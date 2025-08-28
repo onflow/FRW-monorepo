@@ -87,6 +87,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     // Create enhanced platform that overrides methods to use hook data
     const enhancedPlatform = Object.create(platform);
 
+
     enhancedPlatform.getCache = async (key: string) => {
       if (key === 'coins') {
         if (!coins || coins.length === 0) {
@@ -141,8 +142,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           // Handle contractType for EVM NFTs
           ...(isEvmAddress &&
             (collection.collection as any).contractType && {
-              contractType: (collection.collection as any).contractType,
-            }),
+            contractType: (collection.collection as any).contractType,
+          }),
 
           // Handle path for Cadence NFTs
           ...(collection.collection.path && {

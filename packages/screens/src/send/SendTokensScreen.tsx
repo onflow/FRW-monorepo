@@ -1,7 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, useTokenStore } from '@onflow/frw-stores';
 import {
-  type WalletAccount,
   type NFTModel,
   type CollectionModel,
   type TokenModel,
@@ -28,7 +27,6 @@ import {
   MultipleNFTsPreview,
   SendSectionHeader,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 export const SendTokensScreen = (props) => {
@@ -45,21 +43,18 @@ export const SendTokensScreen = (props) => {
     transactionType,
     selectedNFTs,
     selectedToken,
-    setFromAccount: setStoreFromAccount,
-    setToAccount: setStoreToAccount,
+    fromAccount,
+    setFromAccount,
+    toAccount,
     updateFormData,
     executeTransaction,
     isLoading: storeLoading,
   } = useSendStore();
-
   // Get token store
   const { getTokensForAddress, fetchTokens } = useTokenStore();
 
   // Add a ref to track if we've already initialized
   const hasInitialized = React.useRef(false);
-  const routerValues = bridge.getRouterValue?.() || {};
-  const initialToAddress = routerValues.toAddress || null;
-  const initialTokenSymbol = routerValues.tokenSymbol || null;
   const network = bridge.getNetwork() || 'mainnet';
 
   // Default values for internal use
@@ -83,8 +78,6 @@ export const SendTokensScreen = (props) => {
   };
 
   // Internal state - no more props for data
-  const [fromAccount, setFromAccount] = useState<WalletAccount | null>(null);
-  const [toAccount, setToAccount] = useState<WalletAccount | null>(null);
   const [amount, setAmount] = useState<string>('');
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
   const [tokens, setTokens] = useState<TokenModel[]>([]);
@@ -98,7 +91,6 @@ export const SendTokensScreen = (props) => {
   const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
   const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
   const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
-
   // Simple initialization without complex bridge calls
   useEffect(() => {
     // Prevent multiple initializations
@@ -139,50 +131,11 @@ export const SendTokensScreen = (props) => {
 
           if (coinsData && coinsData.length > 0) {
             setTokens(coinsData);
-
-            // Set initial token based on prop or default to FLOW
-            let defaultToken: TokenModel | undefined;
-            if (initialTokenSymbol) {
-              defaultToken = coinsData.find(
-                (token) => (token.symbol || '').toLowerCase() === initialTokenSymbol.toLowerCase()
-              );
-            }
-            if (!defaultToken) {
-              const flowToken = coinsData.find(
-                (token) => (token.symbol || '').toLowerCase() === 'flow'
-              );
-              defaultToken = flowToken || coinsData[0];
-            }
-            if (defaultToken) {
-              setSelectedToken(defaultToken);
-            }
           } else {
             setTokens([]);
             setSelectedToken(null);
             setError('No tokens available. Please ensure your wallet has tokens to send.');
           }
-        }
-
-        // Fetch NFT collections
-        try {
-          const nftData = await bridge.getCache('nfts');
-          if (nftData && Array.isArray(nftData)) {
-            setNftCollections(nftData);
-          }
-        } catch (error) {
-          console.warn('Failed to fetch NFT collections:', error);
-        }
-
-        // Set initial recipient if provided
-        if (initialToAddress) {
-          setToAccount({
-            address: initialToAddress,
-            name: 'Recipient',
-            balance: '0',
-            avatar: '',
-            emoji: '',
-            emojiInfo: null,
-          });
         }
 
         setError(null);
@@ -195,7 +148,7 @@ export const SendTokensScreen = (props) => {
 
     // Call async initialization
     initializeData();
-  }, [initialToAddress, initialTokenSymbol]);
+  }, []);
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback((token: any) => {
@@ -248,21 +201,18 @@ export const SendTokensScreen = (props) => {
       }
 
       setSelectedToken(selectedToken);
-      setStoreFromAccount(fromAccount);
-      setStoreToAccount(toAccount);
+      setSelectedNFTs([]);
       setTransactionType('tokens');
       updateFormData({ tokenAmount: amount });
     } else {
       if (!selectedNFTs.length || !fromAccount || !toAccount) {
         throw new Error('Missing NFT transaction data');
       }
-
+      setSelectedToken(null);
       setSelectedNFTs(selectedNFTs);
-      setStoreFromAccount(fromAccount);
-      setStoreToAccount(toAccount);
       setTransactionType(transactionType);
     }
-    
+
     const result = await executeTransaction();
     return result;
   }, [
@@ -275,8 +225,6 @@ export const SendTokensScreen = (props) => {
     setSelectedToken,
     setSelectedNFTs,
     setTransactionType,
-    setStoreFromAccount,
-    setStoreToAccount,
     updateFormData,
     executeTransaction,
   ]);
@@ -364,16 +312,16 @@ export const SendTokensScreen = (props) => {
                   selectedToken={
                     selectedToken
                       ? {
-                          symbol: selectedToken.symbol,
-                          name: selectedToken.name,
-                          logo: selectedToken.logoURI,
-                          logoURI: selectedToken.logoURI,
-                          balance: selectedToken.balance?.toString(),
-                          price: selectedToken.priceInUSD
-                            ? parseFloat(selectedToken.priceInUSD)
-                            : undefined,
-                          isVerified: selectedToken.isVerified,
-                        }
+                        symbol: selectedToken.symbol,
+                        name: selectedToken.name,
+                        logo: selectedToken.logoURI,
+                        logoURI: selectedToken.logoURI,
+                        balance: selectedToken.balance?.toString(),
+                        price: selectedToken.priceInUSD
+                          ? parseFloat(selectedToken.priceInUSD)
+                          : undefined,
+                        isVerified: selectedToken.isVerified,
+                      }
                       : undefined
                   }
                   amount={amount}
@@ -396,7 +344,7 @@ export const SendTokensScreen = (props) => {
                   {/* Section Header */}
                   <SendSectionHeader
                     title={`Send NFTs (${selectedNFTs.length})`}
-                    onEditPress={() => {}}
+                    onEditPress={() => { }}
                     showEditButton={showEditButtons}
                     editButtonText="Edit"
                   />

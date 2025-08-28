@@ -1,23 +1,11 @@
 import { Search, Close } from '@onflow/frw-icons';
+import { type TokenModel } from '@onflow/frw-types';
 import React, { useState, useMemo } from 'react';
 import { YStack, XStack, ScrollView, Input, View } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
-
-export interface TokenModel {
-  id?: string;
-  symbol: string;
-  name: string;
-  logoURI?: string;
-  balance?: string | number;
-  priceInUSD?: string;
-  decimal?: number;
-  identifier?: string;
-  contractAddress?: string;
-  isVerified?: boolean;
-}
 
 export interface TokenSelectorModalProps {
   visible: boolean;
@@ -54,7 +42,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
     return tokens.filter(
       (token) =>
         token.name.toLowerCase().includes(query) ||
-        token.symbol.toLowerCase().includes(query) ||
+        token.symbol?.toLowerCase().includes(query) ||
         token.contractAddress?.toLowerCase().includes(query)
     );
   }, [tokens, searchQuery]);

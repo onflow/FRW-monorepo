@@ -1,19 +1,13 @@
-import { getServiceContext, type PlatformSpec, type Storage } from '@onflow/frw-context';
-import type { WalletAccount } from '@onflow/frw-types';
+import {
+  getServiceContext,
+  type PlatformSpec,
+  type Storage,
+  type StorageKeyMap,
+} from '@onflow/frw-context';
+import type { WalletAccount, RecentRecipient } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
-const RECENT_RECIPIENTS_KEY = 'recent_recipients';
 const MAX_RECENT_RECIPIENTS = 10;
-
-export interface RecentRecipient {
-  id: string;
-  name: string;
-  address: string;
-  emoji?: string;
-  avatar?: string;
-  lastUsed: number; // timestamp
-  source: 'local' | 'server'; // track where it came from
-}
 
 export class RecentRecipientsService {
   /**
@@ -63,14 +57,17 @@ export class RecentRecipientsService {
 
   async getAllRecentRecipients(): Promise<WalletAccount[]> {
     try {
-      // Get local recent recipients from MMKV
-      const localRecents = this.getLocalRecentRecipients();
+      // Get local recent recipients from storage
+      const localRecents = await this.getLocalRecentRecipients();
 
       // Get server recent recipients from bridge
       const serverRecents = await this.getServerRecentRecipients();
 
       // Merge and deduplicate
-      const merged = this.mergeAndDeduplicateRecents(localRecents, serverRecents);
+      const merged = await this.mergeAndDeduplicateRecents(
+        this.getLocalRecentRecipients(),
+        this.getServerRecentRecipients()
+      );
 
       // Convert to WalletAccount format
       return merged.map((recent) => ({
@@ -88,15 +85,15 @@ export class RecentRecipientsService {
   }
 
   /**
-   * Get local recent recipients from MMKV
+   * Get local recent recipients from storage
    */
-  getLocalRecentRecipients(): RecentRecipient[] {
+  async getLocalRecentRecipients(): Promise<RecentRecipient[]> {
     try {
-      const data = this.storage.getString(RECENT_RECIPIENTS_KEY);
-      if (!data) return [];
+      const recents = await this.storage.get('recentRecipients');
+      if (!recents) return [];
 
-      const recents: RecentRecipient[] = JSON.parse(data);
-      return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
+      const recipientsArray = Array.isArray(recents) ? recents : [];
+      return recipientsArray.sort((a, b) => b.lastUsed - a.lastUsed);
     } catch (_error) {
       logger.error('Catch block error', _error);
       return [];
@@ -128,15 +125,15 @@ export class RecentRecipientsService {
   /**
    * Add a new recent recipient (when user selects someone)
    */
-  addRecentRecipient(recipient: {
+  async addRecentRecipient(recipient: {
     id?: string;
     name: string;
     address: string;
     emoji?: string;
     avatar?: string;
-  }): void {
+  }): Promise<void> {
     try {
-      const localRecents = this.getLocalRecentRecipients();
+      const localRecents = await this.getLocalRecentRecipients();
 
       const newRecent: RecentRecipient = {
         id: recipient.id || recipient.address,
@@ -152,10 +149,9 @@ export class RecentRecipientsService {
       const filtered = localRecents.filter((r) => r.address !== recipient.address);
 
       // Add new entry at the beginning
-      const updated = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
+      const updated: RecentRecipient[] = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
 
-      // Save to MMKV
-      this.storage.set(RECENT_RECIPIENTS_KEY, JSON.stringify(updated));
+      await this.storage.set<keyof StorageKeyMap>('recentRecipients', updated);
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (_error) {
@@ -166,9 +162,9 @@ export class RecentRecipientsService {
   /**
    * Clear all local recent recipients
    */
-  clearLocalRecentRecipients(): void {
+  async clearLocalRecentRecipients(): Promise<void> {
     try {
-      this.storage.delete(RECENT_RECIPIENTS_KEY);
+      await this.storage.delete('recentRecipients');
       logger.debug('Cleared local recent recipients');
     } catch (_error) {
       logger.error('Catch block error', _error);
@@ -178,21 +174,25 @@ export class RecentRecipientsService {
   /**
    * Merge and deduplicate recent recipients from local and server
    */
-  private mergeAndDeduplicateRecents(
-    localRecents: RecentRecipient[],
-    serverRecents: RecentRecipient[]
-  ): RecentRecipient[] {
+  private async mergeAndDeduplicateRecents(
+    localRecents: Promise<RecentRecipient[]>,
+    serverRecents: Promise<RecentRecipient[]>
+  ): Promise<RecentRecipient[]> {
+    const [localRecentsResolved, serverRecentsResolved] = await Promise.all([
+      localRecents,
+      serverRecents,
+    ]);
     const addressMap = new Map<string, RecentRecipient>();
 
     // Add server recents first (lower priority)
-    for (const recent of serverRecents) {
+    for (const recent of serverRecentsResolved) {
       if (recent.address) {
         addressMap.set(recent.address, recent);
       }
     }
 
     // Add local recents (higher priority, will overwrite server entries)
-    for (const recent of localRecents) {
+    for (const recent of localRecentsResolved) {
       if (recent.address) {
         addressMap.set(recent.address, recent);
       }
@@ -207,16 +207,16 @@ export class RecentRecipientsService {
   /**
    * Check if an address is in recent recipients
    */
-  isAddressInRecents(address: string): boolean {
-    const localRecents = this.getLocalRecentRecipients();
+  async isAddressInRecents(address: string): Promise<boolean> {
+    const localRecents = await this.getLocalRecentRecipients();
     return localRecents.some((r) => r.address === address);
   }
 
   /**
    * Get recent recipient by address
    */
-  getRecentRecipientByAddress(address: string): RecentRecipient | null {
-    const localRecents = this.getLocalRecentRecipients();
+  async getRecentRecipientByAddress(address: string): Promise<RecentRecipient | null> {
+    const localRecents = await this.getLocalRecentRecipients();
     return localRecents.find((r) => r.address === address) || null;
   }
 }

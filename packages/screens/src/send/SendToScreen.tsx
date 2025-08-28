@@ -38,6 +38,8 @@ export function SendToScreen({
     { type: 'contacts', title: t('send.addressBook') },
   ];
 
+  const { setToAccount } = useSendStore();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
   const [recipients, setRecipients] = useState<RecipientData[]>([]);
@@ -137,7 +139,15 @@ export function SendToScreen({
 
   const handleRecipientPress = useCallback(
     (recipient: RecipientData) => {
-      console.log('Selected recipient:', recipient);
+      setToAccount({
+        id: recipient.id,
+        name: recipient.name,
+        address: recipient.address,
+        avatar: recipient.avatar || '',
+        emojiInfo: recipient.emojiInfo,
+        isActive: false,
+        type: recipient.type === 'account' ? 'main' : undefined,
+      });
       // Navigate to send tokens screen - platforms should handle this appropriately
       navigation.navigate('SendTokens', { address: recipient.address, recipient });
     },
