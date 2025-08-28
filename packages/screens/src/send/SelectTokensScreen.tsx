@@ -1,13 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { TokenService } from '@onflow/frw-services';
 import { useSendStore, useTokenStore, useWalletStore } from '@onflow/frw-stores';
-import {
-  addressType,
-  WalletType,
-  type CollectionModel,
-  type TokenModel,
-  type WalletAccount,
-} from '@onflow/frw-types';
+import { type CollectionModel, type TokenModel, type WalletAccount } from '@onflow/frw-types';
 import {
   AccountCard,
   AddressText,
@@ -62,57 +55,23 @@ export function SelectTokensScreen(): React.ReactElement {
 
   const walletStoreState = useWalletStore();
 
+  // Get token store functions
+  const { getTokensForAddress, fetchTokens: fetchTokensFromStore } = useTokenStore();
+
   // Tab options
   const TABS = [t('tabs.tokens'), t('tabs.nfts')] as const;
 
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Fetch account balance
-  const fetchAccountBalance = useCallback(
-    async (
-      accountAddress: string,
-      accountType?: string,
-      forceFresh: boolean = false
-    ): Promise<string> => {
-      try {
-        const network = bridge.getNetwork();
-        const tokenStore = useTokenStore.getState();
-
-        const result = forceFresh
-          ? await tokenStore.getBalance(accountAddress, accountType, { fresh: true })
-          : await tokenStore.getAccountBalance(accountAddress, accountType, network || 'mainnet');
-
-        return result.balance;
-      } catch (error) {
-        console.error(`Failed to fetch balance for ${accountAddress}:`, error);
-        return '0 FLOW';
-      }
-    },
-    [bridge]
-  );
-
-  // Update account balance
-  const updateFromAccountBalance = useCallback(
-    async (accountAddress: string, accountType?: string, forceFresh: boolean = true) => {
-      setIsBalanceLoading(true);
-      try {
-        const balance = await fetchAccountBalance(accountAddress, accountType, forceFresh);
-        setFromAccountBalance(balance);
-      } catch (error) {
-        console.error('Failed to update account balance:', error);
-        setFromAccountBalance('0 FLOW');
-      } finally {
-        setIsBalanceLoading(false);
-      }
-    },
-    [fetchAccountBalance]
-  );
+  // Get tokens from tokenStore for the account
+  const network = bridge.getNetwork() || 'mainnet';
 
   // Fetch tokens
   const fetchTokens = useCallback(
     async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
-      setIsLoading(true);
+      setIsLoading(!isRefreshAction);
+      setIsAccountLoading(true);
       setError(null);
 
       try {
@@ -124,37 +83,30 @@ export function SelectTokensScreen(): React.ReactElement {
           return;
         }
 
-        // Try to get coins from bridge first
-        const coinsData = await bridge.getCache('coins');
+        // Check if we already have cached data first
+        const cachedTokens = getTokensForAddress(targetAddress, network);
 
-        if (coinsData && Array.isArray(coinsData) && coinsData.length > 0) {
-          // Bridge now returns data in TokenModel format, use directly
+        if (!cachedTokens || cachedTokens.length === 0) {
+          // Only fetch if we don't have cached data
+          await fetchTokensFromStore(targetAddress, network, false);
+        }
+        // Get tokens from cache (either existing or newly fetched)
+        const coinsData = getTokensForAddress(targetAddress, network);
+
+        if (coinsData && coinsData.length > 0) {
           setTokens(coinsData);
         } else {
-          // Fallback to original TokenService logic
-          const network = bridge.getNetwork();
-          let walletType: WalletType;
-          if (accountType === 'evm') {
-            walletType = WalletType.EVM;
-          } else if (accountType === 'main' || accountType === 'child') {
-            walletType = WalletType.Flow;
-          } else {
-            walletType = addressType(targetAddress);
-          }
-          const currency = bridge.getCurrency();
-          const tokenService = new TokenService(walletType);
-          const tokenInfos = await tokenService.getTokenInfo(targetAddress, network, currency.name);
-          setTokens(tokenInfos);
+          setTokens([]);
         }
       } catch (err: any) {
-        console.error('Error fetching tokens:', err);
         setError(err.message || t('errors.failedToLoadTokens'));
         setTokens([]);
       } finally {
         setIsLoading(false);
+        setIsAccountLoading(false);
       }
     },
-    [bridge, t]
+    [bridge, t, getTokensForAddress, fetchTokensFromStore]
   );
 
   // Fetch NFT collections
@@ -205,8 +157,16 @@ export function SelectTokensScreen(): React.ReactElement {
     [bridge]
   );
 
+  // Add a ref to track if we've already initialized
+  const hasInitialized = React.useRef(false);
+
   // Initialize screen
   useEffect(() => {
+    // Prevent multiple initializations
+    if (hasInitialized.current) {
+      return;
+    }
+
     setCurrentStep('select-tokens');
 
     const initializeActiveAccount = async (): Promise<void> => {
@@ -215,27 +175,25 @@ export function SelectTokensScreen(): React.ReactElement {
           return;
         }
 
-        const activeAccount = walletStoreState.activeAccount || walletStoreState.accounts[0];
+        hasInitialized.current = true;
+        setIsLoading(true);
 
-        // For extension, just fetch tokens directly without account logic
-        setIsAccountLoading(false);
         const bridgeAddress = bridge.getSelectedAddress();
 
         if (bridgeAddress) {
-          // Fetch tokens using bridge address
-          await Promise.all([
-            fetchTokens(bridgeAddress, 'main'),
-            fetchNFTCollections(bridgeAddress, 'main'),
-          ]);
+          // Fetch tokens and NFT collections sequentially to avoid race conditions
+          await fetchTokens(bridgeAddress, 'main');
+          await fetchNFTCollections(bridgeAddress, 'main');
         }
       } catch (error) {
-        console.error('Error initializing account:', error);
-        setIsAccountLoading(false);
+        console.error('❌ Error initializing account:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     initializeActiveAccount();
-  }, [walletStoreState.isLoading]);
+  }, []); // Remove dependency to prevent multiple runs
 
   // Handle tab change
   const handleTabChange = (newTab: TabType): void => {
@@ -255,8 +213,9 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
-    setSelectedCollection(collection);
     const address = fromAccount?.address || bridge.getSelectedAddress();
+    setSelectedCollection(collection);
+    setTransactionType('multiple-nfts');
     navigation.navigate('NFTList', { collection, address });
   };
 
@@ -373,7 +332,7 @@ export function SelectTokensScreen(): React.ReactElement {
                         symbol={token.symbol || ''}
                         name={token.name || ''}
                         balance={token.displayBalance || token.balance || '0'}
-                        logo={token.icon}
+                        logo={token.logoURI}
                         price={token.usdValue?.toString()}
                         change24h={token.change ? parseFloat(token.change) : undefined}
                         isVerified={token.isVerified}

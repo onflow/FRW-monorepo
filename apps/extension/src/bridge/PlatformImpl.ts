@@ -87,15 +87,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   // API endpoint methods
   getApiEndpoint(): string {
-    // Return appropriate API endpoint based on network
-    return 'https://lilico.app';
+    return process.env.API_BASE_URL || '';
   }
 
   getGoApiEndpoint(): string {
-    const network = this.getNetwork();
-    return network === 'testnet'
-      ? 'https://goapi-testnet.lilico.app'
-      : 'https://goapi-mainnet.lilico.app';
+    return process.env.API_GO_SERVER_URL || '';
   }
 
   getInstabugToken(): string {
