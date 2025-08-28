@@ -163,6 +163,7 @@
     "noResultsFoundDescription": "No accounts or contacts match \"{{query}}\". Try a different search term.",
     "noAccountsTitle": "No Accounts",
     "noAccountsDescription": "You haven't added any accounts yet. Create your first account to get started.",
+    "noAccountsAvailable": "No accounts available",
     "noRecentRecipientsTitle": "No Recent Recipients",
     "noRecentRecipientsDescription": "Your recent recipients will appear here after you send tokens.",
     "noContactsTitle": "No Contacts",
