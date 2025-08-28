@@ -42,4 +42,10 @@ export interface Navigation {
    * Get the current route information
    */
   getCurrentRoute(): { name: string; params?: Record<string, unknown> } | null;
+
+  /**
+   * Get route parameters for the current screen
+   * This provides a unified way to access route params across platforms
+   */
+  getRouteParams(): Record<string, unknown>;
 }

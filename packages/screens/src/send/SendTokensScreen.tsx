@@ -28,6 +28,7 @@ import {
   MultipleNFTsPreview,
   SendSectionHeader,
 } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 export const SendTokensScreen = (props) => {
@@ -261,7 +262,7 @@ export const SendTokensScreen = (props) => {
       setStoreToAccount(toAccount);
       setTransactionType(transactionType);
     }
-
+    
     const result = await executeTransaction();
     return result;
   }, [
