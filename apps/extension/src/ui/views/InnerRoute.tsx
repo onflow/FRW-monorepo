@@ -19,7 +19,8 @@ import SendToAddress from './NFT/SendNFT/SendToAddress';
 import EvmCollectionDetail from './NftEvm/CollectionDetail';
 import NftEvmDetail from './NftEvm/Detail';
 import SendNftEvm from './NftEvm/SendNFT/SendToAddress';
-import CollectionScreenView from './NFTScreen/NFTListScreen';
+import NFTDetailScreenView from './NFTScreen/NFTDetailScreen';
+import NFTListScreenView from './NFTScreen/NFTListScreen';
 import SelectTokensScreenView from './SelectTokensScreenView';
 import SendTo from './SendTo';
 import SendTokensScreenView from './SendTokensScreen';
@@ -187,7 +188,15 @@ const InnerRoute = () => {
               path="nested/nftlistscreen/:address"
               element={
                 <PrivateRoute>
-                  <CollectionScreenView />
+                  <NFTListScreenView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="nested/nftdtailscreen/:id"
+              element={
+                <PrivateRoute>
+                  <NFTDetailScreenView />
                 </PrivateRoute>
               }
             />

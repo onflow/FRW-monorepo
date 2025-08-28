@@ -64,7 +64,15 @@ export function NFTCard({
 
         {/* Selection Indicator - top right corner */}
 
-        <YStack position="absolute" top="$2" right="$2" onPress={() => onSelect(nft.id)}>
+        <YStack
+          w="$6"
+          h="$6"
+          zIndex="$2"
+          position="absolute"
+          top="$2"
+          right="$2"
+          onPress={() => onSelect(nft.id)}
+        >
           <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>
       </YStack>
