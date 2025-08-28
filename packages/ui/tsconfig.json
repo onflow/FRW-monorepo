@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
     "jsx": "react-jsx",
@@ -10,15 +9,12 @@
     "allowImportingTsExtensions": false,
     "noEmit": false
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tsup.config.ts", ".storybook/**/*", "stories/**/*"],
   "exclude": [
     "dist",
     "node_modules",
     "**/*.test.*",
     "**/*.spec.*",
-    "storybook-static",
-    ".storybook",
-    "stories",
-    "*.stories.tsx"
+    "storybook-static"
   ]
 }
