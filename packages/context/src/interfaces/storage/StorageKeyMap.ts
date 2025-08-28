@@ -1,4 +1,4 @@
-import type { TokenModel, User } from '@onflow/frw-types';
+import type { TokenModel, User, RecentRecipient } from '@onflow/frw-types';
 
 /**
  * Generic wrapper for all stored data with versioning and metadata
@@ -55,4 +55,5 @@ export interface StorageKeyMap {
   settings: StorageData<AppSettings>;
   auth: StorageData<AuthData>;
   cache: StorageData<CacheData>;
+  recentRecipients: StorageData<RecentRecipient[]>;
 }

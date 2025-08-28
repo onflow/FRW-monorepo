@@ -1,19 +1,8 @@
 import { getServiceContext, type PlatformSpec, type Storage } from '@onflow/frw-context';
-import type { WalletAccount } from '@onflow/frw-types';
+import type { WalletAccount, RecentRecipient } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
-const RECENT_RECIPIENTS_KEY = 'recent_recipients';
 const MAX_RECENT_RECIPIENTS = 10;
-
-export interface RecentRecipient {
-  id: string;
-  name: string;
-  address: string;
-  emoji?: string;
-  avatar?: string;
-  lastUsed: number; // timestamp
-  source: 'local' | 'server'; // track where it came from
-}
 
 export class RecentRecipientsService {
   /**
@@ -95,10 +84,9 @@ export class RecentRecipientsService {
    */
   async getLocalRecentRecipients(): Promise<RecentRecipient[]> {
     try {
-      const data = await this.storage.get('cache');
-      if (!data || !data[RECENT_RECIPIENTS_KEY]) return [];
+      const recents = await this.storage.get('recentRecipients');
+      if (!recents) return [];
 
-      const recents: RecentRecipient[] = data[RECENT_RECIPIENTS_KEY] as RecentRecipient[];
       return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
     } catch (_error) {
       logger.error('Catch block error', _error);
@@ -158,11 +146,7 @@ export class RecentRecipientsService {
       const updated = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
 
       // Save to storage
-      const existingCache = (await this.storage.get('cache')) || {};
-      await this.storage.set('cache', {
-        ...existingCache,
-        [RECENT_RECIPIENTS_KEY]: updated,
-      });
+      await this.storage.set('recentRecipients', updated);
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (_error) {
@@ -175,9 +159,7 @@ export class RecentRecipientsService {
    */
   async clearLocalRecentRecipients(): Promise<void> {
     try {
-      const existingCache = (await this.storage.get('cache')) || {};
-      const { [RECENT_RECIPIENTS_KEY]: _, ...restCache } = existingCache as any;
-      await this.storage.set('cache', restCache);
+      await this.storage.delete('recentRecipients');
       logger.debug('Cleared local recent recipients');
     } catch (_error) {
       logger.error('Catch block error', _error);

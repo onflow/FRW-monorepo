@@ -312,16 +312,16 @@ export const SendTokensScreen = (props) => {
                   selectedToken={
                     selectedToken
                       ? {
-                          symbol: selectedToken.symbol,
-                          name: selectedToken.name,
-                          logo: selectedToken.logoURI,
-                          logoURI: selectedToken.logoURI,
-                          balance: selectedToken.balance?.toString(),
-                          price: selectedToken.priceInUSD
-                            ? parseFloat(selectedToken.priceInUSD)
-                            : undefined,
-                          isVerified: selectedToken.isVerified,
-                        }
+                        symbol: selectedToken.symbol,
+                        name: selectedToken.name,
+                        logo: selectedToken.logoURI,
+                        logoURI: selectedToken.logoURI,
+                        balance: selectedToken.balance?.toString(),
+                        price: selectedToken.priceInUSD
+                          ? parseFloat(selectedToken.priceInUSD)
+                          : undefined,
+                        isVerified: selectedToken.isVerified,
+                      }
                       : undefined
                   }
                   amount={amount}
@@ -344,7 +344,7 @@ export const SendTokensScreen = (props) => {
                   {/* Section Header */}
                   <SendSectionHeader
                     title={`Send NFTs (${selectedNFTs.length})`}
-                    onEditPress={() => {}}
+                    onEditPress={() => { }}
                     showEditButton={showEditButtons}
                     editButtonText="Edit"
                   />
@@ -433,8 +433,8 @@ export const SendTokensScreen = (props) => {
         {/* Token Selector Modal */}
         <TokenSelectorModal
           visible={isTokenSelectorVisible}
-          selectedToken={selectedToken as any}
-          tokens={tokens as any}
+          selectedToken={selectedToken}
+          tokens={tokens}
           onTokenSelect={handleTokenSelect}
           onClose={handleTokenSelectorClose}
         />
@@ -443,7 +443,7 @@ export const SendTokensScreen = (props) => {
         <TransactionConfirmationModal
           visible={isConfirmationVisible}
           transactionType={transactionType}
-          selectedToken={selectedToken as any}
+          selectedToken={selectedToken}
           fromAccount={fromAccount}
           toAccount={toAccount}
           formData={formData}

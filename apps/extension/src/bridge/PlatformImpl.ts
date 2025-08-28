@@ -10,7 +10,6 @@ import {
 import { extensionNavigation } from './ExtensionNavigation';
 import { ExtensionStorage } from './ExtensionStorage';
 
-
 class ExtensionPlatformImpl implements PlatformSpec {
   private debugMode: boolean = process.env.NODE_ENV === 'development';
   private storageInstance: ExtensionStorage;
@@ -22,7 +21,34 @@ class ExtensionPlatformImpl implements PlatformSpec {
     this.storageInstance = new ExtensionStorage();
   }
 
-  // Methods to update cached values from hooks/context
+  storage(): Storage {
+    return this.storageInstance;
+  }
+
+  navigation() {
+    return extensionNavigation;
+  }
+
+  getPlatform(): Platform {
+    return Platform.Extension;
+  }
+
+  getVersion(): string {
+    return chrome.runtime.getManifest().version;
+  }
+
+  getBuildNumber(): string {
+    return chrome.runtime.getManifest().version_name || this.getVersion();
+  }
+
+  getCurrency(): Currency {
+    return {
+      name: 'USD',
+      symbol: '$',
+      rate: '1',
+    };
+  }
+
   setCurrentAddress(address: string | null) {
     this.currentAddress = address;
   }
@@ -35,7 +61,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     this.walletController = controller;
   }
 
-  // Basic platform methods
   getSelectedAddress(): string | null {
     return this.currentAddress;
   }
@@ -66,26 +91,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     }
   }
 
-  getVersion(): string {
-    return chrome.runtime.getManifest().version;
-  }
-
-  getBuildNumber(): string {
-    return chrome.runtime.getManifest().version_name || this.getVersion();
-  }
-
-  getCurrency(): Currency {
-    return {
-      name: 'USD',
-      symbol: '$',
-      rate: '1',
-    };
-  }
-  getPlatform(): Platform {
-    return Platform.Extension;
-  }
-
-  // API endpoint methods
   getApiEndpoint(): string {
     return process.env.API_BASE_URL || '';
   }
@@ -95,20 +100,9 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   getInstabugToken(): string {
-    // Return extension-specific analytics/logging token if available
     return process.env.INSTABUG_TOKEN || '';
   }
 
-  // Storage access
-  getStorage(): Storage {
-    return this.storageInstance;
-  }
-
-  storage(): Storage {
-    return this.storageInstance;
-  }
-
-  // Cryptographic operations
   async sign(hexData: string): Promise<string> {
     return await this.walletController.signMessage(hexData);
   }
@@ -117,7 +111,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.walletController.getKeyIndex() || 0;
   }
 
-  // Data access methods
   async getRecentContacts(): Promise<RecentContactsResponse> {
     return await this.walletController.getRecentContacts();
   }
@@ -154,7 +147,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return await this.walletController.getSelectedAccount();
   }
 
-  // Extended data access methods for SendToScreen
   async getAddressBookContacts(): Promise<any[]> {
     if (!this.walletController) return [];
     return await this.walletController.getAddressBook();
@@ -170,22 +162,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return await this.walletController.searchByUsername(username);
   }
 
-  // Get account data from profiles/hooks
   getAccountsData(): any[] {
-    // This will be set by the component when it has the data
-    // For now, return empty array - component will override this
     return [];
   }
 
-  // Token and account data methods (required by PlatformSpec)
-  // Note: For extension, this should be overridden by PlatformContext to use useCoins() hook data
   async getCache(key: string): Promise<any[] | null> {
     this.log('warn', `Extension getCache(${key}) called - should be overridden by PlatformContext`);
     return null;
   }
 
   getRouterValue?(): { [key: string]: any } {
-    // Get from React Router values stored in window object
     const routerValues = (window as any).__flowWalletRouterParams || {};
     return routerValues;
   }
@@ -253,7 +239,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     }
   }
 
-  // CadenceService configuration
   configureCadenceService(cadenceService: any): void {
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
@@ -391,7 +376,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
             }
 
             // Navigate to transaction complete
-            const navigation = this.getNavigation();
+            const navigation = this.navigation();
             if (navigation && navigation.navigate) {
               navigation.navigate('TransactionComplete', {
                 txId: txId,
@@ -410,7 +395,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     this.log('debug', 'CadenceService configured for extension');
   }
 
-  // Logging methods
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
       return;
@@ -453,7 +437,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.debugMode;
   }
 
-  // UI interaction methods
   async scanQRCode(): Promise<string> {
     // Extension-specific QR code scanning implementation
     // Could open a popup window with camera access
@@ -472,25 +455,14 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   closeRN(id?: string | null): void {
-    // Extension equivalent - close current popup/tab
     if (window.close) {
       window.close();
     } else {
       chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
     }
   }
-
-  getNavigation() {
-    // Return the extension navigation implementation
-    return extensionNavigation;
-  }
-
-  navigation() {
-    return extensionNavigation;
-  }
 }
 
-// Singleton instance
 let platformInstance: ExtensionPlatformImpl | null = null;
 
 export const getPlatform = (): ExtensionPlatformImpl => {

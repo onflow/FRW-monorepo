@@ -2,6 +2,11 @@ import type { Storage, StorageKeyMap } from '@onflow/frw-context';
 
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 
+// Extend Chrome storage interface to include getKeys method
+interface ChromeStorageWithKeys extends chrome.storage.StorageArea {
+  getKeys(): Promise<string[]>;
+}
+
 /**
  * Extension Storage Implementation
  * Implements the context Storage interface using Chrome storage
@@ -65,10 +70,24 @@ export class ExtensionStorage implements Storage {
 
   async getAllKeys(): Promise<(keyof StorageKeyMap)[]> {
     try {
-      // Chrome storage doesn't have a direct getAllKeys method, so we'll return an empty array
-      // In a real implementation, you might want to maintain a separate key registry
-      return [];
-    } catch {
+      const keys = await (this.storageArea as unknown as ChromeStorageWithKeys).getKeys();
+
+      const validKeys: (keyof StorageKeyMap)[] = [];
+
+      const storageKeys = Object.keys({} as StorageKeyMap) as (keyof StorageKeyMap)[];
+
+      const isValidStorageKey = (key: string): key is keyof StorageKeyMap => {
+        return storageKeys.includes(key as keyof StorageKeyMap);
+      };
+
+      for (const key of keys) {
+        if (isValidStorageKey(key)) {
+          validKeys.push(key);
+        }
+      }
+      return validKeys;
+    } catch (error) {
+      console.error('Failed to get all keys:', error);
       return [];
     }
   }
@@ -79,16 +98,5 @@ export class ExtensionStorage implements Storage {
     } catch (error) {
       console.error('Failed to clear storage:', error);
     }
-  }
-
-  // Optional methods for platform-specific functionality
-  async recrypt?(key: string | undefined): Promise<void> {
-    // Chrome storage doesn't support encryption, so this is a no-op
-    console.warn('recrypt() is not supported in Chrome storage');
-  }
-
-  async trim?(): Promise<void> {
-    // Chrome storage doesn't need trimming, so this is a no-op
-    console.warn('trim() is not supported in Chrome storage');
   }
 }

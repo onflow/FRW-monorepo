@@ -87,9 +87,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     // Create enhanced platform that overrides methods to use hook data
     const enhancedPlatform = Object.create(platform);
 
-    // Ensure the new storage() and navigation() methods are available
-    enhancedPlatform.storage = () => platform.getStorage();
-    enhancedPlatform.navigation = () => platform.getNavigation();
 
     enhancedPlatform.getCache = async (key: string) => {
       if (key === 'coins') {
@@ -145,8 +142,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           // Handle contractType for EVM NFTs
           ...(isEvmAddress &&
             (collection.collection as any).contractType && {
-              contractType: (collection.collection as any).contractType,
-            }),
+            contractType: (collection.collection as any).contractType,
+          }),
 
           // Handle path for Cadence NFTs
           ...(collection.collection.path && {
