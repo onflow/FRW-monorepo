@@ -152,6 +152,13 @@ class ExtensionNavigation implements Navigation {
     return null;
   }
 
+  getRouteParams(): Record<string, unknown> {
+    if (this.locationRef?.current) {
+      return this.locationRef.current.state || {};
+    }
+    return {};
+  }
+
   /**
    * Convert screen names to extension paths
    * Maps the screen names used by shared screens to extension routes

@@ -1,5 +1,10 @@
-import { getServiceContext, type PlatformSpec, type Storage } from '@onflow/frw-context';
-import type { WalletAccount } from '@onflow/frw-types';
+import {
+  getServiceContext,
+  type PlatformSpec,
+  type Storage,
+  type StorageKeyMap,
+} from '@onflow/frw-context';
+import type { WalletAccount, RecentRecipient } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
 // Extend StorageKeyMap to include recent_recipients
@@ -15,16 +20,6 @@ declare module '@onflow/frw-context' {
 }
 
 const MAX_RECENT_RECIPIENTS = 10;
-
-export interface RecentRecipient {
-  id: string;
-  name: string;
-  address: string;
-  emoji?: string;
-  avatar?: string;
-  lastUsed: number; // timestamp
-  source: 'local' | 'server'; // track where it came from
-}
 
 export class RecentRecipientsService {
   /**
@@ -81,7 +76,10 @@ export class RecentRecipientsService {
       const serverRecents = await this.getServerRecentRecipients();
 
       // Merge and deduplicate
-      const merged = this.mergeAndDeduplicateRecents(localRecents, serverRecents);
+      const merged = await this.mergeAndDeduplicateRecents(
+        this.getLocalRecentRecipients(),
+        this.getServerRecentRecipients()
+      );
 
       // Convert to WalletAccount format
       return merged.map((recent) => ({
@@ -103,11 +101,11 @@ export class RecentRecipientsService {
    */
   async getLocalRecentRecipients(): Promise<RecentRecipient[]> {
     try {
-      const storageData = await this.storage.get('recent_recipients');
-      if (!storageData) return [];
+      const recents = await this.storage.get('recentRecipients');
+      if (!recents) return [];
 
-      const recents: RecentRecipient[] = storageData.data || [];
-      return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
+      const recipientsArray = Array.isArray(recents) ? recents : [];
+      return recipientsArray.sort((a, b) => b.lastUsed - a.lastUsed);
     } catch (_error) {
       logger.error('Catch block error', _error);
       return [];
@@ -163,12 +161,9 @@ export class RecentRecipientsService {
       const filtered = localRecents.filter((r) => r.address !== recipient.address);
 
       // Add new entry at the beginning
-      const updated = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
+      const updated: RecentRecipient[] = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
 
-      // Save to storage
-      await this.storage.set('recent_recipients', {
-        data: updated,
-      });
+      await this.storage.set<keyof StorageKeyMap>('recentRecipients', updated);
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (_error) {
@@ -181,7 +176,7 @@ export class RecentRecipientsService {
    */
   async clearLocalRecentRecipients(): Promise<void> {
     try {
-      await this.storage.delete('recent_recipients');
+      await this.storage.delete('recentRecipients');
       logger.debug('Cleared local recent recipients');
     } catch (_error) {
       logger.error('Catch block error', _error);
@@ -191,21 +186,25 @@ export class RecentRecipientsService {
   /**
    * Merge and deduplicate recent recipients from local and server
    */
-  private mergeAndDeduplicateRecents(
-    localRecents: RecentRecipient[],
-    serverRecents: RecentRecipient[]
-  ): RecentRecipient[] {
+  private async mergeAndDeduplicateRecents(
+    localRecents: Promise<RecentRecipient[]>,
+    serverRecents: Promise<RecentRecipient[]>
+  ): Promise<RecentRecipient[]> {
+    const [localRecentsResolved, serverRecentsResolved] = await Promise.all([
+      localRecents,
+      serverRecents,
+    ]);
     const addressMap = new Map<string, RecentRecipient>();
 
     // Add server recents first (lower priority)
-    for (const recent of serverRecents) {
+    for (const recent of serverRecentsResolved) {
       if (recent.address) {
         addressMap.set(recent.address, recent);
       }
     }
 
     // Add local recents (higher priority, will overwrite server entries)
-    for (const recent of localRecents) {
+    for (const recent of localRecentsResolved) {
       if (recent.address) {
         addressMap.set(recent.address, recent);
       }

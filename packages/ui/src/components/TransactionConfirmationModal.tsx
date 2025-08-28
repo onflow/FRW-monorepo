@@ -1,9 +1,8 @@
-import { ChevronDown, CloseIcon, FlowLogo, WalletCard } from '@onflow/frw-icons';
-import { type WalletAccount, type TransactionType } from '@onflow/frw-types';
+import { ChevronDown, WalletCard, FlowLogo } from '@onflow/frw-icons';
+import { type WalletAccount, type TransactionType, type TokenModel } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
 
-import { type TokenModel } from './TokenSelectorModal';
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
@@ -327,7 +326,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
                 {selectedToken?.logoURI ? (
                   <Avatar
                     src={selectedToken.logoURI}
-                    fallback={selectedToken.symbol.charAt(0)}
+                    fallback={selectedToken.symbol?.charAt(0) || 'A'}
                     size={35.2}
                   />
                 ) : (
@@ -394,3 +393,6 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
     </YStack>
   );
 };
+
+// Re-export types for Storybook usage
+export type { TokenModel, WalletAccount } from '@onflow/frw-types';
