@@ -1,7 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, useTokenStore } from '@onflow/frw-stores';
 import {
-  type WalletAccount,
   type NFTModel,
   type CollectionModel,
   type TokenModel,
@@ -44,21 +43,18 @@ export const SendTokensScreen = (props) => {
     transactionType,
     selectedNFTs,
     selectedToken,
-    setFromAccount: setStoreFromAccount,
-    setToAccount: setStoreToAccount,
+    fromAccount,
+    setFromAccount,
+    toAccount,
     updateFormData,
     executeTransaction,
     isLoading: storeLoading,
   } = useSendStore();
-
   // Get token store
   const { getTokensForAddress, fetchTokens } = useTokenStore();
 
   // Add a ref to track if we've already initialized
   const hasInitialized = React.useRef(false);
-  const routerValues = bridge.getRouterValue?.() || {};
-  const initialToAddress = routerValues.toAddress || null;
-  const initialTokenSymbol = routerValues.tokenSymbol || null;
   const network = bridge.getNetwork() || 'mainnet';
 
   // Default values for internal use
@@ -82,8 +78,6 @@ export const SendTokensScreen = (props) => {
   };
 
   // Internal state - no more props for data
-  const [fromAccount, setFromAccount] = useState<WalletAccount | null>(null);
-  const [toAccount, setToAccount] = useState<WalletAccount | null>(null);
   const [amount, setAmount] = useState<string>('');
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
   const [tokens, setTokens] = useState<TokenModel[]>([]);
@@ -97,7 +91,6 @@ export const SendTokensScreen = (props) => {
   const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
   const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
   const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
-  console.log('send tokens screen', selectedToken, selectedNFTs, transactionType);
   // Simple initialization without complex bridge calls
   useEffect(() => {
     // Prevent multiple initializations
@@ -138,50 +131,11 @@ export const SendTokensScreen = (props) => {
 
           if (coinsData && coinsData.length > 0) {
             setTokens(coinsData);
-
-            // Set initial token based on prop or default to FLOW
-            let defaultToken: TokenModel | undefined;
-            if (initialTokenSymbol) {
-              defaultToken = coinsData.find(
-                (token) => (token.symbol || '').toLowerCase() === initialTokenSymbol.toLowerCase()
-              );
-            }
-            if (!defaultToken) {
-              const flowToken = coinsData.find(
-                (token) => (token.symbol || '').toLowerCase() === 'flow'
-              );
-              defaultToken = flowToken || coinsData[0];
-            }
-            if (defaultToken) {
-              setSelectedToken(defaultToken);
-            }
           } else {
             setTokens([]);
             setSelectedToken(null);
             setError('No tokens available. Please ensure your wallet has tokens to send.');
           }
-        }
-
-        // Fetch NFT collections
-        try {
-          const nftData = await bridge.getCache('nfts');
-          if (nftData && Array.isArray(nftData)) {
-            setNftCollections(nftData);
-          }
-        } catch (error) {
-          console.warn('Failed to fetch NFT collections:', error);
-        }
-
-        // Set initial recipient if provided
-        if (initialToAddress) {
-          setToAccount({
-            address: initialToAddress,
-            name: 'Recipient',
-            balance: '0',
-            avatar: '',
-            emoji: '',
-            emojiInfo: null,
-          });
         }
 
         setError(null);
@@ -194,7 +148,7 @@ export const SendTokensScreen = (props) => {
 
     // Call async initialization
     initializeData();
-  }, [initialToAddress, initialTokenSymbol]);
+  }, []);
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback((token: any) => {
@@ -248,8 +202,6 @@ export const SendTokensScreen = (props) => {
 
       setSelectedToken(selectedToken);
       setSelectedNFTs([]);
-      setStoreFromAccount(fromAccount);
-      setStoreToAccount(toAccount);
       setTransactionType('tokens');
       updateFormData({ tokenAmount: amount });
     } else {
@@ -258,8 +210,6 @@ export const SendTokensScreen = (props) => {
       }
       setSelectedToken(null);
       setSelectedNFTs(selectedNFTs);
-      setStoreFromAccount(fromAccount);
-      setStoreToAccount(toAccount);
       setTransactionType(transactionType);
     }
 
@@ -275,8 +225,6 @@ export const SendTokensScreen = (props) => {
     setSelectedToken,
     setSelectedNFTs,
     setTransactionType,
-    setStoreFromAccount,
-    setStoreToAccount,
     updateFormData,
     executeTransaction,
   ]);
@@ -485,8 +433,8 @@ export const SendTokensScreen = (props) => {
         {/* Token Selector Modal */}
         <TokenSelectorModal
           visible={isTokenSelectorVisible}
-          selectedToken={selectedToken}
-          tokens={tokens}
+          selectedToken={selectedToken as any}
+          tokens={tokens as any}
           onTokenSelect={handleTokenSelect}
           onClose={handleTokenSelectorClose}
         />
@@ -495,7 +443,7 @@ export const SendTokensScreen = (props) => {
         <TransactionConfirmationModal
           visible={isConfirmationVisible}
           transactionType={transactionType}
-          selectedToken={selectedToken}
+          selectedToken={selectedToken as any}
           fromAccount={fromAccount}
           toAccount={toAccount}
           formData={formData}

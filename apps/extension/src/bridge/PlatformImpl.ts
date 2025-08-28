@@ -7,19 +7,19 @@ import {
   type Currency,
 } from '@onflow/frw-types';
 
-import { chromeStorage } from '@/extension-shared/chrome-storage';
-
 import { extensionNavigation } from './ExtensionNavigation';
+import { ExtensionStorage } from './ExtensionStorage';
+
 
 class ExtensionPlatformImpl implements PlatformSpec {
   private debugMode: boolean = process.env.NODE_ENV === 'development';
-  private storage: Storage;
+  private storageInstance: ExtensionStorage;
   private currentAddress: string | null = null;
   private currentNetwork: string = 'mainnet';
   private walletController: any = null;
 
   constructor() {
-    this.storage = chromeStorage as Storage;
+    this.storageInstance = new ExtensionStorage();
   }
 
   // Methods to update cached values from hooks/context
@@ -101,11 +101,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   // Storage access
   getStorage(): Storage {
-    return this.storage;
+    return this.storageInstance;
   }
 
   storage(): Storage {
-    return this.storage;
+    return this.storageInstance;
   }
 
   // Cryptographic operations
