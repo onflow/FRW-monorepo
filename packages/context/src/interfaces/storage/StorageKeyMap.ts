@@ -1,5 +1,8 @@
 import type { TokenModel, User, RecentRecipient } from '@onflow/frw-types';
 
+// Re-export types for external use
+export type { RecentRecipient };
+
 /**
  * Generic wrapper for all stored data with versioning and metadata
  */
