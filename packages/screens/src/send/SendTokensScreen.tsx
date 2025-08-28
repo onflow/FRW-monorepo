@@ -28,7 +28,6 @@ import {
   MultipleNFTsPreview,
   SendSectionHeader,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
 export const SendTokensScreen = (props) => {
@@ -98,7 +97,7 @@ export const SendTokensScreen = (props) => {
   const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
   const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
   const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
-
+  console.log('send tokens screen', selectedToken, selectedNFTs, transactionType);
   // Simple initialization without complex bridge calls
   useEffect(() => {
     // Prevent multiple initializations
@@ -248,6 +247,7 @@ export const SendTokensScreen = (props) => {
       }
 
       setSelectedToken(selectedToken);
+      setSelectedNFTs([]);
       setStoreFromAccount(fromAccount);
       setStoreToAccount(toAccount);
       setTransactionType('tokens');
@@ -256,13 +256,13 @@ export const SendTokensScreen = (props) => {
       if (!selectedNFTs.length || !fromAccount || !toAccount) {
         throw new Error('Missing NFT transaction data');
       }
-
+      setSelectedToken(null);
       setSelectedNFTs(selectedNFTs);
       setStoreFromAccount(fromAccount);
       setStoreToAccount(toAccount);
       setTransactionType(transactionType);
     }
-    
+
     const result = await executeTransaction();
     return result;
   }, [

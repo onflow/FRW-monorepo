@@ -104,6 +104,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.storage;
   }
 
+  storage(): Storage {
+    return this.storage;
+  }
+
   // Cryptographic operations
   async sign(hexData: string): Promise<string> {
     return await this.walletController.signMessage(hexData);
@@ -478,6 +482,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   getNavigation() {
     // Return the extension navigation implementation
+    return extensionNavigation;
+  }
+
+  navigation() {
     return extensionNavigation;
   }
 }
