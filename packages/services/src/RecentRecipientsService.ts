@@ -144,7 +144,7 @@ export class RecentRecipientsService {
       const filtered = localRecents.filter((r) => r.address !== recipient.address);
 
       // Add new entry at the beginning
-      const updated = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
+      const updated: RecentRecipient[] = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
 
       // Save to storage
       await this.storage.set('recentRecipients', updated);
