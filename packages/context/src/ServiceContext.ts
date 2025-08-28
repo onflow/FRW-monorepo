@@ -4,7 +4,7 @@ import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
-import type { Storage } from './interfaces/Storage';
+import type { Storage } from './interfaces/storage/Storage';
 
 /**
  * Service Context - Provides centralized access to all services
@@ -51,8 +51,8 @@ export class ServiceContext {
     ServiceContext.instance._bridge = bridge;
 
     // Store storage and navigation instances from bridge
-    ServiceContext.instance._storage = bridge.getStorage();
-    ServiceContext.instance._navigation = bridge.getNavigation();
+    ServiceContext.instance._storage = bridge.storage();
+    ServiceContext.instance._navigation = bridge.navigation();
 
     // Configure API endpoints dynamically from bridge
     configureApiEndpoints(

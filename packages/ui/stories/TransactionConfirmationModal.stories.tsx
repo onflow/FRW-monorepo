@@ -26,13 +26,13 @@ const meta: Meta<typeof TransactionConfirmationModal> = {
     transactionType: { control: 'select', options: ['tokens', 'nfts'] },
     title: { control: 'text' },
     backgroundColor: { control: 'color' },
-    isLoading: { control: 'boolean' },
+    isSending: { control: 'boolean' },
     onConfirm: { action: 'transaction-confirmed' },
     onClose: { action: 'modal-closed' },
   },
   decorators: [
     (Story): React.JSX.Element => (
-      <YStack width={400} height={300} items="center" justify="center">
+      <YStack width={400} height={300} alignItems="center" justifyContent="center">
         <Story />
       </YStack>
     ),
@@ -101,7 +101,7 @@ export const LoadingState: Story = {
     fromAccount: mockFromAccount,
     toAccount: mockToAccount,
     formData: mockFormData,
-    isLoading: true,
+    isSending: true,
   },
 };
 
@@ -199,7 +199,7 @@ export const Interactive: Story = {
     };
 
     return (
-      <YStack gap="$4" items="center">
+      <YStack gap="$4" alignItems="center">
         <Button onPress={() => setVisible(true)}>Open Transaction Confirmation</Button>
 
         <TransactionConfirmationModal
@@ -209,7 +209,7 @@ export const Interactive: Story = {
           fromAccount={mockFromAccount}
           toAccount={mockToAccount}
           formData={mockFormData}
-          isLoading={isLoading}
+          isSending={isLoading}
           onConfirm={handleConfirm}
           onClose={() => setVisible(false)}
         />

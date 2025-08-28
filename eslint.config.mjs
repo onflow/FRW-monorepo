@@ -202,6 +202,10 @@ export default [
       globals: {
         ...globals.browser, // React Native has some browser-like APIs
       },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: process.cwd(),
+      },
     },
     settings: {
       'import/resolver': {
@@ -230,6 +234,10 @@ export default [
         ...globals.browser,
         ...globals.webextensions,
         chrome: 'readonly', // Chrome extension API
+      },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: process.cwd(),
       },
     },
     settings: {
@@ -269,6 +277,20 @@ export default [
     // Package-specific rules (excluding tests and build scripts)
     files: ['packages/**/*.{ts,tsx,js,jsx}'],
     ignores: ['packages/**/tests/**', 'packages/**/*.test.*', 'packages/**/build/**'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: process.cwd(),
+      },
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json',
+        },
+      },
+    },
     rules: {
       // Packages can be stricter
       '@typescript-eslint/explicit-function-return-type': 'warn',

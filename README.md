@@ -1,42 +1,53 @@
 # Flow Reference Wallet (FRW) 🌊
 
-> Production-ready Flow blockchain wallet
+> Production-ready Flow blockchain wallet with React Native and Browser
+> Extension
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
 [![React Native](https://img.shields.io/badge/React%20Native-0.80-green)](https://reactnative.dev/)
 [![pnpm](https://img.shields.io/badge/pnpm-10.14-orange)](https://pnpm.io/)
 [![Flow](https://img.shields.io/badge/Flow-Blockchain-purple)](https://flow.com/)
-[![MVVM](https://img.shields.io/badge/Architecture-MVVM-red)](./docs/ARCHITECTURE.md)
 
-## ✨ Features
+## 📁 Project Structure
 
-- 🏗️ **MVVM Architecture**: Clean Model-ViewModel-View separation with
-  reactiveUI
-- 📱 **Multi-Platform**: React Native (iOS/Android) + Browser Extension
-- 🌙 **Theme System**: Complete light/dark mode with CSS variables
-- 🔗 **Flow + EVM**: Full Flow and Ethereum blockchain support
-- 💾 **Smart Caching**: Intelligent state management with automatic refresh
-- 🧪 **Type Safe**: Complete TypeScript coverage across all packages
-- 🚀 **Production Ready**: Battle-tested with 10,000+ active users
+```
+FRW-monorepo/
+├── apps/
+│   ├── react-native/            # React Native shared code & Metro bundler
+│   │   ├── ios/                 # iOS native app (git submodule: FRW-iOS)
+│   │   └── android/             # Android native app (git submodule: FRW-android)
+│   └── extension/               # Browser extension (Chrome/Firefox)
+├── packages/                    # Shared libraries
+│   ├── types/                   # TypeScript definitions & data models
+│   ├── api/                     # HTTP API clients for backend services
+│   ├── cadence/                 # Flow blockchain interaction & smart contracts
+│   ├── services/                # Business logic & domain services
+│   ├── workflow/                # Transaction workflows & orchestration
+│   ├── stores/                  # State management (Zustand stores)
+│   ├── ui/                      # Reusable UI components (Tamagui)
+│   ├── icons/                   # SVG icon components
+│   ├── screens/                 # Complete screen implementations
+│   ├── utils/                   # Utility functions & helpers
+│   └── context/                 # Dependency injection & platform abstraction
+├── docs/                        # Documentation & guidelines
+└── tools/                       # Build tools & configurations
+```
 
-**Data Flow**: `types` → `api/cadence` → `services/workflow` → `stores` →
-`screens` → `apps`
+### Package Overview
 
-## 📦 Package Structure
-
-| Package               | Role         | Purpose                               | Dependencies               |
-| --------------------- | ------------ | ------------------------------------- | -------------------------- |
-| **types**             | 📋 Model     | Data structures & interfaces          | none                       |
-| **api**               | 🌐 Network   | HTTP API clients                      | types                      |
-| **cadence**           | 🌐 Network   | Flow blockchain integration           | types                      |
-| **services**          | ⚙️ Business  | Domain services & data transformation | api, cadence, types        |
-| **workflow**          | ⚙️ Business  | Transaction orchestration             | cadence, services, types   |
-| **stores**            | 🧠 ViewModel | UI state management                   | services, workflow, types  |
-| **ui**                | 🎨 UI        | Pure, stateless UI components         | types                      |
-| **icons**             | 🎨 UI        | Universal SVG components              | none                       |
-| **screens**           | 📺 Screen    | UI + ViewModel integration            | ui, stores, types          |
-| **apps/react-native** | 📱 App       | iOS/Android mobile app                | screens, ui, stores, types |
-| **apps/extension**    | 📱 App       | Browser extension                     | screens, ui, stores, types |
+| Package      | Purpose                  | What it contains                                               |
+| ------------ | ------------------------ | -------------------------------------------------------------- |
+| **types**    | Data models & interfaces | TokenModel, UserModel, transaction types, API schemas          |
+| **api**      | Backend communication    | REST API clients, HTTP services, external service integrations |
+| **cadence**  | Flow blockchain          | Cadence scripts, transactions, Flow network communication      |
+| **services** | Business logic           | Token services, wallet services, authentication logic          |
+| **workflow** | Complex operations       | Multi-step transactions, send/receive flows, account creation  |
+| **stores**   | State management         | User store, token store, transaction store (Zustand)           |
+| **ui**       | UI components            | Buttons, cards, modals, forms (pure components only)           |
+| **icons**    | Icon library             | SVG icons with theme support, universal across platforms       |
+| **screens**  | Complete screens         | Login screen, send screen, token list (UI + logic combined)    |
+| **utils**    | Utilities                | Formatters, validators, logging, crypto helpers                |
+| **context**  | Platform layer           | Storage, notifications, biometrics (platform-specific APIs)    |
 
 ## 🚀 Quick Start
 
@@ -46,22 +57,24 @@
 # Required versions
 node >= 20.0.0
 pnpm >= 9.0.0
-
-# iOS development (optional)
-Xcode >= 14
-CocoaPods >= 1.15
-
-# Android development (optional)
-Android Studio
-Java 17+
 ```
+
+**For React Native development**, follow the official
+[React Native Environment Setup](https://reactnative.dev/docs/set-up-your-environment)
+guide:
+
+- **iOS development**: Xcode >= 14, CocoaPods >= 1.15
+- **Android development**: Android Studio, Java 17+
 
 ### Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/onflow/FRW-monorepo
+# Clone repository with submodules
+git clone --recurse-submodules https://github.com/onflow/FRW-monorepo
 cd FRW-monorepo
+
+# Or if already cloned, initialize submodules
+git submodule update --init --recursive
 
 # Install dependencies
 pnpm install
@@ -95,168 +108,28 @@ pnpm dev             # Development build
 pnpm build           # Production build
 ```
 
-## 🛠️ Development Workflow
+## 📚 Documentation
 
-### MVVM + Universal Screens Development Flow
+For detailed development guidelines and best practices:
 
-1. **📋 Model First**: Define data structures in `packages/types`
-2. **🌐 Network Layer**: Implement API clients in `packages/api` and
-   `packages/cadence`
-3. **⚙️ Business Logic**: Add domain services in `packages/services` and
-   workflows in `packages/workflow`
-4. **🧠 ViewModel**: Manage UI state in `packages/stores`
-5. **🎨 UI Components**: Build pure, stateless components in `packages/ui`
-6. **📺 Screen Integration**: Combine UI + ViewModels in `packages/screens`
-7. **📱 Applications**: Use pre-built screens directly in both React Native and
-   Extension
-
-**Key Benefit**: Both platforms share not just business logic, but entire screen
-implementations for maximum code reuse.
-
-## 🏃‍♂️ Available Scripts
-
-### Root Level
-
-```bash
-# Development
-pnpm dev:packages        # Watch all packages
-pnpm dev:rn             # Start React Native
-pnpm dev:rn:full        # Combined packages watch + RN
-
-# Building
-pnpm build              # Build all packages
-pnpm build:packages     # Build only packages
-pnpm build:rn           # Build React Native app
-
-# Quality
-pnpm lint               # Lint all packages
-pnpm lint:fix           # Fix lint issues
-pnpm test               # Run all tests
-pnpm typecheck          # TypeScript validation
-```
-
-### Package Level
-
-```bash
-# Build specific package
-pnpm -F @onflow/frw-types build
-pnpm -F @onflow/frw-stores build
-
-# Test specific package
-pnpm -F @onflow/frw-services test
-
-# Lint specific package
-pnpm -F @onflow/frw-workflow lint
-```
-
-## 📱 Applications
-
-### React Native App
-
-**Features**:
-
-- ✅ Complete wallet functionality (send, receive, NFTs)
-- ✅ Multi-chain support (Flow + EVM)
-- ✅ Native iOS/Android integration
-- ✅ Theme system with CSS variables
-- ✅ Hardware wallet support
-- ✅ Multi-language support
-
-**Tech Stack**:
-
-- React Native 0.80 + React 19
-- NativeWind (Tailwind CSS for RN)
-- React Navigation v7
-- Zustand state management
-- MMKV persistent storage
-- Native Turbo Modules
-
-### Browser Extension
-
-**Features**:
-
-- ✅ Complete wallet functionality using shared screens
-- ✅ Transaction signing and account management
-- ✅ dApp integration with content script injection
-- ✅ Chrome Manifest V3 service worker architecture
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-pnpm test
-
-# Run tests with coverage
-pnpm test:coverage
-
-# Run tests for specific package
-pnpm -F @onflow/frw-stores test
-
-# Watch mode
-pnpm test --watch
-```
-
-## 📋 Type Safety
-
-The entire codebase is built with TypeScript and follows strict type safety:
-
-```typescript
-// Shared types across all packages
-import { TokenInfo, WalletAccount, SendPayload } from '@onflow/frw-types';
-
-// Type-safe API calls
-const tokenService = new TokenService();
-const tokens: TokenInfo[] = await tokenService.getTokens(address);
-
-// Type-safe state management
-const { selectedToken, setSelectedToken } = useTokenStore();
-setSelectedToken(tokens[0]); // TypeScript ensures correct type
-```
+- **[Development Guidelines](./docs/DEVELOPMENT_GUIDELINES.md)** - Coding
+  standards, architecture rules, and common patterns
+- **[Contributing Guide](./docs/CONTRIBUTING.md)** - How to contribute to the
+  project
+- **[Architecture Guide](./docs/ARCHITECTURE.md)** - Technical architecture
+  documentation
 
 ## 🤝 Contributing
 
-We welcome contributions! Please read our
-**[Contributing Guide](./docs/CONTRIBUTING.md)** for detailed instructions on:
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feat/amazing-feature`
+3. Follow our [Development Guidelines](./docs/DEVELOPMENT_GUIDELINES.md)
+4. Commit with conventional format: `git commit -m "feat: add amazing feature"`
+5. Run quality checks: `pnpm lint && pnpm typecheck && pnpm build`
+6. Submit a pull request
 
-- 📝 **Commit Message Guidelines** (Conventional Commits format)
-- 🧹 **Code Quality Standards** (ESLint, Prettier, TypeScript)
-- 🔄 **Pull Request Process**
-- 🏗️ **Architecture Guidelines** (MVVM patterns)
-
-### Quick Start
-
-1. **Fork the repository**
-2. **Create feature branch**: `git checkout -b feat/amazing-feature`
-3. **Make your changes** following our coding standards
-4. **Commit with conventional format**:
-   `git commit -m "feat: add amazing feature"`
-5. **Run quality checks**: `pnpm lint && pnpm typecheck && pnpm build`
-6. **Submit pull request**
-
-> 💡 **Tip**: All commits must follow
-> [Conventional Commits](https://www.conventionalcommits.org/) format to pass
-> our automated checks!
-
-## 📊 CI/CD
-
-GitHub Actions workflows automatically:
-
-- ✅ **Package Validation**: Build and test changed packages
-- ✅ **React Native Validation**: iOS/Android build validation
-- ✅ **Lint Changed Files**: ESLint + Prettier on modified files
-- ✅ **Full CI Pipeline**: Complete validation on PRs
-- ✅ **Claude PR Review**: AI-powered code review with `@claude`
-- ✅ **Security Audits**: Dependency vulnerability scanning
-
-## 📚 Documentation
-
-- **[Architecture Guide](./docs/ARCHITECTURE.md)** - Complete MVVM architecture
-  documentation
-- **[React Native Guide](./apps/react-native/README.md)** - React Native app
-  specific documentation
-- **[Contributing Guide](./docs/CONTRIBUTING.md)** - Development workflow and
-  commit message guidelines
-- **[API Documentation](./docs/API.md)** - API reference and examples
+Please read our **[Contributing Guide](./docs/CONTRIBUTING.md)** for detailed
+instructions.
 
 ## 📄 License
 
