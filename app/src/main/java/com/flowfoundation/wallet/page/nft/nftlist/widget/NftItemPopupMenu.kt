@@ -18,9 +18,7 @@ class NftItemPopupMenu(
             popupMenu(
                 view,
                 items = listOf(
-                    PopupListView.ItemData(R.string.top_selection.res2String(), iconRes = R.drawable.ic_selection_star),
-                    PopupListView.ItemData(R.string.share.res2String(), iconRes = R.drawable.ic_share),
-                    PopupListView.ItemData(R.string.send.res2String(), iconRes = R.drawable.ic_send_simple),
+                    // No items - context menu is now empty
                 ),
                 selectListener = { _, text -> onMenuItemClick(text) },
             ).show()
@@ -28,11 +26,7 @@ class NftItemPopupMenu(
     }
 
     private fun onMenuItemClick(text: String): Boolean {
-        when (text) {
-            R.id.action_select.res2String() -> {}
-            R.id.action_share.res2String() -> {}
-            R.id.action_send.res2String() -> {}
-        }
+        // No menu items to handle anymore
         return true
     }
 }

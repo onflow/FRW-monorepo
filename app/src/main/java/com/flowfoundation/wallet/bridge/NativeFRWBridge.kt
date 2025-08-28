@@ -50,7 +50,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     init {
         android.util.Log.d(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
-        android.util.Log.d(TAG, "React context hasCurrentReactInstance: ${reactContext.hasCurrentReactInstance()}")
+        android.util.Log.d(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
     }
 
     override fun getName(): String {

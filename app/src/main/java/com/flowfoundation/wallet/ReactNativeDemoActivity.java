@@ -135,7 +135,6 @@ public class ReactNativeDemoActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate called");
         Log.d(TAG, "Build type: " + BuildConfig.BUILD_TYPE);
-        Log.d(TAG, "React Native version info: " + com.facebook.react.BuildConfig.VERSION_NAME);
         
         // Store the original exception handler
         final Thread.UncaughtExceptionHandler originalHandler = Thread.getDefaultUncaughtExceptionHandler();
@@ -325,9 +324,11 @@ public class ReactNativeDemoActivity extends ReactActivity {
         String routeName;
         
         if (screenType == RNBridge.ScreenType.SEND_ASSET) {
-            // If NFTs are pre-selected, navigate to SendTo (recipient selection)
+            // If NFTs or tokens are pre-selected, navigate to SendTo (recipient selection)
             // The user needs to select recipient before going to the final send screen
-            if (sendToConfig != null && sendToConfig.selectedNFTs != null && !sendToConfig.selectedNFTs.isEmpty()) {
+            if (sendToConfig != null && 
+                ((sendToConfig.selectedNFTs != null && !sendToConfig.selectedNFTs.isEmpty()) ||
+                 (sendToConfig.selectedToken != null))) {
                 routeName = "SendTo";
             } else {
                 routeName = "SelectTokens";
