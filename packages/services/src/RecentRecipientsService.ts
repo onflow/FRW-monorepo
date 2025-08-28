@@ -1,4 +1,9 @@
-import { getServiceContext, type PlatformSpec, type Storage } from '@onflow/frw-context';
+import {
+  getServiceContext,
+  type PlatformSpec,
+  type Storage,
+  type StorageKeyMap,
+} from '@onflow/frw-context';
 import type { WalletAccount, RecentRecipient } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
@@ -146,7 +151,7 @@ export class RecentRecipientsService {
       // Add new entry at the beginning
       const updated: RecentRecipient[] = [newRecent, ...filtered].slice(0, MAX_RECENT_RECIPIENTS);
 
-      await this.storage.set<'recentRecipients'>('recentRecipients', updated);
+      await this.storage.set<keyof StorageKeyMap>('recentRecipients', updated);
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (_error) {
