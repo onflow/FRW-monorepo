@@ -71,8 +71,8 @@ class ExtensionNavigation implements Navigation {
         } else {
           path = `/dashboard/token/${tokenId}/send`;
         }
-      } else if (screen === 'NFTDetail' && params?.id) {
-        path = `/dashboard/nested/nftdetail/${params.id}`;
+      } else if (screen === 'NFTView' && params?.id) {
+        path = `/dashboard/nested/nftdtailscreen/${params.id}`;
       } else if (screen === 'NFTList' && params?.collection && params?.address) {
         path = `/dashboard/nested/nftlistscreen/${params.address}`;
       } else if (screen === 'TransactionComplete' && params?.txId) {
@@ -168,6 +168,7 @@ class ExtensionNavigation implements Navigation {
       SendNftEvm: '/dashboard/nftevm/send',
       NFTDetail: '/dashboard/nested/nftdetail',
       NFTList: '/dashboard/nested/nftlistscreen',
+      NFTView: '/dashboard/nested/nftdetailscreen',
       TransactionComplete: '/dashboard', // Navigate to dashboard for transaction complete
     };
 
@@ -186,6 +187,7 @@ class ExtensionNavigation implements Navigation {
       '/dashboard/nftevm/send': 'SendNftEvm',
       '/dashboard/nested/nftdetail': 'NFTDetail',
       '/dashboard/nested/nftlistscreen': 'NFTList',
+      '/dashboard/nested/nftdetailscreen': 'NFTView',
     };
 
     return pathMapping[path] || path.replace('/dashboard/', '');

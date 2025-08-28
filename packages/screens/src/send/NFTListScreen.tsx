@@ -100,9 +100,15 @@ export function NFTListScreen({
     fetchNFTs();
   }, [fetchNFTs]);
 
+  useEffect(() => {
+    const selectedNFTs = nfts.filter((nft) => selectedIds.includes(getNFTId(nft)));
+    setSelectedNFTs(selectedNFTs);
+  }, [selectedIds]);
+
   // Handle NFT selection
   const handleNFTSelect = useCallback((nftId: string) => {
     setTransactionType('multiple-nfts');
+
     setSelectedIds((prev) => {
       const isSelected = prev.includes(nftId);
       if (isSelected) {
@@ -116,6 +122,10 @@ export function NFTListScreen({
         return [...prev, nftId];
       }
     });
+  }, []);
+
+  const handleNFTDetail = useCallback((nftId: string) => {
+    navigation.navigate('NFTView', { id: nftId });
   }, []);
 
   // Handle NFT removal from selection bar
@@ -210,6 +220,7 @@ export function NFTListScreen({
         <NFTSelectionBar
           selectedNFTs={selectedNFTs}
           onRemoveNFT={handleNFTRemove}
+          onNFTPress={handleNFTDetail}
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
           isEditing={isEditing}

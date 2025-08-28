@@ -8,6 +8,7 @@ import { Button } from '../foundation/Button';
 export interface NFTSelectionBarProps {
   selectedNFTs: NFTData[];
   onRemoveNFT?: (id: string) => void;
+  onNFTPress?: (id: string) => void;
   onContinue?: () => void;
   continueText?: string;
   isEditing?: boolean;
@@ -18,6 +19,7 @@ export function NFTSelectionBar({
   selectedNFTs,
   onRemoveNFT,
   onContinue,
+  onNFTPress = (id: string) => {},
   continueText = 'Continue',
   isEditing = false,
   maxHeight = '$20',
@@ -34,7 +36,7 @@ export function NFTSelectionBar({
 
   const renderNFTItem = (nft: NFTData) => (
     <XStack key={nft.id} items="center" justify="space-between" gap="$2">
-      <XStack items="center" gap="$2">
+      <XStack items="center" gap="$2" onPress={() => onNFTPress(nft.id)} cursor="pointer">
         {/* NFT Image */}
         <YStack borderRadius="$4" overflow="hidden" width="$13" height="$13" bg="$background4">
           <Image

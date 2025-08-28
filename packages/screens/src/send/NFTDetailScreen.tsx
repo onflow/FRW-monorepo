@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { navigation, bridge } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
 import { type NFTModel } from '@onflow/frw-types';
 import {
@@ -7,6 +7,7 @@ import {
   type NFTDetailData,
   type NFTData,
   YStack,
+  ExtensionHeader,
 } from '@onflow/frw-ui';
 import { getNFTCover, getNFTId } from '@onflow/frw-utils';
 import React, { useState, useCallback, useEffect } from 'react';
@@ -22,6 +23,7 @@ export function NFTDetailScreen({ nft, selectedNFTs, onSelectionChange }: NFTDet
   // navigation is imported directly from ServiceContext
   const { t } = useTranslation();
   const { activeAccount } = useWalletStore();
+  const isExtension = bridge.getPlatform() === 'extension';
 
   // Determine if selection is enabled
   const isSelectable = selectedNFTs !== undefined && selectedNFTs !== null;
@@ -153,6 +155,14 @@ export function NFTDetailScreen({ nft, selectedNFTs, onSelectionChange }: NFTDet
 
   return (
     <YStack flex={1}>
+      {isExtension && (
+        <ExtensionHeader
+          title={t('send.title')}
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
       <NFTDetailView
         nft={nftDetailData}
         selected={isSelected}
@@ -167,6 +177,7 @@ export function NFTDetailScreen({ nft, selectedNFTs, onSelectionChange }: NFTDet
         <NFTSelectionBar
           selectedNFTs={currentSelectedNFTs}
           onRemoveNFT={handleRemoveNFT}
+          onNFTPress={() => navigation.navigate('NFTView', { id: nftDetailData.id })}
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
           isEditing={false}

@@ -34,7 +34,7 @@ export interface NFTGridProps {
 
   // Actions
   onNFTSelect?: (id: string) => void;
-  onNFTPress?: (nft: NFTData) => void;
+  onNFTPress?: (id: string) => void;
   onRetry?: () => void;
   onClearSearch?: () => void;
 
