@@ -41,6 +41,8 @@ export default [
         ecmaFeatures: {
           jsx: true,
         },
+        tsconfigRootDir: process.cwd(),
+        project: false, // Disable project-wide analysis to avoid memory issues
       },
     },
     plugins: {
@@ -159,12 +161,21 @@ export default [
       'vite.config.js',
       'rollup.config.js',
       'vitest.config.ts',
+      'tsup.config.ts',
       'build/**/*.{ts,js,cjs}', // Build scripts
       'apps/extension/build/**/*.{ts,js,cjs}', // Extension build scripts
       '.storybook/**/*.{ts,js}', // Storybook config
       'scripts/**/*.{ts,js,cjs}', // Project scripts
       '**/scripts/**/*.{ts,js,cjs}', // Package scripts
+      '**/tsup.config.ts', // Package build configs
+      '**/vitest.config.ts', // Package test configs
     ],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        project: false, // Disable TypeScript project for config files
+      },
+    },
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-var-requires': 'off',
@@ -176,6 +187,23 @@ export default [
       'no-undef': 'off',
       'import/no-unresolved': 'off', // Build scripts may have special imports
       'unused-imports/no-unused-vars': 'off', // Build scripts may have unused vars
+    },
+  },
+  {
+    // Storybook files - separate from main TypeScript project
+    files: ['**/*.stories.{ts,tsx}', '**/stories/**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        project: false, // Disable TypeScript project for stories
+      },
+    },
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'import/no-unresolved': 'warn', // Warn instead of error for stories
+      'unused-imports/no-unused-vars': 'warn',
+      'no-console': 'off', // Allow console in stories for debugging
     },
   },
   {
@@ -203,8 +231,8 @@ export default [
         ...globals.browser, // React Native has some browser-like APIs
       },
       parserOptions: {
-        projectService: true,
         tsconfigRootDir: process.cwd(),
+        project: ['./apps/react-native/tsconfig.json'],
       },
     },
     settings: {
@@ -236,8 +264,8 @@ export default [
         chrome: 'readonly', // Chrome extension API
       },
       parserOptions: {
-        projectService: true,
         tsconfigRootDir: process.cwd(),
+        project: ['./apps/extension/tsconfig.json'],
       },
     },
     settings: {
@@ -276,11 +304,19 @@ export default [
   {
     // Package-specific rules (excluding tests and build scripts)
     files: ['packages/**/*.{ts,tsx,js,jsx}'],
-    ignores: ['packages/**/tests/**', 'packages/**/*.test.*', 'packages/**/build/**'],
+    ignores: [
+      'packages/**/tests/**',
+      'packages/**/*.test.*',
+      'packages/**/build/**',
+      'packages/**/stories/**', // Exclude storybook files
+      'packages/**/*.stories.*', // Exclude story files
+      'packages/**/tsup.config.ts', // Exclude build configs
+      'packages/**/vitest.config.ts', // Exclude test configs
+    ],
     languageOptions: {
       parserOptions: {
-        projectService: true,
         tsconfigRootDir: process.cwd(),
+        project: ['./tsconfig.json'],
       },
     },
     settings: {
@@ -323,6 +359,8 @@ export default [
       'apps/react-native/cache/**',
       'apps/react-native/extensions/**',
       'apps/react-native/specifications/**',
+      'apps/react-native/flow-wallet-kit/**', // External wallet kit library
+      'apps/react-native/.build/**',
 
       // Extension specific
       'apps/extension/_raw/**',
