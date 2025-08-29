@@ -163,6 +163,7 @@
     "noResultsFoundDescription": "「{{query}}」に一致するアカウントや連絡先がありません。別の検索語句を試してください。",
     "noAccountsTitle": "アカウントがありません",
     "noAccountsDescription": "まだアカウントを追加していません。最初のアカウントを作成して開始しましょう。",
+    "noAccountsAvailable": "利用可能なアカウントがありません",
     "noRecentRecipientsTitle": "最近の受信者がありません",
     "noRecentRecipientsDescription": "トークンを送信すると、最近の受信者がここに表示されます。",
     "noContactsTitle": "連絡先がありません",

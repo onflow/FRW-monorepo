@@ -5,7 +5,9 @@
     "sendTo": "Enviar a",
     "confirmation": "Confirmación",
     "colorDemo": "Demo de Colores",
-    "nftList": "Lista NFT"
+    "nftList": "Lista NFT",
+    "sending": "Enviando",
+    "send": "Enviar"
   },
   "home": {
     "title": "🏠 Inicio",
@@ -41,13 +43,20 @@
     "scan": "Escanear",
     "send": "Enviar",
     "confirm": "Confirmar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "retry": "Reintentar",
+    "refresh": "Actualizar",
+    "clearSearch": "Limpiar búsqueda",
+    "next": "Siguiente"
   },
   "placeholders": {
     "searchAddress": "Buscar / Pegar dirección",
     "enterAmount": "Ingrese cantidad",
     "selectToken": "Seleccionar token",
-    "selectNFT": "Seleccionar NFT"
+    "selectNFT": "Seleccionar NFT",
+    "searchNFTs": "Buscar NFTs",
+    "searchCollections": "Buscar colecciones",
+    "searchToken": "Buscar Token"
   },
   "validation": {
     "required": "Este campo es obligatorio",
@@ -68,15 +77,24 @@
     "save": "Guardar",
     "delete": "Eliminar",
     "retry": "Reintentar",
+    "refresh": "Actualizar",
+    "clearSearch": "Limpiar búsqueda",
     "switchToLightMode": "Cambiar a modo claro",
-    "switchToDarkMode": "Cambiar a modo oscuro"
+    "switchToDarkMode": "Cambiar a modo oscuro",
+    "unknown": "Desconocido",
+    "item": "Artículo",
+    "items": "Artículos"
   },
   "nft": {
     "collection": "Colección",
     "tokenId": "ID del Token",
     "selectMultiple": "Seleccionar Múltiple",
     "selected": "Seleccionado",
-    "nfts": "NFTs"
+    "nfts": "NFTs",
+    "selectedCount_one": "{{count}} NFT Seleccionado",
+    "selectedCount_other": "{{count}} NFTs Seleccionados",
+    "confirmCount_one": "Confirmar {{count}} NFT",
+    "confirmCount_other": "Confirmar {{count}} NFTs"
   },
   "account": {
     "balance": "Saldo",
@@ -93,6 +111,78 @@
     "fee": "Tarifa de Transacción",
     "coveredByFlowWallet": "Cubierto por Flow Wallet",
     "hash": "Hash de Transacción",
-    "blockHeight": "Altura del Bloque"
+    "blockHeight": "Altura del Bloque",
+    "sendTokens": "Enviar Tokens",
+    "sendNFTs": "Enviar NFTs"
+  },
+  "alerts": {
+    "notice": "Aviso",
+    "error": "Error",
+    "maxNFTSelection": "Solo puedes seleccionar hasta 9 NFTs",
+    "selectAtLeastOneNFT": "Por favor selecciona al menos un NFT"
+  },
+  "messages": {
+    "noSearchResults": "No hay resultados de búsqueda",
+    "noNFTsFound": "No se encontraron NFTs",
+    "noNFTsMatchSearch": "No hay NFTs que coincidan con \"{{search}}\" en esta colección",
+    "collectionEmpty": "Esta colección no contiene ningún NFT",
+    "loadingAccount": "Cargando cuenta...",
+    "noNFTCollectionsFound": "No se encontraron colecciones NFT",
+    "noCollectionsMatchSearch": "No hay colecciones que coincidan con \"{{search}}\"",
+    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT para esta cuenta",
+    "noTokensFound": "No se encontraron tokens",
+    "noTokensAvailable": "No hay tokens disponibles",
+    "noTokensWithBalance": "No se encontraron tokens con saldo",
+    "addressCopied": "Dirección copiada al portapapeles",
+    "failedToCopyAddress": "Error al copiar la dirección",
+    "loading": "Cargando..."
+  },
+  "errors": {
+    "failedToLoadNFTs": "Error al cargar NFTs",
+    "failedToLoadTokens": "Error al cargar tokens",
+    "failedToLoadNFTCollections": "Error al cargar colecciones NFT"
+  },
+  "tabs": {
+    "tokens": "Tokens",
+    "nfts": "NFTs"
+  },
+  "sections": {
+    "myAccounts": "Mis Cuentas",
+    "recent": "Reciente",
+    "addressBook": "Libreta de Direcciones"
+  },
+  "labels": {
+    "fromAccount": "Cuenta de Origen",
+    "toAccount": "Cuenta de Destino",
+    "nfts": "NFTs",
+    "sendNFT": "Enviar NFT",
+    "sendNFTs": "Enviar NFTs",
+    "incompatibleAccount": "Cuenta Incompatible",
+    "learnMore": "Saber más"
+  },
+  "emptyState": {
+    "noResultsFoundTitle": "No se Encontraron Resultados",
+    "noResultsFoundDescription": "No hay cuentas o contactos que coincidan con \"{{query}}\". Prueba con un término de búsqueda diferente.",
+    "noAccountsTitle": "No hay Cuentas",
+    "noAccountsDescription": "Aún no has agregado ninguna cuenta. Crea tu primera cuenta para comenzar.",
+    "noAccountsAvailable": "No hay cuentas disponibles",
+    "noRecentRecipientsTitle": "No hay Destinatarios Recientes",
+    "noRecentRecipientsDescription": "Tus destinatarios recientes aparecerán aquí después de enviar tokens.",
+    "noContactsTitle": "No hay Contactos",
+    "noContactsDescription": "Agrega contactos a tu libreta de direcciones para acceso rápido.",
+    "noDataTitle": "No hay Datos",
+    "noDataDescription": "No hay datos disponibles para esta sección."
+  },
+  "contact": {
+    "unknownContact": "Contacto Desconocido"
+  },
+  "colorDemo": {
+    "lightModeColors": "Colores del Modo Claro",
+    "darkModeColors": "Colores del Modo Oscuro",
+    "switchToDark": "Cambiar a Oscuro",
+    "switchToLight": "Cambiar a Claro",
+    "primaryColors": "Colores Primarios",
+    "text": "Texto",
+    "system": "Sistema"
   }
 }

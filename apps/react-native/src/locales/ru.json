@@ -163,6 +163,7 @@
     "noResultsFoundDescription": "Нет аккаунтов или контактов, соответствующих \"{{query}}\". Попробуйте другой поисковый запрос.",
     "noAccountsTitle": "Нет аккаунтов",
     "noAccountsDescription": "Вы еще не добавили ни одного аккаунта. Создайте свой первый аккаунт, чтобы начать.",
+    "noAccountsAvailable": "Нет доступных аккаунтов",
     "noRecentRecipientsTitle": "Нет недавних получателей",
     "noRecentRecipientsDescription": "Ваши недавние получатели появятся здесь после того, как вы отправите токены.",
     "noContactsTitle": "Нет контактов",

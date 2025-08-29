@@ -388,7 +388,7 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
                           },
                         ]}
                       >
-                        {t('noAccountsAvailable')}
+                        {t('emptyState.noAccountsAvailable')}
                       </Text>
                     </View>
                   ) : (
