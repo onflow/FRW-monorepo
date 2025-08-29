@@ -5,7 +5,7 @@ import { getCollectionLogo, getNFTId } from '@onflow/frw-utils';
 import { useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
 
 import BottomConfirmBar, { type BottomConfirmBarRef } from '@/components/NFTList/BottomConfirmBar';
 import NFTListCard from '@/components/NFTList/NFTListCard';
