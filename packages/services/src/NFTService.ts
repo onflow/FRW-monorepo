@@ -246,7 +246,7 @@ export class NFTService {
   private bridge?: PlatformSpec;
 
   constructor(type: WalletType, bridge?: PlatformSpec) {
-    this.nftProvider = type === WalletType.Flow ? new FlowNFTProvider() : new EvmNFTProvider();
+    this.nftProvider = type === WalletType.EVM ? new EvmNFTProvider() : new FlowNFTProvider();
 
     // If bridge is not provided, try to get it from ServiceContext
     if (bridge) {

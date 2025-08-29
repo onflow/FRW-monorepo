@@ -60,6 +60,30 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
   const [isAccountLoading, setIsAccountLoading] = React.useState(true);
   const { isDark } = useTheme();
 
+  // Add abort controller for cancelling operations during account switches
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Reset account-specific data
+  const resetAccountData = useCallback(() => {
+    setTokens([]);
+    setNftCollections([]);
+    setFromAccountBalance('0 FLOW');
+    setError(null);
+    setNftError(null);
+    setIsLoading(false);
+    setNftLoading(false);
+    setIsRefreshing(false);
+    setNftRefreshing(false);
+  }, []);
+
+  // Cleanup function for component unmount or account changes
+  useEffect(() => {
+    return () => {
+      // Cancel any ongoing operations when component unmounts
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   // Safe currency access with fallback - moved to async useEffect to prevent ANR
   const [currency, setCurrency] = React.useState({ name: 'USD', symbol: '$', rate: '1.0' });
 
@@ -99,15 +123,18 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
 
       if (!assetStore) {
         // Create new store and associate it with this address
-        assetStore = createAccessibleAssetStore();
-        setAccessibleAssetStore(account.address, assetStore);
+        const newStore = createAccessibleAssetStore();
+        setAccessibleAssetStore(account.address, newStore as any);
+        assetStore = newStore as any;
       }
 
       // For child accounts, fetch accessible IDs
       if (account.type === 'child' && account.parentAddress) {
         try {
           const network = await NativeFRWBridge.getNetwork();
-          await assetStore.getState().fetchChildAccountAllowTypes(network || 'mainnet', account);
+          await (assetStore as any)
+            .getState()
+            .fetchChildAccountAllowTypes(network || 'mainnet', account);
           console.log('[SelectTokens] Fetched accessible IDs for child account:', account.address);
         } catch (error) {
           console.error('[SelectTokens] Failed to fetch accessible IDs:', error);
@@ -172,7 +199,14 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
 
   // Fetch tokens from API
   const fetchTokens = useCallback(
-    async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
+    async (
+      accountAddress?: string,
+      accountType?: string,
+      isRefreshAction = false,
+      signal?: AbortSignal
+    ) => {
+      if (signal?.aborted) return;
+
       if (isRefreshAction) {
         setIsRefreshing(true);
       } else {
@@ -190,6 +224,16 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           return;
         }
 
+        if (signal?.aborted) return;
+
+        // Light validation - only check if we have a basic mismatch
+        const currentAccount = fromAccount;
+        if (accountAddress && currentAccount && currentAccount.address !== accountAddress) {
+          console.log(
+            '[fetchTokens] Account mismatch detected, but continuing with provided address'
+          );
+        }
+
         // Determine wallet type based on account type from bridge or fallback to address
         let walletType: WalletType;
         if (accountType === 'evm') {
@@ -204,26 +248,41 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         // Create TokenService instance for the detected wallet type
         const tokenService = new TokenService(walletType);
         const tokenInfos = await tokenService.getTokenInfo(targetAddress, network, currency.name);
+
+        if (signal?.aborted) return;
+
+        // Set tokens regardless - let React handle the state consistency
         setTokens(tokenInfos);
       } catch (err: any) {
+        if (err.name === 'AbortError') return;
+
         console.error('Error fetching tokens:', err);
         setError(err.message || t('errors.failedToLoadTokens'));
-        // Show empty state on error
         setTokens([]);
       } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
+        if (!signal?.aborted) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
     },
-    [t]
+    [fromAccount, currency.name, t] // Added missing dependencies
   );
 
   // Fetch NFT collections from API (CACHED VERSION)
   const fetchNFTCollections = useCallback(
-    async (accountAddress?: string, accountType?: string, isRefreshAction = false) => {
+    async (
+      accountAddress?: string,
+      accountType?: string,
+      isRefreshAction = false,
+      signal?: AbortSignal
+    ) => {
       console.log(
         `[SelectTokens] fetchNFTCollections called for ${accountAddress}, refresh: ${isRefreshAction}`
       );
+
+      if (signal?.aborted) return;
+
       if (isRefreshAction) {
         setNftRefreshing(true);
       } else {
@@ -238,9 +297,17 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
 
         if (!targetAddress) {
           setNftCollections([]);
-          setNftLoading(false);
-          setNftRefreshing(false);
           return;
+        }
+
+        if (signal?.aborted) return;
+
+        // Light validation - only log if we have a basic mismatch
+        const currentAccount = fromAccount;
+        if (accountAddress && currentAccount && currentAccount.address !== accountAddress) {
+          console.log(
+            '[fetchNFTCollections] Account mismatch detected, but continuing with provided address'
+          );
         }
 
         // Use token store for NFT collections
@@ -254,6 +321,8 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           await tokenStore.fetchTokens(targetAddress, network || 'mainnet', true);
         }
 
+        if (signal?.aborted) return;
+
         const collections =
           tokenStore.getNFTCollectionsForAddress(targetAddress, network || 'mainnet') || [];
 
@@ -264,56 +333,96 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           isRefreshAction,
         });
 
+        // Set collections regardless - let React handle the state consistency
         setNftCollections(collections || []);
       } catch (err: any) {
+        if (err.name === 'AbortError') return;
+
         // Enhanced error handling to prevent 'Property error doesn't exist' issues
         const errorMessage = err?.message || err?.toString() || 'Unknown error';
         console.error('[NFT] Failed to fetch cached collections:', errorMessage);
         console.error('[NFT] Full error object:', err);
+
         setNftError(`Failed to load NFT collections: ${errorMessage}`);
         setNftCollections([]);
       } finally {
-        setNftLoading(false);
-        setNftRefreshing(false);
+        if (!signal?.aborted) {
+          setNftLoading(false);
+          setNftRefreshing(false);
+        }
       }
     },
-    []
+    [fromAccount] // Added missing dependency
   );
 
   // Handle account selection from the modal
   const handleAccountSelect = useCallback(
     async (selectedAccount: WalletAccount) => {
       try {
+        // Cancel any ongoing operations for the previous account
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
+        console.log(`[handleAccountSelect] Switching to account: ${selectedAccount.address}`);
+
+        // Clear old data but keep loading states active
+        setTokens([]);
+        setNftCollections([]);
+        setFromAccountBalance('0 FLOW');
+        setError(null);
+        setNftError(null);
+
         // Update local state immediately
         setLocalFromAccount(selectedAccount);
         setStoreFromAccount(selectedAccount);
 
-        // Set loading state instead of clearing collections immediately
-        // This prevents the "No NFT collections found" flash
+        // Set loading state - this is important for showing loading UI
+        setIsLoading(true);
         setNftLoading(true);
-        setNftError(null);
 
-        // Initialize accessible asset store for the new account
+        if (signal.aborted) return;
+
+        // Reset and initialize accessible asset store for the new account
+        const assetStore = getAccessibleAssetStore(selectedAccount.address);
+        if (assetStore) {
+          // Reset existing store before fetching new data
+          (assetStore as any).getState().reset();
+        }
         await initializeAccessibleAssetStore(selectedAccount);
+
+        if (signal.aborted) return;
 
         // Fetch balance data from tokenStore (force fresh for account switching)
         await updateFromAccountBalance(selectedAccount.address, selectedAccount.type, true);
 
-        // Refresh token and NFT data for the new account
+        if (signal.aborted) return;
+
+        // Refresh token and NFT data for the new account with cancellation support
         await Promise.all([
-          fetchTokens(selectedAccount.address, selectedAccount.type),
-          fetchNFTCollections(selectedAccount.address, selectedAccount.type),
+          fetchTokens(selectedAccount.address, selectedAccount.type, false, signal),
+          fetchNFTCollections(selectedAccount.address, selectedAccount.type, false, signal),
         ]);
+
+        console.log(
+          `[handleAccountSelect] Successfully switched to account: ${selectedAccount.address}`
+        );
       } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('[handleAccountSelect] Account switch was cancelled');
+          return;
+        }
         console.error('Failed to update account:', error);
       }
     },
     [
+      resetAccountData,
       setStoreFromAccount,
       updateFromAccountBalance,
       fetchTokens,
       fetchNFTCollections,
       initializeAccessibleAssetStore,
+      getAccessibleAssetStore,
     ]
   );
 
@@ -339,6 +448,11 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           return;
         }
 
+        // Cancel any ongoing operations
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+
         const activeAccount = walletStoreState.activeAccount;
 
         if (activeAccount) {
@@ -347,14 +461,18 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           setStoreFromAccount(activeAccount);
           setIsAccountLoading(false);
 
+          if (signal.aborted) return;
+
           // Initialize accessible asset store for active account
           await initializeAccessibleAssetStore(activeAccount);
+
+          if (signal.aborted) return;
 
           // Start loading balance and other data in parallel
           const dataPromises = [
             updateFromAccountBalance(activeAccount.address, activeAccount.type),
-            fetchTokens(activeAccount.address, activeAccount.type),
-            fetchNFTCollections(activeAccount.address, activeAccount.type),
+            fetchTokens(activeAccount.address, activeAccount.type, false, signal),
+            fetchNFTCollections(activeAccount.address, activeAccount.type, false, signal),
           ];
 
           // Wait for all data to load
@@ -366,13 +484,17 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           setStoreFromAccount(firstAccount);
           setIsAccountLoading(false);
 
+          if (signal.aborted) return;
+
           // Initialize accessible asset store for first account
           await initializeAccessibleAssetStore(firstAccount);
 
+          if (signal.aborted) return;
+
           const dataPromises = [
             updateFromAccountBalance(firstAccount.address, firstAccount.type),
-            fetchTokens(firstAccount.address, firstAccount.type),
-            fetchNFTCollections(firstAccount.address, firstAccount.type),
+            fetchTokens(firstAccount.address, firstAccount.type, false, signal),
+            fetchNFTCollections(firstAccount.address, firstAccount.type, false, signal),
           ];
           await Promise.all(dataPromises);
         } else {
@@ -380,13 +502,21 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
           setIsAccountLoading(false);
         }
       } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('[SelectTokens] Initialization was cancelled');
+          return;
+        }
         console.error('Error initializing active account:', error);
         setIsAccountLoading(false);
       }
     };
 
     initializeActiveAccount();
-  }, [walletStoreState.isLoading]); // Only depend on loading state to prevent infinite loops
+  }, [
+    walletStoreState.isLoading,
+    walletStoreState.activeAccount?.address,
+    walletStoreState.activeAccount?.type,
+  ]); // More specific dependencies to avoid infinite loops while ensuring re-initialization when account changes
 
   // Get current accessible asset store for fromAccount
   const getCurrentAssetStore = useCallback(() => {
@@ -408,7 +538,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         return true; // Default to accessible if store not available
       }
 
-      const isAllowed = assetStore.getState().isTokenAllowed(token);
+      const isAllowed = (assetStore as any).getState().isTokenAllowed(token);
       if (!isAllowed) {
         console.log(
           `[SelectTokens] Token ${token.symbol || token.identifier} not accessible for child account`
@@ -434,7 +564,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         return true; // Default to accessible if store not available
       }
 
-      const isAllowed = assetStore.getState().isCollectionAllowed(collection);
+      const isAllowed = (assetStore as any).getState().isCollectionAllowed(collection);
       if (!isAllowed) {
         console.log(
           `[SelectTokens] NFT collection ${collection.name || collection.id} not accessible for child account`

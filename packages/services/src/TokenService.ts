@@ -105,7 +105,7 @@ export class TokenService {
 
   constructor(type: WalletType, bridge?: PlatformSpec) {
     this.tokenProvider =
-      type === WalletType.Flow ? new FlowTokenProvider() : new ERC20TokenProvider();
+      type === WalletType.EVM ? new ERC20TokenProvider() : new FlowTokenProvider();
 
     // If bridge is not provided, try to get it from ServiceContext
     if (bridge) {
