@@ -1,5 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Storage } from '@onflow/frw-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Buffer } from 'buffer';
 
 // In-memory cache for synchronous operations
 class AsyncStorageCache {
@@ -85,9 +86,9 @@ export const storage: Storage = {
     let stringValue: string;
     
     if (value instanceof ArrayBuffer) {
-      // Convert ArrayBuffer to base64 string
+      // Convert ArrayBuffer to base64 string using Buffer
       const bytes = new Uint8Array(value);
-      stringValue = btoa(String.fromCharCode(...bytes));
+      stringValue = Buffer.from(bytes).toString('base64');
     } else {
       stringValue = String(value);
     }
@@ -119,12 +120,8 @@ export const storage: Storage = {
     
     try {
       // Convert base64 string back to ArrayBuffer
-      const binaryString = atob(value);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      return bytes.buffer;
+      const buffer = Buffer.from(value, 'base64');
+      return buffer.buffer;
     } catch {
       return undefined;
     }
