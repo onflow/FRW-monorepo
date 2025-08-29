@@ -84,24 +84,6 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
     };
   }, []);
 
-  // Safe currency access with fallback - moved to async useEffect to prevent ANR
-  const [currency, setCurrency] = React.useState({ name: 'USD', symbol: '$', rate: '1.0' });
-
-  // Load currency asynchronously to prevent UI thread blocking
-  React.useEffect(() => {
-    const loadCurrency = () => {
-      try {
-        const curr = NativeFRWBridge.getCurrency();
-        setCurrency(curr);
-      } catch (error) {
-        console.error('Bridge getCurrency error:', error);
-        // Keep fallback USD value
-      }
-    };
-
-    // Use setTimeout to ensure this doesn't block the initial render
-    setTimeout(loadCurrency, 0);
-  }, []);
   // Send store actions
   const {
     setSelectedToken,
@@ -246,6 +228,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         }
 
         // Create TokenService instance for the detected wallet type
+        const currency = NativeFRWBridge.getCurrency();
         const tokenService = new TokenService(walletType);
         const tokenInfos = await tokenService.getTokenInfo(targetAddress, network, currency.name);
 
@@ -266,7 +249,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         }
       }
     },
-    [fromAccount, currency.name, t] // Added missing dependencies
+    [fromAccount, t]
   );
 
   // Fetch NFT collections from API (CACHED VERSION)
@@ -799,7 +782,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
                       <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
                         <TokenCard
                           token={token}
-                          currency={currency}
+                          currency={NativeFRWBridge.getCurrency()}
                           onPress={() => handleTokenPress(token)}
                           isAccessible={isTokenAccessible(token)}
                         />
