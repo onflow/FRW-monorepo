@@ -82,7 +82,67 @@ const TokenCard = ({ balance, tokenName, variant = 'primary', size = 'medium' }:
 - **Pure components** - all data via props
 - **Exception handling** - Only for critical cases with team approval
 
-### 3. Screen Implementation Patterns
+### 3. Internationalization (i18n) Standards
+
+**❌ NEVER use hardcoded strings in UI or screens packages**
+
+```typescript
+// ❌ BAD - Hardcoded strings
+const WelcomeScreen = () => (
+  <YStack>
+    <Text>Welcome to Flow Wallet</Text>
+    <Button>Get Started</Button>
+    <Text>Create your secure wallet today</Text>
+  </YStack>
+);
+```
+
+**✅ ALWAYS use i18n context for text content**
+
+```typescript
+// ✅ GOOD - Using i18n context
+import { useI18n } from '@onflow/frw-context';
+
+const WelcomeScreen = () => {
+  const { t } = useI18n();
+
+  return (
+    <YStack>
+      <Text>{t('welcome.title')}</Text>
+      <Button>{t('welcome.getStarted')}</Button>
+      <Text>{t('welcome.subtitle')}</Text>
+    </YStack>
+  );
+};
+```
+
+**✅ Define all text content in JSON i18n files**
+
+```json
+// screens/context/i18n/en.json
+{
+  "welcome": {
+    "title": "Welcome to Flow Wallet",
+    "getStarted": "Get Started",
+    "subtitle": "Create your secure wallet today"
+  },
+  "buttons": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "next": "Next"
+  }
+}
+```
+
+**i18n Guidelines:**
+
+- **No hardcoded text** - all user-facing strings must use i18n
+- **Structured keys** - use nested objects for organization (`welcome.title`)
+- **Reusable keys** - common buttons/actions should be shared (`buttons.cancel`)
+- **Context awareness** - keys should indicate where they're used
+- **Placeholder support** - use i18n interpolation for dynamic content
+
+### 4. Screen Implementation Patterns
 
 **❌ AVOID complex logic outside screen components**
 
@@ -157,7 +217,7 @@ const TokenSelectorScreen = ({
 
 ## 🔗 Architecture Boundaries
 
-### 4. PlatformSpec Modifications
+### 5. PlatformSpec Modifications
 
 **🚨 CRITICAL: Any changes to `PlatformSpec` require team notification**
 
@@ -185,7 +245,7 @@ export interface PlatformSpec {
 - Extension security model considerations
 - Web browser API limitations
 
-### 5. Bridge Data Structure Rules
+### 6. Bridge Data Structure Rules
 
 **✅ ALL PlatformSpec data structures MUST be defined in
 `packages/types/src/Bridge.ts`**
@@ -236,7 +296,7 @@ export interface PlatformSpec {
 
 ## 💾 Storage Management
 
-### 6. Type-Safe Storage
+### 7. Type-Safe Storage
 
 **✅ ALWAYS define storage keys in StorageKeyMap**
 
@@ -358,6 +418,8 @@ Before submitting any PR, ensure:
 
 - [ ] **Logging**: No `console.log` usage, proper logger implementation
 - [ ] **UI Purity**: No business logic imports in `packages/ui`
+- [ ] **Internationalization**: No hardcoded strings, proper i18n usage in
+      UI/screens
 - [ ] **Screen Logic**: Appropriate abstraction level for screen components
 - [ ] **PlatformSpec**: Team notification for any interface changes
 - [ ] **Bridge Types**: All PlatformSpec data structures in `Bridge.ts`

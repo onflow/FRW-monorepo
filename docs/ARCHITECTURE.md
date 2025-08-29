@@ -7,6 +7,22 @@ on **MVVM architecture** using modern monorepo with pnpm workspaces. The
 architecture follows clean separation of concerns with clear data flow: **Model
 → Network → Business Logic → ViewModel → View**.
 
+## Package Overview
+
+| Package      | Purpose                  | What it contains                                               |
+| ------------ | ------------------------ | -------------------------------------------------------------- |
+| **types**    | Data models & interfaces | TokenModel, UserModel, transaction types, API schemas          |
+| **api**      | Backend communication    | REST API clients, HTTP services, external service integrations |
+| **cadence**  | Flow blockchain          | Cadence scripts, transactions, Flow network communication      |
+| **services** | Business logic           | Token services, wallet services, authentication logic          |
+| **workflow** | Complex operations       | Multi-step transactions, send/receive flows, account creation  |
+| **stores**   | State management         | User store, token store, transaction store (Zustand)           |
+| **ui**       | UI components            | Buttons, cards, modals, forms (pure components only)           |
+| **icons**    | Icon library             | SVG icons with theme support, universal across platforms       |
+| **screens**  | Complete screens         | Login screen, send screen, token list (UI + logic combined)    |
+| **utils**    | Utilities                | Formatters, validators, logging, crypto helpers                |
+| **context**  | Platform layer           | Storage, notifications, biometrics (platform-specific APIs)    |
+
 ## MVVM Architecture Diagram
 
 ```mermaid
