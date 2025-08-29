@@ -163,6 +163,7 @@ export default [
       'vitest.config.ts',
       'vitest.init.ts',
       'tsup.config.ts',
+      '.svgrrc.js',
       'build/**/*.{ts,js,cjs}', // Build scripts
       'apps/extension/build/**/*.{ts,js,cjs}', // Extension build scripts
       'apps/**/vitest.config.ts', // App-level vitest configs
