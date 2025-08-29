@@ -58,3 +58,4 @@ jobs:
         with:
           eslint: true
           eslint_extensions: ts,tsx,js,jsx
+          eslint_args: "--cache"
