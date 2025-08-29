@@ -336,6 +336,7 @@ export default [
       'packages/**/.storybook/**', // Exclude storybook config
       'packages/**/tsup.config.ts', // Exclude build configs
       'packages/**/vitest.config.ts', // Exclude test configs
+      'packages/**/.svgrrc.js', // Exclude SVGR config files
     ],
     languageOptions: {
       parserOptions: {
