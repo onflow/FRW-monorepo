@@ -1,0 +1,90 @@
+jobs:
+  checkout:
+    executor:
+      name: rn/linux_js
+      node_version: "18.20.3"
+    steps:
+      - checkout
+      - rn/yarn_install
+      - persist_to_workspace:
+          root: .
+          paths: .
+  create-key-store:
+    executor:
+      name: rn/linux_js
+    steps:
+      - attach_workspace:
+          at: .
+      - android/decode-keystore:
+          keystore-location: android/app/keystore
+      - android/create-keystore-properties:
+          working-directory: android/app
+      - run:
+          command: echo $GOOGLE_PLAY_KEY > ./android/app/google-play-key.json
+      - persist_to_workspace:
+          root: .
+          paths: .
+
+  android-build-release:
+    docker:
+      - image: reactnativecommunity/react-native-android:7
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          command: git config user.email "devops@flowfoundation.org"
+      - run:
+          command: git config user.name "Flow Devops"
+      - run:
+          command: git config core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+      - run:
+          name: bundle install
+          working_directory: apps/react-native/android
+          command: bundle install
+      - run:
+          name: bundle exec fastlane release
+          no_output_timeout: 30m
+          working_directory: apps/react-native/android
+          command: bundle exec fastlane release
+
+  ios-build-release:
+    macos:
+      xcode: 15.0.0
+    resource_class: macos.m1.medium.gen1
+    steps:
+      - checkout
+      - run: rbenv install 3.0.0
+      - run: bundler install
+      - run: npm install -g yarn
+      - run: yarn install
+      - run: gem install fastlane --version 2.217.0
+      - run: gem install cocoapods
+      - run: yes | gem uninstall --force activesupport || result=$?
+      - run: yes | gem install activesupport -v 7.0.8 || result=$?
+      - run: cd ios && pod install
+      - run:
+          name: Build IOS release
+          no_output_timeout: 45m
+          working_directory: apps/react-native/ios
+          command: bundle exec fastlane release
+
+orbs:
+  rn: react-native-community/react-native@7.1.1
+  android: circleci/android@2.2.0
+
+version: 2.1
+workflows:
+  release_internal:
+    when:
+      equal: [circleci, << pipeline.git.branch >>]
+    jobs:
+      - checkout
+      - ios-build-release:
+          requires:
+            - checkout
+      - create-key-store:
+          requires:
+            - checkout
+      - android-build-release:
+          requires:
+            - create-key-store
