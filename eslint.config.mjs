@@ -273,7 +273,12 @@ export default [
   },
   {
     files: ['apps/extension/**/*.{ts,tsx,js,jsx}'],
-    ignores: ['apps/extension/vitest.config.ts', 'apps/extension/vitest.init.ts'],
+    ignores: [
+      'apps/extension/vitest.config.ts',
+      'apps/extension/vitest.init.ts',
+      'apps/extension/e2e/**/*.{ts,tsx,js,jsx}', // Exclude e2e tests
+      'apps/extension/playwright.config.ts', // Exclude playwright config
+    ],
     languageOptions: {
       globals: {
         ...globals.browser,
