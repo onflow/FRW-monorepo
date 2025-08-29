@@ -161,10 +161,19 @@ export default [
       'vite.config.js',
       'rollup.config.js',
       'vitest.config.ts',
+      'vitest.init.ts',
       'tsup.config.ts',
       'build/**/*.{ts,js,cjs}', // Build scripts
       'apps/extension/build/**/*.{ts,js,cjs}', // Extension build scripts
-      '.storybook/**/*.{ts,js}', // Storybook config
+      'apps/**/vitest.config.ts', // App-level vitest configs
+      'apps/**/vitest.init.ts', // App-level vitest init files
+      'apps/**/babel.config.js', // App-level babel configs
+      'apps/**/metro.config.js', // React Native metro configs
+      'apps/**/metro-*.js', // Metro transformer files
+      'apps/**/index.js', // App entry points
+      'apps/**/scripts/**/*.{ts,js,cjs}', // App scripts
+      '.storybook/**/*.{ts,tsx,js}', // Storybook config
+      '**/.storybook/**/*.{ts,tsx,js}', // Package-level storybook configs
       'scripts/**/*.{ts,js,cjs}', // Project scripts
       '**/scripts/**/*.{ts,js,cjs}', // Package scripts
       '**/tsup.config.ts', // Package build configs
@@ -226,6 +235,13 @@ export default [
   },
   {
     files: ['apps/react-native/**/*.{ts,tsx,js,jsx}'],
+    ignores: [
+      'apps/react-native/babel.config.js',
+      'apps/react-native/metro.config.js',
+      'apps/react-native/metro-*.js',
+      'apps/react-native/index.js',
+      'apps/react-native/scripts/**/*.{ts,js,cjs}',
+    ],
     languageOptions: {
       globals: {
         ...globals.browser, // React Native has some browser-like APIs
@@ -257,6 +273,7 @@ export default [
   },
   {
     files: ['apps/extension/**/*.{ts,tsx,js,jsx}'],
+    ignores: ['apps/extension/vitest.config.ts', 'apps/extension/vitest.init.ts'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -310,6 +327,7 @@ export default [
       'packages/**/build/**',
       'packages/**/stories/**', // Exclude storybook files
       'packages/**/*.stories.*', // Exclude story files
+      'packages/**/.storybook/**', // Exclude storybook config
       'packages/**/tsup.config.ts', // Exclude build configs
       'packages/**/vitest.config.ts', // Exclude test configs
     ],
