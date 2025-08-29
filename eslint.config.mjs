@@ -337,6 +337,7 @@ export default [
       'packages/**/tsup.config.ts', // Exclude build configs
       'packages/**/vitest.config.ts', // Exclude test configs
       'packages/**/.svgrrc.js', // Exclude SVGR config files
+      'packages/**/scripts/**', // Exclude all package scripts
     ],
     languageOptions: {
       parserOptions: {
