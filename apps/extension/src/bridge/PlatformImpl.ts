@@ -264,8 +264,9 @@ class ExtensionPlatformImpl implements PlatformSpec {
         config.proposer = async (account: any) => {
           const selectedAccount = await this.getSelectedAccount();
           const address = selectedAccount.parentAddress;
-          const keyId = this.getSignKeyIndex();
+          const keyId = await this.getSignKeyIndex();
           const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
+
           const KEY_ID = Number(keyId) || 0;
 
           return {
@@ -357,14 +358,12 @@ class ExtensionPlatformImpl implements PlatformSpec {
         // Handle bypassed extension transactions
         if (response && response.__EXTENSION_SUCCESS__) {
           txId = response.result;
-          this.log('debug', 'Extension bypassed transaction completed with ID:', txId);
 
           // Return the transaction ID as the response
           response = txId;
         } else if (response && typeof response === 'string') {
           // Handle normal FCL transactions
           txId = response;
-          this.log('debug', 'FCL transaction completed with ID:', txId);
         }
 
         if (txId) {
@@ -372,7 +371,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
             // Start transaction monitoring
             if (this.walletController && this.walletController.listenTransaction) {
               this.walletController.listenTransaction(txId);
-              this.log('debug', 'Extension transaction monitoring started for:', txId);
             }
 
             // Navigate to transaction complete
@@ -381,7 +379,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
               navigation.navigate('TransactionComplete', {
                 txId: txId,
               });
-              this.log('debug', 'Navigation to TransactionComplete triggered');
             }
           } catch (error) {
             this.log('error', 'Failed to execute post-transaction actions:', error);
@@ -391,8 +388,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
       return { config, response };
     });
-
-    this.log('debug', 'CadenceService configured for extension');
   }
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {

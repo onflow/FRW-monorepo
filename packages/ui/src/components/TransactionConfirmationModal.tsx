@@ -285,12 +285,6 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
 
             {/* To Account */}
             <YStack flex={1} items="center" gap="$1" maxW={130}>
-              {/* Debug logging */}
-              {console.log('TransactionConfirmationModal toAccount:', toAccount)}
-              {console.log(
-                'TransactionConfirmationModal toAccount.emoji:',
-                (toAccount as any)?.emoji
-              )}
               <Avatar
                 src={toAccount?.avatar}
                 fallback={(toAccount as any)?.emoji || toAccount?.name?.charAt(0) || 'A'}
