@@ -2,6 +2,7 @@ import { type Currency, type TokenModel } from '@onflow/frw-types';
 import { getDisplayBalanceWithSymbol } from '@onflow/frw-utils';
 import { TouchableOpacity, View } from 'react-native';
 
+import { formatCurrencyStringForDisplay } from '@/lib/string';
 import { VerifiedToken as VerifiedIcon } from 'icons';
 
 import { AccessibilityStatus } from '../media/AccessibilityStatus';
@@ -17,7 +18,7 @@ export interface TokenCardProps {
 
 export function TokenCard({
   token,
-  currency = { name: 'USD', symbol: '$' },
+  currency = { name: 'USD', symbol: '$', rate: '1' },
   onPress,
   isAccessible = true,
 }: TokenCardProps) {
@@ -52,6 +53,18 @@ export function TokenCard({
             <View className="flex-row items-center gap-2">
               <Text className="text-fg-2 text-left text-sm" numberOfLines={1} ellipsizeMode="tail">
                 {(() => {
+                  if (token.priceInCurrency === '0' || token.priceInCurrency === '0.00') return '';
+                  const currencyValue = parseFloat(token.priceInCurrency ?? '0');
+                  return !isNaN(currencyValue) && currencyValue > 0
+                    ? `${currency.symbol}${formatCurrencyStringForDisplay({ value: currencyValue, digits: 4 })}`
+                    : '';
+                })()}
+              </Text>
+              <AccessibilityStatus isAccessible={isAccessible} />
+            </View>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-fg-2 text-left text-sm" numberOfLines={1} ellipsizeMode="tail">
+                {(() => {
                   if (
                     !token.balanceInCurrency ||
                     token.balanceInCurrency === '0' ||
@@ -64,13 +77,7 @@ export function TokenCard({
                     : '';
                 })()}
               </Text>
-              <AccessibilityStatus isAccessible={isAccessible} />
             </View>
-            {token.change !== null && token.change !== '' && (
-              <View className="bg-primary/10 rounded-xl px-1.5 py-1">
-                <Text className="text-primary text-xs">{token.change}</Text>
-              </View>
-            )}
           </View>
         </View>
       </View>
