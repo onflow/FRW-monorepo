@@ -99,15 +99,18 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
 
       if (!assetStore) {
         // Create new store and associate it with this address
-        assetStore = createAccessibleAssetStore();
-        setAccessibleAssetStore(account.address, assetStore);
+        const newStore = createAccessibleAssetStore();
+        setAccessibleAssetStore(account.address, newStore as any);
+        assetStore = newStore as any;
       }
 
       // For child accounts, fetch accessible IDs
       if (account.type === 'child' && account.parentAddress) {
         try {
           const network = await NativeFRWBridge.getNetwork();
-          await assetStore.getState().fetchChildAccountAllowTypes(network || 'mainnet', account);
+          await (assetStore as any)
+            .getState()
+            .fetchChildAccountAllowTypes(network || 'mainnet', account);
           console.log('[SelectTokens] Fetched accessible IDs for child account:', account.address);
         } catch (error) {
           console.error('[SelectTokens] Failed to fetch accessible IDs:', error);
@@ -293,7 +296,12 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         setNftLoading(true);
         setNftError(null);
 
-        // Initialize accessible asset store for the new account
+        // Reset and initialize accessible asset store for the new account
+        const assetStore = getAccessibleAssetStore(selectedAccount.address);
+        if (assetStore) {
+          // Reset existing store before fetching new data
+          (assetStore as any).getState().reset();
+        }
         await initializeAccessibleAssetStore(selectedAccount);
 
         // Fetch balance data from tokenStore (force fresh for account switching)
@@ -408,7 +416,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         return true; // Default to accessible if store not available
       }
 
-      const isAllowed = assetStore.getState().isTokenAllowed(token);
+      const isAllowed = (assetStore as any).getState().isTokenAllowed(token);
       if (!isAllowed) {
         console.log(
           `[SelectTokens] Token ${token.symbol || token.identifier} not accessible for child account`
@@ -434,7 +442,7 @@ const SelectTokensScreen = React.memo(function SelectTokensScreen({
         return true; // Default to accessible if store not available
       }
 
-      const isAllowed = assetStore.getState().isCollectionAllowed(collection);
+      const isAllowed = (assetStore as any).getState().isCollectionAllowed(collection);
       if (!isAllowed) {
         console.log(
           `[SelectTokens] NFT collection ${collection.name || collection.id} not accessible for child account`
