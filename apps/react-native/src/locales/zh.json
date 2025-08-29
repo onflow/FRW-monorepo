@@ -163,6 +163,7 @@
     "noResultsFoundDescription": "没有账户或联系人与「{{query}}」匹配。请尝试不同的搜索词。",
     "noAccountsTitle": "无账户",
     "noAccountsDescription": "您还没有添加任何账户。创建您的第一个账户开始使用。",
+    "noAccountsAvailable": "没有可用的账户",
     "noRecentRecipientsTitle": "无最近收款人",
     "noRecentRecipientsDescription": "发送代币后，您的最近收款人将显示在这里。",
     "noContactsTitle": "无联系人",
