@@ -288,7 +288,18 @@ object WalletManager {
     }
 
     fun walletUpdate() {
-        wallet()?.let { refreshChildAccount(it) }
+        val currentWallet = wallet()
+        if (currentWallet != null) {
+            // Normal wallet - use existing logic
+            refreshChildAccount(currentWallet)
+        } else {
+            // Hardware-backed key - initialize child accounts using selected address
+            val selectedAddress = selectedWalletAddress()
+            if (!selectedAddress.isNullOrEmpty()) {
+                logd(TAG, "Hardware-backed key detected in walletUpdate, initializing child accounts for: $selectedAddress")
+                refreshChildAccountForHardwareBackedKey(selectedAddress)
+            }
+        }
     }
 
     fun wallet(): Wallet? = synchronized(initializationLock) {
@@ -367,7 +378,15 @@ object WalletManager {
     }
 
     fun childAccountList(walletAddress: String? = null): ChildAccountList? {
-        val address = (walletAddress ?: wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address) ?: return null
+        val address = walletAddress ?: wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address ?: selectedWalletAddress()
+        if (address.isNullOrEmpty()) return null
+        
+        // For hardware-backed keys, ensure child account list is initialized
+        if (!childAccountMap.contains(address)) {
+            logd(TAG, "Initializing child account list for address: $address")
+            childAccountMap[address] = ChildAccountList(address)
+        }
+        
         return childAccountMap[address]
     }
 
@@ -533,6 +552,14 @@ object WalletManager {
             } else {
                 childAccountMap[it] = ChildAccountList(it)
             }
+        }
+    }
+    
+    private fun refreshChildAccountForHardwareBackedKey(address: String) {
+        if (childAccountMap.contains(address)) {
+            childAccountMap[address]?.refresh()
+        } else {
+            childAccountMap[address] = ChildAccountList(address)
         }
     }
 

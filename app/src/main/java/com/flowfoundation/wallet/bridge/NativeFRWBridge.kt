@@ -202,8 +202,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             try {
                 val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
 
-                // Get main wallet address
-                val mainAddress = WalletManager.wallet()?.walletAddress()
+                // Get main wallet address - for hardware-backed keys, wallet() returns null,
+                // so we need to use selectedWalletAddress() as fallback
+                var mainAddress = WalletManager.wallet()?.walletAddress()
+                if (mainAddress.isNullOrEmpty()) {
+                    // Hardware-backed key fallback: use the selected address
+                    mainAddress = WalletManager.selectedWalletAddress()
+                }
                 val mainEmojiInfo = createEmojiInfo(mainAddress)
                 if (!mainAddress.isNullOrEmpty()) {
                     val mainAccount = RNBridge.WalletAccount(
