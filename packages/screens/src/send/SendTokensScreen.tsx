@@ -1,10 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, useTokenStore } from '@onflow/frw-stores';
-import {
-  type NFTModel,
-  type CollectionModel,
-  type TokenModel,
-} from '@onflow/frw-types';
+import { type NFTModel, type CollectionModel, type TokenModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -312,16 +308,16 @@ export const SendTokensScreen = (props) => {
                   selectedToken={
                     selectedToken
                       ? {
-                        symbol: selectedToken.symbol,
-                        name: selectedToken.name,
-                        logo: selectedToken.logoURI,
-                        logoURI: selectedToken.logoURI,
-                        balance: selectedToken.balance?.toString(),
-                        price: selectedToken.priceInUSD
-                          ? parseFloat(selectedToken.priceInUSD)
-                          : undefined,
-                        isVerified: selectedToken.isVerified,
-                      }
+                          symbol: selectedToken.symbol,
+                          name: selectedToken.name,
+                          logo: selectedToken.logoURI,
+                          logoURI: selectedToken.logoURI,
+                          balance: selectedToken.balance?.toString(),
+                          price: selectedToken.priceInUSD
+                            ? parseFloat(selectedToken.priceInUSD)
+                            : undefined,
+                          isVerified: selectedToken.isVerified,
+                        }
                       : undefined
                   }
                   amount={amount}
@@ -344,7 +340,7 @@ export const SendTokensScreen = (props) => {
                   {/* Section Header */}
                   <SendSectionHeader
                     title={`Send NFTs (${selectedNFTs.length})`}
-                    onEditPress={() => { }}
+                    onEditPress={() => {}}
                     showEditButton={showEditButtons}
                     editButtonText="Edit"
                   />
@@ -444,6 +440,14 @@ export const SendTokensScreen = (props) => {
           visible={isConfirmationVisible}
           transactionType={transactionType}
           selectedToken={selectedToken}
+          selectedNFTs={selectedNFTs?.map((nft) => ({
+            id: nft.id || '',
+            name: nft.name || '',
+            image: nft.thumbnail || '',
+            collection: nft.collectionName || '',
+            collectionContractName: nft.collectionContractName || '',
+            description: nft.description || '',
+          }))}
           fromAccount={fromAccount}
           toAccount={toAccount}
           formData={formData}
