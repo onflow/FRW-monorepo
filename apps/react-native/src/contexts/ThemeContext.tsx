@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+
 interface ThemeContextType {
   isDark: boolean;
   theme: 'light' | 'dark';
@@ -14,7 +16,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isDark, setIsDark] = useState(systemColorScheme === 'dark');
 
   useEffect(() => {
-    setIsDark(systemColorScheme === 'dark');
+    const getThemeFromBridge = () => {
+      try {
+        // Try to get theme from main Android app first
+        const bridgeTheme = NativeFRWBridge.getTheme();
+        setIsDark(bridgeTheme === 'dark');
+        console.log('[ThemeContext] Using theme from main app:', bridgeTheme);
+      } catch (error) {
+        // Fallback to system color scheme if bridge method fails
+        console.log('[ThemeContext] Bridge theme unavailable, using system theme:', systemColorScheme);
+        setIsDark(systemColorScheme === 'dark');
+      }
+    };
+
+    getThemeFromBridge();
   }, [systemColorScheme]);
 
   const toggleTheme = () => {

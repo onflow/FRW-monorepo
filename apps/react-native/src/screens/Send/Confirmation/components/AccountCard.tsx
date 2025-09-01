@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 
+import { useTheme } from '@/contexts/ThemeContext';
 import { Link } from 'icons';
 import { Text, WalletAvatar } from 'ui';
 
@@ -25,6 +26,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   parentEmoji,
   type,
 }) => {
+  const { isDark } = useTheme();
   const displayEmoji = typeof emoji === 'string' ? emoji : emoji?.emoji || defaultEmoji;
 
   // Check if account should show link icon (only for child and evm types)
@@ -84,14 +86,14 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               width: 36,
               height: 36,
               borderRadius: 18,
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
             <Text
               style={{
-                color: '#FFFFFF',
+                color: isDark ? '#FFFFFF' : '#1A1A1A',
                 fontSize: 16,
                 fontWeight: 'bold',
                 textAlign: 'center',
@@ -124,7 +126,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 fontWeight: '600',
                 lineHeight: 16.8,
                 letterSpacing: -0.084,
-                color: '#FFFFFF',
+                color: isDark ? '#FFFFFF' : '#1A1A1A',
                 textAlign: 'center',
               }}
             >
@@ -138,7 +140,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             fontSize: 12,
             fontWeight: '400',
             lineHeight: 16.8,
-            color: '#B3B3B3',
+            color: isDark ? '#B3B3B3' : '#666666',
             textAlign: 'center',
             width: '100%',
           }}

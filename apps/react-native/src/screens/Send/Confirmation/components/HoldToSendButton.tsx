@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableWithoutFeedback, Animated, Easing } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
+import { useTheme } from '@/contexts/ThemeContext';
+
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 import { useAndroidTextFix } from '@/lib/androidTextFix';
@@ -21,6 +23,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   holdDuration = 2000,
 }) => {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const [isHolding, setIsHolding] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -180,7 +183,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
         className="rounded-2xl mx-4 p-4 min-h-16 items-center justify-center self-stretch"
         style={[
           {
-            backgroundColor: '#FFFFFF',
+            backgroundColor: isDark ? '#FFFFFF' : '#000000',
             transform: [{ scale: scaleValue }],
           },
         ]}
@@ -203,8 +206,15 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
               ]}
             />
             <Text
-              className="text-fg-1 font-semibold font-inter"
-              style={[androidTextFix, { fontSize: 16, includeFontPadding: false }]}
+              style={[
+                androidTextFix,
+                {
+                  fontSize: 16,
+                  includeFontPadding: false,
+                  color: isDark ? '#1A1A1A' : '#FFFFFF',
+                  fontWeight: '600',
+                },
+              ]}
               allowFontScaling={false}
             >
               {t('send.holdToSend')}
@@ -219,7 +229,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                     cx={12}
                     cy={12}
                     r={CIRCLE_RADIUS}
-                    stroke="#FAFAFA"
+                    stroke={isDark ? '#FAFAFA' : '#666666'}
                     strokeWidth={4}
                     fill="none"
                   />
@@ -227,7 +237,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                     cx={12}
                     cy={12}
                     r={CIRCLE_RADIUS}
-                    stroke="#1A1A1A"
+                    stroke={isDark ? '#1A1A1A' : '#FFFFFF'}
                     strokeWidth={4}
                     fill="none"
                     strokeDasharray={CIRCLE_CIRCUMFERENCE}
@@ -244,12 +254,15 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
               )}
             </View>
             <Text
-              className="text-fg-1 font-semibold font-inter text-center flex-shrink-0"
               style={[
                 androidTextFix,
                 {
                   fontSize: 16,
                   includeFontPadding: false,
+                  color: isDark ? '#1A1A1A' : '#FFFFFF',
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  flexShrink: 0,
                 },
               ]}
               allowFontScaling={false}

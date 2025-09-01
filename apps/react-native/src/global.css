@@ -61,8 +61,8 @@
   /* Segment colors */
   --segment-border: 0 0 0;
 
-  /* Drawer background */
-  --drawer-bg: 18 18 18;
+  /* Drawer background - light mode */
+  --drawer-bg: 255 255 255;
 
   /* Accent colors */
   --accent-evm: 98 126 234;
@@ -101,6 +101,9 @@
   --surface-2: 255 255 255;
   --surface-3: 255 255 255;
   --surface-quaternary-alt: 0 10 8;
+  
+  /* Drawer background for dark mode */
+  --drawer-bg: 18 18 18;
 
   /* Input/search backgrounds - use white with opacity for dark mode */
   --input-bg: 255 255 255; /* will be used with 0.1 opacity */

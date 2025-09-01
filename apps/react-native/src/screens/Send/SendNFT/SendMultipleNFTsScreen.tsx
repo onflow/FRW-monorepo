@@ -115,7 +115,7 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
         {/* Main Content */}
-        <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'} pt-4`}>
+        <View className="flex-1 bg-surface-1 pt-4">
           <ScrollView className="flex-1 px-5 pt-2">
             {/* From Account Container */}
             <ContentContainer>

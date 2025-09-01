@@ -71,7 +71,7 @@ function NFTListItem({
                 fontSize: 14,
                 lineHeight: 20, // 1.4285714285714286em * 14px ≈ 20px
                 letterSpacing: -0.084, // -0.6% of 14px
-                color: 'rgba(255, 255, 255, 0.8)',
+                color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
               }}
             >
               {nft.name}
@@ -84,7 +84,7 @@ function NFTListItem({
                 fontSize: 14,
                 lineHeight: 20, // 1.4285714285714286em * 14px ≈ 20px
                 letterSpacing: -0.084, // -0.6% of 14px
-                color: 'rgba(255, 255, 255, 0.8)',
+                color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
               }}
             >
               {nft.collectionName}
@@ -101,7 +101,7 @@ function NFTListItem({
           }}
           activeOpacity={0.7}
         >
-          <TrashIcon width={24} height={24} color="rgba(255, 255, 255, 0.5)" />
+          <TrashIcon width={24} height={24} color={isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)"} />
         </TouchableOpacity>
       </View>
       {/* Divider */}
@@ -320,11 +320,17 @@ const BottomConfirmBar = forwardRef<BottomConfirmBarRef, BottomConfirmBarProps>(
             className="w-full flex-row justify-between items-center py-2.5"
             onPress={toggleExpanded}
           >
-            <Text className="text-fg-1 font-inter" style={{ fontSize: 14 }}>
+            <Text 
+              style={{ 
+                fontSize: 14,
+                fontFamily: 'Inter',
+                color: isDark ? '#FFFFFF' : '#000000' 
+              }}
+            >
               {t('nft.selectedCount', { count: selectedNFTs.length })}
             </Text>
             <Animated.View style={{ transform: [{ rotate }] }}>
-              <ChevronDown width={24} height={24} color="#fff" />
+              <ChevronDown width={24} height={24} color={isDark ? "#FFFFFF" : "#000000"} />
             </Animated.View>
           </TouchableOpacity>
 
@@ -379,7 +385,7 @@ const BottomConfirmBar = forwardRef<BottomConfirmBarRef, BottomConfirmBarProps>(
             <Text
               className="font-inter"
               style={{
-                color: '#252B34', // Changed from text-fg-4 to specific dark color from Figma
+                color: isDark ? '#000000' : '#FFFFFF', // White text on dark button in light mode
                 fontSize: 16,
                 fontWeight: '600',
                 lineHeight: 19.2, // 1.2em as per Figma

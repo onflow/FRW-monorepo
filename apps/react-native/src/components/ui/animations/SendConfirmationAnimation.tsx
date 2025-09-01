@@ -4,6 +4,8 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { type ViewStyle, Platform, View } from 'react-native';
 
+import { useTheme } from '@/contexts/ThemeContext';
+
 import sendConfirmationAnimationDynamic from '@/assets/animations/send-confirmation-noblur.json';
 import sendConfirmationAnimationStatic from '@/assets/animations/send-confirmation.json';
 import { injectImageWithFallbacks } from '@/utils/lottie-image-injection';
@@ -14,12 +16,14 @@ import { AnimationErrorBoundary } from './AnimationErrorBoundary';
  * SEND CONFIRMATION ANIMATION
  * ==========================
  *
- * Preload Strategy (Fixed for Android Token Flash):
- * 1. Preload & Prepare: Load and inject correct token image before showing animation
- * 2. Silent Preparation: Keep area empty while preparing to avoid any visual artifacts
- * 3. Ready Display: Show animation only when correct token image is loaded
+ * Theme-Aware Preload Strategy (Fixed for Android Token Flash):
+ * 1. Theme Selection: Choose light/dark animation based on current theme
+ * 2. Preload & Prepare: Load and inject correct token image before showing animation
+ * 3. Silent Preparation: Keep area empty while preparing to avoid any visual artifacts
+ * 4. Ready Display: Show animation only when correct token image is loaded
  *
  * This approach ensures:
+ * - Theme consistency - uses appropriate colors for light/dark mode
  * - No token flash - users never see wrong token image
  * - Correct token from start - animation shows intended token immediately
  * - Graceful fallback - works even if dynamic injection fails
@@ -35,6 +39,7 @@ interface SendConfirmationAnimationProps {
   selectedToken?: { symbol?: string; name?: string; logoURI?: string; identifier?: string };
   selectedNFTs?: NFTModel[];
   transactionType?: string;
+  onAnimationReady?: (isReady: boolean) => void;
 }
 
 export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps> = ({
@@ -46,6 +51,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   selectedToken,
   selectedNFTs,
   transactionType,
+  onAnimationReady,
 }) => {
   const animationRef = useRef<LottieView>(null);
   const [imageLoadError, setImageLoadError] = useState(false);
@@ -56,9 +62,12 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   }>({ method: null, success: false });
   const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(null);
   const [isAnimationReady, setIsAnimationReady] = useState(false);
+  
+  const { isDark } = useTheme();
 
   // Determine what to show based on transaction type and available data
-  const shouldShowFlowLogo = !selectedToken && !transactionType?.includes('nft');
+  const isFlowToken = selectedToken?.symbol === 'FLOW' || selectedToken?.name === 'FLOW' || !selectedToken?.logoURI;
+  const shouldShowFlowLogo = (!selectedToken && !transactionType?.includes('nft')) || isFlowToken;
 
   // Get image URI - for NFT transactions, prioritize collection square image
   const getImageUri = () => {
@@ -107,19 +116,21 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   // Preload and prepare animation to avoid token image flash
   useEffect(() => {
     const prepareAnimation = async () => {
+      // Use single animation source
+      const baseAnimation = sendConfirmationAnimationDynamic;
+      const staticAnimation = sendConfirmationAnimationStatic;
+      
       try {
         console.log('[SendConfirmationAnimation] Platform:', Platform.OS);
-        console.log('[SendConfirmationAnimation] Preparing animation with proper token');
+        console.log(`[SendConfirmationAnimation] Preparing animation`);
 
         setIsAnimationReady(false);
         setCurrentAnimationSource(null);
 
-        const baseAnimation = sendConfirmationAnimationDynamic;
-
         // Validate that the base animation data exists and is valid
         if (!baseAnimation || typeof baseAnimation !== 'object') {
           console.warn('[SendConfirmationAnimation] Invalid dynamic animation data, using static');
-          setCurrentAnimationSource(sendConfirmationAnimationStatic);
+          setCurrentAnimationSource(staticAnimation);
           setIsAnimationReady(true);
           return;
         }
@@ -128,6 +139,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
         if (imageUri && !imageLoadError && !shouldShowFlowLogo) {
           console.log('[SendConfirmationAnimation] Preloading and injecting image for:', imageUri);
 
+          // Use dynamic animation with token injection for both themes
           const result = await injectImageWithFallbacks(baseAnimation, 'image_0', imageUri);
 
           setInjectionResult({
@@ -150,10 +162,10 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
             setCurrentAnimationSource(baseAnimation);
           }
         } else {
-          // No image to inject, use dynamic animation or static for Flow logo
+          // No image to inject, use appropriate animation
           if (shouldShowFlowLogo) {
             console.log('[SendConfirmationAnimation] Using static animation for Flow logo');
-            setCurrentAnimationSource(sendConfirmationAnimationStatic);
+            setCurrentAnimationSource(staticAnimation);
           } else {
             console.log(
               '[SendConfirmationAnimation] Using dynamic animation without image injection'
@@ -169,19 +181,24 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
           '[SendConfirmationAnimation] Animation preparation failed, using static:',
           error
         );
-        setCurrentAnimationSource(sendConfirmationAnimationStatic);
+        setCurrentAnimationSource(staticAnimation);
         setIsAnimationReady(true);
       }
     };
 
     prepareAnimation();
-  }, [imageUri, imageLoadError, shouldShowFlowLogo]);
+  }, [imageUri, imageLoadError, shouldShowFlowLogo, isDark]);
 
   // Reset error state when imageUri changes
   useEffect(() => {
     setImageLoadError(false);
     setAnimationError(false);
   }, [imageUri]);
+
+  // Notify parent when animation ready state changes
+  useEffect(() => {
+    onAnimationReady?.(isAnimationReady);
+  }, [isAnimationReady, onAnimationReady]);
 
   return (
     <AnimationErrorBoundary>
@@ -232,38 +249,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
               );
             }}
           />
-        ) : (
-          // Simple fallback when animation fails to load
-          <View
-            style={{
-              width,
-              height,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                width: 60,
-                height: 60,
-                backgroundColor: '#10b981',
-                borderRadius: 30,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <View
-                style={{
-                  width: 24,
-                  height: 24,
-                  backgroundColor: 'white',
-                  borderRadius: 12,
-                }}
-              />
-            </View>
-          </View>
-        )}
+        ) : null}
 
         {/* No overlay needed - dynamic injection handles everything */}
       </View>

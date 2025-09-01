@@ -4,6 +4,7 @@ import { SafeAreaView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ConfirmDialogBg from '@/assets/icons/send/ConfirmDialogBg';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   AccountTransferDisplay,
   HoldToSendButton,
@@ -48,6 +49,7 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
   onClose,
   onConfirm,
 }) => {
+  const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const handleGoBack = () => {
     onGoBack?.();
@@ -67,7 +69,7 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
   const safeFormData = formData || { tokenAmount: '0', fiatAmount: '0' };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)' }}>
       <View className="flex-1">
         {/* Background SVG - positioned at the top and bottom layer */}
         <View className="absolute top-0 left-0 right-0 -z-10 aspect-square">
