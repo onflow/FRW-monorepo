@@ -2,7 +2,7 @@ import { configureApiEndpoints } from '@onflow/frw-api';
 import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
 import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
-import type { Cache } from './interfaces/cache/Cache';
+import type { Cache } from './interfaces/caching/Cache';
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/storage/Storage';
