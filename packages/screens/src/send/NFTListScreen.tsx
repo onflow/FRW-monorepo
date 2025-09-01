@@ -98,7 +98,7 @@ export function NFTListScreen({
   // Fetch NFTs when component mounts or collection changes
   useEffect(() => {
     fetchNFTs();
-  }, [fetchNFTs]);
+  }, []);
 
   useEffect(() => {
     const selectedNFTs = nfts.filter((nft) => selectedIds.includes(getNFTId(nft)));
