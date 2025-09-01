@@ -59,8 +59,6 @@ export interface Spec extends TurboModule {
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrency(): Currency;
   getTokenRate(token: string): string;
-  // Get theme from main Android app
-  getTheme(): 'light' | 'dark';
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
