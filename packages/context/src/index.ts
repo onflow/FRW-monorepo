@@ -26,6 +26,7 @@ export {
 
 // Query Client Manager
 export {
+  queryClient,
   queryClientManager,
   getGlobalQueryClient,
   setGlobalQueryClient,

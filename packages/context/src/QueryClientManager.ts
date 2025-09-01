@@ -208,7 +208,7 @@ class QueryClientManager {
       // Filter queries that should be persisted
       const persistableQueries = queries
         .filter((query) => {
-          const category = getDataCategory(query.queryKey);
+          const category = getDataCategory([...query.queryKey]);
           // Don't persist SESSION or FINANCIAL data
           return category !== DataCategory.SESSION && category !== DataCategory.FINANCIAL;
         })

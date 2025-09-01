@@ -76,19 +76,19 @@ export type QueryDomainValue = (typeof FlatQueryDomain)[keyof typeof FlatQueryDo
 // Helper function to get category from domain value
 export const getDomainCategory = (domain: string): DataCategory => {
   // Check each category group
-  if (Object.values(QueryDomain.FINANCIAL).includes(domain as QueryDomainValue)) {
+  if ((Object.values(QueryDomain.FINANCIAL) as string[]).includes(domain)) {
     return DataCategory.FINANCIAL;
   }
-  if (Object.values(QueryDomain.USER_SETTINGS).includes(domain as QueryDomainValue)) {
+  if ((Object.values(QueryDomain.USER_SETTINGS) as string[]).includes(domain)) {
     return DataCategory.USER_SETTINGS;
   }
-  if (Object.values(QueryDomain.STATIC).includes(domain as QueryDomainValue)) {
+  if ((Object.values(QueryDomain.STATIC) as string[]).includes(domain)) {
     return DataCategory.STATIC;
   }
-  if (Object.values(QueryDomain.PERSISTENT).includes(domain as QueryDomainValue)) {
+  if ((Object.values(QueryDomain.PERSISTENT) as string[]).includes(domain)) {
     return DataCategory.PERSISTENT;
   }
-  if (Object.values(QueryDomain.SESSION).includes(domain as QueryDomainValue)) {
+  if ((Object.values(QueryDomain.SESSION) as string[]).includes(domain)) {
     return DataCategory.SESSION;
   }
 

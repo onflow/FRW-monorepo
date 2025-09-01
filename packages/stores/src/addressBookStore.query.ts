@@ -359,8 +359,7 @@ const mockAddressBookService = {
   },
 };
 
-// Export query keys and functions for use in React Query hooks
-export { addressBookQueryKeys, addressBookQueries, addressBookMutations };
+// Query keys, queries, and mutations are already exported above
 
 // Example usage in a React component:
 /*

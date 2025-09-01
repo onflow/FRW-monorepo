@@ -40,7 +40,7 @@ interface TokenStoreState {
 }
 
 // Query Functions - Pure data fetching logic
-const tokenQueries = {
+export const tokenQueries = {
   // Fetch tokens for an address
   fetchTokens: async (address: string, network: string = 'mainnet'): Promise<TokenModel[]> => {
     if (!address) return [];
@@ -396,5 +396,4 @@ export const tokenHelpers = {
   },
 };
 
-// Export query keys and functions for use in React Query hooks
-export { tokenQueryKeys, tokenQueries };
+// Query keys and queries are already exported above
