@@ -1,10 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, useTokenStore } from '@onflow/frw-stores';
-import {
-  type NFTModel,
-  type CollectionModel,
-  type TokenModel,
-} from '@onflow/frw-types';
+import { type NFTModel, type CollectionModel, type TokenModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -25,7 +21,6 @@ import {
   Stack,
   // NFT-related components
   MultipleNFTsPreview,
-  SendSectionHeader,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
@@ -190,9 +185,17 @@ export const SendTokensScreen = (props) => {
     setIsConfirmationVisible(false);
   }, []);
 
-  const handleNFTRemove = useCallback((nftId: string) => {
-    setSelectedNFTs((prev) => prev.filter((nft) => nft.id !== nftId));
-  }, []);
+  const handleNFTRemove = useCallback(
+    (nftId: string) => {
+      const oldSelectedNFTs = selectedNFTs;
+      // Only remove if there's more than 1 NFT selected
+      if (oldSelectedNFTs.length > 1) {
+        const newSelectedNFTs = oldSelectedNFTs.filter((nft) => nft.id !== nftId);
+        setSelectedNFTs(newSelectedNFTs);
+      }
+    },
+    [selectedNFTs]
+  );
 
   const handleTransactionConfirm = useCallback(async () => {
     if (transactionType === 'tokens') {
@@ -312,16 +315,16 @@ export const SendTokensScreen = (props) => {
                   selectedToken={
                     selectedToken
                       ? {
-                        symbol: selectedToken.symbol,
-                        name: selectedToken.name,
-                        logo: selectedToken.logoURI,
-                        logoURI: selectedToken.logoURI,
-                        balance: selectedToken.balance?.toString(),
-                        price: selectedToken.priceInUSD
-                          ? parseFloat(selectedToken.priceInUSD)
-                          : undefined,
-                        isVerified: selectedToken.isVerified,
-                      }
+                          symbol: selectedToken.symbol,
+                          name: selectedToken.name,
+                          logo: selectedToken.logoURI,
+                          logoURI: selectedToken.logoURI,
+                          balance: selectedToken.balance?.toString(),
+                          price: selectedToken.priceInUSD
+                            ? parseFloat(selectedToken.priceInUSD)
+                            : undefined,
+                          isVerified: selectedToken.isVerified,
+                        }
                       : undefined
                   }
                   amount={amount}
@@ -341,14 +344,6 @@ export const SendTokensScreen = (props) => {
               selectedNFTs &&
               selectedNFTs.length > 0 && (
                 <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
-                  {/* Section Header */}
-                  <SendSectionHeader
-                    title={`Send NFTs (${selectedNFTs.length})`}
-                    onEditPress={() => { }}
-                    showEditButton={showEditButtons}
-                    editButtonText="Edit"
-                  />
-
                   {/* NFTs Preview */}
                   <MultipleNFTsPreview
                     nfts={selectedNFTs.map((nft) => ({
@@ -444,6 +439,14 @@ export const SendTokensScreen = (props) => {
           visible={isConfirmationVisible}
           transactionType={transactionType}
           selectedToken={selectedToken}
+          selectedNFTs={selectedNFTs?.map((nft) => ({
+            id: nft.id || '',
+            name: nft.name || '',
+            image: nft.thumbnail || '',
+            collection: nft.collectionName || '',
+            collectionContractName: nft.collectionContractName || '',
+            description: nft.description || '',
+          }))}
           fromAccount={fromAccount}
           toAccount={toAccount}
           formData={formData}

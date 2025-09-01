@@ -3,6 +3,8 @@ import { type WalletAccount, type TransactionType, type TokenModel } from '@onfl
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
 
+import { MultipleNFTsPreview } from './MultipleNFTsPreview';
+import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
@@ -18,6 +20,7 @@ export interface TransactionConfirmationModalProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
+  selectedNFTs?: NFTSendData[];
   fromAccount?: WalletAccount | null;
   toAccount?: WalletAccount | null;
   formData: TransactionFormData;
@@ -116,6 +119,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
   visible,
   transactionType,
   selectedToken,
+  selectedNFTs,
   fromAccount,
   toAccount,
   formData,
@@ -306,67 +310,83 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
           </XStack>
 
           {/* Transaction Details Card */}
-          <YStack bg="$light10" borderRadius="$4" padding="$4" gap="$3" width="100%" height={141}>
-            {/* Transaction Type */}
-            <Text fontSize="$2" color="$light80" fontFamily="Inter" fontWeight="400">
-              Send Tokens
-            </Text>
-
-            {/* Token Amount */}
-            <XStack items="center" justify="space-between" width="100%">
-              <View
-                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}
-              >
-                {selectedToken?.logoURI ? (
-                  <Avatar
-                    src={selectedToken.logoURI}
-                    fallback={selectedToken.symbol?.charAt(0) || 'A'}
-                    size={35.2}
-                  />
-                ) : (
-                  <FlowLogo size={35.2} />
-                )}
-                <Text fontSize={28} fontWeight="500" color="$white" fontFamily="Inter">
-                  {formData.tokenAmount}
-                </Text>
-              </View>
-              <View
-                bg="$light10"
-                borderRadius="$10"
-                paddingHorizontal="$2.5"
-                paddingVertical="$1"
-                flexDirection="row"
-                items="center"
-                gap="$1"
-                height={35}
-                width={77}
-              >
-                <Text
-                  fontSize="$2"
-                  fontWeight="600"
-                  color="$white"
-                  fontFamily="Inter"
-                  letterSpacing={-0.072}
-                >
-                  {selectedToken?.symbol || 'FLOW'}
-                </Text>
-                <ChevronDown size={10} color="$white" />
-              </View>
-            </XStack>
-
-            {/* Fiat Amount */}
-            <XStack justify="flex-start" width="100%">
-              <Text
-                fontSize="$3"
-                color="$light80"
-                fontFamily="Inter"
-                fontWeight="400"
-                textAlign="left"
-              >
-                ${formData.fiatAmount || '0.69'}
+          {transactionType !== 'tokens' && selectedNFTs ? (
+            <YStack bg="$light10" borderRadius="$4" padding="$4" gap="$3" width="100%" height={141}>
+              {/* NFT Transaction Details */}
+              <MultipleNFTsPreview
+                nfts={selectedNFTs}
+                sectionTitle={`Send ${selectedNFTs.length} NFT${selectedNFTs.length !== 1 ? 's' : ''}`}
+                maxVisibleThumbnails={3}
+                expandable={false}
+                thumbnailSize={77.33}
+                backgroundColor="transparent"
+                borderRadius={14.4}
+                contentPadding={0}
+              />
+            </YStack>
+          ) : (
+            <YStack bg="$light10" borderRadius="$4" padding="$4" gap="$3" width="100%" height={141}>
+              {/* Token Transaction Details */}
+              <Text fontSize="$2" color="$light80" fontFamily="Inter" fontWeight="400">
+                Send Tokens
               </Text>
-            </XStack>
-          </YStack>
+
+              {/* Token Amount */}
+              <XStack items="center" justify="space-between" width="100%">
+                <View
+                  style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}
+                >
+                  {selectedToken?.logoURI ? (
+                    <Avatar
+                      src={selectedToken.logoURI}
+                      fallback={selectedToken.symbol?.charAt(0) || 'A'}
+                      size={35.2}
+                    />
+                  ) : (
+                    <FlowLogo size={35.2} />
+                  )}
+                  <Text fontSize={28} fontWeight="500" color="$white" fontFamily="Inter">
+                    {formData.tokenAmount}
+                  </Text>
+                </View>
+                <View
+                  bg="$light10"
+                  borderRadius="$10"
+                  paddingHorizontal="$2.5"
+                  paddingVertical="$1"
+                  flexDirection="row"
+                  items="center"
+                  gap="$1"
+                  height={35}
+                  width={77}
+                >
+                  <Text
+                    fontSize="$2"
+                    fontWeight="600"
+                    color="$white"
+                    fontFamily="Inter"
+                    letterSpacing={-0.072}
+                  >
+                    {selectedToken?.symbol || 'FLOW'}
+                  </Text>
+                  <ChevronDown size={10} color="$white" />
+                </View>
+              </XStack>
+
+              {/* Fiat Amount */}
+              <XStack justify="flex-start" width="100%">
+                <Text
+                  fontSize="$3"
+                  color="$light80"
+                  fontFamily="Inter"
+                  fontWeight="400"
+                  textAlign="left"
+                >
+                  ${formData.fiatAmount || '0.69'}
+                </Text>
+              </XStack>
+            </YStack>
+          )}
         </YStack>
 
         {/* Confirm Button - fixed at bottom */}
