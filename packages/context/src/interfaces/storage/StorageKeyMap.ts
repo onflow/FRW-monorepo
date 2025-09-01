@@ -47,28 +47,14 @@ export interface CacheData {
   [key: string]: unknown;
 }
 
-/**
- * Query cache data structure for TanStack Query persistence
- */
-export interface QueryCacheEntry {
-  data: unknown;
-  dataUpdatedAt: number;
-  error: unknown;
-  errorUpdatedAt: number;
-  fetchFailureCount: number;
-  fetchFailureReason: unknown;
-  fetchMeta: unknown;
-  isInvalidated: boolean;
-  state: 'loading' | 'error' | 'success';
-}
-
-export interface QueryCacheData {
-  [queryKey: string]: QueryCacheEntry;
-}
+// QueryCacheData types removed - TanStack Query now uses dynamic keys via storage.getRaw/setRaw
 
 /**
  * Storage key definitions with their corresponding data types
  * All data is automatically wrapped with StorageData<T> for versioning
+ *
+ * Note: TanStack Query cache now uses dynamic keys via storage.getRaw/setRaw
+ * with keys like 'tanquery:${queryHash}' for optimal performance
  */
 export interface StorageKeyMap {
   tokens: StorageData<TokenModel[]>;
@@ -78,7 +64,4 @@ export interface StorageKeyMap {
   auth: StorageData<AuthData>;
   cache: StorageData<CacheData>;
   recentRecipients: StorageData<RecentRecipient[]>;
-
-  // TanStack Query cache persistence - namespaced to avoid conflicts
-  'tanstack-query-cache': StorageData<QueryCacheData>;
 }

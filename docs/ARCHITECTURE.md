@@ -445,7 +445,7 @@ const App = () => {
 
 - **React Navigation v7**: Native stack navigation
 - **NativeWind**: Tailwind CSS for React Native
-- **MMKV Storage**: Persistent state management
+- **AsyncStorage**: Dual storage system (Storage + Cache)
 - **Native Bridge**: iOS/Android platform integration
 - **Theme System**: CSS variables with light/dark mode
 
@@ -476,8 +476,7 @@ const PopupApp = () => (
 - **Chrome Manifest V3**: Service worker architecture
 - **Background Scripts**: Secure blockchain/key management
 - **Content Scripts**: dApp provider injection
-- **Chrome Storage API**: Extension-specific persistence
-- **Stale-while-revalidate Cache**: Custom caching system
+- **Chrome Storage API**: Dual storage system (Storage + Cache)
 
 ---
 
@@ -496,7 +495,8 @@ export class ServiceContext {
 
   get cadence(): CadenceService;
   get bridge(): BridgeSpec;
-  get storage(): Storage;
+  get storage(): Storage; // Business data with type safety and versioning
+  get cache(): Cache; // High-performance query cache with TTL
 }
 
 // Convenience functions

@@ -2,6 +2,7 @@ import { configureApiEndpoints } from '@onflow/frw-api';
 import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
 import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
+import type { Cache } from './interfaces/cache/Cache';
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/storage/Storage';
@@ -15,6 +16,7 @@ export class ServiceContext {
   private _bridge: PlatformSpec | null = null;
   private _cadenceService: CadenceService | null = null;
   private _storage: Storage | null = null;
+  private _cache: Cache | null = null;
   private _navigation: Navigation | null = null;
   private _logger: Logger | null = null;
 
@@ -50,8 +52,9 @@ export class ServiceContext {
     }
     ServiceContext.instance._bridge = bridge;
 
-    // Store storage and navigation instances from bridge
+    // Store storage, cache, and navigation instances from bridge
     ServiceContext.instance._storage = bridge.storage();
+    ServiceContext.instance._cache = bridge.cache();
     ServiceContext.instance._navigation = bridge.navigation();
 
     // Configure API endpoints dynamically from bridge
@@ -135,6 +138,16 @@ export class ServiceContext {
   }
 
   /**
+   * Get the cache instance
+   */
+  get cache(): Cache {
+    if (!this._cache) {
+      throw new Error('Cache not available in ServiceContext');
+    }
+    return this._cache;
+  }
+
+  /**
    * Get the navigation instance
    */
   get navigation(): Navigation {
@@ -184,6 +197,12 @@ export const bridge = new Proxy({} as PlatformSpec, {
 export const storage = new Proxy({} as Storage, {
   get(target, prop): unknown {
     return ServiceContext.current().storage[prop as keyof Storage];
+  },
+});
+
+export const cache = new Proxy({} as Cache, {
+  get(target, prop): unknown {
+    return ServiceContext.current().cache[prop as keyof Cache];
   },
 });
 

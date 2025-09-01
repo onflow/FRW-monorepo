@@ -6,6 +6,7 @@ import type {
   WalletAccountsResponse,
 } from '@onflow/frw-types';
 
+import type { Cache } from './cache/Cache';
 import type { Navigation } from './Navigation';
 import type { Storage } from './storage/Storage';
 
@@ -33,8 +34,9 @@ export interface PlatformSpec {
   getGoApiEndpoint(): string;
   getInstabugToken(): string;
 
-  // Storage and navigation access
+  // Storage, cache, and navigation access
   storage(): Storage;
+  cache(): Cache;
   navigation(): Navigation;
 
   // Cryptographic operations

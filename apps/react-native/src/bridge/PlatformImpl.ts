@@ -1,4 +1,4 @@
-import { type PlatformSpec, type Storage } from '@onflow/frw-context';
+import { type PlatformSpec, type Storage, type Cache, type Navigation } from '@onflow/frw-context';
 import type {
   Currency,
   RecentContactsResponse,
@@ -10,8 +10,8 @@ import { isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
 
+import { storage, cache } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
@@ -135,8 +135,12 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  getStorage(): Storage {
+  storage(): Storage {
     return storage;
+  }
+
+  cache(): Cache {
+    return cache;
   }
 
   sign(hexData: string): Promise<string> {
@@ -213,11 +217,10 @@ class PlatformImpl implements PlatformSpec {
     });
   }
 
-  getNavigation() {
+  navigation(): Navigation {
     // Return the navigation implementation - will be set up separately
     return reactNativeNavigation;
   }
 }
 
-export const storage = new MMKV();
 export const platform = new PlatformImpl();

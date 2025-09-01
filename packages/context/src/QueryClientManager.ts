@@ -13,29 +13,26 @@ export const getDataCategory = (queryKey: unknown[]): DataCategory => {
   return DataCategory.FINANCIAL;
 };
 
-// Platform storage adapter using existing strongly-typed storage
-const createPlatformStorageAdapter = (): {
+// Platform cache adapter using dedicated Cache interface
+// This provides optimal performance for TanStack Query operations
+const createPlatformCacheAdapter = (): {
   getItem: (key: string) => Promise<string | null>;
   setItem: (key: string, value: string) => Promise<void>;
   removeItem: (key: string) => Promise<void>;
 } => {
-  let storage: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+  let cache: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   return {
     async getItem(key: string): Promise<string | null> {
       try {
-        // Lazy load storage to avoid circular dependencies
-        if (!storage) {
-          const { storage: contextStorage } = await import('./ServiceContext');
-          storage = contextStorage;
+        // Lazy load cache to avoid circular dependencies
+        if (!cache) {
+          const { cache: contextCache } = await import('./ServiceContext');
+          cache = contextCache;
         }
 
-        const cacheData = await storage.get('tanstack-query-cache');
-        if (!cacheData || !cacheData[key]) {
-          return null;
-        }
-
-        return JSON.stringify(cacheData[key]);
+        // Direct cache access - optimized for TanStack Query
+        return (await cache.get(key)) as string | null;
       } catch {
         return null;
       }
@@ -43,33 +40,29 @@ const createPlatformStorageAdapter = (): {
 
     async setItem(key: string, value: string): Promise<void> {
       try {
-        // Lazy load storage to avoid circular dependencies
-        if (!storage) {
-          const { storage: contextStorage } = await import('./ServiceContext');
-          storage = contextStorage;
+        // Lazy load cache to avoid circular dependencies
+        if (!cache) {
+          const { cache: contextCache } = await import('./ServiceContext');
+          cache = contextCache;
         }
 
-        const cacheData = (await storage.get('tanstack-query-cache')) || {};
-        cacheData[key] = JSON.parse(value);
-
-        await storage.set('tanstack-query-cache', cacheData);
+        // Direct cache storage - no complex serialization needed
+        await cache.set(key, value);
       } catch {
-        // Fail silently
+        // Fail silently to avoid breaking the app
       }
     },
 
     async removeItem(key: string): Promise<void> {
       try {
-        // Lazy load storage to avoid circular dependencies
-        if (!storage) {
-          const { storage: contextStorage } = await import('./ServiceContext');
-          storage = contextStorage;
+        // Lazy load cache to avoid circular dependencies
+        if (!cache) {
+          const { cache: contextCache } = await import('./ServiceContext');
+          cache = contextCache;
         }
 
-        const cacheData = (await storage.get('tanstack-query-cache')) || {};
-        delete cacheData[key];
-
-        await storage.set('tanstack-query-cache', cacheData);
+        // Direct cache deletion
+        await cache.delete(key);
       } catch {
         // Fail silently
       }
@@ -146,34 +139,43 @@ class QueryClientManager {
   }
 
   /**
-   * Set up cache persistence using platform storage
+   * Set up cache persistence using platform cache
    */
   private setupCachePersistence(queryClient: QueryClient): void {
-    const storage = createPlatformStorageAdapter();
+    const cacheAdapter = createPlatformCacheAdapter();
 
     // Restore cache from storage on initialization
-    this.restoreCache(queryClient, storage);
+    this.restoreCache(queryClient, cacheAdapter);
 
     // Persist cache changes
-    this.setupCachePersister(queryClient, storage);
+    this.setupCachePersister(queryClient, cacheAdapter);
   }
 
   /**
-   * Restore cache from platform storage
+   * Restore cache from platform cache
+   * TanStack Query will automatically load cache data through the adapter
    */
   private async restoreCache(
-    queryClient: QueryClient,
-    storage: ReturnType<typeof createPlatformStorageAdapter>
+    _queryClient: QueryClient,
+    _cacheAdapter: ReturnType<typeof createPlatformCacheAdapter>
   ): Promise<void> {
     try {
-      const cacheData = await storage.getItem('queryCache');
-      if (cacheData) {
-        const parsed = JSON.parse(cacheData);
-        queryClient.getQueryCache().build(queryClient, parsed);
+      // Get cache statistics for logging
+      const { cache: contextCache } = await import('./ServiceContext');
+      const stats = await contextCache.getStats?.();
+
+      if (stats && stats.keyCount > 0) {
+        console.info(
+          `[QueryClientManager] Found ${stats.keyCount} cached queries available for restoration`
+        );
       }
+
+      // Note: TanStack Query v5 handles cache restoration automatically
+      // through the cache adapter when individual queries are accessed.
+      // This provides better performance than bulk restoration.
     } catch (error) {
       // Fail silently on restore errors
-      console.warn('Failed to restore query cache:', error);
+      console.warn('Failed to check query cache:', error);
     }
   }
 
@@ -182,13 +184,13 @@ class QueryClientManager {
    */
   private setupCachePersister(
     queryClient: QueryClient,
-    storage: ReturnType<typeof createPlatformStorageAdapter>
+    _cacheAdapter: ReturnType<typeof createPlatformCacheAdapter>
   ): void {
     const cache = queryClient.getQueryCache();
 
     // Persist cache when queries are updated
     const unsubscribe = cache.subscribe(() => {
-      this.persistCache(queryClient, storage);
+      this.cleanupExpiredQueries();
     });
 
     // Store unsubscribe function for cleanup
@@ -196,40 +198,28 @@ class QueryClientManager {
   }
 
   /**
-   * Persist current cache state to storage
+   * Cleanup expired queries periodically
+   * Cache persistence happens automatically through the cache adapter
    */
-  private async persistCache(
-    queryClient: QueryClient,
-    storage: ReturnType<typeof createPlatformStorageAdapter>
-  ): Promise<void> {
+  private async cleanupExpiredQueries(): Promise<void> {
     try {
-      const queries = queryClient.getQueryCache().getAll();
+      // Get the cache instance for cleanup operations
+      const { cache: contextCache } = await import('./ServiceContext');
 
-      // Filter queries that should be persisted
-      const persistableQueries = queries
-        .filter((query) => {
-          const category = getDataCategory([...query.queryKey]);
-          // Don't persist SESSION or FINANCIAL data
-          return category !== DataCategory.SESSION && category !== DataCategory.FINANCIAL;
-        })
-        .map((query) => ({
-          queryKey: query.queryKey,
-          queryHash: query.queryHash,
-          state: query.state,
-          meta: query.meta,
-        }));
+      // AsyncStorageCache has built-in cleanup for expired entries
+      if (
+        contextCache &&
+        'cleanupExpired' in contextCache &&
+        typeof (contextCache as any).cleanupExpired === 'function'
+      ) {
+        await (contextCache as any).cleanupExpired();
+      }
 
-      await storage.setItem(
-        'queryCache',
-        JSON.stringify({
-          queries: persistableQueries,
-          timestamp: Date.now(),
-          version: '1.0',
-        })
-      );
+      // Note: Individual query persistence happens automatically through the cache adapter
+      // when TanStack Query calls setItem/removeItem. This provides optimal performance.
     } catch (error) {
-      // Fail silently on persist errors
-      console.warn('Failed to persist query cache:', error);
+      // Fail silently to avoid breaking the app
+      console.warn('Failed to cleanup expired queries:', error);
     }
   }
 

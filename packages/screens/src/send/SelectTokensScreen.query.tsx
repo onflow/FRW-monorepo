@@ -300,23 +300,3 @@ export function SelectTokensScreen(): React.ReactElement {
     </BackgroundWrapper>
   );
 }
-
-// 🎉 Code Comparison:
-// Original SelectTokensScreen.tsx: 415 lines with complex manual state management
-// New SelectTokensScreen.query.tsx: 250 lines with TanStack Query
-//
-// Eliminated:
-// - ❌ Manual loading states (isLoading, setIsLoading, isAccountLoading, etc.)
-// - ❌ Manual error handling (error, setError, nftError, setNftError)
-// - ❌ Manual cache management (fetchTokens, fetchNFTCollections logic)
-// - ❌ Manual refresh logic (refreshTokensInBackground, polling)
-// - ❌ hasInitialized ref and complex effect dependencies
-//
-// Gained:
-// - ✅ Automatic background refresh
-// - ✅ Automatic retry with exponential backoff
-// - ✅ Request deduplication
-// - ✅ Stale-while-revalidate for better UX
-// - ✅ Automatic refetch on window focus/network reconnect
-// - ✅ Built-in loading and error states
-// - ✅ Intelligent caching (financial data always fresh, NFTs cached 5min)

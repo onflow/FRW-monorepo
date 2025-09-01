@@ -1,4 +1,3 @@
-// Import the new TanStack Query version
 import { SelectTokensScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {

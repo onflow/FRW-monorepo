@@ -1,6 +1,7 @@
 // Core interfaces
 export type { PlatformSpec } from './interfaces/PlatformSpec';
 export type { Storage } from './interfaces/storage/Storage';
+export type { Cache } from './interfaces/cache/Cache';
 export type { Navigation } from './interfaces/Navigation';
 export type {
   StorageKeyMap,
@@ -11,6 +12,7 @@ export type {
 // Service Context
 export {
   bridge,
+  cache,
   cadence,
   context,
   getBridge,

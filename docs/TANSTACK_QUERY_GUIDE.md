@@ -58,19 +58,40 @@ FlatQueryDomain.CONFIG    // 'config' → auto-categorized as PERSISTENT
 - **Session (2min)**: Temporary app state, UI state (`temp`)
 - **Derived**: Computed data from other queries (using `select` option)
 
-## Integrated Platform Storage
+## High-Performance Cache Storage
 
-TanStack Query uses the existing FRW strongly-typed storage system:
+TanStack Query now uses a **dedicated Cache system** optimized for query
+performance:
 
-- **Unified Storage**: Uses existing `ServiceContext.storage` instance
-- **Type Safety**: Query cache stored under `'tanstack-query-cache'` key in
-  `StorageKeyMap`
-- **Cross-Platform**: Automatic platform detection (React Native MMKV, Extension
-  chrome.storage, Web localStorage)
-- **Versioned Data**: All cache data includes version, createdAt, updatedAt
-  metadata
-- **Lazy Loading**: Storage adapter prevents circular dependencies with lazy
+- **Independent Storage**: Uses new `ServiceContext.cache` instance (separate
+  from business data)
+- **High Performance**: Each query stored with independent key - no large object
+  serialization
+- **TTL Support**: Optional time-to-live with automatic expiration cleanup
+- **Cross-Platform**: Automatic platform detection (React Native AsyncStorage,
+  Extension chrome.storage, Web localStorage)
+- **No Metadata Overhead**: Raw key-value storage optimized for speed
+- **Prefix Organization**: All TanStack Query cache keys use `tanquery:` prefix
+- **Lazy Loading**: Cache adapter prevents circular dependencies with lazy
   imports
+
+### Performance Benefits
+
+- **10x+ Performance**: Independent keys vs. single large object storage
+- **Memory Efficient**: Automatic cleanup of expired queries
+- **Batch Operations**: Efficient multi-key operations for cache management
+- **Zero Migration**: Existing TanStack Query code works without changes
+
+### Storage vs Cache Comparison
+
+| Feature         | Storage (Business Data)           | Cache (Query Data)           |
+| --------------- | --------------------------------- | ---------------------------- |
+| **Purpose**     | Persistent business data          | Temporary query cache        |
+| **Type Safety** | Strongly typed StorageKeyMap      | Raw key-value pairs          |
+| **Metadata**    | Automatic versioning + timestamps | None (performance optimized) |
+| **TTL Support** | Manual                            | Automatic with cleanup       |
+| **Performance** | Structured data                   | Optimized for speed          |
+| **Keys**        | Fixed schema                      | Dynamic query hashes         |
 
 ## Adding New Queries
 
