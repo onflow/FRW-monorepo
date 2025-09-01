@@ -21,7 +21,6 @@ import {
   Stack,
   // NFT-related components
   MultipleNFTsPreview,
-  SendSectionHeader,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
@@ -186,9 +185,17 @@ export const SendTokensScreen = (props) => {
     setIsConfirmationVisible(false);
   }, []);
 
-  const handleNFTRemove = useCallback((nftId: string) => {
-    setSelectedNFTs((prev) => prev.filter((nft) => nft.id !== nftId));
-  }, []);
+  const handleNFTRemove = useCallback(
+    (nftId: string) => {
+      const oldSelectedNFTs = selectedNFTs;
+      // Only remove if there's more than 1 NFT selected
+      if (oldSelectedNFTs.length > 1) {
+        const newSelectedNFTs = oldSelectedNFTs.filter((nft) => nft.id !== nftId);
+        setSelectedNFTs(newSelectedNFTs);
+      }
+    },
+    [selectedNFTs]
+  );
 
   const handleTransactionConfirm = useCallback(async () => {
     if (transactionType === 'tokens') {
@@ -337,14 +344,6 @@ export const SendTokensScreen = (props) => {
               selectedNFTs &&
               selectedNFTs.length > 0 && (
                 <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
-                  {/* Section Header */}
-                  <SendSectionHeader
-                    title={`Send NFTs (${selectedNFTs.length})`}
-                    onEditPress={() => {}}
-                    showEditButton={showEditButtons}
-                    editButtonText="Edit"
-                  />
-
                   {/* NFTs Preview */}
                   <MultipleNFTsPreview
                     nfts={selectedNFTs.map((nft) => ({

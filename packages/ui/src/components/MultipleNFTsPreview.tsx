@@ -107,9 +107,6 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove }) => {
               width="100%"
               height="100%"
               onError={() => setImageError(true)}
-              style={{
-                objectFit: 'cover',
-              }}
             />
           </View>
         ) : (
@@ -304,7 +301,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         </XStack>
 
         {/* Expand Button */}
-        {expandable && totalCount > maxVisibleThumbnails && (
+        {expandable && (
           <XStack
             width={21.6}
             height={21.6}
