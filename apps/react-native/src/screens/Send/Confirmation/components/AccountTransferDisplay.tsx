@@ -77,44 +77,12 @@ export const AccountTransferDisplay: React.FC<AccountTransferDisplayProps> = ({
           type={(fromAccount as any).type}
         />
 
-        {/* Progress Dots (Center) */}
+        {/* Spacer (Center) */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 14,
-            justifyContent: 'center',
             flex: 1,
           }}
-        >
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: 'rgba(0, 239, 139, 0.1)',
-            }}
-          />
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: 'rgba(0, 239, 139, 0.2)',
-            }}
-          />
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: 'rgba(0, 239, 139, 0.3)',
-            }}
-          />
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#009154' }} />
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#00EF8B' }} />
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#00EF8B' }} />
-        </View>
+        />
 
         {/* To Account (Right) */}
         <AccountCard
