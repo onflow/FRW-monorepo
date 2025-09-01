@@ -33,4 +33,6 @@ export {
   getGlobalQueryClient,
   setGlobalQueryClient,
   resetGlobalQueryClient,
+  loadDebugTools,
+  useSyncQueriesExternal,
 } from './QueryClientManager';

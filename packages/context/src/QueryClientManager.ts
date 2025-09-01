@@ -1,6 +1,8 @@
 import { DataCategory, getDomainCategory, CACHE_TIMES, GC_TIMES } from '@onflow/frw-types';
 import { QueryClient } from '@tanstack/query-core';
 
+import { logger } from './ServiceContext';
+
 // Utility function to determine data category from query key
 export const getDataCategory = (queryKey: unknown[]): DataCategory => {
   const [domain] = queryKey;
@@ -165,7 +167,7 @@ class QueryClientManager {
       const stats = await contextCache.getStats?.();
 
       if (stats && stats.keyCount > 0) {
-        console.info(
+        logger.info(
           `[QueryClientManager] Found ${stats.keyCount} cached queries available for restoration`
         );
       }
@@ -175,7 +177,7 @@ class QueryClientManager {
       // This provides better performance than bulk restoration.
     } catch (error) {
       // Fail silently on restore errors
-      console.warn('Failed to check query cache:', error);
+      logger.warn('Failed to check query cache:', error);
     }
   }
 
@@ -219,7 +221,7 @@ class QueryClientManager {
       // when TanStack Query calls setItem/removeItem. This provides optimal performance.
     } catch (error) {
       // Fail silently to avoid breaking the app
-      console.warn('Failed to cleanup expired queries:', error);
+      logger.warn('Failed to cleanup expired queries:', error);
     }
   }
 
