@@ -35,7 +35,8 @@
     "@onflow/frw-api": "workspace:*",
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-types": "workspace:*",
-    "@onflow/frw-utils": "workspace:*"
+    "@onflow/frw-utils": "workspace:*",
+    "@tanstack/query-core": "^5.85.6"
   },
   "devDependencies": {
     "@types/node": "^22.11.0",

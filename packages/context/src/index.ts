@@ -23,3 +23,11 @@ export {
   ServiceContext,
   storage,
 } from './ServiceContext';
+
+// Query Client Manager
+export {
+  queryClientManager,
+  getGlobalQueryClient,
+  setGlobalQueryClient,
+  resetGlobalQueryClient,
+} from './QueryClientManager';

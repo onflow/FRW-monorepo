@@ -607,6 +607,9 @@ importers:
       '@tamagui/config':
         specifier: ^1.132.20
         version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      '@tanstack/react-query':
+        specifier: ^5.85.6
+        version: 5.85.6(react@19.0.0)
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
@@ -823,6 +826,9 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
+      '@tanstack/query-core':
+        specifier: ^5.85.6
+        version: 5.85.6
     devDependencies:
       '@types/node':
         specifier: ^22.11.0
@@ -879,6 +885,9 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
+      '@tanstack/react-query':
+        specifier: ^5.85.6
+        version: 5.85.6(react@19.0.0)
       i18next:
         specifier: ^24.1.0
         version: 24.2.3(typescript@5.7.2)
@@ -968,6 +977,9 @@ importers:
       '@onflow/frw-workflow':
         specifier: workspace:*
         version: link:../workflow
+      '@tanstack/query-core':
+        specifier: ^5.85.6
+        version: 5.85.6
       zustand:
         specifier: ^5.0.6
         version: 5.0.8(@types/react@19.1.11)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.5.0(react@19.0.0))
@@ -4355,6 +4367,14 @@ packages:
 
   '@tamagui/z-index-stack@1.132.21':
     resolution: {integrity: sha512-2iIeXUKfSHtuuwkNjG82DUG/1OZtFRbPGy+YZRPmv/NXx3uCOwfeUB6VAoLKT2+LNQ8CKluC1H5G8OaFTmA2jw==}
+    peerDependencies:
+      react: 19.0.0
+
+  '@tanstack/query-core@5.85.6':
+    resolution: {integrity: sha512-hCj0TktzdCv2bCepIdfwqVwUVWb+GSHm1Jnn8w+40lfhQ3m7lCO7ADRUJy+2unxQ/nzjh2ipC6ye69NDW3l73g==}
+
+  '@tanstack/react-query@5.85.6':
+    resolution: {integrity: sha512-VUAag4ERjh+qlmg0wNivQIVCZUrYndqYu3/wPCVZd4r0E+1IqotbeyGTc+ICroL/PqbpSaGZg02zSWYfcvxbdA==}
     peerDependencies:
       react: 19.0.0
 
@@ -16353,6 +16373,13 @@ snapshots:
 
   '@tamagui/z-index-stack@1.132.21(react@19.0.0)':
     dependencies:
+      react: 19.0.0
+
+  '@tanstack/query-core@5.85.6': {}
+
+  '@tanstack/react-query@5.85.6(react@19.0.0)':
+    dependencies:
+      '@tanstack/query-core': 5.85.6
       react: 19.0.0
 
   '@testing-library/jest-dom@6.8.0':

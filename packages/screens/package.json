@@ -23,6 +23,7 @@
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
+    "@tanstack/react-query": "^5.85.6",
     "i18next": "^24.1.0",
     "react": "^19.1.0",
     "react-i18next": "^15.6.1"

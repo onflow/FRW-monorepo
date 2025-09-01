@@ -1,3 +1,4 @@
+// Import the new TanStack Query version
 import { SelectTokensScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -132,7 +133,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setSelectedNFTs,
   ]);
 
-  const customLightTheme = {
+  const _customLightTheme = {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,

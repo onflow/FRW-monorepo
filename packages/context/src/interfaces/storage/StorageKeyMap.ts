@@ -48,6 +48,25 @@ export interface CacheData {
 }
 
 /**
+ * Query cache data structure for TanStack Query persistence
+ */
+export interface QueryCacheEntry {
+  data: unknown;
+  dataUpdatedAt: number;
+  error: unknown;
+  errorUpdatedAt: number;
+  fetchFailureCount: number;
+  fetchFailureReason: unknown;
+  fetchMeta: unknown;
+  isInvalidated: boolean;
+  state: 'loading' | 'error' | 'success';
+}
+
+export interface QueryCacheData {
+  [queryKey: string]: QueryCacheEntry;
+}
+
+/**
  * Storage key definitions with their corresponding data types
  * All data is automatically wrapped with StorageData<T> for versioning
  */
@@ -59,4 +78,7 @@ export interface StorageKeyMap {
   auth: StorageData<AuthData>;
   cache: StorageData<CacheData>;
   recentRecipients: StorageData<RecentRecipient[]>;
+
+  // TanStack Query cache persistence - namespaced to avoid conflicts
+  'tanstack-query-cache': StorageData<QueryCacheData>;
 }
