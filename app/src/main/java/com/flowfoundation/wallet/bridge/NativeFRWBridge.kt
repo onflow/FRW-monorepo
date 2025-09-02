@@ -321,7 +321,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun getSignKeyIndex(): Double {
         return try {
-            val address = WalletManager.wallet()?.walletAddress()
+            // Use the same logic as getWalletAccounts() for consistency
+            var address = WalletManager.wallet()?.walletAddress()
+            if (address.isNullOrEmpty()) {
+                // Hardware-backed key fallback: use the selected address
+                address = WalletManager.selectedWalletAddress()
+            }
+            
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
 
             if (address.isNullOrEmpty() || cryptoProvider == null) {
@@ -338,6 +344,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             if (keyId == -1) 0.0 else keyId.toDouble()
         } catch (e: Exception) {
             // Return 0 as default key index on any error
+            android.util.Log.w(TAG, "getSignKeyIndex() error: ${e.message}")
             0.0
         }
     }

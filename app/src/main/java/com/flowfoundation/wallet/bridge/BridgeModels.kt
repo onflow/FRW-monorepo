@@ -98,13 +98,13 @@ class RNBridge {
 
     data class SendToConfig(
         @SerializedName("selectedToken")
-        @JvmField val selectedToken: TokenModel?,
+        val selectedToken: TokenModel?,
         @SerializedName("fromAccount")
-        @JvmField val fromAccount: WalletAccount?,
+        val fromAccount: WalletAccount?,
         @SerializedName("selectedNFTs")
-        @JvmField val selectedNFTs: List<NFTModel>?,
+        val selectedNFTs: List<NFTModel>?,
         @SerializedName("targetAddress")
-        @JvmField val targetAddress: String?
+        val targetAddress: String?
     )
 
     data class InitialProps(

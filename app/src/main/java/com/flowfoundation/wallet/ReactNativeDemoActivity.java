@@ -327,8 +327,8 @@ public class ReactNativeDemoActivity extends ReactActivity {
             // If NFTs or tokens are pre-selected, navigate to SendTo (recipient selection)
             // The user needs to select recipient before going to the final send screen
             if (sendToConfig != null && 
-                ((sendToConfig.selectedNFTs != null && !sendToConfig.selectedNFTs.isEmpty()) ||
-                 (sendToConfig.selectedToken != null))) {
+                ((sendToConfig.getSelectedNFTs() != null && !sendToConfig.getSelectedNFTs().isEmpty()) ||
+                 (sendToConfig.getSelectedToken() != null))) {
                 routeName = "SendTo";
             } else {
                 routeName = "SelectTokens";
