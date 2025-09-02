@@ -37,7 +37,6 @@ export const NFTPreview = ({ nft }: NFTPreviewProps) => {
             }}
             numberOfLines={1}
             ellipsizeMode="tail"
-            disableAndroidFix={true}
           >
             {nft.collectionName || nft.name}
           </Text>
@@ -54,7 +53,6 @@ export const NFTPreview = ({ nft }: NFTPreviewProps) => {
           }}
           numberOfLines={2}
           ellipsizeMode="tail"
-          disableAndroidFix={true}
         >
           {nft.name}
         </Text>

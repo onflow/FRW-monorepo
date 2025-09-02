@@ -22,7 +22,7 @@ import { NFTSectionHeader } from '../shared/components/NFTSectionHeader';
 import { SectionDivider } from '../shared/components/SectionDivider';
 import { SendButton } from '../shared/components/SendButton';
 
-const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => {
+const SendSingleNFTScreen = ({ navigation }: { navigation?: NavigationProp }) => {
   const { t } = useTranslation();
   const { isDark } = useTheme();
   const { openConfirmation } = useConfirmationDrawer();
@@ -119,7 +119,7 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
   // If no NFT is selected after loading, navigate back or close app
   if (!selectedNFT) {
     console.log('[SendSingleNFTScreen] No NFT selected after loading, exiting');
-    if (navigation.canGoBack()) {
+    if (navigation?.canGoBack()) {
       navigation.goBack();
     } else {
       // If launched directly from native, close the app

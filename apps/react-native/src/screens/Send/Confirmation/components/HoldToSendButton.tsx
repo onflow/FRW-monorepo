@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, Text, TouchableWithoutFeedback, Animated, Easing } from 'react-native';
+import { View, TouchableWithoutFeedback, Animated, Easing } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
+import { Text } from '@/components/ui/typography/text';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-import { useAndroidTextFix } from '@/lib/androidTextFix';
 
 interface HoldToSendButtonProps {
   onPress: () => Promise<void>;
@@ -28,12 +27,11 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const [isCompleted, setIsCompleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
-  const androidTextFix = useAndroidTextFix();
 
   const progressValue = useRef(new Animated.Value(0)).current;
   const spinValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
-  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
   const spinAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
 
@@ -206,15 +204,11 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
               ]}
             />
             <Text
-              style={[
-                androidTextFix,
-                {
-                  fontSize: 16,
-                  includeFontPadding: false,
-                  color: isDark ? '#1A1A1A' : '#FFFFFF',
-                  fontWeight: '600',
-                },
-              ]}
+              weight="semibold"
+              style={{
+                fontSize: 16,
+                color: isDark ? '#1A1A1A' : '#FFFFFF',
+              }}
               allowFontScaling={false}
             >
               {t('send.holdToSend')}
@@ -254,17 +248,13 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
               )}
             </View>
             <Text
-              style={[
-                androidTextFix,
-                {
-                  fontSize: 16,
-                  includeFontPadding: false,
-                  color: isDark ? '#1A1A1A' : '#FFFFFF',
-                  fontWeight: '600',
-                  textAlign: 'center',
-                  flexShrink: 0,
-                },
-              ]}
+              weight="semibold"
+              style={{
+                fontSize: 16,
+                color: isDark ? '#1A1A1A' : '#FFFFFF',
+                textAlign: 'center',
+                flexShrink: 0,
+              }}
               allowFontScaling={false}
             >
               {t('send.holdToSend')}

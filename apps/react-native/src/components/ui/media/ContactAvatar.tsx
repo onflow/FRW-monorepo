@@ -50,7 +50,6 @@ export const ContactAvatar: React.FC<ContactAvatarProps> = ({
             fontSize: contentSize * 0.45,
             fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
           }}
-          disableAndroidFix={true}
         >
           {firstLetter}
         </Text>

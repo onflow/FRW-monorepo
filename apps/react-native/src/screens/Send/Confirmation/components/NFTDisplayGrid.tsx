@@ -111,7 +111,6 @@ export const NFTDisplayGrid: React.FC<NFTDisplayGridProps> = ({ nfts, transactio
                     opacity: 0.6,
                     textAlign: 'center',
                   }}
-                  disableAndroidFix={true}
                 >
                   +{nfts.length - maxVisible}
                 </Text>

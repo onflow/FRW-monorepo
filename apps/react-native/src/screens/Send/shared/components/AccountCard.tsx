@@ -4,11 +4,12 @@ import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { WalletAvatar } from '@/components/ui/media/WalletAvatar';
+import { Text } from '@/components/ui/typography/text';
 import { useTheme } from '@/contexts/ThemeContext';
 import { isEVMAccount } from '@/lib';
 import { formatCurrencyStringForDisplay, truncateBalance } from '@/lib/string';
 import { Link } from 'icons';
-import { AddressText, EVMChip, EditButton, Skeleton, Text } from 'ui';
+import { AddressText, EVMChip, EditButton, Skeleton } from 'ui';
 
 interface AccountCardProps {
   account: WalletAccount;
@@ -114,15 +115,10 @@ export const AccountCard = ({
   const content = (
     <>
       <Text
-        disableAndroidFix={true}
-        style={{
-          fontSize: 12,
-          marginBottom: 12,
-          fontWeight: '400',
-          color: showBackground 
-            ? (isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)') 
-            : (isDark ? '#FFFFFF' : '#000000')
-        }}
+        size="sm"
+        weight="normal"
+        className={isDark ? 'text-white/80' : 'text-black/80'}
+        style={{ marginBottom: 12 }}
       >
         {title}
       </Text>
@@ -148,12 +144,13 @@ export const AccountCard = ({
                 }}
               >
                 <Text
-                  className="text-center text-[8px] leading-3"
+                  size="xs"
+                  className="text-center leading-3"
                   style={{
+                    fontSize: 8,
                     textAlignVertical: 'center',
                     includeFontPadding: false,
                   }}
-                  disableAndroidFix={true}
                 >
                   {account.parentEmoji?.emoji}
                 </Text>
@@ -183,14 +180,14 @@ export const AccountCard = ({
                   </View>
                 )}
                 <Text
+                  size="sm"
+                  weight="semibold"
+                  className={isDark ? 'text-white' : 'text-black'}
                   style={{
-                    fontSize: 14,
-                    fontWeight: '600', // semi-bold
                     lineHeight: 17,
                     letterSpacing: -0.084,
                     includeFontPadding: false,
                     textAlignVertical: 'center',
-                    color: isDark ? '#FFFFFF' : '#000000'
                   }}
                 >
                   {account.name}
@@ -204,7 +201,7 @@ export const AccountCard = ({
                   fontSize: 12,
                   fontWeight: '400',
                   lineHeight: 17,
-                  color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                  color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                 }}
                 value={account.address}
               />
@@ -215,14 +212,13 @@ export const AccountCard = ({
                   <Skeleton isDark={isDark} style={{ height: 16, width: 96 }} />
                 ) : displayText ? (
                   <Text
+                    size="xs"
+                    weight="normal"
+                    className={isDark ? 'text-white/70' : 'text-black/70'}
                     style={{
-                      fontSize: 12,
-                      fontWeight: '400',
                       lineHeight: 17,
                       includeFontPadding: false,
-                      color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
                     }}
-                    disableAndroidFix={true}
                   >
                     {displayText}
                   </Text>
@@ -243,10 +239,10 @@ export const AccountCard = ({
   );
 
   return showBackground ? (
-    <View 
+    <View
       className="w-full rounded-2xl p-4 mt-5"
       style={{
-        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#F2F2F7'
+        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#F2F2F7',
       }}
     >
       {content}

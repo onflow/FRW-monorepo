@@ -57,7 +57,6 @@ const ExpandedNFTItem = ({ nft, onRemove }: ExpandedNFTItemProps) => {
               letterSpacing: -0.006,
               includeFontPadding: false,
             }}
-            disableAndroidFix={true}
           >
             {nft.collectionName}
           </Text>
@@ -120,7 +119,6 @@ export const MultipleNFTsPreview = ({
             numberOfLines={1}
             adjustsFontSizeToFit={true}
             minimumFontScale={0.9}
-            disableAndroidFix={true}
           >
             {selectedNFTs.length} NFT{selectedNFTs.length !== 1 ? 's' : ''}
           </Text>
@@ -242,7 +240,6 @@ export const MultipleNFTsPreview = ({
                             includeFontPadding: false,
                             textAlign: 'center',
                           }}
-                          disableAndroidFix={true}
                         >
                           +{remainingCount}
                         </Text>

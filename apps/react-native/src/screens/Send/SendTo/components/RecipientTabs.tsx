@@ -65,12 +65,12 @@ export const RecipientTabs: React.FC<RecipientTabsProps> = ({ activeTab, onTabCh
                 style={{
                   includeFontPadding: false,
                   textAlign: 'center',
-                  minWidth: 60,
+                  minWidth: 70,
+                  paddingHorizontal: 4,
                 }}
                 numberOfLines={1}
                 adjustsFontSizeToFit={true}
                 minimumFontScale={0.8}
-                disableAndroidFix={true}
               >
                 {t(tab.labelKey)}
               </Text>

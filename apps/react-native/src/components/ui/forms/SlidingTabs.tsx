@@ -102,7 +102,6 @@ export const SlidingTabs: React.FC<SlidingTabsProps> = ({ tabs, activeTab, onTab
                 textAlign: 'center',
                 fontWeight: '600',
               }}
-              disableAndroidFix={true}
             >
               {tab}
             </Text>
