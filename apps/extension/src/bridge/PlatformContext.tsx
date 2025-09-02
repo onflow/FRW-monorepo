@@ -295,7 +295,9 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate, location]);
 
   // Convenience method to create navigation for screens
-  const getNavigation = (navigate: (path: string, state?: any) => void): NavigationProp => ({
+  const getNavigation = (
+    navigate: (path: string | number, state?: any) => void
+  ): NavigationProp => ({
     navigate: (screen: string, params?: Record<string, unknown>) => {
       // Convert screen navigation to router navigation
       switch (screen) {
@@ -317,7 +319,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     },
-    goBack: () => window.history.back(),
+    goBack: () => navigate(-1),
     canGoBack: () => true,
     reset: (routes: string[]) => {
       if (routes.length > 0) {
@@ -330,7 +332,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     push: (screen: string, params?: Record<string, unknown>) => {
       navigate(screen, params);
     },
-    pop: () => window.history.back(),
+    pop: () => navigate(-1),
     getCurrentRoute: () => {
       return {
         name: location.pathname,

@@ -1,0 +1,67 @@
+import type { TokenModel, User, RecentRecipient } from '@onflow/frw-types';
+
+// Re-export types for external use
+export type { RecentRecipient };
+
+/**
+ * Generic wrapper for all stored data with versioning and metadata
+ */
+export type StorageData<T> = T & {
+  version: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+/**
+ * Wallet configuration data model
+ */
+export interface WalletConfig {
+  address: string;
+  keyIndex: number;
+  network: string;
+}
+
+/**
+ * Application settings data model
+ */
+export interface AppSettings {
+  theme: 'light' | 'dark' | 'auto';
+  language: string;
+  currency: string;
+  notifications: boolean;
+}
+
+/**
+ * Authentication data model
+ */
+export interface AuthData {
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+}
+
+/**
+ * Generic cache data model
+ */
+export interface CacheData {
+  [key: string]: unknown;
+}
+
+// QueryCacheData types removed - TanStack Query now uses dynamic keys via storage.getRaw/setRaw
+
+/**
+ * Storage key definitions with their corresponding data types
+ * All data is automatically wrapped with StorageData<T> for versioning
+ *
+ * Note: TanStack Query cache now uses dynamic keys via storage.getRaw/setRaw
+ * with keys like 'tanquery:${queryHash}' for optimal performance
+ */
+export interface StorageKeyMap {
+  tokens: StorageData<TokenModel[]>;
+  user: StorageData<User>;
+  wallet: StorageData<WalletConfig>;
+  settings: StorageData<AppSettings>;
+  auth: StorageData<AuthData>;
+  cache: StorageData<CacheData>;
+  recentRecipients: StorageData<RecentRecipient[]>;
+}

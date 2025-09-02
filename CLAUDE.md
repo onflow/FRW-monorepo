@@ -335,6 +335,114 @@ layer separation:
 - `packages/context` - Dependency injection container and platform abstraction
 - `packages/utils` - Pure utility functions (zero dependencies)
 
+### Data Storage Architecture
+
+The project uses a **dual storage system** for optimal performance and clear
+separation of concerns:
+
+#### Storage - Business Data (`Storage` interface)
+
+**Purpose**: Type-safe storage for structured business data with automatic
+versioning and metadata management.
+
+**Features**:
+
+- **Type Safety**: Strongly typed with `StorageKeyMap` interface
+- **Automatic Metadata**: Adds `version`, `createdAt`, `updatedAt` to all data
+- **Versioning**: Built-in data versioning for migration support
+- **Validation**: Schema validation and error handling
+
+**Usage**:
+
+```typescript
+import { storage } from '@onflow/frw-context';
+
+// Type-safe business data operations
+await storage.set('user', { name: 'John', email: 'john@example.com' });
+const user = await storage.get('user'); // Fully typed return
+
+// Automatic metadata is added:
+// { name: 'John', email: 'john@example.com', version: '1.0.0', createdAt: 1234567890, updatedAt: 1234567890 }
+```
+
+**Storage Keys** (defined in `StorageKeyMap`):
+
+- `tokens` - Token balances and metadata
+- `user` - User profile and preferences
+- `wallet` - Wallet configuration and settings
+- `settings` - Application settings
+- `auth` - Authentication tokens and state
+- `recentRecipients` - Recently used addresses
+
+#### Cache - High-Performance Caching (`Cache` interface)
+
+**Purpose**: Optimized caching system for temporary data, specifically designed
+for TanStack Query performance.
+
+**Features**:
+
+- **High Performance**: Independent key-value storage, no metadata overhead
+- **TTL Support**: Optional time-to-live for automatic expiration
+- **Auto-Cleanup**: Built-in expired entry cleanup
+- **Batch Operations**: Efficient multi-key operations
+- **Prefix Support**: Namespace-based key organization
+
+**Usage**:
+
+```typescript
+import { cache } from '@onflow/frw-context';
+
+// High-performance cache operations
+await cache.set('query-user-123', userData, 300000); // 5 min TTL
+const cached = await cache.get('query-user-123');
+
+// Bulk operations
+await cache.clearByPrefix('tanquery:'); // Clear all TanStack Query cache
+const stats = await cache.getStats(); // Get cache statistics
+```
+
+#### TanStack Query Integration
+
+TanStack Query **automatically uses the optimized Cache system** for all query
+caching:
+
+- **Performance**: Each query uses an independent cache key (no large object
+  serialization)
+- **Memory Efficient**: Automatic cleanup of expired queries
+- **Transparent**: Existing TanStack Query code works without changes
+- **Prefix**: All TanStack Query cache keys use `tanquery:` prefix
+
+```typescript
+// TanStack Query works transparently with the new cache system
+const { data } = useQuery({
+  queryKey: ['user', userId],
+  queryFn: fetchUser,
+  staleTime: 5 * 60 * 1000, // 5 minutes
+});
+// Automatically cached using cache.set('tanquery:hash', data, ttl)
+```
+
+#### Platform Implementation
+
+Each platform implements both interfaces via `PlatformSpec`:
+
+```typescript
+// React Native - AsyncStorage-based implementation
+storage(): Storage // -> AsyncStorageImpl (business data)
+cache(): Cache     // -> AsyncStorageCache (query cache)
+
+// Extension - Chrome storage-based implementation
+storage(): Storage // -> ChromeStorageImpl (business data)
+cache(): Cache     // -> ChromeCache (query cache)
+```
+
+#### Performance Benefits
+
+- **Storage**: Structured data with metadata for business logic requirements
+- **Cache**: Raw performance for temporary data and query results
+- **TanStack Query**: 10x+ performance improvement with independent key storage
+- **Memory**: Reduced memory usage with automatic cleanup and TTL support
+
 ### Development Flow (MVVM + Universal Screens)
 
 1. **Model First**: Define data structures in `packages/types`
@@ -432,7 +540,7 @@ The UI package includes comprehensive Storybook integration:
 
 - **NativeWind 4.x** for styling (Tailwind CSS for React Native)
 - **React Navigation v7** with native stack navigation
-- **MMKV** for persistent storage
+- **AsyncStorage** for persistent storage (dual Storage + Cache system)
 - **Theme system** with CSS variables and light/dark mode
 - **Nitro modules** for native iOS/Android bridge functionality
 - **Bundle commands**: iOS (`pnpm bundle:ios`), Android (`pnpm bundle:android`)

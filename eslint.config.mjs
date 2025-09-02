@@ -41,6 +41,8 @@ export default [
         ecmaFeatures: {
           jsx: true,
         },
+        tsconfigRootDir: process.cwd(),
+        project: false, // Disable project-wide analysis to avoid memory issues
       },
     },
     plugins: {
@@ -159,12 +161,31 @@ export default [
       'vite.config.js',
       'rollup.config.js',
       'vitest.config.ts',
+      'vitest.init.ts',
+      'tsup.config.ts',
+      '.svgrrc.js',
       'build/**/*.{ts,js,cjs}', // Build scripts
       'apps/extension/build/**/*.{ts,js,cjs}', // Extension build scripts
-      '.storybook/**/*.{ts,js}', // Storybook config
+      'apps/**/vitest.config.ts', // App-level vitest configs
+      'apps/**/vitest.init.ts', // App-level vitest init files
+      'apps/**/babel.config.js', // App-level babel configs
+      'apps/**/metro.config.js', // React Native metro configs
+      'apps/**/metro-*.js', // Metro transformer files
+      'apps/**/index.js', // App entry points
+      'apps/**/scripts/**/*.{ts,js,cjs}', // App scripts
+      '.storybook/**/*.{ts,tsx,js}', // Storybook config
+      '**/.storybook/**/*.{ts,tsx,js}', // Package-level storybook configs
       'scripts/**/*.{ts,js,cjs}', // Project scripts
       '**/scripts/**/*.{ts,js,cjs}', // Package scripts
+      '**/tsup.config.ts', // Package build configs
+      '**/vitest.config.ts', // Package test configs
     ],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        project: false, // Disable TypeScript project for config files
+      },
+    },
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-var-requires': 'off',
@@ -176,6 +197,23 @@ export default [
       'no-undef': 'off',
       'import/no-unresolved': 'off', // Build scripts may have special imports
       'unused-imports/no-unused-vars': 'off', // Build scripts may have unused vars
+    },
+  },
+  {
+    // Storybook files - separate from main TypeScript project
+    files: ['**/*.stories.{ts,tsx}', '**/stories/**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        project: false, // Disable TypeScript project for stories
+      },
+    },
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'import/no-unresolved': 'warn', // Warn instead of error for stories
+      'unused-imports/no-unused-vars': 'warn',
+      'no-console': 'off', // Allow console in stories for debugging
     },
   },
   {
@@ -198,9 +236,20 @@ export default [
   },
   {
     files: ['apps/react-native/**/*.{ts,tsx,js,jsx}'],
+    ignores: [
+      'apps/react-native/babel.config.js',
+      'apps/react-native/metro.config.js',
+      'apps/react-native/metro-*.js',
+      'apps/react-native/index.js',
+      'apps/react-native/scripts/**/*.{ts,js,cjs}',
+    ],
     languageOptions: {
       globals: {
         ...globals.browser, // React Native has some browser-like APIs
+      },
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        project: ['./apps/react-native/tsconfig.json'],
       },
     },
     settings: {
@@ -225,11 +274,21 @@ export default [
   },
   {
     files: ['apps/extension/**/*.{ts,tsx,js,jsx}'],
+    ignores: [
+      'apps/extension/vitest.config.ts',
+      'apps/extension/vitest.init.ts',
+      'apps/extension/e2e/**/*.{ts,tsx,js,jsx}', // Exclude e2e tests
+      'apps/extension/playwright.config.ts', // Exclude playwright config
+    ],
     languageOptions: {
       globals: {
         ...globals.browser,
         ...globals.webextensions,
         chrome: 'readonly', // Chrome extension API
+      },
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        project: ['./apps/extension/tsconfig.json'],
       },
     },
     settings: {
@@ -268,7 +327,32 @@ export default [
   {
     // Package-specific rules (excluding tests and build scripts)
     files: ['packages/**/*.{ts,tsx,js,jsx}'],
-    ignores: ['packages/**/tests/**', 'packages/**/*.test.*', 'packages/**/build/**'],
+    ignores: [
+      'packages/**/tests/**',
+      'packages/**/*.test.*',
+      'packages/**/build/**',
+      'packages/**/stories/**', // Exclude storybook files
+      'packages/**/*.stories.*', // Exclude story files
+      'packages/**/.storybook/**', // Exclude storybook config
+      'packages/**/tsup.config.ts', // Exclude build configs
+      'packages/**/vitest.config.ts', // Exclude test configs
+      'packages/**/.svgrrc.js', // Exclude SVGR config files
+      'packages/**/scripts/**', // Exclude all package scripts
+    ],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+        project: ['./tsconfig.eslint.json'],
+      },
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json',
+        },
+      },
+    },
     rules: {
       // Packages can be stricter
       '@typescript-eslint/explicit-function-return-type': 'warn',
@@ -301,6 +385,8 @@ export default [
       'apps/react-native/cache/**',
       'apps/react-native/extensions/**',
       'apps/react-native/specifications/**',
+      'apps/react-native/flow-wallet-kit/**', // External wallet kit library
+      'apps/react-native/.build/**',
 
       // Extension specific
       'apps/extension/_raw/**',

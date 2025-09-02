@@ -34,6 +34,8 @@ export type { FlowPath, TokenModel } from './TokenModel';
 // Wallet types and utilities
 export { addressType, WalletType } from './Wallet';
 
+export type { RecentRecipient } from './RecentRecipient';
+
 // Send transaction types
 export type { ConfirmationScreenProps, ExpandedNFTData, NavigationProp } from './Send';
 
@@ -50,3 +52,6 @@ export type * from './StoreTypes';
 export { Platform } from './Platform';
 
 export { formatCurrencyStringForDisplay } from './utils/string';
+
+// Query-related types
+export * from './query/QueryDomain';

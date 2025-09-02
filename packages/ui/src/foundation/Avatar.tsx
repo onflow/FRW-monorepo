@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, YStack } from 'tamagui';
+import { Image, Text, YStack } from 'tamagui';
 
 import type { AvatarProps } from '../types';
 
@@ -27,16 +27,7 @@ export function Avatar({
       style={style}
     >
       {src ? (
-        <img
-          src={src}
-          alt={alt}
-          style={{
-            width: size,
-            height: size,
-            objectFit: 'cover',
-            display: 'block',
-          }}
-        />
+        <Image src={src} alt={alt} width={size} height={size} objectFit="cover" />
       ) : (
         <Text color="$text" fontSize="$4" fontWeight="600">
           {fallback || alt?.[0]?.toUpperCase() || '?'}

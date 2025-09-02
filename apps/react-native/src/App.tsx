@@ -1,13 +1,16 @@
 import { ServiceContext } from '@onflow/frw-context';
+import { QueryProvider } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
 import { TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+
 import 'react-native-get-random-values';
 import { version } from '../package.json';
 import { platform } from './bridge/PlatformImpl';
+import { QueryDebugger } from './components/QueryDebugger';
 import AppNavigator from './navigation/AppNavigator';
 
 interface AppProps {
@@ -74,9 +77,12 @@ const App = (props: AppProps) => {
 
   return (
     <TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <AppNavigator {...props} />
-      </GestureHandlerRootView>
+      <QueryProvider>
+        <QueryDebugger />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AppNavigator {...props} />
+        </GestureHandlerRootView>
+      </QueryProvider>
     </TamaguiProvider>
   );
 };

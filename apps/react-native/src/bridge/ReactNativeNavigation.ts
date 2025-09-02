@@ -89,6 +89,10 @@ class ReactNativeNavigation implements Navigation {
     }
     return null;
   }
+
+  getRouteParams(): Record<string, unknown> {
+    return {};
+  }
 }
 
 // Export singleton instance

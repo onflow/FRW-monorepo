@@ -48,13 +48,14 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
       position="relative"
     >
       {displayImage ? (
-        <Image
-          source={{ uri: imageUrl }}
-          width={size}
-          height={size}
-          onError={() => setImageError(true)}
-          style={{ objectFit: 'cover' }}
-        />
+        <View width="100%" height="100%" overflow="hidden" rounded={14.4}>
+          <Image
+            source={{ uri: imageUrl }}
+            width="100%"
+            height="100%"
+            onError={() => setImageError(true)}
+          />
+        </View>
       ) : (
         <View flex={1} bg="$light10" rounded={14.4} />
       )}
@@ -100,13 +101,14 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove }) => {
         overflow="hidden"
       >
         {displayImage ? (
-          <Image
-            source={{ uri: imageUrl }}
-            width={53.44}
-            height={53.44}
-            onError={() => setImageError(true)}
-            style={{ objectFit: 'cover' }}
-          />
+          <View width={53.44} height={53.44} overflow="hidden" rounded={16}>
+            <Image
+              source={{ uri: imageUrl }}
+              width="100%"
+              height="100%"
+              onError={() => setImageError(true)}
+            />
+          </View>
         ) : (
           <View flex={1} bg="$light10" rounded={16} />
         )}
@@ -299,7 +301,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         </XStack>
 
         {/* Expand Button */}
-        {expandable && totalCount > maxVisibleThumbnails && (
+        {expandable && (
           <XStack
             width={21.6}
             height={21.6}

@@ -2,12 +2,10 @@ import { Button, ScrollView, Text } from '@onflow/frw-ui';
 import type { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const HomeScreen = () => {
-  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Home'>>();
   const { address, network } = route.params || {};

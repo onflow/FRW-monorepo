@@ -6,13 +6,13 @@ const NFTListScreenView = (props) => {
   const navigate = useNavigate();
   const params = useParams();
   console.log(params, 'NFTListScreenView===');
-  const { selectedCollection } = useSendStore();
+  const { selectedCollection, selectedNFTs } = useSendStore();
 
   return (
     <NFTListScreen
       collection={selectedCollection}
       address={params.address}
-      selectedNFTIds={[]}
+      selectedNFTIds={selectedNFTs.map((nft) => nft.id)}
       isEditing={true}
     />
   );

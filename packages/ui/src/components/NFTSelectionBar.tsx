@@ -8,6 +8,7 @@ import { Button } from '../foundation/Button';
 export interface NFTSelectionBarProps {
   selectedNFTs: NFTData[];
   onRemoveNFT?: (id: string) => void;
+  onNFTPress?: (id: string) => void;
   onContinue?: () => void;
   continueText?: string;
   isEditing?: boolean;
@@ -18,6 +19,7 @@ export function NFTSelectionBar({
   selectedNFTs,
   onRemoveNFT,
   onContinue,
+  onNFTPress = (id: string) => {},
   continueText = 'Continue',
   isEditing = false,
   maxHeight = '$20',
@@ -34,7 +36,7 @@ export function NFTSelectionBar({
 
   const renderNFTItem = (nft: NFTData) => (
     <XStack key={nft.id} items="center" justify="space-between" gap="$2">
-      <XStack items="center" gap="$2">
+      <XStack items="center" gap="$2" onPress={() => onNFTPress(nft.id)} cursor="pointer">
         {/* NFT Image */}
         <YStack borderRadius="$4" overflow="hidden" width="$13" height="$13" bg="$background4">
           <Image
@@ -114,14 +116,21 @@ export function NFTSelectionBar({
 
         {/* Expandable Content */}
         {isExpanded && (
-          <YStack maxHeight={maxHeight} bg="$backgroundStrong" borderRadius="$4" gap="$0.5" pb="$2">
+          <YStack
+            maxH={maxHeight}
+            minH={30 + selectedNFTs.length * 50}
+            bg="$backgroundStrong"
+            borderRadius="$4"
+            gap="$0.5"
+            pb="$2"
+          >
             <ScrollView showsVerticalScrollIndicator={false}>
               <YStack>
                 {selectedNFTs.map((nft, index) => (
                   <React.Fragment key={nft.id}>
                     {renderNFTItem(nft)}
                     {index < selectedNFTs.length - 1 && (
-                      <YStack py="$2" items="center">
+                      <YStack py="$2" items="center" width="100%">
                         <YStack height="$0.25" bg="$background4" width="100%" />
                       </YStack>
                     )}

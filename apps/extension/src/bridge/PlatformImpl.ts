@@ -7,22 +7,48 @@ import {
   type Currency,
 } from '@onflow/frw-types';
 
-import { chromeStorage } from '@/extension-shared/chrome-storage';
-
 import { extensionNavigation } from './ExtensionNavigation';
+import { ExtensionStorage } from './ExtensionStorage';
 
 class ExtensionPlatformImpl implements PlatformSpec {
   private debugMode: boolean = process.env.NODE_ENV === 'development';
-  private storage: Storage;
+  private storageInstance: ExtensionStorage;
   private currentAddress: string | null = null;
   private currentNetwork: string = 'mainnet';
   private walletController: any = null;
 
   constructor() {
-    this.storage = chromeStorage as Storage;
+    this.storageInstance = new ExtensionStorage();
   }
 
-  // Methods to update cached values from hooks/context
+  storage(): Storage {
+    return this.storageInstance;
+  }
+
+  navigation() {
+    return extensionNavigation;
+  }
+
+  getPlatform(): Platform {
+    return Platform.Extension;
+  }
+
+  getVersion(): string {
+    return chrome.runtime.getManifest().version;
+  }
+
+  getBuildNumber(): string {
+    return chrome.runtime.getManifest().version_name || this.getVersion();
+  }
+
+  getCurrency(): Currency {
+    return {
+      name: 'USD',
+      symbol: '$',
+      rate: '1',
+    };
+  }
+
   setCurrentAddress(address: string | null) {
     this.currentAddress = address;
   }
@@ -35,7 +61,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     this.walletController = controller;
   }
 
-  // Basic platform methods
   getSelectedAddress(): string | null {
     return this.currentAddress;
   }
@@ -66,49 +91,18 @@ class ExtensionPlatformImpl implements PlatformSpec {
     }
   }
 
-  getVersion(): string {
-    return chrome.runtime.getManifest().version;
-  }
-
-  getBuildNumber(): string {
-    return chrome.runtime.getManifest().version_name || this.getVersion();
-  }
-
-  getCurrency(): Currency {
-    return {
-      name: 'USD',
-      symbol: '$',
-      rate: '1',
-    };
-  }
-  getPlatform(): Platform {
-    return Platform.Extension;
-  }
-
-  // API endpoint methods
   getApiEndpoint(): string {
-    // Return appropriate API endpoint based on network
-    return 'https://lilico.app';
+    return process.env.API_BASE_URL || '';
   }
 
   getGoApiEndpoint(): string {
-    const network = this.getNetwork();
-    return network === 'testnet'
-      ? 'https://goapi-testnet.lilico.app'
-      : 'https://goapi-mainnet.lilico.app';
+    return process.env.API_GO_SERVER_URL || '';
   }
 
   getInstabugToken(): string {
-    // Return extension-specific analytics/logging token if available
     return process.env.INSTABUG_TOKEN || '';
   }
 
-  // Storage access
-  getStorage(): Storage {
-    return this.storage;
-  }
-
-  // Cryptographic operations
   async sign(hexData: string): Promise<string> {
     return await this.walletController.signMessage(hexData);
   }
@@ -117,7 +111,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.walletController.getKeyIndex() || 0;
   }
 
-  // Data access methods
   async getRecentContacts(): Promise<RecentContactsResponse> {
     return await this.walletController.getRecentContacts();
   }
@@ -154,7 +147,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return await this.walletController.getSelectedAccount();
   }
 
-  // Extended data access methods for SendToScreen
   async getAddressBookContacts(): Promise<any[]> {
     if (!this.walletController) return [];
     return await this.walletController.getAddressBook();
@@ -170,22 +162,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return await this.walletController.searchByUsername(username);
   }
 
-  // Get account data from profiles/hooks
   getAccountsData(): any[] {
-    // This will be set by the component when it has the data
-    // For now, return empty array - component will override this
     return [];
   }
 
-  // Token and account data methods (required by PlatformSpec)
-  // Note: For extension, this should be overridden by PlatformContext to use useCoins() hook data
   async getCache(key: string): Promise<any[] | null> {
     this.log('warn', `Extension getCache(${key}) called - should be overridden by PlatformContext`);
     return null;
   }
 
   getRouterValue?(): { [key: string]: any } {
-    // Get from React Router values stored in window object
     const routerValues = (window as any).__flowWalletRouterParams || {};
     return routerValues;
   }
@@ -253,7 +239,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     }
   }
 
-  // CadenceService configuration
   configureCadenceService(cadenceService: any): void {
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
@@ -279,8 +264,9 @@ class ExtensionPlatformImpl implements PlatformSpec {
         config.proposer = async (account: any) => {
           const selectedAccount = await this.getSelectedAccount();
           const address = selectedAccount.parentAddress;
-          const keyId = this.getSignKeyIndex();
+          const keyId = await this.getSignKeyIndex();
           const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
+
           const KEY_ID = Number(keyId) || 0;
 
           return {
@@ -372,14 +358,12 @@ class ExtensionPlatformImpl implements PlatformSpec {
         // Handle bypassed extension transactions
         if (response && response.__EXTENSION_SUCCESS__) {
           txId = response.result;
-          this.log('debug', 'Extension bypassed transaction completed with ID:', txId);
 
           // Return the transaction ID as the response
           response = txId;
         } else if (response && typeof response === 'string') {
           // Handle normal FCL transactions
           txId = response;
-          this.log('debug', 'FCL transaction completed with ID:', txId);
         }
 
         if (txId) {
@@ -387,16 +371,14 @@ class ExtensionPlatformImpl implements PlatformSpec {
             // Start transaction monitoring
             if (this.walletController && this.walletController.listenTransaction) {
               this.walletController.listenTransaction(txId);
-              this.log('debug', 'Extension transaction monitoring started for:', txId);
             }
 
             // Navigate to transaction complete
-            const navigation = this.getNavigation();
+            const navigation = this.navigation();
             if (navigation && navigation.navigate) {
               navigation.navigate('TransactionComplete', {
                 txId: txId,
               });
-              this.log('debug', 'Navigation to TransactionComplete triggered');
             }
           } catch (error) {
             this.log('error', 'Failed to execute post-transaction actions:', error);
@@ -406,11 +388,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
       return { config, response };
     });
-
-    this.log('debug', 'CadenceService configured for extension');
   }
 
-  // Logging methods
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
       return;
@@ -453,7 +432,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.debugMode;
   }
 
-  // UI interaction methods
   async scanQRCode(): Promise<string> {
     // Extension-specific QR code scanning implementation
     // Could open a popup window with camera access
@@ -472,21 +450,14 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   closeRN(id?: string | null): void {
-    // Extension equivalent - close current popup/tab
     if (window.close) {
       window.close();
     } else {
       chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
     }
   }
-
-  getNavigation() {
-    // Return the extension navigation implementation
-    return extensionNavigation;
-  }
 }
 
-// Singleton instance
 let platformInstance: ExtensionPlatformImpl | null = null;
 
 export const getPlatform = (): ExtensionPlatformImpl => {

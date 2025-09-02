@@ -6,8 +6,9 @@ import type {
   WalletAccountsResponse,
 } from '@onflow/frw-types';
 
+import type { Cache } from './caching/Cache';
 import type { Navigation } from './Navigation';
-import type { Storage } from './Storage';
+import type { Storage } from './storage/Storage';
 
 // Re-export CadenceService interceptor types
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
@@ -33,9 +34,10 @@ export interface PlatformSpec {
   getGoApiEndpoint(): string;
   getInstabugToken(): string;
 
-  // Storage and navigation access
-  getStorage(): Storage;
-  getNavigation(): Navigation;
+  // Storage, cache, and navigation access
+  storage(): Storage;
+  cache(): Cache;
+  navigation(): Navigation;
 
   // Cryptographic operations
   // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
@@ -47,12 +49,6 @@ export interface PlatformSpec {
   getWalletAccounts(): Promise<WalletAccountsResponse>;
   getSelectedAccount(): Promise<WalletAccount>;
 
-  // Token and account data methods
-  getCache(key: string): Promise<any | null>;
-
-  // Router values for screens
-  getRouterValue?(): { [key: string]: any };
-
   // Transaction monitoring and post-transaction actions
   listenTransaction?(
     txId: string,
@@ -61,8 +57,6 @@ export interface PlatformSpec {
     message: string,
     icon?: string
   ): void;
-  setRecent?(contact: any): Promise<void>;
-  setDashIndex?(index: number): Promise<void>;
 
   // CadenceService configuration using interceptor pattern
   // This method allows the bridge to configure all FCL-related functionality
