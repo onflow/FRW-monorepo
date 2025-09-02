@@ -45,6 +45,10 @@ export const test = base.extend<{
         '--lang=en-US',
         '--no-sandbox',
         '--disable-dev-shm-usage',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins',
+        '--disable-site-isolation-trials',
+        '--enable-extensions',
       ],
       locale: 'en-US',
       env: {
@@ -64,6 +68,18 @@ export const test = base.extend<{
   extensionId: async ({ context }, call) => {
     // Alternative approach: try to get extension ID from a page first
     let extensionId: string | null = null;
+
+    // In CI, use the known extension ID immediately
+    if (process.env.CI) {
+      extensionId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
+      console.log(`CI mode - using known extension ID: ${extensionId}`);
+
+      // Wait a bit longer for extension to initialize in CI
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      await call(extensionId);
+      return;
+    }
 
     // Method 1: Try service worker approach
     let [background] = context.serviceWorkers();

@@ -46,6 +46,9 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     ...devices['Desktop Chrome'],
 
+    // Extensions require headed mode
+    headless: false,
+
     trace: 'retain-on-failure', // Collect trace for failed tests
     video: 'retain-on-failure', // Record video for failed tests
     screenshot: 'only-on-failure', // Take screenshot only on failure
