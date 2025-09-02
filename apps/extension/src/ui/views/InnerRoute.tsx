@@ -13,7 +13,6 @@ import LinkedCollection from './Linked/LinkedCollection';
 import LinkedNftDetail from './Linked/LinkedNftDetail';
 import ManageToken from './ManageToken';
 import CollectionDetail from './NFT/CollectionDetail';
-import Detail from './NFT/Detail';
 import AddList from './NFT/NFTList/AddList';
 import SendToAddress from './NFT/SendNFT/SendToAddress';
 import EvmCollectionDetail from './NftEvm/CollectionDetail';
@@ -220,7 +219,7 @@ const InnerRoute = () => {
               path="nested/nftdetail/:id"
               element={
                 <PrivateRoute>
-                  <Detail />
+                  <NFTDetailScreenView />
                 </PrivateRoute>
               }
             />

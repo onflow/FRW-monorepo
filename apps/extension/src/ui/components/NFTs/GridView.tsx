@@ -143,7 +143,7 @@ const GridView = (props: GridViewProps) => {
   // Determine the correct path and state based on NFT type
   const detailPath = isEvm
     ? `/dashboard/nftevm/detail/${index}`
-    : `/dashboard/nested/${fromLinked ? 'linkednftdetail' : 'nftdetail'}/${index}`;
+    : `/dashboard/nested/${fromLinked ? 'linkednftdetail' : 'nftdetail'}/${data.id}`;
 
   const navigateState = {
     nft: data,
