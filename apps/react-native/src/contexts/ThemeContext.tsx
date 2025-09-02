@@ -15,6 +15,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     setIsDark(systemColorScheme === 'dark');
+    console.log('[ThemeContext] Using system theme:', systemColorScheme);
   }, [systemColorScheme]);
 
   const toggleTheme = () => {

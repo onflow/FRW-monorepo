@@ -114,10 +114,14 @@ export const AccountCard = ({
   const content = (
     <>
       <Text
-        className={`text-xs mb-3 font-normal ${showBackground ? 'text-fg-1/80' : 'text-fg-1'}`}
         disableAndroidFix={true}
         style={{
           fontSize: 12,
+          marginBottom: 12,
+          fontWeight: '400',
+          color: showBackground 
+            ? (isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)') 
+            : (isDark ? '#FFFFFF' : '#000000')
         }}
       >
         {title}
@@ -136,7 +140,7 @@ export const AccountCard = ({
             {/* Parent Emoji Container - positioned at top-left */}
             {shouldShowParentEmoji && (
               <View
-                className="absolute rounded-full items-center justify-center w-5 h-5 z-10 border-[1.5px] border-surface-1 dark:border-surface-base"
+                className="absolute rounded-full items-center justify-center w-5 h-5 z-10"
                 style={{
                   left: -6.5, // 3.5px from parent container left (10px - 3.5px = 6.5px offset)
                   top: -4,
@@ -179,7 +183,6 @@ export const AccountCard = ({
                   </View>
                 )}
                 <Text
-                  className="text-fg-1"
                   style={{
                     fontSize: 14,
                     fontWeight: '600', // semi-bold
@@ -187,6 +190,7 @@ export const AccountCard = ({
                     letterSpacing: -0.084,
                     includeFontPadding: false,
                     textAlignVertical: 'center',
+                    color: isDark ? '#FFFFFF' : '#000000'
                   }}
                 >
                   {account.name}
@@ -200,23 +204,23 @@ export const AccountCard = ({
                   fontSize: 12,
                   fontWeight: '400',
                   lineHeight: 17,
+                  color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
                 }}
                 value={account.address}
-                className="text-fg-2"
               />
 
               {/* Balance and NFT count */}
               <View className="h-5 mb-1">
                 {isLoading || isLoadingTokens ? (
-                  <Skeleton isDark={isDark} className="h-4 w-24" />
+                  <Skeleton isDark={isDark} style={{ height: 16, width: 96 }} />
                 ) : displayText ? (
                   <Text
-                    className="text-fg-2"
                     style={{
                       fontSize: 12,
                       fontWeight: '400',
                       lineHeight: 17,
                       includeFontPadding: false,
+                      color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
                     }}
                     disableAndroidFix={true}
                   >
@@ -239,7 +243,14 @@ export const AccountCard = ({
   );
 
   return showBackground ? (
-    <View className="w-full rounded-2xl bg-white/10 p-4 mt-5">{content}</View>
+    <View 
+      className="w-full rounded-2xl p-4 mt-5"
+      style={{
+        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#F2F2F7'
+      }}
+    >
+      {content}
+    </View>
   ) : (
     <View>{content}</View>
   );

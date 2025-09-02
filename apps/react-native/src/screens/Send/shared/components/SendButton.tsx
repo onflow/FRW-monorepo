@@ -36,15 +36,17 @@ export const SendButton = ({ isAccountIncompatible, onPress, buttonText }: SendB
       >
         <View style={{ paddingHorizontal: 24, minWidth: 100 }}>
           <Text
-            className={
-              isAccountIncompatible ? 'text-fg-1/30' : isDark ? 'text-black' : 'text-white'
-            }
             style={{
               lineHeight: 32,
               textAlign: 'center',
               fontSize: 16,
               fontWeight: '600',
               letterSpacing: 0.5,
+              color: isAccountIncompatible 
+                ? (isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)')
+                : isDark 
+                  ? '#000000'  // Dark mode: black text on white button
+                  : '#FFFFFF'  // Light mode: white text on black button
             }}
           >
             {displayText}

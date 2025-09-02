@@ -185,7 +185,7 @@ export const TokenAmountInput = ({
             }}
             onPress={onToggleInputMode}
           >
-            <SwitchVertical width={12} height={12} />
+            <SwitchVertical width={12} height={12} color={isDark ? '#FFFFFF' : '#000000'} />
           </TouchableOpacity>
 
           {/* USD Value */}
@@ -242,11 +242,12 @@ export const TokenAmountInput = ({
 
           {/* MAX Button */}
           <TouchableOpacity
-            className="items-center justify-center px-3 py-1"
+            className="items-center justify-center"
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
               borderRadius: 39,
-              paddingHorizontal: 10,
+              paddingLeft: 10,
+              paddingRight: 6,
               paddingVertical: 3,
             }}
             onPress={onMaxPress}
@@ -260,7 +261,7 @@ export const TokenAmountInput = ({
                   lineHeight: 18,
                   fontWeight: '600',
                   includeFontPadding: false,
-                  color: 'rgb(255, 255, 255)',
+                  color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)',
                   minWidth: 35,
                 },
               ]}

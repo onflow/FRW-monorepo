@@ -242,7 +242,7 @@ const SendTokensScreen = () => {
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
         {/* Main Content */}
-        <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'} pt-4`}>
+        <View className="flex-1 bg-surface-1 pt-4">
           <ScrollView className="flex-1 px-5 pt-2">
             {/* Main Content Container - From Account and Send Tokens */}
             <ContentContainer>
@@ -339,23 +339,33 @@ const SendTokensScreen = () => {
                       NativeFRWBridge.closeRN(null);
                     },
                     children: selectedToken ? (
-                      <View className="w-full p-4 bg-surface-2 rounded-2xl">
-                        <Text className="text-fg-1 font-semibold text-base mb-2">
+                      <View 
+                        className="w-full p-4 rounded-2xl"
+                        style={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#F2F2F7' }}
+                      >
+                        <Text 
+                          style={{
+                            color: isDark ? '#FFFFFF' : '#000000',
+                            fontWeight: '600',
+                            fontSize: 16,
+                            marginBottom: 8,
+                          }}
+                        >
                           Transaction Details
                         </Text>
                         <View className="flex-row justify-between">
-                          <Text className="text-fg-2">Amount</Text>
-                          <Text className="text-fg-1 font-semibold">
+                          <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>Amount</Text>
+                          <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontWeight: '600' }}>
                             {formData.tokenAmount} {selectedToken.symbol}
                           </Text>
                         </View>
                         <View className="flex-row justify-between mt-2">
-                          <Text className="text-fg-2">Token</Text>
-                          <Text className="text-fg-1 font-semibold">{selectedToken.name}</Text>
+                          <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>Token</Text>
+                          <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontWeight: '600' }}>{selectedToken.name}</Text>
                         </View>
                         <View className="flex-row justify-between mt-2">
-                          <Text className="text-fg-2">Network Fee</Text>
-                          <Text className="text-fg-1 font-semibold">~0.001 FLOW</Text>
+                          <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>Network Fee</Text>
+                          <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontWeight: '600' }}>~0.001 FLOW</Text>
                         </View>
                       </View>
                     ) : null,

@@ -162,7 +162,7 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
             style={{
               width: '100%',
               padding: 16,
-              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#F2F2F7',
               borderRadius: 16,
             }}
           >
@@ -232,23 +232,12 @@ const SendSingleNFTScreen = ({ navigation }: { navigation: NavigationProp }) => 
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <SafeAreaView
-        style={{
-          flex: 1,
-          backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)',
-        }}
-      >
+    <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1 bg-surface-base">
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
         {/* Main Content */}
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)',
-            paddingTop: 16,
-          }}
-        >
+        <View className="flex-1 bg-surface-1 pt-4">
           <ScrollView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 8 }}>
             {/* From Account Container */}
             {currentFromAccount && (

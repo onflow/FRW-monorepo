@@ -4,7 +4,9 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { type ViewStyle, Platform, View } from 'react-native';
 
-import sendConfirmationAnimationDynamic from '@/assets/animations/send-confirmation-dynamic.json';
+import { useTheme } from '@/contexts/ThemeContext';
+
+import sendConfirmationAnimationDynamic from '@/assets/animations/send-confirmation-noblur.json';
 import sendConfirmationAnimationStatic from '@/assets/animations/send-confirmation.json';
 import { injectImageWithFallbacks } from '@/utils/lottie-image-injection';
 
@@ -14,16 +16,18 @@ import { AnimationErrorBoundary } from './AnimationErrorBoundary';
  * SEND CONFIRMATION ANIMATION
  * ==========================
  *
- * Progressive Loading Strategy:
- * 1. Static First: Immediately show static Lottie animation (no delay)
- * 2. Dynamic Upgrade: Async prepare dynamic version with injected images
- * 3. Seamless Switch: Replace with dynamic version when ready
+ * Theme-Aware Preload Strategy (Fixed for Android Token Flash):
+ * 1. Theme Selection: Choose light/dark animation based on current theme
+ * 2. Preload & Prepare: Load and inject correct token image before showing animation
+ * 3. Silent Preparation: Keep area empty while preparing to avoid any visual artifacts
+ * 4. Ready Display: Show animation only when correct token image is loaded
  *
  * This approach ensures:
- * - Zero delay - users see animation immediately
- * - Enhanced experience - dynamic images appear when ready
+ * - Theme consistency - uses appropriate colors for light/dark mode
+ * - No token flash - users never see wrong token image
+ * - Correct token from start - animation shows intended token immediately
  * - Graceful fallback - works even if dynamic injection fails
- * - iOS optimized - Buffer-based base64 encoding for reliability
+ * - Android optimized - prevents Flow token appearing before actual token
  */
 
 interface SendConfirmationAnimationProps {
@@ -35,6 +39,7 @@ interface SendConfirmationAnimationProps {
   selectedToken?: { symbol?: string; name?: string; logoURI?: string; identifier?: string };
   selectedNFTs?: NFTModel[];
   transactionType?: string;
+  onAnimationReady?: (isReady: boolean) => void;
 }
 
 export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps> = ({
@@ -46,6 +51,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   selectedToken,
   selectedNFTs,
   transactionType,
+  onAnimationReady,
 }) => {
   const animationRef = useRef<LottieView>(null);
   const [imageLoadError, setImageLoadError] = useState(false);
@@ -54,12 +60,14 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
     method: 'base64' | 'url' | 'failed' | null;
     success: boolean;
   }>({ method: null, success: false });
-  const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(
-    sendConfirmationAnimationStatic
-  );
+  const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(null);
+  const [isAnimationReady, setIsAnimationReady] = useState(false);
+  
+  const { isDark } = useTheme();
 
   // Determine what to show based on transaction type and available data
-  const shouldShowFlowLogo = !selectedToken && !transactionType?.includes('nft');
+  const isFlowToken = selectedToken?.symbol === 'FLOW' || selectedToken?.name === 'FLOW' || !selectedToken?.logoURI;
+  const shouldShowFlowLogo = (!selectedToken && !transactionType?.includes('nft')) || isFlowToken;
 
   // Get image URI - for NFT transactions, prioritize collection square image
   const getImageUri = () => {
@@ -105,32 +113,33 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
 
   const imageUri = getImageUri();
 
-  // Progressive loading: Start with static, upgrade to dynamic when ready
+  // Preload and prepare animation to avoid token image flash
   useEffect(() => {
-    // Step 1: Always start with static animation (immediate, no delay)
-    console.log('[SendConfirmationAnimation] Starting with static animation');
-    setCurrentAnimationSource(sendConfirmationAnimationStatic);
-
-    // Step 2: Async prepare dynamic version in background
-    const prepareDynamicVersion = async () => {
+    const prepareAnimation = async () => {
+      // Use single animation source
+      const baseAnimation = sendConfirmationAnimationDynamic;
+      const staticAnimation = sendConfirmationAnimationStatic;
+      
       try {
         console.log('[SendConfirmationAnimation] Platform:', Platform.OS);
-        console.log('[SendConfirmationAnimation] Preparing dynamic version in background');
+        console.log(`[SendConfirmationAnimation] Preparing animation`);
 
-        const baseAnimation = sendConfirmationAnimationDynamic;
+        setIsAnimationReady(false);
+        setCurrentAnimationSource(null);
 
         // Validate that the base animation data exists and is valid
         if (!baseAnimation || typeof baseAnimation !== 'object') {
-          console.warn(
-            '[SendConfirmationAnimation] Invalid dynamic animation data, staying with static'
-          );
-          return; // Keep using static
+          console.warn('[SendConfirmationAnimation] Invalid dynamic animation data, using static');
+          setCurrentAnimationSource(staticAnimation);
+          setIsAnimationReady(true);
+          return;
         }
 
-        // If we have an image to inject, use the advanced injection method
+        // If we have an image to inject, prepare it first to avoid flash
         if (imageUri && !imageLoadError && !shouldShowFlowLogo) {
-          console.log('[SendConfirmationAnimation] Attempting image injection for:', imageUri);
+          console.log('[SendConfirmationAnimation] Preloading and injecting image for:', imageUri);
 
+          // Use dynamic animation with token injection for both themes
           const result = await injectImageWithFallbacks(baseAnimation, 'image_0', imageUri);
 
           setInjectionResult({
@@ -144,52 +153,58 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
           });
 
           if (result.success) {
-            console.log(
-              '[SendConfirmationAnimation] ✅ Upgrading to dynamic animation with injected image'
-            );
+            console.log('[SendConfirmationAnimation] ✅ Animation ready with injected token image');
             setCurrentAnimationSource(result.animationData);
           } else {
             console.log(
-              '[SendConfirmationAnimation] ⚠️ Image injection failed, but upgrading to dynamic base animation'
+              '[SendConfirmationAnimation] ⚠️ Image injection failed, using dynamic base animation'
             );
             setCurrentAnimationSource(baseAnimation);
           }
         } else {
-          // No image to inject, but can still upgrade to dynamic animation
-          console.log(
-            '[SendConfirmationAnimation] Upgrading to dynamic animation without image injection'
-          );
-          setCurrentAnimationSource(baseAnimation);
+          // No image to inject, use appropriate animation
+          if (shouldShowFlowLogo) {
+            console.log('[SendConfirmationAnimation] Using static animation for Flow logo');
+            setCurrentAnimationSource(staticAnimation);
+          } else {
+            console.log(
+              '[SendConfirmationAnimation] Using dynamic animation without image injection'
+            );
+            setCurrentAnimationSource(baseAnimation);
+          }
           setInjectionResult({ method: null, success: false });
         }
+
+        setIsAnimationReady(true);
       } catch (error) {
         console.error(
-          '[SendConfirmationAnimation] Dynamic preparation failed, keeping static:',
+          '[SendConfirmationAnimation] Animation preparation failed, using static:',
           error
         );
-        // Keep using static animation - no setAnimationError(true)
+        setCurrentAnimationSource(staticAnimation);
+        setIsAnimationReady(true);
       }
     };
 
-    // Start background preparation (non-blocking)
-    prepareDynamicVersion();
-  }, [imageUri, imageLoadError, shouldShowFlowLogo]);
+    prepareAnimation();
+  }, [imageUri, imageLoadError, shouldShowFlowLogo, isDark]);
 
   // Reset error state when imageUri changes
   useEffect(() => {
     setImageLoadError(false);
     setAnimationError(false);
-    // Reset to static animation when imageUri changes
-    setCurrentAnimationSource(sendConfirmationAnimationStatic);
   }, [imageUri]);
+
+  // Notify parent when animation ready state changes
+  useEffect(() => {
+    onAnimationReady?.(isAnimationReady);
+  }, [isAnimationReady, onAnimationReady]);
 
   return (
     <AnimationErrorBoundary>
       <View style={[{ width, height, position: 'relative', overflow: 'visible' }, style]}>
-        {/* No loading state needed - static animation shows immediately */}
-
-        {/* Lottie Animation - Progressive: Static → Dynamic */}
-        {!animationError ? (
+        {/* Lottie Animation - Show only when ready with correct token */}
+        {isAnimationReady && currentAnimationSource && !animationError ? (
           <LottieView
             ref={animationRef}
             source={currentAnimationSource}
@@ -234,38 +249,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
               );
             }}
           />
-        ) : (
-          // Simple fallback when animation fails to load
-          <View
-            style={{
-              width,
-              height,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                width: 60,
-                height: 60,
-                backgroundColor: '#10b981',
-                borderRadius: 30,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <View
-                style={{
-                  width: 24,
-                  height: 24,
-                  backgroundColor: 'white',
-                  borderRadius: 12,
-                }}
-              />
-            </View>
-          </View>
-        )}
+        ) : null}
 
         {/* No overlay needed - dynamic injection handles everything */}
       </View>
