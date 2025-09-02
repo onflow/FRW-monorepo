@@ -132,7 +132,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setSelectedNFTs,
   ]);
 
-  const customLightTheme = {
+  const _customLightTheme = {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,

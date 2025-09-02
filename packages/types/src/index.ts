@@ -52,3 +52,6 @@ export type * from './StoreTypes';
 export { Platform } from './Platform';
 
 export { formatCurrencyStringForDisplay } from './utils/string';
+
+// Query-related types
+export * from './query/QueryDomain';

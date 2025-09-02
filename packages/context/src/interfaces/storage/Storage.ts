@@ -1,7 +1,7 @@
 import type { StorageKeyMap } from './StorageKeyMap';
 
 /**
- * Type-safe storage interface with unified get/set methods
+ * Type-safe storage interface for business data
  * Automatically handles versioning and metadata for all stored data
  * All operations are async to support different storage implementations
  */

@@ -1,18 +1,24 @@
-import { MMKV } from 'react-native-mmkv';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Simple MMKV instance
-export const storage = new MMKV();
+import { AsyncStorageCache } from './AsyncStorageCache';
+import { AsyncStorageImpl } from './AsyncStorageImpl';
+
+// Business data storage using typed StorageKeyMap interface
+export const storage = new AsyncStorageImpl();
+
+// TanStack Query cache using optimized Cache interface
+export const cache = new AsyncStorageCache('tanquery:');
 
 // Simple storage adapter for Zustand
-export const mmkvStorage = {
-  setItem: (key: string, value: string) => {
-    storage.set(key, value);
+export const asyncStorageAdapter = {
+  setItem: async (key: string, value: string) => {
+    await AsyncStorage.setItem(key, value);
   },
-  getItem: (key: string): string | null => {
-    const value = storage.getString(key);
+  getItem: async (key: string): Promise<string | null> => {
+    const value = await AsyncStorage.getItem(key);
     return value ?? null;
   },
-  removeItem: (key: string) => {
-    storage.delete(key);
+  removeItem: async (key: string) => {
+    await AsyncStorage.removeItem(key);
   },
 };

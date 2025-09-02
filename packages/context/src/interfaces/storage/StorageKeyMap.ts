@@ -47,9 +47,14 @@ export interface CacheData {
   [key: string]: unknown;
 }
 
+// QueryCacheData types removed - TanStack Query now uses dynamic keys via storage.getRaw/setRaw
+
 /**
  * Storage key definitions with their corresponding data types
  * All data is automatically wrapped with StorageData<T> for versioning
+ *
+ * Note: TanStack Query cache now uses dynamic keys via storage.getRaw/setRaw
+ * with keys like 'tanquery:${queryHash}' for optimal performance
  */
 export interface StorageKeyMap {
   tokens: StorageData<TokenModel[]>;

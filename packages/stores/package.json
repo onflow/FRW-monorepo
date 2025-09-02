@@ -38,6 +38,7 @@
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "@onflow/frw-workflow": "workspace:*",
+    "@tanstack/query-core": "^5.85.6",
     "zustand": "^5.0.6"
   },
   "devDependencies": {
