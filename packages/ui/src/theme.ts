@@ -14,7 +14,7 @@ const flowColors = {
   surfaceLight4: 'rgba(0, 13, 7, 0.25)', // 25% - tertiary surfaces
 
   // Dark Mode surfaces (from Figma)
-  surfaceDark1: '#000000', // 100% - primary background
+  surfaceDark1: '#121212', // 100% - primary background
   surfaceDark2: '#1A1A1A', // 100% - cards/surfaces
   surfaceDark3: 'rgba(255, 255, 255, 0.5)', // 50% - secondary (inverted)
   surfaceDark4: 'rgba(170, 170, 176, 0.25)', // 25% - tertiary surfaces

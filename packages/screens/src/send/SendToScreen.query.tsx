@@ -1,5 +1,6 @@
 import { navigation } from '@onflow/frw-context';
-import { sendSelectors, useSendStore } from '@onflow/frw-stores';
+import { useWalletStore, walletSelectors, useAddressBookStore, addressBookQueryKeys } from '@onflow/frw-stores';
+import type { WalletAccount } from '@onflow/frw-types';
 import {
   SearchableTabLayout,
   RecipientList,
@@ -7,8 +8,11 @@ import {
   Text,
   YStack,
 } from '@onflow/frw-ui';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
 
@@ -17,21 +21,13 @@ interface TabConfig {
   title: string;
 }
 
-interface SendToScreenProps {
-  theme?: { isDark: boolean };
-  // Optional data loading functions that platforms can provide
-  loadAccountsData?: () => Promise<RecipientData[]>;
-  loadRecentData?: () => Promise<RecipientData[]>;
-  loadContactsData?: () => Promise<RecipientData[]>;
-}
-
-export function SendToScreen({
-  loadAccountsData,
-  loadRecentData,
-  loadContactsData,
-}: SendToScreenProps) {
-  // navigation is imported directly from ServiceContext
+/**
+ * Query-integrated version of SendToScreen following the established pattern
+ * Uses TanStack Query for data fetching and caching
+ */
+export function SendToScreen(): React.ReactElement {
   const { t } = useTranslation();
+  
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
     { type: 'recent', title: t('send.recent') },
@@ -42,8 +38,6 @@ export function SendToScreen({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
-  const [recipients, setRecipients] = useState<RecipientData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Get selected token from send store
   const selectedToken = useSendStore(sendSelectors.selectedToken);
@@ -53,6 +47,116 @@ export function SendToScreen({
   useEffect(() => {
     setCurrentStep('send-to');
   }, [setCurrentStep]);
+
+  // Get wallet data
+  const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const loadAccountsFromBridge = useWalletStore(state => state.loadAccountsFromBridge);
+  const isLoadingWallet = useWalletStore(state => state.isLoading);
+  const walletError = useWalletStore(state => state.error);
+  const addressBookStore = useAddressBookStore();
+
+  // Initialize wallet accounts on mount (only if not already loaded)
+  useEffect(() => {
+    if (accounts.length === 0 && !isLoadingWallet) {
+      loadAccountsFromBridge();
+    }
+  }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
+
+  // Query for recent contacts with automatic caching
+  const {
+    data: recentContacts = [],
+    isLoading: isLoadingRecent,
+  } = useQuery({
+    queryKey: addressBookQueryKeys.recent(),
+    queryFn: () => addressBookStore.fetchRecent(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Query for all contacts with automatic caching
+  const {
+    data: allContacts = [],
+    isLoading: isLoadingContacts,
+  } = useQuery({
+    queryKey: addressBookQueryKeys.contacts(),
+    queryFn: () => addressBookStore.fetchContacts(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Convert accounts data
+  const accountsData = useMemo((): RecipientData[] => {
+    return accounts.map((account: WalletAccount) => ({
+      id: account.address,
+      name: account.name,
+      address: account.address,
+      avatar: account.avatar,
+      emojiInfo: account.emojiInfo,
+      parentEmojiInfo: null,
+      type: 'account' as const,
+      isSelected: account.isActive,
+    }));
+  }, [accounts]);
+
+  // Convert recent contacts data
+  const recentData = useMemo((): RecipientData[] => {
+    return recentContacts.map((contact: any) => ({
+      id: contact.id,
+      name: contact.name,
+      address: contact.address,
+      avatar: contact.avatar,
+      type: 'recent' as const,
+      emojiInfo: {
+        emoji: '👤',
+        name: 'person',
+        color: '#6B7280',
+      },
+      parentEmojiInfo: null,
+    }));
+  }, [recentContacts]);
+
+  // Convert contacts data
+  const contactsData = useMemo((): RecipientData[] => {
+    return allContacts.map((contact: any) => ({
+      id: contact.id,
+      name: contact.name,
+      address: contact.address,
+      avatar: contact.avatar,
+      type: 'contact' as const,
+      emojiInfo: {
+        emoji: '📇',
+        name: 'contact',
+        color: '#3B82F6',
+      },
+      parentEmojiInfo: null,
+    }));
+  }, [allContacts]);
+
+  // Get current recipients based on active tab
+  const recipients = useMemo(() => {
+    switch (activeTab) {
+      case 'accounts':
+        return accountsData;
+      case 'recent':
+        return recentData;
+      case 'contacts':
+        return contactsData;
+      default:
+        return [];
+    }
+  }, [activeTab, accountsData, recentData, contactsData]);
+
+  // Get loading state for current tab
+  const isLoading = useMemo(() => {
+    switch (activeTab) {
+      case 'accounts':
+        return isLoadingWallet; // Use wallet loading state
+      case 'recent':
+        return isLoadingRecent;
+      case 'contacts':
+        return isLoadingContacts;
+      default:
+        return false;
+    }
+  }, [activeTab, isLoadingWallet, isLoadingRecent, isLoadingContacts]);
 
   const getTitleByType = useCallback(
     (type: RecipientTabType): string => {
@@ -74,8 +178,6 @@ export function SendToScreen({
     (title: string) => {
       const tabType = getTypeByTitle(title);
       setActiveTab(tabType);
-      // TODO: Load recipients for the active tab
-      loadRecipientsForTab(tabType);
     },
     [getTypeByTitle]
   );
@@ -84,58 +186,6 @@ export function SendToScreen({
     // TODO: Implement QR scanning functionality
     console.log('Scan QR code');
   }, []);
-
-  const loadRecipientsForTab = useCallback(
-    async (tab: RecipientTabType) => {
-      setIsLoading(true);
-      try {
-        let recipientsData: RecipientData[] = [];
-
-        // Use platform-provided data loaders if available, otherwise use mock data
-        switch (tab) {
-          case 'accounts':
-            if (loadAccountsData) {
-              recipientsData = await loadAccountsData();
-            } else {
-              // Fallback mock data for accounts
-              recipientsData = [];
-            }
-            break;
-
-          case 'recent':
-            if (loadRecentData) {
-              recipientsData = await loadRecentData();
-            } else {
-              // Fallback mock data for recent
-              recipientsData = [];
-            }
-            break;
-
-          case 'contacts':
-            if (loadContactsData) {
-              recipientsData = await loadContactsData();
-            } else {
-              // Fallback mock data for contacts
-              recipientsData = [];
-            }
-            break;
-        }
-
-        setRecipients(recipientsData);
-      } catch (error) {
-        console.error('Failed to load recipients:', error);
-        setRecipients([]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [loadAccountsData, loadRecentData, loadContactsData]
-  );
-
-  // Load initial data
-  useEffect(() => {
-    loadRecipientsForTab(activeTab);
-  }, [activeTab, loadRecipientsForTab]);
 
   const handleRecipientPress = useCallback(
     (recipient: RecipientData) => {
@@ -148,10 +198,10 @@ export function SendToScreen({
         isActive: false,
         type: recipient.type === 'account' ? 'main' : undefined,
       });
-      // Navigate to send tokens screen - platforms should handle this appropriately
+      // Navigate to send tokens screen
       navigation.navigate('SendTokens', { address: recipient.address, recipient });
     },
-    [navigation]
+    [setToAccount]
   );
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {

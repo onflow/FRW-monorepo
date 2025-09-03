@@ -1,4 +1,4 @@
-import { SwitchVertical, ChevronDown, CheckCircle } from '@onflow/frw-icons';
+import { SwitchVertical, ChevronDown, VerifiedToken } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { Input, XStack, YStack } from 'tamagui';
 
@@ -109,7 +109,7 @@ export function TokenAmountInput({
             <Text fontSize={12} fontWeight="600" color="$white" lineHeight={18} numberOfLines={1}>
               {tokenSymbol}
             </Text>
-            {selectedToken?.isVerified && <CheckCircle size={10} color="#FFFFFF" />}
+            {selectedToken?.isVerified && <VerifiedToken size={10} color="#41CC5D" />}
           </XStack>
           <ChevronDown size={14} color="#FFFFFF" />
         </XStack>
@@ -171,6 +171,7 @@ export function TokenAmountInput({
             rounded={40}
             height="$6"
             items="center"
+            justify="center"
             pressStyle={{ opacity: 0.8 }}
             onPress={onMaxPress}
             px="$2.5"

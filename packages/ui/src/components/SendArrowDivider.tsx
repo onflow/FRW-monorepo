@@ -34,7 +34,7 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
         justify="center"
       >
         {variant === 'arrow' ? (
-          <ArrowDown size={size * 0.5} color={iconColor} />
+          <ArrowDown size={24} color={iconColor} />
         ) : (
           <Text fontSize="$4" color={iconColor} textAlign="center">
             {text}

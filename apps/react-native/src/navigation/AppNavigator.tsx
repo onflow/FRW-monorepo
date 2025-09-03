@@ -1,4 +1,4 @@
-import { SelectTokensScreen } from '@onflow/frw-screens';
+import { SelectTokensScreen, SendToScreen, SendTokensScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -9,9 +9,10 @@ import {
 } from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 // import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useTheme } from 'tamagui';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { HomeScreen } from '@/screens';
@@ -132,34 +133,49 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setSelectedNFTs,
   ]);
 
-  const _customLightTheme = {
-    ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      background: 'rgb(255, 255, 255)', // --background-base light
-      card: 'rgb(242, 242, 247)', // --background-muted light
-      text: 'rgb(0, 0, 0)', // --forend-primary light
-      border: 'rgb(118, 118, 118)', // --forend-secondary light
-      primary: 'rgb(0, 255, 149)', // --primary
-    },
-  };
+  // Get theme from Tamagui
+  const theme = useTheme();
 
-  const customDarkTheme = {
-    ...DarkTheme,
-    colors: {
-      ...DarkTheme.colors,
-      background: 'rgb(0, 0, 0)', // --background-base dark
-      card: 'rgb(26, 26, 26)', // --background-muted dark
-      text: 'rgb(255, 255, 255)', // --forend-primary dark
-      border: 'rgb(179, 179, 179)', // --forend-secondary dark
-      primary: 'rgb(0, 255, 149)', // --primary
-    },
-  };
+  // Memoize navigation themes to avoid unnecessary re-renders
+  const navigationThemes = useMemo(() => {
+    const customLightTheme = {
+      ...DefaultTheme,
+      colors: {
+        ...DefaultTheme.colors,
+        background: theme.background?.val || '#FFFFFF',
+        card: theme.bg2?.val || '#F2F2F7',
+        text: theme.text?.val || '#000000',
+        border: theme.border?.val || '#767676',
+        primary: theme.primary?.val || '#00EF8B',
+      },
+    };
+
+    const customDarkTheme = {
+      ...DarkTheme,
+      colors: {
+        ...DarkTheme.colors,
+        background: theme.background?.val || '#121212',
+        card: theme.bg2?.val || '#1A1A1A', 
+        text: theme.text?.val || '#FFFFFF',
+        border: theme.border?.val || '#B3B3B3',
+        primary: theme.primary?.val || '#00EF8B',
+      },
+    };
+
+    return { customLightTheme, customDarkTheme };
+  }, [theme]);
+
+  // Determine if we're in dark mode based on background color
+  const isDarkMode = theme.background?.val === '#121212';
+  const currentTheme = isDarkMode ? navigationThemes.customDarkTheme : navigationThemes.customLightTheme;
 
   return (
     <SafeAreaProvider>
       {/* <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}> */}
-      <NavigationContainer ref={navigationRef} theme={customDarkTheme}>
+      <NavigationContainer 
+        ref={navigationRef} 
+        theme={currentTheme}
+      >
         <Stack.Navigator
           initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
           screenOptions={{
@@ -173,6 +189,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           <Stack.Group
             screenOptions={{
               headerShown: true,
+              headerBackTitleVisible: false, // Hide the "Back" text next to chevron
+              headerBackTitle: '', // Ensure no back title text
+              headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
               // headerLeft: () => <NavigationBackButton />,
               // headerRight: () => <NavigationCloseButton />,
             }}
@@ -180,11 +199,23 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             <Stack.Screen
               name="SelectTokens"
               component={SelectTokensScreen}
-              options={
-                {
-                  // headerTitle: () => <NavigationTitle title={t('navigation.selectTokens')} />,
-                }
-              }
+              options={{
+                headerTitle: 'Select Tokens',
+              }}
+            />
+            <Stack.Screen
+              name="SendTo"
+              component={SendToScreen}
+              options={{
+                headerTitle: 'Send To',
+              }}
+            />
+            <Stack.Screen
+              name="SendTokens"
+              component={SendTokensScreen}
+              options={{
+                headerTitle: 'Send Tokens',
+              }}
             />
           </Stack.Group>
         </Stack.Navigator>
