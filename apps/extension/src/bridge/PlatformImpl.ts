@@ -292,12 +292,12 @@ class ExtensionPlatformImpl implements PlatformSpec {
         };
 
         // Determine payer function based on transaction name and fee coverage logic
-        const shouldCoverFee = config.name && config.name.endsWith('WithPayer');
-
-        if (shouldCoverFee) {
+        const withPayer = config.name && config.name.endsWith('WithPayer');
+        if (withPayer) {
           // Use bridge fee payer function
           const { address: payerAddress, keyId: payerKeyId } =
             await this.walletController.getBridgeFeePayerAddressAndKeyId();
+
           config.payer = async (account: any) => {
             const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
             const KEY_ID = Number(payerKeyId) || 0;
@@ -308,16 +308,15 @@ class ExtensionPlatformImpl implements PlatformSpec {
               addr: ADDRESS.replace('0x', ''),
               keyId: KEY_ID,
               signingFunction: async (signable: any) => {
+                const signature = await this.walletController.signBridgeFeePayer(signable);
                 return {
                   addr: ADDRESS,
                   keyId: KEY_ID,
-                  signature: await this.walletController.signPayer(signable),
+                  signature: signature,
                 };
               },
             };
           };
-
-          // Set authorizations array with both proposer and payer
           config.authorizations = [config.proposer, config.payer];
         } else {
           // Check if free gas is allowed
