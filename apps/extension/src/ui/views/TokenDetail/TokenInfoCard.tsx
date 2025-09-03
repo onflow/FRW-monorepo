@@ -3,7 +3,6 @@ import { bridge } from '@onflow/frw-context';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
-
 import {
   type CoinItem,
   type CustomFungibleTokenInfo,
@@ -64,6 +63,8 @@ const TokenInfoCard = ({
           balance:
             tokenInfo && 'symbol' in tokenInfo ? (tokenInfo as CoinItem).balance || '0' : '0',
           contractName: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.contractName || '' : '',
+          contractAddress: tokenInfo.address || '',
+          flowIdentifier: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.flowIdentifier || '' : '',
           isVerified:
             tokenInfo && 'symbol' in tokenInfo
               ? (tokenInfo as CoinItem).isVerified || false
