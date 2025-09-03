@@ -27,19 +27,18 @@ export function TokenAmountInput({
   const tokenBalance = selectedToken?.balance || '0';
   return (
     <YStack gap={12} p={12} pb={16} rounded={16} width="100%" {...props}>
-      {/* Send Tokens Header - exactly 75px width */}
-      <XStack items="center" gap={15}>
-        <Text
-          fontSize={12}
-          fontWeight="400"
-          color="rgba(255, 255, 255, 0.8)"
-          width={75}
-          lineHeight={16}
-          textAlign="left"
-        >
-          Send Tokens
-        </Text>
-      </XStack>
+      {/* Send Tokens Header - aligned with From Account */}
+      <Text
+        fontSize="$2"
+        mb="$3"
+        ml="$1"
+        fontWeight="400"
+        color="$light80"
+        lineHeight={16}
+        textAlign="left"
+      >
+        Send Tokens
+      </Text>
 
       {/* Main Input Row - space-between with 11px gap */}
       <XStack items="center" justify="space-between" gap={11}>
