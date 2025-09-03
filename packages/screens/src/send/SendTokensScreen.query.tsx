@@ -1,10 +1,14 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, useTokenStore, useWalletStore, walletSelectors, sendSelectors } from '@onflow/frw-stores';
-import { type NFTModel, type CollectionModel, type TokenModel } from '@onflow/frw-types';
+import {
+  useSendStore,
+  useTokenStore,
+  useWalletStore,
+  walletSelectors,
+} from '@onflow/frw-stores';
+import { type NFTModel, type CollectionModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
-  View,
   TokenAmountInput,
   TokenSelectorModal,
   TransactionConfirmationModal,
@@ -18,7 +22,6 @@ import {
   Text,
   Separator,
   XStack,
-  Stack,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
@@ -56,8 +59,8 @@ export const SendTokensScreen = (props) => {
   // Get token store and wallet store
   const { getTokensForAddress, fetchTokens } = useTokenStore();
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
-  const loadAccountsFromBridge = useWalletStore(state => state.loadAccountsFromBridge);
-  const isLoadingWallet = useWalletStore(state => state.isLoading);
+  const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
+  const isLoadingWallet = useWalletStore((state) => state.isLoading);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -92,14 +95,14 @@ export const SendTokensScreen = (props) => {
     queryKey: ['tokens', selectedAccount?.address, network],
     queryFn: async () => {
       if (!selectedAccount?.address) return [];
-      
+
       // Check if we already have cached data first
       const cachedTokens = getTokensForAddress(selectedAccount.address, network);
-      
+
       if (!cachedTokens || cachedTokens.length === 0) {
         await fetchTokens(selectedAccount.address, network, false);
       }
-      
+
       // Get tokens from cache (either existing or newly fetched)
       const coinsData = getTokensForAddress(selectedAccount.address, network);
       return coinsData || [];
@@ -159,10 +162,13 @@ export const SendTokensScreen = (props) => {
   const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
 
   // Handler functions - now internal to the screen
-  const handleTokenSelect = useCallback((token: any) => {
-    setSelectedToken(token);
-    setIsTokenSelectorVisible(false);
-  }, [setSelectedToken]);
+  const handleTokenSelect = useCallback(
+    (token: any) => {
+      setSelectedToken(token);
+      setIsTokenSelectorVisible(false);
+    },
+    [setSelectedToken]
+  );
 
   const handleAmountChange = useCallback((newAmount: string) => {
     setAmount(newAmount);
@@ -278,7 +284,7 @@ export const SendTokensScreen = (props) => {
   // Calculate overall loading state - only show loading screen for critical data
   // Don't block on wallet store loading if we already have accounts
   const isLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
-  
+
   // Calculate error state
   const error = useMemo(() => {
     if (accountError) return 'Failed to load account data. Please try refreshing.';
@@ -323,10 +329,10 @@ export const SendTokensScreen = (props) => {
           onNavigate={(link: string) => navigation.navigate(link)}
         />
       )}
-      
+
       <YStack flex={1} p={contentPadding}>
         {/* Scrollable Content */}
-        <YStack flex={1} gap="$4">
+        <YStack flex={1} gap="$3">
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$3">
             {/* From Account Section */}
             {fromAccount ? (
@@ -404,7 +410,6 @@ export const SendTokensScreen = (props) => {
           {/* To Account Section */}
           {toAccount && (
             <ToAccountSection
-            
               account={toAccount}
               fromAccount={fromAccount || undefined}
               isAccountIncompatible={isAccountIncompatible}
@@ -427,7 +432,7 @@ export const SendTokensScreen = (props) => {
               borderRadius={16}
               contentPadding={0}
             />
-            
+
             {showStorageWarning && (
               <StorageWarning
                 message={storageWarningMessage}
@@ -453,9 +458,9 @@ export const SendTokensScreen = (props) => {
             borderWidth={1}
             borderColor="#2E2E2E"
           >
-            <Text 
-              fontSize="$4" 
-              fontWeight="600" 
+            <Text
+              fontSize="$4"
+              fontWeight="600"
               color={isSendDisabled ? 'rgba(255, 255, 255, 0.3)' : '$white'}
             >
               Next

@@ -26,7 +26,7 @@ export function TokenAmountInput({
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
   return (
-    <YStack gap={12} p={12} pb={16} rounded={16} width="100%" {...props}>
+    <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - aligned with From Account */}
       <Text
         fontSize="$2"
