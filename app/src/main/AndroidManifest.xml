@@ -69,7 +69,7 @@
             android:theme="@style/AppTheme"/>
 
         <activity
-            android:name=".ReactNativeActivity"
+            android:name=".reactnative.ReactNativeActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme"

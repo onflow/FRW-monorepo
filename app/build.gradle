@@ -235,11 +235,6 @@ configurations.all {
     }
 }
 
-// Fix RevoPush CodePush duplicate class conflict
-android.packagingOptions.pickFirsts += [
-    '**/NativeFRWBridgeSpec.class'
-]
-
 // Clean task to remove conflicting generated classes
 task cleanCodegenClasses {
     doLast {
