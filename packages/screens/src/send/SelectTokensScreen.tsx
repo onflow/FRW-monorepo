@@ -50,6 +50,7 @@ export function SelectTokensScreen(): React.ReactElement {
     setCurrentStep,
     clearTransactionData,
     setSelectedCollection,
+    setSelectedNFTs,
     setFromAccount: setStoreFromAccount,
   } = useSendStore();
 
@@ -64,7 +65,7 @@ export function SelectTokensScreen(): React.ReactElement {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Get tokens from tokenStore for the account
+  // Get tokens from tokenStore for the account (if available)
   const network = bridge.getNetwork() || 'mainnet';
 
   // Fetch tokens
@@ -215,6 +216,7 @@ export function SelectTokensScreen(): React.ReactElement {
   const handleNFTPress = (collection: CollectionModel): void => {
     const address = fromAccount?.address || bridge.getSelectedAddress();
     setSelectedCollection(collection);
+    setSelectedNFTs([]);
     setTransactionType('multiple-nfts');
     navigation.navigate('NFTList', { collection, address });
   };

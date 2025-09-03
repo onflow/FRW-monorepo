@@ -1,4 +1,4 @@
-import { type PlatformSpec, type Storage } from '@onflow/frw-context';
+import { type PlatformSpec, type Storage, type Cache } from '@onflow/frw-context';
 import {
   Platform,
   type RecentContactsResponse,
@@ -7,22 +7,29 @@ import {
   type Currency,
 } from '@onflow/frw-types';
 
+import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
 import { ExtensionStorage } from './ExtensionStorage';
 
 class ExtensionPlatformImpl implements PlatformSpec {
   private debugMode: boolean = process.env.NODE_ENV === 'development';
   private storageInstance: ExtensionStorage;
+  private cacheInstance: ExtensionCache;
   private currentAddress: string | null = null;
   private currentNetwork: string = 'mainnet';
   private walletController: any = null;
 
   constructor() {
     this.storageInstance = new ExtensionStorage();
+    this.cacheInstance = new ExtensionCache('screens:');
   }
 
   storage(): Storage {
     return this.storageInstance;
+  }
+
+  cache(): Cache {
+    return this.cacheInstance;
   }
 
   navigation() {
