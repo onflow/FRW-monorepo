@@ -8,7 +8,8 @@ const CONFIG = {
   input: '../../packages/types/src/Bridge.ts',
   output: {
     swift: 'ios/FRW/Foundation/Bridge/BridgeModels.swift',
-    kotlin: 'android/app/src/main/java/com/flowfoundation/wallet/bridge/BridgeModels.kt',
+    kotlin:
+      'android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/BridgeModels.kt',
   },
 };
 
@@ -149,16 +150,27 @@ function parseTypeScriptInterfaces(content, filePath) {
  */
 function resolveExternalInterface(interfaceName, packagePath, collectedInterfaces = []) {
   try {
-    // Try to find the interface in the external package
-    const packageDir = path.resolve('./node_modules', packagePath);
+    let packageDir;
+    let possibleFiles = [];
 
-    // Look for common file locations
-    const possibleFiles = [
-      path.join(packageDir, 'src/index.ts'),
-      path.join(packageDir, 'src/codegen/service.generated.ts'),
-      path.join(packageDir, 'index.ts'),
-      path.join(packageDir, 'lib/index.ts'),
-    ];
+    // Check if it's a local workspace package first
+    if (packagePath === '@onflow/frw-api') {
+      packageDir = path.resolve('../../packages/api');
+      possibleFiles = [
+        path.join(packageDir, 'src/codegen/service.generated.ts'),
+        path.join(packageDir, 'src/index.ts'),
+        path.join(packageDir, 'index.ts'),
+      ];
+    } else {
+      // Try to find the interface in node_modules
+      packageDir = path.resolve('./node_modules', packagePath);
+      possibleFiles = [
+        path.join(packageDir, 'src/index.ts'),
+        path.join(packageDir, 'src/codegen/service.generated.ts'),
+        path.join(packageDir, 'index.ts'),
+        path.join(packageDir, 'lib/index.ts'),
+      ];
+    }
 
     for (const filePath of possibleFiles) {
       if (fs.existsSync(filePath)) {
@@ -540,7 +552,7 @@ function generateKotlinCode(interfaces) {
 //  Do not edit manually
 //
 
-package com.flowfoundation.wallet.bridge
+package com.flowfoundation.wallet.reactnative.bridge
 
 import com.google.gson.annotations.SerializedName
 
