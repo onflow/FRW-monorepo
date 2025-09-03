@@ -231,7 +231,7 @@ jobs:
         run: xvfb-run -a --server-args="-screen 0 1280x720x24 -nolisten tcp -nolisten unix" pnpm -F frw-extension test:e2e
         env:
           CI: true
-          HEADLESS: false
+          HEADLESS: true
       - name: Sanitize Playwright Report
         if: always()
         run: cd apps/extension && pnpm tsx build/sanitize-playwright.ts

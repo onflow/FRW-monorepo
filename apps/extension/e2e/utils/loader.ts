@@ -45,10 +45,6 @@ export const test = base.extend<{
         '--lang=en-US',
         '--no-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-web-security',
-        '--disable-features=IsolateOrigins',
-        '--disable-site-isolation-trials',
-        '--enable-extensions',
       ],
       locale: 'en-US',
       env: {
