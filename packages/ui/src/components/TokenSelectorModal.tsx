@@ -66,6 +66,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
     <YStack flex={1} gap={20}>
       {/* Header */}
       <XStack items="center" justify="space-between">
+        <XStack width={40} /> {/* Invisible spacer to balance the close button */}
         <Text fontSize={18} fontWeight="700" color="#FFFFFF" flex={1} textAlign="center">
           {title}
         </Text>

@@ -25,8 +25,8 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      pt="$4"
-    //  px="$2"
+      pt="$2"
+      px="$1"
       pb="$6"
       gap="$3"
       pressStyle={{
@@ -37,7 +37,7 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16} textAlign="left">
+      <Text fontSize="$2" mb="$3" fontWeight="400" color="$light80" lineHeight={16} textAlign="left">
         {title}
       </Text>
 
