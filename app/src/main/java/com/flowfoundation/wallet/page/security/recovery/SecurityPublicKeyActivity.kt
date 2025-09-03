@@ -10,9 +10,11 @@ import com.flowfoundation.wallet.databinding.ActivitySecurityPublicKeyBinding
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.instabug.library.Instabug
+import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class SecurityPublicKeyActivity : BaseActivity() {
 
@@ -22,6 +24,11 @@ class SecurityPublicKeyActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySecurityPublicKeyBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Configure status bar to prevent overlap with system UI
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
+        
         setupToolbar()
         initPrivateKey()
     }

@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.page.nft.nftdetail.NftDetailActivity
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTItemModel
 import com.flowfoundation.wallet.page.nft.nftlist.title
-import com.flowfoundation.wallet.page.nft.nftlist.widget.NftItemPopupMenu
+
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -62,11 +62,8 @@ class NFTListItemPresenter(
                 logd("NFTListItemPresenter", "coverViewWrapper clicked for NFT: ${nft.uniqueId()}")
                 NftDetailActivity.launch(context, nft.uniqueId(), nft.getCollectionContractId(), nft.contractName(), fromAddress)
             }
-            coverViewWrapper.setOnLongClickListener {
-                logd("NFTListItemPresenter", "coverViewWrapper long clicked for NFT: ${nft.uniqueId()}")
-                NftItemPopupMenu(coverView, model.nft).show()
-                true
-            }
+            // Long click handler removed - no menu items to show
+            coverViewWrapper.setOnLongClickListener(null)
 
             view.setBackgroundResource(R.color.transparent)
             view.setPadding(0, 0, 0, 0)

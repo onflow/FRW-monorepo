@@ -19,12 +19,17 @@ class FlowWalletApplication : Application(), ReactApplication {
 
     override val reactNativeHost: ReactNativeHost =
         object : DefaultReactNativeHost(this) {
-            override fun getPackages(): List<ReactPackage> =
-                PackageList(this).packages.apply {
+            override fun getPackages(): List<ReactPackage> {
+                android.util.Log.d("FlowWalletApplication", "Getting React Native packages...")
+                val packages = PackageList(this).packages.apply {
                     // Packages that cannot be autolinked yet can be added manually here, for example:
-                     add(NativeFRWBridgePackage())
-                     // CodePush will be added automatically via autolinking
+                    android.util.Log.d("FlowWalletApplication", "Adding NativeFRWBridgePackage to React Native packages")
+                    add(NativeFRWBridgePackage())
+                    // CodePush will be added automatically via autolinking
                 }
+                android.util.Log.d("FlowWalletApplication", "Total packages: ${packages.size}")
+                return packages
+            }
 
             override fun getJSMainModuleName(): String = "index"
 
