@@ -62,11 +62,6 @@
       "Bash(rbenv global:*)",
       "Bash(rbenv version:*)",
       "Bash(xcodebuild:*)",
-      "Read(/Users/lealobanov/Library/Developer/Xcode/DerivedData/FRW-eqwhelzelgjrtsczzhckkzjmwabc/SourcePackages/checkouts/web3swift/Sources/Web3Core/KeystoreManager/**)",
-      "Read(/Users/lealobanov/Library/Developer/Xcode/DerivedData/FRW-eqwhelzelgjrtsczzhckkzjmwabc/SourcePackages/checkouts/web3swift/**)",
-      "Read(/Users/lealobanov/Library/Developer/Xcode/DerivedData/FRW-eqwhelzelgjrtsczzhckkzjmwabc/SourcePackages/checkouts/web3swift/Sources/Web3Core/Utility/**)",
-      "Read(/Users/lealobanov/Library/Developer/Xcode/DerivedData/FRW-eqwhelzelgjrtsczzhckkzjmwabc/SourcePackages/checkouts/web3swift/Sources/web3swift/Utils/Extensions/**)",
-      "Read(/Users/lealobanov/Library/Developer/Xcode/DerivedData/FRW-eqwhelzelgjrtsczzhckkzjmwabc/SourcePackages/checkouts/CryptoSwift/Sources/CryptoSwift/Foundation/**)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
