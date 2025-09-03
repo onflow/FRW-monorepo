@@ -85,9 +85,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           borderWidth={0}
           height={44}
         >
-          <XStack width={20} height={20} items="center" justify="center">
-            <Search size={20} color="rgba(255, 255, 255, 0.6)" />
-          </XStack>
+          <Search size={20} color="rgba(255, 255, 255, 0.6)" />
           <Input
             flex={1}
             value={searchQuery}
@@ -101,7 +99,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
             unstyled
             fontFamily="Inter"
             fontWeight="400"
-            height={44}
+            height="100%"
             textAlignVertical="center"
           />
         </XStack>

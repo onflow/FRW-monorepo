@@ -161,7 +161,7 @@ export function SelectTokensScreen(): React.ReactElement {
             }}
             title={t('labels.fromAccount')}
             isLoading={isBalanceLoading}
-            showBackground={true}
+            
           />
         )}
 
@@ -178,7 +178,7 @@ export function SelectTokensScreen(): React.ReactElement {
         {/* Content */}
         <ScrollView flex={1} showsVerticalScrollIndicator={false}>
           {tab === 'Tokens' && (
-            <YStack gap="$3">
+            <YStack gap="$4">
               {isTokensLoading ? (
                 <>
                   {[1, 2, 3, 4, 5].map((index) => (
@@ -212,9 +212,9 @@ export function SelectTokensScreen(): React.ReactElement {
                   refreshText={t('buttons.refresh')}
                 />
               ) : (
-                <YStack gap="$2">
+                <YStack gap="$3">
                   {/* Token Count Badge */}
-                  <XStack justify="space-between" items="center" px="$2" pb="$2">
+                  <XStack justify="space-between" items="center" px="$2" pb="$3">
                     <Badge variant="secondary" size="small">
                       {tokensWithBalance.length}{' '}
                       {tokensWithBalance.length === 1 ? 'Token' : 'Tokens'}
@@ -228,7 +228,7 @@ export function SelectTokensScreen(): React.ReactElement {
                         name={token.name || ''}
                         balance={token.displayBalance || token.balance || '0'}
                         logo={token.logoURI}
-                        price={token.usdValue?.toString()}
+                        price={token.priceInUSD?.toString()}
                         change24h={token.change ? parseFloat(token.change) : undefined}
                         isVerified={token.isVerified}
                         onPress={() => handleTokenPress(token)}
@@ -242,7 +242,7 @@ export function SelectTokensScreen(): React.ReactElement {
           )}
 
           {tab === 'NFTs' && (
-            <YStack gap="$3">
+            <YStack gap="$4">
               {isNFTsLoading ? (
                 <>
                   {[1, 2, 3, 4].map((index) => (
@@ -273,9 +273,9 @@ export function SelectTokensScreen(): React.ReactElement {
                   refreshText={t('buttons.refresh')}
                 />
               ) : (
-                <YStack gap="$2">
+                <YStack gap="$3">
                   {/* NFT Collections Count Badge */}
-                  <XStack justify="space-between" items="center" px="$2" pb="$2">
+                  <XStack justify="space-between" items="center" px="$2" pb="$3">
                     <Badge variant="primary" size="small">
                       {nftCollections.length}{' '}
                       {nftCollections.length === 1 ? 'Collection' : 'Collections'}

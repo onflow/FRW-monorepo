@@ -42,6 +42,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       rounded={borderRadius}
       gap={12}
       pt={16}
+      t={-26}
       px={16}
       pb={24}
       width="100%"

@@ -26,15 +26,16 @@ export function TokenAmountInput({
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
   return (
-    <YStack gap={12} p={16} pb={24} rounded={16} width="100%" {...props}>
+    <YStack gap={12} p={12} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - exactly 75px width */}
       <XStack items="center" gap={15}>
         <Text
           fontSize={12}
           fontWeight="400"
           color="rgba(255, 255, 255, 0.8)"
-          width="100%"
+          width={75}
           lineHeight={16}
+          textAlign="left"
         >
           Send Tokens
         </Text>

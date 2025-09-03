@@ -139,7 +139,8 @@ export const SendTokensScreen = (props) => {
 
   // Internal callback handlers
   const onEditAccountPress = () => {
-    // Handle edit account press internally
+    // Navigate back to SendTo screen to select a different recipient
+    navigation.goBack();
   };
   const onLearnMorePress = () => {
     // Handle learn more press internally
@@ -325,8 +326,8 @@ export const SendTokensScreen = (props) => {
       
       <YStack flex={1} p={contentPadding}>
         {/* Scrollable Content */}
-        <YStack flex={1} gap="$2">
-          <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3">
+        <YStack flex={1} gap="$4">
+          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$3">
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
@@ -340,7 +341,7 @@ export const SendTokensScreen = (props) => {
             <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
-              <YStack gap="$3">
+              <YStack gap="$4">
                 <TokenAmountInput
                   selectedToken={
                     selectedToken
@@ -373,7 +374,7 @@ export const SendTokensScreen = (props) => {
               /* NFTs Section */
               selectedNFTs &&
               selectedNFTs.length > 0 && (
-                <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3">
+                <YStack bg={cardBackgroundColor} rounded="$4" pt={16} px={16} pb={24} gap={12}>
                   {/* NFTs Preview */}
                   <MultipleNFTsPreview
                     nfts={selectedNFTs.map((nft) => ({
@@ -395,7 +396,7 @@ export const SendTokensScreen = (props) => {
 
           {/* Arrow Down Indicator */}
           <XStack position="relative" height={0}>
-            <XStack width="100%" position="absolute" t={-10} justify="center">
+            <XStack width="100%" position="absolute" t={-30} justify="center">
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>
           </XStack>
@@ -403,6 +404,7 @@ export const SendTokensScreen = (props) => {
           {/* To Account Section */}
           {toAccount && (
             <ToAccountSection
+            
               account={toAccount}
               fromAccount={fromAccount || undefined}
               isAccountIncompatible={isAccountIncompatible}

@@ -26,7 +26,7 @@ export function AccountCard({
     <YStack
       width="100%"
       pt="$4"
-      px="$4"
+    //  px="$2"
       pb="$6"
       gap="$3"
       pressStyle={{
@@ -37,7 +37,7 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16}>
+      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16} textAlign="left">
         {title}
       </Text>
 
