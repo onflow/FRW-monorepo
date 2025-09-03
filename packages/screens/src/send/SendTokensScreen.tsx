@@ -67,6 +67,7 @@ export const SendTokensScreen = (props) => {
   // Internal callback handlers
   const onEditAccountPress = () => {
     // Handle edit account press internally
+    navigation.navigate('SendTo');
   };
   const onLearnMorePress = () => {
     // Handle learn more press internally

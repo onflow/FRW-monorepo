@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import {
   SearchableTabLayout,
@@ -7,6 +7,7 @@ import {
   Text,
   YStack,
 } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-utils';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -38,7 +39,7 @@ export function SendToScreen({
     { type: 'contacts', title: t('send.addressBook') },
   ];
 
-  const { setToAccount } = useSendStore();
+  const { setToAccount, setSelectedToken, setTransactionType, setCurrentStep } = useSendStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
@@ -47,7 +48,29 @@ export function SendToScreen({
 
   // Get selected token from send store
   const selectedToken = useSendStore(sendSelectors.selectedToken);
-  const setCurrentStep = useSendStore((state) => state.setCurrentStep);
+
+  // Check bridge cache for token data if selectedToken is null
+  useEffect(() => {
+    const restoreFromCache = async () => {
+      if (useSendStore.getState().transactionType === 'tokens') {
+        const cacheData = (await bridge.cache().get('sendFlowData')) as any;
+        if (cacheData?.selectedToken) {
+          try {
+            setSelectedToken(cacheData.selectedToken);
+            setTransactionType('tokens');
+            setCurrentStep('send-to');
+
+            // Clear the cache after restoring to prevent stale data
+            bridge.cache().delete('sendFlowData');
+          } catch (error) {
+            logger.error('SendToScreen - No token data in cache or error accessing cache');
+          }
+        }
+      }
+    };
+
+    restoreFromCache();
+  }, [setSelectedToken, setTransactionType, setCurrentStep]);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -82,7 +105,7 @@ export function SendToScreen({
 
   const handleScanPress = useCallback(async () => {
     // TODO: Implement QR scanning functionality
-    console.log('Scan QR code');
+    logger.info('Scan QR code');
   }, []);
 
   const loadRecipientsForTab = useCallback(
@@ -123,7 +146,7 @@ export function SendToScreen({
 
         setRecipients(recipientsData);
       } catch (error) {
-        console.error('Failed to load recipients:', error);
+        logger.error('Failed to load recipients:', error);
         setRecipients([]);
       } finally {
         setIsLoading(false);
@@ -156,12 +179,12 @@ export function SendToScreen({
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {
     // TODO: Handle edit recipient
-    console.log('Edit recipient:', recipient);
+    logger.info('Edit recipient:', recipient);
   }, []);
 
   const handleRecipientCopy = useCallback((recipient: RecipientData) => {
     // TODO: Handle copy recipient address
-    console.log('Copy recipient address:', recipient.address);
+    logger.info('Copy recipient address:', recipient.address);
   }, []);
 
   const getEmptyStateForTab = () => {
