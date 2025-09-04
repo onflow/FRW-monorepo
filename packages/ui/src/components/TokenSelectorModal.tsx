@@ -70,9 +70,17 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         <Text fontSize={18} fontWeight="700" color="#FFFFFF" flex={1} textAlign="center">
           {title}
         </Text>
-        <Button size="small" variant="ghost" onPress={onClose}>
+        <XStack
+          width={40}
+          height={40}
+          items="center"
+          justify="center"
+          pressStyle={{ opacity: 0.7 }}
+          onPress={onClose}
+          cursor="pointer"
+        >
           <Close size={15} color="#FFFFFF" />
-        </Button>
+        </XStack>
       </XStack>
 
       {/* Search Input */}

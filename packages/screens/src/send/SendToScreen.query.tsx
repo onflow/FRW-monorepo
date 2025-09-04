@@ -252,14 +252,6 @@ export function SendToScreen(): React.ReactElement {
       activeTab={getTitleByType(activeTab)}
       onTabChange={handleTabChange}
     >
-      {selectedToken && (
-        <YStack mb="$3" p="$3" bg="$bg2" rounded="$3">
-          <Text fontSize="$3" color="$textSecondary">
-            {t('send.selectedToken')}: {selectedToken.symbol}
-          </Text>
-        </YStack>
-      )}
-
       <RecipientList
         data={recipients}
         isLoading={isLoading}

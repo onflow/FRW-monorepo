@@ -159,7 +159,7 @@ export function SelectTokensScreen(): React.ReactElement {
               balance: isBalanceLoading ? t('messages.loading') : balanceData.displayBalance,
               // Add more account props as needed
             }}
-            title={t('labels.fromAccount')}
+            title={t('send.fromAccount')}
             isLoading={isBalanceLoading}
             
           />

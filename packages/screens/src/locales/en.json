@@ -53,6 +53,7 @@
     "insufficient": "Insufficient Balance",
     "recipient": "Recipient",
     "from": "From",
+    "fromAccount": "From Account",
     "to": "To",
     "amount": "Amount",
     "asset": "Asset",
