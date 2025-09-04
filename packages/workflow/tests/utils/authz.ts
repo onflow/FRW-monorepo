@@ -6,7 +6,7 @@ import { sign, signSecp256k1 } from './crypto';
 export const child1Addr = accounts.child1.address;
 export const child2Addr = accounts.child2.address;
 
-export async function authz(account) {
+export async function authz(account, signType = 'secp256k1') {
   return {
     // there is stuff in the account that is passed in
     // you need to make sure its part of what is returned
@@ -22,7 +22,10 @@ export async function authz(account) {
     signingFunction: (signable) => ({
       addr: fcl.withPrefix(accounts.main.address), // must match the address that requested the signature, but with a prefix
       keyId: accounts.main.key.index, // must match the keyId in the account that requested the signature
-      signature: sign(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
+      signature:
+        signType === 'p256'
+          ? sign(accounts.main.key.privateKey, signable.message)
+          : signSecp256k1(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
       // if you arent in control of the transaction that is being signed we recommend constructing the
       // message from signable.voucher using the @onflow/encode module
     }),

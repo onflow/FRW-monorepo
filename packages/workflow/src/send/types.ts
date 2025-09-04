@@ -21,5 +21,18 @@ export interface SendPayload {
  */
 export interface TransferStrategy {
   canHandle(payload: SendPayload): boolean;
-  execute(payload: SendPayload): Promise<any>;
+  execute(payload: SendPayload, callback?: any, evmProvider?: any): Promise<any>;
 }
+
+// /**
+//  * Callback function type for EVM transaction signing
+//  */
+// export type EvmTransactionCallback = (data: {
+//   state: string;
+//   trxData: {
+//     from: string;
+//     to: string;
+//     data: string;
+//     gasLimit: number;
+//   };
+// }) => Promise<string>;
