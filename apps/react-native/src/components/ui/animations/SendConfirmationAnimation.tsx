@@ -4,10 +4,10 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { type ViewStyle, Platform, View } from 'react-native';
 
-import { useTheme } from '@/contexts/ThemeContext';
 
 import sendConfirmationAnimationDynamic from '@/assets/animations/send-confirmation-noblur.json';
 import sendConfirmationAnimationStatic from '@/assets/animations/send-confirmation.json';
+import { useTheme } from '@/contexts/ThemeContext';
 import { injectImageWithFallbacks } from '@/utils/lottie-image-injection';
 
 import { AnimationErrorBoundary } from './AnimationErrorBoundary';
@@ -62,11 +62,13 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
   }>({ method: null, success: false });
   const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(null);
   const [isAnimationReady, setIsAnimationReady] = useState(false);
-  
+
   const { isDark } = useTheme();
 
   // Determine what to show based on transaction type and available data
-  const isFlowToken = selectedToken?.symbol === 'FLOW' || selectedToken?.name === 'FLOW' || !selectedToken?.logoURI;
+  const isFlowToken = selectedToken
+    ? selectedToken.symbol === 'FLOW' || selectedToken.name === 'FLOW' || !selectedToken.logoURI
+    : false;
   const shouldShowFlowLogo = (!selectedToken && !transactionType?.includes('nft')) || isFlowToken;
 
   // Get image URI - for NFT transactions, prioritize collection square image
@@ -119,7 +121,7 @@ export const SendConfirmationAnimation: React.FC<SendConfirmationAnimationProps>
       // Use single animation source
       const baseAnimation = sendConfirmationAnimationDynamic;
       const staticAnimation = sendConfirmationAnimationStatic;
-      
+
       try {
         console.log('[SendConfirmationAnimation] Platform:', Platform.OS);
         console.log(`[SendConfirmationAnimation] Preparing animation`);

@@ -177,7 +177,7 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
 
                   {/* Balance display */}
                   {showBalance && (
-                    <View className="h-4">
+                    <View className="min-h-[18px] justify-center">
                       {isBalanceLoading ? (
                         <Skeleton isDark={isDark} className="h-4 w-20" />
                       ) : (
@@ -186,7 +186,10 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                           style={{
                             fontSize: 12,
                             fontWeight: '400',
-                            lineHeight: 17,
+                            lineHeight: 18,
+                            paddingVertical: 1,
+                            includeFontPadding: false,
+                            textAlignVertical: 'center',
                           }}
                         >
                           {balanceData || '0 FLOW'}
