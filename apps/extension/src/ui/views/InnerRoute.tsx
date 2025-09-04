@@ -200,7 +200,7 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="nested/evm/collectiondetail/:address"
+              path="nested/evm/collectiondetail/:collection_address_name"
               element={
                 <PrivateRoute>
                   <EvmCollectionDetail />

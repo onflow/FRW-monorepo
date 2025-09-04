@@ -92,7 +92,7 @@
     "type": "modules",
     "jsSrcsDir": "src/bridge",
     "android": {
-      "javaPackageName": "com.flowfoundation.wallet.bridge"
+      "javaPackageName": "com.flowfoundation.wallet.reactnative.bridge"
     },
     "ios": {
       "modulesProvider": {

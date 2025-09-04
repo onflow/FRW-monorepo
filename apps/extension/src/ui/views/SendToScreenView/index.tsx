@@ -88,15 +88,6 @@ const SendToScreenView = () => {
 
   const { selectedToken } = useSendStore();
 
-  // Debug logging
-  console.log('SendToScreenView - selectedToken:', selectedToken);
-  console.log('SendToScreenView - params.id:', params.id);
-  console.log('SendToScreenView - current URL:', window.location.pathname);
-
-  // Get token ID from URL params first (as source of truth), then selected token, or default to 'flow'
-  const tokenId = params.id || selectedToken?.symbol?.toLowerCase() || 'flow';
-  console.log('SendToScreenView - computed tokenId:', tokenId);
-
   // Redirect to proper token route if accessed via wrong URL or if we have a selected token but wrong URL
   useEffect(() => {
     const currentPath = window.location.pathname;

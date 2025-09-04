@@ -1,18 +1,17 @@
-import { navigation } from '@onflow/frw-context';
-import { useWalletStore, walletSelectors, useAddressBookStore, addressBookQueryKeys } from '@onflow/frw-stores';
-import type { WalletAccount } from '@onflow/frw-types';
+import { navigation, logger, bridge } from '@onflow/frw-context';
 import {
-  SearchableTabLayout,
-  RecipientList,
-  type RecipientData,
-  Text,
-  YStack,
-} from '@onflow/frw-ui';
+  useWalletStore,
+  useSendStore,
+  sendSelectors,
+  walletSelectors,
+  useAddressBookStore,
+  addressBookQueryKeys,
+} from '@onflow/frw-stores';
+import type { WalletAccount } from '@onflow/frw-types';
+import { SearchableTabLayout, RecipientList, type RecipientData } from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
 
@@ -27,21 +26,43 @@ interface TabConfig {
  */
 export function SendToScreen(): React.ReactElement {
   const { t } = useTranslation();
-  
+
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
     { type: 'recent', title: t('send.recent') },
     { type: 'contacts', title: t('send.addressBook') },
   ];
 
-  const { setToAccount } = useSendStore();
+  const { setToAccount, setSelectedToken, setTransactionType, setCurrentStep } = useSendStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
 
   // Get selected token from send store
   const selectedToken = useSendStore(sendSelectors.selectedToken);
-  const setCurrentStep = useSendStore((state) => state.setCurrentStep);
+
+  // Check bridge cache for token data if selectedToken is null
+  useEffect(() => {
+    const restoreFromCache = async () => {
+      if (useSendStore.getState().transactionType === 'tokens') {
+        const cacheData = (await bridge.cache().get('sendFlowData')) as any;
+        if (cacheData?.selectedToken) {
+          try {
+            setSelectedToken(cacheData.selectedToken);
+            setTransactionType('tokens');
+            setCurrentStep('send-to');
+
+            // Clear the cache after restoring to prevent stale data
+            bridge.cache().delete('sendFlowData');
+          } catch (error) {
+            logger.error('SendToScreen - No token data in cache or error accessing cache');
+          }
+        }
+      }
+    };
+
+    restoreFromCache();
+  }, [setSelectedToken, setTransactionType, setCurrentStep]);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -50,9 +71,9 @@ export function SendToScreen(): React.ReactElement {
 
   // Get wallet data
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
-  const loadAccountsFromBridge = useWalletStore(state => state.loadAccountsFromBridge);
-  const isLoadingWallet = useWalletStore(state => state.isLoading);
-  const walletError = useWalletStore(state => state.error);
+  const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
+  const isLoadingWallet = useWalletStore((state) => state.isLoading);
+  const walletError = useWalletStore((state) => state.error);
   const addressBookStore = useAddressBookStore();
 
   // Initialize wallet accounts on mount (only if not already loaded)
@@ -63,20 +84,14 @@ export function SendToScreen(): React.ReactElement {
   }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
 
   // Query for recent contacts with automatic caching
-  const {
-    data: recentContacts = [],
-    isLoading: isLoadingRecent,
-  } = useQuery({
+  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Query for all contacts with automatic caching
-  const {
-    data: allContacts = [],
-    isLoading: isLoadingContacts,
-  } = useQuery({
+  const { data: allContacts = [], isLoading: isLoadingContacts } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -184,7 +199,7 @@ export function SendToScreen(): React.ReactElement {
 
   const handleScanPress = useCallback(async () => {
     // TODO: Implement QR scanning functionality
-    console.log('Scan QR code');
+    logger.info('Scan QR code');
   }, []);
 
   const handleRecipientPress = useCallback(
@@ -206,12 +221,12 @@ export function SendToScreen(): React.ReactElement {
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {
     // TODO: Handle edit recipient
-    console.log('Edit recipient:', recipient);
+    logger.info('Edit recipient:', recipient);
   }, []);
 
   const handleRecipientCopy = useCallback((recipient: RecipientData) => {
     // TODO: Handle copy recipient address
-    console.log('Copy recipient address:', recipient.address);
+    logger.info('Copy recipient address:', recipient.address);
   }, []);
 
   const getEmptyStateForTab = () => {
