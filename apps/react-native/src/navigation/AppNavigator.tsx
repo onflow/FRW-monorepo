@@ -7,7 +7,6 @@ import {
   type InitialProps,
   type NFTModel,
 } from '@onflow/frw-types';
-import { lightTheme, darkTheme } from '@onflow/frw-ui';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useMemo } from 'react';
@@ -136,17 +135,17 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   // Get theme colors from UI package
   const [isDarkMode] = React.useState(false);
 
-  // Memoize navigation themes to avoid unnecessary re-renders
+  // Memoize navigation themes with hardcoded colors
   const navigationThemes = useMemo(() => {
     const customLightTheme = {
       ...DefaultTheme,
       colors: {
         ...DefaultTheme.colors,
-        background: lightTheme.background,
-        card: lightTheme.bg2,
-        text: lightTheme.text,
-        border: lightTheme.border,
-        primary: lightTheme.primary,
+        background: '#FFFFFF', // White background for light mode
+        card: '#F2F2F7', // Light card color
+        text: '#000000', // Black text for light mode
+        border: '#767676', // Gray border
+        primary: '#00EF8B', // Flow brand green
       },
     };
 
@@ -154,11 +153,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       ...DarkTheme,
       colors: {
         ...DarkTheme.colors,
-        background: darkTheme.background,
-        card: darkTheme.bg2,
-        text: darkTheme.text,
-        border: darkTheme.border,
-        primary: darkTheme.primary,
+        background: '#121212', // surfaceDarkDrawer color for dark mode
+        card: '#1A1A1A', // Dark card color
+        text: '#FFFFFF', // White text for dark mode
+        border: '#B3B3B3', // Light gray border
+        primary: '#00EF8B', // Flow brand green
       },
     };
 
