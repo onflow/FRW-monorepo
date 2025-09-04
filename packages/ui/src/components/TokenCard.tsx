@@ -23,13 +23,14 @@ export function TokenCard({
         onPress: onPress,
         cursor: 'pointer',
       })}
-      py="$2"
+      py="$3"
+      px="$1"
       width="100%"
     >
-      <XStack items="center" gap="$2" width="100%">
+      <XStack items="center" gap="$3" width="100%">
         <Avatar src={logo} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
 
-        <YStack flex={1} gap="$1">
+        <YStack flex={1} gap="$1.5">
           {/* Top row: Token name + verified badge + balance */}
           <XStack justify="space-between" items="center" gap="$1">
             <XStack items="center" gap="$1" flex={1} shrink={1}>

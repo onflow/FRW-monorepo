@@ -25,11 +25,10 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      pt="$4"
-      px="$4"
-      pb="$8"
+      pt="$2"
+      px="$1"
+      pb="$6"
       gap="$3"
-      height={135}
       pressStyle={{
         bg: '$light25',
       }}
@@ -38,32 +37,56 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16}>
+      <Text
+        fontSize="$2"
+        mb="$3"
+        fontWeight="400"
+        color="$light80"
+        lineHeight={16}
+        textAlign="left"
+      >
         {title}
       </Text>
 
       {/* Account Container */}
-      <XStack py={10} pl={5} pr={0} justify="space-between" items="start" flex={1}>
+      <XStack py="$2.5" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>
         {/* Left side: Avatar and Account Details */}
-        <XStack items="start" gap={16} flex={1}>
+        <XStack items="center" gap="$4" flex={1}>
           {/* Account Avatar */}
           <Avatar
             src={account.avatar}
-            fallback={account.emoji || account.name?.charAt(0) || '?'}
+            fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || '?'}
+            bgColor={account.emojiInfo?.color}
             size={36}
             borderColor="$primary"
             borderWidth={1}
           />
 
           {/* Account Details */}
-          <YStack width={151.34} gap={2}>
+          <YStack flex={1} gap="$0.5">
             {/* Account Name */}
-            <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
+            <Text
+              color="$white"
+              fontSize="$3"
+              fontWeight="600"
+              lineHeight={17}
+              numberOfLines={1}
+              minH={20}
+              w="100%"
+            >
               {account.name || 'Unnamed Account'}
             </Text>
 
             {/* Account Address */}
-            <AddressText address={account.address} truncate={true} startLength={6} endLength={4} />
+            <AddressText
+              address={account.address}
+              truncate={true}
+              startLength={6}
+              endLength={4}
+              color="$textSecondary"
+              minH={18}
+              w="100%"
+            />
 
             {/* Balance */}
             {isLoading ? (
@@ -85,7 +108,7 @@ export function AccountCard({
 
         {/* Edit Icon */}
         {showEditButton && (
-          <XStack width={24} height={24} items="center" justify="center" mt={6}>
+          <XStack width={24} height={24} items="center" justify="center">
             <Edit size={24} color="#767676" theme="outline" />
           </XStack>
         )}
@@ -178,7 +201,8 @@ export function AccountCard({
                               {/* Account Avatar */}
                               <Avatar
                                 src={acc.avatar}
-                                fallback={acc.emoji || acc.name?.charAt(0) || '?'}
+                                fallback={acc.emojiInfo?.emoji || acc.name?.charAt(0) || '?'}
+                                bgColor={acc.emojiInfo?.color}
                                 size={53.44}
                                 borderColor={isSelected ? '$primary' : undefined}
                                 borderWidth={isSelected ? 1 : undefined}

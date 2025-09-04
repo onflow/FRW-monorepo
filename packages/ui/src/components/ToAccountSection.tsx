@@ -9,11 +9,12 @@ import { Text } from '../foundation/Text';
 
 export interface ToAccountSectionProps {
   account: WalletAccount;
+  fromAccount?: WalletAccount;
   isAccountIncompatible?: boolean;
   onEditPress?: () => void;
   onLearnMorePress?: () => void;
   showEditButton?: boolean;
-  title?: string;
+  title: string;
   backgroundColor?: string;
   borderRadius?: string | number;
   contentPadding?: number;
@@ -23,11 +24,12 @@ export interface ToAccountSectionProps {
 
 export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   account,
+  fromAccount, // For conditional border logic
   isAccountIncompatible = false,
   onEditPress,
   onLearnMorePress,
   showEditButton = true,
-  title = 'To account',
+  title,
   backgroundColor = 'rgba(255, 255, 255, 0.1)',
   borderRadius = 16,
   contentPadding: _contentPadding = 16,
@@ -40,6 +42,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       rounded={borderRadius}
       gap={12}
       pt={16}
+      t={-20}
       px={16}
       pb={24}
       width="100%"
@@ -85,10 +88,21 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
               <Avatar
                 src={account.avatar}
-                fallback={(account as any)?.emoji || account.name?.charAt(0) || 'A'}
+                fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || 'A'}
+                bgColor={account.emojiInfo?.color}
                 size={avatarSize}
-                borderColor={isAccountIncompatible ? '#D9D9D9' : '#00EF8B'}
-                borderWidth={1}
+                borderColor={
+                  isAccountIncompatible
+                    ? '#D9D9D9'
+                    : fromAccount && account.address === fromAccount.address
+                      ? '#00EF8B'
+                      : undefined
+                }
+                borderWidth={
+                  isAccountIncompatible || (fromAccount && account.address === fromAccount.address)
+                    ? 1
+                    : undefined
+                }
               />
             </XStack>
           )}

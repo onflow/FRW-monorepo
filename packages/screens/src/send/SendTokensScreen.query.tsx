@@ -1,13 +1,13 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, useTokenStore } from '@onflow/frw-stores';
-import { type NFTModel, type CollectionModel, type TokenModel } from '@onflow/frw-types';
+import { useSendStore, useTokenStore, useWalletStore, walletSelectors } from '@onflow/frw-stores';
+import { type NFTModel, type CollectionModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
-  View,
   TokenAmountInput,
   TokenSelectorModal,
   TransactionConfirmationModal,
+  ConfirmationDrawer,
   AccountCard,
   ToAccountSection,
   TransactionFeeSection,
@@ -18,17 +18,22 @@ import {
   Text,
   Separator,
   XStack,
-  Stack,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
+import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
+/**
+ * Query-integrated version of SendTokensScreen following the established pattern
+ * Uses TanStack Query for data fetching and caching
+ */
 export const SendTokensScreen = (props) => {
-  // Use props for configuration only, fetch data from bridge
-  // Get router values from bridge
+  const { t } = useTranslation();
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
+  const network = bridge.getNetwork() || 'mainnet';
 
   // Get send store
   const {
@@ -44,17 +49,84 @@ export const SendTokensScreen = (props) => {
     updateFormData,
     executeTransaction,
     isLoading: storeLoading,
+    setCurrentStep,
   } = useSendStore();
-  // Get token store
+
+  // Get token store and wallet store
   const { getTokensForAddress, fetchTokens } = useTokenStore();
+  const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
+  const isLoadingWallet = useWalletStore((state) => state.isLoading);
 
-  // Add a ref to track if we've already initialized
-  const hasInitialized = React.useRef(false);
-  const network = bridge.getNetwork() || 'mainnet';
+  // Update current step when screen loads
+  useEffect(() => {
+    setCurrentStep('send-tokens');
+  }, [setCurrentStep]);
 
-  // Default values for internal use
-  const backgroundColor = '$background';
-  const contentPadding = 20;
+  // Initialize wallet accounts on mount (only if not already loaded)
+  useEffect(() => {
+    if (accounts.length === 0 && !isLoadingWallet) {
+      loadAccountsFromBridge();
+    }
+  }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
+
+  // Query for selected account with automatic caching
+  const {
+    data: selectedAccount,
+    isLoading: isLoadingAccount,
+    error: accountError,
+  } = useQuery({
+    queryKey: ['selectedAccount'],
+    queryFn: () => bridge.getSelectedAccount(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: true,
+  });
+
+  // Query for tokens with automatic caching
+  const {
+    data: tokens = [],
+    isLoading: isLoadingTokens,
+    error: tokensError,
+  } = useQuery({
+    queryKey: ['tokens', selectedAccount?.address, network],
+    queryFn: async () => {
+      if (!selectedAccount?.address) return [];
+
+      // Check if we already have cached data first
+      const cachedTokens = getTokensForAddress(selectedAccount.address, network);
+
+      if (!cachedTokens || cachedTokens.length === 0) {
+        await fetchTokens(selectedAccount.address, network, false);
+      }
+
+      // Get tokens from cache (either existing or newly fetched)
+      const coinsData = getTokensForAddress(selectedAccount.address, network);
+      return coinsData || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!selectedAccount?.address,
+  });
+
+  // Set fromAccount when selectedAccount is loaded
+  useEffect(() => {
+    if (selectedAccount && !fromAccount) {
+      setFromAccount({
+        id: selectedAccount.address,
+        address: selectedAccount.address,
+        name: selectedAccount.name,
+        avatar: selectedAccount.avatar,
+        emojiInfo: selectedAccount.emojiInfo,
+        parentAddress: selectedAccount.parentAddress,
+        isActive: true,
+        type: selectedAccount.type,
+      });
+    }
+  }, [selectedAccount, fromAccount, setFromAccount]);
+
+  // Theme-aware styling to match Figma design
+  const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
+  const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
+  const contentPadding = 16;
   const usdFee = '$0.02';
   const isAccountIncompatible = false;
   const isBalanceLoading = false;
@@ -66,8 +138,8 @@ export const SendTokensScreen = (props) => {
 
   // Internal callback handlers
   const onEditAccountPress = () => {
-    // Handle edit account press internally
-    navigation.navigate('SendTo');
+    // Navigate back to SendTo screen to select a different recipient
+    navigation.goBack();
   };
   const onLearnMorePress = () => {
     // Handle learn more press internally
@@ -76,81 +148,23 @@ export const SendTokensScreen = (props) => {
   // Internal state - no more props for data
   const [amount, setAmount] = useState<string>('');
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
-  const [tokens, setTokens] = useState<TokenModel[]>([]);
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [nftCollections, setNftCollections] = useState<CollectionModel[]>([]);
   const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
   const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
   const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
-  // Simple initialization without complex bridge calls
-  useEffect(() => {
-    // Prevent multiple initializations
-    if (hasInitialized.current) {
-      return;
-    }
-
-    const initializeData = async () => {
-      try {
-        hasInitialized.current = true;
-        setLoading(true);
-
-        // Get current selected account (this is the FROM account - the sender)
-        const selectedAccount = await bridge.getSelectedAccount();
-
-        if (selectedAccount) {
-          setFromAccount({
-            id: selectedAccount.address,
-            address: selectedAccount.address,
-            name: selectedAccount.name,
-            avatar: selectedAccount.avatar || '',
-            emojiInfo: selectedAccount.emojiInfo,
-            parentAddress: selectedAccount.parentAddress,
-            isActive: true,
-            type: selectedAccount.type,
-          });
-
-          // Get tokens from tokenStore for the selected account
-          // Check if we already have cached data first
-          const cachedTokens = getTokensForAddress(selectedAccount.address, network);
-
-          if (!cachedTokens || cachedTokens.length === 0) {
-            await fetchTokens(selectedAccount.address, network, false);
-          }
-
-          // Get tokens from cache (either existing or newly fetched)
-          const coinsData = getTokensForAddress(selectedAccount.address, network);
-
-          if (coinsData && coinsData.length > 0) {
-            setTokens(coinsData);
-          } else {
-            setTokens([]);
-            setSelectedToken(null);
-            setError('No tokens available. Please ensure your wallet has tokens to send.');
-          }
-        }
-
-        setError(null);
-      } catch (err) {
-        setError('Failed to load wallet data. Please try refreshing.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Call async initialization
-    initializeData();
-  }, []);
 
   // Handler functions - now internal to the screen
-  const handleTokenSelect = useCallback((token: any) => {
-    setSelectedToken(token);
-    setIsTokenSelectorVisible(false);
-  }, []);
+  const handleTokenSelect = useCallback(
+    (token: any) => {
+      setSelectedToken(token);
+      setIsTokenSelectorVisible(false);
+    },
+    [setSelectedToken]
+  );
 
   const handleAmountChange = useCallback((newAmount: string) => {
     setAmount(newAmount);
@@ -195,7 +209,7 @@ export const SendTokensScreen = (props) => {
         setSelectedNFTs(newSelectedNFTs);
       }
     },
-    [selectedNFTs]
+    [selectedNFTs, setSelectedNFTs]
   );
 
   const handleTransactionConfirm = useCallback(async () => {
@@ -263,8 +277,22 @@ export const SendTokensScreen = (props) => {
     ]
   );
 
+  // Calculate overall loading state - only show loading screen for critical data
+  // Don't block on wallet store loading if we already have accounts
+  const isLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
+
+  // Calculate error state
+  const error = useMemo(() => {
+    if (accountError) return 'Failed to load account data. Please try refreshing.';
+    if (tokensError) return 'Failed to load tokens. Please try refreshing.';
+    if (tokens.length === 0 && !isLoadingTokens && selectedAccount) {
+      return 'No tokens available. Please ensure your wallet has tokens to send.';
+    }
+    return null;
+  }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
+
   // Show loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
         {isExtension && <ExtensionHeader title="Send to" help={true} />}
@@ -281,7 +309,7 @@ export const SendTokensScreen = (props) => {
       <BackgroundWrapper backgroundColor={backgroundColor}>
         {isExtension && <ExtensionHeader title="Send to" help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
-          <Text color="$red500">{error}</Text>
+          <Text color="$error">{error}</Text>
         </YStack>
       </BackgroundWrapper>
     );
@@ -291,27 +319,31 @@ export const SendTokensScreen = (props) => {
     <BackgroundWrapper backgroundColor={backgroundColor}>
       {isExtension && (
         <ExtensionHeader
-          title="Send to"
+          title={t('send.sendTokens.title', 'Sending')}
           help={true}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
         />
       )}
-      <YStack flex={1} p="$4">
-        <YStack gap={0}>
-          <YStack mx="$2" rounded={16} background="$background4" mb="$1">
+
+      <YStack flex={1} p={contentPadding}>
+        {/* Scrollable Content */}
+        <YStack flex={1} gap="$3">
+          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$3">
             {/* From Account Section */}
-            {fromAccount && (
+            {fromAccount ? (
               <AccountCard
                 account={fromAccount}
                 title="From Account"
                 isLoading={isBalanceLoading}
               />
+            ) : (
+              <Text>No account data available</Text>
             )}
-            <Separator mx="$4" my={-1} borderColor="$textTertiary" />
+            <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
-              <YStack gap="$3">
+              <YStack gap="$4">
                 <TokenAmountInput
                   selectedToken={
                     selectedToken
@@ -344,7 +376,7 @@ export const SendTokensScreen = (props) => {
               /* NFTs Section */
               selectedNFTs &&
               selectedNFTs.length > 0 && (
-                <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
+                <YStack bg={cardBackgroundColor} rounded="$4" pt={16} px={16} pb={24} gap={12}>
                   {/* NFTs Preview */}
                   <MultipleNFTsPreview
                     nfts={selectedNFTs.map((nft) => ({
@@ -366,37 +398,37 @@ export const SendTokensScreen = (props) => {
 
           {/* Arrow Down Indicator */}
           <XStack position="relative" height={0}>
-            <XStack width="100%" position="absolute" t={-35} justify="center">
-              <SendArrowDivider variant="text" />
+            <XStack width="100%" position="absolute" t={-30} justify="center">
+              <SendArrowDivider variant="arrow" size={48} />
             </XStack>
           </XStack>
 
           {/* To Account Section */}
-          <Stack px="$2">
-            {toAccount && (
-              <ToAccountSection
-                account={toAccount}
-                isAccountIncompatible={isAccountIncompatible}
-                onEditPress={onEditAccountPress}
-                onLearnMorePress={onLearnMorePress}
-                showEditButton={showEditButtons}
-                title="To account"
-              />
-            )}
-          </Stack>
+          {toAccount && (
+            <ToAccountSection
+              account={toAccount}
+              fromAccount={fromAccount || undefined}
+              isAccountIncompatible={isAccountIncompatible}
+              onEditPress={onEditAccountPress}
+              onLearnMorePress={onLearnMorePress}
+              showEditButton={showEditButtons}
+              title={t('send.toAccount')}
+            />
+          )}
 
-          {/* Transaction Fee Section */}
-          <TransactionFeeSection
-            flowFee={transactionFee}
-            usdFee={usdFee}
-            isFree={isFeesFree}
-            showCovered={true}
-            title="Transaction Fee"
-            backgroundColor="transparent"
-            borderRadius={16}
-            contentPadding={16}
-          />
-          <Stack p="$4">
+          {/* Transaction Fee and Storage Warning Section */}
+          <YStack gap="$3">
+            <TransactionFeeSection
+              flowFee={transactionFee}
+              usdFee={usdFee}
+              isFree={isFeesFree}
+              showCovered={true}
+              title="Transaction Fee"
+              backgroundColor="transparent"
+              borderRadius={16}
+              contentPadding={0}
+            />
+
             {showStorageWarning && (
               <StorageWarning
                 message={storageWarningMessage}
@@ -405,26 +437,32 @@ export const SendTokensScreen = (props) => {
                 visible={true}
               />
             )}
-          </Stack>
+          </YStack>
         </YStack>
 
-        {/* Send Button */}
-        <View p={contentPadding} pt="$2">
+        {/* Send Button - Anchored to bottom */}
+        <YStack pt="$4">
           <YStack
-            bg={isSendDisabled ? 'rgba(255, 255, 255, 0.2)' : '#007AFF'}
+            bg={isSendDisabled ? '#2E2E2E' : '#2E2E2E'}
             rounded="$4"
             p="$4"
             items="center"
-            opacity={isSendDisabled ? 0.5 : 1}
+            opacity={isSendDisabled ? 1 : 1}
             pressStyle={{ opacity: 0.8 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
+            borderWidth={1}
+            borderColor="#2E2E2E"
           >
-            <Text fontSize="$4" fontWeight="600" color="$white">
-              Send Tokens
+            <Text
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? 'rgba(255, 255, 255, 0.3)' : '$white'}
+            >
+              Next
             </Text>
           </YStack>
-        </View>
+        </YStack>
 
         {/* Token Selector Modal */}
         <TokenSelectorModal
@@ -433,27 +471,50 @@ export const SendTokensScreen = (props) => {
           tokens={tokens}
           onTokenSelect={handleTokenSelect}
           onClose={handleTokenSelectorClose}
+          platform="mobile"
+          title="Tokens"
         />
 
-        {/* Transaction Confirmation Modal */}
-        <TransactionConfirmationModal
-          visible={isConfirmationVisible}
-          transactionType={transactionType}
-          selectedToken={selectedToken}
-          selectedNFTs={selectedNFTs?.map((nft) => ({
-            id: nft.id || '',
-            name: nft.name || '',
-            image: nft.thumbnail || '',
-            collection: nft.collectionName || '',
-            collectionContractName: nft.collectionContractName || '',
-            description: nft.description || '',
-          }))}
-          fromAccount={fromAccount}
-          toAccount={toAccount}
-          formData={formData}
-          onConfirm={handleTransactionConfirm}
-          onClose={handleConfirmationClose}
-        />
+        {/* Transaction Confirmation Modal/Drawer - Platform specific */}
+        {isExtension ? (
+          <TransactionConfirmationModal
+            visible={isConfirmationVisible}
+            transactionType={transactionType}
+            selectedToken={selectedToken}
+            selectedNFTs={selectedNFTs?.map((nft) => ({
+              id: nft.id || '',
+              name: nft.name || '',
+              image: nft.thumbnail || '',
+              collection: nft.collectionName || '',
+              collectionContractName: nft.collectionContractName || '',
+              description: nft.description || '',
+            }))}
+            fromAccount={fromAccount}
+            toAccount={toAccount}
+            formData={formData}
+            onConfirm={handleTransactionConfirm}
+            onClose={handleConfirmationClose}
+          />
+        ) : (
+          <ConfirmationDrawer
+            visible={isConfirmationVisible}
+            transactionType={transactionType}
+            selectedToken={selectedToken}
+            selectedNFTs={selectedNFTs?.map((nft) => ({
+              id: nft.id || '',
+              name: nft.name || '',
+              image: nft.thumbnail || '',
+              collection: nft.collectionName || '',
+              collectionContractName: nft.collectionContractName || '',
+              description: nft.description || '',
+            }))}
+            fromAccount={fromAccount}
+            toAccount={toAccount}
+            formData={formData}
+            onConfirm={handleTransactionConfirm}
+            onClose={handleConfirmationClose}
+          />
+        )}
       </YStack>
     </BackgroundWrapper>
   );

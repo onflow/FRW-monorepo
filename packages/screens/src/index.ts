@@ -1,9 +1,9 @@
 // Export screen components
 export { SelectTokensScreen } from './send/SelectTokensScreen.query';
-export * from './send/SendToScreen';
+export { SendToScreen } from './send/SendToScreen.query';
 export * from './send/NFTListScreen';
 export * from './send/NFTDetailScreen';
-export * from './send/SendTokensScreen';
+export { SendTokensScreen } from './send/SendTokensScreen.query';
 export * from './send/SendSingleNFTScreen';
 export * from './send/SendMultipleNFTsScreen';
 

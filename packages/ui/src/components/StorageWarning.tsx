@@ -34,10 +34,10 @@ export const StorageWarning: React.FC<StorageWarningProps> = ({
   }
 
   return (
-    <YStack gap="$1">
+    <YStack gap={4}>
       {/* Header with title and info icon */}
-      <XStack items="center" gap="$0.5">
-        <Text fontSize="$2" fontWeight="400" color="$white" lineHeight={16}>
+      <XStack items="center" justify="space-between">
+        <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={18}>
           {title}
         </Text>
         {showIcon && <InfoIcon size={15} color="rgba(255, 255, 255, 0.4)" />}

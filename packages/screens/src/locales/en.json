@@ -27,6 +27,7 @@
     "sendTo": {
       "title": "Send To"
     },
+    "toAccount": "To Account",
     "searchAddress": "Search address or contact...",
     "selectedToken": "Selected Token",
     "noAccounts": {
@@ -53,6 +54,7 @@
     "insufficient": "Insufficient Balance",
     "recipient": "Recipient",
     "from": "From",
+    "fromAccount": "From Account",
     "to": "To",
     "amount": "Amount",
     "asset": "Asset",
