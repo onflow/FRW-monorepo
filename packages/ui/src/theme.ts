@@ -15,6 +15,7 @@ const flowColors = {
 
   // Dark Mode surfaces (from Figma)
   surfaceDark1: '#000000', // 100% - primary background
+  surfaceDarkDrawer: '#121212',
   surfaceDark2: '#1A1A1A', // 100% - cards/surfaces
   surfaceDark3: 'rgba(255, 255, 255, 0.5)', // 50% - secondary (inverted)
   surfaceDark4: 'rgba(170, 170, 176, 0.25)', // 25% - tertiary surfaces
@@ -187,6 +188,7 @@ const themesBuilder = createThemeBuilder()
       flowColors.lightBg1, // 7 - light background
       flowColors.lightBorder1, // 8 - light border
       flowColors.textLight4, // 9 - light text
+      flowColors.surfaceLight1, // 10 - drawer background in light mode (same as main bg)
     ],
     // Dark palette: dark background to light foreground
     dark: [
@@ -200,6 +202,7 @@ const themesBuilder = createThemeBuilder()
       flowColors.darkBg1, // 7 - light background
       flowColors.darkBorder1, // 8 - dark border
       flowColors.textDark4, // 9 - dark text
+      flowColors.surfaceDarkDrawer, // 10 - drawer background (#121212)
     ],
   })
   // Add templates - these map palette indices to theme property names
@@ -226,6 +229,7 @@ const themesBuilder = createThemeBuilder()
       bg2: 1, // $bg2 - secondary background
       bg3: 2, // $bg3 - tertiary background
       bg4: 3, // $bg4 - quaternary background
+      bgDrawer: 10, // $bgDrawer - drawer background (maps to surfaceDarkDrawer #121212 in dark mode)
 
       // Border colors - long names
       border1: 8,

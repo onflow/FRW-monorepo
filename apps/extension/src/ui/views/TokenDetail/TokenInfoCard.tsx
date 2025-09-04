@@ -1,4 +1,5 @@
 import { Box, ButtonBase, Skeleton, Typography } from '@mui/material';
+import { bridge } from '@onflow/frw-context';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -45,10 +46,54 @@ const TokenInfoCard = ({
   const balance = extendedTokenInfo?.balance;
 
   const toSend = () => {
-    if (tokenInfo && 'symbol' in tokenInfo) {
-      navigate(`/dashboard/token/${tokenInfo.symbol}/send`);
-    } else {
-      navigate(`/dashboard/token/${tokenInfo?.address}/send`);
+    if (tokenInfo) {
+      // Create token data to store in cache
+      const tokenData = {
+        selectedToken: {
+          symbol:
+            tokenInfo && 'symbol' in tokenInfo
+              ? tokenInfo.symbol
+              : (tokenInfo as EvmCustomTokenInfo).unit || '',
+          name:
+            tokenInfo && 'symbol' in tokenInfo
+              ? tokenInfo.name || (tokenInfo as CoinItem).coin || ''
+              : (tokenInfo as EvmCustomTokenInfo).coin || '',
+          address: tokenInfo.address || '',
+          type: tokenInfo && 'symbol' in tokenInfo ? 'flow' : 'evm',
+          balance:
+            tokenInfo && 'symbol' in tokenInfo ? (tokenInfo as CoinItem).balance || '0' : '0',
+          contractName: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.contractName || '' : '',
+          contractAddress: tokenInfo.address || '',
+          flowIdentifier: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.flowIdentifier || '' : '',
+          isVerified:
+            tokenInfo && 'symbol' in tokenInfo
+              ? (tokenInfo as CoinItem).isVerified || false
+              : false,
+          logoURI:
+            tokenInfo && 'symbol' in tokenInfo
+              ? tokenInfo.logoURI || (tokenInfo as CoinItem).icon || ''
+              : '',
+          decimals: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.decimals || 8 : 18,
+        },
+        transactionType: 'tokens',
+        currentStep: 'send-to',
+      };
+
+      // Store token data in bridge cache for SendToScreenView to retrieve
+      try {
+        bridge.cache().set('sendFlowData', tokenData);
+      } catch (error) {
+        console.error('TokenInfoCard - Failed to store in bridge cache:', error);
+      }
+
+      // Navigate to send screen
+      if (tokenInfo && 'symbol' in tokenInfo) {
+        // For Flow tokens, use symbol-based navigation
+        navigate(`/dashboard/token/${tokenInfo.symbol?.toLowerCase() || 'flow'}/send`);
+      } else {
+        // For EVM tokens, use address-based navigation
+        navigate(`/dashboard/token/${tokenInfo.address || 'flow'}/send`);
+      }
     }
   };
 

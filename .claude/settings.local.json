@@ -55,7 +55,13 @@
       "Bash(readlink:*)",
       "Bash(./gradlew:*)",
       "Bash(npx react-native build-android:*)",
-      "Bash(git stash push:*)"
+      "Bash(git stash push:*)",
+      "Bash(adb shell:*)",
+      "Bash(open:*)",
+      "Bash(git stash:*)",
+      "Bash(rbenv global:*)",
+      "Bash(rbenv version:*)",
+      "Bash(xcodebuild:*)",
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

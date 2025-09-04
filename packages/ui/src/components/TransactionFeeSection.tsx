@@ -40,7 +40,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
     : {};
 
   return (
-    <YStack gap="$0.5" {...containerProps}>
+    <YStack gap={4} {...containerProps}>
       {/* Main fee row */}
       <XStack justify="space-between" items="center">
         {/* Left side - Title */}
@@ -55,10 +55,10 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
         </Text>
 
         {/* Right side - Fee amount and Flow logo */}
-        <XStack items="center" gap="$0.5">
+        <XStack items="center" gap={6}>
           {isFree ? (
             // Show strikethrough when free
-            <XStack items="center" gap="$0.5" pos="relative">
+            <XStack items="center" gap={6} pos="relative">
               <Text
                 fontSize="$4"
                 fontWeight="400"
@@ -81,11 +81,11 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               >
                 {usdFee}
               </Text>
-              <FlowLogo size={18} style={{ opacity: 0.6 }} />
+              <FlowLogo size={18} theme="multicolor" style={{ opacity: 0.6 }} />
             </XStack>
           ) : (
             // Show normal fee display
-            <XStack items="center" gap="$0.75">
+            <XStack items="center" gap={6}>
               <Text
                 fontSize="$4"
                 fontWeight="400"
@@ -104,7 +104,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               >
                 {usdFee}
               </Text>
-              <FlowLogo size={18} />
+              <FlowLogo size={18} theme="multicolor" />
             </XStack>
           )}
         </XStack>
