@@ -47,8 +47,7 @@ export function SendToScreen(): React.ReactElement {
     setCurrentStep('send-to');
   }, [setCurrentStep]);
 
-  // Get wallet data
-  const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const allAccounts = useWalletStore(walletSelectors.getAllAccounts);
   const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
   const isLoadingWallet = useWalletStore((state) => state.isLoading);
   const walletError = useWalletStore((state) => state.error);
@@ -56,10 +55,10 @@ export function SendToScreen(): React.ReactElement {
 
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
-    if (accounts.length === 0 && !isLoadingWallet) {
+    if (allAccounts.length === 0 && !isLoadingWallet) {
       loadAccountsFromBridge();
     }
-  }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
+  }, [loadAccountsFromBridge, allAccounts.length, isLoadingWallet]);
 
   // Query for recent contacts with automatic caching
   const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
@@ -69,7 +68,11 @@ export function SendToScreen(): React.ReactElement {
   });
 
   // Query for all contacts with automatic caching
-  const { data: allContacts = [], isLoading: isLoadingContacts } = useQuery({
+  const {
+    data: allContacts = [],
+    isLoading: isLoadingContacts,
+    error: contactsError,
+  } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -77,7 +80,7 @@ export function SendToScreen(): React.ReactElement {
 
   // Convert accounts data
   const accountsData = useMemo((): RecipientData[] => {
-    return accounts.map((account: WalletAccount) => ({
+    return allAccounts.map((account: WalletAccount) => ({
       id: account.address,
       name: account.name,
       address: account.address,
@@ -87,7 +90,7 @@ export function SendToScreen(): React.ReactElement {
       type: 'account' as const,
       isSelected: account.isActive,
     }));
-  }, [accounts]);
+  }, [allAccounts]);
 
   // Convert recent contacts data
   const recentData = useMemo((): RecipientData[] => {
@@ -108,6 +111,11 @@ export function SendToScreen(): React.ReactElement {
 
   // Convert contacts data
   const contactsData = useMemo((): RecipientData[] => {
+    console.log('🔍 [SendToScreen] allContacts from query:', allContacts);
+    console.log('🔍 [SendToScreen] allContacts length:', allContacts.length);
+    console.log('🔍 [SendToScreen] isLoadingContacts:', isLoadingContacts);
+    console.log('🔍 [SendToScreen] contactsError:', contactsError);
+
     return allContacts.map((contact: any) => ({
       id: contact.id,
       name: contact.name,
@@ -121,7 +129,7 @@ export function SendToScreen(): React.ReactElement {
       },
       parentEmojiInfo: null,
     }));
-  }, [allContacts]);
+  }, [allContacts, isLoadingContacts, contactsError]);
 
   // Get current recipients based on active tab
   const recipients = useMemo(() => {
