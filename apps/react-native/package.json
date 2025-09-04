@@ -47,6 +47,7 @@
     "@react-navigation/native-stack": "^7.1.13",
     "@rn-primitives/avatar": "^1.2.0",
     "@rn-primitives/checkbox": "^1.2.0",
+    "@rn-primitives/slot": "^1.2.0",
     "@rn-primitives/tabs": "^1.2.0",
     "axios": "^1.10.0",
     "buffer": "^6.0.3",

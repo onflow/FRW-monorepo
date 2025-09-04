@@ -63,9 +63,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               backgroundColor: parentEmoji?.color || '#F0F0F0',
             }}
           >
-            <Text className="text-center text-[6px] leading-2" disableAndroidFix={true}>
-              {parentEmoji?.emoji}
-            </Text>
+            <Text className="text-center text-[6px] leading-2">{parentEmoji?.emoji}</Text>
           </View>
         )}
 
@@ -98,7 +96,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 fontWeight: 'bold',
                 textAlign: 'center',
               }}
-              disableAndroidFix={true}
             >
               {name.charAt(0).toUpperCase()}
             </Text>
@@ -146,7 +143,6 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           }}
           numberOfLines={1}
           ellipsizeMode="middle"
-          disableAndroidFix={true}
         >
           {address}
         </Text>

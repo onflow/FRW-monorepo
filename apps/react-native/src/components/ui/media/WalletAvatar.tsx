@@ -112,7 +112,6 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
                 includeFontPadding: false,
               },
             ]}
-            disableAndroidFix={true}
           >
             {showValue}
           </Text>
@@ -136,7 +135,6 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
                   includeFontPadding: false,
                 },
               ]}
-              disableAndroidFix={true}
             >
               {fallback || '👤'}
             </Text>

@@ -102,7 +102,6 @@ export default function NFTListCard({
                     width: 15.36,
                     height: 15.36,
                   }}
-                  disableAndroidFix={true}
                 >
                   {fromAccount.emojiInfo?.emoji || '🦊'}
                 </Text>

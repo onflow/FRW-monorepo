@@ -40,7 +40,8 @@ export function TokenCard({
               {token.isVerified && <VerifiedIcon width={16} height={16} />}
             </View>
             <Text
-              className="text-sm text-fg-1 min-w-3 text-right"
+              className="text-sm text-fg-1 text-right"
+              style={{ minWidth: 64 }}
               numberOfLines={1}
               ellipsizeMode="tail"
             >

@@ -38,11 +38,7 @@ export const StorageWarning: React.FC = () => {
           }}
         >
           <ActivityIndicator size="small" color={warningTextColor} />
-          <Text
-            className="text-fg-2 text-sm font-normal"
-            style={{ lineHeight: 20 }}
-            disableAndroidFix={true}
-          >
+          <Text className="text-fg-2 text-sm font-normal" style={{ lineHeight: 20 }}>
             Checking storage conditions...
           </Text>
         </View>
@@ -74,7 +70,6 @@ export const StorageWarning: React.FC = () => {
                   flex: 1,
                   flexShrink: 1,
                 }}
-                disableAndroidFix={true}
               >
                 Storage Warning
               </Text>
@@ -96,7 +91,6 @@ export const StorageWarning: React.FC = () => {
               lineHeight: 20,
               letterSpacing: -0.084,
             }}
-            disableAndroidFix={true}
           >
             Account balance will fall below the minimum FLOW required for storage after this
             transaction, causing this transaction to fail.

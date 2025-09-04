@@ -110,7 +110,6 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                         textAlignVertical: 'center',
                         includeFontPadding: false,
                       }}
-                      disableAndroidFix={true}
                     >
                       {account.parentEmoji?.emoji}
                     </Text>

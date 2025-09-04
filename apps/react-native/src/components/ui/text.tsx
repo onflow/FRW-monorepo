@@ -3,7 +3,6 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 import { Platform, Text as RNText, type Role } from 'react-native';
 
-import { useAndroidTextFix } from '@/lib/androidTextFix';
 import { cn } from '@/lib/utils';
 
 const textVariants = cva(
@@ -17,7 +16,6 @@ const textVariants = cva(
     variants: {
       variant: {
         default: '',
-        // React Native Reusables semantic variants
         h1: cn(
           'text-center text-4xl font-extrabold tracking-tight',
           Platform.select({ web: 'scroll-m-20 text-balance' })
@@ -37,32 +35,10 @@ const textVariants = cva(
         large: 'text-lg font-semibold',
         small: 'text-sm font-medium leading-none',
         muted: 'text-muted-foreground text-sm',
-        // Original color variants
-        destructive: 'text-red-600',
-        success: 'text-green-600',
-        warning: 'text-yellow-600',
-        primary: 'text-blue-600',
-      },
-      size: {
-        xs: 'text-xs',
-        sm: 'text-sm',
-        base: 'text-base',
-        lg: 'text-lg',
-        xl: 'text-xl',
-        '2xl': 'text-2xl',
-        '3xl': 'text-3xl',
-      },
-      weight: {
-        normal: 'font-normal',
-        medium: 'font-medium',
-        semibold: 'font-semibold',
-        bold: 'font-bold',
       },
     },
     defaultVariants: {
       variant: 'default',
-      size: 'base',
-      weight: 'normal',
     },
   }
 );
@@ -93,59 +69,21 @@ function Text({
   className,
   asChild = false,
   variant = 'default',
-  size = 'base',
-  weight = 'normal',
-  style,
-  disableAndroidFix = false,
-  children,
   ...props
 }: React.ComponentProps<typeof RNText> &
   TextVariantProps &
   React.RefAttributes<RNText> & {
     asChild?: boolean;
-    disableAndroidFix?: boolean;
   }) {
   const textClass = React.useContext(TextClassContext);
-
-  // Detect if text should be bold based on weight or variant
-  const isBold =
-    weight === 'bold' ||
-    weight === 'semibold' ||
-    variant === 'h1' ||
-    variant === 'h2' ||
-    variant === 'h3' ||
-    variant === 'h4' ||
-    variant === 'large';
-
-  const androidTextFix = useAndroidTextFix(disableAndroidFix, isBold);
-
-  // Add space at the end for Android to prevent cutoff (from Reddit solution)
-  // Bold text needs more aggressive spacing
-  const processedChildren = React.useMemo(() => {
-    if (Platform.OS !== 'android' || disableAndroidFix) {
-      return children;
-    }
-
-    if (typeof children === 'string') {
-      // Bold text gets extra spaces for more aggressive prevention
-      const extraSpaces = isBold ? '   ' : ' ';
-      return children + extraSpaces;
-    }
-
-    return children;
-  }, [children, disableAndroidFix, isBold]);
-
   const Component = asChild ? Slot.Text : RNText;
   return (
     <Component
-      className={cn(textVariants({ variant, size, weight }), textClass, className)}
-      style={[androidTextFix, style]}
+      className={cn(textVariants({ variant }), textClass, className)}
       role={variant ? ROLE[variant] : undefined}
       aria-level={variant ? ARIA_LEVEL[variant] : undefined}
       {...props}
-    >
-      {processedChildren}
-    </Component>
+    />
   );
 }
 

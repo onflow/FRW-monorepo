@@ -109,7 +109,6 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                         textAlignVertical: 'center',
                         includeFontPadding: false,
                       }}
-                      disableAndroidFix={true}
                     >
                       {account.parentEmoji?.emoji}
                     </Text>

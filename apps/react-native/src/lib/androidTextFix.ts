@@ -53,28 +53,30 @@ const getManufacturerSpecificFix = (): TextStyle => {
  * Shared Android text fix utility
  * This addresses the text cutoff issue on Android devices
  */
-export const getAndroidTextFix = (disableFix: boolean = false): TextStyle => {
+export const getAndroidTextFix = (disableFix: boolean = false, isBold: boolean = false): TextStyle => {
   if (Platform.OS !== 'android' || disableFix) {
     return {};
   }
 
   const fontScale = PixelRatio.getFontScale();
-  const manufacturerFix = getManufacturerSpecificFix();
+
+  // Enhanced fix for bold text - more aggressive approach
+  const boldMultiplier = isBold ? 2.0 : 1;
 
   return {
-    // Manufacturer-specific fixes
-    ...manufacturerFix,
-
-    // Primary fix: transparent border (most effective)
-    borderRightWidth: 4 * fontScale,
+    // Force fallback to system default font
+    fontFamily: undefined,
+    // Primary fix: transparent border (more padding for bold text)
+    borderRightWidth: 6 * fontScale * boldMultiplier,
     borderColor: 'transparent',
 
     // Backup fixes for various Android devices
     includeFontPadding: false,
     textAlignVertical: 'center' as const,
 
-    // Additional padding for safety
-    paddingRight: 2,
+    // Additional padding for safety (extra aggressive for bold)
+    paddingRight: isBold ? 8 : 2,
+    paddingLeft: isBold ? 2 : 0,
 
     // Ensure correct line height
     lineHeight: undefined,
@@ -84,10 +86,11 @@ export const getAndroidTextFix = (disableFix: boolean = false): TextStyle => {
 /**
  * Hook for getting Android text fix styles
  * @param disableFix - Whether to disable the fix
+ * @param isBold - Whether the text is bold (applies enhanced fixes)
  * @returns TextStyle object with Android fixes
  */
-export const useAndroidTextFix = (disableFix: boolean = false): TextStyle => {
-  return getAndroidTextFix(disableFix);
+export const useAndroidTextFix = (disableFix: boolean = false, isBold: boolean = false): TextStyle => {
+  return getAndroidTextFix(disableFix, isBold);
 };
 
 /**

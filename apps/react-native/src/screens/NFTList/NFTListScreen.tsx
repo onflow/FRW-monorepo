@@ -196,7 +196,6 @@ export default function NFTListScreen() {
             <View style={{ flex: 1, gap: 6 }}>
               <Text
                 className="text-fg-1"
-                disableAndroidFix={true}
                 style={{
                   fontFamily: 'Inter',
                   fontWeight: '600', // semi-bold
@@ -212,7 +211,6 @@ export default function NFTListScreen() {
               {!nftLoading && (
                 <Text
                   className="text-fg-2"
-                  disableAndroidFix={true}
                   style={{
                     fontFamily: 'Inter',
                     fontWeight: '400', // regular
@@ -227,7 +225,6 @@ export default function NFTListScreen() {
               {collection?.description && (
                 <Text
                   className="text-fg-3"
-                  disableAndroidFix={true}
                   style={{
                     fontFamily: 'Inter',
                     fontWeight: '400', // regular
@@ -324,7 +321,6 @@ export default function NFTListScreen() {
               {/* Title */}
               <Text
                 className="text-fg-1 text-center mb-2"
-                disableAndroidFix={true}
                 style={{
                   fontFamily: 'Inter',
                   fontWeight: '600',
@@ -339,7 +335,6 @@ export default function NFTListScreen() {
               {/* Description */}
               <Text
                 className="text-fg-2 text-center mb-6"
-                disableAndroidFix={true}
                 style={{
                   fontFamily: 'Inter',
                   fontWeight: '400',
@@ -369,7 +364,6 @@ export default function NFTListScreen() {
                 >
                   <Text
                     className="text-fg-1 text-center"
-                    disableAndroidFix={true}
                     style={{
                       fontFamily: 'Inter',
                       fontWeight: '500',
@@ -393,7 +387,6 @@ export default function NFTListScreen() {
                   }}
                 >
                   <Text
-                    disableAndroidFix={true}
                     style={{
                       fontFamily: 'Inter',
                       fontWeight: '600', // Semi-bold
