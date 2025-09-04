@@ -27,6 +27,7 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -256,14 +257,9 @@ export const SendTokensScreen = (props) => {
           updatedAt: Date.now(),
         };
 
-        console.log(
-          '🔍 [SendTokensScreen] Setting recent contact after transaction:',
-          recentContact
-        );
         await addressBookStore.setRecentContact(recentContact);
       } catch (error) {
-        console.error('❌ [SendTokensScreen] Error setting recent contact:', error);
-        // Don't throw here - transaction was successful, this is just a nice-to-have
+        logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
       }
     }
 
