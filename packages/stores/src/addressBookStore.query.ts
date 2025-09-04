@@ -1,4 +1,4 @@
-import { context } from '@onflow/frw-context';
+import { context, queryClient } from '@onflow/frw-context';
 import { AddressBookService } from '@onflow/frw-services';
 import { FlatQueryDomain } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
@@ -108,13 +108,31 @@ export const addressBookQueries = {
   // Fetch recent contacts from storage
   fetchRecent: async (): Promise<Contact[]> => {
     try {
-      // Get recent contacts from storage using the predefined key
       const storage = context.storage;
       const recentContactsData = await storage.get('recentRecipients');
 
       if (recentContactsData) {
+        // The storage returns StorageData<RecentRecipient[]> which is RecentRecipient[] with metadata
+        // We need to extract the array items (excluding metadata properties)
+        let recipientsArray: any[] = [];
+
+        if (Array.isArray(recentContactsData)) {
+          // If it's already an array, use it directly
+          recipientsArray = recentContactsData;
+        } else if (recentContactsData && typeof recentContactsData === 'object') {
+          // If it's a StorageData object, extract array items (exclude metadata)
+          const dataObj = recentContactsData as any;
+          recipientsArray = Object.values(dataObj).filter(
+            (item) =>
+              item &&
+              typeof item === 'object' &&
+              'address' in item &&
+              !['version', 'createdAt', 'updatedAt'].includes(String(item))
+          );
+        }
+
         // Convert RecentRecipient[] to Contact[]
-        const recent: Contact[] = recentContactsData.map((recipient: any) => ({
+        const recent: Contact[] = recipientsArray.map((recipient: any) => ({
           id: recipient.id || recipient.address,
           name: recipient.name || 'Recent Contact',
           address: recipient.address,
@@ -123,6 +141,7 @@ export const addressBookQueries = {
           createdAt: recipient.createdAt || Date.now(),
           updatedAt: recipient.updatedAt || Date.now(),
         }));
+
         logger.debug('[AddressBookQuery] Fetched recent contacts from storage:', recent);
         return recent;
       }
@@ -187,7 +206,15 @@ export const addressBookMutations = {
       let recentRecipients: any[] = [];
 
       if (existingRecentData) {
-        recentRecipients = existingRecentData;
+        // Handle both array format and StorageData format
+        if (Array.isArray(existingRecentData)) {
+          recentRecipients = existingRecentData;
+        } else if (existingRecentData && typeof existingRecentData === 'object') {
+          // If it's a StorageData object, extract the array
+          recentRecipients = Object.values(existingRecentData).filter(
+            (item) => item && typeof item === 'object' && 'address' in item
+          );
+        }
       }
 
       // Convert Contact to RecentRecipient format
@@ -210,14 +237,11 @@ export const addressBookMutations = {
       // Keep only the last 10 recent recipients
       recentRecipients = recentRecipients.slice(0, 10);
 
-      // Save back to storage with proper StorageData format
-      const storageData = {
-        ...recentRecipients,
-        version: '1.0.0',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      } as any;
-      await storage.set('recentRecipients', storageData);
+      // Store the array directly - ExtensionStorage.set will automatically add metadata
+      await storage.set('recentRecipients', recentRecipients as any);
+
+      // Invalidate the recent contacts query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: addressBookQueryKeys.recent() });
 
       logger.debug('[AddressBookMutation] Set recent contact:', {
         contact,

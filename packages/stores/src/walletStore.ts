@@ -38,6 +38,11 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       const flow = flowService();
       const walletAccountsData = await flow.getWalletAccounts();
 
+      // Debug: Log what we're getting from the bridge
+      console.log('🔍 [WalletStore] walletAccountsData from bridge:', walletAccountsData);
+      console.log('🔍 [WalletStore] accounts array:', walletAccountsData.accounts);
+      console.log('🔍 [WalletStore] accounts length:', walletAccountsData.accounts?.length);
+
       if (!Array.isArray(walletAccountsData.accounts)) {
         throw new Error('Invalid accounts data from bridge');
       }

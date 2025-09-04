@@ -61,7 +61,11 @@ export function SendToScreen(): React.ReactElement {
   }, [loadAccountsFromBridge, allAccounts.length, isLoadingWallet]);
 
   // Query for recent contacts with automatic caching
-  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
+  const {
+    data: recentContacts = [],
+    isLoading: isLoadingRecent,
+    error: recentError,
+  } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -111,11 +115,6 @@ export function SendToScreen(): React.ReactElement {
 
   // Convert contacts data
   const contactsData = useMemo((): RecipientData[] => {
-    console.log('🔍 [SendToScreen] allContacts from query:', allContacts);
-    console.log('🔍 [SendToScreen] allContacts length:', allContacts.length);
-    console.log('🔍 [SendToScreen] isLoadingContacts:', isLoadingContacts);
-    console.log('🔍 [SendToScreen] contactsError:', contactsError);
-
     return allContacts.map((contact: any) => ({
       id: contact.id,
       name: contact.name,

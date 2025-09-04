@@ -171,8 +171,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     };
 
     enhancedPlatform.getWalletAccounts = async () => {
-      console.log('👛 userWallets data:', userWallets);
-
       // Always ensure there's a main account from mainAddress (parent Flow address)
       const accountsArray: any[] = [];
 
@@ -223,17 +221,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         });
       }
 
-      console.log('👛 Returning accounts array:', accountsArray.length, 'accounts');
-      console.log('👛 All accounts:', accountsArray);
-      console.log(
-        '👛 Main accounts:',
-        accountsArray.filter((acc) => acc.type === 'main')
-      );
-      console.log(
-        '👛 EVM accounts with parentAddress:',
-        accountsArray.filter((acc) => acc.type === 'evm' && acc.parentAddress)
-      );
-
       return {
         accounts: accountsArray,
         total: accountsArray.length,
@@ -241,10 +228,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     };
 
     enhancedPlatform.getSelectedAccount = async () => {
-      console.log(
-        '🎯 Enhanced platform getSelectedAccount called, currentWallet:',
-        currentWallet?.address || 'undefined'
-      );
       if (!currentWallet) {
         throw new Error('No selected account available');
       }
