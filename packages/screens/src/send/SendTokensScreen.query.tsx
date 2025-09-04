@@ -1,6 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, useTokenStore, useWalletStore, walletSelectors } from '@onflow/frw-stores';
-import { type NFTModel, type CollectionModel } from '@onflow/frw-types';
+import { type NFTModel, type CollectionModel, type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -15,15 +15,32 @@ import {
   StorageWarning,
   ExtensionHeader,
   type TransactionFormData,
+  type AccountDisplayData,
   Text,
   Separator,
   XStack,
+  Button,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * Transform WalletAccount to AccountDisplayData for UI components
+ */
+const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
+  if (!account) return null;
+
+  return {
+    name: account.name,
+    address: account.address,
+    avatarSrc: account.avatar,
+    avatarFallback: account.emojiInfo?.emoji || account.name?.charAt(0) || 'A',
+    avatarBgColor: account.emojiInfo?.color,
+  };
+};
 
 /**
  * Query-integrated version of SendTokensScreen following the established pattern
@@ -442,26 +459,19 @@ export const SendTokensScreen = (props) => {
 
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4">
-          <YStack
-            bg={isSendDisabled ? '#2E2E2E' : '#2E2E2E'}
+          <Button
+            width="100%"
+            height={52}
+            bg={isSendDisabled ? '$gray8' : '$white'}
             rounded="$4"
-            p="$4"
-            items="center"
-            opacity={isSendDisabled ? 1 : 1}
-            pressStyle={{ opacity: 0.8 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
-            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
-            borderWidth={1}
-            borderColor="#2E2E2E"
+            disabled={isSendDisabled}
+            opacity={isSendDisabled ? 0.7 : 1}
           >
-            <Text
-              fontSize="$4"
-              fontWeight="600"
-              color={isSendDisabled ? 'rgba(255, 255, 255, 0.3)' : '$white'}
-            >
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '$black'}>
               Next
             </Text>
-          </YStack>
+          </Button>
         </YStack>
 
         {/* Token Selector Modal */}
@@ -489,8 +499,8 @@ export const SendTokensScreen = (props) => {
               collectionContractName: nft.collectionContractName || '',
               description: nft.description || '',
             }))}
-            fromAccount={fromAccount}
-            toAccount={toAccount}
+            fromAccount={transformAccountForDisplay(fromAccount)}
+            toAccount={transformAccountForDisplay(toAccount)}
             formData={formData}
             onConfirm={handleTransactionConfirm}
             onClose={handleConfirmationClose}
@@ -508,8 +518,8 @@ export const SendTokensScreen = (props) => {
               collectionContractName: nft.collectionContractName || '',
               description: nft.description || '',
             }))}
-            fromAccount={fromAccount}
-            toAccount={toAccount}
+            fromAccount={transformAccountForDisplay(fromAccount)}
+            toAccount={transformAccountForDisplay(toAccount)}
             formData={formData}
             onConfirm={handleTransactionConfirm}
             onClose={handleConfirmationClose}

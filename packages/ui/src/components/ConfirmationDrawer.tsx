@@ -1,5 +1,5 @@
-import { ChevronDown, WalletCard, Close, FlowLogo } from '@onflow/frw-icons';
-import { type WalletAccount, type TransactionType, type TokenModel } from '@onflow/frw-types';
+import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { type TransactionType, type TokenModel } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
 
@@ -16,13 +16,21 @@ export interface TransactionFormData {
   transactionFee?: string;
 }
 
+export interface AccountDisplayData {
+  name: string;
+  address: string;
+  avatarSrc?: string;
+  avatarFallback: string;
+  avatarBgColor?: string;
+}
+
 export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
   selectedNFTs?: NFTSendData[];
-  fromAccount?: WalletAccount | null;
-  toAccount?: WalletAccount | null;
+  fromAccount?: AccountDisplayData | null;
+  toAccount?: AccountDisplayData | null;
   formData: TransactionFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
@@ -152,12 +160,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       <Sheet.Frame bg="$bgDrawer" borderTopLeftRadius="$6" borderTopRightRadius="$6">
         <YStack p="$4" gap="$4">
           {/* Header */}
-          <XStack items="center" justify="space-between" width="100%">
+          <XStack items="center" width="100%">
             <View w={32} h={32} />
 
-            <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
-              {title}
-            </Text>
+            <View flex={1} items="center">
+              <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
+                {title}
+              </Text>
+            </View>
 
             <XStack
               w={32}
@@ -210,8 +220,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             {/* From Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
               <Avatar
-                src={fromAccount?.avatar}
-                fallback={(fromAccount as any)?.emoji || fromAccount?.name?.charAt(0) || 'A'}
+                src={fromAccount?.avatarSrc}
+                fallback={fromAccount?.avatarFallback || 'A'}
+                bgColor={fromAccount?.avatarBgColor}
                 size={36}
               />
               <YStack items="center" gap="$1">
@@ -234,8 +245,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             {/* To Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
               <Avatar
-                src={toAccount?.avatar}
-                fallback={(toAccount as any)?.emoji || toAccount?.name?.charAt(0) || 'A'}
+                src={toAccount?.avatarSrc}
+                fallback={toAccount?.avatarFallback || 'A'}
+                bgColor={toAccount?.avatarBgColor}
                 size={36}
               />
               <YStack items="center" gap="$1">
@@ -310,6 +322,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   >
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
+                  <VerifiedToken size={10} />
                   <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>
@@ -340,7 +353,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             opacity={internalIsSending ? 0.7 : 1}
           >
             <Text fontSize="$4" fontWeight="600" color="$black">
-              {internalIsSending ? 'Sending...' : 'Confirm'}
+              {internalIsSending ? 'Sending...' : 'Hold to send'}
             </Text>
           </Button>
         </YStack>
