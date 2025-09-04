@@ -36,6 +36,7 @@ export * from './components/AddressText';
 export * from './components/Badge';
 export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
+export * from './components/ConfirmationDrawer';
 export * from './components/ErrorDialog';
 export * from './components/MultipleNFTsPreview';
 export * from './components/NFTCard';

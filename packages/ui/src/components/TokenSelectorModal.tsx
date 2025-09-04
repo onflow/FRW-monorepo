@@ -1,10 +1,9 @@
 import { Search, Close, VerifiedToken } from '@onflow/frw-icons';
 import { type TokenModel } from '@onflow/frw-types';
 import React, { useState, useMemo } from 'react';
-import { YStack, XStack, ScrollView, Input, View, Sheet, useMedia } from 'tamagui';
+import { YStack, XStack, ScrollView, Input, Sheet, useMedia } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface TokenSelectorModalProps {
@@ -37,7 +36,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const media = useMedia();
   const isMobile = media.xs || media.sm;
-  
+
   // Alternative detection: check if we're on React Native
   const isReactNative = typeof window === 'undefined' || !window.document;
 
@@ -153,17 +152,20 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                         <Text fontSize={14} fontWeight="600" color="#FFFFFF">
                           {token.symbol}
                         </Text>
-                        {token.isVerified && (
-                          <VerifiedToken size={16} color="#41CC5D" />
-                        )}
+                        {token.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
                       </XStack>
-                      <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" textAlign="right">
+                      <Text
+                        fontSize={14}
+                        fontWeight="400"
+                        color="rgba(255, 255, 255, 0.8)"
+                        textAlign="right"
+                      >
                         {typeof token.balance === 'string'
                           ? token.balance
                           : token.balance?.toFixed(4)}
                       </Text>
                     </XStack>
-                    
+
                     {/* Bottom row: Token balance and USD price */}
                     <XStack justify="space-between" items="center">
                       <Text fontSize={14} fontWeight="400" color="#FFFFFF" textAlign="right">
@@ -172,21 +174,22 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                           : `${token.balance?.toFixed(4)} ${token.symbol}`}
                       </Text>
                       {token.priceInUSD && (
-                        <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.4)" textAlign="right">
+                        <Text
+                          fontSize={14}
+                          fontWeight="400"
+                          color="rgba(255, 255, 255, 0.4)"
+                          textAlign="right"
+                        >
                           ${token.priceInUSD}
                         </Text>
                       )}
                     </XStack>
                   </YStack>
                 </XStack>
-                
+
                 {/* Divider - show for all items except the last one */}
                 {index < filteredTokens.length - 1 && (
-                  <YStack 
-                    height={1} 
-                    bg="rgba(255, 255, 255, 0.1)" 
-                    mx={12}
-                  />
+                  <YStack height={1} bg="rgba(255, 255, 255, 0.1)" mx={12} />
                 )}
               </YStack>
             ))
@@ -199,8 +202,8 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   if (!visible) return null;
 
   // Determine if we should use sheet
-  const shouldUseSheet = platform === 'mobile' || 
-    (platform === 'auto' && (isMobile || isReactNative));
+  const shouldUseSheet =
+    platform === 'mobile' || (platform === 'auto' && (isMobile || isReactNative));
 
   // Mobile: Use bottom sheet
   if (shouldUseSheet) {
@@ -219,9 +222,9 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           backgroundColor="rgba(0, 0, 0, 0.3)"
         />
         <Sheet.Handle />
-        <Sheet.Frame 
-          bg="#121212" 
-          borderTopLeftRadius={16} 
+        <Sheet.Frame
+          bg="#121212"
+          borderTopLeftRadius={16}
           borderTopRightRadius={16}
           pt={25}
           px={18}

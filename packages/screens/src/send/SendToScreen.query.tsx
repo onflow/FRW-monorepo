@@ -1,18 +1,17 @@
 import { navigation } from '@onflow/frw-context';
-import { useWalletStore, walletSelectors, useAddressBookStore, addressBookQueryKeys } from '@onflow/frw-stores';
-import type { WalletAccount } from '@onflow/frw-types';
 import {
-  SearchableTabLayout,
-  RecipientList,
-  type RecipientData,
-  Text,
-  YStack,
-} from '@onflow/frw-ui';
+  sendSelectors,
+  useSendStore,
+  useWalletStore,
+  walletSelectors,
+  useAddressBookStore,
+  addressBookQueryKeys,
+} from '@onflow/frw-stores';
+import type { WalletAccount } from '@onflow/frw-types';
+import { SearchableTabLayout, RecipientList, type RecipientData } from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
 
@@ -27,7 +26,7 @@ interface TabConfig {
  */
 export function SendToScreen(): React.ReactElement {
   const { t } = useTranslation();
-  
+
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
     { type: 'recent', title: t('send.recent') },
@@ -50,9 +49,9 @@ export function SendToScreen(): React.ReactElement {
 
   // Get wallet data
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
-  const loadAccountsFromBridge = useWalletStore(state => state.loadAccountsFromBridge);
-  const isLoadingWallet = useWalletStore(state => state.isLoading);
-  const walletError = useWalletStore(state => state.error);
+  const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
+  const isLoadingWallet = useWalletStore((state) => state.isLoading);
+  const walletError = useWalletStore((state) => state.error);
   const addressBookStore = useAddressBookStore();
 
   // Initialize wallet accounts on mount (only if not already loaded)
@@ -63,20 +62,14 @@ export function SendToScreen(): React.ReactElement {
   }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
 
   // Query for recent contacts with automatic caching
-  const {
-    data: recentContacts = [],
-    isLoading: isLoadingRecent,
-  } = useQuery({
+  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Query for all contacts with automatic caching
-  const {
-    data: allContacts = [],
-    isLoading: isLoadingContacts,
-  } = useQuery({
+  const { data: allContacts = [], isLoading: isLoadingContacts } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
     staleTime: 5 * 60 * 1000, // 5 minutes
