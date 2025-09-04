@@ -161,7 +161,6 @@ export function SelectTokensScreen(): React.ReactElement {
             }}
             title={t('send.fromAccount')}
             isLoading={isBalanceLoading}
-            
           />
         )}
 

@@ -12,7 +12,7 @@ export interface AvatarProps {
   alt?: string;
   size?: number;
   fallback?: string;
-  emojiInfo?: { emoji: string; name: string; color: string };
+  bgColor?: string;
   borderColor?: string;
   borderWidth?: number;
   style?: React.CSSProperties;

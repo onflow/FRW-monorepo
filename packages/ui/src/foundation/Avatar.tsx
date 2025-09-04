@@ -8,7 +8,7 @@ export function Avatar({
   alt,
   size = 40,
   fallback,
-  emojiInfo,
+  bgColor,
   borderColor,
   borderWidth,
   style,
@@ -17,7 +17,7 @@ export function Avatar({
     <YStack
       width={size}
       height={size}
-      bg={emojiInfo?.color || "$bg3"}
+      bg={bgColor || '$bg3'}
       items="center"
       justify="center"
       rounded={size / 2}
