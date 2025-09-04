@@ -5,6 +5,7 @@ import { YStack, XStack, View, Sheet } from 'tamagui';
 
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
+import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
@@ -229,13 +230,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <Text fontSize="$3" fontWeight="600" color="$white" textAlign="center">
                   {fromAccount?.name || 'Unknown'}
                 </Text>
-                <Text fontSize="$2" color="$gray11" textAlign="center">
-                  {fromAccount?.address
-                    ? fromAccount.address.length < 20
-                      ? fromAccount.address
-                      : `${fromAccount.address.slice(0, 6)}...${fromAccount.address.slice(-4)}`
-                    : ''}
-                </Text>
+                {fromAccount?.address && (
+                  <AddressText 
+                    address={fromAccount.address}
+                    fontSize="$2" 
+                    color="$gray11" 
+                    textAlign="center"
+                  />
+                )}
               </YStack>
             </YStack>
 
@@ -254,13 +256,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <Text fontSize="$3" fontWeight="600" color="$white" textAlign="center">
                   {toAccount?.name || 'Unknown'}
                 </Text>
-                <Text fontSize="$2" color="$gray11" textAlign="center">
-                  {toAccount?.address
-                    ? toAccount.address.length < 20
-                      ? toAccount.address
-                      : `${toAccount.address.slice(0, 6)}...${toAccount.address.slice(-4)}`
-                    : ''}
-                </Text>
+                {toAccount?.address && (
+                  <AddressText 
+                    address={toAccount.address}
+                    fontSize="$2" 
+                    color="$gray11" 
+                    textAlign="center"
+                  />
+                )}
               </YStack>
             </YStack>
           </XStack>
@@ -322,7 +325,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   >
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
-                  <VerifiedToken size={10} />
+                  <VerifiedToken size={10} color="#00EF8B" />
                   <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>
@@ -344,17 +347,15 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Confirm Button */}
           <Button
-            width="100%"
-            height={52}
-            bg="$white"
-            rounded="$4"
+            variant="primary"
+            size="large"
+            fullWidth={true}
+            loading={internalIsSending}
+            loadingText="Hold to send"
             onPress={handleConfirm}
             disabled={internalIsSending}
-            opacity={internalIsSending ? 0.7 : 1}
           >
-            <Text fontSize="$4" fontWeight="600" color="$black">
-              {internalIsSending ? 'Sending...' : 'Hold to send'}
-            </Text>
+            Hold to send
           </Button>
         </YStack>
       </Sheet.Frame>

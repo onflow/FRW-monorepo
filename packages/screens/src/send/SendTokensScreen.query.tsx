@@ -460,15 +460,28 @@ export const SendTokensScreen = (props) => {
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4">
           <Button
-            width="100%"
-            height={52}
-            bg={isSendDisabled ? '$gray8' : '$white'}
-            rounded="$4"
-            onPress={isSendDisabled ? undefined : handleSendPress}
+            fullWidth={true}
+            size="large"
             disabled={isSendDisabled}
-            opacity={isSendDisabled ? 0.7 : 1}
+            onPress={handleSendPress}
+            style={{
+              height: 52,
+              backgroundColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
+              color: isSendDisabled ? '#999' : '#000000',
+              borderColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
+              borderWidth: 1,
+              borderRadius: 16,
+              paddingHorizontal: 20,
+              paddingVertical: 16,
+              shadowColor: 'rgba(16, 24, 40, 0.05)',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: isSendDisabled ? 0 : 1,
+              shadowRadius: 2,
+              elevation: isSendDisabled ? 0 : 1,
+              opacity: isSendDisabled ? 0.7 : 1,
+            }}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '$black'}>
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
               Next
             </Text>
           </Button>

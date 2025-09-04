@@ -3,6 +3,7 @@ import React from 'react';
 import { YStack } from 'tamagui';
 
 import { StorageWarning } from '../src/components/StorageWarning';
+import { Text } from '../src/foundation/Text';
 
 const meta = {
   title: 'Components/StorageWarning',
@@ -33,6 +34,22 @@ const meta = {
     visible: {
       control: { type: 'boolean' },
       description: 'Whether to show the warning',
+    },
+    infoDialogContent: {
+      control: false,
+      description: 'Custom content to show in the info dialog when info icon is clicked',
+    },
+    infoDialogTitle: {
+      control: { type: 'text' },
+      description: 'Title for the info dialog',
+    },
+    infoDialogButtonText: {
+      control: { type: 'text' },
+      description: 'Optional button text for the info dialog',
+    },
+    onInfoDialogButtonClick: {
+      action: 'onInfoDialogButtonClick',
+      description: 'Callback when info dialog button is clicked',
     },
   },
   decorators: [
@@ -103,5 +120,50 @@ export const CustomMessage: Story = {
     showIcon: true,
     title: 'Transaction Alert',
     visible: true,
+  },
+};
+
+export const WithCustomInfoDialog: Story = {
+  args: {
+    message:
+      'Account balance will fall below the minimum FLOW required for storage after this transaction, causing this transaction to fail.',
+    showIcon: true,
+    title: 'Storage warning',
+    visible: true,
+    infoDialogTitle: 'Storage Information',
+    infoDialogContent: (
+      <YStack gap={12}>
+        <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20}>
+          Flow accounts require a minimum balance of FLOW tokens to cover storage costs.
+        </Text>
+        <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20}>
+          When sending tokens or NFTs, ensure your account maintains sufficient FLOW balance to cover storage requirements, otherwise the transaction will fail.
+        </Text>
+        <Text fontSize="$3" fontWeight="400" color="rgba(255, 255, 255, 0.7)" lineHeight={20}>
+          Learn more about Flow account storage at docs.onflow.org
+        </Text>
+      </YStack>
+    ),
+  },
+};
+
+export const WithDialogButton: Story = {
+  args: {
+    message: 'Insufficient FLOW balance for this transaction.',
+    showIcon: true,
+    title: 'Storage warning',
+    visible: true,
+    infoDialogTitle: 'Storage Requirements',
+    infoDialogButtonText: 'Add FLOW',
+    infoDialogContent: (
+      <YStack gap={12}>
+        <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20}>
+          Your account needs more FLOW tokens to cover storage costs for this transaction.
+        </Text>
+        <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20}>
+          You can add FLOW to your account to proceed with this transaction.
+        </Text>
+      </YStack>
+    ),
   },
 };
