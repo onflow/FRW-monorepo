@@ -123,7 +123,7 @@ export const SendTokensScreen = (props) => {
   }, [selectedAccount, fromAccount, setFromAccount]);
 
   // Theme-aware styling to match Figma design
-  const backgroundColor = '$background'; // Main background
+  const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
   const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
   const contentPadding = 16;
   const usdFee = '$0.02';

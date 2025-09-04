@@ -139,7 +139,7 @@ export function SelectTokensScreen(): React.ReactElement {
   });
 
   return (
-    <BackgroundWrapper backgroundColor="$background">
+    <BackgroundWrapper backgroundColor="$bgDrawer">
       <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
         {isExtension && (

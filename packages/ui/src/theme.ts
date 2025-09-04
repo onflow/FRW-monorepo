@@ -188,11 +188,11 @@ const themesBuilder = createThemeBuilder()
       flowColors.lightBg1, // 7 - light background
       flowColors.lightBorder1, // 8 - light border
       flowColors.textLight4, // 9 - light text
+      flowColors.surfaceLight1, // 10 - drawer background in light mode (same as main bg)
     ],
     // Dark palette: dark background to light foreground
     dark: [
       flowColors.surfaceDark1, // 0 - darkest background
-      flowColors.surfaceDarkDrawer, // drawer background color
       flowColors.surfaceDark2, // 1 - dark background
       flowColors.surfaceDark4, // 2 - medium background
       flowColors.surfaceDark3, // 3 - light background (inverted)
@@ -202,6 +202,7 @@ const themesBuilder = createThemeBuilder()
       flowColors.darkBg1, // 7 - light background
       flowColors.darkBorder1, // 8 - dark border
       flowColors.textDark4, // 9 - dark text
+      flowColors.surfaceDarkDrawer, // 10 - drawer background (#121212)
     ],
   })
   // Add templates - these map palette indices to theme property names
@@ -228,6 +229,7 @@ const themesBuilder = createThemeBuilder()
       bg2: 1, // $bg2 - secondary background
       bg3: 2, // $bg3 - tertiary background
       bg4: 3, // $bg4 - quaternary background
+      bgDrawer: 10, // $bgDrawer - drawer background (maps to surfaceDarkDrawer #121212 in dark mode)
 
       // Border colors - long names
       border1: 8,

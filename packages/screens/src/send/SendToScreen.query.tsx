@@ -251,6 +251,7 @@ export function SendToScreen(): React.ReactElement {
       tabSegments={tabTitles}
       activeTab={getTitleByType(activeTab)}
       onTabChange={handleTabChange}
+      backgroundColor="$bgDrawer"
     >
       <RecipientList
         data={recipients}
