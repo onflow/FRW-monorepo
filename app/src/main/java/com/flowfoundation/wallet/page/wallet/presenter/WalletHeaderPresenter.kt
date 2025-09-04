@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.bridge.RNBridge
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -114,16 +113,6 @@ class WalletHeaderPresenter(
                 cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
                 cvSwap.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppSwap())
                 flAddToken.visible()
-            }
-
-            with(cvSend) {
-                if (WalletManager.isChildAccountSelected()) {
-                    isEnabled = false
-                    alpha = 0.5f
-                } else {
-                    isEnabled = true
-                    alpha = 1f
-                }
             }
 
             ivHide.setOnClickListener {
