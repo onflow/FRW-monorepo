@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import {
   sendSelectors,
   useSendStore,
@@ -8,7 +8,13 @@ import {
   addressBookQueryKeys,
 } from '@onflow/frw-stores';
 import type { WalletAccount } from '@onflow/frw-types';
-import { SearchableTabLayout, RecipientList, type RecipientData } from '@onflow/frw-ui';
+import {
+  SearchableTabLayout,
+  RecipientList,
+  type RecipientData,
+  ExtensionHeader,
+  BackgroundWrapper,
+} from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +31,7 @@ interface TabConfig {
  * Uses TanStack Query for data fetching and caching
  */
 export function SendToScreen(): React.ReactElement {
+  const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
 
   const TABS: TabConfig[] = [
@@ -241,28 +248,38 @@ export function SendToScreen(): React.ReactElement {
   const emptyState = getEmptyStateForTab();
 
   return (
-    <SearchableTabLayout
-      title={t('send.sendTo.title')}
-      searchValue={searchQuery}
-      searchPlaceholder={t('send.searchAddress')}
-      showScanButton={true}
-      onSearchChange={setSearchQuery}
-      onScanPress={handleScanPress}
-      tabSegments={tabTitles}
-      activeTab={getTitleByType(activeTab)}
-      onTabChange={handleTabChange}
-      backgroundColor="$bgDrawer"
-    >
-      <RecipientList
-        data={recipients}
-        isLoading={isLoading}
-        emptyTitle={emptyState.title}
-        emptyMessage={emptyState.message}
-        onItemPress={handleRecipientPress}
-        onItemEdit={handleRecipientEdit}
-        onItemCopy={handleRecipientCopy}
-        contentPadding={0}
-      />
-    </SearchableTabLayout>
+    <BackgroundWrapper>
+      {isExtension && (
+        <ExtensionHeader
+          title={t('send.sendTokens.title', 'Sending')}
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
+      <SearchableTabLayout
+        title={t('send.sendTo.title')}
+        searchValue={searchQuery}
+        searchPlaceholder={t('send.searchAddress')}
+        showScanButton={true}
+        onSearchChange={setSearchQuery}
+        onScanPress={handleScanPress}
+        tabSegments={tabTitles}
+        activeTab={getTitleByType(activeTab)}
+        onTabChange={handleTabChange}
+        backgroundColor="$bgDrawer"
+      >
+        <RecipientList
+          data={recipients}
+          isLoading={isLoading}
+          emptyTitle={emptyState.title}
+          emptyMessage={emptyState.message}
+          onItemPress={handleRecipientPress}
+          onItemEdit={handleRecipientEdit}
+          onItemCopy={handleRecipientCopy}
+          contentPadding={0}
+        />
+      </SearchableTabLayout>
+    </BackgroundWrapper>
   );
 }
