@@ -27,6 +27,7 @@
     "sendTo": {
       "title": "Send To"
     },
+    "toAccount": "To account",
     "searchAddress": "Search address or contact...",
     "selectedToken": "Selected Token",
     "noAccounts": {

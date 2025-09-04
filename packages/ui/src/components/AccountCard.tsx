@@ -37,7 +37,14 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text fontSize="$2" mb="$3" fontWeight="400" color="$light80" lineHeight={16} textAlign="left">
+      <Text
+        fontSize="$2"
+        mb="$3"
+        fontWeight="400"
+        color="$light80"
+        lineHeight={16}
+        textAlign="left"
+      >
         {title}
       </Text>
 
@@ -49,7 +56,7 @@ export function AccountCard({
           <Avatar
             src={account.avatar}
             fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || '?'}
-            emojiInfo={account.emojiInfo}
+            bgColor={account.emojiInfo?.color}
             size={36}
             borderColor="$primary"
             borderWidth={1}
@@ -58,12 +65,28 @@ export function AccountCard({
           {/* Account Details */}
           <YStack flex={1} gap="$0.5">
             {/* Account Name */}
-            <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1} minH={20} w="100%">
+            <Text
+              color="$white"
+              fontSize="$3"
+              fontWeight="600"
+              lineHeight={17}
+              numberOfLines={1}
+              minH={20}
+              w="100%"
+            >
               {account.name || 'Unnamed Account'}
             </Text>
 
             {/* Account Address */}
-            <AddressText address={account.address} truncate={true} startLength={6} endLength={4} color="$textSecondary" minH={18} w="100%" />
+            <AddressText
+              address={account.address}
+              truncate={true}
+              startLength={6}
+              endLength={4}
+              color="$textSecondary"
+              minH={18}
+              w="100%"
+            />
 
             {/* Balance */}
             {isLoading ? (
@@ -179,7 +202,7 @@ export function AccountCard({
                               <Avatar
                                 src={acc.avatar}
                                 fallback={acc.emojiInfo?.emoji || acc.name?.charAt(0) || '?'}
-                                emojiInfo={acc.emojiInfo}
+                                bgColor={acc.emojiInfo?.color}
                                 size={53.44}
                                 borderColor={isSelected ? '$primary' : undefined}
                                 borderWidth={isSelected ? 1 : undefined}

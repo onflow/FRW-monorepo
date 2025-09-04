@@ -1,10 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import {
-  useSendStore,
-  useTokenStore,
-  useWalletStore,
-  walletSelectors,
-} from '@onflow/frw-stores';
+import { useSendStore, useTokenStore, useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import { type NFTModel, type CollectionModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -416,7 +411,7 @@ export const SendTokensScreen = (props) => {
               onEditPress={onEditAccountPress}
               onLearnMorePress={onLearnMorePress}
               showEditButton={showEditButtons}
-              title="To account"
+              title={t('send.toAccount')}
             />
           )}
 

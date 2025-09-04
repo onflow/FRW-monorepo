@@ -14,7 +14,8 @@ const flowColors = {
   surfaceLight4: 'rgba(0, 13, 7, 0.25)', // 25% - tertiary surfaces
 
   // Dark Mode surfaces (from Figma)
-  surfaceDark1: '#121212', // 100% - primary background
+  surfaceDark1: '#000000', // 100% - primary background
+  surfaceDarkDrawer: '#121212',
   surfaceDark2: '#1A1A1A', // 100% - cards/surfaces
   surfaceDark3: 'rgba(255, 255, 255, 0.5)', // 50% - secondary (inverted)
   surfaceDark4: 'rgba(170, 170, 176, 0.25)', // 25% - tertiary surfaces
@@ -191,6 +192,7 @@ const themesBuilder = createThemeBuilder()
     // Dark palette: dark background to light foreground
     dark: [
       flowColors.surfaceDark1, // 0 - darkest background
+      flowColors.surfaceDarkDrawer, // drawer background color
       flowColors.surfaceDark2, // 1 - dark background
       flowColors.surfaceDark4, // 2 - medium background
       flowColors.surfaceDark3, // 3 - light background (inverted)

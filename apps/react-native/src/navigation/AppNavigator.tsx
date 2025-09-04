@@ -7,12 +7,12 @@ import {
   type InitialProps,
   type NFTModel,
 } from '@onflow/frw-types';
+import { lightTheme, darkTheme } from '@onflow/frw-ui';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useMemo } from 'react';
 // import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useTheme } from 'tamagui';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { HomeScreen } from '@/screens';
@@ -133,8 +133,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setSelectedNFTs,
   ]);
 
-  // Get theme from Tamagui
-  const theme = useTheme();
+  // Get theme colors from UI package
+  const [isDarkMode] = React.useState(false);
 
   // Memoize navigation themes to avoid unnecessary re-renders
   const navigationThemes = useMemo(() => {
@@ -142,11 +142,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       ...DefaultTheme,
       colors: {
         ...DefaultTheme.colors,
-        background: theme.background?.val || '#FFFFFF',
-        card: theme.bg2?.val || '#F2F2F7',
-        text: theme.text?.val || '#000000',
-        border: theme.border?.val || '#767676',
-        primary: theme.primary?.val || '#00EF8B',
+        background: lightTheme.background,
+        card: lightTheme.bg2,
+        text: lightTheme.text,
+        border: lightTheme.border,
+        primary: lightTheme.primary,
       },
     };
 
@@ -154,28 +154,26 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       ...DarkTheme,
       colors: {
         ...DarkTheme.colors,
-        background: theme.background?.val || '#121212',
-        card: theme.bg2?.val || '#1A1A1A', 
-        text: theme.text?.val || '#FFFFFF',
-        border: theme.border?.val || '#B3B3B3',
-        primary: theme.primary?.val || '#00EF8B',
+        background: darkTheme.background,
+        card: darkTheme.bg2,
+        text: darkTheme.text,
+        border: darkTheme.border,
+        primary: darkTheme.primary,
       },
     };
 
     return { customLightTheme, customDarkTheme };
-  }, [theme]);
+  }, []);
 
-  // Determine if we're in dark mode based on background color
-  const isDarkMode = theme.background?.val === '#121212';
-  const currentTheme = isDarkMode ? navigationThemes.customDarkTheme : navigationThemes.customLightTheme;
+  // Use the current theme based on dark mode state
+  const currentTheme = isDarkMode
+    ? navigationThemes.customDarkTheme
+    : navigationThemes.customLightTheme;
 
   return (
     <SafeAreaProvider>
       {/* <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}> */}
-      <NavigationContainer 
-        ref={navigationRef} 
-        theme={currentTheme}
-      >
+      <NavigationContainer ref={navigationRef} theme={currentTheme}>
         <Stack.Navigator
           initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
           screenOptions={{
@@ -189,7 +187,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           <Stack.Group
             screenOptions={{
               headerShown: true,
-              headerBackTitleVisible: false, // Hide the "Back" text next to chevron
               headerBackTitle: '', // Ensure no back title text
               headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
               // headerLeft: () => <NavigationBackButton />,

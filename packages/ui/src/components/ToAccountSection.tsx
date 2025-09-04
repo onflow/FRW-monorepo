@@ -14,7 +14,7 @@ export interface ToAccountSectionProps {
   onEditPress?: () => void;
   onLearnMorePress?: () => void;
   showEditButton?: boolean;
-  title?: string;
+  title: string;
   backgroundColor?: string;
   borderRadius?: string | number;
   contentPadding?: number;
@@ -29,7 +29,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   onEditPress,
   onLearnMorePress,
   showEditButton = true,
-  title = 'To account',
+  title,
   backgroundColor = 'rgba(255, 255, 255, 0.1)',
   borderRadius = 16,
   contentPadding: _contentPadding = 16,
@@ -89,18 +89,18 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               <Avatar
                 src={account.avatar}
                 fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || 'A'}
-                emojiInfo={account.emojiInfo}
+                bgColor={account.emojiInfo?.color}
                 size={avatarSize}
                 borderColor={
-                  isAccountIncompatible 
-                    ? '#D9D9D9' 
-                    : fromAccount && account.address === fromAccount.address 
-                      ? '#00EF8B' 
+                  isAccountIncompatible
+                    ? '#D9D9D9'
+                    : fromAccount && account.address === fromAccount.address
+                      ? '#00EF8B'
                       : undefined
                 }
                 borderWidth={
-                  isAccountIncompatible || (fromAccount && account.address === fromAccount.address) 
-                    ? 1 
+                  isAccountIncompatible || (fromAccount && account.address === fromAccount.address)
+                    ? 1
                     : undefined
                 }
               />
