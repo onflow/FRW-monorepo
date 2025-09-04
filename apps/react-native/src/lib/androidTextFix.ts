@@ -61,22 +61,25 @@ export const getAndroidTextFix = (disableFix: boolean = false, isBold: boolean =
   const fontScale = PixelRatio.getFontScale();
 
   // Enhanced fix for bold text - more aggressive approach
-  const boldMultiplier = isBold ? 2.0 : 1;
+  const boldMultiplier = isBold ? 2.5 : 1.2;
 
   return {
     // Force fallback to system default font
     fontFamily: undefined,
-    // Primary fix: transparent border (more padding for bold text)
-    borderRightWidth: 6 * fontScale * boldMultiplier,
+    // Primary fix: transparent border (increased for better Chinese text support)
+    borderRightWidth: 8 * fontScale * boldMultiplier,
+    borderBottomWidth: 2 * fontScale, // Add bottom border to prevent vertical cutoff
     borderColor: 'transparent',
 
     // Backup fixes for various Android devices
     includeFontPadding: false,
     textAlignVertical: 'center' as const,
 
-    // Additional padding for safety (extra aggressive for bold)
+    // Enhanced padding for Chinese characters (extra aggressive for bold)
     paddingRight: isBold ? 8 : 2,
     paddingLeft: isBold ? 2 : 0,
+    paddingBottom: isBold ? 3 : 2, // Add bottom padding for Chinese characters
+    paddingTop: isBold ? 1 : 0,
 
     // Ensure correct line height
     lineHeight: undefined,
