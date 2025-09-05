@@ -64,8 +64,8 @@ export function RecipientItem({
       disabled={isDisabled}
       onPress={onPress}
       opacity={isDisabled ? 0.5 : 1}
-      borderColor={isSelected ? '$primary' : 'transparent'}
-      borderWidth={isSelected ? '$0.5' : 0}
+      borderColor="transparent"
+      borderWidth={0}
     >
       <XStack items="center">
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}

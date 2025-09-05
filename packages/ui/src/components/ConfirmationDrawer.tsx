@@ -3,9 +3,9 @@ import { type TransactionType, type TokenModel } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
 
+import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
-import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
@@ -231,10 +231,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   {fromAccount?.name || 'Unknown'}
                 </Text>
                 {fromAccount?.address && (
-                  <AddressText 
+                  <AddressText
                     address={fromAccount.address}
-                    fontSize="$2" 
-                    color="$gray11" 
+                    fontSize="$2"
+                    color="$gray11"
                     textAlign="center"
                   />
                 )}
@@ -257,10 +257,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   {toAccount?.name || 'Unknown'}
                 </Text>
                 {toAccount?.address && (
-                  <AddressText 
+                  <AddressText
                     address={toAccount.address}
-                    fontSize="$2" 
-                    color="$gray11" 
+                    fontSize="$2"
+                    color="$gray11"
                     textAlign="center"
                   />
                 )}
@@ -308,11 +308,11 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <View
                   bg="$light10"
                   rounded="$10"
-                  px="$2.5"
+                  px="$2"
                   py="$1"
                   flexDirection="row"
                   items="center"
-                  gap="$1"
+                  gap="$0.5"
                   height={32}
                   minW={60}
                 >
@@ -325,7 +325,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   >
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
-                  <VerifiedToken size={10} color="#00EF8B" />
+                  <VerifiedToken size={10} color="#41CC5D" />
                   <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>

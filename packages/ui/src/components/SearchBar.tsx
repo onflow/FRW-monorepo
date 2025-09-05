@@ -55,6 +55,7 @@ export function SearchBar({
         fontWeight={400}
         fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
         lineHeight={24}
+        textAlignVertical="center"
         disabled={disabled}
         bg="transparent"
         borderWidth={0}

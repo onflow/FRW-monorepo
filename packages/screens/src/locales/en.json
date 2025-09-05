@@ -18,6 +18,10 @@
     "error": "Error",
     "success": "Success"
   },
+  "tabs": {
+    "tokens": "Tokens",
+    "nfts": "NFTs"
+  },
   "send": {
     "tokens": "Tokens",
     "nfts": "NFTs",
@@ -28,7 +32,7 @@
       "title": "Send To"
     },
     "toAccount": "To Account",
-    "searchAddress": "Search address or contact...",
+    "searchAddress": "Search address",
     "selectedToken": "Selected Token",
     "noAccounts": {
       "title": "No Accounts",

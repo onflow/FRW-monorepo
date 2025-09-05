@@ -3,9 +3,7 @@ import { useSendStore, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
 import { type CollectionModel, type TokenModel } from '@onflow/frw-types';
 import {
   AccountCard,
-  AddressText,
   BackgroundWrapper,
-  Badge,
   Divider,
   ExtensionHeader,
   NFTCollectionRow,
@@ -153,15 +151,21 @@ export function SelectTokensScreen(): React.ReactElement {
 
         {/* Account Card - Show balance from React Query */}
         {!isExtension && balanceData && (
-          <AccountCard
-            account={{
-              address,
-              balance: isBalanceLoading ? t('messages.loading') : balanceData.displayBalance,
-              // Add more account props as needed
-            }}
-            title={t('send.fromAccount')}
-            isLoading={isBalanceLoading}
-          />
+          <YStack bg="rgba(255, 255, 255, 0.1)" borderRadius={16} p={16} pt={16} pb={24} gap={12}>
+            <AccountCard
+              account={{
+                address,
+                balance: isBalanceLoading ? t('messages.loading') : balanceData.displayBalance,
+                // Add more account props as needed
+              }}
+              title={t('send.fromAccount')}
+              isLoading={isBalanceLoading}
+              showEditButton={true}
+              pt={0}
+              px={0}
+              pb={0}
+            />
+          </YStack>
         )}
 
         {/* Tab Selector */}
@@ -212,13 +216,13 @@ export function SelectTokensScreen(): React.ReactElement {
                 />
               ) : (
                 <YStack gap="$3">
-                  {/* Token Count Badge */}
-                  <XStack justify="space-between" items="center" px="$2" pb="$3">
+                  {/* Token Count Badge - Hidden as requested */}
+                  {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
                     <Badge variant="secondary" size="small">
                       {tokensWithBalance.length}{' '}
                       {tokensWithBalance.length === 1 ? 'Token' : 'Tokens'}
                     </Badge>
-                  </XStack>
+                  </XStack> */}
 
                   {tokensWithBalance.map((token, idx) => (
                     <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
@@ -273,14 +277,14 @@ export function SelectTokensScreen(): React.ReactElement {
                 />
               ) : (
                 <YStack gap="$3">
-                  {/* NFT Collections Count Badge */}
-                  <XStack justify="space-between" items="center" px="$2" pb="$3">
+                  {/* NFT Collections Count Badge - Hidden as requested */}
+                  {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
                     <Badge variant="primary" size="small">
                       {nftCollections.length}{' '}
                       {nftCollections.length === 1 ? 'Collection' : 'Collections'}
                     </Badge>
                     <AddressText address={address} truncate={true} startLength={4} endLength={4} />
-                  </XStack>
+                  </XStack> */}
 
                   {nftCollections.map((collection, idx) => (
                     <NFTCollectionRow

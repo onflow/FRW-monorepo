@@ -32,7 +32,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
   useEffect(() => {
     // Only run in browser environment
     if (typeof document === 'undefined') return;
-    
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && visible) {
         onClose();
@@ -70,7 +70,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
       onPress={onClose}
       aria-modal="true"
       role="dialog"
-      aria-labelledby={title ? "info-dialog-title" : undefined}
+      aria-labelledby={title ? 'info-dialog-title' : undefined}
     >
       <YStack
         w={339}
@@ -127,9 +127,9 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
               {title}
             </Text>
           )}
-          
+
           {/* Content */}
-          <YStack flex={1} justify="flex-start">
+          <YStack flex={1} justify="flex-start" alignItems="center" textAlign="center">
             {children}
           </YStack>
 

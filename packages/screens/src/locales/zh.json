@@ -18,6 +18,10 @@
     "error": "错误",
     "success": "成功"
   },
+  "tabs": {
+    "tokens": "代币",
+    "nfts": "NFT"
+  },
   "send": {
     "myAccounts": "我的账户",
     "recent": "最近",

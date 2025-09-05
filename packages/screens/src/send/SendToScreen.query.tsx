@@ -83,9 +83,13 @@ export function SendToScreen(): React.ReactElement {
       address: account.address,
       avatar: account.avatar,
       emojiInfo: account.emojiInfo,
-      parentEmojiInfo: null,
+      parentEmojiInfo: account.parentEmoji || null,
       type: 'account' as const,
       isSelected: account.isActive,
+      isLinked: !!(account.parentAddress || account.type === 'child'),
+      isEVM: account.type === 'evm',
+      balance: "550.66 Flow | 12 NFT's", // TODO: Replace with real balance data
+      showBalance: true,
     }));
   }, [accounts]);
 
@@ -255,6 +259,7 @@ export function SendToScreen(): React.ReactElement {
         onItemEdit={handleRecipientEdit}
         onItemCopy={handleRecipientCopy}
         contentPadding={0}
+        showSeparators={true}
       />
     </SearchableTabLayout>
   );

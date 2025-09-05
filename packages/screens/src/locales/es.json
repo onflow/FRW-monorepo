@@ -18,6 +18,10 @@
     "error": "Error",
     "success": "Éxito"
   },
+  "tabs": {
+    "tokens": "Tokens",
+    "nfts": "NFTs"
+  },
   "send": {
     "myAccounts": "Mis Cuentas",
     "recent": "Reciente",
