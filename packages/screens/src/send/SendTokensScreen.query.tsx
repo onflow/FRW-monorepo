@@ -1,6 +1,12 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, useTokenStore, useWalletStore, walletSelectors } from '@onflow/frw-stores';
-import { type NFTModel, type CollectionModel, type WalletAccount } from '@onflow/frw-types';
+import {
+  useSendStore,
+  useTokenStore,
+  useWalletStore,
+  walletSelectors,
+  useAddressBookStore,
+} from '@onflow/frw-stores';
+import { type NFTModel, type CollectionModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -23,6 +29,7 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -74,6 +81,9 @@ export const SendTokensScreen = (props) => {
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
   const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
   const isLoadingWallet = useWalletStore((state) => state.isLoading);
+
+  // Get address book store for setting recent contacts
+  const addressBookStore = useAddressBookStore();
 
   // Update current step when screen loads
   useEffect(() => {
@@ -249,6 +259,27 @@ export const SendTokensScreen = (props) => {
     }
 
     const result = await executeTransaction();
+
+    // Set the recipient as a recent contact after successful transaction
+    if (result && toAccount) {
+      try {
+        // Convert WalletAccount to Contact format
+        const recentContact = {
+          id: toAccount.id || toAccount.address,
+          name: toAccount.name,
+          address: toAccount.address,
+          avatar: toAccount.avatar || '',
+          isFavorite: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        await addressBookStore.setRecentContact(recentContact);
+      } catch (error) {
+        logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+      }
+    }
+
     return result;
   }, [
     transactionType,
@@ -262,6 +293,7 @@ export const SendTokensScreen = (props) => {
     setTransactionType,
     updateFormData,
     executeTransaction,
+    addressBookStore,
   ]);
 
   // Calculate if send button should be disabled
