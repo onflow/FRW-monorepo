@@ -4,7 +4,6 @@ import type { SendPayload, TransferStrategy } from './types';
 import { encodeEvmContractCallData, GAS_LIMITS, convertHexToByteArray } from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
 
-
 /**
  * Strategy for child account to child account NFT transfers
  */
@@ -133,6 +132,7 @@ export class EoaToChildNftStrategy implements TransferStrategy {
         gasLimit: GAS_LIMITS.EVM_DEFAULT,
       },
     });
+
     const rlpEncoded = convertHexToByteArray(signedTx);
     return await this.cadenceService.batchBridgeChildNftFromEoaWithPayer(
       rlpEncoded,

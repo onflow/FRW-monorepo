@@ -21,9 +21,9 @@ import {
   FlowToFlowTokenStrategy,
   FlowTokenBridgeToEvmStrategy,
   ParentToChildTokenStrategy,
+  EoaToFlowCoaWithdrawalStrategy,
 } from './tokenStrategies';
 import type { SendPayload, TransferStrategy } from './types';
-
 
 /**
  * Context class that uses the Strategy Pattern to execute transfers
@@ -78,10 +78,11 @@ export const createTransferContext = (cadenceService: any, callback: any): Trans
   context.addStrategy(new EvmToFlowCoaWithdrawalStrategy(cadenceService));
   context.addStrategy(new EvmToFlowTokenBridgeStrategy(cadenceService));
   context.addStrategy(new EvmToFlowTokenWithEoaBridgeStrategy(cadenceService));
-  context.addStrategy(new EoaToChildNftStrategy(cadenceService));
   context.addStrategy(new EvmToEvmTokenStrategy(cadenceService));
+  context.addStrategy(new EoaToFlowCoaWithdrawalStrategy(cadenceService));
 
   // Add NFT transfer strategies
+  context.addStrategy(new EoaToChildNftStrategy(cadenceService));
   context.addStrategy(new ChildToChildNftStrategy(cadenceService));
   context.addStrategy(new ChildToOthersNftStrategy(cadenceService));
   context.addStrategy(new ParentToChildNftStrategy(cadenceService));

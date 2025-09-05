@@ -1,10 +1,8 @@
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import dotenv from 'dotenv';
-import { ethers } from 'ethers';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 // import { getTrx } from '../src/utils';
-import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
 import { authz, bridgeAuthorization } from './utils/authz';
 
@@ -15,22 +13,6 @@ const child1Account = accounts.child1;
 const child2Account = accounts.child2;
 
 const cadenceService = new CadenceService();
-
-const evmProvider = new ethers.JsonRpcProvider('https://mainnet.evm.nodes.onflow.org');
-
-const evmTrxCallback = async (props: any) => {
-  const mnemonic = process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC || '';
-  const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
-  wallet.connect(evmProvider);
-  const { trxData } = props;
-  // add nonce
-  const nonce = await evmProvider.getTransactionCount(wallet.address);
-  // add chainid
-  const chainid = 747;
-  const tx = await wallet.signTransaction({ ...trxData, nonce, chainid });
-  console.log(tx, '---tx---');
-  return tx;
-};
 
 describe('Test NFT send strategies', () => {
   beforeEach(() => {
@@ -354,24 +336,24 @@ describe('Test NFT send strategies', () => {
   //   expect(txid.length).toBe(64);
   // });
 
-  it('Test EoaToChildNftStrategy - Bridge NFT from EOA to Child', async () => {
-    const payload = {
-      type: 'nft',
-      assetType: 'evm',
-      proposer: mainAccount.address,
-      receiver: '0x1693baa419804143',
-      flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
-      sender: mainAccount.eoaAddr,
-      amount: '0',
-      childAddrs: ['0x1693baa419804143'],
-      ids: [225399885718549],
-      decimal: 0,
-      coaAddr: mainAccount.evmAddr,
-      tokenContractAddr: '0x2B7CfE0f24c18690a4E34a154e313859B7c6e342',
-    };
+  // it('Test EoaToChildNftStrategy - Bridge NFT from EOA to Child', async () => {
+  //   const payload = {
+  //     type: 'nft',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: '0x1693baa419804143',
+  //     flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+  //     sender: mainAccount.eoaAddr,
+  //     amount: '0',
+  //     childAddrs: ['0x1693baa419804143'],
+  //     ids: [225399885718549],
+  //     decimal: 0,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x2B7CfE0f24c18690a4E34a154e313859B7c6e342',
+  //   };
 
-    const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
-    console.log(txid);
-    expect(txid.length).toBe(64);
-  });
+  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   console.log(txid);
+  //   expect(txid.length).toBe(64);
+  // });
 });

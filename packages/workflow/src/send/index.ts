@@ -34,6 +34,6 @@ export const SendTransaction = async (
   evmProvider: any = null
 ) => {
   logger.debug('SendTransaction payload', payload);
-  const context = createTransferContext(cadenceService, callback, evmProvider);
+  const context = createTransferContext(cadenceService, callback);
   return await context.execute(payload);
 };

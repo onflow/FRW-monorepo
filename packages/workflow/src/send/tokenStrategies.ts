@@ -189,12 +189,13 @@ export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
 
   canHandle(payload: SendPayload): boolean {
-    const { assetType, flowIdentifier, receiver, type } = payload;
+    const { assetType, flowIdentifier, receiver, type, sender, coaAddr } = payload;
     return (
       type === 'token' &&
       assetType === 'evm' &&
       isFlowToken(flowIdentifier) &&
-      validateFlowAddress(receiver)
+      validateFlowAddress(receiver) &&
+      sender === coaAddr
     );
   }
 
@@ -202,6 +203,46 @@ export class EvmToFlowCoaWithdrawalStrategy implements TransferStrategy {
     const { amount, receiver } = payload;
     const formattedAmount = safeConvertToUFix64(amount);
     return await this.cadenceService.withdrawCoa(formattedAmount, receiver);
+  }
+}
+
+/**
+ * Strategy for EVM to Flow token transfers (COA withdrawal)
+ */
+export class EoaToFlowCoaWithdrawalStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+
+  canHandle(payload: SendPayload): boolean {
+    const { assetType, flowIdentifier, receiver, type, sender, coaAddr } = payload;
+    return (
+      type === 'token' &&
+      assetType === 'evm' &&
+      isFlowToken(flowIdentifier) &&
+      validateFlowAddress(receiver) &&
+      sender !== coaAddr
+    );
+  }
+
+  async execute(payload: SendPayload, callback: any): Promise<any> {
+    const { amount, receiver, sender, coaAddr, decimal } = payload;
+    const valueBig = parseUnits(safeConvertToUFix64(amount), decimal);
+
+    // const callData = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
+    const formattedAmount = safeConvertToUFix64(amount);
+
+    const signedTx = await callback({
+      state: 'EVM_TRX_BUILDING',
+      trxData: {
+        from: payload.sender,
+        to: payload.tokenContractAddr,
+        data: '0x',
+        gasLimit: GAS_LIMITS.EVM_DEFAULT,
+        value: valueBig.toString(),
+      },
+    });
+
+    const rlpEncoded = convertHexToByteArray(signedTx);
+    return await this.cadenceService.eoaToCoaToFlow(rlpEncoded, sender, formattedAmount, receiver);
   }
 }
 
@@ -218,6 +259,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
       assetType === 'evm' &&
       validateFlowAddress(receiver) &&
       isVaultIdentifier(flowIdentifier) &&
+      !isFlowToken(flowIdentifier) &&
       sender === coaAddr
     );
   }
@@ -246,11 +288,12 @@ export class EvmToFlowTokenWithEoaBridgeStrategy implements TransferStrategy {
       assetType === 'evm' &&
       validateFlowAddress(receiver) &&
       isVaultIdentifier(flowIdentifier) &&
+      !isFlowToken(flowIdentifier) &&
       sender !== coaAddr
     );
   }
 
-  async execute(payload: SendPayload, callback: EvmTransactionCallback): Promise<any> {
+  async execute(payload: SendPayload, callback: any): Promise<any> {
     const { flowIdentifier, amount, receiver, decimal, sender, coaAddr, tokenContractAddr } =
       payload;
     const valueBig = parseUnits(safeConvertToUFix64(amount), decimal);

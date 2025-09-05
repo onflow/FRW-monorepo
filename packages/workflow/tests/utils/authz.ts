@@ -1,4 +1,5 @@
 import fcl from '@onflow/fcl';
+import { ethers } from 'ethers';
 
 import { accounts } from './accounts';
 import { sign, signSecp256k1 } from './crypto';
@@ -111,3 +112,19 @@ export function test2Authz() {
   });
   return authz;
 }
+
+export const evmTrxCallback = async (props: any) => {
+  const evmProvider = new ethers.JsonRpcProvider('https://mainnet.evm.nodes.onflow.org');
+
+  const mnemonic = process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC || '';
+  const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+  wallet.connect(evmProvider);
+  const { trxData } = props;
+  // add nonce
+  const nonce = await evmProvider.getTransactionCount(wallet.address);
+  // add chainId
+  const chainId = 747;
+  const tx = await wallet.signTransaction({ ...trxData, nonce, chainId });
+  console.log(tx, '---tx---');
+  return tx;
+};
