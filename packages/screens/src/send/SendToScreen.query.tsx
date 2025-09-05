@@ -1,5 +1,5 @@
-import { RecentRecipientsService } from '@onflow/frw-services';
 import { bridge, navigation } from '@onflow/frw-context';
+import { RecentRecipientsService } from '@onflow/frw-services';
 import {
   sendSelectors,
   useSendStore,
