@@ -6,7 +6,7 @@ import {
   walletSelectors,
   useAddressBookStore,
 } from '@onflow/frw-stores';
-import { type NFTModel, type CollectionModel } from '@onflow/frw-types';
+import { type NFTModel, type CollectionModel, type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -46,6 +46,26 @@ const transformAccountForDisplay = (account: WalletAccount | null): AccountDispl
     avatarSrc: account.avatar,
     avatarFallback: account.emojiInfo?.emoji || account.name?.charAt(0) || 'A',
     avatarBgColor: account.emojiInfo?.color,
+    parentEmoji: account.parentEmoji,
+    type: account.type,
+  };
+};
+
+/**
+ * Transform WalletAccount to UI Account type for AccountCard
+ */
+const transformAccountForCard = (account: WalletAccount | null, balance?: string): any | null => {
+  if (!account) return null;
+
+  return {
+    name: account.name,
+    address: account.address,
+    avatar: account.avatar,
+    balance: balance || '0 FLOW',
+    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
+    emojiInfo: account.emojiInfo,
+    parentEmoji: account.parentEmoji,
+    type: account.type,
   };
 };
 
@@ -143,6 +163,7 @@ export const SendTokensScreen = (props) => {
         name: selectedAccount.name,
         avatar: selectedAccount.avatar,
         emojiInfo: selectedAccount.emojiInfo,
+        parentEmoji: selectedAccount.parentEmoji,
         parentAddress: selectedAccount.parentAddress,
         isActive: true,
         type: selectedAccount.type,
@@ -382,7 +403,7 @@ export const SendTokensScreen = (props) => {
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
-                account={fromAccount}
+                account={transformAccountForCard(fromAccount, balanceData?.displayBalance)}
                 title="From Account"
                 isLoading={isBalanceLoading}
               />

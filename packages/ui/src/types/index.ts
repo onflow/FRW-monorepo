@@ -84,6 +84,12 @@ export interface Account {
     name: string;
     color: string;
   };
+  parentEmoji?: {
+    emoji: string;
+    name: string;
+    color: string;
+  };
+  type?: 'main' | 'child' | 'evm';
 }
 
 export interface AccountCardProps {

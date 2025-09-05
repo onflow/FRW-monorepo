@@ -102,6 +102,17 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
   });
 
+  // 🔥 TanStack Query: Fetch batch balances for all accounts
+  const { data: batchBalances, isLoading: isLoadingBatchBalances } = useQuery({
+    queryKey: ['batchBalances', accounts.map((acc) => acc.address)],
+    queryFn: () => tokenQueries.fetchBatchFlowBalances(accounts.map((acc) => acc.address)),
+    enabled: accounts.length > 0,
+    staleTime: 30 * 1000, // Use cached balances for 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 60 * 1000, // Refresh balances every minute in background
+  });
+
   // Initialize screen
   React.useEffect(() => {
     setCurrentStep('select-tokens');
@@ -163,16 +174,31 @@ export function SelectTokensScreen(): React.ReactElement {
     return hasBalance;
   });
 
-  // Convert wallet accounts to AccountCard format
+  // Create a balance lookup map for efficient access
+  const balanceLookup = React.useMemo(() => {
+    if (!batchBalances) return new Map<string, string>();
+
+    const lookup = new Map<string, string>();
+    batchBalances.forEach(([address, balance]) => {
+      lookup.set(address, balance);
+    });
+    return lookup;
+  }, [batchBalances]);
+
+  // Convert wallet accounts to AccountCard format with dynamic balances
   const accountsForModal = React.useMemo(() => {
     return accounts.map((account: WalletAccount) => ({
       name: account.name,
       address: account.address,
       avatar: account.avatar,
-      balance: '550.66 FLOW', // TODO: Replace with real balance data
+      balance: isLoadingBatchBalances
+        ? t('messages.loading')
+        : balanceLookup.get(account.address) || '0 FLOW',
       emojiInfo: account.emojiInfo,
+      parentEmoji: account.parentEmoji,
+      type: account.type,
     }));
-  }, [accounts]);
+  }, [accounts, isLoadingBatchBalances, balanceLookup, t]);
 
   // Get current account data
   const currentAccount = React.useMemo(() => {

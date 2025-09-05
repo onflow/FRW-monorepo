@@ -23,6 +23,12 @@ export interface AccountDisplayData {
   avatarSrc?: string;
   avatarFallback: string;
   avatarBgColor?: string;
+  parentEmoji?: {
+    emoji: string;
+    name: string;
+    color: string;
+  };
+  type?: 'main' | 'child' | 'evm';
 }
 
 export interface ConfirmationDrawerProps {

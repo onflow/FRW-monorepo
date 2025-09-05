@@ -4,6 +4,7 @@ import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { Badge } from './Badge';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -110,15 +111,41 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
           {/* Account Details - Fixed width with 12px gap from avatar */}
           <XStack ml={12}>
             <YStack width={151.34} gap={2}>
-              <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
-                {account.name || 'Unknown Account'}
-              </Text>
+              {/* Account Name with linked chain emoji */}
+              <XStack items="center" gap={4}>
+                <Text
+                  color="$white"
+                  fontSize="$3"
+                  fontWeight="600"
+                  lineHeight={17}
+                  numberOfLines={1}
+                  flex={1}
+                >
+                  {account.name || 'Unknown Account'}
+                </Text>
+                {/* Linked chain emoji */}
+                {account.parentEmoji && (
+                  <Text fontSize="$3" lineHeight={17} color="$white">
+                    {account.parentEmoji.emoji}
+                  </Text>
+                )}
+              </XStack>
+
               <AddressText
                 address={account.address}
                 truncate={true}
                 startLength={6}
                 endLength={4}
               />
+
+              {/* EVM Badge */}
+              {account.type === 'evm' && (
+                <XStack items="center">
+                  <Badge variant="evm" size="small">
+                    EVM
+                  </Badge>
+                </XStack>
+              )}
             </YStack>
           </XStack>
         </XStack>
