@@ -18,6 +18,10 @@
     "error": "Error",
     "success": "Éxito"
   },
+  "tabs": {
+    "tokens": "Tokens",
+    "nfts": "NFTs"
+  },
   "send": {
     "myAccounts": "Mis Cuentas",
     "recent": "Reciente",
@@ -72,6 +76,15 @@
     "properties": "Propiedades",
     "description": "Descripción",
     "creator": "Creador"
+  },
+  "messages": {
+    "loading": "Cargando...",
+    "noTokensWithBalance": "No hay tokens con saldo",
+    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT"
+  },
+  "buttons": {
+    "retry": "Reintentar",
+    "refresh": "Actualizar"
   },
   "errors": {
     "networkError": "Ocurrió un error de red",

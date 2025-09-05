@@ -3,12 +3,10 @@ import React from 'react';
 import { XStack, YStack, Text } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
-import { Separator } from '../foundation/Separator';
 import type { NFTCollectionRowProps } from '../types';
 
 export function NFTCollectionRow({
   collection,
-  showDivider = false,
   onPress,
   ...props
 }: NFTCollectionRowProps): React.ReactElement {
@@ -52,10 +50,8 @@ export function NFTCollectionRow({
           </YStack>
         </XStack>
         {/* Chevron Icon */}
-        <ChevronRight size={24} />
+        <ChevronRight size={24} color="rgba(255, 255, 255, 0.5)" />
       </XStack>
-
-      {showDivider && <Separator borderColor="$bg1" />}
     </YStack>
   );
 }

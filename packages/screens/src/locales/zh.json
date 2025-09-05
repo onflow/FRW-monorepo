@@ -18,6 +18,10 @@
     "error": "错误",
     "success": "成功"
   },
+  "tabs": {
+    "tokens": "代币",
+    "nfts": "NFT"
+  },
   "send": {
     "myAccounts": "我的账户",
     "recent": "最近",
@@ -72,6 +76,15 @@
     "properties": "属性",
     "description": "描述",
     "creator": "创建者"
+  },
+  "messages": {
+    "loading": "加载中...",
+    "noTokensWithBalance": "无余额代币",
+    "noNFTCollectionsForAccount": "未找到NFT收藏"
+  },
+  "buttons": {
+    "retry": "重试",
+    "refresh": "刷新"
   },
   "errors": {
     "networkError": "网络错误",

@@ -30,6 +30,7 @@ export * from './foundation/Text';
 
 // Export specialized components
 export * from './components/AccountCard';
+export * from './components/AccountSelector';
 export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';
 export * from './components/AddressText';
@@ -38,6 +39,7 @@ export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationDrawer';
 export * from './components/ErrorDialog';
+export * from './components/InfoDialog';
 export * from './components/MultipleNFTsPreview';
 export * from './components/NFTCard';
 export * from './components/NFTCollectionRow';

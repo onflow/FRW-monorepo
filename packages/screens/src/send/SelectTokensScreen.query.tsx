@@ -1,11 +1,15 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
-import { type CollectionModel, type TokenModel } from '@onflow/frw-types';
 import {
-  AccountCard,
-  AddressText,
+  useSendStore,
+  tokenQueryKeys,
+  tokenQueries,
+  useWalletStore,
+  walletSelectors,
+} from '@onflow/frw-stores';
+import { type CollectionModel, type TokenModel, type WalletAccount } from '@onflow/frw-types';
+import {
+  AccountSelector,
   BackgroundWrapper,
-  Badge,
   Divider,
   ExtensionHeader,
   NFTCollectionRow,
@@ -51,6 +55,11 @@ export function SelectTokensScreen(): React.ReactElement {
   // Get current address and network
   const address = bridge.getSelectedAddress() || '';
   const network = bridge.getNetwork() || 'mainnet';
+
+  // Get wallet accounts for modal selection
+  const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
+  const isLoadingWallet = useWalletStore((state) => state.isLoading);
 
   // 🔥 TanStack Query: Fetch tokens with automatic caching, retry, and background refresh
   const {
@@ -98,6 +107,13 @@ export function SelectTokensScreen(): React.ReactElement {
     setCurrentStep('select-tokens');
   }, [setCurrentStep]);
 
+  // Initialize wallet accounts on mount (only if not already loaded)
+  React.useEffect(() => {
+    if (accounts.length === 0 && !isLoadingWallet) {
+      loadAccountsFromBridge();
+    }
+  }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
+
   // Handle tab change
   const handleTabChange = (newTab: TabType): void => {
     if (newTab !== tab) {
@@ -121,6 +137,15 @@ export function SelectTokensScreen(): React.ReactElement {
     navigation.navigate('NFTList', { collection, address });
   };
 
+  // Handle account selection from modal
+  const handleAccountSelect = (selectedAccount: any): void => {
+    // Switch to the selected account
+    bridge.setSelectedAccount(selectedAccount.address);
+    // Clear transaction data since we're switching accounts
+    clearTransactionData();
+    // The screen will re-render with the new account data
+  };
+
   // Refresh functions - TanStack Query makes this super simple!
   const refreshTokens = useCallback(() => {
     refetchTokens();
@@ -138,6 +163,41 @@ export function SelectTokensScreen(): React.ReactElement {
     return hasBalance;
   });
 
+  // Convert wallet accounts to AccountCard format
+  const accountsForModal = React.useMemo(() => {
+    return accounts.map((account: WalletAccount) => ({
+      name: account.name,
+      address: account.address,
+      avatar: account.avatar,
+      balance: '550.66 FLOW', // TODO: Replace with real balance data
+      emojiInfo: account.emojiInfo,
+    }));
+  }, [accounts]);
+
+  // Get current account data
+  const currentAccount = React.useMemo(() => {
+    // Find matching account - try both exact match and case-insensitive match
+    const account = accounts.find(
+      (acc: WalletAccount) =>
+        acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
+    );
+
+    // Debug log to help troubleshoot
+    console.log('SelectTokensScreen - Address matching:', {
+      currentAddress: address,
+      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
+      foundAccount: account ? { address: account.address, name: account.name } : null,
+    });
+
+    return {
+      name: account?.name || account?.username || 'Unnamed Account',
+      address: address,
+      avatar: account?.avatar,
+      balance: isBalanceLoading ? t('messages.loading') : balanceData?.displayBalance || '0 FLOW',
+      emojiInfo: account?.emojiInfo,
+    };
+  }, [accounts, address, isBalanceLoading, balanceData, t]);
+
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       <YStack flex={1} px="$4" pt="$2">
@@ -151,17 +211,17 @@ export function SelectTokensScreen(): React.ReactElement {
           />
         )}
 
-        {/* Account Card - Show balance from React Query */}
+        {/* Account Selector - Show balance from React Query */}
         {!isExtension && balanceData && (
-          <AccountCard
-            account={{
-              address,
-              balance: isBalanceLoading ? t('messages.loading') : balanceData.displayBalance,
-              // Add more account props as needed
-            }}
-            title={t('send.fromAccount')}
-            isLoading={isBalanceLoading}
-          />
+          <YStack bg="rgba(255, 255, 255, 0.1)" borderRadius={16} p={16} pt={16} pb={24} gap={12}>
+            <AccountSelector
+              currentAccount={currentAccount}
+              accounts={accountsForModal}
+              onAccountSelect={handleAccountSelect}
+              title={t('send.fromAccount')}
+              showEditButton={accounts.length > 1}
+            />
+          </YStack>
         )}
 
         {/* Tab Selector */}
@@ -212,13 +272,13 @@ export function SelectTokensScreen(): React.ReactElement {
                 />
               ) : (
                 <YStack gap="$3">
-                  {/* Token Count Badge */}
-                  <XStack justify="space-between" items="center" px="$2" pb="$3">
+                  {/* Token Count Badge - Hidden as requested */}
+                  {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
                     <Badge variant="secondary" size="small">
                       {tokensWithBalance.length}{' '}
                       {tokensWithBalance.length === 1 ? 'Token' : 'Tokens'}
                     </Badge>
-                  </XStack>
+                  </XStack> */}
 
                   {tokensWithBalance.map((token, idx) => (
                     <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
@@ -273,22 +333,25 @@ export function SelectTokensScreen(): React.ReactElement {
                 />
               ) : (
                 <YStack gap="$3">
-                  {/* NFT Collections Count Badge */}
-                  <XStack justify="space-between" items="center" px="$2" pb="$3">
+                  {/* NFT Collections Count Badge - Hidden as requested */}
+                  {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
                     <Badge variant="primary" size="small">
                       {nftCollections.length}{' '}
                       {nftCollections.length === 1 ? 'Collection' : 'Collections'}
                     </Badge>
                     <AddressText address={address} truncate={true} startLength={4} endLength={4} />
-                  </XStack>
+                  </XStack> */}
 
                   {nftCollections.map((collection, idx) => (
-                    <NFTCollectionRow
+                    <React.Fragment
                       key={`nft-collection-${collection.id || collection.contractName || collection.name}-${idx}`}
-                      collection={collection}
-                      showDivider={idx !== nftCollections.length - 1}
-                      onPress={() => handleNFTPress(collection)}
-                    />
+                    >
+                      <NFTCollectionRow
+                        collection={collection}
+                        onPress={() => handleNFTPress(collection)}
+                      />
+                      {idx < nftCollections.length - 1 && <Divider />}
+                    </React.Fragment>
                   ))}
                 </YStack>
               )}
