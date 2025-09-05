@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { YStack } from 'tamagui';
 
 import { InfoDialog } from '../src/components/InfoDialog';
@@ -53,7 +53,8 @@ const meta: Meta<typeof InfoDialog> = {
           Flow accounts require a minimum balance of FLOW tokens to cover storage costs.
         </Text>
         <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20}>
-          When sending tokens or NFTs, ensure your account maintains sufficient FLOW balance to cover storage requirements, otherwise the transaction will fail.
+          When sending tokens or NFTs, ensure your account maintains sufficient FLOW balance to
+          cover storage requirements, otherwise the transaction will fail.
         </Text>
         <Text fontSize="$3" fontWeight="400" color="rgba(255, 255, 255, 0.7)" lineHeight={20}>
           Learn more about Flow account storage at docs.onflow.org
