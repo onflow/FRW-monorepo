@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import {
   sendSelectors,
   useSendStore,
@@ -8,7 +8,13 @@ import {
   addressBookQueryKeys,
 } from '@onflow/frw-stores';
 import type { WalletAccount } from '@onflow/frw-types';
-import { SearchableTabLayout, RecipientList, type RecipientData } from '@onflow/frw-ui';
+import {
+  SearchableTabLayout,
+  RecipientList,
+  type RecipientData,
+  ExtensionHeader,
+  BackgroundWrapper,
+} from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +31,7 @@ interface TabConfig {
  * Uses TanStack Query for data fetching and caching
  */
 export function SendToScreen(): React.ReactElement {
+  const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
 
   const TABS: TabConfig[] = [
@@ -47,8 +54,7 @@ export function SendToScreen(): React.ReactElement {
     setCurrentStep('send-to');
   }, [setCurrentStep]);
 
-  // Get wallet data
-  const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const allAccounts = useWalletStore(walletSelectors.getAllAccounts);
   const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
   const isLoadingWallet = useWalletStore((state) => state.isLoading);
   const walletError = useWalletStore((state) => state.error);
@@ -56,20 +62,28 @@ export function SendToScreen(): React.ReactElement {
 
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
-    if (accounts.length === 0 && !isLoadingWallet) {
+    if (allAccounts.length === 0 && !isLoadingWallet) {
       loadAccountsFromBridge();
     }
-  }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
+  }, [loadAccountsFromBridge, allAccounts.length, isLoadingWallet]);
 
   // Query for recent contacts with automatic caching
-  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
+  const {
+    data: recentContacts = [],
+    isLoading: isLoadingRecent,
+    error: recentError,
+  } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Query for all contacts with automatic caching
-  const { data: allContacts = [], isLoading: isLoadingContacts } = useQuery({
+  const {
+    data: allContacts = [],
+    isLoading: isLoadingContacts,
+    error: contactsError,
+  } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -77,7 +91,7 @@ export function SendToScreen(): React.ReactElement {
 
   // Convert accounts data
   const accountsData = useMemo((): RecipientData[] => {
-    return accounts.map((account: WalletAccount) => ({
+    return allAccounts.map((account: WalletAccount) => ({
       id: account.address,
       name: account.name,
       address: account.address,
@@ -87,7 +101,7 @@ export function SendToScreen(): React.ReactElement {
       type: 'account' as const,
       isSelected: account.isActive,
     }));
-  }, [accounts]);
+  }, [allAccounts]);
 
   // Convert recent contacts data
   const recentData = useMemo((): RecipientData[] => {
@@ -121,7 +135,7 @@ export function SendToScreen(): React.ReactElement {
       },
       parentEmojiInfo: null,
     }));
-  }, [allContacts]);
+  }, [allContacts, isLoadingContacts, contactsError]);
 
   // Get current recipients based on active tab
   const recipients = useMemo(() => {
@@ -234,28 +248,38 @@ export function SendToScreen(): React.ReactElement {
   const emptyState = getEmptyStateForTab();
 
   return (
-    <SearchableTabLayout
-      title={t('send.sendTo.title')}
-      searchValue={searchQuery}
-      searchPlaceholder={t('send.searchAddress')}
-      showScanButton={true}
-      onSearchChange={setSearchQuery}
-      onScanPress={handleScanPress}
-      tabSegments={tabTitles}
-      activeTab={getTitleByType(activeTab)}
-      onTabChange={handleTabChange}
-      backgroundColor="$bgDrawer"
-    >
-      <RecipientList
-        data={recipients}
-        isLoading={isLoading}
-        emptyTitle={emptyState.title}
-        emptyMessage={emptyState.message}
-        onItemPress={handleRecipientPress}
-        onItemEdit={handleRecipientEdit}
-        onItemCopy={handleRecipientCopy}
-        contentPadding={0}
-      />
-    </SearchableTabLayout>
+    <BackgroundWrapper>
+      {isExtension && (
+        <ExtensionHeader
+          title={t('send.sendTokens.title', 'Sending')}
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
+      <SearchableTabLayout
+        title={t('send.sendTo.title')}
+        searchValue={searchQuery}
+        searchPlaceholder={t('send.searchAddress')}
+        showScanButton={true}
+        onSearchChange={setSearchQuery}
+        onScanPress={handleScanPress}
+        tabSegments={tabTitles}
+        activeTab={getTitleByType(activeTab)}
+        onTabChange={handleTabChange}
+        backgroundColor="$bgDrawer"
+      >
+        <RecipientList
+          data={recipients}
+          isLoading={isLoading}
+          emptyTitle={emptyState.title}
+          emptyMessage={emptyState.message}
+          onItemPress={handleRecipientPress}
+          onItemEdit={handleRecipientEdit}
+          onItemCopy={handleRecipientCopy}
+          contentPadding={0}
+        />
+      </SearchableTabLayout>
+    </BackgroundWrapper>
   );
 }
