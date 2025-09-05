@@ -1,4 +1,4 @@
-import { CheckCircle, Close } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
@@ -104,10 +104,7 @@ export function AccountSelector({
               onPress={handleEditClick}
               cursor="pointer"
             >
-              {/* Using a simple edit icon representation for now */}
-              <Text color="#767676" fontSize={16}>
-                ✏️
-              </Text>
+              <Edit size={24} color="#767676" theme="outline" />
             </XStack>
           )}
         </XStack>

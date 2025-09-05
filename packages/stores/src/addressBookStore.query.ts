@@ -1,5 +1,5 @@
 import { context, queryClient } from '@onflow/frw-context';
-import { AddressBookService } from '@onflow/frw-services';
+import { AddressBookService, RecentRecipientsService } from '@onflow/frw-services';
 import { FlatQueryDomain } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
@@ -65,13 +65,8 @@ export const addressBookQueries = {
     } catch (error: unknown) {
       logger.error('[AddressBookQuery] Error fetching contacts:', error);
 
-      // Fallback to mock service if API fails
-      const contacts = await mockAddressBookService.getAllContacts();
-      logger.debug('[AddressBookQuery] Fallback to mock contacts:', {
-        count: contacts.length,
-        contacts: contacts,
-      });
-      return contacts;
+      // Return empty array if API fails - no mock service needed
+      return [];
     }
   },
 
