@@ -1,4 +1,5 @@
 import { navigation } from '@onflow/frw-context';
+import { RecentRecipientsService } from '@onflow/frw-services';
 import {
   sendSelectors,
   useSendStore,
@@ -85,10 +86,10 @@ export function SendToScreen(): React.ReactElement {
       emojiInfo: account.emojiInfo,
       parentEmojiInfo: account.parentEmoji || null,
       type: 'account' as const,
-      isSelected: account.isActive,
+      isSelected: false,
       isLinked: !!(account.parentAddress || account.type === 'child'),
       isEVM: account.type === 'evm',
-      balance: "550.66 Flow | 12 NFT's", // TODO: Replace with real balance data
+      balance: '550.66 Flow | 12 NFTs', // TODO: Replace with real balance data
       showBalance: true,
     }));
   }, [accounts]);
@@ -185,7 +186,7 @@ export function SendToScreen(): React.ReactElement {
   }, []);
 
   const handleRecipientPress = useCallback(
-    (recipient: RecipientData) => {
+    async (recipient: RecipientData) => {
       setToAccount({
         id: recipient.id,
         name: recipient.name,
@@ -195,10 +196,28 @@ export function SendToScreen(): React.ReactElement {
         isActive: false,
         type: recipient.type === 'account' ? 'main' : undefined,
       });
+
+      // Add to recent recipients (only if not selecting from "My Accounts" tab)
+      if (activeTab !== 'accounts') {
+        try {
+          const recentService = RecentRecipientsService.getInstance();
+          await recentService.addRecentRecipient({
+            id: recipient.id,
+            name: recipient.name,
+            address: recipient.address,
+            emoji: recipient.emojiInfo?.emoji,
+            avatar: recipient.avatar,
+          });
+        } catch (error) {
+          console.warn('Failed to add recent recipient:', error);
+          // Don't block navigation if this fails
+        }
+      }
+
       // Navigate to send tokens screen
       navigation.navigate('SendTokens', { address: recipient.address, recipient });
     },
-    [setToAccount]
+    [setToAccount, activeTab]
   );
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {

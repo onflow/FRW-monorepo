@@ -81,6 +81,15 @@
     "description": "Description",
     "creator": "Creator"
   },
+  "messages": {
+    "loading": "Loading...",
+    "noTokensWithBalance": "No tokens with balance",
+    "noNFTCollectionsForAccount": "No NFT collections found"
+  },
+  "buttons": {
+    "retry": "Retry",
+    "refresh": "Refresh"
+  },
   "errors": {
     "networkError": "Network error occurred",
     "invalidInput": "Invalid input",
