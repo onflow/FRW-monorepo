@@ -16,8 +16,8 @@ export class ExtensionStorage implements Storage {
 
   async get<K extends keyof StorageKeyMap>(key: K): Promise<StorageKeyMap[K] | undefined> {
     try {
-      const data = (await this.storageArea.get(key as string)) as Record<string, unknown>;
-      const value = data[key as string];
+      // ChromeStorage.get() returns the value directly, not wrapped in an object
+      const value = await this.storageArea.get(key as string);
 
       if (!value) return undefined;
 
@@ -44,7 +44,8 @@ export class ExtensionStorage implements Storage {
         updatedAt: now,
       } as StorageKeyMap[K];
 
-      await this.storageArea.set(key as string, JSON.stringify(dataWithMetadata));
+      // ChromeStorage.set() expects raw data, not JSON string
+      await this.storageArea.set(key as string, dataWithMetadata);
     } catch (error) {
       console.error(`Failed to set ${key as string}:`, error);
       throw new Error(`Storage write failed: ${error}`);
@@ -53,8 +54,8 @@ export class ExtensionStorage implements Storage {
 
   async has<K extends keyof StorageKeyMap>(key: K): Promise<boolean> {
     try {
-      const data = (await this.storageArea.get(key as string)) as Record<string, unknown>;
-      return data[key as string] !== undefined;
+      const value = await this.storageArea.get(key as string);
+      return value !== undefined;
     } catch {
       return false;
     }

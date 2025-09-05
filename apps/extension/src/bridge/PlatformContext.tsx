@@ -58,7 +58,7 @@ const PlatformContext = createContext<PlatformContextValue | null>(null);
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
   const userWallets = useUserWallets();
-  const { currentWallet, mainAddress } = useProfiles();
+  const { currentWallet, mainAddress, walletList, evmWallet, childAccounts } = useProfiles();
   const wallet = useWallet();
   const { coins } = useCoins();
 
@@ -118,7 +118,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
       if (key === 'nfts') {
         if (!nftCollectionsList || nftCollectionsList.length === 0) {
-          console.log('🖼️ No NFT collections found, returning null');
           return null;
         }
 
@@ -157,13 +156,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           type: isEvmAddress ? 'evm' : 'flow',
           count: collection.count || 0,
         }));
-
-        console.log(
-          '🖼️ Converted NFT collections to CollectionModel format:',
-          convertedCollections.length,
-          'collections',
-          convertedCollections
-        );
         return convertedCollections;
       }
 
@@ -171,35 +163,67 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     };
 
     enhancedPlatform.getWalletAccounts = async () => {
-      console.log('👛 userWallets data:', userWallets);
-
-      // Always ensure there's a main account from mainAddress (parent Flow address)
       const accountsArray: any[] = [];
 
-      // Add main Flow account first (from mainAddress)
-      if (mainAddress) {
-        accountsArray.push({
-          address: mainAddress,
-          name: 'Main Account',
-          type: 'main',
-          balance: '0',
-          avatar: currentWallet?.avatar || '',
-          emoji: currentWallet?.emoji || '',
-          emojiInfo: currentWallet?.emojiInfo || null,
+      // Add all main wallet accounts from walletList (this includes all 18 accounts)
+      if (Array.isArray(walletList) && walletList.length > 0) {
+        walletList.forEach((account) => {
+          const accountName = account.name || 'Main Account';
+          accountsArray.push({
+            address: account.address,
+            name: accountName,
+            type: 'main',
+            balance: '0',
+            avatar: account.icon || '', // Use icon as avatar
+            emoji: account.icon || '', // Use icon as emoji
+            emojiInfo: {
+              emoji: account.icon || '',
+              name: accountName,
+              color: account.color || '#6B7280',
+            },
+            isActive: account.address === mainAddress,
+          });
         });
       }
 
-      // Add userWallets accounts if they exist and are different from main
-      if (Array.isArray(userWallets)) {
-        userWallets.forEach((wallet) => {
-          if (!accountsArray.find((acc) => acc.address === wallet.address)) {
-            const isEVMWallet = isValidEthereumAddress(wallet.address);
-            accountsArray.push({
-              ...wallet,
-              type: wallet.type || (isEVMWallet ? 'evm' : 'main'),
-              parentAddress: isEVMWallet ? mainAddress : undefined,
-            });
-          }
+      // Add EVM account if available
+      if (evmWallet && evmWallet.address) {
+        const evmName = evmWallet.name || 'EVM Account';
+        accountsArray.push({
+          address: evmWallet.address,
+          name: evmName,
+          type: 'evm',
+          balance: '0',
+          avatar: evmWallet.icon || '', // Use icon as avatar
+          emoji: evmWallet.icon || '', // Use icon as emoji
+          emojiInfo: {
+            emoji: evmWallet.icon || '',
+            name: evmName,
+            color: evmWallet.color || '#6B7280',
+          },
+          isActive: false,
+        });
+      }
+
+      // Add child accounts if available
+      if (Array.isArray(childAccounts) && childAccounts.length > 0) {
+        childAccounts.forEach((account) => {
+          const childName = account.name || 'Child Account';
+          accountsArray.push({
+            address: account.address,
+            name: childName,
+            type: 'child',
+            balance: '0',
+            avatar: account.icon || '', // Use icon as avatar
+            emoji: account.icon || '', // Use icon as emoji
+            emojiInfo: {
+              emoji: account.icon || '',
+              name: childName,
+              color: account.color || '#6B7280',
+            },
+            parentEmoji: evmWallet?.icon || '', // Use icon as emoji
+            isActive: false,
+          });
         });
       }
 
@@ -211,28 +235,22 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       ) {
         const accountType = isEvmAddress ? 'evm' : 'main';
 
+        const currentName = currentWallet.name || 'Current Account';
         accountsArray.push({
           address: currentWallet.address,
-          name: currentWallet.name || 'Current Account',
+          name: currentName,
           type: accountType,
           balance: '0',
-          avatar: currentWallet.avatar || '',
-          emoji: currentWallet.emoji || '',
-          emojiInfo: currentWallet.emojiInfo || null,
+          avatar: currentWallet.icon || '', // Use icon as avatar
+          emoji: currentWallet.icon || '', // Use icon as emoji
+          emojiInfo: {
+            emoji: currentWallet.icon || '',
+            name: currentName,
+            color: currentWallet.color || '#6B7280',
+          },
           parentAddress: isEvmAddress ? mainAddress : undefined,
         });
       }
-
-      console.log('👛 Returning accounts array:', accountsArray.length, 'accounts');
-      console.log('👛 All accounts:', accountsArray);
-      console.log(
-        '👛 Main accounts:',
-        accountsArray.filter((acc) => acc.type === 'main')
-      );
-      console.log(
-        '👛 EVM accounts with parentAddress:',
-        accountsArray.filter((acc) => acc.type === 'evm' && acc.parentAddress)
-      );
 
       return {
         accounts: accountsArray,
@@ -241,10 +259,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     };
 
     enhancedPlatform.getSelectedAccount = async () => {
-      console.log(
-        '🎯 Enhanced platform getSelectedAccount called, currentWallet:',
-        currentWallet?.address || 'undefined'
-      );
       if (!currentWallet) {
         throw new Error('No selected account available');
       }
@@ -252,26 +266,25 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       // Determine account type based on address format
       const accountType = isEvmAddress ? 'evm' : 'main';
 
+      const selectedName = currentWallet.name || 'My Account';
       return {
         address: currentWallet.address,
-        name: currentWallet.name || 'My Account',
+        name: selectedName,
         type: accountType,
         balance: '0',
-        avatar: currentWallet.avatar || '',
-        emoji: currentWallet.emoji || '',
-        emojiInfo: currentWallet.emojiInfo || null,
+        avatar: currentWallet.icon || '', // Use icon as avatar
+        emoji: currentWallet.icon || '', // Use icon as emoji
+        emojiInfo: {
+          emoji: currentWallet.icon || '',
+          name: selectedName,
+          color: currentWallet.color || '#6B7280',
+        },
         parentAddress: mainAddress,
       };
     };
 
     // Always reinitialize ServiceContext when data changes
     ServiceContext.initialize(enhancedPlatform);
-    console.log(
-      '✅ ServiceContext reinitialized with coins:',
-      coins?.length || 'undefined',
-      'wallets:',
-      userWallets?.length || 'undefined'
-    );
   }, [platform, coins, userWallets, currentWallet]);
 
   // Keep platform synchronized with extension state
@@ -362,7 +375,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     getCurrency: () => platform.getCurrency(),
     getCache: (key: string) => {
       // Use the coins data from useCoins hook instead of trying to fetch from platform
-      console.log(`🪙 PlatformContext getCache(${key}) called, coins data:`, coins);
       if (key === 'coins') {
         return coins || null;
       }
