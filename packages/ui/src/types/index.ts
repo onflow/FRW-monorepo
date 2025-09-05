@@ -69,7 +69,6 @@ export interface CollectionModel {
 
 export interface NFTCollectionRowProps {
   collection?: CollectionModel;
-  showDivider?: boolean;
   onPress?: () => void;
 }
 

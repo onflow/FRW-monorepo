@@ -343,12 +343,15 @@ export function SelectTokensScreen(): React.ReactElement {
                   </XStack> */}
 
                   {nftCollections.map((collection, idx) => (
-                    <NFTCollectionRow
+                    <React.Fragment
                       key={`nft-collection-${collection.id || collection.contractName || collection.name}-${idx}`}
-                      collection={collection}
-                      showDivider={idx !== nftCollections.length - 1}
-                      onPress={() => handleNFTPress(collection)}
-                    />
+                    >
+                      <NFTCollectionRow
+                        collection={collection}
+                        onPress={() => handleNFTPress(collection)}
+                      />
+                      {idx < nftCollections.length - 1 && <Divider />}
+                    </React.Fragment>
                   ))}
                 </YStack>
               )}
