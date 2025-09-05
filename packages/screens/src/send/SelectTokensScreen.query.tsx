@@ -8,7 +8,7 @@ import {
 } from '@onflow/frw-stores';
 import { type CollectionModel, type TokenModel, type WalletAccount } from '@onflow/frw-types';
 import {
-  AccountCard,
+  AccountSelector,
   BackgroundWrapper,
   Divider,
   ExtensionHeader,
@@ -211,21 +211,15 @@ export function SelectTokensScreen(): React.ReactElement {
           />
         )}
 
-        {/* Account Card - Show balance from React Query */}
+        {/* Account Selector - Show balance from React Query */}
         {!isExtension && balanceData && (
           <YStack bg="rgba(255, 255, 255, 0.1)" borderRadius={16} p={16} pt={16} pb={24} gap={12}>
-            <AccountCard
-              account={currentAccount}
-              title={t('send.fromAccount')}
-              isLoading={isBalanceLoading || isLoadingWallet}
-              showEditButton={true}
-              enableModalSelection={accounts.length > 1}
+            <AccountSelector
+              currentAccount={currentAccount}
               accounts={accountsForModal}
               onAccountSelect={handleAccountSelect}
-              modalTitle={t('send.myAccounts')}
-              pt={0}
-              px={0}
-              pb={0}
+              title={t('send.fromAccount')}
+              showEditButton={accounts.length > 1}
             />
           </YStack>
         )}

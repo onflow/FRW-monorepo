@@ -80,6 +80,11 @@ export interface Account {
   balance?: string;
   emoji?: string;
   nfts?: string;
+  emojiInfo?: {
+    emoji: string;
+    name: string;
+    color: string;
+  };
 }
 
 export interface AccountCardProps {

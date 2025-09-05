@@ -30,6 +30,7 @@ export * from './foundation/Text';
 
 // Export specialized components
 export * from './components/AccountCard';
+export * from './components/AccountSelector';
 export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';
 export * from './components/AddressText';
