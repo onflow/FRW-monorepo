@@ -21,7 +21,7 @@ export function CollectionHeader({
   const nameSize = size === 'large' ? '$7' : size === 'medium' ? '$6' : '$5';
 
   return (
-    <XStack items="center" gap="$1" p="$3">
+    <XStack items="center" gap="$1" p="$3" mb="$3">
       {/* Collection Avatar */}
       <Avatar
             src={image}

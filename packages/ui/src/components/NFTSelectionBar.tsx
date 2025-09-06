@@ -83,23 +83,16 @@ export function NFTSelectionBar({
       {/* Remove Button */}
       {onRemoveNFT && (
         <XStack
-          width="$8"
-          height="$8"
-          items="center"
-          justify="center"
-          bg="rgba(255, 59, 48, 0.15)"
-          borderRadius="$3"
-          borderWidth={1}
-          borderColor="rgba(255, 59, 48, 0.3)"
-          onPress={() => {
-            console.log('🗑️ Trash icon clicked for NFT:', nft.id);
-            onRemoveNFT(nft.id);
-          }}
-          cursor="pointer"
-          pressStyle={{ opacity: 0.8, bg: "rgba(255, 59, 48, 0.25)", scale: 0.95 }}
-        >
-          <Trash size={20} color="#FF3B30" theme="filled" />
-        </XStack>
+        width={24}
+        height={24}
+        items="center"
+        justify="center"
+        pressStyle={{ opacity: 0.7 }}
+        onPress={() => onRemoveNFT(nft.id)}
+        cursor="pointer"
+      >
+        <Trash size={24} color="rgba(255, 255, 255, 0.5)" theme="outline" />
+      </XStack>
       )}
     </XStack>
     );

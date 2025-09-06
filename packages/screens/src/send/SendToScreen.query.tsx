@@ -117,11 +117,7 @@ export function SendToScreen(): React.ReactElement {
       address: contact.address,
       avatar: contact.avatar,
       type: 'recent' as const,
-      emojiInfo: {
-        emoji: '👤',
-        name: 'person',
-        color: '#6B7280',
-      },
+      emojiInfo: null,
       parentEmojiInfo: null,
     }));
   }, [recentContacts]);
@@ -134,11 +130,7 @@ export function SendToScreen(): React.ReactElement {
       address: contact.address,
       avatar: contact.avatar,
       type: 'contact' as const,
-      emojiInfo: {
-        emoji: '📇',
-        name: 'contact',
-        color: '#3B82F6',
-      },
+      emojiInfo: null,
       parentEmojiInfo: null,
     }));
   }, [allContacts, isLoadingContacts, contactsError]);

@@ -70,7 +70,7 @@ export function RecipientItem({
     >
       <XStack items="center" justify="space-between" flex={1} p={0}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
-        <XStack w={46} h={36} position="relative">
+        <XStack width={46} height={36} position="relative">
           {/* Main Avatar using proper Avatar component */}
           <YStack
             position="absolute"
@@ -95,8 +95,8 @@ export function RecipientItem({
                 left: -1,
                 top: -2,
               }}
-              w={18}
-              h={18}
+              width={18}
+              height={18}
               rounded={9}
               bg="$textSecondary"
               borderWidth={2}
@@ -113,7 +113,7 @@ export function RecipientItem({
         </XStack>
 
         {/* Content */}
-        <YStack flex={1} gap={2} w={151.34} ml={16}>
+        <YStack flex={1} gap={2} width={151.34} ml={16}>
           <XStack items="center" gap={4}>
             {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
             <Text
@@ -127,7 +127,7 @@ export function RecipientItem({
               {name || emojiInfo?.name}
             </Text>
             {isEVM && (
-              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" h={16}>
+              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
                 <Text
                   fontSize={8}
                   fontWeight="400"
@@ -169,8 +169,8 @@ export function RecipientItem({
         <XStack gap="$2" items="center">
           {showCopyButton && onCopy && (
             <XStack
-              w={24}
-              h={24}
+              width={24}
+              height={24}
               opacity={0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
