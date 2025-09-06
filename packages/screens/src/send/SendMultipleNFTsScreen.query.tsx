@@ -21,6 +21,8 @@ import {
   ExtensionHeader,
   type NFTSendData,
   type TransactionFormData,
+  XStack,
+  Separator,
 } from '@onflow/frw-ui';
 import { logger, getNFTId } from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -72,6 +74,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
+
+  const cardBackgroundColor = '$light10';
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
@@ -156,7 +160,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const handleRemoveNFT = useCallback((nftId: string) => {
     const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
     setSelectedNFTs(updatedNFTs);
-    
+
     // If only one NFT remains, navigate to single NFT screen
     if (updatedNFTs.length === 1) {
       navigation.navigate('SendSingleNFT');
@@ -200,7 +204,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$4">
+          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$3">
             {/* From Account Section - Following Figma design */}
             {fromAccountForCard && (
               <AccountCard
@@ -210,15 +214,17 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
             )}
 
+            <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+
             {/* NFTs Section - Following Figma design with expandable list */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
+            <YStack p="$4" gap="$3">
               <SendSectionHeader
                 title={t('send.nfts')}
                 onEditPress={handleEditNFTsPress}
                 showEditButton={true}
                 editButtonText="Edit"
               />
-              
+
               {/* NFT Count Display - Following Figma design */}
               <YStack direction="row" justifyContent="space-between" alignItems="center" mb="$2">
                 <Text fontSize="$5" fontWeight="500" color="rgba(255, 255, 255, 0.8)">
@@ -226,7 +232,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
                 </Text>
                 {/* Expandable indicator would go here if needed */}
               </YStack>
-              
+
               {/* NFTs List - Following Figma design structure */}
               <MultipleNFTsPreview
                 nfts={nftsForUI}
@@ -248,8 +254,12 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
             )}
 
-            {/* Arrow Down Indicator - Following Figma design */}
-            <SendArrowDivider variant="icon" /> {/* Use icon variant for green arrow like in Figma */}
+            {/* Arrow Down Indicator */}
+            <XStack position="relative" height={0}>
+              <XStack width="100%" position="absolute" t={-30} justify="center">
+                <SendArrowDivider variant="arrow" size={48} />
+              </XStack>
+            </XStack>
 
             {/* To Account Section - Following Figma design */}
             {toAccount && (

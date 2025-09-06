@@ -81,7 +81,12 @@ export function RecipientItem({
           >
             <Avatar
               src={avatar?.includes('https://') ? avatar : undefined}
-              fallback={avatar || emojiInfo?.emoji || name?.charAt(0)?.toUpperCase() || type.charAt(0).toUpperCase()}
+              fallback={
+                avatar ||
+                emojiInfo?.emoji ||
+                name?.charAt(0)?.toUpperCase() ||
+                type.charAt(0).toUpperCase()
+              }
               bgColor="rgba(255, 255, 255, 0.25)"
               size={avatarSize}
             />

@@ -24,11 +24,11 @@ export function CollectionHeader({
     <XStack items="center" gap="$1" p="$3" mb="$3">
       {/* Collection Avatar */}
       <Avatar
-            src={image}
-            alt= {name.charAt(0).toUpperCase()}
-            fallback= {name.charAt(0).toUpperCase()}
-            size={48}
-          />
+        src={image}
+        alt={name.charAt(0).toUpperCase()}
+        fallback={name.charAt(0).toUpperCase()}
+        size={48}
+      />
 
       {/* Collection Info */}
       <YStack flex={1} ml="$3" gap="$0.75">

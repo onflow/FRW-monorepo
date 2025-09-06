@@ -21,6 +21,7 @@ import {
   ExtensionHeader,
   type NFTDetailData,
   type TransactionFormData,
+  XStack,
 } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -211,7 +212,12 @@ export function SendSingleNFTScreen(): React.ReactElement {
             )}
 
             {/* Arrow Down Indicator */}
-            <SendArrowDivider variant="text" />
+          <XStack position="relative" height={0}>
+            <XStack width="100%" position="absolute" t={-30} justify="center">
+              <SendArrowDivider variant="arrow" size={48} />
+            </XStack>
+          </XStack>
+
 
             {/* To Account Section */}
             {toAccount && (

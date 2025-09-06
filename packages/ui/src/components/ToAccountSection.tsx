@@ -89,7 +89,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
               <Avatar
                 src={account.avatar}
-                fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || 'A'}
+                fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
                 bgColor={account.emojiInfo?.color}
                 size={avatarSize}
                 borderColor={

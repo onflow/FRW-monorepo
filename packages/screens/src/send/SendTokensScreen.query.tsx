@@ -200,10 +200,6 @@ export const SendTokensScreen = (props) => {
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
 
-  const [nftCollections, setNftCollections] = useState<CollectionModel[]>([]);
-  const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
-  const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
-  const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(

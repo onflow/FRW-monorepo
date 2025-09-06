@@ -12,6 +12,7 @@ import type { WalletAccount } from '@onflow/frw-types';
 import {
   SearchableTabLayout,
   RecipientList,
+  AddressBookList,
   type RecipientData,
   ExtensionHeader,
   BackgroundWrapper,
@@ -292,16 +293,46 @@ export function SendToScreen(): React.ReactElement {
         onTabChange={handleTabChange}
         backgroundColor="$bgDrawer"
       >
-        <RecipientList
-          data={recipients}
-          isLoading={isLoading}
-          emptyTitle={emptyState.title}
-          emptyMessage={emptyState.message}
-          onItemPress={handleRecipientPress}
-          onItemEdit={handleRecipientEdit}
-          onItemCopy={handleRecipientCopy}
-          contentPadding={0}
-        />
+        {activeTab === 'contacts' ? (
+          isLoading ? (
+            <RecipientList
+              data={[]}
+              isLoading={true}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              contentPadding={0}
+            />
+          ) : contactsData.length === 0 ? (
+            <RecipientList
+              data={[]}
+              isLoading={false}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              contentPadding={0}
+            />
+          ) : (
+            <AddressBookList
+              contacts={contactsData.map((contact) => ({
+                ...contact,
+                onPress: () => handleRecipientPress(contact),
+                onEdit: () => handleRecipientEdit(contact),
+                onCopy: () => handleRecipientCopy(contact),
+              }))}
+              groupByLetter={true}
+            />
+          )
+        ) : (
+          <RecipientList
+            data={recipients}
+            isLoading={isLoading}
+            emptyTitle={emptyState.title}
+            emptyMessage={emptyState.message}
+            onItemPress={handleRecipientPress}
+            onItemEdit={handleRecipientEdit}
+            onItemCopy={handleRecipientCopy}
+            contentPadding={0}
+          />
+        )}
       </SearchableTabLayout>
     </BackgroundWrapper>
   );
