@@ -70,8 +70,16 @@ export function NFTSelectionBar({
 
       {/* Remove Button */}
       {onRemoveNFT && (
-        <XStack width="$6" height="$6" onPress={() => onRemoveNFT(nft.id)} cursor="pointer">
-          <Trash size="$6" color="#767676" />
+        <XStack
+          width="$6"
+          height="$6"
+          items="center"
+          justify="center"
+          onPress={() => onRemoveNFT(nft.id)}
+          cursor="pointer"
+          pressStyle={{ opacity: 0.7 }}
+        >
+          <Trash size={20} color="#767676" theme="outline" />
         </XStack>
       )}
     </XStack>
@@ -107,10 +115,19 @@ export function NFTSelectionBar({
             position="absolute"
             right={0}
             top="$2.5"
+            width="$6"
+            height="$6"
+            items="center"
+            justify="center"
             onPress={handleToggleExpanded}
             cursor="pointer"
+            pressStyle={{ opacity: 0.7 }}
           >
-            {isExpanded ? <ChevronDown size={24} /> : <ChevronUp size={24} />}
+            {isExpanded ? (
+              <ChevronDown size={20} color="#FFFFFF" theme="outline" />
+            ) : (
+              <ChevronUp size={20} color="#FFFFFF" theme="outline" />
+            )}
           </XStack>
         </XStack>
 

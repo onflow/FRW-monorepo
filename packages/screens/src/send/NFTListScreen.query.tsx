@@ -190,25 +190,35 @@ export function NFTListScreen({
   //   setSelectedNFTs(selectedNFTsToStore);
   // }, [selectedNFTsToStore]);
 
-  // Handle NFT selection - temporarily disable store updates
-  const handleNFTSelect = useCallback((nftId: string) => {
-    console.log('NFT selected:', nftId);
-    // setTransactionType('multiple-nfts');
+  // Handle NFT selection
+  const handleNFTSelect = useCallback(
+    (nftId: string) => {
+      console.log('NFT selected:', nftId);
 
-    setSelectedIds((prev) => {
-      const isSelected = prev.includes(nftId);
-      if (isSelected) {
-        return prev.filter((id) => id !== nftId);
-      } else {
-        if (prev.length >= 9) {
-          // Show alert for max selection - this would need to be handled by the parent
-          console.warn('Maximum 9 NFTs can be selected');
-          return prev;
+      setSelectedIds((prev) => {
+        const isSelected = prev.includes(nftId);
+        const newSelectedIds = isSelected
+          ? prev.filter((id) => id !== nftId)
+          : prev.length >= 9
+            ? prev // Don't add more than 9
+            : [...prev, nftId];
+
+        // Set transaction type based on selection count
+        if (newSelectedIds.length === 1) {
+          setTransactionType('single-nft');
+        } else if (newSelectedIds.length > 1) {
+          setTransactionType('multiple-nfts');
         }
-        return [...prev, nftId];
-      }
-    });
-  }, []);
+
+        if (prev.length >= 9 && !isSelected) {
+          console.warn('Maximum 9 NFTs can be selected');
+        }
+
+        return newSelectedIds;
+      });
+    },
+    [setTransactionType]
+  );
 
   const handleNFTDetail = useCallback((nftId: string) => {
     navigation.navigate('NFTView', { id: nftId });
@@ -219,14 +229,14 @@ export function NFTListScreen({
     setSelectedIds((prev) => prev.filter((id) => id !== nftId));
   }, []);
 
-  // Handle continue action - temporarily disable store updates
+  // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
-    console.log('Continue pressed');
-    // const selectedNFTs = nfts.filter((nft) => selectedIds.includes(getNFTId(nft)));
-    // setSelectedNFTs(selectedNFTs);
-    // setCurrentStep('send-to');
-    // navigation.navigate('SendTo');
-  }, []);
+    console.log('Continue pressed with selected NFTs:', selectedIds.length);
+    const selectedNFTs = nfts.filter((nft) => selectedIds.includes(getNFTId(nft)));
+    setSelectedNFTs(selectedNFTs);
+    setCurrentStep('send-to');
+    navigation.navigate('SendTo');
+  }, [selectedIds, nfts, setSelectedNFTs, setCurrentStep]);
 
   // Refresh function - TanStack Query makes this super simple!
   const refreshNFTs = useCallback(() => {

@@ -75,7 +75,8 @@
     "tokenId": "ID del Token",
     "properties": "Propiedades",
     "description": "Descripción",
-    "creator": "Creador"
+    "creator": "Creador",
+    "title": "Enviar"
   },
   "messages": {
     "loading": "Cargando...",
@@ -84,7 +85,9 @@
   },
   "buttons": {
     "retry": "Reintentar",
-    "refresh": "Actualizar"
+    "refresh": "Actualizar",
+    "continue": "Continuar",
+    "clearSearch": "Limpiar Búsqueda"
   },
   "errors": {
     "networkError": "Ocurrió un error de red",
@@ -96,6 +99,14 @@
     "tokenNotSupported": "Token no soportado",
     "unauthorized": "Acceso no autorizado",
     "timeout": "Tiempo de espera agotado",
-    "unknown": "Ocurrió un error desconocido"
+    "unknown": "Ocurrió un error desconocido",
+    "failedToLoadTokens": "Error al cargar tokens",
+    "failedToLoadNFTs": "Error al cargar NFTs"
+  },
+  "nft": {
+    "noSearchResults": "Sin Resultados de Búsqueda",
+    "noNFTsMatchSearch": "Ningún NFT coincide con '{{search}}'",
+    "noNFTsFound": "No se Encontraron NFTs",
+    "collectionEmpty": "Esta colección no contiene ningún NFT"
   }
 }

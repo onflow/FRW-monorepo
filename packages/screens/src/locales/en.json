@@ -79,7 +79,8 @@
     "tokenId": "Token ID",
     "properties": "Properties",
     "description": "Description",
-    "creator": "Creator"
+    "creator": "Creator",
+    "title": "Send"
   },
   "messages": {
     "loading": "Loading...",
@@ -88,7 +89,9 @@
   },
   "buttons": {
     "retry": "Retry",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "continue": "Continue",
+    "clearSearch": "Clear Search"
   },
   "errors": {
     "networkError": "Network error occurred",
@@ -100,6 +103,14 @@
     "tokenNotSupported": "Token not supported",
     "unauthorized": "Unauthorized access",
     "timeout": "Request timed out",
-    "unknown": "An unknown error occurred"
+    "unknown": "An unknown error occurred",
+    "failedToLoadTokens": "Failed to load tokens",
+    "failedToLoadNFTs": "Failed to load NFTs"
+  },
+  "nft": {
+    "noSearchResults": "No Search Results",
+    "noNFTsMatchSearch": "No NFTs match '{{search}}'",
+    "noNFTsFound": "No NFTs Found",
+    "collectionEmpty": "This collection doesn't contain any NFTs"
   }
 }

@@ -26,12 +26,11 @@ export function NFTCard({
   accountEmoji,
   accountAvatar,
 }: NFTCardProps) {
-  const width = size === 'large' ? '$50' : size === 'medium' ? 160 : '$30';
-  const height = size === 'large' ? '$50' : size === 'medium' ? 200 : '$30';
+  const width = size === 'large' ? '$50' : size === 'medium' ? '100%' : '$30';
+  const imageHeight = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
   return (
     <YStack
       width={width}
-      height={height}
       gap="$1.5"
       pressStyle={{ bg: 'transparent' }}
       onPress={onPress}
@@ -39,8 +38,8 @@ export function NFTCard({
     >
       {/* NFT Image */}
       <YStack
-        w={width}
-        h={height}
+        w="100%"
+        h={imageHeight}
         rounded="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}

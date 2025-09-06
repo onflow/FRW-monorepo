@@ -98,12 +98,19 @@ export function NFTGrid({
 
   // Empty state
   const renderEmpty = () => (
-    <YStack flex={1} justify="center" items="center" py="$8">
-      <Text fontSize="$6" fontWeight="600" color="$color" mb="$2" textAlign="center">
+    <YStack flex={1} justify="center" items="center" px="$6" py="$12">
+      <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
         {emptyTitle || 'No NFTs Found'}
       </Text>
 
-      <Text fontSize="$4" color="$textSecondary" mb="$6" textAlign="center" maxWidth="$20">
+      <Text
+        fontSize="$4"
+        color="$textSecondary"
+        mb="$8"
+        textAlign="center"
+        maxWidth="$24"
+        lineHeight="$5"
+      >
         {emptyMessage || 'No NFTs available in this collection.'}
       </Text>
 
@@ -114,6 +121,8 @@ export function NFTGrid({
           bg="$bg2"
           borderColor="$borderColor"
           color="$color"
+          px="$4"
+          py="$3"
         >
           {clearSearchText}
         </Button>
@@ -144,21 +153,24 @@ export function NFTGrid({
 
   // Main grid content
   return (
-    <YStack gap="$6">
+    <YStack gap="$4">
       {rows.map((row, rowIndex) => (
-        <XStack key={`row-${rowIndex}`} gap="$6" justify="center" width="100%">
+        <XStack key={`row-${rowIndex}`} gap="$4" justify="space-between" width="100%">
           {row.map((nft) => (
-            <NFTCard
-              key={nft.id}
-              nft={nft}
-              size="medium"
-              selected={selectedIds.includes(nft.id)}
-              onPress={() => onNFTPress(nft)}
-              onSelect={() => onNFTSelect(nft.id)}
-              showAmount={!!nft.amount}
-              aspectRatio={aspectRatio}
-            />
+            <YStack key={nft.id} flex={1}>
+              <NFTCard
+                nft={nft}
+                size="medium"
+                selected={selectedIds.includes(nft.id)}
+                onPress={() => onNFTPress(nft)}
+                onSelect={() => onNFTSelect(nft.id)}
+                showAmount={!!nft.amount}
+                aspectRatio={aspectRatio}
+              />
+            </YStack>
           ))}
+          {/* Add empty spacer if row has only 1 item to maintain left alignment */}
+          {row.length === 1 && <YStack flex={1} />}
         </XStack>
       ))}
     </YStack>
