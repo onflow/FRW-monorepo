@@ -36,6 +36,7 @@ export interface SegmentedControlProps {
   onChange: (value: string) => void;
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
+  constrainWidth?: boolean;
 }
 
 export interface SkeletonProps {

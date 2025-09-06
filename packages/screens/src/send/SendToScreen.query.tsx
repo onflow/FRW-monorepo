@@ -48,6 +48,7 @@ export function SendToScreen(): React.ReactElement {
 
   // Get selected token from send store
   const selectedToken = useSendStore(sendSelectors.selectedToken);
+  const transactionType = useSendStore((state) => state.transactionType);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
   // Update current step when screen loads
@@ -228,10 +229,17 @@ export function SendToScreen(): React.ReactElement {
         }
       }
 
-      // Navigate to send tokens screen
-      navigation.navigate('SendTokens', { address: recipient.address, recipient });
+      // Navigate to appropriate screen based on transaction type
+      if (transactionType === 'single-nft') {
+        navigation.navigate('SendSingleNFT', { address: recipient.address, recipient });
+      } else if (transactionType === 'multiple-nfts') {
+        navigation.navigate('SendMultipleNFTs', { address: recipient.address, recipient });
+      } else {
+        // Default to tokens screen
+        navigation.navigate('SendTokens', { address: recipient.address, recipient });
+      }
     },
-    [setToAccount, activeTab]
+    [setToAccount, activeTab, transactionType]
   );
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {

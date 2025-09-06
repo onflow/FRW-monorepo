@@ -1,6 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, sendSelectors, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
-import { type CollectionModel, type NFTModel } from '@onflow/frw-types';
+import { type NFTModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   NFTGrid,
@@ -23,7 +23,6 @@ import { useQueryClient } from '../providers/QueryProvider';
  * Uses TanStack Query for data fetching and caching
  */
 export function NFTListScreen(): React.ReactElement {
-  console.log('🟢 NFTListScreen COMPONENT RENDERED!');
 
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,19 +45,6 @@ export function NFTListScreen(): React.ReactElement {
   const activeCollection = selectedCollection;
   const currentAddress = fromAccount?.address;
 
-  console.log('🔍 Store data sources:', {
-    storeCollection: selectedCollection ? { name: selectedCollection.name, id: selectedCollection.id } : null,
-    fromAccountAddress: fromAccount?.address,
-    currentAddress,
-    activeCollection: activeCollection
-      ? {
-          name: activeCollection.name,
-          id: activeCollection.id,
-          contractName: activeCollection.contractName,
-        }
-      : null,
-    willQueryRun: !!activeCollection && !!currentAddress,
-  });
   // Update current step when screen loads (following SendToScreen pattern)
   useEffect(() => {
     setCurrentStep('select-nfts');
@@ -68,7 +54,6 @@ export function NFTListScreen(): React.ReactElement {
 
   // Early return if essential data is missing from store
   if (!activeCollection) {
-    console.error('❌ NFTListScreen: No collection available from store');
     return (
       <BackgroundWrapper backgroundColor="$background">
         <YStack flex={1} items="center" justify="center" px="$6">
@@ -84,7 +69,6 @@ export function NFTListScreen(): React.ReactElement {
   }
 
   if (!currentAddress) {
-    console.error('❌ NFTListScreen: No address available from store');
     return (
       <BackgroundWrapper backgroundColor="$background">
         <YStack flex={1} items="center" justify="center" px="$6">
@@ -101,16 +85,8 @@ export function NFTListScreen(): React.ReactElement {
 
   // Memoize the query key to prevent unnecessary re-renders
   const queryKey = useMemo(() => {
-    console.log('🔑 Computing query key with:', {
-      collection: activeCollection?.name,
-      address: currentAddress,
-      network,
-      hasCollection: !!activeCollection,
-      hasAddress: !!currentAddress,
-    });
     // Since we have early returns above, this should always have valid data
     const key = tokenQueryKeys.nftCollection(currentAddress, activeCollection, network);
-    console.log('🔑 Generated query key:', key);
     return key;
   }, [
     activeCollection?.id,
@@ -122,6 +98,8 @@ export function NFTListScreen(): React.ReactElement {
 
   // Query is always enabled since we have early returns for missing data
   const isQueryEnabled = true;
+  
+  console.log('🔍 NFTListScreen loading state:', { isLoading, hasData: (nfts || []).length > 0, error: !!error });
 
   // 🔥 TanStack Query: Fetch NFTs from collection with intelligent caching
   const {
@@ -132,12 +110,6 @@ export function NFTListScreen(): React.ReactElement {
   } = useQuery({
     queryKey,
     queryFn: () => {
-      console.log(
-        '🔥 QUERY RUNNING - Fetching NFTs for collection:',
-        activeCollection.name,
-        'at address:',
-        currentAddress
-      );
       // Safe to use non-null assertion due to early returns
       return tokenQueries.fetchNFTCollection(currentAddress, activeCollection, network);
     },
@@ -162,24 +134,22 @@ export function NFTListScreen(): React.ReactElement {
     [collectionName]
   );
 
-  // Add debugging
-  console.log(
-    'NFTListScreen render - NFTs:',
-    nfts.length,
-    'isLoading:',
-    isLoading,
-    'error:',
-    error?.message
-  );
-
   // Memoize the NFT data conversion to prevent unnecessary recalculations
   const nftData: NFTData[] = useMemo(() => {
+    if (!nfts || !Array.isArray(nfts)) {
+      console.log('Converting NFT data: No NFTs available or invalid data');
+      return [];
+    }
     console.log('Converting NFT data:', nfts.length, 'NFTs');
     return nfts.map(convertToNFTData);
   }, [nfts, convertToNFTData]);
 
   // Memoize filtered NFTs to prevent unnecessary recalculations
   const filteredNFTs = useMemo(() => {
+    if (!Array.isArray(nftData)) {
+      console.log('Filtered NFTs: nftData is not an array, returning empty array');
+      return [];
+    }
     const filtered = nftData.filter(
       (nft) =>
         !searchQuery ||
@@ -202,7 +172,6 @@ export function NFTListScreen(): React.ReactElement {
   // Handle NFT selection
   const handleNFTSelect = useCallback(
     (nftId: string) => {
-      console.log('NFT selected:', nftId);
 
       setSelectedIds((prev) => {
         const isSelected = prev.includes(nftId);
@@ -230,18 +199,29 @@ export function NFTListScreen(): React.ReactElement {
   );
 
   const handleNFTDetail = useCallback((nftId: string) => {
-    navigation.navigate('NFTView', { id: nftId });
-  }, []);
+    console.log('🔍 Opening NFT detail for:', nftId);
+    const foundNFT = (nfts || []).find(n => getNFTId(n) === nftId);
+    if (foundNFT) {
+      navigation.navigate('NFTDetail', { nft: foundNFT });
+    } else {
+      console.warn('NFT not found for ID:', nftId);
+    }
+  }, [nfts]);
 
   // Handle NFT removal from selection bar
   const handleNFTRemove = useCallback((nftId: string) => {
-    setSelectedIds((prev) => prev.filter((id) => id !== nftId));
+    console.log('🗑️ Removing NFT from selection:', nftId);
+    setSelectedIds((prev) => {
+      const newIds = prev.filter((id) => id !== nftId);
+      console.log('🗑️ Selected IDs before:', prev, 'after:', newIds);
+      return newIds;
+    });
   }, []);
 
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
     console.log('Continue pressed with selected NFTs:', selectedIds.length);
-    const selectedNFTs = nfts.filter((nft) => selectedIds.includes(getNFTId(nft)));
+    const selectedNFTs = (nfts || []).filter((nft) => selectedIds.includes(getNFTId(nft)));
     setSelectedNFTs(selectedNFTs);
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
@@ -254,7 +234,7 @@ export function NFTListScreen(): React.ReactElement {
 
   // Memoize selected NFTs for the selection bar to prevent recalculations
   const selectedNFTsForBar = useMemo(
-    () => filteredNFTs.filter((nft) => selectedIds.includes(nft.id)),
+    () => filteredNFTs.filter((nft) => (selectedIds || []).includes(nft.id)),
     [filteredNFTs, selectedIds]
   );
 
@@ -274,7 +254,7 @@ export function NFTListScreen(): React.ReactElement {
   const emptyState = getEmptyState();
 
   return (
-    <BackgroundWrapper backgroundColor="$background">
+    <BackgroundWrapper backgroundColor="$bgDrawer">
       <YStack flex={1} position="relative">
         {/* Collection Header */}
         {isExtension && (
@@ -291,7 +271,7 @@ export function NFTListScreen(): React.ReactElement {
               name={collectionName}
               image={activeCollection.logoURI || activeCollection.logo}
               // description={activeCollection.description}
-              itemCount={nfts.length}
+              itemCount={(nfts || []).length}
               isLoading={isLoading}
             />
           </YStack>
@@ -307,6 +287,7 @@ export function NFTListScreen(): React.ReactElement {
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
             onNFTSelect={handleNFTSelect}
+            onNFTPress={handleNFTDetail}
             onRetry={refreshNFTs}
             retryText={t('buttons.retry')}
             clearSearchText={t('buttons.clearSearch')}

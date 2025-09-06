@@ -403,7 +403,7 @@ export const SendTokensScreen = (props) => {
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
-                account={transformAccountForCard(fromAccount, balanceData?.displayBalance)}
+                account={transformAccountForCard(fromAccount, selectedAccount?.balance)}
                 title="From Account"
                 isLoading={isBalanceLoading}
               />

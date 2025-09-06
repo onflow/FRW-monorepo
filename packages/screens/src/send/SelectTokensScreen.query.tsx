@@ -1,6 +1,7 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import {
   useSendStore,
+  sendSelectors,
   tokenQueryKeys,
   tokenQueries,
   useWalletStore,
@@ -53,8 +54,10 @@ export function SelectTokensScreen(): React.ReactElement {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Get current address and network
-  const address = bridge.getSelectedAddress() || '';
+  // Get current address and network - prioritize fromAccount in send store
+  const fromAccount = useSendStore(sendSelectors.fromAccount);
+  const bridgeAddress = bridge.getSelectedAddress() || '';
+  const address = fromAccount?.address || bridgeAddress;
   const network = bridge.getNetwork() || 'mainnet';
 
   // Get wallet accounts for modal selection
@@ -126,6 +129,19 @@ export function SelectTokensScreen(): React.ReactElement {
     }
   }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
 
+  // Initialize fromAccount if not set and we have accounts loaded
+  React.useEffect(() => {
+    if (!fromAccount && accounts.length > 0 && bridgeAddress) {
+      const matchingAccount = accounts.find(
+        (acc: WalletAccount) =>
+          acc.address === bridgeAddress || acc.address?.toLowerCase() === bridgeAddress?.toLowerCase()
+      );
+      if (matchingAccount) {
+        setFromAccount(matchingAccount);
+      }
+    }
+  }, [fromAccount, accounts, bridgeAddress, setFromAccount]);
+
   // Handle tab change
   const handleTabChange = (newTab: TabType): void => {
     if (newTab !== tab) {
@@ -171,11 +187,19 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle account selection from modal
   const handleAccountSelect = (selectedAccount: any): void => {
-    // Switch to the selected account
-    bridge.setSelectedAccount(selectedAccount.address);
-    // Clear transaction data since we're switching accounts
-    clearTransactionData();
-    // The screen will re-render with the new account data
+    // Find the full account object from our accounts array
+    const fullAccount = accounts.find(
+      (acc: WalletAccount) => 
+        acc.address === selectedAccount.address || 
+        acc.address?.toLowerCase() === selectedAccount.address?.toLowerCase()
+    );
+    
+    if (fullAccount) {
+      // Update the fromAccount in the send store
+      setFromAccount(fullAccount);
+      // Clear transaction data since we're switching accounts
+      clearTransactionData();
+    }
   };
 
   // Refresh functions - TanStack Query makes this super simple!
@@ -223,7 +247,18 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Get current account data
   const currentAccount = React.useMemo(() => {
-    // Find matching account - try both exact match and case-insensitive match
+    // If we have a fromAccount in send store, use it directly
+    if (fromAccount) {
+      return {
+        name: fromAccount.name || 'Unnamed Account',
+        address: fromAccount.address,
+        avatar: fromAccount.avatar,
+        balance: isBalanceLoading ? t('messages.loading') : balanceData?.displayBalance || '0 FLOW',
+        emojiInfo: fromAccount.emojiInfo,
+      };
+    }
+
+    // Otherwise, find matching account from accounts array
     const account = accounts.find(
       (acc: WalletAccount) =>
         acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
@@ -232,6 +267,7 @@ export function SelectTokensScreen(): React.ReactElement {
     // Debug log to help troubleshoot
     console.log('SelectTokensScreen - Address matching:', {
       currentAddress: address,
+      fromAccount: fromAccount ? { address: fromAccount.address, name: fromAccount.name } : null,
       allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
       foundAccount: account ? { address: account.address, name: account.name } : null,
     });
@@ -243,7 +279,7 @@ export function SelectTokensScreen(): React.ReactElement {
       balance: isBalanceLoading ? t('messages.loading') : balanceData?.displayBalance || '0 FLOW',
       emojiInfo: account?.emojiInfo,
     };
-  }, [accounts, address, isBalanceLoading, balanceData, t]);
+  }, [accounts, address, fromAccount, isBalanceLoading, balanceData, t]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">

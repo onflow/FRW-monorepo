@@ -62,28 +62,30 @@ export function NFTGrid({
 }: NFTGridProps) {
   const columns = 2;
 
-  // Loading skeleton - group into rows like the main content
+  // Loading skeleton - match the responsive 2-column layout
   const renderSkeleton = () => {
     const skeletonRows = [];
     for (let i = 0; i < 6; i += columns) {
       const rowItems = Array.from({ length: Math.min(columns, 6 - i) }, (_, index) => (
-        <YStack key={`skeleton-${i + index}`} gap="$1.5">
-          <Skeleton width="$41" height="$41" borderRadius="$4" />
-          <YStack gap="$-0.75">
-            <Skeleton height="$6" width="80%" mb="$2" />
-            <Skeleton height="$5" width="60%" />
+        <YStack key={`skeleton-${i + index}`} flex={1} gap="$1.5">
+          <Skeleton width="100%" height="$41" borderRadius="$4" />
+          <YStack gap="$1">
+            <Skeleton height="$4" width="80%" />
+            <Skeleton height="$3" width="60%" />
           </YStack>
         </YStack>
       ));
 
       skeletonRows.push(
-        <XStack key={`skeleton-row-${i}`} justify="space-between" width="100%">
+        <XStack key={`skeleton-row-${i}`} gap="$4" justify="space-between" width="100%">
           {rowItems}
+          {/* Add empty spacer if row has only 1 item to maintain left alignment */}
+          {rowItems.length === 1 && <YStack flex={1} />}
         </XStack>
       );
     }
 
-    return <YStack gap="$6">{skeletonRows}</YStack>;
+    return <YStack gap="$4">{skeletonRows}</YStack>;
   };
 
   // Error state
@@ -162,9 +164,8 @@ export function NFTGrid({
                 nft={nft}
                 size="medium"
                 selected={selectedIds.includes(nft.id)}
-                onPress={() => onNFTPress(nft)}
+                onPress={() => onNFTPress(nft.id)}
                 onSelect={() => onNFTSelect(nft.id)}
-                showAmount={!!nft.amount}
                 aspectRatio={aspectRatio}
               />
             </YStack>

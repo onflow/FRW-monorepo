@@ -9,6 +9,7 @@ export function SegmentedControl({
   onChange,
   size = 'medium',
   fullWidth = false,
+  constrainWidth = false,
   ...props
 }: SegmentedControlProps): React.ReactElement {
   const selectedIndex = segments.indexOf(value);
@@ -22,6 +23,11 @@ export function SegmentedControl({
 
   const { height, px, fontSize } = sizeConfig[size];
 
+  const containerWidth = fullWidth ? '100%' : (constrainWidth ? 178 : 'auto');
+  const useGap = constrainWidth ? 8 : undefined;
+  const segmentWidth = fullWidth ? undefined : (constrainWidth ? (178 - 10 - 8) / 2 : undefined);
+  const segmentPx = fullWidth ? px : (constrainWidth ? 6 : px);
+
   return (
     <XStack
       bg="transparent"
@@ -30,7 +36,10 @@ export function SegmentedControl({
       rounded={200}
       p={5}
       items="center"
-      w={fullWidth ? '100%' : 'auto'}
+      justify={constrainWidth ? "center" : undefined}
+      w={containerWidth}
+      maxW={constrainWidth ? 178 : undefined}
+      gap={useGap}
       {...props}
     >
       {segments.map((segment, index) => {
@@ -40,12 +49,13 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
+            w={segmentWidth}
             h={height}
             bg={isSelected ? '#242424' : 'transparent'}
             rounded={24}
             items="center"
             justify="center"
-            px={px}
+            px={segmentPx}
             pressStyle={{ opacity: 0.8, bg: isSelected ? '#242424' : 'rgba(255, 255, 255, 0.1)' }}
             onPress={() => onChange(segment)}
             cursor="pointer"

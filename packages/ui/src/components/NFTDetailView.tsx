@@ -16,6 +16,7 @@ export interface NFTDetailData {
   contractAddress?: string;
   collectionContractName?: string;
   properties?: NFTProperty[];
+  type?: 'evm' | 'flow'; // determines if EVM badge should show
 }
 
 export interface NFTDetailViewProps {
@@ -40,7 +41,7 @@ export function NFTDetailView({
   onToggleSelection,
   owner,
   showOwner = false,
-  backgroundColor = '$background',
+  backgroundColor = '$bgDrawer',
   contentPadding = 14,
 }: NFTDetailViewProps) {
   // Generate properties from NFT data
@@ -83,7 +84,7 @@ export function NFTDetailView({
               src={nft.image}
               selected={selected}
               selectable={selectable}
-              onToggleSelection={onToggleSelection}
+              onImagePress={selectable ? onToggleSelection : undefined}
               borderRadius={16}
             />
           </YStack>

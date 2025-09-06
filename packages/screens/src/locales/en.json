@@ -111,6 +111,10 @@
     "noSearchResults": "No Search Results",
     "noNFTsMatchSearch": "No NFTs match '{{search}}'",
     "noNFTsFound": "No NFTs Found",
-    "collectionEmpty": "This collection doesn't contain any NFTs"
+    "collectionEmpty": "This collection doesn't contain any NFTs",
+    "notFound": {
+      "title": "NFT Not Found",
+      "message": "The requested NFT could not be found or loaded"
+    }
   }
 }

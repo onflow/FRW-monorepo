@@ -57,19 +57,20 @@ export function RecipientItem({
 }: RecipientItemProps): React.JSX.Element {
   return (
     <Card
-      mb="$0.75"
       bg="transparent"
-      borderRadius="$4"
+      borderRadius={16}
       pressStyle={pressStyle || { opacity: 0.8, scale: 0.98 }}
       disabled={isDisabled}
       onPress={onPress}
       opacity={isDisabled ? 0.5 : 1}
       borderColor="transparent"
       borderWidth={0}
+      p={12}
+      minHeight={60}
     >
-      <XStack items="center">
+      <XStack items="center" justify="space-between" flex={1} p={0}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
-        <XStack width={46} height={36} position="relative">
+        <XStack w={46} h={36} position="relative">
           {/* Main Avatar Circle - Always show background */}
           <YStack
             position="absolute"
@@ -77,25 +78,36 @@ export function RecipientItem({
               left: 5,
               top: 0,
             }}
-            width={avatarSize}
-            height={avatarSize}
+            w={avatarSize}
+            h={avatarSize}
             rounded={avatarSize / 2}
-            bg="$light25"
+            bg="rgba(255, 255, 255, 0.25)"
             items="center"
             justify="center"
           >
             {avatar?.includes('https://') ? (
-              <Image width={avatarSize} height={avatarSize} source={{ uri: avatar }} />
+              <Image w={avatarSize} h={avatarSize} source={{ uri: avatar }} />
             ) : (
-              <Text
-                fontSize={18}
-                color={emojiInfo?.color}
-                fontWeight="600"
-                lineHeight={18 * 1.2}
-                letterSpacing={-0.1}
+              <YStack
+                w={42}
+                h={42}
+                rounded={21}
+                borderWidth={1}
+                borderColor="rgba(0, 239, 139, 0)"
+                items="center"
+                justify="center"
+                p="12px 14px"
               >
-                {avatar || emojiInfo?.emoji || type.charAt(0).toUpperCase()}
-              </Text>
+                <Text
+                  fontSize={17.8}
+                  color="rgba(255, 255, 255, 0.8)"
+                  fontWeight="600"
+                  lineHeight={21.4}
+                  letterSpacing={-0.107}
+                >
+                  {avatar || emojiInfo?.emoji || name?.charAt(0)?.toUpperCase() || type.charAt(0).toUpperCase()}
+                </Text>
+              </YStack>
             )}
           </YStack>
 
@@ -107,8 +119,8 @@ export function RecipientItem({
                 left: -1,
                 top: -2,
               }}
-              width={18}
-              height={18}
+              w={18}
+              h={18}
               rounded={9}
               bg="$textSecondary"
               borderWidth={2}
@@ -125,27 +137,25 @@ export function RecipientItem({
         </XStack>
 
         {/* Content */}
-        <YStack flex={1} gap={2} width={151.34} ml="$0.75">
-          <XStack items="center" gap="$1">
-            <XStack items="center" gap={4}>
-              {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
-              <Text
-                fontSize={14}
-                fontWeight="600"
-                color="$white"
-                numberOfLines={1}
-                lineHeight={16.8}
-                letterSpacing={-0.084}
-              >
-                {name || emojiInfo?.name}
-              </Text>
-            </XStack>
+        <YStack flex={1} gap={2} w={151.34} ml={16}>
+          <XStack items="center" gap={4}>
+            {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+            <Text
+              fontSize={14}
+              fontWeight="600"
+              color="#FFFFFF"
+              numberOfLines={1}
+              lineHeight={16.8}
+              letterSpacing={-0.084}
+            >
+              {name || emojiInfo?.name}
+            </Text>
             {isEVM && (
-              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" h={16}>
                 <Text
                   fontSize={8}
                   fontWeight="400"
-                  color="$white"
+                  color="#FFFFFF"
                   lineHeight={9.7}
                   letterSpacing={0.128}
                 >
@@ -159,7 +169,7 @@ export function RecipientItem({
             address={address}
             fontSize={12}
             fontWeight="400"
-            color="$textMuted"
+            color="#B3B3B3"
             lineHeight={16.8}
           />
 
@@ -183,8 +193,8 @@ export function RecipientItem({
         <XStack gap="$2" items="center">
           {showCopyButton && onCopy && (
             <XStack
-              width={24}
-              height={24}
+              w={24}
+              h={24}
               opacity={0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();

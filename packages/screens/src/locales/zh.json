@@ -107,6 +107,10 @@
     "noSearchResults": "无搜索结果",
     "noNFTsMatchSearch": "没有NFT与'{{search}}'匹配",
     "noNFTsFound": "未找到NFT",
-    "collectionEmpty": "此收藏不包含任何NFT"
+    "collectionEmpty": "此收藏不包含任何NFT",
+    "notFound": {
+      "title": "未找到NFT",
+      "message": "无法找到或加载请求的NFT"
+    }
   }
 }

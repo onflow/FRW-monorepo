@@ -32,9 +32,10 @@ export function NFTCard({
     <YStack
       width={width}
       gap="$1.5"
-      pressStyle={{ bg: 'transparent' }}
+      pressStyle={{ opacity: 0.8, scale: 0.98 }}
       onPress={onPress}
       position="relative"
+      cursor="pointer"
     >
       {/* NFT Image */}
       <YStack
@@ -45,8 +46,6 @@ export function NFTCard({
         aspectRatio={aspectRatio}
         bg="$surface2"
         position="relative"
-        pressStyle={{ bg: 'transparent' }}
-        onPress={onPress}
       >
         {nft.thumbnail || nft.image ? (
           <Image src={nft.thumbnail || nft.image} width="100%" height="100%" objectFit="cover" />
@@ -62,7 +61,6 @@ export function NFTCard({
         )}
 
         {/* Selection Indicator - top right corner */}
-
         <YStack
           w="$6"
           h="$6"
@@ -70,7 +68,12 @@ export function NFTCard({
           position="absolute"
           top="$2"
           right="$2"
-          onPress={() => onSelect(nft.id)}
+          onPress={(e) => {
+            e?.stopPropagation?.();
+            onSelect(nft.id);
+          }}
+          pressStyle={{ opacity: 0.8 }}
+          cursor="pointer"
         >
           <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>
