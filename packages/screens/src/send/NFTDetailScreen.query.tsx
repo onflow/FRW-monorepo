@@ -109,16 +109,65 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Convert NFTModel to NFTDetailData
   const convertToNFTDetailData = useCallback(
-    (nftModel: NFTModel): NFTDetailData => ({
-      id: nftModel.id,
-      name: nftModel.name || 'Untitled NFT',
-      image: getNFTCover(nftModel),
-      collection: nftModel.collectionName || activeCollection.name,
-      description: nftModel.description,
-      contractName: nftModel.contractName,
-      contractAddress: nftModel.contractAddress,
-      collectionContractName: nftModel.collectionContractName,
-    }),
+    (nftModel: NFTModel): NFTDetailData => {
+      // Extract additional properties that might contain traits/attributes
+      const additionalProperties: { label: string; value: string }[] = [];
+      
+      // Check if NFT has traits/attributes in metadata
+      const nftAsAny = nftModel as any;
+      
+      // Common trait/attribute fields from NFT metadata
+      if (nftAsAny.traits || nftAsAny.attributes) {
+        const traits = nftAsAny.traits || nftAsAny.attributes;
+        if (Array.isArray(traits)) {
+          traits.forEach((trait: any) => {
+            if (trait && typeof trait === 'object' && trait.trait_type && trait.value) {
+              additionalProperties.push({
+                label: trait.trait_type,
+                value: trait.value.toString()
+              });
+            }
+          });
+        }
+      }
+      
+      // Check for properties in postMedia or other nested objects
+      if (nftAsAny.postMedia?.traits || nftAsAny.postMedia?.attributes) {
+        const mediaTraits = nftAsAny.postMedia.traits || nftAsAny.postMedia.attributes;
+        if (Array.isArray(mediaTraits)) {
+          mediaTraits.forEach((trait: any) => {
+            if (trait && typeof trait === 'object' && trait.trait_type && trait.value) {
+              additionalProperties.push({
+                label: trait.trait_type,
+                value: trait.value.toString()
+              });
+            }
+          });
+        }
+      }
+      
+      // Check for other common metadata fields that might contain properties
+      ['rarity', 'edition', 'series', 'creator', 'royalty'].forEach(field => {
+        if (nftAsAny[field] && typeof nftAsAny[field] === 'string') {
+          additionalProperties.push({
+            label: field.charAt(0).toUpperCase() + field.slice(1),
+            value: nftAsAny[field]
+          });
+        }
+      });
+
+      return {
+        id: nftModel.id,
+        name: nftModel.name || 'Untitled NFT',
+        image: getNFTCover(nftModel),
+        collection: nftModel.collectionName || activeCollection.name,
+        description: nftModel.description,
+        contractName: nftModel.contractName,
+        contractAddress: nftModel.contractAddress,
+        collectionContractName: nftModel.collectionContractName,
+        properties: additionalProperties.length > 0 ? additionalProperties : undefined,
+      };
+    },
     [activeCollection.name]
   );
 

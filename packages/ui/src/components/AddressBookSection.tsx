@@ -30,7 +30,7 @@ export function AddressBookSection({
       </Text>
 
       {/* Contacts List */}
-      <YStack gap={4}>
+      <YStack gap={0}>
         {contacts.map((contact, index) => (
           <YStack key={`${contact.address}-${index}`}>
             <RecipientItem
@@ -45,7 +45,6 @@ export function AddressBookSection({
                 bg="rgba(255, 255, 255, 0.1)"
                 w="100%"
                 ml={0}
-                mt={4}
               />
             )}
           </YStack>
@@ -66,7 +65,7 @@ export function AddressBookList({
 }: AddressBookListProps): React.JSX.Element {
   if (!groupByLetter) {
     return (
-      <YStack gap={4}>
+      <YStack gap={0}>
         {contacts.map((contact, index) => (
           <YStack key={`${contact.address}-${index}`}>
             <RecipientItem
@@ -81,7 +80,6 @@ export function AddressBookList({
                 bg="rgba(255, 255, 255, 0.1)"
                 w="100%"
                 ml={0}
-                mt={4}
               />
             )}
           </YStack>

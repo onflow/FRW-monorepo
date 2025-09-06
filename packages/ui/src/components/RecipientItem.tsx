@@ -1,8 +1,9 @@
 import { Copy, Link } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Text, Image } from 'tamagui';
+import { Card, XStack, YStack, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 
 export interface RecipientItemProps {
@@ -65,50 +66,25 @@ export function RecipientItem({
       opacity={isDisabled ? 0.5 : 1}
       borderColor="transparent"
       borderWidth={0}
-      p={12}
-      minHeight={60}
+      p={0}
     >
       <XStack items="center" justify="space-between" flex={1} p={0}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
         <XStack w={46} h={36} position="relative">
-          {/* Main Avatar Circle - Always show background */}
+          {/* Main Avatar using proper Avatar component */}
           <YStack
             position="absolute"
             style={{
               left: 5,
               top: 0,
             }}
-            w={avatarSize}
-            h={avatarSize}
-            rounded={avatarSize / 2}
-            bg="rgba(255, 255, 255, 0.25)"
-            items="center"
-            justify="center"
           >
-            {avatar?.includes('https://') ? (
-              <Image w={avatarSize} h={avatarSize} source={{ uri: avatar }} />
-            ) : (
-              <YStack
-                w={42}
-                h={42}
-                rounded={21}
-                borderWidth={1}
-                borderColor="rgba(0, 239, 139, 0)"
-                items="center"
-                justify="center"
-                p="12px 14px"
-              >
-                <Text
-                  fontSize={17.8}
-                  color="rgba(255, 255, 255, 0.8)"
-                  fontWeight="600"
-                  lineHeight={21.4}
-                  letterSpacing={-0.107}
-                >
-                  {avatar || emojiInfo?.emoji || name?.charAt(0)?.toUpperCase() || type.charAt(0).toUpperCase()}
-                </Text>
-              </YStack>
-            )}
+            <Avatar
+              src={avatar?.includes('https://') ? avatar : undefined}
+              fallback={avatar || emojiInfo?.emoji || name?.charAt(0)?.toUpperCase() || type.charAt(0).toUpperCase()}
+              bgColor="rgba(255, 255, 255, 0.25)"
+              size={avatarSize}
+            />
           </YStack>
 
           {/* Small overlay avatar for parent account */}

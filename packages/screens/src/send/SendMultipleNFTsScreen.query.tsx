@@ -2,8 +2,6 @@ import { bridge, navigation } from '@onflow/frw-context';
 import {
   useSendStore,
   sendSelectors,
-  useWalletStore,
-  walletSelectors,
 } from '@onflow/frw-stores';
 import { type WalletAccount, type NFTModel } from '@onflow/frw-types';
 import {
@@ -102,7 +100,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             {t('nft.notFound.title')}
           </Text>
           <Text fontSize="$4" color="$textSecondary" textAlign="center">
-            {t('nft.multiple.notSelected')}
+            No NFTs selected. Please go back and select NFTs to send.
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -194,7 +192,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         {/* Extension Header - Following Figma design title "Sending" */}
         {isExtension && (
           <ExtensionHeader
-            title={t('send.nft.multiple.title')}
+            title={t('send.title')}
             help={true}
             onGoBack={() => navigation.goBack()}
             onNavigate={(link: string) => navigation.navigate(link)}
@@ -215,16 +213,16 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             {/* NFTs Section - Following Figma design with expandable list */}
             <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
               <SendSectionHeader
-                title={t('send.nft.multiple')}
+                title={t('send.nfts')}
                 onEditPress={handleEditNFTsPress}
                 showEditButton={true}
-                editButtonText={t('buttons.edit')}
+                editButtonText="Edit"
               />
               
               {/* NFT Count Display - Following Figma design */}
               <YStack direction="row" justifyContent="space-between" alignItems="center" mb="$2">
                 <Text fontSize="$5" fontWeight="500" color="rgba(255, 255, 255, 0.8)">
-                  {t('send.nft.count', { count: selectedNFTs.length })}
+                  {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
                 </Text>
                 {/* Expandable indicator would go here if needed */}
               </YStack>
@@ -245,7 +243,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               <StorageWarning
                 message={storageWarningMessage}
                 showIcon={true}
-                title={t('warnings.storage.title')}
+                title="Storage warning"
                 visible={true}
               />
             )}
@@ -271,7 +269,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               usdFee={usdFee}
               isFree={isFeesFree}
               showCovered={true}
-              coveredText={t('send.fee.covered')}
+              coveredText="Covered by Flow Wallet"
               title={t('send.transactionFee')}
               backgroundColor="transparent"
               borderRadius={16}
@@ -321,7 +319,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
           formData={formData}
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
-          title={t('send.confirm.nft.multiple.title')}
+          title="Confirm NFT Transfer"
         />
       </YStack>
     </BackgroundWrapper>

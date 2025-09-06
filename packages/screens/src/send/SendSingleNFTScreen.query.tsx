@@ -2,8 +2,6 @@ import { bridge, navigation } from '@onflow/frw-context';
 import {
   useSendStore,
   sendSelectors,
-  useWalletStore,
-  walletSelectors,
 } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
@@ -167,7 +165,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         {/* Extension Header */}
         {isExtension && (
           <ExtensionHeader
-            title={t('send.nft.single.title')}
+            title={t('send.title')}
             help={true}
             onGoBack={() => navigation.goBack()}
             onNavigate={(link: string) => navigation.navigate(link)}
@@ -188,10 +186,10 @@ export function SendSingleNFTScreen(): React.ReactElement {
             {/* NFT Section */}
             <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
               <SendSectionHeader
-                title={t('send.nft.single')}
+                title={t('send.nfts')}
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
-                editButtonText={t('buttons.change')}
+                editButtonText="Change"
               />
               <NFTSendPreview
                 nft={nftForUI}
@@ -207,7 +205,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
               <StorageWarning
                 message={storageWarningMessage}
                 showIcon={true}
-                title={t('warnings.storage.title')}
+                title="Storage warning"
                 visible={true}
               />
             )}
@@ -282,7 +280,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
           formData={formData}
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
-          title={t('send.confirm.nft.title')}
+          title="Confirm NFT Transfer"
         />
       </YStack>
     </BackgroundWrapper>

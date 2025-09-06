@@ -35,8 +35,9 @@ export function NFTCollectionRow({
           {/* Collection Avatar */}
           <Avatar
             src={collection.logoURI || collection.logo}
+            alt={collection.name}
             fallback={collection.name?.charAt(0) || 'N'}
-            size="$13"
+            size={48}
           />
 
           {/* Collection Info */}

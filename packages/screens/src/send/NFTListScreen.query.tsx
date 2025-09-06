@@ -160,14 +160,14 @@ export function NFTListScreen(): React.ReactElement {
     return filtered;
   }, [nftData, searchQuery]);
 
-  // Temporarily disable store updates to isolate the issue
-  // const selectedNFTsToStore = useMemo(() => {
-  //   return nfts.filter((nft) => selectedIds.includes(getNFTId(nft)));
-  // }, [selectedIds, nfts]);
+  // Update store with selected NFTs
+  const selectedNFTsToStore = useMemo(() => {
+    return nfts.filter((nft) => selectedIds.includes(getNFTId(nft)));
+  }, [selectedIds, nfts]);
 
-  // useEffect(() => {
-  //   setSelectedNFTs(selectedNFTsToStore);
-  // }, [selectedNFTsToStore]);
+  useEffect(() => {
+    setSelectedNFTs(selectedNFTsToStore);
+  }, [selectedNFTsToStore, setSelectedNFTs]);
 
   // Handle NFT selection
   const handleNFTSelect = useCallback(
