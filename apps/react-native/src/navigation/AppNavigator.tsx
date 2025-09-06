@@ -1,4 +1,9 @@
-import { SelectTokensScreen, SendToScreen, SendTokensScreen } from '@onflow/frw-screens';
+import {
+  SelectTokensScreen,
+  SendToScreen,
+  SendTokensScreen,
+  NFTListScreen,
+} from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -197,6 +202,13 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={SelectTokensScreen}
               options={{
                 headerTitle: 'Select Tokens',
+              }}
+            />
+            <Stack.Screen
+              name="NFTList"
+              component={NFTListScreen}
+              options={{
+                headerTitle: 'NFT Collection',
               }}
             />
             <Stack.Screen
