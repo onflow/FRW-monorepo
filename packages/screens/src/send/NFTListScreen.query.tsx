@@ -1,5 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
+import { useSendStore, sendSelectors, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
 import { type CollectionModel, type NFTModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -9,66 +9,45 @@ import {
   type NFTData,
   YStack,
   ExtensionHeader,
+  Text,
 } from '@onflow/frw-ui';
 import { getNFTId } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useQueryClient } from '../providers/QueryProvider';
 
-interface NFTListScreenProps {
-  collection?: CollectionModel;
-  address?: string;
-  selectedNFTIds?: string[];
-  isEditing?: boolean;
-}
-
-export function NFTListScreen({
-  collection,
-  address,
-  selectedNFTIds = [],
-  isEditing = false,
-}: NFTListScreenProps) {
+/**
+ * Query-integrated version of NFTListScreen following the established pattern
+ * Uses TanStack Query for data fetching and caching
+ */
+export function NFTListScreen(): React.ReactElement {
   console.log('🟢 NFTListScreen COMPONENT RENDERED!');
-
-  // Debug props at the very start
-  console.log('NFTListScreen props:', {
-    collection: collection
-      ? {
-          name: collection.name,
-          id: collection.id,
-          contractName: collection.contractName,
-        }
-      : null,
-    address,
-    selectedNFTIds,
-    isEditing,
-  });
 
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedIds, setSelectedIds] = useState<string[]>(selectedNFTIds);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Get shared QueryClient to ensure it matches the one in stores
   const _queryClient = useQueryClient();
 
-  // Get store functions and data
-  const { setSelectedNFTs, setCurrentStep, setTransactionType, selectedCollection, fromAccount } =
-    useSendStore();
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
 
-  // Get address from send store's fromAccount, fallback to prop only
-  const currentAddress = fromAccount?.address || address;
+  // Get data from store using selectors (following SendToScreen pattern)
+  const fromAccount = useSendStore(sendSelectors.fromAccount);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
+  const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
+  const setCurrentStep = useSendStore((state) => state.setCurrentStep);  
+  const setTransactionType = useSendStore((state) => state.setTransactionType);
 
-  // Use collection from store if not provided as prop (React Native case)
-  const activeCollection = collection || selectedCollection;
+  // Use store data only - store is the single source of truth
+  const activeCollection = selectedCollection;
+  const currentAddress = fromAccount?.address;
 
-  console.log('🔍 Data sources:', {
-    propCollection: !!collection,
-    storeCollection: !!selectedCollection,
-    propAddress: address,
+  console.log('🔍 Store data sources:', {
+    storeCollection: selectedCollection ? { name: selectedCollection.name, id: selectedCollection.id } : null,
     fromAccountAddress: fromAccount?.address,
     currentAddress,
     activeCollection: activeCollection
@@ -78,27 +57,60 @@ export function NFTListScreen({
           contractName: activeCollection.contractName,
         }
       : null,
+    willQueryRun: !!activeCollection && !!currentAddress,
   });
-  // Temporarily disable store updates to isolate the issue
-  // useEffect(() => {
-  //   setCurrentStep('select-nfts');
-  // }, []);
+  // Update current step when screen loads (following SendToScreen pattern)
+  useEffect(() => {
+    setCurrentStep('select-nfts');
+  }, [setCurrentStep]);
 
   const collectionName = activeCollection?.name || 'NFT Collection';
 
+  // Early return if essential data is missing from store
+  if (!activeCollection) {
+    console.error('❌ NFTListScreen: No collection available from store');
+    return (
+      <BackgroundWrapper backgroundColor="$background">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+            {t('nft.noNFTsFound')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
+            No collection selected. Please go back and select an NFT collection.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
+
+  if (!currentAddress) {
+    console.error('❌ NFTListScreen: No address available from store');
+    return (
+      <BackgroundWrapper backgroundColor="$background">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+            {t('errors.unknown')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
+            No account address available. Please select an account.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
+
   // Memoize the query key to prevent unnecessary re-renders
   const queryKey = useMemo(() => {
-    console.log('Computing query key with:', {
-      collection: !!activeCollection,
+    console.log('🔑 Computing query key with:', {
+      collection: activeCollection?.name,
       address: currentAddress,
       network,
+      hasCollection: !!activeCollection,
+      hasAddress: !!currentAddress,
     });
-    if (!activeCollection || !currentAddress) {
-      console.log('Query disabled - missing collection or address');
-      return ['nft-collection', 'disabled'];
-    }
+    // Since we have early returns above, this should always have valid data
     const key = tokenQueryKeys.nftCollection(currentAddress, activeCollection, network);
-    console.log('Generated query key:', key);
+    console.log('🔑 Generated query key:', key);
     return key;
   }, [
     activeCollection?.id,
@@ -108,12 +120,8 @@ export function NFTListScreen({
     network,
   ]);
 
-  // Check enabled condition
-  const isQueryEnabled = !!activeCollection && !!currentAddress;
-  console.log('Query enabled?', isQueryEnabled, {
-    hasCollection: !!activeCollection,
-    hasAddress: !!currentAddress,
-  });
+  // Query is always enabled since we have early returns for missing data
+  const isQueryEnabled = true;
 
   // 🔥 TanStack Query: Fetch NFTs from collection with intelligent caching
   const {
@@ -126,11 +134,12 @@ export function NFTListScreen({
     queryFn: () => {
       console.log(
         '🔥 QUERY RUNNING - Fetching NFTs for collection:',
-        activeCollection?.name,
+        activeCollection.name,
         'at address:',
         currentAddress
       );
-      return tokenQueries.fetchNFTCollection(currentAddress!, activeCollection!, network);
+      // Safe to use non-null assertion due to early returns
+      return tokenQueries.fetchNFTCollection(currentAddress, activeCollection, network);
     },
     enabled: isQueryEnabled,
     staleTime: 5 * 60 * 1000, // NFT items can be cached for 5 minutes
@@ -313,7 +322,7 @@ export function NFTListScreen({
           onNFTPress={handleNFTDetail}
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
-          isEditing={isEditing}
+          isEditing={false}
         />
       </YStack>
     </BackgroundWrapper>

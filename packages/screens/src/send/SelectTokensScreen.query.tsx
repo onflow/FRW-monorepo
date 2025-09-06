@@ -44,6 +44,7 @@ export function SelectTokensScreen(): React.ReactElement {
     setCurrentStep,
     clearTransactionData,
     setSelectedCollection,
+    setFromAccount,
   } = useSendStore();
 
   // Tab options
@@ -135,7 +136,17 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle token press
   const handleTokenPress = (token: TokenModel): void => {
+    // Find the current account to set in store
+    const account = accounts.find(
+      (acc: WalletAccount) =>
+        acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
+    );
+    
+    // Set store data for SendTo flow
     setSelectedToken(token);
+    if (account) {
+      setFromAccount(account);
+    }
     setTransactionType('tokens');
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
@@ -143,7 +154,17 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
+    // Find the current account to set in store
+    const account = accounts.find(
+      (acc: WalletAccount) =>
+        acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
+    );
+    
+    // Set store data for NFTListScreen
     setSelectedCollection(collection);
+    if (account) {
+      setFromAccount(account);
+    }
     setTransactionType('multiple-nfts');
     navigation.navigate('NFTList', { collection, address });
   };
