@@ -2,7 +2,6 @@ import { Edit } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack } from 'tamagui';
 
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface SendSectionHeaderProps {
@@ -26,18 +25,28 @@ export const SendSectionHeader: React.FC<SendSectionHeaderProps> = ({
 }) => {
   return (
     <XStack items="center" justify="space-between">
-      <Text fontSize="$3" fontWeight="600" color={titleColor}>
+      <Text fontSize="$3" fontWeight="600">
         {title}
       </Text>
       {showEditButton && onEditPress && (
-        <Button
-          size={editButtonSize}
-          variant={editButtonVariant}
-          onPress={onEditPress}
-          icon={<Edit size={16} />}
-        >
-          {editButtonText}
-        </Button>
+        <XStack justify="flex-end" items="center" gap={16}>
+          <XStack
+            width={24}
+            height={24}
+            items="center"
+            justify="center"
+            pressStyle={{ opacity: 0.7 }}
+            onPress={onEditPress}
+            cursor="pointer"
+            opacity={1}
+          >
+            <Edit
+              size={24}
+              color={'#767676'}
+              theme="outline"
+            />
+          </XStack>
+        </XStack>
       )}
     </XStack>
   );

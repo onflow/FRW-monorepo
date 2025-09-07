@@ -75,7 +75,8 @@
     "tokenId": "代币ID",
     "properties": "属性",
     "description": "描述",
-    "creator": "创建者"
+    "creator": "创建者",
+    "title": "发送"
   },
   "messages": {
     "loading": "加载中...",
@@ -84,7 +85,9 @@
   },
   "buttons": {
     "retry": "重试",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "continue": "继续",
+    "clearSearch": "清除搜索"
   },
   "errors": {
     "networkError": "网络错误",
@@ -96,6 +99,18 @@
     "tokenNotSupported": "不支持的代币",
     "unauthorized": "未授权访问",
     "timeout": "请求超时",
-    "unknown": "发生未知错误"
+    "unknown": "发生未知错误",
+    "failedToLoadTokens": "加载代币失败",
+    "failedToLoadNFTs": "加载NFT失败"
+  },
+  "nft": {
+    "noSearchResults": "无搜索结果",
+    "noNFTsMatchSearch": "没有NFT与'{{search}}'匹配",
+    "noNFTsFound": "未找到NFT",
+    "collectionEmpty": "此收藏不包含任何NFT",
+    "notFound": {
+      "title": "未找到NFT",
+      "message": "无法找到或加载请求的NFT"
+    }
   }
 }
