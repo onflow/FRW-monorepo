@@ -87,7 +87,7 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor="rgba(255, 255, 255, 0.25)"
+              bgColor={emojiInfo?.color || "rgba(255, 255, 255, 0.25)"}
               size={avatarSize}
             />
           </YStack>

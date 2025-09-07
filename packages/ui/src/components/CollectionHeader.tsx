@@ -1,5 +1,6 @@
-import { Avatar } from '../foundation/Avatar';
 import { XStack, YStack, Text } from 'tamagui';
+
+import { Avatar } from '../foundation/Avatar';
 
 export interface CollectionHeaderProps {
   name: string;

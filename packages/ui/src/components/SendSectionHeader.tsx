@@ -2,7 +2,6 @@ import { Edit } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack } from 'tamagui';
 
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface SendSectionHeaderProps {

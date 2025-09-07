@@ -6,7 +6,7 @@ import {
   walletSelectors,
   useAddressBookStore,
 } from '@onflow/frw-stores';
-import { type NFTModel, type CollectionModel, type WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,

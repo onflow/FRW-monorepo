@@ -95,7 +95,7 @@ export function NFTSelectionBar({
             onPress={() => onRemoveNFT(nft.id)}
             cursor="pointer"
           >
-            <Trash size={24} color="rgba(255, 255, 255, 0.5)" theme="outline" />
+            <Trash size={24} color="rgba(255, 255, 255, 0.8)" theme="outline" />
           </XStack>
         )}
       </XStack>

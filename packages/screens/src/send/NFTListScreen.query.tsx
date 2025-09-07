@@ -293,6 +293,9 @@ export function NFTListScreen(): React.ReactElement {
             clearSearchText={t('buttons.clearSearch')}
             onClearSearch={() => setSearchQuery('')}
             showClearSearch={!!searchQuery}
+            accountEmoji={fromAccount?.emojiInfo?.emoji}
+            accountAvatar={fromAccount?.avatar}
+            accountName={fromAccount?.name}
           />
         </YStack>
 

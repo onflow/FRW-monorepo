@@ -38,6 +38,11 @@ export interface NFTGridProps {
   onRetry?: () => void;
   onClearSearch?: () => void;
 
+  // Account info for From Account avatar
+  accountEmoji?: string;
+  accountAvatar?: string;
+  accountName?: string;
+
   // Layout
   gap?: string;
   aspectRatio?: number;
@@ -57,6 +62,9 @@ export function NFTGrid({
   onNFTPress = () => {},
   onRetry,
   onClearSearch,
+  accountEmoji,
+  accountAvatar,
+  accountName,
   gap = '$3',
   aspectRatio = 1,
 }: NFTGridProps) {
@@ -167,6 +175,9 @@ export function NFTGrid({
                 onPress={() => onNFTPress(nft.id)}
                 onSelect={() => onNFTSelect(nft.id)}
                 aspectRatio={aspectRatio}
+                accountEmoji={accountEmoji}
+                accountAvatar={accountAvatar}
+                accountName={accountName}
               />
             </YStack>
           ))}

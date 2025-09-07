@@ -7,6 +7,23 @@ import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 import type { Account } from '../types';
 
+// Helper function to round balance to 5 decimal places
+const formatBalance = (balance: string): string => {
+  // Extract numeric value from balance string (e.g., "123.456789 FLOW" -> "123.456789")
+  const match = balance.match(/^([\d.,]+)/);
+  if (!match) return balance;
+  
+  const numericPart = match[1].replace(/,/g, ''); // Remove commas
+  const restOfString = balance.replace(match[0], ''); // Get the rest (e.g., " FLOW")
+  
+  const num = parseFloat(numericPart);
+  if (isNaN(num)) return balance;
+  
+  // Round to 5 decimal places and format
+  const rounded = Number(num.toFixed(5));
+  return `${rounded}${restOfString}`;
+};
+
 export interface AccountSelectorProps {
   currentAccount: Account;
   accounts: Account[];
@@ -88,7 +105,7 @@ export function AccountSelector({
                 lineHeight={17}
                 numberOfLines={1}
               >
-                {currentAccount.balance}
+                {formatBalance(currentAccount.balance)}
               </Text>
             </YStack>
           </XStack>
@@ -166,7 +183,7 @@ export function AccountSelector({
                         {/* Account Avatar */}
                         <Avatar
                           src={account.avatar}
-                          fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || '?'}
+                          fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
                           bgColor={account.emojiInfo?.color}
                           size={40}
                           borderColor={isSelected ? '$primary' : undefined}
@@ -198,7 +215,7 @@ export function AccountSelector({
                             color="rgba(255, 255, 255, 0.6)"
                             numberOfLines={1}
                           >
-                            {account.balance}
+                            {formatBalance(account.balance)}
                           </Text>
                         </YStack>
                       </XStack>
@@ -206,7 +223,7 @@ export function AccountSelector({
                       {/* Selection Indicator */}
                       {isSelected && (
                         <YStack width={24} height={24} items="center" justify="center">
-                          <CheckCircle size={24} color="#41CC5D" theme="filled" />
+                          <CheckCircle size={24} color="#00EF8B" theme="filled" />
                         </YStack>
                       )}
                     </XStack>

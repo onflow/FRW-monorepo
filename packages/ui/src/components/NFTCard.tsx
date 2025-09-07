@@ -13,6 +13,7 @@ export interface NFTCardProps {
   collectionAvatar?: string;
   accountEmoji?: string;
   accountAvatar?: string;
+  accountName?: string;
 }
 
 export function NFTCard({
@@ -25,6 +26,7 @@ export function NFTCard({
   collectionAvatar,
   accountEmoji,
   accountAvatar,
+  accountName,
 }: NFTCardProps) {
   const width = size === 'large' ? '$50' : size === 'medium' ? '100%' : '$30';
   const imageHeight = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
@@ -77,6 +79,32 @@ export function NFTCard({
         >
           <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>
+
+        {/* From Account Avatar - bottom left corner */}
+        {(accountEmoji || accountAvatar) && (
+          <YStack
+            position="absolute"
+            bottom="$2"
+            left="$2"
+            width={16}
+            height={16}
+            bg={accountEmoji ? '#FFBD68' : 'rgba(255, 255, 255, 0.1)'}
+            borderRadius="$10"
+            items="center"
+            justify="center"
+            zIndex="$2"
+            borderWidth={0.5}
+            borderColor="rgba(255, 255, 255, 0.2)"
+          >
+            {accountEmoji ? (
+              <Text fontSize={8} fontWeight="600" lineHeight={8}>
+                {accountEmoji}
+              </Text>
+            ) : accountAvatar ? (
+              <Image src={accountAvatar} width={14} height={14} borderRadius="$10" />
+            ) : null}
+          </YStack>
+        )}
       </YStack>
 
       {/* NFT Info */}
@@ -111,14 +139,14 @@ export function NFTCard({
               <Image src={collectionAvatar} width="$5" height="$5" rounded="$6" />
             )}
 
-            {/* Collection Name */}
+            {/* From Account Name */}
             <Text fontSize="$4" fontWeight="400" color="$textSecondary" numberOfLines={1} flex={1}>
-              {nft.collection}
+              {accountName || nft.collection}
             </Text>
 
             {/* Right Chevron */}
             <YStack justify="center">
-              <ChevronRight size={24} />
+              <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
             </YStack>
           </XStack>
         )}
