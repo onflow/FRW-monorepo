@@ -13,6 +13,7 @@ import {
   type KeyData,
   SignatureAlgorithm,
   HashAlgorithm,
+  BIP44_PATHS,
 } from '../types/key';
 
 /**
@@ -31,13 +32,13 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
 
   constructor(
     storage: StorageProtocol,
-    derivationPath: string = "m/44'/539'/0'/0/0", // Flow default
+    flowCustomDerivationPath: string = BIP44_PATHS.FLOW, // Flow custom default
     passphrase: string = '',
-    hdWallet?: any,
+    hdWallet?: HDWallet,
     mnemonic?: string
   ) {
     this.storage = storage;
-    this.derivationPath = derivationPath;
+    this.derivationPath = flowCustomDerivationPath;
     this.passphrase = passphrase;
     this.hdWallet = hdWallet;
     this.mnemonic = mnemonic || '';
@@ -55,7 +56,7 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
 
     return new SeedPhraseKey(
       storage,
-      "m/44'/539'/0'/0/0", // Flow default derivation path
+      BIP44_PATHS.FLOW, // Flow default derivation path
       '',
       wallet,
       mnemonic
@@ -78,7 +79,7 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
 
     return new SeedPhraseKey(
       storage,
-      advance.derivationPath || "m/44'/539'/0'/0/0",
+      advance.derivationPath || BIP44_PATHS.FLOW,
       advance.passphrase || '',
       wallet,
       advance.mnemonic
@@ -156,7 +157,10 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
   /**
    * Extract public key for given signature algorithm (matches iOS implementation)
    */
-  async publicKey(signAlgo: SignatureAlgorithm): Promise<Uint8Array | null> {
+  async publicKey(
+    signAlgo: SignatureAlgorithm,
+    derivationPath: string | undefined = undefined
+  ): Promise<Uint8Array | null> {
     if (!this.hdWallet) {
       throw new Error('HD wallet not initialized');
     }
@@ -166,7 +170,7 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
       const publicKeyHex = await WalletCoreProvider.getFlowPublicKeyBySignatureAlgorithm(
         this.hdWallet,
         signAlgo,
-        this.derivationPath
+        derivationPath || this.derivationPath
       );
 
       // Convert hex to bytes and remove '04' prefix if present (matches iOS format() method)
@@ -187,7 +191,10 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
   /**
    * Extract private key for given signature algorithm (use with caution - matches iOS implementation)
    */
-  async privateKey(signAlgo: SignatureAlgorithm): Promise<Uint8Array | null> {
+  async privateKey(
+    signAlgo: SignatureAlgorithm,
+    derivationPath: string | undefined = undefined
+  ): Promise<Uint8Array | null> {
     if (!this.hdWallet) {
       throw new Error('HD wallet not initialized');
     }
@@ -197,7 +204,7 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
       const privateKey = await WalletCoreProvider.getFlowPrivateKeyBySignatureAlgorithm(
         this.hdWallet,
         signAlgo,
-        this.derivationPath
+        derivationPath || this.derivationPath
       );
 
       try {

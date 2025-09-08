@@ -12,12 +12,12 @@ import {
   type KeyProtocol,
   type StorageProtocol,
   type SecurityCheckDelegate,
-  type FlowAddress,
   SignatureAlgorithm,
   type Network,
   type FlowNetwork,
   type EVMNetworkConfig,
   NETWORKS,
+  BIP44_PATHS,
 } from '../types/key';
 import { type WalletType } from '../types/wallet';
 
@@ -100,7 +100,7 @@ export class Wallet {
    */
   getFlowAccounts(): FlowAccount[] {
     return Array.from(this.accounts.values()).filter(
-      (account): account is FlowAccount => 'keyIndex' in account
+      (account): account is FlowAccount => account.chain === Chain.Flow
     );
   }
 
@@ -109,7 +109,7 @@ export class Wallet {
    */
   getEVMAccounts(): EVMAccount[] {
     return Array.from(this.accounts.values()).filter(
-      (account): account is EVMAccount => 'balance' in account
+      (account): account is EVMAccount => account.chain === Chain.EVM
     );
   }
 
@@ -291,10 +291,6 @@ export class Wallet {
    * Implements the key indexer service integration with different endpoints for mainnet/testnet
    */
   async fetchAccount(): Promise<void> {
-    if (!this.canSign || !this.key) {
-      return; // Watch-only wallets don't have keys to discover with
-    }
-
     this.setLoadingState(true);
 
     try {
@@ -348,7 +344,7 @@ export class Wallet {
 
     try {
       // Get public key for the signature algorithm
-      const publicKeyBytes = await this.key.publicKey(signAlgo);
+      const publicKeyBytes = await this.key.publicKey(signAlgo, BIP44_PATHS.FLOW);
       if (!publicKeyBytes) {
         return [];
       }
@@ -457,7 +453,10 @@ export class Wallet {
       // For private key keys, derive address directly from the key
 
       // Get private key bytes for secp256k1 curve (EVM-compatible)
-      const privateKeyBytes = await this.key.privateKey(SignatureAlgorithm.ECDSA_secp256k1);
+      const privateKeyBytes = await this.key.privateKey(
+        SignatureAlgorithm.ECDSA_secp256k1,
+        BIP44_PATHS.EVM
+      );
       if (!privateKeyBytes) {
         return null;
       }
@@ -508,7 +507,7 @@ export class Wallet {
     const hasCachedData = await this.loadCachedAccountData();
 
     // If no cached data and wallet can sign, fetch accounts from networks
-    if (!hasCachedData && this.canSign && this.key) {
+    if (!hasCachedData) {
       await this.fetchAccount();
     }
   }
@@ -605,33 +604,5 @@ export class Wallet {
       console.warn('Failed to load cached account data:', error);
       return false;
     }
-  }
-}
-
-/**
- * Wallet factory for creating different wallet types
- */
-export class WalletFactory {
-  /**
-   * Create wallet from key
-   */
-  static fromKey(
-    key: KeyProtocol,
-    networks?: Set<Network>,
-    cacheStorage?: StorageProtocol
-  ): Wallet {
-    const wallet = new Wallet({ type: 'key', key }, networks, cacheStorage);
-    return wallet;
-  }
-
-  /**
-   * Create watch-only wallet from address
-   */
-  static watchOnly(
-    address: FlowAddress,
-    networks?: Set<Network>,
-    cacheStorage?: StorageProtocol
-  ): Wallet {
-    return new Wallet({ type: 'watch', address }, networks, cacheStorage);
   }
 }

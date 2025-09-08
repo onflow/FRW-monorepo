@@ -33,12 +33,18 @@ export interface KeyProtocol<TKey = any, TSecret = any, TAdvance = any> {
   /**
    * Extract public key for given signature algorithm
    */
-  publicKey(signAlgo: SignatureAlgorithm): Promise<Uint8Array | null>;
+  publicKey(
+    signAlgo: SignatureAlgorithm,
+    derivationPath: string | undefined
+  ): Promise<Uint8Array | null>;
 
   /**
    * Extract private key for given signature algorithm (use with caution)
    */
-  privateKey(signAlgo: SignatureAlgorithm): Promise<Uint8Array | null>;
+  privateKey(
+    signAlgo: SignatureAlgorithm,
+    derivationPath: string | undefined
+  ): Promise<Uint8Array | null>;
 
   /**
    * Sign data with specified algorithms

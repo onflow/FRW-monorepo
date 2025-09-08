@@ -45,8 +45,8 @@ export enum HashAlgorithm {
  * BIP44 derivation paths
  */
 export const BIP44_PATHS = {
-  FLOW: "m/44'/539'/0'/0/",
-  EVM: "m/44'/60'/0'/0/",
+  FLOW: "m/44'/539'/0'/0/0",
+  EVM: "m/44'/60'/0'/0/0",
 } as const;
 
 /**

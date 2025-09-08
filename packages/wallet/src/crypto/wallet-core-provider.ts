@@ -4,7 +4,11 @@
  */
 
 import { type WalletCore } from '@trustwallet/wallet-core';
-
+import {
+  type HDWallet,
+  type PrivateKey,
+  type PublicKey,
+} from '@trustwallet/wallet-core/dist/src/wallet-core';
 /**
  * Wallet Core provider with Flow blockchain extensions
  */
@@ -54,7 +58,7 @@ export class WalletCoreProvider {
     strength: number = 256,
     password: string = ''
   ): Promise<{
-    wallet: any;
+    wallet: HDWallet;
     mnemonic: string;
   }> {
     const core = await this.ensureInitialized();
@@ -117,10 +121,10 @@ export class WalletCoreProvider {
    * Get private key by signature algorithm for Flow (matches iOS implementation)
    */
   static async getFlowPrivateKeyBySignatureAlgorithm(
-    wallet: any,
+    wallet: HDWallet,
     signatureAlgorithm: string,
     derivationPath: string = "m/44'/539'/0'/0/0"
-  ): Promise<any> {
+  ): Promise<PrivateKey> {
     const core = await this.ensureInitialized();
 
     switch (signatureAlgorithm) {
@@ -382,8 +386,18 @@ export class WalletCoreProvider {
 
     try {
       const privateKey = await this.createPrivateKeyFromBytes(privateKeyBytes);
+
+      // Get public key from private key
+      const publicKey = privateKey.getPublicKeySecp256k1(false); // uncompressed
+
       // Derive Ethereum address from public key
-      return CoinTypeExt.deriveAddress(core.CoinType.ethereum, privateKey);
+      const address = core.AnyAddress.createWithPublicKey(publicKey, core.CoinType.ethereum);
+
+      // Clean up
+      publicKey.delete();
+      privateKey.delete();
+
+      return address.description();
     } catch (error) {
       throw new Error(`Failed to derive EVM address from private key: ${error}`);
     }
