@@ -1,4 +1,10 @@
-import type { RecentContactsResponse, WalletAccountsResponse } from '@onflow/frw-types';
+import type {
+  Currency,
+  Platform,
+  RecentContactsResponse,
+  WalletAccount,
+  WalletAccountsResponse,
+} from '@onflow/frw-types';
 
 import type { Storage } from './Storage';
 
@@ -18,9 +24,13 @@ export interface PlatformSpec {
   getVersion(): string;
   getBuildNumber(): string;
 
+  getCurrency(): Currency;
+  getPlatform(): Platform;
+
   // API endpoint methods
   getApiEndpoint(): string;
   getGoApiEndpoint(): string;
+  getInstabugToken(): string;
 
   // Storage access
   getStorage(): Storage;
@@ -33,6 +43,7 @@ export interface PlatformSpec {
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;
+  getSelectedAccount(): Promise<WalletAccount>;
 
   // CadenceService configuration using interceptor pattern
   // This method allows the bridge to configure all FCL-related functionality
@@ -44,5 +55,5 @@ export interface PlatformSpec {
 
   // UI interaction methods
   scanQRCode(): Promise<string>;
-  closeRN(): void;
+  closeRN(id?: string | null): void;
 }

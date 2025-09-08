@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Platform } from 'react-native';
+
 import { Text } from 'ui';
 interface ContactAvatarProps {
   name: string;
@@ -49,7 +50,6 @@ export const ContactAvatar: React.FC<ContactAvatarProps> = ({
             fontSize: contentSize * 0.45,
             fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
           }}
-          disableAndroidFix={true}
         >
           {firstLetter}
         </Text>

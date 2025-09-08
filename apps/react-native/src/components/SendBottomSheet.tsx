@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
-import { StyleSheet } from 'react-native';
-import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
+import { StyleSheet, View } from 'react-native';
+import Modal from 'react-native-modal';
+
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface SendBottomSheetProps {
@@ -15,74 +16,52 @@ export interface SendBottomSheetRef {
 
 export const SendBottomSheet = forwardRef<SendBottomSheetRef, SendBottomSheetProps>(
   ({ children, onClose }, ref) => {
-    const bottomSheetRef = useRef<BottomSheet>(null);
+    const [isVisible, setIsVisible] = useState(false);
     const { isDark } = useTheme();
 
-    // Calculate snap points - full screen for send workflow
-    const snapPoints = useMemo(() => ['100%'], []);
-
-    const handleSheetChanges = useCallback(
-      (index: number) => {
-        if (index === -1) {
-          onClose?.();
-        }
-      },
-      [onClose]
-    );
-
-    const renderBackdrop = useCallback(
-      (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
-          opacity={1.0}
-          pressBehavior="close"
-        />
-      ),
-      []
-    );
+    const handleClose = () => {
+      setIsVisible(false);
+      onClose?.();
+    };
 
     useImperativeHandle(ref, () => ({
       present: () => {
-        bottomSheetRef.current?.snapToIndex(0);
+        setIsVisible(true);
       },
       dismiss: () => {
-        bottomSheetRef.current?.dismiss();
+        setIsVisible(false);
       },
     }));
 
-    const backgroundStyle = useMemo(
-      () => ({
-        backgroundColor: isDark ? '#000000' : '#ffffff',
-      }),
-      [isDark]
-    );
-
-    const handleStyle = useMemo(
-      () => ({
-        backgroundColor: isDark ? '#000000' : '#ffffff',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingTop: 8,
-      }),
-      [isDark]
-    );
+    const containerStyle = {
+      ...styles.container,
+      backgroundColor: isDark ? '#000000' : '#ffffff',
+    };
 
     return (
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose
-        backdropComponent={renderBackdrop}
-        backgroundStyle={backgroundStyle}
-        handleStyle={handleStyle}
-        onChange={handleSheetChanges}
-        style={styles.bottomSheet}
+      <Modal
+        isVisible={isVisible}
+        onBackdropPress={handleClose}
+        onBackButtonPress={handleClose}
+        onSwipeComplete={handleClose}
+        swipeDirection={['down']}
+        style={styles.modal}
+        backdropOpacity={1.0}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+        animationInTiming={300}
+        animationOutTiming={250}
+        backdropTransitionInTiming={300}
+        backdropTransitionOutTiming={250}
+        useNativeDriverForBackdrop={true}
+        hideModalContentWhileAnimating={false}
+        propagateSwipe={true}
       >
-        <BottomSheetView style={styles.contentContainer}>{children}</BottomSheetView>
-      </BottomSheet>
+        <View style={containerStyle}>
+          <View style={styles.handle} />
+          <View style={styles.contentContainer}>{children}</View>
+        </View>
+      </Modal>
     );
   }
 );
@@ -90,7 +69,15 @@ export const SendBottomSheet = forwardRef<SendBottomSheetRef, SendBottomSheetPro
 SendBottomSheet.displayName = 'SendBottomSheet';
 
 const styles = StyleSheet.create({
-  bottomSheet: {
+  modal: {
+    justifyContent: 'flex-end',
+    margin: 0,
+  },
+  container: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    minHeight: '100%',
+    paddingTop: 8,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -99,6 +86,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 12,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#D1D5DB',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 8,
   },
   contentContainer: {
     flex: 1,

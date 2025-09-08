@@ -1,3 +1,8 @@
+import { useSendStore } from '@onflow/frw-stores';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import {
@@ -7,10 +12,6 @@ import {
   SendToScreen,
   SendTokensScreen,
 } from '@/screens';
-import { useSendStore } from '@onflow/frw-stores';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Alert, View } from 'react-native';
 import { Text } from 'ui';
 
 export type SendWorkflowStep =
@@ -123,8 +124,22 @@ export const SendWorkflowManager: React.FC<SendWorkflowManagerProps> = ({
         try {
           const result = await executeTransaction();
           console.log('[SendWorkflowManager] Transaction result:', result);
+
+          // Close the workflow UI first and wait for cleanup
           onClose();
-          NativeFRWBridge.closeRN();
+
+          // Add delay to ensure complete cleanup before closing
+          setTimeout(() => {
+            try {
+              console.log('[SendWorkflowManager] Closing React Native activity');
+              NativeFRWBridge.closeRN(null);
+            } catch (error) {
+              console.warn(
+                '[SendWorkflowManager] Failed to close RN, activity may already be closed:',
+                error
+              );
+            }
+          }, 500);
         } catch (error) {
           console.error('[SendWorkflowManager] Transaction error:', error);
           Alert.alert(t('errors.title'), t('errors.transactionFailed'));

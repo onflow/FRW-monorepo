@@ -22,10 +22,13 @@ export class RecentRecipientsService {
   private static instance: RecentRecipientsService;
   private bridge: PlatformSpec;
   private storage: Storage;
+  private allRecentsCache: RecentRecipient[] = [];
 
   private constructor(bridge: PlatformSpec, storage: Storage) {
     this.bridge = bridge;
     this.storage = storage;
+    // Initialize cache with local recent recipients
+    this.allRecentsCache = this.getLocalRecentRecipients();
   }
 
   // add bridge params
@@ -38,7 +41,7 @@ export class RecentRecipientsService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = getServiceContext().bridge;
-        } catch (error) {
+        } catch {
           throw new Error(
             'RecentRecipientsService requires bridge parameter or initialized ServiceContext'
           );
@@ -49,7 +52,7 @@ export class RecentRecipientsService {
       if (!storageToUse) {
         try {
           storageToUse = getServiceContext().storage;
-        } catch (error) {
+        } catch {
           throw new Error(
             'RecentRecipientsService requires storage parameter or initialized ServiceContext'
           );
@@ -63,17 +66,14 @@ export class RecentRecipientsService {
 
   async getAllRecentRecipients(): Promise<WalletAccount[]> {
     try {
-      // Get local recent recipients from MMKV
-      const localRecents = this.getLocalRecentRecipients();
-
       // Get server recent recipients from bridge
       const serverRecents = await this.getServerRecentRecipients();
 
-      // Merge and deduplicate
-      const merged = this.mergeAndDeduplicateRecents(localRecents, serverRecents);
+      // Merge server data with current cache and update cache
+      this.allRecentsCache = this.mergeAndDeduplicateRecents(this.allRecentsCache, serverRecents);
 
       // Convert to WalletAccount format
-      return merged.map((recent) => ({
+      return this.allRecentsCache.map((recent) => ({
         id: recent.id,
         name: recent.name,
         emoji: recent.emoji || '👤', // Use emoji if available, fallback to default
@@ -81,9 +81,17 @@ export class RecentRecipientsService {
         address: recent.address,
         isActive: false,
       }));
-    } catch (error) {
-      logger.error('Failed to get recent recipients', error);
-      return [];
+    } catch (_error) {
+      logger.error('Catch block error', _error);
+      // Return cached data on error
+      return this.allRecentsCache.map((recent) => ({
+        id: recent.id,
+        name: recent.name,
+        emoji: recent.emoji || '👤',
+        avatar: recent.avatar,
+        address: recent.address,
+        isActive: false,
+      }));
     }
   }
 
@@ -97,8 +105,8 @@ export class RecentRecipientsService {
 
       const recents: RecentRecipient[] = JSON.parse(data);
       return recents.sort((a, b) => b.lastUsed - a.lastUsed); // Most recent first
-    } catch (error) {
-      logger.error('Failed to get local recent recipients', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -119,8 +127,8 @@ export class RecentRecipientsService {
         lastUsed: Date.now(), // Server doesn't provide timestamp, use current time
         source: 'server' as const,
       }));
-    } catch (error) {
-      logger.error('Failed to get server recent recipients', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
       return [];
     }
   }
@@ -148,7 +156,7 @@ export class RecentRecipientsService {
         source: 'local',
       };
 
-      // Remove existing entry with same address (if any)
+      // Remove existing entry with same address (if any) from local storage
       const filtered = localRecents.filter((r) => r.address !== recipient.address);
 
       // Add new entry at the beginning
@@ -157,21 +165,30 @@ export class RecentRecipientsService {
       // Save to MMKV
       this.storage.set(RECENT_RECIPIENTS_KEY, JSON.stringify(updated));
 
+      // Update cache: remove existing entry with same address, add new entry at beginning (local data has higher priority)
+      const filteredCache = this.allRecentsCache.filter((r) => r.address !== recipient.address);
+      this.allRecentsCache = [newRecent, ...filteredCache].slice(0, MAX_RECENT_RECIPIENTS);
+
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
-    } catch (error) {
-      logger.error('Failed to add recent recipient', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
     }
   }
 
   /**
-   * Clear all local recent recipients
+   * Clear all local recent recipients (keep server data in cache)
    */
   clearLocalRecentRecipients(): void {
     try {
+      // Clear local storage
       this.storage.delete(RECENT_RECIPIENTS_KEY);
+
+      // Update cache: keep only server data
+      this.allRecentsCache = this.allRecentsCache.filter((r) => r.source === 'server');
+
       logger.debug('Cleared local recent recipients');
-    } catch (error) {
-      logger.error('Failed to clear recent recipients', error);
+    } catch (_error) {
+      logger.error('Catch block error', _error);
     }
   }
 
@@ -205,18 +222,16 @@ export class RecentRecipientsService {
   }
 
   /**
-   * Check if an address is in recent recipients
+   * Check if an address is in recent recipients (uses cache)
    */
   isAddressInRecents(address: string): boolean {
-    const localRecents = this.getLocalRecentRecipients();
-    return localRecents.some((r) => r.address === address);
+    return this.allRecentsCache.some((r) => r.address === address);
   }
 
   /**
-   * Get recent recipient by address
+   * Get recent recipient by address (uses cache)
    */
   getRecentRecipientByAddress(address: string): RecentRecipient | null {
-    const localRecents = this.getLocalRecentRecipients();
-    return localRecents.find((r) => r.address === address) || null;
+    return this.allRecentsCache.find((r) => r.address === address) || null;
   }
 }

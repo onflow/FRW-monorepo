@@ -1,14 +1,17 @@
-import { type NFTModel } from '@onflow/frw-types';
+import { type CollectionModel, type NFTModel } from '@onflow/frw-types';
+
+import { convertedSVGURL } from './svgToPng';
+import { stripHexPrefix } from './utils';
 
 /**
  * Gets the cover image URL from an NFT
  */
 export function getNFTCover(nft: NFTModel): string {
   if (nft.thumbnail) {
-    return nft.thumbnail;
+    return convertedSVGURL(nft.thumbnail);
   }
   if (nft.postMedia?.image) {
-    return nft.postMedia.image;
+    return convertedSVGURL(nft.postMedia.image);
   }
   return '';
 }
@@ -41,4 +44,41 @@ export function hasNFTMedia(nft: NFTModel): boolean {
  */
 export function getNFTDisplayName(nft: NFTModel): string {
   return nft.name || nft.id || 'Unnamed NFT';
+}
+
+/**
+ * Checks if an NFT is an ERC1155 token
+ */
+export function isERC1155(nft: NFTModel): boolean {
+  return nft.contractType === 'ERC1155';
+}
+
+/**
+ * Gets the resource identifier for an NFT
+ * A.{address}.{contractName}.NFT
+ */
+export function getNFTResourceIdentifier(nft: NFTModel | null): string | null {
+  if (nft?.flowIdentifier) {
+    if (nft.flowIdentifier.includes('NFT')) {
+      return nft.flowIdentifier;
+    } else {
+      return `${nft.flowIdentifier}.NFT`;
+    }
+  }
+  if (!nft || !nft.address || !nft.contractName) {
+    return null;
+  }
+  const cleanAddress = stripHexPrefix(nft.address);
+  return `A.${cleanAddress}.${nft.contractName}.NFT`;
+}
+
+/**
+ * A.{address}.{contractName}.Collection
+ */
+export function getCollectionResourceIdentifier(collection: CollectionModel | null): string | null {
+  if (!collection || !collection.address || !collection.contractName) {
+    return null;
+  }
+  const cleanAddress = stripHexPrefix(collection.address);
+  return `A.${cleanAddress}.${collection.contractName}.Collection`;
 }

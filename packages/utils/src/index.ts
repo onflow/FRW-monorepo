@@ -2,7 +2,19 @@
 export { isValidFlowAddress, formatFlowAddress, getAddressType, truncateAddress } from './address';
 
 // NFT utilities
-export { getNFTCover, getNFTId, getNFTSearchText, hasNFTMedia, getNFTDisplayName } from './nft';
+export {
+  getNFTCover,
+  getNFTId,
+  getNFTSearchText,
+  hasNFTMedia,
+  getNFTDisplayName,
+  isERC1155,
+  getNFTResourceIdentifier,
+  getCollectionResourceIdentifier,
+} from './nft';
+
+// Collection utilities
+export { getCollectionLogo } from './collection';
 
 // General utilities
 export {
@@ -14,7 +26,16 @@ export {
   formatNumber,
   isEmpty,
   isTransactionId,
+  stripHexPrefix,
 } from './utils';
+
+// Token utilities
+export {
+  getDisplayBalanceInFLOW,
+  getDisplayBalanceWithSymbol,
+  getTokenResourceIdentifier,
+  getTokenIdentifier,
+} from './token';
 
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
@@ -22,3 +43,6 @@ export type { BridgeLogger } from './logger';
 
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';
+
+// SVG utilities
+export { convertedSVGURL } from './svgToPng';

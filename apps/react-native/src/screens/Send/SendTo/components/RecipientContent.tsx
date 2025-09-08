@@ -1,9 +1,13 @@
-import { FirstTimeSendModal } from '@/components/ui/modals';
-import { useTheme } from '@/contexts/ThemeContext';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, View } from 'react-native';
+
+import { FirstTimeSendModal } from '@/components/ui/modals';
+import { useTheme } from '@/contexts/ThemeContext';
+
+import { AlphabetIndex } from './AlphabetIndex';
+import { createRenderItem, renderEmptyState, renderSkeletonRows } from './renderHelpers';
 import { useDataLoader } from '../hooks/useDataLoader';
 import { useEventHandlers } from '../hooks/useEventHandlers';
 import type {
@@ -18,8 +22,7 @@ import {
   generateSearchAllTabsData,
   selectListData,
 } from '../utils/listDataGenerators';
-import { AlphabetIndex } from './AlphabetIndex';
-import { createRenderItem, renderEmptyState, renderSkeletonRows } from './renderHelpers';
+import { validateSearchAddress } from '../utils/recipientUtils';
 
 // Container style constant for better performance - adjusted to match Figma specs
 const CONTAINER_STYLE = { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20 };
@@ -186,6 +189,24 @@ export const RecipientContent: React.FC<RecipientContentProps> = React.memo(
       refreshRecentContacts,
     });
 
+    // Handle valid address in search box - trigger same FirstTimeSendModal logic
+    React.useEffect(() => {
+      if (debouncedSearchQuery.trim()) {
+        const addressValidation = validateSearchAddress(debouncedSearchQuery.trim());
+
+        if (addressValidation.isValid) {
+          // Create a debounced delay to prevent immediate action while user is typing
+          const timer = setTimeout(() => {
+            const address = debouncedSearchQuery.trim();
+            // Use the same logic as clicking on an unknown address
+            handleUnknownAddressPress(address);
+          }, 500); // 500ms delay
+
+          return () => clearTimeout(timer);
+        }
+      }
+    }, [debouncedSearchQuery, handleUnknownAddressPress]);
+
     // Create render item function using extracted helper
     const renderItem = useCallback(
       createRenderItem({
@@ -268,7 +289,7 @@ export const RecipientContent: React.FC<RecipientContentProps> = React.memo(
     return (
       <View className="flex-1">
         {/* Divider - only show when there's content */}
-        <View className="mb-2 mx-5" style={dividerStyle} />
+        <View className=" mx-5" style={dividerStyle} />
         <FlatList
           ref={flatListRef}
           data={listData}
@@ -295,6 +316,7 @@ export const RecipientContent: React.FC<RecipientContentProps> = React.memo(
             letters={alphabetLetters}
             activeIndex={activeIndexLetter}
             onLetterPress={handleAlphabetPress}
+            position="right"
           />
         )}
 

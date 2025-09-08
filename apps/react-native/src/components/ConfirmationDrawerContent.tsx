@@ -1,28 +1,16 @@
+import type { WalletAccount, NFTModel } from '@onflow/frw-types';
+import React, { type ReactNode } from 'react';
+import { SafeAreaView, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import ConfirmDialogBg from '@/assets/icons/send/ConfirmDialogBg';
-import type { WalletAccount } from '@onflow/frw-types';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   AccountTransferDisplay,
-  ConfirmationHeader,
   HoldToSendButton,
   TransactionDetailsCard,
+  ConfirmationHeader,
 } from '@/screens/Send/Confirmation/components';
-import React, { ReactNode } from 'react';
-import { SafeAreaView, ScrollView, View } from 'react-native';
-
-interface Token {
-  symbol?: string;
-  name?: string;
-  logoURI?: string;
-  identifier?: string;
-  decimal?: number;
-  contractAddress?: string;
-}
-
-interface NFT {
-  id: string | number;
-  name?: string;
-  thumbnail?: string | object;
-}
 
 interface FormData {
   tokenAmount: string;
@@ -33,8 +21,15 @@ interface ConfirmationDrawerContentProps {
   fromAccount: WalletAccount;
   toAccount: WalletAccount;
   transactionType?: string;
-  selectedToken?: Token;
-  selectedNFTs?: NFT[];
+  selectedToken?: {
+    symbol?: string;
+    name?: string;
+    logoURI?: string;
+    identifier?: string;
+    decimal?: number;
+    contractAddress?: string;
+  };
+  selectedNFTs?: NFTModel[];
   formData?: FormData;
   children?: ReactNode;
   onGoBack?: () => void;
@@ -54,6 +49,8 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
   onClose,
   onConfirm,
 }) => {
+  const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const handleGoBack = () => {
     onGoBack?.();
   };
@@ -72,7 +69,7 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
   const safeFormData = formData || { tokenAmount: '0', fiatAmount: '0' };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: isDark ? 'rgb(18, 18, 18)' : 'rgb(255, 255, 255)' }}>
       <View className="flex-1">
         {/* Background SVG - positioned at the top and bottom layer */}
         <View className="absolute top-0 left-0 right-0 -z-10 aspect-square">
@@ -96,7 +93,13 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
             keyboardShouldPersistTaps="handled"
           >
             {/* Account Transfer Display */}
-            <AccountTransferDisplay fromAccount={fromAccount} toAccount={toAccount} />
+            <AccountTransferDisplay
+              fromAccount={fromAccount}
+              toAccount={toAccount}
+              selectedToken={selectedToken}
+              selectedNFTs={selectedNFTs}
+              transactionType={transactionType}
+            />
 
             {/* Transaction Details Card */}
             <TransactionDetailsCard
@@ -111,7 +114,9 @@ export const ConfirmationDrawerContent: React.FC<ConfirmationDrawerContentProps>
           </ScrollView>
 
           {/* Hold to Send Button - Outside content container */}
-          <HoldToSendButton onPress={handleConfirm} />
+          <View style={{ paddingBottom: insets.bottom + 8 }}>
+            <HoldToSendButton onPress={handleConfirm} />
+          </View>
         </View>
       </View>
     </SafeAreaView>

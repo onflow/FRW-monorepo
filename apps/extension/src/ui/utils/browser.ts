@@ -3,10 +3,10 @@ import { consoleError } from '@/shared/utils';
 export async function detectBrowsers() {
   // Detect Brave (Brave exposes a special API)
   let isBrave = false;
-  // @ts-ignore
+  // @ts-ignore: navigator.brave is a Brave browser-specific API
   if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
     try {
-      // @ts-ignore
+      // @ts-ignore: navigator.brave.isBrave() is a Brave browser-specific method
       isBrave = await navigator.brave.isBrave();
     } catch (e) {
       consoleError(e);
@@ -20,7 +20,7 @@ export async function detectBrowsers() {
   // Detect Opera:
   // Opera may expose window.opr and include "OPR/" in its user agent.
   const isOpera =
-    // @ts-ignore
+    // @ts-ignore: window.opr and opr.addons are Opera browser-specific globals
     (!!window.opr && !!opr.addons) || !!window.opera || userAgent.indexOf(' OPR/') > -1;
 
   // Detect Edge (Chromium‑based or Legacy):
@@ -35,7 +35,7 @@ export async function detectBrowsers() {
 
   // Detect Firefox:
   // Firefox exposes the InstallTrigger object.
-  // @ts-ignore
+  // @ts-ignore: InstallTrigger is a Firefox browser-specific global
   const isFirefox = typeof InstallTrigger !== 'undefined';
 
   // Detect Safari:

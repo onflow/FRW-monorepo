@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
+
 import { Text } from 'ui';
 
 interface SegmentedControlProps {
@@ -43,7 +44,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
             .join(' ');
 
           const textClasses = [
-            'text-base font-medium text-center',
+            'text-base font-semibold text-center',
             textClassName,
             'text-fg-1',
             isActive ? activeTextClassName : '',
@@ -60,6 +61,9 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
             >
               <Text
                 className={textClasses}
+                style={{
+                  fontWeight: '600', // Ensure semi-bold
+                }}
                 numberOfLines={1}
                 adjustsFontSizeToFit={true}
                 minimumFontScale={0.8}

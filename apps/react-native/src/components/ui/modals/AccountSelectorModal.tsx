@@ -1,21 +1,30 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAndroidTextFix } from '@/lib';
 import type { WalletAccount } from '@onflow/frw-types';
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
 import React, {
   forwardRef,
   useCallback,
   useEffect,
   useImperativeHandle,
-  useRef,
   useState,
+  useRef,
 } from 'react';
-import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  Modal,
+  Pressable,
+  Dimensions,
+} from 'react-native';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/hooks/useLanguage';
+import { useAndroidTextFix } from '@/lib';
+import { CheckCircleFill as CheckCircleFillIcon } from 'icons';
+
 import { WalletAccountSection } from '../index';
 
 interface AccountSelectorModalProps {
@@ -33,29 +42,30 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
   ({ onAccountSelect, currentAccount, onClose }, ref) => {
     const { isDark } = useTheme();
     const androidTextFix = useAndroidTextFix();
-    const bottomSheetRef = useRef<BottomSheet>(null);
+    const { t } = useLanguage();
     const [accounts, setAccounts] = useState<WalletAccount[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
 
-    // Theme-aware accent green color
-    const accentGreen = isDark ? '#00EF8B' : '#00B877';
+    // Generate a unique instance ID to force recreation of animated values
+    const instanceId = useRef(Math.random().toString(36)).current;
+    const [modalKey, setModalKey] = useState(0);
 
     // Cache for full account list to ensure we always have complete data
     const [fullAccountsCache, setFullAccountsCache] = useState<WalletAccount[]>([]);
 
     // Load accounts when modal opens
     useEffect(() => {
-      if (isOpen) {
+      if (isVisible) {
         loadAccounts(0);
       }
-    }, [isOpen]);
+    }, [isVisible]);
 
     // Ensure we always have at least the current account when modal opens (only after load attempt)
     useEffect(() => {
       // Only trigger fallback after a reasonable delay to allow normal loading to complete
       const timeoutId = setTimeout(() => {
-        if (isOpen && accounts.length === 0 && !isLoading && currentAccount) {
+        if (isVisible && accounts.length === 0 && !isLoading && currentAccount) {
           console.log(
             '[AccountSelector] No accounts loaded but have currentAccount, using as fallback'
           );
@@ -74,7 +84,7 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
       }, 1000); // Wait 1 second before applying fallback
 
       return () => clearTimeout(timeoutId);
-    }, [isOpen, accounts.length, isLoading, currentAccount]);
+    }, [isVisible, accounts.length, isLoading, currentAccount]);
 
     const loadAccounts = useCallback(
       async (retryCount = 0) => {
@@ -207,110 +217,46 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
       [currentAccount, fullAccountsCache]
     );
 
-    // Bottom sheet handlers
-    const handleSheetChanges = useCallback(
-      (index: number) => {
-        if (index === -1) {
-          setIsOpen(false);
-          onClose?.();
-        }
-      },
-      [onClose]
-    );
+    // Modal close handler
+    const handleClose = useCallback(() => {
+      setIsVisible(false);
+      onClose?.();
+    }, [onClose]);
 
-    const renderBackdrop = useCallback(
-      (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
-        <BottomSheetBackdrop
-          {...props}
-          disappearsOnIndex={-1}
-          appearsOnIndex={0}
-          opacity={0.6}
-          pressBehavior="close"
-        />
-      ),
-      []
-    );
-
-    // Fixed snap points - multiple options to choose from
-    const snapPoints = React.useMemo(() => {
-      return ['40%', '55%', '70%', '85%']; // Fixed set of snap points
-    }, []);
-
-    // Calculate which snap point index to use based on account count
-    const getTargetSnapIndex = React.useCallback(() => {
-      if (accounts.length === 0) return 1; // 55% while loading
-
-      if (accounts.length <= 2) return 1; // 55% for 1-2 accounts
-      if (accounts.length <= 4) return 2; // 70% for 3-4 accounts
-      if (accounts.length <= 6) return 3; // 85% for 5-6 accounts
-      return 3; // 85% for 7+ accounts
+    // Calculate modal height based on account count
+    const getModalHeight = React.useCallback(() => {
+      const screenHeight = Dimensions.get('window').height;
+      if (accounts.length === 0) return screenHeight * 0.35; // while loading
+      if (accounts.length <= 2) return screenHeight * 0.45; // for 1-2 accounts
+      if (accounts.length <= 4) return screenHeight * 0.55; // for 3-4 accounts
+      if (accounts.length <= 6) return screenHeight * 0.7; // for 5-6 accounts
+      return screenHeight * 0.8; // for 7+ accounts
     }, [accounts.length]);
 
-    const backgroundStyle = React.useMemo(
-      () => ({
-        backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
-      }),
-      [isDark]
-    );
-
-    const handleStyle = React.useMemo(
-      () => ({
+    const containerStyle = React.useMemo(() => {
+      const screenHeight = Dimensions.get('window').height;
+      return {
         backgroundColor: isDark ? '#1A1A1A' : '#FFFFFF',
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
+        maxHeight: screenHeight * 0.75,
+        minHeight: screenHeight * 0.4,
         paddingTop: 8,
-      }),
-      [isDark]
-    );
-
-    // Snap to appropriate height based on account count
-    useEffect(() => {
-      if (isOpen && accounts.length > 0) {
-        const targetIndex = getTargetSnapIndex();
-        console.log(
-          `[AccountSelector] Snapping to index ${targetIndex} (${snapPoints[targetIndex]}) for ${accounts.length} accounts`
-        );
-
-        setTimeout(() => {
-          bottomSheetRef.current?.snapToIndex(targetIndex);
-        }, 100);
-      }
-    }, [accounts.length, isOpen, getTargetSnapIndex, snapPoints]);
+      };
+    }, [isDark]);
 
     // Create a dismiss function we can call directly
     const dismissModal = useCallback(() => {
       console.log('[AccountSelector] Dismissing modal');
-      setIsOpen(false);
-
-      // Try multiple methods to close the bottom sheet
-      if (bottomSheetRef.current) {
-        console.log('[AccountSelector] Trying snapToIndex(-1)');
-        bottomSheetRef.current.snapToIndex(-1);
-
-        // Try other potential methods
-        setTimeout(() => {
-          if (bottomSheetRef.current) {
-            console.log('[AccountSelector] Trying close() method');
-            (bottomSheetRef.current as any).close?.();
-
-            setTimeout(() => {
-              console.log('[AccountSelector] Trying forceClose() method');
-              (bottomSheetRef.current as any).forceClose?.();
-            }, 100);
-          }
-        }, 50);
-      }
+      setIsVisible(false);
       onClose?.();
     }, [onClose]);
 
     useImperativeHandle(ref, () => ({
       present: () => {
-        setIsOpen(true);
-        // The index prop will handle opening to the correct position
-        setTimeout(() => {
-          const targetIndex = getTargetSnapIndex();
-          bottomSheetRef.current?.snapToIndex(targetIndex);
-        }, 100);
+        // Force recreation of modal by incrementing key
+        setModalKey(prev => prev + 1);
+        setIsVisible(true);
       },
       dismiss: dismissModal,
     }));
@@ -348,148 +294,129 @@ export const AccountSelectorModal = forwardRef<AccountSelectorModalRef, AccountS
             account={account}
             onAccountPress={() => handleAccountPress(account)}
             useLetterAvatar={false}
+            isSelectedFromAccount={isSelected}
           />
         </View>
 
         {/* Selection indicator */}
         {isSelected && (
-          <View
-            style={{
-              width: 20,
-              height: 20,
-              borderRadius: 10,
-              backgroundColor: accentGreen,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: '#FFFFFF',
-                fontSize: 12,
-                fontWeight: 'bold',
-              }}
-            >
-              ✓
-            </Text>
+          <View style={{ marginLeft: 8 }}>
+            <CheckCircleFillIcon width={24} height={24} />
           </View>
         )}
       </TouchableOpacity>
     );
 
     return (
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={isOpen ? 1 : -1} // Sync with isOpen state
-        snapPoints={snapPoints}
-        enablePanDownToClose
-        backdropComponent={renderBackdrop}
-        backgroundStyle={backgroundStyle}
-        handleStyle={handleStyle}
-        onChange={handleSheetChanges}
-        key={`bottomsheet-${isOpen ? 'open' : 'closed'}`} // Use state-based key
+      <Modal
+        visible={isVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleClose}
       >
-        <BottomSheetView
-          style={{ flex: 1, paddingTop: 12, paddingHorizontal: 16, paddingBottom: 24 }}
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            justifyContent: 'flex-end',
+          }}
+          onPress={handleClose}
         >
-          <SafeAreaView style={{ flex: 1 }}>
-            {/* Header */}
-            <View
-              style={{
-                alignItems: 'center',
-                marginBottom: 16,
-              }}
-            >
-              <Text
-                style={[
-                  androidTextFix,
-                  {
-                    fontSize: 18,
-                    fontWeight: '700',
-                    color: isDark ? '#FFFFFF' : '#000000',
-                    lineHeight: 24,
-                    textAlign: 'center',
-                  },
-                ]}
-              >
-                Select Account
-              </Text>
-            </View>
+          <Pressable onPress={e => e.stopPropagation()}>
+            <View style={containerStyle}>
+              {/* Handle */}
+              <View
+                style={{
+                  width: 40,
+                  height: 4,
+                  backgroundColor: '#D1D5DB',
+                  borderRadius: 2,
+                  alignSelf: 'center',
+                  marginBottom: 8,
+                }}
+              />
 
-            {/* Account List */}
-            <View style={{ flex: 1 }}>
-              {isLoading ? (
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 24,
-                  }}
-                >
-                  <ActivityIndicator
-                    size="large"
-                    color={isDark ? '#FFFFFF' : '#000000'}
-                    style={{ marginBottom: 16 }}
-                  />
-                  <Text
-                    style={[
-                      androidTextFix,
-                      {
-                        color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                        fontSize: 16,
-                        fontWeight: '500',
-                        minWidth: 150,
-                        textAlign: 'center',
-                      },
-                    ]}
-                  >
-                    Loading accounts...
-                  </Text>
-                </View>
-              ) : accounts.length === 0 ? (
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 24,
-                  }}
-                >
-                  <Text
-                    style={[
-                      androidTextFix,
-                      {
-                        color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                        fontSize: 16,
-                        textAlign: 'center',
-                        minWidth: 150,
-                      },
-                    ]}
-                  >
-                    No accounts available
-                  </Text>
-                </View>
-              ) : (
-                <BottomSheetScrollView
-                  showsVerticalScrollIndicator={true}
-                  contentContainerStyle={{ paddingBottom: 12 }}
-                >
-                  {accounts.map(account => {
-                    const isSelected = currentAccount?.address === account.address;
-                    return (
-                      <AccountItem
-                        key={account.id || account.address}
-                        account={account}
-                        isSelected={isSelected}
+              <SafeAreaView
+                style={{ flex: 1, paddingTop: 8, paddingHorizontal: 16, paddingBottom: 0 }}
+              >
+                {/* Account List */}
+                <View style={{ flex: 1, paddingTop: 8, paddingHorizontal: 8 }}>
+                  {isLoading ? (
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingVertical: 24,
+                      }}
+                    >
+                      <ActivityIndicator
+                        size="large"
+                        color={isDark ? '#FFFFFF' : '#000000'}
+                        style={{ marginBottom: 16 }}
                       />
-                    );
-                  })}
-                </BottomSheetScrollView>
-              )}
+                      <Text
+                        style={[
+                          androidTextFix,
+                          {
+                            color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                            fontSize: 16,
+                            fontWeight: '500',
+                            minWidth: 150,
+                            textAlign: 'center',
+                          },
+                        ]}
+                      >
+                        Loading accounts...
+                      </Text>
+                    </View>
+                  ) : accounts.length === 0 ? (
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingVertical: 24,
+                      }}
+                    >
+                      <Text
+                        style={[
+                          androidTextFix,
+                          {
+                            color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                            fontSize: 16,
+                            textAlign: 'center',
+                            minWidth: 150,
+                          },
+                        ]}
+                      >
+                        {t('emptyState.noAccountsAvailable')}
+                      </Text>
+                    </View>
+                  ) : (
+                    <ScrollView
+                      showsVerticalScrollIndicator={true}
+                      contentContainerStyle={{
+                        paddingBottom: 20,
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      {accounts.map(account => {
+                        const isSelected = currentAccount?.address === account.address;
+                        return (
+                          <AccountItem
+                            key={account.id || account.address}
+                            account={account}
+                            isSelected={isSelected}
+                          />
+                        );
+                      })}
+                    </ScrollView>
+                  )}
+                </View>
+              </SafeAreaView>
             </View>
-          </SafeAreaView>
-        </BottomSheetView>
-      </BottomSheet>
+          </Pressable>
+        </Pressable>
+      </Modal>
     );
   }
 );

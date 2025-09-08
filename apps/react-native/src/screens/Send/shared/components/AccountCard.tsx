@@ -1,13 +1,15 @@
+import { useTokenStore } from '@onflow/frw-stores';
+import { type WalletAccount } from '@onflow/frw-types';
+import { useMemo } from 'react';
+import { View } from 'react-native';
+
 import { WalletAvatar } from '@/components/ui/media/WalletAvatar';
+import { Text } from '@/components/ui/typography/text';
 import { useTheme } from '@/contexts/ThemeContext';
 import { isEVMAccount } from '@/lib';
 import { formatCurrencyStringForDisplay, truncateBalance } from '@/lib/string';
-import { useTokenStore } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import { Link } from 'icons';
-import { useMemo } from 'react';
-import { View } from 'react-native';
-import { AddressText, EVMChip, EditButton, Skeleton, Text } from 'ui';
+import { AddressText, EVMChip, EditButton, Skeleton } from 'ui';
 
 interface AccountCardProps {
   account: WalletAccount;
@@ -113,11 +115,10 @@ export const AccountCard = ({
   const content = (
     <>
       <Text
-        className={`text-xs mb-3 font-normal ${showBackground ? 'text-fg-1/80' : 'text-fg-1'}`}
-        disableAndroidFix={true}
-        style={{
-          fontSize: 12,
-        }}
+        size="sm"
+        weight="normal"
+        className={isDark ? 'text-white/80' : 'text-black/80'}
+        style={{ marginBottom: 12 }}
       >
         {title}
       </Text>
@@ -135,27 +136,37 @@ export const AccountCard = ({
             {/* Parent Emoji Container - positioned at top-left */}
             {shouldShowParentEmoji && (
               <View
-                className="absolute rounded-full items-center justify-center w-5 h-5 z-10 border-[1.5px] border-surface-1 dark:border-surface-base"
+                className="absolute rounded-full items-center justify-center w-5 h-5 z-10"
                 style={{
                   left: -6.5, // 3.5px from parent container left (10px - 3.5px = 6.5px offset)
                   top: -4,
                   backgroundColor: account.parentEmoji?.color || '#F0F0F0',
                 }}
               >
-                <Text className="text-center text-[8px] leading-3" disableAndroidFix={true}>
+                <Text
+                  size="xs"
+                  className="text-center leading-3"
+                  style={{
+                    fontSize: 8,
+                    textAlignVertical: 'center',
+                    includeFontPadding: false,
+                  }}
+                >
                   {account.parentEmoji?.emoji}
                 </Text>
               </View>
             )}
 
             {/* Main account icon */}
-            <WalletAvatar
-              value={account.avatar || account.emojiInfo?.emoji || '👤'}
-              fallback={account.emojiInfo?.emoji || '👤'}
-              size={40}
-              highlight={account.isActive}
-              backgroundColor={account.emojiInfo?.color}
-            />
+            <View className="w-10 h-10 items-center justify-center">
+              <WalletAvatar
+                value={account.avatar || account.emojiInfo?.emoji || '👤'}
+                fallback={account.emojiInfo?.emoji || '👤'}
+                size={36}
+                highlight={account.isActive}
+                backgroundColor={account.emojiInfo?.color}
+              />
+            </View>
           </View>
 
           {/* Account Details */}
@@ -165,15 +176,15 @@ export const AccountCard = ({
               <View className="flex-row items-center gap-1">
                 {isLinkedAccount((account as any).type) && (
                   <View className="mr-0.5">
-                    <Link width={12} height={12} />
+                    <Link width={16} height={16} />
                   </View>
                 )}
                 <Text
-                  className="text-fg-1"
+                  size="sm"
+                  weight="semibold"
+                  className={isDark ? 'text-white' : 'text-black'}
                   style={{
-                    fontSize: 14,
-                    fontWeight: '400',
-                    lineHeight: 20,
+                    lineHeight: 17,
                     letterSpacing: -0.084,
                     includeFontPadding: false,
                     textAlignVertical: 'center',
@@ -188,19 +199,26 @@ export const AccountCard = ({
               <AddressText
                 style={{
                   fontSize: 12,
+                  fontWeight: '400',
+                  lineHeight: 17,
+                  color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
                 }}
                 value={account.address}
-                className="text-fg-2"
               />
 
               {/* Balance and NFT count */}
               <View className="h-5 mb-1">
                 {isLoading || isLoadingTokens ? (
-                  <Skeleton isDark={isDark} className="h-4 w-24" />
+                  <Skeleton isDark={isDark} style={{ height: 16, width: 96 }} />
                 ) : displayText ? (
                   <Text
-                    className="text-fg-2 font-normal text-xs leading-relaxed"
-                    disableAndroidFix={true}
+                    size="xs"
+                    weight="normal"
+                    className={isDark ? 'text-white/70' : 'text-black/70'}
+                    style={{
+                      lineHeight: 17,
+                      includeFontPadding: false,
+                    }}
                   >
                     {displayText}
                   </Text>
@@ -221,7 +239,14 @@ export const AccountCard = ({
   );
 
   return showBackground ? (
-    <View className="w-full rounded-2xl bg-white/10 p-4 mt-5">{content}</View>
+    <View
+      className="w-full rounded-2xl p-4 mt-5"
+      style={{
+        backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#F2F2F7',
+      }}
+    >
+      {content}
+    </View>
   ) : (
     <View>{content}</View>
   );

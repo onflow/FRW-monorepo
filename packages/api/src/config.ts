@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import { serviceOptions as goServiceOptions } from './codgen/goService.generated';
-import { serviceOptions } from './codgen/service.generated';
+import { serviceOptions as goServiceOptions } from './codegen/goService.generated';
+import { serviceOptions } from './codegen/service.generated';
 
 /**
  * Configure API endpoints and authentication dynamically
@@ -16,7 +16,7 @@ export function configureApiEndpoints(
   // Configure main API service
   const instance = axios.create({
     baseURL: apiEndpoint,
-    timeout: 10000,
+    timeout: 30000, // 30 seconds timeout
   });
 
   instance.interceptors.request.use(
@@ -48,7 +48,7 @@ export function configureApiEndpoints(
   // Configure Go API service
   const goInstance = axios.create({
     baseURL: goApiEndpoint,
-    timeout: 10000,
+    timeout: 30000, // 30 seconds timeout
   });
 
   goInstance.interceptors.request.use(

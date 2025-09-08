@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useRef, ReactNode, useState } from 'react';
-import { SendBottomSheet, SendBottomSheetRef } from '@/components/SendBottomSheet';
-import { SendWorkflowManager, SendWorkflowStep } from '@/components/SendWorkflowManager';
+import { useSendStore } from '@onflow/frw-stores';
+import React, { createContext, useContext, useRef, type ReactNode, useState } from 'react';
+
+import { SendBottomSheet, type SendBottomSheetRef } from '@/components/SendBottomSheet';
+import { SendWorkflowManager, type SendWorkflowStep } from '@/components/SendWorkflowManager';
 
 interface SendBottomSheetContextType {
   openSend: (initialStep?: SendWorkflowStep, params?: Record<string, unknown>) => void;
@@ -19,6 +21,7 @@ export const SendBottomSheetProvider: React.FC<SendBottomSheetProviderProps> = (
   const [currentStep, setCurrentStep] = useState<SendWorkflowStep>('SelectTokens');
   const [currentParams, setCurrentParams] = useState<Record<string, unknown> | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { clearTransactionData } = useSendStore();
 
   const openSend = (
     initialStep: SendWorkflowStep = 'SelectTokens',
@@ -31,12 +34,29 @@ export const SendBottomSheetProvider: React.FC<SendBottomSheetProviderProps> = (
   };
 
   const closeSend = () => {
-    bottomSheetRef.current?.dismiss();
-    setTimeout(() => {
+    try {
+      bottomSheetRef.current?.dismiss();
+
+      // Cleanup timeout to ensure state is reset even if sheet dismiss fails
+      setTimeout(() => {
+        try {
+          setIsOpen(false);
+          setCurrentStep('SelectTokens');
+          setCurrentParams(null);
+          // Clear form data including amount field when workflow closes
+          clearTransactionData();
+        } catch (error) {
+          console.warn('[SendBottomSheetContext] Error during cleanup:', error);
+        }
+      }, 300);
+    } catch (error) {
+      console.warn('[SendBottomSheetContext] Error closing send workflow:', error);
+      // Force cleanup even if dismiss fails
       setIsOpen(false);
       setCurrentStep('SelectTokens');
       setCurrentParams(null);
-    }, 300);
+      clearTransactionData();
+    }
   };
 
   const navigateToStep = (step: SendWorkflowStep, params?: Record<string, unknown>) => {

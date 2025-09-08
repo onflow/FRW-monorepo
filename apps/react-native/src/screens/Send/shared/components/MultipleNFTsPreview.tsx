@@ -1,9 +1,10 @@
-import { IconView } from '@/components/ui/media/IconView';
-import { useTheme } from '@/contexts/ThemeContext';
 import { type ExpandedNFTData } from '@onflow/frw-types';
-import { ChevronDown, ChevronUp, Trash as TrashIcon } from 'icons';
 import { useState } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
+
+import { IconView } from '@/components/ui/media/IconView';
+import { useTheme } from '@/contexts/ThemeContext';
+import { ChevronDown, ChevronUp, Trash as TrashIcon } from 'icons';
 import { Text } from 'ui';
 
 interface MultipleNFTsPreviewProps {
@@ -56,7 +57,6 @@ const ExpandedNFTItem = ({ nft, onRemove }: ExpandedNFTItemProps) => {
               letterSpacing: -0.006,
               includeFontPadding: false,
             }}
-            disableAndroidFix={true}
           >
             {nft.collectionName}
           </Text>
@@ -119,7 +119,6 @@ export const MultipleNFTsPreview = ({
             numberOfLines={1}
             adjustsFontSizeToFit={true}
             minimumFontScale={0.9}
-            disableAndroidFix={true}
           >
             {selectedNFTs.length} NFT{selectedNFTs.length !== 1 ? 's' : ''}
           </Text>
@@ -241,7 +240,6 @@ export const MultipleNFTsPreview = ({
                             includeFontPadding: false,
                             textAlign: 'center',
                           }}
-                          disableAndroidFix={true}
                         >
                           +{remainingCount}
                         </Text>

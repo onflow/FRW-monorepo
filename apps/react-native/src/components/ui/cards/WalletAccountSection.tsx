@@ -1,16 +1,18 @@
+import type { WalletAccount } from '@onflow/frw-types';
+import React from 'react';
+import { TouchableOpacity, View } from 'react-native';
+
 import { useTheme } from '@/contexts/ThemeContext';
 import { isEVMAccount } from '@/lib';
 import { Link } from 'icons';
-import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
 import { EVMChip, Skeleton, Text } from 'ui';
+
 import { CopyIcon } from '../icons/CopyIcon';
 import { ContactAvatar } from '../media/ContactAvatar';
 import { WalletAvatar } from '../media/WalletAvatar';
 import AddressText from '../typography/AddressText';
 
 // Import unified type instead of defining locally
-import type { WalletAccount } from '@onflow/frw-types';
 
 interface WalletAccountSectionProps {
   account: WalletAccount;
@@ -101,7 +103,13 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                       backgroundColor: account.parentEmoji?.color || '#F0F0F0',
                     }}
                   >
-                    <Text className="text-center text-[8px] leading-3" disableAndroidFix={true}>
+                    <Text
+                      className="text-center text-[8px] leading-3"
+                      style={{
+                        textAlignVertical: 'center',
+                        includeFontPadding: false,
+                      }}
+                    >
                       {account.parentEmoji?.emoji}
                     </Text>
                   </View>
@@ -136,12 +144,18 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                   >
                     {isLinkedAccount(account.type) && (
                       <View className="mr-0.5">
-                        <Link width={12} height={12} />
+                        <Link width={16} height={16} />
                       </View>
                     )}
                     <Text
-                      className="text-fg-1 font-semibold text-sm leading-4"
-                      style={NAME_TEXT_STYLE}
+                      className="text-fg-1"
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '600', // semi-bold
+                        lineHeight: 17,
+                        letterSpacing: -0.084,
+                        flexShrink: 1,
+                      }}
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
@@ -153,16 +167,31 @@ const WalletAccountSectionComponent: React.FC<WalletAccountSectionProps> = ({
                   {/* Account Address */}
                   <AddressText
                     value={account.address}
-                    className="text-fg-2 text-xs leading-4 min-w-[120px]"
+                    className="text-fg-2 min-w-[120px]"
+                    style={{
+                      fontSize: 12,
+                      fontWeight: '400',
+                      lineHeight: 17,
+                    }}
                   />
 
                   {/* Balance display */}
                   {showBalance && (
-                    <View className="h-4">
+                    <View className="min-h-[18px] justify-center">
                       {isBalanceLoading ? (
                         <Skeleton isDark={isDark} className="h-4 w-20" />
                       ) : (
-                        <Text className="text-fg-2 text-xs leading-4">
+                        <Text
+                          className="text-fg-2"
+                          style={{
+                            fontSize: 12,
+                            fontWeight: '400',
+                            lineHeight: 18,
+                            paddingVertical: 1,
+                            includeFontPadding: false,
+                            textAlignVertical: 'center',
+                          }}
+                        >
                           {balanceData || '0 FLOW'}
                         </Text>
                       )}

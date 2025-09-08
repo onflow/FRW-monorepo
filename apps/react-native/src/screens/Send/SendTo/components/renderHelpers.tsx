@@ -1,6 +1,8 @@
-import { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount } from '@onflow/frw-types';
 import { Alert, Platform, ToastAndroid, View } from 'react-native';
+
 import { Skeleton, Text, WalletAccountSection } from 'ui';
+
 import type { RecipientTabType } from '../SendToScreen';
 import type { ExtendedWalletAccount, ListItem } from '../types/recipientTypes';
 
@@ -37,11 +39,7 @@ export const createRenderItem = ({
   return ({ item }: { item: ListItem }) => {
     switch (item.type) {
       case 'header': {
-        return (
-          <Text className="text-fg-2 text-xs mb-3 font-normal" disableAndroidFix={true}>
-            {item.title}
-          </Text>
-        );
+        return <Text className="text-fg-2 text-xs mb-3 font-normal">{item.title}</Text>;
       }
 
       case 'account':
@@ -187,18 +185,10 @@ export const renderEmptyState = (
 
   return (
     <View className="rounded-xl p-8 items-center">
-      <Text
-        className="text-fg-1 text-lg font-semibold mb-2 text-center"
-        style={{ minWidth: 200 }}
-        disableAndroidFix={true}
-      >
+      <Text className="text-fg-1 text-lg font-semibold mb-2 text-center" style={{ minWidth: 200 }}>
         {emptyState.title}
       </Text>
-      <Text
-        className="text-fg-2 text-sm text-center leading-5"
-        style={{ minWidth: 200 }}
-        disableAndroidFix={true}
-      >
+      <Text className="text-fg-2 text-sm text-center leading-5" style={{ minWidth: 200 }}>
         {emptyState.description}
       </Text>
     </View>

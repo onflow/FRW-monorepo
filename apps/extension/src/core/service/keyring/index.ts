@@ -31,12 +31,7 @@ import type {
   VaultEntryV3,
   LoggedInAccount,
 } from '@/shared/types';
-import {
-  consoleError,
-  consoleInfo,
-  consoleWarn,
-  combinePubPkTuple,
-} from '@/shared/utils';
+import { consoleError, consoleInfo, consoleWarn, combinePubPkTuple } from '@/shared/utils';
 
 import { HDKeyring, type HDKeyringData, type HDKeyringType } from './hdKeyring';
 import { type SimpleKeyPairType, SimpleKeyring, type SimpleKeyringData } from './simpleKeyring';
@@ -1484,13 +1479,14 @@ class KeyringService extends EventEmitter {
 
     // this returns an array of KeyringKeyDataV2
     switch (this.store.getState().vaultVersion) {
-      case KEYRING_STATE_VAULT_V1:
+      case KEYRING_STATE_VAULT_V1: {
         // Looking up the derivation path and passphrase
         const keyringDataV2 = await this.translateVaultV1toV2({
           id: entry.id,
           decryptedData: decryptedData as DecryptedKeyDataV2[],
         });
         return await this.translateVaultV2toV3(keyringDataV2);
+      }
       case KEYRING_STATE_VAULT_V2:
         return await this.translateVaultV2toV3({
           id: entry.id,

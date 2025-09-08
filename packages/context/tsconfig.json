@@ -4,6 +4,6 @@
     "outDir": "./dist",
     "types": ["node"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts", "tsup.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

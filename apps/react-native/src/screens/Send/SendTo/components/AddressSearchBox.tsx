@@ -1,11 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { cn } from '@/lib/utils';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAndroidTextFix } from '@/lib/androidTextFix';
+import { cn } from '@/lib/utils';
 import { SearchIcon, ScanIcon, CloseIcon } from 'ui';
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useTranslation } from 'react-i18next';
 
 interface AddressSearchBoxProps {
   value: string;
@@ -71,12 +72,19 @@ export const AddressSearchBox: React.FC<AddressSearchBoxProps> = ({
             {
               fontWeight: '400',
               includeFontPadding: false,
+              textAlignVertical: 'center',
+              paddingVertical: 0,
+              paddingTop: 0,
+              paddingBottom: 0,
+              lineHeight: 20,
+              height: 44,
+              marginTop: -2,
             },
           ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={defaultPlaceholder}
-          placeholderTextColor={isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)'}
+          placeholderTextColor={isDark ? 'rgba(179, 179, 179, 0.8)' : 'rgba(118, 118, 118, 0.8)'}
           autoCapitalize="none"
           autoCorrect={false}
         />

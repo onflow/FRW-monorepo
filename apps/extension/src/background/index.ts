@@ -171,7 +171,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
   // openapiService.getConfig();
 
-  // @ts-ignore
+  // @ts-ignore: Adding custom _timer property to port object for timeout management
   port._timer = setTimeout(forceReconnect, 250e3, port);
   port.onDisconnect.addListener(deleteTimer);
 
@@ -283,7 +283,7 @@ const handlePreAuthz = async (id) => {
 
   const keyIndex = await userWalletService.getKeyIndex();
   const services = preAuthzServiceDefinition(
-    address,
+    address as string,
     keyIndex,
     payer.address,
     payer.keyId,

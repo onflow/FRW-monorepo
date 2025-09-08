@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, TouchableOpacity, Animated, LayoutChangeEvent } from 'react-native';
-import { Text } from 'ui';
+import { View, TouchableOpacity, Animated, type LayoutChangeEvent } from 'react-native';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { Text } from 'ui';
 
 interface SlidingTabsProps {
   tabs: string[];
@@ -96,12 +97,11 @@ export const SlidingTabs: React.FC<SlidingTabsProps> = ({ tabs, activeTab, onTab
                     ? 'rgba(255, 255, 255, 0.8)'
                     : '#000000' // Active tab color from Figma
                   : isDark
-                  ? '#FFFFFF'
-                  : 'rgba(0, 0, 0, 0.6)', // Inactive tab color
+                    ? '#FFFFFF'
+                    : 'rgba(0, 0, 0, 0.6)', // Inactive tab color
                 textAlign: 'center',
                 fontWeight: '600',
               }}
-              disableAndroidFix={true}
             >
               {tab}
             </Text>

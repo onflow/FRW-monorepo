@@ -52,6 +52,7 @@ Thumbs.db
 apps/react-native/ios/
 apps/react-native/android/
 apps/react-native/flow-wallet-kit/
+Flow-Wallet-Kit/
 
 # React Native build outputs that might leak outside submodules
 **/ios/build/
@@ -122,6 +123,7 @@ storybook-static/
 # Local configuration
 .cursorrules
 **/.claude/settings.local.json
+.cursor
 
 # Documentation
 docs-archive

@@ -103,7 +103,7 @@ const SendToCadenceOrEvm = ({
                     }}
                   >
                     <CancelIcon size={24} color={'#E54040'} style={{ margin: '8px' }} />
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography variant="body2" color="error">
                       {chrome.i18n.getMessage('Invalid_address_in')}
                       {` ${network}`}
                     </Typography>
@@ -113,10 +113,11 @@ const SendToCadenceOrEvm = ({
             </Box>
 
             <Typography
-              variant="body1"
+              variant="caption"
               sx={{
                 alignSelf: 'start',
-                fontSize: '14px',
+                fontWeight: 'medium',
+                color: 'text.secondary',
               }}
             >
               {chrome.i18n.getMessage('Transfer__Amount')}
@@ -134,10 +135,11 @@ const SendToCadenceOrEvm = ({
             {transactionState.tokenInfo.unit && (
               <>
                 <Typography
-                  variant="body1"
+                  variant="caption"
                   sx={{
                     alignSelf: 'start',
-                    fontSize: '14px',
+                    fontWeight: 'medium',
+                    color: 'text.secondary',
                   }}
                 >
                   {chrome.i18n.getMessage('Available__Balance')}
@@ -151,10 +153,10 @@ const SendToCadenceOrEvm = ({
                     height={18}
                   />
                   <Typography
-                    variant="body1"
+                    variant="body2"
                     sx={{
                       alignSelf: 'start',
-                      fontSize: '15px',
+                      color: 'text.secondary',
                     }}
                   >
                     <TokenBalance
@@ -190,7 +192,7 @@ const SendToCadenceOrEvm = ({
                 textTransform: 'capitalize',
               }}
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                 {chrome.i18n.getMessage('Cancel')}
               </Typography>
             </Button>
@@ -217,7 +219,7 @@ const SendToCadenceOrEvm = ({
                 new BN(transactionState.amount || '-1').isLessThanOrEqualTo(0)
               }
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} color="text.primary">
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                 {chrome.i18n.getMessage('Next')}
               </Typography>
             </Button>

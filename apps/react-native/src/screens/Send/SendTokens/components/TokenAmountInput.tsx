@@ -1,14 +1,16 @@
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAndroidTextFix } from '@/lib';
-import { TokenInfo } from '@onflow/frw-types';
-import { SwitchVertical, VerifiedToken as VerifiedIcon } from 'icons';
+import { type TokenModel } from '@onflow/frw-types';
+import { type Currency } from '@onflow/frw-types';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidTextFix } from '@/lib';
+import { SwitchVertical, VerifiedToken as VerifiedIcon } from 'icons';
 import { ChevronDown, FlowLogo } from 'ui';
 
 interface TokenAmountInputProps {
-  selectedToken: TokenInfo | null;
+  selectedToken: TokenModel | null;
   formData: {
     tokenAmount: string;
     fiatAmount: string;
@@ -19,6 +21,7 @@ interface TokenAmountInputProps {
   onTokenSelectorPress: () => void;
   onMaxPress: () => void;
   tokenToUsdRate: number;
+  currency: Currency;
 }
 
 export const TokenAmountInput = ({
@@ -28,7 +31,8 @@ export const TokenAmountInput = ({
   onToggleInputMode,
   onTokenSelectorPress,
   onMaxPress,
-  _tokenToUsdRate,
+  tokenToUsdRate,
+  currency = { name: 'USD', symbol: '$', rate: '1' },
 }: TokenAmountInputProps) => {
   const { t } = useTranslation();
   const { isDark } = useTheme();
@@ -89,12 +93,12 @@ export const TokenAmountInput = ({
                     lineHeight: 32,
                     fontWeight: '500',
                     includeFontPadding: false,
-                    color: isDark ? '#FFFFFF' : '#000D07',
+                    color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 13, 7)',
                     marginRight: 0,
                   },
                 ]}
               >
-                $
+                {currency.symbol}
               </Text>
             )}
 
@@ -114,11 +118,13 @@ export const TokenAmountInput = ({
                   paddingVertical: 0,
                   margin: 0,
                   minHeight: 32,
-                  color: isDark ? '#FFFFFF' : '#000D07',
+                  color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 13, 7)',
                 },
               ]}
-              placeholderTextColor={isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 13, 7, 0.5)'}
-              selectionColor={isDark ? '#00EF8B' : '#00B877'}
+              placeholderTextColor={
+                isDark ? 'rgba(179, 179, 179, 0.8)' : 'rgba(118, 118, 118, 0.8)'
+              }
+              selectionColor={isDark ? 'rgb(0, 239, 139)' : 'rgb(0, 184, 119)'}
               selectTextOnFocus={true}
             />
           </View>
@@ -131,7 +137,7 @@ export const TokenAmountInput = ({
             height: 35.2,
             borderRadius: 39,
             minWidth: 85,
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgb(255, 255, 255)',
           }}
           onPress={onTokenSelectorPress}
         >
@@ -179,7 +185,7 @@ export const TokenAmountInput = ({
             }}
             onPress={onToggleInputMode}
           >
-            <SwitchVertical width={12} height={12} />
+            <SwitchVertical width={12} height={12} color={isDark ? '#FFFFFF' : '#000000'} />
           </TouchableOpacity>
 
           {/* USD Value */}
@@ -197,7 +203,7 @@ export const TokenAmountInput = ({
             numberOfLines={1}
           >
             {formData.isTokenMode
-              ? `$${formData.fiatAmount}`
+              ? `${currency.symbol}${formData.fiatAmount}`
               : `${formData.tokenAmount} ${selectedToken?.symbol || 'FLOW'}`}
           </Text>
         </View>
@@ -236,11 +242,12 @@ export const TokenAmountInput = ({
 
           {/* MAX Button */}
           <TouchableOpacity
-            className="items-center justify-center px-3 py-1"
+            className="items-center justify-center"
             style={{
-              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
               borderRadius: 39,
-              paddingHorizontal: 10,
+              paddingLeft: 10,
+              paddingRight: 6,
               paddingVertical: 3,
             }}
             onPress={onMaxPress}
@@ -254,7 +261,7 @@ export const TokenAmountInput = ({
                   lineHeight: 18,
                   fontWeight: '600',
                   includeFontPadding: false,
-                  color: isDark ? '#FFFFFF' : '#FFFFFF',
+                  color: isDark ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)',
                   minWidth: 35,
                 },
               ]}

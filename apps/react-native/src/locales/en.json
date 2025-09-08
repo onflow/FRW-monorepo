@@ -1,7 +1,7 @@
 {
   "navigation": {
     "home": "Home",
-    "selectTokens": "Select Tokens",
+    "selectTokens": "Send",
     "sendTo": "Send To",
     "confirmation": "Summary",
     "colorDemo": "Color Demo",
@@ -21,7 +21,7 @@
     "viewColors": "View Colors"
   },
   "send": {
-    "searchAddress": "Search address",
+    "searchAddress": "Search / Paste address",
     "myAccounts": "My accounts",
     "recent": "Recent",
     "addressBook": "Address book",
@@ -32,7 +32,8 @@
     "to": "To",
     "amount": "Amount",
     "fee": "Fee",
-    "total": "Total"
+    "total": "Total",
+    "inaccessible": "Inaccessible"
   },
   "buttons": {
     "back": "Back",
@@ -49,7 +50,7 @@
     "next": "Next"
   },
   "placeholders": {
-    "searchAddress": "Search address",
+    "searchAddress": "Search / Paste address",
     "enterAmount": "Enter amount",
     "selectToken": "Select token",
     "selectNFT": "Select NFT",
@@ -162,6 +163,7 @@
     "noResultsFoundDescription": "No accounts or contacts match \"{{query}}\". Try a different search term.",
     "noAccountsTitle": "No Accounts",
     "noAccountsDescription": "You haven't added any accounts yet. Create your first account to get started.",
+    "noAccountsAvailable": "No accounts available",
     "noRecentRecipientsTitle": "No Recent Recipients",
     "noRecentRecipientsDescription": "Your recent recipients will appear here after you send tokens.",
     "noContactsTitle": "No Contacts",

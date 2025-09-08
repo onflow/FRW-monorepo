@@ -1,8 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Image } from 'react-native';
-import { FlowLogo, Text } from 'ui';
+
+import { useTheme } from '@/contexts/ThemeContext';
+
 import { VerifiedToken as VerifiedIcon } from 'icons';
+import { FlowLogo, Text } from 'ui';
+
 import { NFTDisplayGrid } from './NFTDisplayGrid';
 
 interface Token {
@@ -39,6 +43,7 @@ export const TransactionDetailsCard: React.FC<TransactionDetailsCardProps> = ({
   formData,
 }) => {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   function formatAmount(val: string | number | undefined | null): string {
     // Handle undefined, null, empty string, or whitespace-only strings
     if (val === undefined || val === null || val === '' || String(val).trim() === '') {
@@ -79,7 +84,7 @@ export const TransactionDetailsCard: React.FC<TransactionDetailsCardProps> = ({
 
   return (
     <View
-      className="bg-white/10 rounded-2xl w-full"
+      className={`${isDark ? 'bg-white/10' : 'bg-surface-2'} rounded-2xl w-full`}
       style={{
         paddingHorizontal: 16,
         paddingVertical: 2,
@@ -95,7 +100,7 @@ export const TransactionDetailsCard: React.FC<TransactionDetailsCardProps> = ({
             fontSize: 12,
             fontWeight: '400',
             lineHeight: 16,
-            color: 'rgba(255, 255, 255, 0.8)',
+            color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
           }}
         >
           {transactionType === 'tokens' ? t('transaction.sendTokens') : t('transaction.sendNFTs')}
@@ -140,7 +145,7 @@ export const TransactionDetailsCard: React.FC<TransactionDetailsCardProps> = ({
                   fontSize: 28,
                   fontWeight: '500',
                   lineHeight: 32,
-                  color: '#FFFFFF',
+                  color: isDark ? '#FFFFFF' : '#000000',
                 }}
               >
                 {formatAmount(amount)}
@@ -149,8 +154,9 @@ export const TransactionDetailsCard: React.FC<TransactionDetailsCardProps> = ({
 
             {/* Token Selector */}
             <View
-              className="bg-white/10 rounded-full flex-row items-center"
+              className="rounded-full flex-row items-center"
               style={{
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#FFFFFF',
                 paddingHorizontal: 12,
                 paddingVertical: 8,
                 gap: 4,
@@ -162,7 +168,7 @@ export const TransactionDetailsCard: React.FC<TransactionDetailsCardProps> = ({
                   fontWeight: '600',
                   lineHeight: 18,
                   letterSpacing: -0.006,
-                  color: '#FFFFFF',
+                  color: isDark ? '#FFFFFF' : '#000000',
                   minWidth: 45,
                 }}
               >
@@ -180,7 +186,7 @@ export const TransactionDetailsCard: React.FC<TransactionDetailsCardProps> = ({
               fontSize: 14,
               fontWeight: '400',
               lineHeight: 16,
-              color: 'rgba(255, 255, 255, 0.8)',
+              color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
             }}
           >
             {`$${formatUsdAmount(formData.fiatAmount)}`}

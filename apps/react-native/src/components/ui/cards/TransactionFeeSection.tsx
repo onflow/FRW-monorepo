@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'ui';
-import { FlowLogo } from '../index';
+import { View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { Text } from 'ui';
+
+import { FlowLogo } from '../index';
 
 interface TransactionFeeSectionProps {
   transactionFee: string;
@@ -40,7 +42,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({ tr
             {t('transaction.fee')}
           </Text>
         </View>
-        <View className="flex-row items-center" style={{ gap: 0 }}>
+        <View className="flex-row items-center" style={{ gap: 4 }}>
           {isFreeGasEnabled ? (
             <>
               <Text
@@ -57,7 +59,6 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({ tr
                 className="text-fg-1 text-sm font-medium"
                 style={{
                   lineHeight: 20,
-                  minWidth: 40,
                 }}
                 numberOfLines={1}
               >
@@ -69,7 +70,6 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({ tr
               className="text-fg-1 text-sm font-medium"
               style={{
                 lineHeight: 20,
-                minWidth: 40,
               }}
               numberOfLines={1}
             >

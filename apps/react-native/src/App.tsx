@@ -1,16 +1,20 @@
 import { ServiceContext } from '@onflow/frw-context';
 import { useWalletStore } from '@onflow/frw-stores';
-import { useEffect } from 'react';
+import { logger } from '@onflow/frw-utils';
+import Instabug, { InvocationEvent } from 'instabug-reactnative';
+import { useCallback, useEffect } from 'react';
 import { Platform, Text as RNText } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import 'react-native-get-random-values';
-import { bridge } from './bridge/RNBridge';
+import { version } from '../package.json';
+import { platform } from './bridge/PlatformImpl';
 import { ConfirmationDrawerProvider } from './contexts/ConfirmationDrawerContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import './global.css';
 import { getGlobalTextProps } from './lib/androidTextFix';
-import './lib/i18n';
+import { initI18n, validateI18n } from './lib/i18n';
 import AppNavigator from './navigation/AppNavigator';
 
 // Configure default text props for Android to prevent text cutoff issues
@@ -26,38 +30,70 @@ interface AppProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
+  language?: string;
 }
 
 const App = (props: AppProps) => {
   // Initialize walletStore when the app starts
   const { loadAccountsFromBridge } = useWalletStore();
 
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Initialize services with RNBridge dependency injection
-        ServiceContext.initialize(bridge);
-        console.log('[App] Services initialized with RNBridge successfully');
+  const initializeApp = useCallback(async () => {
+    try {
+      // Initialize services with RNBridge dependency injection
+      ServiceContext.initialize(platform);
+      logger.debug('[App] Services initialized with RNBridge successfully');
 
-        // Initialize walletStore when app starts to have account data ready
-        await loadAccountsFromBridge();
-        console.log('[App] Wallet store initialized successfully');
-      } catch (error) {
-        console.error('[App] Failed to initialize app:', error);
+      // Initialize i18n FIRST before any UI rendering (now synchronous)
+      initI18n(props.language);
+      if (!validateI18n()) {
+        throw new Error('i18n initialization failed validation');
       }
-    };
+      logger.debug('[App] i18n initialized and validated successfully');
 
+      // Initialize Instabug after ServiceContext is ready
+      initializeInstabug(props);
+      logger.debug('[App] Instabug initialized successfully');
+
+      logger.debug('[App] i18n initialized and validated successfully');
+
+      // Initialize walletStore when app starts to have account data ready
+      await loadAccountsFromBridge();
+      logger.debug('[App] Wallet store initialized successfully');
+    } catch (error) {
+      logger.error('[App] Failed to initialize app:', error);
+    }
+  }, [loadAccountsFromBridge, props]);
+
+  const initializeInstabug = useCallback((appProps: AppProps) => {
+    try {
+      Instabug.init({
+        token: platform.getInstabugToken(),
+        invocationEvents: [InvocationEvent.none],
+      });
+
+      // Set user attributes for debugging
+      Instabug.setUserAttribute('SelectedAccount', appProps.address ?? '');
+      Instabug.setUserAttribute('Network', appProps.network ?? '');
+      Instabug.setUserAttribute('Version', version);
+    } catch (error) {
+      logger.error('[App] Failed to initialize Instabug:', error);
+    }
+  }, []);
+
+  useEffect(() => {
     initializeApp();
-  }, []); // Remove loadAccountsFromBridge dependency to prevent re-initialization
+  }, [initializeApp]);
 
   return (
-    <ThemeProvider>
+    <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ConfirmationDrawerProvider>
-          <AppNavigator {...props} />
-        </ConfirmationDrawerProvider>
+        <ThemeProvider>
+          <ConfirmationDrawerProvider>
+            <AppNavigator {...props} />
+          </ConfirmationDrawerProvider>
+        </ThemeProvider>
       </GestureHandlerRootView>
-    </ThemeProvider>
+    </SafeAreaProvider>
   );
 };
 

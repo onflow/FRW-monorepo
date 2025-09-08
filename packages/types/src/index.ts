@@ -5,12 +5,16 @@ export type { AccountCacheData, UseCachedAccountDataOptions } from './Account';
 
 // Bridge types
 export type {
-  Contact,
-  WalletAccount,
   AddressBookContact,
-  RecentContactsResponse,
-  WalletAccountsResponse,
   AddressBookResponse,
+  SendToConfig,
+  Contact,
+  RecentContactsResponse,
+  WalletAccount,
+  WalletAccountsResponse,
+  EnvironmentVariables,
+  InitialProps,
+  Currency,
 } from './Bridge';
 
 // NFT List types
@@ -19,20 +23,30 @@ export type { NFTListNFT } from './NFTListTypes';
 // NFT Model types
 export type { CollectionPath, CollectionModel, NFTModel } from './NFTModel';
 
-// Token Info types and utilities
-export type { FlowPath } from './TokenInfo';
+// Token Model types and utilities
 export {
-  TokenInfo,
-  mapCadenceTokenDataWithCurrencyToTokenInfo,
-  mapERC20TokenToTokenInfo,
-} from './TokenInfo';
+  mapCadenceTokenDataWithCurrencyToTokenModel,
+  mapERC20TokenToTokenModel,
+  isFlow,
+} from './TokenModel';
+export type { FlowPath, TokenModel } from './TokenModel';
 
 // Wallet types and utilities
-export { WalletType, addressType } from './Wallet';
+export { addressType, WalletType } from './Wallet';
 
 // Send transaction types
-export type { NavigationProp, ExpandedNFTData, ConfirmationScreenProps } from './Send';
+export type { ConfirmationScreenProps, ExpandedNFTData, NavigationProp } from './Send';
+
+// Bridge handler types
+export {
+  createWalletAccountFromConfig,
+  createNFTModelsFromConfig,
+  createTokenModelFromConfig,
+} from './BridgeHandler';
 
 export type * from './StoreTypes';
 
-export * from './utils/string';
+// Platform types
+export { Platform } from './Platform';
+
+export { formatCurrencyStringForDisplay } from './utils/string';

@@ -136,8 +136,8 @@ const SendAddress = () => {
   const handleTransactionRedirect = useCallback(
     (address: string) => {
       if (isValidAddress(address)) {
-        // Check if there was a token in the search params
-        const pathname = `/dashboard/token/${token}/send/${address}`;
+        // Navigate to SendTokensScreenView instead of SendTo, including token
+        const pathname = `/dashboard/token/${token}/send-tokens/${address}`;
         navigate(pathname);
       } else {
         consoleError('Invalid address', address);

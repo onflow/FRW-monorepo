@@ -1,15 +1,17 @@
+import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
+import { type TokenModel, type WalletAccount } from '@onflow/frw-types';
+import { getTokenIdentifier } from '@onflow/frw-utils';
+import { useNavigation } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccountCompatibilityModal } from '@/lib';
-import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
-import { TokenInfo, type WalletAccount } from '@onflow/frw-types';
-import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
 import {
   AccountCompatibilityModal,
-  StorageWarning,
   Text,
   ToAccountSection,
   TokenSelectorModal,
@@ -17,14 +19,14 @@ import {
 } from 'ui';
 
 // Import shared components
+import { TokenAmountInput } from './components/TokenAmountInput';
 import { AccountCard } from '../shared/components/AccountCard';
 import { ContentContainer } from '../shared/components/ContentContainer';
 import { DownArrowButton } from '../shared/components/DownArrowButton';
 import { SectionDivider } from '../shared/components/SectionDivider';
 import { SendButton } from '../shared/components/SendButton';
+
 // Import local token-specific components
-import { useNavigation } from '@react-navigation/native';
-import { TokenAmountInput } from './components/TokenAmountInput';
 
 // Types
 
@@ -120,12 +122,13 @@ const SendTokensScreen = () => {
 
   // Account compatibility should be determined by UI logic based on transaction requirements
   // No longer reading from account.isIncompatible since it's not part of WalletAccount interface
-
+  const currency = NativeFRWBridge.getCurrency();
   // Get actual USD rate from selected token
   const getTokenToUsdRate = () => {
     if (!selectedToken?.priceInUSD) return 0;
-    const price = parseFloat(selectedToken.priceInUSD);
-    return isNaN(price) ? 0 : price;
+    const rate = NativeFRWBridge.getTokenRate(getTokenIdentifier(selectedToken) || '');
+    const tokenToUsdRate = parseFloat(rate) * parseFloat(currency.rate);
+    return isNaN(tokenToUsdRate) ? 0 : tokenToUsdRate;
   };
 
   const tokenToUsdRate = getTokenToUsdRate();
@@ -191,7 +194,7 @@ const SendTokensScreen = () => {
   };
 
   // Handle token selection from modal
-  const handleTokenSelection = (token: TokenInfo) => {
+  const handleTokenSelection = (token: TokenModel) => {
     setSelectedToken(token);
     setIsTokenSelectorVisible(false);
 
@@ -239,7 +242,7 @@ const SendTokensScreen = () => {
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
         {/* Main Content */}
-        <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'} pt-4`}>
+        <View className="flex-1 bg-surface-1 pt-4">
           <ScrollView className="flex-1 px-5 pt-2">
             {/* Main Content Container - From Account and Send Tokens */}
             <ContentContainer>
@@ -261,6 +264,7 @@ const SendTokensScreen = () => {
                   onTokenSelectorPress={() => setIsTokenSelectorVisible(true)}
                   onMaxPress={handleMaxPress}
                   tokenToUsdRate={tokenToUsdRate}
+                  currency={currency}
                 />
               </View>
             </ContentContainer>
@@ -293,11 +297,6 @@ const SendTokensScreen = () => {
 
             {/* Transaction Fee Section */}
             <TransactionFeeSection transactionFee={formData.transactionFee} />
-
-            {/* Storage Warning */}
-            <View className="mt-6">
-              <StorageWarning />
-            </View>
           </ScrollView>
 
           {/* Send Button */}
@@ -337,26 +336,36 @@ const SendTokensScreen = () => {
                       const { executeTransaction } = useSendStore.getState();
                       const result = await executeTransaction();
                       console.log('[SendTokensScreen] Transaction result:', result);
-                      NativeFRWBridge.closeRN();
+                      NativeFRWBridge.closeRN(null);
                     },
                     children: selectedToken ? (
-                      <View className="w-full p-4 bg-surface-2 rounded-2xl">
-                        <Text className="text-fg-1 font-semibold text-base mb-2">
+                      <View 
+                        className="w-full p-4 rounded-2xl"
+                        style={{ backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#F2F2F7' }}
+                      >
+                        <Text 
+                          style={{
+                            color: isDark ? '#FFFFFF' : '#000000',
+                            fontWeight: '600',
+                            fontSize: 16,
+                            marginBottom: 8,
+                          }}
+                        >
                           Transaction Details
                         </Text>
                         <View className="flex-row justify-between">
-                          <Text className="text-fg-2">Amount</Text>
-                          <Text className="text-fg-1 font-semibold">
+                          <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>Amount</Text>
+                          <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontWeight: '600' }}>
                             {formData.tokenAmount} {selectedToken.symbol}
                           </Text>
                         </View>
                         <View className="flex-row justify-between mt-2">
-                          <Text className="text-fg-2">Token</Text>
-                          <Text className="text-fg-1 font-semibold">{selectedToken.name}</Text>
+                          <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>Token</Text>
+                          <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontWeight: '600' }}>{selectedToken.name}</Text>
                         </View>
                         <View className="flex-row justify-between mt-2">
-                          <Text className="text-fg-2">Network Fee</Text>
-                          <Text className="text-fg-1 font-semibold">~0.001 FLOW</Text>
+                          <Text style={{ color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' }}>Network Fee</Text>
+                          <Text style={{ color: isDark ? '#FFFFFF' : '#000000', fontWeight: '600' }}>~0.001 FLOW</Text>
                         </View>
                       </View>
                     ) : null,

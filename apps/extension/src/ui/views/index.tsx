@@ -1,8 +1,16 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { extensionTamaguiConfig } from '@onflow/frw-ui';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
+import { TamaguiProvider } from 'tamagui';
 
+// Import Tamagui CSS for web support
+import '@tamagui/core/reset.css';
+import '@tamagui/font-inter/css/400.css';
+import '@tamagui/font-inter/css/700.css';
+
+import { PlatformProvider } from '@/bridge/PlatformContext';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
@@ -70,9 +78,15 @@ const App = ({ wallet }: { wallet: any }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <WalletProvider wallet={wallet}>
-        <Main />
-      </WalletProvider>
+      <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
+        <div className="t_dark" style={{ minHeight: '100vh' }}>
+          <WalletProvider wallet={wallet}>
+            <PlatformProvider>
+              <Main />
+            </PlatformProvider>
+          </WalletProvider>
+        </div>
+      </TamaguiProvider>
     </ThemeProvider>
   );
 };

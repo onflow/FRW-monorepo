@@ -1,10 +1,10 @@
-import { getCadenceService } from '@onflow/frw-context';
+import { cadence, context } from '@onflow/frw-context';
 import { tokenService, nftService } from '@onflow/frw-services';
 import {
   addressType,
   formatCurrencyStringForDisplay,
   type CollectionModel,
-  type TokenInfo,
+  type TokenModel,
 } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
@@ -26,7 +26,7 @@ const CACHE_STRATEGIES = {
 // Unified cache structure per address
 interface AddressCache {
   // Token and NFT data
-  tokens: TokenInfo[];
+  tokens: TokenModel[];
   nftCollections: CollectionModel[];
 
   // Balance data
@@ -79,7 +79,7 @@ interface TokenStoreActions {
   ) => Promise<BalanceData>;
 
   // Address-specific cache access for wallet integration
-  getTokensForAddress: (address: string, network?: string) => TokenInfo[] | null;
+  getTokensForAddress: (address: string, network?: string) => TokenModel[] | null;
   getNFTCollectionsForAddress: (address: string, network?: string) => CollectionModel[] | null;
   getCachedBalanceForAddress: (address: string) => BalanceData | null;
   isCacheValidForAddress: (address: string, network?: string) => boolean;
@@ -126,8 +126,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
 
       // Special handling for EVM accounts
       if (accountType === 'evm') {
-        const cadenceService = getCadenceService();
-        const coaBalance = await cadenceService.getFlowBalanceForAnyAccounts([address]);
+        const coaBalance = await cadence.getFlowBalanceForAnyAccounts([address]);
         const balanceNumber = parseFloat(coaBalance[address] || '0');
         const formattedBalance = formatCurrencyStringForDisplay({
           value: balanceNumber,
@@ -278,8 +277,7 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
 
     try {
       // Call cadence service to get balances for all addresses
-      const cadenceService = getCadenceService();
-      const balanceResults = await cadenceService.getFlowBalanceForAnyAccounts(addressList);
+      const balanceResults = await cadence.getFlowBalanceForAnyAccounts(addressList);
 
       // Convert to array of [address, displayBalance] tuples
       const resultArray: Array<[string, string]> = [];
@@ -462,10 +460,10 @@ export const useTokenStore = create<TokenStore>((set, get) => ({
       const walletType = addressType(address);
       const tokenSvc = tokenService(walletType);
       const nftSvc = nftService(walletType);
-
+      const currency = context.bridge.getCurrency();
       // Fetch data in parallel
       const [tokens, nftCollections] = await Promise.all([
-        tokenSvc.getTokenInfo(address, network),
+        tokenSvc.getTokenInfo(address, network, currency.name),
         nftSvc.getNFTCollections(address),
       ]);
 

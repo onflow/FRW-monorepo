@@ -2,6 +2,15 @@ import * as ethSigUtil from '@metamask/eth-sig-util';
 import { ethers } from 'ethers';
 import { describe, expect, test, vi } from 'vitest';
 
+// Mock the environment module to avoid navigator issues
+vi.mock('@/background/webapi/environment', () => ({
+  IS_CHROME: true,
+  IS_FIREFOX: false,
+  IS_LINUX: false,
+  IS_AFTER_CHROME94: true,
+  IS_WINDOWS: false,
+}));
+
 // Mock all necessary services
 vi.mock('@/core/service', () => ({
   openapiService: {

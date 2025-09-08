@@ -397,7 +397,7 @@ const PriceCard = ({ token }) => {
 
           <Tooltip
             content={
-              //@ts-ignore
+              // @ts-ignore: CustomTooltip component props may not match Tooltip content expectations
               <CustomTooltip />
             }
           />

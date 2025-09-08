@@ -1,6 +1,7 @@
-import { IconView } from '@/components/ui/media/IconView';
-import { type NFTModel } from '@onflow/frw-types';
 import { View } from 'react-native';
+
+import { IconView } from '@/components/ui/media/IconView';
+import { type NFTModel } from '@/types';
 import { Text } from 'ui';
 
 interface NFTPreviewProps {
@@ -36,7 +37,6 @@ export const NFTPreview = ({ nft }: NFTPreviewProps) => {
             }}
             numberOfLines={1}
             ellipsizeMode="tail"
-            disableAndroidFix={true}
           >
             {nft.collectionName || nft.name}
           </Text>
@@ -48,12 +48,11 @@ export const NFTPreview = ({ nft }: NFTPreviewProps) => {
           style={{
             fontSize: 20,
             fontWeight: '500',
-            lineHeight: 16,
+            lineHeight: 24,
             includeFontPadding: false,
           }}
           numberOfLines={2}
           ellipsizeMode="tail"
-          disableAndroidFix={true}
         >
           {nft.name}
         </Text>

@@ -1,19 +1,14 @@
-import NativeFRWBridge from '@/bridge/NativeFRWBridge';
-import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAccountCompatibilityModal } from '@/lib';
 import { sendSelectors, useSendStore, useTokenStore } from '@onflow/frw-stores';
 import { type NavigationProp, type WalletAccount } from '@onflow/frw-types';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, ScrollView, StatusBar, View } from 'react-native';
-import {
-  AccountCompatibilityModal,
-  StorageWarning,
-  Text,
-  ToAccountSection,
-  TransactionFeeSection,
-} from 'ui';
+
+import NativeFRWBridge from '@/bridge/NativeFRWBridge';
+import { useConfirmationDrawer } from '@/contexts/ConfirmationDrawerContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAccountCompatibilityModal } from '@/lib';
+import { AccountCompatibilityModal, Text, ToAccountSection, TransactionFeeSection } from 'ui';
 
 // Import shared components
 import { AccountCard } from '../shared/components/AccountCard';
@@ -72,8 +67,12 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
     // Update transaction type based on remaining NFTs
     const remainingNFTs = selectedNFTs.filter(nft => nft.id !== nftId);
     if (remainingNFTs.length === 0) {
-      // Navigate back if no NFTs remain
-      navigation.goBack();
+      // Navigate back if no NFTs remain, or close app if launched from native
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        NativeFRWBridge.closeRN(null);
+      }
     } else if (remainingNFTs.length === 1) {
       // Switch to single NFT flow
       setTransactionType('single-nft');
@@ -94,9 +93,14 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
 
   const [isAccountIncompatible] = useState(false);
 
-  // If no NFTs are selected, show error or navigate back
+  // If no NFTs are selected, navigate back or close app
   if (!selectedNFTs || selectedNFTs.length === 0) {
-    navigation.goBack();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // If launched directly from native, close the app
+      NativeFRWBridge.closeRN(null);
+    }
     return null;
   }
 
@@ -111,7 +115,7 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
         {/* Main Content */}
-        <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'} pt-4`}>
+        <View className="flex-1 bg-surface-1 pt-4">
           <ScrollView className="flex-1 px-5 pt-2">
             {/* From Account Container */}
             <ContentContainer>
@@ -183,11 +187,6 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
 
             {/* Transaction Fee Section */}
             <TransactionFeeSection transactionFee={transactionFee} />
-
-            {/* Storage Warning */}
-            <View className="mt-6">
-              <StorageWarning />
-            </View>
           </ScrollView>
 
           {/* Send Button */}
@@ -222,7 +221,7 @@ const SendMultipleNFTsScreen = ({ navigation }: { navigation: NavigationProp }) 
                       const { executeTransaction } = useSendStore.getState();
                       const result = await executeTransaction();
                       console.log('[SendMultipleNFTsScreen] Transaction result:', result);
-                      NativeFRWBridge.closeRN();
+                      NativeFRWBridge.closeRN(null);
                     },
                     children:
                       selectedNFTs && selectedNFTs.length > 0 ? (

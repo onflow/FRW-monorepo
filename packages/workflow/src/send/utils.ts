@@ -1,5 +1,6 @@
+import { Interface } from '@ethersproject/abi';
+import { parseUnits } from '@ethersproject/units';
 import { logger } from '@onflow/frw-utils';
-import { ethers, parseUnits } from 'ethers';
 
 import type { SendPayload } from './types';
 
@@ -14,9 +15,9 @@ export const GAS_LIMITS = {
 /**
  * Flow token contract addresses for different networks
  */
-const FLOW_TOKEN_ADDRESSES = {
-  mainnet: 'A.1654653399040a61.FlowToken',
-  testnet: 'A.7e60df042a9c0868.FlowToken',
+const FLOW_TOKEN_VAULT = {
+  mainnet: 'A.1654653399040a61.FlowToken.Vault',
+  testnet: 'A.7e60df042a9c0868.FlowToken.Vault',
 } as const;
 
 /**
@@ -25,7 +26,30 @@ const FLOW_TOKEN_ADDRESSES = {
  * @returns True if the identifier is for Flow token, false otherwise
  */
 export const isFlowToken = (flowIdentifier: string): boolean => {
-  return Object.values(FLOW_TOKEN_ADDRESSES).includes(flowIdentifier as any);
+  return Object.values(FLOW_TOKEN_VAULT).includes(flowIdentifier as any);
+};
+
+export const isVaultIdentifier = (flowIdentifier: string): boolean => {
+  const vaultRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(Vault)$/;
+  return vaultRegex.test(flowIdentifier);
+};
+
+export const isNFTIdentifier = (flowIdentifier: string): boolean => {
+  const nftRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(NFT)$/;
+  return nftRegex.test(flowIdentifier);
+};
+
+export const isCollectionIdentifier = (flowIdentifier: string): boolean => {
+  const collectionRegex = /^A\.[0-9a-fA-F]{16}\.[a-zA-Z0-9_]+\.(Collection)$/;
+  return collectionRegex.test(flowIdentifier);
+};
+
+export const isFlowIdentifier = (flowIdentifier: string): boolean => {
+  return (
+    isVaultIdentifier(flowIdentifier) ||
+    isNFTIdentifier(flowIdentifier) ||
+    isCollectionIdentifier(flowIdentifier)
+  );
 };
 
 /**
@@ -33,8 +57,8 @@ export const isFlowToken = (flowIdentifier: string): boolean => {
  * @param network - The network ('mainnet' or 'testnet')
  * @returns The Flow token address for the specified network
  */
-export const getFlowTokenAddress = (network: 'mainnet' | 'testnet'): string => {
-  return FLOW_TOKEN_ADDRESSES[network];
+export const getFlowTokenVault = (network: 'mainnet' | 'testnet'): string => {
+  return FLOW_TOKEN_VAULT[network];
 };
 
 /**
@@ -95,7 +119,7 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
     const valueBig = parseUnits(value.toString(), decimal);
     // ERC20 transfer function ABI
     const abi = ['function transfer(address to, uint256 value)'];
-    const iface = new ethers.Interface(abi);
+    const iface = new Interface(abi);
 
     // Encode function call data
     callData = iface.encodeFunctionData('transfer', [receiver, valueBig]);
@@ -108,24 +132,25 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
 
         // ERC721 transferFrom function ABI
         const abi = ['function safeTransferFrom(address from, address to, uint256 tokenId)'];
-        const iface = new ethers.Interface(abi);
+        const iface = new Interface(abi);
 
         // Encode function call data
         callData = iface.encodeFunctionData('safeTransferFrom', [sender, receiver, tokenId]);
       } else {
         // ERC1155 NFT transfer (with amount parameter)
         const tokenId = ids[0];
+        const nftAmount = Number(amount);
 
         // ERC1155 safeTransferFrom function ABI
         const abi = [
           'function safeTransferFrom(address from, address to, uint256 tokenId, uint256 amount, bytes data)',
         ];
-        const iface = new ethers.Interface(abi);
+        const iface = new Interface(abi);
         callData = iface.encodeFunctionData('safeTransferFrom', [
           sender,
           receiver,
           tokenId,
-          amount,
+          nftAmount,
           '0x', // Empty data parameter
         ]);
       }
@@ -133,8 +158,11 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
   }
 
   // Convert hex string to byte array
-  const dataBuffer = Buffer.from(callData.slice(2), 'hex');
-  const dataArray = Uint8Array.from(dataBuffer);
+  const hexString = callData.slice(2); // Remove '0x' prefix
+  const dataArray = new Uint8Array(hexString.length / 2);
+  for (let i = 0; i < hexString.length; i += 2) {
+    dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+  }
   const regularArray = Array.from(dataArray);
 
   return regularArray;

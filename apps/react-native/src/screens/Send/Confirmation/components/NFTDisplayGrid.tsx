@@ -1,7 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Text } from 'ui';
+
 import { IconView } from '@/components/ui/media/IconView';
+import { Text } from 'ui';
 
 interface NFT {
   id: string | number;
@@ -110,7 +111,6 @@ export const NFTDisplayGrid: React.FC<NFTDisplayGridProps> = ({ nfts, transactio
                     opacity: 0.6,
                     textAlign: 'center',
                   }}
-                  disableAndroidFix={true}
                 >
                   +{nfts.length - maxVisible}
                 </Text>

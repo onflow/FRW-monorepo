@@ -28,8 +28,8 @@ class FlowNFTProvider implements NFTProvider {
           count: collection.count,
         })) ?? []
       );
-    } catch (error) {
-      logger.error('[NFTService] Failed to fetch Flow NFT collections:', error);
+    } catch (_error) {
+      logger.error('Unused error parameter', _error);
       return [];
     }
   }
@@ -121,19 +121,19 @@ class EvmNFTProvider implements NFTProvider {
       });
 
       return collections;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Failed to fetch EVM NFT collections', {
         address,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         provider: 'EvmNFTProvider',
         method: 'getCollections',
@@ -163,7 +163,7 @@ class EvmNFTProvider implements NFTProvider {
     try {
       logger.debug('[NFTService] Calling FlowEvmNftService.collectionList API', {
         address,
-        collectionIdentifier: collection.flowIdentifier || 'undefined',
+        collectionIdentifier: collection.id || 'undefined',
         offset,
         limit,
         method: 'FlowEvmNftService.collectionList',
@@ -172,7 +172,7 @@ class EvmNFTProvider implements NFTProvider {
 
       const res = await FlowEvmNftService.collectionList({
         address,
-        collectionIdentifier: collection.flowIdentifier || '',
+        collectionIdentifier: collection.id || '',
         offset,
         limit,
       });
@@ -213,7 +213,7 @@ class EvmNFTProvider implements NFTProvider {
       });
 
       return nfts;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Failed to fetch EVM NFTs', {
         address,
@@ -224,13 +224,13 @@ class EvmNFTProvider implements NFTProvider {
         limit,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         provider: 'EvmNFTProvider',
         method: 'getNFTs',
@@ -246,7 +246,7 @@ export class NFTService {
   private bridge?: PlatformSpec;
 
   constructor(type: WalletType, bridge?: PlatformSpec) {
-    this.nftProvider = type === WalletType.Flow ? new FlowNFTProvider() : new EvmNFTProvider();
+    this.nftProvider = type === WalletType.EVM ? new EvmNFTProvider() : new FlowNFTProvider();
 
     // If bridge is not provided, try to get it from ServiceContext
     if (bridge) {
@@ -254,7 +254,7 @@ export class NFTService {
     } else {
       try {
         this.bridge = getServiceContext().bridge;
-      } catch (error) {
+      } catch {
         logger.warn('[NFTService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }
@@ -303,20 +303,20 @@ export class NFTService {
       });
 
       return collections;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Error in getNFTCollections', {
         address,
         providerType,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         method: 'getNFTCollections',
       });
@@ -370,7 +370,7 @@ export class NFTService {
       });
 
       return nfts;
-    } catch (error) {
+    } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Error in getNFTs', {
         address,
@@ -381,13 +381,13 @@ export class NFTService {
         limit,
         duration: `${duration}ms`,
         error:
-          error instanceof Error
+          _error instanceof Error
             ? {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
+                name: _error.name,
+                message: _error.message,
+                stack: _error.stack,
               }
-            : error,
+            : _error,
         timestamp: new Date().toISOString(),
         method: 'getNFTs',
       });

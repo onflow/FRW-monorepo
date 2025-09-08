@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { useAndroidTextFix } from '@/lib/androidTextFix';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidTextFix } from '@/lib/androidTextFix';
+
 import { CloseIcon } from '../index';
 
 interface StorageInfoModalProps {

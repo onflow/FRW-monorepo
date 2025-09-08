@@ -1,0 +1,175 @@
+import { CadenceService } from '@onflow/frw-cadence';
+import type { TokenModel, CollectionModel, NFTModel } from '@onflow/frw-types';
+import type { WalletAccount } from '@onflow/frw-types';
+import {
+  getCollectionResourceIdentifier,
+  getNFTResourceIdentifier,
+  getTokenResourceIdentifier,
+} from '@onflow/frw-utils';
+import { create } from 'zustand';
+
+interface AccessibleAssetStore {
+  // State
+  accessibleIds: string[] | null;
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  setAccessibleIds: (accessibleIds: string[]) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  fetchChildAccountAllowTypes: (network: string, account: WalletAccount) => Promise<void>;
+
+  // Getters - Specific asset checks
+  isTokenAllowed: (token: TokenModel) => boolean;
+  isNFTAllowed: (nft: NFTModel) => boolean;
+  isCollectionAllowed: (collection: CollectionModel) => boolean;
+
+  // Utils
+  reset: () => void;
+}
+
+// Factory function to create new store instances
+const createAccessibleAssetStore = () =>
+  create<AccessibleAssetStore>()((set, get) => ({
+    // Initial state
+    accessibleIds: null,
+    isLoading: false,
+    error: null,
+
+    // Actions
+    setAccessibleIds: (accessibleIds: string[]) => {
+      set({ accessibleIds, error: null });
+    },
+
+    setLoading: (isLoading: boolean) => {
+      set({ isLoading });
+    },
+
+    setError: (error: string | null) => {
+      set({ error, isLoading: false });
+    },
+
+    fetchChildAccountAllowTypes: async (network: string, account: WalletAccount) => {
+      if (account.type !== 'child') {
+        return;
+      }
+
+      const parentAddress = account.parentAddress;
+      const childAddress = account.address;
+      if (!parentAddress || !childAddress) {
+        return;
+      }
+
+      const state = get();
+      // Check if we already have data for this account combination
+      if (state.accessibleIds !== null && state.accessibleIds.length > 0 && !state.error) {
+        // Data already exists for this account, skip fetch
+        return;
+      }
+
+      set({ isLoading: true, error: null });
+
+      try {
+        const cadenceService = new CadenceService();
+        // Fetch the accessible IDs from cache
+        const accessibleIds = await cadenceService.getChildAccountAllowTypes(
+          parentAddress,
+          childAddress
+        );
+        set({
+          accessibleIds: accessibleIds || [],
+          isLoading: false,
+          error: null,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        console.error('Failed to fetch child account allow types:', errorMessage);
+
+        set({
+          accessibleIds: null,
+          isLoading: false,
+          error: errorMessage,
+        });
+      }
+    },
+
+    // Specific asset accessibility checks
+    isTokenAllowed: (token: TokenModel) => {
+      const { accessibleIds } = get();
+      if (accessibleIds === null) {
+        return true;
+      }
+      if (!token.contractAddress) {
+        return false;
+      }
+
+      const tokenIdentifier = getTokenResourceIdentifier(token);
+      if (!tokenIdentifier) {
+        return false;
+      }
+
+      return accessibleIds.some(id => id.toLowerCase().includes(tokenIdentifier.toLowerCase()));
+    },
+
+    isNFTAllowed: (nft: NFTModel) => {
+      const { accessibleIds } = get();
+      if (accessibleIds === null) {
+        return true;
+      }
+      if (!nft.contractAddress) {
+        return false;
+      }
+      const nftIdentifier = getNFTResourceIdentifier(nft);
+      if (!nftIdentifier) {
+        return false;
+      }
+      return accessibleIds.some(id => id.toLowerCase().includes(nftIdentifier.toLowerCase()));
+    },
+
+    isCollectionAllowed: (collection: CollectionModel) => {
+      const { accessibleIds } = get();
+      if (accessibleIds === null) {
+        return true;
+      }
+      if (!collection.address || !collection.contractName) {
+        return false;
+      }
+
+      const collectionIdentifier = getCollectionResourceIdentifier(collection);
+      if (!collectionIdentifier) {
+        return false;
+      }
+      return accessibleIds.some(id =>
+        id.toLowerCase().includes(collectionIdentifier.toLowerCase())
+      );
+    },
+
+    // Utility
+    reset: () => {
+      set({
+        accessibleIds: null,
+        isLoading: false,
+        error: null,
+      });
+    },
+  }));
+
+// Default store instance for backwards compatibility
+export const useAccessibleAssetStore = createAccessibleAssetStore();
+
+// Export factory function for creating new instances
+export { createAccessibleAssetStore };
+
+// Selector hooks for convenience
+export const useAccessibleIds = () => useAccessibleAssetStore(state => state.accessibleIds);
+export const useAssetStoreLoading = () => useAccessibleAssetStore(state => state.isLoading);
+export const useAssetStoreError = () => useAccessibleAssetStore(state => state.error);
+
+// Specific asset accessibility hooks
+export const useTokenAllowed = (token: TokenModel) =>
+  useAccessibleAssetStore(state => state.isTokenAllowed(token));
+export const useNFTAllowed = (nft: NFTModel) =>
+  useAccessibleAssetStore(state => state.isNFTAllowed(nft));
+export const useCollectionAllowed = (collection: CollectionModel) =>
+  useAccessibleAssetStore(state => state.isCollectionAllowed(collection));

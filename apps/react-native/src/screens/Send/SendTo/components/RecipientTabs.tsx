@@ -1,12 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, TouchableOpacity } from 'react-native';
-import { cn } from '@/lib/utils';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
+import { TabMyAccountsIcon, TabRecentIcon, TabAddressBookIcon, Text } from 'ui';
+
 import type { RecipientTabType } from '../SendToScreen';
 
 // Import themed icon components
-import { TabMyAccountsIcon, TabRecentIcon, TabAddressBookIcon, Text } from 'ui';
 
 interface TabItem {
   id: RecipientTabType;
@@ -63,12 +65,12 @@ export const RecipientTabs: React.FC<RecipientTabsProps> = ({ activeTab, onTabCh
                 style={{
                   includeFontPadding: false,
                   textAlign: 'center',
-                  minWidth: 60,
+                  minWidth: 70,
+                  paddingHorizontal: 4,
                 }}
                 numberOfLines={1}
                 adjustsFontSizeToFit={true}
                 minimumFontScale={0.8}
-                disableAndroidFix={true}
               >
                 {t(tab.labelKey)}
               </Text>

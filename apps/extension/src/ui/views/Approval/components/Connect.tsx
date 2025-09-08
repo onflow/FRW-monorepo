@@ -7,9 +7,6 @@ import {
   serviceDefinition,
 } from '@/background/controller/serviceDefinition';
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
-
-// TODO: TB - move all this to the background
-
 import flowgrey from '@/ui/assets/svg/flow-grey.svg';
 import linkGlobe from '@/ui/assets/svg/linkGlobe.svg';
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
@@ -19,6 +16,8 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
 import ShowSwitch from './ShowSwitch';
+
+// TODO: TB - move all this to the background
 
 interface ConnectProps {
   params: { tabId: number };

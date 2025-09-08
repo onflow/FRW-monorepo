@@ -1,23 +1,29 @@
-import { configureFCL } from '@onflow/frw-cadence';
-import dotenv from 'dotenv';
+import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import {
-  //  SendTransaction,
-  cadenceService,
-} from '../src';
-// import { getTrx } from '../src/utils';
-import { accounts } from '../src/utils/accounts';
+import { accounts } from './utils/accounts';
+import { authz } from './utils/authz';
 
-dotenv.config();
+// dotenv.config();
 
 const mainAccount = accounts.main;
-const child1Account = accounts.child1;
-const child2Account = accounts.child2;
+// const child1Account = accounts.child1;
+// const child2Account = accounts.child2;
+
+const cadenceService = new CadenceService();
 
 describe('Test send strategies', () => {
   beforeEach(() => {
     configureFCL('mainnet');
+
+    cadenceService.useRequestInterceptor(async (config: any) => {
+      if (config.type === 'transaction') {
+        config.payer = authz;
+        config.proposer = authz;
+        config.authorizations = [authz];
+      }
+      return config;
+    });
   });
 
   it('Test query coa', async () => {
@@ -116,7 +122,7 @@ describe('Test send strategies', () => {
   //     type: 'token',
   //     assetType: 'flow',
   //     proposer: mainAccount.address,
-  //     receiver: '0x3b44f144B97A0402C0e206522c28052C1025A8AA',
+  //     receiver: mainAccount.evmAddr,
   //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
   //     sender: mainAccount.address,
   //     amount: '0.001',
@@ -127,7 +133,7 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 
@@ -152,22 +158,39 @@ describe('Test send strategies', () => {
   // });
 
   // it('Test EvmToFlowTokenBridgeStrategy - Bridge USDC from EVM to Flow', async () => {
-  //   const payload = {
-  //     type: 'token',
-  //     assetType: 'evm',
-  //     proposer: mainAccount.address,
-  //     receiver: mainAccount.address,
-  //     flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
-  //     sender: mainAccount.evmAddr,
-  //     amount: '0.001',
-  //     childAddrs: [],
-  //     ids: [],
-  //     decimal: 8,
-  //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '0x1234567890123456789012345678901234567890',
-  //   };
+  // const payload = {
+  //   type: 'token',
+  //   assetType: 'evm',
+  //   proposer: mainAccount.address,
+  //   receiver: mainAccount.address,
+  //   flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+  //   sender: mainAccount.evmAddr,
+  //   amount: '0.001',
+  //   childAddrs: [],
+  //   ids: [],
+  //   decimal: 8,
+  //   coaAddr: mainAccount.evmAddr,
+  //   tokenContractAddr: '0x1234567890123456789012345678901234567890',
+  // };
 
-  //   const txid = await SendTransaction(payload);
+  //   const payload = {
+  //     "type": "token",
+  //     "assetType": "evm",
+  //     "proposer": mainAccount.address,
+  //     "receiver": mainAccount.address,
+  //     "flowIdentifier": "A.1e4aa0b87d10b141.EVMVMBridgedToken_1b97100ea1d7126c4d60027e231ea4cb25314bdb.Vault",
+  //     "sender": mainAccount.evmAddr,
+  //     "childAddrs": [
+  //       "0x8e5a02ccc537163f"
+  //     ],
+  //     "ids": [],
+  //     "amount": "0.001",
+  //     "decimal": 18,
+  //     "coaAddr": mainAccount.evmAddr,
+  //     "tokenContractAddr": "0x1b97100ea1d7126c4d60027e231ea4cb25314bdb"
+  //   }
+
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 
@@ -179,15 +202,15 @@ describe('Test send strategies', () => {
   //     receiver: '0x3b44f144b97a0402c0e206522c28052c1025a8aa',
   //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
   //     sender: mainAccount.evmAddr,
-  //     amount: '0.00001',
+  //     amount: '0.0001',
   //     childAddrs: [],
   //     ids: [],
-  //     decimal: 6,
+  //     decimal: 8,
   //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52',
+  //     tokenContractAddr: '0x0000000000000000000000000000000000000000',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 

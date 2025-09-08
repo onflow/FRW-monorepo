@@ -4,19 +4,19 @@
 
 :root {
   /* Primary colors */
-  --primary: 0 184 119;
-  --primary-20: 0 184 119;
-  --primary-10: 0 184 119;
+  --primary: 0 239 139;
+  --primary-20: 0 239 139;
+  --primary-10: 0 239 139;
 
   /* Green variants for icons/accents */
   --green-light: 0 184 119; /* #00B877 */
-  --green-dark: 22 255 153; /* #16FF99 */
+  --green-dark: 0 239 139; /* #00EF8B - Updated to match Figma */
 
   /* Surface colors */
-  --surface-base: 242 242 247;
-  --surface-1: 242 242 247;
-  --surface-2: 118 118 118;
-  --surface-3: 0 0 7;
+  --surface-base: 255 255 255; /* Main background - white */
+  --surface-1: 255 255 255; /* Main background - white */
+  --surface-2: 242 242 247; /* Cards - light gray #F2F2F7 */
+  --surface-3: 118 118 118; /* Icons/secondary elements */
 
   /* Input/search backgrounds */
   --input-bg: 242 242 247; /* #F2F2F7 */
@@ -26,22 +26,26 @@
   --overlay: 255 255 255;
 
   /* Foreground/text colors */
-  --fg-1: 0 13 7;
-  --fg-2: 118 118 118;
-  --fg-3: 0 0 7;
+  --fg-1: 0 0 0; /* Primary text - pure black #000000 */
+  --fg-2: 118 118 118; /* Secondary text - #767676 */
+  --fg-3: 0 13 7; /* Tertiary text - #000D07 */
 
   /* Dark accents for light mode */
-  --dark-1: 0 0 0;
-  --dark-2: 0 0 0;
-  --dark-3: 0 0 0;
-  --dark-4: 0 0 0;
+  --dark-1: 0 0 0; /* 80% opacity - for subtle backgrounds */
+  --dark-2: 0 0 0; /* 40% opacity - for secondary elements */
+  --dark-3: 0 0 0; /* 25% opacity - for borders and dividers */
+  --dark-4: 0 0 0; /* 10% opacity - for very subtle accents */
 
   /* Light accents for dark mode (not visible in light mode) */
-  --light-1: 255 255 255;
-  --light-2: 255 255 255;
-  --light-3: 255 255 255;
-  --light-4: 255 255 255;
-  --light-5: 255 255 255;
+  --light-1: 255 255 255; /* 80% opacity */
+  --light-2: 255 255 255; /* 40% opacity */
+  --light-3: 255 255 255; /* 25% opacity */
+  --light-4: 255 255 255; /* 10% opacity */
+  --light-5: 255 255 255; /* 5% opacity */
+
+  /* Icon and border colors for dark mode */
+  --icon-secondary: 255 255 255; /* 50% opacity - for secondary icons */
+  --border-subtle: 255 255 255; /* 25% opacity - for borders */
 
   /* System colors */
   --success: 18 183 106;
@@ -57,8 +61,14 @@
   /* Segment colors */
   --segment-border: 0 0 0;
 
+  /* Drawer background - light mode */
+  --drawer-bg: 255 255 255;
+
   /* Accent colors */
   --accent-evm: 98 126 234;
+
+  /* Navigation color */
+  --nav-bg: 10 10 11;
 
   /* Typography */
   --font-inter: 'Inter';
@@ -86,11 +96,14 @@
 
 .dark {
   /* Surface colors */
-  --surface-base: 26 26 26;
-  --surface-1: 26 26 26;
+  --surface-base: 18 18 18;
+  --surface-1: 18 18 18;
   --surface-2: 255 255 255;
   --surface-3: 255 255 255;
   --surface-quaternary-alt: 0 10 8;
+  
+  /* Drawer background for dark mode */
+  --drawer-bg: 18 18 18;
 
   /* Input/search backgrounds - use white with opacity for dark mode */
   --input-bg: 255 255 255; /* will be used with 0.1 opacity */
@@ -110,11 +123,15 @@
   --fg-3: 255 255 255;
 
   /* Light accents for dark mode */
-  --light-1: 255 255 255;
-  --light-2: 255 255 255;
-  --light-3: 255 255 255;
-  --light-4: 255 255 255;
-  --light-5: 255 255 255;
+  --light-1: 255 255 255; /* 80% opacity */
+  --light-2: 255 255 255; /* 40% opacity */
+  --light-3: 255 255 255; /* 25% opacity */
+  --light-4: 255 255 255; /* 10% opacity */
+  --light-5: 255 255 255; /* 5% opacity */
+
+  /* Icon and border colors for dark mode */
+  --icon-secondary: 255 255 255; /* 50% opacity - for secondary icons */
+  --border-subtle: 255 255 255; /* 25% opacity - for borders */
 
   /* Dark accents for light mode (not visible in dark mode) */
   --dark-1: 0 0 0;
@@ -179,5 +196,78 @@
 
   .dark .bg-green-primary {
     background-color: rgb(var(--green-dark));
+  }
+
+  /* Drawer background utility */
+  .bg-drawer {
+    background-color: rgb(var(--drawer-bg));
+  }
+
+  /* Navigation background utility */
+  .bg-nav {
+    background-color: rgb(var(--nav-bg));
+  }
+
+  /* Icon and border utilities */
+  .icon-secondary {
+    color: rgba(var(--icon-secondary), 0.5);
+  }
+
+  .border-subtle {
+    border-color: rgba(var(--border-subtle), 0.25);
+  }
+
+  /* Light opacity utilities for dark mode */
+  .light-80 {
+    opacity: 0.8;
+  }
+
+  .light-40 {
+    opacity: 0.4;
+  }
+
+  .light-25 {
+    opacity: 0.25;
+  }
+
+  .light-10 {
+    opacity: 0.1;
+  }
+
+  .light-5 {
+    opacity: 0.05;
+  }
+
+  /* Dark opacity utilities for light mode */
+  .dark-80 {
+    color: rgba(var(--dark-1), 0.8);
+  }
+
+  .dark-40 {
+    color: rgba(var(--dark-2), 0.4);
+  }
+
+  .dark-25 {
+    color: rgba(var(--dark-3), 0.25);
+  }
+
+  .dark-10 {
+    color: rgba(var(--dark-4), 0.1);
+  }
+
+  .bg-dark-80 {
+    background-color: rgba(var(--dark-1), 0.8);
+  }
+
+  .bg-dark-40 {
+    background-color: rgba(var(--dark-2), 0.4);
+  }
+
+  .bg-dark-25 {
+    background-color: rgba(var(--dark-3), 0.25);
+  }
+
+  .bg-dark-10 {
+    background-color: rgba(var(--dark-4), 0.1);
   }
 }

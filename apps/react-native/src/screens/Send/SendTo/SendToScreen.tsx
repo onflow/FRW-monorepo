@@ -1,10 +1,12 @@
-import { useTheme } from '@/contexts/ThemeContext';
 import { sendSelectors, useSendStore } from '@onflow/frw-stores';
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView, StatusBar, View } from 'react-native';
+
+import { useTheme } from '@/contexts/ThemeContext';
 import { SegmentedControl } from 'ui';
+
 import { AddressSearchBox } from './components/AddressSearchBox';
 import { RecipientContent } from './components/RecipientContent';
 
@@ -32,11 +34,16 @@ const SendToScreen = () => {
   // Get selected token from send store
   const selectedToken = useSendStore(sendSelectors.selectedToken);
   const setCurrentStep = useSendStore(state => state.setCurrentStep);
+  const setToAccount = useSendStore(state => state.setToAccount);
+  const transactionType = useSendStore(state => state.transactionType);
 
   // Update current step when screen loads
   useEffect(() => {
     setCurrentStep('send-to');
   }, []);
+
+  // Auto-navigate when searchQuery is a valid address
+  // This logic has been moved to RecipientContent to use the same FirstTimeSendModal flow
 
   const getTitleByType = (type: RecipientTabType): string => {
     return TABS.find(tab => tab.type === type)?.title || '';
@@ -62,7 +69,7 @@ const SendToScreen = () => {
         <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'}`}>
           <View className="flex-1 px-5 pt-4">
             {/* Search box area */}
-            <View className="mb-6">
+            <View className="mb-8">
               <AddressSearchBox
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -71,7 +78,7 @@ const SendToScreen = () => {
             </View>
 
             {/* Tab area */}
-            <View className="mb-4">
+            <View className="mb-5">
               <SegmentedControl
                 segments={tabTitles}
                 value={getTitleByType(activeTab)}

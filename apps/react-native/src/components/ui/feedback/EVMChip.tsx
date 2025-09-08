@@ -1,13 +1,28 @@
 import React from 'react';
 import { View } from 'react-native';
+
 import { Text } from 'ui';
 
 export const EVMChip: React.FC = () => {
   return (
-    <View className="bg-accent-evm rounded-2xl px-1.5 py-0.5 justify-center items-center">
+    <View
+      className="bg-accent-evm"
+      style={{
+        paddingHorizontal: 4,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center', // Make component shrink to content width and height
+      }}
+    >
       <Text
-        className="text-fg-1 font-inter text-[8px] font-normal leading-[8px] tracking-[0.128px]"
-        disableAndroidFix={true}
+        style={{
+          fontSize: 8,
+          fontWeight: '400',
+          color: '#FFFFFF',
+          textAlign: 'center',
+          includeFontPadding: false,
+          lineHeight: 12,
+        }}
       >
         EVM
       </Text>

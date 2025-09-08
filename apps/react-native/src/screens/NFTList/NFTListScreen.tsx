@@ -1,15 +1,17 @@
-import BottomConfirmBar from '@/components/NFTList/BottomConfirmBar';
+import { NFTService } from '@onflow/frw-services';
+import { sendSelectors, useSendStore } from '@onflow/frw-stores';
+import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
+import { getCollectionLogo, getNFTId } from '@onflow/frw-utils';
+import { useRoute } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, Animated, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
+
+import BottomConfirmBar, { type BottomConfirmBarRef } from '@/components/NFTList/BottomConfirmBar';
 import NFTListCard from '@/components/NFTList/NFTListCard';
 import { IconView } from '@/components/ui/media/IconView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { AddressSearchBox } from '@/screens/Send/SendTo/components/AddressSearchBox';
-import { NFTService } from '@onflow/frw-services';
-import { type CollectionModel, type NFTModel, addressType } from '@onflow/frw-types';
-import { getNFTId } from '@onflow/frw-utils';
-import { useRoute } from '@react-navigation/native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Alert, Animated, Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
 import { BackgroundWrapper, Skeleton, Text } from 'ui';
 
 export default function NFTListScreen() {
@@ -39,6 +41,10 @@ export default function NFTListScreen() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>(preSelectedNFTIds);
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
+  const bottomConfirmBarRef = useRef<BottomConfirmBarRef>(null);
+
+  // Keep default header configuration - no background changes needed
+  // The header will use the default navigation theme colors
 
   const selectNFT = useCallback(
     (id: string) => {
@@ -61,13 +67,13 @@ export default function NFTListScreen() {
 
   const getCollectionImage = () => {
     // Try logoURI first, then logo
-    return collection?.logoURI || collection?.logo || '';
+    return getCollectionLogo(collection) || collection?.logoURI || collection?.logo || '';
   };
 
   const collectionImage = getCollectionImage();
 
-  // Get fromAccount from route params or default to undefined
-  const fromAccountForCard = undefined; // This will be handled by the card component internally
+  // Get fromAccount from send store
+  const fromAccountForCard = useSendStore(sendSelectors.fromAccount);
 
   // Fetch NFTs from the collection
   const fetchNFTs = async () => {
@@ -142,23 +148,27 @@ export default function NFTListScreen() {
 
   return (
     <BackgroundWrapper>
+      {/* Dark Tint Overlay - covers main content but not the BottomConfirmBar */}
+      {isDrawerExpanded && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10, // Lower z-index so it doesn't cover BottomConfirmBar
+          }}
+          pointerEvents="auto"
+          onTouchEnd={() => {
+            setIsDrawerExpanded(false);
+            bottomConfirmBarRef.current?.collapse();
+          }}
+        />
+      )}
       {/* Main Content */}
       <View className={`flex-1 ${isDark ? 'bg-surface-1' : 'bg-white'}`}>
-        {/* Dark Tint Overlay */}
-        {isDrawerExpanded && (
-          <Animated.View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 1,
-            }}
-            pointerEvents="none"
-          />
-        )}
         {/* Content Container with proper padding */}
         <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 6 }}>
           {/* Collection Info */}
@@ -167,7 +177,7 @@ export default function NFTListScreen() {
               marginBottom: 20,
               paddingVertical: 8,
               flexDirection: 'row',
-              alignItems: 'center',
+              alignItems: 'flex-start', // Align icon with header text
               gap: 16,
               width: '100%',
               minHeight: 80,
@@ -186,12 +196,11 @@ export default function NFTListScreen() {
             <View style={{ flex: 1, gap: 6 }}>
               <Text
                 className="text-fg-1"
-                disableAndroidFix={true}
                 style={{
                   fontFamily: 'Inter',
-                  fontWeight: '700',
-                  fontSize: 18,
-                  lineHeight: 22,
+                  fontWeight: '600', // semi-bold
+                  fontSize: 16,
+                  lineHeight: 19,
                   includeFontPadding: false,
                 }}
                 numberOfLines={2}
@@ -202,12 +211,11 @@ export default function NFTListScreen() {
               {!nftLoading && (
                 <Text
                   className="text-fg-2"
-                  disableAndroidFix={true}
                   style={{
                     fontFamily: 'Inter',
-                    fontWeight: '500',
-                    fontSize: 15,
-                    lineHeight: 18,
+                    fontWeight: '400', // regular
+                    fontSize: 12,
+                    lineHeight: 15,
                     includeFontPadding: false,
                   }}
                 >
@@ -217,12 +225,11 @@ export default function NFTListScreen() {
               {collection?.description && (
                 <Text
                   className="text-fg-3"
-                  disableAndroidFix={true}
                   style={{
                     fontFamily: 'Inter',
-                    fontWeight: '400',
-                    fontSize: 13,
-                    lineHeight: 16,
+                    fontWeight: '400', // regular
+                    fontSize: 14,
+                    lineHeight: 17,
                     includeFontPadding: false,
                   }}
                   numberOfLines={2}
@@ -314,7 +321,6 @@ export default function NFTListScreen() {
               {/* Title */}
               <Text
                 className="text-fg-1 text-center mb-2"
-                disableAndroidFix={true}
                 style={{
                   fontFamily: 'Inter',
                   fontWeight: '600',
@@ -329,7 +335,6 @@ export default function NFTListScreen() {
               {/* Description */}
               <Text
                 className="text-fg-2 text-center mb-6"
-                disableAndroidFix={true}
                 style={{
                   fontFamily: 'Inter',
                   fontWeight: '400',
@@ -359,7 +364,6 @@ export default function NFTListScreen() {
                 >
                   <Text
                     className="text-fg-1 text-center"
-                    disableAndroidFix={true}
                     style={{
                       fontFamily: 'Inter',
                       fontWeight: '500',
@@ -374,20 +378,22 @@ export default function NFTListScreen() {
                 <TouchableOpacity
                   onPress={fetchNFTs}
                   style={{
-                    backgroundColor: '#41C352',
+                    backgroundColor: '#FFFFFF', // White background
                     paddingHorizontal: 24,
                     paddingVertical: 12,
                     borderRadius: 12,
+                    alignItems: 'center', // Center text horizontally
+                    justifyContent: 'center', // Center text vertically
                   }}
                 >
                   <Text
-                    className="text-white text-center"
-                    disableAndroidFix={true}
                     style={{
                       fontFamily: 'Inter',
-                      fontWeight: '600',
+                      fontWeight: '600', // Semi-bold
                       fontSize: 15,
+                      color: '#000000', // Black text
                       includeFontPadding: false,
+                      textAlign: 'center',
                     }}
                   >
                     {t('buttons.refresh')}
@@ -426,6 +432,7 @@ export default function NFTListScreen() {
       </View>
       {/* Bottom Confirm Bar */}
       <BottomConfirmBar
+        ref={bottomConfirmBarRef}
         selectedNFTs={selectedNFTsList}
         onRemoveNFT={handleRemoveNFT}
         onExpandedChange={setIsDrawerExpanded}

@@ -1,6 +1,7 @@
 import React from 'react';
-import { InfoIcon as InfoIconSvg } from 'icons';
+
 import { useTheme } from '@/contexts/ThemeContext';
+import { InfoIcon as InfoIconSvg } from 'icons';
 
 interface InfoIconProps {
   width?: number;

@@ -1,16 +1,16 @@
-import { getCadenceService } from '@onflow/frw-context';
+import { bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
-import { type NFTModel, type TokenInfo, addressType } from '@onflow/frw-types';
-import { logger } from '@onflow/frw-utils';
+import { type NFTModel, type TokenModel, addressType } from '@onflow/frw-types';
+import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
-  isFlowToken,
   SendTransaction,
   isValidSendTransactionPayload,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
 import {
+  type AccessibleAssetStore,
   type BalanceData,
   type SendFormData,
   type SendState,
@@ -51,8 +51,11 @@ export const useSendStore = create<SendState>((set, get) => ({
     evm: {},
   },
 
+  // Accessible asset stores state - keyed by address
+  accessibleAssetStores: {},
+
   // Actions
-  setSelectedToken: (token: TokenInfo | null) => set({ selectedToken: token, error: null }),
+  setSelectedToken: (token: TokenModel | null) => set({ selectedToken: token, error: null }),
 
   setFromAccount: (account: WalletAccount | null) => set({ fromAccount: account, error: null }),
 
@@ -234,6 +237,32 @@ export const useSendStore = create<SendState>((set, get) => ({
     return get().balances.evm[evmAddress] || null;
   },
 
+  // Accessible asset store management
+  getAccessibleAssetStore: (address: string) => {
+    return get().accessibleAssetStores[address] || null;
+  },
+
+  setAccessibleAssetStore: (address: string, store: AccessibleAssetStore) => {
+    set((state) => ({
+      accessibleAssetStores: {
+        ...state.accessibleAssetStores,
+        [address]: store,
+      },
+    }));
+  },
+
+  clearAccessibleAssetStore: (address: string) => {
+    set((state) => {
+      const newStores = { ...state.accessibleAssetStores };
+      delete newStores[address];
+      return { accessibleAssetStores: newStores };
+    });
+  },
+
+  clearAllAccessibleAssetStores: () => {
+    set({ accessibleAssetStores: {} });
+  },
+
   clearBalances: () => {
     set(() => ({
       balances: {
@@ -251,22 +280,29 @@ export const useSendStore = create<SendState>((set, get) => ({
     });
   },
 
-  resetSendFlow: () =>
-    set({
-      selectedToken: null,
-      fromAccount: null,
-      toAccount: null,
-      transactionType: 'tokens',
-      formData: defaultFormData,
-      selectedNFTs: [],
-      currentStep: 'select-tokens',
-      isLoading: false,
-      error: null,
-      balances: {
-        coa: {},
-        evm: {},
-      },
-    }),
+  resetSendFlow: () => {
+    // Clear any pending timeouts or intervals that might cause memory leaks
+    try {
+      set({
+        selectedToken: null,
+        fromAccount: null,
+        toAccount: null,
+        transactionType: 'tokens',
+        formData: defaultFormData,
+        selectedNFTs: [],
+        currentStep: 'select-tokens',
+        isLoading: false,
+        error: null,
+        balances: {
+          coa: {},
+          evm: {},
+        },
+        accessibleAssetStores: {},
+      });
+    } catch (error) {
+      console.error('[SendStore] Error during resetSendFlow:', error);
+    }
+  },
 
   // Clear transaction-specific data while preserving accounts
   clearTransactionData: () =>
@@ -305,25 +341,42 @@ export const useSendStore = create<SendState>((set, get) => ({
 
     try {
       // Get wallet accounts for child addresses and COA
-      const flow = flowService();
-      const { accounts } = await flow.getWalletAccounts();
-      const coaAddr = accounts.filter((account) => account.type === 'evm')[0]?.address || '';
+      const { accounts } = await bridge.getWalletAccounts();
+      const selectedAccount = await bridge.getSelectedAccount();
+      const mainAccount =
+        selectedAccount.type === 'main'
+          ? selectedAccount
+          : accounts.find(
+              (account) =>
+                account.type === 'main' && account.address === selectedAccount.parentAddress
+            );
+      const coaAddr =
+        accounts.filter(
+          (account) => account.type === 'evm' && account.parentAddress === mainAccount?.address
+        )[0]?.address || '';
       const childAddrs = accounts
-        .filter((account) => account.type === 'child')
+        .filter(
+          (account) => account.type === 'child' && account.parentAddress === mainAccount?.address
+        )
         .map((account) => account.address);
-      const mainAccount = accounts.filter((account) => account.type === 'main')[0];
 
       if (!mainAccount) {
         logger.error('[SendStore] No main account found');
         return null;
       }
+      const contractAddress = isTokenTransaction
+        ? selectedToken?.evmAddress || ''
+        : selectedNFTs[0]?.evmAddress || '';
 
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
         assetType: addressType(fromAccount.address),
         proposer: mainAccount.address,
         receiver: toAccount.address,
-        flowIdentifier: selectedToken?.identifier || '',
+        flowIdentifier:
+          getTokenResourceIdentifier(selectedToken) ||
+          getNFTResourceIdentifier(selectedNFTs[0]) ||
+          '',
         sender: fromAccount.address,
         childAddrs: childAddrs,
         ids: isNFTTransaction
@@ -336,11 +389,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : '',
         decimal: selectedToken?.decimal || 8,
         coaAddr: coaAddr,
-        // For Flow tokens, contract address can be empty since they're identified by flowIdentifier
-        tokenContractAddr:
-          selectedToken && selectedToken.identifier && isFlowToken(selectedToken.identifier)
-            ? ''
-            : selectedToken?.contractAddress || '',
+        tokenContractAddr: contractAddress,
       };
 
       logger.debug('[SendStore] Created send payload:', payload);
@@ -372,14 +421,17 @@ export const useSendStore = create<SendState>((set, get) => ({
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
       // Get cadence service and execute transaction
-      const cadenceService = getCadenceService();
-      const result = await SendTransaction(payload, cadenceService);
+      const result = await SendTransaction(payload, cadence);
 
       logger.debug('[SendStore] Transaction result:', result);
 
-      // Reset flow on success
+      // Set loading to false first, then reset flow to avoid state conflicts
       set({ isLoading: false });
-      state.resetSendFlow();
+
+      // Use setTimeout to ensure state updates complete before reset
+      setTimeout(() => {
+        state.resetSendFlow();
+      }, 50);
 
       return result;
     } catch (error) {
@@ -444,6 +496,11 @@ export const sendSelectors = {
     state.balances.evm[evmAddress] || null,
   getAllCoaBalances: (state: SendState) => state.balances.coa,
   getAllEvmBalances: (state: SendState) => state.balances.evm,
+
+  // Accessible asset store selectors
+  getAccessibleAssetStore: (state: SendState) => (address: string) =>
+    state.accessibleAssetStores[address] || null,
+  getAllAccessibleAssetStores: (state: SendState) => state.accessibleAssetStores,
 
   // Validation selectors
   canProceedFromSelectTokens: (state: SendState) =>

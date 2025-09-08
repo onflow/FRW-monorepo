@@ -5,6 +5,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "source": "./src/index.ts",
   "files": [
     "src",
     "dist"
@@ -18,11 +19,12 @@
     "test:run": "vitest --run",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build",
-    "lint": "eslint . --cache",
-    "lint:fix": "eslint . --cache --fix"
+    "lint": "eslint src --cache",
+    "lint:fix": "eslint src --cache --fix"
   },
   "exports": {
     ".": {
+      "@onflow/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
@@ -38,7 +40,8 @@
   },
   "devDependencies": {
     "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
   },
   "publishConfig": {
     "access": "public"

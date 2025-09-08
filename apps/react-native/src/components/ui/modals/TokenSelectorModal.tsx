@@ -1,10 +1,12 @@
+import { useTokenStore } from '@onflow/frw-stores';
+import { type TokenInfo } from '@onflow/frw-types';
+import React, { useMemo, useState } from 'react';
+import { Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+
 import NativeFRWBridge from '@/bridge/NativeFRWBridge';
 import { useTheme } from '@/contexts/ThemeContext';
 import { AddressSearchBox } from '@/screens/Send/SendTo/components/AddressSearchBox';
-import { useTokenStore } from '@onflow/frw-stores';
-import { TokenInfo } from '@onflow/frw-types';
-import React, { useMemo, useState } from 'react';
-import { Modal, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+
 import { TokenCard as SelectTokenCard } from '../cards/TokenCard';
 import { CloseIcon, Skeleton } from '../index';
 import { Divider } from '../layout/divider';
@@ -26,28 +28,62 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [tokens, setTokens] = useState<TokenInfo[]>([]); // Initialize empty, will load from cache
   const [isLoading, setIsLoading] = useState(false);
+  const [currency, setCurrency] = useState({ name: 'USD', symbol: '$', rate: '1.0' });
 
-  // Load tokens when modal opens
+  // Load tokens and currency when modal opens
   React.useEffect(() => {
     if (visible) {
       loadTokens();
+      loadCurrency();
     }
   }, [visible]);
+
+  const loadCurrency = () => {
+    setTimeout(() => {
+      try {
+        const curr = NativeFRWBridge.getCurrency();
+        setCurrency(curr);
+      } catch (error) {
+        console.error('Bridge getCurrency error:', error);
+      }
+    }, 0);
+  };
 
   const loadTokens = async () => {
     setIsLoading(true);
 
     try {
-      // Get wallet address
-      const address = NativeFRWBridge.getSelectedAddress();
+      // Get wallet address asynchronously to prevent UI thread blocking
+      const address = await new Promise<string | null>(resolve => {
+        setTimeout(() => {
+          try {
+            resolve(NativeFRWBridge.getSelectedAddress());
+          } catch (error) {
+            console.error('Error getting selected address:', error);
+            resolve(null);
+          }
+        }, 0);
+      });
+
       if (!address) {
         console.log('[TokenSelectorModal] No wallet address available');
         return;
       }
 
+      // Get network asynchronously to prevent UI thread blocking
+      const network = await new Promise<string>(resolve => {
+        setTimeout(() => {
+          try {
+            resolve(NativeFRWBridge.getNetwork() || 'mainnet');
+          } catch (error) {
+            console.error('Error getting network:', error);
+            resolve('mainnet');
+          }
+        }, 0);
+      });
+
       // Use token store for tokens
       const tokenStore = useTokenStore.getState();
-      const network = NativeFRWBridge.getNetwork() || 'mainnet';
       await tokenStore.fetchTokens(address, network);
       const tokenInfos = tokenStore.getTokensForAddress(address, network) || [];
 
@@ -208,7 +244,11 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                 ) : (
                   filteredTokens.map((token, index) => (
                     <React.Fragment key={`${token.symbol || 'unknown'}-${index}`}>
-                      <SelectTokenCard token={token} onPress={() => handleTokenPress(token)} />
+                      <SelectTokenCard
+                        token={token}
+                        currency={currency}
+                        onPress={() => handleTokenPress(token)}
+                      />
                       {/* Divider - only show between items, not after the last one */}
                       {index < filteredTokens.length - 1 && <Divider />}
                     </React.Fragment>

@@ -1,7 +1,9 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Text, WalletAvatar } from 'ui';
+
+import { useTheme } from '@/contexts/ThemeContext';
 import { Link } from 'icons';
+import { Text, WalletAvatar } from 'ui';
 
 interface AccountCardProps {
   emoji: string | { emoji: string } | undefined;
@@ -24,6 +26,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   parentEmoji,
   type,
 }) => {
+  const { isDark } = useTheme();
   const displayEmoji = typeof emoji === 'string' ? emoji : emoji?.emoji || defaultEmoji;
 
   // Check if account should show link icon (only for child and evm types)
@@ -60,9 +63,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               backgroundColor: parentEmoji?.color || '#F0F0F0',
             }}
           >
-            <Text className="text-center text-[6px] leading-2" disableAndroidFix={true}>
-              {parentEmoji?.emoji}
-            </Text>
+            <Text className="text-center text-[6px] leading-2">{parentEmoji?.emoji}</Text>
           </View>
         )}
 
@@ -83,19 +84,18 @@ export const AccountCard: React.FC<AccountCardProps> = ({
               width: 36,
               height: 36,
               borderRadius: 18,
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
             <Text
               style={{
-                color: '#FFFFFF',
+                color: isDark ? '#FFFFFF' : '#1A1A1A',
                 fontSize: 16,
                 fontWeight: 'bold',
                 textAlign: 'center',
               }}
-              disableAndroidFix={true}
             >
               {name.charAt(0).toUpperCase()}
             </Text>
@@ -123,7 +123,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 fontWeight: '600',
                 lineHeight: 16.8,
                 letterSpacing: -0.084,
-                color: '#FFFFFF',
+                color: isDark ? '#FFFFFF' : '#1A1A1A',
                 textAlign: 'center',
               }}
             >
@@ -137,13 +137,12 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             fontSize: 12,
             fontWeight: '400',
             lineHeight: 16.8,
-            color: '#B3B3B3',
+            color: isDark ? '#B3B3B3' : '#666666',
             textAlign: 'center',
             width: '100%',
           }}
           numberOfLines={1}
           ellipsizeMode="middle"
-          disableAndroidFix={true}
         >
           {address}
         </Text>

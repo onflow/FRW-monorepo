@@ -7,14 +7,16 @@
     "build": "pnpm -r build",
     "build:packages": "pnpm -F './packages/**' build",
     "build:extension": "pnpm -F frw-extension build:dev",
-    "build:rn": "pnpm -F FRWRN android",
+    "build:rn": "pnpm -F FRWRN bundle:android && pnpm -F FRWRN bundle:ios",
     "dev": "pnpm -r --parallel build:watch",
     "dev:packages": "pnpm -F './packages/**' --parallel build:watch",
     "dev:extension": "pnpm -F frw-extension build:dev",
     "dev:rn": "pnpm -F FRWRN start",
     "dev:rn:full": "pnpm -F './packages/**' --parallel build:watch & pnpm -F FRWRN start",
     "clean": "pnpm -r clean && rm -rf **/node_modules && pnpm install",
-    "test": "pnpm -r test",
+    "clean:rn": "react-native-clean-project",
+    "clean:rn:auto": "react-native-clean-project auto",
+    "test": "pnpm -r --filter='!FRWRN' test",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "lint:packages": "pnpm -r lint",
@@ -29,6 +31,7 @@
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/js": "^9.18.0",
+    "@outblock/react-native-clean-project": "^4.1.0",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
     "eslint": "^9.18.0",
@@ -39,6 +42,7 @@
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
+    "eslint-plugin-storybook": "^9.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^15.13.0",
     "husky": "^9.1.7",
@@ -51,5 +55,11 @@
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@10.14.0"
+  "packageManager": "pnpm@10.14.0",
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0"
+    }
+  }
 }

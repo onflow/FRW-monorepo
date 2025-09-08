@@ -22,7 +22,7 @@ export class AddressBookService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = context.bridge;
-        } catch (error) {
+        } catch {
           throw new Error(
             'AddressBookService requires bridge parameter or initialized ServiceContext'
           );
@@ -81,19 +81,8 @@ export class AddressBookService {
           })),
         };
       } else {
-        // Single contact or unexpected structure
-        const contact = response;
         return {
-          contacts: [
-            {
-              id: String(contact.id || contact.address || ''),
-              name: contact.username || contact.contact_name || 'Unknown Contact',
-              address: contact.address || '',
-              avatar: contact.avatar,
-              username: contact.username,
-              contactName: contact.contact_name,
-            },
-          ],
+          contacts: [],
         };
       }
     } catch (error) {

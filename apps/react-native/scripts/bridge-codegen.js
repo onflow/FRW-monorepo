@@ -29,9 +29,96 @@ const TYPE_MAPPING = {
 };
 
 /**
+ * Parse export type statements to find re-exported interfaces
+ */
+function parseExportTypeStatements(content, basePath) {
+  const reexportedInterfaces = [];
+
+  // Match export type statements like: export type { TokenModel } from './TokenModel';
+  const exportTypeRegex = /export\s+type\s*\{\s*(\w+)\s*\}\s+from\s+['"]([^'"]+)['"]/g;
+  let match;
+
+  while ((match = exportTypeRegex.exec(content)) !== null) {
+    const interfaceName = match[1];
+    const importPath = match[2];
+
+    // Resolve the full path
+    const fullPath = path.resolve(path.dirname(basePath), importPath + '.ts');
+
+    if (fs.existsSync(fullPath)) {
+      const importedContent = fs.readFileSync(fullPath, 'utf8');
+
+      // Find the interface in the imported file (handle multi-line interfaces and extends)
+      const interfaceRegex = new RegExp(
+        `export\\s+interface\\s+${interfaceName}\\s+extends\\s+([\\w\\s,]+)\\s*\\{([\\s\\S]*?)\\}`,
+        'g'
+      );
+      const extendsMatch = interfaceRegex.exec(importedContent);
+
+      let interfaceMatch = null;
+      if (!extendsMatch) {
+        // Try regular interface without extends
+        const regularInterfaceRegex = new RegExp(
+          `export\\s+interface\\s+${interfaceName}\\s*\\{([\\s\\S]*?)\\}`,
+          'g'
+        );
+        interfaceMatch = regularInterfaceRegex.exec(importedContent);
+      }
+
+      if (extendsMatch) {
+        // Handle interface with extends
+        const extendedType = extendsMatch[1].trim();
+        const ownProperties = parseInterfaceProperties(extendsMatch[2]);
+
+        // Dynamically resolve base properties and collect referenced interfaces
+        const collectedReferencedInterfaces = [];
+        const baseProperties = resolveExtendedInterface(
+          extendedType,
+          fullPath,
+          collectedReferencedInterfaces
+        );
+        const allProperties = [...baseProperties, ...ownProperties];
+
+        reexportedInterfaces.push({
+          name: interfaceName,
+          properties: allProperties,
+        });
+
+        // Add any collected referenced interfaces
+        reexportedInterfaces.push(...collectedReferencedInterfaces);
+      } else if (interfaceMatch) {
+        const properties = parseInterfaceProperties(interfaceMatch[1]);
+        reexportedInterfaces.push({
+          name: interfaceName,
+          properties,
+        });
+      } else {
+        // Check if it's an enum
+        const enumRegex = new RegExp(
+          `export\\s+enum\\s+${interfaceName}\\s*\\{([\\s\\S]*?)\\}`,
+          'g'
+        );
+        const enumMatch = enumRegex.exec(importedContent);
+
+        if (enumMatch) {
+          const enumValues = parseEnumValues(enumMatch[1]);
+          reexportedInterfaces.push({
+            name: interfaceName,
+            isEnum: true,
+            enumValues,
+          });
+        }
+      }
+    }
+  }
+
+  return reexportedInterfaces;
+}
+
+/**
  * Parse TypeScript interface from file content
  */
-function parseTypeScriptInterfaces(content) {
+function parseTypeScriptInterfaces(content, filePath) {
   const interfaces = [];
 
   // Match interface declarations
@@ -50,7 +137,207 @@ function parseTypeScriptInterfaces(content) {
     });
   }
 
+  // Also parse re-exported types
+  const reexportedInterfaces = parseExportTypeStatements(content, filePath);
+  interfaces.push(...reexportedInterfaces);
+
   return interfaces;
+}
+
+/**
+ * Resolve external interface from node_modules and collect referenced interfaces
+ */
+function resolveExternalInterface(interfaceName, packagePath, collectedInterfaces = []) {
+  try {
+    // Try to find the interface in the external package
+    const packageDir = path.resolve('./node_modules', packagePath);
+
+    // Look for common file locations
+    const possibleFiles = [
+      path.join(packageDir, 'src/index.ts'),
+      path.join(packageDir, 'src/codegen/service.generated.ts'),
+      path.join(packageDir, 'index.ts'),
+      path.join(packageDir, 'lib/index.ts'),
+    ];
+
+    for (const filePath of possibleFiles) {
+      if (fs.existsSync(filePath)) {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const interfaceRegex = new RegExp(
+          `export\\s+interface\\s+${interfaceName}\\s*\\{([\\s\\S]*?)\\}`,
+          'g'
+        );
+        const match = interfaceRegex.exec(content);
+
+        if (match) {
+          const properties = parseInterfaceProperties(match[1]);
+
+          // Recursively collect referenced interfaces from the same file
+          const collectReferencedInterfaces = (props, content, processed = new Set()) => {
+            props.forEach(prop => {
+              // Check if property type references another interface (starts with uppercase)
+              const typeMatch = prop.type
+                .replace(/\?$/, '')
+                .replace(/\[\]$/, '')
+                .match(/^([A-Z]\w*)/);
+              if (typeMatch) {
+                const referencedType = typeMatch[1];
+
+                // Avoid infinite recursion and duplicates
+                const alreadyCollected = collectedInterfaces.some(
+                  iface => iface.name === referencedType
+                );
+                const alreadyProcessed = processed.has(referencedType);
+
+                if (
+                  !alreadyCollected &&
+                  !alreadyProcessed &&
+                  referencedType !== interfaceName &&
+                  !['String', 'Number', 'Boolean', 'Array', 'Object', 'Date'].includes(
+                    referencedType
+                  )
+                ) {
+                  processed.add(referencedType);
+
+                  // Try to find the referenced interface in the same file
+                  const referencedRegex = new RegExp(
+                    `export\\s+interface\\s+${referencedType}\\s*\\{([\\s\\S]*?)\\}`,
+                    'g'
+                  );
+                  const referencedMatch = referencedRegex.exec(content);
+
+                  if (referencedMatch) {
+                    console.log(`📦 Found referenced interface: ${referencedType}`);
+                    const referencedProperties = parseInterfaceProperties(referencedMatch[1]);
+                    collectedInterfaces.push({
+                      name: referencedType,
+                      properties: referencedProperties,
+                    });
+
+                    // Recursively process the referenced interface's properties
+                    collectReferencedInterfaces(referencedProperties, content, processed);
+                  }
+                }
+              }
+            });
+          };
+
+          collectReferencedInterfaces(properties, content);
+
+          return properties;
+        }
+      }
+    }
+  } catch (error) {
+    console.warn(
+      `⚠️  Could not resolve external interface ${interfaceName} from ${packagePath}: ${error.message}`
+    );
+  }
+
+  return [];
+}
+
+/**
+ * Resolve extended interface properties dynamically
+ */
+function resolveExtendedInterface(
+  extendedType,
+  currentFilePath,
+  collectedInterfaces = [],
+  cache = new Set()
+) {
+  // Prevent infinite recursion
+  if (cache.has(extendedType)) {
+    return [];
+  }
+  cache.add(extendedType);
+
+  // Try to find the extended interface in the same file first
+  const currentFileContent = fs.readFileSync(currentFilePath, 'utf8');
+  const localInterfaceRegex = new RegExp(
+    `export\\s+interface\\s+${extendedType}\\s*\\{([\\s\\S]*?)\\}`,
+    'g'
+  );
+  const localMatch = localInterfaceRegex.exec(currentFileContent);
+
+  if (localMatch) {
+    return parseInterfaceProperties(localMatch[1]);
+  }
+
+  // Check imports in the current file to find where the extended type comes from
+  const importRegex = new RegExp(
+    `import\\s+(?:type\\s+)?\\{[^}]*\\b${extendedType}\\b[^}]*\\}\\s+from\\s+['"]([^'"]+)['"]`,
+    'g'
+  );
+  const importMatch = importRegex.exec(currentFileContent);
+
+  if (importMatch) {
+    const importPath = importMatch[1];
+
+    // Handle external dependencies (node_modules)
+    if (importPath.startsWith('@')) {
+      return resolveExternalInterface(extendedType, importPath, collectedInterfaces);
+    }
+
+    const fullImportPath = path.resolve(path.dirname(currentFilePath), importPath + '.ts');
+
+    if (fs.existsSync(fullImportPath)) {
+      const importedContent = fs.readFileSync(fullImportPath, 'utf8');
+
+      // Check for regular interface
+      const importedInterfaceRegex = new RegExp(
+        `export\\s+interface\\s+${extendedType}\\s*\\{([\\s\\S]*?)\\}`,
+        'g'
+      );
+      const importedMatch = importedInterfaceRegex.exec(importedContent);
+
+      if (importedMatch) {
+        return parseInterfaceProperties(importedMatch[1]);
+      }
+
+      // Check for extended interface in imported file
+      const importedExtendsRegex = new RegExp(
+        `export\\s+interface\\s+${extendedType}\\s+extends\\s+([\\w\\s,]+)\\s*\\{([\\s\\S]*?)\\}`,
+        'g'
+      );
+      const importedExtendsMatch = importedExtendsRegex.exec(importedContent);
+
+      if (importedExtendsMatch) {
+        const baseType = importedExtendsMatch[1].trim();
+        const ownProps = parseInterfaceProperties(importedExtendsMatch[2]);
+        const baseProps = resolveExtendedInterface(
+          baseType,
+          fullImportPath,
+          collectedInterfaces,
+          cache
+        );
+        return [...baseProps, ...ownProps];
+      }
+    }
+  }
+
+  // If we can't find it locally, return empty array (external dependency)
+  return [];
+}
+
+/**
+ * Parse enum values from enum body
+ */
+function parseEnumValues(body) {
+  const values = [];
+
+  // Match enum values like: Flow = 'flow',
+  const enumValueRegex = /(\w+)\s*=\s*['"`]([^'"`]+)['"`]/g;
+  let match;
+
+  while ((match = enumValueRegex.exec(body)) !== null) {
+    values.push({
+      key: match[1],
+      value: match[2],
+    });
+  }
+
+  return values;
 }
 
 /**
@@ -104,10 +391,16 @@ function mapType(tsType, targetLang, propertyName = '') {
     const enumValues = extractEnumValues(tsType);
     if (enumValues.length > 1) {
       // Create enum name from property name
-      const baseName =
-        propertyName === 'type'
-          ? 'AccountType'
-          : propertyName.charAt(0).toUpperCase() + propertyName.slice(1) + 'Type';
+      let baseName;
+      if (propertyName === 'type' && tsType.includes('Flow') && tsType.includes('EVM')) {
+        baseName = 'WalletType';
+      } else if (propertyName === 'type' && tsType.includes('main') && tsType.includes('child')) {
+        baseName = 'AccountType';
+      } else if (propertyName === 'transactionType') {
+        baseName = 'TransactionType';
+      } else {
+        baseName = propertyName.charAt(0).toUpperCase() + propertyName.slice(1) + 'Type';
+      }
       const enumName = baseName;
       return enumName;
     }
@@ -132,7 +425,9 @@ function mapType(tsType, targetLang, propertyName = '') {
 function generateSwiftEnum(enumName, values) {
   let code = `    enum ${enumName}: String, Codable {\n`;
   values.forEach(value => {
-    code += `        case ${value} = "${value}"\n`;
+    // Convert kebab-case to camelCase for Swift enum cases
+    let swiftCase = value.replace(/-(\w)/g, (match, letter) => letter.toUpperCase());
+    code += `        case ${swiftCase} = "${value}"\n`;
   });
   code += `    }\n\n`;
   return code;
@@ -159,18 +454,30 @@ enum RNBridge {
   const enums = new Map();
 
   interfaces.forEach(iface => {
-    iface.properties.forEach(prop => {
-      if (prop.type.includes('|') && prop.type.includes("'")) {
-        const enumValues = extractEnumValues(prop.type);
-        if (enumValues.length > 1) {
-          const enumName =
-            prop.name === 'type'
-              ? 'AccountType'
-              : prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
-          enums.set(enumName, enumValues);
+    if (iface.properties) {
+      iface.properties.forEach(prop => {
+        if (prop.type.includes('|') && prop.type.includes("'")) {
+          const enumValues = extractEnumValues(prop.type);
+          if (enumValues.length > 1) {
+            let enumName;
+            if (prop.name === 'type' && prop.type.includes('Flow') && prop.type.includes('EVM')) {
+              enumName = 'WalletType';
+            } else if (
+              prop.name === 'type' &&
+              prop.type.includes('main') &&
+              prop.type.includes('child')
+            ) {
+              enumName = 'AccountType';
+            } else if (prop.name === 'transactionType') {
+              enumName = 'TransactionType';
+            } else {
+              enumName = prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
+            }
+            enums.set(enumName, enumValues);
+          }
         }
-      }
-    });
+      });
+    }
   });
 
   // Generate enums
@@ -178,17 +485,29 @@ enum RNBridge {
     code += generateSwiftEnum(enumName, values);
   });
 
-  // Generate structs
+  // Generate structs and enums
   interfaces.forEach(iface => {
-    code += `    struct ${iface.name}: Codable {\n`;
+    if (iface.isEnum) {
+      // Generate enum
+      code += `    enum ${iface.name}: String, Codable {\n`;
+      iface.enumValues.forEach(enumValue => {
+        code += `        case ${enumValue.key.toLowerCase()} = "${enumValue.value}"\n`;
+      });
+      code += `    }\n\n`;
+    } else {
+      // Generate struct
+      code += `    struct ${iface.name}: Codable {\n`;
 
-    iface.properties.forEach(prop => {
-      const swiftType = mapType(prop.type, 'swift', prop.name);
-      const optionalMarker = prop.optional ? '?' : '';
-      code += `        let ${prop.name}: ${swiftType}${optionalMarker}\n`;
-    });
+      if (iface.properties) {
+        iface.properties.forEach(prop => {
+          const swiftType = mapType(prop.type, 'swift', prop.name);
+          const optionalMarker = prop.optional ? '?' : '';
+          code += `        let ${prop.name}: ${swiftType}${optionalMarker}\n`;
+        });
+      }
 
-    code += `    }\n\n`;
+      code += `    }\n\n`;
+    }
   });
 
   code += `}\n`;
@@ -201,7 +520,8 @@ enum RNBridge {
 function generateKotlinEnum(enumName, values) {
   let code = `    enum class ${enumName} {\n`;
   values.forEach((value, index) => {
-    const enumCase = value.toUpperCase();
+    // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+    const enumCase = value.toUpperCase().replace(/-/g, '_');
     const comma = index < values.length - 1 ? ',' : '';
     code += `        @SerializedName("${value}") ${enumCase}${comma}\n`;
   });
@@ -231,18 +551,30 @@ class RNBridge {
   const enums = new Map();
 
   interfaces.forEach(iface => {
-    iface.properties.forEach(prop => {
-      if (prop.type.includes('|') && prop.type.includes("'")) {
-        const enumValues = extractEnumValues(prop.type);
-        if (enumValues.length > 1) {
-          const enumName =
-            prop.name === 'type'
-              ? 'AccountType'
-              : prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
-          enums.set(enumName, enumValues);
+    if (iface.properties) {
+      iface.properties.forEach(prop => {
+        if (prop.type.includes('|') && prop.type.includes("'")) {
+          const enumValues = extractEnumValues(prop.type);
+          if (enumValues.length > 1) {
+            let enumName;
+            if (prop.name === 'type' && prop.type.includes('Flow') && prop.type.includes('EVM')) {
+              enumName = 'WalletType';
+            } else if (
+              prop.name === 'type' &&
+              prop.type.includes('main') &&
+              prop.type.includes('child')
+            ) {
+              enumName = 'AccountType';
+            } else if (prop.name === 'transactionType') {
+              enumName = 'TransactionType';
+            } else {
+              enumName = prop.name.charAt(0).toUpperCase() + prop.name.slice(1) + 'Type';
+            }
+            enums.set(enumName, enumValues);
+          }
         }
-      }
-    });
+      });
+    }
   });
 
   // Generate enums
@@ -250,19 +582,35 @@ class RNBridge {
     code += generateKotlinEnum(enumName, values);
   });
 
-  // Generate data classes
+  // Generate data classes and enums
   interfaces.forEach(iface => {
-    code += `    data class ${iface.name}(\n`;
+    if (iface.isEnum) {
+      // Generate enum
+      code += `    enum class ${iface.name} {\n`;
+      iface.enumValues.forEach((enumValue, index) => {
+        const comma = index < iface.enumValues.length - 1 ? ',' : '';
+        // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+        const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
+        code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
+      });
+      code += `    }\n\n`;
+    } else {
+      // Generate data class
+      code += `    data class ${iface.name}(\n`;
 
-    const properties = iface.properties.map(prop => {
-      const kotlinType = mapType(prop.type, 'kotlin', prop.name);
-      const nullableMarker = prop.optional ? '?' : '';
-      return `        @SerializedName("${prop.name}")
+      if (iface.properties) {
+        const properties = iface.properties.map(prop => {
+          const kotlinType = mapType(prop.type, 'kotlin', prop.name);
+          const nullableMarker = prop.optional ? '?' : '';
+          return `        @SerializedName("${prop.name}")
         val ${prop.name}: ${kotlinType}${nullableMarker}`;
-    });
+        });
 
-    code += properties.join(',\n') + '\n';
-    code += `    )\n\n`;
+        code += properties.join(',\n') + '\n';
+      }
+
+      code += `    )\n\n`;
+    }
   });
 
   code += `}\n`;
@@ -286,7 +634,7 @@ function generateBridgeModels() {
     console.log(`📖 Reading TypeScript interfaces from ${CONFIG.input}`);
 
     // Parse interfaces
-    const interfaces = parseTypeScriptInterfaces(tsContent);
+    const interfaces = parseTypeScriptInterfaces(tsContent, inputPath);
     console.log(
       `✅ Parsed ${interfaces.length} interfaces:`,
       interfaces.map(i => i.name).join(', ')

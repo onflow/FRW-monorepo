@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import type { Account as FclAccount } from '@onflow/fcl';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
 
@@ -12,12 +12,7 @@ import {
   getLocalData,
   setLocalData,
 } from '@/data-model';
-import {
-  DEFAULT_CURRENCY,
-  Period,
-  type PeriodFrequency,
-  PriceProvider,
-} from '@/shared/constant';
+import { DEFAULT_CURRENCY, Period, type PeriodFrequency, PriceProvider } from '@/shared/constant';
 import type {
   BalanceMap,
   CadenceTokenInfo,

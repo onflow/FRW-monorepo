@@ -1,6 +1,7 @@
-import { CloseIcon } from 'icons';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
+
+import { CloseIcon } from 'icons';
 
 interface CloseButtonProps {
   onPress?: () => void;

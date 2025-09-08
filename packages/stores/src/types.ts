@@ -1,6 +1,22 @@
 // Shared types for all stores
-import type { NFTModel, TokenInfo, WalletAccount } from '@onflow/frw-types';
+import type { CollectionModel, NFTModel, TokenModel, WalletAccount } from '@onflow/frw-types';
 import type { SendPayload } from '@onflow/frw-workflow';
+
+// Define AccessibleAssetStore interface
+export interface AccessibleAssetStore {
+  accessibleIds: string[];
+  isLoading: boolean;
+  error: string | null;
+
+  setAccessibleIds: (accessibleIds: string[]) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  fetchChildAccountAllowTypes: (network: string, account: WalletAccount) => Promise<void>;
+  isTokenAllowed: (token: TokenModel) => boolean;
+  isNFTAllowed: (nft: NFTModel) => boolean;
+  isCollectionAllowed: (collection: CollectionModel) => boolean;
+  reset: () => void;
+}
 
 export interface User {
   id: string;
@@ -73,7 +89,7 @@ export interface BalanceData {
 
 export interface SendState {
   // Current flow data
-  selectedToken: TokenInfo | null;
+  selectedToken: TokenModel | null;
   fromAccount: WalletAccount | null;
   toAccount: WalletAccount | null;
   transactionType: TransactionType;
@@ -86,13 +102,16 @@ export interface SendState {
     evm: Record<string, BalanceData>; // keyed by evmAddress
   };
 
+  // Accessible assets management - keyed by address
+  accessibleAssetStores: Record<string, AccessibleAssetStore>;
+
   // Flow state
   currentStep: 'select-tokens' | 'send-to' | 'send-tokens' | 'send-nft' | 'confirmation';
   isLoading: boolean;
   error: string | null;
 
   // Actions
-  setSelectedToken: (token: TokenInfo | null) => void;
+  setSelectedToken: (token: TokenModel | null) => void;
   setFromAccount: (account: WalletAccount | null) => void;
   setToAccount: (account: WalletAccount | null) => void;
   setTransactionType: (type: TransactionType) => void;
@@ -114,12 +133,18 @@ export interface SendState {
   clearBalances: () => void;
   clearBalanceForAddress: (type: 'coa' | 'evm', address: string) => void;
 
+  // Accessible asset store management
+  getAccessibleAssetStore: (address: string) => AccessibleAssetStore | null;
+  setAccessibleAssetStore: (address: string, store: AccessibleAssetStore) => void;
+  clearAccessibleAssetStore: (address: string) => void;
+  clearAllAccessibleAssetStores: () => void;
+
   // Transaction payload creation
   createSendPayload: () => Promise<SendPayload | null>;
-  
+
   // Transaction execution
   executeTransaction: () => Promise<any>;
-  
+
   // Transaction details for UI
   getTransactionDetailsForDisplay: () => {
     isTokenTransaction: boolean;
@@ -132,4 +157,4 @@ export interface SendState {
   };
 }
 
-export type { NFTModel, TokenInfo, WalletAccount };
+export type { NFTModel, TokenModel, WalletAccount };

@@ -5,6 +5,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "source": "./src/index.ts",
   "files": [
     "src",
     "dist"
@@ -23,6 +24,7 @@
   },
   "exports": {
     ".": {
+      "@onflow/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
@@ -40,7 +42,8 @@
   },
   "devDependencies": {
     "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
   },
   "publishConfig": {
     "access": "public"

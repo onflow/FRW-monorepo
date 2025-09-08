@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Image, View, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { Text } from 'ui';
+import { Image, View, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
 import { SvgXml } from 'react-native-svg';
+
+import { Text } from 'ui';
 
 interface WalletAvatarProps {
   value: string; // emoji or url
@@ -22,6 +23,15 @@ function isSvgUrl(str: string) {
   return str.endsWith('.svg');
 }
 
+function isValidUrl(str: string) {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const WalletAvatar: React.FC<WalletAvatarProps> = ({
   value,
   fallback,
@@ -35,8 +45,9 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
   const [imgError, setImgError] = useState(false);
   const [svgError, setSvgError] = useState(false);
 
-  // Calculate final display content
-  const showValue = !imgError && !svgError ? value : fallback || '👤';
+  // Improved fallback logic - check if value is valid first
+  const shouldUseFallback = imgError || svgError || (!isEmoji(value) && !isValidUrl(value));
+  const showValue = shouldUseFallback ? fallback || '👤' : value;
   const isSvg = isSvgUrl(showValue);
   const isEmojiValue = isEmoji(showValue);
 
@@ -57,6 +68,12 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
         .catch(() => setSvgError(true));
     }
   }, [showValue, isSvg, isEmojiValue]);
+
+  // Reset error states when value changes
+  useEffect(() => {
+    setImgError(false);
+    setSvgError(false);
+  }, [value]);
 
   // Unified View structure
   return (
@@ -86,8 +103,15 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
       >
         {isEmojiValue ? (
           <Text
-            style={[styles.emoji, { fontSize: contentSize * 0.5, lineHeight: contentSize }]}
-            disableAndroidFix={true}
+            style={[
+              styles.emoji,
+              {
+                fontSize: contentSize * 0.5,
+                lineHeight: contentSize * 0.6,
+                textAlignVertical: 'center',
+                includeFontPadding: false,
+              },
+            ]}
           >
             {showValue}
           </Text>
@@ -99,7 +123,22 @@ export const WalletAvatar: React.FC<WalletAvatarProps> = ({
               height={contentSize}
               style={{ borderRadius: contentSize / 2 }}
             />
-          ) : null
+          ) : (
+            // Show fallback while loading SVG or if SVG fails
+            <Text
+              style={[
+                styles.emoji,
+                {
+                  fontSize: contentSize * 0.5,
+                  lineHeight: contentSize * 0.6,
+                  textAlignVertical: 'center',
+                  includeFontPadding: false,
+                },
+              ]}
+            >
+              {fallback || '👤'}
+            </Text>
+          )
         ) : (
           <Image
             source={{ uri: showValue }}

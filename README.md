@@ -10,8 +10,8 @@
 
 ## ✨ Features
 
-- 🏗️ **MVVM Architecture**: Clean Model-ViewModel-View separation with reactive
-  UI
+- 🏗️ **MVVM Architecture**: Clean Model-ViewModel-View separation with
+  reactiveUI
 - 📱 **Multi-Platform**: React Native (iOS/Android) + Browser Extension
 - 🌙 **Theme System**: Complete light/dark mode with CSS variables
 - 🔗 **Flow + EVM**: Full Flow and Ethereum blockchain support
@@ -19,20 +19,24 @@
 - 🧪 **Type Safe**: Complete TypeScript coverage across all packages
 - 🚀 **Production Ready**: Battle-tested with 10,000+ active users
 
-**Data Flow**: `types` → `api/cadence` → `services/workflow` → `stores` → `apps`
+**Data Flow**: `types` → `api/cadence` → `services/workflow` → `stores` →
+`screens` → `apps`
 
 ## 📦 Package Structure
 
-| Package               | Role         | Purpose                               | Dependencies              |
-| --------------------- | ------------ | ------------------------------------- | ------------------------- |
-| **types**             | 📋 Model     | Data structures & interfaces          | none                      |
-| **api**               | 🌐 Network   | HTTP API clients                      | types                     |
-| **cadence**           | 🌐 Network   | Flow blockchain integration           | types                     |
-| **services**          | ⚙️ Business  | Domain services & data transformation | api, cadence, types       |
-| **workflow**          | ⚙️ Business  | Transaction orchestration             | cadence, services, types  |
-| **stores**            | 🧠 ViewModel | UI state management                   | services, workflow, types |
-| **apps/react-native** | 📱 View      | iOS/Android mobile app                | stores, types             |
-| **apps/extension**    | 📱 View      | Browser extension                     | stores, types             |
+| Package               | Role         | Purpose                               | Dependencies               |
+| --------------------- | ------------ | ------------------------------------- | -------------------------- |
+| **types**             | 📋 Model     | Data structures & interfaces          | none                       |
+| **api**               | 🌐 Network   | HTTP API clients                      | types                      |
+| **cadence**           | 🌐 Network   | Flow blockchain integration           | types                      |
+| **services**          | ⚙️ Business  | Domain services & data transformation | api, cadence, types        |
+| **workflow**          | ⚙️ Business  | Transaction orchestration             | cadence, services, types   |
+| **stores**            | 🧠 ViewModel | UI state management                   | services, workflow, types  |
+| **ui**                | 🎨 UI        | Pure, stateless UI components         | types                      |
+| **icons**             | 🎨 UI        | Universal SVG components              | none                       |
+| **screens**           | 📺 Screen    | UI + ViewModel integration            | ui, stores, types          |
+| **apps/react-native** | 📱 App       | iOS/Android mobile app                | screens, ui, stores, types |
+| **apps/extension**    | 📱 App       | Browser extension                     | screens, ui, stores, types |
 
 ## 🚀 Quick Start
 
@@ -93,7 +97,7 @@ pnpm build           # Production build
 
 ## 🛠️ Development Workflow
 
-### MVVM Development Flow
+### MVVM + Universal Screens Development Flow
 
 1. **📋 Model First**: Define data structures in `packages/types`
 2. **🌐 Network Layer**: Implement API clients in `packages/api` and
@@ -101,7 +105,13 @@ pnpm build           # Production build
 3. **⚙️ Business Logic**: Add domain services in `packages/services` and
    workflows in `packages/workflow`
 4. **🧠 ViewModel**: Manage UI state in `packages/stores`
-5. **📱 View**: Build reactive UI components in applications
+5. **🎨 UI Components**: Build pure, stateless components in `packages/ui`
+6. **📺 Screen Integration**: Combine UI + ViewModels in `packages/screens`
+7. **📱 Applications**: Use pre-built screens directly in both React Native and
+   Extension
+
+**Key Benefit**: Both platforms share not just business logic, but entire screen
+implementations for maximum code reuse.
 
 ## 🏃‍♂️ Available Scripts
 
@@ -165,10 +175,10 @@ pnpm -F @onflow/frw-workflow lint
 
 **Features**:
 
-- ✅ Transaction signing
-- ✅ Account management
-- ✅ dApp integration
-- ✅ Background service workers
+- ✅ Complete wallet functionality using shared screens
+- ✅ Transaction signing and account management
+- ✅ dApp integration with content script injection
+- ✅ Chrome Manifest V3 service worker architecture
 
 ## 🧪 Testing
 
