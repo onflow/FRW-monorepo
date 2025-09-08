@@ -1,144 +1,61 @@
 /**
- * Wallet types based on Flow Wallet Kit iOS Wallet implementation
+ * Wallet types - data models only (exact match to Flow Wallet Kit iOS)
  */
 
-import { type FlowAccountData, type EVMAccountData } from './account';
-import { type Chain } from './chain';
-import { type KeyType } from './key';
-import { type SecureStorage, type CacheStorage } from './storage';
+import { type KeyProtocol, type FlowAddress } from './key';
+
+// Re-export from key types
+export { FlowChainID as ChainID, type FlowAddress } from './key';
 
 /**
- * Wallet data interface
+ * Wallet type discriminated union - exact match to iOS WalletType.swift
  */
-export interface WalletData {
+export type WalletType =
+  | { type: 'key'; key: KeyProtocol }
+  | { type: 'watch'; address: FlowAddress };
+
+/**
+ * Wallet type operations - matches iOS WalletTypeProtocol
+ */
+interface WalletTypeOperations {
+  idPrefix: string;
   id: string;
-  name: string;
-  type: KeyType;
-  createdAt: number;
-  updatedAt: number;
-  metadata?: Record<string, any>;
+  key?: KeyProtocol;
 }
 
 /**
- * Wallet configuration
+ * Wallet type utilities - matches iOS extension methods
  */
-export interface WalletConfig {
-  secureStorage: SecureStorage;
-  cacheStorage: CacheStorage;
-  networks: string[];
-  defaultNetwork?: string;
+export class WalletTypeUtils {
+  private static readonly ID_PREFIX = 'frw';
+
+  static getId(walletType: WalletType): string {
+    const operations = this.getOperations(walletType);
+    return operations.id;
+  }
+
+  static getKey(walletType: WalletType): KeyProtocol | null {
+    const operations = this.getOperations(walletType);
+    return operations.key || null;
+  }
+
+  static canSign(walletType: WalletType): boolean {
+    return walletType.type === 'key';
+  }
+
+  private static getOperations(walletType: WalletType): WalletTypeOperations {
+    switch (walletType.type) {
+      case 'key':
+        return {
+          idPrefix: this.ID_PREFIX,
+          id: `${this.ID_PREFIX}/${walletType.key.keyType}`,
+          key: walletType.key,
+        };
+      case 'watch':
+        return {
+          idPrefix: this.ID_PREFIX,
+          id: `${this.ID_PREFIX}/${walletType.address}`,
+        };
+    }
+  }
 }
-
-/**
- * Wallet creation parameters
- */
-export interface CreateWalletParams {
-  name: string;
-  type: KeyType;
-  mnemonic?: string; // for mnemonic wallets
-  privateKey?: string; // for private key wallets
-  password: string;
-  metadata?: Record<string, any>;
-}
-
-/**
- * Import wallet parameters
- */
-export interface ImportWalletParams {
-  name: string;
-  mnemonic?: string;
-  privateKey?: string;
-  password: string;
-  derivationIndexes?: number[]; // which accounts to derive
-  metadata?: Record<string, any>;
-}
-
-/**
- * Wallet account map type
- */
-export type WalletAccountMap = Map<string, FlowAccountData | EVMAccountData>;
-
-/**
- * Wallet state interface
- */
-export interface WalletState {
-  loaded: boolean;
-  unlocked: boolean;
-  accounts: WalletAccountMap;
-  selectedAccount?: string; // account address
-}
-
-/**
- * Account derivation parameters
- */
-export interface AccountDerivationParams {
-  keyIndex: number;
-  chain: Chain;
-  network: string;
-  name?: string;
-}
-
-/**
- * Wallet operation result
- */
-export interface WalletOperationResult<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-/**
- * Wallet account discovery parameters
- */
-export interface AccountDiscoveryParams {
-  chain: Chain;
-  network: string;
-  startIndex?: number;
-  maxAccounts?: number;
-  includeEmpty?: boolean;
-}
-
-/**
- * Account discovery result
- */
-export interface AccountDiscoveryResult {
-  accounts: (FlowAccountData | EVMAccountData)[];
-  nextIndex: number;
-  hasMore: boolean;
-}
-
-/**
- * Wallet backup data
- */
-export interface WalletBackupData {
-  version: string;
-  walletData: WalletData;
-  encryptedMnemonic?: string;
-  encryptedPrivateKey?: string;
-  accounts: (FlowAccountData | EVMAccountData)[];
-  metadata: {
-    exportedAt: number;
-    appVersion: string;
-  };
-}
-
-/**
- * Wallet restore parameters
- */
-export interface WalletRestoreParams {
-  backupData: WalletBackupData;
-  password: string;
-  newName?: string;
-  selectiveAccounts?: string[]; // addresses to restore
-}
-
-/**
- * Wallet cache keys
- */
-export const WALLET_CACHE_KEYS = {
-  WALLET_DATA: (walletId: string) => `wallet:${walletId}`,
-  WALLET_ACCOUNTS: (walletId: string) => `wallet_accounts:${walletId}`,
-  WALLET_STATE: (walletId: string) => `wallet_state:${walletId}`,
-  ACCOUNT_DISCOVERY: (walletId: string, chain: Chain, network: string) =>
-    `discovery:${walletId}:${chain}:${network}`,
-} as const;

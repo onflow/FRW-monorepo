@@ -1,42 +1,57 @@
 /**
- * @onflow/frw-wallet - TypeScript wallet package for private key-based multi-account management
- * Based on Flow Wallet Kit iOS implementation patterns
+ * @onflow/frw-wallet - TypeScript wallet package based on Flow Wallet Kit iOS
+ * 1:1 implementation of iOS Flow Wallet Kit patterns with Trust Wallet Core integration
  */
 
-// Core wallet functionality
-export { Wallet } from './core/wallet';
+// Core types - exact match to iOS Flow Wallet Kit (data models only)
+export type * from './types/key';
+export type * from './types/account';
+export type * from './types/wallet';
 
-// Account classes
-export { BaseAccount } from './accounts/base-account';
-export { FlowAccount } from './accounts/flow-account';
-export { EVMAccount } from './accounts/evm-account';
-export { AccountFactory } from './accounts/account-factory';
+// Core wallet classes
+export { Wallet, WalletFactory } from './wallet';
+export { Account, COA } from './account';
+export { WalletTypeUtils } from './types/wallet';
 
-// Storage implementations
-export { createSecureStorage, PlatformSecureStorage } from './storage/secure-storage';
-export { createCacheStorage, PlatformCacheStorage } from './storage/cache-storage';
+// Key implementations - matches iOS Flow Wallet Kit key types
+export { SeedPhraseKey } from './keys/seed-phrase-key';
+export { PrivateKey } from './keys/private-key';
+
+// Wallet Core integration
+export { WalletCoreProvider } from './crypto/wallet-core-provider';
+
+// Core storage implementations (platform-specific ones should be implemented by apps)
+export { MemoryStorage } from './storage';
+
+// Re-export key enums and types
 export {
-  createMockSecureStorage,
-  createMockCacheStorage,
-  createMockStorageSetup,
-  MockSecureStorage,
-  MockCacheStorage,
-} from './storage/mock-storage';
+  KeyType,
+  SignatureAlgorithm,
+  HashAlgorithm,
+  FlowChainID,
+  type FlowAddress,
+  type FlowAccount,
+  type FlowTransaction,
+  type FlowSigner,
+  type KeyProtocol,
+  type StorageProtocol,
+  type SecurityCheckDelegate,
+  type KeyData,
+} from './types/key';
 
-// Type definitions
-export type * from './types';
+// Wallet type exports
+export { ChainID, type WalletType } from './types/wallet';
 
-// Error classes
-export {
-  WalletError,
-  StorageError,
-  KeyError,
-  AccountError,
-  NetworkError,
-  WalletOperationError,
-} from './types/errors';
+// Account type exports
+export { FlowVM, type ChildAccount, type FlowVMProtocol } from './types/account';
 
-// Constants and utilities
+// Constants
 export { BIP44_PATHS } from './types/key';
-export { ACCOUNT_CACHE_KEYS } from './types/account';
-export { WALLET_CACHE_KEYS } from './types/wallet';
+
+// Legacy exports for backward compatibility (will be removed)
+export type {
+  BaseAccountData,
+  AccountMetadata,
+  FlowAccountData,
+  EVMAccountData,
+} from './types/account';

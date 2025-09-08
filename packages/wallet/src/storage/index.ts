@@ -1,4 +1,6 @@
-// Storage implementations
-export * from './secure-storage';
-export * from './cache-storage';
-export * from './mock-storage';
+/**
+ * Core storage implementations
+ * Platform-specific implementations should be created by the consuming applications
+ */
+
+export { MemoryStorage } from './memory-storage';
