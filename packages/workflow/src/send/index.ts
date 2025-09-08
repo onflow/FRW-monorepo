@@ -30,8 +30,7 @@ import type { SendPayload } from './types';
 export const SendTransaction = async (
   payload: SendPayload,
   cadenceService: any,
-  callback: any,
-  evmProvider: any = null
+  callback: any = () => {}
 ) => {
   logger.debug('SendTransaction payload', payload);
   const context = createTransferContext(cadenceService, callback);
