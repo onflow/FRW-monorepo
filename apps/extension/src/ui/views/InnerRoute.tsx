@@ -1,3 +1,4 @@
+import { SendSingleNFTScreen, SendMultipleNFTsScreen } from '@onflow/frw-screens';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Route, Routes } from 'react-router';
 
@@ -196,6 +197,22 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <NFTDetailScreenView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="nested/send-single-nft"
+              element={
+                <PrivateRoute>
+                  <SendSingleNFTScreen />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="nested/send-multiple-nfts"
+              element={
+                <PrivateRoute>
+                  <SendMultipleNFTsScreen />
                 </PrivateRoute>
               }
             />
