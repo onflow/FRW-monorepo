@@ -1,8 +1,9 @@
 import { Copy, Link } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Text, Image } from 'tamagui';
+import { Card, XStack, YStack, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 
 export interface RecipientItemProps {
@@ -57,46 +58,38 @@ export function RecipientItem({
 }: RecipientItemProps): React.JSX.Element {
   return (
     <Card
-      mb="$0.75"
       bg="transparent"
-      borderRadius="$4"
+      borderRadius={16}
       pressStyle={pressStyle || { opacity: 0.8, scale: 0.98 }}
       disabled={isDisabled}
       onPress={onPress}
       opacity={isDisabled ? 0.5 : 1}
       borderColor="transparent"
       borderWidth={0}
+      p={0}
     >
-      <XStack items="center">
+      <XStack items="center" justify="space-between" flex={1} p={0}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
         <XStack width={46} height={36} position="relative">
-          {/* Main Avatar Circle - Always show background */}
+          {/* Main Avatar using proper Avatar component */}
           <YStack
             position="absolute"
             style={{
               left: 5,
               top: 0,
             }}
-            width={avatarSize}
-            height={avatarSize}
-            rounded={avatarSize / 2}
-            bg="$light25"
-            items="center"
-            justify="center"
           >
-            {avatar?.includes('https://') ? (
-              <Image width={avatarSize} height={avatarSize} source={{ uri: avatar }} />
-            ) : (
-              <Text
-                fontSize={18}
-                color={emojiInfo?.color}
-                fontWeight="600"
-                lineHeight={18 * 1.2}
-                letterSpacing={-0.1}
-              >
-                {avatar || emojiInfo?.emoji || type.charAt(0).toUpperCase()}
-              </Text>
-            )}
+            <Avatar
+              src={avatar?.includes('https://') ? avatar : undefined}
+              fallback={
+                avatar ||
+                emojiInfo?.emoji ||
+                name?.charAt(0)?.toUpperCase() ||
+                type.charAt(0).toUpperCase()
+              }
+              bgColor={emojiInfo?.color || "rgba(255, 255, 255, 0.25)"}
+              size={avatarSize}
+            />
           </YStack>
 
           {/* Small overlay avatar for parent account */}
@@ -125,27 +118,25 @@ export function RecipientItem({
         </XStack>
 
         {/* Content */}
-        <YStack flex={1} gap={2} width={151.34} ml="$0.75">
-          <XStack items="center" gap="$1">
-            <XStack items="center" gap={4}>
-              {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
-              <Text
-                fontSize={14}
-                fontWeight="600"
-                color="$white"
-                numberOfLines={1}
-                lineHeight={16.8}
-                letterSpacing={-0.084}
-              >
-                {name || emojiInfo?.name}
-              </Text>
-            </XStack>
+        <YStack flex={1} gap={2} width={151.34} ml={16}>
+          <XStack items="center" gap={4}>
+            {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+            <Text
+              fontSize={14}
+              fontWeight="600"
+              color="#FFFFFF"
+              numberOfLines={1}
+              lineHeight={16.8}
+              letterSpacing={-0.084}
+            >
+              {name || emojiInfo?.name}
+            </Text>
             {isEVM && (
               <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
                 <Text
                   fontSize={8}
                   fontWeight="400"
-                  color="$white"
+                  color="#FFFFFF"
                   lineHeight={9.7}
                   letterSpacing={0.128}
                 >
@@ -159,7 +150,7 @@ export function RecipientItem({
             address={address}
             fontSize={12}
             fontWeight="400"
-            color="$textMuted"
+            color="#B3B3B3"
             lineHeight={16.8}
           />
 

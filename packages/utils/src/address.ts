@@ -9,6 +9,12 @@ export function isValidFlowAddress(address: string): boolean {
   return flowAddressRegex.test(address);
 }
 
+export function isValidEthereumAddress(address: string): boolean {
+  // EVM addresses are hex strings with '0x' prefix
+  const evmAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+  return evmAddressRegex.test(address);
+}
+
 /**
  * Formats a Flow address with proper capitalization
  */

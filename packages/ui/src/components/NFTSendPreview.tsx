@@ -12,6 +12,7 @@ export interface NFTSendData {
   collection: string;
   collectionContractName?: string;
   description?: string;
+  type?: 'evm' | 'flow'; // determines if EVM badge should show
 }
 
 export interface NFTSendPreviewProps {
@@ -117,26 +118,23 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
           {/* Collection and Badge Row */}
           <XStack items="center" gap="$2" width="100%">
             {/* Collection Icon and Name */}
-            <View width="$5" height="$5" items="center" justify="center">
-              <Text fontSize="$4" fontWeight="600">
-                🏀
-              </Text>
-            </View>
             <Text fontSize="$4" fontWeight="600" numberOfLines={1} flex={1}>
-              {nft.collection || 'NBA Top Shot'}
+              {nft.collection}
             </Text>
 
-            {/* EVM Badge */}
-            <View width="$10" height="$4" bg="#627EEA" rounded="$4" items="center" justify="center">
-              <Text fontSize="$2" fontWeight="400" letterSpacing={0.16}>
-                EVM
-              </Text>
-            </View>
+            {/* EVM Badge - Only show for EVM NFTs */}
+            {nft.type === 'evm' && (
+              <View width="$10" height="$4" bg="#627EEA" rounded="$4" items="center" justify="center">
+                <Text fontSize="$2" fontWeight="400" letterSpacing={0.16} color="$white">
+                  EVM
+                </Text>
+              </View>
+            )}
           </XStack>
 
           {/* NFT Name */}
           <Text fontSize="$5" fontWeight="500" opacity={0.8} numberOfLines={2} flex={1}>
-            {nft.name || 'Spring Tide #1'}
+            {nft.name}
           </Text>
         </YStack>
       </XStack>
