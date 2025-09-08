@@ -134,7 +134,8 @@ export function SelectTokensScreen(): React.ReactElement {
     if (!fromAccount && accounts.length > 0 && bridgeAddress) {
       const matchingAccount = accounts.find(
         (acc: WalletAccount) =>
-          acc.address === bridgeAddress || acc.address?.toLowerCase() === bridgeAddress?.toLowerCase()
+          acc.address === bridgeAddress ||
+          acc.address?.toLowerCase() === bridgeAddress?.toLowerCase()
       );
       if (matchingAccount) {
         setFromAccount(matchingAccount);
@@ -157,7 +158,7 @@ export function SelectTokensScreen(): React.ReactElement {
       (acc: WalletAccount) =>
         acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
     );
-    
+
     // Set store data for SendTo flow
     setSelectedToken(token);
     if (account) {
@@ -175,7 +176,7 @@ export function SelectTokensScreen(): React.ReactElement {
       (acc: WalletAccount) =>
         acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
     );
-    
+
     // Set store data for NFTListScreen
     setSelectedCollection(collection);
     if (account) {
@@ -189,11 +190,11 @@ export function SelectTokensScreen(): React.ReactElement {
   const handleAccountSelect = (selectedAccount: any): void => {
     // Find the full account object from our accounts array
     const fullAccount = accounts.find(
-      (acc: WalletAccount) => 
-        acc.address === selectedAccount.address || 
+      (acc: WalletAccount) =>
+        acc.address === selectedAccount.address ||
         acc.address?.toLowerCase() === selectedAccount.address?.toLowerCase()
     );
-    
+
     if (fullAccount) {
       // Update the fromAccount in the send store
       setFromAccount(fullAccount);
@@ -288,7 +289,7 @@ export function SelectTokensScreen(): React.ReactElement {
         {isExtension && (
           <ExtensionHeader
             title={t('send.title')}
-            help={true}
+            help={false}
             onGoBack={() => navigation.goBack()}
             onNavigate={(link: string) => navigation.navigate(link)}
           />
