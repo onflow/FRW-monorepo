@@ -18,6 +18,7 @@ import {
   ExtensionHeader,
   BackgroundWrapper,
 } from '@onflow/frw-ui';
+import { isValidEthereumAddress, isValidFlowAddress } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -329,6 +330,50 @@ export function SendToScreen(): React.ReactElement {
     [setToAccount, activeTab, transactionType]
   );
 
+  // Handle search input changes and auto-navigation for valid addresses
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+
+      // Check if the search value is a valid address
+      if (value && value.trim()) {
+        const trimmedValue = value.trim();
+
+        const isFlowAddress = isValidFlowAddress(trimmedValue);
+        const isEvmAddress = isValidEthereumAddress(trimmedValue);
+
+        if (isFlowAddress || isEvmAddress) {
+          // Find matching account from the accounts list
+          const matchingAccount = allAccounts.find(
+            (account) =>
+              account.address.toLowerCase() === trimmedValue.toLowerCase() ||
+              account.address === trimmedValue
+          );
+
+          // Create recipient data
+          const recipient: RecipientData = {
+            id: trimmedValue,
+            name: matchingAccount?.name || 'Unknown Account',
+            address: trimmedValue,
+            avatar: matchingAccount?.avatar,
+            emojiInfo: matchingAccount?.emojiInfo,
+            parentEmojiInfo: matchingAccount?.parentEmoji || null,
+            type: 'account' as const,
+            isSelected: false,
+            isLinked: !!(matchingAccount?.parentAddress || matchingAccount?.type === 'child'),
+            isEVM: isEvmAddress,
+            balance: '',
+            showBalance: false,
+          };
+
+          // Auto-navigate to the next screen
+          handleRecipientPress(recipient);
+        }
+      }
+    },
+    [allAccounts, handleRecipientPress]
+  );
+
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {
     // TODO: Handle edit recipient
     console.log('Edit recipient:', recipient);
@@ -380,7 +425,7 @@ export function SendToScreen(): React.ReactElement {
         searchValue={searchQuery}
         searchPlaceholder={t('send.searchAddress')}
         showScanButton={true}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
         onScanPress={handleScanPress}
         tabSegments={tabTitles}
         activeTab={getTitleByType(activeTab)}

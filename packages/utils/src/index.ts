@@ -1,5 +1,11 @@
 // Address utilities
-export { isValidFlowAddress, formatFlowAddress, getAddressType, truncateAddress } from './address';
+export {
+  isValidFlowAddress,
+  formatFlowAddress,
+  getAddressType,
+  truncateAddress,
+  isValidEthereumAddress,
+} from './address';
 
 // NFT utilities
 export {
