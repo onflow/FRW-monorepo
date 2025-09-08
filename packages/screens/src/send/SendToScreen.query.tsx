@@ -93,29 +93,52 @@ export function SendToScreen(): React.ReactElement {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Query for account balances (only fetch if we have accounts)
-  const { data: accountBalances = {} } = useQuery({
-    queryKey: ['accountBalances', allAccounts.map(acc => acc.address)],
+  // Query for account balances using batch API
+  const { data: batchBalances = [] } = useQuery({
+    queryKey: ['batchBalances', allAccounts.map((acc) => acc.address)],
+    queryFn: () => tokenQueries.fetchBatchFlowBalances(allAccounts.map((acc) => acc.address)),
+    enabled: allAccounts.length > 0,
+    staleTime: 30 * 1000, // Cache for 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 60 * 1000, // Refresh every minute
+  });
+
+  // Query for NFT counts using NFT collections API
+  const { data: nftCounts = {} } = useQuery({
+    queryKey: ['nftCounts', allAccounts.map((acc) => acc.address)],
     queryFn: async () => {
-      const results: { [address: string]: { balance: string; nftCount: string } } = {};
-      
-      // Fetch balance for each account
-      for (const account of allAccounts) {
+      const results: { [address: string]: string } = {};
+
+      const nftCountPromises = allAccounts.map(async (account) => {
         try {
-          const balanceData = await tokenQueries.fetchBalance(account.address, account.type);
-          results[account.address] = {
-            balance: balanceData.displayBalance,
-            nftCount: balanceData.nftCountDisplay,
+          const nftCollections = await tokenQueries.fetchNFTCollections(account.address);
+          const totalCount = nftCollections.reduce(
+            (sum, collection) => sum + (collection.count || 0),
+            0
+          );
+          const nftCountDisplay =
+            totalCount === 0 ? '0 NFTs' : `${totalCount} NFT${totalCount !== 1 ? 's' : ''}`;
+
+          return {
+            address: account.address,
+            nftCount: nftCountDisplay,
           };
         } catch (error) {
-          console.warn(`Failed to fetch balance for ${account.address}:`, error);
-          results[account.address] = {
-            balance: '0 FLOW',
+          console.warn(`Failed to fetch NFT count for ${account.address}:`, error);
+          return {
+            address: account.address,
             nftCount: '0 NFTs',
           };
         }
-      }
-      
+      });
+
+      // Wait for all NFT count requests to complete in parallel
+      const nftCountResults = await Promise.all(nftCountPromises);
+      nftCountResults.forEach(({ address, nftCount }) => {
+        results[address] = nftCount;
+      });
+
       return results;
     },
     enabled: allAccounts.length > 0,
@@ -125,23 +148,45 @@ export function SendToScreen(): React.ReactElement {
     refetchInterval: 60 * 1000, // Refresh every minute
   });
 
+  // Convert batch balances and NFT counts to the expected format
+  const accountBalances = useMemo(() => {
+    const results: { [address: string]: { balance: string; nftCount: string } } = {};
+
+    // Create a lookup map from batch results
+    const balanceLookup = new Map<string, string>();
+    batchBalances.forEach(([address, balance]) => {
+      balanceLookup.set(address, balance);
+    });
+
+    // Map to expected format with both balance and NFT count
+    allAccounts.forEach((account) => {
+      const balance = balanceLookup.get(account.address) || '0 FLOW';
+      const nftCount = nftCounts[account.address] || '0 NFTs';
+      results[account.address] = {
+        balance,
+        nftCount,
+      };
+    });
+
+    return results;
+  }, [batchBalances, nftCounts, allAccounts]);
+
   // Convert accounts data
   const accountsData = useMemo((): RecipientData[] => {
     return allAccounts.map((account: WalletAccount) => {
       const balanceInfo = accountBalances[account.address];
       let balance = 'Loading...';
-      
+
       if (balanceInfo) {
         // Parse NFT count to check if it's 0
         const nftCountMatch = balanceInfo.nftCount.match(/^(\d+)/);
         const nftCount = nftCountMatch ? parseInt(nftCountMatch[1], 10) : 0;
-        
+
         // Show only FLOW balance if no NFTs, otherwise show both
-        balance = nftCount > 0 
-          ? `${balanceInfo.balance} | ${balanceInfo.nftCount}`
-          : balanceInfo.balance;
+        balance =
+          nftCount > 0 ? `${balanceInfo.balance} | ${balanceInfo.nftCount}` : balanceInfo.balance;
       }
-        
+
       return {
         id: account.address,
         name: account.name,
