@@ -21,13 +21,12 @@ import {
   Text,
   ExtensionHeader,
   Separator,
-  Button,
-  type NFTDetailData,
+  type NFTSendData,
   type TransactionFormData,
   type AccountDisplayData,
   XStack,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
+import { logger, getNFTCover } from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -80,7 +79,6 @@ const transformAccountForDisplay = (account: WalletAccount | null): AccountDispl
 export function SendSingleNFTScreen(): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
-  const network = bridge.getNetwork() || 'mainnet';
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
@@ -90,7 +88,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const toAccount = useSendStore(sendSelectors.toAccount);
   const isLoading = useSendStore(sendSelectors.isLoading);
-  const error = useSendStore(sendSelectors.error);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
 
@@ -99,7 +96,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Update current step when screen loads
   useEffect(() => {
-    setCurrentStep('send-single-nft');
+    setCurrentStep('send-nft');
   }, [setCurrentStep]);
 
   // Early return if essential data is missing
@@ -107,10 +104,10 @@ export function SendSingleNFTScreen(): React.ReactElement {
     return (
       <BackgroundWrapper backgroundColor="$bgDrawer">
         <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
             {t('nft.notFound.title')}
           </Text>
-          <Text fontSize="$4" color="$textSecondary" textAlign="center">
+          <Text fontSize="$4" color="$textSecondary" text="center">
             No NFT selected. Please go back and select an NFT to send.
           </Text>
         </YStack>
@@ -118,11 +115,15 @@ export function SendSingleNFTScreen(): React.ReactElement {
     );
   }
 
-  // Transform NFT data for UI
-  const nftForUI: NFTDetailData = {
-    id: selectedNFT.id,
+  // Transform NFT data for UI using getNFTCover utility
+  const nftImage = getNFTCover(selectedNFT);
+  console.log('[SendSingleNFT] NFT image URL:', nftImage);
+  console.log('[SendSingleNFT] Full NFT data:', selectedNFT);
+  
+  const nftForUI: NFTSendData = {
+    id: selectedNFT.id || '',
     name: selectedNFT.name || 'Untitled NFT',
-    image: (selectedNFT as any).postMedia?.image || selectedNFT.thumbnail || '',
+    image: nftImage,
     collection: selectedNFT.collectionName || 'Unknown Collection',
     collectionContractName: selectedNFT.collectionContractName,
     description: selectedNFT.description || '',
@@ -284,32 +285,24 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
         {/* Send Button - Anchored to bottom */}
         <YStack p={20} pt="$2">
-          <Button
-            fullWidth={true}
-            size="large"
-            disabled={isSendDisabled}
-            onPress={handleSendPress}
-            style={{
-              height: 52,
-              backgroundColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              color: isSendDisabled ? '#999' : '#000000',
-              borderColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              borderWidth: 1,
-              borderRadius: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 16,
-              shadowColor: 'rgba(16, 24, 40, 0.05)',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: isSendDisabled ? 0 : 1,
-              shadowRadius: 2,
-              elevation: isSendDisabled ? 0 : 1,
-              opacity: isSendDisabled ? 0.7 : 1,
-            }}
+          <YStack
+            width="100%"
+            height={52}
+            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            rounded={16}
+            items="center"
+            justify="center"
+            borderWidth={1}
+            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            opacity={isSendDisabled ? 0.7 : 1}
+            pressStyle={{ opacity: 0.9 }}
+            onPress={isSendDisabled ? undefined : handleSendPress}
+            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
               {t('common.next')}
             </Text>
-          </Button>
+          </YStack>
         </YStack>
 
         {/* Transaction Confirmation - Platform specific */}
