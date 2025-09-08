@@ -9,9 +9,8 @@ export type * from './types/account';
 export type * from './types/wallet';
 
 // Core wallet classes
-export { Wallet, WalletFactory } from './wallet';
+export { Wallet, WalletFactory, WalletTypeUtils, WalletUtils } from './wallet';
 export { Account, COA } from './account';
-export { WalletTypeUtils } from './types/wallet';
 
 // Key implementations - matches iOS Flow Wallet Kit key types
 export { SeedPhraseKey } from './keys/seed-phrase-key';
@@ -30,7 +29,7 @@ export {
   HashAlgorithm,
   FlowChainID,
   type FlowAddress,
-  type FlowAccount,
+  type FlowAccountData,
   type FlowTransaction,
   type FlowSigner,
   type KeyProtocol,
@@ -43,15 +42,14 @@ export {
 export { ChainID, type WalletType } from './types/wallet';
 
 // Account type exports
-export { FlowVM, type ChildAccount, type FlowVMProtocol } from './types/account';
+export {
+  FlowVM,
+  type BaseAccount,
+  type FlowAccount,
+  type EVMAccount,
+  type ChildAccount,
+  type FlowVMProtocol,
+} from './types/account';
 
 // Constants
 export { BIP44_PATHS } from './types/key';
-
-// Legacy exports for backward compatibility (will be removed)
-export type {
-  BaseAccountData,
-  AccountMetadata,
-  FlowAccountData,
-  EVMAccountData,
-} from './types/account';

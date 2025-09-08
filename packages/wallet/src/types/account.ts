@@ -5,6 +5,38 @@
 import { type FlowAddress, type FlowChainID } from './key';
 
 /**
+ * Base account interface with shared properties
+ */
+export interface BaseAccount {
+  address: FlowAddress;
+  chain: string;
+  network: FlowChainID;
+  name?: string;
+  description?: string;
+  icon?: string; // URL string
+}
+
+/**
+ * Flow account specific properties and methods
+ */
+export interface FlowAccount extends BaseAccount {
+  keyIndex?: number;
+  publicKey?: string;
+  hashAlgorithm?: string;
+  signatureAlgorithm?: string;
+  weight?: number;
+}
+
+/**
+ * EVM account specific properties and methods
+ */
+export interface EVMAccount extends BaseAccount {
+  balance?: string;
+  nonce?: number;
+  publicKey?: string;
+}
+
+/**
  * Child account data structure - matches iOS ChildAccount
  */
 export interface ChildAccount {
@@ -29,26 +61,4 @@ export enum FlowVM {
  */
 export interface FlowVMProtocol {
   vm: FlowVM;
-}
-
-// Legacy exports for backward compatibility (to be removed later)
-export interface BaseAccountData {
-  address: string;
-  chain: string;
-  network: FlowChainID;
-}
-
-export interface AccountMetadata {
-  name?: string;
-  avatar?: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface FlowAccountData extends BaseAccountData {
-  keyIndex?: number;
-}
-
-export interface EVMAccountData extends BaseAccountData {
-  balance?: string;
 }

@@ -6,7 +6,7 @@ import { type ChildAccount, type FlowVMProtocol, FlowVM } from './types/account'
 import {
   type FlowAddress,
   type FlowChainID,
-  type FlowAccount,
+  type FlowAccountData,
   type FlowTransaction,
   type FlowSigner,
   type KeyProtocol,
@@ -34,7 +34,7 @@ export class COA implements FlowVMProtocol {
  */
 export class Account implements FlowSigner {
   // Properties
-  readonly account: FlowAccount;
+  readonly account: FlowAccountData;
   readonly chainID: FlowChainID;
   readonly key?: KeyProtocol;
 
@@ -46,7 +46,7 @@ export class Account implements FlowSigner {
   isLoading: boolean = false;
   securityDelegate?: SecurityCheckDelegate;
 
-  constructor(account: FlowAccount, chainID: FlowChainID, key?: KeyProtocol) {
+  constructor(account: FlowAccountData, chainID: FlowChainID, key?: KeyProtocol) {
     this.account = account;
     this.chainID = chainID;
     this.key = key;

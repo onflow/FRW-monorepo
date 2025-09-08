@@ -4,6 +4,12 @@
  */
 
 import type { WalletCore } from '@trustwallet/wallet-core';
+import {
+  CoinTypeExt,
+  type HDWallet,
+  type PrivateKey,
+  type PublicKey,
+} from '@trustwallet/wallet-core/dist/src/wallet-core';
 
 /**
  * Wallet Core provider with Flow blockchain extensions
@@ -114,29 +120,6 @@ export class WalletCoreProvider {
   }
 
   /**
-   * Generate Ethereum-compatible address (for Flow EVM)
-   */
-  static async getEthereumAddress(wallet: any): Promise<string> {
-    const core = await this.ensureInitialized();
-
-    // Use Ethereum coin type for Flow EVM compatibility
-    return wallet.getAddressForCoin(core.CoinType.ethereum);
-  }
-
-  /**
-   * Get private key for Ethereum (secp256k1) - for Flow EVM
-   */
-  static async getEthereumPrivateKey(wallet: any): Promise<string> {
-    const core = await this.ensureInitialized();
-
-    const privateKey = wallet.getKeyForCoin(core.CoinType.ethereum);
-    const data = privateKey.data();
-
-    // Convert to hex string
-    return core.HexCoding.encode(data);
-  }
-
-  /**
    * Get private key by signature algorithm for Flow (matches iOS implementation)
    */
   static async getFlowPrivateKeyBySignatureAlgorithm(
@@ -161,7 +144,7 @@ export class WalletCoreProvider {
   /**
    * Get private key for EVM (separate from Flow)
    */
-  static async getEVMPrivateKeyBySignatureAlgorithm(wallet: any): Promise<any> {
+  static async getEVMPrivateKeyBySignatureAlgorithm(wallet: HDWallet): Promise<PrivateKey> {
     const core = await this.ensureInitialized();
     return wallet.getKeyForCoin(core.CoinType.ethereum);
   }
@@ -170,7 +153,7 @@ export class WalletCoreProvider {
    * Get public key by signature algorithm for Flow (supports both P-256 and secp256k1)
    */
   static async getFlowPublicKeyBySignatureAlgorithm(
-    wallet: any,
+    wallet: HDWallet,
     signatureAlgorithm: string,
     derivationPath: string = "m/44'/539'/0'/0/0"
   ): Promise<string> {
@@ -184,7 +167,7 @@ export class WalletCoreProvider {
     );
 
     try {
-      let publicKey: any;
+      let publicKey: PublicKey;
 
       switch (signatureAlgorithm) {
         case 'ECDSA_P256':
@@ -201,7 +184,7 @@ export class WalletCoreProvider {
 
       // Get uncompressed format and convert to hex
       const uncompressedData = publicKey.uncompressed
-        ? publicKey.uncompressed.data()
+        ? publicKey.uncompressed().data()
         : publicKey.data();
       const publicKeyHex = core.HexCoding.encode(uncompressedData);
 
@@ -218,53 +201,21 @@ export class WalletCoreProvider {
   /**
    * Get public key for EVM (only supports secp256k1)
    */
-  static async getEVMPublicKeyBySignatureAlgorithm(
-    wallet: any,
-    signatureAlgorithm: string
-  ): Promise<string> {
-    const core = await this.ensureInitialized();
-
-    if (signatureAlgorithm !== 'ECDSA_secp256k1') {
-      throw new Error(`EVM only supports ECDSA_secp256k1, not ${signatureAlgorithm}`);
-    }
-
+  static async getEVMPublicKeyBySignatureAlgorithm(wallet: HDWallet): Promise<string> {
     // Get private key using getKeyForCoin for EVM
     const privateKey = await this.getEVMPrivateKeyBySignatureAlgorithm(wallet);
 
     try {
       // Get secp256k1 public key (uncompressed for Flow EVM)
       const publicKey = privateKey.getPublicKeySecp256k1(false); // false = uncompressed
-
-      // Get uncompressed format and convert to hex
-      const uncompressedData = publicKey.uncompressed
-        ? publicKey.uncompressed.data()
-        : publicKey.data();
-      const publicKeyHex = core.HexCoding.encode(uncompressedData);
-
-      // Remove '04' prefix if present (matches iOS format() method)
-      return publicKeyHex.startsWith('04') ? publicKeyHex.slice(2) : publicKeyHex;
+      const publicKeyHex = await this.bytesToHex(publicKey.uncompressed().data());
+      return publicKeyHex;
     } finally {
       // Secure cleanup of private key (matches iOS defer pattern)
       if (privateKey && typeof privateKey.delete === 'function') {
         privateKey.delete();
       }
     }
-  }
-
-  /**
-   * Get public key in secp256k1 format (for Flow EVM)
-   * @deprecated Use getEVMPublicKeyBySignatureAlgorithm instead
-   */
-  static async getPublicKeySecp256k1(wallet: any): Promise<string> {
-    return this.getEVMPublicKeyBySignatureAlgorithm(wallet, 'ECDSA_secp256k1');
-  }
-
-  /**
-   * Get public key in P-256 format (for Flow)
-   * @deprecated Use getFlowPublicKeyBySignatureAlgorithm instead
-   */
-  static async getPublicKeyP256(wallet: any): Promise<string> {
-    return this.getFlowPublicKeyBySignatureAlgorithm(wallet, 'ECDSA_P256');
   }
 
   /**
@@ -285,27 +236,6 @@ export class WalletCoreProvider {
 
     const hashResult = core.Hash.sha3_256(data);
     return new Uint8Array(hashResult);
-  }
-
-  /**
-   * PBKDF2 key derivation
-   */
-  static async pbkdf2(
-    password: string,
-    salt: Uint8Array,
-    iterations: number = 10000,
-    keyLength: number = 32
-  ): Promise<Uint8Array> {
-    const core = await this.ensureInitialized();
-
-    const derivedKey = core.PBKDF2.hmacSha256(
-      new TextEncoder().encode(password),
-      salt,
-      iterations,
-      keyLength
-    );
-
-    return new Uint8Array(derivedKey);
   }
 
   /**
@@ -354,7 +284,7 @@ export class WalletCoreProvider {
   /**
    * Create PrivateKey object from raw bytes (matches iOS PrivateKey init)
    */
-  static async createPrivateKeyFromBytes(privateKeyBytes: Uint8Array): Promise<any> {
+  static async createPrivateKeyFromBytes(privateKeyBytes: Uint8Array): Promise<PrivateKey> {
     const core = await this.ensureInitialized();
 
     // Create PrivateKey from raw bytes using createWithData (matches WalletCore API)
@@ -416,6 +346,36 @@ export class WalletCoreProvider {
     const core = await this.ensureInitialized();
 
     // Wallet Core should provide version info
-    return 'Wallet Core WASM';
+    return '0.1.0';
+  }
+
+  /**
+   * Derive EVM address from HD wallet using WalletCore's standard API
+   */
+  static async deriveEVMAddress(wallet: HDWallet): Promise<string> {
+    const core = await this.ensureInitialized();
+
+    try {
+      // Use WalletCore's direct method to get Ethereum address
+      // This handles all the cryptographic operations internally
+      return wallet.getAddressForCoin(core.CoinType.ethereum);
+    } catch (error) {
+      throw new Error(`Failed to derive EVM address: ${error}`);
+    }
+  }
+
+  /**
+   * Derive EVM address from private key bytes
+   */
+  static async deriveEVMAddressFromPrivateKey(privateKeyBytes: Uint8Array): Promise<string> {
+    const core = await this.ensureInitialized();
+
+    try {
+      const privateKey = await this.createPrivateKeyFromBytes(privateKeyBytes);
+      // Derive Ethereum address from public key
+      return CoinTypeExt.deriveAddress(core.CoinType.ethereum, privateKey);
+    } catch (error) {
+      throw new Error(`Failed to derive EVM address from private key: ${error}`);
+    }
   }
 }

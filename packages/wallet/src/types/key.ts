@@ -237,7 +237,7 @@ export interface FlowPublicKey {
 /**
  * Flow account data from blockchain
  */
-export interface FlowAccount {
+export interface FlowAccountData {
   address: FlowAddress;
   balance: number;
   code: string;
