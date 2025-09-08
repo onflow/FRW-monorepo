@@ -4,25 +4,29 @@
 
 import { WalletTypeUtils } from './utils';
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
+import { KeyIndexerService, type PublicKeyAccount } from '../services/key-indexer';
 import { MemoryStorage } from '../storage/memory-storage';
 import { type FlowAccount, type EVMAccount } from '../types/account';
+import { Chain } from '../types/chain';
 import {
   type KeyProtocol,
   type StorageProtocol,
   type SecurityCheckDelegate,
-  FlowChainID,
   type FlowAddress,
   SignatureAlgorithm,
+  type Network,
+  type FlowNetwork,
+  type EVMNetworkConfig,
+  NETWORKS,
 } from '../types/key';
 import { type WalletType } from '../types/wallet';
-// Note: Import from correct API package when available\n// import { AccountService, type PublicKeyAccount } from '@onflow/frw-api';\n\n// Temporary types until API package is properly connected\ninterface PublicKeyAccount {\n  address: string;\n  publicKey: string;\n  keyIndex: number;\n  weight: number;\n  signAlgo: number;\n  hashAlgoString: string;\n}\n\n// Temporary service placeholder\nconst AccountService = {\n  keyIndexer: async (params: { publicKey: string }): Promise<PublicKeyAccount[]> => {\n    // This would be replaced with actual API call\n    console.warn('AccountService.keyIndexer not implemented - placeholder');\n    return [];\n  }\n};
 
 /**
  * Wallet class - exact match to Flow Wallet Kit iOS Wallet.swift
  */
 export class Wallet {
   readonly type: WalletType;
-  networks: Set<FlowChainID>;
+  networks: Set<Network>;
   public securityDelegate?: SecurityCheckDelegate;
 
   // Private state properties
@@ -35,7 +39,12 @@ export class Wallet {
 
   constructor(
     type: WalletType,
-    networks: Set<FlowChainID> = new Set([FlowChainID.Mainnet, FlowChainID.Testnet]),
+    networks: Set<Network> = new Set([
+      NETWORKS.FLOW_MAINNET,
+      NETWORKS.FLOW_TESTNET,
+      NETWORKS.FLOW_EVM_MAINNET,
+      NETWORKS.FLOW_EVM_TESTNET,
+    ]),
     cacheStorage?: StorageProtocol
   ) {
     this.type = type;
@@ -106,7 +115,7 @@ export class Wallet {
   /**
    * Get accounts by network
    */
-  getAccountsByNetwork(network: FlowChainID): (FlowAccount | EVMAccount)[] {
+  getAccountsByNetwork(network: Network): (FlowAccount | EVMAccount)[] {
     return Array.from(this.accounts.values()).filter((account) => account.network === network);
   }
 
@@ -134,8 +143,48 @@ export class Wallet {
   /**
    * Add new network to wallet
    */
-  addNetwork(network: FlowChainID): void {
+  addNetwork(network: Network): void {
     this.networks.add(network);
+  }
+
+  /**
+   * Remove network from wallet
+   */
+  removeNetwork(network: Network): boolean {
+    return this.networks.delete(network);
+  }
+
+  /**
+   * Check if wallet supports a specific network
+   */
+  hasNetwork(network: Network): boolean {
+    return this.networks.has(network);
+  }
+
+  /**
+   * Get Flow networks only
+   */
+  getFlowNetworks(): FlowNetwork[] {
+    return Array.from(this.networks).filter(
+      (network): network is FlowNetwork => network.chain === Chain.Flow
+    );
+  }
+
+  /**
+   * Get EVM networks only
+   */
+  getEVMNetworks(): EVMNetworkConfig[] {
+    return Array.from(this.networks).filter(
+      (network): network is EVMNetworkConfig => network.chain === Chain.EVM
+    );
+  }
+
+  /**
+   * Clear all networks and set new ones
+   */
+  setNetworks(networks: Set<Network>): void {
+    this.networks.clear();
+    networks.forEach((network) => this.networks.add(network));
   }
 
   // MARK: - Key-to-Account Discovery (matching iOS implementation lines 103-293)
@@ -212,12 +261,23 @@ export class Wallet {
       const publicKeyHex = await WalletCoreProvider.bytesToHex(new Uint8Array(publicKeyBytes));
       const cleanPublicKey = publicKeyHex.replace(/^0x/, '');
 
-      // Query key indexer service
-      const foundAccounts = await AccountService.keyIndexer({
-        publicKey: cleanPublicKey,
-      });
+      // Query key indexer service for each Flow network
+      const flowNetworks = this.getFlowNetworks();
+      const allFoundAccounts: PublicKeyAccount[] = [];
 
-      return foundAccounts || [];
+      for (const flowNetwork of flowNetworks) {
+        try {
+          const foundAccounts = await KeyIndexerService.findAccountByKey(
+            cleanPublicKey,
+            flowNetwork.flowChainId
+          );
+          allFoundAccounts.push(...foundAccounts);
+        } catch (error) {
+          console.warn(`Failed to search accounts on ${flowNetwork.name}:`, error);
+        }
+      }
+
+      return KeyIndexerService.filterByWeight(allFoundAccounts, Wallet.FULL_WEIGHT_THRESHOLD);
     } catch (error) {
       console.warn(`Failed to search accounts for ${signAlgo}:`, error);
       return [];
@@ -227,31 +287,36 @@ export class Wallet {
   /**
    * Process discovered accounts and filter by full weight keys
    * Implements account filtering logic using full weight keys (≥1000 weight, non-revoked)
+   * Note: Filtering is now handled in KeyIndexerService, this method focuses on conversion
    */
   private async processDiscoveredAccounts(accounts: PublicKeyAccount[]): Promise<FlowAccount[]> {
     const processedAccounts: FlowAccount[] = [];
+    const flowNetworks = this.getFlowNetworks();
 
     for (const account of accounts) {
-      // Filter by full weight keys (≥1000 weight)
-      if (account.weight >= Wallet.FULL_WEIGHT_THRESHOLD) {
-        const flowAccount: FlowAccount = {
-          address: account.address,
-          network: this.getNetworkFromEnvironment(), // Determine network based on current environment
-          chain: 'flow', // FlowAccount is always on Flow chain
-          keyIndex: account.keyIndex,
-          // Additional FlowAccount properties would be populated here
-          // This matches the iOS structure for FlowAccount
-        };
+      // Find the appropriate Flow network for this account
+      // In a real implementation, we would determine this from the account data
+      // For now, use the first Flow network as default
+      const flowNetwork = flowNetworks[0] || NETWORKS.FLOW_MAINNET;
 
-        processedAccounts.push(flowAccount);
-      }
+      const flowAccount: FlowAccount = {
+        address: account.address,
+        network: flowNetwork,
+        chain: Chain.Flow,
+        keyIndex: account.keyId, // Use keyId from PublicKeyAccount
+        signatureAlgorithm: account.signing,
+        hashAlgorithm: account.hashing,
+        weight: account.weight,
+      };
+
+      processedAccounts.push(flowAccount);
     }
 
     return processedAccounts;
   }
 
   /**
-   * Discover EVM accounts based on wallet key type
+   * Discover EVM accounts based on wallet key type - local computation only, no network requests
    * - For seed phrase: BIP44 index 0 derivation
    * - For private key: single account
    */
@@ -261,19 +326,22 @@ export class Wallet {
     }
 
     try {
-      // Get EVM address using BIP44 derivation (index 0)
-      const evmAddress = await this.getEVMAddressForKey();
+      // Get all EVM networks from wallet configuration
+      const evmNetworks = this.getEVMNetworks();
 
-      if (evmAddress) {
-        const evmAccount: EVMAccount = {
-          address: evmAddress,
-          network: this.getNetworkFromEnvironment(),
-          chain: 'evm', // EVMAccount is always on EVM chain
-          balance: '0', // Will be populated when balances are fetched
-          // Additional EVMAccount properties
-        };
+      for (const evmNetwork of evmNetworks) {
+        const evmAddress = await this.getEVMAddressForKey(evmNetwork);
 
-        this.setAccount(evmAddress, evmAccount);
+        if (evmAddress) {
+          const evmAccount: EVMAccount = {
+            address: evmAddress,
+            network: evmNetwork,
+            chain: Chain.EVM,
+            balance: '0', // Will be populated when balances are fetched
+          };
+
+          this.setAccount(`${evmNetwork.chainId}_${evmAddress}`, evmAccount);
+        }
       }
     } catch (error) {
       console.warn('Failed to discover EVM accounts:', error);
@@ -281,29 +349,30 @@ export class Wallet {
   }
 
   /**
-   * Get EVM address for the current key
+   * Get EVM address for the current key using WalletCore - local computation only
    */
-  private async getEVMAddressForKey(): Promise<string | null> {
+  private async getEVMAddressForKey(evmNetwork: EVMNetworkConfig): Promise<string | null> {
     if (!this.key) {
       return null;
     }
 
     try {
-      // Use secp256k1 for EVM (Ethereum-compatible)
-      const publicKeyBytes = await this.key.publicKey(SignatureAlgorithm.ECDSA_secp256k1);
-      if (!publicKeyBytes) {
+      // For seed phrase keys, use HD wallet derivation through WalletCore
+      // For private key keys, derive address directly from the key
+
+      // Get private key bytes for secp256k1 curve (EVM-compatible)
+      const privateKeyBytes = await this.key.privateKey(SignatureAlgorithm.ECDSA_secp256k1);
+      if (!privateKeyBytes) {
         return null;
       }
 
-      // Convert public key to EVM address using WalletCore
-      // This would typically involve:
-      // 1. Getting the uncompressed public key
-      // 2. Taking Keccak256 hash
-      // 3. Taking last 20 bytes as address
-      // For now, return a placeholder EVM address\n      // TODO: Implement proper EVM address derivation\n      const evmAddress = '0x' + Buffer.from(publicKeyBytes.slice(0, 20)).toString('hex');
+      // Use WalletCore to derive EVM address from private key - no network request needed
+      const evmAddress = await WalletCoreProvider.deriveEVMAddressFromPrivateKey(
+        new Uint8Array(privateKeyBytes)
+      );
       return evmAddress;
     } catch (error) {
-      console.warn('Failed to derive EVM address:', error);
+      console.warn(`Failed to derive EVM address for network ${evmNetwork.name}:`, error);
       return null;
     }
   }
@@ -319,49 +388,13 @@ export class Wallet {
         lastUpdated: Date.now(),
       };
 
-      await this.cacheStorage.set(`wallet_${this.id}_accounts`, JSON.stringify(accountsData));
+      await this.cacheStorage.set(
+        `wallet_${this.id}_accounts`,
+        new TextEncoder().encode(JSON.stringify(accountsData))
+      );
     } catch (error) {
       console.warn('Failed to cache account data:', error);
     }
-  }
-
-  /**
-   * Load cached account data
-   */
-  private async loadCachedAccountData(): Promise<void> {
-    try {
-      const cachedData = await this.cacheStorage.get(`wallet_${this.id}_accounts`);
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-
-        // Restore accounts
-        this.accounts.clear();
-        for (const [address, accountData] of parsed.accounts) {
-          this.accounts.set(address, accountData);
-        }
-
-        // Restore networks
-        this.networks.clear();
-        for (const network of parsed.networks) {
-          this.networks.add(network);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to load cached account data:', error);
-    }
-  }
-
-  /**
-   * Determine network based on current environment/configuration
-   */
-  private getNetworkFromEnvironment(): FlowChainID {
-    // This would typically check environment variables or configuration
-    // For now, default to mainnet if it's in the networks set, otherwise use first network
-    if (this.networks.has(FlowChainID.Mainnet)) {
-      return FlowChainID.Mainnet;
-    }
-
-    return Array.from(this.networks)[0] || FlowChainID.Mainnet;
   }
 
   /**
@@ -372,10 +405,57 @@ export class Wallet {
   }
 
   /**
-   * Load cached data on initialization
+   * Initialize wallet - load cached data or fetch accounts if no cache exists
    */
   async initialize(): Promise<void> {
-    await this.loadCachedAccountData();
+    // Try to load cached account data first
+    const hasCachedData = await this.loadCachedAccountData();
+
+    // If no cached data and wallet can sign, fetch accounts from networks
+    if (!hasCachedData && this.canSign && this.key) {
+      await this.fetchAccount();
+    }
+  }
+
+  /**
+   * Load cached account data
+   * @returns true if cached data was loaded, false otherwise
+   */
+  private async loadCachedAccountData(): Promise<boolean> {
+    try {
+      const cachedData = await this.cacheStorage.get(`wallet_${this.id}_accounts`);
+      if (!cachedData) {
+        return false;
+      }
+
+      const parsed = JSON.parse(new TextDecoder().decode(cachedData));
+
+      // Check if cached data is not too old (e.g., 1 hour)
+      const maxCacheAge = 60 * 60 * 1000; // 1 hour in milliseconds
+      const now = Date.now();
+      if (parsed.lastUpdated && now - parsed.lastUpdated > maxCacheAge) {
+        console.log('Cached data is too old, will fetch fresh data');
+        return false;
+      }
+
+      // Restore accounts
+      this.accounts.clear();
+      for (const [address, accountData] of parsed.accounts) {
+        this.accounts.set(address, accountData);
+      }
+
+      // Restore networks
+      this.networks.clear();
+      for (const network of parsed.networks) {
+        this.networks.add(network);
+      }
+
+      console.log(`Loaded ${this.accounts.size} cached accounts for wallet ${this.id}`);
+      return true;
+    } catch (error) {
+      console.warn('Failed to load cached account data:', error);
+      return false;
+    }
   }
 }
 
@@ -388,7 +468,7 @@ export class WalletFactory {
    */
   static fromKey(
     key: KeyProtocol,
-    networks?: Set<FlowChainID>,
+    networks?: Set<Network>,
     cacheStorage?: StorageProtocol
   ): Wallet {
     const wallet = new Wallet({ type: 'key', key }, networks, cacheStorage);
@@ -400,7 +480,7 @@ export class WalletFactory {
    */
   static watchOnly(
     address: FlowAddress,
-    networks?: Set<FlowChainID>,
+    networks?: Set<Network>,
     cacheStorage?: StorageProtocol
   ): Wallet {
     return new Wallet({ type: 'watch', address }, networks, cacheStorage);

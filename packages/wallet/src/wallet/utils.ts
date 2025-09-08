@@ -4,7 +4,7 @@
  */
 
 import { type FlowAccount, type EVMAccount } from '../types/account';
-import { type KeyProtocol, type FlowAddress } from '../types/key';
+import { type KeyProtocol } from '../types/key';
 import { type WalletType } from '../types/wallet';
 
 /**
@@ -31,13 +31,6 @@ export class WalletTypeUtils {
    */
   static getKey(walletType: WalletType): KeyProtocol | null {
     return walletType.type === 'key' ? walletType.key : null;
-  }
-
-  /**
-   * Get address from wallet type
-   */
-  static getAddress(walletType: WalletType): FlowAddress | null {
-    return walletType.type === 'watch' ? walletType.address : null;
   }
 
   /**

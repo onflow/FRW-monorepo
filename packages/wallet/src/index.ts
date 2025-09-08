@@ -5,8 +5,11 @@
 
 // Core types - exact match to iOS Flow Wallet Kit (data models only)
 export type * from './types/key';
+export type * from './types/key-protocol';
+export type * from './types/storage';
 export type * from './types/account';
 export type * from './types/wallet';
+export type * from './types/chain';
 
 // Core wallet classes
 export { Wallet, WalletFactory, WalletTypeUtils, WalletUtils } from './wallet';
@@ -37,6 +40,9 @@ export {
   type SecurityCheckDelegate,
   type KeyData,
 } from './types/key';
+
+// Chain types
+export { Chain, ChainUtils } from './types/chain';
 
 // Wallet type exports
 export { ChainID, type WalletType } from './types/wallet';

@@ -239,6 +239,22 @@ export class WalletCoreProvider {
   }
 
   /**
+   * PBKDF2 key derivation using HMAC-SHA256
+   */
+  static async pbkdf2(
+    password: string,
+    salt: Uint8Array,
+    iterations: number,
+    keyLength: number
+  ): Promise<Uint8Array> {
+    const core = await this.ensureInitialized();
+
+    const passwordBytes = new TextEncoder().encode(password);
+    const derivedKey = core.PBKDF2.hmacSha256(passwordBytes, salt, iterations, keyLength);
+    return new Uint8Array(derivedKey);
+  }
+
+  /**
    * AES encryption
    */
   static async aesEncrypt(data: Uint8Array, key: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {

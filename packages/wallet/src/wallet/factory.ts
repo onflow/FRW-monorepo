@@ -7,10 +7,9 @@ import { Wallet } from './wallet';
 import {
   type KeyProtocol,
   type StorageProtocol,
-  type FlowChainID,
   type FlowAddress,
+  type Network,
 } from '../types/key';
-
 
 /**
  * Factory class for creating different types of wallets
@@ -21,7 +20,7 @@ export class WalletFactory {
    */
   static createKeyWallet(
     key: KeyProtocol,
-    networks?: Set<FlowChainID>,
+    networks?: Set<Network>,
     cacheStorage?: StorageProtocol
   ): Wallet {
     return new Wallet({ type: 'key', key }, networks, cacheStorage);
@@ -32,7 +31,7 @@ export class WalletFactory {
    */
   static createWatchWallet(
     address: FlowAddress,
-    networks?: Set<FlowChainID>,
+    networks?: Set<Network>,
     cacheStorage?: StorageProtocol
   ): Wallet {
     return new Wallet({ type: 'watch', address }, networks, cacheStorage);
@@ -43,7 +42,7 @@ export class WalletFactory {
    */
   static createFromType(
     walletType: { type: 'key'; key: KeyProtocol } | { type: 'watch'; address: FlowAddress },
-    networks?: Set<FlowChainID>,
+    networks?: Set<Network>,
     cacheStorage?: StorageProtocol
   ): Wallet {
     return new Wallet(walletType, networks, cacheStorage);

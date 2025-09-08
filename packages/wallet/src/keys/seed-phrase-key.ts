@@ -3,7 +3,7 @@
  * Uses Trust Wallet Core for cryptographic operations
  */
 
-import type { WalletCore } from '@trustwallet/wallet-core';
+import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
@@ -26,7 +26,7 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
   // Private properties
   private derivationPath: string;
   private passphrase: string;
-  private hdWallet?: WalletCore['HDWallet']; // Trust Wallet Core HDWallet
+  private hdWallet?: HDWallet; // Trust Wallet Core HDWallet
   private mnemonic: string;
 
   constructor(

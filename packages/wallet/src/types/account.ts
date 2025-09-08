@@ -2,15 +2,22 @@
  * Account types - data models only (exact match to Flow Wallet Kit iOS)
  */
 
-import { type FlowAddress, type FlowChainID } from './key';
+import { type Chain } from './chain';
+import {
+  type FlowAddress,
+  type FlowChainID,
+  type Network,
+  type FlowNetwork,
+  type EVMNetworkConfig,
+} from './key';
 
 /**
  * Base account interface with shared properties
  */
 export interface BaseAccount {
   address: FlowAddress;
-  chain: string;
-  network: FlowChainID;
+  chain: Chain;
+  network: Network;
   name?: string;
   description?: string;
   icon?: string; // URL string
@@ -20,6 +27,8 @@ export interface BaseAccount {
  * Flow account specific properties and methods
  */
 export interface FlowAccount extends BaseAccount {
+  chain: Chain.Flow;
+  network: FlowNetwork;
   keyIndex?: number;
   publicKey?: string;
   hashAlgorithm?: string;
@@ -31,6 +40,8 @@ export interface FlowAccount extends BaseAccount {
  * EVM account specific properties and methods
  */
 export interface EVMAccount extends BaseAccount {
+  chain: Chain.EVM;
+  network: EVMNetworkConfig;
   balance?: string;
   nonce?: number;
   publicKey?: string;

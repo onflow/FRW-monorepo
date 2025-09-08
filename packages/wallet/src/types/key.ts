@@ -2,6 +2,12 @@
  * Key management types based on Flow Wallet Kit iOS KeyProtocol
  */
 
+import { Chain } from './chain';
+
+// Re-export from separate files for convenience
+export { type KeyProtocol, type KeyData, type SecurityCheckDelegate } from './key-protocol';
+export { type StorageProtocol } from './storage';
+
 /**
  * Supported key types - exact match to iOS Flow Wallet Kit KeyType.swift
  */
@@ -9,19 +15,6 @@ export enum KeyType {
   SeedPhrase = 'seedPhrase',
   PrivateKey = 'privateKey',
   SecureEnclave = 'secureEnclave',
-}
-
-/**
- * Storage abstraction for key persistence - exact match to iOS StorageProtocol.swift
- */
-export interface StorageProtocol {
-  readonly allKeys: string[];
-
-  findKey(keyword: string): Promise<string[]>;
-  get(key: string): Promise<Uint8Array | null>;
-  set(key: string, value: Uint8Array): Promise<void>;
-  remove(key: string): Promise<void>;
-  removeAll(): Promise<void>;
 }
 
 /**
@@ -121,93 +114,110 @@ export interface KeyValidationResult {
 }
 
 /**
- * Key protocol interface - exact match to iOS Flow Wallet Kit KeyProtocol.swift
- * https://github.com/onflow/Flow-Wallet-Kit/blob/master/iOS/FlowWalletKit/Sources/Keys/KeyProtocol.swift
- */
-export interface KeyProtocol<TKey = any, TSecret = any, TAdvance = any> {
-  /** Key type strategy */
-  readonly keyType: KeyType;
-
-  /** Storage backend for persistence */
-  storage: StorageProtocol;
-
-  // Static factory methods (implement as static methods in concrete classes)
-  // create(storage: StorageProtocol): Promise<TKey>;
-  // createAdvanced(advance: TAdvance, storage: StorageProtocol): Promise<TKey>;
-  // createAndStore(id: string, password: string, storage: StorageProtocol): Promise<TKey>;
-  // get(id: string, password: string, storage: StorageProtocol): Promise<TKey>;
-  // restore(secret: TSecret, storage: StorageProtocol): Promise<TKey>;
-
-  // Instance methods
-
-  /**
-   * Store key with password protection
-   */
-  store(id: string, password: string): Promise<void>;
-
-  /**
-   * Extract public key for given signature algorithm
-   */
-  publicKey(signAlgo: SignatureAlgorithm): Promise<Uint8Array | null>;
-
-  /**
-   * Extract private key for given signature algorithm (use with caution)
-   */
-  privateKey(signAlgo: SignatureAlgorithm): Promise<Uint8Array | null>;
-
-  /**
-   * Sign data with specified algorithms
-   */
-  sign(
-    data: Uint8Array,
-    signAlgo: SignatureAlgorithm,
-    hashAlgo: HashAlgorithm
-  ): Promise<Uint8Array>;
-
-  /**
-   * Validate a signature against a message
-   */
-  isValidSignature(
-    signature: Uint8Array,
-    message: Uint8Array,
-    signAlgo: SignatureAlgorithm
-  ): Promise<boolean>;
-
-  /**
-   * Securely remove key from storage
-   */
-  remove(id: string): Promise<void>;
-
-  /**
-   * List all stored key identifiers
-   */
-  allKeys(): Promise<string[]>;
-}
-
-/**
- * Key data structure for SeedPhrase keys
- */
-export interface KeyData {
-  mnemonic: string;
-  derivationPath: string;
-  passphrase?: string;
-}
-
-/**
- * Security check delegate for sensitive operations
- */
-export interface SecurityCheckDelegate {
-  performSecurityCheck(): Promise<boolean>;
-  verifyAuthentication(): Promise<boolean>;
-}
-
-/**
  * Flow chain ID enumeration
  */
 export enum FlowChainID {
   Mainnet = 'mainnet',
   Testnet = 'testnet',
 }
+
+/**
+ * EVM network types (Flow EVM and other chains)
+ */
+export enum EVMNetwork {
+  FlowMainnet = 'flow-mainnet',
+  FlowTestnet = 'flow-testnet',
+  Ethereum = 'ethereum',
+}
+
+/**
+ * Base network interface
+ */
+export interface BaseNetwork {
+  readonly chain: Chain;
+  readonly name: string;
+  readonly chainId: string | number;
+  readonly isTestnet: boolean;
+  readonly rpcEndpoint: string;
+}
+
+/**
+ * Flow network configuration
+ */
+export interface FlowNetwork extends BaseNetwork {
+  readonly chain: Chain.Flow;
+  readonly flowChainId: FlowChainID;
+  readonly keyIndexerUrl?: string;
+}
+
+/**
+ * EVM network configuration
+ */
+export interface EVMNetworkConfig extends BaseNetwork {
+  readonly chain: Chain.EVM;
+  readonly evmNetwork: EVMNetwork;
+  readonly explorerUrl?: string;
+}
+
+/**
+ * Union type for all supported networks
+ */
+export type Network = FlowNetwork | EVMNetworkConfig;
+
+/**
+ * Pre-configured network instances
+ */
+export const NETWORKS = {
+  FLOW_MAINNET: {
+    chain: Chain.Flow,
+    name: 'Flow Mainnet',
+    chainId: 'flow-mainnet',
+    isTestnet: false,
+    rpcEndpoint: 'https://rest-mainnet.onflow.org',
+    flowChainId: FlowChainID.Mainnet,
+    keyIndexerUrl: 'https://production.key-indexer.flow.com',
+  } as FlowNetwork,
+
+  FLOW_TESTNET: {
+    chain: Chain.Flow,
+    name: 'Flow Testnet',
+    chainId: 'flow-testnet',
+    isTestnet: true,
+    rpcEndpoint: 'https://rest-testnet.onflow.org',
+    flowChainId: FlowChainID.Testnet,
+    keyIndexerUrl: 'https://staging.key-indexer.flow.com',
+  } as FlowNetwork,
+
+  FLOW_EVM_MAINNET: {
+    chain: Chain.EVM,
+    name: 'Flow EVM Mainnet',
+    chainId: 747,
+    isTestnet: false,
+    rpcEndpoint: 'https://mainnet.evm.nodes.onflow.org',
+    evmNetwork: EVMNetwork.FlowMainnet,
+    explorerUrl: 'https://flowdiver.io',
+  } as EVMNetworkConfig,
+
+  FLOW_EVM_TESTNET: {
+    chain: Chain.EVM,
+    name: 'Flow EVM Testnet',
+    chainId: 545,
+    isTestnet: true,
+    rpcEndpoint: 'https://testnet.evm.nodes.onflow.org',
+    evmNetwork: EVMNetwork.FlowTestnet,
+    explorerUrl: 'https://testnet.flowdiver.io',
+  } as EVMNetworkConfig,
+
+  ETHEREUM: {
+    chain: Chain.EVM,
+    name: 'Ethereum Mainnet',
+    chainId: 1,
+    isTestnet: false,
+    rpcEndpoint: 'https://eth.llamarpc.com',
+    evmNetwork: EVMNetwork.Ethereum,
+    explorerUrl: 'https://etherscan.io',
+  } as EVMNetworkConfig,
+} as const;
 
 /**
  * Flow address type
