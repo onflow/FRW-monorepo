@@ -1,4 +1,12 @@
-import { SelectTokensScreen, SendToScreen, SendTokensScreen } from '@onflow/frw-screens';
+import {
+  SelectTokensScreen,
+  SendToScreen,
+  SendTokensScreen,
+  NFTListScreen,
+  NFTDetailScreen,
+  SendSingleNFTScreen,
+  SendMultipleNFTsScreen,
+} from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -132,8 +140,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setSelectedNFTs,
   ]);
 
-  // Get theme colors from UI package
-  const [isDarkMode] = React.useState(false);
+  // Since TamaguiProvider is set to defaultTheme="dark", use that
+  const isDarkMode = true; // Based on TamaguiProvider defaultTheme="dark" in App.tsx
 
   // Memoize navigation themes with hardcoded colors
   const navigationThemes = useMemo(() => {
@@ -154,7 +162,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       colors: {
         ...DarkTheme.colors,
         background: '#121212', // surfaceDarkDrawer color for dark mode
-        card: '#1A1A1A', // Dark card color
+        card: '#121212', // Use surfaceDarkDrawer for header background consistency
         text: '#FFFFFF', // White text for dark mode
         border: '#B3B3B3', // Light gray border
         primary: '#00EF8B', // Flow brand green
@@ -196,7 +204,21 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="SelectTokens"
               component={SelectTokensScreen}
               options={{
-                headerTitle: 'Select Tokens',
+                headerTitle: 'Send',
+              }}
+            />
+            <Stack.Screen
+              name="NFTList"
+              component={NFTListScreen}
+              options={{
+                headerTitle: 'Send',
+              }}
+            />
+            <Stack.Screen
+              name="NFTDetail"
+              component={NFTDetailScreen}
+              options={{
+                headerTitle: 'NFT Details',
               }}
             />
             <Stack.Screen
@@ -211,6 +233,20 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={SendTokensScreen}
               options={{
                 headerTitle: 'Send Tokens',
+              }}
+            />
+            <Stack.Screen
+              name="SendSingleNFT"
+              component={SendSingleNFTScreen}
+              options={{
+                headerTitle: 'Send NFT',
+              }}
+            />
+            <Stack.Screen
+              name="SendMultipleNFTs"
+              component={SendMultipleNFTsScreen}
+              options={{
+                headerTitle: 'Send NFTs',
               }}
             />
           </Stack.Group>

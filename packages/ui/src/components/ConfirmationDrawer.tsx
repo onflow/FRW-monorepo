@@ -1,8 +1,9 @@
-import { ChevronDown, WalletCard, Close, FlowLogo } from '@onflow/frw-icons';
-import { type WalletAccount, type TransactionType, type TokenModel } from '@onflow/frw-types';
+import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { type TransactionType, type TokenModel } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
 
+import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
@@ -16,13 +17,27 @@ export interface TransactionFormData {
   transactionFee?: string;
 }
 
+export interface AccountDisplayData {
+  name: string;
+  address: string;
+  avatarSrc?: string;
+  avatarFallback: string;
+  avatarBgColor?: string;
+  parentEmoji?: {
+    emoji: string;
+    name: string;
+    color: string;
+  };
+  type?: 'main' | 'child' | 'evm';
+}
+
 export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
   selectedNFTs?: NFTSendData[];
-  fromAccount?: WalletAccount | null;
-  toAccount?: WalletAccount | null;
+  fromAccount?: AccountDisplayData | null;
+  toAccount?: AccountDisplayData | null;
   formData: TransactionFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
@@ -152,12 +167,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       <Sheet.Frame bg="$bgDrawer" borderTopLeftRadius="$6" borderTopRightRadius="$6">
         <YStack p="$4" gap="$4">
           {/* Header */}
-          <XStack items="center" justify="space-between" width="100%">
+          <XStack items="center" width="100%">
             <View w={32} h={32} />
 
-            <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
-              {title}
-            </Text>
+            <View flex={1} items="center">
+              <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
+                {title}
+              </Text>
+            </View>
 
             <XStack
               w={32}
@@ -210,21 +227,23 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             {/* From Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
               <Avatar
-                src={fromAccount?.avatar}
-                fallback={(fromAccount as any)?.emoji || fromAccount?.name?.charAt(0) || 'A'}
+                src={fromAccount?.avatarSrc}
+                fallback={fromAccount?.avatarFallback || 'A'}
+                bgColor={fromAccount?.avatarBgColor}
                 size={36}
               />
               <YStack items="center" gap="$1">
                 <Text fontSize="$3" fontWeight="600" color="$white" textAlign="center">
                   {fromAccount?.name || 'Unknown'}
                 </Text>
-                <Text fontSize="$2" color="$gray11" textAlign="center">
-                  {fromAccount?.address
-                    ? fromAccount.address.length < 20
-                      ? fromAccount.address
-                      : `${fromAccount.address.slice(0, 6)}...${fromAccount.address.slice(-4)}`
-                    : ''}
-                </Text>
+                {fromAccount?.address && (
+                  <AddressText
+                    address={fromAccount.address}
+                    fontSize="$2"
+                    color="$gray11"
+                    textAlign="center"
+                  />
+                )}
               </YStack>
             </YStack>
 
@@ -234,21 +253,23 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             {/* To Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
               <Avatar
-                src={toAccount?.avatar}
-                fallback={(toAccount as any)?.emoji || toAccount?.name?.charAt(0) || 'A'}
+                src={toAccount?.avatarSrc}
+                fallback={toAccount?.avatarFallback || 'A'}
+                bgColor={toAccount?.avatarBgColor}
                 size={36}
               />
               <YStack items="center" gap="$1">
                 <Text fontSize="$3" fontWeight="600" color="$white" textAlign="center">
                   {toAccount?.name || 'Unknown'}
                 </Text>
-                <Text fontSize="$2" color="$gray11" textAlign="center">
-                  {toAccount?.address
-                    ? toAccount.address.length < 20
-                      ? toAccount.address
-                      : `${toAccount.address.slice(0, 6)}...${toAccount.address.slice(-4)}`
-                    : ''}
-                </Text>
+                {toAccount?.address && (
+                  <AddressText
+                    address={toAccount.address}
+                    fontSize="$2"
+                    color="$gray11"
+                    textAlign="center"
+                  />
+                )}
               </YStack>
             </YStack>
           </XStack>
@@ -293,11 +314,11 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <View
                   bg="$light10"
                   rounded="$10"
-                  px="$2.5"
+                  px="$2"
                   py="$1"
                   flexDirection="row"
                   items="center"
-                  gap="$1"
+                  gap="$0.5"
                   height={32}
                   minW={60}
                 >
@@ -310,6 +331,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   >
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
+                  <VerifiedToken size={10} color="#41CC5D" />
                   <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>
@@ -331,17 +353,15 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Confirm Button */}
           <Button
-            width="100%"
-            height={52}
-            bg="$white"
-            rounded="$4"
+            variant="primary"
+            size="large"
+            fullWidth={true}
+            loading={internalIsSending}
+            loadingText="Hold to send"
             onPress={handleConfirm}
             disabled={internalIsSending}
-            opacity={internalIsSending ? 0.7 : 1}
           >
-            <Text fontSize="$4" fontWeight="600" color="$black">
-              {internalIsSending ? 'Sending...' : 'Confirm'}
-            </Text>
+            Hold to send
           </Button>
         </YStack>
       </Sheet.Frame>

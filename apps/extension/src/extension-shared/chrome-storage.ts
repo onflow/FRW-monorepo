@@ -43,6 +43,12 @@ class ChromeStorage implements Storage {
     await chrome.storage.local.clear();
   }
 
+  // Add getKeys method that ExtensionStorage expects
+  async getKeys(): Promise<string[]> {
+    const result = await chrome.storage.local.get(null);
+    return Object.keys(result);
+  }
+
   // TTL storage operations (with expiration)
   async getExpiry(key: string): Promise<unknown> {
     const data = await this.get(key);

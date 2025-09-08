@@ -6,6 +6,7 @@ import {
   formatCurrencyStringForDisplay,
   type CollectionModel,
   type TokenModel,
+  type NFTModel,
 } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
@@ -31,6 +32,11 @@ export const tokenQueryKeys = {
     [...tokenQueryKeys.address(address, network), FlatQueryDomain.BALANCE] as const,
   nfts: (address: string, network: string = 'mainnet') =>
     [...tokenQueryKeys.address(address, network), FlatQueryDomain.NFTS] as const,
+  nftCollection: (address: string, collection: CollectionModel, network: string = 'mainnet') =>
+    [
+      ...tokenQueryKeys.nfts(address, network),
+      collection.id || collection.contractName || collection.name,
+    ] as const,
 };
 
 // Token Store State - Minimal UI state, queries handle data
@@ -87,6 +93,38 @@ export const tokenQueries = {
       return collections;
     } catch (error: unknown) {
       logger.error('[TokenQuery] Error fetching NFT collections:', error);
+      throw error;
+    }
+  },
+
+  // Fetch NFTs from a specific collection
+  fetchNFTCollection: async (
+    address: string,
+    collection: CollectionModel,
+    network: string = 'mainnet',
+    offset: number = 0,
+    limit: number = 50
+  ): Promise<NFTModel[]> => {
+    if (!address || !collection) return [];
+
+    try {
+      const walletType = addressType(address);
+      const nftSvc = nftService(walletType);
+
+      const nfts = await nftSvc.getNFTs(address, collection, offset, limit);
+
+      logger.debug('[TokenQuery] Fetched NFTs from collection:', {
+        address,
+        collection: collection.name,
+        network,
+        count: nfts.length,
+        offset,
+        limit,
+      });
+
+      return nfts;
+    } catch (error: unknown) {
+      logger.error('[TokenQuery] Error fetching NFTs from collection:', error);
       throw error;
     }
   },
@@ -217,6 +255,13 @@ interface TokenStoreActions {
   fetchTokens: (address: string, network?: string, forceRefresh?: boolean) => Promise<TokenModel[]>;
   fetchBalance: (address: string, accountType?: string, network?: string) => Promise<BalanceData>;
   fetchNFTCollections: (address: string, network?: string) => Promise<CollectionModel[]>;
+  fetchNFTCollection: (
+    address: string,
+    collection: CollectionModel,
+    network?: string,
+    offset?: number,
+    limit?: number
+  ) => Promise<NFTModel[]>;
 
   // Batch operations
   fetchBatchFlowBalances: (addressList: string[]) => Promise<Array<[string, string]>>;
@@ -224,17 +269,28 @@ interface TokenStoreActions {
   // Cache management
   invalidateTokens: (address: string, network?: string) => void;
   invalidateBalance: (address: string, network?: string) => void;
+  invalidateNFTCollection: (address: string, collection: CollectionModel, network?: string) => void;
   invalidateAll: (address?: string) => void;
 
   // Getters with query data
   getTokensForAddress: (address: string, network?: string) => TokenModel[] | undefined;
   getNFTCollectionsForAddress: (address: string, network?: string) => CollectionModel[] | undefined;
+  getNFTCollectionForAddress: (
+    address: string,
+    collection: CollectionModel,
+    network?: string
+  ) => NFTModel[] | undefined;
   getBalanceForAddress: (address: string, network?: string) => BalanceData | undefined;
 
   // Loading states
   isTokensLoading: (address: string, network?: string) => boolean;
   isBalanceLoading: (address: string, network?: string) => boolean;
   isNFTsLoading: (address: string, network?: string) => boolean;
+  isNFTCollectionLoading: (
+    address: string,
+    collection: CollectionModel,
+    network?: string
+  ) => boolean;
 }
 
 type TokenStore = TokenStoreState & TokenStoreActions;
@@ -279,6 +335,21 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
     });
   },
 
+  // Fetch NFT collection items with TanStack Query
+  fetchNFTCollection: async (
+    address: string,
+    collection: CollectionModel,
+    network: string = 'mainnet',
+    offset: number = 0,
+    limit: number = 50
+  ): Promise<NFTModel[]> => {
+    return await queryClient.fetchQuery({
+      queryKey: tokenQueryKeys.nftCollection(address, collection, network),
+      queryFn: () => tokenQueries.fetchNFTCollection(address, collection, network, offset, limit),
+      staleTime: 5 * 60 * 1000, // NFT items can be cached for 5 minutes
+    });
+  },
+
   // Batch fetch Flow balances
   fetchBatchFlowBalances: async (addressList: string[]): Promise<Array<[string, string]>> => {
     return await tokenQueries.fetchBatchFlowBalances(addressList);
@@ -294,6 +365,16 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
   invalidateBalance: (address: string, network: string = 'mainnet'): void => {
     queryClient.invalidateQueries({
       queryKey: tokenQueryKeys.balance(address, network),
+    });
+  },
+
+  invalidateNFTCollection: (
+    address: string,
+    collection: CollectionModel,
+    network: string = 'mainnet'
+  ): void => {
+    queryClient.invalidateQueries({
+      queryKey: tokenQueryKeys.nftCollection(address, collection, network),
     });
   },
 
@@ -321,6 +402,16 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
     return queryClient.getQueryData<CollectionModel[]>(tokenQueryKeys.nfts(address, network));
   },
 
+  getNFTCollectionForAddress: (
+    address: string,
+    collection: CollectionModel,
+    network: string = 'mainnet'
+  ): NFTModel[] | undefined => {
+    return queryClient.getQueryData<NFTModel[]>(
+      tokenQueryKeys.nftCollection(address, collection, network)
+    );
+  },
+
   getBalanceForAddress: (address: string, network: string = 'mainnet'): BalanceData | undefined => {
     return queryClient.getQueryData<BalanceData>(tokenQueryKeys.balance(address, network));
   },
@@ -343,6 +434,17 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
   isNFTsLoading: (address: string, network: string = 'mainnet'): boolean => {
     const query = queryClient.getQueryCache().find({
       queryKey: tokenQueryKeys.nfts(address, network),
+    });
+    return query?.state.fetchStatus === 'fetching';
+  },
+
+  isNFTCollectionLoading: (
+    address: string,
+    collection: CollectionModel,
+    network: string = 'mainnet'
+  ): boolean => {
+    const query = queryClient.getQueryCache().find({
+      queryKey: tokenQueryKeys.nftCollection(address, collection, network),
     });
     return query?.state.fetchStatus === 'fetching';
   },

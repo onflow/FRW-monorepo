@@ -38,11 +38,15 @@ const sampleContacts: RecipientItemProps[] = [
     name: 'Alice Cooper',
     address: '0x1234567890abcdef1234567890abcdef12345678',
     type: 'contact',
+    emojiInfo: { emoji: 'A', name: 'Alice Cooper', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
   {
     name: 'Anna Smith',
     address: '0x9876543210fedcba9876543210fedcba98765432',
     type: 'contact',
+    emojiInfo: { emoji: 'A', name: 'Anna Smith', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
 ];
 
@@ -67,38 +71,52 @@ const fullContactList: RecipientItemProps[] = [
     name: 'Alice Cooper',
     address: '0x1234567890abcdef1234567890abcdef12345678',
     type: 'contact',
+    emojiInfo: { emoji: 'A', name: 'Alice Cooper', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
   {
     name: 'Anna Smith',
     address: '0x9876543210fedcba9876543210fedcba98765432',
     type: 'contact',
+    emojiInfo: { emoji: 'A', name: 'Anna Smith', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
   {
     name: 'Andrew Johnson',
     address: '0xabcdef1234567890abcdef1234567890abcdef12',
     type: 'contact',
+    emojiInfo: { emoji: 'A', name: 'Andrew Johnson', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
   // B section
   {
     name: 'Bob Wilson',
     address: '0x5555666677778888999900001111222233334444',
     type: 'contact',
+    emojiInfo: { emoji: 'B', name: 'Bob Wilson', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
   {
     name: 'Betty Davis',
     address: '0x1111222233334444555566667777888899990000',
     type: 'contact',
+    emojiInfo: { emoji: 'B', name: 'Betty Davis', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
   // C section
   {
     name: 'Charlie Brown',
     address: '0xaaaaaabbbbbbccccccddddddeeeeeeffffffffff',
     type: 'contact',
+    emojiInfo: { emoji: 'C', name: 'Charlie Brown', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
   {
     name: 'Catherine Miller',
     address: '0xdeadbeefcafebabe123456789abcdef012345678',
     type: 'contact',
+    emojiInfo: { emoji: 'C', name: 'Catherine Miller', color: '#FFFFFF' },
+    parentEmojiInfo: null,
   },
 ];
 
@@ -119,6 +137,8 @@ export const SingleLetterAddressBook: Story = {
           address: '0x0c666c888d8fb259',
           type: 'contact',
           avatar: '🐯',
+          emojiInfo: { emoji: '🐯', name: 'Tiger', color: '#000000' },
+          parentEmojiInfo: null,
         },
       ]}
       groupByLetter={true}

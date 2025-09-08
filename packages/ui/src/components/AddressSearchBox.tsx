@@ -5,6 +5,7 @@ import { XStack, Input, Button } from 'tamagui';
 export interface AddressSearchBoxProps {
   value: string;
   onChangeText: (text: string) => void;
+  /** Placeholder text for the search input. Should be translated by parent component. */
   placeholder?: string;
   showScanButton?: boolean;
   showClearButton?: boolean;
@@ -13,10 +14,14 @@ export interface AddressSearchBoxProps {
   disabled?: boolean;
 }
 
+/**
+ * Address search input component with optional scan button and clear functionality.
+ * Part of the pure UI layer - translations should be handled by parent components.
+ */
 export function AddressSearchBox({
   value,
   onChangeText,
-  placeholder = 'Search address',
+  placeholder = 'Search...',
   showScanButton = false,
   showClearButton = true,
   onScanPress,
@@ -63,12 +68,11 @@ export function AddressSearchBox({
           disabled={disabled}
           bg="transparent"
           borderWidth={0}
+          h={44}
+          p={0}
           focusStyle={{
             outlineWidth: 0,
           }}
-          minH="$11"
-          px="$4"
-          py="$2.5"
         />
 
         {/* Clear Button */}

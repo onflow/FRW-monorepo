@@ -1,4 +1,5 @@
-import { navigation } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
+import { RecentRecipientsService } from '@onflow/frw-services';
 import {
   sendSelectors,
   useSendStore,
@@ -6,9 +7,17 @@ import {
   walletSelectors,
   useAddressBookStore,
   addressBookQueryKeys,
+  tokenQueries,
 } from '@onflow/frw-stores';
 import type { WalletAccount } from '@onflow/frw-types';
-import { SearchableTabLayout, RecipientList, type RecipientData } from '@onflow/frw-ui';
+import {
+  SearchableTabLayout,
+  RecipientList,
+  AddressBookList,
+  type RecipientData,
+  ExtensionHeader,
+  BackgroundWrapper,
+} from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +34,7 @@ interface TabConfig {
  * Uses TanStack Query for data fetching and caching
  */
 export function SendToScreen(): React.ReactElement {
+  const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
 
   const TABS: TabConfig[] = [
@@ -40,6 +50,7 @@ export function SendToScreen(): React.ReactElement {
 
   // Get selected token from send store
   const selectedToken = useSendStore(sendSelectors.selectedToken);
+  const transactionType = useSendStore((state) => state.transactionType);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
   // Update current step when screen loads
@@ -47,8 +58,7 @@ export function SendToScreen(): React.ReactElement {
     setCurrentStep('send-to');
   }, [setCurrentStep]);
 
-  // Get wallet data
-  const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const allAccounts = useWalletStore(walletSelectors.getAllAccounts);
   const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
   const isLoadingWallet = useWalletStore((state) => state.isLoading);
   const walletError = useWalletStore((state) => state.error);
@@ -56,38 +66,98 @@ export function SendToScreen(): React.ReactElement {
 
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
-    if (accounts.length === 0 && !isLoadingWallet) {
+    if (allAccounts.length === 0 && !isLoadingWallet) {
       loadAccountsFromBridge();
     }
-  }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
+  }, [loadAccountsFromBridge, allAccounts.length, isLoadingWallet]);
 
   // Query for recent contacts with automatic caching
-  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
+  const {
+    data: recentContacts = [],
+    isLoading: isLoadingRecent,
+    error: recentError,
+  } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Query for all contacts with automatic caching
-  const { data: allContacts = [], isLoading: isLoadingContacts } = useQuery({
+  const {
+    data: allContacts = [],
+    isLoading: isLoadingContacts,
+    error: contactsError,
+  } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Query for account balances (only fetch if we have accounts)
+  const { data: accountBalances = {} } = useQuery({
+    queryKey: ['accountBalances', allAccounts.map(acc => acc.address)],
+    queryFn: async () => {
+      const results: { [address: string]: { balance: string; nftCount: string } } = {};
+      
+      // Fetch balance for each account
+      for (const account of allAccounts) {
+        try {
+          const balanceData = await tokenQueries.fetchBalance(account.address, account.type);
+          results[account.address] = {
+            balance: balanceData.displayBalance,
+            nftCount: balanceData.nftCountDisplay,
+          };
+        } catch (error) {
+          console.warn(`Failed to fetch balance for ${account.address}:`, error);
+          results[account.address] = {
+            balance: '0 FLOW',
+            nftCount: '0 NFTs',
+          };
+        }
+      }
+      
+      return results;
+    },
+    enabled: allAccounts.length > 0,
+    staleTime: 30 * 1000, // Cache for 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 60 * 1000, // Refresh every minute
+  });
+
   // Convert accounts data
   const accountsData = useMemo((): RecipientData[] => {
-    return accounts.map((account: WalletAccount) => ({
-      id: account.address,
-      name: account.name,
-      address: account.address,
-      avatar: account.avatar,
-      emojiInfo: account.emojiInfo,
-      parentEmojiInfo: null,
-      type: 'account' as const,
-      isSelected: account.isActive,
-    }));
-  }, [accounts]);
+    return allAccounts.map((account: WalletAccount) => {
+      const balanceInfo = accountBalances[account.address];
+      let balance = 'Loading...';
+      
+      if (balanceInfo) {
+        // Parse NFT count to check if it's 0
+        const nftCountMatch = balanceInfo.nftCount.match(/^(\d+)/);
+        const nftCount = nftCountMatch ? parseInt(nftCountMatch[1], 10) : 0;
+        
+        // Show only FLOW balance if no NFTs, otherwise show both
+        balance = nftCount > 0 
+          ? `${balanceInfo.balance} | ${balanceInfo.nftCount}`
+          : balanceInfo.balance;
+      }
+        
+      return {
+        id: account.address,
+        name: account.name,
+        address: account.address,
+        avatar: account.avatar,
+        emojiInfo: account.emojiInfo,
+        parentEmojiInfo: account.parentEmoji || null,
+        type: 'account' as const,
+        isSelected: false,
+        isLinked: !!(account.parentAddress || account.type === 'child'),
+        isEVM: account.type === 'evm',
+        balance,
+        showBalance: true,
+      };
+    });
+  }, [allAccounts, accountBalances]);
 
   // Convert recent contacts data
   const recentData = useMemo((): RecipientData[] => {
@@ -97,11 +167,7 @@ export function SendToScreen(): React.ReactElement {
       address: contact.address,
       avatar: contact.avatar,
       type: 'recent' as const,
-      emojiInfo: {
-        emoji: '👤',
-        name: 'person',
-        color: '#6B7280',
-      },
+      emojiInfo: null,
       parentEmojiInfo: null,
     }));
   }, [recentContacts]);
@@ -114,14 +180,10 @@ export function SendToScreen(): React.ReactElement {
       address: contact.address,
       avatar: contact.avatar,
       type: 'contact' as const,
-      emojiInfo: {
-        emoji: '📇',
-        name: 'contact',
-        color: '#3B82F6',
-      },
+      emojiInfo: null,
       parentEmojiInfo: null,
     }));
-  }, [allContacts]);
+  }, [allContacts, isLoadingContacts, contactsError]);
 
   // Get current recipients based on active tab
   const recipients = useMemo(() => {
@@ -181,7 +243,7 @@ export function SendToScreen(): React.ReactElement {
   }, []);
 
   const handleRecipientPress = useCallback(
-    (recipient: RecipientData) => {
+    async (recipient: RecipientData) => {
       setToAccount({
         id: recipient.id,
         name: recipient.name,
@@ -191,10 +253,35 @@ export function SendToScreen(): React.ReactElement {
         isActive: false,
         type: recipient.type === 'account' ? 'main' : undefined,
       });
-      // Navigate to send tokens screen
-      navigation.navigate('SendTokens', { address: recipient.address, recipient });
+
+      // Add to recent recipients (only if not selecting from "My Accounts" tab)
+      if (activeTab !== 'accounts') {
+        try {
+          const recentService = RecentRecipientsService.getInstance();
+          await recentService.addRecentRecipient({
+            id: recipient.id,
+            name: recipient.name,
+            address: recipient.address,
+            emoji: recipient.emojiInfo?.emoji,
+            avatar: recipient.avatar,
+          });
+        } catch (error) {
+          console.warn('Failed to add recent recipient:', error);
+          // Don't block navigation if this fails
+        }
+      }
+
+      // Navigate to appropriate screen based on transaction type
+      if (transactionType === 'single-nft') {
+        navigation.navigate('SendSingleNFT', { address: recipient.address, recipient });
+      } else if (transactionType === 'multiple-nfts') {
+        navigation.navigate('SendMultipleNFTs', { address: recipient.address, recipient });
+      } else {
+        // Default to tokens screen
+        navigation.navigate('SendTokens', { address: recipient.address, recipient });
+      }
     },
-    [setToAccount]
+    [setToAccount, activeTab, transactionType]
   );
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {
@@ -234,28 +321,68 @@ export function SendToScreen(): React.ReactElement {
   const emptyState = getEmptyStateForTab();
 
   return (
-    <SearchableTabLayout
-      title={t('send.sendTo.title')}
-      searchValue={searchQuery}
-      searchPlaceholder={t('send.searchAddress')}
-      showScanButton={true}
-      onSearchChange={setSearchQuery}
-      onScanPress={handleScanPress}
-      tabSegments={tabTitles}
-      activeTab={getTitleByType(activeTab)}
-      onTabChange={handleTabChange}
-      backgroundColor="$bgDrawer"
-    >
-      <RecipientList
-        data={recipients}
-        isLoading={isLoading}
-        emptyTitle={emptyState.title}
-        emptyMessage={emptyState.message}
-        onItemPress={handleRecipientPress}
-        onItemEdit={handleRecipientEdit}
-        onItemCopy={handleRecipientCopy}
-        contentPadding={0}
-      />
-    </SearchableTabLayout>
+    <BackgroundWrapper>
+      {isExtension && (
+        <ExtensionHeader
+          title={t('send.sendTokens.title', 'Sending')}
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
+      <SearchableTabLayout
+        title={t('send.sendTo.title')}
+        searchValue={searchQuery}
+        searchPlaceholder={t('send.searchAddress')}
+        showScanButton={true}
+        onSearchChange={setSearchQuery}
+        onScanPress={handleScanPress}
+        tabSegments={tabTitles}
+        activeTab={getTitleByType(activeTab)}
+        onTabChange={handleTabChange}
+        backgroundColor="$bgDrawer"
+      >
+        {activeTab === 'contacts' ? (
+          isLoading ? (
+            <RecipientList
+              data={[]}
+              isLoading={true}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              contentPadding={0}
+            />
+          ) : contactsData.length === 0 ? (
+            <RecipientList
+              data={[]}
+              isLoading={false}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              contentPadding={0}
+            />
+          ) : (
+            <AddressBookList
+              contacts={contactsData.map((contact) => ({
+                ...contact,
+                onPress: () => handleRecipientPress(contact),
+                onEdit: () => handleRecipientEdit(contact),
+                onCopy: () => handleRecipientCopy(contact),
+              }))}
+              groupByLetter={true}
+            />
+          )
+        ) : (
+          <RecipientList
+            data={recipients}
+            isLoading={isLoading}
+            emptyTitle={emptyState.title}
+            emptyMessage={emptyState.message}
+            onItemPress={handleRecipientPress}
+            onItemEdit={handleRecipientEdit}
+            onItemCopy={handleRecipientCopy}
+            contentPadding={0}
+          />
+        )}
+      </SearchableTabLayout>
+    </BackgroundWrapper>
   );
 }

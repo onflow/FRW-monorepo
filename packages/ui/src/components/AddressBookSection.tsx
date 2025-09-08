@@ -17,14 +17,14 @@ export function AddressBookSection({
   }
 
   return (
-    <YStack gap={8} width="100%">
+    <YStack gap={4} w="$100">
       {/* Letter Header */}
       <Text
         fontSize={14}
         fontWeight="400"
         color="rgba(255, 255, 255, 0.4)"
         lineHeight={16.8}
-        mb="$0.75"
+        w="100%"
       >
         {letter}
       </Text>
@@ -43,10 +43,8 @@ export function AddressBookSection({
               <YStack
                 height={1}
                 bg="rgba(255, 255, 255, 0.1)"
-                width="100%"
+                w="100%"
                 ml={0}
-                mb="$0.75"
-                mt="$0.5"
               />
             )}
           </YStack>
@@ -80,10 +78,8 @@ export function AddressBookList({
               <YStack
                 height={1}
                 bg="rgba(255, 255, 255, 0.1)"
-                width="100%"
+                w="100%"
                 ml={0}
-                mb="$0.75"
-                mt="$0.5"
               />
             )}
           </YStack>

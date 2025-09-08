@@ -2,7 +2,7 @@ import { YStack } from '@onflow/frw-ui';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useState } from 'react';
 
-import { NFTDetailScreen } from '../src/send/NFTDetailScreen';
+import { NFTDetailScreen } from '../src/send/NFTDetailScreen.query';
 
 // Mock navigation and bridge for stories
 const mockNavigation = {

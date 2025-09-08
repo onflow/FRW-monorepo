@@ -1,6 +1,12 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, useTokenStore, useWalletStore, walletSelectors } from '@onflow/frw-stores';
-import { type NFTModel, type CollectionModel } from '@onflow/frw-types';
+import {
+  useSendStore,
+  useTokenStore,
+  useWalletStore,
+  walletSelectors,
+  useAddressBookStore,
+} from '@onflow/frw-stores';
+import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -15,15 +21,53 @@ import {
   StorageWarning,
   ExtensionHeader,
   type TransactionFormData,
+  type AccountDisplayData,
   Text,
   Separator,
   XStack,
+  Button,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * Transform WalletAccount to AccountDisplayData for UI components
+ */
+const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
+  if (!account) return null;
+
+  return {
+    name: account.name,
+    address: account.address,
+    avatarSrc: account.avatar,
+    avatarFallback: account.emojiInfo?.emoji || account.name?.charAt(0) || 'A',
+    avatarBgColor: account.emojiInfo?.color,
+    parentEmoji: account.parentEmoji,
+    type: account.type,
+  };
+};
+
+/**
+ * Transform WalletAccount to UI Account type for AccountCard
+ */
+const transformAccountForCard = (account: WalletAccount | null, balance?: string): any | null => {
+  if (!account) return null;
+
+  return {
+    name: account.name,
+    address: account.address,
+    avatar: account.avatar,
+    balance: balance || '0 FLOW',
+    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
+    emojiInfo: account.emojiInfo,
+    parentEmoji: account.parentEmoji,
+    type: account.type,
+  };
+};
 
 /**
  * Query-integrated version of SendTokensScreen following the established pattern
@@ -57,6 +101,9 @@ export const SendTokensScreen = (props) => {
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
   const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
   const isLoadingWallet = useWalletStore((state) => state.isLoading);
+
+  // Get address book store for setting recent contacts
+  const addressBookStore = useAddressBookStore();
 
   // Update current step when screen loads
   useEffect(() => {
@@ -116,6 +163,7 @@ export const SendTokensScreen = (props) => {
         name: selectedAccount.name,
         avatar: selectedAccount.avatar,
         emojiInfo: selectedAccount.emojiInfo,
+        parentEmoji: selectedAccount.parentEmoji,
         parentAddress: selectedAccount.parentAddress,
         isActive: true,
         type: selectedAccount.type,
@@ -152,10 +200,6 @@ export const SendTokensScreen = (props) => {
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
 
-  const [nftCollections, setNftCollections] = useState<CollectionModel[]>([]);
-  const [availableNFTs, setAvailableNFTs] = useState<NFTModel[]>([]);
-  const [isNFTSelectorVisible, setIsNFTSelectorVisible] = useState(false);
-  const [isCollectionSelectorVisible, setIsCollectionSelectorVisible] = useState(false);
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
@@ -232,6 +276,27 @@ export const SendTokensScreen = (props) => {
     }
 
     const result = await executeTransaction();
+
+    // Set the recipient as a recent contact after successful transaction
+    if (result && toAccount) {
+      try {
+        // Convert WalletAccount to Contact format
+        const recentContact = {
+          id: toAccount.id || toAccount.address,
+          name: toAccount.name,
+          address: toAccount.address,
+          avatar: toAccount.avatar || '',
+          isFavorite: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        await addressBookStore.setRecentContact(recentContact);
+      } catch (error) {
+        logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+      }
+    }
+
     return result;
   }, [
     transactionType,
@@ -245,6 +310,7 @@ export const SendTokensScreen = (props) => {
     setTransactionType,
     updateFormData,
     executeTransaction,
+    addressBookStore,
   ]);
 
   // Calculate if send button should be disabled
@@ -333,7 +399,7 @@ export const SendTokensScreen = (props) => {
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
-                account={fromAccount}
+                account={transformAccountForCard(fromAccount, selectedAccount?.balance)}
                 title="From Account"
                 isLoading={isBalanceLoading}
               />
@@ -442,26 +508,32 @@ export const SendTokensScreen = (props) => {
 
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4">
-          <YStack
-            bg={isSendDisabled ? '#2E2E2E' : '#2E2E2E'}
-            rounded="$4"
-            p="$4"
-            items="center"
-            opacity={isSendDisabled ? 1 : 1}
-            pressStyle={{ opacity: 0.8 }}
-            onPress={isSendDisabled ? undefined : handleSendPress}
-            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
-            borderWidth={1}
-            borderColor="#2E2E2E"
+          <Button
+            fullWidth={true}
+            size="large"
+            disabled={isSendDisabled}
+            onPress={handleSendPress}
+            style={{
+              height: 52,
+              backgroundColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
+              color: isSendDisabled ? '#999' : '#000000',
+              borderColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
+              borderWidth: 1,
+              borderRadius: 16,
+              paddingHorizontal: 20,
+              paddingVertical: 16,
+              shadowColor: 'rgba(16, 24, 40, 0.05)',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: isSendDisabled ? 0 : 1,
+              shadowRadius: 2,
+              elevation: isSendDisabled ? 0 : 1,
+              opacity: isSendDisabled ? 0.7 : 1,
+            }}
           >
-            <Text
-              fontSize="$4"
-              fontWeight="600"
-              color={isSendDisabled ? 'rgba(255, 255, 255, 0.3)' : '$white'}
-            >
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
               Next
             </Text>
-          </YStack>
+          </Button>
         </YStack>
 
         {/* Token Selector Modal */}
@@ -489,8 +561,8 @@ export const SendTokensScreen = (props) => {
               collectionContractName: nft.collectionContractName || '',
               description: nft.description || '',
             }))}
-            fromAccount={fromAccount}
-            toAccount={toAccount}
+            fromAccount={transformAccountForDisplay(fromAccount)}
+            toAccount={transformAccountForDisplay(toAccount)}
             formData={formData}
             onConfirm={handleTransactionConfirm}
             onClose={handleConfirmationClose}
@@ -508,8 +580,8 @@ export const SendTokensScreen = (props) => {
               collectionContractName: nft.collectionContractName || '',
               description: nft.description || '',
             }))}
-            fromAccount={fromAccount}
-            toAccount={toAccount}
+            fromAccount={transformAccountForDisplay(fromAccount)}
+            toAccount={transformAccountForDisplay(toAccount)}
             formData={formData}
             onConfirm={handleTransactionConfirm}
             onClose={handleConfirmationClose}

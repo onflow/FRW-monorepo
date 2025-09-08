@@ -147,7 +147,7 @@ export function TokenAmountInput({
             >
               {isTokenMode
                 ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
-                : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)} ${tokenSymbol}`}
+                : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)}`}
             </Text>
           </XStack>
         )}
