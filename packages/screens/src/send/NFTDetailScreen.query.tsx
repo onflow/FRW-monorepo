@@ -232,6 +232,17 @@ export function NFTDetailScreen(): React.ReactElement {
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
     console.log('Continue with selected NFTs:', selectedNFTs?.length);
+    
+    // Get transaction type from store
+    const setTransactionType = useSendStore.getState().setTransactionType;
+    
+    // Set transaction type based on number of selected NFTs
+    if (selectedNFTs && selectedNFTs.length === 1) {
+      setTransactionType('single-nft');
+    } else if (selectedNFTs && selectedNFTs.length > 1) {
+      setTransactionType('multiple-nfts');
+    }
+    
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
   }, [selectedNFTs, setCurrentStep]);

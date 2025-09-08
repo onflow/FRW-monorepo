@@ -44,8 +44,8 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
 
   return (
     <YStack
-      bg="$bg1"
-      rounded="$4"
+      bg={backgroundColor}
+      rounded={borderRadius}
       pt={contentPadding}
       px={contentPadding}
       pb="$7"

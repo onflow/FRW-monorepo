@@ -12,6 +12,7 @@ import {
   NFTSendPreview,
   SendArrowDivider,
   TransactionConfirmationModal,
+  ConfirmationDrawer,
   TransactionFeeSection,
   ToAccountSection,
   AccountCard,
@@ -19,8 +20,11 @@ import {
   StorageWarning,
   Text,
   ExtensionHeader,
+  Separator,
+  Button,
   type NFTDetailData,
   type TransactionFormData,
+  type AccountDisplayData,
   XStack,
 } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
@@ -41,6 +45,30 @@ const transformAccountForCard = (account: WalletAccount | null, balance?: string
     nfts: '12 NFTs', // TODO: Replace with real NFT count when available
     emojiInfo: account.emojiInfo,
     parentEmoji: account.parentEmoji,
+    type: account.type,
+  };
+};
+
+/**
+ * Transform WalletAccount to AccountDisplayData for confirmation drawer
+ */
+const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
+  if (!account) return null;
+
+  // For Flow accounts, we use emoji instead of avatar image
+  const hasEmoji = account.emojiInfo?.emoji;
+  
+  return {
+    name: account.name,
+    address: account.address,
+    avatarSrc: hasEmoji ? undefined : account.avatar, // Only use avatar if no emoji
+    avatarFallback: hasEmoji ? (account.emojiInfo?.emoji || '?') : (account.name?.[0] || '?'),
+    avatarBgColor: account.emojiInfo?.color || '#7B61FF',
+    parentEmoji: account.parentEmoji ? {
+      emoji: account.parentEmoji.emoji,
+      name: account.parentEmoji.name,
+      color: account.parentEmoji.color,
+    } : undefined,
     type: account.type,
   };
 };
@@ -94,9 +122,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const nftForUI: NFTDetailData = {
     id: selectedNFT.id,
     name: selectedNFT.name || 'Untitled NFT',
-    image: selectedNFT.image || selectedNFT.thumbnail || '',
-    collection: selectedNFT.collectionName || selectedNFT.collection || 'Unknown Collection',
-    collectionContractName: selectedNFT.collectionContractName || selectedNFT.contractName,
+    image: (selectedNFT as any).postMedia?.image || selectedNFT.thumbnail || '',
+    collection: selectedNFT.collectionName || 'Unknown Collection',
+    collectionContractName: selectedNFT.collectionContractName,
     description: selectedNFT.description || '',
     type: selectedNFT.type, // Pass the NFT type for EVM badge
   };
@@ -116,7 +144,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const isFeesFree = false;
 
   // Mock storage warning - TODO: Replace with real storage check
-  const showStorageWarning = false;
+  const showStorageWarning = true;
   const storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.';
 
   // Create form data for transaction confirmation
@@ -129,7 +157,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Event handlers
   const handleEditNFTPress = useCallback(() => {
-    navigation.goBack(); // Go back to NFT selection
+    // Navigate back to NFT selection screen
+    // We need to go back twice: SendSingleNFT -> SendTo -> NFTList
+    navigation.navigate('NFTList');
   }, []);
 
   const handleEditAccountPress = useCallback(() => {
@@ -175,41 +205,36 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={20} gap="$4">
-            {/* From Account Section */}
-            {fromAccountForCard && (
-              <AccountCard
-                account={fromAccountForCard}
-                title={t('send.fromAccount')}
-                isLoading={false} // TODO: Real loading state
-              />
-            )}
-
             {/* NFT Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$4" gap="$3">
+            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
+              {/* From Account Section */}
+              {fromAccountForCard && (
+                <AccountCard
+                  account={fromAccountForCard}
+                  title={t('send.fromAccount')}
+                  isLoading={false} // TODO: Real loading state
+                />
+              )}
+              
+              <Separator mx="$0" my="$1" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+              
               <SendSectionHeader
-                title={t('send.nfts')}
+                title="Send NFTs"
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
                 editButtonText="Change"
               />
+              
               <NFTSendPreview
                 nft={nftForUI}
                 onEditPress={handleEditNFTPress}
                 showEditButton={false} // Header now handles the edit button
                 sectionTitle=""
                 backgroundColor="transparent"
+                borderRadius={0}
+                contentPadding="$0"
               />
             </YStack>
-
-            {/* Storage Warning */}
-            {showStorageWarning && (
-              <StorageWarning
-                message={storageWarningMessage}
-                showIcon={true}
-                title="Storage warning"
-                visible={true}
-              />
-            )}
 
             {/* Arrow Down Indicator */}
           <XStack position="relative" height={0}>
@@ -242,22 +267,30 @@ export function SendSingleNFTScreen(): React.ReactElement {
               borderRadius={16}
               contentPadding={0}
             />
+
+            {/* Storage Warning */}
+            {showStorageWarning && (
+              <StorageWarning
+                message={storageWarningMessage}
+                showIcon={true}
+                title="Storage warning"
+                visible={true}
+              />
+            )}
           </YStack>
         </ScrollView>
 
-        {/* Send Button */}
-        <View p={20} pt="$2">
-          <YStack
-            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
-            rounded="$4"
-            p="$4"
-            items="center"
-            opacity={isSendDisabled ? 0.7 : 1}
-            pressStyle={{ opacity: 0.8 }}
-            onPress={isSendDisabled ? undefined : handleSendPress}
-            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
+        {/* Send Button - Anchored to bottom */}
+        <YStack p={20} pt="$2">
+          <Button
+            fullWidth={true}
+            size="large"
+            disabled={isSendDisabled}
+            onPress={handleSendPress}
             style={{
               height: 52,
+              backgroundColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
+              color: isSendDisabled ? '#999' : '#000000',
               borderColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
               borderWidth: 1,
               borderRadius: 16,
@@ -268,26 +301,56 @@ export function SendSingleNFTScreen(): React.ReactElement {
               shadowOpacity: isSendDisabled ? 0 : 1,
               shadowRadius: 2,
               elevation: isSendDisabled ? 0 : 1,
+              opacity: isSendDisabled ? 0.7 : 1,
             }}
           >
             <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
               {t('common.next')}
             </Text>
-          </YStack>
-        </View>
+          </Button>
+        </YStack>
 
-        {/* Transaction Confirmation Modal */}
-        <TransactionConfirmationModal
-          visible={isConfirmationVisible}
-          transactionType="nfts"
-          selectedToken={null}
-          fromAccount={fromAccount}
-          toAccount={toAccount}
-          formData={formData}
-          onConfirm={handleTransactionConfirm}
-          onClose={handleConfirmationClose}
-          title="Confirm NFT Transfer"
-        />
+        {/* Transaction Confirmation - Platform specific */}
+        {isExtension ? (
+          <TransactionConfirmationModal
+            visible={isConfirmationVisible}
+            transactionType="single-nft"
+            selectedToken={null}
+            selectedNFTs={selectedNFT ? [{
+              id: selectedNFT.id || '',
+              name: selectedNFT.name || '',
+              image: selectedNFT.thumbnail || '',
+              collection: selectedNFT.collectionName || '',
+              collectionContractName: selectedNFT.collectionContractName || selectedNFT.contractName || '',
+              description: selectedNFT.description || '',
+            }] : undefined}
+            fromAccount={transformAccountForDisplay(fromAccount)}
+            toAccount={transformAccountForDisplay(toAccount)}
+            formData={formData}
+            onConfirm={handleTransactionConfirm}
+            onClose={handleConfirmationClose}
+            title="Confirm NFT Transfer"
+          />
+        ) : (
+          <ConfirmationDrawer
+            visible={isConfirmationVisible}
+            transactionType="single-nft"
+            selectedToken={null}
+            selectedNFTs={selectedNFT ? [{
+              id: selectedNFT.id || '',
+              name: selectedNFT.name || '',
+              image: selectedNFT.thumbnail || '',
+              collection: selectedNFT.collectionName || '',
+              collectionContractName: selectedNFT.collectionContractName || selectedNFT.contractName || '',
+              description: selectedNFT.description || '',
+            }] : undefined}
+            fromAccount={transformAccountForDisplay(fromAccount)}
+            toAccount={transformAccountForDisplay(toAccount)}
+            formData={formData}
+            onConfirm={handleTransactionConfirm}
+            onClose={handleConfirmationClose}
+          />
+        )}
       </YStack>
     </BackgroundWrapper>
   );

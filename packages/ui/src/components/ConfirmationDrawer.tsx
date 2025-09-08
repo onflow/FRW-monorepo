@@ -279,7 +279,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
-                sectionTitle={`Send ${selectedNFTs.length} NFT${selectedNFTs.length !== 1 ? 's' : ''}`}
                 maxVisibleThumbnails={3}
                 expandable={false}
                 thumbnailSize={60}
@@ -352,17 +351,20 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           )}
 
           {/* Confirm Button */}
-          <Button
-            variant="primary"
-            size="large"
-            fullWidth={true}
-            loading={internalIsSending}
-            loadingText="Hold to send"
-            onPress={handleConfirm}
-            disabled={internalIsSending}
+          <YStack
+            bg="#FFFFFF"
+            rounded="$4"
+            height={56}
+            items="center"
+            justify="center"
+            pressStyle={{ opacity: 0.9 }}
+            onPress={internalIsSending ? undefined : handleConfirm}
+            cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
-            Hold to send
-          </Button>
+            <Text fontSize="$5" fontWeight="600" color="#000000">
+              {internalIsSending ? 'Sending...' : 'Hold to send'}
+            </Text>
+          </YStack>
         </YStack>
       </Sheet.Frame>
     </Sheet>
