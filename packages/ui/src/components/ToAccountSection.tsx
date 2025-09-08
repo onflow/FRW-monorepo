@@ -111,7 +111,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
           {/* Account Details - Fixed width with 12px gap from avatar */}
           <XStack ml={12}>
             <YStack width={151.34} gap={2}>
-              {/* Account Name with linked chain emoji */}
+              {/* Account Name with linked chain emoji and EVM badge */}
               <XStack items="center" gap={4}>
                 <Text
                   color="$white"
@@ -119,7 +119,6 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                   fontWeight="600"
                   lineHeight={17}
                   numberOfLines={1}
-                  flex={1}
                 >
                   {account.name || 'Unknown Account'}
                 </Text>
@@ -129,6 +128,12 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                     {account.parentEmoji.emoji}
                   </Text>
                 )}
+                {/* EVM Badge - inline with name */}
+                {account.type === 'evm' && (
+                  <Badge variant="evm" size="small">
+                    EVM
+                  </Badge>
+                )}
               </XStack>
 
               <AddressText
@@ -137,15 +142,6 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 startLength={6}
                 endLength={4}
               />
-
-              {/* EVM Badge */}
-              {account.type === 'evm' && (
-                <XStack items="center">
-                  <Badge variant="evm" size="small">
-                    EVM
-                  </Badge>
-                </XStack>
-              )}
             </YStack>
           </XStack>
         </XStack>

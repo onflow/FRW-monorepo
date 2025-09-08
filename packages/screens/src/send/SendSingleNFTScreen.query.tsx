@@ -206,17 +206,19 @@ export function SendSingleNFTScreen(): React.ReactElement {
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={20} gap="$4">
             {/* NFT Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
+            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
               {fromAccountForCard && (
-                <AccountCard
-                  account={fromAccountForCard}
-                  title={t('send.fromAccount')}
-                  isLoading={false} // TODO: Real loading state
-                />
+                <View mt={-8} mb={-16}>
+                  <AccountCard
+                    account={fromAccountForCard}
+                    title={t('send.fromAccount')}
+                    isLoading={false} // TODO: Real loading state
+                  />
+                </View>
               )}
               
-              <Separator mx="$0" my="$1" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+              <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
               
               <SendSectionHeader
                 title="Send NFTs"
