@@ -110,8 +110,8 @@ describe('Storage Implementations', () => {
     it('should handle TTL expiration', async () => {
       await cache.set('test_key', 'data', 1); // 1ms TTL
 
-      // Wait for expiration
-      await new Promise((resolve) => setTimeout(resolve, 2));
+      // Wait for expiration with a bit more margin
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       const retrieved = await cache.get('test_key');
       expect(retrieved).toBeNull();

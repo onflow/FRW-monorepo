@@ -3,13 +3,7 @@
  * Based on analysis of Trust Wallet Core WASM tests and examples
  */
 
-import type { WalletCore } from '@trustwallet/wallet-core';
-import {
-  CoinTypeExt,
-  type HDWallet,
-  type PrivateKey,
-  type PublicKey,
-} from '@trustwallet/wallet-core/dist/src/wallet-core';
+import { type WalletCore } from '@trustwallet/wallet-core';
 
 /**
  * Wallet Core provider with Flow blockchain extensions
