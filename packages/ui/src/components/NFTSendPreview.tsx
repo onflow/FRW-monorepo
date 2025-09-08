@@ -22,7 +22,7 @@ export interface NFTSendPreviewProps {
   sectionTitle?: string;
   imageSize?: string;
   backgroundColor?: string;
-  borderRadius?: string | number;
+  borderRadius?: any;
   contentPadding?: string;
 }
 
@@ -80,11 +80,11 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
         <View width={imageSize} height={imageSize} rounded="$4" overflow="hidden" bg="$bg1">
           {displayImage ? (
             <Image
-              source={{ uri: imageUrl }}
+              src={imageUrl}
               width={imageSize}
               height={imageSize}
               onError={() => setImageError(true)}
-              style={{ objectFit: 'cover' }}
+              objectFit="cover"
             />
           ) : (
             <YStack
