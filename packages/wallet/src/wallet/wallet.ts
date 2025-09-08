@@ -22,6 +22,16 @@ import {
 import { type WalletType } from '../types/wallet';
 
 /**
+ * Account change listener callback
+ */
+export type AccountsListener = (accounts: Map<string, FlowAccount | EVMAccount>) => void;
+
+/**
+ * Loading state listener callback
+ */
+export type LoadingListener = (isLoading: boolean) => void;
+
+/**
  * Wallet class - exact match to Flow Wallet Kit iOS Wallet.swift
  */
 export class Wallet {
@@ -33,6 +43,10 @@ export class Wallet {
   private accounts: Map<string, FlowAccount | EVMAccount> = new Map(); // address -> account
   private isLoading: boolean = false;
   private cacheStorage: StorageProtocol;
+
+  // Event listeners
+  private accountsListeners: Set<AccountsListener> = new Set();
+  private loadingListeners: Set<LoadingListener> = new Set();
 
   // Constants (matching iOS implementation)
   private static readonly FULL_WEIGHT_THRESHOLD = 1000;
@@ -64,6 +78,7 @@ export class Wallet {
    */
   setAccount(address: string, account: FlowAccount | EVMAccount): void {
     this.accounts.set(address, account);
+    this.notifyAccountsListeners();
   }
 
   /**
@@ -102,7 +117,11 @@ export class Wallet {
    * Remove account by address
    */
   removeAccount(address: string): boolean {
-    return this.accounts.delete(address);
+    const removed = this.accounts.delete(address);
+    if (removed) {
+      this.notifyAccountsListeners();
+    }
+    return removed;
   }
 
   /**
@@ -124,6 +143,7 @@ export class Wallet {
    */
   clearAccounts(): void {
     this.accounts.clear();
+    this.notifyAccountsListeners();
   }
 
   /**
@@ -187,6 +207,82 @@ export class Wallet {
     networks.forEach((network) => this.networks.add(network));
   }
 
+  // MARK: - Event Listeners
+
+  /**
+   * Add listener for accounts changes
+   */
+  addAccountsListener(listener: AccountsListener): () => void {
+    this.accountsListeners.add(listener);
+    // Return unsubscribe function
+    return () => {
+      this.accountsListeners.delete(listener);
+    };
+  }
+
+  /**
+   * Add listener for loading state changes
+   */
+  addLoadingListener(listener: LoadingListener): () => void {
+    this.loadingListeners.add(listener);
+    // Return unsubscribe function
+    return () => {
+      this.loadingListeners.delete(listener);
+    };
+  }
+
+  /**
+   * Remove accounts listener
+   */
+  removeAccountsListener(listener: AccountsListener): void {
+    this.accountsListeners.delete(listener);
+  }
+
+  /**
+   * Remove loading listener
+   */
+  removeLoadingListener(listener: LoadingListener): void {
+    this.loadingListeners.delete(listener);
+  }
+
+  /**
+   * Clear all listeners
+   */
+  clearAllListeners(): void {
+    this.accountsListeners.clear();
+    this.loadingListeners.clear();
+  }
+
+  /**
+   * Notify accounts listeners
+   */
+  private notifyAccountsListeners(): void {
+    const accountsCopy = new Map(this.accounts);
+    this.accountsListeners.forEach((listener) => {
+      try {
+        listener(accountsCopy);
+      } catch (error) {
+        console.error('Error in accounts listener:', error);
+      }
+    });
+  }
+
+  /**
+   * Set loading state and notify listeners
+   */
+  private setLoadingState(loading: boolean): void {
+    if (this.isLoading !== loading) {
+      this.isLoading = loading;
+      this.loadingListeners.forEach((listener) => {
+        try {
+          listener(loading);
+        } catch (error) {
+          console.error('Error in loading listener:', error);
+        }
+      });
+    }
+  }
+
   // MARK: - Key-to-Account Discovery (matching iOS implementation lines 103-293)
 
   /**
@@ -199,7 +295,7 @@ export class Wallet {
       return; // Watch-only wallets don't have keys to discover with
     }
 
-    this.isLoading = true;
+    this.setLoadingState(true);
 
     try {
       // Execute parallel key search for both P256 and secp256k1
@@ -236,7 +332,7 @@ export class Wallet {
       console.error('Failed to fetch accounts:', error);
       throw error;
     } finally {
-      this.isLoading = false;
+      this.setLoadingState(false);
     }
   }
 
@@ -418,7 +514,7 @@ export class Wallet {
   }
 
   /**
-   * Load cached account data
+   * Load cached account data with safe replacement strategy
    * @returns true if cached data was loaded, false otherwise
    */
   private async loadCachedAccountData(): Promise<boolean> {
@@ -430,28 +526,81 @@ export class Wallet {
 
       const parsed = JSON.parse(new TextDecoder().decode(cachedData));
 
-      // Check if cached data is not too old (e.g., 1 hour)
-      const maxCacheAge = 60 * 60 * 1000; // 1 hour in milliseconds
+      // Check if cached data is not too old (e.g., 24 hours)
+      const maxCacheAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
       const now = Date.now();
       if (parsed.lastUpdated && now - parsed.lastUpdated > maxCacheAge) {
         console.log('Cached data is too old, will fetch fresh data');
         return false;
       }
 
-      // Restore accounts
-      this.accounts.clear();
-      for (const [address, accountData] of parsed.accounts) {
-        this.accounts.set(address, accountData);
+      // Validate cached data structure
+      if (
+        !parsed.accounts ||
+        !Array.isArray(parsed.accounts) ||
+        !parsed.networks ||
+        !Array.isArray(parsed.networks)
+      ) {
+        console.warn('Invalid cached data structure');
+        return false;
       }
 
-      // Restore networks
-      this.networks.clear();
-      for (const network of parsed.networks) {
-        this.networks.add(network);
-      }
+      // Create temporary collections to validate data
+      const tempAccounts = new Map<string, FlowAccount | EVMAccount>();
+      const tempNetworks = new Set<Network>();
 
-      console.log(`Loaded ${this.accounts.size} cached accounts for wallet ${this.id}`);
-      return true;
+      try {
+        // Validate and populate accounts
+        for (const [address, accountData] of parsed.accounts) {
+          if (typeof address === 'string' && accountData && typeof accountData === 'object') {
+            tempAccounts.set(address, accountData);
+          }
+        }
+
+        // Validate and populate networks
+        for (const network of parsed.networks) {
+          if (network && typeof network === 'object' && network.chain && network.name) {
+            tempNetworks.add(network);
+          }
+        }
+
+        // Only replace existing data if validation successful
+        if (tempAccounts.size > 0 || tempNetworks.size > 0) {
+          // Backup current state
+          const oldAccounts = new Map(this.accounts);
+          const oldNetworks = new Set(this.networks);
+
+          try {
+            // Replace with validated cached data
+            this.accounts.clear();
+            tempAccounts.forEach((account, address) => {
+              this.accounts.set(address, account);
+            });
+
+            this.networks.clear();
+            tempNetworks.forEach((network) => {
+              this.networks.add(network);
+            });
+
+            console.log(`Loaded ${this.accounts.size} cached accounts for wallet ${this.id}`);
+
+            // Notify listeners of the change
+            this.notifyAccountsListeners();
+            return true;
+          } catch (replaceError) {
+            // Restore backup if replacement fails
+            console.error('Failed to replace cached data, restoring backup:', replaceError);
+            this.accounts = oldAccounts;
+            this.networks = oldNetworks;
+            return false;
+          }
+        }
+
+        return false;
+      } catch (validationError) {
+        console.warn('Failed to validate cached data:', validationError);
+        return false;
+      }
     } catch (error) {
       console.warn('Failed to load cached account data:', error);
       return false;

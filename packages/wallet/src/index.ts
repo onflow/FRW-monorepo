@@ -12,7 +12,14 @@ export type * from './types/wallet';
 export type * from './types/chain';
 
 // Core wallet classes
-export { Wallet, WalletFactory, WalletTypeUtils, WalletUtils } from './wallet';
+export {
+  Wallet,
+  WalletFactory,
+  WalletTypeUtils,
+  WalletUtils,
+  type AccountsListener,
+  type LoadingListener,
+} from './wallet';
 export { Account, COA } from './account';
 
 // Key implementations - matches iOS Flow Wallet Kit key types
