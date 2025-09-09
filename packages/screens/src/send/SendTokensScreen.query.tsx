@@ -200,7 +200,6 @@ export const SendTokensScreen = (props) => {
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
 
-
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
     (token: any) => {
@@ -257,23 +256,14 @@ export const SendTokensScreen = (props) => {
   );
 
   const handleTransactionConfirm = useCallback(async () => {
-    if (transactionType === 'tokens') {
-      if (!selectedToken || !fromAccount || !toAccount || !amount) {
-        throw new Error('Missing transaction data');
-      }
-
-      setSelectedToken(selectedToken);
-      setSelectedNFTs([]);
-      setTransactionType('tokens');
-      updateFormData({ tokenAmount: amount });
-    } else {
-      if (!selectedNFTs.length || !fromAccount || !toAccount) {
-        throw new Error('Missing NFT transaction data');
-      }
-      setSelectedToken(null);
-      setSelectedNFTs(selectedNFTs);
-      setTransactionType(transactionType);
+    if (!selectedToken || !fromAccount || !toAccount || !amount) {
+      throw new Error('Missing transaction data');
     }
+
+    setSelectedToken(selectedToken);
+    setSelectedNFTs([]);
+    setTransactionType('tokens');
+    updateFormData({ tokenAmount: amount });
 
     const result = await executeTransaction();
 
