@@ -1,0 +1,334 @@
+/**
+ * Test suite for Wallet class
+ * Based on Flow Wallet Kit iOS testing patterns
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+import { Wallet } from '../wallet/wallet';
+import { createMockStorageSetup } from '../storage/mock-storage';
+import { Chain } from '../types/chain';
+import { KeyType } from '../types/key';
+import { type WalletConfig, type CreateWalletParams } from '../types/wallet';
+
+describe('Wallet', () => {
+  let mockStorage: ReturnType<typeof createMockStorageSetup>;
+  let config: WalletConfig;
+
+  beforeEach(() => {
+    mockStorage = createMockStorageSetup();
+    config = {
+      secureStorage: mockStorage.secureStorage,
+      cacheStorage: mockStorage.cacheStorage,
+      networks: ['mainnet', 'testnet'],
+      defaultNetwork: 'mainnet',
+    };
+  });
+
+  afterEach(() => {
+    mockStorage.reset();
+  });
+
+  describe('Wallet Creation', () => {
+    it('should create a new mnemonic wallet', async () => {
+      const params: CreateWalletParams = {
+        name: 'Test Wallet',
+        type: KeyType.MNEMONIC,
+        mnemonic:
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        password: 'test123',
+      };
+
+      const wallet = await Wallet.create(params, config);
+
+      expect(wallet.name).toBe('Test Wallet');
+      expect(wallet.type).toBe(KeyType.MNEMONIC);
+      expect(wallet.id).toBeDefined();
+      expect(wallet.createdAt).toBeTypeOf('number');
+    });
+
+    it('should create a new private key wallet', async () => {
+      const params: CreateWalletParams = {
+        name: 'Private Key Wallet',
+        type: KeyType.PRIVATE_KEY,
+        privateKey: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        password: 'test123',
+      };
+
+      const wallet = await Wallet.create(params, config);
+
+      expect(wallet.name).toBe('Private Key Wallet');
+      expect(wallet.type).toBe(KeyType.PRIVATE_KEY);
+    });
+
+    it('should throw error for invalid wallet type', async () => {
+      const params: CreateWalletParams = {
+        name: 'Invalid Wallet',
+        type: KeyType.MNEMONIC,
+        // Missing mnemonic
+        password: 'test123',
+      } as any;
+
+      await expect(Wallet.create(params, config)).rejects.toThrow();
+    });
+  });
+
+  describe('Wallet Loading and Authentication', () => {
+    let wallet: Wallet;
+
+    beforeEach(async () => {
+      const params: CreateWalletParams = {
+        name: 'Test Wallet',
+        type: KeyType.MNEMONIC,
+        mnemonic:
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        password: 'test123',
+      };
+
+      wallet = await Wallet.create(params, config);
+    });
+
+    it('should load wallet with correct password', async () => {
+      expect(wallet.isLoaded).toBe(false);
+      expect(wallet.isUnlocked).toBe(false);
+
+      await wallet.load('test123');
+
+      expect(wallet.isLoaded).toBe(true);
+      expect(wallet.isUnlocked).toBe(true);
+    });
+
+    it('should reject incorrect password', async () => {
+      await expect(wallet.load('wrong_password')).rejects.toThrow();
+    });
+
+    it('should lock and unlock wallet', async () => {
+      await wallet.load('test123');
+      expect(wallet.isUnlocked).toBe(true);
+
+      await wallet.lock();
+      expect(wallet.isUnlocked).toBe(false);
+
+      await wallet.unlock('test123');
+      expect(wallet.isUnlocked).toBe(true);
+    });
+  });
+
+  describe('Account Management', () => {
+    let wallet: Wallet;
+
+    beforeEach(async () => {
+      const params: CreateWalletParams = {
+        name: 'Test Wallet',
+        type: KeyType.MNEMONIC,
+        mnemonic:
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        password: 'test123',
+      };
+
+      wallet = await Wallet.create(params, config);
+      await wallet.load('test123');
+    });
+
+    it('should start with empty accounts', async () => {
+      const accounts = await wallet.fetchAllAccounts();
+      expect(accounts.size).toBe(0);
+    });
+
+    it('should create watch-only Flow account', async () => {
+      const address = '0x1234567890abcdef';
+      const account = await wallet.createWatchAccount(
+        address,
+        Chain.Flow,
+        'mainnet',
+        'Test Flow Account'
+      );
+
+      expect(account.address).toBe(address);
+      expect(account.chain).toBe(Chain.Flow);
+      expect(account.network).toBe('mainnet');
+      expect(account.name).toBe('Test Flow Account');
+      expect(account.canSign()).toBe(false);
+      expect(account.isWatchOnly()).toBe(true);
+    });
+
+    it('should create watch-only EVM account', async () => {
+      const address = '0x1234567890abcdef1234567890abcdef12345678';
+      const account = await wallet.createWatchAccount(
+        address,
+        Chain.EVM,
+        'ethereum',
+        'Test EVM Account'
+      );
+
+      expect(account.address).toBe(address);
+      expect(account.chain).toBe(Chain.EVM);
+      expect(account.network).toBe('ethereum');
+      expect(account.canSign()).toBe(false);
+    });
+
+    it('should reject invalid Flow address', async () => {
+      const invalidAddress = '0xinvalid';
+
+      await expect(
+        wallet.createWatchAccount(invalidAddress, Chain.Flow, 'mainnet')
+      ).rejects.toThrow();
+    });
+
+    it('should reject invalid EVM address', async () => {
+      const invalidAddress = '0xinvalid';
+
+      await expect(
+        wallet.createWatchAccount(invalidAddress, Chain.EVM, 'ethereum')
+      ).rejects.toThrow();
+    });
+
+    it('should select and get selected account', async () => {
+      const address = '0x1234567890abcdef';
+      await wallet.createWatchAccount(address, Chain.Flow, 'mainnet');
+
+      await wallet.selectAccount(address);
+      expect(wallet.selectedAccount).toBe(address);
+
+      const selectedAccount = wallet.getSelectedAccount();
+      expect(selectedAccount).not.toBeNull();
+      expect(selectedAccount!.address).toBe(address);
+    });
+
+    it('should remove account', async () => {
+      const address = '0x1234567890abcdef';
+      await wallet.createWatchAccount(address, Chain.Flow, 'mainnet');
+
+      const accounts = await wallet.fetchAllAccounts();
+      expect(accounts.size).toBe(1);
+
+      const removed = await wallet.removeAccount(address);
+      expect(removed).toBe(true);
+
+      const accountsAfter = await wallet.fetchAllAccounts();
+      expect(accountsAfter.size).toBe(0);
+    });
+  });
+
+  describe('Wallet Backup and Restore', () => {
+    let wallet: Wallet;
+
+    beforeEach(async () => {
+      const params: CreateWalletParams = {
+        name: 'Test Wallet',
+        type: KeyType.MNEMONIC,
+        mnemonic:
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        password: 'test123',
+        metadata: { testData: 'backup test' },
+      };
+
+      wallet = await Wallet.create(params, config);
+      await wallet.load('test123');
+    });
+
+    it('should create wallet backup', async () => {
+      const backup = await wallet.createBackup('test123');
+
+      expect(backup.version).toBe('1.0.0');
+      expect(backup.walletData.name).toBe('Test Wallet');
+      expect(backup.walletData.type).toBe(KeyType.MNEMONIC);
+      expect(backup.encryptedMnemonic).toBeDefined();
+      expect(backup.accounts).toEqual([]);
+      expect(backup.metadata.exportedAt).toBeTypeOf('number');
+    });
+
+    it('should restore wallet from backup', async () => {
+      // Add an account to the original wallet
+      await wallet.createWatchAccount('0x1234567890abcdef', Chain.Flow, 'mainnet', 'Test Account');
+
+      const backup = await wallet.createBackup('test123');
+
+      // Create new storage for restored wallet
+      const newMockStorage = createMockStorageSetup();
+      const newConfig: WalletConfig = {
+        secureStorage: newMockStorage.secureStorage,
+        cacheStorage: newMockStorage.cacheStorage,
+        networks: ['mainnet', 'testnet'],
+        defaultNetwork: 'mainnet',
+      };
+
+      const restoredWallet = await Wallet.restoreFromBackup(
+        {
+          backupData: backup,
+          password: 'test123',
+          newName: 'Restored Wallet',
+        },
+        newConfig
+      );
+
+      expect(restoredWallet.name).toBe('Restored Wallet');
+      expect(restoredWallet.type).toBe(KeyType.MNEMONIC);
+      expect(restoredWallet.id).not.toBe(wallet.id); // New ID should be generated
+
+      const restoredAccounts = await restoredWallet.fetchAllAccounts();
+      expect(restoredAccounts.size).toBe(1);
+    });
+  });
+
+  describe('Storage and Cache', () => {
+    let wallet: Wallet;
+
+    beforeEach(async () => {
+      const params: CreateWalletParams = {
+        name: 'Test Wallet',
+        type: KeyType.MNEMONIC,
+        mnemonic:
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        password: 'test123',
+      };
+
+      wallet = await Wallet.create(params, config);
+    });
+
+    it('should save and load from cache', async () => {
+      await wallet.saveToCache();
+
+      // Create a new wallet instance with the same ID and config
+      const newWallet = new (wallet.constructor as any)(
+        { ...wallet.data, name: 'Different Name' }, // Temporarily change name
+        config
+      );
+
+      await newWallet.loadFromCache();
+
+      // Name should be restored from cache
+      expect(newWallet.name).toBe('Test Wallet');
+    });
+
+    it('should maintain storage stats', async () => {
+      await wallet.createWatchAccount('0x1234567890abcdef', Chain.Flow, 'mainnet');
+
+      const stats = await mockStorage.getStats();
+      expect(stats.secureKeys).toBeGreaterThan(0);
+      expect(stats.cacheKeys).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Wallet Summary', () => {
+    it('should provide wallet summary', async () => {
+      const params: CreateWalletParams = {
+        name: 'Summary Test Wallet',
+        type: KeyType.MNEMONIC,
+        mnemonic:
+          'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        password: 'test123',
+      };
+
+      const wallet = await Wallet.create(params, config);
+      const summary = wallet.getSummary();
+
+      expect(summary.name).toBe('Summary Test Wallet');
+      expect(summary.type).toBe(KeyType.MNEMONIC);
+      expect(summary.accountCount).toBe(0);
+      expect(summary.isLoaded).toBe(false);
+      expect(summary.isUnlocked).toBe(false);
+      expect(summary.networks).toEqual(['mainnet', 'testnet']);
+    });
+  });
+});
