@@ -87,7 +87,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         <XStack items="center" width={217}>
           {/* Avatar Container - 46x36 with 5px left offset */}
           {showAvatar && (
-            <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
+            <XStack width={46} height={36} items="center" justify="flex-start" pl={5} position="relative">
               <Avatar
                 src={account.avatar}
                 fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
@@ -106,13 +106,33 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                     : undefined
                 }
               />
+              {/* Parent emoji overlay bubble for linked accounts */}
+              {account.parentEmoji && (
+                <XStack
+                  position="absolute"
+                  left={-1}
+                  top={-2}
+                  width={18}
+                  height={18}
+                  rounded={9}
+                  bg="#D9D9D9"
+                  borderWidth={2}
+                  borderColor="$bg"
+                  items="center"
+                  justify="center"
+                >
+                  <Text fontSize={11.5} fontWeight="600">
+                    {account.parentEmoji.emoji}
+                  </Text>
+                </XStack>
+              )}
             </XStack>
           )}
 
           {/* Account Details - Fixed width with 12px gap from avatar */}
           <XStack ml={12}>
             <YStack width={151.34} gap={2}>
-              {/* Account Name with linked icon, chain emoji and EVM badge */}
+              {/* Account Name with linked icon and EVM badge */}
               <XStack items="center" gap={4}>
                 {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
                 <Text
@@ -124,12 +144,6 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 >
                   {account.name || 'Unknown Account'}
                 </Text>
-                {/* Linked chain emoji */}
-                {account.parentEmoji && (
-                  <Text fontSize="$3" lineHeight={17} color="$white">
-                    {account.parentEmoji.emoji}
-                  </Text>
-                )}
                 {/* EVM Badge - inline with name */}
                 {account.type === 'evm' && (
                   <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
