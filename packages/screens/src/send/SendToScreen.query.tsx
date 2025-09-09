@@ -290,14 +290,26 @@ export function SendToScreen(): React.ReactElement {
 
   const handleRecipientPress = useCallback(
     async (recipient: RecipientData) => {
+      // Determine the correct account type
+      let accountType: 'main' | 'child' | 'evm' | undefined;
+      if (recipient.isEVM) {
+        accountType = 'evm';
+      } else if (recipient.isLinked) {
+        accountType = 'child';
+      } else if (recipient.type === 'account') {
+        accountType = 'main';
+      }
+      
       setToAccount({
         id: recipient.id,
         name: recipient.name,
         address: recipient.address,
         avatar: recipient.avatar || '',
         emojiInfo: recipient.emojiInfo,
+        parentEmoji: recipient.parentEmojiInfo,
+        parentAddress: recipient.isLinked ? recipient.address : undefined, // If linked, store parent info
         isActive: false,
-        type: recipient.type === 'account' ? 'main' : undefined,
+        type: accountType,
       });
 
       // Add to recent recipients (only if not selecting from "My Accounts" tab)

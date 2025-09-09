@@ -220,7 +220,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={20} gap="$4">
             {/* NFT Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
+            <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
               {fromAccountForCard && (
                 <View mb={-16}>
