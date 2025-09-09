@@ -205,9 +205,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$4">
+          <YStack p={20} gap="$3">
             {/* NFT Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
+            <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
               {fromAccountForCard && (
                 <View mt={-8} mb={-16}>
@@ -219,7 +219,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 </View>
               )}
               
-              <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+              <Separator mx="$0" my="$0" mb="$2" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
               
               <SendSectionHeader
                 title="Send NFTs"
@@ -228,19 +228,22 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 editButtonText="Change"
               />
               
-              <NFTSendPreview
-                nft={nftForUI}
-                onEditPress={handleEditNFTPress}
-                showEditButton={false} // Header now handles the edit button
-                sectionTitle=""
-                backgroundColor="transparent"
-                borderRadius={0}
-                contentPadding="$0"
-              />
+              <View mt={-8} mb={-8}>
+                <NFTSendPreview
+                  nft={nftForUI}
+                  onEditPress={handleEditNFTPress}
+                  showEditButton={false} // Header now handles the edit button
+                  sectionTitle=""
+                  backgroundColor="transparent"
+                  borderRadius={0}
+                  contentPadding="$0"
+                  imageSize="$24"
+                />
+              </View>
             </YStack>
 
             {/* Arrow Down Indicator */}
-          <XStack position="relative" height={0}>
+          <XStack position="relative" height={0} mt="$1">
             <XStack width="100%" position="absolute" t={-30} justify="center">
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>

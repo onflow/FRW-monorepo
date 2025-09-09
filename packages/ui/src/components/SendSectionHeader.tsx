@@ -25,7 +25,7 @@ export const SendSectionHeader: React.FC<SendSectionHeaderProps> = ({
 }) => {
   return (
     <XStack items="center" justify="space-between">
-      <Text fontSize="$3" fontWeight="600">
+      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16}>
         {title}
       </Text>
       {showEditButton && onEditPress && (
