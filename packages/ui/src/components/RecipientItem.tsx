@@ -106,11 +106,12 @@ export function RecipientItem({
               rounded={9}
               bg="#D9D9D9"
               borderWidth={2}
-              borderColor="$bg"
+              borderColor="#0A0A0B"
               items="center"
               justify="center"
+              overflow="visible"
             >
-              <Text fontSize={11.5} fontWeight="600">
+              <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
                 {parentEmojiInfo?.emoji || parentAvatar}
               </Text>
             </YStack>

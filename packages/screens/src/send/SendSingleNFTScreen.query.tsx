@@ -122,7 +122,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
   
   const nftForUI: NFTSendData = {
     id: selectedNFT.id || '',
-    name: selectedNFT.name || 'Untitled NFT',
+    name: selectedNFT.name || 'Untitled',
     image: nftImage,
     collection: selectedNFT.collectionName || 'Unknown Collection',
     collectionContractName: selectedNFT.collectionContractName,

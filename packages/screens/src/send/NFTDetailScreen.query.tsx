@@ -158,7 +158,7 @@ export function NFTDetailScreen(): React.ReactElement {
 
       return {
         id: nftModel.id,
-        name: nftModel.name || 'Untitled NFT',
+        name: nftModel.name || 'Untitled',
         image: getNFTCover(nftModel),
         collection: nftModel.collectionName || activeCollection.name,
         description: nftModel.description,

@@ -121,7 +121,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
       
       return {
         id: nft.id || '',
-        name: nft.name || 'Untitled NFT',
+        name: nft.name || 'Untitled',
         image: image,
         collection: nft.collectionName || 'Unknown Collection',
         collectionContractName: nft.collectionContractName,
