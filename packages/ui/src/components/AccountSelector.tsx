@@ -69,15 +69,37 @@ export function AccountSelector({
         <XStack py={10} pl={5} pr={0} justify="space-between" items="center" borderRadius={16}>
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
-            {/* Account Avatar */}
-            <Avatar
-              src={currentAccount.avatar}
-              fallback={currentAccount.emojiInfo?.emoji || currentAccount.name?.charAt(0) || '?'}
-              bgColor={currentAccount.emojiInfo?.color}
-              size={36}
-              borderColor="$primary"
-              borderWidth={1}
-            />
+            {/* Account Avatar with parent emoji overlay */}
+            <XStack position="relative" width={36} height={36}>
+              <Avatar
+                src={currentAccount.avatar}
+                fallback={currentAccount.emojiInfo?.emoji || currentAccount.name?.charAt(0) || '?'}
+                bgColor={currentAccount.emojiInfo?.color}
+                size={36}
+                borderColor="$primary"
+                borderWidth={1}
+              />
+              {/* Parent emoji overlay bubble for linked accounts */}
+              {currentAccount.parentEmoji && (
+                <XStack
+                  position="absolute"
+                  left={-6}
+                  top={-6}
+                  width={18}
+                  height={18}
+                  rounded={9}
+                  bg="#D9D9D9"
+                  borderWidth={2}
+                  borderColor="$bg"
+                  items="center"
+                  justify="center"
+                >
+                  <Text fontSize={11.5} fontWeight="600">
+                    {currentAccount.parentEmoji.emoji}
+                  </Text>
+                </XStack>
+              )}
+            </XStack>
 
             {/* Account Details */}
             <YStack flex={1} gap={2}>
@@ -180,15 +202,37 @@ export function AccountSelector({
                       backgroundColor={isSelected ? 'rgba(255, 255, 255, 0.05)' : 'transparent'}
                     >
                       <XStack items="center" gap={16} flex={1}>
-                        {/* Account Avatar */}
-                        <Avatar
-                          src={account.avatar}
-                          fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
-                          bgColor={account.emojiInfo?.color}
-                          size={40}
-                          borderColor={isSelected ? '$primary' : undefined}
-                          borderWidth={isSelected ? 1 : undefined}
-                        />
+                        {/* Account Avatar with parent emoji overlay */}
+                        <XStack position="relative" width={40} height={40}>
+                          <Avatar
+                            src={account.avatar}
+                            fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
+                            bgColor={account.emojiInfo?.color}
+                            size={40}
+                            borderColor={isSelected ? '$primary' : undefined}
+                            borderWidth={isSelected ? 1 : undefined}
+                          />
+                          {/* Parent emoji overlay bubble for linked accounts */}
+                          {account.parentEmoji && (
+                            <XStack
+                              position="absolute"
+                              left={-6}
+                              top={-6}
+                              width={18}
+                              height={18}
+                              rounded={9}
+                              bg="#D9D9D9"
+                              borderWidth={2}
+                              borderColor="$bg"
+                              items="center"
+                              justify="center"
+                            >
+                              <Text fontSize={11.5} fontWeight="600">
+                                {account.parentEmoji.emoji}
+                              </Text>
+                            </XStack>
+                          )}
+                        </XStack>
 
                         {/* Account Details */}
                         <YStack gap={2} flex={1} justify="center">
