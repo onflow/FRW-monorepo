@@ -1,4 +1,5 @@
-import { queryClient } from '@onflow/frw-context';
+import { context, queryClient } from '@onflow/frw-context';
+import { AddressBookService, RecentRecipientsService } from '@onflow/frw-services';
 import { FlatQueryDomain } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
@@ -40,28 +41,79 @@ export const addressBookQueries = {
   // Fetch all contacts
   fetchContacts: async (): Promise<Contact[]> => {
     try {
-      // Mock service call - replace with actual address book service
-      const contacts = await mockAddressBookService.getAllContacts();
+      // Use real address book API service
+      const addressBookService = AddressBookService.getInstance();
+      const response = await addressBookService.getAddressBook();
+
+      // Convert API response to Contact format
+      const contacts: Contact[] = response.contacts.map((contact) => ({
+        id: contact.id,
+        name: contact.name,
+        address: contact.address,
+        avatar: contact.avatar || '',
+        isFavorite: false, // API doesn't provide this, default to false
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      }));
 
       logger.debug('[AddressBookQuery] Fetched contacts:', {
         count: contacts.length,
+        contacts: contacts,
       });
 
       return contacts;
     } catch (error: unknown) {
       logger.error('[AddressBookQuery] Error fetching contacts:', error);
-      throw error;
+
+      // Return empty array if API fails - no mock service needed
+      return [];
     }
   },
 
   // Fetch single contact
   fetchContact: async (id: string): Promise<Contact> => {
     try {
-      const contact = await mockAddressBookService.getContact(id);
+      // Try to find in address book first
+      const addressBookService = AddressBookService.getInstance();
+      const response = await addressBookService.getAddressBook();
 
-      logger.debug('[AddressBookQuery] Fetched contact:', { id, contact });
+      const foundContact = response.contacts.find((c) => c.id === id);
+      if (foundContact) {
+        const contact: Contact = {
+          id: foundContact.id,
+          name: foundContact.name,
+          address: foundContact.address,
+          avatar: foundContact.avatar,
+          isFavorite: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
 
-      return contact;
+        logger.debug('[AddressBookQuery] Fetched contact from address book:', { id, contact });
+        return contact;
+      }
+
+      // If not found in address book, try recent contacts
+      const recentService = RecentRecipientsService.getInstance();
+      const recentAccounts = await recentService.getAllRecentRecipients();
+
+      const foundRecent = recentAccounts.find((a) => a.id === id);
+      if (foundRecent) {
+        const contact: Contact = {
+          id: foundRecent.id,
+          name: foundRecent.name,
+          address: foundRecent.address,
+          avatar: foundRecent.avatar,
+          isFavorite: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        logger.debug('[AddressBookQuery] Fetched contact from recent:', { id, contact });
+        return contact;
+      }
+
+      throw new Error(`Contact ${id} not found`);
     } catch (error: unknown) {
       logger.error('[AddressBookQuery] Error fetching contact:', error);
       throw error;
@@ -71,7 +123,9 @@ export const addressBookQueries = {
   // Fetch favorite contacts
   fetchFavorites: async (): Promise<Contact[]> => {
     try {
-      const favorites = await mockAddressBookService.getFavorites();
+      // Since real API doesn't have favorites yet, we'll return empty array
+      // In the future, this could filter contacts marked as favorites
+      const favorites: Contact[] = [];
 
       logger.debug('[AddressBookQuery] Fetched favorites:', {
         count: favorites.length,
@@ -84,19 +138,52 @@ export const addressBookQueries = {
     }
   },
 
-  // Fetch recent contacts
+  // Fetch recent contacts from storage
   fetchRecent: async (): Promise<Contact[]> => {
     try {
-      const recent = await mockAddressBookService.getRecentContacts();
+      const storage = context.storage;
+      const recentContactsData = await storage.get('recentRecipients');
 
-      logger.debug('[AddressBookQuery] Fetched recent contacts:', {
-        count: recent.length,
-      });
+      if (recentContactsData) {
+        // The storage returns StorageData<RecentRecipient[]> which is RecentRecipient[] with metadata
+        // We need to extract the array items (excluding metadata properties)
+        let recipientsArray: any[] = [];
 
-      return recent;
+        if (Array.isArray(recentContactsData)) {
+          // If it's already an array, use it directly
+          recipientsArray = recentContactsData;
+        } else if (recentContactsData && typeof recentContactsData === 'object') {
+          // If it's a StorageData object, extract array items (exclude metadata)
+          const dataObj = recentContactsData as any;
+          recipientsArray = Object.values(dataObj).filter(
+            (item) =>
+              item &&
+              typeof item === 'object' &&
+              'address' in item &&
+              !['version', 'createdAt', 'updatedAt'].includes(String(item))
+          );
+        }
+
+        // Convert RecentRecipient[] to Contact[]
+        const recent: Contact[] = recipientsArray.map((recipient: any) => ({
+          id: recipient.id || recipient.address,
+          name: recipient.name || 'Recent Contact',
+          address: recipient.address,
+          avatar: recipient.avatar || '',
+          isFavorite: false,
+          createdAt: recipient.createdAt || Date.now(),
+          updatedAt: recipient.updatedAt || Date.now(),
+        }));
+
+        logger.debug('[AddressBookQuery] Fetched recent contacts from storage:', recent);
+        return recent;
+      }
+
+      logger.debug('[AddressBookQuery] No recent contacts found in storage');
+      return [];
     } catch (error: unknown) {
       logger.error('[AddressBookQuery] Error fetching recent contacts:', error);
-      throw error;
+      return [];
     }
   },
 };
@@ -106,11 +193,9 @@ export const addressBookMutations = {
   // Create a new contact
   createContact: async (data: CreateContactRequest): Promise<Contact> => {
     try {
-      const contact = await mockAddressBookService.createContact(data);
-
-      logger.debug('[AddressBookMutation] Created contact:', { contact });
-
-      return contact;
+      // For now, creating contacts is not supported by the real API
+      // This would need to be implemented when backend supports it
+      throw new Error('Creating contacts is not yet supported by the backend API');
     } catch (error: unknown) {
       logger.error('[AddressBookMutation] Error creating contact:', error);
       throw error;
@@ -120,11 +205,9 @@ export const addressBookMutations = {
   // Update an existing contact
   updateContact: async (id: string, data: UpdateContactRequest): Promise<Contact> => {
     try {
-      const contact = await mockAddressBookService.updateContact(id, data);
-
-      logger.debug('[AddressBookMutation] Updated contact:', { id, contact });
-
-      return contact;
+      // For now, updating contacts is not supported by the real API
+      // This would need to be implemented when backend supports it
+      throw new Error('Updating contacts is not yet supported by the backend API');
     } catch (error: unknown) {
       logger.error('[AddressBookMutation] Error updating contact:', error);
       throw error;
@@ -134,11 +217,67 @@ export const addressBookMutations = {
   // Delete a contact
   deleteContact: async (id: string): Promise<void> => {
     try {
-      await mockAddressBookService.deleteContact(id);
-
-      logger.debug('[AddressBookMutation] Deleted contact:', { id });
+      // For now, deleting contacts is not supported by the real API
+      // This would need to be implemented when backend supports it
+      throw new Error('Deleting contacts is not yet supported by the backend API');
     } catch (error: unknown) {
       logger.error('[AddressBookMutation] Error deleting contact:', error);
+      throw error;
+    }
+  },
+
+  // Set recent contact after transaction completion
+  setRecentContact: async (contact: Contact): Promise<void> => {
+    try {
+      // Get existing recent contacts from storage
+      const storage = context.storage;
+      const existingRecentData = await storage.get('recentRecipients');
+      let recentRecipients: any[] = [];
+
+      if (existingRecentData) {
+        // Handle both array format and StorageData format
+        if (Array.isArray(existingRecentData)) {
+          recentRecipients = existingRecentData;
+        } else if (existingRecentData && typeof existingRecentData === 'object') {
+          // If it's a StorageData object, extract the array
+          recentRecipients = Object.values(existingRecentData).filter(
+            (item) => item && typeof item === 'object' && 'address' in item
+          );
+        }
+      }
+
+      // Convert Contact to RecentRecipient format
+      const newRecipient = {
+        id: contact.id,
+        name: contact.name,
+        address: contact.address,
+        avatar: contact.avatar || '',
+        emoji: '',
+        createdAt: contact.createdAt,
+        updatedAt: contact.updatedAt,
+      };
+
+      // Remove existing recipient with same address to avoid duplicates
+      recentRecipients = recentRecipients.filter((r) => r.address !== contact.address);
+
+      // Add new recipient to the beginning
+      recentRecipients.unshift(newRecipient);
+
+      // Keep only the last 10 recent recipients
+      recentRecipients = recentRecipients.slice(0, 10);
+
+      // Store the array directly - ExtensionStorage.set will automatically add metadata
+      await storage.set('recentRecipients', recentRecipients as any);
+
+      // Invalidate the recent contacts query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: addressBookQueryKeys.recent() });
+
+      logger.debug('[AddressBookMutation] Set recent contact:', {
+        contact,
+        totalRecent: recentRecipients.length,
+      });
+    } catch (error: unknown) {
+      logger.error('[AddressBookMutation] Error setting recent contact:', error);
       throw error;
     }
   },
@@ -161,6 +300,7 @@ interface AddressBookStoreActions {
   createContact: (data: CreateContactRequest) => Promise<Contact>;
   updateContact: (id: string, data: UpdateContactRequest) => Promise<Contact>;
   deleteContact: (id: string) => Promise<void>;
+  setRecentContact: (contact: Contact) => Promise<void>;
 
   // Cache management
   invalidateContacts: () => void;
@@ -174,190 +314,70 @@ interface AddressBookStoreActions {
 type AddressBookStore = AddressBookStoreState & AddressBookStoreActions;
 
 export const useAddressBookStore = create<AddressBookStore>((_set, _get) => ({
-  // Query methods - Automatic 5-minute cache for USER_SETTINGS category
+  // Query methods - Direct API calls without TanStack Query for now
   fetchContacts: async () => {
-    return await queryClient.fetchQuery({
-      queryKey: addressBookQueryKeys.contacts(),
-      queryFn: () => addressBookQueries.fetchContacts(),
-      // staleTime: 5 minutes handled automatically for 'addressbook' user settings data
-    });
+    try {
+      console.log('🔍 [AddressBookStore] fetchContacts called');
+      const result = await addressBookQueries.fetchContacts();
+      console.log('🔍 [AddressBookStore] fetchContacts result:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ [AddressBookStore] fetchContacts error:', error);
+      throw error;
+    }
   },
 
   fetchContact: async (id: string) => {
-    return await queryClient.fetchQuery({
-      queryKey: addressBookQueryKeys.contact(id),
-      queryFn: () => addressBookQueries.fetchContact(id),
-      // Automatic cache management
-    });
+    return await addressBookQueries.fetchContact(id);
   },
 
   fetchFavorites: async () => {
-    return await queryClient.fetchQuery({
-      queryKey: addressBookQueryKeys.favorites(),
-      queryFn: () => addressBookQueries.fetchFavorites(),
-      // Automatic cache management
-    });
+    return await addressBookQueries.fetchFavorites();
   },
 
   fetchRecent: async () => {
-    return await queryClient.fetchQuery({
-      queryKey: addressBookQueryKeys.recent(),
-      queryFn: () => addressBookQueries.fetchRecent(),
-      // Automatic cache management
-    });
+    return await addressBookQueries.fetchRecent();
   },
 
   // Mutation methods with optimistic cache updates
   createContact: async (data: CreateContactRequest): Promise<Contact> => {
     const newContact = await addressBookMutations.createContact(data);
-
-    // Optimistically update contacts cache
-    queryClient.setQueryData<Contact[]>(addressBookQueryKeys.contacts(), (oldContacts) =>
-      oldContacts ? [newContact, ...oldContacts] : [newContact]
-    );
-
-    // Invalidate related queries
-    queryClient.invalidateQueries({
-      queryKey: addressBookQueryKeys.favorites(),
-    });
-
     return newContact;
   },
 
   updateContact: async (id: string, data: UpdateContactRequest): Promise<Contact> => {
     const updatedContact = await addressBookMutations.updateContact(id, data);
-
-    // Update individual contact cache
-    queryClient.setQueryData<Contact>(addressBookQueryKeys.contact(id), updatedContact);
-
-    // Update contacts list cache
-    queryClient.setQueryData<Contact[]>(
-      addressBookQueryKeys.contacts(),
-      (oldContacts) =>
-        oldContacts?.map((contact) => (contact.id === id ? updatedContact : contact)) || []
-    );
-
-    // Invalidate favorites if favorite status changed
-    if ('isFavorite' in data) {
-      queryClient.invalidateQueries({
-        queryKey: addressBookQueryKeys.favorites(),
-      });
-    }
-
     return updatedContact;
   },
 
   deleteContact: async (id: string): Promise<void> => {
     await addressBookMutations.deleteContact(id);
-
-    // Remove from all caches
-    queryClient.removeQueries({
-      queryKey: addressBookQueryKeys.contact(id),
-    });
-
-    queryClient.setQueriesData<Contact[]>(
-      { queryKey: addressBookQueryKeys.contacts() },
-      (oldContacts) => oldContacts?.filter((contact) => contact.id !== id) || []
-    );
-
-    queryClient.setQueriesData<Contact[]>(
-      { queryKey: addressBookQueryKeys.favorites() },
-      (oldFavorites) => oldFavorites?.filter((contact) => contact.id !== id) || []
-    );
-
-    queryClient.setQueriesData<Contact[]>(
-      { queryKey: addressBookQueryKeys.recent() },
-      (oldRecent) => oldRecent?.filter((contact) => contact.id !== id) || []
-    );
   },
 
-  // Cache management
+  setRecentContact: async (contact: Contact): Promise<void> => {
+    await addressBookMutations.setRecentContact(contact);
+  },
+
+  // Cache management - No-op for now since we're not using TanStack Query
   invalidateContacts: (): void => {
-    queryClient.invalidateQueries({
-      queryKey: addressBookQueryKeys.contacts(),
-    });
+    // No-op
   },
 
   invalidateContact: (id: string): void => {
-    queryClient.invalidateQueries({
-      queryKey: addressBookQueryKeys.contact(id),
-    });
+    // No-op
   },
 
-  // Getters - Return cached data without triggering fetch
+  // Getters - Return undefined for now since we're not using TanStack Query
   getContacts: (): Contact[] | undefined => {
-    return queryClient.getQueryData<Contact[]>(addressBookQueryKeys.contacts());
+    return undefined;
   },
 
   getContact: (id: string): Contact | undefined => {
-    return queryClient.getQueryData<Contact>(addressBookQueryKeys.contact(id));
+    return undefined;
   },
 }));
 
-// Mock service for demonstration
-const mockAddressBookService = {
-  async getAllContacts(): Promise<Contact[]> {
-    return [
-      {
-        id: '1',
-        name: 'Alice',
-        address: '0x123...',
-        isFavorite: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      {
-        id: '2',
-        name: 'Bob',
-        address: '0x456...',
-        isFavorite: false,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-    ];
-  },
-
-  async getContact(id: string): Promise<Contact> {
-    const contacts = await this.getAllContacts();
-    const contact = contacts.find((c) => c.id === id);
-    if (!contact) throw new Error(`Contact ${id} not found`);
-    return contact;
-  },
-
-  async getFavorites(): Promise<Contact[]> {
-    const contacts = await this.getAllContacts();
-    return contacts.filter((c) => c.isFavorite);
-  },
-
-  async getRecentContacts(): Promise<Contact[]> {
-    const contacts = await this.getAllContacts();
-    return contacts.slice(0, 5); // Return most recent 5
-  },
-
-  async createContact(data: CreateContactRequest): Promise<Contact> {
-    return {
-      id: Date.now().toString(),
-      ...data,
-      isFavorite: false,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-  },
-
-  async updateContact(id: string, data: UpdateContactRequest): Promise<Contact> {
-    const contact = await this.getContact(id);
-    return {
-      ...contact,
-      ...data,
-      updatedAt: Date.now(),
-    };
-  },
-
-  async deleteContact(id: string): Promise<void> {
-    // Mock deletion
-    console.log(`Deleted contact ${id}`);
-  },
-};
+// Real services are now integrated above - no more mock service needed!
 
 // Query keys, queries, and mutations are already exported above
 

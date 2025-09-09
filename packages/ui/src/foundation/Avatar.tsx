@@ -8,6 +8,7 @@ export function Avatar({
   alt,
   size = 40,
   fallback,
+  bgColor,
   borderColor,
   borderWidth,
   style,
@@ -16,18 +17,26 @@ export function Avatar({
     <YStack
       width={size}
       height={size}
-      bg="$bg3"
+      bg={bgColor || '$bg3'}
       items="center"
       justify="center"
       rounded={size / 2}
       overflow="hidden"
-      pos="relative"
+      position="relative"
       borderColor={borderColor as any}
       borderWidth={borderWidth}
       style={style}
     >
       {src ? (
-        <Image src={src} alt={alt} width={size} height={size} objectFit="cover" />
+        <Image 
+          src={src} 
+          alt={alt} 
+          width="100%" 
+          height="100%" 
+          objectFit="cover"
+          borderRadius={size / 2}
+          position="absolute"
+        />
       ) : (
         <Text color="$text" fontSize="$4" fontWeight="600">
           {fallback || alt?.[0]?.toUpperCase() || '?'}

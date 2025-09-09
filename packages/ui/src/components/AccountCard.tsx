@@ -7,6 +7,7 @@ import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 import type { Account, AccountCardProps } from '../types';
 import { AddressText } from './AddressText';
+import { Badge } from './Badge';
 
 export function AccountCard({
   account,
@@ -25,11 +26,10 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      pt="$4"
-      px="$4"
-      pb="$8"
+      pt="$2"
+      px="$1"
+      pb="$6"
       gap="$3"
-      height={135}
       pressStyle={{
         bg: '$light25',
       }}
@@ -38,54 +38,95 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16}>
+      <Text
+        fontSize="$2"
+        mb="$3"
+        fontWeight="400"
+        color="$light80"
+        lineHeight={16}
+        textAlign="left"
+      >
         {title}
       </Text>
 
       {/* Account Container */}
-      <XStack py={10} pl={5} pr={0} justify="space-between" items="start" flex={1}>
+      <XStack py="$2.5" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>
         {/* Left side: Avatar and Account Details */}
-        <XStack items="start" gap={16} flex={1}>
+        <XStack items="center" gap="$4" flex={1}>
           {/* Account Avatar */}
           <Avatar
             src={account.avatar}
-            fallback={account.emoji || account.name?.charAt(0) || '?'}
+            fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || '?'}
+            bgColor={account.emojiInfo?.color}
             size={36}
             borderColor="$primary"
             borderWidth={1}
           />
 
           {/* Account Details */}
-          <YStack width={151.34} gap={2}>
-            {/* Account Name */}
-            <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
-              {account.name || 'Unnamed Account'}
-            </Text>
+          <YStack flex={1} gap="$0.5">
+            {/* Account Name with linked chain emoji */}
+            <XStack items="center" gap="$1" minH={20}>
+              <Text
+                color="$white"
+                fontSize="$3"
+                fontWeight="600"
+                lineHeight={17}
+                numberOfLines={1}
+                flex={1}
+              >
+                {account.name || 'Unnamed Account'}
+              </Text>
+              {/* Linked chain emoji */}
+              {account.parentEmoji && (
+                <Text fontSize="$3" lineHeight={17}>
+                  {account.parentEmoji.emoji}
+                </Text>
+              )}
+            </XStack>
 
             {/* Account Address */}
-            <AddressText address={account.address} truncate={true} startLength={6} endLength={4} />
+            <AddressText
+              address={account.address}
+              truncate={true}
+              startLength={6}
+              endLength={4}
+              color="$textSecondary"
+              minH={18}
+              w="100%"
+            />
 
-            {/* Balance */}
-            {isLoading ? (
-              <Skeleton width="$12" height="$3" borderRadius="$2" mb="$3" />
-            ) : account.balance ? (
-              <Text
-                color="$textMuted"
-                fontWeight="400"
-                fontSize="$2"
-                lineHeight={17}
-                mb="$3"
-                numberOfLines={1}
-              >
-                {account.balance} | {account.nfts}
-              </Text>
-            ) : null}
+            {/* EVM Badge and Balance Row */}
+            <XStack items="center" gap="$2" minH={17}>
+              {/* EVM Badge */}
+              {account.type === 'evm' && (
+                <Badge variant="evm" size="small">
+                  EVM
+                </Badge>
+              )}
+
+              {/* Balance */}
+              {isLoading ? (
+                <Skeleton width="$12" height="$3" borderRadius="$2" />
+              ) : account.balance ? (
+                <Text
+                  color="$textMuted"
+                  fontWeight="400"
+                  fontSize="$2"
+                  lineHeight={17}
+                  numberOfLines={1}
+                  flex={1}
+                >
+                  {account.balance} | {account.nfts}
+                </Text>
+              ) : null}
+            </XStack>
           </YStack>
         </XStack>
 
         {/* Edit Icon */}
         {showEditButton && (
-          <XStack width={24} height={24} items="center" justify="center" mt={6}>
+          <XStack width={24} height={24} items="center" justify="center">
             <Edit size={24} color="#767676" theme="outline" />
           </XStack>
         )}
@@ -178,7 +219,8 @@ export function AccountCard({
                               {/* Account Avatar */}
                               <Avatar
                                 src={acc.avatar}
-                                fallback={acc.emoji || acc.name?.charAt(0) || '?'}
+                                fallback={acc.emojiInfo?.emoji || acc.name?.charAt(0) || '?'}
+                                bgColor={acc.emojiInfo?.color}
                                 size={53.44}
                                 borderColor={isSelected ? '$primary' : undefined}
                                 borderWidth={isSelected ? 1 : undefined}
@@ -186,15 +228,26 @@ export function AccountCard({
 
                               {/* Account Details */}
                               <YStack gap={2} flex={1} justify="center">
-                                <Text
-                                  fontSize={14}
-                                  fontWeight="600"
-                                  color="rgba(255, 255, 255, 0.8)"
-                                  numberOfLines={1}
-                                  ellipsizeMode="tail"
-                                >
-                                  {acc.name || 'Unnamed Account'}
-                                </Text>
+                                {/* Account Name with linked chain emoji */}
+                                <XStack items="center" gap={4}>
+                                  <Text
+                                    fontSize={14}
+                                    fontWeight="600"
+                                    color="rgba(255, 255, 255, 0.8)"
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                    flex={1}
+                                  >
+                                    {acc.name || 'Unnamed Account'}
+                                  </Text>
+                                  {/* Linked chain emoji */}
+                                  {acc.parentEmoji && (
+                                    <Text fontSize={14} color="rgba(255, 255, 255, 0.8)">
+                                      {acc.parentEmoji.emoji}
+                                    </Text>
+                                  )}
+                                </XStack>
+
                                 <AddressText
                                   address={acc.address}
                                   truncate={true}
@@ -204,6 +257,15 @@ export function AccountCard({
                                   fontWeight="400"
                                   color="rgba(255, 255, 255, 0.8)"
                                 />
+
+                                {/* EVM Badge */}
+                                {acc.type === 'evm' && (
+                                  <XStack items="center">
+                                    <Badge variant="evm" size="small">
+                                      EVM
+                                    </Badge>
+                                  </XStack>
+                                )}
                               </YStack>
                             </XStack>
 

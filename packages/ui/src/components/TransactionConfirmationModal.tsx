@@ -1,8 +1,9 @@
-import { ChevronDown, WalletCard, Close, FlowLogo } from '@onflow/frw-icons';
-import { type WalletAccount, type TransactionType, type TokenModel } from '@onflow/frw-types';
+import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { type TransactionType, type TokenModel } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
 
+import { type AccountDisplayData } from './ConfirmationDrawer';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
@@ -21,8 +22,8 @@ export interface TransactionConfirmationModalProps {
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
   selectedNFTs?: NFTSendData[];
-  fromAccount?: WalletAccount | null;
-  toAccount?: WalletAccount | null;
+  fromAccount?: AccountDisplayData | null;
+  toAccount?: AccountDisplayData | null;
   formData: TransactionFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
@@ -266,15 +267,16 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             {/* From Account */}
             <YStack flex={1} items="center" gap="$1" maxW={130}>
               <Avatar
-                src={fromAccount?.avatar}
-                fallback={(fromAccount as any)?.emoji || fromAccount?.name?.charAt(0) || 'A'}
+                src={fromAccount?.avatarSrc}
+                fallback={fromAccount?.avatarFallback || 'A'}
+                bgColor={fromAccount?.avatarBgColor}
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color="$color" textAlign="center">
+                <Text fontSize="$3" fontWeight="600" color="$color" ta="center">
                   {fromAccount?.name || 'Unknown'}
                 </Text>
-                <Text fontSize="$2" color="$gray11" textAlign="center">
+                <Text fontSize="$2" color="$gray11" ta="center">
                   {fromAccount?.address
                     ? fromAccount.address.length < 20
                       ? fromAccount.address
@@ -290,15 +292,16 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             {/* To Account */}
             <YStack flex={1} items="center" gap="$1" maxW={130}>
               <Avatar
-                src={toAccount?.avatar}
-                fallback={(toAccount as any)?.emoji || toAccount?.name?.charAt(0) || 'A'}
+                src={toAccount?.avatarSrc}
+                fallback={toAccount?.avatarFallback || 'A'}
+                bgColor={toAccount?.avatarBgColor}
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color="$color" textAlign="center">
+                <Text fontSize="$3" fontWeight="600" color="$color" ta="center">
                   {toAccount?.name || 'Unknown'}
                 </Text>
-                <Text fontSize="$2" color="$gray11" textAlign="center">
+                <Text fontSize="$2" color="$gray11" ta="center">
                   {toAccount?.address
                     ? toAccount.address.length < 20
                       ? toAccount.address
@@ -369,6 +372,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
                   >
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
+                  <VerifiedToken size={10} />
                   <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>

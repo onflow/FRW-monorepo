@@ -18,6 +18,10 @@
     "error": "Error",
     "success": "Éxito"
   },
+  "tabs": {
+    "tokens": "Tokens",
+    "nfts": "NFTs"
+  },
   "send": {
     "myAccounts": "Mis Cuentas",
     "recent": "Reciente",
@@ -71,7 +75,19 @@
     "tokenId": "ID del Token",
     "properties": "Propiedades",
     "description": "Descripción",
-    "creator": "Creador"
+    "creator": "Creador",
+    "title": "Enviar"
+  },
+  "messages": {
+    "loading": "Cargando...",
+    "noTokensWithBalance": "No hay tokens con saldo",
+    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT"
+  },
+  "buttons": {
+    "retry": "Reintentar",
+    "refresh": "Actualizar",
+    "continue": "Continuar",
+    "clearSearch": "Limpiar Búsqueda"
   },
   "errors": {
     "networkError": "Ocurrió un error de red",
@@ -83,6 +99,18 @@
     "tokenNotSupported": "Token no soportado",
     "unauthorized": "Acceso no autorizado",
     "timeout": "Tiempo de espera agotado",
-    "unknown": "Ocurrió un error desconocido"
+    "unknown": "Ocurrió un error desconocido",
+    "failedToLoadTokens": "Error al cargar tokens",
+    "failedToLoadNFTs": "Error al cargar NFTs"
+  },
+  "nft": {
+    "noSearchResults": "Sin Resultados de Búsqueda",
+    "noNFTsMatchSearch": "Ningún NFT coincide con '{{search}}'",
+    "noNFTsFound": "No se Encontraron NFTs",
+    "collectionEmpty": "Esta colección no contiene ningún NFT",
+    "notFound": {
+      "title": "NFT No Encontrado",
+      "message": "El NFT solicitado no se pudo encontrar o cargar"
+    }
   }
 }

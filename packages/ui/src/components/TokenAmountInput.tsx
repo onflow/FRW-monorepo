@@ -1,4 +1,4 @@
-import { SwitchVertical, ChevronDown, CheckCircle } from '@onflow/frw-icons';
+import { SwitchVertical, ChevronDown, VerifiedToken } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { Input, XStack, YStack } from 'tamagui';
 
@@ -26,19 +26,19 @@ export function TokenAmountInput({
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
   return (
-    <YStack gap={12} p={16} pb={24} rounded={16} width="100%" {...props}>
-      {/* Send Tokens Header - exactly 75px width */}
-      <XStack items="center" gap={15}>
-        <Text
-          fontSize={12}
-          fontWeight="400"
-          color="rgba(255, 255, 255, 0.8)"
-          width="100%"
-          lineHeight={16}
-        >
-          Send Tokens
-        </Text>
-      </XStack>
+    <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
+      {/* Send Tokens Header - aligned with From Account */}
+      <Text
+        fontSize="$2"
+        mb="$3"
+        ml="$1"
+        fontWeight="400"
+        color="$light80"
+        lineHeight={16}
+        textAlign="left"
+      >
+        Send Tokens
+      </Text>
 
       {/* Main Input Row - space-between with 11px gap */}
       <XStack items="center" justify="space-between" gap={11}>
@@ -109,7 +109,7 @@ export function TokenAmountInput({
             <Text fontSize={12} fontWeight="600" color="$white" lineHeight={18} numberOfLines={1}>
               {tokenSymbol}
             </Text>
-            {selectedToken?.isVerified && <CheckCircle size={10} color="#FFFFFF" />}
+            {selectedToken?.isVerified && <VerifiedToken size={10} color="#41CC5D" />}
           </XStack>
           <ChevronDown size={14} color="#FFFFFF" />
         </XStack>
@@ -147,7 +147,7 @@ export function TokenAmountInput({
             >
               {isTokenMode
                 ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
-                : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)} ${tokenSymbol}`}
+                : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)}`}
             </Text>
           </XStack>
         )}
@@ -171,6 +171,7 @@ export function TokenAmountInput({
             rounded={40}
             height="$6"
             items="center"
+            justify="center"
             pressStyle={{ opacity: 0.8 }}
             onPress={onMaxPress}
             px="$2.5"

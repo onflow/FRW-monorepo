@@ -13,6 +13,7 @@ export interface NFTCardProps {
   collectionAvatar?: string;
   accountEmoji?: string;
   accountAvatar?: string;
+  accountName?: string;
 }
 
 export function NFTCard({
@@ -25,29 +26,28 @@ export function NFTCard({
   collectionAvatar,
   accountEmoji,
   accountAvatar,
+  accountName,
 }: NFTCardProps) {
-  const width = size === 'large' ? '$50' : size === 'medium' ? 160 : '$30';
-  const height = size === 'large' ? '$50' : size === 'medium' ? 200 : '$30';
+  const width = size === 'large' ? '$50' : size === 'medium' ? '100%' : '$30';
+  const imageHeight = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
   return (
     <YStack
       width={width}
-      height={height}
       gap="$1.5"
-      pressStyle={{ bg: 'transparent' }}
+      pressStyle={{ opacity: 0.8, scale: 0.98 }}
       onPress={onPress}
       position="relative"
+      cursor="pointer"
     >
       {/* NFT Image */}
       <YStack
-        w={width}
-        h={height}
+        w="100%"
+        h={imageHeight}
         rounded="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}
         bg="$surface2"
         position="relative"
-        pressStyle={{ bg: 'transparent' }}
-        onPress={onPress}
       >
         {nft.thumbnail || nft.image ? (
           <Image src={nft.thumbnail || nft.image} width="100%" height="100%" objectFit="cover" />
@@ -63,7 +63,6 @@ export function NFTCard({
         )}
 
         {/* Selection Indicator - top right corner */}
-
         <YStack
           w="$6"
           h="$6"
@@ -71,7 +70,12 @@ export function NFTCard({
           position="absolute"
           top="$2"
           right="$2"
-          onPress={() => onSelect(nft.id)}
+          onPress={(e) => {
+            e?.stopPropagation?.();
+            onSelect(nft.id);
+          }}
+          pressStyle={{ opacity: 0.8 }}
+          cursor="pointer"
         >
           <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>
@@ -109,14 +113,14 @@ export function NFTCard({
               <Image src={collectionAvatar} width="$5" height="$5" rounded="$6" />
             )}
 
-            {/* Collection Name */}
+            {/* From Account Name */}
             <Text fontSize="$4" fontWeight="400" color="$textSecondary" numberOfLines={1} flex={1}>
-              {nft.collection}
+              {accountName || nft.collection}
             </Text>
 
             {/* Right Chevron */}
             <YStack justify="center">
-              <ChevronRight size={24} />
+              <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
             </YStack>
           </XStack>
         )}

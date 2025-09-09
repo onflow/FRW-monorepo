@@ -4,16 +4,18 @@ import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { Badge } from './Badge';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
 export interface ToAccountSectionProps {
   account: WalletAccount;
+  fromAccount?: WalletAccount;
   isAccountIncompatible?: boolean;
   onEditPress?: () => void;
   onLearnMorePress?: () => void;
   showEditButton?: boolean;
-  title?: string;
+  title: string;
   backgroundColor?: string;
   borderRadius?: string | number;
   contentPadding?: number;
@@ -23,11 +25,12 @@ export interface ToAccountSectionProps {
 
 export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   account,
+  fromAccount, // For conditional border logic
   isAccountIncompatible = false,
   onEditPress,
   onLearnMorePress,
   showEditButton = true,
-  title = 'To account',
+  title,
   backgroundColor = 'rgba(255, 255, 255, 0.1)',
   borderRadius = 16,
   contentPadding: _contentPadding = 16,
@@ -40,6 +43,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       rounded={borderRadius}
       gap={12}
       pt={16}
+      t={-20}
       px={16}
       pb={24}
       width="100%"
@@ -85,10 +89,21 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
               <Avatar
                 src={account.avatar}
-                fallback={(account as any)?.emoji || account.name?.charAt(0) || 'A'}
+                fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
+                bgColor={account.emojiInfo?.color}
                 size={avatarSize}
-                borderColor={isAccountIncompatible ? '#D9D9D9' : '#00EF8B'}
-                borderWidth={1}
+                borderColor={
+                  isAccountIncompatible
+                    ? '#D9D9D9'
+                    : fromAccount && account.address === fromAccount.address
+                      ? '#00EF8B'
+                      : undefined
+                }
+                borderWidth={
+                  isAccountIncompatible || (fromAccount && account.address === fromAccount.address)
+                    ? 1
+                    : undefined
+                }
               />
             </XStack>
           )}
@@ -96,15 +111,41 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
           {/* Account Details - Fixed width with 12px gap from avatar */}
           <XStack ml={12}>
             <YStack width={151.34} gap={2}>
-              <Text color="$white" fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
-                {account.name || 'Unknown Account'}
-              </Text>
+              {/* Account Name with linked chain emoji */}
+              <XStack items="center" gap={4}>
+                <Text
+                  color="$white"
+                  fontSize="$3"
+                  fontWeight="600"
+                  lineHeight={17}
+                  numberOfLines={1}
+                  flex={1}
+                >
+                  {account.name || 'Unknown Account'}
+                </Text>
+                {/* Linked chain emoji */}
+                {account.parentEmoji && (
+                  <Text fontSize="$3" lineHeight={17} color="$white">
+                    {account.parentEmoji.emoji}
+                  </Text>
+                )}
+              </XStack>
+
               <AddressText
                 address={account.address}
                 truncate={true}
                 startLength={6}
                 endLength={4}
               />
+
+              {/* EVM Badge */}
+              {account.type === 'evm' && (
+                <XStack items="center">
+                  <Badge variant="evm" size="small">
+                    EVM
+                  </Badge>
+                </XStack>
+              )}
             </YStack>
           </XStack>
         </XStack>

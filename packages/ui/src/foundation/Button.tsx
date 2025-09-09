@@ -9,6 +9,7 @@ interface UIButtonProps {
   fullWidth?: boolean;
   disabled?: boolean;
   children?: React.ReactNode;
+  icon?: React.ReactElement;
   onPress?: () => void;
 }
 
@@ -19,6 +20,7 @@ export function Button({
   loadingText,
   fullWidth = false,
   children,
+  icon,
   disabled,
   onPress,
   ...props
@@ -108,7 +110,10 @@ export function Button({
           {loadingText && <Text>{loadingText}</Text>}
         </XStack>
       ) : (
-        children
+        <XStack items="center" gap="$2">
+          {icon && React.cloneElement(icon, { color: 'currentColor' })}
+          {children}
+        </XStack>
       )}
     </TamaguiButton>
   );

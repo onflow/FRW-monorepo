@@ -1,11 +1,11 @@
 // Export screen components
 export { SelectTokensScreen } from './send/SelectTokensScreen.query';
-export * from './send/SendToScreen';
-export * from './send/NFTListScreen';
-export * from './send/NFTDetailScreen';
-export * from './send/SendTokensScreen';
-export * from './send/SendSingleNFTScreen';
-export * from './send/SendMultipleNFTsScreen';
+export { SendToScreen } from './send/SendToScreen.query';
+export * from './send/NFTListScreen.query';
+export * from './send/NFTDetailScreen.query';
+export { SendTokensScreen } from './send/SendTokensScreen.query';
+export { SendSingleNFTScreen } from './send/SendSingleNFTScreen.query';
+export { SendMultipleNFTsScreen } from './send/SendMultipleNFTsScreen.query';
 
 // Export providers
 export * from './providers/QueryProvider';

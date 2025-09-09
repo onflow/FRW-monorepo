@@ -12,6 +12,7 @@ export interface AvatarProps {
   alt?: string;
   size?: number;
   fallback?: string;
+  bgColor?: string;
   borderColor?: string;
   borderWidth?: number;
   style?: React.CSSProperties;
@@ -35,6 +36,7 @@ export interface SegmentedControlProps {
   onChange: (value: string) => void;
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
+  constrainWidth?: boolean;
 }
 
 export interface SkeletonProps {
@@ -68,7 +70,6 @@ export interface CollectionModel {
 
 export interface NFTCollectionRowProps {
   collection?: CollectionModel;
-  showDivider?: boolean;
   onPress?: () => void;
 }
 
@@ -79,6 +80,17 @@ export interface Account {
   balance?: string;
   emoji?: string;
   nfts?: string;
+  emojiInfo?: {
+    emoji: string;
+    name: string;
+    color: string;
+  };
+  parentEmoji?: {
+    emoji: string;
+    name: string;
+    color: string;
+  };
+  type?: 'main' | 'child' | 'evm';
 }
 
 export interface AccountCardProps {

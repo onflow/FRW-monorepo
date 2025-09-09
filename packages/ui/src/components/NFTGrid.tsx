@@ -38,6 +38,11 @@ export interface NFTGridProps {
   onRetry?: () => void;
   onClearSearch?: () => void;
 
+  // Account info for From Account avatar
+  accountEmoji?: string;
+  accountAvatar?: string;
+  accountName?: string;
+
   // Layout
   gap?: string;
   aspectRatio?: number;
@@ -57,33 +62,36 @@ export function NFTGrid({
   onNFTPress = () => {},
   onRetry,
   onClearSearch,
+  accountEmoji,
+  accountAvatar,
+  accountName,
   gap = '$3',
   aspectRatio = 1,
 }: NFTGridProps) {
   const columns = 2;
 
-  // Loading skeleton - group into rows like the main content
+  // Loading skeleton - match the responsive 2-column layout
   const renderSkeleton = () => {
-    const skeletonRows = [];
+    const skeletonRows: React.ReactElement[] = [];
     for (let i = 0; i < 6; i += columns) {
       const rowItems = Array.from({ length: Math.min(columns, 6 - i) }, (_, index) => (
-        <YStack key={`skeleton-${i + index}`} gap="$1.5">
-          <Skeleton width="$41" height="$41" borderRadius="$4" />
-          <YStack gap="$-0.75">
-            <Skeleton height="$6" width="80%" mb="$2" />
-            <Skeleton height="$5" width="60%" />
+        <YStack key={`skeleton-${i + index}`} width="50%" flex={0} gap="$1.5">
+          <Skeleton width="100%" height="$41" borderRadius="$4" />
+          <YStack gap="$1">
+            <Skeleton height="$4" width="80%" />
+            <Skeleton height="$3" width="60%" />
           </YStack>
         </YStack>
       ));
 
       skeletonRows.push(
-        <XStack key={`skeleton-row-${i}`} justify="space-between" width="100%">
+        <XStack key={`skeleton-row-${i}`} gap="$4" justify="flex-start" width="100%">
           {rowItems}
         </XStack>
       );
     }
 
-    return <YStack gap="$6">{skeletonRows}</YStack>;
+    return <YStack gap="$4">{skeletonRows}</YStack>;
   };
 
   // Error state
@@ -98,12 +106,19 @@ export function NFTGrid({
 
   // Empty state
   const renderEmpty = () => (
-    <YStack flex={1} justify="center" items="center" py="$8">
-      <Text fontSize="$6" fontWeight="600" color="$color" mb="$2" textAlign="center">
+    <YStack flex={1} justify="center" items="center" px="$6" py="$12">
+      <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
         {emptyTitle || 'No NFTs Found'}
       </Text>
 
-      <Text fontSize="$4" color="$textSecondary" mb="$6" textAlign="center" maxWidth="$20">
+      <Text
+        fontSize="$4"
+        color="$textSecondary"
+        mb="$8"
+        textAlign="center"
+        maxWidth="$24"
+        lineHeight="$5"
+      >
         {emptyMessage || 'No NFTs available in this collection.'}
       </Text>
 
@@ -114,6 +129,8 @@ export function NFTGrid({
           bg="$bg2"
           borderColor="$borderColor"
           color="$color"
+          px="$4"
+          py="$3"
         >
           {clearSearchText}
         </Button>
@@ -137,27 +154,30 @@ export function NFTGrid({
   }
 
   // Group NFTs into rows
-  const rows = [];
+  const rows: NFTData[][] = [];
   for (let i = 0; i < data.length; i += columns) {
     rows.push(data.slice(i, i + columns));
   }
 
   // Main grid content
   return (
-    <YStack gap="$6">
+    <YStack gap="$4">
       {rows.map((row, rowIndex) => (
-        <XStack key={`row-${rowIndex}`} gap="$6" justify="center" width="100%">
+        <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
           {row.map((nft) => (
-            <NFTCard
-              key={nft.id}
-              nft={nft}
-              size="medium"
-              selected={selectedIds.includes(nft.id)}
-              onPress={() => onNFTPress(nft)}
-              onSelect={() => onNFTSelect(nft.id)}
-              showAmount={!!nft.amount}
-              aspectRatio={aspectRatio}
-            />
+            <YStack key={nft.id} width="50%" flex={0}>
+              <NFTCard
+                nft={nft}
+                size="medium"
+                selected={selectedIds.includes(nft.id)}
+                onPress={() => onNFTPress(nft.id)}
+                onSelect={() => onNFTSelect(nft.id)}
+                aspectRatio={aspectRatio}
+                accountEmoji={accountEmoji}
+                accountAvatar={accountAvatar}
+                accountName={accountName}
+              />
+            </YStack>
           ))}
         </XStack>
       ))}
