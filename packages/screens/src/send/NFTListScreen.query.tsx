@@ -307,6 +307,7 @@ export function NFTListScreen(): React.ReactElement {
             accountEmoji={fromAccount?.emojiInfo?.emoji}
             accountAvatar={fromAccount?.avatar}
             accountName={fromAccount?.name}
+            accountColor={fromAccount?.emojiInfo?.color}
           />
         </YStack>
 
