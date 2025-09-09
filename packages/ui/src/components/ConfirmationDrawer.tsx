@@ -7,7 +7,6 @@ import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface TransactionFormData {
