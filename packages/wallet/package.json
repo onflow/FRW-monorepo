@@ -1,0 +1,46 @@
+{
+  "name": "@onflow/frw-wallet",
+  "version": "0.0.1",
+  "description": "TypeScript wallet package for private key-based multi-account management",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "source": "./src/index.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "pnpm build",
+    "lint": "eslint . --cache",
+    "lint:fix": "eslint . --cache --fix"
+  },
+  "exports": {
+    ".": {
+      "@onflow/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.2",
+    "@onflow/fcl": "^1.12.4",
+    "@onflow/frw-context": "workspace:*",
+    "@onflow/frw-types": "workspace:*",
+    "@trustwallet/wallet-core": "^4.0.50"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "tsup": "^8.5.0",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {}
+}

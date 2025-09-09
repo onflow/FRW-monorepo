@@ -93,6 +93,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+  const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -109,6 +110,38 @@ export function SendSingleNFTScreen(): React.ReactElement {
   useEffect(() => {
     setCurrentStep('send-nft');
   }, [setCurrentStep]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async () => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        console.error('Failed to check free gas status:', error);
+        // Default to enabled if we can't determine the status
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
+
+  // Early return if essential data is missing
+  if (!selectedNFT) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center">
+            No NFT selected. Please go back and select an NFT to send.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
 
   // Transform NFT data for UI using getNFTCover utility
   const nftImage = getNFTCover(selectedNFT);
@@ -134,10 +167,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
   // Calculate if send button should be disabled
   const isSendDisabled = !selectedNFT || !fromAccount || !toAccount || isLoading;
 
-  // Mock transaction fee data - TODO: Replace with real fee calculation
+  // Transaction fee data
   const transactionFee = '0.001 FLOW';
   const usdFee = '$0.02';
-  const isFeesFree = false;
 
   // Mock storage warning - TODO: Replace with real storage check
   const showStorageWarning = true;
@@ -219,9 +251,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$4">
+          <YStack p={20} gap="$3">
             {/* NFT Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
+            <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
               {fromAccountForCard && (
                 <View mt={-8} mb={-16}>
@@ -233,31 +265,34 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 </View>
               )}
 
-              <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
-
+              
+              <Separator mx="$0" my="$0" mb="$2" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+              
               <SendSectionHeader
                 title="Send NFTs"
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
                 editButtonText="Change"
               />
-
-              <NFTSendPreview
-                nft={nftForUI}
-                onEditPress={handleEditNFTPress}
-                showEditButton={false} // Header now handles the edit button
-                sectionTitle=""
-                backgroundColor="transparent"
-                borderRadius={0}
-                contentPadding="$0"
-              />
+     
+              <View mt={-8} mb={-8}>
+                <NFTSendPreview
+                  nft={nftForUI}
+                  onEditPress={handleEditNFTPress}
+                  showEditButton={false} // Header now handles the edit button
+                  sectionTitle=""
+                  backgroundColor="transparent"
+                  borderRadius={0}
+                  contentPadding="$0"
+                  imageSize="$24"
+                />
+              </View>
             </YStack>
 
             {/* Arrow Down Indicator */}
-            <XStack position="relative" height={0}>
-              <XStack width="100%" position="absolute" t={-30} justify="center">
-                <SendArrowDivider variant="arrow" size={48} />
-              </XStack>
+          <XStack position="relative" height={0} mt="$1">
+            <XStack width="100%" position="absolute" t={-40} justify="center">
+              <SendArrowDivider variant="arrow" size={48} />
             </XStack>
 
             {/* To Account Section */}
@@ -273,27 +308,29 @@ export function SendSingleNFTScreen(): React.ReactElement {
               />
             )}
 
-            {/* Transaction Fee Section */}
-            <TransactionFeeSection
-              flowFee={transactionFee}
-              usdFee={usdFee}
-              isFree={isFeesFree}
-              showCovered={true}
-              title={t('send.transactionFee')}
-              backgroundColor="transparent"
-              borderRadius={16}
-              contentPadding={0}
-            />
-
-            {/* Storage Warning */}
-            {showStorageWarning && (
-              <StorageWarning
-                message={storageWarningMessage}
-                showIcon={true}
-                title="Storage warning"
-                visible={true}
+            {/* Transaction Fee and Storage Warning Section */}
+            <YStack gap="$3" mt={-16}>
+              <TransactionFeeSection
+                flowFee={transactionFee}
+                usdFee={usdFee}
+                isFree={isFreeGasEnabled}
+                showCovered={true}
+                title={t('send.transactionFee')}
+                backgroundColor="transparent"
+                borderRadius={16}
+                contentPadding={0}
               />
-            )}
+
+              {/* Storage Warning */}
+              {showStorageWarning && (
+                <StorageWarning
+                  message={storageWarningMessage}
+                  showIcon={true}
+                  title="Storage warning"
+                  visible={true}
+                />
+              )}
+            </YStack>
           </YStack>
         </ScrollView>
 

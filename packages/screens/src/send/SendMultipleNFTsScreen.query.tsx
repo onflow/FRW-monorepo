@@ -81,6 +81,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+  const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -95,6 +96,38 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   useEffect(() => {
     setCurrentStep('send-nft');
   }, [setCurrentStep]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async () => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        console.error('Failed to check free gas status:', error);
+        // Default to enabled if we can't determine the status
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
+
+  // Early return if essential data is missing
+  if (!selectedNFTs || selectedNFTs.length === 0) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center">
+            No NFTs selected. Please go back and select NFTs to send.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
 
   // Transform NFT data for UI using getNFTCover utility
   const nftsForUI: NFTSendData[] = useMemo(
@@ -126,10 +159,9 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const isSendDisabled =
     !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
 
-  // Mock transaction fee data - TODO: Replace with real fee calculation
+  // Transaction fee data
   const transactionFee = '0.001 FLOW';
   const usdFee = '$0.02';
-  const isFeesFree = false;
 
   // Mock storage warning - TODO: Replace with real storage check
   const showStorageWarning = true;
@@ -286,7 +318,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             <TransactionFeeSection
               flowFee={transactionFee}
               usdFee={usdFee}
-              isFree={isFeesFree}
+              isFree={isFreeGasEnabled}
               showCovered={true}
               title={t('send.transactionFee')}
               backgroundColor="transparent"

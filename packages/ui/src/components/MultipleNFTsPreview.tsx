@@ -65,11 +65,11 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
         <>
           <View
             position="absolute"
-            bg="rgba(0, 0, 0, 0.2)"
+            bg="rgba(0, 0, 0, 0.6)"
             rounded={14.4}
             style={{ top: -0.5, left: 0, right: 0, bottom: 0 }}
           />
-          <Text position="absolute" fontSize={21.6} fontWeight="700" color="$white" opacity={0.6}>
+          <Text position="absolute" fontSize={21.6} fontWeight="700" color="$white" opacity={1}>
             {overlayText}
           </Text>
         </>

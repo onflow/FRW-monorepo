@@ -28,7 +28,7 @@ export function AccountCard({
       pt="$2"
       px="$1"
       pb="$6"
-      gap="$3"
+      gap="$1"
       pressStyle={{
         bg: '$light25',
       }}
@@ -39,11 +39,10 @@ export function AccountCard({
       {/* Title */}
       <Text
         fontSize="$2"
-        mb="$3"
+        mb="$1"
         fontWeight="400"
         color="$light80"
         lineHeight={16}
-        textAlign="left"
       >
         {title}
       </Text>
@@ -78,7 +77,7 @@ export function AccountCard({
                 justify="center"
                 overflow="visible"
               >
-                <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
+                <Text fontSize={10} fontWeight="600" lineHeight={18}>
                   {account.parentEmoji.emoji}
                 </Text>
               </XStack>
@@ -95,7 +94,7 @@ export function AccountCard({
               )}
               <Text
                 color="$white"
-                fontSize="$3"
+                fontSize={14}
                 fontWeight="600"
                 lineHeight={17}
                 numberOfLines={1}
@@ -268,7 +267,7 @@ export function AccountCard({
                                     justify="center"
                                     overflow="visible"
                                   >
-                                    <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
+                                    <Text fontSize={10} fontWeight="600" lineHeight={18}>
                                       {acc.parentEmoji.emoji}
                                     </Text>
                                   </XStack>
