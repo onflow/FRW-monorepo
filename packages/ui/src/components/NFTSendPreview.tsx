@@ -115,27 +115,32 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
 
         {/* NFT Details */}
         <YStack flex={1} gap="$1">
-          {/* Collection and Badge Row */}
+          {/* Collection Name */}
+          <Text fontSize="$4" fontWeight="600" numberOfLines={1} ellipsizeMode="tail">
+            {nft.collection}
+          </Text>
+
+          {/* NFT Name with EVM Badge */}
           <XStack items="center" gap="$2" width="100%">
-            {/* Collection Icon and Name */}
-            <Text fontSize="$4" fontWeight="600" numberOfLines={1} flex={1}>
-              {nft.collection}
+            <Text fontSize="$5" fontWeight="500" opacity={0.8} numberOfLines={1} flex={1} ellipsizeMode="tail">
+              {nft.name}
             </Text>
 
             {/* EVM Badge - Only show for EVM NFTs */}
             {nft.type === 'evm' && (
-              <View width="$10" height="$4" bg="#627EEA" rounded="$4" items="center" justify="center">
-                <Text fontSize="$2" fontWeight="400" letterSpacing={0.16} color="$white">
+              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+                <Text
+                  fontSize={8}
+                  fontWeight="400"
+                  color="#FFFFFF"
+                  lineHeight={9.7}
+                  letterSpacing={0.128}
+                >
                   EVM
                 </Text>
-              </View>
+              </XStack>
             )}
           </XStack>
-
-          {/* NFT Name */}
-          <Text fontSize="$5" fontWeight="500" opacity={0.8} numberOfLines={2} flex={1}>
-            {nft.name}
-          </Text>
         </YStack>
       </XStack>
     </YStack>
