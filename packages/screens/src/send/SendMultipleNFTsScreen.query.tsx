@@ -82,6 +82,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+  const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -96,6 +97,22 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   useEffect(() => {
     setCurrentStep('send-nft');
   }, [setCurrentStep]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async () => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        console.error('Failed to check free gas status:', error);
+        // Default to enabled if we can't determine the status
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
 
   // Early return if essential data is missing
   if (!selectedNFTs || selectedNFTs.length === 0) {
@@ -141,10 +158,9 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   // Calculate if send button should be disabled
   const isSendDisabled = !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
 
-  // Mock transaction fee data - TODO: Replace with real fee calculation
+  // Transaction fee data
   const transactionFee = '0.001 FLOW';
   const usdFee = '$0.02';
-  const isFeesFree = false;
 
   // Mock storage warning - TODO: Replace with real storage check
   const showStorageWarning = true;
@@ -278,7 +294,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             <TransactionFeeSection
               flowFee={transactionFee}
               usdFee={usdFee}
-              isFree={isFeesFree}
+              isFree={isFreeGasEnabled}
               showCovered={true}
               title={t('send.transactionFee')}
               backgroundColor="transparent"

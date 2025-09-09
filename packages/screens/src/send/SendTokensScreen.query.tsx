@@ -78,6 +78,7 @@ export const SendTokensScreen = (props) => {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
+  const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get send store
   const {
@@ -109,6 +110,22 @@ export const SendTokensScreen = (props) => {
   useEffect(() => {
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async () => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        console.error('Failed to check free gas status:', error);
+        // Default to enabled if we can't determine the status
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
 
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
@@ -182,7 +199,6 @@ export const SendTokensScreen = (props) => {
   const storageWarningMessage =
     'Account balance will fall below the minimum FLOW required for storage after this transaction.';
   const showEditButtons = true;
-  const isFeesFree = false;
 
   // Internal callback handlers
   const onEditAccountPress = () => {
@@ -488,7 +504,7 @@ export const SendTokensScreen = (props) => {
             <TransactionFeeSection
               flowFee={transactionFee}
               usdFee={usdFee}
-              isFree={isFeesFree}
+              isFree={isFreeGasEnabled}
               showCovered={true}
               title="Transaction Fee"
               backgroundColor="transparent"
