@@ -257,23 +257,6 @@ export class EvmToFlowNftWithEoaBridgeStrategy implements TransferStrategy {
     });
 
     try {
-      // let trxResult = await evmProvider.broadcastTransaction(res);
-
-      // logger.debug('EVM transaction result', trxResult);
-      // let result = await trxResult.wait();
-      // console.log(result, '----result----');
-      // const { status } = result;
-      // if (status === 1) {
-      //   await callback({ error: 'Transaction success', state: 'EVM_TRX_DONE' });
-      //   return await this.cadenceService.batchBridgeNftFromEvmToFlowWithPayer(
-      //     flowIdentifier,
-      //     ids.map((id) => `${id}`),
-      //     receiver
-      //   );
-      // } else {
-      //   await callback({ error: 'Transaction failed', state: 'EVM_TRX_ERROR' });
-      // }
-
       const rlpEncoded = convertHexToByteArray(signedTx);
       return await this.cadenceService.batchBridgeNftFromEoaToFlowWithPayer(
         rlpEncoded,
