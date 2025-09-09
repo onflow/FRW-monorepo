@@ -1,8 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import {
-  useSendStore,
-  sendSelectors,
-} from '@onflow/frw-stores';
+import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -33,7 +30,19 @@ import { useTranslation } from 'react-i18next';
 /**
  * Transform WalletAccount to UI Account type for AccountCard
  */
-const transformAccountForCard = (account: WalletAccount | null, balance?: string): any | null => {
+const transformAccountForCard = (
+  account: WalletAccount | null,
+  balance?: string
+): {
+  name: string;
+  address: string;
+  avatar?: string;
+  balance: string;
+  nfts: string;
+  emojiInfo?: any;
+  parentEmoji?: any;
+  type: 'main' | 'child' | 'evm';
+} | null => {
   if (!account) return null;
 
   return {
@@ -44,7 +53,7 @@ const transformAccountForCard = (account: WalletAccount | null, balance?: string
     nfts: '12 NFTs', // TODO: Replace with real NFT count when available
     emojiInfo: account.emojiInfo,
     parentEmoji: account.parentEmoji,
-    type: account.type,
+    type: account.type as 'main' | 'child' | 'evm',
   };
 };
 
@@ -56,18 +65,20 @@ const transformAccountForDisplay = (account: WalletAccount | null): AccountDispl
 
   // For Flow accounts, we use emoji instead of avatar image
   const hasEmoji = account.emojiInfo?.emoji;
-  
+
   return {
     name: account.name,
     address: account.address,
     avatarSrc: hasEmoji ? undefined : account.avatar, // Only use avatar if no emoji
-    avatarFallback: hasEmoji ? (account.emojiInfo?.emoji || '?') : (account.name?.[0] || '?'),
+    avatarFallback: hasEmoji ? account.emojiInfo?.emoji || '?' : account.name?.[0] || '?',
     avatarBgColor: account.emojiInfo?.color || '#7B61FF',
-    parentEmoji: account.parentEmoji ? {
-      emoji: account.parentEmoji.emoji,
-      name: account.parentEmoji.name,
-      color: account.parentEmoji.color,
-    } : undefined,
+    parentEmoji: account.parentEmoji
+      ? {
+          emoji: account.parentEmoji.emoji,
+          name: account.parentEmoji.name,
+          color: account.parentEmoji.color,
+        }
+      : undefined,
     type: account.type,
   };
 };
@@ -134,17 +145,17 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Transform NFT data for UI using getNFTCover utility
   const nftImage = getNFTCover(selectedNFT);
-  console.log('[SendSingleNFT] NFT image URL:', nftImage);
-  console.log('[SendSingleNFT] Full NFT data:', selectedNFT);
-  
+  // console.log('[SendSingleNFT] NFT image URL:', nftImage);
+  // console.log('[SendSingleNFT] Full NFT data:', selectedNFT);
+
   const nftForUI: NFTSendData = {
-    id: selectedNFT.id || '',
-    name: selectedNFT.name || 'Untitled',
+    id: selectedNFT?.id || '',
+    name: selectedNFT?.name || 'Untitled',
     image: nftImage,
-    collection: selectedNFT.collectionName || 'Unknown Collection',
-    collectionContractName: selectedNFT.collectionContractName,
-    description: selectedNFT.description || '',
-    type: selectedNFT.type, // Pass the NFT type for EVM badge
+    collection: selectedNFT?.collectionName || 'Unknown Collection',
+    collectionContractName: selectedNFT?.collectionContractName,
+    description: selectedNFT?.description || '',
+    type: selectedNFT?.type, // Pass the NFT type for EVM badge
   };
 
   // Transform accounts for UI components
@@ -162,7 +173,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Mock storage warning - TODO: Replace with real storage check
   const showStorageWarning = true;
-  const storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.';
+  const storageWarningMessage =
+    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = {
@@ -185,7 +197,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const handleLearnMorePress = useCallback(() => {
     // TODO: Navigate to help/learn more screen
-    console.log('Learn more pressed');
+    // console.log('Learn more pressed');
   }, []);
 
   const handleSendPress = useCallback(() => {
@@ -198,14 +210,32 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      setIsConfirmationVisible(false);
+      if (!isExtension) {
+        setIsConfirmationVisible(false);
+      }
       await executeTransaction();
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendSingleNFTScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction]);
+  }, [executeTransaction, isExtension]);
+
+  // Early return if essential data is missing
+  if (!selectedNFT) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center">
+            No NFT selected. Please go back and select an NFT to send.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
@@ -234,6 +264,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                   />
                 </View>
               )}
+
               
               <Separator mx="$0" my="$0" mb="$2" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
               
@@ -243,7 +274,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 showEditButton={true}
                 editButtonText="Change"
               />
-              
+     
               <View mt={-8} mb={-8}>
                 <NFTSendPreview
                   nft={nftForUI}
@@ -263,8 +294,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
             <XStack width="100%" position="absolute" t={-40} justify="center">
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>
-          </XStack>
-
 
             {/* To Account Section */}
             {toAccount && (
@@ -333,14 +362,21 @@ export function SendSingleNFTScreen(): React.ReactElement {
             visible={isConfirmationVisible}
             transactionType="single-nft"
             selectedToken={null}
-            selectedNFTs={selectedNFT ? [{
-              id: selectedNFT.id || '',
-              name: selectedNFT.name || '',
-              image: selectedNFT.thumbnail || '',
-              collection: selectedNFT.collectionName || '',
-              collectionContractName: selectedNFT.collectionContractName || selectedNFT.contractName || '',
-              description: selectedNFT.description || '',
-            }] : undefined}
+            selectedNFTs={
+              selectedNFT
+                ? [
+                    {
+                      id: selectedNFT.id || '',
+                      name: selectedNFT.name || '',
+                      image: selectedNFT.thumbnail || '',
+                      collection: selectedNFT.collectionName || '',
+                      collectionContractName:
+                        selectedNFT.collectionContractName || selectedNFT.contractName || '',
+                      description: selectedNFT.description || '',
+                    },
+                  ]
+                : undefined
+            }
             fromAccount={transformAccountForDisplay(fromAccount)}
             toAccount={transformAccountForDisplay(toAccount)}
             formData={formData}
@@ -353,14 +389,21 @@ export function SendSingleNFTScreen(): React.ReactElement {
             visible={isConfirmationVisible}
             transactionType="single-nft"
             selectedToken={null}
-            selectedNFTs={selectedNFT ? [{
-              id: selectedNFT.id || '',
-              name: selectedNFT.name || '',
-              image: selectedNFT.thumbnail || '',
-              collection: selectedNFT.collectionName || '',
-              collectionContractName: selectedNFT.collectionContractName || selectedNFT.contractName || '',
-              description: selectedNFT.description || '',
-            }] : undefined}
+            selectedNFTs={
+              selectedNFT
+                ? [
+                    {
+                      id: selectedNFT.id || '',
+                      name: selectedNFT.name || '',
+                      image: selectedNFT.thumbnail || '',
+                      collection: selectedNFT.collectionName || '',
+                      collectionContractName:
+                        selectedNFT.collectionContractName || selectedNFT.contractName || '',
+                      description: selectedNFT.description || '',
+                    },
+                  ]
+                : undefined
+            }
             fromAccount={transformAccountForDisplay(fromAccount)}
             toAccount={transformAccountForDisplay(toAccount)}
             formData={formData}

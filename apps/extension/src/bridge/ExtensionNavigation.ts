@@ -177,7 +177,7 @@ class ExtensionNavigation implements Navigation {
       SendSingleNFT: '/dashboard/nft/send',
       SendMultipleNFTs: '/dashboard/nft/send',
       SendNftEvm: '/dashboard/nftevm/send',
-      NFTDetail: '/dashboard/nested/nftdetail',
+      NFTDetail: '/dashboard/nested/nftdetailscreenview',
       NFTList: '/dashboard/nested/nftlistscreen',
       NFTView: '/dashboard/nested/nftdetailscreen',
       TransactionComplete: '/dashboard', // Navigate to dashboard for transaction complete
@@ -196,7 +196,7 @@ class ExtensionNavigation implements Navigation {
       '/dashboard/select-tokens': 'SelectTokens',
       '/dashboard/nft/send': 'SendSingleNFT',
       '/dashboard/nftevm/send': 'SendNftEvm',
-      '/dashboard/nested/nftdetail': 'NFTDetail',
+      '/dashboard/nested/nftdetailscreenview': 'NFTDetail',
       '/dashboard/nested/nftlistscreen': 'NFTList',
       '/dashboard/nested/nftdetailscreen': 'NFTView',
     };
