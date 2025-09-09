@@ -404,7 +404,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
           opacity={internalIsSending ? 0.7 : 1}
         >
           <Text fontSize="$4" fontWeight="600" color="$black">
-            {internalIsSending ? 'Sending...' : 'Confirm'}
+            {internalIsSending ? 'Sending...' : 'Hold to send'}
           </Text>
         </Button>
       </YStack>
