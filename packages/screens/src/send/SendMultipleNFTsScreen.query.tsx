@@ -1,8 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import {
-  useSendStore,
-  sendSelectors,
-} from '@onflow/frw-stores';
+import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -56,18 +53,20 @@ const transformAccountForDisplay = (account: WalletAccount | null): AccountDispl
 
   // For Flow accounts, we use emoji instead of avatar image
   const hasEmoji = account.emojiInfo?.emoji;
-  
+
   return {
     name: account.name,
     address: account.address,
     avatarSrc: hasEmoji ? undefined : account.avatar, // Only use avatar if no emoji
-    avatarFallback: hasEmoji ? (account.emojiInfo?.emoji || '?') : (account.name?.[0] || '?'),
+    avatarFallback: hasEmoji ? account.emojiInfo?.emoji || '?' : account.name?.[0] || '?',
     avatarBgColor: account.emojiInfo?.color || '#7B61FF',
-    parentEmoji: account.parentEmoji ? {
-      emoji: account.parentEmoji.emoji,
-      name: account.parentEmoji.name,
-      color: account.parentEmoji.color,
-    } : undefined,
+    parentEmoji: account.parentEmoji
+      ? {
+          emoji: account.parentEmoji.emoji,
+          name: account.parentEmoji.name,
+          color: account.parentEmoji.color,
+        }
+      : undefined,
     type: account.type,
   };
 };
@@ -97,38 +96,23 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     setCurrentStep('send-nft');
   }, [setCurrentStep]);
 
-  // Early return if essential data is missing
-  if (!selectedNFTs || selectedNFTs.length === 0) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFTs selected. Please go back and select NFTs to send.
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   // Transform NFT data for UI using getNFTCover utility
   const nftsForUI: NFTSendData[] = useMemo(
-    () => selectedNFTs.map((nft) => {
-      const image = getNFTCover(nft);
-      console.log('[SendMultipleNFTs] NFT image URL:', image);
-      
-      return {
-        id: nft.id || '',
-        name: nft.name || 'Untitled',
-        image: image,
-        collection: nft.collectionName || 'Unknown Collection',
-        collectionContractName: nft.collectionContractName,
-        description: nft.description || '',
-        type: nft.type, // Pass the NFT type for EVM badge
-      };
-    }),
+    () =>
+      selectedNFTs?.map((nft) => {
+        const image = getNFTCover(nft);
+        // console.log('[SendMultipleNFTs] NFT image URL:', image);
+
+        return {
+          id: nft.id || '',
+          name: nft.name || 'Untitled',
+          image: image,
+          collection: nft.collectionName || 'Unknown Collection',
+          collectionContractName: nft.collectionContractName,
+          description: nft.description || '',
+          type: nft.type, // Pass the NFT type for EVM badge
+        };
+      }) || [],
     [selectedNFTs]
   );
 
@@ -139,7 +123,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   );
 
   // Calculate if send button should be disabled
-  const isSendDisabled = !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
+  const isSendDisabled =
+    !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
 
   // Mock transaction fee data - TODO: Replace with real fee calculation
   const transactionFee = '0.001 FLOW';
@@ -148,11 +133,12 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   // Mock storage warning - TODO: Replace with real storage check
   const showStorageWarning = true;
-  const storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.';
+  const storageWarningMessage =
+    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = {
-    tokenAmount: selectedNFTs.length.toString(),
+    tokenAmount: selectedNFTs?.length.toString() || '0',
     fiatAmount: '0.00',
     isTokenMode: true,
     transactionFee,
@@ -170,20 +156,24 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   const handleLearnMorePress = useCallback(() => {
     // TODO: Navigate to help/learn more screen
-    console.log('Learn more pressed');
+    // console.log('Learn more pressed');
   }, []);
 
-  const handleRemoveNFT = useCallback((nftId: string) => {
-    const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
-    setSelectedNFTs(updatedNFTs);
+  const handleRemoveNFT = useCallback(
+    (nftId: string) => {
+      if (!selectedNFTs) return;
+      const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
+      setSelectedNFTs(updatedNFTs);
 
-    // If no NFTs remain, navigate back to the NFT selection screen
-    if (updatedNFTs.length === 0) {
-      // Navigate to NFT selection screen (same as edit button behavior)
-      navigation.navigate('NFTList');
-    }
-    // Stay on the same screen even with 1 NFT remaining
-  }, [selectedNFTs, setSelectedNFTs, navigation]);
+      // If no NFTs remain, navigate back to the NFT selection screen
+      if (updatedNFTs.length === 0) {
+        // Navigate to NFT selection screen (same as edit button behavior)
+        navigation.navigate('NFTList');
+      }
+      // Stay on the same screen even with 1 NFT remaining
+    },
+    [selectedNFTs, setSelectedNFTs]
+  );
 
   const handleSendPress = useCallback(() => {
     setIsConfirmationVisible(true);
@@ -195,14 +185,32 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      setIsConfirmationVisible(false);
+      if (!isExtension) {
+        setIsConfirmationVisible(false);
+      }
       await executeTransaction();
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction]);
+  }, [executeTransaction, isExtension]);
+
+  // Early return if essential data is missing
+  if (!selectedNFTs || selectedNFTs.length === 0) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center">
+            No NFTs selected. Please go back and select NFTs to send.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
@@ -231,16 +239,16 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
                   />
                 </View>
               )}
-              
+
               <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
-              
+
               <SendSectionHeader
                 title="Send NFTs"
                 onEditPress={handleEditNFTsPress}
                 showEditButton={true}
                 editButtonText="Change"
               />
-              
+
               {/* Multiple NFTs Preview with expandable dropdown */}
               <MultipleNFTsPreview
                 nfts={nftsForUI}
