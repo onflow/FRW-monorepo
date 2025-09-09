@@ -166,13 +166,6 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   if (totalCount === 0) {
     return (
       <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
-        {/* Section Header */}
-        <XStack items="center" justify="space-between" gap={15} width="100%">
-          <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16} width={69}>
-            {sectionTitle}
-          </Text>
-        </XStack>
-
         {/* Empty State */}
         <XStack items="center" justify="center" gap={14.4} width={304} height={thumbnailSize}>
           <Text fontSize={14} color="$textMuted" fontWeight="400">
@@ -188,11 +181,19 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
       <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
         {/* Section Header */}
         <XStack items="center" justify="space-between" gap={15} width="100%">
-          <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16} width={77.08}>
-            {sectionTitle}
+          {/* NFT Count */}
+          <Text
+            fontSize={20}
+            fontWeight="500"
+            color="$light80"
+            lineHeight={24}
+          >
+            {totalCount} NFT{totalCount !== 1 ? 's' : ''}
           </Text>
-          {showEditButton && onEditPress && (
-            <XStack items="center" justify="flex-end" gap={16}>
+          
+          {/* Action Buttons */}
+          <XStack items="center" gap={12}>
+            {showEditButton && onEditPress && (
               <XStack
                 width={24}
                 height={24}
@@ -204,34 +205,20 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
               >
                 <Edit size={24} color="#767676" theme="outline" />
               </XStack>
-            </XStack>
-          )}
-        </XStack>
-
-        {/* NFT Count Row */}
-        <XStack items="center" justify="space-between" gap={12} width={304}>
-          <Text
-            fontSize={20}
-            fontWeight="500"
-            color="$light80"
-            lineHeight={16}
-            width={169}
-            height={24}
-          >
-            {totalCount} NFT{totalCount !== 1 ? 's' : ''}
-          </Text>
-          {expandable && (
-            <XStack
-              width={24}
-              height={24}
-              items="center"
-              justify="center"
-              onPress={() => setIsExpanded(false)}
-              cursor="pointer"
-            >
-              <ChevronUp size={24} color="#767676" theme="outline" />
-            </XStack>
-          )}
+            )}
+            {expandable && (
+              <XStack
+                width={24}
+                height={24}
+                items="center"
+                justify="center"
+                onPress={() => setIsExpanded(false)}
+                cursor="pointer"
+              >
+                <ChevronUp size={24} color="#767676" theme="outline" />
+              </XStack>
+            )}
+          </XStack>
         </XStack>
 
         {/* Expanded List */}
@@ -253,37 +240,26 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   return (
     <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
       {/* Section Header */}
-      <XStack items="center" justify="space-between" gap={15} width="100%">
-        <Text
-          fontSize={12}
-          fontWeight="400"
-          color="rgba(255, 255, 255, 0.8)"
-          lineHeight={16}
-          width={69}
-        >
-          {sectionTitle}
-        </Text>
-        {showEditButton && onEditPress && (
-          <XStack items="center" justify="flex-end" gap={16}>
-            <XStack
-              width={24}
-              height={24}
-              alignItems="center"
-              justifyContent="center"
-              pressStyle={{ opacity: 0.7 }}
-              onPress={onEditPress}
-              cursor="pointer"
-            >
-              <Edit size={24} color="#767676" theme="outline" />
-            </XStack>
+      {showEditButton && onEditPress && (
+        <XStack items="center" justify="flex-end" gap={15} width="100%">
+          <XStack
+            width={24}
+            height={24}
+            items="center"
+            justify="center"
+            pressStyle={{ opacity: 0.7 }}
+            onPress={onEditPress}
+            cursor="pointer"
+          >
+            <Edit size={24} color="#767676" theme="outline" />
           </XStack>
-        )}
-      </XStack>
+        </XStack>
+      )}
 
       {/* NFT Preview Row */}
-      <XStack items="center" justify="space-between" gap={14.4} width={304}>
+      <XStack items="center" justify="space-between" gap={17} width="100%">
         {/* NFT Thumbnails */}
-        <XStack items="center" gap={9}>
+        <XStack items="center" gap={17}>
           {visibleNFTs.map((nft, index) => {
             const isLast = index === visibleNFTs.length - 1;
             const shouldShowOverlay = isLast && showOverlay;
@@ -299,19 +275,19 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
             );
           })}
         </XStack>
-
-        {/* Expand Button */}
+        
+        {/* Expand Button at the end */}
         {expandable && (
           <XStack
-            width={21.6}
-            height={21.6}
+            width={24}
+            height={24}
             items="center"
             justify="center"
             pressStyle={{ opacity: 0.7 }}
             onPress={() => setIsExpanded(true)}
             cursor="pointer"
           >
-            <ChevronDown size={21.6} color="#767676" theme="outline" />
+            <ChevronDown size={24} color="#767676" theme="outline" />
           </XStack>
         )}
       </XStack>

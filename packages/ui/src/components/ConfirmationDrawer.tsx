@@ -248,7 +248,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
 
             {/* Loading Indicator */}
-            <LoadingIndicator isAnimating={internalIsSending} width={90} />
+            {/* <LoadingIndicator isAnimating={internalIsSending} width={90} /> */}
 
             {/* To Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>

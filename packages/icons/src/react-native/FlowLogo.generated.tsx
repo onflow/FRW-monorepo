@@ -1,20 +1,7 @@
-import * as React from 'react';
-import Svg, { type SvgProps, ClipPath, Defs, G, Path } from 'react-native-svg';
-const FlowLogo = ({
-  color = 'currentColor',
-  size = 24,
-  width,
-  height,
-  ...props
-}: SvgProps & { size?: number }) => (
-  <Svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={width ?? size}
-    height={height ?? size}
-    fill="none"
-    viewBox="0 0 36 36"
-    {...props}
-  >
+import * as React from "react"
+import Svg, { type SvgProps, ClipPath, Defs, G, Path } from "react-native-svg"
+const FlowLogo = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (
+  <Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size} fill="none" viewBox="0 0 36 36" {...props}>
     <G clipPath="url(#flow-logo_svg__a)">
       <Path
         fill={color}
@@ -54,4 +41,4 @@ const FlowLogo = ({
     </Defs>
   </Svg>
 );
-export default FlowLogo;
+export default FlowLogo

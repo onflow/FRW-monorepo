@@ -479,6 +479,7 @@ export const SendTokensScreen = (props) => {
               onLearnMorePress={onLearnMorePress}
               showEditButton={showEditButtons}
               title={t('send.toAccount')}
+              isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
             />
           )}
 

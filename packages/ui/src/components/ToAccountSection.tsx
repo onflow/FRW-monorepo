@@ -1,10 +1,9 @@
-import { Edit } from '@onflow/frw-icons';
+import { Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
-import { Badge } from './Badge';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -21,6 +20,7 @@ export interface ToAccountSectionProps {
   contentPadding?: number;
   showAvatar?: boolean;
   avatarSize?: number;
+  isLinked?: boolean;
 }
 
 export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
@@ -36,11 +36,12 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   contentPadding: _contentPadding = 16,
   showAvatar = true,
   avatarSize = 36,
+  isLinked = false,
 }) => {
   return (
     <YStack
-      bg={backgroundColor}
-      rounded={borderRadius}
+      bg={backgroundColor as any}
+      rounded={borderRadius as any}
       gap={12}
       pt={16}
       t={-20}
@@ -111,8 +112,9 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
           {/* Account Details - Fixed width with 12px gap from avatar */}
           <XStack ml={12}>
             <YStack width={151.34} gap={2}>
-              {/* Account Name with linked chain emoji and EVM badge */}
+              {/* Account Name with linked icon, chain emoji and EVM badge */}
               <XStack items="center" gap={4}>
+                {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
                 <Text
                   color="$white"
                   fontSize="$3"
@@ -130,9 +132,17 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 )}
                 {/* EVM Badge - inline with name */}
                 {account.type === 'evm' && (
-                  <Badge variant="evm" size="small">
-                    EVM
-                  </Badge>
+                  <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="#FFFFFF"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EVM
+                    </Text>
+                  </XStack>
                 )}
               </XStack>
 

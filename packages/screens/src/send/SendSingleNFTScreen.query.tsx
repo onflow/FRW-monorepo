@@ -207,7 +207,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={20} gap="$4">
             {/* NFT Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
+            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
               {fromAccountForCard && (
                 <View mt={-8} mb={-16}>
@@ -256,6 +256,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 onEditPress={handleEditAccountPress}
                 onLearnMorePress={handleLearnMorePress}
                 showEditButton={true}
+                isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
               />
             )}
 

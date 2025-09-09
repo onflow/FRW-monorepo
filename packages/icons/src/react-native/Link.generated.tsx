@@ -1,20 +1,7 @@
-import * as React from 'react';
-import Svg, { type SvgProps, ClipPath, Defs, G, Path } from 'react-native-svg';
-const Link = ({
-  color = 'currentColor',
-  size = 24,
-  width,
-  height,
-  ...props
-}: SvgProps & { size?: number }) => (
-  <Svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={width ?? size}
-    height={height ?? size}
-    fill="none"
-    viewBox="0 0 14 13"
-    {...props}
-  >
+import * as React from "react"
+import Svg, { type SvgProps, ClipPath, Defs, G, Path } from "react-native-svg"
+const Link = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (
+  <Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size} fill="none" viewBox="0 0 14 13" {...props}>
     <G clipPath="url(#link_svg__a)">
       <Path
         stroke={color}
@@ -32,4 +19,4 @@ const Link = ({
     </Defs>
   </Svg>
 );
-export default Link;
+export default Link

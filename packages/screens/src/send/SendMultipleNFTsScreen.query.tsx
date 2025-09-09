@@ -177,12 +177,13 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
     setSelectedNFTs(updatedNFTs);
 
-    // If no NFTs remain, go back to selection
+    // If no NFTs remain, navigate back to the NFT selection screen
     if (updatedNFTs.length === 0) {
-      navigation.goBack();
+      // Navigate to NFT selection screen (same as edit button behavior)
+      navigation.navigate('NFTList');
     }
     // Stay on the same screen even with 1 NFT remaining
-  }, [selectedNFTs, setSelectedNFTs]);
+  }, [selectedNFTs, setSelectedNFTs, navigation]);
 
   const handleSendPress = useCallback(() => {
     setIsConfirmationVisible(true);
@@ -219,10 +220,10 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack p={20} gap="$4">
             {/* NFT Section */}
-            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
+            <YStack bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
               {fromAccountForCard && (
-                <View mt={-8} mb={-16}>
+                <View mb={-16}>
                   <AccountCard
                     account={fromAccountForCard}
                     title={t('send.fromAccount')}
@@ -269,6 +270,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
                 onEditPress={handleEditAccountPress}
                 onLearnMorePress={handleLearnMorePress}
                 showEditButton={true}
+                isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
               />
             )}
 
