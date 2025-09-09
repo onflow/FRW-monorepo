@@ -52,6 +52,7 @@ export function RecipientItem({
   avatarSize = 36,
   parentAvatar,
   emojiInfo,
+  parentEmojiInfo,
   onPress,
   onCopy,
   pressStyle,
@@ -93,7 +94,7 @@ export function RecipientItem({
           </YStack>
 
           {/* Small overlay avatar for parent account */}
-          {isLinked && parentAvatar && (
+          {isLinked && (parentAvatar || parentEmojiInfo) && (
             <YStack
               position="absolute"
               style={{
@@ -103,15 +104,14 @@ export function RecipientItem({
               width={18}
               height={18}
               rounded={9}
-              bg="$textSecondary"
+              bg="#D9D9D9"
               borderWidth={2}
               borderColor="$bg"
               items="center"
               justify="center"
-              p={1}
             >
-              <Text fontSize={10} fontWeight="600">
-                {parentAvatar}
+              <Text fontSize={11.5} fontWeight="600">
+                {parentEmojiInfo?.emoji || parentAvatar}
               </Text>
             </YStack>
           )}
