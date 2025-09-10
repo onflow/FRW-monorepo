@@ -104,7 +104,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
               width={8}
               height={8}
               borderRadius={4}
-              bg={style.bg}
+              backgroundColor={style.bg}
               opacity={style.opacity}
             />
           );
@@ -169,13 +169,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               items="center"
               justify="center"
               borderRadius="$4"
-              pressStyle={{ bg: '$gray3' }}
+              pressStyle={{ opacity: 0.8 }}
               onPress={onClose}
               cursor="pointer"
             >
               <Close size={20} color="$white" />
             </XStack>
           </XStack>
+
 
           {/* Transaction Visual */}
           <View
@@ -225,15 +226,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color="$white" textAlign="center">
+                <Text fontSize="$3" fontWeight="600" color="$white">
                   {fromAccount?.name || 'Unknown'}
                 </Text>
                 {fromAccount?.address && (
                   <AddressText
                     address={fromAccount.address}
                     fontSize="$2"
-                    color="$gray11"
-                    textAlign="center"
+                    color="$textSecondary"
                   />
                 )}
               </YStack>
@@ -251,15 +251,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color="$white" textAlign="center">
+                <Text fontSize="$3" fontWeight="600" color="$white">
                   {toAccount?.name || 'Unknown'}
                 </Text>
                 {toAccount?.address && (
                   <AddressText
                     address={toAccount.address}
                     fontSize="$2"
-                    color="$gray11"
-                    textAlign="center"
+                    color="$textSecondary"
                   />
                 )}
               </YStack>
@@ -269,6 +268,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
+              <Text fontSize="$2" color="$light80" fontWeight="400">
+                Send NFTs
+              </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
                 maxVisibleThumbnails={3}
@@ -281,7 +283,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
           ) : (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
-              <Text fontSize="$2" color="$light80" fontFamily="Inter" fontWeight="400">
+              <Text fontSize="$2" color="$light80" fontWeight="400">
                 Send Tokens
               </Text>
 
@@ -297,7 +299,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   ) : (
                     <FlowLogo size={32} />
                   )}
-                  <Text fontSize="$6" fontWeight="500" color="$white" fontFamily="Inter">
+                  <Text fontSize="$6" fontWeight="500" color="$white">
                     {formData.tokenAmount}
                   </Text>
                 </XStack>
@@ -317,7 +319,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     fontSize="$2"
                     fontWeight="600"
                     color="$white"
-                    fontFamily="Inter"
                     letterSpacing={-0.072}
                   >
                     {selectedToken?.symbol || 'FLOW'}
@@ -332,9 +333,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <Text
                   fontSize="$3"
                   color="$light80"
-                  fontFamily="Inter"
                   fontWeight="400"
-                  textAlign="left"
                 >
                   ${formData.fiatAmount || '0.69'}
                 </Text>

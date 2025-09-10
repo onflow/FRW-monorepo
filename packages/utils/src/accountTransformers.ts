@@ -21,7 +21,7 @@ export const transformAccountForDisplay = (
     // Avatar/display options
     avatar: hasEmoji ? '' : account.avatar,
     avatarSrc: hasEmoji ? undefined : account.avatar,
-    avatarFallback: hasEmoji ? '' : account.name?.[0] || '?',
+    avatarFallback: hasEmoji ? account.emojiInfo?.emoji : (account.name?.[0] || '?'),
     avatarBgColor: account.emojiInfo?.color || '#7B61FF',
     balance: account?.balance || '0 FLOW',
     nfts: account?.nfts || '0 NFTs',

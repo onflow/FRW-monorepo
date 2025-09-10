@@ -181,7 +181,10 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     };
 
     enhancedPlatform.getWalletAccounts = async () => {
+      
       const accountsArray: any[] = [];
+
+  
 
       // Add all main wallet accounts from walletList (this includes all 18 accounts)
       if (Array.isArray(walletList) && walletList.length > 0) {
@@ -270,6 +273,9 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         });
       }
 
+      console.log('PlatformContext getWalletAccounts: final accountsArray:', accountsArray);
+      console.log('PlatformContext getWalletAccounts: total accounts:', accountsArray.length);
+      
       return {
         accounts: accountsArray,
         total: accountsArray.length,

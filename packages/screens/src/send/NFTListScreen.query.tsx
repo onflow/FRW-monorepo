@@ -289,7 +289,7 @@ export function NFTListScreen(): React.ReactElement {
         )}
 
         {/* Search and Content */}
-        <YStack flex={1} px="$4">
+        <YStack flex={1} pl="$4" pr="$6">
           <NFTGrid
             data={filteredNFTs}
             selectedIds={selectedIds}

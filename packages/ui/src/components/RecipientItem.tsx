@@ -57,6 +57,7 @@ export function RecipientItem({
   onCopy,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
+  console.log('RecipientItem render:', { name, address, type, emojiInfo, avatar });
   return (
     <Card
       bg="transparent"
@@ -68,8 +69,9 @@ export function RecipientItem({
       borderColor="transparent"
       borderWidth={0}
       p={0}
+      minHeight={56}
     >
-      <XStack items="center" justify="space-between" flex={1} p={0}>
+      <XStack items="center" justify="space-between" flex={1} p={0} height={56}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
         <XStack width={46} height={36} position="relative">
           {/* Main Avatar using proper Avatar component */}
@@ -111,7 +113,7 @@ export function RecipientItem({
               justify="center"
               overflow="visible"
             >
-              <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
+              <Text fontSize={10} fontWeight="600" lineHeight={18}>
                 {parentEmojiInfo?.emoji || parentAvatar}
               </Text>
             </YStack>
@@ -174,7 +176,7 @@ export function RecipientItem({
         {/* Action Buttons */}
         <XStack gap="$2" items="center">
           {showCopyButton && onCopy && (
-            <XStack
+            <Card
               width={24}
               height={24}
               opacity={0.5}
@@ -183,9 +185,15 @@ export function RecipientItem({
                 onCopy();
               }}
               cursor="pointer"
+              bg="transparent"
+              borderWidth={0}
+              p={0}
+              pressStyle={{ opacity: 0.3 }}
+              items="center"
+              justify="center"
             >
               <Copy size={24} color="#FFFFFF" />
-            </XStack>
+            </Card>
           )}
         </XStack>
       </XStack>
