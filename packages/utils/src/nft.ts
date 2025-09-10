@@ -1,5 +1,6 @@
 import { type CollectionModel, type NFTModel } from '@onflow/frw-types';
 
+import { stripHexPrefix } from './utils';
 /**
  * Gets the cover image URL from an NFT
  */
@@ -65,7 +66,8 @@ export function getNFTResourceIdentifier(nft: NFTModel | null): string | null {
   if (!nft || !nft.address || !nft.contractName) {
     return null;
   }
-  return `A.${nft.address}.${nft.contractName}.NFT`;
+  const cleanAddress = stripHexPrefix(nft.address);
+  return `A.${cleanAddress}.${nft.contractName}.NFT`;
 }
 
 /**
@@ -75,5 +77,6 @@ export function getCollectionResourceIdentifier(collection: CollectionModel | nu
   if (!collection || !collection.address || !collection.contractName) {
     return null;
   }
-  return `A.${collection.address}.${collection.contractName}.Collection`;
+  const cleanAddress = stripHexPrefix(collection.address);
+  return `A.${cleanAddress}.${collection.contractName}.Collection`;
 }

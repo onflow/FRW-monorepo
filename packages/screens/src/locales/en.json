@@ -79,7 +79,8 @@
     "tokenId": "Token ID",
     "properties": "Properties",
     "description": "Description",
-    "creator": "Creator"
+    "creator": "Creator",
+    "inaccessible": "Inaccessible"
   },
   "messages": {
     "loading": "Loading...",

@@ -75,7 +75,8 @@
     "tokenId": "代币ID",
     "properties": "属性",
     "description": "描述",
-    "creator": "创建者"
+    "creator": "创建者",
+    "inaccessible": "不可访问"
   },
   "messages": {
     "loading": "加载中...",

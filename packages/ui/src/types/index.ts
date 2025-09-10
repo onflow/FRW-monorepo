@@ -1,3 +1,4 @@
+import type { WalletAccount } from '@onflow/frw-types';
 import type { ComponentProps } from 'react';
 import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiText } from 'tamagui';
 
@@ -28,6 +29,8 @@ export interface TokenCardProps {
   change24h?: number;
   isVerified?: boolean;
   onPress?: () => void;
+  isAccessible?: boolean;
+  inaccessibleText?: string;
 }
 
 export interface SegmentedControlProps {
@@ -70,29 +73,17 @@ export interface CollectionModel {
 export interface NFTCollectionRowProps {
   collection?: CollectionModel;
   onPress?: () => void;
-}
-
-export interface Account {
-  name?: string;
-  address: string;
-  avatar?: string;
-  balance?: string;
-  emoji?: string;
-  nfts?: string;
-  emojiInfo?: {
-    emoji: string;
-    name: string;
-    color: string;
-  };
+  isAccessible?: boolean; // For child account accessibility
+  inaccessibleText?: string;
 }
 
 export interface AccountCardProps {
-  account: Account;
+  account: WalletAccount;
   title: string;
   isLoading?: boolean;
   // Modal-style selection props
-  accounts?: Account[];
-  onAccountSelect?: (account: Account) => void;
+  accounts?: WalletAccount[];
+  onAccountSelect?: (account: WalletAccount) => void;
   modalTitle?: string;
   enableModalSelection?: boolean;
   showEditButton?: boolean;

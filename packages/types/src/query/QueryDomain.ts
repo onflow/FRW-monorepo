@@ -21,6 +21,7 @@ export const QueryDomain = {
     NFTS: 'nfts',
     TRANSACTIONS: 'transactions',
     PRICES: 'prices',
+    ACCESSIBLE_ASSETS: 'accessible-assets',
   },
 
   // User settings domains - medium cache (5min)

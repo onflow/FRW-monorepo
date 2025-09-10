@@ -5,6 +5,9 @@ import {
   tokenQueries,
   useWalletStore,
   walletSelectors,
+  accessibleAssetQueryKeys,
+  accessibleAssetQueries,
+  accessibleAssetHelpers,
 } from '@onflow/frw-stores';
 import { type CollectionModel, type TokenModel, type WalletAccount } from '@onflow/frw-types';
 import {
@@ -39,6 +42,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Store hooks
   const {
+    setFromAccount,
     setSelectedToken,
     setTransactionType,
     setCurrentStep,
@@ -53,8 +57,21 @@ export function SelectTokensScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
 
   // Get current address and network
-  const address = bridge.getSelectedAddress() || '';
+  const [currentAccount, setCurrentAccount] = React.useState<WalletAccount | null>(null);
   const network = bridge.getNetwork() || 'mainnet';
+
+  // Load current account on mount
+  React.useEffect(() => {
+    const loadCurrentAccount = async () => {
+      try {
+        const account = await bridge.getSelectedAccount();
+        setCurrentAccount(account);
+      } catch (error) {
+        console.error('Failed to load current account:', error);
+      }
+    };
+    loadCurrentAccount();
+  }, []);
 
   // Get wallet accounts for modal selection
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
@@ -68,9 +85,9 @@ export function SelectTokensScreen(): React.ReactElement {
     error: tokensError,
     refetch: refetchTokens,
   } = useQuery({
-    queryKey: tokenQueryKeys.tokens(address, network),
-    queryFn: () => tokenQueries.fetchTokens(address, network),
-    enabled: !!address && tab === 'Tokens',
+    queryKey: tokenQueryKeys.tokens(currentAccount?.address || '', network),
+    queryFn: () => tokenQueries.fetchTokens(currentAccount?.address || '', network),
+    enabled: !!currentAccount?.address && tab === 'Tokens',
     staleTime: 0, // Always fetch fresh for financial data
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -83,24 +100,59 @@ export function SelectTokensScreen(): React.ReactElement {
     error: nftsError,
     refetch: refetchNFTs,
   } = useQuery({
-    queryKey: tokenQueryKeys.nfts(address, network),
-    queryFn: () => tokenQueries.fetchNFTCollections(address, network),
-    enabled: !!address && tab === 'NFTs',
+    queryKey: tokenQueryKeys.nfts(currentAccount?.address || '', network),
+    queryFn: () => tokenQueries.fetchNFTCollections(currentAccount?.address || '', network),
+    enabled: !!currentAccount?.address && tab === 'NFTs',
     staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
+  // Log current account for debugging
+  React.useEffect(() => {
+    console.log('SelectTokensScreen - Current account:', {
+      currentAccount: currentAccount
+        ? { address: currentAccount.address, name: currentAccount.name }
+        : null,
+      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
+    });
+  }, [currentAccount, accounts]);
+
   // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
   const { data: balanceData, isLoading: isBalanceLoading } = useQuery({
-    queryKey: tokenQueryKeys.balance(address, network),
-    queryFn: () => tokenQueries.fetchBalance(address, undefined, network),
-    enabled: !!address,
+    queryKey: tokenQueryKeys.balance(currentAccount?.address || '', network),
+    queryFn: () => tokenQueries.fetchBalance(currentAccount?.address || '', undefined, network),
+    enabled: !!currentAccount?.address,
     staleTime: 30 * 1000, // Use cached balance for 30 seconds
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
   });
+
+  // 🔥 TanStack Query: Fetch accessible IDs for child accounts only
+  const { data: accessibleIds, refetch: refetchAccessibleIds } = useQuery({
+    queryKey: accessibleAssetQueryKeys.allowTypes(
+      currentAccount?.parentAddress || '',
+      currentAccount?.address || '',
+      network
+    ),
+    queryFn: () =>
+      accessibleAssetQueries.fetchChildAccountAllowTypes(
+        currentAccount?.parentAddress || '',
+        currentAccount?.address || '',
+        network
+      ),
+    enabled:
+      currentAccount?.type === 'child' &&
+      !!currentAccount?.parentAddress &&
+      !!currentAccount?.address, // Only fetch for child accounts
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes as access permissions don't change frequently
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
+
+  // For regular accounts, all assets are accessible by default
+  const effectiveAccessibleIds = currentAccount?.type === 'child' ? accessibleIds : null;
 
   // Initialize screen
   React.useEffect(() => {
@@ -134,26 +186,34 @@ export function SelectTokensScreen(): React.ReactElement {
   const handleNFTPress = (collection: CollectionModel): void => {
     setSelectedCollection(collection);
     setTransactionType('multiple-nfts');
-    navigation.navigate('NFTList', { collection, address });
+    navigation.navigate('NFTList', { collection, address: currentAccount?.address || '' });
   };
 
   // Handle account selection from modal
-  const handleAccountSelect = (selectedAccount: any): void => {
+  const handleAccountSelect = (selectedAccount: WalletAccount): void => {
     // Switch to the selected account
-    bridge.setSelectedAccount(selectedAccount.address);
-    // Clear transaction data since we're switching accounts
+    setCurrentAccount(selectedAccount);
+    setFromAccount(selectedAccount);
     clearTransactionData();
-    // The screen will re-render with the new account data
+    refreshAll();
   };
 
   // Refresh functions - TanStack Query makes this super simple!
   const refreshTokens = useCallback(() => {
     refetchTokens();
-  }, [refetchTokens]);
+    refetchAccessibleIds();
+  }, [refetchTokens, refetchAccessibleIds]);
 
   const refreshNFTCollections = useCallback(() => {
     refetchNFTs();
-  }, [refetchNFTs]);
+    refetchAccessibleIds();
+  }, [refetchNFTs, refetchAccessibleIds]);
+
+  const refreshAll = useCallback(() => {
+    refetchTokens();
+    refetchNFTs();
+    refetchAccessibleIds();
+  }, [refetchTokens, refetchNFTs, refetchAccessibleIds]);
 
   // Filter tokens with balance
   const tokensWithBalance = tokens.filter((token) => {
@@ -165,38 +225,8 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Convert wallet accounts to AccountCard format
   const accountsForModal = React.useMemo(() => {
-    return accounts.map((account: WalletAccount) => ({
-      name: account.name,
-      address: account.address,
-      avatar: account.avatar,
-      balance: '550.66 FLOW', // TODO: Replace with real balance data
-      emojiInfo: account.emojiInfo,
-    }));
+    return accounts;
   }, [accounts]);
-
-  // Get current account data
-  const currentAccount = React.useMemo(() => {
-    // Find matching account - try both exact match and case-insensitive match
-    const account = accounts.find(
-      (acc: WalletAccount) =>
-        acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
-    );
-
-    // Debug log to help troubleshoot
-    console.log('SelectTokensScreen - Address matching:', {
-      currentAddress: address,
-      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
-      foundAccount: account ? { address: account.address, name: account.name } : null,
-    });
-
-    return {
-      name: account?.name || account?.username || 'Unnamed Account',
-      address: address,
-      avatar: account?.avatar,
-      balance: isBalanceLoading ? t('messages.loading') : balanceData?.displayBalance || '0 FLOW',
-      emojiInfo: account?.emojiInfo,
-    };
-  }, [accounts, address, isBalanceLoading, balanceData, t]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
@@ -291,6 +321,11 @@ export function SelectTokensScreen(): React.ReactElement {
                         change24h={token.change ? parseFloat(token.change) : undefined}
                         isVerified={token.isVerified}
                         onPress={() => handleTokenPress(token)}
+                        isAccessible={accessibleAssetHelpers.isTokenAllowed(
+                          token,
+                          effectiveAccessibleIds
+                        )}
+                        inaccessibleText={t('send.inaccessible')}
                       />
                       {idx < tokensWithBalance.length - 1 && <Divider />}
                     </React.Fragment>
@@ -349,6 +384,11 @@ export function SelectTokensScreen(): React.ReactElement {
                       <NFTCollectionRow
                         collection={collection}
                         onPress={() => handleNFTPress(collection)}
+                        isAccessible={accessibleAssetHelpers.isCollectionAllowed(
+                          collection,
+                          effectiveAccessibleIds
+                        )}
+                        inaccessibleText={t('send.inaccessible')}
                       />
                       {idx < nftCollections.length - 1 && <Divider />}
                     </React.Fragment>
