@@ -94,7 +94,7 @@ export interface Account {
 }
 
 export interface AccountCardProps {
-  account: Account;
+  account: Account | null;
   title: string;
   isLoading?: boolean;
   // Modal-style selection props

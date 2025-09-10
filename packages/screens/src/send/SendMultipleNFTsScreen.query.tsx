@@ -1,6 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -20,56 +19,17 @@ import {
   Separator,
   type NFTSendData,
   type TransactionFormData,
-  type AccountDisplayData,
   XStack,
 } from '@onflow/frw-ui';
-import { logger, getNFTCover, getNFTId } from '@onflow/frw-utils';
+import {
+  logger,
+  getNFTCover,
+  getNFTId,
+  transformAccountForCard,
+  transformAccountForDisplay,
+} from '@onflow/frw-utils';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-/**
- * Transform WalletAccount to UI Account type for AccountCard
- */
-const transformAccountForCard = (account: WalletAccount | null, balance?: string): any | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatar: account.avatar,
-    balance: balance || '0 FLOW',
-    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
-    emojiInfo: account.emojiInfo,
-    parentEmoji: account.parentEmoji,
-    type: account.type,
-  };
-};
-
-/**
- * Transform WalletAccount to AccountDisplayData for confirmation drawer
- */
-const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
-  if (!account) return null;
-
-  // For Flow accounts, we use emoji instead of avatar image
-  const hasEmoji = account.emojiInfo?.emoji;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatarSrc: hasEmoji ? undefined : account.avatar, // Only use avatar if no emoji
-    avatarFallback: hasEmoji ? account.emojiInfo?.emoji || '?' : account.name?.[0] || '?',
-    avatarBgColor: account.emojiInfo?.color || '#7B61FF',
-    parentEmoji: account.parentEmoji
-      ? {
-          emoji: account.parentEmoji.emoji,
-          name: account.parentEmoji.name,
-          color: account.parentEmoji.color,
-        }
-      : undefined,
-    type: account.type,
-  };
-};
 
 /**
  * Query-integrated version of SendMultipleNFTsScreen following the established pattern
@@ -113,22 +73,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     checkFreeGasStatus();
   }, []);
 
-  // Early return if essential data is missing
-  if (!selectedNFTs || selectedNFTs.length === 0) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFTs selected. Please go back and select NFTs to send.
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   // Transform NFT data for UI using getNFTCover utility
   const nftsForUI: NFTSendData[] = useMemo(
     () =>
@@ -147,12 +91,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         };
       }) || [],
     [selectedNFTs]
-  );
-
-  // Transform accounts for UI components
-  const fromAccountForCard = useMemo(
-    () => transformAccountForCard(fromAccount, '550.66 FLOW'), // TODO: Real balance
-    [fromAccount]
   );
 
   // Calculate if send button should be disabled
@@ -262,10 +200,10 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
-              {fromAccountForCard && (
+              {fromAccount && (
                 <View mb={-16}>
                   <AccountCard
-                    account={fromAccountForCard}
+                    account={transformAccountForCard(fromAccount)}
                     title={t('send.fromAccount')}
                     isLoading={false} // TODO: Real loading state
                   />

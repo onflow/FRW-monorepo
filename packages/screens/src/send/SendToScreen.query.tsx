@@ -7,6 +7,7 @@ import {
   useAddressBookStore,
   addressBookQueryKeys,
   tokenQueries,
+  tokenQueryKeys,
 } from '@onflow/frw-stores';
 import type { WalletAccount } from '@onflow/frw-types';
 import {
@@ -44,7 +45,7 @@ export function SendToScreen(): React.ReactElement {
     { type: 'contacts', title: t('send.addressBook') },
   ];
 
-  const { setToAccount } = useSendStore();
+  const { setToAccount, setFromAccount, fromAccount } = useSendStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
@@ -69,13 +70,17 @@ export function SendToScreen(): React.ReactElement {
   const profileError = useProfileStore((state) => state.error);
   const profilesLoadedRef = useRef(false);
 
+  const bridgeAddress = bridge.getSelectedAddress() || '';
+  const fromAddress = fromAccount?.address || bridgeAddress;
+  const network = bridge.getNetwork() || 'mainnet';
+
   useEffect(() => {
     // Only load if we haven't loaded yet and we're not currently loading
     if (!profilesLoadedRef.current && !isLoadingProfiles && !profileError) {
       profilesLoadedRef.current = true;
       loadProfilesFromBridge();
     }
-  }, [isLoadingProfiles, profileError]); // Simplified dependencies
+  }, [isLoadingProfiles, loadProfilesFromBridge, profileError]);
 
   // Query for recent contacts with automatic caching
   const {
@@ -112,6 +117,27 @@ export function SendToScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh every minute
+  });
+
+  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
+  const { data: balanceData } = useQuery({
+    queryKey: tokenQueryKeys.balance(fromAddress, network),
+    queryFn: () => tokenQueries.fetchBalance(fromAddress, undefined, network),
+    enabled: !!fromAccount?.address,
+    staleTime: 30 * 1000, // Use cached balance for 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 60 * 1000, // Refresh balance every minute in background
+  });
+
+  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching
+  const { data: nftCollections = [] } = useQuery({
+    queryKey: tokenQueryKeys.nfts(fromAddress, network),
+    queryFn: () => tokenQueries.fetchNFTCollections(fromAddress, network),
+    enabled: !!fromAccount?.address,
+    staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Convert batch balances and NFT counts to the expected format
@@ -239,6 +265,23 @@ export function SendToScreen(): React.ReactElement {
       } else if (recipient.type === 'account') {
         accountType = 'main';
       }
+
+      console.log('nftCollections ', nftCollections, balanceData);
+
+      // Calculate total NFT count from all collections
+      const totalNFTCount = nftCollections.reduce((total, collection) => {
+        return total + (collection.count || 0);
+      }, 0);
+
+      if (fromAccount) {
+        setFromAccount({
+          ...fromAccount,
+          balance: balanceData?.displayBalance || '0 FLOW',
+          nfts: totalNFTCount ? `${totalNFTCount} NFTs` : '0 NFTs',
+        });
+      }
+
+      console.log('Total NFT count:', totalNFTCount);
 
       setToAccount({
         id: recipient.id,

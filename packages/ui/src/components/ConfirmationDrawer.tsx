@@ -1,5 +1,5 @@
 import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type TransactionType, type TokenModel } from '@onflow/frw-types';
+import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
 
@@ -14,20 +14,6 @@ export interface TransactionFormData {
   fiatAmount: string;
   isTokenMode: boolean;
   transactionFee?: string;
-}
-
-export interface AccountDisplayData {
-  name: string;
-  address: string;
-  avatarSrc?: string;
-  avatarFallback: string;
-  avatarBgColor?: string;
-  parentEmoji?: {
-    emoji: string;
-    name: string;
-    color: string;
-  };
-  type?: 'main' | 'child' | 'evm';
 }
 
 export interface ConfirmationDrawerProps {

@@ -6,7 +6,6 @@ import {
   walletSelectors,
   useAddressBookStore,
 } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -21,7 +20,6 @@ import {
   StorageWarning,
   ExtensionHeader,
   type TransactionFormData,
-  type AccountDisplayData,
   Text,
   Separator,
   XStack,
@@ -29,45 +27,10 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
+import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-/**
- * Transform WalletAccount to AccountDisplayData for UI components
- */
-const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatarSrc: account.avatar,
-    avatarFallback: account.emojiInfo?.emoji || account.name?.charAt(0) || 'A',
-    avatarBgColor: account.emojiInfo?.color,
-    parentEmoji: account.parentEmoji,
-    type: account.type,
-  };
-};
-
-/**
- * Transform WalletAccount to UI Account type for AccountCard
- */
-const transformAccountForCard = (account: WalletAccount | null, balance?: string): any | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatar: account.avatar,
-    balance: balance || '0 FLOW',
-    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
-    emojiInfo: account.emojiInfo,
-    parentEmoji: account.parentEmoji,
-    type: account.type,
-  };
-};
 
 /**
  * Query-integrated version of SendTokensScreen following the established pattern
@@ -89,7 +52,6 @@ export const SendTokensScreen = (props) => {
     selectedNFTs,
     selectedToken,
     fromAccount,
-    setFromAccount,
     toAccount,
     updateFormData,
     executeTransaction,
@@ -170,23 +132,6 @@ export const SendTokensScreen = (props) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: !!selectedAccount?.address,
   });
-
-  // Set fromAccount when selectedAccount is loaded
-  useEffect(() => {
-    if (selectedAccount && !fromAccount) {
-      setFromAccount({
-        id: selectedAccount.address,
-        address: selectedAccount.address,
-        name: selectedAccount.name,
-        avatar: selectedAccount.avatar,
-        emojiInfo: selectedAccount.emojiInfo,
-        parentEmoji: selectedAccount.parentEmoji,
-        parentAddress: selectedAccount.parentAddress,
-        isActive: true,
-        type: selectedAccount.type,
-      });
-    }
-  }, [selectedAccount, fromAccount, setFromAccount]);
 
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
@@ -405,7 +350,7 @@ export const SendTokensScreen = (props) => {
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
-                account={transformAccountForCard(fromAccount, selectedAccount?.balance)}
+                account={transformAccountForCard(fromAccount)}
                 title="From Account"
                 isLoading={isBalanceLoading}
               />

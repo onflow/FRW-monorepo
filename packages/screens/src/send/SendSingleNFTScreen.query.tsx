@@ -1,6 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -20,68 +19,16 @@ import {
   Separator,
   type NFTSendData,
   type TransactionFormData,
-  type AccountDisplayData,
   XStack,
 } from '@onflow/frw-ui';
-import { logger, getNFTCover } from '@onflow/frw-utils';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  logger,
+  getNFTCover,
+  transformAccountForCard,
+  transformAccountForDisplay,
+} from '@onflow/frw-utils';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-
-/**
- * Transform WalletAccount to UI Account type for AccountCard
- */
-const transformAccountForCard = (
-  account: WalletAccount | null,
-  balance?: string
-): {
-  name: string;
-  address: string;
-  avatar?: string;
-  balance: string;
-  nfts: string;
-  emojiInfo?: { emoji: string; name: string; color: string };
-  parentEmoji?: { emoji: string; name: string; color: string };
-  type: 'main' | 'child' | 'evm';
-} | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatar: account.avatar,
-    balance: balance || '0 FLOW',
-    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
-    emojiInfo: account.emojiInfo,
-    parentEmoji: account.parentEmoji,
-    type: account.type as 'main' | 'child' | 'evm',
-  };
-};
-
-/**
- * Transform WalletAccount to AccountDisplayData for confirmation drawer
- */
-const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
-  if (!account) return null;
-
-  // For Flow accounts, we use emoji instead of avatar image
-  const hasEmoji = account.emojiInfo?.emoji;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatarSrc: hasEmoji ? undefined : account.avatar, // Only use avatar if no emoji
-    avatarFallback: hasEmoji ? account.emojiInfo?.emoji || '?' : account.name?.[0] || '?',
-    avatarBgColor: account.emojiInfo?.color || '#7B61FF',
-    parentEmoji: account.parentEmoji
-      ? {
-          emoji: account.parentEmoji.emoji,
-          name: account.parentEmoji.name,
-          color: account.parentEmoji.color,
-        }
-      : undefined,
-    type: account.type,
-  };
-};
 
 /**
  * Query-integrated version of SendSingleNFTScreen following the established pattern
@@ -138,12 +85,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
     description: selectedNFT?.description || '',
     type: selectedNFT?.type, // Pass the NFT type for EVM badge
   };
-
-  // Transform accounts for UI components
-  const fromAccountForCard = useMemo(
-    () => transformAccountForCard(fromAccount, '550.66 FLOW'), // TODO: Real balance
-    [fromAccount]
-  );
 
   // Calculate if send button should be disabled
   const isSendDisabled = !selectedNFT || !fromAccount || !toAccount || isLoading;
@@ -235,10 +176,10 @@ export function SendSingleNFTScreen(): React.ReactElement {
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
-              {fromAccountForCard && (
+              {fromAccount && (
                 <View mt={-8} mb={-16}>
                   <AccountCard
-                    account={fromAccountForCard}
+                    account={transformAccountForCard(fromAccount)}
                     title={t('send.fromAccount')}
                     isLoading={false} // TODO: Real loading state
                   />
