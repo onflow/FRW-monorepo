@@ -25,10 +25,10 @@ export function TokenCard({
         onPress: onPress,
         cursor: 'pointer',
       })}
-      py="$2"
-      px="$1"
+      items="center"
+      justify="center"
       width="100%"
-      height={80}
+      height={64}
     >
       <XStack items="center" gap="$2" width="100%">
         <Avatar src={logoURI} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />

@@ -299,15 +299,7 @@ export function SelectTokensScreen(): React.ReactElement {
                   refreshText={t('buttons.refresh')}
                 />
               ) : (
-                <YStack gap="$3">
-                  {/* Token Count Badge - Hidden as requested */}
-                  {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
-                    <Badge variant="secondary" size="small">
-                      {tokensWithBalance.length}{' '}
-                      {tokensWithBalance.length === 1 ? 'Token' : 'Tokens'}
-                    </Badge>
-                  </XStack> */}
-
+                <YStack gap="$2">
                   {tokensWithBalance.map((token, idx) => (
                     <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
                       <TokenCard
@@ -361,7 +353,7 @@ export function SelectTokensScreen(): React.ReactElement {
                   refreshText={t('buttons.refresh')}
                 />
               ) : (
-                <YStack gap="$3">
+                <YStack gap="$1">
                   {/* NFT Collections Count Badge - Hidden as requested */}
                   {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
                     <Badge variant="primary" size="small">
