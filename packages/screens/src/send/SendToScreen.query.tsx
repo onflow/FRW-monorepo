@@ -114,47 +114,6 @@ export function SendToScreen(): React.ReactElement {
     refetchInterval: 60 * 1000, // Refresh every minute
   });
 
-  // Query for NFT counts using NFT collections API - use profile accounts
-  const { data: nftCounts = {} } = useQuery({
-    queryKey: ['nftCounts', profileAccountAddresses],
-    queryFn: async () => {
-      const results: { [address: string]: string } = {};
-
-      const nftCountPromises = profileAccountAddresses.map(async (address) => {
-        try {
-          // const nftCollections = await tokenQueries.fetchNFTCollections(address);
-          const totalCount = 0;
-          const nftCountDisplay =
-            totalCount === 0 ? '0 NFTs' : `${totalCount} NFT${totalCount !== 1 ? 's' : ''}`;
-
-          return {
-            address: address,
-            nftCount: nftCountDisplay,
-          };
-        } catch (error) {
-          console.warn(`Failed to fetch NFT count for ${address}:`, error);
-          return {
-            address: address,
-            nftCount: '0 NFTs',
-          };
-        }
-      });
-
-      // Wait for all NFT count requests to complete in parallel
-      const nftCountResults = await Promise.all(nftCountPromises);
-      nftCountResults.forEach(({ address, nftCount }) => {
-        results[address] = nftCount;
-      });
-
-      return results;
-    },
-    enabled: profileAccountAddresses.length > 0,
-    staleTime: 30 * 1000, // Cache for 30 seconds
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: 60 * 1000, // Refresh every minute
-  });
-
   // Convert batch balances and NFT counts to the expected format
   const accountBalances = useMemo(() => {
     const results: { [address: string]: { balance: string; nftCount: string } } = {};
@@ -168,15 +127,14 @@ export function SendToScreen(): React.ReactElement {
     // Map to expected format with both balance and NFT count for all profile accounts
     profileAccountAddresses.forEach((address) => {
       const balance = balanceLookup.get(address) || '0 FLOW';
-      const nftCount = nftCounts[address] || '0 NFTs';
       results[address] = {
         balance,
-        nftCount,
+        nftCount: '0',
       };
     });
 
     return results;
-  }, [batchBalances, nftCounts, profileAccountAddresses]);
+  }, [batchBalances, profileAccountAddresses]);
 
   // Convert recent contacts data
   const recentData = useMemo((): RecipientData[] => {
