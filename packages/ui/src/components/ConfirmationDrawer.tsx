@@ -6,8 +6,10 @@ import { YStack, XStack, View, Sheet } from 'tamagui';
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
+// import { LottieAnimation } from './LottieAnimation';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
+import sendConfirmationAnimation from '../assets/animations/send-confirmation-noblur.json';
 
 export interface TransactionFormData {
   tokenAmount: string;
@@ -201,9 +203,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             />
 
             <View items="center" justify="center" position="relative" style={{ zIndex: 10 }}>
-              <View transform={[{ rotate: '344.558deg' }]}>
-                <WalletCard width={80} height={90} />
-              </View>
+              {/* <LottieAnimation
+                source={sendConfirmationAnimation}
+                width={120}
+                height={120}
+                autoPlay={true}
+                loop={false}
+                speed={1}
+              /> */}
             </View>
           </View>
 

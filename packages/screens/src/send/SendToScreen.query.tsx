@@ -61,6 +61,7 @@ export function SendToScreen(): React.ReactElement {
 
   // Get all profiles with their accounts - using stable hook
   const allProfiles = useAllProfiles();
+  console.log('SendToScreen - allProfiles:', allProfiles);
   const loadProfilesFromBridge = useProfileStore((state) => state.loadProfilesFromBridge);
 
   const addressBookStore = useAddressBookStore();
@@ -190,13 +191,17 @@ export function SendToScreen(): React.ReactElement {
 
   // Convert profiles data for display
   const profilesData = useMemo(() => {
-    return allProfiles.map((profile) => ({
+    console.log('Converting profiles data, allProfiles:', allProfiles);
+    console.log('accountBalances:', accountBalances);
+    const result = allProfiles.map((profile) => ({
       ...profile,
       accounts: profile.accounts.map((account) => ({
         ...account,
         balance: accountBalances[account.address]?.balance || '0 FLOW',
       })),
     }));
+    console.log('profilesData result:', result);
+    return result;
   }, [allProfiles, accountBalances]);
 
   // Get current recipients based on active tab
@@ -431,13 +436,21 @@ export function SendToScreen(): React.ReactElement {
         backgroundColor="$bgDrawer"
       >
         {activeTab === 'accounts' ? (
-          <ProfileList
-            profiles={profilesData}
-            onAccountPress={handleRecipientPress}
-            isLoading={isLoading}
-            emptyTitle={emptyState.title}
-            emptyMessage={emptyState.message}
-          />
+          <>
+            {console.log('Rendering ProfileList with:', { 
+              profilesData, 
+              profilesLength: profilesData.length,
+              firstProfileAccounts: profilesData[0]?.accounts?.length,
+              isLoading 
+            })}
+            <ProfileList
+              profiles={profilesData}
+              onAccountPress={handleRecipientPress}
+              isLoading={isLoading}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+            />
+          </>
         ) : activeTab === 'contacts' ? (
           isLoading ? (
             <RecipientList

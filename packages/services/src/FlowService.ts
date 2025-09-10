@@ -100,7 +100,13 @@ class FlowService {
    * @returns Promise<WalletProfilesResponse> - All profiles with their accounts
    */
   async getWalletProfiles(): Promise<WalletProfilesResponse> {
-    return this.bridge.getWalletProfiles();
+    // Check if the bridge has the getWalletProfiles method
+    if ('getWalletProfiles' in this.bridge && typeof this.bridge.getWalletProfiles === 'function') {
+      return this.bridge.getWalletProfiles();
+    }
+    
+    // If not available, throw an error to trigger fallback
+    throw new Error('getWalletProfiles not implemented on this platform');
   }
 
   /**

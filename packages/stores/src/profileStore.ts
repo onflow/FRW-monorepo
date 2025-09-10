@@ -1,6 +1,5 @@
 import { flowService } from '@onflow/frw-services';
 import type { WalletProfile } from '@onflow/frw-types';
-import { useMemo } from 'react';
 import { create } from 'zustand';
 
 interface ProfileStoreState {
@@ -39,20 +38,50 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 
     try {
       const flow = flowService();
-      const walletProfilesData = await flow.getWalletProfiles();
+      
+      // Try to use the new getWalletProfiles method first
+      try {
+        const walletProfilesData = await flow.getWalletProfiles();
 
-      if (!Array.isArray(walletProfilesData.profiles)) {
-        throw new Error('Invalid profiles data from bridge');
+        if (!Array.isArray(walletProfilesData.profiles)) {
+          throw new Error('Invalid profiles data from bridge');
+        }
+
+        // Clean profile data
+        const profiles: WalletProfile[] = walletProfilesData.profiles;
+
+        set({
+          profiles,
+          isLoading: false,
+          error: null,
+        });
+      } catch (profileError) {
+        // Fallback to getWalletAccounts if getWalletProfiles is not available
+        console.log('getWalletProfiles not available, falling back to getWalletAccounts');
+        
+        const walletAccountsData = await flow.getWalletAccounts();
+        console.log('walletAccountsData:', walletAccountsData);
+        
+        if (!walletAccountsData.accounts || !Array.isArray(walletAccountsData.accounts)) {
+          throw new Error('Invalid accounts data from bridge');
+        }
+
+        // Convert accounts to a single profile structure
+        const profiles: WalletProfile[] = [{
+          uid: 'default-profile',
+          name: 'Main Profile',
+          avatar: '👤',
+          accounts: walletAccountsData.accounts,
+        }];
+        
+        console.log('Fallback profiles created:', profiles);
+
+        set({
+          profiles,
+          isLoading: false,
+          error: null,
+        });
       }
-
-      // Clean profile data
-      const profiles: WalletProfile[] = walletProfilesData.profiles;
-
-      set({
-        profiles,
-        isLoading: false,
-        error: null,
-      });
     } catch (error) {
       set({
         profiles: [],
@@ -80,8 +109,6 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 // Custom hook to get full profiles with their accounts
 export const useAllProfiles = () => {
   const profiles = useProfileStore((state) => state.profiles);
-
-  return useMemo(() => {
-    return profiles;
-  }, [profiles]);
+  console.log('useAllProfiles returning:', profiles);
+  return profiles;
 };

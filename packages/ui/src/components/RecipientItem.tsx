@@ -133,11 +133,11 @@ export function RecipientItem({
               {name || emojiInfo?.name}
             </Text>
             {isEVM && (
-              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+              <XStack bg="$primary" rounded="$4" px={4} items="center" justify="center" height={16}>
                 <Text
                   fontSize={8}
                   fontWeight="400"
-                  color="#FFFFFF"
+                  color="$white"
                   lineHeight={9.7}
                   letterSpacing={0.128}
                 >

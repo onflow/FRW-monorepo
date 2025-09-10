@@ -23,7 +23,7 @@ import {
   Text,
   Separator,
   XStack,
-  Button,
+  View,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
@@ -346,18 +346,20 @@ export const SendTokensScreen = (props) => {
       <YStack flex={1} p={contentPadding}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$3">
+          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
-              <AccountCard
-                account={transformAccountForCard(fromAccount)}
-                title="From Account"
-                isLoading={isBalanceLoading}
-              />
+              <View mb="$2">
+                <AccountCard
+                  account={transformAccountForCard(fromAccount)}
+                  title="From Account"
+                  isLoading={isBalanceLoading}
+                />
+              </View>
             ) : (
               <Text>No account data available</Text>
             )}
-            <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+            <Separator mx="$0" my="$0" mb="$2" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -460,32 +462,24 @@ export const SendTokensScreen = (props) => {
 
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4">
-          <Button
-            fullWidth={true}
-            size="large"
-            disabled={isSendDisabled}
-            onPress={handleSendPress}
-            style={{
-              height: 52,
-              backgroundColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              color: isSendDisabled ? '#999' : '#000000',
-              borderColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              borderWidth: 1,
-              borderRadius: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 16,
-              shadowColor: 'rgba(16, 24, 40, 0.05)',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: isSendDisabled ? 0 : 1,
-              shadowRadius: 2,
-              elevation: isSendDisabled ? 0 : 1,
-              opacity: isSendDisabled ? 0.7 : 1,
-            }}
+          <YStack
+            width="100%"
+            height={52}
+            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            rounded={16}
+            items="center"
+            justify="center"
+            borderWidth={1}
+            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            opacity={isSendDisabled ? 0.7 : 1}
+            pressStyle={{ opacity: 0.9 }}
+            onPress={isSendDisabled ? undefined : handleSendPress}
+            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
               Next
             </Text>
-          </Button>
+          </YStack>
         </YStack>
 
         {/* Token Selector Modal */}

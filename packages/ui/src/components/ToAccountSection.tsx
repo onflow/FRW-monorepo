@@ -147,11 +147,11 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 </Text>
                 {/* EVM Badge - inline with name */}
                 {account.type === 'evm' && (
-                  <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+                  <XStack bg="$primary" rounded="$4" px={4} items="center" justify="center" height={16}>
                     <Text
                       fontSize={8}
                       fontWeight="400"
-                      color="#FFFFFF"
+                      color="$white"
                       lineHeight={9.7}
                       letterSpacing={0.128}
                     >

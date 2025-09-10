@@ -68,11 +68,15 @@ export function RecipientList({
   sectionSpacing = 16,
   contentPadding = 16,
 }: RecipientListProps) {
+  console.log('RecipientList render:', { data, dataLength: data?.length, sections, isLoading });
+  
   // Normalize data - either use sections or create a single section from data
   const normalizedSections = sections || (data ? [{ data }] : []);
 
   // Calculate total items for loading state
   const totalItems = normalizedSections.reduce((sum, section) => sum + section.data.length, 0);
+  
+  console.log('RecipientList normalizedSections:', normalizedSections, 'totalItems:', totalItems);
 
   // Loading skeleton
   const renderSkeleton = () => (

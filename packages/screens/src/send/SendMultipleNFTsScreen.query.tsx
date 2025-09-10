@@ -220,16 +220,18 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
-              <MultipleNFTsPreview
+              <View mt={8} pb={16}mb={-8}>
+                <MultipleNFTsPreview
                 nfts={nftsForUI}
                 onRemoveNFT={handleRemoveNFT}
                 maxVisibleThumbnails={3}
                 expandable={true}
-                thumbnailSize={60}
+                thumbnailSize={90}
                 backgroundColor="transparent"
                 borderRadius={14.4}
                 contentPadding={0}
-              />
+                />
+              </View>
             </YStack>
 
             {/* Arrow Down Indicator */}
@@ -241,7 +243,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
-              <ToAccountSection
+               <View mt={-8}>
+              <ToAccountSection 
                 account={toAccount}
                 title={t('send.toAccount')}
                 isAccountIncompatible={false} // TODO: Real compatibility check
@@ -250,6 +253,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
                 showEditButton={true}
                 isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
               />
+              </View>
             )}
 
             {/* Transaction Fee Section */}

@@ -71,14 +71,14 @@ export function AccountCard({
             {account.parentEmoji && (
               <XStack
                 position="absolute"
-                left={-6}
-                top={-6}
+                l={-6}
+                t={-6}
                 width={18}
                 height={18}
                 rounded={9}
-                bg="#D9D9D9"
+                bg="$light80"
                 borderWidth={2}
-                borderColor="#0A0A0B"
+                borderColor="$bgDrawer"
                 items="center"
                 justify="center"
                 overflow="visible"
@@ -104,7 +104,7 @@ export function AccountCard({
               {/* EVM Badge - inline with name */}
               {account.type === 'evm' && (
                 <XStack
-                  bg="#627EEA"
+                  bg="$primary"
                   rounded="$4"
                   px={4}
                   items="center"
@@ -114,7 +114,7 @@ export function AccountCard({
                   <Text
                     fontSize={8}
                     fontWeight="400"
-                    color="#FFFFFF"
+                    color="$white"
                     lineHeight={9.7}
                     letterSpacing={0.128}
                   >
@@ -159,7 +159,7 @@ export function AccountCard({
         {/* Edit Icon */}
         {showEditButton && (
           <XStack width={24} height={24} items="center" justify="center">
-            <Edit size={24} color="#767676" theme="outline" />
+            <Edit size={24} color="$textSecondary" theme="outline" />
           </XStack>
         )}
       </XStack>
@@ -262,14 +262,14 @@ export function AccountCard({
                                 {acc.parentEmoji && (
                                   <XStack
                                     position="absolute"
-                                    left={-6}
-                                    top={-6}
+                                    l={-6}
+                                    t={-6}
                                     width={18}
                                     height={18}
                                     rounded={9}
-                                    bg="#D9D9D9"
+                                    bg="$light80"
                                     borderWidth={2}
-                                    borderColor="#0A0A0B"
+                                    borderColor="$bgDrawer"
                                     items="center"
                                     justify="center"
                                     overflow="visible"
@@ -301,7 +301,7 @@ export function AccountCard({
                                   {/* EVM Badge - inline with name */}
                                   {acc.type === 'evm' && (
                                     <XStack
-                                      bg="#627EEA"
+                                      bg="$primary"
                                       rounded="$4"
                                       px={4}
                                       items="center"
@@ -311,7 +311,7 @@ export function AccountCard({
                                       <Text
                                         fontSize={8}
                                         fontWeight="400"
-                                        color="#FFFFFF"
+                                        color="$white"
                                         lineHeight={9.7}
                                         letterSpacing={0.128}
                                       >
@@ -336,7 +336,7 @@ export function AccountCard({
                             {/* Selection Indicator */}
                             {isSelected && (
                               <YStack width={24} height={24} items="center" justify="center">
-                                <CheckCircle size={24} color="#41CC5D" theme="filled" />
+                                <CheckCircle size={24} color="$success" theme="filled" />
                               </YStack>
                             )}
                           </XStack>
