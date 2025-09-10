@@ -42,14 +42,14 @@ export function AccountSelector({
   return (
     <>
       {/* Current Account Display */}
-      <YStack gap={12}>
+      <YStack height={120} gap={12}>
         {/* Title */}
-        <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
+        <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16}>
           {title}
         </Text>
 
         {/* Account Container */}
-        <XStack py={10} pl={5} pr={0} justify="space-between" items="center" borderRadius={16}>
+        <XStack py={10} pl={5} pr={0} justify="space-between" items="center">
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
             {/* Account Avatar */}

@@ -242,7 +242,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
         {/* Account Selector - Show balance from React Query */}
         {!isExtension && balanceData && (
-          <YStack bg="rgba(255, 255, 255, 0.1)" borderRadius={16} p={16} pt={16} pb={24} gap={12}>
+          <YStack bg="$light10" rounded="$4" p={16} gap={12}>
             <AccountSelector
               currentAccount={currentAccount}
               accounts={accountsForModal}
@@ -259,7 +259,6 @@ export function SelectTokensScreen(): React.ReactElement {
             segments={TABS as unknown as string[]}
             value={tab === 'Tokens' ? TABS[0] : TABS[1]}
             onChange={(value) => handleTabChange(value === TABS[0] ? 'Tokens' : 'NFTs')}
-            fullWidth={true}
           />
         </YStack>
 
