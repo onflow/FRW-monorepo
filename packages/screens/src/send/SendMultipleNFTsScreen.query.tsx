@@ -233,8 +233,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-            <XStack position="relative" height={0}>
-              <XStack width="100%" position="absolute" t={-30} justify="center">
+            <XStack position="relative" height={0} mt="$1">
+              <XStack width="100%" position="absolute" t={-40} justify="center">
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
             </XStack>
