@@ -325,10 +325,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                 },
                 isActive: false, // Only current profile's main address is active
               });
-
-              // Add EVM account for this main account if it exists
-              console.log('account', account);
-
               if (account.evmAccount?.address) {
                 const evmName = account.evmAccount.name || 'EVM Account';
                 profileAccounts.push({

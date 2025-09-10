@@ -279,12 +279,15 @@ export function SendToScreen(): React.ReactElement {
         });
       }
 
+      const emojiValue = recipient.emojiInfo?.emoji;
+      const isRealEmoji = emojiValue && !emojiValue.startsWith('http') && emojiValue.length <= 4;
+
       setToAccount({
         id: recipient.id,
         name: recipient.name,
         address: recipient.address,
-        avatar: recipient.emojiInfo ? undefined : recipient.avatar || '',
-        emojiInfo: recipient.emojiInfo,
+        avatar: isRealEmoji ? undefined : recipient.avatar || '',
+        emojiInfo: isRealEmoji ? recipient.emojiInfo : undefined,
         parentEmoji: recipient.parentEmojiInfo,
         parentAddress: recipient.isLinked ? recipient.address : undefined, // If linked, store parent info
         isActive: false,

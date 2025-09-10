@@ -131,7 +131,6 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
 }) => {
   // Internal sending state
   const [internalIsSending, setInternalIsSending] = React.useState(false);
-
   // Handle transaction confirmation
   const handleConfirm = async () => {
     try {
@@ -291,8 +290,8 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             {/* To Account */}
             <YStack flex={1} items="center" gap="$1" maxW={130}>
               <Avatar
-                src={toAccount?.avatarSrc}
-                fallback={fromAccount?.emojiInfo?.emoji || fromAccount?.avatarFallback || 'A'}
+                src={toAccount?.avatar}
+                fallback={toAccount?.emojiInfo?.emoji || toAccount?.avatarFallback || 'A'}
                 bgColor={toAccount?.avatarBgColor}
                 size={36}
               />
