@@ -127,7 +127,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
   }, []);
 
   // Transform NFT data for UI using getNFTCover utility
-  const nftImage = selectedNFT !== null ? getNFTCover(selectedNFT) : '';
+  const nftImage = selectedNFT ? getNFTCover(selectedNFT) : '';
 
   const nftForUI: NFTSendData = {
     id: selectedNFT?.id || '',
