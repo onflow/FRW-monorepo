@@ -10,7 +10,6 @@ export const transformAccountForDisplay = (
   account: WalletAccount | null
 ): AccountDisplayData | null => {
   if (!account) return null;
-
   // For Flow accounts, we use emoji instead of avatar image
   const hasEmoji = account.emojiInfo?.emoji;
   return {
@@ -20,9 +19,9 @@ export const transformAccountForDisplay = (
     type: account.type as 'main' | 'child' | 'evm',
 
     // Avatar/display options
-    avatar: account.avatar,
-    avatarSrc: hasEmoji ? undefined : account.avatar, // Only use avatar if no emoji
-    avatarFallback: hasEmoji ? account.emojiInfo?.emoji || '?' : account.name?.[0] || '?',
+    avatar: hasEmoji ? '' : account.avatar,
+    avatarSrc: hasEmoji ? undefined : account.avatar,
+    avatarFallback: hasEmoji ? '' : account.name?.[0] || '?',
     avatarBgColor: account.emojiInfo?.color || '#7B61FF',
     balance: account?.balance || '0 FLOW',
     nfts: account?.nfts || '0 NFTs',

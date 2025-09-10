@@ -287,7 +287,7 @@ export function SendToScreen(): React.ReactElement {
         id: recipient.id,
         name: recipient.name,
         address: recipient.address,
-        avatar: recipient.avatar || '',
+        avatar: recipient.emojiInfo ? undefined : recipient.avatar || '',
         emojiInfo: recipient.emojiInfo,
         parentEmoji: recipient.parentEmojiInfo,
         parentAddress: recipient.isLinked ? recipient.address : undefined, // If linked, store parent info
@@ -354,7 +354,7 @@ export function SendToScreen(): React.ReactElement {
             id: trimmedValue,
             name: matchingAccount?.name || 'Unknown Account',
             address: trimmedValue,
-            avatar: matchingAccount?.avatar,
+            avatar: matchingAccount?.emojiInfo ? undefined : matchingAccount?.avatar,
             emojiInfo: matchingAccount?.emojiInfo,
             parentEmojiInfo: matchingAccount?.parentEmoji || null,
             type: 'account' as const,
