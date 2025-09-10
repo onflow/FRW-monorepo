@@ -14,6 +14,9 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemWalletNotificationBinding
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
+import com.flowfoundation.wallet.manager.walletconnect.dispatch
+import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
+import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.notification.model.DisplayType
 import com.flowfoundation.wallet.page.notification.model.Type
@@ -22,6 +25,9 @@ import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.Wall
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 
 
 class NotificationItemPresenter(
@@ -73,7 +79,43 @@ class NotificationItemPresenter(
             }
             binding.root.setOnClickListener {
                 if (model.type == Type.PENDING_REQUEST) {
-                    WalletConnectSessionActivity.launch(view.context)
+                    logd("NotificationItemPresenter", "click pending request")
+
+                    val request = model.pendingRequest
+                    if (request != null) {
+                        logd("NotificationItemPresenter", "using cached request: $request")
+                        ioScope {
+                            try {
+                                request.toWcRequest().dispatch()
+                                WalletNotificationManager.removeNotification(model)
+                                logd("NotificationItemPresenter", "notification removed after successful dispatch")
+                            } catch (e: Exception) {
+                                loge("NotificationItemPresenter", "failed to dispatch request: ${e.message}")
+                                loge(e)
+                            }
+                        }
+                    } else {
+                        logd("NotificationItemPresenter", "no cached request, querying current pending requests")
+                        val requests = getWalletConnectPendingRequests()
+                        logd("NotificationItemPresenter", "pending requests: $requests")
+                        val foundRequest = requests.firstOrNull { model.id == it.request.id.toString() }
+                        logd("NotificationItemPresenter", "found request: $foundRequest")
+                        if (foundRequest != null) {
+                            ioScope {
+                                try {
+                                    foundRequest.toWcRequest().dispatch()
+                                    WalletNotificationManager.removeNotification(model)
+                                    logd("NotificationItemPresenter", "notification removed after successful dispatch")
+                                } catch (e: Exception) {
+                                    loge("NotificationItemPresenter", "failed to dispatch request: ${e.message}")
+                                    loge(e)
+                                }
+                            }
+                        } else {
+                            logd("NotificationItemPresenter", "no matching request found, opening WalletConnect session activity")
+                            WalletConnectSessionActivity.launch(view.context)
+                        }
+                    }
                     return@setOnClickListener
                 }
                 model.url?.let {
