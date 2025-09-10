@@ -1,7 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
-  sendSelectors,
   useSendStore,
   useProfileStore,
   useAllProfiles,
@@ -51,7 +50,6 @@ export function SendToScreen(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
 
   // Get selected token from send store
-  const selectedToken = useSendStore(sendSelectors.selectedToken);
   const transactionType = useSendStore((state) => state.transactionType);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
@@ -64,12 +62,6 @@ export function SendToScreen(): React.ReactElement {
   const allProfiles = useAllProfiles();
   const loadProfilesFromBridge = useProfileStore((state) => state.loadProfilesFromBridge);
 
-  // Debug log when data changes
-  useEffect(() => {
-    if (allProfiles.length > 0) {
-      console.log('allProfiles loaded:', allProfiles);
-    }
-  }, [allProfiles]);
   const addressBookStore = useAddressBookStore();
 
   // Initialize profiles on mount (only if not already loaded)
