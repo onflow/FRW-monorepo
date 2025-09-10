@@ -269,16 +269,16 @@ export function SelectTokensScreen(): React.ReactElement {
               {isTokensLoading ? (
                 <>
                   {[1, 2, 3, 4, 5].map((index) => (
-                    <YStack key={`token-skeleton-${index}`} p="$3">
+                    <YStack key={`token-skeleton-${index}`} p="$3" height={72}>
                       <XStack items="center" gap="$3">
-                        <Skeleton width="$4" height="$4" borderRadius="$10" />
+                        <Skeleton width="$12" height="$12" borderRadius="$6" />
                         <YStack flex={1} gap="$2">
-                          <Skeleton height="$1" width="60%" />
-                          <Skeleton height="$0.75" width="40%" />
+                          <Skeleton height="$3" width="60%" />
+                          <Skeleton height="$2" width="40%" />
                         </YStack>
-                        <YStack items="flex-end" gap="$1">
-                          <Skeleton height="$1" width="$4" />
-                          <Skeleton height="$0.75" width="$3" />
+                        <YStack items="flex-end" gap="$2">
+                          <Skeleton height="$3" width="$20" />
+                          <Skeleton height="$2" width="$18" />
                         </YStack>
                       </XStack>
                     </YStack>
@@ -326,14 +326,17 @@ export function SelectTokensScreen(): React.ReactElement {
               {isNFTsLoading ? (
                 <>
                   {[1, 2, 3, 4].map((index) => (
-                    <YStack key={`nft-skeleton-${index}`} p="$3">
+                    <YStack key={`nft-skeleton-${index}`} p="$3" height={72}>
                       <XStack items="center" gap="$3">
-                        <Skeleton width="$4" height="$4" borderRadius="$10" />
+                        <Skeleton width="$12" height="$12" borderRadius="$6" />
                         <YStack flex={1} gap="$2">
-                          <Skeleton height="$1" width="70%" />
-                          <Skeleton height="$0.75" width="30%" />
+                          <Skeleton height="$3" width="60%" />
+                          <Skeleton height="$2" width="40%" />
                         </YStack>
-                        <Skeleton width="$1.5" height="$1.5" />
+                        <YStack items="flex-end" gap="$2">
+                          <Skeleton height="$3" width="$20" />
+                          <Skeleton height="$2" width="$1" />
+                        </YStack>
                       </XStack>
                     </YStack>
                   ))}
