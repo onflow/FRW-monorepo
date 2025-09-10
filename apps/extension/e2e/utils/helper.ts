@@ -376,13 +376,14 @@ export const loginToReceiverAccount = async ({ page, extensionId }) => {
 };
 
 export const importReceiverAccount = async ({ page, extensionId }) => {
-  await importAccountBySeedPhrase({
+  const config = {
     page,
     extensionId,
     seedPhrase: process.env.TEST_SEED_PHRASE_RECEIVER,
     username: 'receiver',
     accountAddr: process.env.TEST_RECEIVER_ADDR,
-  });
+  };
+  await importAccountBySeedPhrase(config);
 };
 
 export const getSenderCadenceAccount = ({ parallelIndex }) => {
