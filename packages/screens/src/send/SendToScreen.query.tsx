@@ -266,8 +266,6 @@ export function SendToScreen(): React.ReactElement {
         accountType = 'main';
       }
 
-      console.log('nftCollections ', nftCollections, balanceData);
-
       // Calculate total NFT count from all collections
       const totalNFTCount = nftCollections.reduce((total, collection) => {
         return total + (collection.count || 0);
@@ -280,8 +278,6 @@ export function SendToScreen(): React.ReactElement {
           nfts: totalNFTCount ? `${totalNFTCount} NFTs` : '0 NFTs',
         });
       }
-
-      console.log('Total NFT count:', totalNFTCount);
 
       setToAccount({
         id: recipient.id,

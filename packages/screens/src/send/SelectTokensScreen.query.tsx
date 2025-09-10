@@ -265,16 +265,8 @@ export function SelectTokensScreen(): React.ReactElement {
         acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
     );
 
-    // Debug log to help troubleshoot
-    console.log('SelectTokensScreen - Address matching:', {
-      currentAddress: address,
-      fromAccount: fromAccount ? { address: fromAccount.address, name: fromAccount.name } : null,
-      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
-      foundAccount: account ? { address: account.address, name: account.name } : null,
-    });
-
     return {
-      name: account?.name || account?.username || 'Unnamed Account',
+      name: account?.name || 'Unnamed Account',
       address: address,
       avatar: account?.avatar,
       balance: isBalanceLoading ? t('messages.loading') : balanceData?.displayBalance || '0 FLOW',
@@ -284,16 +276,16 @@ export function SelectTokensScreen(): React.ReactElement {
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
+      {isExtension && (
+        <ExtensionHeader
+          title={t('send.title')}
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
       <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
-        {isExtension && (
-          <ExtensionHeader
-            title={t('send.title')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
 
         {/* Account Selector - Show balance from React Query */}
         {!isExtension && balanceData && (
