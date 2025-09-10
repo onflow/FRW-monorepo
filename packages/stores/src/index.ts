@@ -3,6 +3,7 @@ export type { AccessibleAssetStore, NFTModel, TokenModel, SendState } from './ty
 export { sendHelpers, sendSelectors, useSendStore } from './sendStore';
 export { useTokenStore, tokenSelectors, tokenHelpers } from './tokenStore';
 export { useWalletStore, walletSelectors, walletHelpers } from './walletStore';
+export { useProfileStore, useAllProfiles } from './profileStore';
 export {
   tokenQueryKeys,
   tokenQueries,

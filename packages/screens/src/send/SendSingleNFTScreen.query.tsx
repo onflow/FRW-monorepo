@@ -1,6 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -20,68 +19,16 @@ import {
   Separator,
   type NFTSendData,
   type TransactionFormData,
-  type AccountDisplayData,
   XStack,
 } from '@onflow/frw-ui';
-import { logger, getNFTCover } from '@onflow/frw-utils';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  logger,
+  getNFTCover,
+  transformAccountForCard,
+  transformAccountForDisplay,
+} from '@onflow/frw-utils';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-
-/**
- * Transform WalletAccount to UI Account type for AccountCard
- */
-const transformAccountForCard = (
-  account: WalletAccount | null,
-  balance?: string
-): {
-  name: string;
-  address: string;
-  avatar?: string;
-  balance: string;
-  nfts: string;
-  emojiInfo?: any;
-  parentEmoji?: any;
-  type: 'main' | 'child' | 'evm';
-} | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatar: account.avatar,
-    balance: balance || '0 FLOW',
-    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
-    emojiInfo: account.emojiInfo,
-    parentEmoji: account.parentEmoji,
-    type: account.type as 'main' | 'child' | 'evm',
-  };
-};
-
-/**
- * Transform WalletAccount to AccountDisplayData for confirmation drawer
- */
-const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
-  if (!account) return null;
-
-  // For Flow accounts, we use emoji instead of avatar image
-  const hasEmoji = account.emojiInfo?.emoji;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatarSrc: hasEmoji ? undefined : account.avatar, // Only use avatar if no emoji
-    avatarFallback: hasEmoji ? account.emojiInfo?.emoji || '?' : account.name?.[0] || '?',
-    avatarBgColor: account.emojiInfo?.color || '#7B61FF',
-    parentEmoji: account.parentEmoji
-      ? {
-          emoji: account.parentEmoji.emoji,
-          name: account.parentEmoji.name,
-          color: account.parentEmoji.color,
-        }
-      : undefined,
-    type: account.type,
-  };
-};
 
 /**
  * Query-integrated version of SendSingleNFTScreen following the established pattern
@@ -113,12 +60,11 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Check free gas status
   useEffect(() => {
-    const checkFreeGasStatus = async () => {
+    const checkFreeGasStatus = async (): Promise<void> => {
       try {
         const isEnabled = await bridge.isFreeGasEnabled?.();
         setIsFreeGasEnabled(isEnabled ?? true);
       } catch (error) {
-        console.error('Failed to check free gas status:', error);
         // Default to enabled if we can't determine the status
         setIsFreeGasEnabled(true);
       }
@@ -127,26 +73,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
     checkFreeGasStatus();
   }, []);
 
-  // Early return if essential data is missing
-  if (!selectedNFT) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFT selected. Please go back and select an NFT to send.
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   // Transform NFT data for UI using getNFTCover utility
-  const nftImage = getNFTCover(selectedNFT);
-  // console.log('[SendSingleNFT] NFT image URL:', nftImage);
-  // console.log('[SendSingleNFT] Full NFT data:', selectedNFT);
+  const nftImage = selectedNFT ? getNFTCover(selectedNFT) : '';
 
   const nftForUI: NFTSendData = {
     id: selectedNFT?.id || '',
@@ -157,12 +85,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
     description: selectedNFT?.description || '',
     type: selectedNFT?.type, // Pass the NFT type for EVM badge
   };
-
-  // Transform accounts for UI components
-  const fromAccountForCard = useMemo(
-    () => transformAccountForCard(fromAccount, '550.66 FLOW'), // TODO: Real balance
-    [fromAccount]
-  );
 
   // Calculate if send button should be disabled
   const isSendDisabled = !selectedNFT || !fromAccount || !toAccount || isLoading;
@@ -197,7 +119,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const handleLearnMorePress = useCallback(() => {
     // TODO: Navigate to help/learn more screen
-    // console.log('Learn more pressed');
   }, []);
 
   const handleSendPress = useCallback(() => {
@@ -255,26 +176,31 @@ export function SendSingleNFTScreen(): React.ReactElement {
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
-              {fromAccountForCard && (
+              {fromAccount && (
                 <View mt={-8} mb={-16}>
                   <AccountCard
-                    account={fromAccountForCard}
+                    account={transformAccountForCard(fromAccount)}
                     title={t('send.fromAccount')}
                     isLoading={false} // TODO: Real loading state
                   />
                 </View>
               )}
 
-              
-              <Separator mx="$0" my="$0" mb="$2" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
-              
+              <Separator
+                mx="$0"
+                my="$0"
+                mb="$2"
+                borderColor="rgba(255, 255, 255, 0.1)"
+                borderWidth={0.5}
+              />
+
               <SendSectionHeader
                 title="Send NFTs"
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
                 editButtonText="Change"
               />
-     
+
               <View mt={-8} mb={-8}>
                 <NFTSendPreview
                   nft={nftForUI}
@@ -290,9 +216,10 @@ export function SendSingleNFTScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-          <XStack position="relative" height={0} mt="$1">
-            <XStack width="100%" position="absolute" t={-40} justify="center">
-              <SendArrowDivider variant="arrow" size={48} />
+            <XStack position="relative" height={0} mt="$1">
+              <XStack width="100%" position="absolute" t={-40} justify="center">
+                <SendArrowDivider variant="arrow" size={48} />
+              </XStack>
             </XStack>
 
             {/* To Account Section */}

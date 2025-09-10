@@ -44,5 +44,8 @@ export {
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
 export type { BridgeLogger } from './logger';
 
+// Account transformer utilities
+export { transformAccountForCard, transformAccountForDisplay } from './accountTransformers';
+
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';

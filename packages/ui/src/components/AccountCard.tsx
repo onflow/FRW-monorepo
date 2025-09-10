@@ -22,6 +22,18 @@ export function AccountCard({
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Early return if no account data
+  if (!account) {
+    return (
+      <YStack width="100%" pt="$2" px="$1" pb="$6" gap="$1" {...props}>
+        <Text fontSize="$2" mb="$1" fontWeight="400" color="$light80" lineHeight={16}>
+          {title}
+        </Text>
+        <Text color="$error">No account data available</Text>
+      </YStack>
+    );
+  }
+
   const content = (
     <YStack
       width="100%"
@@ -37,13 +49,7 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text
-        fontSize="$2"
-        mb="$1"
-        fontWeight="400"
-        color="$light80"
-        lineHeight={16}
-      >
+      <Text fontSize="$2" mb="$1" fontWeight="400" color="$light80" lineHeight={16}>
         {title}
       </Text>
 
@@ -92,18 +98,19 @@ export function AccountCard({
               {(account.type === 'child' || account.parentEmoji) && (
                 <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
               )}
-              <Text
-                color="$white"
-                fontSize={14}
-                fontWeight="600"
-                lineHeight={17}
-                numberOfLines={1}
-              >
+              <Text color="$white" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}
               </Text>
               {/* EVM Badge - inline with name */}
               {account.type === 'evm' && (
-                <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+                <XStack
+                  bg="#627EEA"
+                  rounded="$4"
+                  px={4}
+                  items="center"
+                  justify="center"
+                  height={16}
+                >
                   <Text
                     fontSize={8}
                     fontWeight="400"
@@ -293,7 +300,14 @@ export function AccountCard({
                                   </Text>
                                   {/* EVM Badge - inline with name */}
                                   {acc.type === 'evm' && (
-                                    <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+                                    <XStack
+                                      bg="#627EEA"
+                                      rounded="$4"
+                                      px={4}
+                                      items="center"
+                                      justify="center"
+                                      height={16}
+                                    >
                                       <Text
                                         fontSize={8}
                                         fontWeight="400"
