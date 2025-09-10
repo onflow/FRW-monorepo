@@ -186,7 +186,7 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="nested/nftlistscreen/:address"
+              path="nested/nftlistscreen/:address?"
               element={
                 <PrivateRoute>
                   <NFTListScreenView />
