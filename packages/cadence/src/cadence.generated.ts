@@ -346,6 +346,28 @@ access(all) fun main(addresses: [String]): {String: UFix64?} {
     return result.response;
   }
 
+
+  public async getSurgeFactor(): Promise<string> {
+    const code = `
+import FlowFees from 0xFlowFees
+access(all) fun main(): UFix64 {
+    return FlowFees.getFeeParameters().surgeFactor
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "getSurgeFactor",
+      type: "script",
+      args: (arg: any, t: any) => [
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
   // Tag: SrcCadenceBridgeScripts
   public async getAssociatedEvmAddress(identifier: string): Promise<string| undefined> {
     const code = `
