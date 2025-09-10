@@ -59,7 +59,6 @@ export function SelectTokensScreen(): React.ReactElement {
   // Get current address and network
   const [currentAccount, setCurrentAccount] = React.useState<WalletAccount | null>(null);
   const network = bridge.getNetwork() || 'mainnet';
-
   // Load current account on mount
   React.useEffect(() => {
     const loadCurrentAccount = async () => {
@@ -313,12 +312,8 @@ export function SelectTokensScreen(): React.ReactElement {
                   {tokensWithBalance.map((token, idx) => (
                     <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
                       <TokenCard
-                        symbol={token.symbol || ''}
-                        name={token.name || ''}
-                        balance={token.displayBalance || token.balance || '0'}
-                        logo={token.logoURI}
-                        price={token.priceInUSD?.toString()}
-                        change24h={token.change ? parseFloat(token.change) : undefined}
+                        token={token}
+                        currency={bridge.getCurrency()}
                         isVerified={token.isVerified}
                         onPress={() => handleTokenPress(token)}
                         isAccessible={accessibleAssetHelpers.isTokenAllowed(

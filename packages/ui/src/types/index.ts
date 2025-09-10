@@ -1,4 +1,4 @@
-import type { WalletAccount } from '@onflow/frw-types';
+import type { TokenModel, WalletAccount, Currency } from '@onflow/frw-types';
 import type { ComponentProps } from 'react';
 import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiText } from 'tamagui';
 
@@ -20,13 +20,8 @@ export interface AvatarProps {
 }
 
 export interface TokenCardProps {
-  symbol: string;
-  name: string;
-  balance: string;
-  logo?: string;
-  price?: string;
-  usdBalance?: string;
-  change24h?: number;
+  token: TokenModel;
+  currency: Currency;
   isVerified?: boolean;
   onPress?: () => void;
   isAccessible?: boolean;

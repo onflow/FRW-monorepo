@@ -1,22 +1,22 @@
 import { VerifiedToken } from '@onflow/frw-icons';
+import { formatCurrencyStringForDisplay } from '@onflow/frw-types';
+import { getDisplayBalanceWithSymbol } from '@onflow/frw-utils';
 import React from 'react';
 import { Stack, Text, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { TokenCardProps } from '../types';
 import { Tag } from './Tag';
+
 export function TokenCard({
-  symbol,
-  name,
-  balance,
-  logo,
-  change24h,
+  token,
+  currency,
   onPress,
   isVerified = false,
   isAccessible = true,
   inaccessibleText = 'inaccessible',
 }: TokenCardProps): React.ReactElement {
-  const isPositiveChange = change24h && change24h >= 0;
+  const { symbol, name, logoURI } = token;
 
   return (
     <Stack
@@ -30,7 +30,7 @@ export function TokenCard({
       width="100%"
     >
       <XStack items="center" gap="$3" width="100%">
-        <Avatar src={logo} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
+        <Avatar src={logoURI} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
 
         <YStack flex={1} gap="$1.5">
           {/* Top row: Token name + verified badge + balance */}
@@ -48,7 +48,7 @@ export function TokenCard({
                 >
                   {name || symbol}
                 </Text>
-                {isVerified && <VerifiedToken size={16} color="#41CC5D" />}
+                {isVerified && <VerifiedToken ml={1} size={16} color="#41CC5D" />}
               </XStack>
             </XStack>
             <Text
@@ -59,23 +59,46 @@ export function TokenCard({
               text="right"
               lineHeight="$1"
             >
-              {balance} {symbol}
+              {getDisplayBalanceWithSymbol(token)}
             </Text>
           </XStack>
 
           {/* Bottom row: Token amount + change percentage tag */}
-          <XStack items="flex-start" gap="$2">
-            <Text
-              color="$light80"
-              fontSize={14}
-              fontWeight="400"
-              numberOfLines={1}
-              lineHeight="$1"
-              flex={1}
-            >
-              {balance} {symbol}
+          <XStack items="center" gap="$2" justify="space-between">
+            <XStack items="center" gap="$2">
+              <Text
+                color="$light80"
+                fontSize={14}
+                fontWeight="400"
+                numberOfLines={1}
+                lineHeight="$1"
+              >
+                {(() => {
+                  if (token.priceInCurrency === '0' || token.priceInCurrency === '0.00') return '';
+                  const currencyValue = parseFloat(token.priceInCurrency ?? '0');
+                  return !isNaN(currencyValue) && currencyValue > 0
+                    ? `${currency.symbol}${formatCurrencyStringForDisplay({ value: currencyValue, digits: 4 })}`
+                    : '';
+                })()}
+              </Text>
+
+              {!isAccessible && <Tag>{inaccessibleText}</Tag>}
+            </XStack>
+
+            <Text color="$light80" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight="$1">
+              {(() => {
+                if (
+                  !token.balanceInCurrency ||
+                  token.balanceInCurrency === '0' ||
+                  token.balanceInCurrency === '0.00'
+                )
+                  return '';
+                const currencyValue = parseFloat(token.balanceInCurrency);
+                return !isNaN(currencyValue) && currencyValue > 0
+                  ? `${currency.symbol}${currencyValue.toFixed(2)}`
+                  : '';
+              })()}
             </Text>
-            {!isAccessible && <Tag>{inaccessibleText}</Tag>}
           </XStack>
         </YStack>
       </XStack>
