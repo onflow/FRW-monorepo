@@ -25,22 +25,22 @@ export function TokenCard({
         onPress: onPress,
         cursor: 'pointer',
       })}
-      py="$3"
+      py="$2"
       px="$1"
       width="100%"
+      height={80}
     >
-      <XStack items="center" gap="$3" width="100%">
+      <XStack items="center" gap="$2" width="100%">
         <Avatar src={logoURI} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
-
-        <YStack flex={1} gap="$1.5">
+        <YStack flex={1} gap="$1">
           {/* Top row: Token name + verified badge + balance */}
           <XStack justify="space-between" items="center" gap="$1">
             <XStack items="center" gap="$1" flex={1} shrink={1}>
-              <XStack items="center" gap="$0.5" shrink={1}>
+              <XStack items="center" gap="$1" shrink={1}>
                 <Text
                   fontWeight="600"
                   fontSize={14}
-                  color="$color"
+                  color="$text1"
                   numberOfLines={1}
                   lineHeight="$1"
                   letterSpacing={-0.6}
@@ -48,13 +48,13 @@ export function TokenCard({
                 >
                   {name || symbol}
                 </Text>
-                {isVerified && <VerifiedToken ml={1} size={16} color="#41CC5D" />}
+                {isVerified && <VerifiedToken size={16} color="#41CC5D" />}
               </XStack>
             </XStack>
             <Text
               fontSize={14}
               fontWeight="400"
-              color="$color"
+              color="$text1"
               numberOfLines={1}
               text="right"
               lineHeight="$1"
@@ -64,15 +64,9 @@ export function TokenCard({
           </XStack>
 
           {/* Bottom row: Token amount + change percentage tag */}
-          <XStack items="center" gap="$2" justify="space-between">
-            <XStack items="center" gap="$2">
-              <Text
-                color="$light80"
-                fontSize={14}
-                fontWeight="400"
-                numberOfLines={1}
-                lineHeight="$1"
-              >
+          <XStack items="center" gap="$1" justify="space-between">
+            <XStack items="center" gap="$1">
+              <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight="$1">
                 {(() => {
                   if (token.priceInCurrency === '0' || token.priceInCurrency === '0.00') return '';
                   const currencyValue = parseFloat(token.priceInCurrency ?? '0');
@@ -85,7 +79,7 @@ export function TokenCard({
               {!isAccessible && <Tag>{inaccessibleText}</Tag>}
             </XStack>
 
-            <Text color="$light80" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight="$1">
+            <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight="$1">
               {(() => {
                 if (
                   !token.balanceInCurrency ||

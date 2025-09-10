@@ -27,6 +27,7 @@ export function NFTCollectionRow({
         py="$4.5"
         px="$0"
         width="100%"
+        height={80}
         justify="space-between"
         {...(onPress && {
           pressStyle: { opacity: 0.7 },
@@ -39,7 +40,7 @@ export function NFTCollectionRow({
           <Avatar
             src={collection.logoURI || collection.logo}
             fallback={collection.name?.charAt(0) || 'N'}
-            size="$13"
+            size={48}
           />
 
           {/* Collection Info */}
