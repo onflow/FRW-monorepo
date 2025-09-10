@@ -267,7 +267,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             <YStack flex={1} items="center" gap="$1" maxW={130}>
               <Avatar
                 src={fromAccount?.avatarSrc}
-                fallback={fromAccount?.avatarFallback || 'A'}
+                fallback={fromAccount?.emojiInfo?.emoji || fromAccount?.avatarFallback || 'A'}
                 bgColor={fromAccount?.avatarBgColor}
                 size={36}
               />
@@ -292,7 +292,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             <YStack flex={1} items="center" gap="$1" maxW={130}>
               <Avatar
                 src={toAccount?.avatarSrc}
-                fallback={toAccount?.avatarFallback || 'A'}
+                fallback={fromAccount?.emojiInfo?.emoji || fromAccount?.avatarFallback || 'A'}
                 bgColor={toAccount?.avatarBgColor}
                 size={36}
               />

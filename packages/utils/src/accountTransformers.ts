@@ -10,7 +10,7 @@ export const transformAccountForDisplay = (
   account: WalletAccount | null
 ): AccountDisplayData | null => {
   if (!account) return null;
-  // For Flow accounts, we use emoji instead of avatar image
+  // For Internal Wallet accounts, we use emoji instead of avatar image
   const hasEmoji = account.emojiInfo?.emoji;
   return {
     // Core account info
