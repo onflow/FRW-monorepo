@@ -12,6 +12,8 @@ export type {
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  WalletProfile,
+  WalletProfilesResponse,
   EnvironmentVariables,
   InitialProps,
   Currency,

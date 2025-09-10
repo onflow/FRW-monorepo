@@ -39,8 +39,8 @@ const transformAccountForCard = (
   avatar?: string;
   balance: string;
   nfts: string;
-  emojiInfo?: any;
-  parentEmoji?: any;
+  emojiInfo?: { emoji: string; name: string; color: string };
+  parentEmoji?: { emoji: string; name: string; color: string };
   type: 'main' | 'child' | 'evm';
 } | null => {
   if (!account) return null;
@@ -113,12 +113,11 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Check free gas status
   useEffect(() => {
-    const checkFreeGasStatus = async () => {
+    const checkFreeGasStatus = async (): Promise<void> => {
       try {
         const isEnabled = await bridge.isFreeGasEnabled?.();
         setIsFreeGasEnabled(isEnabled ?? true);
       } catch (error) {
-        console.error('Failed to check free gas status:', error);
         // Default to enabled if we can't determine the status
         setIsFreeGasEnabled(true);
       }
@@ -127,26 +126,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
     checkFreeGasStatus();
   }, []);
 
-  // Early return if essential data is missing
-  if (!selectedNFT) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFT selected. Please go back and select an NFT to send.
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   // Transform NFT data for UI using getNFTCover utility
-  const nftImage = getNFTCover(selectedNFT);
-  // console.log('[SendSingleNFT] NFT image URL:', nftImage);
-  // console.log('[SendSingleNFT] Full NFT data:', selectedNFT);
+  const nftImage = selectedNFT ? getNFTCover(selectedNFT) : '';
 
   const nftForUI: NFTSendData = {
     id: selectedNFT?.id || '',
@@ -197,7 +178,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const handleLearnMorePress = useCallback(() => {
     // TODO: Navigate to help/learn more screen
-    // console.log('Learn more pressed');
   }, []);
 
   const handleSendPress = useCallback(() => {
@@ -265,16 +245,21 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 </View>
               )}
 
-              
-              <Separator mx="$0" my="$0" mb="$2" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
-              
+              <Separator
+                mx="$0"
+                my="$0"
+                mb="$2"
+                borderColor="rgba(255, 255, 255, 0.1)"
+                borderWidth={0.5}
+              />
+
               <SendSectionHeader
                 title="Send NFTs"
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
                 editButtonText="Change"
               />
-     
+
               <View mt={-8} mb={-8}>
                 <NFTSendPreview
                   nft={nftForUI}
@@ -290,9 +275,10 @@ export function SendSingleNFTScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-          <XStack position="relative" height={0} mt="$1">
-            <XStack width="100%" position="absolute" t={-40} justify="center">
-              <SendArrowDivider variant="arrow" size={48} />
+            <XStack position="relative" height={0} mt="$1">
+              <XStack width="100%" position="absolute" t={-40} justify="center">
+                <SendArrowDivider variant="arrow" size={48} />
+              </XStack>
             </XStack>
 
             {/* To Account Section */}
