@@ -7,16 +7,10 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     // Check if we're in React Native environment
     if (typeof window === 'undefined' || !window.document) {
-      // React Native environment - use the Clipboard module
-      try {
-        // Dynamic import to avoid bundling issues in web
-        const { default: Clipboard } = await import('@react-native-clipboard/clipboard');
-        await Clipboard.setString(text);
-        return true;
-      } catch (error) {
-        console.error('React Native Clipboard not available:', error);
-        return false;
-      }
+      // React Native environment - this should be handled by the calling component
+      // We can't import React Native modules in a compiled package
+      console.warn('copyToClipboard called in React Native environment - handle in component');
+      return false;
     } else {
       // Web environment
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -33,7 +27,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
+
         try {
           const successful = document.execCommand('copy');
           document.body.removeChild(textArea);

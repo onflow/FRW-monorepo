@@ -496,6 +496,7 @@ export const SendTokensScreen = (props) => {
           onClose={handleTokenSelectorClose}
           platform="mobile"
           title="Tokens"
+          currency={bridge.getCurrency()}
         />
 
         <ConfirmationDrawer

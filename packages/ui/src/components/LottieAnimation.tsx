@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View } from 'tamagui';
-import type { ViewProps } from 'tamagui';
+import { View, type ViewProps } from 'tamagui';
 
 // Cross-platform Lottie component
 interface LottieAnimationProps extends ViewProps {
@@ -54,12 +53,12 @@ export const LottieAnimation: React.FC<LottieAnimationProps> = ({
 
   return (
     <View width={width} height={height} {...viewProps}>
-      <div 
-        ref={containerRef} 
-        style={{ 
-          width: '100%', 
-          height: '100%' 
-        }} 
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          height: '100%',
+        }}
       />
     </View>
   );

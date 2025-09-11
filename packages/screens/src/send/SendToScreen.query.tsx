@@ -49,6 +49,7 @@ export function SendToScreen(): React.ReactElement {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   // Get selected token from send store
   const transactionType = useSendStore((state) => state.transactionType);
@@ -379,9 +380,30 @@ export function SendToScreen(): React.ReactElement {
     console.log('Edit recipient:', recipient);
   }, []);
 
-  const handleRecipientCopy = useCallback((recipient: RecipientData) => {
-    // TODO: Handle copy recipient address
-    console.log('Copy recipient address:', recipient.address);
+  const handleRecipientCopy = useCallback(async (recipient: RecipientData) => {
+    try {
+      // Check platform and use appropriate clipboard method
+      const platform = bridge.getPlatform();
+
+      // Check for React Native environment (ios, android, or react-native)
+      if (platform === 'react-native' || platform === 'ios' || platform === 'android') {
+        // Use global clipboard provided by React Native wrapper
+        if ((global as any).clipboard?.setString) {
+          (global as any).clipboard.setString(recipient.address);
+          setCopiedAddress(recipient.address);
+          setTimeout(() => setCopiedAddress(null), 1000);
+        }
+      } else {
+        // Use web clipboard API for extension
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(recipient.address);
+          setCopiedAddress(recipient.address);
+          setTimeout(() => setCopiedAddress(null), 1000);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to copy address:', error);
+    }
   }, []);
 
   const getEmptyStateForTab = () => {
@@ -466,6 +488,7 @@ export function SendToScreen(): React.ReactElement {
                 onCopy: () => handleRecipientCopy(contact),
               }))}
               groupByLetter={true}
+              copiedAddress={copiedAddress}
             />
           )
         ) : (

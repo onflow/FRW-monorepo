@@ -1,4 +1,4 @@
-import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
@@ -104,10 +104,42 @@ export function AccountSelector({
 
             {/* Account Details */}
             <YStack flex={1} gap={2}>
-              {/* Account Name */}
-              <Text color="$white" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
-                {currentAccount.name || 'Unnamed Account'}
-              </Text>
+              {/* Account Name with link icon and EVM Badge */}
+              <XStack items="center" gap={4}>
+                {/* Link icon for linked accounts */}
+                {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
+                  <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                )}
+                <Text
+                  color="$white"
+                  fontSize={14}
+                  fontWeight="600"
+                  lineHeight={17}
+                  numberOfLines={1}
+                >
+                  {currentAccount.name || 'Unnamed Account'}
+                </Text>
+                {currentAccount.type === 'evm' && (
+                  <XStack
+                    bg="$accentEVM"
+                    rounded="$4"
+                    px={4}
+                    items="center"
+                    justify="center"
+                    height={16}
+                  >
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="$white"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EVM
+                    </Text>
+                  </XStack>
+                )}
+              </XStack>
 
               {/* Account Address */}
               <AddressText
@@ -245,14 +277,40 @@ export function AccountSelector({
 
                         {/* Account Details */}
                         <YStack gap={2} flex={1} justify="center">
-                          <Text
-                            fontSize={14}
-                            fontWeight="600"
-                            color="rgba(255, 255, 255, 0.9)"
-                            numberOfLines={1}
-                          >
-                            {account.name || 'Unnamed Account'}
-                          </Text>
+                          <XStack items="center" gap={4}>
+                            {/* Link icon for linked accounts */}
+                            {(account.type === 'child' || account.parentEmoji) && (
+                              <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                            )}
+                            <Text
+                              fontSize={14}
+                              fontWeight="600"
+                              color="rgba(255, 255, 255, 0.9)"
+                              numberOfLines={1}
+                            >
+                              {account.name || 'Unnamed Account'}
+                            </Text>
+                            {account.type === 'evm' && (
+                              <XStack
+                                bg="$accentEVM"
+                                rounded="$4"
+                                px={4}
+                                items="center"
+                                justify="center"
+                                height={16}
+                              >
+                                <Text
+                                  fontSize={8}
+                                  fontWeight="400"
+                                  color="$white"
+                                  lineHeight={9.7}
+                                  letterSpacing={0.128}
+                                >
+                                  EVM
+                                </Text>
+                              </XStack>
+                            )}
+                          </XStack>
                           <AddressText
                             address={account.address}
                             truncate={true}

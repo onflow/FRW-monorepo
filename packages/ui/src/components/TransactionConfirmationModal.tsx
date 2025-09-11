@@ -347,7 +347,12 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
                     <FlowLogo size={35.2} />
                   )}
                   <Text fontSize={28} fontWeight="500" color="$white" fontFamily="Inter">
-                    {formData.tokenAmount}
+                    {(() => {
+                      const amount = parseFloat(formData.tokenAmount);
+                      if (isNaN(amount)) return formData.tokenAmount;
+                      // Round to at most 8 decimal places
+                      return parseFloat(amount.toFixed(8)).toString();
+                    })()}
                   </Text>
                 </View>
                 <View

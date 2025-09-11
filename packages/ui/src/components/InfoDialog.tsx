@@ -1,8 +1,8 @@
 import { Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { YStack, Stack } from 'tamagui';
 import { Platform, Modal } from 'react-native';
+import { YStack, Stack } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -62,7 +62,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
 
   const dialogContent = (
     <Stack
-      pos={isWeb ? "fixed" : "absolute"}
+      pos={isWeb ? 'fixed' : 'absolute'}
       top={0}
       left={0}
       right={0}

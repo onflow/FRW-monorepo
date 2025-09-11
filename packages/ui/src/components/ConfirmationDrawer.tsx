@@ -320,7 +320,12 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     <FlowLogo size={32} />
                   )}
                   <Text fontSize="$6" fontWeight="500" color="$white">
-                    {formData.tokenAmount}
+                    {(() => {
+                      const amount = parseFloat(formData.tokenAmount);
+                      if (isNaN(amount)) return formData.tokenAmount;
+                      // Round to at most 8 decimal places
+                      return parseFloat(amount.toFixed(8)).toString();
+                    })()}
                   </Text>
                 </XStack>
 
