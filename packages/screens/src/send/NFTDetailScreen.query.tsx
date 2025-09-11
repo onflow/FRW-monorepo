@@ -241,8 +241,9 @@ export function NFTDetailScreen(): React.ReactElement {
     if (!fromAccount) return undefined;
     return {
       name: fromAccount.name,
-      avatar: fromAccount.avatar || fromAccount.emojiInfo?.emoji,
+      avatar: fromAccount.avatar,
       address: fromAccount.address,
+      emojiInfo: fromAccount.emojiInfo,
     };
   }, [fromAccount]);
 

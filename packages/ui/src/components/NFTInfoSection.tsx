@@ -43,12 +43,35 @@ export function NFTInfoSection({
 
           {showOwner && owner && (
             <XStack alignItems="center" gap={4}>
-              <Avatar
-                src={owner.emojiInfo ? undefined : owner.avatar}
-                fallback={owner.emojiInfo?.emoji || owner.name?.charAt(0) || '🐼'}
-                bgColor={owner.emojiInfo?.color || '$bg3'}
-                size={24}
-              />
+              {/* Account Avatar/Emoji - same logic as NFTCard */}
+              {owner.emojiInfo?.emoji ? (
+                <YStack
+                  width={24}
+                  height={24}
+                  bg={owner.emojiInfo?.color || '$warning'}
+                  rounded={12}
+                  items="center"
+                  justify="center"
+                >
+                  <Text fontSize={12} fontWeight="600">
+                    {owner.emojiInfo.emoji}
+                  </Text>
+                </YStack>
+              ) : owner.avatar ? (
+                <Avatar
+                  src={owner.avatar}
+                  fallback={owner.name?.charAt(0) || '🐼'}
+                  bgColor="$bg3"
+                  size={24}
+                />
+              ) : (
+                <Avatar
+                  src={undefined}
+                  fallback={owner.name?.charAt(0) || '🐼'}
+                  bgColor="$bg3"
+                  size={24}
+                />
+              )}
             </XStack>
           )}
         </XStack>
