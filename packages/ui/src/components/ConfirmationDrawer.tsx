@@ -1,4 +1,4 @@
-import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { ChevronDown, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
@@ -9,7 +9,6 @@ import { type NFTSendData } from './NFTSendPreview';
 // import { LottieAnimation } from './LottieAnimation';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
-import sendConfirmationAnimation from '../assets/animations/send-confirmation-noblur.json';
 
 export interface TransactionFormData {
   tokenAmount: string;
@@ -177,7 +176,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </XStack>
           </XStack>
 
-
           {/* Transaction Visual */}
           <View
             height={120}
@@ -230,11 +228,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   {fromAccount?.name || 'Unknown'}
                 </Text>
                 {fromAccount?.address && (
-                  <AddressText
-                    address={fromAccount.address}
-                    fontSize="$2"
-                    color="$textSecondary"
-                  />
+                  <AddressText address={fromAccount.address} fontSize="$2" color="$textSecondary" />
                 )}
               </YStack>
             </YStack>
@@ -255,11 +249,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   {toAccount?.name || 'Unknown'}
                 </Text>
                 {toAccount?.address && (
-                  <AddressText
-                    address={toAccount.address}
-                    fontSize="$2"
-                    color="$textSecondary"
-                  />
+                  <AddressText address={toAccount.address} fontSize="$2" color="$textSecondary" />
                 )}
               </YStack>
             </YStack>
@@ -300,7 +290,12 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     <FlowLogo size={32} />
                   )}
                   <Text fontSize="$6" fontWeight="500" color="$white">
-                    {formData.tokenAmount}
+                    {(() => {
+                      const amount = parseFloat(formData.tokenAmount);
+                      if (isNaN(amount)) return formData.tokenAmount;
+                      // Round to at most 8 decimal places
+                      return parseFloat(amount.toFixed(8)).toString();
+                    })()}
                   </Text>
                 </XStack>
 
@@ -315,12 +310,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   height={32}
                   minW={60}
                 >
-                  <Text
-                    fontSize="$2"
-                    fontWeight="600"
-                    color="$white"
-                    letterSpacing={-0.072}
-                  >
+                  <Text fontSize="$2" fontWeight="600" color="$white" letterSpacing={-0.072}>
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
                   <VerifiedToken size={10} color="#41CC5D" />
@@ -330,11 +320,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
               {/* Fiat Amount */}
               <XStack justify="flex-start" width="100%">
-                <Text
-                  fontSize="$3"
-                  color="$light80"
-                  fontWeight="400"
-                >
+                <Text fontSize="$3" color="$light80" fontWeight="400">
                   ${formData.fiatAmount || '0.69'}
                 </Text>
               </XStack>

@@ -117,13 +117,26 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
         <YStack flex={1} gap="$1">
           {/* Collection Name with EVM Badge */}
           <XStack items="center" gap="$2">
-            <Text fontSize={14} fontWeight="600" color="$white" numberOfLines={1} ellipsizeMode="tail">
+            <Text
+              fontSize={14}
+              fontWeight="600"
+              color="$white"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {nft.collection}
             </Text>
 
             {/* EVM Badge - Only show for EVM NFTs */}
             {nft.type === 'evm' && (
-              <XStack bg="$primary" rounded="$4" px={4} items="center" justify="center" height={16}>
+              <XStack
+                bg="$accentEVM"
+                rounded="$4"
+                px={4}
+                items="center"
+                justify="center"
+                height={16}
+              >
                 <Text
                   fontSize={8}
                   fontWeight="400"
@@ -138,7 +151,13 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
           </XStack>
 
           {/* NFT Name */}
-          <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" numberOfLines={2} ellipsizeMode="tail">
+          <Text
+            fontSize={14}
+            fontWeight="400"
+            color="rgba(255, 255, 255, 0.8)"
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
             {nft.name}
           </Text>
         </YStack>
