@@ -201,7 +201,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 editButtonText="Change"
               />
 
-              <View mt={8} mb={-8}>
+              <View mt={-8} mb={-8}>
                 <NFTSendPreview
                   nft={nftForUI}
                   onEditPress={handleEditNFTPress}
