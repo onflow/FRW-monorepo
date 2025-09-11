@@ -2,18 +2,19 @@
  * FlowAccount Unit Tests
  */
 
+
+import { type CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { COA } from '../Account/COA';
+import { FlowAccount } from '../Account/FlowAccount';
 import {
   type FlowAccountData,
   FlowChainID as FlowChainIDEnum,
   type KeyProtocol,
   SignatureAlgorithm,
   HashAlgorithm,
-} from '../../types/key';
-import { type CadenceServiceInterface } from '../CadenceServiceInterface';
-import { COA } from '../COA';
-import { FlowAccount } from '../FlowAccount';
+} from '../types/key';
 
 // Mock data based on user's example
 const MOCK_FLOW_ADDRESS = '0x84221fe0294044d7';
@@ -22,18 +23,18 @@ const MOCK_CHILD_ADDRESS = '0x16c41a2b76dee69b';
 const MOCK_CHILD_NAME = 'Dapper Wallet';
 
 describe('FlowAccount', () => {
-  let mockCadenceService: CadenceServiceInterface;
+  let mockCadenceService: CadenceService;
   let mockKeyProtocol: KeyProtocol;
   let mockFlowAccountData: FlowAccountData;
   let flowAccount: FlowAccount;
 
   beforeEach(() => {
-    // Mock CadenceServiceInterface
+    // Mock CadenceService
     mockCadenceService = {
       getChildAddresses: vi.fn(),
       getChildAccountMeta: vi.fn(),
       getAddr: vi.fn(),
-    };
+    } as any;
 
     // Mock KeyProtocol
     mockKeyProtocol = {

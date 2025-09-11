@@ -2,7 +2,8 @@
  * FlowAccount class - exact match to Flow Wallet Kit iOS Account.swift
  */
 
-import { type CadenceServiceInterface } from './CadenceServiceInterface';
+import { type CadenceService } from '@onflow/frw-cadence';
+
 import { COA } from './COA';
 import { type ChildAccount } from '../types/account';
 import {
@@ -17,7 +18,6 @@ import {
   type FlowAccountKey,
 } from '../types/key';
 
-
 /**
  * FlowAccount class - exact match to Flow Wallet Kit iOS Account.swift
  */
@@ -26,7 +26,7 @@ export class FlowAccount implements FlowSigner {
   readonly account: FlowAccountData;
   readonly chainID: FlowChainID;
   readonly key?: KeyProtocol;
-  readonly cadenceService: CadenceServiceInterface;
+  readonly cadenceService: CadenceService;
 
   // Optional linked accounts
   childs?: ChildAccount[];
@@ -39,7 +39,7 @@ export class FlowAccount implements FlowSigner {
   constructor(
     account: FlowAccountData,
     chainID: FlowChainID,
-    cadenceService: CadenceServiceInterface,
+    cadenceService: CadenceService,
     key?: KeyProtocol
   ) {
     this.account = account;
