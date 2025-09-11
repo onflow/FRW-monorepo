@@ -1,4 +1,4 @@
-import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { ChevronDown, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
@@ -9,7 +9,6 @@ import { type NFTSendData } from './NFTSendPreview';
 // import { LottieAnimation } from './LottieAnimation';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
-import sendConfirmationAnimation from '../assets/animations/send-confirmation-noblur.json';
 
 export interface TransactionFormData {
   tokenAmount: string;
@@ -30,6 +29,7 @@ export interface ConfirmationDrawerProps {
   onClose: () => void;
   title?: string;
   isSending?: boolean;
+  isExtension?: boolean;
 }
 
 interface LoadingIndicatorProps {
@@ -126,6 +126,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   onClose,
   title = 'Summary',
   isSending = false,
+  isExtension = false,
 }) => {
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
@@ -151,32 +152,59 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
       <Sheet.Handle bg="$gray8" />
 
-      <Sheet.Frame bg="$bgDrawer" borderTopLeftRadius="$6" borderTopRightRadius="$6">
+      <Sheet.Frame
+        bg="$bgDrawer"
+        borderTopLeftRadius={isExtension ? 0 : '$6'}
+        borderTopRightRadius={isExtension ? 0 : '$6'}
+      >
         <YStack p="$4" gap="$4">
           {/* Header */}
           <XStack items="center" width="100%">
-            <View w={32} h={32} />
+            {isExtension ? (
+              <>
+                <View flex={1} items="center">
+                  <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
+                    {title}
+                  </Text>
+                </View>
 
-            <View flex={1} items="center">
-              <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
-                {title}
-              </Text>
-            </View>
+                <XStack
+                  w={32}
+                  h={32}
+                  items="center"
+                  justify="center"
+                  pressStyle={{ opacity: 0.8 }}
+                  onPress={onClose}
+                  cursor="pointer"
+                >
+                  <Close size={20} color="white" />
+                </XStack>
+              </>
+            ) : (
+              <>
+                <View w={32} h={32} />
 
-            <XStack
-              w={32}
-              h={32}
-              items="center"
-              justify="center"
-              borderRadius="$4"
-              pressStyle={{ opacity: 0.8 }}
-              onPress={onClose}
-              cursor="pointer"
-            >
-              <Close size={20} color="$white" />
-            </XStack>
+                <View flex={1} items="center">
+                  <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
+                    {title}
+                  </Text>
+                </View>
+
+                <XStack
+                  w={32}
+                  h={32}
+                  items="center"
+                  justify="center"
+                  borderRadius="$4"
+                  pressStyle={{ opacity: 0.8 }}
+                  onPress={onClose}
+                  cursor="pointer"
+                >
+                  <Close size={20} color="$white" />
+                </XStack>
+              </>
+            )}
           </XStack>
-
 
           {/* Transaction Visual */}
           <View
@@ -230,11 +258,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   {fromAccount?.name || 'Unknown'}
                 </Text>
                 {fromAccount?.address && (
-                  <AddressText
-                    address={fromAccount.address}
-                    fontSize="$2"
-                    color="$textSecondary"
-                  />
+                  <AddressText address={fromAccount.address} fontSize="$2" color="$textSecondary" />
                 )}
               </YStack>
             </YStack>
@@ -255,11 +279,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   {toAccount?.name || 'Unknown'}
                 </Text>
                 {toAccount?.address && (
-                  <AddressText
-                    address={toAccount.address}
-                    fontSize="$2"
-                    color="$textSecondary"
-                  />
+                  <AddressText address={toAccount.address} fontSize="$2" color="$textSecondary" />
                 )}
               </YStack>
             </YStack>
@@ -315,12 +335,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   height={32}
                   minW={60}
                 >
-                  <Text
-                    fontSize="$2"
-                    fontWeight="600"
-                    color="$white"
-                    letterSpacing={-0.072}
-                  >
+                  <Text fontSize="$2" fontWeight="600" color="$white" letterSpacing={-0.072}>
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
                   <VerifiedToken size={10} color="#41CC5D" />
@@ -330,11 +345,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
               {/* Fiat Amount */}
               <XStack justify="flex-start" width="100%">
-                <Text
-                  fontSize="$3"
-                  color="$light80"
-                  fontWeight="400"
-                >
+                <Text fontSize="$3" color="$light80" fontWeight="400">
                   ${formData.fiatAmount || '0.69'}
                 </Text>
               </XStack>
@@ -353,7 +364,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$5" fontWeight="600" color="#000000">
-              {internalIsSending ? 'Sending...' : 'Hold to send'}
+              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm' : 'Hold to send'}
             </Text>
           </YStack>
         </YStack>
