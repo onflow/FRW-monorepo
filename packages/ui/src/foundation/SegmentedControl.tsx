@@ -21,12 +21,12 @@ export function SegmentedControl({
     large: { height: 48, px: 20, fontSize: 18 },
   };
 
-  const { height, px, fontSize } = sizeConfig[size];
+  const { px, fontSize } = sizeConfig[size];
 
-  const containerWidth = fullWidth ? '100%' : (constrainWidth ? 178 : 'auto');
+  const containerWidth = fullWidth ? '100%' : constrainWidth ? 178 : 'auto';
   const useGap = constrainWidth ? 8 : undefined;
-  const segmentWidth = fullWidth ? undefined : (constrainWidth ? (178 - 10 - 8) / 2 : undefined);
-  const segmentPx = fullWidth ? px : (constrainWidth ? 6 : px);
+  const segmentWidth = fullWidth ? undefined : constrainWidth ? (178 - 10 - 8) / 2 : undefined;
+  const segmentPx = fullWidth ? px : constrainWidth ? 6 : px;
 
   return (
     <XStack
@@ -34,12 +34,10 @@ export function SegmentedControl({
       borderWidth={2}
       borderColor="#292929"
       rounded={200}
-      p={5}
+      p={3}
       items="center"
-      justify={constrainWidth ? "center" : undefined}
-      w={containerWidth}
-      maxW={constrainWidth ? 178 : undefined}
-      gap={useGap}
+      height={40}
+      alignSelf="flex-start"
       {...props}
     >
       {segments.map((segment, index) => {
@@ -49,10 +47,9 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            w={segmentWidth}
-            h={height}
-            bg={isSelected ? '#242424' : 'transparent'}
-            rounded={24}
+            bg={isSelected ? '$darkBg1' : 'transparent'}
+            rounded={20}
+            height={30}
             items="center"
             justify="center"
             px={segmentPx}

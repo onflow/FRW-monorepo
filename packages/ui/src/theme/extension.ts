@@ -1,11 +1,8 @@
-// Extension-specific theme configuration - compact sizing for extension UI
-
 import { defaultConfig } from '@tamagui/config/v4';
 import { createTamagui } from 'tamagui';
 
 import { colorTokens, themes, zIndex } from '../theme';
 
-// Extension-specific size system with smaller values for compact UI
 export const extensionSize = {
   $0: 0,
   '$0.25': 1,
@@ -36,9 +33,32 @@ export const extensionSize = {
   $18: 72,
   $19: 76,
   $20: 80,
+  $21: 84,
+  $22: 88,
+  $23: 92,
+  $24: 96,
+  $25: 100,
+  $26: 104,
+  $27: 108,
+  $28: 112,
+  $29: 116,
+  $30: 120,
+  $container: 400,
+  $nav: 400,
+  $content: 367,
+  $card: 71,
+  $cardWidth: 364,
+  $cardContainer: 381,
+  $icon: 53,
+  $tab: 198,
+  $tabHeight: 48,
+  $paddingContainer: 16,
+  $paddingCard: 9,
+  $paddingCardInner: 8,
+  $gapCard: 11,
+  $gapTab: 58,
 };
 
-// Extension space system (includes negative values)
 export const extensionSpace = {
   ...extensionSize,
   '$-0.25': -1,
@@ -68,40 +88,67 @@ export const extensionSpace = {
   '$-18': -72,
   '$-19': -76,
   '$-20': -80,
+  '$-21': -84,
+  '$-22': -88,
+  '$-23': -92,
+  '$-24': -96,
+  '$-25': -100,
+  '$-26': -104,
+  '$-27': -108,
+  '$-28': -112,
+  '$-29': -116,
+  '$-30': -120,
 };
 
-// Radius system (smaller values for extension)
 export const extensionRadius = {
   0: 0,
   1: 4,
-  2: 8,
-  3: 12,
-  4: 14,
-  true: 16,
-  5: 20,
-  6: 24,
-  7: 28,
-  8: 32,
-  9: 36,
-  10: 40,
-  11: 44,
-  12: 48,
+  2: 9,
+  3: 13,
+  4: 16,
+  true: 18,
+  5: 22,
+  6: 27,
+  7: 31,
+  8: 36,
+  9: 40,
+  10: 44,
+  11: 49,
+  12: 53,
+  card: 18,
+  button: 27,
+  icon: 222,
+  nav: 0,
 };
 
-// Create extension tamagui config
+export const extensionFontSize = {
+  xs: 13,
+  sm: 16,
+  base: 18,
+  lg: 20,
+  xl: 22,
+  '2xl': 27,
+  '3xl': 31,
+  '4xl': 36,
+  '5xl': 40,
+  '6xl': 44,
+  title: 20,
+  tab: 18,
+  body: 16,
+  small: 13,
+};
+
 export const extensionTamaguiConfig = createTamagui({
   ...defaultConfig,
-  // Use the same themes as mobile for consistent colors
   themes,
   tokens: {
     ...defaultConfig.tokens,
-    // Use the same color tokens as mobile
     ...colorTokens,
-    // Use extension-specific sizing tokens for compact UI
     size: extensionSize,
     space: extensionSpace,
-    zIndex, // Same z-index system as mobile
+    zIndex,
     radius: extensionRadius,
+    fontSize: extensionFontSize,
   },
 });
 

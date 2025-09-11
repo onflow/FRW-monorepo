@@ -24,7 +24,7 @@ export function RefreshView({
       </Text>
       {onRefresh && (
         <Button size="small" variant="secondary" onPress={onRefresh}>
-          {refreshText}
+          <Text>{refreshText}</Text>
         </Button>
       )}
     </YStack>

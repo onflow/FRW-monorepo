@@ -1,5 +1,11 @@
 // Address utilities
-export { isValidFlowAddress, formatFlowAddress, getAddressType, truncateAddress } from './address';
+export {
+  isValidFlowAddress,
+  formatFlowAddress,
+  getAddressType,
+  truncateAddress,
+  isValidEthereumAddress,
+} from './address';
 
 // NFT utilities
 export {
@@ -33,6 +39,9 @@ export {
   getTokenResourceIdentifier,
   getTokenIdentifier,
 } from './token';
+
+// SVG to PNG utilities
+export { convertedSVGURL } from './svgtopng';
 
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';

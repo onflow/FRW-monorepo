@@ -1,4 +1,5 @@
 import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -58,7 +59,12 @@ const PlatformContext = createContext<PlatformContextValue | null>(null);
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
   const userWallets = useUserWallets();
-  const { currentWallet, mainAddress, walletList, evmWallet, childAccounts } = useProfiles();
+  const { currentWallet, mainAddress, walletList, evmWallet, childAccounts, activeAccountType } =
+    useProfiles();
+
+  // Send store hooks for synchronization
+  const fromAccount = useSendStore(sendSelectors.fromAccount);
+  const setFromAccount = useSendStore((state) => state.setFromAccount);
   const wallet = useWallet();
   const { coins } = useCoins();
 
@@ -300,6 +306,31 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     platform.setWalletController(wallet);
   }, [platform, wallet]);
+
+  // Sync send store fromAccount when currentWallet changes
+  useEffect(() => {
+    if (currentWallet && currentWallet.address) {
+      // Convert currentWallet to WalletAccount format for send store
+      const walletAccount: WalletAccount = {
+        name: currentWallet.name || 'Unnamed Account',
+        address: currentWallet.address,
+        avatar: currentWallet.icon || '',
+        emojiInfo: {
+          emoji: currentWallet.icon || '',
+          color: currentWallet.color || '#6B7280',
+          name: currentWallet.name || 'Unnamed Account',
+        },
+        type: activeAccountType === 'none' ? 'main' : activeAccountType, // Default type for extension accounts
+        isActive: true,
+        id: currentWallet.address,
+      };
+
+      // Only update if the address has changed
+      if (fromAccount?.address !== currentWallet.address) {
+        setFromAccount(walletAccount);
+      }
+    }
+  }, [currentWallet, fromAccount?.address, setFromAccount, activeAccountType]);
 
   // Set up extension navigation
   useEffect(() => {

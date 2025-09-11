@@ -76,7 +76,8 @@
     "properties": "Propiedades",
     "description": "Descripción",
     "creator": "Creador",
-    "title": "Enviar"
+    "title": "Enviar",
+    "inaccessible": "Inaccesible"
   },
   "messages": {
     "loading": "Cargando...",

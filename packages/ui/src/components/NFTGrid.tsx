@@ -72,10 +72,10 @@ export function NFTGrid({
 
   // Loading skeleton - match the responsive 2-column layout
   const renderSkeleton = () => {
-    const skeletonRows = [];
+    const skeletonRows: React.ReactElement[] = [];
     for (let i = 0; i < 6; i += columns) {
       const rowItems = Array.from({ length: Math.min(columns, 6 - i) }, (_, index) => (
-        <YStack key={`skeleton-${i + index}`} flex={1} gap="$1.5">
+        <YStack key={`skeleton-${i + index}`} width="50%" flex={0} gap="$1.5">
           <Skeleton width="100%" height="$41" borderRadius="$4" />
           <YStack gap="$1">
             <Skeleton height="$4" width="80%" />
@@ -85,10 +85,8 @@ export function NFTGrid({
       ));
 
       skeletonRows.push(
-        <XStack key={`skeleton-row-${i}`} gap="$4" justify="space-between" width="100%">
+        <XStack key={`skeleton-row-${i}`} gap="$4" justify="flex-start" width="100%">
           {rowItems}
-          {/* Add empty spacer if row has only 1 item to maintain left alignment */}
-          {rowItems.length === 1 && <YStack flex={1} />}
         </XStack>
       );
     }
@@ -156,7 +154,7 @@ export function NFTGrid({
   }
 
   // Group NFTs into rows
-  const rows = [];
+  const rows: NFTData[][] = [];
   for (let i = 0; i < data.length; i += columns) {
     rows.push(data.slice(i, i + columns));
   }
@@ -165,9 +163,9 @@ export function NFTGrid({
   return (
     <YStack gap="$4">
       {rows.map((row, rowIndex) => (
-        <XStack key={`row-${rowIndex}`} gap="$4" justify="space-between" width="100%">
+        <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
           {row.map((nft) => (
-            <YStack key={nft.id} flex={1}>
+            <YStack key={nft.id} width="50%" flex={0}>
               <NFTCard
                 nft={nft}
                 size="medium"
@@ -181,8 +179,6 @@ export function NFTGrid({
               />
             </YStack>
           ))}
-          {/* Add empty spacer if row has only 1 item to maintain left alignment */}
-          {row.length === 1 && <YStack flex={1} />}
         </XStack>
       ))}
     </YStack>

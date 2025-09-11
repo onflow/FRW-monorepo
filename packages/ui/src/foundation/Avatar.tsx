@@ -1,3 +1,4 @@
+import { convertedSVGURL } from '@onflow/frw-utils';
 import React from 'react';
 import { Image, Text, YStack } from 'tamagui';
 
@@ -28,11 +29,11 @@ export function Avatar({
       style={style}
     >
       {src ? (
-        <Image 
-          src={src} 
-          alt={alt} 
-          width="100%" 
-          height="100%" 
+        <Image
+          src={convertedSVGURL(src)}
+          alt={alt}
+          width="100%"
+          height="100%"
           objectFit="cover"
           borderRadius={size / 2}
           position="absolute"

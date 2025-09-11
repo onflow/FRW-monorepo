@@ -71,6 +71,10 @@ class ExtensionNavigation implements Navigation {
         } else {
           path = `/dashboard/token/${tokenId}/send`;
         }
+      } else if (screen === 'SendSingleNFT' && params?.address && params?.recipient) {
+        path = `/dashboard/nested/send-single-nft`;
+      } else if (screen === 'SendMultipleNFTs' && params?.address && params?.recipient) {
+        path = `/dashboard/nested/send-multiple-nfts`;
       } else if (screen === 'NFTView' && params?.id) {
         path = `/dashboard/nested/nftdtailscreen/${params.id}`;
       } else if (screen === 'NFTList' && params?.collection && params?.address) {
