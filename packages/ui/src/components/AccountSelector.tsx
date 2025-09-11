@@ -12,13 +12,13 @@ const formatBalance = (balance: string): string => {
   // Extract numeric value from balance string (e.g., "123.456789 FLOW" -> "123.456789")
   const match = balance.match(/^([\d.,]+)/);
   if (!match) return balance;
-  
+
   const numericPart = match[1].replace(/,/g, ''); // Remove commas
   const restOfString = balance.replace(match[0], ''); // Get the rest (e.g., " FLOW")
-  
+
   const num = parseFloat(numericPart);
   if (isNaN(num)) return balance;
-  
+
   // Round to 5 decimal places and format
   const rounded = Number(num.toFixed(5));
   return `${rounded}${restOfString}`;
@@ -59,14 +59,14 @@ export function AccountSelector({
   return (
     <>
       {/* Current Account Display */}
-      <YStack gap={12}>
+      <YStack height={120} gap={12}>
         {/* Title */}
-        <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
+        <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16}>
           {title}
         </Text>
 
         {/* Account Container */}
-        <XStack py={10} pl={5} pr={0} justify="space-between" items="center" borderRadius={16}>
+        <XStack py={10} pl={5} pr={0} justify="space-between" items="center">
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
             {/* Account Avatar */}
@@ -183,7 +183,9 @@ export function AccountSelector({
                         {/* Account Avatar */}
                         <Avatar
                           src={account.avatar}
-                          fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
+                          fallback={
+                            account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
+                          }
                           bgColor={account.emojiInfo?.color}
                           size={40}
                           borderColor={isSelected ? '$primary' : undefined}

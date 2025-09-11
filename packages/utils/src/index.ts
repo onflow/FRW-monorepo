@@ -40,6 +40,9 @@ export {
   getTokenIdentifier,
 } from './token';
 
+// SVG to PNG utilities
+export { convertedSVGURL } from './svgtopng';
+
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
 export type { BridgeLogger } from './logger';

@@ -13,3 +13,8 @@ export {
   addressBookQueries,
   useAddressBookStore,
 } from './addressBookStore.query';
+export {
+  accessibleAssetQueryKeys,
+  accessibleAssetQueries,
+  accessibleAssetHelpers,
+} from './accessibleAssetStore.query';
