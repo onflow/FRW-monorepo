@@ -1,4 +1,4 @@
-import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
@@ -104,8 +104,12 @@ export function AccountSelector({
 
             {/* Account Details */}
             <YStack flex={1} gap={2}>
-              {/* Account Name with EVM Badge */}
+              {/* Account Name with link icon and EVM Badge */}
               <XStack items="center" gap={4}>
+                {/* Link icon for linked accounts */}
+                {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
+                  <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                )}
                 <Text
                   color="$white"
                   fontSize={14}
@@ -274,6 +278,10 @@ export function AccountSelector({
                         {/* Account Details */}
                         <YStack gap={2} flex={1} justify="center">
                           <XStack items="center" gap={4}>
+                            {/* Link icon for linked accounts */}
+                            {(account.type === 'child' || account.parentEmoji) && (
+                              <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                            )}
                             <Text
                               fontSize={14}
                               fontWeight="600"
