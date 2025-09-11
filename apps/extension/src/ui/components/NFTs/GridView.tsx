@@ -1,6 +1,6 @@
 import { Box, Card, CardActionArea, CardContent, CardMedia, Typography } from '@mui/material';
 import { useSendStore } from '@onflow/frw-stores';
-import { WalletType, type CollectionModel } from '@onflow/frw-types';
+import { WalletType } from '@onflow/frw-types';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -165,27 +165,6 @@ const GridView = (props: GridViewProps) => {
         ...data,
       };
 
-      // Construct a basic path from the contract name
-      const contractName = data.contractName || data.collectionContractName;
-      const basicCollection: CollectionModel = {
-        id: data.collectionId || contractName,
-        name: data.collectionName || collectionInfo?.name || 'Unknown Collection',
-        contractName: contractName,
-        address: data.contractAddress,
-        evmAddress: isEvm ? data.contractAddress : undefined,
-        description: collectionInfo?.description,
-        logoURI: collectionInfo?.image || data.postMedia?.image,
-        logo: collectionInfo?.image || data.postMedia?.image,
-        type: isEvm ? WalletType.EVM : WalletType.Flow,
-        path: {
-          private_path: `/private/${contractName}Collection`,
-          public_path: collectionInfo.path?.publicPath,
-          storage_path: collectionInfo.path?.storagePath,
-        },
-      };
-      setSelectedCollection(basicCollection);
-
-      // Set the NFT as selected so the NFTDetailScreen can display it
       setSelectedNFTs([nftData]);
 
       // Navigate to the new NFTDetailScreen
