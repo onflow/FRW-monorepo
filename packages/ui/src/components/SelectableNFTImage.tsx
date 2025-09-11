@@ -1,6 +1,6 @@
 import { CheckCircle } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, Image, Text } from 'tamagui';
+import { YStack, Image } from 'tamagui';
 
 export interface SelectableNFTImageProps {
   src: string;
@@ -93,8 +93,6 @@ export function SelectableNFTImage({
           <CheckCircle size={30} color="#00EF8B" />
         </YStack>
       )}
-
-      
     </YStack>
   );
 }

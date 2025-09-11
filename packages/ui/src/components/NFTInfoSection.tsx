@@ -1,5 +1,6 @@
 import React from 'react';
 import { YStack, XStack, Text } from 'tamagui';
+
 import { Avatar } from '../foundation/Avatar';
 
 export interface NFTInfoSectionProps {

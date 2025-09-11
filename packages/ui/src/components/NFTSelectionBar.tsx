@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Text, Image } from 'tamagui';
 
 import type { NFTData } from './NFTGrid';
-import { Button } from '../foundation/Button';
 
 export interface NFTSelectionBarProps {
   selectedNFTs: NFTData[];
@@ -37,18 +36,27 @@ export function NFTSelectionBar({
   };
 
   const renderNFTItem = (nft: NFTData) => {
-
     return (
       <XStack key={nft.id} items="center" justify="space-between" gap="$2" width="100%">
-        <XStack items="center" gap="$2" onPress={() => onNFTPress(nft.id)} cursor="pointer" flex={1}>
+        <XStack
+          items="center"
+          gap="$2"
+          onPress={() => onNFTPress(nft.id)}
+          cursor="pointer"
+          flex={1}
+        >
           {/* NFT Image */}
-          <YStack rounded="$4" overflow="hidden" minW="$13" minH="$13" w="$13" h="$13" bg="$background4" flexShrink={0}>
-            <Image
-              src={nft.thumbnail || nft.image}
-              width="$13"
-              height="$13"
-              objectFit="cover"
-            />
+          <YStack
+            rounded="$4"
+            overflow="hidden"
+            minW="$13"
+            minH="$13"
+            w="$13"
+            h="$13"
+            bg="$background4"
+            flexShrink={0}
+          >
+            <Image src={nft.thumbnail || nft.image} width="$13" height="$13" objectFit="cover" />
           </YStack>
 
           {/* NFT Info */}
@@ -155,22 +163,22 @@ export function NFTSelectionBar({
           </YStack>
         )}
 
-
         {/* Action Button - Always visible at bottom */}
         {onContinue && (
-           <YStack shrink={0} 
-           bg="#FFFFFF"
-           rounded="$4"
-           height={56}
-           items="center"
-           justify="center"
-           disabled={selectedNFTs.length === 0}
-              onPress={onContinue}
-         >
-           <Text fontSize="$5" fontWeight="600" color="#000000">
-           Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
-           </Text>
-         </YStack>
+          <YStack
+            shrink={0}
+            bg="#FFFFFF"
+            rounded="$4"
+            height={56}
+            items="center"
+            justify="center"
+            disabled={selectedNFTs.length === 0}
+            onPress={onContinue}
+          >
+            <Text fontSize="$5" fontWeight="600" color="#000000">
+              Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
+            </Text>
+          </YStack>
         )}
       </YStack>
     </YStack>
