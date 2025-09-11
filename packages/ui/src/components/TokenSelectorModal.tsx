@@ -1,7 +1,8 @@
 import { Search, Close, VerifiedToken } from '@onflow/frw-icons';
-import { type TokenModel } from '@onflow/frw-types';
+import { type TokenModel, formatCurrencyStringForDisplay } from '@onflow/frw-types';
+import { getDisplayBalanceWithSymbol } from '@onflow/frw-utils';
 import React, { useState, useMemo } from 'react';
-import { YStack, XStack, ScrollView, Input, Sheet, useMedia } from 'tamagui';
+import { YStack, XStack, ScrollView, Input, Sheet, useMedia, Stack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
@@ -18,6 +19,7 @@ export interface TokenSelectorModalProps {
   backgroundColor?: string;
   maxHeight?: number;
   platform?: 'mobile' | 'desktop' | 'auto';
+  currency?: { symbol: string };
 }
 
 export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
@@ -32,6 +34,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   backgroundColor = '$background',
   maxHeight = 600,
   platform = 'auto',
+  currency = { symbol: '$' },
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const media = useMedia();
@@ -125,71 +128,103 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           ) : (
             filteredTokens.map((token, index) => (
               <YStack key={token.id || `${token.symbol}-${index}`}>
-                <XStack
-                  items="flex-end"
-                  gap={8}
-                  py={8}
-                  px={0}
-                  bg="transparent"
-                  hoverStyle={{ bg: 'rgba(255, 255, 255, 0.05)' }}
-                  pressStyle={{ bg: 'rgba(255, 255, 255, 0.08)' }}
+                <Stack
+                  pressStyle={{ opacity: 0.7 }}
                   onPress={() => handleTokenSelect(token)}
                   cursor="pointer"
+                  items="center"
+                  justify="center"
+                  width="100%"
+                  height={64}
+                  px={12}
                 >
-                  {/* Token Logo */}
-                  <Avatar
-                    src={token.logoURI}
-                    fallback={token.symbol.charAt(0)}
-                    size={48}
-                    bg="rgba(255, 255, 255, 0.1)"
-                  />
-
-                  {/* Token Info */}
-                  <YStack flex={1} gap={4}>
-                    {/* Top row: Token name and verified icon */}
-                    <XStack justify="space-between" items="center">
-                      <XStack items="center" gap={4}>
-                        <Text fontSize={14} fontWeight="600" color="#FFFFFF">
-                          {token.symbol}
-                        </Text>
-                        {token.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
-                      </XStack>
-                      <Text
-                        fontSize={14}
-                        fontWeight="400"
-                        color="rgba(255, 255, 255, 0.8)"
-                        textAlign="right"
-                      >
-                        {typeof token.balance === 'string'
-                          ? token.balance
-                          : token.balance?.toFixed(4)}
-                      </Text>
-                    </XStack>
-
-                    {/* Bottom row: Token balance and USD price */}
-                    <XStack justify="space-between" items="center">
-                      <Text fontSize={14} fontWeight="400" color="#FFFFFF" textAlign="right">
-                        {typeof token.balance === 'string'
-                          ? `${token.balance} ${token.symbol}`
-                          : `${token.balance?.toFixed(4)} ${token.symbol}`}
-                      </Text>
-                      {token.priceInUSD && (
+                  <XStack items="center" gap="$2" width="100%">
+                    <Avatar
+                      src={token.logoURI}
+                      alt={token.symbol}
+                      fallback={token.symbol?.[0] || token.name?.[0] || '?'}
+                      size={48}
+                    />
+                    <YStack flex={1} gap="$1">
+                      {/* Top row: Token name + verified badge + balance */}
+                      <XStack justify="space-between" items="center" gap="$1">
+                        <XStack items="center" gap="$1" flex={1} shrink={1}>
+                          <XStack items="center" gap="$1" shrink={1}>
+                            <Text
+                              fontWeight="600"
+                              fontSize={14}
+                              color="$text1"
+                              numberOfLines={1}
+                              lineHeight="$1"
+                              letterSpacing={-0.6}
+                              shrink={1}
+                            >
+                              {token.name || token.symbol}
+                            </Text>
+                            {token.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
+                          </XStack>
+                        </XStack>
                         <Text
                           fontSize={14}
                           fontWeight="400"
-                          color="rgba(255, 255, 255, 0.4)"
-                          textAlign="right"
+                          color="$text1"
+                          numberOfLines={1}
+                          text="right"
+                          lineHeight="$1"
                         >
-                          ${token.priceInUSD}
+                          {getDisplayBalanceWithSymbol(token)}
                         </Text>
-                      )}
-                    </XStack>
-                  </YStack>
-                </XStack>
+                      </XStack>
+
+                      {/* Bottom row: Price per token + total balance in currency */}
+                      <XStack items="center" gap="$1" justify="space-between">
+                        <XStack items="center" gap="$1">
+                          <Text
+                            color="$text2"
+                            fontSize={14}
+                            fontWeight="400"
+                            numberOfLines={1}
+                            lineHeight="$1"
+                          >
+                            {(() => {
+                              if (token.priceInCurrency === '0' || token.priceInCurrency === '0.00')
+                                return '';
+                              const currencyValue = parseFloat(token.priceInCurrency ?? '0');
+                              return !isNaN(currencyValue) && currencyValue > 0
+                                ? `${currency.symbol}${formatCurrencyStringForDisplay({ value: currencyValue, digits: 4 })}`
+                                : '';
+                            })()}
+                          </Text>
+                        </XStack>
+
+                        <Text
+                          color="$text2"
+                          fontSize={14}
+                          fontWeight="400"
+                          numberOfLines={1}
+                          lineHeight="$1"
+                        >
+                          {(() => {
+                            if (
+                              !token.balanceInCurrency ||
+                              token.balanceInCurrency === '0' ||
+                              token.balanceInCurrency === '0.00'
+                            )
+                              return '';
+                            const currencyValue = parseFloat(token.balanceInCurrency);
+                            return !isNaN(currencyValue) && currencyValue > 0
+                              ? `${currency.symbol}${currencyValue.toFixed(2)}`
+                              : '';
+                          })()}
+                        </Text>
+                      </XStack>
+                    </YStack>
+                  </XStack>
+                </Stack>
 
                 {/* Divider - show for all items except the last one */}
                 {index < filteredTokens.length - 1 && (
-                  <YStack height={1} bg="rgba(255, 255, 255, 0.1)" mx={12} />
+                  <YStack height={1} bg="rgba(255, 255, 255, 0.1)" mx={0} />
                 )}
               </YStack>
             ))

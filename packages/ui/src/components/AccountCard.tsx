@@ -8,6 +8,19 @@ import { Text } from '../foundation/Text';
 import type { Account, AccountCardProps } from '../types';
 import { AddressText } from './AddressText';
 
+// Helper function to format balance with max 5 decimal places
+function formatBalance(balance?: string): string {
+  if (!balance) return '0';
+
+  const num = parseFloat(balance);
+  if (isNaN(num)) return balance;
+
+  // If the number has more than 5 decimal places, round to 5
+  // Otherwise, show the number as is (without trailing zeros)
+  const rounded = Math.round(num * 100000) / 100000;
+  return rounded.toString();
+}
+
 export function AccountCard({
   account,
   title,
@@ -104,7 +117,7 @@ export function AccountCard({
               {/* EVM Badge - inline with name */}
               {account.type === 'evm' && (
                 <XStack
-                  bg="$primary"
+                  bg="$accentEVM"
                   rounded="$4"
                   px={4}
                   items="center"
@@ -149,7 +162,7 @@ export function AccountCard({
                   numberOfLines={1}
                   flex={1}
                 >
-                  {account.balance} | {account.nfts}
+                  {formatBalance(account.balance)} | {account.nfts}
                 </Text>
               ) : null}
             </XStack>
@@ -301,7 +314,7 @@ export function AccountCard({
                                   {/* EVM Badge - inline with name */}
                                   {acc.type === 'evm' && (
                                     <XStack
-                                      bg="$primary"
+                                      bg="$accentEVM"
                                       rounded="$4"
                                       px={4}
                                       items="center"

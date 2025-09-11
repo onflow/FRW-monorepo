@@ -359,7 +359,13 @@ export const SendTokensScreen = (props) => {
             ) : (
               <Text>No account data available</Text>
             )}
-            <Separator mx="$0" my="$0" mb="$2" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+            <Separator
+              mx="$0"
+              my="$0"
+              mb="$2"
+              borderColor="rgba(255, 255, 255, 0.1)"
+              borderWidth={0.5}
+            />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -491,6 +497,7 @@ export const SendTokensScreen = (props) => {
           onClose={handleTokenSelectorClose}
           platform="mobile"
           title="Tokens"
+          currency={bridge.getCurrency()}
         />
 
         {/* Transaction Confirmation Modal/Drawer - Platform specific */}
