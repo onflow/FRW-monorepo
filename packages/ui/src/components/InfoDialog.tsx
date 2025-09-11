@@ -62,15 +62,15 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
 
   const dialogContent = (
     <Stack
-      position={isWeb ? "fixed" : "absolute"}
+      pos={isWeb ? "fixed" : "absolute"}
       top={0}
       left={0}
       right={0}
       bottom={0}
-      backgroundColor="rgba(0, 0, 0, 0.5)"
-      zIndex={1000}
-      alignItems="center"
-      justifyContent="center"
+      bg="rgba(0, 0, 0, 0.5)"
+      z={1000}
+      items="center"
+      justify="center"
       pressStyle={{ opacity: 1 }}
       onPress={onClose}
       aria-modal="true"
@@ -78,14 +78,14 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
       aria-labelledby={title ? 'info-dialog-title' : undefined}
     >
       <YStack
-        width={339}
-        minWidth={300}
-        maxWidth="90%"
-        height={326}
-        minHeight={300}
-        maxHeight="90%"
-        backgroundColor="#28282A"
-        borderRadius={16}
+        w={339}
+        minW={300}
+        maxW="90%"
+        h={326}
+        minH={300}
+        maxH="90%"
+        bg="#28282A"
+        rounded={16}
         shadowColor="rgba(0, 0, 0, 0.25)"
         shadowOffset={{ width: 0, height: 5 }}
         shadowOpacity={0.25}
@@ -96,15 +96,15 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
       >
         {/* Close button */}
         <YStack
-          position="absolute"
+          pos="absolute"
           top={19.56}
           right={18}
-          width={24}
-          height={24}
-          alignItems="center"
-          justifyContent="center"
-          backgroundColor="rgba(0, 0, 0, 0.03)"
-          borderRadius={12}
+          w={24}
+          h={24}
+          items="center"
+          justify="center"
+          bg="rgba(0, 0, 0, 0.03)"
+          rounded={12}
           pressStyle={{ opacity: 0.7 }}
           onPress={onClose}
           cursor="pointer"
@@ -114,35 +114,37 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
         </YStack>
 
         {/* Content area */}
-        <YStack padding={20} paddingTop={60} flex={1} gap={16}>
+        <YStack p={20} pt={60} flex={1} gap={16}>
           {title && (
-            <Text
-              id="info-dialog-title"
-              fontSize={16}
-              fontWeight="600"
-              color="$white"
-              ta="center"
-            >
-              {title}
-            </Text>
+            <YStack w="100%" items="center">
+              <Text
+                id="info-dialog-title"
+                fontSize={16}
+                fontWeight="600"
+                color="$white"
+                ta="center"
+              >
+                {title}
+              </Text>
+            </YStack>
           )}
 
           {/* Content */}
-          <YStack flex={1} justifyContent="center" alignItems="center" width="100%" paddingHorizontal={10}>
+          <YStack flex={1} justify="center" items="center" w="100%" px={10}>
             {children}
           </YStack>
 
           {/* Bottom button */}
           {buttonText && (
             <YStack
-              alignSelf="stretch"
-              height={44}
-              backgroundColor="$white"
-              borderRadius={12}
-              alignItems="center"
-              justifyContent="center"
-              paddingHorizontal={16}
-              paddingVertical={12}
+              self="stretch"
+              h={44}
+              bg="$white"
+              rounded={12}
+              items="center"
+              justify="center"
+              px={16}
+              py={12}
               pressStyle={{ opacity: 0.8 }}
               onPress={onButtonClick}
               cursor="pointer"
