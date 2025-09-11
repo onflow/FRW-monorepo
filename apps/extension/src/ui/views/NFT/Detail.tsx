@@ -8,7 +8,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import fallback from '@/ui/assets/image/errorImage.png';
-import DetailMove from '@/ui/assets/svg/detailMove.svg';
 import SendIcon from '@/ui/assets/svg/detailSend.svg';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -50,21 +49,6 @@ const Detail = () => {
   const [contactTwo, setContactTwo] = useState<any>(emptyContact);
   const [isAccessibleNft, setisAccessibleNft] = useState<any>(false);
 
-  // TB July 2025. This always fails as the script doesn't exist. Turning off for now
-  // const [canMoveChild, setCanMoveChild] = useState(false);
-
-  const canMoveChild = activeAccountType !== 'child' && currentWallet.address;
-  /*
-  useEffect(() => {
-    const checkPermission = async () => {
-      // TODO: TB July 2025. This always fails as the script doesn't exist. Turning off for now
-      const result = await usewallet.checkCanMoveChild(currentWallet.address);
-      setCanMoveChild(result);
-    };
-
-    checkPermission();
-  }, [usewallet, currentWallet.address]);
- */
   useEffect(() => {
     const savedState = localStorage.getItem('nftDetailState');
     if (savedState) {
@@ -476,30 +460,6 @@ const Detail = () => {
                 sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
               />
               {chrome.i18n.getMessage('Send')}
-            </Button>
-          )}
-          {canMoveChild && (
-            <Button
-              sx={{
-                backgroundColor: '#FFFFFF33',
-                p: '12px',
-                color: '#fff',
-                borderRadius: '12px',
-                height: '42px',
-                marginLeft: '8px',
-                fill: 'var(--Special-Color-White-2, rgba(255, 255, 255, 0.20))',
-                filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.24))',
-                backdropFilter: 'blur(6px)',
-              }}
-              disabled={!isAccessibleNft}
-              onClick={() => setMoveOpen(true)}
-            >
-              {/* <IosShareOutlinedIcon color="primary" /> */}
-              <CardMedia
-                image={DetailMove}
-                sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
-              />
-              {chrome.i18n.getMessage('Move')}
             </Button>
           )}
         </Box>

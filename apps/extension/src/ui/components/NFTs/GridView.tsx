@@ -1,6 +1,8 @@
 import { Box, Card, CardActionArea, CardContent, CardMedia, Typography } from '@mui/material';
+import { useSendStore } from '@onflow/frw-stores';
+import { WalletType } from '@onflow/frw-types';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 
 import fallback from '@/ui/assets/image/errorImage.png';
 import type { PostMedia } from '@/ui/utils/url';
@@ -31,6 +33,9 @@ const GridView = (props: GridViewProps) => {
     isEvm = false,
     searchTerm,
   } = props;
+
+  const navigate = useNavigate();
+  const { setSelectedCollection, setSelectedNFTs, setFromAccount, setCurrentStep } = useSendStore();
 
   const [loaded, setLoaded] = useState(false);
   const [isAccessible, setAccessible] = useState(true);
@@ -140,39 +145,33 @@ const GridView = (props: GridViewProps) => {
     );
   };
 
-  // Determine the correct path and state based on NFT type
-  const detailPath = isEvm
-    ? `/dashboard/nftevm/detail/${index}`
-    : `/dashboard/nested/${fromLinked ? 'linkednftdetail' : 'nftdetail'}/${data.id}`;
+  // Handle navigation to new NFTDetailScreen
+  const navigateToNFTDetail = async () => {
+    try {
+      setCurrentStep('nft-detail');
 
-  const navigateState = {
-    nft: data,
-    media: media,
-    index: index,
-    ownerAddress: ownerAddress,
-  };
+      // Convert the NFT data to the format expected by the new screen
+      const nftData = {
+        id: data.id,
+        name: data.name || 'Untitled',
+        description: data.description,
+        image: data.postMedia?.image || data.media?.image || fallback,
+        collectionName: data.collectionName || collectionInfo?.name || 'Unknown Collection',
+        contractName: data.contractName || data.collectionContractName,
+        contractAddress: data.contractAddress,
+        collectionContractName: data.collectionContractName,
+        amount: data.amount || 1,
+        type: isEvm ? WalletType.EVM : WalletType.Flow,
+        ...data,
+      };
 
-  // Handle navigation state saving for both NFT types
-  const navigateWithState = () => {
-    const state: Record<string, any> = {
-      nft: data,
-      media: media,
-      index: index,
-      ownerAddress: ownerAddress,
-      isAccessibleNft,
-    };
+      setSelectedNFTs([nftData]);
 
-    // Only add collectionInfo if it's available
-    if (collectionInfo) {
-      state.collectionInfo = collectionInfo;
+      // Navigate to the new NFTDetailScreen
+      navigate('/dashboard/nested/nftdetailscreenview');
+    } catch (error) {
+      console.error('Error navigating to NFT detail:', error);
     }
-
-    // Save search term if available
-    if (searchTerm) {
-      state.searchTerm = searchTerm;
-    }
-
-    localStorage.setItem('nftDetailState', JSON.stringify(state));
   };
 
   return (
@@ -193,7 +192,6 @@ const GridView = (props: GridViewProps) => {
       elevation={0}
     >
       <CardActionArea
-        component={Link}
         sx={{
           width: '100%',
           height: '100%',
@@ -203,8 +201,7 @@ const GridView = (props: GridViewProps) => {
             backgroundColor: '#222222',
           },
         }}
-        to={detailPath}
-        onClick={navigateWithState}
+        onClick={navigateToNFTDetail}
       >
         <CardMedia
           sx={{

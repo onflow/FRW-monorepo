@@ -427,7 +427,7 @@ export function SendToScreen(): React.ReactElement {
         title={t('send.sendTo.title')}
         searchValue={searchQuery}
         searchPlaceholder={t('send.searchAddress')}
-        showScanButton={true}
+        showScanButton={!isExtension}
         onSearchChange={handleSearchChange}
         onScanPress={handleScanPress}
         tabSegments={tabTitles}
@@ -436,21 +436,13 @@ export function SendToScreen(): React.ReactElement {
         backgroundColor="$bgDrawer"
       >
         {activeTab === 'accounts' ? (
-          <>
-            {console.log('Rendering ProfileList with:', { 
-              profilesData, 
-              profilesLength: profilesData.length,
-              firstProfileAccounts: profilesData[0]?.accounts?.length,
-              isLoading 
-            })}
-            <ProfileList
-              profiles={profilesData}
-              onAccountPress={handleRecipientPress}
-              isLoading={isLoading}
-              emptyTitle={emptyState.title}
-              emptyMessage={emptyState.message}
-            />
-          </>
+          <ProfileList
+            profiles={profilesData}
+            onAccountPress={handleRecipientPress}
+            isLoading={isLoading}
+            emptyTitle={emptyState.title}
+            emptyMessage={emptyState.message}
+          />
         ) : activeTab === 'contacts' ? (
           isLoading ? (
             <RecipientList
