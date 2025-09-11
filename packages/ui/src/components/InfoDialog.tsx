@@ -2,7 +2,7 @@ import { Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { YStack, Stack } from 'tamagui';
-import { Platform } from 'react-native';
+import { Platform, Modal } from 'react-native';
 
 import { Text } from '../foundation/Text';
 
@@ -128,7 +128,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
           )}
 
           {/* Content */}
-          <YStack flex={1} justifyContent="flex-start" alignItems="center">
+          <YStack flex={1} justifyContent="center" alignItems="center">
             {children}
           </YStack>
 
@@ -165,10 +165,20 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
   );
 
   // Use portal to render at document body level (only in browser)
-  if (typeof document !== 'undefined') {
+  if (typeof document !== 'undefined' && Platform.OS === 'web') {
     return createPortal(dialogContent, document.body);
   }
 
-  // Fallback for non-browser environments (React Native, SSR)
-  return dialogContent;
+  // For React Native, use Modal component for proper overlay
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent={true}
+    >
+      {dialogContent}
+    </Modal>
+  );
 };
