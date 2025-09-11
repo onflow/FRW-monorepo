@@ -31,6 +31,7 @@ export interface RecipientItemProps {
   // Actions
   onPress?: () => void;
   onCopy?: () => void;
+  copiedFeedback?: string;
 
   // Styling
   pressStyle?: object;
@@ -55,6 +56,7 @@ export function RecipientItem({
   parentEmojiInfo,
   onPress,
   onCopy,
+  copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
   console.log('RecipientItem render:', { name, address, type, emojiInfo, avatar });
@@ -174,12 +176,12 @@ export function RecipientItem({
         </YStack>
 
         {/* Action Buttons */}
-        <XStack gap="$2" items="center">
+        <XStack gap="$2" items="center" position="relative">
           {showCopyButton && onCopy && (
             <Card
               width={24}
               height={24}
-              opacity={0.5}
+              opacity={copiedFeedback ? 1 : 0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
@@ -192,8 +194,26 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <Copy size={24} color="#FFFFFF" />
+              <Copy size={24} color={copiedFeedback ? "#00D964" : "#FFFFFF"} />
             </Card>
+          )}
+          {copiedFeedback && (
+            <YStack
+              position="absolute"
+              top={-30}
+              right={0}
+              bg="#00D964"
+              rounded={8}
+              px={8}
+              py={4}
+              animation="quick"
+              enterStyle={{ opacity: 0, scale: 0.9, y: 5 }}
+              exitStyle={{ opacity: 0, scale: 0.9, y: 5 }}
+            >
+              <Text fontSize={12} fontWeight="600" color="#000000">
+                {copiedFeedback}
+              </Text>
+            </YStack>
           )}
         </XStack>
       </XStack>

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, YStack } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
+import { copyToClipboard } from '../utils/clipboard';
 
 export interface AddressBookSectionProps {
   letter: string;
@@ -12,9 +13,20 @@ export function AddressBookSection({
   letter,
   contacts,
 }: AddressBookSectionProps): React.JSX.Element | null {
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
   if (contacts.length === 0) {
     return null;
   }
+
+  const handleCopy = async (address: string) => {
+    const success = await copyToClipboard(address);
+    if (success) {
+      // Show feedback
+      setCopiedAddress(address);
+      setTimeout(() => setCopiedAddress(null), 2000);
+    }
+  };
 
   return (
     <YStack gap={4} w="$100">
@@ -37,7 +49,8 @@ export function AddressBookSection({
               {...contact}
               type="contact"
               showCopyButton={true}
-              onCopy={() => navigator.clipboard?.writeText(contact.address)}
+              onCopy={() => handleCopy(contact.address)}
+              copiedFeedback={copiedAddress === contact.address ? 'Copied!' : undefined}
             />
             {index < contacts.length - 1 && (
               <YStack
@@ -63,6 +76,17 @@ export function AddressBookList({
   contacts,
   groupByLetter = true,
 }: AddressBookListProps): React.JSX.Element {
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const handleCopy = async (address: string) => {
+    const success = await copyToClipboard(address);
+    if (success) {
+      // Show feedback
+      setCopiedAddress(address);
+      setTimeout(() => setCopiedAddress(null), 2000);
+    }
+  };
+
   if (!groupByLetter) {
     return (
       <YStack gap={0}>
@@ -72,7 +96,8 @@ export function AddressBookList({
               {...contact}
               type="contact"
               showCopyButton={true}
-              onCopy={() => navigator.clipboard?.writeText(contact.address)}
+              onCopy={() => handleCopy(contact.address)}
+              copiedFeedback={copiedAddress === contact.address ? 'Copied!' : undefined}
             />
             {index < contacts.length - 1 && (
               <YStack

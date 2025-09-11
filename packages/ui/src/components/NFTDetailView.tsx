@@ -90,9 +90,6 @@ export function NFTDetailView({
               selectable={selectable}
               onImagePress={selectable ? onToggleSelection : undefined}
               borderRadius={16}
-              showAccountAvatar={!!owner}
-              accountEmoji={owner?.emojiInfo?.emoji}
-              accountAvatar={owner?.avatar}
             />
           </YStack>
 

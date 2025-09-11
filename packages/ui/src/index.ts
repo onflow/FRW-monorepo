@@ -28,6 +28,9 @@ export * from './foundation/Separator';
 export * from './foundation/Skeleton';
 export * from './foundation/Text';
 
+// Export utilities
+export * from './utils/clipboard';
+
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';

@@ -45,7 +45,6 @@ export function ProfileList({
     );
   }
 
-  console.log('ProfileList: Rendering profiles:', profiles);
   return (
     <YStack gap="$4">
       {profiles.map((profile, index) => {
@@ -78,91 +77,12 @@ function ProfileItem({
   onAccountPress,
   isLast = false,
 }: ProfileItemProps): React.ReactElement {
-  console.log('ProfileItem render:', { profile, accountsCount: profile.accounts?.length });
   
   const handleAccountPress = (account: any) => {
-    console.log('ProfileItem: Account pressed:', account);
     onAccountPress?.(account);
   };
 
-  // Early return if no accounts
-  if (!profile.accounts || profile.accounts.length === 0) {
-    console.log('ProfileItem: No accounts found for profile:', profile);
-    return (
-      <YStack gap="$3" items="flex-start" justifyContent="flex-start" width="100%">
-        {/* Profile Header */}
-        <XStack items="center" justifyContent="space-between" width="100%">
-          <XStack gap="$4" items="center" justifyContent="flex-start">
-            {/* Profile Icon */}
-            <View borderRadius="$2" width={26} height={26} items="center" justifyContent="center">
-              {profile.avatar && profile.avatar.startsWith('http') ? (
-                <View
-                  width="100%"
-                  height="100%"
-                  borderRadius="$1"
-                  bg="$background"
-                  style={{
-                    backgroundImage: `url(${profile.avatar})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                />
-              ) : profile.avatar && profile.avatar.length <= 4 ? (
-                <View
-                  width="100%"
-                  height="100%"
-                  borderRadius="$1"
-                  bg="$gray8"
-                  items="center"
-                  justifyContent="center"
-                >
-                  <Text fontSize="$4">
-                    {profile.avatar}
-                  </Text>
-                </View>
-              ) : (
-                <View
-                  width="100%"
-                  height="100%"
-                  borderRadius="$1"
-                  bg="$gray8"
-                  items="center"
-                  justifyContent="center"
-                >
-                  <Text color="$color" fontSize="$1" fontWeight="600">
-                    {profile.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
-            </View>
 
-            {/* Profile Name */}
-            <XStack gap="$2" items="center" justifyContent="flex-start">
-              <Text
-                color="$color"
-                fontSize="$3"
-                fontWeight="600"
-                whiteSpace="nowrap"
-                letterSpacing={-0.084}
-              >
-                {profile.name}
-              </Text>
-            </XStack>
-          </XStack>
-        </XStack>
-
-        {/* Separator Line */}
-        <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
-
-        {/* Empty State Message */}
-        <YStack items="center" justifyContent="center" py="$4" width="100%">
-          <Text color="$color" fontSize="$2" textAlign="center">
-            No accounts found for this profile
-          </Text>
-        </YStack>
-      </YStack>
-    );
-  }
 
   // Convert profile accounts to RecipientData format
   const accountsData: RecipientData[] = profile.accounts.map((account) => {
@@ -171,11 +91,7 @@ function ProfileItem({
       name: account.name,
       address: account.address,
       avatar: account.avatar,
-      emojiInfo: account.emojiInfo || {
-        emoji: account.avatar || account.name?.charAt(0)?.toUpperCase() || '?',
-        name: account.name || 'Account',
-        color: '#6B7280'
-      },
+      emojiInfo: account.emojiInfo,
       parentEmojiInfo: account.parentEmoji || null,
       type: 'account' as const,
       isSelected: false,
@@ -184,11 +100,9 @@ function ProfileItem({
       balance: (account as any).balance || '0 FLOW', // Balance is added in SendToScreen
       showBalance: true,
     };
-    console.log('ProfileItem: Converted account:', data);
     return data;
   });
   
-  console.log('ProfileItem: accountsData:', accountsData);
 
   return (
     <YStack gap="$3" items="flex-start" justifyContent="flex-start" width="100%">

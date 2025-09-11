@@ -1,5 +1,6 @@
 import React from 'react';
-import { YStack, XStack, Text, Avatar } from 'tamagui';
+import { YStack, XStack, Text } from 'tamagui';
+import { Avatar } from '../foundation/Avatar';
 
 export interface NFTInfoSectionProps {
   name: string;
@@ -9,6 +10,7 @@ export interface NFTInfoSectionProps {
     name?: string;
     avatar?: string;
     address?: string;
+    emojiInfo?: { emoji: string; name: string; color: string };
   };
   showOwner?: boolean;
   spacing?: number;
@@ -41,17 +43,12 @@ export function NFTInfoSection({
 
           {showOwner && owner && (
             <XStack alignItems="center" gap={4}>
-              <Avatar circular size={24}>
-                {owner.avatar ? (
-                  <Avatar.Image src={owner.avatar} />
-                ) : (
-                  <Avatar.Fallback bg="$bg3" alignItems="center" justifyContent="center">
-                    <Text fontSize={18} fontWeight="600" color="$textSecondary">
-                      {owner.name?.charAt(0) || '🐼'}
-                    </Text>
-                  </Avatar.Fallback>
-                )}
-              </Avatar>
+              <Avatar
+                src={owner.emojiInfo ? undefined : owner.avatar}
+                fallback={owner.emojiInfo?.emoji || owner.name?.charAt(0) || '🐼'}
+                bgColor={owner.emojiInfo?.color || '$bg3'}
+                size={24}
+              />
             </XStack>
           )}
         </XStack>

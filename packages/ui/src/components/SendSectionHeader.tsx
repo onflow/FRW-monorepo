@@ -18,10 +18,6 @@ export const SendSectionHeader: React.FC<SendSectionHeaderProps> = ({
   title,
   onEditPress,
   showEditButton = true,
-  editButtonText = 'Edit',
-  titleColor = '$gray11',
-  editButtonVariant = 'ghost',
-  editButtonSize = 'small',
 }) => {
   return (
     <XStack items="center" justify="space-between">

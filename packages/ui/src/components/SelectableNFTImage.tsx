@@ -94,30 +94,7 @@ export function SelectableNFTImage({
         </YStack>
       )}
 
-      {/* From Account Avatar */}
-      {showAccountAvatar && (accountEmoji || accountAvatar) && (
-        <YStack
-          pos="absolute"
-          bottom={14}
-          right={14}
-          width={24}
-          height={24}
-          bg={accountEmoji ? '#D6D6D6' : 'rgba(255, 255, 255, 0.1)'}
-          borderRadius="$12"
-          items="center"
-          justify="center"
-          borderWidth={0.5}
-          borderColor="rgba(255, 255, 255, 0.2)"
-        >
-          {accountEmoji ? (
-            <Text fontSize={18} fontWeight="600" lineHeight={13}>
-              {accountEmoji}
-            </Text>
-          ) : accountAvatar ? (
-            <Image src={accountAvatar} width={22} height={22} borderRadius="$12" />
-          ) : null}
-        </YStack>
-      )}
+      
     </YStack>
   );
 }

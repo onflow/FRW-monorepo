@@ -50,7 +50,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
       {displayImage ? (
         <View width="100%" height="100%" overflow="hidden" rounded={14.4}>
           <Image
-            source={{ uri: imageUrl }}
+            src={imageUrl}
             width="100%"
             height="100%"
             onError={() => setImageError(true)}

@@ -595,6 +595,9 @@ importers:
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))
+      '@react-native-clipboard/clipboard':
+        specifier: ^1.16.3
+        version: 1.16.3(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
       '@react-native/gradle-plugin':
         specifier: 0.79.2
         version: 0.79.2
@@ -3222,6 +3225,19 @@ packages:
     resolution: {integrity: sha512-gvRvjR5JAaUZF8tv2Kcq/Gbt3JHwbKFYfmb445rhOj6NUMx3qPLixmDx5pZAyb9at1bYvJ4/eTUipU5aki45xw==}
     peerDependencies:
       react-native: 0.79.2
+
+  '@react-native-clipboard/clipboard@1.16.3':
+    resolution: {integrity: sha512-cMIcvoZKIrShzJHEaHbTAp458R9WOv0fB6UyC7Ek4Qk561Ow/DrzmmJmH/rAZg21Z6ixJ4YSdFDC14crqIBmCQ==}
+    peerDependencies:
+      react: 19.0.0
+      react-native: 0.79.2
+      react-native-macos: '>= 0.61.0'
+      react-native-windows: '>= 0.61.0'
+    peerDependenciesMeta:
+      react-native-macos:
+        optional: true
+      react-native-windows:
+        optional: true
 
   '@react-native-community/cli-clean@19.0.0':
     resolution: {integrity: sha512-Br+bxxEKXpikzlBLeAv3Bh1DRGrveJmULEG6Q9XPHzPOtRZcRlcDcBidjVwu8XGJdYiplvFdK6cC2sxCM2Mbvw==}
@@ -14666,6 +14682,11 @@ snapshots:
       merge-options: 3.0.4
       react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0)
 
+  '@react-native-clipboard/clipboard@1.16.3(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0)
+
   '@react-native-community/cli-clean@19.0.0':
     dependencies:
       '@react-native-community/cli-tools': 19.0.0
@@ -15012,9 +15033,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
