@@ -128,7 +128,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
           )}
 
           {/* Content */}
-          <YStack flex={1} justifyContent="center" alignItems="center">
+          <YStack flex={1} justifyContent="center" alignItems="center" width="100%" paddingHorizontal={10}>
             {children}
           </YStack>
 
