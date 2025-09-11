@@ -191,8 +191,6 @@ export function SendToScreen(): React.ReactElement {
 
   // Convert profiles data for display
   const profilesData = useMemo(() => {
-    console.log('Converting profiles data, allProfiles:', allProfiles);
-    console.log('accountBalances:', accountBalances);
     const result = allProfiles.map((profile) => ({
       ...profile,
       accounts: profile.accounts.map((account) => ({
@@ -200,7 +198,6 @@ export function SendToScreen(): React.ReactElement {
         balance: accountBalances[account.address]?.balance || '0 FLOW',
       })),
     }));
-    console.log('profilesData result:', result);
     return result;
   }, [allProfiles, accountBalances]);
 

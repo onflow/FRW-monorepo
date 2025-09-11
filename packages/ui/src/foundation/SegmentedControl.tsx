@@ -17,8 +17,8 @@ export function SegmentedControl({
   // Size configurations
   const sizeConfig = {
     small: { height: 32, px: 12, fontSize: 14 },
-    medium: { height: 40, px: 16, fontSize: 16 },
-    large: { height: 48, px: 20, fontSize: 18 },
+    medium: { height: 40, px: 16, fontSize: '$4' },
+    large: { height: 48, px: 20, fontSize: '$4.5' },
   };
 
   const { px, fontSize } = sizeConfig[size];
@@ -37,6 +37,7 @@ export function SegmentedControl({
       p={3}
       items="center"
       height={40}
+      width={containerWidth}
       alignSelf="flex-start"
       {...props}
     >
