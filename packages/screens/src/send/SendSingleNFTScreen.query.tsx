@@ -1,5 +1,12 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, sendSelectors } from '@onflow/frw-stores';
+import {
+  useSendStore,
+  sendSelectors,
+  storageQueryKeys,
+  storageQueries,
+  storageUtils,
+} from '@onflow/frw-stores';
+import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -27,7 +34,8 @@ import {
   transformAccountForCard,
   transformAccountForDisplay,
 } from '@onflow/frw-utils';
-import React, { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -132,17 +140,36 @@ export function SendSingleNFTScreen(): React.ReactElement {
     amount: maxQuantity, // Pass total amount for display
   };
 
-  // Calculate if send button should be disabled
-  const isSendDisabled = !selectedNFT || !fromAccount || !toAccount || isLoading;
+  // Query for complete account information including storage and balance
+  const { data: accountInfo } = useQuery({
+    queryKey: storageQueryKeys.accountInfo(fromAccount || null),
+    queryFn: () => storageQueries.fetchAccountInfo(fromAccount || null),
+    enabled: !!fromAccount?.address,
+    staleTime: 0, // Always fresh for financial data
+  });
 
-  // Transaction fee data
+  // Mock transaction fee data - TODO: Replace with real fee calculation
   const transactionFee = '0.001 FLOW';
   const usdFee = '$0.02';
+  const isFeesFree = false;
 
-  // Mock storage warning - TODO: Replace with real storage check
-  const showStorageWarning = false;
-  const storageWarningMessage =
-    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
+  // Calculate storage warning state based on account validation for NFT transfer
+  const validationResult = useMemo(() => {
+    if (!accountInfo) {
+      return { canProceed: true, showWarning: false, warningType: null };
+    }
+    // NFT transfers are treated as "other" transactions (non-FLOW)
+    return storageUtils.validateOtherTransaction(accountInfo, isFeesFree);
+  }, [accountInfo, isFeesFree]);
+
+  const showStorageWarning = validationResult.showWarning;
+  const storageWarningMessage = useMemo(() => {
+    return storageUtils.getStorageWarningMessage(validationResult.warningType);
+  }, [validationResult.warningType, accountInfo]);
+
+  // Calculate if send button should be disabled
+  const isSendDisabled =
+    !selectedNFT || !fromAccount || !toAccount || isLoading || !validationResult.canProceed;
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = {
@@ -294,8 +321,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-            <XStack position="relative" height={0} mt="$1">
-              <XStack width="100%" position="absolute" t={-40} justify="center">
+            <XStack position="relative" height={0}>
+              <XStack width="100%" position="absolute" t={-30} justify="center">
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
             </XStack>
