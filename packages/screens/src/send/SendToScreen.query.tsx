@@ -394,14 +394,14 @@ export function SendToScreen(): React.ReactElement {
         if ((global as any).clipboard?.setString) {
           (global as any).clipboard.setString(recipient.address);
           setCopiedAddress(recipient.address);
-          setTimeout(() => setCopiedAddress(null), 2000);
+          setTimeout(() => setCopiedAddress(null), 1000);
         }
       } else {
         // Use web clipboard API for extension
         if (navigator.clipboard) {
           await navigator.clipboard.writeText(recipient.address);
           setCopiedAddress(recipient.address);
-          setTimeout(() => setCopiedAddress(null), 2000);
+          setTimeout(() => setCopiedAddress(null), 1000);
         }
       }
     } catch (error) {
