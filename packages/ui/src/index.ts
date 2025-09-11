@@ -65,6 +65,7 @@ export * from './components/SelectableNFTImage';
 export * from './components/SendArrowDivider';
 export * from './components/SendSectionHeader';
 export * from './components/StorageWarning';
+export * from './components/Tag';
 export * from './components/ToAccountSection';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';

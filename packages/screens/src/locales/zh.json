@@ -76,7 +76,8 @@
     "properties": "属性",
     "description": "描述",
     "creator": "创建者",
-    "title": "发送"
+    "title": "发送",
+    "inaccessible": "不可访问"
   },
   "messages": {
     "loading": "加载中...",

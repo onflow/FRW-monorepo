@@ -1,11 +1,13 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import {
   useSendStore,
-  sendSelectors,
   tokenQueryKeys,
   tokenQueries,
   useWalletStore,
   walletSelectors,
+  accessibleAssetQueryKeys,
+  accessibleAssetQueries,
+  accessibleAssetHelpers,
 } from '@onflow/frw-stores';
 import { type CollectionModel, type TokenModel, type WalletAccount } from '@onflow/frw-types';
 import {
@@ -40,12 +42,12 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Store hooks
   const {
+    setFromAccount,
     setSelectedToken,
     setTransactionType,
     setCurrentStep,
     clearTransactionData,
     setSelectedCollection,
-    setFromAccount,
   } = useSendStore();
 
   // Tab options
@@ -54,11 +56,22 @@ export function SelectTokensScreen(): React.ReactElement {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Get current address and network - prioritize fromAccount in send store
-  const fromAccount = useSendStore(sendSelectors.fromAccount);
-  const bridgeAddress = bridge.getSelectedAddress() || '';
-  const address = fromAccount?.address || bridgeAddress;
+  // Get current address and network
+  const [currentAccount, setCurrentAccount] = React.useState<WalletAccount | null>(null);
   const network = bridge.getNetwork() || 'mainnet';
+  // Load current account on mount
+  React.useEffect(() => {
+    const loadCurrentAccount = async () => {
+      try {
+        const account = await bridge.getSelectedAccount();
+        setCurrentAccount(account);
+        setFromAccount(account);
+      } catch (error) {
+        console.error('Failed to load current account:', error);
+      }
+    };
+    loadCurrentAccount();
+  }, []);
 
   // Get wallet accounts for modal selection
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
@@ -72,9 +85,9 @@ export function SelectTokensScreen(): React.ReactElement {
     error: tokensError,
     refetch: refetchTokens,
   } = useQuery({
-    queryKey: tokenQueryKeys.tokens(address, network),
-    queryFn: () => tokenQueries.fetchTokens(address, network),
-    enabled: !!address && tab === 'Tokens',
+    queryKey: tokenQueryKeys.tokens(currentAccount?.address || '', network),
+    queryFn: () => tokenQueries.fetchTokens(currentAccount?.address || '', network),
+    enabled: !!currentAccount?.address && tab === 'Tokens',
     staleTime: 0, // Always fetch fresh for financial data
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -87,19 +100,29 @@ export function SelectTokensScreen(): React.ReactElement {
     error: nftsError,
     refetch: refetchNFTs,
   } = useQuery({
-    queryKey: tokenQueryKeys.nfts(address, network),
-    queryFn: () => tokenQueries.fetchNFTCollections(address, network),
-    enabled: !!address && tab === 'NFTs',
+    queryKey: tokenQueryKeys.nfts(currentAccount?.address || '', network),
+    queryFn: () => tokenQueries.fetchNFTCollections(currentAccount?.address || '', network),
+    enabled: !!currentAccount?.address && tab === 'NFTs',
     staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
+  // Log current account for debugging
+  React.useEffect(() => {
+    console.log('SelectTokensScreen - Current account:', {
+      currentAccount: currentAccount
+        ? { address: currentAccount.address, name: currentAccount.name }
+        : null,
+      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
+    });
+  }, [currentAccount, accounts]);
+
   // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
   const { data: balanceData, isLoading: isBalanceLoading } = useQuery({
-    queryKey: tokenQueryKeys.balance(address, network),
-    queryFn: () => tokenQueries.fetchBalance(address, undefined, network),
-    enabled: !!address,
+    queryKey: tokenQueryKeys.balance(currentAccount?.address || '', network),
+    queryFn: () => tokenQueries.fetchBalance(currentAccount?.address || '', undefined, network),
+    enabled: !!currentAccount?.address,
     staleTime: 30 * 1000, // Use cached balance for 30 seconds
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -117,6 +140,31 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchInterval: 60 * 1000, // Refresh balances every minute in background
   });
 
+  // 🔥 TanStack Query: Fetch accessible IDs for child accounts only
+  const { data: accessibleIds, refetch: refetchAccessibleIds } = useQuery({
+    queryKey: accessibleAssetQueryKeys.allowTypes(
+      currentAccount?.parentAddress || '',
+      currentAccount?.address || '',
+      network
+    ),
+    queryFn: () =>
+      accessibleAssetQueries.fetchChildAccountAllowTypes(
+        currentAccount?.parentAddress || '',
+        currentAccount?.address || '',
+        network
+      ),
+    enabled:
+      currentAccount?.type === 'child' &&
+      !!currentAccount?.parentAddress &&
+      !!currentAccount?.address, // Only fetch for child accounts
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes as access permissions don't change frequently
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
+
+  // For regular accounts, all assets are accessible by default
+  const effectiveAccessibleIds = currentAccount?.type === 'child' ? accessibleIds : null;
+
   // Initialize screen
   React.useEffect(() => {
     setCurrentStep('select-tokens');
@@ -128,20 +176,6 @@ export function SelectTokensScreen(): React.ReactElement {
       loadAccountsFromBridge();
     }
   }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
-
-  // Initialize fromAccount if not set and we have accounts loaded
-  React.useEffect(() => {
-    if (!fromAccount && accounts.length > 0 && bridgeAddress) {
-      const matchingAccount = accounts.find(
-        (acc: WalletAccount) =>
-          acc.address === bridgeAddress ||
-          acc.address?.toLowerCase() === bridgeAddress?.toLowerCase()
-      );
-      if (matchingAccount) {
-        setFromAccount(matchingAccount);
-      }
-    }
-  }, [fromAccount, accounts, bridgeAddress, setFromAccount]);
 
   // Handle tab change
   const handleTabChange = (newTab: TabType): void => {
@@ -155,8 +189,7 @@ export function SelectTokensScreen(): React.ReactElement {
   const handleTokenPress = (token: TokenModel): void => {
     // Find the current account to set in store
     const account = accounts.find(
-      (acc: WalletAccount) =>
-        acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
+      (acc: WalletAccount) => acc.address?.toLowerCase() === currentAccount?.address?.toLowerCase()
     );
 
     // Set store data for SendTo flow
@@ -173,8 +206,7 @@ export function SelectTokensScreen(): React.ReactElement {
   const handleNFTPress = (collection: CollectionModel): void => {
     // Find the current account to set in store
     const account = accounts.find(
-      (acc: WalletAccount) =>
-        acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
+      (acc: WalletAccount) => acc.address?.toLowerCase() === currentAccount?.address?.toLowerCase()
     );
 
     // Set store data for NFTListScreen
@@ -183,34 +215,34 @@ export function SelectTokensScreen(): React.ReactElement {
       setFromAccount(account);
     }
     setTransactionType('multiple-nfts');
-    navigation.navigate('NFTList', { collection, address });
+    navigation.navigate('NFTList', { collection, address: currentAccount?.address || '' });
   };
 
   // Handle account selection from modal
-  const handleAccountSelect = (selectedAccount: any): void => {
-    // Find the full account object from our accounts array
-    const fullAccount = accounts.find(
-      (acc: WalletAccount) =>
-        acc.address === selectedAccount.address ||
-        acc.address?.toLowerCase() === selectedAccount.address?.toLowerCase()
-    );
-
-    if (fullAccount) {
-      // Update the fromAccount in the send store
-      setFromAccount(fullAccount);
-      // Clear transaction data since we're switching accounts
-      clearTransactionData();
-    }
+  const handleAccountSelect = (selectedAccount: WalletAccount): void => {
+    // Switch to the selected account
+    setCurrentAccount(selectedAccount);
+    setFromAccount(selectedAccount);
+    clearTransactionData();
+    refreshAll();
   };
 
   // Refresh functions - TanStack Query makes this super simple!
   const refreshTokens = useCallback(() => {
     refetchTokens();
-  }, [refetchTokens]);
+    refetchAccessibleIds();
+  }, [refetchTokens, refetchAccessibleIds]);
 
   const refreshNFTCollections = useCallback(() => {
     refetchNFTs();
-  }, [refetchNFTs]);
+    refetchAccessibleIds();
+  }, [refetchNFTs, refetchAccessibleIds]);
+
+  const refreshAll = useCallback(() => {
+    refetchTokens();
+    refetchNFTs();
+    refetchAccessibleIds();
+  }, [refetchTokens, refetchNFTs, refetchAccessibleIds]);
 
   // Filter tokens with balance
   const tokensWithBalance = tokens.filter((token) => {
@@ -233,46 +265,8 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Convert wallet accounts to AccountCard format with dynamic balances
   const accountsForModal = React.useMemo(() => {
-    return accounts.map((account: WalletAccount) => ({
-      name: account.name,
-      address: account.address,
-      avatar: account.avatar,
-      balance: isLoadingBatchBalances
-        ? t('messages.loading')
-        : balanceLookup.get(account.address) || '0 FLOW',
-      emojiInfo: account.emojiInfo,
-      parentEmoji: account.parentEmoji,
-      type: account.type,
-    }));
-  }, [accounts, isLoadingBatchBalances, balanceLookup, t]);
-
-  // Get current account data
-  const currentAccount = React.useMemo(() => {
-    // If we have a fromAccount in send store, use it directly
-    if (fromAccount) {
-      return {
-        name: fromAccount.name || 'Unnamed Account',
-        address: fromAccount.address,
-        avatar: fromAccount.avatar,
-        balance: isBalanceLoading ? t('messages.loading') : balanceData?.displayBalance || '0 FLOW',
-        emojiInfo: fromAccount.emojiInfo,
-      };
-    }
-
-    // Otherwise, find matching account from accounts array
-    const account = accounts.find(
-      (acc: WalletAccount) =>
-        acc.address === address || acc.address?.toLowerCase() === address?.toLowerCase()
-    );
-
-    return {
-      name: account?.name || 'Unnamed Account',
-      address: address,
-      avatar: account?.avatar,
-      balance: isBalanceLoading ? t('messages.loading') : balanceData?.displayBalance || '0 FLOW',
-      emojiInfo: account?.emojiInfo,
-    };
-  }, [accounts, address, fromAccount, isBalanceLoading, balanceData, t]);
+    return accounts;
+  }, [accounts]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
@@ -288,8 +282,8 @@ export function SelectTokensScreen(): React.ReactElement {
         {/* Header */}
 
         {/* Account Selector - Show balance from React Query */}
-        {!isExtension && balanceData && (
-          <YStack bg="rgba(255, 255, 255, 0.1)" borderRadius={16} p={16} pt={16} pb={24} gap={12}>
+        {!isExtension && balanceData && currentAccount && (
+          <YStack bg="$light10" rounded="$4" p={16} gap={12}>
             <AccountSelector
               currentAccount={currentAccount}
               accounts={accountsForModal}
@@ -306,7 +300,6 @@ export function SelectTokensScreen(): React.ReactElement {
             segments={TABS as unknown as string[]}
             value={tab === 'Tokens' ? TABS[0] : TABS[1]}
             onChange={(value) => handleTabChange(value === TABS[0] ? 'Tokens' : 'NFTs')}
-            fullWidth={true}
           />
         </YStack>
 
@@ -317,16 +310,16 @@ export function SelectTokensScreen(): React.ReactElement {
               {isTokensLoading ? (
                 <>
                   {[1, 2, 3, 4, 5].map((index) => (
-                    <YStack key={`token-skeleton-${index}`} p="$3">
+                    <YStack key={`token-skeleton-${index}`} p="$3" height={72}>
                       <XStack items="center" gap="$3">
-                        <Skeleton width="$4" height="$4" borderRadius="$10" />
+                        <Skeleton width="$12" height="$12" borderRadius="$6" />
                         <YStack flex={1} gap="$2">
-                          <Skeleton height="$1" width="60%" />
-                          <Skeleton height="$0.75" width="40%" />
+                          <Skeleton height="$3" width="60%" />
+                          <Skeleton height="$2" width="40%" />
                         </YStack>
-                        <YStack items="flex-end" gap="$1">
-                          <Skeleton height="$1" width="$4" />
-                          <Skeleton height="$0.75" width="$3" />
+                        <YStack items="flex-end" gap="$2">
+                          <Skeleton height="$3" width="$20" />
+                          <Skeleton height="$2" width="$18" />
                         </YStack>
                       </XStack>
                     </YStack>
@@ -347,26 +340,19 @@ export function SelectTokensScreen(): React.ReactElement {
                   refreshText={t('buttons.refresh')}
                 />
               ) : (
-                <YStack gap="$3">
-                  {/* Token Count Badge - Hidden as requested */}
-                  {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
-                    <Badge variant="secondary" size="small">
-                      {tokensWithBalance.length}{' '}
-                      {tokensWithBalance.length === 1 ? 'Token' : 'Tokens'}
-                    </Badge>
-                  </XStack> */}
-
+                <YStack gap="$2">
                   {tokensWithBalance.map((token, idx) => (
                     <React.Fragment key={`token-${token.identifier || token.symbol}-${idx}`}>
                       <TokenCard
-                        symbol={token.symbol || ''}
-                        name={token.name || ''}
-                        balance={token.displayBalance || token.balance || '0'}
-                        logo={token.logoURI}
-                        price={token.priceInUSD?.toString()}
-                        change24h={token.change ? parseFloat(token.change) : undefined}
+                        token={token}
+                        currency={bridge.getCurrency()}
                         isVerified={token.isVerified}
                         onPress={() => handleTokenPress(token)}
+                        isAccessible={accessibleAssetHelpers.isTokenAllowed(
+                          token,
+                          effectiveAccessibleIds
+                        )}
+                        inaccessibleText={t('send.inaccessible')}
                       />
                       {idx < tokensWithBalance.length - 1 && <Divider />}
                     </React.Fragment>
@@ -381,14 +367,17 @@ export function SelectTokensScreen(): React.ReactElement {
               {isNFTsLoading ? (
                 <>
                   {[1, 2, 3, 4].map((index) => (
-                    <YStack key={`nft-skeleton-${index}`} p="$3">
+                    <YStack key={`nft-skeleton-${index}`} p="$3" height={72}>
                       <XStack items="center" gap="$3">
-                        <Skeleton width="$4" height="$4" borderRadius="$10" />
+                        <Skeleton width="$12" height="$12" borderRadius="$6" />
                         <YStack flex={1} gap="$2">
-                          <Skeleton height="$1" width="70%" />
-                          <Skeleton height="$0.75" width="30%" />
+                          <Skeleton height="$3" width="60%" />
+                          <Skeleton height="$2" width="40%" />
                         </YStack>
-                        <Skeleton width="$1.5" height="$1.5" />
+                        <YStack items="flex-end" gap="$2">
+                          <Skeleton height="$3" width="$20" />
+                          <Skeleton height="$2" width="$1" />
+                        </YStack>
                       </XStack>
                     </YStack>
                   ))}
@@ -408,16 +397,7 @@ export function SelectTokensScreen(): React.ReactElement {
                   refreshText={t('buttons.refresh')}
                 />
               ) : (
-                <YStack gap="$3">
-                  {/* NFT Collections Count Badge - Hidden as requested */}
-                  {/* <XStack justify="space-between" items="center" px="$2" pb="$3">
-                    <Badge variant="primary" size="small">
-                      {nftCollections.length}{' '}
-                      {nftCollections.length === 1 ? 'Collection' : 'Collections'}
-                    </Badge>
-                    <AddressText address={address} truncate={true} startLength={4} endLength={4} />
-                  </XStack> */}
-
+                <YStack gap="$1">
                   {nftCollections.map((collection, idx) => (
                     <React.Fragment
                       key={`nft-collection-${collection.id || collection.contractName || collection.name}-${idx}`}
@@ -425,6 +405,11 @@ export function SelectTokensScreen(): React.ReactElement {
                       <NFTCollectionRow
                         collection={collection}
                         onPress={() => handleNFTPress(collection)}
+                        isAccessible={accessibleAssetHelpers.isCollectionAllowed(
+                          collection,
+                          effectiveAccessibleIds
+                        )}
+                        inaccessibleText={t('send.inaccessible')}
                       />
                       {idx < nftCollections.length - 1 && <Divider />}
                     </React.Fragment>

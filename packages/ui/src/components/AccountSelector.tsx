@@ -1,33 +1,33 @@
 import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
+import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
-import type { Account } from '../types';
 
 // Helper function to round balance to 5 decimal places
 const formatBalance = (balance: string): string => {
   // Extract numeric value from balance string (e.g., "123.456789 FLOW" -> "123.456789")
   const match = balance.match(/^([\d.,]+)/);
   if (!match) return balance;
-  
+
   const numericPart = match[1].replace(/,/g, ''); // Remove commas
   const restOfString = balance.replace(match[0], ''); // Get the rest (e.g., " FLOW")
-  
+
   const num = parseFloat(numericPart);
   if (isNaN(num)) return balance;
-  
+
   // Round to 5 decimal places and format
   const rounded = Number(num.toFixed(5));
   return `${rounded}${restOfString}`;
 };
 
 export interface AccountSelectorProps {
-  currentAccount: Account;
-  accounts: Account[];
-  onAccountSelect: (account: Account) => void;
+  currentAccount: WalletAccount;
+  accounts: WalletAccount[];
+  onAccountSelect: (account: WalletAccount) => void;
   title?: string;
   showEditButton?: boolean;
   onEditClick?: () => void;
@@ -43,7 +43,7 @@ export function AccountSelector({
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
 
-  const handleAccountSelect = (account: Account) => {
+  const handleAccountSelect = (account: WalletAccount) => {
     onAccountSelect(account);
     setOpen(false);
   };
@@ -59,14 +59,14 @@ export function AccountSelector({
   return (
     <>
       {/* Current Account Display */}
-      <YStack gap={12}>
+      <YStack height={120} gap={12}>
         {/* Title */}
-        <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
+        <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16}>
           {title}
         </Text>
 
         {/* Account Container */}
-        <XStack py={10} pl={5} pr={0} justify="space-between" items="center" borderRadius={16}>
+        <XStack py={10} pl={5} pr={0} justify="space-between" items="center">
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
             {/* Account Avatar with parent emoji overlay */}
@@ -128,7 +128,7 @@ export function AccountSelector({
                 lineHeight={17}
                 numberOfLines={1}
               >
-                {formatBalance(currentAccount.balance)}
+                {formatBalance(currentAccount.balance || '0')}
               </Text>
             </YStack>
           </XStack>
@@ -207,7 +207,9 @@ export function AccountSelector({
                         <XStack position="relative" width={40} height={40}>
                           <Avatar
                             src={account.avatar}
-                            fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
+                            fallback={
+                              account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
+                            }
                             bgColor={account.emojiInfo?.color}
                             size={40}
                             borderColor={isSelected ? '$primary' : undefined}
@@ -229,7 +231,12 @@ export function AccountSelector({
                               justify="center"
                               overflow="visible"
                             >
-                              <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
+                              <Text
+                                fontSize={10}
+                                fontWeight="600"
+                                lineHeight={18}
+                                textAlign="center"
+                              >
                                 {account.parentEmoji.emoji}
                               </Text>
                             </XStack>
@@ -261,7 +268,7 @@ export function AccountSelector({
                             color="rgba(255, 255, 255, 0.6)"
                             numberOfLines={1}
                           >
-                            {formatBalance(account.balance)}
+                            {formatBalance(account.balance || '0')}
                           </Text>
                         </YStack>
                       </XStack>
