@@ -167,7 +167,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
     return (
       <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
         {/* Empty State */}
-        <XStack items="center" justify="center" gap={14.4} width={304} height={thumbnailSize}>
+        <XStack items="center" justify="center" gap={8} width={304} height={thumbnailSize}>
           <Text fontSize={14} color="$textMuted" fontWeight="400">
             No NFTs selected
           </Text>
@@ -257,9 +257,9 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
       )}
 
       {/* NFT Preview Row */}
-      <XStack items="center" justify="space-between" gap={17} width="100%">
+      <XStack items="center" justify="space-between" gap={8} width="100%">
         {/* NFT Thumbnails */}
-        <XStack items="center" gap={17}>
+        <XStack items="center" gap={8}>
           {visibleNFTs.map((nft, index) => {
             const isLast = index === visibleNFTs.length - 1;
             const shouldShowOverlay = isLast && showOverlay;
