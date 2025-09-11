@@ -42,6 +42,8 @@ export interface WalletAccount {
   avatar?: string;
   isActive: boolean;
   type?: 'main' | 'child' | 'evm';
+  balance?: string;
+  nfts?: string;
 }
 
 export interface RecentContactsResponse {
