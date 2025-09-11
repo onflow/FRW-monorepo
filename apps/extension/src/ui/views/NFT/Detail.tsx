@@ -1,14 +1,15 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { Box, Button, CardMedia, Container, IconButton, Typography } from '@mui/material';
+import { Box, Container, IconButton, Typography } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
+import { WalletType } from '@onflow/frw-types';
 import { saveAs } from 'file-saver';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import fallback from '@/ui/assets/image/errorImage.png';
-import SendIcon from '@/ui/assets/svg/detailSend.svg';
+import NFTSendButton from '@/ui/components/NFTs/NFTSendButton';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type PostMedia } from '@/ui/utils/url';
@@ -65,10 +66,16 @@ const Detail = () => {
   }, []);
 
   const fetchNft = useCallback(async () => {
+    // Guard against missing userInfo
+    if (!userInfo) {
+      console.warn('UserInfo not available, skipping fetchNft');
+      return;
+    }
+
     const currentAddress = currentWallet.address;
     const parentAddress = mainAddress;
     const userTemplate = {
-      avatar: userInfo!.avatar,
+      avatar: userInfo?.avatar || '',
       domain: {
         domain_type: 0,
         value: '',
@@ -91,18 +98,18 @@ const Detail = () => {
       userTwo = {
         ...userTemplate,
         address: parentAddress,
-        contact_name: userInfo!.nickname,
+        contact_name: userInfo?.nickname || '',
       };
     } else {
       userOne = {
         ...userTemplate,
         address: currentAddress,
-        contact_name: userInfo!.nickname,
+        contact_name: userInfo?.nickname || '',
       };
       userTwo = {
         ...userTemplate,
         address: parentAddress,
-        contact_name: userInfo!.nickname,
+        contact_name: userInfo?.nickname || '',
       };
     }
     setContactOne(userOne);
@@ -436,31 +443,13 @@ const Detail = () => {
           {!(
             nftDetail?.collectionContractName === 'Domains' && media?.title?.includes('.meow')
           ) && (
-            <Button
-              sx={{
-                backgroundColor: '#FFFFFF33',
-                p: '12px',
-                color: '#fff',
-                borderRadius: '12px',
-                height: '42px',
-                fill: 'var(--Special-Color-White-2, rgba(255, 255, 255, 0.20))',
-                filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.24))',
-                backdropFilter: 'blur(6px)',
-              }}
-              disabled={!isAccessibleNft}
-              onClick={() =>
-                navigate('/dashboard/nft/send/', {
-                  state: { nft: nftDetail, media: media, contract: nftDetail },
-                })
-              }
-            >
-              {/* <IosShareOutlinedIcon color="primary" /> */}
-              <CardMedia
-                image={SendIcon}
-                sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
-              />
-              {chrome.i18n.getMessage('Send')}
-            </Button>
+            <NFTSendButton
+              nftDetail={nftDetail}
+              media={media}
+              collectionInfo={collectionInfo}
+              isAccessibleNft={isAccessibleNft}
+              walletType={WalletType.Flow}
+            />
           )}
         </Box>
 
