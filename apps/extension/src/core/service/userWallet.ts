@@ -73,6 +73,7 @@ import {
 } from '@/shared/utils';
 
 import { authenticationService } from '.';
+import accountManager from './account-manager';
 import { analyticsService } from './analytics';
 import keyringService from './keyring';
 import openapiService, { getScripts } from './openapi';
@@ -579,7 +580,43 @@ class UserWallet {
     const network = this.getNetwork();
     const pubkey = this.getCurrentPubkey();
 
-    return getMainAccountsWithPubKey(network, pubkey);
+    // Get original Flow main accounts
+    const originalMainAccounts = await getMainAccountsWithPubKey(network, pubkey);
+
+    // Try to get EOA account info and add it to main accounts
+    try {
+      let eoaAccountInfo: WalletAccount | undefined;
+
+      // Try to get EOA account info (this won't require password if cached)
+      const eoaInfo = await accountManager.getEOAAccountInfo();
+
+      if (eoaInfo) {
+        eoaAccountInfo = {
+          address: eoaInfo.address,
+          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+          id: 99, // Special ID for EOA
+          name: 'EVM Account (EOA)',
+          icon: '🔷',
+          color: '#627EEA', // EVM blue
+          balance: eoaInfo.balance || '0',
+        };
+      }
+
+      // Add EOA info to main accounts
+      const enhancedMainAccounts: MainAccount[] = originalMainAccounts.map((account) => ({
+        ...account,
+        eoaAccount: eoaAccountInfo,
+      }));
+
+      return enhancedMainAccounts;
+    } catch (error) {
+      console.error('Failed to enhance main accounts with EOA:', error);
+      // Return original accounts if EOA enhancement fails
+      return originalMainAccounts.map((account) => ({
+        ...account,
+        eoaAccount: undefined,
+      }));
+    }
   };
 
   // Get the main account wallet for the current public key

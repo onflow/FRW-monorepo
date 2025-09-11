@@ -102,6 +102,7 @@ export type WalletAccountWithBalance = WalletAccount & {
 export type MainAccount = WalletAccount &
   PublicKeyAccount & {
     evmAccount?: WalletAccount;
+    eoaAccount?: WalletAccount; // EOA account derived from same mnemonic
     childAccounts?: WalletAccount[];
   };
 

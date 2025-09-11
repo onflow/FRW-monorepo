@@ -38,6 +38,7 @@ export {
   SignatureAlgorithm,
   HashAlgorithm,
   FlowChainID,
+  NETWORKS,
   type FlowAddress,
   type FlowAccountData,
   type FlowTransaction,
