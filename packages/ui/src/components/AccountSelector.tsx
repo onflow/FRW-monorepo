@@ -1,11 +1,11 @@
 import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
+import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
-import type { Account } from '../types';
 
 // Helper function to round balance to 5 decimal places
 const formatBalance = (balance: string): string => {
@@ -25,9 +25,9 @@ const formatBalance = (balance: string): string => {
 };
 
 export interface AccountSelectorProps {
-  currentAccount: Account;
-  accounts: Account[];
-  onAccountSelect: (account: Account) => void;
+  currentAccount: WalletAccount;
+  accounts: WalletAccount[];
+  onAccountSelect: (account: WalletAccount) => void;
   title?: string;
   showEditButton?: boolean;
   onEditClick?: () => void;
@@ -43,7 +43,7 @@ export function AccountSelector({
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
 
-  const handleAccountSelect = (account: Account) => {
+  const handleAccountSelect = (account: WalletAccount) => {
     onAccountSelect(account);
     setOpen(false);
   };
@@ -105,7 +105,7 @@ export function AccountSelector({
                 lineHeight={17}
                 numberOfLines={1}
               >
-                {formatBalance(currentAccount.balance)}
+                {formatBalance(currentAccount.balance || '0')}
               </Text>
             </YStack>
           </XStack>
@@ -217,7 +217,7 @@ export function AccountSelector({
                             color="rgba(255, 255, 255, 0.6)"
                             numberOfLines={1}
                           >
-                            {formatBalance(account.balance)}
+                            {formatBalance(account.balance || '0')}
                           </Text>
                         </YStack>
                       </XStack>
