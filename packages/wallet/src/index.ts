@@ -20,7 +20,7 @@ export {
   type AccountsListener,
   type LoadingListener,
 } from './wallet';
-export { FlowAccount, EVMAccount, COA, ChildAccount } from './Account';
+export { FlowAccount, EVMAccount, COA, ChildAccount } from './account';
 
 // Key implementations - matches iOS Flow Wallet Kit key types
 export { SeedPhraseKey } from './keys/seed-phrase-key';

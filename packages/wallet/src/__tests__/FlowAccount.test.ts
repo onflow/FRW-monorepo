@@ -2,12 +2,11 @@
  * FlowAccount Unit Tests
  */
 
-
 import { type CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { COA } from '../Account/COA';
-import { FlowAccount } from '../Account/FlowAccount';
+import { COA } from '../account/COA';
+import { FlowAccount } from '../account/FlowAccount';
 import {
   type FlowAccountData,
   FlowChainID as FlowChainIDEnum,
