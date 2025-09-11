@@ -1,6 +1,5 @@
 import {
   SelectTokensScreen,
-  SendToScreen,
   SendTokensScreen,
   NFTListScreen,
   NFTDetailScreen,
@@ -23,6 +22,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { HomeScreen } from '@/screens';
+
+import { SendToScreen } from '../screens/SendToScreenWrapper';
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
