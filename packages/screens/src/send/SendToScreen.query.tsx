@@ -384,43 +384,28 @@ export function SendToScreen(): React.ReactElement {
   }, []);
 
   const handleRecipientCopy = useCallback(async (recipient: RecipientData) => {
-    console.log('=== COPY BUTTON CLICKED ===');
-    console.log('Recipient:', recipient);
-    console.log('Address to copy:', recipient.address);
-
     try {
       // Check platform and use appropriate clipboard method
       const platform = bridge.getPlatform();
-      console.log('Platform:', platform);
 
       // Check for React Native environment (ios, android, or react-native)
       if (platform === 'react-native' || platform === 'ios' || platform === 'android') {
-        console.log('Using React Native clipboard approach for platform:', platform);
         // Use global clipboard provided by React Native wrapper
         if ((global as any).clipboard?.setString) {
-          console.log('Global clipboard found, copying...');
           (global as any).clipboard.setString(recipient.address);
           setCopiedAddress(recipient.address);
-          console.log('Address copied successfully via global clipboard');
           setTimeout(() => setCopiedAddress(null), 2000);
-        } else {
-          console.warn('Global clipboard not available, checking for other options...');
-          console.log('Global object:', global);
-          console.log('Global.clipboard:', (global as any).clipboard);
         }
       } else {
-        console.log('Using web clipboard API for extension');
         // Use web clipboard API for extension
         if (navigator.clipboard) {
           await navigator.clipboard.writeText(recipient.address);
           setCopiedAddress(recipient.address);
-          console.log('Address copied successfully via navigator.clipboard');
           setTimeout(() => setCopiedAddress(null), 2000);
         }
       }
     } catch (error) {
       console.error('Failed to copy address:', error);
-      console.error('Error stack:', error.stack);
     }
   }, []);
 
@@ -474,12 +459,6 @@ export function SendToScreen(): React.ReactElement {
       >
         {activeTab === 'accounts' ? (
           <>
-            {console.log('Rendering ProfileList with:', {
-              profilesData,
-              profilesLength: profilesData.length,
-              firstProfileAccounts: profilesData[0]?.accounts?.length,
-              isLoading,
-            })}
             <ProfileList
               profiles={profilesData}
               onAccountPress={handleRecipientPress}
