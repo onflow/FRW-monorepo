@@ -4,10 +4,13 @@ import { XStack, YStack, Text } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { NFTCollectionRowProps } from '../types';
+import { Tag } from './Tag';
 
 export function NFTCollectionRow({
   collection,
   onPress,
+  isAccessible = true,
+  inaccessibleText = 'inaccessible',
   ...props
 }: NFTCollectionRowProps): React.ReactElement {
   if (!collection) {
@@ -24,6 +27,7 @@ export function NFTCollectionRow({
         py="$2"
         px="$0"
         width="100%"
+        height={80}
         justify="space-between"
         {...(onPress && {
           pressStyle: { opacity: 0.7 },
@@ -48,6 +52,9 @@ export function NFTCollectionRow({
             <Text color="$textSecondary" fontSize="$4">
               {count}
             </Text>
+
+            {/* Inaccessible indicator for child accounts */}
+            {!isAccessible && <Tag>{inaccessibleText}</Tag>}
           </YStack>
         </XStack>
         {/* Chevron Icon */}
