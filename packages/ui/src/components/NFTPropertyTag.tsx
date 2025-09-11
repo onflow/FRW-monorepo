@@ -20,8 +20,6 @@ export function NFTPropertyTag({
 }: NFTPropertyTagProps) {
   const paddingX = variant === 'compact' ? '$2' : '$3';
   const paddingY = variant === 'compact' ? '$1' : '$1.5';
-  
-  console.log('NFTPropertyTag rendering:', { label, value });
 
   return (
     <XStack

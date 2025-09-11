@@ -45,8 +45,8 @@ export function NFTSelectionBar({
           <YStack rounded="$4" overflow="hidden" minW="$13" minH="$13" w="$13" h="$13" bg="$background4" flexShrink={0}>
             <Image
               src={nft.thumbnail || nft.image}
-              w="100%"
-              h="100%"
+              width="$13"
+              height="$13"
               objectFit="cover"
             />
           </YStack>

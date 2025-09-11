@@ -19,7 +19,6 @@ export function ProfileList({
   emptyTitle = 'No Profiles',
   emptyMessage = 'No profiles found',
 }: ProfileListProps): React.ReactElement {
-  console.log('ProfileList render:', { profiles, profilesLength: profiles?.length, isLoading });
   
   if (isLoading) {
     return (
@@ -32,7 +31,6 @@ export function ProfileList({
   }
 
   if (!profiles || profiles.length === 0) {
-    console.log('ProfileList: No profiles to display');
     return (
       <YStack items="center" justifyContent="center" py="$4">
         <Text color="$color" fontSize="$3" fontWeight="600" mb="$2">
@@ -48,7 +46,6 @@ export function ProfileList({
   return (
     <YStack gap="$4">
       {profiles.map((profile, index) => {
-        console.log(`Rendering profile ${index}:`, profile);
         return (
           <React.Fragment key={profile.uid}>
             <ProfileItem

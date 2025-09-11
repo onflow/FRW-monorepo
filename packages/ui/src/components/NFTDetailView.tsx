@@ -77,7 +77,6 @@ export function NFTDetailView({
   };
 
   const allProperties = generateProperties();
-  console.log('allProperties', allProperties);
 
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
