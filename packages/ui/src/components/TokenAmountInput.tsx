@@ -51,10 +51,10 @@ export function TokenAmountInput({
             size={35.2}
           />
 
-          {/* Amount Input - fixed width 169px, height 26px */}
-          <XStack items="center" width={169} height={26}>
+          {/* Amount Input - fixed width 169px, height 35px to match input */}
+          <XStack items="center" width={169} height={35}>
             {!isTokenMode && (
-              <Text fontSize={28} fontWeight="500" color="$white" lineHeight={16} mr={4}>
+              <Text fontSize={28} fontWeight="500" color="$white" lineHeight={35} mr={4}>
                 $
               </Text>
             )}

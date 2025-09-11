@@ -104,10 +104,10 @@ export const StorageWarning: React.FC<StorageWarningProps> = ({
       >
         {infoDialogContent || (
           <YStack gap={12}>
-            <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20} textAlign="center">
+            <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20} ta="center">
               Flow accounts require a minimum balance of FLOW tokens to cover storage costs.
             </Text>
-            <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20} textAlign="center">
+            <Text fontSize="$3" fontWeight="400" color="$white" lineHeight={20} ta="center">
               When sending tokens or NFTs, ensure your account maintains sufficient FLOW balance to
               cover storage requirements, otherwise the transaction will fail.
             </Text>
@@ -116,7 +116,7 @@ export const StorageWarning: React.FC<StorageWarningProps> = ({
               fontWeight="400"
               color="rgba(255, 255, 255, 0.7)"
               lineHeight={20}
-              textAlign="center"
+              ta="center"
             >
               Learn more about Flow account storage at docs.onflow.org
             </Text>
