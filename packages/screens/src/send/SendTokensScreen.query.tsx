@@ -11,7 +11,6 @@ import {
   YStack,
   TokenAmountInput,
   TokenSelectorModal,
-  TransactionConfirmationModal,
   ConfirmationDrawer,
   AccountCard,
   ToAccountSection,
@@ -500,46 +499,25 @@ export const SendTokensScreen = (props) => {
           currency={bridge.getCurrency()}
         />
 
-        {/* Transaction Confirmation Modal/Drawer - Platform specific */}
-        {isExtension ? (
-          <TransactionConfirmationModal
-            visible={isConfirmationVisible}
-            transactionType={transactionType}
-            selectedToken={selectedToken}
-            selectedNFTs={selectedNFTs?.map((nft) => ({
-              id: nft.id || '',
-              name: nft.name || '',
-              image: nft.thumbnail || '',
-              collection: nft.collectionName || '',
-              collectionContractName: nft.collectionContractName || '',
-              description: nft.description || '',
-            }))}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        ) : (
-          <ConfirmationDrawer
-            visible={isConfirmationVisible}
-            transactionType={transactionType}
-            selectedToken={selectedToken}
-            selectedNFTs={selectedNFTs?.map((nft) => ({
-              id: nft.id || '',
-              name: nft.name || '',
-              image: nft.thumbnail || '',
-              collection: nft.collectionName || '',
-              collectionContractName: nft.collectionContractName || '',
-              description: nft.description || '',
-            }))}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        )}
+        <ConfirmationDrawer
+          visible={isConfirmationVisible}
+          transactionType={transactionType}
+          selectedToken={selectedToken}
+          selectedNFTs={selectedNFTs?.map((nft) => ({
+            id: nft.id || '',
+            name: nft.name || '',
+            image: nft.thumbnail || '',
+            collection: nft.collectionName || '',
+            collectionContractName: nft.collectionContractName || '',
+            description: nft.description || '',
+          }))}
+          fromAccount={transformAccountForDisplay(fromAccount)}
+          toAccount={transformAccountForDisplay(toAccount)}
+          formData={formData}
+          onConfirm={handleTransactionConfirm}
+          onClose={handleConfirmationClose}
+          isExtension={isExtension}
+        />
       </YStack>
     </BackgroundWrapper>
   );

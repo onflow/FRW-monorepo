@@ -108,16 +108,6 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchOnReconnect: true,
   });
 
-  // Log current account for debugging
-  React.useEffect(() => {
-    console.log('SelectTokensScreen - Current account:', {
-      currentAccount: currentAccount
-        ? { address: currentAccount.address, name: currentAccount.name }
-        : null,
-      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
-    });
-  }, [currentAccount, accounts]);
-
   // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
   const { data: balanceData, isLoading: isBalanceLoading } = useQuery({
     queryKey: tokenQueryKeys.balance(currentAccount?.address || '', network),

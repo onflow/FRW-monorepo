@@ -7,7 +7,6 @@ import {
   View,
   MultipleNFTsPreview,
   SendArrowDivider,
-  TransactionConfirmationModal,
   ConfirmationDrawer,
   TransactionFeeSection,
   ToAccountSection,
@@ -220,16 +219,16 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
-              <View mt={8} pb={16}mb={-8}>
+              <View mt={8} pb={16} mb={-8}>
                 <MultipleNFTsPreview
-                nfts={nftsForUI}
-                onRemoveNFT={handleRemoveNFT}
-                maxVisibleThumbnails={3}
-                expandable={true}
-                thumbnailSize={90}
-                backgroundColor="transparent"
-                borderRadius={14.4}
-                contentPadding={0}
+                  nfts={nftsForUI}
+                  onRemoveNFT={handleRemoveNFT}
+                  maxVisibleThumbnails={3}
+                  expandable={true}
+                  thumbnailSize={90}
+                  backgroundColor="transparent"
+                  borderRadius={14.4}
+                  contentPadding={0}
                 />
               </View>
             </YStack>
@@ -243,16 +242,16 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
-               <View mt={-8}>
-              <ToAccountSection 
-                account={toAccount}
-                title={t('send.toAccount')}
-                isAccountIncompatible={false} // TODO: Real compatibility check
-                onEditPress={handleEditAccountPress}
-                onLearnMorePress={handleLearnMorePress}
-                showEditButton={true}
-                isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
-              />
+              <View mt={-8}>
+                <ToAccountSection
+                  account={toAccount}
+                  title={t('send.toAccount')}
+                  isAccountIncompatible={false} // TODO: Real compatibility check
+                  onEditPress={handleEditAccountPress}
+                  onLearnMorePress={handleLearnMorePress}
+                  showEditButton={true}
+                  isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                />
               </View>
             )}
 
@@ -303,32 +302,18 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         </YStack>
 
         {/* Transaction Confirmation - Platform specific */}
-        {isExtension ? (
-          <TransactionConfirmationModal
-            visible={isConfirmationVisible}
-            transactionType="multiple-nfts"
-            selectedToken={null}
-            selectedNFTs={nftsForUI}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-            title="Confirm NFT Transfer"
-          />
-        ) : (
-          <ConfirmationDrawer
-            visible={isConfirmationVisible}
-            transactionType="multiple-nfts"
-            selectedToken={null}
-            selectedNFTs={nftsForUI}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        )}
+        <ConfirmationDrawer
+          visible={isConfirmationVisible}
+          transactionType="multiple-nfts"
+          selectedToken={null}
+          selectedNFTs={nftsForUI}
+          fromAccount={transformAccountForDisplay(fromAccount)}
+          toAccount={transformAccountForDisplay(toAccount)}
+          formData={formData}
+          onConfirm={handleTransactionConfirm}
+          onClose={handleConfirmationClose}
+          isExtension={isExtension}
+        />
       </YStack>
     </BackgroundWrapper>
   );
