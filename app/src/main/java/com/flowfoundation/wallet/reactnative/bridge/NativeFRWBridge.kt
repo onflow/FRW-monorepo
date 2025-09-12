@@ -187,7 +187,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         parentAddress = null,
                         avatar = null,
                         isActive = isSelectedWalletAddress(mainAddress),
-                        type = RNBridge.AccountType.MAIN
+                        type = RNBridge.AccountType.MAIN,
+                        balance = null,
+                        nfts = null,
                     )
                     bridgeAccounts.add(mainAccount)
                 }
@@ -208,7 +210,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                             parentAddress = mainAddress,
                             avatar = childAccount.icon, // Include the squid avatar!
                             isActive = isSelectedWalletAddress(childAccount.address),
-                            type = RNBridge.AccountType.CHILD
+                            type = RNBridge.AccountType.CHILD,
+                            balance = null,
+                            nfts = null,
                         )
                         bridgeAccounts.add(childAccountBridge)
                     }
@@ -232,7 +236,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                             parentEmoji = mainEmojiInfo,
                             avatar = null,
                             isActive = isSelectedWalletAddress(evmAddress),
-                            type = RNBridge.AccountType.EVM
+                            type = RNBridge.AccountType.EVM,
+                            balance = null,
+                            nfts = null,
                         )
                         bridgeAccounts.add(evmAccount)
                     }
@@ -349,7 +355,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     parentAddress = if (accountType != RNBridge.AccountType.MAIN) mainAddress else null,
                     avatar = null,
                     isActive = true,
-                    type = accountType
+                    type = accountType,
+                    balance = null,
+                    nfts = null,
                 )
 
                 val result = bridgeModelToWritableMap(selectedAccount)
