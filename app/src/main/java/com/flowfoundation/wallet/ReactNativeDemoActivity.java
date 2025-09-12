@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.app.ChainNetworkKt;
 import com.flowfoundation.wallet.wallet.WalletUtilsKt;
 import com.google.gson.Gson;
 import java.util.List;
+import java.util.Locale;
 
 public class ReactNativeDemoActivity extends ReactActivity {
 
@@ -54,6 +55,7 @@ public class ReactNativeDemoActivity extends ReactActivity {
                     String initialRoute = intent.getStringExtra("initialRoute");
                     String screen = intent.getStringExtra("screen");
                     String sendToConfigJson = intent.getStringExtra("sendToConfig");
+                    String language = Locale.getDefault().getLanguage();
 
                     // Top level props
                     if (address != null) {
@@ -68,6 +70,9 @@ public class ReactNativeDemoActivity extends ReactActivity {
                         launchOptions.putString("initialRoute", initialRoute);
                         Log.d(TAG, "Added initialRoute to launch options: " + initialRoute);
                     }
+
+                    Log.d(TAG, "Added language to launch options: " + language);
+                    launchOptions.putString("language", language);
 
                     // Create initialProps object if we have screen or sendToConfig
                     if (screen != null || sendToConfigJson != null) {
@@ -135,17 +140,17 @@ public class ReactNativeDemoActivity extends ReactActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate called");
         Log.d(TAG, "Build type: " + BuildConfig.BUILD_TYPE);
-        
+
         // Store the original exception handler
         final Thread.UncaughtExceptionHandler originalHandler = Thread.getDefaultUncaughtExceptionHandler();
-        
+
         // Set up custom exception handler for this activity
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
                 Log.e(TAG, "Uncaught exception in ReactNativeDemoActivity: " + ex.getMessage());
                 ex.printStackTrace();
-                
+
                 // Try to gracefully finish the activity
                 try {
                     if (!isFinishing() && !isDestroyed()) {
@@ -154,20 +159,20 @@ public class ReactNativeDemoActivity extends ReactActivity {
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to finish activity after uncaught exception: " + e.getMessage());
                 }
-                
+
                 // Call the original handler to maintain crash reporting
                 if (originalHandler != null) {
                     originalHandler.uncaughtException(thread, ex);
                 }
             }
         });
-        
+
         try {
             Log.d(TAG, "Calling super.onCreate()...");
             super.onCreate(savedInstanceState);
             Log.d(TAG, "super.onCreate() completed successfully");
-            
-            
+
+
             // Log the intent extras for debugging
             Intent intent = getIntent();
             if (intent != null) {
@@ -178,7 +183,7 @@ public class ReactNativeDemoActivity extends ReactActivity {
                 Log.d(TAG, "  screen: " + intent.getStringExtra("screen"));
                 Log.d(TAG, "  sendToConfig: " + intent.getStringExtra("sendToConfig"));
             }
-            
+
             // Check if React context is available
             Log.d(TAG, "Checking React Native initialization...");
             if (getReactInstanceManager() != null) {
@@ -322,11 +327,11 @@ public class ReactNativeDemoActivity extends ReactActivity {
         // Convert screen enum to string and set both screen and initialRoute
         String screenString = screenType == RNBridge.ScreenType.SEND_ASSET ? "send-asset" : "token-detail";
         String routeName;
-        
+
         if (screenType == RNBridge.ScreenType.SEND_ASSET) {
             // If NFTs or tokens are pre-selected, navigate to SendTo (recipient selection)
             // The user needs to select recipient before going to the final send screen
-            if (sendToConfig != null && 
+            if (sendToConfig != null &&
                 ((sendToConfig.getSelectedNFTs() != null && !sendToConfig.getSelectedNFTs().isEmpty()) ||
                  (sendToConfig.getSelectedToken() != null))) {
                 routeName = "SendTo";
@@ -373,7 +378,7 @@ public class ReactNativeDemoActivity extends ReactActivity {
     public static void launchNFTSend(Context context, List<RNBridge.NFTModel> nfts) {
         String address = WalletUtilsKt.toAddress(WalletManager.INSTANCE.selectedWalletAddress());
         String network = ChainNetworkKt.chainNetWorkString();
-        
+
         // Let React Native handle from account selection via bridge.getSelectedAccount()
         RNBridge.SendToConfig sendToConfig = new RNBridge.SendToConfig(null, null, nfts, null);
         launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network);
