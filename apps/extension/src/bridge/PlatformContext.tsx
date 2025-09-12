@@ -72,6 +72,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     childAccounts,
     activeAccountType,
     profileIds,
+    parentWallet,
   } = useProfiles();
 
   // Send store hooks for synchronization
@@ -241,6 +242,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             },
             parentEmoji: evmWallet?.icon || '', // Use icon as emoji
             isActive: false,
+            parentAddress: mainAddress,
           });
         });
       }
@@ -397,6 +399,20 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
       // Determine account type based on address format
       const selectedName = currentWallet.name || 'My Account';
+      let emojiInfo;
+      if (activeAccountType === 'child') {
+        emojiInfo = {
+          emoji: parentWallet.icon || '',
+          name: parentWallet.name,
+          color: parentWallet.color || '#6B7280',
+        };
+      } else {
+        emojiInfo = {
+          emoji: currentWallet.icon || '',
+          name: selectedName,
+          color: currentWallet.color || '#6B7280',
+        };
+      }
       return {
         address: currentWallet.address,
         name: selectedName,
@@ -404,11 +420,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         balance: '0',
         avatar: currentWallet.icon || '', // Use icon as avatar
         emoji: currentWallet.icon || '', // Use icon as emoji
-        emojiInfo: {
-          emoji: currentWallet.icon || '',
-          name: selectedName,
-          color: currentWallet.color || '#6B7280',
-        },
+        emojiInfo,
         parentAddress: mainAddress,
       };
     };
