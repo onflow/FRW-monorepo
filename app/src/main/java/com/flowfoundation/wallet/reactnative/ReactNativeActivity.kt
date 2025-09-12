@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
+import com.facebook.react.ReactRootView
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.flowfoundation.wallet.reactnative.bridge.QRCodeScanManager
@@ -27,7 +28,7 @@ class ReactNativeActivity : ReactActivity() {
         return object : DefaultReactActivityDelegate(
             this,
             mainComponentName,
-            true, // fabricEnabled
+            false, // fabricEnabled
         ) {
             override fun getLaunchOptions(): Bundle? {
                 val launchOptions = Bundle()
