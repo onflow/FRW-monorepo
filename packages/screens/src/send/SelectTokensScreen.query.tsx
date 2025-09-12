@@ -57,21 +57,26 @@ export function SelectTokensScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
 
   // Get current address and network
+  const selectedAddress = bridge.getSelectedAddress();
   const [currentAccount, setCurrentAccount] = React.useState<WalletAccount | null>(null);
   const network = bridge.getNetwork() || 'mainnet';
   // Load current account on mount
-  React.useEffect(() => {
-    const loadCurrentAccount = async () => {
-      try {
-        const account = await bridge.getSelectedAccount();
-        setCurrentAccount(account);
-        setFromAccount(account);
-      } catch (error) {
-        console.error('Failed to load current account:', error);
-      }
-    };
-    loadCurrentAccount();
+  const loadCurrentAccount = React.useCallback(async () => {
+    try {
+      const account = await bridge.getSelectedAccount();
+      setCurrentAccount(account);
+      setFromAccount(account);
+    } catch (error) {
+      console.error('Failed to load current account:', error);
+    }
   }, []);
+
+  // Update current account when selected address changes
+  React.useEffect(() => {
+    if (selectedAddress) {
+      loadCurrentAccount();
+    }
+  }, [selectedAddress, loadCurrentAccount]);
 
   // Get wallet accounts for modal selection
   const accounts = useWalletStore(walletSelectors.getAllAccounts);

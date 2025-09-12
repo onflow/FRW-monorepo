@@ -396,13 +396,11 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Determine account type based on address format
-      const accountType = isEvmAddress ? 'evm' : 'main';
-
       const selectedName = currentWallet.name || 'My Account';
       return {
         address: currentWallet.address,
         name: selectedName,
-        type: accountType,
+        type: activeAccountType,
         balance: '0',
         avatar: currentWallet.icon || '', // Use icon as avatar
         emoji: currentWallet.icon || '', // Use icon as emoji
