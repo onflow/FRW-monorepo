@@ -199,15 +199,17 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
-    // Find the current account to set in store
-    const account = accounts.find(
-      (acc: WalletAccount) => acc.address?.toLowerCase() === currentAccount?.address?.toLowerCase()
-    );
-
     // Set store data for NFTListScreen
     setSelectedCollection(collection);
-    if (account) {
-      setFromAccount(account);
+    if (currentAccount) {
+      setFromAccount(currentAccount);
+    } else {
+      const account = accounts.find(
+        (acc: WalletAccount) => acc.address?.toLowerCase() === selectedAddress?.toLowerCase()
+      );
+      if (account) {
+        setFromAccount(account);
+      }
     }
     setTransactionType('multiple-nfts');
     navigation.navigate('NFTList', { collection, address: currentAccount?.address || '' });
