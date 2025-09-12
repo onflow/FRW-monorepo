@@ -5,7 +5,7 @@
 //  Do not edit manually
 //
 
-package com.flowfoundation.wallet.bridge
+package com.flowfoundation.wallet.reactnative.bridge
 
 import com.google.gson.annotations.SerializedName
 
