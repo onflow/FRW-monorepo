@@ -400,8 +400,10 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       // Determine account type based on address format
       const selectedName = currentWallet.name || 'My Account';
       let emojiInfo;
+      let parentEmoji;
       if (activeAccountType === 'child') {
-        emojiInfo = {
+        emojiInfo = undefined;
+        parentEmoji = {
           emoji: parentWallet.icon || '',
           name: parentWallet.name,
           color: parentWallet.color || '#6B7280',
@@ -422,6 +424,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         emoji: currentWallet.icon || '', // Use icon as emoji
         emojiInfo,
         parentAddress: mainAddress,
+        parentEmoji,
       };
     };
 
