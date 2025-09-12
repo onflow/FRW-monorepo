@@ -66,6 +66,25 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     staleTime: 0, // Always fresh for financial data
   });
 
+  // Query for resource compatibility check (multiple NFTs - use first NFT's identifier)
+  const firstNFTFlowIdentifier = selectedNFTs?.[0]?.flowIdentifier;
+  const { data: isResourceCompatible = true } = useQuery({
+    queryKey: storageQueryKeys.resourceCheck(
+      toAccount?.address || '',
+      firstNFTFlowIdentifier || ''
+    ),
+    queryFn: () =>
+      storageQueries.checkResourceCompatibility(
+        toAccount?.address || '',
+        firstNFTFlowIdentifier || ''
+      ),
+    enabled: !!(toAccount?.address && firstNFTFlowIdentifier),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
+  });
+
+  // Calculate account incompatibility (invert the compatibility result)
+  const isAccountIncompatible = !isResourceCompatible;
+
   // Transform NFT data for UI - following Figma design structure
   const nftsForUI: NFTSendData[] = useMemo(
     () => selectedNFTs?.map((nft) => {
@@ -84,13 +103,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
       }) || [],
     [selectedNFTs]
   );
-
-  // Transform accounts for UI components
-  const fromAccountForCard = useMemo(
-    () => transformAccountForCard(fromAccount, '550.66 FLOW'), // TODO: Real balance
-    [fromAccount]
-  );
-
   // Mock transaction fee data - TODO: Replace with real fee calculation
   const transactionFee = '0.001';
   const usdFee = '0.00';
@@ -117,7 +129,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     !fromAccount ||
     !toAccount ||
     isLoading ||
-    !validationResult.canProceed;
+    !validationResult.canProceed ||
+    isAccountIncompatible;
 
   // Event handlers
   const handleEditNFTsPress = useCallback(() => {
@@ -127,11 +140,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   const handleEditAccountPress = useCallback(() => {
     navigation.navigate('SendTo'); // Go back to account selection
-  }, []);
-
-  const handleLearnMorePress = useCallback(() => {
-    // TODO: Navigate to help/learn more screen
-    logger.info('Learn more pressed');
   }, []);
 
   const handleRemoveNFT = useCallback(
@@ -281,9 +289,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
                 <ToAccountSection
                   account={toAccount}
                   title={t('send.toAccount')}
-                  isAccountIncompatible={false} // TODO: Real compatibility check
+                  isAccountIncompatible={isAccountIncompatible} // TODO: Real compatibility check
                   onEditPress={handleEditAccountPress}
-                  onLearnMorePress={handleLearnMorePress}
                   showEditButton={true}
                   isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
                 />

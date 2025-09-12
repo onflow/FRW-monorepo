@@ -148,6 +148,24 @@ export function SendSingleNFTScreen(): React.ReactElement {
     staleTime: 0, // Always fresh for financial data
   });
 
+  // Query for resource compatibility check (NFT only)
+  const { data: isResourceCompatible = true } = useQuery({
+    queryKey: storageQueryKeys.resourceCheck(
+      toAccount?.address || '',
+      selectedNFT?.flowIdentifier || ''
+    ),
+    queryFn: () =>
+      storageQueries.checkResourceCompatibility(
+        toAccount?.address || '',
+        selectedNFT?.flowIdentifier || ''
+      ),
+    enabled: !!(toAccount?.address && selectedNFT?.flowIdentifier),
+    staleTime: 0, // 5 minutes cache for resource compatibility
+  });
+
+  // Calculate account incompatibility (invert the compatibility result)
+  const isAccountIncompatible = !isResourceCompatible;
+
   // Mock transaction fee data - TODO: Replace with real fee calculation
   const transactionFee = '0.001 FLOW';
   const usdFee = '$0.02';
@@ -169,7 +187,12 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Calculate if send button should be disabled
   const isSendDisabled =
-    !selectedNFT || !fromAccount || !toAccount || isLoading || !validationResult.canProceed;
+    !selectedNFT ||
+    !fromAccount ||
+    !toAccount ||
+    isLoading ||
+    !validationResult.canProceed ||
+    isAccountIncompatible;
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = {
@@ -188,10 +211,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const handleEditAccountPress = useCallback(() => {
     navigation.navigate('SendTo'); // Go back to account selection
-  }, []);
-
-  const handleLearnMorePress = useCallback(() => {
-    // TODO: Navigate to help/learn more screen
   }, []);
 
   const handleSendPress = useCallback(() => {
@@ -332,9 +351,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
               <ToAccountSection
                 account={toAccount}
                 title={t('send.toAccount')}
-                isAccountIncompatible={false} // TODO: Real compatibility check
+                isAccountIncompatible={isAccountIncompatible}
                 onEditPress={handleEditAccountPress}
-                onLearnMorePress={handleLearnMorePress}
                 showEditButton={true}
                 isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
               />

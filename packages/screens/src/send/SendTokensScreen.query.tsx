@@ -156,12 +156,29 @@ export const SendTokensScreen = (): React.ReactElement => {
     staleTime: 0, // Always fresh for financial data
   });
 
+  // Query for resource compatibility check (tokens only)
+  const { data: isResourceCompatible = true } = useQuery({
+    queryKey: storageQueryKeys.resourceCheck(
+      toAccount?.address || '',
+      selectedToken?.identifier || ''
+    ),
+    queryFn: () =>
+      storageQueries.checkResourceCompatibility(
+        toAccount?.address || '',
+        selectedToken?.identifier || ''
+      ),
+    enabled: !!(toAccount?.address && selectedToken?.identifier),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
+  });
+
+  // Calculate account incompatibility (invert the compatibility result)
+  const isAccountIncompatible = !isResourceCompatible;
+
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
   const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
   const contentPadding = 16;
   const usdFee = '$0.02';
-  const isAccountIncompatible = false;
   const isBalanceLoading = false;
   const showEditButtons = true;
 
@@ -169,9 +186,6 @@ export const SendTokensScreen = (): React.ReactElement => {
   const onEditAccountPress = () => {
     // Navigate back to SendTo screen to select a different recipient
     navigation.goBack();
-  };
-  const onLearnMorePress = () => {
-    // Handle learn more press internally
   };
 
   // Internal state - no more props for data
@@ -414,12 +428,13 @@ export const SendTokensScreen = (): React.ReactElement => {
         !toAccount ||
         amountNum.lte(0) ||
         tokenAmount.gt(balanceNum) ||
-        showStorageWarning
+        showStorageWarning ||
+        isAccountIncompatible
       );
     } else {
       return !selectedNFTs.length || !fromAccount || !toAccount;
     }
-  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount, isTokenMode,showStorageWarning]);
+  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount, isTokenMode, showStorageWarning, isAccountIncompatible]);
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = useMemo(
@@ -588,7 +603,6 @@ export const SendTokensScreen = (): React.ReactElement => {
               fromAccount={fromAccount || undefined}
               isAccountIncompatible={isAccountIncompatible}
               onEditPress={onEditAccountPress}
-              onLearnMorePress={onLearnMorePress}
               showEditButton={showEditButtons}
               title={t('send.toAccount')}
               isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}

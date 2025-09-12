@@ -26,6 +26,8 @@ export const storageQueryKeys = {
       ...storageQueryKeys.info(),
       selectedAccount?.parentAddress || selectedAccount?.address || 'unknown',
     ] as const,
+  resourceCheck: (address: string, flowIdentifier: string) =>
+    [...storageQueryKeys.all, 'resource-check', address, flowIdentifier] as const,
 };
 
 /**
@@ -89,6 +91,44 @@ export const storageQueries = {
         selectedAccount: selectedAccount?.address,
       });
       throw error;
+    }
+  },
+
+  /**
+   * Check if a specific address can receive a specific resource (token or NFT)
+   * @param address - Target address to check
+   * @param flowIdentifier - Resource identifier (e.g., A.xxx.FlowToken.Vault for tokens, A.xxx.ExampleNFT.NFT for NFTs)
+   * @returns Promise<boolean> - true if the address can receive the resource, false otherwise
+   */
+  checkResourceCompatibility: async (address: string, flowIdentifier: string): Promise<boolean> => {
+    if (!address || !flowIdentifier) {
+      logger.warn('Missing address or flowIdentifier for resource check', {
+        address,
+        flowIdentifier,
+      });
+      return false;
+    }
+
+    try {
+      logger.info('Checking resource compatibility', { address, flowIdentifier });
+
+      const isCompatible = await cadence.checkResource(address, flowIdentifier);
+
+      logger.info('Resource compatibility check result', {
+        address,
+        flowIdentifier,
+        isCompatible,
+      });
+
+      return isCompatible;
+    } catch (error) {
+      logger.error('Failed to check resource compatibility', {
+        error: error instanceof Error ? error.message : String(error),
+        address,
+        flowIdentifier,
+      });
+      // In case of error, assume incompatible for safety
+      return false;
     }
   },
 };
