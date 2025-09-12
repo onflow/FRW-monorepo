@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.2",
-    "axios": "^1.4.0"
+    "axios": "^1.12.0"
   },
   "devDependencies": {
     "@types/node": "^22.11.0",
