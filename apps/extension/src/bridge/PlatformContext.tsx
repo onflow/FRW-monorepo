@@ -356,12 +356,12 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                     balance: '0',
                     avatar: childAccount.icon || '',
                     emoji: childAccount.icon || '',
-                    emojiInfo: {
-                      emoji: childAccount.icon || '',
-                      name: childName,
-                      color: childAccount.color || '#6B7280',
+                    emojiInfo: undefined,
+                    parentEmoji: {
+                      emoji: account?.icon || '',
+                      name: account?.name || '',
+                      color: account?.color || '#6B7280',
                     },
-                    parentEmoji: account.evmAccount?.icon || account.icon || '',
                     isActive: false,
                   });
                 });
