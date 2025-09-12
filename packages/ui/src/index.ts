@@ -28,6 +28,9 @@ export * from './foundation/Separator';
 export * from './foundation/Skeleton';
 export * from './foundation/Text';
 
+// Export utilities
+export * from './utils/clipboard';
+
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
@@ -51,6 +54,7 @@ export * from './components/NFTPropertyTag';
 export * from './components/NFTSelectionBar';
 export * from './components/NFTSendPreview';
 export * from './components/PercentageChangeBadge';
+export * from './components/ProfileList';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
 export * from './components/RefreshView';
@@ -75,6 +79,7 @@ export * from './components/ExtensionHeader';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
+export * from './components/LottieAnimation';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';

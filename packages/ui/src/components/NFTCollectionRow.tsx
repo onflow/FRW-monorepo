@@ -24,7 +24,7 @@ export function NFTCollectionRow({
       <XStack
         items="center"
         gap="$4.5"
-        py="$4.5"
+        py="$2"
         px="$0"
         width="100%"
         height={80}

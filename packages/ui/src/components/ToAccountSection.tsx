@@ -1,10 +1,9 @@
-import { Edit } from '@onflow/frw-icons';
+import { Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
-import { Badge } from './Badge';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -21,6 +20,7 @@ export interface ToAccountSectionProps {
   contentPadding?: number;
   showAvatar?: boolean;
   avatarSize?: number;
+  isLinked?: boolean;
 }
 
 export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
@@ -36,14 +36,15 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   contentPadding: _contentPadding = 16,
   showAvatar = true,
   avatarSize = 36,
+  isLinked = false,
 }) => {
   return (
     <YStack
-      bg={backgroundColor}
-      rounded={borderRadius}
+      bg={backgroundColor as any}
+      rounded={borderRadius as any}
       gap={12}
       pt={16}
-      t={-20}
+      t={-25}
       px={16}
       pb={24}
       width="100%"
@@ -86,7 +87,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         <XStack items="center" width={217}>
           {/* Avatar Container - 46x36 with 5px left offset */}
           {showAvatar && (
-            <XStack width={46} height={36} items="center" justify="flex-start" pl={5}>
+            <XStack width={46} height={36} items="center" justify="flex-start" pl={5} position="relative">
               <Avatar
                 src={account.avatar}
                 fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
@@ -105,29 +106,58 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                     : undefined
                 }
               />
+              {/* Parent emoji overlay bubble for linked accounts */}
+              {account.parentEmoji && (
+                <XStack
+                  position="absolute"
+                  left={-1}
+                  top={-2}
+                  width={18}
+                  height={18}
+                  rounded={9}
+                  bg="#D9D9D9"
+                  borderWidth={2}
+                  borderColor="#0A0A0B"
+                  items="center"
+                  justify="center"
+                  overflow="visible"
+                >
+                  <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
+                    {account.parentEmoji.emoji}
+                  </Text>
+                </XStack>
+              )}
             </XStack>
           )}
 
           {/* Account Details - Fixed width with 12px gap from avatar */}
           <XStack ml={12}>
             <YStack width={151.34} gap={2}>
-              {/* Account Name with linked chain emoji */}
+              {/* Account Name with linked icon and EVM badge */}
               <XStack items="center" gap={4}>
+                {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
                 <Text
                   color="$white"
                   fontSize="$3"
                   fontWeight="600"
                   lineHeight={17}
                   numberOfLines={1}
-                  flex={1}
                 >
                   {account.name || 'Unknown Account'}
                 </Text>
-                {/* Linked chain emoji */}
-                {account.parentEmoji && (
-                  <Text fontSize="$3" lineHeight={17} color="$white">
-                    {account.parentEmoji.emoji}
-                  </Text>
+                {/* EVM Badge - inline with name */}
+                {account.type === 'evm' && (
+                  <XStack bg="$primary" rounded="$4" px={4} items="center" justify="center" height={16}>
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="$white"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EVM
+                    </Text>
+                  </XStack>
                 )}
               </XStack>
 
@@ -137,15 +167,6 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 startLength={6}
                 endLength={4}
               />
-
-              {/* EVM Badge */}
-              {account.type === 'evm' && (
-                <XStack items="center">
-                  <Badge variant="evm" size="small">
-                    EVM
-                  </Badge>
-                </XStack>
-              )}
             </YStack>
           </XStack>
         </XStack>

@@ -1,9 +1,8 @@
 import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type TransactionType, type TokenModel } from '@onflow/frw-types';
+import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
 
-import { type AccountDisplayData } from './ConfirmationDrawer';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
@@ -132,7 +131,6 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
 }) => {
   // Internal sending state
   const [internalIsSending, setInternalIsSending] = React.useState(false);
-
   // Handle transaction confirmation
   const handleConfirm = async () => {
     try {
@@ -268,7 +266,7 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             <YStack flex={1} items="center" gap="$1" maxW={130}>
               <Avatar
                 src={fromAccount?.avatarSrc}
-                fallback={fromAccount?.avatarFallback || 'A'}
+                fallback={fromAccount?.emojiInfo?.emoji || fromAccount?.avatarFallback || 'A'}
                 bgColor={fromAccount?.avatarBgColor}
                 size={36}
               />
@@ -292,8 +290,8 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
             {/* To Account */}
             <YStack flex={1} items="center" gap="$1" maxW={130}>
               <Avatar
-                src={toAccount?.avatarSrc}
-                fallback={toAccount?.avatarFallback || 'A'}
+                src={toAccount?.avatar}
+                fallback={toAccount?.emojiInfo?.emoji || toAccount?.avatarFallback || 'A'}
                 bgColor={toAccount?.avatarBgColor}
                 size={36}
               />
@@ -349,7 +347,12 @@ export const TransactionConfirmationModal: React.FC<TransactionConfirmationModal
                     <FlowLogo size={35.2} />
                   )}
                   <Text fontSize={28} fontWeight="500" color="$white" fontFamily="Inter">
-                    {formData.tokenAmount}
+                    {(() => {
+                      const amount = parseFloat(formData.tokenAmount);
+                      if (isNaN(amount)) return formData.tokenAmount;
+                      // Round to at most 8 decimal places
+                      return parseFloat(amount.toFixed(8)).toString();
+                    })()}
                   </Text>
                 </View>
                 <View

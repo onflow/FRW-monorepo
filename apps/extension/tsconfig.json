@@ -19,7 +19,8 @@
       "@onflow/frw-cadence": ["./node_modules/@onflow/frw-cadence/src/index.ts"],
       "@onflow/frw-context": ["./node_modules/@onflow/frw-context/src/index.ts"],
       "@onflow/frw-ui": ["./node_modules/@onflow/frw-ui/src/index.ts"],
-      "@onflow/frw-screens": ["./node_modules/@onflow/frw-screens/src/index.ts"]
+      "@onflow/frw-screens": ["./node_modules/@onflow/frw-screens/src/index.ts"],
+      "@onflow/frw-stores": ["./node_modules/@onflow/frw-stores/src/index.ts"]
     },
     "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
     "types": ["chrome", "node", "react", "react-dom"],

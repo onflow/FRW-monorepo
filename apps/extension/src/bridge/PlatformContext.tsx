@@ -4,6 +4,26 @@ import { type WalletAccount } from '@onflow/frw-types';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
+import { getCachedData } from '@/data-model/cache-data-access';
+import { userInfoCachekey, getCachedMainAccounts } from '@/data-model/cache-data-keys';
+import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
+import { getLocalData } from '@/data-model/storage';
+import { isValidEthereumAddress } from '@/shared/utils/address';
+import { useUserWallets } from '@/ui/hooks/use-account-hooks';
+import { useWallet } from '@/ui/hooks/use-wallet';
+import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
+import { useCadenceNftCollectionsAndIds, useEvmNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
+
+import { extensionNavigation } from './ExtensionNavigation';
+import { initializePlatform } from './PlatformImpl';
+
+/**
+ * Platform context that provides the full PlatformSpec implementation
+ * and convenience methods for screens
+ */
+
 // Define types for platform bridge and translation
 type NavigationProp = {
   navigate: (screen: string, params?: any) => void;
@@ -25,27 +45,12 @@ type PlatformBridge = {
 };
 type TranslationFunction = (key: string) => string;
 
-import { isValidEthereumAddress } from '@/shared/utils/address';
-import { useUserWallets } from '@/ui/hooks/use-account-hooks';
-import { useWallet } from '@/ui/hooks/use-wallet';
-import { useCoins } from '@/ui/hooks/useCoinHook';
-import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { useCadenceNftCollectionsAndIds, useEvmNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
-import { useProfiles } from '@/ui/hooks/useProfileHook';
-
-import { extensionNavigation } from './ExtensionNavigation';
-import { initializePlatform } from './PlatformImpl';
-
-/**
- * Platform context that provides the full PlatformSpec implementation
- * and convenience methods for screens
- */
 interface PlatformContextValue {
   // Full platform implementation
   platform: PlatformSpec;
 
   // Convenience methods for screens (extracted from platform)
-  getNavigation: (navigate: (path: string, state?: any) => void) => NavigationProp;
+  getNavigation: (navigate: (path: string | number, state?: any) => void) => NavigationProp;
   getBridge: () => PlatformBridge;
   getTranslation: () => TranslationFunction;
 }
@@ -59,8 +64,15 @@ const PlatformContext = createContext<PlatformContextValue | null>(null);
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
   const userWallets = useUserWallets();
-  const { currentWallet, mainAddress, walletList, evmWallet, childAccounts, activeAccountType } =
-    useProfiles();
+  const {
+    currentWallet,
+    mainAddress,
+    walletList,
+    evmWallet,
+    childAccounts,
+    activeAccountType,
+    profileIds,
+  } = useProfiles();
 
   // Send store hooks for synchronization
   const fromAccount = useSendStore(sendSelectors.fromAccount);
@@ -169,7 +181,10 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     };
 
     enhancedPlatform.getWalletAccounts = async () => {
+      
       const accountsArray: any[] = [];
+
+  
 
       // Add all main wallet accounts from walletList (this includes all 18 accounts)
       if (Array.isArray(walletList) && walletList.length > 0) {
@@ -258,9 +273,126 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         });
       }
 
+      console.log('PlatformContext getWalletAccounts: final accountsArray:', accountsArray);
+      console.log('PlatformContext getWalletAccounts: total accounts:', accountsArray.length);
+      
       return {
         accounts: accountsArray,
         total: accountsArray.length,
+      };
+    };
+
+    enhancedPlatform.getWalletProfiles = async () => {
+      const profilesArray: any[] = [];
+
+      // Get all profile IDs from the keyring
+      const allProfileIds = profileIds || [];
+
+      // For each profile, get the specific data
+      for (const profileId of allProfileIds) {
+        try {
+          // Get user info for this specific profile from cache
+          const profileUserInfo = (await getCachedData(userInfoCachekey(profileId))) || {};
+
+          // Get the public key for this profile from keyring
+          const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as any;
+          const profileVaultEntry = keyringState?.vault?.find(
+            (entry: any) => entry.id === profileId
+          );
+          const profilePublicKey = profileVaultEntry?.publicKey;
+
+          if (!profilePublicKey) {
+            console.warn(`No public key found for profile ${profileId}`);
+            continue;
+          }
+
+          // Get accounts for this specific profile using the public key
+          const profileMainAccounts =
+            (await getCachedMainAccounts(network, profilePublicKey)) || [];
+
+          // Create accounts array for this profile
+          const profileAccounts: any[] = [];
+
+          // Add main wallet accounts
+          if (Array.isArray(profileMainAccounts) && profileMainAccounts.length > 0) {
+            profileMainAccounts.forEach((account) => {
+              const accountName = account.name || 'Main Account';
+              profileAccounts.push({
+                address: account.address,
+                name: accountName,
+                type: 'main',
+                balance: '0',
+                avatar: account.icon || '', // Use icon as avatar
+                emoji: account.icon || '', // Use icon as emoji
+                emojiInfo: {
+                  emoji: account.icon || '',
+                  name: accountName,
+                  color: account.color || '#6B7280',
+                },
+                isActive: false, // Only current profile's main address is active
+              });
+              if (account.evmAccount?.address) {
+                const evmName = account.evmAccount.name || 'EVM Account';
+                profileAccounts.push({
+                  address: account.evmAccount.address,
+                  name: evmName,
+                  type: 'evm',
+                  balance: '0',
+                  avatar: account.evmAccount.icon || '',
+                  emoji: account.evmAccount.icon || '',
+                  emojiInfo: {
+                    emoji: account.evmAccount.icon || '',
+                    name: evmName,
+                    color: account.evmAccount.color || '#6B7280',
+                  },
+                  isActive: false,
+                });
+              }
+
+              // Add child accounts for this main account if they exist
+              if (Array.isArray(account.childAccounts) && account.childAccounts.length > 0) {
+                account.childAccounts.forEach((childAccount) => {
+                  const childName = childAccount.name || 'Child Account';
+                  profileAccounts.push({
+                    address: childAccount.address,
+                    name: childName,
+                    type: 'child',
+                    balance: '0',
+                    avatar: childAccount.icon || '',
+                    emoji: childAccount.icon || '',
+                    emojiInfo: {
+                      emoji: childAccount.icon || '',
+                      name: childName,
+                      color: childAccount.color || '#6B7280',
+                    },
+                    parentEmoji: account.evmAccount?.icon || account.icon || '',
+                    isActive: false,
+                  });
+                });
+              }
+            });
+          }
+
+          if (profileAccounts.length > 0) {
+            // Create profile object with the specific data
+            const profile = {
+              name:
+                (profileUserInfo as any)?.username ||
+                (profileUserInfo as any)?.nickname ||
+                `Profile ${profileId}`,
+              avatar: (profileUserInfo as any)?.avatar || '',
+              uid: profileId,
+              accounts: profileAccounts,
+            };
+            profilesArray.push(profile);
+          }
+        } catch (error) {
+          console.warn(`Failed to get data for profile ${profileId}:`, error);
+        }
+      }
+
+      return {
+        profiles: profilesArray,
       };
     };
 
@@ -498,7 +630,7 @@ export const usePlatformSpec = (): PlatformSpec => {
 };
 
 export const usePlatformNavigation = (
-  navigate: (path: string, state?: any) => void
+  navigate: (path: string | number, state?: any) => void
 ): NavigationProp => {
   return usePlatform().getNavigation(navigate);
 };

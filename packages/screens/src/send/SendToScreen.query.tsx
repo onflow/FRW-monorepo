@@ -1,26 +1,27 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
-  sendSelectors,
   useSendStore,
-  useWalletStore,
-  walletSelectors,
+  useProfileStore,
+  useAllProfiles,
   useAddressBookStore,
   addressBookQueryKeys,
   tokenQueries,
+  tokenQueryKeys,
 } from '@onflow/frw-stores';
 import type { WalletAccount } from '@onflow/frw-types';
 import {
   SearchableTabLayout,
   RecipientList,
   AddressBookList,
+  ProfileList,
   type RecipientData,
   ExtensionHeader,
   BackgroundWrapper,
 } from '@onflow/frw-ui';
 import { isValidEthereumAddress, isValidFlowAddress } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
@@ -44,13 +45,13 @@ export function SendToScreen(): React.ReactElement {
     { type: 'contacts', title: t('send.addressBook') },
   ];
 
-  const { setToAccount } = useSendStore();
+  const { setToAccount, setFromAccount, fromAccount } = useSendStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   // Get selected token from send store
-  const selectedToken = useSendStore(sendSelectors.selectedToken);
   const transactionType = useSendStore((state) => state.transactionType);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
@@ -59,18 +60,29 @@ export function SendToScreen(): React.ReactElement {
     setCurrentStep('send-to');
   }, [setCurrentStep]);
 
-  const allAccounts = useWalletStore(walletSelectors.getAllAccounts);
-  const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
-  const isLoadingWallet = useWalletStore((state) => state.isLoading);
-  const walletError = useWalletStore((state) => state.error);
+  // Get all profiles with their accounts - using stable hook
+  const allProfiles = useAllProfiles();
+  console.log('SendToScreen - allProfiles:', allProfiles);
+  const loadProfilesFromBridge = useProfileStore((state) => state.loadProfilesFromBridge);
+
   const addressBookStore = useAddressBookStore();
 
-  // Initialize wallet accounts on mount (only if not already loaded)
+  // Initialize profiles on mount (only if not already loaded)
+  const isLoadingProfiles = useProfileStore((state) => state.isLoading);
+  const profileError = useProfileStore((state) => state.error);
+  const profilesLoadedRef = useRef(false);
+
+  const bridgeAddress = bridge.getSelectedAddress() || '';
+  const fromAddress = fromAccount?.address || bridgeAddress;
+  const network = bridge.getNetwork() || 'mainnet';
+
   useEffect(() => {
-    if (allAccounts.length === 0 && !isLoadingWallet) {
-      loadAccountsFromBridge();
+    // Only load if we haven't loaded yet and we're not currently loading
+    if (!profilesLoadedRef.current && !isLoadingProfiles && !profileError) {
+      profilesLoadedRef.current = true;
+      loadProfilesFromBridge();
     }
-  }, [loadAccountsFromBridge, allAccounts.length, isLoadingWallet]);
+  }, [isLoadingProfiles, loadProfilesFromBridge, profileError]);
 
   // Query for recent contacts with automatic caching
   const {
@@ -94,59 +106,40 @@ export function SendToScreen(): React.ReactElement {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Query for account balances using batch API
+  // Query for account balances using batch API - use profile accounts
+  const profileAccountAddresses = useMemo(() => {
+    return allProfiles.flatMap((profile) => profile.accounts.map((account) => account.address));
+  }, [allProfiles]);
+
   const { data: batchBalances = [] } = useQuery({
-    queryKey: ['batchBalances', allAccounts.map((acc) => acc.address)],
-    queryFn: () => tokenQueries.fetchBatchFlowBalances(allAccounts.map((acc) => acc.address)),
-    enabled: allAccounts.length > 0,
+    queryKey: ['batchBalances', profileAccountAddresses],
+    queryFn: () => tokenQueries.fetchBatchFlowBalances(profileAccountAddresses),
+    enabled: profileAccountAddresses.length > 0,
     staleTime: 30 * 1000, // Cache for 30 seconds
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh every minute
   });
 
-  // Query for NFT counts using NFT collections API
-  const { data: nftCounts = {} } = useQuery({
-    queryKey: ['nftCounts', allAccounts.map((acc) => acc.address)],
-    queryFn: async () => {
-      const results: { [address: string]: string } = {};
-
-      const nftCountPromises = allAccounts.map(async (account) => {
-        try {
-          const nftCollections = await tokenQueries.fetchNFTCollections(account.address);
-          const totalCount = nftCollections.reduce(
-            (sum, collection) => sum + (collection.count || 0),
-            0
-          );
-          const nftCountDisplay =
-            totalCount === 0 ? '0 NFTs' : `${totalCount} NFT${totalCount !== 1 ? 's' : ''}`;
-
-          return {
-            address: account.address,
-            nftCount: nftCountDisplay,
-          };
-        } catch (error) {
-          console.warn(`Failed to fetch NFT count for ${account.address}:`, error);
-          return {
-            address: account.address,
-            nftCount: '0 NFTs',
-          };
-        }
-      });
-
-      // Wait for all NFT count requests to complete in parallel
-      const nftCountResults = await Promise.all(nftCountPromises);
-      nftCountResults.forEach(({ address, nftCount }) => {
-        results[address] = nftCount;
-      });
-
-      return results;
-    },
-    enabled: allAccounts.length > 0,
-    staleTime: 30 * 1000, // Cache for 30 seconds
+  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
+  const { data: balanceData } = useQuery({
+    queryKey: tokenQueryKeys.balance(fromAddress, network),
+    queryFn: () => tokenQueries.fetchBalance(fromAddress, undefined, network),
+    enabled: !!fromAccount?.address,
+    staleTime: 30 * 1000, // Use cached balance for 30 seconds
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    refetchInterval: 60 * 1000, // Refresh every minute
+    refetchInterval: 60 * 1000, // Refresh balance every minute in background
+  });
+
+  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching
+  const { data: nftCollections = [] } = useQuery({
+    queryKey: tokenQueryKeys.nfts(fromAddress, network),
+    queryFn: () => tokenQueries.fetchNFTCollections(fromAddress, network),
+    enabled: !!fromAccount?.address,
+    staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Convert batch balances and NFT counts to the expected format
@@ -159,51 +152,17 @@ export function SendToScreen(): React.ReactElement {
       balanceLookup.set(address, balance);
     });
 
-    // Map to expected format with both balance and NFT count
-    allAccounts.forEach((account) => {
-      const balance = balanceLookup.get(account.address) || '0 FLOW';
-      const nftCount = nftCounts[account.address] || '0 NFTs';
-      results[account.address] = {
+    // Map to expected format with both balance and NFT count for all profile accounts
+    profileAccountAddresses.forEach((address) => {
+      const balance = balanceLookup.get(address) || '0 FLOW';
+      results[address] = {
         balance,
-        nftCount,
+        nftCount: '0',
       };
     });
 
     return results;
-  }, [batchBalances, nftCounts, allAccounts]);
-
-  // Convert accounts data
-  const accountsData = useMemo((): RecipientData[] => {
-    return allAccounts.map((account: WalletAccount) => {
-      const balanceInfo = accountBalances[account.address];
-      let balance = 'Loading...';
-
-      if (balanceInfo) {
-        // Parse NFT count to check if it's 0
-        const nftCountMatch = balanceInfo.nftCount.match(/^(\d+)/);
-        const nftCount = nftCountMatch ? parseInt(nftCountMatch[1], 10) : 0;
-
-        // Show only FLOW balance if no NFTs, otherwise show both
-        balance =
-          nftCount > 0 ? `${balanceInfo.balance} | ${balanceInfo.nftCount}` : balanceInfo.balance;
-      }
-
-      return {
-        id: account.address,
-        name: account.name,
-        address: account.address,
-        avatar: account.avatar,
-        emojiInfo: account.emojiInfo,
-        parentEmojiInfo: account.parentEmoji || null,
-        type: 'account' as const,
-        isSelected: false,
-        isLinked: !!(account.parentAddress || account.type === 'child'),
-        isEVM: account.type === 'evm',
-        balance,
-        showBalance: true,
-      };
-    });
-  }, [allAccounts, accountBalances]);
+  }, [batchBalances, profileAccountAddresses]);
 
   // Convert recent contacts data
   const recentData = useMemo((): RecipientData[] => {
@@ -231,11 +190,24 @@ export function SendToScreen(): React.ReactElement {
     }));
   }, [allContacts, isLoadingContacts, contactsError]);
 
+  // Convert profiles data for display
+  const profilesData = useMemo(() => {
+    console.log('Converting profiles data, allProfiles:', allProfiles);
+    console.log('accountBalances:', accountBalances);
+    const result = allProfiles.map((profile) => ({
+      ...profile,
+      accounts: profile.accounts.map((account) => ({
+        ...account,
+        balance: accountBalances[account.address]?.balance || '0 FLOW',
+      })),
+    }));
+    console.log('profilesData result:', result);
+    return result;
+  }, [allProfiles, accountBalances]);
+
   // Get current recipients based on active tab
   const recipients = useMemo(() => {
     switch (activeTab) {
-      case 'accounts':
-        return accountsData;
       case 'recent':
         return recentData;
       case 'contacts':
@@ -243,13 +215,13 @@ export function SendToScreen(): React.ReactElement {
       default:
         return [];
     }
-  }, [activeTab, accountsData, recentData, contactsData]);
+  }, [activeTab, recentData, contactsData]);
 
   // Get loading state for current tab
   const isLoading = useMemo(() => {
     switch (activeTab) {
       case 'accounts':
-        return isLoadingWallet; // Use wallet loading state
+        return isLoadingProfiles;
       case 'recent':
         return isLoadingRecent;
       case 'contacts':
@@ -257,7 +229,7 @@ export function SendToScreen(): React.ReactElement {
       default:
         return false;
     }
-  }, [activeTab, isLoadingWallet, isLoadingRecent, isLoadingContacts]);
+  }, [activeTab, isLoadingProfiles, isLoadingRecent, isLoadingContacts]);
 
   const getTitleByType = useCallback(
     (type: RecipientTabType): string => {
@@ -290,14 +262,42 @@ export function SendToScreen(): React.ReactElement {
 
   const handleRecipientPress = useCallback(
     async (recipient: RecipientData) => {
+      // Determine the correct account type
+      let accountType: 'main' | 'child' | 'evm' | undefined;
+      if (recipient.isEVM) {
+        accountType = 'evm';
+      } else if (recipient.isLinked) {
+        accountType = 'child';
+      } else if (recipient.type === 'account') {
+        accountType = 'main';
+      }
+
+      // Calculate total NFT count from all collections
+      const totalNFTCount = nftCollections.reduce((total, collection) => {
+        return total + (collection.count || 0);
+      }, 0);
+
+      if (fromAccount) {
+        setFromAccount({
+          ...fromAccount,
+          balance: balanceData?.displayBalance || '0 FLOW',
+          nfts: totalNFTCount ? `${totalNFTCount} NFTs` : '0 NFTs',
+        });
+      }
+
+      const emojiValue = recipient.emojiInfo?.emoji;
+      const isRealEmoji = emojiValue && !emojiValue.startsWith('http') && emojiValue.length <= 4;
+
       setToAccount({
         id: recipient.id,
         name: recipient.name,
         address: recipient.address,
-        avatar: recipient.avatar || '',
-        emojiInfo: recipient.emojiInfo,
+        avatar: isRealEmoji ? undefined : recipient.avatar || '',
+        emojiInfo: isRealEmoji ? recipient.emojiInfo : undefined,
+        parentEmoji: recipient.parentEmojiInfo,
+        parentAddress: recipient.isLinked ? recipient.address : undefined, // If linked, store parent info
         isActive: false,
-        type: recipient.type === 'account' ? 'main' : undefined,
+        type: accountType,
       });
 
       // Add to recent recipients (only if not selecting from "My Accounts" tab)
@@ -343,19 +343,23 @@ export function SendToScreen(): React.ReactElement {
         const isEvmAddress = isValidEthereumAddress(trimmedValue);
 
         if (isFlowAddress || isEvmAddress) {
-          // Find matching account from the accounts list
-          const matchingAccount = allAccounts.find(
-            (account) =>
-              account.address.toLowerCase() === trimmedValue.toLowerCase() ||
-              account.address === trimmedValue
-          );
+          // Find matching account from the profile accounts
+          let matchingAccount: WalletAccount | undefined = undefined;
+          for (const profile of allProfiles) {
+            matchingAccount = profile.accounts.find(
+              (account) =>
+                account.address.toLowerCase() === trimmedValue.toLowerCase() ||
+                account.address === trimmedValue
+            );
+            if (matchingAccount) break;
+          }
 
           // Create recipient data
           const recipient: RecipientData = {
             id: trimmedValue,
             name: matchingAccount?.name || 'Unknown Account',
             address: trimmedValue,
-            avatar: matchingAccount?.avatar,
+            avatar: matchingAccount?.emojiInfo ? undefined : matchingAccount?.avatar,
             emojiInfo: matchingAccount?.emojiInfo,
             parentEmojiInfo: matchingAccount?.parentEmoji || null,
             type: 'account' as const,
@@ -371,7 +375,7 @@ export function SendToScreen(): React.ReactElement {
         }
       }
     },
-    [allAccounts, handleRecipientPress]
+    [allProfiles, handleRecipientPress]
   );
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {
@@ -379,9 +383,30 @@ export function SendToScreen(): React.ReactElement {
     console.log('Edit recipient:', recipient);
   }, []);
 
-  const handleRecipientCopy = useCallback((recipient: RecipientData) => {
-    // TODO: Handle copy recipient address
-    console.log('Copy recipient address:', recipient.address);
+  const handleRecipientCopy = useCallback(async (recipient: RecipientData) => {
+    try {
+      // Check platform and use appropriate clipboard method
+      const platform = bridge.getPlatform();
+
+      // Check for React Native environment (ios, android, or react-native)
+      if (platform === 'react-native' || platform === 'ios' || platform === 'android') {
+        // Use global clipboard provided by React Native wrapper
+        if ((global as any).clipboard?.setString) {
+          (global as any).clipboard.setString(recipient.address);
+          setCopiedAddress(recipient.address);
+          setTimeout(() => setCopiedAddress(null), 1000);
+        }
+      } else {
+        // Use web clipboard API for extension
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(recipient.address);
+          setCopiedAddress(recipient.address);
+          setTimeout(() => setCopiedAddress(null), 1000);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to copy address:', error);
+    }
   }, []);
 
   const getEmptyStateForTab = () => {
@@ -432,7 +457,17 @@ export function SendToScreen(): React.ReactElement {
         onTabChange={handleTabChange}
         backgroundColor="$bgDrawer"
       >
-        {activeTab === 'contacts' ? (
+        {activeTab === 'accounts' ? (
+          <>
+            <ProfileList
+              profiles={profilesData}
+              onAccountPress={handleRecipientPress}
+              isLoading={isLoading}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+            />
+          </>
+        ) : activeTab === 'contacts' ? (
           isLoading ? (
             <RecipientList
               data={[]}
@@ -458,6 +493,7 @@ export function SendToScreen(): React.ReactElement {
                 onCopy: () => handleRecipientCopy(contact),
               }))}
               groupByLetter={true}
+              copiedAddress={copiedAddress}
             />
           )
         ) : (

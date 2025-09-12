@@ -21,6 +21,8 @@
     "@tamagui/core": "^1.132.20",
     "@tamagui/theme-builder": "^1.132.20",
     "@tamagui/web": "^1.132.20",
+    "lottie-react-native": "^7.3.2",
+    "lottie-web": "^5.13.0",
     "tamagui": "^1.132.20"
   },
   "devDependencies": {
@@ -56,7 +58,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src/assets"
   ],
   "exports": {
     ".": {

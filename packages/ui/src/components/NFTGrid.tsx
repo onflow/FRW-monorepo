@@ -42,6 +42,7 @@ export interface NFTGridProps {
   accountEmoji?: string;
   accountAvatar?: string;
   accountName?: string;
+  accountColor?: string;
 
   // Layout
   gap?: string;
@@ -65,6 +66,7 @@ export function NFTGrid({
   accountEmoji,
   accountAvatar,
   accountName,
+  accountColor,
   gap = '$3',
   aspectRatio = 1,
 }: NFTGridProps) {
@@ -176,6 +178,7 @@ export function NFTGrid({
                 accountEmoji={accountEmoji}
                 accountAvatar={accountAvatar}
                 accountName={accountName}
+                accountColor={accountColor}
               />
             </YStack>
           ))}

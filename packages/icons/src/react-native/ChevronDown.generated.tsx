@@ -1,20 +1,7 @@
-import * as React from 'react';
-import Svg, { type SvgProps, Path } from 'react-native-svg';
-const ChevronDown = ({
-  color = 'currentColor',
-  size = 24,
-  width,
-  height,
-  ...props
-}: SvgProps & { size?: number }) => (
-  <Svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={width ?? size}
-    height={height ?? size}
-    fill="none"
-    viewBox="0 0 15 15"
-    {...props}
-  >
+import * as React from "react"
+import Svg, { type SvgProps, Path } from "react-native-svg"
+const ChevronDown = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (
+  <Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size} fill="none" viewBox="0 0 15 15" {...props}>
     <Path
       stroke={color}
       strokeLinecap="round"
@@ -24,4 +11,4 @@ const ChevronDown = ({
     />
   </Svg>
 );
-export default ChevronDown;
+export default ChevronDown

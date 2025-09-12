@@ -1,5 +1,7 @@
 import React from 'react';
-import { YStack, XStack, Text, Avatar } from 'tamagui';
+import { YStack, XStack, Text } from 'tamagui';
+
+import { Avatar } from '../foundation/Avatar';
 
 export interface NFTInfoSectionProps {
   name: string;
@@ -9,6 +11,7 @@ export interface NFTInfoSectionProps {
     name?: string;
     avatar?: string;
     address?: string;
+    emojiInfo?: { emoji: string; name: string; color: string };
   };
   showOwner?: boolean;
   spacing?: number;
@@ -41,17 +44,35 @@ export function NFTInfoSection({
 
           {showOwner && owner && (
             <XStack alignItems="center" gap={4}>
-              <Avatar circular size={24}>
-                {owner.avatar ? (
-                  <Avatar.Image src={owner.avatar} />
-                ) : (
-                  <Avatar.Fallback bg="$bg3" alignItems="center" justifyContent="center">
-                    <Text fontSize={18} fontWeight="600" color="$textSecondary">
-                      {owner.name?.charAt(0) || '🐼'}
-                    </Text>
-                  </Avatar.Fallback>
-                )}
-              </Avatar>
+              {/* Account Avatar/Emoji - same logic as NFTCard */}
+              {owner.emojiInfo?.emoji ? (
+                <YStack
+                  width={24}
+                  height={24}
+                  bg={owner.emojiInfo?.color || '$warning'}
+                  rounded={12}
+                  items="center"
+                  justify="center"
+                >
+                  <Text fontSize={12} fontWeight="600">
+                    {owner.emojiInfo.emoji}
+                  </Text>
+                </YStack>
+              ) : owner.avatar ? (
+                <Avatar
+                  src={owner.avatar}
+                  fallback={owner.name?.charAt(0) || '🐼'}
+                  bgColor="$bg3"
+                  size={24}
+                />
+              ) : (
+                <Avatar
+                  src={undefined}
+                  fallback={owner.name?.charAt(0) || '🐼'}
+                  bgColor="$bg3"
+                  size={24}
+                />
+              )}
             </XStack>
           )}
         </XStack>

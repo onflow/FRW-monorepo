@@ -265,27 +265,33 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Convert wallet accounts to AccountCard format with dynamic balances
   const accountsForModal = React.useMemo(() => {
-    return accounts;
-  }, [accounts]);
+    return accounts.map((account) => ({
+      ...account,
+      balance: balanceLookup.get(account.address) || account.balance || '0 FLOW',
+    }));
+  }, [accounts, balanceLookup]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
+      {isExtension && (
+        <ExtensionHeader
+          title={t('send.title')}
+          help={true}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
       <YStack flex={1} px="$4" pt="$2">
         {/* Header */}
-        {isExtension && (
-          <ExtensionHeader
-            title={t('send.title')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
 
         {/* Account Selector - Show balance from React Query */}
-        {!isExtension && balanceData && currentAccount && (
+        {!isExtension && currentAccount && (
           <YStack bg="$light10" rounded="$4" p={16} gap={12}>
             <AccountSelector
-              currentAccount={currentAccount}
+              currentAccount={{
+                ...currentAccount,
+                balance: balanceData?.balance || currentAccount.balance || '0 FLOW',
+              }}
               accounts={accountsForModal}
               onAccountSelect={handleAccountSelect}
               title={t('send.fromAccount')}

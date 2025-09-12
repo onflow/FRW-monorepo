@@ -6,6 +6,19 @@ import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 import type { TokenAmountInputProps } from '../types';
 
+// Helper function to format balance with max 8 decimal places
+function formatBalance(balance?: string | number): string {
+  if (!balance) return '0';
+
+  const num = typeof balance === 'number' ? balance : parseFloat(balance);
+  if (isNaN(num)) return balance.toString();
+
+  // If the number has more than 8 decimal places, round to 8
+  // Otherwise, show the number as is (without trailing zeros)
+  const rounded = Math.round(num * 100000000) / 100000000;
+  return rounded.toString();
+}
+
 export function TokenAmountInput({
   selectedToken,
   amount,
@@ -51,10 +64,10 @@ export function TokenAmountInput({
             size={35.2}
           />
 
-          {/* Amount Input - fixed width 169px, height 26px */}
-          <XStack items="center" width={169} height={26}>
+          {/* Amount Input - fixed width 169px, height 35px to match input */}
+          <XStack items="center" width={169} height={35}>
             {!isTokenMode && (
-              <Text fontSize={28} fontWeight="500" color="$white" lineHeight={16} mr={4}>
+              <Text fontSize={28} fontWeight="500" color="$white" lineHeight={35} mr={4}>
                 $
               </Text>
             )}
@@ -163,7 +176,7 @@ export function TokenAmountInput({
               text="right"
               flexShrink={0}
             >
-              {tokenBalance} {tokenSymbol}
+              {formatBalance(tokenBalance)} {tokenSymbol}
             </Text>
           )}
           <YStack

@@ -54,6 +54,17 @@ export interface WalletAccountsResponse {
   accounts: WalletAccount[];
 }
 
+export interface WalletProfile {
+  name: string;
+  avatar: string;
+  uid: string;
+  accounts: WalletAccount[];
+}
+
+export interface WalletProfilesResponse {
+  profiles: WalletProfile[];
+}
+
 export interface AddressBookResponse {
   contacts: AddressBookContact[];
 }

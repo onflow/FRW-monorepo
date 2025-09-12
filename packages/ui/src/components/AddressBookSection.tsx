@@ -6,11 +6,13 @@ import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 export interface AddressBookSectionProps {
   letter: string;
   contacts: RecipientItemProps[];
+  copiedAddress?: string | null;
 }
 
 export function AddressBookSection({
   letter,
   contacts,
+  copiedAddress,
 }: AddressBookSectionProps): React.JSX.Element | null {
   if (contacts.length === 0) {
     return null;
@@ -37,15 +39,10 @@ export function AddressBookSection({
               {...contact}
               type="contact"
               showCopyButton={true}
-              onCopy={() => navigator.clipboard?.writeText(contact.address)}
+              copiedFeedback={copiedAddress === contact.address ? 'Copied!' : undefined}
             />
             {index < contacts.length - 1 && (
-              <YStack
-                height={1}
-                bg="rgba(255, 255, 255, 0.1)"
-                w="100%"
-                ml={0}
-              />
+              <YStack height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
             )}
           </YStack>
         ))}
@@ -57,11 +54,13 @@ export function AddressBookSection({
 export interface AddressBookListProps {
   contacts: RecipientItemProps[];
   groupByLetter?: boolean;
+  copiedAddress?: string | null;
 }
 
 export function AddressBookList({
   contacts,
   groupByLetter = true,
+  copiedAddress,
 }: AddressBookListProps): React.JSX.Element {
   if (!groupByLetter) {
     return (
@@ -72,15 +71,10 @@ export function AddressBookList({
               {...contact}
               type="contact"
               showCopyButton={true}
-              onCopy={() => navigator.clipboard?.writeText(contact.address)}
+              copiedFeedback={copiedAddress === contact.address ? 'Copied!' : undefined}
             />
             {index < contacts.length - 1 && (
-              <YStack
-                height={1}
-                bg="rgba(255, 255, 255, 0.1)"
-                w="100%"
-                ml={0}
-              />
+              <YStack height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
             )}
           </YStack>
         ))}
@@ -107,7 +101,12 @@ export function AddressBookList({
   return (
     <YStack gap={16}>
       {sortedLetters.map((letter) => (
-        <AddressBookSection key={letter} letter={letter} contacts={groupedContacts[letter]} />
+        <AddressBookSection
+          key={letter}
+          letter={letter}
+          contacts={groupedContacts[letter]}
+          copiedAddress={copiedAddress}
+        />
       ))}
     </YStack>
   );

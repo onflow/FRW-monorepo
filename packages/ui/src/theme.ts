@@ -42,6 +42,9 @@ const flowColors = {
   warning10: 'rgba(253, 176, 34, 0.1)', // Warning orange 10%
   error10: 'rgba(240, 68, 56, 0.1)', // Error red 10%
 
+  // Accent colors
+  accentEVM: '#627EEA', // EVM chip background color
+
   // Essential grayscale (minimal set)
   white: '#ffffff',
   black: '#000000',
@@ -305,6 +308,9 @@ const themesBuilder = createThemeBuilder()
       // Essential grayscale colors
       white: flowColors.white,
       black: flowColors.black,
+
+      // Accent colors
+      accentEVM: flowColors.accentEVM, // $accentEVM
 
       // Light accent shortcuts (for dark mode usage)
       light80: flowColors.light80, // $light80

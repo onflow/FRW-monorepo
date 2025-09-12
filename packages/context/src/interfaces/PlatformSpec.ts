@@ -4,6 +4,7 @@ import type {
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  WalletProfilesResponse,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -47,6 +48,7 @@ export interface PlatformSpec {
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;
+  getWalletProfiles(): Promise<WalletProfilesResponse>;
   getSelectedAccount(): Promise<WalletAccount>;
 
   // Transaction monitoring and post-transaction actions

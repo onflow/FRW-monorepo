@@ -1,7 +1,8 @@
 import { Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { YStack } from 'tamagui';
+import { Platform, Modal } from 'react-native';
+import { YStack, Stack } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -57,15 +58,19 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
 
   if (!visible) return null;
 
+  const isWeb = Platform.OS === 'web';
+
   const dialogContent = (
-    <YStack
-      position="fixed"
+    <Stack
+      pos={isWeb ? 'fixed' : 'absolute'}
       top={0}
       left={0}
       right={0}
       bottom={0}
       bg="rgba(0, 0, 0, 0.5)"
-      zIndex={1000}
+      z={1000}
+      items="center"
+      justify="center"
       pressStyle={{ opacity: 1 }}
       onPress={onClose}
       aria-modal="true"
@@ -75,10 +80,10 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
       <YStack
         w={339}
         minW={300}
-        maxW="90vw"
+        maxW="90%"
         h={326}
         minH={300}
-        maxH="90vh"
+        maxH="90%"
         bg="#28282A"
         rounded={16}
         shadowColor="rgba(0, 0, 0, 0.25)"
@@ -88,16 +93,10 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
         elevation={8}
         pressStyle={{ opacity: 1 }}
         onPress={(e) => e.stopPropagation()}
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
       >
         {/* Close button */}
         <YStack
-          position="absolute"
+          pos="absolute"
           top={19.56}
           right={18}
           w={24}
@@ -117,27 +116,29 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
         {/* Content area */}
         <YStack p={20} pt={60} flex={1} gap={16}>
           {title && (
-            <Text
-              id="info-dialog-title"
-              fontSize={16}
-              fontWeight="600"
-              color="$white"
-              textAlign="center"
-            >
-              {title}
-            </Text>
+            <YStack w="100%" items="center">
+              <Text
+                id="info-dialog-title"
+                fontSize={16}
+                fontWeight="600"
+                color="$white"
+                ta="center"
+              >
+                {title}
+              </Text>
+            </YStack>
           )}
 
           {/* Content */}
-          <YStack flex={1} justify="flex-start" alignItems="center" textAlign="center">
+          <YStack flex={1} justify="center" items="center" w="100%" px={10}>
             {children}
           </YStack>
 
           {/* Bottom button */}
           {buttonText && (
             <YStack
-              alignSelf="stretch"
-              height={44}
+              self="stretch"
+              h={44}
               bg="$white"
               rounded={12}
               items="center"
@@ -151,9 +152,9 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
               <Text
                 fontSize={14}
                 fontWeight="700"
-                lineHeight="1.43em"
-                letterSpacing="-1%"
-                textAlign="center"
+                lineHeight={20}
+                letterSpacing={0}
+                ta="center"
                 color="rgba(0, 0, 0, 0.9)"
               >
                 {buttonText}
@@ -162,14 +163,24 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
           )}
         </YStack>
       </YStack>
-    </YStack>
+    </Stack>
   );
 
   // Use portal to render at document body level (only in browser)
-  if (typeof document !== 'undefined') {
+  if (typeof document !== 'undefined' && Platform.OS === 'web') {
     return createPortal(dialogContent, document.body);
   }
 
-  // Fallback for non-browser environments (React Native, SSR)
-  return dialogContent;
+  // For React Native, use Modal component for proper overlay
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent={true}
+    >
+      {dialogContent}
+    </Modal>
+  );
 };
