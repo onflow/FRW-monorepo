@@ -4,6 +4,7 @@ import type {
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { Platform } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
@@ -165,6 +166,10 @@ class PlatformImpl implements PlatformSpec {
 
   closeRN(): void {
     NativeFRWBridge.closeRN(null);
+  }
+
+  getWalletProfiles(): Promise<WalletProfilesResponse> {
+    return NativeFRWBridge.getWalletProfiles();
   }
 
   configureCadenceService(cadenceService: any): void {

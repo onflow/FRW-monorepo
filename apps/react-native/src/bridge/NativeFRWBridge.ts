@@ -4,6 +4,7 @@ import type {
   WalletAccount,
   WalletAccountsResponse,
   Currency as SharedCurrency,
+  WalletProfilesResponse,
 } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
@@ -59,6 +60,7 @@ export interface Spec extends TurboModule {
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrency(): Currency;
   getTokenRate(token: string): string;
+  getWalletProfiles(): Promise<WalletProfilesResponse>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
