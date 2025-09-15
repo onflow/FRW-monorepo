@@ -75,6 +75,7 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   if (flowAddr !== addr) {
     // switch to the correct account
     await page.getByTestId('account-menu-button').click();
+    await page.getByTestId('switch-profile-button').isVisible();
     await page.getByTestId('switch-profile-button').click();
     await expect(page.getByText('Profiles', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
@@ -285,9 +286,10 @@ export const importAccountBySeedPhrase = async ({
   await page.getByPlaceholder('Import 12 or 24 words split').fill(seedPhrase);
 
   await page.getByRole('button', { name: 'Import' }).click();
+
   // We need to wait for the next step to be visible
 
-  await expect(page.getByRole('button', { name: 'Import' })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Import' })).not.toBeVisible({ timeout: 6_000 });
 
   const step = await page.getByText('STEP').textContent();
 
@@ -460,8 +462,26 @@ export const switchToMainAccount = async ({ page, address }) => {
   // get address
   await getCurrentAddress(page);
 };
+
 const getActivityItemRegexp = (txId: string, ingoreFlowCharge = false) => {
   return new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
+};
+
+export const checkNFTTrx = async ({ page, sealedText, collectionName, txId, isEvm = false }) => {
+  const activityItemRegexp = getActivityItemRegexp(txId);
+  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
+  await expect(sealedItem).toBeVisible({
+    timeout: 60_000,
+  });
+  if (!isEvm) {
+    await page
+      .getByTestId(activityItemRegexp)
+      .getByTestId(`collection-${collectionName}`)
+      .isVisible();
+    await expect(
+      page.getByTestId(activityItemRegexp).getByTestId(`collection-${collectionName}`)
+    ).toBeVisible();
+  }
 };
 
 export const checkSentAmount = async ({
@@ -479,6 +499,21 @@ export const checkSentAmount = async ({
   await expect(
     page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
   ).toBeVisible();
+};
+
+export const checkSentNFT = async ({
+  page,
+  sealedText,
+  collectionName,
+  txId,
+  ingoreFlowCharge = false,
+}) => {
+  const activityItemRegexp = getActivityItemRegexp(txId, ingoreFlowCharge);
+  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
+  await expect(sealedItem).toBeVisible({
+    timeout: 60_000,
+  });
+  await expect(page.getByTestId(activityItemRegexp).getByTestId(collectionName)).toBeVisible();
 };
 
 export const waitForTransaction = async ({

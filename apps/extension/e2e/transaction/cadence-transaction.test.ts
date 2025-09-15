@@ -20,9 +20,9 @@ export const sendTokenFlow = async ({
   // send Ft token from COA
   await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByTestId(`send-button`).click();
-  await page.getByPlaceholder('Search address(0x), or flow').click();
-  await page.getByPlaceholder('Search address(0x), or flow').fill(receiver);
-  await page.getByPlaceholder('Amount').fill(amount);
+  await page.getByPlaceholder('Search address').click();
+  await page.getByPlaceholder('Search address').fill(receiver);
+  await page.getByPlaceholder('0.00').fill(amount);
   await page.getByRole('button', { name: 'Next' }).click();
   await page.getByRole('button', { name: 'Send' }).click();
   // Wait for the transaction to be completed
@@ -40,8 +40,8 @@ export const moveTokenFlow = async ({
   await page.getByRole('tab', { name: 'coins' }).click();
   await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByRole('button', { name: 'Move' }).click();
-  await page.getByPlaceholder('Amount').click();
-  await page.getByPlaceholder('Amount').fill(amount);
+  await page.getByPlaceholder('0.00').click();
+  await page.getByPlaceholder('0.00').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
 
   // Wait for the transaction to be completed
@@ -60,8 +60,8 @@ export const moveTokenFlowHomepage = async ({
   await page.getByRole('button', { name: 'Move Tokens' }).click();
   await page.getByRole('combobox').click();
   await page.getByRole('option', { name: tokenname, exact: true }).getByRole('img').click();
-  await page.getByPlaceholder('Amount').click();
-  await page.getByPlaceholder('Amount').fill(amount);
+  await page.getByPlaceholder('0.00').click();
+  await page.getByPlaceholder('0.00').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
