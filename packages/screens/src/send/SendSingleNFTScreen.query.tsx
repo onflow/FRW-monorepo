@@ -70,7 +70,10 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Check if NFT is ERC1155
   const isERC1155 = selectedNFT?.contractType === 'ERC1155';
-  const maxQuantity = selectedNFT?.amount || 1;
+  const maxQuantity =
+    typeof selectedNFT?.amount === 'number'
+      ? selectedNFT.amount
+      : parseInt(selectedNFT?.amount as string) || 1;
 
   // Debug the title - Swapped: ERC1155 shows "Send S/NFTs", regular shows "Send NFTs"
   const sectionTitle = isERC1155 ? 'Send S/NFTs' : 'Send NFTs';
@@ -127,6 +130,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
     collectionContractName: selectedNFT?.collectionContractName,
     description: selectedNFT?.description || '',
     type: selectedNFT?.type, // Pass the NFT type for EVM badge
+    contractType: selectedNFT?.contractType, // Pass for ERC1155 detection
+    amount: maxQuantity, // Pass total amount for display
   };
 
   // Calculate if send button should be disabled

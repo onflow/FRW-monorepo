@@ -13,6 +13,8 @@ export interface NFTSendData {
   collectionContractName?: string;
   description?: string;
   type?: 'evm' | 'flow'; // determines if EVM badge should show
+  contractType?: string; // 'ERC721' | 'ERC1155'
+  amount?: number; // Total amount for ERC1155
 }
 
 export interface NFTSendPreviewProps {
@@ -160,6 +162,13 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
           >
             {nft.name}
           </Text>
+
+          {/* ERC1155 Total Amount */}
+          {nft.contractType === 'ERC1155' && nft.amount && nft.amount > 0 && (
+            <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.6)" numberOfLines={1}>
+              ({nft.amount.toLocaleString()} Tokens)
+            </Text>
+          )}
         </YStack>
       </XStack>
     </YStack>
