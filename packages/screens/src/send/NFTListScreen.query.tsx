@@ -97,6 +97,7 @@ export function NFTListScreen(): React.ReactElement {
       thumbnail: nft.thumbnail || '',
       collection: nft.collectionName || collectionName,
       amount: nft.amount,
+      contractType: nft.contractType, // Preserve ERC1155/ERC721 type
     }),
     [collectionName]
   );
@@ -108,6 +109,7 @@ export function NFTListScreen(): React.ReactElement {
       return [];
     }
     console.log('Converting NFT data:', nfts.length, 'NFTs');
+    console.log('NFTs:', nfts);
     return nfts.map(convertToNFTData);
   }, [nfts, convertToNFTData]);
 
