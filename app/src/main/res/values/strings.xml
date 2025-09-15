@@ -771,4 +771,5 @@
     <string name="transfer_success">Transaction Success</string>
     <string name="transfer_failed">Transaction Failed</string>
     <string name="nft_amount_items">%1$s Items</string>
+    <string name="pending_request_from">You have a pending request from %1$s</string>
 </resources>

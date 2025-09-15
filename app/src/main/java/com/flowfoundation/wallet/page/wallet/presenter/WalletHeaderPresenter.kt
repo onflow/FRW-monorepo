@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -40,6 +39,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.wallet.toAddress
+import com.google.gson.Gson
 import java.util.Date
 
 class WalletHeaderPresenter(
@@ -116,16 +116,6 @@ class WalletHeaderPresenter(
                 flAddToken.visible()
             }
 
-            with(cvSend) {
-                if (WalletManager.isChildAccountSelected()) {
-                    isEnabled = false
-                    alpha = 0.5f
-                } else {
-                    isEnabled = true
-                    alpha = 1f
-                }
-            }
-
             ivHide.setOnClickListener {
                 uiScope {
                     setHideWalletBalance(!isHideWalletBalance())
@@ -149,28 +139,47 @@ class WalletHeaderPresenter(
 
         ioScope {
             val sessions = WalletConnect.get().sessions()
-            val requests = getWalletConnectPendingRequests().map { request ->
-                PendingRequestModel(
-                    request = request,
-                    metadata = sessions.firstOrNull { request.topic == it.topic }?.metaData
-                )
-            }.filter { it.metadata != null }
-            requests.firstOrNull()?.let {
-                logd("notification", "pendingRequest::$it")
-                if (WalletNotificationManager.alreadyExist(it.request.request.id.toString())) {
+            val requests = getWalletConnectPendingRequests().mapNotNull { request ->
+                val metadata = sessions.firstOrNull { request.topic == it.topic }?.metaData
+                if (metadata != null) {
+                    PendingRequestModel(
+                        request = request,
+                        metadata = metadata
+                    )
+                } else null
+            }
+            logd("notification", "pendingRequest::requests=${Gson().toJson(requests)}")
+
+            requests.firstOrNull()?.let { pendingRequestModel ->
+                logd("notification", "pendingRequest::$pendingRequestModel")
+                if (WalletNotificationManager.alreadyExist(pendingRequestModel.request.request.id.toString())) {
                     return@ioScope
                 }
+
+                val title = if (pendingRequestModel.metadata?.name.isNullOrEmpty()) {
+                    R.string.pending_request.res2String()
+                } else {
+                    "${R.string.pending_request.res2String()} - ${pendingRequestModel.metadata.name}"
+                }
+
+                val body = if (pendingRequestModel.metadata?.url.isNullOrEmpty()) {
+                    R.string.view_more.res2String()
+                } else {
+                    view.context.getString(R.string.pending_request_from, pendingRequestModel.metadata.url)
+                }
+
                 WalletNotificationManager.addNotification(
                     WalletNotification(
-                        id = it.request.request.id.toString(),
-                        icon = it.metadata?.icons?.firstOrNull(),
-                        title = it.metadata?.name.orEmpty(),
-                        body = "View More",
+                        id = pendingRequestModel.request.request.id.toString(),
+                        icon = pendingRequestModel.metadata?.icons?.firstOrNull(),
+                        title = title,
+                        body = body,
                         priority = Priority.URGENT,
                         type = Type.PENDING_REQUEST,
                         expiryTime = Date(),
                         displayType = DisplayType.CLICK,
-                        conditions = emptyList()
+                        conditions = emptyList(),
+                        pendingRequest = pendingRequestModel.request // Store the request directly
                     )
                 )
             }

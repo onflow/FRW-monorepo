@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.databinding.ActivityTransactionRecordBinding
 import com.flowfoundation.wallet.page.transaction.record.presenter.TransactionRecordPresenter
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.isNightMode
+import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class TransactionRecordActivity : BaseActivity() {
     private val contractId by lazy { intent.getStringExtra(EXTRA_CONTRACT_ID) }
@@ -24,6 +26,10 @@ class TransactionRecordActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityTransactionRecordBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Configure status bar to prevent overlap with system UI
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
 
         presenter = TransactionRecordPresenter(binding, this)
         viewModel = ViewModelProvider(this)[TransactionRecordViewModel::class.java].apply {

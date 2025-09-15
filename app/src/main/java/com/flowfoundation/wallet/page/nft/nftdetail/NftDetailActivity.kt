@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
-import com.flowfoundation.wallet.page.ar.ArActivity
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
@@ -75,46 +74,25 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflateWithCrowdin(R.menu.nft_detail, menu, resources)
-        val menuItem = menu.findItem(R.id.view_in_ar)
-        if (isARCameraSupported()) {
-            menuItem.actionView?.setOnClickListener { openInAr() }
-        } else {
-            menuItem.setVisible(false)
-        }
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.view_in_ar -> openInAr()
             else -> super.onOptionsItemSelected(item)
         }
         return true
     }
 
-    private fun openInAr() {
-        val nft = viewModel.nftLiveData.value ?: return
-        ArActivity.launch(this, nft.cover(), nft.video())
-    }
-
-    private fun isARCameraSupported(): Boolean {
-        return false
-//        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-//            packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_AR)
-//        } else {
-//            false
-//        }
-    }
-
     override fun onTransactionStateChange() {
         val transaction = TransactionStateManager.getLastVisibleTransaction() ?: return
-        
+
         if (transaction.type == TransactionState.TYPE_TRANSFER_NFT || transaction.type == TransactionState.TYPE_NFT || transaction.type == TransactionState.TYPE_MOVE_NFT) {
             // Check if transaction is either processing, finalized, executed, or sealed
             if (!hasNavigatedBack && (transaction.isProcessing() || transaction.isExecuted() || transaction.isSealed())) {
                 hasNavigatedBack = true
-                
+
                 // Navigate back to the collection page instead of the home tab
                 navigateToCollectionPage()
                 return
@@ -130,13 +108,13 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
         if (isFinishing || isDestroyed) {
             return
         }
-        
+
         // Always launch MainActivity with the target tab and use safer flags
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("extra_target_tab", tab.index)
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
-        
+
         try {
             startActivity(intent)
             finish()
@@ -150,7 +128,7 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
         if (isFinishing || isDestroyed) {
             return
         }
-        
+
         try {
             // Navigate back to the main NFTs tab
             MainActivity.launch(this, HomeTab.NFT)

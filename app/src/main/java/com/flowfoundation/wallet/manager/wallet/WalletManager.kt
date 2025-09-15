@@ -86,8 +86,8 @@ object WalletManager {
                 }
                 // Store the job for potential waiting
                 initializationJob = initJob
-            } finally { 
-                isInitializing = false 
+            } finally {
+                isInitializing = false
             }
         }
     }
@@ -132,14 +132,14 @@ object WalletManager {
             // Load the stored private key using the prefix-based ID with backward compatibility
             val keyId = "prefix_key_${account.prefix}"
             logd(TAG, "Attempting to load private key (with fallback to old storage)")
-            
+
             try {
                 val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
                 if (privateKey == null) {
                     logd(TAG, "Private key not found in either storage system")
                     return false
                 }
-                
+
                 logd(TAG, "Successfully loaded private key")
 
                 /* 2. Create the wallet */
@@ -150,12 +150,12 @@ object WalletManager {
                 )
                 currentWallet = newWallet
                 logd(TAG, "Prefix wallet created, waiting for accounts to load...")
-                
+
             } catch (e: com.flowfoundation.wallet.manager.account.HardwareBackedKeyException) {
                 logd(TAG, "Hardware-backed key detected")
                 logd(TAG, "Hardware-backed keys will be handled by CryptoProviderManager during signing operations")
                 logd(TAG, "Setting currentWallet = null for hardware-backed keys")
-                
+
                 // For hardware-backed keys, we cannot create a wallet object because the key cannot be extracted
                 // The CryptoProviderManager will handle cryptographic operations using AndroidKeystoreCryptoProvider
                 // Transactions will get the address from account data instead of wallet object
@@ -256,7 +256,7 @@ object WalletManager {
                 }
                 val firebaseUserId = firebaseUid()
                     ?: throw IllegalStateException("Firebase user ID is null - cannot create wallet data")
-                
+
                 account.wallet = WalletListData(
                     id       = firebaseUserId,
                     username = account.userInfo.username,
@@ -273,7 +273,7 @@ object WalletManager {
             val blockchainData = walletData?.blockchain?.firstOrNull()
             blockchainData?.address
         }
-        
+
         // Only set the address if no address is currently selected (avoid overriding user selections)
         if (!address.isNullOrBlank() && selectedWalletAddressRef.get().isBlank()) {
             selectWalletAddress(address)
@@ -288,7 +288,18 @@ object WalletManager {
     }
 
     fun walletUpdate() {
-        wallet()?.let { refreshChildAccount(it) }
+        val currentWallet = wallet()
+        if (currentWallet != null) {
+            // Normal wallet - use existing logic
+            refreshChildAccount(currentWallet)
+        } else {
+            // Hardware-backed key - initialize child accounts using selected address
+            val selectedAddress = selectedWalletAddress()
+            if (!selectedAddress.isNullOrEmpty()) {
+                logd(TAG, "Hardware-backed key detected in walletUpdate, initializing child accounts for: $selectedAddress")
+                refreshChildAccountForHardwareBackedKey(selectedAddress)
+            }
+        }
     }
 
     fun wallet(): Wallet? = synchronized(initializationLock) {
@@ -353,12 +364,7 @@ object WalletManager {
     }
 
     fun isChildAccountSelected(): Boolean {
-        val accounts = wallet()?.accounts?.values?.flatten()
-        if (accounts.isNullOrEmpty()) {
-            return false
-        }
-        return accounts.none { it.address.equals(selectedWalletAddress(), ignoreCase = true) }
-                && isEVMAccountSelected().not()
+        return isChildAccount(selectedWalletAddress())
     }
 
     fun haveChildAccount(): Boolean {
@@ -367,7 +373,15 @@ object WalletManager {
     }
 
     fun childAccountList(walletAddress: String? = null): ChildAccountList? {
-        val address = (walletAddress ?: wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address) ?: return null
+        val address = walletAddress ?: wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address ?: selectedWalletAddress()
+        if (address.isEmpty()) return null
+
+        // For hardware-backed keys, ensure child account list is initialized
+        if (!childAccountMap.contains(address)) {
+            logd(TAG, "Initializing child account list for address: $address")
+            childAccountMap[address] = ChildAccountList(address)
+        }
+
         return childAccountMap[address]
     }
 
@@ -411,7 +425,7 @@ object WalletManager {
 
     fun selectWalletAddress(address: String): String {
         logd(TAG, "selectWalletAddress called with: '$address'")
-        
+
         if (address.isBlank()) {
             logd(TAG, "WARNING: Attempting to select blank address")
         }
@@ -472,9 +486,9 @@ object WalletManager {
         val isChildAccount = childAccount(pref) != null
         val isEVMAddress = EVMWalletManager.isEVMWalletAddress(pref)
         val isInChildMap = childAccountMap.keys.contains(pref)
-        
+
         logd(TAG, "Address existence check - isChildAccount: $isChildAccount, isEVMAddress: $isEVMAddress, isInChildMap: $isInChildMap")
-        
+
         val isExist = isInChildMap || isChildAccount || isEVMAddress
         if (isExist) {
             logd(TAG, "Address exists in our maps, returning: '$pref'")
@@ -485,7 +499,7 @@ object WalletManager {
         if (selectedWalletAddressRef.get().isNotBlank()) {
             val currentWallet = wallet()
             logd(TAG, "Current wallet: ${if (currentWallet == null) "null (hardware-backed)" else "not null"}")
-            
+
             if (currentWallet == null) {
                 // Hardware-backed key case: trust the selected address even if not in our maps
                 logd(TAG, "Hardware-backed key detected, preserving selected address: ${selectedWalletAddressRef.get()}")
@@ -533,6 +547,14 @@ object WalletManager {
             } else {
                 childAccountMap[it] = ChildAccountList(it)
             }
+        }
+    }
+
+    private fun refreshChildAccountForHardwareBackedKey(address: String) {
+        if (childAccountMap.contains(address)) {
+            childAccountMap[address]?.refresh()
+        } else {
+            childAccountMap[address] = ChildAccountList(address)
         }
     }
 
@@ -594,7 +616,7 @@ object WalletManager {
                     } catch (e: Exception) {
                         logd(TAG, "CRITICAL ERROR: Failed to load stored private key: ${e.message}")
                         logd(TAG, "This could indicate a migration issue. Cannot proceed without the stored key.")
-                        
+
                         // Run diagnostic to help troubleshooting
                         try {
                             val androidKeystoreAliases = KeyStoreMigrationManager.diagnoseAndroidKeystore()
@@ -602,7 +624,7 @@ object WalletManager {
                         } catch (diagE: Exception) {
                             logd(TAG, "Could not run Android Keystore diagnostic: ${diagE.message}")
                         }
-                        
+
                         return@synchronized
                     }
                     logd(TAG, "Successfully loaded private key")
@@ -715,7 +737,7 @@ object WalletManager {
                 // Force a wallet update and notify listeners
                 walletUpdate()
                 logd(TAG, "Triggered wallet update")
-                
+
                 uiScope {
                     triggerWalletReadyCallbacks()
                 }
@@ -731,11 +753,11 @@ object WalletManager {
 fun Wallet?.walletAddress(): String? {
     val currentNetwork = chainNetWorkString()
     logd("WalletManager", "Getting wallet address for network: $currentNetwork")
-    
+
     // Handle case where wallet is null (hardware-backed keys)
     if (this == null) {
         logd("WalletManager", "Wallet is null (likely hardware-backed key), getting address from account data")
-        
+
         // Get address from account data for hardware-backed keys
         val account = AccountManager.get()
         val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
@@ -748,11 +770,11 @@ fun Wallet?.walletAddress(): String? {
             logd("WalletManager", "Using server wallet address for hardware-backed key: $serverAddress")
             return serverAddress
         }
-        
+
         logd("WalletManager", "No wallet address available for hardware-backed key")
         return null
     }
-    
+
     // First try to find account for current network
     val networkAccount = this.accounts.entries.firstOrNull { (chainId, accounts) ->
         val isNetworkMatch = when (currentNetwork) {

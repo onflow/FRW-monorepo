@@ -4,6 +4,7 @@ import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.config.AppConfig.isVersionUpdateRequired
 import com.flowfoundation.wallet.utils.svgToPng
 import com.google.gson.annotations.SerializedName
+import com.reown.sign.client.Sign
 import java.util.Date
 
 
@@ -29,7 +30,9 @@ data class WalletNotification(
     @SerializedName("display_type")
     val displayType: DisplayType,
     @SerializedName("conditions")
-    val conditions: List<Condition>?
+    val conditions: List<Condition>?,
+    @Transient
+    val pendingRequest: Sign.Model.SessionRequest? = null
 ) {
     fun icon(): String? {
         return if (icon?.endsWith(".svg") == true) {
