@@ -23,10 +23,10 @@ export function SegmentedControl({
 
   const { height, px, fontSize } = sizeConfig[size];
 
-  const containerWidth = fullWidth ? '100%' : (constrainWidth ? 178 : 'auto');
+  const containerWidth = fullWidth ? '100%' : constrainWidth ? 178 : 'auto';
   const useGap = constrainWidth ? 8 : undefined;
-  const segmentWidth = fullWidth ? undefined : (constrainWidth ? (178 - 10 - 8) / 2 : undefined);
-  const segmentPx = fullWidth ? px : (constrainWidth ? 6 : px);
+  const segmentWidth = fullWidth ? undefined : constrainWidth ? (178 - 10 - 8) / 2 : undefined;
+  const segmentPx = fullWidth ? px : constrainWidth ? 6 : px;
 
   return (
     <XStack
@@ -36,7 +36,7 @@ export function SegmentedControl({
       rounded={200}
       p={5}
       items="center"
-      justify={constrainWidth ? "center" : undefined}
+      justify={constrainWidth ? 'center' : undefined}
       w={containerWidth}
       maxW={constrainWidth ? 178 : undefined}
       gap={useGap}
@@ -61,6 +61,7 @@ export function SegmentedControl({
             cursor="pointer"
           >
             <Text
+              data-testid={segment}
               fontSize={fontSize}
               fontWeight={600}
               opacity={isSelected ? 0.8 : 1}

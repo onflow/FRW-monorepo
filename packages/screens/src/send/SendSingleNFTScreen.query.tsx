@@ -1,8 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import {
-  useSendStore,
-  sendSelectors,
-} from '@onflow/frw-stores';
+import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -74,22 +71,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
     setCurrentStep('send-single-nft');
   }, [setCurrentStep]);
 
-  // Early return if essential data is missing
-  if (!selectedNFT) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" textAlign="center">
-            No NFT selected. Please go back and select an NFT to send.
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   // Transform NFT data for UI
   const nftForUI: NFTDetailData = {
     id: selectedNFT.id,
@@ -117,7 +98,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Mock storage warning - TODO: Replace with real storage check
   const showStorageWarning = false;
-  const storageWarningMessage = 'Account balance will fall below the minimum FLOW required for storage after this transaction.';
+  const storageWarningMessage =
+    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = {
@@ -159,6 +141,22 @@ export function SendSingleNFTScreen(): React.ReactElement {
       // Error handling will be managed by the store
     }
   }, [executeTransaction]);
+
+  // Early return if essential data is missing
+  if (!selectedNFT) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
+            No NFT selected. Please go back and select an NFT to send.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
@@ -212,12 +210,11 @@ export function SendSingleNFTScreen(): React.ReactElement {
             )}
 
             {/* Arrow Down Indicator */}
-          <XStack position="relative" height={0}>
-            <XStack width="100%" position="absolute" t={-30} justify="center">
-              <SendArrowDivider variant="arrow" size={48} />
+            <XStack position="relative" height={0}>
+              <XStack width="100%" position="absolute" t={-30} justify="center">
+                <SendArrowDivider variant="arrow" size={48} />
+              </XStack>
             </XStack>
-          </XStack>
-
 
             {/* To Account Section */}
             {toAccount && (
@@ -270,7 +267,12 @@ export function SendSingleNFTScreen(): React.ReactElement {
               elevation: isSendDisabled ? 0 : 1,
             }}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              data-testid="next"
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? '#999' : '#000000'}
+            >
               {t('common.next')}
             </Text>
           </YStack>

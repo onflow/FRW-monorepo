@@ -182,6 +182,7 @@ export function NFTSelectionBar({
               borderWidth={0}
               borderRadius="$4"
               pressStyle={{ opacity: 0.8, scale: 0.98 }}
+              data-testid={'confirm'}
             >
               <Text fontSize="$5" fontWeight="600" color="$black">
                 Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
