@@ -1,4 +1,4 @@
-import { ChevronDown, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
@@ -240,6 +240,8 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 loop={false}
                 speed={1}
               /> */}
+
+              {isExtension && <WalletCard width={114.62} height={129.195} />}
             </View>
           </View>
 
