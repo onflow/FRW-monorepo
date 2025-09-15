@@ -64,6 +64,24 @@ export function NFTCard({
           </YStack>
         )}
 
+        {/* ERC1155 Badge - top left corner */}
+        {nft.contractType === 'ERC1155' && nft.amount && (
+          <XStack
+            position="absolute"
+            top="$2"
+            left="$2"
+            bg="$blackA11"
+            rounded="$2"
+            px="$2"
+            py="$1"
+            zIndex={1}
+          >
+            <Text fontSize="$2" fontWeight="600" color="$white">
+              x{nft.amount}
+            </Text>
+          </XStack>
+        )}
+
         {/* Selection Indicator - top right corner */}
         <YStack
           w="$6"

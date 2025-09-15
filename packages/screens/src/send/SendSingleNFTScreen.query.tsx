@@ -252,10 +252,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
               {/* ERC1155 Quantity Selector */}
               {isERC1155 && (
-                <YStack gap="$2" mt="$3">
-                  <Text fontSize="$3" fontWeight="400" opacity={0.8}>
-                    Quantity
-                  </Text>
+                <YStack gap="$2" mb="$3">
                   <ERC1155QuantitySelector
                     quantity={selectedQuantity}
                     maxQuantity={maxQuantity}

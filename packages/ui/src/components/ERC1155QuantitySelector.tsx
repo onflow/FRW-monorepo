@@ -1,6 +1,6 @@
 import { Minus, Plus } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, Text, View } from 'tamagui';
+import { XStack, Text, Stack } from 'tamagui';
 
 export interface ERC1155QuantitySelectorProps {
   quantity: number;
@@ -41,11 +41,11 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
       items="center"
       justify="space-between"
       px="$2.5"
-      py="$0.75"
+      py="$1"
       gap="$2.5"
       alignSelf="stretch"
     >
-      <View
+      <Stack
         onPress={handleDecrease}
         opacity={isDecreaseDisabled ? 0.3 : 1}
         cursor={isDecreaseDisabled ? 'not-allowed' : 'pointer'}
@@ -55,22 +55,23 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
         items="center"
         justify="center"
       >
-        <Minus size={24} color="#FFFFFF" theme="outline" />
-      </View>
+        <Minus size={24} color="white" theme="outline" />
+      </Stack>
 
       <Text
         fontSize="$4.5"
         fontWeight="600"
         color="$white"
-        letterSpacing={-0.006}
+        letterSpacing="$xs"
         textAlign="center"
         flex={1}
         numberOfLines={1}
+        lineHeight="$4.5"
       >
         {formatNumber(quantity)}
       </Text>
 
-      <View
+      <Stack
         onPress={handleIncrease}
         opacity={isIncreaseDisabled ? 0.3 : 1}
         cursor={isIncreaseDisabled ? 'not-allowed' : 'pointer'}
@@ -80,8 +81,8 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
         items="center"
         justify="center"
       >
-        <Plus size={24} color="#FFFFFF" theme="outline" />
-      </View>
+        <Plus size={24} color="white" theme="outline" />
+      </Stack>
     </XStack>
   );
 };

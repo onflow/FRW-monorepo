@@ -92,6 +92,8 @@ export function NFTDetailView({
               selectable={selectable}
               onImagePress={selectable ? onToggleSelection : undefined}
               borderRadius={16}
+              contractType={nft.contractType}
+              amount={nft.amount}
             />
           </YStack>
 

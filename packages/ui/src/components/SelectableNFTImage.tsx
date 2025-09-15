@@ -1,6 +1,6 @@
 import { CheckCircle } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, Image } from 'tamagui';
+import { YStack, XStack, Image, Text } from 'tamagui';
 
 export interface SelectableNFTImageProps {
   src: string;
@@ -15,6 +15,9 @@ export interface SelectableNFTImageProps {
   accountEmoji?: string;
   accountAvatar?: string;
   showAccountAvatar?: boolean;
+  // ERC1155 quantity
+  contractType?: string;
+  amount?: number;
 }
 
 export function SelectableNFTImage({
@@ -29,6 +32,8 @@ export function SelectableNFTImage({
   accountEmoji,
   accountAvatar,
   showAccountAvatar = false,
+  contractType,
+  amount,
 }: SelectableNFTImageProps) {
   const getSizeStyles = () => {
     switch (size) {
@@ -75,6 +80,24 @@ export function SelectableNFTImage({
           </YStack>
         }
       />
+
+      {/* ERC1155 Quantity Badge - top left corner */}
+      {contractType === 'ERC1155' && amount && (
+        <XStack
+          pos="absolute"
+          top={14}
+          left={14}
+          bg="$blackA11"
+          rounded="$2"
+          px="$2.5"
+          py="$1.5"
+          zIndex={1}
+        >
+          <Text fontSize="$3" fontWeight="600" color="$white">
+            x{amount}
+          </Text>
+        </XStack>
+      )}
 
       {/* Selection Indicator */}
       {selectable && selected && (

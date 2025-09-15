@@ -11,7 +11,7 @@ import {
   ExtensionHeader,
   Text,
 } from '@onflow/frw-ui';
-import { getNFTId } from '@onflow/frw-utils';
+import { getNFTId, logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -169,16 +169,67 @@ export function NFTListScreen(): React.ReactElement {
     }
   }, [selectedNFTsToStore, setSelectedNFTs]);
 
-  // Handle NFT selection
+  // Handle NFT selection with ERC1155 constraints
   const handleNFTSelect = useCallback(
     (nftId: string) => {
       setSelectedIds((prev) => {
         const isSelected = prev.includes(nftId);
-        const newSelectedIds = isSelected
-          ? prev.filter((id) => id !== nftId)
-          : prev.length >= 9
-            ? prev // Don't add more than 9
-            : [...prev, nftId];
+
+        // Find the NFT being selected
+        const selectedNFT = nfts.find((nft) => getNFTId(nft) === nftId);
+        const isERC1155 = selectedNFT?.contractType === 'ERC1155';
+
+        // Check if any currently selected NFTs are ERC1155
+        const currentlySelectedNFTs = nfts.filter((nft) => prev.includes(getNFTId(nft)));
+        const hasERC1155Selected = currentlySelectedNFTs.some(
+          (nft) => nft.contractType === 'ERC1155'
+        );
+
+        // Deselection logic - always allow deselection
+        if (isSelected) {
+          const newSelectedIds = prev.filter((id) => id !== nftId);
+
+          // Set transaction type based on selection count
+          if (newSelectedIds.length === 1) {
+            setTransactionType('single-nft');
+          } else if (newSelectedIds.length > 1) {
+            setTransactionType('multiple-nfts');
+          }
+
+          return newSelectedIds;
+        }
+
+        // Selection logic with ERC1155 constraints
+
+        // If selecting ERC1155, clear all other selections (only allow single ERC1155)
+        if (isERC1155) {
+          logger.info('[NFTListScreen] ERC1155 NFT selected - clearing other selections', {
+            nftId,
+            nftName: selectedNFT?.name,
+            previousSelections: prev.length,
+          });
+          setTransactionType('single-nft');
+          return [nftId];
+        }
+
+        // If ERC1155 is already selected, don't allow selecting other NFTs
+        if (hasERC1155Selected) {
+          logger.warn('[NFTListScreen] Cannot select other NFTs when ERC1155 is selected', {
+            attemptedNftId: nftId,
+            existingERC1155Count: currentlySelectedNFTs.filter(
+              (nft) => nft.contractType === 'ERC1155'
+            ).length,
+          });
+          return prev;
+        }
+
+        // Regular NFT selection logic (non-ERC1155)
+        if (prev.length >= 9) {
+          console.warn('Maximum 9 NFTs can be selected');
+          return prev;
+        }
+
+        const newSelectedIds = [...prev, nftId];
 
         // Set transaction type based on selection count
         if (newSelectedIds.length === 1) {
@@ -187,14 +238,10 @@ export function NFTListScreen(): React.ReactElement {
           setTransactionType('multiple-nfts');
         }
 
-        if (prev.length >= 9 && !isSelected) {
-          console.warn('Maximum 9 NFTs can be selected');
-        }
-
         return newSelectedIds;
       });
     },
-    [setTransactionType]
+    [setTransactionType, nfts]
   );
 
   const handleNFTDetail = useCallback(
