@@ -7,7 +7,6 @@ import {
   View,
   NFTSendPreview,
   SendArrowDivider,
-  TransactionConfirmationModal,
   ConfirmationDrawer,
   TransactionFeeSection,
   ToAccountSection,
@@ -343,60 +342,32 @@ export function SendSingleNFTScreen(): React.ReactElement {
         </YStack>
 
         {/* Transaction Confirmation - Platform specific */}
-        {isExtension ? (
-          <TransactionConfirmationModal
-            visible={isConfirmationVisible}
-            transactionType="single-nft"
-            selectedToken={null}
-            selectedNFTs={
-              selectedNFT
-                ? [
-                    {
-                      id: selectedNFT.id || '',
-                      name: selectedNFT.name || '',
-                      image: selectedNFT.thumbnail || '',
-                      collection: selectedNFT.collectionName || '',
-                      collectionContractName:
-                        selectedNFT.collectionContractName || selectedNFT.contractName || '',
-                      description: selectedNFT.description || '',
-                    },
-                  ]
-                : undefined
-            }
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-            title="Confirm NFT Transfer"
-          />
-        ) : (
-          <ConfirmationDrawer
-            visible={isConfirmationVisible}
-            transactionType="single-nft"
-            selectedToken={null}
-            selectedNFTs={
-              selectedNFT
-                ? [
-                    {
-                      id: selectedNFT.id || '',
-                      name: selectedNFT.name || '',
-                      image: selectedNFT.thumbnail || '',
-                      collection: selectedNFT.collectionName || '',
-                      collectionContractName:
-                        selectedNFT.collectionContractName || selectedNFT.contractName || '',
-                      description: selectedNFT.description || '',
-                    },
-                  ]
-                : undefined
-            }
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        )}
+        <ConfirmationDrawer
+          visible={isConfirmationVisible}
+          transactionType="single-nft"
+          selectedToken={null}
+          selectedNFTs={
+            selectedNFT
+              ? [
+                  {
+                    id: selectedNFT.id || '',
+                    name: selectedNFT.name || '',
+                    image: selectedNFT.thumbnail || '',
+                    collection: selectedNFT.collectionName || '',
+                    collectionContractName:
+                      selectedNFT.collectionContractName || selectedNFT.contractName || '',
+                    description: selectedNFT.description || '',
+                  },
+                ]
+              : undefined
+          }
+          fromAccount={transformAccountForDisplay(fromAccount)}
+          toAccount={transformAccountForDisplay(toAccount)}
+          formData={formData}
+          onConfirm={handleTransactionConfirm}
+          onClose={handleConfirmationClose}
+          isExtension={isExtension}
+        />
       </YStack>
     </BackgroundWrapper>
   );

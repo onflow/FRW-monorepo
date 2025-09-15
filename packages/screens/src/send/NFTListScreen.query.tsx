@@ -36,6 +36,7 @@ export function NFTListScreen(): React.ReactElement {
   // Get data from store using selectors (following SendToScreen pattern)
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const selectedCollection = useSendStore((state) => state.selectedCollection);
+  const selectedNFTs = useSendStore((state) => state.selectedNFTs);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setTransactionType = useSendStore((state) => state.setTransactionType);
@@ -48,6 +49,21 @@ export function NFTListScreen(): React.ReactElement {
   useEffect(() => {
     setCurrentStep('select-tokens');
   }, [setCurrentStep]);
+
+  // Initialize selectedIds from store's selectedNFTs when component mounts
+  useEffect(() => {
+    if (selectedNFTs && selectedNFTs.length > 0) {
+      const nftIds = selectedNFTs.map((nft) => getNFTId(nft));
+      setSelectedIds(nftIds);
+
+      // Set transaction type based on selection count
+      if (nftIds.length === 1) {
+        setTransactionType('single-nft');
+      } else if (nftIds.length > 1) {
+        setTransactionType('multiple-nfts');
+      }
+    }
+  }, []); // Only run on mount
 
   const collectionName = activeCollection?.name || 'NFT Collection';
 

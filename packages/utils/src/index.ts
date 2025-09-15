@@ -30,6 +30,7 @@ export {
   isEmpty,
   isTransactionId,
   stripHexPrefix,
+  isEmoji,
 } from './utils';
 
 // Token utilities

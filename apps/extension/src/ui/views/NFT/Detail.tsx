@@ -1,15 +1,15 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { Box, Button, CardMedia, Container, IconButton, Typography } from '@mui/material';
+import { Box, Container, IconButton, Typography } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
+import { WalletType } from '@onflow/frw-types';
 import { saveAs } from 'file-saver';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import fallback from '@/ui/assets/image/errorImage.png';
-import DetailMove from '@/ui/assets/svg/detailMove.svg';
-import SendIcon from '@/ui/assets/svg/detailSend.svg';
+import NFTSendButton from '@/ui/components/NFTs/NFTSendButton';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { type PostMedia } from '@/ui/utils/url';
@@ -50,21 +50,6 @@ const Detail = () => {
   const [contactTwo, setContactTwo] = useState<any>(emptyContact);
   const [isAccessibleNft, setisAccessibleNft] = useState<any>(false);
 
-  // TB July 2025. This always fails as the script doesn't exist. Turning off for now
-  // const [canMoveChild, setCanMoveChild] = useState(false);
-
-  const canMoveChild = activeAccountType !== 'child' && currentWallet.address;
-  /*
-  useEffect(() => {
-    const checkPermission = async () => {
-      // TODO: TB July 2025. This always fails as the script doesn't exist. Turning off for now
-      const result = await usewallet.checkCanMoveChild(currentWallet.address);
-      setCanMoveChild(result);
-    };
-
-    checkPermission();
-  }, [usewallet, currentWallet.address]);
- */
   useEffect(() => {
     const savedState = localStorage.getItem('nftDetailState');
     if (savedState) {
@@ -81,10 +66,16 @@ const Detail = () => {
   }, []);
 
   const fetchNft = useCallback(async () => {
+    // Guard against missing userInfo
+    if (!userInfo) {
+      console.warn('UserInfo not available, skipping fetchNft');
+      return;
+    }
+
     const currentAddress = currentWallet.address;
     const parentAddress = mainAddress;
     const userTemplate = {
-      avatar: userInfo!.avatar,
+      avatar: userInfo?.avatar || '',
       domain: {
         domain_type: 0,
         value: '',
@@ -107,18 +98,18 @@ const Detail = () => {
       userTwo = {
         ...userTemplate,
         address: parentAddress,
-        contact_name: userInfo!.nickname,
+        contact_name: userInfo?.nickname || '',
       };
     } else {
       userOne = {
         ...userTemplate,
         address: currentAddress,
-        contact_name: userInfo!.nickname,
+        contact_name: userInfo?.nickname || '',
       };
       userTwo = {
         ...userTemplate,
         address: parentAddress,
-        contact_name: userInfo!.nickname,
+        contact_name: userInfo?.nickname || '',
       };
     }
     setContactOne(userOne);
@@ -452,55 +443,13 @@ const Detail = () => {
           {!(
             nftDetail?.collectionContractName === 'Domains' && media?.title?.includes('.meow')
           ) && (
-            <Button
-              sx={{
-                backgroundColor: '#FFFFFF33',
-                p: '12px',
-                color: '#fff',
-                borderRadius: '12px',
-                height: '42px',
-                fill: 'var(--Special-Color-White-2, rgba(255, 255, 255, 0.20))',
-                filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.24))',
-                backdropFilter: 'blur(6px)',
-              }}
-              disabled={!isAccessibleNft}
-              onClick={() =>
-                navigate('/dashboard/nft/send/', {
-                  state: { nft: nftDetail, media: media, contract: nftDetail },
-                })
-              }
-            >
-              {/* <IosShareOutlinedIcon color="primary" /> */}
-              <CardMedia
-                image={SendIcon}
-                sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
-              />
-              {chrome.i18n.getMessage('Send')}
-            </Button>
-          )}
-          {canMoveChild && (
-            <Button
-              sx={{
-                backgroundColor: '#FFFFFF33',
-                p: '12px',
-                color: '#fff',
-                borderRadius: '12px',
-                height: '42px',
-                marginLeft: '8px',
-                fill: 'var(--Special-Color-White-2, rgba(255, 255, 255, 0.20))',
-                filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.24))',
-                backdropFilter: 'blur(6px)',
-              }}
-              disabled={!isAccessibleNft}
-              onClick={() => setMoveOpen(true)}
-            >
-              {/* <IosShareOutlinedIcon color="primary" /> */}
-              <CardMedia
-                image={DetailMove}
-                sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
-              />
-              {chrome.i18n.getMessage('Move')}
-            </Button>
+            <NFTSendButton
+              nftDetail={nftDetail}
+              media={media}
+              collectionInfo={collectionInfo}
+              isAccessibleNft={isAccessibleNft}
+              walletType={WalletType.Flow}
+            />
           )}
         </Box>
 

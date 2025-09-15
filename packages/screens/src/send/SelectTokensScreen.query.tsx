@@ -57,21 +57,26 @@ export function SelectTokensScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
 
   // Get current address and network
+  const selectedAddress = bridge.getSelectedAddress();
   const [currentAccount, setCurrentAccount] = React.useState<WalletAccount | null>(null);
   const network = bridge.getNetwork() || 'mainnet';
   // Load current account on mount
-  React.useEffect(() => {
-    const loadCurrentAccount = async () => {
-      try {
-        const account = await bridge.getSelectedAccount();
-        setCurrentAccount(account);
-        setFromAccount(account);
-      } catch (error) {
-        console.error('Failed to load current account:', error);
-      }
-    };
-    loadCurrentAccount();
+  const loadCurrentAccount = React.useCallback(async () => {
+    try {
+      const account = await bridge.getSelectedAccount();
+      setCurrentAccount(account);
+      setFromAccount(account);
+    } catch (error) {
+      console.error('Failed to load current account:', error);
+    }
   }, []);
+
+  // Update current account when selected address changes
+  React.useEffect(() => {
+    if (selectedAddress) {
+      loadCurrentAccount();
+    }
+  }, [selectedAddress, loadCurrentAccount]);
 
   // Get wallet accounts for modal selection
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
@@ -107,16 +112,6 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
-
-  // Log current account for debugging
-  React.useEffect(() => {
-    console.log('SelectTokensScreen - Current account:', {
-      currentAccount: currentAccount
-        ? { address: currentAccount.address, name: currentAccount.name }
-        : null,
-      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
-    });
-  }, [currentAccount, accounts]);
 
   // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
   const { data: balanceData, isLoading: isBalanceLoading } = useQuery({
@@ -204,15 +199,17 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
-    // Find the current account to set in store
-    const account = accounts.find(
-      (acc: WalletAccount) => acc.address?.toLowerCase() === currentAccount?.address?.toLowerCase()
-    );
-
     // Set store data for NFTListScreen
     setSelectedCollection(collection);
-    if (account) {
-      setFromAccount(account);
+    if (currentAccount) {
+      setFromAccount(currentAccount);
+    } else {
+      const account = accounts.find(
+        (acc: WalletAccount) => acc.address?.toLowerCase() === selectedAddress?.toLowerCase()
+      );
+      if (account) {
+        setFromAccount(account);
+      }
     }
     setTransactionType('multiple-nfts');
     navigation.navigate('NFTList', { collection, address: currentAccount?.address || '' });

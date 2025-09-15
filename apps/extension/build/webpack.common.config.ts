@@ -190,6 +190,10 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         'process.env.release': JSON.stringify(version),
       }),
     ],
+    externals: {
+      'react-native': 'undefined',
+      '@react-native-clipboard/clipboard': 'undefined',
+    },
     resolve: {
       alias: {
         moment: 'dayjs',
@@ -219,6 +223,8 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         events: 'events',
         fs: false,
         'fs/promises': false,
+        '@react-native-clipboard/clipboard': false,
+        'react-native': false,
       },
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },

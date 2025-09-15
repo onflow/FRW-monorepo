@@ -72,6 +72,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     childAccounts,
     activeAccountType,
     profileIds,
+    parentWallet,
   } = useProfiles();
 
   // Send store hooks for synchronization
@@ -181,10 +182,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     };
 
     enhancedPlatform.getWalletAccounts = async () => {
-      
       const accountsArray: any[] = [];
-
-  
 
       // Add all main wallet accounts from walletList (this includes all 18 accounts)
       if (Array.isArray(walletList) && walletList.length > 0) {
@@ -244,6 +242,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             },
             parentEmoji: evmWallet?.icon || '', // Use icon as emoji
             isActive: false,
+            parentAddress: mainAddress,
           });
         });
       }
@@ -262,8 +261,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           name: currentName,
           type: accountType,
           balance: '0',
-          avatar: currentWallet.icon || '', // Use icon as avatar
-          emoji: currentWallet.icon || '', // Use icon as emoji
+          avatar: currentWallet.icon || '',
+          emoji: currentWallet.icon || '',
           emojiInfo: {
             emoji: currentWallet.icon || '',
             name: currentName,
@@ -273,9 +272,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         });
       }
 
-      console.log('PlatformContext getWalletAccounts: final accountsArray:', accountsArray);
-      console.log('PlatformContext getWalletAccounts: total accounts:', accountsArray.length);
-      
       return {
         accounts: accountsArray,
         total: accountsArray.length,
@@ -360,12 +356,12 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                     balance: '0',
                     avatar: childAccount.icon || '',
                     emoji: childAccount.icon || '',
-                    emojiInfo: {
-                      emoji: childAccount.icon || '',
-                      name: childName,
-                      color: childAccount.color || '#6B7280',
+                    emojiInfo: undefined,
+                    parentEmoji: {
+                      emoji: account?.icon || '',
+                      name: account?.name || '',
+                      color: account?.color || '#6B7280',
                     },
-                    parentEmoji: account.evmAccount?.icon || account.icon || '',
                     isActive: false,
                   });
                 });
@@ -402,22 +398,33 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Determine account type based on address format
-      const accountType = isEvmAddress ? 'evm' : 'main';
-
       const selectedName = currentWallet.name || 'My Account';
-      return {
-        address: currentWallet.address,
-        name: selectedName,
-        type: accountType,
-        balance: '0',
-        avatar: currentWallet.icon || '', // Use icon as avatar
-        emoji: currentWallet.icon || '', // Use icon as emoji
-        emojiInfo: {
+      let emojiInfo;
+      let parentEmoji;
+      if (activeAccountType === 'child') {
+        emojiInfo = undefined;
+        parentEmoji = {
+          emoji: parentWallet.icon || '',
+          name: parentWallet.name,
+          color: parentWallet.color || '#6B7280',
+        };
+      } else {
+        emojiInfo = {
           emoji: currentWallet.icon || '',
           name: selectedName,
           color: currentWallet.color || '#6B7280',
-        },
+        };
+      }
+      return {
+        address: currentWallet.address,
+        name: selectedName,
+        type: activeAccountType,
+        balance: '0',
+        avatar: currentWallet.icon || '', // Use icon as avatar
+        emoji: currentWallet.icon || '', // Use icon as emoji
+        emojiInfo,
         parentAddress: mainAddress,
+        parentEmoji,
       };
     };
 

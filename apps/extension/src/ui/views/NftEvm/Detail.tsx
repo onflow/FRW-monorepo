@@ -1,19 +1,17 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { Box, Button, CardMedia, Container, IconButton, Typography } from '@mui/material';
+import { Box, Container, IconButton, Typography } from '@mui/material';
 import { StyledEngineProvider } from '@mui/material/styles';
+import { WalletType } from '@onflow/frw-types';
 import { saveAs } from 'file-saver';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import fallback from '@/ui/assets/image/errorImage.png';
-import DetailMove from '@/ui/assets/svg/detailMove.svg';
-import SendIcon from '@/ui/assets/svg/detailSend.svg';
+import NFTSendButton from '@/ui/components/NFTs/NFTSendButton';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { type PostMedia } from '@/ui/utils/url';
-
-import MoveNftFromEvm from './SendNFT/MoveNftFromEvm';
 
 interface NFTDetailState {
   nft: any;
@@ -41,7 +39,6 @@ const Detail = () => {
   const [mediaLoading, setMediaLoading] = useState(true);
   const [ownerAddress, setOwnerAddress] = useState<any>(null);
   const [media, setMedia] = useState<PostMedia | null>(null);
-  const [moveOpen, setMoveOpen] = useState<boolean>(false);
   const [evmEnabled, setEvmEnabled] = useState<boolean>(false);
   const [contactOne, setContactOne] = useState<any>(emptyContact);
   const [contactTwo, setContactTwo] = useState<any>(emptyContact);
@@ -428,70 +425,16 @@ const Detail = () => {
         {isAccessibleNft && (
           <Box sx={{ height: '42px', position: 'fixed', bottom: '32px', right: '18px' }}>
             {!(nftDetail?.contractName === 'Domains' && media?.title?.includes('.meow')) && (
-              <Button
-                sx={{
-                  backgroundColor: '#FFFFFF33',
-                  p: '12px',
-                  color: '#fff',
-                  borderRadius: '12px',
-                  height: '42px',
-                  fill: 'var(--Special-Color-White-2, rgba(255, 255, 255, 0.20))',
-                  filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.24))',
-                  backdropFilter: 'blur(6px)',
-                }}
-                onClick={() =>
-                  navigate('/dashboard/nftevm/send/', {
-                    state: { nft: nftDetail, media: media, contract: nftDetail },
-                  })
-                }
-              >
-                {/* <IosShareOutlinedIcon color="primary" /> */}
-                <CardMedia
-                  image={SendIcon}
-                  sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
-                />
-                {chrome.i18n.getMessage('Send')}
-              </Button>
-            )}
-
-            <Button
-              sx={{
-                backgroundColor: '#FFFFFF33',
-                p: '12px',
-                color: '#fff',
-                borderRadius: '12px',
-                height: '42px',
-                marginLeft: '8px',
-                fill: 'var(--Special-Color-White-2, rgba(255, 255, 255, 0.20))',
-                filter: 'drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.24))',
-                backdropFilter: 'blur(6px)',
-              }}
-              onClick={() => setMoveOpen(true)}
-            >
-              {/* <IosShareOutlinedIcon color="primary" /> */}
-              <CardMedia
-                image={DetailMove}
-                sx={{ width: '20px', height: '20px', color: '#fff', marginRight: '8px' }}
+              <NFTSendButton
+                nftDetail={nftDetail}
+                media={media}
+                collectionInfo={null}
+                isAccessibleNft={isAccessibleNft}
+                walletType={WalletType.EVM}
               />
-              {chrome.i18n.getMessage('Move')}
-            </Button>
+            )}
           </Box>
         )}
-        <MoveNftFromEvm
-          isConfirmationOpen={moveOpen}
-          data={{
-            contact: contactTwo,
-            userContact: contactOne,
-            nft: nftDetail,
-            contract: nftDetail,
-            media: media,
-          }}
-          handleCloseIconClicked={() => setMoveOpen(false)}
-          handleCancelBtnClicked={() => setMoveOpen(false)}
-          handleAddBtnClicked={() => {
-            setMoveOpen(false);
-          }}
-        />
       </Box>
     </StyledEngineProvider>
   );

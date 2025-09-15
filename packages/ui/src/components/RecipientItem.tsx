@@ -59,7 +59,6 @@ export function RecipientItem({
   copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
-  console.log('RecipientItem render:', { name, address, type, emojiInfo, avatar });
   return (
     <Card
       bg="transparent"
@@ -92,7 +91,7 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={emojiInfo?.color || "rgba(255, 255, 255, 0.25)"}
+              bgColor={emojiInfo?.color || 'rgba(255, 255, 255, 0.25)'}
               size={avatarSize}
             />
           </YStack>
@@ -194,7 +193,7 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <Copy size={24} color={copiedFeedback ? "#00D964" : "#FFFFFF"} />
+              <Copy size={24} color={copiedFeedback ? '#00D964' : '#FFFFFF'} />
             </Card>
           )}
           {copiedFeedback && (
