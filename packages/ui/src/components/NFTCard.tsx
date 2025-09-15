@@ -18,6 +18,7 @@ export interface NFTCardProps {
 }
 
 export function NFTCard({
+  idx,
   nft,
   selected = false,
   onPress,
@@ -78,6 +79,7 @@ export function NFTCard({
           }}
           pressStyle={{ opacity: 0.8 }}
           cursor="pointer"
+          data-testid={idx}
         >
           <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>
@@ -100,7 +102,7 @@ export function NFTCard({
               <YStack
                 width="$4"
                 height="$4"
-                bg={accountColor || "$warning"}
+                bg={accountColor || '$warning'}
                 rounded="$12"
                 items="center"
                 justify="center"

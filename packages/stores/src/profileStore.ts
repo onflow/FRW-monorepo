@@ -38,7 +38,7 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 
     try {
       const flow = flowService();
-      
+
       // Try to use the new getWalletProfiles method first
       try {
         console.log('ProfileStore: Attempting to load profiles with getWalletProfiles');
@@ -60,23 +60,28 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
         });
       } catch (profileError) {
         // Fallback to getWalletAccounts if getWalletProfiles is not available
-        console.log('ProfileStore: getWalletProfiles failed, falling back to getWalletAccounts. Error:', profileError);
-        
+        console.log(
+          'ProfileStore: getWalletProfiles failed, falling back to getWalletAccounts. Error:',
+          profileError
+        );
+
         const walletAccountsData = await flow.getWalletAccounts();
         console.log('ProfileStore: walletAccountsData:', walletAccountsData);
-        
+
         if (!walletAccountsData.accounts || !Array.isArray(walletAccountsData.accounts)) {
           throw new Error('Invalid accounts data from bridge');
         }
 
         // Convert accounts to a single profile structure
-        const profiles: WalletProfile[] = [{
-          uid: 'default-profile',
-          name: 'Main Profile',
-          avatar: '👤',
-          accounts: walletAccountsData.accounts,
-        }];
-        
+        const profiles: WalletProfile[] = [
+          {
+            uid: 'default-profile',
+            name: 'Main Profile',
+            avatar: '👤',
+            accounts: walletAccountsData.accounts,
+          },
+        ];
+
         console.log('Fallback profiles created:', profiles);
 
         set({

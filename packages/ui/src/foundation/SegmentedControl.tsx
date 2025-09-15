@@ -59,6 +59,7 @@ export function SegmentedControl({
             cursor="pointer"
           >
             <Text
+              data-testid={segment}
               fontSize={fontSize}
               fontWeight={600}
               opacity={isSelected ? 0.8 : 1}

@@ -165,6 +165,23 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     }
   }, [executeTransaction, isExtension]);
 
+  const handleRemoveNFT = useCallback(
+    (nftId: string) => {
+      const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
+      setSelectedNFTs(updatedNFTs);
+
+      // If only one NFT remains, navigate to single NFT screen
+      if (updatedNFTs.length === 1) {
+        navigation.navigate('SendSingleNFT');
+      }
+      // If no NFTs remain, go back to selection
+      else if (updatedNFTs.length === 0) {
+        navigation.goBack();
+      }
+    },
+    [selectedNFTs, setSelectedNFTs]
+  );
+
   // Early return if essential data is missing
   if (!selectedNFTs || selectedNFTs.length === 0) {
     return (
@@ -180,6 +197,44 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
       </BackgroundWrapper>
     );
   }
+
+  // Early return if essential data is missing
+  if (!selectedNFTs || selectedNFTs.length === 0) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
+            No NFTs selected. Please go back and select NFTs to send.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
+
+  // Calculate if send button should be disabled
+  const isSendDisabled =
+    !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
+
+  // Mock transaction fee data - TODO: Replace with real fee calculation
+  const transactionFee = '0.001';
+  const usdFee = '0.00';
+  const isFeesFree = true; // Following Figma design "Covered by Flow Wallet"
+
+  // Mock storage warning - TODO: Replace with real storage check
+  const showStorageWarning = false;
+  const storageWarningMessage =
+    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
+
+  // Create form data for transaction confirmation
+  const formData: TransactionFormData = {
+    tokenAmount: selectedNFTs.length.toString(),
+    fiatAmount: '0.00',
+    isTokenMode: true,
+    transactionFee: `${transactionFee} FLOW`,
+  };
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
@@ -295,7 +350,12 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              data-testid="next"
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? '#999' : '#000000'}
+            >
               {t('common.next')}
             </Text>
           </YStack>

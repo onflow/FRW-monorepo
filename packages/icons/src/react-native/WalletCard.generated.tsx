@@ -1,8 +1,21 @@
-import * as React from "react"
-import Svg, { type SvgProps, ClipPath, Defs, ForeignObject, Path } from "react-native-svg"
+import * as React from 'react';
+import Svg, { type SvgProps, ClipPath, Defs, ForeignObject, Path } from 'react-native-svg';
 /* SVGR has dropped some elements not supported by react-native-svg: div */
-const WalletCard = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (
-  <Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size} fill="none" viewBox="0 0 146 156" {...props}>
+const WalletCard = ({
+  color = 'currentColor',
+  size = 24,
+  width,
+  height,
+  ...props
+}: SvgProps & { size?: number }) => (
+  <Svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={width ?? size}
+    height={height ?? size}
+    fill="none"
+    viewBox="0 0 146 156"
+    {...props}
+  >
     <ForeignObject width={189.777} height={211.021} x={-36.938} y={-8.176}></ForeignObject>
     <Path
       fill={color}
@@ -50,4 +63,4 @@ const WalletCard = ({ color = "currentColor", size = 24, width, height, ...props
     </Defs>
   </Svg>
 );
-export default WalletCard
+export default WalletCard;

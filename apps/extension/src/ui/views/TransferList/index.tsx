@@ -76,7 +76,7 @@ const TransferList = () => {
                   prefix={!isContractCall ? (isReceive ? '+' : '-') : ''}
                 />
               ) : (
-                `${props.token}`
+                <div data-testid={`collection-${props.token}`}>{props.token}</div>
               )}
             </Typography>
           ) : (
@@ -185,6 +185,7 @@ const TransferList = () => {
                         type={tx.type}
                         token={tx.token}
                         txType={tx.transferType}
+                        hash={tx.hash}
                       />
                     }
                     disablePadding
@@ -231,6 +232,7 @@ const TransferList = () => {
                         token={tx.token}
                         title={tx.interaction}
                         txType={tx.transferType}
+                        hash={tx.hash}
                       />
                     </ListItemButton>
                   </ListItem>

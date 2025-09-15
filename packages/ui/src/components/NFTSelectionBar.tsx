@@ -166,6 +166,7 @@ export function NFTSelectionBar({
         {/* Action Button - Always visible at bottom */}
         {onContinue && (
           <YStack
+            data-testid={'confirm'}
             shrink={0}
             bg="#FFFFFF"
             rounded="$4"

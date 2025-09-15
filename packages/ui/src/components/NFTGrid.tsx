@@ -160,6 +160,7 @@ export function NFTGrid({
   for (let i = 0; i < data.length; i += columns) {
     rows.push(data.slice(i, i + columns));
   }
+  const idx = -1;
 
   // Main grid content
   return (
