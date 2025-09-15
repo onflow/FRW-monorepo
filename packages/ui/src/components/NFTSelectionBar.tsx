@@ -111,6 +111,7 @@ export function NFTSelectionBar({
       shadowOpacity={0.1}
       shadowRadius="$2"
       elevation={8}
+      zIndex={10}
       pt="$3"
       px="$4"
       pb="$5"

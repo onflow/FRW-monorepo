@@ -68,7 +68,7 @@ export function NFTCard({
         <YStack
           w="$6"
           h="$6"
-          zIndex="$2"
+          zIndex={1}
           position="absolute"
           top="$2"
           right="$2"
@@ -100,7 +100,7 @@ export function NFTCard({
               <YStack
                 width="$4"
                 height="$4"
-                bg={accountColor || "$warning"}
+                bg={accountColor || '$warning'}
                 rounded="$12"
                 items="center"
                 justify="center"
