@@ -26,7 +26,7 @@ export function Badge({
     warning: { bg: '$warning10', textColor: '$warning' },
     error: { bg: '$error10', textColor: '$error' },
     outline: { bg: 'transparent', textColor: '$textSecondary' },
-    evm: { bg: '#627EEA', textColor: '$white' },
+    evm: { bg: '$accentEVM', textColor: '$white' },
   };
 
   const sizeProps = sizeConfig[size];

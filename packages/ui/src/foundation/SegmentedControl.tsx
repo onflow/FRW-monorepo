@@ -17,11 +17,11 @@ export function SegmentedControl({
   // Size configurations
   const sizeConfig = {
     small: { height: 32, px: 12, fontSize: 14 },
-    medium: { height: 40, px: 16, fontSize: 16 },
-    large: { height: 48, px: 20, fontSize: 18 },
+    medium: { height: 40, px: 16, fontSize: '$4' },
+    large: { height: 48, px: 20, fontSize: '$4.5' },
   };
 
-  const { height, px, fontSize } = sizeConfig[size];
+  const { px, fontSize } = sizeConfig[size];
 
   const containerWidth = fullWidth ? '100%' : constrainWidth ? 178 : 'auto';
   const useGap = constrainWidth ? 8 : undefined;
@@ -34,12 +34,11 @@ export function SegmentedControl({
       borderWidth={2}
       borderColor="#292929"
       rounded={200}
-      p={5}
+      p={3}
       items="center"
-      justify={constrainWidth ? 'center' : undefined}
-      w={containerWidth}
-      maxW={constrainWidth ? 178 : undefined}
-      gap={useGap}
+      height={40}
+      width={containerWidth}
+      alignSelf="flex-start"
       {...props}
     >
       {segments.map((segment, index) => {
@@ -49,10 +48,9 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            w={segmentWidth}
-            h={height}
-            bg={isSelected ? '#242424' : 'transparent'}
-            rounded={24}
+            bg={isSelected ? '$darkBg1' : 'transparent'}
+            rounded={20}
+            height={30}
             items="center"
             justify="center"
             px={segmentPx}

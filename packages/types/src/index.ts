@@ -3,6 +3,9 @@
 // Account types - legacy Account removed, use WalletAccount instead
 export type { AccountCacheData, UseCachedAccountDataOptions } from './Account';
 
+// Account display types
+export type { AccountDisplayData } from './AccountDisplay';
+
 // Bridge types
 export type {
   AddressBookContact,
@@ -12,6 +15,8 @@ export type {
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  WalletProfile,
+  WalletProfilesResponse,
   EnvironmentVariables,
   InitialProps,
   Currency,

@@ -107,7 +107,13 @@ export interface SendState {
   accessibleAssetStores: Record<string, AccessibleAssetStore>;
 
   // Flow state
-  currentStep: 'select-tokens' | 'send-to' | 'send-tokens' | 'send-nft' | 'confirmation';
+  currentStep:
+    | 'select-tokens'
+    | 'send-to'
+    | 'send-tokens'
+    | 'send-nft'
+    | 'confirmation'
+    | 'nft-detail';
   isLoading: boolean;
   error: string | null;
 

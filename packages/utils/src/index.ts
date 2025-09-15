@@ -30,6 +30,7 @@ export {
   isEmpty,
   isTransactionId,
   stripHexPrefix,
+  isEmoji,
 } from './utils';
 
 // Token utilities
@@ -40,9 +41,15 @@ export {
   getTokenIdentifier,
 } from './token';
 
+// SVG to PNG utilities
+export { convertedSVGURL } from './svgtopng';
+
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
 export type { BridgeLogger } from './logger';
+
+// Account transformer utilities
+export { transformAccountForCard, transformAccountForDisplay } from './accountTransformers';
 
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';

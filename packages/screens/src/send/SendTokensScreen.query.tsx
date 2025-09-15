@@ -6,13 +6,11 @@ import {
   walletSelectors,
   useAddressBookStore,
 } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
   TokenAmountInput,
   TokenSelectorModal,
-  TransactionConfirmationModal,
   ConfirmationDrawer,
   AccountCard,
   ToAccountSection,
@@ -21,53 +19,17 @@ import {
   StorageWarning,
   ExtensionHeader,
   type TransactionFormData,
-  type AccountDisplayData,
   Text,
   Separator,
   XStack,
-  Button,
+  View,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
+import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-/**
- * Transform WalletAccount to AccountDisplayData for UI components
- */
-const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatarSrc: account.avatar,
-    avatarFallback: account.emojiInfo?.emoji || account.name?.charAt(0) || 'A',
-    avatarBgColor: account.emojiInfo?.color,
-    parentEmoji: account.parentEmoji,
-    type: account.type,
-  };
-};
-
-/**
- * Transform WalletAccount to UI Account type for AccountCard
- */
-const transformAccountForCard = (account: WalletAccount | null, balance?: string): any | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatar: account.avatar,
-    balance: balance || '0 FLOW',
-    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
-    emojiInfo: account.emojiInfo,
-    parentEmoji: account.parentEmoji,
-    type: account.type,
-  };
-};
 
 /**
  * Query-integrated version of SendTokensScreen following the established pattern
@@ -78,6 +40,7 @@ export const SendTokensScreen = (props) => {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
+  const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get send store
   const {
@@ -88,7 +51,6 @@ export const SendTokensScreen = (props) => {
     selectedNFTs,
     selectedToken,
     fromAccount,
-    setFromAccount,
     toAccount,
     updateFormData,
     executeTransaction,
@@ -109,6 +71,22 @@ export const SendTokensScreen = (props) => {
   useEffect(() => {
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async () => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        console.error('Failed to check free gas status:', error);
+        // Default to enabled if we can't determine the status
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
 
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
@@ -154,23 +132,6 @@ export const SendTokensScreen = (props) => {
     enabled: !!selectedAccount?.address,
   });
 
-  // Set fromAccount when selectedAccount is loaded
-  useEffect(() => {
-    if (selectedAccount && !fromAccount) {
-      setFromAccount({
-        id: selectedAccount.address,
-        address: selectedAccount.address,
-        name: selectedAccount.name,
-        avatar: selectedAccount.avatar,
-        emojiInfo: selectedAccount.emojiInfo,
-        parentEmoji: selectedAccount.parentEmoji,
-        parentAddress: selectedAccount.parentAddress,
-        isActive: true,
-        type: selectedAccount.type,
-      });
-    }
-  }, [selectedAccount, fromAccount, setFromAccount]);
-
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
   const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
@@ -182,7 +143,6 @@ export const SendTokensScreen = (props) => {
   const storageWarningMessage =
     'Account balance will fall below the minimum FLOW required for storage after this transaction.';
   const showEditButtons = true;
-  const isFeesFree = false;
 
   // Internal callback handlers
   const onEditAccountPress = () => {
@@ -199,7 +159,6 @@ export const SendTokensScreen = (props) => {
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
-
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
@@ -257,23 +216,14 @@ export const SendTokensScreen = (props) => {
   );
 
   const handleTransactionConfirm = useCallback(async () => {
-    if (transactionType === 'tokens') {
-      if (!selectedToken || !fromAccount || !toAccount || !amount) {
-        throw new Error('Missing transaction data');
-      }
-
-      setSelectedToken(selectedToken);
-      setSelectedNFTs([]);
-      setTransactionType('tokens');
-      updateFormData({ tokenAmount: amount });
-    } else {
-      if (!selectedNFTs.length || !fromAccount || !toAccount) {
-        throw new Error('Missing NFT transaction data');
-      }
-      setSelectedToken(null);
-      setSelectedNFTs(selectedNFTs);
-      setTransactionType(transactionType);
+    if (!selectedToken || !fromAccount || !toAccount || !amount) {
+      throw new Error('Missing transaction data');
     }
+
+    setSelectedToken(selectedToken);
+    setSelectedNFTs([]);
+    setTransactionType('tokens');
+    updateFormData({ tokenAmount: amount });
 
     const result = await executeTransaction();
 
@@ -395,18 +345,26 @@ export const SendTokensScreen = (props) => {
       <YStack flex={1} p={contentPadding}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$3">
+          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
-              <AccountCard
-                account={transformAccountForCard(fromAccount, selectedAccount?.balance)}
-                title="From Account"
-                isLoading={isBalanceLoading}
-              />
+              <View mb="$2">
+                <AccountCard
+                  account={transformAccountForCard(fromAccount)}
+                  title="From Account"
+                  isLoading={isBalanceLoading}
+                />
+              </View>
             ) : (
               <Text>No account data available</Text>
             )}
-            <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+            <Separator
+              mx="$0"
+              my="$0"
+              mb="$2"
+              borderColor="rgba(255, 255, 255, 0.1)"
+              borderWidth={0.5}
+            />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -463,8 +421,8 @@ export const SendTokensScreen = (props) => {
           </YStack>
 
           {/* Arrow Down Indicator */}
-          <XStack position="relative" height={0}>
-            <XStack width="100%" position="absolute" t={-30} justify="center">
+          <XStack position="relative" height={0} mt="$1">
+            <XStack width="100%" position="absolute" t={-40} justify="center">
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>
           </XStack>
@@ -479,6 +437,7 @@ export const SendTokensScreen = (props) => {
               onLearnMorePress={onLearnMorePress}
               showEditButton={showEditButtons}
               title={t('send.toAccount')}
+              isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
             />
           )}
 
@@ -487,7 +446,7 @@ export const SendTokensScreen = (props) => {
             <TransactionFeeSection
               flowFee={transactionFee}
               usdFee={usdFee}
-              isFree={isFeesFree}
+              isFree={isFreeGasEnabled}
               showCovered={true}
               title="Transaction Fee"
               backgroundColor="transparent"
@@ -508,32 +467,24 @@ export const SendTokensScreen = (props) => {
 
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4">
-          <Button
-            fullWidth={true}
-            size="large"
-            disabled={isSendDisabled}
-            onPress={handleSendPress}
-            style={{
-              height: 52,
-              backgroundColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              color: isSendDisabled ? '#999' : '#000000',
-              borderColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              borderWidth: 1,
-              borderRadius: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 16,
-              shadowColor: 'rgba(16, 24, 40, 0.05)',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: isSendDisabled ? 0 : 1,
-              shadowRadius: 2,
-              elevation: isSendDisabled ? 0 : 1,
-              opacity: isSendDisabled ? 0.7 : 1,
-            }}
+          <YStack
+            width="100%"
+            height={52}
+            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            rounded={16}
+            items="center"
+            justify="center"
+            borderWidth={1}
+            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            opacity={isSendDisabled ? 0.7 : 1}
+            pressStyle={{ opacity: 0.9 }}
+            onPress={isSendDisabled ? undefined : handleSendPress}
+            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
               Next
             </Text>
-          </Button>
+          </YStack>
         </YStack>
 
         {/* Token Selector Modal */}
@@ -545,48 +496,28 @@ export const SendTokensScreen = (props) => {
           onClose={handleTokenSelectorClose}
           platform="mobile"
           title="Tokens"
+          currency={bridge.getCurrency()}
         />
 
-        {/* Transaction Confirmation Modal/Drawer - Platform specific */}
-        {isExtension ? (
-          <TransactionConfirmationModal
-            visible={isConfirmationVisible}
-            transactionType={transactionType}
-            selectedToken={selectedToken}
-            selectedNFTs={selectedNFTs?.map((nft) => ({
-              id: nft.id || '',
-              name: nft.name || '',
-              image: nft.thumbnail || '',
-              collection: nft.collectionName || '',
-              collectionContractName: nft.collectionContractName || '',
-              description: nft.description || '',
-            }))}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        ) : (
-          <ConfirmationDrawer
-            visible={isConfirmationVisible}
-            transactionType={transactionType}
-            selectedToken={selectedToken}
-            selectedNFTs={selectedNFTs?.map((nft) => ({
-              id: nft.id || '',
-              name: nft.name || '',
-              image: nft.thumbnail || '',
-              collection: nft.collectionName || '',
-              collectionContractName: nft.collectionContractName || '',
-              description: nft.description || '',
-            }))}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        )}
+        <ConfirmationDrawer
+          visible={isConfirmationVisible}
+          transactionType={transactionType}
+          selectedToken={selectedToken}
+          selectedNFTs={selectedNFTs?.map((nft) => ({
+            id: nft.id || '',
+            name: nft.name || '',
+            image: nft.thumbnail || '',
+            collection: nft.collectionName || '',
+            collectionContractName: nft.collectionContractName || '',
+            description: nft.description || '',
+          }))}
+          fromAccount={transformAccountForDisplay(fromAccount)}
+          toAccount={transformAccountForDisplay(toAccount)}
+          formData={formData}
+          onConfirm={handleTransactionConfirm}
+          onClose={handleConfirmationClose}
+          isExtension={isExtension}
+        />
       </YStack>
     </BackgroundWrapper>
   );

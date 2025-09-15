@@ -13,7 +13,7 @@ import {
 } from '@onflow/frw-ui';
 import { getNFTCover, getNFTId } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useQueryClient } from '../providers/QueryProvider';
@@ -38,9 +38,6 @@ export function NFTDetailScreen(): React.ReactElement {
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
-  // Local state for individual NFT selection
-  const [selectedNFTId, setSelectedNFTId] = useState<string | null>(null);
-
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
   const currentAddress = fromAccount?.address;
@@ -50,45 +47,25 @@ export function NFTDetailScreen(): React.ReactElement {
     setCurrentStep('nft-detail');
   }, [setCurrentStep]);
 
-  // Early return if essential data is missing from store
-  if (!activeCollection || !currentAddress) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" textAlign="center">
-            {t('nft.notFound.message')}
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   // Memoize the query key to prevent unnecessary re-renders
   const queryKey = useMemo(() => {
+    if (!activeCollection || !currentAddress) return null;
     const key = tokenQueryKeys.nftCollection(currentAddress, activeCollection, network);
     return key;
-  }, [
-    activeCollection?.id,
-    activeCollection?.contractName,
-    activeCollection?.name,
-    currentAddress,
-    network,
-  ]);
+  }, [activeCollection, currentAddress, network]);
 
   // 🔥 TanStack Query: Fetch NFTs from collection to get the detailed NFT data
   const {
     data: collectionNFTs = [],
     isLoading,
     error,
-  } = useQuery({
-    queryKey,
+  } = useQuery<NFTModel[]>({
+    queryKey: queryKey || [],
     queryFn: () => {
+      if (!currentAddress || !activeCollection) return Promise.resolve([]);
       return tokenQueries.fetchNFTCollection(currentAddress, activeCollection, network);
     },
-    enabled: true,
+    enabled: !!queryKey,
     staleTime: 5 * 60 * 1000, // NFT items can be cached for 5 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -112,10 +89,10 @@ export function NFTDetailScreen(): React.ReactElement {
     (nftModel: NFTModel): NFTDetailData => {
       // Extract additional properties that might contain traits/attributes
       const additionalProperties: { label: string; value: string }[] = [];
-      
+
       // Check if NFT has traits/attributes in metadata
       const nftAsAny = nftModel as any;
-      
+
       // Common trait/attribute fields from NFT metadata
       if (nftAsAny.traits || nftAsAny.attributes) {
         const traits = nftAsAny.traits || nftAsAny.attributes;
@@ -124,13 +101,13 @@ export function NFTDetailScreen(): React.ReactElement {
             if (trait && typeof trait === 'object' && trait.trait_type && trait.value) {
               additionalProperties.push({
                 label: trait.trait_type,
-                value: trait.value.toString()
+                value: trait.value.toString(),
               });
             }
           });
         }
       }
-      
+
       // Check for properties in postMedia or other nested objects
       if (nftAsAny.postMedia?.traits || nftAsAny.postMedia?.attributes) {
         const mediaTraits = nftAsAny.postMedia.traits || nftAsAny.postMedia.attributes;
@@ -139,28 +116,28 @@ export function NFTDetailScreen(): React.ReactElement {
             if (trait && typeof trait === 'object' && trait.trait_type && trait.value) {
               additionalProperties.push({
                 label: trait.trait_type,
-                value: trait.value.toString()
+                value: trait.value.toString(),
               });
             }
           });
         }
       }
-      
+
       // Check for other common metadata fields that might contain properties
-      ['rarity', 'edition', 'series', 'creator', 'royalty'].forEach(field => {
+      ['rarity', 'edition', 'series', 'creator', 'royalty'].forEach((field) => {
         if (nftAsAny[field] && typeof nftAsAny[field] === 'string') {
           additionalProperties.push({
             label: field.charAt(0).toUpperCase() + field.slice(1),
-            value: nftAsAny[field]
+            value: nftAsAny[field],
           });
         }
       });
 
       return {
         id: nftModel.id,
-        name: nftModel.name || 'Untitled NFT',
+        name: nftModel.name || 'Untitled',
         image: getNFTCover(nftModel),
-        collection: nftModel.collectionName || activeCollection.name,
+        collection: nftModel.collectionName || activeCollection?.name || 'Unknown',
         description: nftModel.description,
         contractName: nftModel.contractName,
         contractAddress: nftModel.contractAddress,
@@ -168,7 +145,7 @@ export function NFTDetailScreen(): React.ReactElement {
         properties: additionalProperties.length > 0 ? additionalProperties : undefined,
       };
     },
-    [activeCollection.name]
+    [activeCollection?.name]
   );
 
   // Convert NFTModel to NFTData for selection bar
@@ -177,10 +154,10 @@ export function NFTDetailScreen(): React.ReactElement {
       id: getNFTId(nftModel),
       name: nftModel.name || 'Untitled',
       image: getNFTCover(nftModel),
-      collection: nftModel.collectionName || activeCollection.name,
+      collection: nftModel.collectionName || activeCollection?.name || 'Unknown',
       amount: nftModel.amount,
     }),
-    [activeCollection.name]
+    [activeCollection?.name]
   );
 
   // Memoize the NFT detail data conversion
@@ -232,6 +209,17 @@ export function NFTDetailScreen(): React.ReactElement {
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
     console.log('Continue with selected NFTs:', selectedNFTs?.length);
+
+    // Get transaction type from store
+    const setTransactionType = useSendStore.getState().setTransactionType;
+
+    // Set transaction type based on number of selected NFTs
+    if (selectedNFTs && selectedNFTs.length === 1) {
+      setTransactionType('single-nft');
+    } else if (selectedNFTs && selectedNFTs.length > 1) {
+      setTransactionType('multiple-nfts');
+    }
+
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
   }, [selectedNFTs, setCurrentStep]);
@@ -253,10 +241,27 @@ export function NFTDetailScreen(): React.ReactElement {
     if (!fromAccount) return undefined;
     return {
       name: fromAccount.name,
-      avatar: fromAccount.avatar || fromAccount.emojiInfo?.emoji,
+      avatar: fromAccount.avatar,
       address: fromAccount.address,
+      emojiInfo: fromAccount.emojiInfo,
     };
   }, [fromAccount]);
+
+  // Early return if essential data is missing from store
+  if (!activeCollection || !currentAddress) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
+            {t('nft.notFound.message')}
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
 
   // Loading state
   if (isLoading) {

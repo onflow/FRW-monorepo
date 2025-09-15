@@ -80,7 +80,8 @@
     "properties": "Properties",
     "description": "Description",
     "creator": "Creator",
-    "title": "Send"
+    "title": "Send",
+    "inaccessible": "Inaccessible"
   },
   "messages": {
     "loading": "Loading...",

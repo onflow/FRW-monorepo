@@ -4,13 +4,17 @@ TypeScript type definitions and interfaces for Flow Reference Wallet.
 
 ## Overview
 
-This package provides comprehensive TypeScript type definitions, interfaces, and utility types for the Flow Reference Wallet ecosystem. It serves as the foundation for type safety across all FRW packages and applications.
+This package provides comprehensive TypeScript type definitions, interfaces, and
+utility types for the Flow Reference Wallet ecosystem. It serves as the
+foundation for type safety across all FRW packages and applications.
 
 ## Features
 
-- **Comprehensive Types**: Complete type definitions for wallets, accounts, tokens, NFTs, and transactions
+- **Comprehensive Types**: Complete type definitions for wallets, accounts,
+  tokens, NFTs, and transactions
 - **Cross-Platform Support**: Types for both Flow and EVM ecosystems
-- **Bridge Interfaces**: Type definitions for cross-platform bridge communication
+- **Bridge Interfaces**: Type definitions for cross-platform bridge
+  communication
 - **Utility Types**: Helper types and type guards for common operations
 - **String Utilities**: Formatting and validation utilities for display values
 
@@ -131,8 +135,8 @@ import { WalletState, TokenState, SendState } from '@onflow/frw-types';
 
 // Wallet store state
 interface WalletState {
-  currentAccount: Account | null;
-  accounts: Account[];
+  currentAccount: WalletAccount | null;
+  accounts: WalletAccount[];
   childAccounts: ChildAccount[];
   isLoading: boolean;
 }
@@ -173,7 +177,10 @@ const formatted = formatCurrencyStringForDisplay({
 ### Token Utilities
 
 ```typescript
-import { TokenInfo, mapCadenceTokenDataWithCurrencyToTokenInfo } from '@onflow/frw-types';
+import {
+  TokenInfo,
+  mapCadenceTokenDataWithCurrencyToTokenInfo,
+} from '@onflow/frw-types';
 
 // Map API response to TokenInfo
 const tokenInfo = mapCadenceTokenDataWithCurrencyToTokenInfo(apiResponse);
@@ -239,7 +246,11 @@ if (isTokenInfo(data)) {
 ```typescript
 import { Account, WalletType, BridgeSpec } from '@onflow/frw-types';
 
-function createWalletAccount(address: string, type: WalletType, bridge: BridgeSpec): Account {
+function createWalletAccount(
+  address: string,
+  type: WalletType,
+  bridge: BridgeSpec
+): Account {
   return {
     address,
     type,

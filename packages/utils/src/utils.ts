@@ -182,3 +182,10 @@ export function isTransactionId(str: unknown): boolean {
 export function stripHexPrefix(str: string): string {
   return str.startsWith('0x') ? str.slice(2) : str;
 }
+
+export const isEmoji = (char: string | undefined) => {
+  if (!char) return false;
+  // Regular expression to match most emojis
+  const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u;
+  return emojiRegex.test(char);
+};

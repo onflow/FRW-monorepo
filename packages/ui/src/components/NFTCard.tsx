@@ -14,6 +14,7 @@ export interface NFTCardProps {
   accountEmoji?: string;
   accountAvatar?: string;
   accountName?: string;
+  accountColor?: string;
 }
 
 export function NFTCard({
@@ -28,6 +29,7 @@ export function NFTCard({
   accountEmoji,
   accountAvatar,
   accountName,
+  accountColor,
 }: NFTCardProps) {
   const width = size === 'large' ? '$50' : size === 'medium' ? '100%' : '$30';
   const imageHeight = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
@@ -100,7 +102,7 @@ export function NFTCard({
               <YStack
                 width="$4"
                 height="$4"
-                bg="$warning"
+                bg={accountColor || '$warning'}
                 rounded="$12"
                 items="center"
                 justify="center"

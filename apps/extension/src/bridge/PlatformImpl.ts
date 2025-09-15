@@ -4,6 +4,7 @@ import {
   type RecentContactsResponse,
   type WalletAccount,
   type WalletAccountsResponse,
+  type WalletProfilesResponse,
   type Currency,
 } from '@onflow/frw-types';
 
@@ -136,6 +137,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
       throw new Error('getWalletAccounts method not available on wallet controller');
     }
     return await this.walletController.getWalletAccounts();
+  }
+
+  async getWalletProfiles(): Promise<WalletProfilesResponse> {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
+    if (!this.walletController.getWalletProfiles) {
+      throw new Error('getWalletProfiles method not available on wallet controller');
+    }
+    return await this.walletController.getWalletProfiles();
   }
 
   async getSelectedAccount(): Promise<WalletAccount> {

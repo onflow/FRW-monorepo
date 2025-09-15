@@ -4,7 +4,7 @@ export interface IconWrapperProps extends SVGProps<SVGSVGElement> {
   children?: React.ReactNode;
   size?: number | string;
   color?: string;
-  theme?: 'outline' | 'filled' | 'dual-tone';
+  theme?: 'outline' | 'filled' | 'dual-tone' | 'multicolor';
 }
 
 /**
@@ -27,7 +27,7 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
 
   // Auto-detect icon type if theme is not provided
   const detectTheme = (): 'outline' | 'filled' | 'dual-tone' | 'multicolor' => {
-    if (theme) return theme as 'outline' | 'filled' | 'dual-tone';
+    if (theme) return theme as 'outline' | 'filled' | 'dual-tone' | 'multicolor';
 
     // Check children to detect if it's outline, filled, or multicolor
     let hasStroke = false;

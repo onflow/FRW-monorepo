@@ -2,7 +2,6 @@ import { Box } from '@mui/material';
 import React from 'react';
 
 import buyIcon from '@/ui/assets/svg/buyIcon.svg';
-import moveIcon from '@/ui/assets/svg/homeMove.svg';
 import receiveIcon from '@/ui/assets/svg/receiveIcon.svg';
 import sendIcon from '@/ui/assets/svg/sendIcon.svg';
 import swapIcon from '@/ui/assets/svg/swapIcon.svg';
@@ -43,10 +42,10 @@ export const ButtonRow: React.FC<ButtonRowProps> = ({
       <IconButton messageKey="Receive" onClick={onReceiveClick} icon={receiveIcon} />
       <IconButton messageKey="Swap" onClick={onSwapClick} icon={swapIcon} />
       <IconButton data-testid="buy-button" messageKey="Buy" onClick={onBuyClick} icon={buyIcon} />
-      {canMoveChild === undefined && (
+      {/* {canMoveChild === undefined && (
         <IconButton messageKey="Move" onClick={() => {}} icon={''} loading={true} />
       )}
-      {canMoveChild && <IconButton messageKey="Move" onClick={onMoveClick} icon={moveIcon} />}
+      {canMoveChild && <IconButton messageKey="Move" onClick={onMoveClick} icon={moveIcon} />} */}
     </Box>
   );
 };

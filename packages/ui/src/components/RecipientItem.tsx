@@ -31,6 +31,7 @@ export interface RecipientItemProps {
   // Actions
   onPress?: () => void;
   onCopy?: () => void;
+  copiedFeedback?: string;
 
   // Styling
   pressStyle?: object;
@@ -52,8 +53,10 @@ export function RecipientItem({
   avatarSize = 36,
   parentAvatar,
   emojiInfo,
+  parentEmojiInfo,
   onPress,
   onCopy,
+  copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
   return (
@@ -67,8 +70,9 @@ export function RecipientItem({
       borderColor="transparent"
       borderWidth={0}
       p={0}
+      minHeight={56}
     >
-      <XStack items="center" justify="space-between" flex={1} p={0}>
+      <XStack items="center" justify="space-between" flex={1} p={0} height={56}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
         <XStack width={46} height={36} position="relative">
           {/* Main Avatar using proper Avatar component */}
@@ -87,13 +91,13 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={emojiInfo?.color || "rgba(255, 255, 255, 0.25)"}
+              bgColor={emojiInfo?.color || 'rgba(255, 255, 255, 0.25)'}
               size={avatarSize}
             />
           </YStack>
 
           {/* Small overlay avatar for parent account */}
-          {isLinked && parentAvatar && (
+          {isLinked && (parentAvatar || parentEmojiInfo) && (
             <YStack
               position="absolute"
               style={{
@@ -103,15 +107,15 @@ export function RecipientItem({
               width={18}
               height={18}
               rounded={9}
-              bg="$textSecondary"
+              bg="#D9D9D9"
               borderWidth={2}
-              borderColor="$bg"
+              borderColor="#0A0A0B"
               items="center"
               justify="center"
-              p={1}
+              overflow="visible"
             >
-              <Text fontSize={10} fontWeight="600">
-                {parentAvatar}
+              <Text fontSize={10} fontWeight="600" lineHeight={18}>
+                {parentEmojiInfo?.emoji || parentAvatar}
               </Text>
             </YStack>
           )}
@@ -132,11 +136,11 @@ export function RecipientItem({
               {name || emojiInfo?.name}
             </Text>
             {isEVM && (
-              <XStack bg="#627EEA" rounded="$4" px={4} items="center" justify="center" height={16}>
+              <XStack bg="$primary" rounded="$4" px={4} items="center" justify="center" height={16}>
                 <Text
                   fontSize={8}
                   fontWeight="400"
-                  color="#FFFFFF"
+                  color="$white"
                   lineHeight={9.7}
                   letterSpacing={0.128}
                 >
@@ -171,20 +175,44 @@ export function RecipientItem({
         </YStack>
 
         {/* Action Buttons */}
-        <XStack gap="$2" items="center">
+        <XStack gap="$2" items="center" position="relative">
           {showCopyButton && onCopy && (
-            <XStack
+            <Card
               width={24}
               height={24}
-              opacity={0.5}
+              opacity={copiedFeedback ? 1 : 0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
               }}
               cursor="pointer"
+              bg="transparent"
+              borderWidth={0}
+              p={0}
+              pressStyle={{ opacity: 0.3 }}
+              items="center"
+              justify="center"
             >
-              <Copy size={24} color="#FFFFFF" />
-            </XStack>
+              <Copy size={24} color={copiedFeedback ? '#00D964' : '#FFFFFF'} />
+            </Card>
+          )}
+          {copiedFeedback && (
+            <YStack
+              position="absolute"
+              top={-30}
+              right={0}
+              bg="#00D964"
+              rounded={8}
+              px={8}
+              py={4}
+              animation="quick"
+              enterStyle={{ opacity: 0, scale: 0.9, y: 5 }}
+              exitStyle={{ opacity: 0, scale: 0.9, y: 5 }}
+            >
+              <Text fontSize={12} fontWeight="600" color="#000000">
+                {copiedFeedback}
+              </Text>
+            </YStack>
           )}
         </XStack>
       </XStack>
