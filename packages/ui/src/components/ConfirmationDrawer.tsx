@@ -240,6 +240,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 loop={false}
                 speed={1}
               /> */}
+              <WalletCard width={114.62} height={129.195} />
 
               {isExtension && <WalletCard width={114.62} height={129.195} />}
             </View>
@@ -291,7 +292,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
-                Send Tokens
+                Send NFTs
               </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}

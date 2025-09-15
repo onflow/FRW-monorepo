@@ -41,7 +41,21 @@ export function SendSingleNFTScreen(): React.ReactElement {
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
+
+  // For ERC1155, retrieve the quantity from sessionStorage if available
+  const getInitialQuantity = () => {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      const storedQuantity = window.sessionStorage.getItem('erc1155_selected_quantity');
+      if (storedQuantity) {
+        // Clear it after reading to prevent stale data
+        window.sessionStorage.removeItem('erc1155_selected_quantity');
+        return parseInt(storedQuantity, 10) || 1;
+      }
+    }
+    return 1;
+  };
+
+  const [selectedQuantity, setSelectedQuantity] = useState(getInitialQuantity);
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -57,6 +71,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
   // Check if NFT is ERC1155
   const isERC1155 = selectedNFT?.contractType === 'ERC1155';
   const maxQuantity = selectedNFT?.amount || 1;
+
+  // Debug the title - Swapped: ERC1155 shows "Send S/NFTs", regular shows "Send NFTs"
+  const sectionTitle = isERC1155 ? 'Send S/NFTs' : 'Send NFTs';
 
   // Log ERC1155 detection
   useEffect(() => {
@@ -231,7 +248,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
               />
 
               <SendSectionHeader
-                title="Send NFTs"
+                title={sectionTitle}
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
                 editButtonText="Change"
