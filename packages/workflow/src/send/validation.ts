@@ -68,7 +68,7 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
   }
 
   // Validate all required fields are present
-  if (!proposer || !receiver || !flowIdentifier || !sender || !type || !assetType) {
+  if (!proposer || !receiver || !sender || !type || !assetType) {
     throw new Error('invalid send transaction payload');
   }
 
