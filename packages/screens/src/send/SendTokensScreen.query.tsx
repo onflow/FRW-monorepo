@@ -26,7 +26,11 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
+import {
+  logger,
+  transformAccountForCard,
+  transformAccountForDisplay,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -41,6 +45,7 @@ export const SendTokensScreen = (props) => {
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
+  const currency = bridge.getCurrency();
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get send store
@@ -76,6 +81,7 @@ export const SendTokensScreen = (props) => {
   // Reset amount when selected token changes
   useEffect(() => {
     setAmount('');
+    setAmountError('');
   }, [selectedToken]);
 
   // Check free gas status
@@ -171,6 +177,7 @@ export const SendTokensScreen = (props) => {
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
 
   // Handler functions - now internal to the screen
@@ -207,52 +214,15 @@ export const SendTokensScreen = (props) => {
         setAmount(sanitized.substring(1));
         return;
       }
-
-      // Check if amount exceeds max balance
-      if (selectedToken?.balance) {
-        const maxBalance = new BN(selectedToken.balance.toString());
-        const inputAmount = new BN(sanitized);
-
-        if (!inputAmount.isNaN() && !maxBalance.isNaN()) {
-          if (isTokenMode) {
-            // In token mode, check directly against balance
-            if (inputAmount.gt(maxBalance)) {
-              setAmount(maxBalance.toString());
-              // Blur the input to deselect it and show the full value
-              if (inputRef.current) {
-                inputRef.current.blur();
-              }
-              return;
-            }
-          } else if (selectedToken?.priceInUSD) {
-            // In USD mode, convert to tokens and check against balance
-            const price = new BN(selectedToken.priceInUSD);
-            if (!price.isNaN() && price.gt(0)) {
-              const tokenEquivalent = inputAmount.div(price);
-              if (tokenEquivalent.gt(maxBalance)) {
-                // Set to max USD value (balance * price)
-                const maxUSD = maxBalance.times(price);
-                setAmount(maxUSD.toFixed(2));
-                // Blur the input to deselect it and show the full value
-                if (inputRef.current) {
-                  inputRef.current.blur();
-                }
-                return;
-              }
-            }
-          }
-        }
-      }
-
       setAmount(sanitized);
     },
-    [selectedToken, isTokenMode]
+    [selectedToken, isTokenMode, currency.rate]
   );
 
   const handleToggleInputMode = useCallback(() => {
     // Convert the amount when switching modes
     if (selectedToken?.priceInUSD) {
-      const price = new BN(selectedToken.priceInUSD);
+      const price = new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1));
       const currentAmount = new BN(amount || '0');
 
       if (!price.isNaN() && !currentAmount.isNaN() && price.gt(0)) {
@@ -270,7 +240,7 @@ export const SendTokensScreen = (props) => {
     }
 
     setIsTokenMode((prev) => !prev);
-  }, [isTokenMode, amount, selectedToken]);
+  }, [isTokenMode, amount, selectedToken, currency.rate]);
 
   const handleMaxPress = useCallback(() => {
     if (selectedToken?.balance) {
@@ -325,7 +295,8 @@ export const SendTokensScreen = (props) => {
     const decimals = selectedToken.decimal || 8;
     if (!isTokenMode) {
       // Converting from USD to token
-      tokenAmount = inputAmount.div(selectedToken.priceInUSD || 0).toFixed(decimals);
+      const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
+      tokenAmount = inputAmount.div(price).toFixed(decimals);
     } else {
       // Already in token mode
       tokenAmount = inputAmount.toFixed(decimals);
@@ -380,10 +351,16 @@ export const SendTokensScreen = (props) => {
       // Convert amount to token equivalent if in USD mode
       let tokenAmount = amountNum;
       if (!isTokenMode && selectedToken?.priceInUSD) {
-        const price = new BN(selectedToken.priceInUSD);
+        const price = new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1));
         if (!price.isNaN() && price.gt(0)) {
           tokenAmount = amountNum.div(price);
         }
+      }
+
+      if (tokenAmount.gt(balanceNum)) {
+        setAmountError('Amount exceeds available balance');
+      } else {
+        setAmountError('');
       }
 
       return (
@@ -404,11 +381,15 @@ export const SendTokensScreen = (props) => {
       tokenAmount: isTokenMode
         ? amount
         : selectedToken?.priceInUSD
-          ? new BN(amount || '0').div(new BN(selectedToken.priceInUSD)).toFixed(2)
+          ? new BN(amount || '0')
+              .div(new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1)))
+              .toFixed(2)
           : amount,
       fiatAmount:
         isTokenMode && selectedToken?.priceInUSD
-          ? new BN(amount || '0').times(new BN(selectedToken.priceInUSD)).toFixed(2)
+          ? new BN(amount || '0')
+              .times(new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1)))
+              .toFixed(2)
           : amount,
       isTokenMode,
       transactionFee: transactionFee,
@@ -420,6 +401,7 @@ export const SendTokensScreen = (props) => {
       selectedNFTs.length,
       isTokenMode,
       transactionFee,
+      currency.rate,
     ]
   );
 
@@ -508,7 +490,7 @@ export const SendTokensScreen = (props) => {
                           logoURI: selectedToken.logoURI,
                           balance: selectedToken.balance?.toString(),
                           price: selectedToken.priceInUSD
-                            ? new BN(selectedToken.priceInUSD)
+                            ? new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1))
                             : undefined,
                           isVerified: selectedToken.isVerified,
                         }
@@ -525,6 +507,8 @@ export const SendTokensScreen = (props) => {
                   showConverter={true}
                   disabled={false}
                   inputRef={inputRef}
+                  currency={currency}
+                  amountError={amountError}
                 />
               </YStack>
             ) : (
@@ -627,7 +611,7 @@ export const SendTokensScreen = (props) => {
           onClose={handleTokenSelectorClose}
           platform="mobile"
           title="Tokens"
-          currency={bridge.getCurrency()}
+          currency={currency}
           isExtension={isExtension}
         />
 

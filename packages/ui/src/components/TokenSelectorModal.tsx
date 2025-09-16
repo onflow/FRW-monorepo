@@ -143,6 +143,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                   width="100%"
                   height={64}
                   px={12}
+                  hoverStyle={{ opacity: 0.7 }}
                 >
                   <XStack items="center" gap="$2" width="100%">
                     <Avatar
@@ -254,7 +255,8 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         open={visible}
         onOpenChange={(open) => !open && onClose()}
         snapPoints={isExtension ? [91] : [85, 50]}
-        dismissOnSnapToBottom
+        dismissOnSnapToBottom={!isExtension}
+        disableDrag={isExtension}
       >
         <Sheet.Overlay
           animation={isExtension ? undefined : 'lazy'}
@@ -267,9 +269,12 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           bg="#121212"
           borderTopLeftRadius={isExtension ? 0 : 16}
           borderTopRightRadius={isExtension ? 0 : 16}
-          pt={25}
-          px={18}
-          pb={36}
+          pt={isExtension ? 0 : 25}
+          px={isExtension ? 16 : 18}
+          pb={isExtension ? 0 : 36}
+          animation={isExtension ? 'quick' : 'lazy'}
+          enterStyle={{ y: '100%' }}
+          exitStyle={{ y: '100%' }}
         >
           {renderContent()}
         </Sheet.Frame>

@@ -1,7 +1,7 @@
 import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, View, Sheet } from 'tamagui';
+import { YStack, XStack, View, Sheet, Spinner } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
@@ -149,9 +149,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       snapPointsMode={!isExtension ? 'fit' : undefined}
       dismissOnSnapToBottom
       snapPoints={isExtension ? [91] : undefined}
+      animation={isExtension ? 'quick' : 'lazy'}
     >
       <Sheet.Overlay
-        animation={!isExtension ? 'lazy' : undefined}
+        animation={isExtension ? 'quick' : 'lazy'}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
         bg="rgba(0,0,0,0.5)"
@@ -161,6 +162,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         bg="$bgDrawer"
         borderTopLeftRadius={isExtension ? 0 : '$6'}
         borderTopRightRadius={isExtension ? 0 : '$6'}
+        animation={isExtension ? 'quick' : 'lazy'}
+        enterStyle={{ y: '100%' }}
+        exitStyle={{ y: '100%' }}
       >
         <YStack p="$4" gap="$4">
           {/* Header */}
@@ -270,7 +274,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
 
             {/* Loading Indicator */}
-            {/* <LoadingIndicator isAnimating={internalIsSending} width={90} /> */}
+            <LoadingIndicator isAnimating={internalIsSending} />
 
             {/* To Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
@@ -393,6 +397,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Confirm Button */}
           <YStack
+            width="100%"
             bg="#FFFFFF"
             rounded="$4"
             height={56}
@@ -402,9 +407,18 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             onPress={internalIsSending ? undefined : handleConfirm}
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$5" fontWeight="600" color="#000000">
-              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm send' : 'Hold to send'}
-            </Text>
+            {internalIsSending ? (
+              <XStack items="center" gap="$2">
+                <Spinner size="small" color="$black" />
+                <Text fontSize="$5" fontWeight="600" color="$black">
+                  Sending...
+                </Text>
+              </XStack>
+            ) : (
+              <Text fontSize="$5" fontWeight="600" color="$black">
+                {isExtension ? 'Confirm send' : 'Hold to send'}
+              </Text>
+            )}
           </YStack>
         </YStack>
       </Sheet.Frame>
