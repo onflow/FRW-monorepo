@@ -15,6 +15,7 @@ export interface NFTSendData {
   type?: 'evm' | 'flow'; // determines if EVM badge should show
   contractType?: string; // 'ERC721' | 'ERC1155'
   amount?: number; // Total amount for ERC1155
+  selectedQuantity?: number; // Selected quantity for ERC1155 sending
 }
 
 export interface NFTSendPreviewProps {

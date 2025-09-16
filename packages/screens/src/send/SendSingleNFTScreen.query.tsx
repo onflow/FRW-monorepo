@@ -376,6 +376,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
                     collectionContractName:
                       selectedNFT.collectionContractName || selectedNFT.contractName || '',
                     description: selectedNFT.description || '',
+                    contractType: selectedNFT.contractType,
+                    amount: maxQuantity,
+                    selectedQuantity: isERC1155 ? selectedQuantity : undefined,
                   },
                 ]
               : undefined
