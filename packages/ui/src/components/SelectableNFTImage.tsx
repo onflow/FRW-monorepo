@@ -103,18 +103,7 @@ export function SelectableNFTImage({
 
       {/* Selection Indicator */}
       {selectable && selected && (
-        <YStack
-          pos="absolute"
-          top={14}
-          right={14}
-          w={30}
-          h={30}
-          onPress={(e) => {
-            e.stopPropagation();
-            onToggleSelection?.();
-          }}
-          cursor="pointer"
-        >
+        <YStack pos="absolute" top={14} right={14} w={30} h={30} cursor="pointer">
           <CheckCircle size={30} color="#00EF8B" />
         </YStack>
       )}
