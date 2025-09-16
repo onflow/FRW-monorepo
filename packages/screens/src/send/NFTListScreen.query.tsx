@@ -42,6 +42,7 @@ export function NFTListScreen(): React.ReactElement {
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setTransactionType = useSendStore((state) => state.setTransactionType);
   const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
+  const setCurrentNFT = useSendStore((state) => state.setCurrentNFT);
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
@@ -250,6 +251,7 @@ export function NFTListScreen(): React.ReactElement {
     (nftId: string) => {
       const foundNFT = (nfts || []).find((n) => getNFTId(n) === nftId);
       if (foundNFT) {
+        setCurrentNFT(foundNFT);
         navigation.navigate('NFTDetail', { nft: foundNFT });
       } else {
         console.warn('NFT not found for ID:', nftId);
