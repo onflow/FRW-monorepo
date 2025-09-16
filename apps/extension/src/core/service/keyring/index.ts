@@ -357,6 +357,7 @@ class KeyringService extends EventEmitter {
    * @deprecated use {@link getKeyringPublicPrivateKey} instead
    */
   getKeyringPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PrivateKeyTuple> => {
+    console.log('keyrings ==>', keyrings);
     for (const keyring of keyrings) {
       if (keyring instanceof SimpleKeyring) {
         // If a private key is found, extract it and break the loop
@@ -1053,6 +1054,18 @@ class KeyringService extends EventEmitter {
     }
     const seedWords = serialized.mnemonic;
     return seedWords;
+  };
+
+  getMnemonicFromKeyring = async (): Promise<string> => {
+    const keyring = this._getKeyringByType(KEYRING_CLASS.MNEMONIC);
+    if (!(keyring instanceof HDKeyring)) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
+    const serialized = await keyring.serialize();
+    if (!serialized.mnemonic) {
+      throw new Error('Keyring is not an HDKeyring');
+    }
+    return serialized.mnemonic;
   };
 
   checkMnemonics = async () => {

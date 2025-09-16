@@ -1,15 +1,13 @@
-import { parseUnits } from '@ethersproject/units';
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
-import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import * as t from '@onflow/types';
 import dotenv from 'dotenv';
+import { parseUnits } from 'ethers';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { SendTransaction } from '../src';
 import { makeArgument, getIX } from './utils';
+import { SendTransaction, isValidSendTransactionPayload, convertToUFix64 } from '../src';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
-import { convertToUFix64 } from '../src/send/utils';
 
 dotenv.config();
 

@@ -6,8 +6,7 @@
  * Storage abstraction for key persistence - exact match to iOS StorageProtocol.swift
  */
 export interface StorageProtocol {
-  readonly allKeys: string[];
-
+  allKeys(): Promise<string[]>;
   findKey(keyword: string): Promise<string[]>;
   get(key: string): Promise<Uint8Array | null>;
   set(key: string, value: Uint8Array): Promise<void>;

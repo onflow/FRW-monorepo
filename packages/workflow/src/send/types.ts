@@ -21,5 +21,5 @@ export interface SendPayload {
  */
 export interface TransferStrategy {
   canHandle(payload: SendPayload): boolean;
-  execute(payload: SendPayload): Promise<any>;
+  execute(payload: SendPayload, callback?: any, evmProvider?: any): Promise<any>;
 }

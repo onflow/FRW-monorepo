@@ -1,4 +1,5 @@
 import fcl from '@onflow/fcl';
+import { ethers } from 'ethers';
 
 import { accounts } from './accounts';
 import { sign, signSecp256k1 } from './crypto';
@@ -6,7 +7,7 @@ import { sign, signSecp256k1 } from './crypto';
 export const child1Addr = accounts.child1.address;
 export const child2Addr = accounts.child2.address;
 
-export async function authz(account) {
+export async function authz(account, signType = 'secp256k1') {
   return {
     // there is stuff in the account that is passed in
     // you need to make sure its part of what is returned
@@ -22,7 +23,10 @@ export async function authz(account) {
     signingFunction: (signable) => ({
       addr: fcl.withPrefix(accounts.main.address), // must match the address that requested the signature, but with a prefix
       keyId: accounts.main.key.index, // must match the keyId in the account that requested the signature
-      signature: sign(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
+      signature:
+        signType === 'p256'
+          ? sign(accounts.main.key.privateKey, signable.message)
+          : signSecp256k1(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
       // if you arent in control of the transaction that is being signed we recommend constructing the
       // message from signable.voucher using the @onflow/encode module
     }),
@@ -108,3 +112,19 @@ export function test2Authz() {
   });
   return authz;
 }
+
+export const evmTrxCallback = async (props: any) => {
+  const evmProvider = new ethers.JsonRpcProvider('https://mainnet.evm.nodes.onflow.org');
+
+  const mnemonic = process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC || '';
+  const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+  wallet.connect(evmProvider);
+  const { trxData } = props;
+  // add nonce
+  const nonce = await evmProvider.getTransactionCount(wallet.address);
+  // add chainId
+  const chainId = 747;
+  const tx = await wallet.signTransaction({ ...trxData, nonce, chainId });
+  console.log(tx, '---tx---');
+  return tx;
+};

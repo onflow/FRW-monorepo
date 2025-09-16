@@ -33,14 +33,13 @@
   "dependencies": {
     "@babel/runtime": "^7.28.2",
     "@onflow/fcl": "^1.12.4",
-    "@onflow/frw-context": "workspace:*",
-    "@onflow/frw-types": "workspace:*",
-    "@trustwallet/wallet-core": "^4.0.50"
+    "@onflow/frw-cadence": "workspace:*",
+    "@trustwallet/wallet-core": "^4.0.50",
+    "buffer": "^6.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.14.15",
     "tsup": "^8.5.0",
     "vitest": "^3.2.4"
-  },
-  "peerDependencies": {}
+  }
 }
