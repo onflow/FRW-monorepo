@@ -104,6 +104,9 @@ export function TokenAmountInput({
                 outlineWidth: 0,
                 boxShadow: 'none',
               }}
+              style={{
+                borderRadius: 0,
+              }}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
               disabled={disabled}

@@ -76,10 +76,8 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
                 color={feeColor}
                 lineHeight={20}
                 letterSpacing="-0.6%"
-                textDecorationLine="line-through"
-                opacity={0.6}
               >
-                {usdFee}
+                {'0.00'}
               </Text>
               <FlowLogo size={18} theme="multicolor" style={{ opacity: 0.6 }} />
             </XStack>

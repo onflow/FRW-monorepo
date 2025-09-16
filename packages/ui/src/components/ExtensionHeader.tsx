@@ -21,6 +21,9 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
       props.onGoBack?.();
     }
   };
+  const handleClose = () => {
+    props.onNavigate?.('');
+  };
 
   return (
     <XStack width="100%" height={48} items="center" justify="space-between" px="$4" bg="$bgDrawer">
@@ -50,7 +53,7 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
           hoverStyle={{ opacity: 0.8 }}
           pressStyle={{ opacity: 0.6 }}
           cursor="pointer"
-          onPress={handleGoBack}
+          onPress={handleClose}
         >
           <Close size={20} color="rgba(255, 255, 255, 0.8)" />
         </XStack>

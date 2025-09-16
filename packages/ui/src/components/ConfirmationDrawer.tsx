@@ -1,4 +1,4 @@
-import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
@@ -379,7 +379,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
                   <VerifiedToken size={10} color="#41CC5D" />
-                  <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>
 

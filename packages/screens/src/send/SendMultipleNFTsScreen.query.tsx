@@ -219,7 +219,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
-              <View mt={8} pb={16} mb={-8}>
+              <View mt={-8} mb={-8}>
                 <MultipleNFTsPreview
                   nfts={nftsForUI}
                   onRemoveNFT={handleRemoveNFT}
@@ -234,7 +234,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-            <XStack position="relative" height={0} mt="$1">
+            <XStack position="relative" height="$1" mt="$1">
               <XStack width="100%" position="absolute" t={-40} justify="center">
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
