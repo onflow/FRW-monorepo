@@ -29,12 +29,12 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
     <XStack width="100%" height={48} items="center" justify="space-between" px="$4" bg="$bgDrawer">
       {/* Left section - Back button (Grid size=1 equivalent) */}
       <XStack
-        style={{ width: 32, height: 32 }}
+        style={{ width: 32, height: 32, borderRadius: 16 }}
         items="center"
         justify="center"
         onPress={handleGoBack}
         cursor="pointer"
-        hoverStyle={{ opacity: 0.8 }}
+        hoverStyle={{ opacity: 0.8, bg: 'rgba(255, 255, 255, 0.1)' }}
         pressStyle={{ opacity: 0.6 }}
       >
         <ArrowBack size={28} color="rgba(255, 255, 255, 0.8)" />
@@ -47,15 +47,15 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
       </View>
       {props.help ? (
         <XStack
-          style={{ width: 32, height: 32 }}
+          style={{ width: 32, height: 32, borderRadius: 16 }}
           items="center"
           justify="center"
-          hoverStyle={{ opacity: 0.8 }}
+          hoverStyle={{ opacity: 0.8, bg: 'rgba(255, 255, 255, 0.1)' }}
           pressStyle={{ opacity: 0.6 }}
           cursor="pointer"
           onPress={handleClose}
         >
-          <Close size={20} color="rgba(255, 255, 255, 0.8)" />
+          <Close size={19} color="rgba(255, 255, 255, 0.8)" />
         </XStack>
       ) : (
         <XStack style={{ width: 32, height: 32 }} items="center" justify="center"></XStack>
