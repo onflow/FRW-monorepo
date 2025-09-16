@@ -36,7 +36,7 @@ export function Button({
       buttonSize = '$14';
       break;
     default:
-      buttonSize = '$4';
+      buttonSize = '$8';
   }
 
   // Map variant to Flow theme styles

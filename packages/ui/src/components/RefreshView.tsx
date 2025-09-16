@@ -23,7 +23,7 @@ export function RefreshView({
         {message}
       </Text>
       {onRefresh && (
-        <Button size="small" variant="secondary" onPress={onRefresh}>
+        <Button variant="outline" onPress={onRefresh}>
           <Text>{refreshText}</Text>
         </Button>
       )}
