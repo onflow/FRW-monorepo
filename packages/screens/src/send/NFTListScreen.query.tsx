@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useQueryClient } from '../providers/QueryProvider';
+// import { useQueryClient } from '../providers/QueryProvider'; // Currently unused
 
 /**
  * Query-integrated version of NFTListScreen following the established pattern
@@ -28,7 +28,7 @@ export function NFTListScreen(): React.ReactElement {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Get shared QueryClient to ensure it matches the one in stores
-  const _queryClient = useQueryClient();
+  // const _queryClient = useQueryClient(); // Currently unused, kept for future use
 
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';

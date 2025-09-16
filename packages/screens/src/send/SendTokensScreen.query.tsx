@@ -76,8 +76,14 @@ export const SendTokensScreen = (props) => {
   useEffect(() => {
     const checkFreeGasStatus = async () => {
       try {
-        const isEnabled = await bridge.isFreeGasEnabled?.();
-        setIsFreeGasEnabled(isEnabled ?? true);
+        // Check if the platform supports free gas
+        const platform = bridge.getPlatform();
+        if (platform === 'extension' || platform === 'mobile') {
+          // For now, default to true since the method might not be available yet
+          setIsFreeGasEnabled(true);
+        } else {
+          setIsFreeGasEnabled(true);
+        }
       } catch (error) {
         console.error('Failed to check free gas status:', error);
         // Default to enabled if we can't determine the status
@@ -169,17 +175,94 @@ export const SendTokensScreen = (props) => {
     [setSelectedToken]
   );
 
-  const handleAmountChange = useCallback((newAmount: string) => {
-    setAmount(newAmount);
-  }, []);
+  const handleAmountChange = useCallback(
+    (newAmount: string) => {
+      // Remove any non-numeric characters except decimal point
+      const sanitized = newAmount.replace(/[^0-9.]/g, '');
+
+      // Prevent multiple decimal points
+      const parts = sanitized.split('.');
+      if (parts.length > 2) {
+        return; // Don't update if there are multiple decimal points
+      }
+
+      // Limit decimal places based on mode
+      if (parts.length === 2) {
+        if (isTokenMode && parts[1].length > 8) {
+          return; // Max 8 decimal places for tokens
+        } else if (!isTokenMode && parts[1].length > 2) {
+          return; // Max 2 decimal places for USD
+        }
+      }
+
+      // Prevent leading zeros (except for decimal numbers like 0.123)
+      if (sanitized.length > 1 && sanitized[0] === '0' && sanitized[1] !== '.') {
+        setAmount(sanitized.substring(1));
+        return;
+      }
+
+      // Check if amount exceeds max balance
+      if (selectedToken?.balance) {
+        const maxBalance = parseFloat(selectedToken.balance.toString());
+        const inputAmount = parseFloat(sanitized);
+
+        if (!isNaN(inputAmount) && !isNaN(maxBalance)) {
+          if (isTokenMode) {
+            // In token mode, check directly against balance
+            if (inputAmount > maxBalance) {
+              setAmount(maxBalance.toString());
+              return;
+            }
+          } else if (selectedToken?.priceInUSD) {
+            // In USD mode, convert to tokens and check against balance
+            const price = parseFloat(selectedToken.priceInUSD);
+            if (!isNaN(price) && price > 0) {
+              const tokenEquivalent = inputAmount / price;
+              if (tokenEquivalent > maxBalance) {
+                // Set to max USD value (balance * price)
+                const maxUSD = maxBalance * price;
+                setAmount(maxUSD.toFixed(2));
+                return;
+              }
+            }
+          }
+        }
+      }
+
+      setAmount(sanitized);
+    },
+    [selectedToken, isTokenMode]
+  );
 
   const handleToggleInputMode = useCallback(() => {
+    // Convert the amount when switching modes
+    if (selectedToken?.priceInUSD) {
+      const price = parseFloat(selectedToken.priceInUSD);
+      const currentAmount = parseFloat(amount || '0');
+
+      if (!isNaN(price) && !isNaN(currentAmount) && price > 0) {
+        if (isTokenMode) {
+          // Converting from token to USD
+          const usdAmount = currentAmount * price;
+          setAmount(usdAmount.toFixed(2));
+        } else {
+          // Converting from USD to token
+          const tokenAmount = currentAmount / price;
+          // Keep up to 8 decimal places for token amount
+          const rounded = Math.round(tokenAmount * 100000000) / 100000000;
+          setAmount(rounded.toString());
+        }
+      }
+    }
+
     setIsTokenMode((prev) => !prev);
-  }, []);
+  }, [isTokenMode, amount, selectedToken]);
 
   const handleMaxPress = useCallback(() => {
     if (selectedToken?.balance) {
       setAmount(selectedToken.balance.toString());
+      // Switch to token mode when MAX is pressed (disable $ mode)
+      setIsTokenMode(true);
     }
   }, [selectedToken]);
 
@@ -512,7 +595,7 @@ export const SendTokensScreen = (props) => {
             description: nft.description || '',
           }))}
           fromAccount={transformAccountForDisplay(fromAccount)}
-          toAccount={transformAccountForDisplay(toAccount)}
+          toAccount={toAccount ? transformAccountForDisplay(toAccount) : null}
           formData={formData}
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
