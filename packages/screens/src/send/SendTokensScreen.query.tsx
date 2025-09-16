@@ -195,7 +195,7 @@ export const SendTokensScreen = (props) => {
 
       // Limit decimal places based on mode
       if (parts.length === 2) {
-        if (isTokenMode && parts[1].length > 8) {
+        if (isTokenMode && parts[1].length > (selectedToken?.decimal || 8)) {
           return; // Max 8 decimal places for tokens
         } else if (!isTokenMode && parts[1].length > 2) {
           return; // Max 2 decimal places for USD
@@ -264,7 +264,7 @@ export const SendTokensScreen = (props) => {
           // Converting from USD to token
           const tokenAmount = currentAmount.div(price);
           // Keep up to 8 decimal places for token amount
-          setAmount(tokenAmount.toFixed(8));
+          setAmount(tokenAmount.toFixed(selectedToken.decimal || 8));
         }
       }
     }
@@ -321,17 +321,17 @@ export const SendTokensScreen = (props) => {
     setSelectedNFTs([]);
     setTransactionType('tokens');
     const inputAmount = new BN(amount || '0');
-    let tokenAmount: BN;
-
+    let tokenAmount: string;
+    const decimals = selectedToken.decimal || 8;
     if (!isTokenMode) {
       // Converting from USD to token
-      tokenAmount = inputAmount.div(selectedToken.priceInUSD || 0);
+      tokenAmount = inputAmount.div(selectedToken.priceInUSD || 0).toFixed(decimals);
     } else {
       // Already in token mode
-      tokenAmount = inputAmount;
+      tokenAmount = inputAmount.toFixed(decimals);
     }
 
-    updateFormData({ tokenAmount: tokenAmount.toString() });
+    updateFormData({ tokenAmount: tokenAmount });
 
     const result = await executeTransaction();
 

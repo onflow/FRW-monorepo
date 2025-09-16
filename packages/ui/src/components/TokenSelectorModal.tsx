@@ -114,6 +114,10 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
             fontWeight="400"
             height="100%"
             textAlignVertical="center"
+            focusStyle={{
+              borderWidth: 0,
+              outline: 'none',
+            }}
           />
         </XStack>
       )}
