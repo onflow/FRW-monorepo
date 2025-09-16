@@ -115,7 +115,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               />
               {/* Parent emoji overlay bubble for linked accounts */}
               {account.parentEmoji && (
-                <XStack
+                <YStack
                   position="absolute"
                   left={-1}
                   top={-2}
@@ -124,15 +124,15 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                   rounded={9}
                   bg="#D9D9D9"
                   borderWidth={2}
-                  borderColor="#0A0A0B"
+                  borderColor="rgba(10, 10, 11, 0.8)"
                   items="center"
                   justify="center"
-                  overflow="visible"
+                  overflow="hidden"
                 >
-                  <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
+                  <Text fontSize={8} fontWeight="600" lineHeight={12}>
                     {account.parentEmoji.emoji}
                   </Text>
-                </XStack>
+                </YStack>
               )}
             </XStack>
           )}

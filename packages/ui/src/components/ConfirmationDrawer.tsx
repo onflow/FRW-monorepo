@@ -246,23 +246,30 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 borderRadius={150}
                 bg="#00EF8B"
                 opacity={0.05}
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: [{ translateX: -150 }, { translateY: -150 }],
-                }}
+                style={
+                  {
+                    // top: '50%',
+                    // left: '50%',
+                    // transform: [{ translateX: -150 }, { translateY: -150 }],
+                  }
+                }
               />
             )}
 
-            <View items="center" justify="center" position="relative" style={{ zIndex: 10 }}>
-              {/* <LottieAnimation
-                source={sendConfirmationAnimation}
-                width={120}
-                height={120}
-                autoPlay={true}
-                loop={false}
-                speed={1}
-              /> */}
+            <View
+              width={0}
+              height={0}
+              items="center"
+              justify="center"
+              position="relative"
+              style={{
+                zIndex: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {/* Wallet Card Icon */}
               <WalletCard width={114.62} height={129.195} />
             </View>
           </View>
@@ -288,7 +295,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
 
             {/* Loading Indicator */}
-            {/* <LoadingIndicator isAnimating={internalIsSending} width={90} /> */}
+            <LoadingIndicator isAnimating={internalIsSending} width={90} />
 
             {/* To Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
