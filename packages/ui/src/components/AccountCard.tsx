@@ -79,7 +79,7 @@ export function AccountCard({
             />
             {/* Parent emoji overlay bubble for linked accounts */}
             {account.parentEmoji && (
-              <XStack
+              <YStack
                 position="absolute"
                 l={-6}
                 t={-6}
@@ -88,15 +88,15 @@ export function AccountCard({
                 rounded={9}
                 bg="$light80"
                 borderWidth={2}
-                borderColor="$bgDrawer"
+                borderColor="rgba(10, 10, 11, 0.8)"
                 items="center"
                 justify="center"
-                overflow="visible"
+                overflow="hidden"
               >
-                <Text fontSize={10} fontWeight="600" lineHeight={18}>
+                <Text fontSize={8} fontWeight="600" lineHeight={12}>
                   {account.parentEmoji.emoji}
                 </Text>
-              </XStack>
+              </YStack>
             )}
           </XStack>
 
@@ -270,7 +270,7 @@ export function AccountCard({
                                 />
                                 {/* Parent emoji overlay bubble for linked accounts */}
                                 {acc.parentEmoji && (
-                                  <XStack
+                                  <YStack
                                     position="absolute"
                                     l={-6}
                                     t={-6}
@@ -279,15 +279,15 @@ export function AccountCard({
                                     rounded={9}
                                     bg="$light80"
                                     borderWidth={2}
-                                    borderColor="$bgDrawer"
+                                    borderColor="rgba(10, 10, 11, 0.8)"
                                     items="center"
                                     justify="center"
-                                    overflow="visible"
+                                    overflow="hidden"
                                   >
-                                    <Text fontSize={10} fontWeight="600" lineHeight={18}>
+                                    <Text fontSize={8} fontWeight="600" lineHeight={12}>
                                       {acc.parentEmoji.emoji}
                                     </Text>
-                                  </XStack>
+                                  </YStack>
                                 )}
                               </XStack>
 
