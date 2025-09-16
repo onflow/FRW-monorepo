@@ -44,7 +44,6 @@ export class ExtensionStorage implements Storage {
         updatedAt: now,
       } as StorageKeyMap[K];
 
-      // ChromeStorage.set() expects raw data, not JSON string
       await this.storageArea.set(key as string, dataWithMetadata);
     } catch (error) {
       throw new Error(`Storage write failed: ${error}`);
