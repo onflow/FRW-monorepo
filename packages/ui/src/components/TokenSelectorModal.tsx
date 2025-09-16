@@ -20,6 +20,7 @@ export interface TokenSelectorModalProps {
   maxHeight?: number;
   platform?: 'mobile' | 'desktop' | 'auto';
   currency?: { symbol: string };
+  isExtension?: boolean;
 }
 
 export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
@@ -35,6 +36,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   maxHeight = 600,
   platform = 'auto',
   currency = { symbol: '$' },
+  isExtension = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const media = useMedia();
@@ -247,20 +249,20 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         modal
         open={visible}
         onOpenChange={(open) => !open && onClose()}
-        snapPoints={[85, 50]}
+        snapPoints={isExtension ? [91] : [85, 50]}
         dismissOnSnapToBottom
       >
         <Sheet.Overlay
-          animation="lazy"
+          animation={isExtension ? undefined : 'lazy'}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
-          backgroundColor="rgba(0, 0, 0, 0.3)"
+          bg="rgba(0, 0, 0, 0.3)"
         />
-        <Sheet.Handle />
+        {!isExtension && <Sheet.Handle />}
         <Sheet.Frame
           bg="#121212"
-          borderTopLeftRadius={16}
-          borderTopRightRadius={16}
+          borderTopLeftRadius={isExtension ? 0 : 16}
+          borderTopRightRadius={isExtension ? 0 : 16}
           pt={25}
           px={18}
           pb={36}

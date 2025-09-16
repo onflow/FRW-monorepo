@@ -142,7 +142,14 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   };
 
   return (
-    <Sheet modal open={visible} onOpenChange={onClose} snapPointsMode="fit" dismissOnSnapToBottom>
+    <Sheet
+      modal
+      open={visible}
+      onOpenChange={onClose}
+      snapPointsMode={!isExtension ? 'fit' : undefined}
+      dismissOnSnapToBottom
+      snapPoints={isExtension ? [91] : undefined}
+    >
       <Sheet.Overlay
         animation={!isExtension ? 'lazy' : undefined}
         enterStyle={{ opacity: 0 }}

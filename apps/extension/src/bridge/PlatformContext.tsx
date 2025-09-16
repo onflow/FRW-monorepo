@@ -423,8 +423,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         name: selectedName,
         type: activeAccountType,
         balance: '0',
-        avatar: currentWallet.icon || '', // Use icon as avatar
-        emoji: currentWallet.icon || '', // Use icon as emoji
+        avatar: currentWallet.icon || '',
+        emoji: currentWallet.icon || '',
         emojiInfo,
         parentAddress: mainAddress,
         parentEmoji,

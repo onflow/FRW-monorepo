@@ -595,6 +595,7 @@ export const SendTokensScreen = (props) => {
           platform="mobile"
           title="Tokens"
           currency={bridge.getCurrency()}
+          isExtension={isExtension}
         />
 
         <ConfirmationDrawer
