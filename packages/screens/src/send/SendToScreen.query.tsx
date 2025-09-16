@@ -435,7 +435,7 @@ export function SendToScreen(): React.ReactElement {
     <BackgroundWrapper>
       {isExtension && (
         <ExtensionHeader
-          title={t('send.sendTokens.title', 'Sending')}
+          title={t('send.sendTo.title', 'Send To')}
           help={false}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
@@ -444,7 +444,7 @@ export function SendToScreen(): React.ReactElement {
       <SearchableTabLayout
         title={t('send.sendTo.title')}
         searchValue={searchQuery}
-        searchPlaceholder={t('send.searchAddress')}
+        searchPlaceholder={t('send.searchPasteAddress')}
         showScanButton={!isExtension}
         onSearchChange={handleSearchChange}
         onScanPress={handleScanPress}

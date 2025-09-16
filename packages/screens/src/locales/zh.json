@@ -30,6 +30,7 @@
       "title": "发送至"
     },
     "searchAddress": "搜索地址或联系人...",
+    "searchPasteAddress": "搜索/ 粘贴地址",
     "selectedToken": "已选代币",
     "noAccounts": {
       "title": "无账户",

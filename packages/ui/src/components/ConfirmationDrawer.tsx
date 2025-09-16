@@ -404,7 +404,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$5" fontWeight="600" color="#000000">
-              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm' : 'Hold to send'}
+              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm send' : 'Hold to send'}
             </Text>
           </YStack>
         </YStack>

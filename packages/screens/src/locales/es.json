@@ -30,6 +30,7 @@
       "title": "Enviar a"
     },
     "searchAddress": "Buscar dirección o contacto...",
+    "searchPasteAddress": "Buscar/ Pegar dirección",
     "selectedToken": "Token Seleccionado",
     "noAccounts": {
       "title": "Sin Cuentas",
