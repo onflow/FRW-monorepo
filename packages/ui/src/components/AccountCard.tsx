@@ -159,7 +159,7 @@ export function AccountCard({
                   numberOfLines={1}
                   flex={1}
                 >
-                  {formatBalance(account.balance)} | {account.nfts}
+                  {formatBalance(account.balance)}
                 </Text>
               ) : null}
             </XStack>

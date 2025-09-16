@@ -57,6 +57,7 @@ export function ProfileList({
             />
             {index < profiles.length - 1 && (
               <View
+                mt="$1"
                 height={0}
                 width="100%"
                 borderBottomWidth={1}
@@ -143,6 +144,7 @@ function ProfileItem({
             <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
             {index < accountsData.length - 1 && (
               <View
+                mt="$2"
                 height={0}
                 width="100%"
                 borderBottomWidth={1}

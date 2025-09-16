@@ -54,14 +54,7 @@ export function NFTCard({
         {nft.thumbnail || nft.image ? (
           <Image src={nft.thumbnail || nft.image} width="100%" height="100%" objectFit="cover" />
         ) : (
-          <YStack flex={1} items="center" justify="center" bg="$surface2" rounded="$4">
-            <Text fontSize="$6" opacity={0.3}>
-              🖼️
-            </Text>
-            <Text fontSize="$2" color="$textSecondary" mt="$2">
-              NFT
-            </Text>
-          </YStack>
+          <YStack flex={1} items="center" justify="center" bg="$surface2" rounded="$4"></YStack>
         )}
 
         {/* ERC1155 Badge - top left corner */}

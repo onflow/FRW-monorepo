@@ -163,43 +163,60 @@ export function SendToScreen(): React.ReactElement {
     return results;
   }, [batchBalances, profileAccountAddresses]);
 
-  // Convert recent contacts data
+  // Filter function for search
+  const filterBySearchQuery = useCallback(
+    (name: string, address: string): boolean => {
+      if (!searchQuery || !searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase().trim();
+      return name.toLowerCase().includes(query) || address.toLowerCase().includes(query);
+    },
+    [searchQuery]
+  );
+
+  // Convert and filter recent contacts data
   const recentData = useMemo((): RecipientData[] => {
-    return recentContacts.map((contact: any) => ({
-      id: contact.id,
-      name: contact.name,
-      address: contact.address,
-      avatar: contact.avatar,
-      type: 'recent' as const,
-      emojiInfo: null,
-      parentEmojiInfo: null,
-    }));
-  }, [recentContacts]);
+    return recentContacts
+      .map((contact: any) => ({
+        id: contact.id,
+        name: contact.name,
+        address: contact.address,
+        avatar: contact.avatar,
+        type: 'recent' as const,
+        emojiInfo: null,
+        parentEmojiInfo: null,
+      }))
+      .filter((contact) => filterBySearchQuery(contact.name, contact.address));
+  }, [recentContacts, filterBySearchQuery]);
 
-  // Convert contacts data
+  // Convert and filter contacts data
   const contactsData = useMemo((): RecipientData[] => {
-    return allContacts.map((contact: any) => ({
-      id: contact.id,
-      name: contact.name,
-      address: contact.address,
-      avatar: contact.avatar,
-      type: 'contact' as const,
-      emojiInfo: null,
-      parentEmojiInfo: null,
-    }));
-  }, [allContacts, isLoadingContacts, contactsError]);
+    return allContacts
+      .map((contact: any) => ({
+        id: contact.id,
+        name: contact.name,
+        address: contact.address,
+        avatar: contact.avatar,
+        type: 'contact' as const,
+        emojiInfo: null,
+        parentEmojiInfo: null,
+      }))
+      .filter((contact) => filterBySearchQuery(contact.name, contact.address));
+  }, [allContacts, isLoadingContacts, contactsError, filterBySearchQuery]);
 
-  // Convert profiles data for display
+  // Convert and filter profiles data for display
   const profilesData = useMemo(() => {
     const result = allProfiles.map((profile) => ({
       ...profile,
-      accounts: profile.accounts.map((account) => ({
-        ...account,
-        balance: accountBalances[account.address]?.balance || '0 FLOW',
-      })),
+      accounts: profile.accounts
+        .map((account) => ({
+          ...account,
+          balance: accountBalances[account.address]?.balance || '0 FLOW',
+        }))
+        .filter((account) => filterBySearchQuery(account.name || '', account.address)),
     }));
-    return result;
-  }, [allProfiles, accountBalances]);
+    // Only return profiles that have at least one matching account
+    return result.filter((profile) => profile.accounts.length > 0);
+  }, [allProfiles, accountBalances, filterBySearchQuery]);
 
   // Get current recipients based on active tab
   const recipients = useMemo(() => {

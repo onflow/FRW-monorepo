@@ -1,8 +1,10 @@
 import React from 'react';
-import { XStack, YStack, Text, Button } from 'tamagui';
+import { XStack, YStack, Text } from 'tamagui';
+
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
+import { Button } from '../foundation/Button';
 import { Skeleton } from '../foundation/Skeleton';
 
 export interface NFTData {
@@ -109,7 +111,7 @@ export function NFTGrid({
 
   // Empty state
   const renderEmpty = () => (
-    <YStack flex={1} justify="center" items="center" px="$6" py="$12">
+    <YStack flex={1} justify="center" items="center" px="$6" py="$6">
       <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
         {emptyTitle || 'No NFTs Found'}
       </Text>
@@ -126,17 +128,11 @@ export function NFTGrid({
       </Text>
 
       {showClearSearch && onClearSearch && (
-        <Button
-          variant="outlined"
-          onPress={onClearSearch}
-          bg="$bg2"
-          borderColor="$borderColor"
-          color="$color"
-          px="$4"
-          py="$3"
-        >
-          {clearSearchText}
-        </Button>
+        <YStack mt="$4" items="center">
+          <Button variant="outline" size="medium" onPress={onClearSearch}>
+            {clearSearchText}
+          </Button>
+        </YStack>
       )}
     </YStack>
   );
