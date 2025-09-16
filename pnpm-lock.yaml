@@ -891,6 +891,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.85.6
         version: 5.85.6(react@19.0.0)
+      bignumber.js:
+        specifier: ^9.1.2
+        version: 9.3.1
       i18next:
         specifier: ^24.1.0
         version: 24.2.3(typescript@5.7.2)
@@ -1030,6 +1033,9 @@ importers:
       '@tamagui/web':
         specifier: ^1.132.20
         version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      bignumber.js:
+        specifier: ^9.1.2
+        version: 9.3.1
       lottie-react-native:
         specifier: ^7.3.2
         version: 7.3.2(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
@@ -15000,9 +15006,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
@@ -17003,12 +17007,12 @@ snapshots:
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.28.3
-      '@babel/types': 7.28.2
+      '@babel/parser': 7.28.4
+      '@babel/types': 7.28.4
 
   '@types/babel__traverse@7.28.0':
     dependencies:
@@ -22256,8 +22260,8 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.3
       '@babel/generator': 7.28.3
-      '@babel/parser': 7.28.3
-      '@babel/types': 7.28.2
+      '@babel/parser': 7.28.4
+      '@babel/types': 7.28.4
       flow-enums-runtime: 0.0.6
       metro: 0.82.5
       metro-babel-transformer: 0.82.5

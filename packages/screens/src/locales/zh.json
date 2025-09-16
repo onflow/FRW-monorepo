@@ -16,7 +16,8 @@
     "previous": "上一步",
     "loading": "加载中...",
     "error": "错误",
-    "success": "成功"
+    "success": "成功",
+    "Search": "搜索"
   },
   "tabs": {
     "tokens": "代币",
@@ -30,6 +31,7 @@
       "title": "发送至"
     },
     "searchAddress": "搜索地址或联系人...",
+    "searchPasteAddress": "搜索/ 粘贴地址",
     "selectedToken": "已选代币",
     "noAccounts": {
       "title": "无账户",

@@ -42,11 +42,9 @@ class ExtensionNavigation implements Navigation {
         const tokenId = params?.tokenId || 'flow';
         path = `/dashboard/token/${tokenId}/send`;
       } else if (screen === 'SendTokens' && params) {
-        // Get token ID from params, or try to extract from current URL, or fallback to 'flow'
         let tokenId = params.tokenId;
 
         if (!tokenId && this.locationRef?.current) {
-          // Try to extract token ID from current URL path
           const currentPath = this.locationRef.current.pathname;
           const tokenMatch = currentPath.match(/\/token\/([^/]+)\//);
           if (tokenMatch) {

@@ -15,11 +15,7 @@ import {
   registerRefreshListener,
   setCachedData,
 } from '@/data-model';
-import {
-  type CadenceTokenInfo,
-  type EvmTokenInfo,
-  type ExtendedTokenInfo,
-} from '@/shared/types';
+import { type CadenceTokenInfo, type EvmTokenInfo, type ExtendedTokenInfo } from '@/shared/types';
 import { isValidEthereumAddress, isValidFlowAddress, consoleError } from '@/shared/utils';
 
 import openapiService from './openapi';
@@ -122,7 +118,6 @@ class CoinList {
       throw new Error('Address is required');
     }
 
-    // Determine if address is EVM or Flow based on format
     const isEvmAddress = isValidEthereumAddress(address);
     const isFlowAddress = isValidFlowAddress(address);
 

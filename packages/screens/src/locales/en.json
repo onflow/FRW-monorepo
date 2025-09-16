@@ -16,7 +16,8 @@
     "previous": "Previous",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "Search": "Search"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -33,6 +34,7 @@
     },
     "toAccount": "To Account",
     "searchAddress": "Search address",
+    "searchPasteAddress": "Search/ Paste address",
     "selectedToken": "Selected Token",
     "noAccounts": {
       "title": "No Accounts",

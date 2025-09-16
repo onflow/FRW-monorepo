@@ -28,7 +28,8 @@ import {
 } from '@onflow/frw-ui';
 import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import BN from 'bignumber.js';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -72,6 +73,11 @@ export const SendTokensScreen = (props) => {
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
 
+  // Reset amount when selected token changes
+  useEffect(() => {
+    setAmount('');
+  }, [selectedToken]);
+
   // Check free gas status
   useEffect(() => {
     const checkFreeGasStatus = async () => {
@@ -107,7 +113,7 @@ export const SendTokensScreen = (props) => {
     isLoading: isLoadingAccount,
     error: accountError,
   } = useQuery({
-    queryKey: ['selectedAccount'],
+    queryKey: ['selectedAccount', bridge.getSelectedAddress()],
     queryFn: () => bridge.getSelectedAccount(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: true,
@@ -145,7 +151,7 @@ export const SendTokensScreen = (props) => {
   const usdFee = '$0.02';
   const isAccountIncompatible = false;
   const isBalanceLoading = false;
-  const showStorageWarning = true;
+  const showStorageWarning = false;
   const storageWarningMessage =
     'Account balance will fall below the minimum FLOW required for storage after this transaction.';
   const showEditButtons = true;
@@ -165,6 +171,7 @@ export const SendTokensScreen = (props) => {
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const inputRef = useRef<any>(null);
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
@@ -188,7 +195,7 @@ export const SendTokensScreen = (props) => {
 
       // Limit decimal places based on mode
       if (parts.length === 2) {
-        if (isTokenMode && parts[1].length > 8) {
+        if (isTokenMode && parts[1].length > (selectedToken?.decimal || 8)) {
           return; // Max 8 decimal places for tokens
         } else if (!isTokenMode && parts[1].length > 2) {
           return; // Max 2 decimal places for USD
@@ -203,25 +210,33 @@ export const SendTokensScreen = (props) => {
 
       // Check if amount exceeds max balance
       if (selectedToken?.balance) {
-        const maxBalance = parseFloat(selectedToken.balance.toString());
-        const inputAmount = parseFloat(sanitized);
+        const maxBalance = new BN(selectedToken.balance.toString());
+        const inputAmount = new BN(sanitized);
 
-        if (!isNaN(inputAmount) && !isNaN(maxBalance)) {
+        if (!inputAmount.isNaN() && !maxBalance.isNaN()) {
           if (isTokenMode) {
             // In token mode, check directly against balance
-            if (inputAmount > maxBalance) {
+            if (inputAmount.gt(maxBalance)) {
               setAmount(maxBalance.toString());
+              // Blur the input to deselect it and show the full value
+              if (inputRef.current) {
+                inputRef.current.blur();
+              }
               return;
             }
           } else if (selectedToken?.priceInUSD) {
             // In USD mode, convert to tokens and check against balance
-            const price = parseFloat(selectedToken.priceInUSD);
-            if (!isNaN(price) && price > 0) {
-              const tokenEquivalent = inputAmount / price;
-              if (tokenEquivalent > maxBalance) {
+            const price = new BN(selectedToken.priceInUSD);
+            if (!price.isNaN() && price.gt(0)) {
+              const tokenEquivalent = inputAmount.div(price);
+              if (tokenEquivalent.gt(maxBalance)) {
                 // Set to max USD value (balance * price)
-                const maxUSD = maxBalance * price;
+                const maxUSD = maxBalance.times(price);
                 setAmount(maxUSD.toFixed(2));
+                // Blur the input to deselect it and show the full value
+                if (inputRef.current) {
+                  inputRef.current.blur();
+                }
                 return;
               }
             }
@@ -237,20 +252,19 @@ export const SendTokensScreen = (props) => {
   const handleToggleInputMode = useCallback(() => {
     // Convert the amount when switching modes
     if (selectedToken?.priceInUSD) {
-      const price = parseFloat(selectedToken.priceInUSD);
-      const currentAmount = parseFloat(amount || '0');
+      const price = new BN(selectedToken.priceInUSD);
+      const currentAmount = new BN(amount || '0');
 
-      if (!isNaN(price) && !isNaN(currentAmount) && price > 0) {
+      if (!price.isNaN() && !currentAmount.isNaN() && price.gt(0)) {
         if (isTokenMode) {
           // Converting from token to USD
-          const usdAmount = currentAmount * price;
+          const usdAmount = currentAmount.times(price);
           setAmount(usdAmount.toFixed(2));
         } else {
           // Converting from USD to token
-          const tokenAmount = currentAmount / price;
+          const tokenAmount = currentAmount.div(price);
           // Keep up to 8 decimal places for token amount
-          const rounded = Math.round(tokenAmount * 100000000) / 100000000;
-          setAmount(rounded.toString());
+          setAmount(tokenAmount.toFixed(selectedToken.decimal || 8));
         }
       }
     }
@@ -306,7 +320,18 @@ export const SendTokensScreen = (props) => {
     setSelectedToken(selectedToken);
     setSelectedNFTs([]);
     setTransactionType('tokens');
-    updateFormData({ tokenAmount: amount });
+    const inputAmount = new BN(amount || '0');
+    let tokenAmount: string;
+    const decimals = selectedToken.decimal || 8;
+    if (!isTokenMode) {
+      // Converting from USD to token
+      tokenAmount = inputAmount.div(selectedToken.priceInUSD || 0).toFixed(decimals);
+    } else {
+      // Already in token mode
+      tokenAmount = inputAmount.toFixed(decimals);
+    }
+
+    updateFormData({ tokenAmount: tokenAmount });
 
     const result = await executeTransaction();
 
@@ -349,20 +374,42 @@ export const SendTokensScreen = (props) => {
   // Calculate if send button should be disabled
   const isSendDisabled = useMemo(() => {
     if (transactionType === 'tokens') {
-      return !selectedToken || !fromAccount || !toAccount || parseFloat(amount || '0') <= 0;
+      const amountNum = new BN(amount || '0');
+      const balanceNum = new BN(selectedToken?.balance?.toString() || '0');
+
+      // Convert amount to token equivalent if in USD mode
+      let tokenAmount = amountNum;
+      if (!isTokenMode && selectedToken?.priceInUSD) {
+        const price = new BN(selectedToken.priceInUSD);
+        if (!price.isNaN() && price.gt(0)) {
+          tokenAmount = amountNum.div(price);
+        }
+      }
+
+      return (
+        !selectedToken ||
+        !fromAccount ||
+        !toAccount ||
+        amountNum.lte(0) ||
+        tokenAmount.gt(balanceNum)
+      );
     } else {
       return !selectedNFTs.length || !fromAccount || !toAccount;
     }
-  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount]);
+  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount, isTokenMode]);
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = useMemo(
     () => ({
-      tokenAmount: transactionType === 'tokens' ? amount : selectedNFTs.length.toString(),
+      tokenAmount: isTokenMode
+        ? amount
+        : selectedToken?.priceInUSD
+          ? new BN(amount || '0').div(new BN(selectedToken.priceInUSD)).toFixed(2)
+          : amount,
       fiatAmount:
-        transactionType === 'tokens' && selectedToken?.priceInUSD
-          ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
-          : '0.00',
+        isTokenMode && selectedToken?.priceInUSD
+          ? new BN(amount || '0').times(new BN(selectedToken.priceInUSD)).toFixed(2)
+          : amount,
       isTokenMode,
       transactionFee: transactionFee,
     }),
@@ -431,7 +478,7 @@ export const SendTokensScreen = (props) => {
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb="$2">
+              <View mb={-18}>
                 <AccountCard
                   account={transformAccountForCard(fromAccount)}
                   title="From Account"
@@ -461,7 +508,7 @@ export const SendTokensScreen = (props) => {
                           logoURI: selectedToken.logoURI,
                           balance: selectedToken.balance?.toString(),
                           price: selectedToken.priceInUSD
-                            ? parseFloat(selectedToken.priceInUSD)
+                            ? new BN(selectedToken.priceInUSD)
                             : undefined,
                           isVerified: selectedToken.isVerified,
                         }
@@ -477,6 +524,7 @@ export const SendTokensScreen = (props) => {
                   showBalance={true}
                   showConverter={true}
                   disabled={false}
+                  inputRef={inputRef}
                 />
               </YStack>
             ) : (
@@ -565,7 +613,7 @@ export const SendTokensScreen = (props) => {
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
-              Next
+              {t('common.next')}
             </Text>
           </YStack>
         </YStack>
@@ -580,6 +628,7 @@ export const SendTokensScreen = (props) => {
           platform="mobile"
           title="Tokens"
           currency={bridge.getCurrency()}
+          isExtension={isExtension}
         />
 
         <ConfirmationDrawer

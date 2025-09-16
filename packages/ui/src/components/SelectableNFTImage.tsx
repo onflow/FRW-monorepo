@@ -107,6 +107,11 @@ export function SelectableNFTImage({
           <CheckCircle size={30} color="#00EF8B" />
         </YStack>
       )}
+      {selectable && !selected && (
+        <YStack pos="absolute" top={14} right={14} w={30} h={30} cursor="pointer">
+          <CheckCircle size={30} color="gray" />
+        </YStack>
+      )}
     </YStack>
   );
 }

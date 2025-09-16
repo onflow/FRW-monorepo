@@ -122,6 +122,7 @@ export interface TokenAmountInputProps {
   showBalance?: boolean;
   showConverter?: boolean;
   disabled?: boolean;
+  inputRef?: React.RefObject<any>;
 }
 
 export interface AddressTextProps extends Omit<TextProps, 'children'> {
