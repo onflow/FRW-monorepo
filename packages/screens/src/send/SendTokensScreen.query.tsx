@@ -76,8 +76,14 @@ export const SendTokensScreen = (props) => {
   useEffect(() => {
     const checkFreeGasStatus = async () => {
       try {
-        const isEnabled = await bridge.isFreeGasEnabled?.();
-        setIsFreeGasEnabled(isEnabled ?? true);
+        // Check if the platform supports free gas
+        const platform = bridge.getPlatform();
+        if (platform === 'extension' || platform === 'mobile') {
+          // For now, default to true since the method might not be available yet
+          setIsFreeGasEnabled(true);
+        } else {
+          setIsFreeGasEnabled(true);
+        }
       } catch (error) {
         console.error('Failed to check free gas status:', error);
         // Default to enabled if we can't determine the status
@@ -169,9 +175,44 @@ export const SendTokensScreen = (props) => {
     [setSelectedToken]
   );
 
-  const handleAmountChange = useCallback((newAmount: string) => {
-    setAmount(newAmount);
-  }, []);
+  const handleAmountChange = useCallback(
+    (newAmount: string) => {
+      // Remove any non-numeric characters except decimal point
+      const sanitized = newAmount.replace(/[^0-9.]/g, '');
+
+      // Prevent multiple decimal points
+      const parts = sanitized.split('.');
+      if (parts.length > 2) {
+        return; // Don't update if there are multiple decimal points
+      }
+
+      // Limit decimal places to 8 (common for crypto)
+      if (parts.length === 2 && parts[1].length > 8) {
+        return; // Don't update if more than 8 decimal places
+      }
+
+      // Prevent leading zeros (except for decimal numbers like 0.123)
+      if (sanitized.length > 1 && sanitized[0] === '0' && sanitized[1] !== '.') {
+        setAmount(sanitized.substring(1));
+        return;
+      }
+
+      // Check if amount exceeds max balance
+      if (selectedToken?.balance) {
+        const maxBalance = parseFloat(selectedToken.balance.toString());
+        const inputAmount = parseFloat(sanitized);
+
+        if (!isNaN(inputAmount) && !isNaN(maxBalance) && inputAmount > maxBalance) {
+          // Set to max balance if exceeded
+          setAmount(maxBalance.toString());
+          return;
+        }
+      }
+
+      setAmount(sanitized);
+    },
+    [selectedToken]
+  );
 
   const handleToggleInputMode = useCallback(() => {
     setIsTokenMode((prev) => !prev);
@@ -180,6 +221,8 @@ export const SendTokensScreen = (props) => {
   const handleMaxPress = useCallback(() => {
     if (selectedToken?.balance) {
       setAmount(selectedToken.balance.toString());
+      // Switch to token mode when MAX is pressed (disable $ mode)
+      setIsTokenMode(true);
     }
   }, [selectedToken]);
 
@@ -512,7 +555,7 @@ export const SendTokensScreen = (props) => {
             description: nft.description || '',
           }))}
           fromAccount={transformAccountForDisplay(fromAccount)}
-          toAccount={transformAccountForDisplay(toAccount)}
+          toAccount={toAccount ? transformAccountForDisplay(toAccount) : null}
           formData={formData}
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
