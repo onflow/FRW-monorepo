@@ -224,6 +224,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             name: evmName,
             color: evmWallet.color || '#6B7280',
           },
+          parentAddress: mainAddress,
           isActive: false,
         });
       }
