@@ -437,7 +437,7 @@ export function SendToScreen(): React.ReactElement {
       {isExtension && (
         <ExtensionHeader
           title={t('send.sendTokens.title', 'Sending')}
-          help={true}
+          help={false}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
         />

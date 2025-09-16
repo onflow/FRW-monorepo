@@ -361,7 +361,7 @@ export function NFTListScreen(): React.ReactElement {
         {isExtension && (
           <ExtensionHeader
             title={t('send.title')}
-            help={true}
+            help={false}
             onGoBack={() => navigation.goBack()}
             onNavigate={(link: string) => navigation.navigate(link)}
           />
