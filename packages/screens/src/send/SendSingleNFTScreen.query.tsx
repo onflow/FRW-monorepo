@@ -140,7 +140,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const usdFee = '$0.02';
 
   // Mock storage warning - TODO: Replace with real storage check
-  const showStorageWarning = true;
+  const showStorageWarning = false;
   const storageWarningMessage =
     'Account balance will fall below the minimum FLOW required for storage after this transaction.';
 

@@ -19,7 +19,6 @@ export function ProfileList({
   emptyTitle = 'No Profiles',
   emptyMessage = 'No profiles found',
 }: ProfileListProps): React.ReactElement {
-  
   if (isLoading) {
     return (
       <YStack items="center" justifyContent="center" py="$4">
@@ -48,14 +47,12 @@ export function ProfileList({
       {profiles.map((profile, index) => {
         return (
           <React.Fragment key={profile.uid}>
+            <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
             <ProfileItem
               profile={profile}
               onAccountPress={onAccountPress}
               isLast={index === profiles.length - 1}
             />
-            {index < profiles.length - 1 && (
-              <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
-            )}
           </React.Fragment>
         );
       })}
@@ -74,12 +71,9 @@ function ProfileItem({
   onAccountPress,
   isLast = false,
 }: ProfileItemProps): React.ReactElement {
-  
   const handleAccountPress = (account: any) => {
     onAccountPress?.(account);
   };
-
-
 
   // Convert profile accounts to RecipientData format
   const accountsData: RecipientData[] = profile.accounts.map((account) => {
@@ -99,7 +93,6 @@ function ProfileItem({
     };
     return data;
   });
-  
 
   return (
     <YStack gap="$3" items="flex-start" justifyContent="flex-start" width="100%">
@@ -129,9 +122,7 @@ function ProfileItem({
                 items="center"
                 justifyContent="center"
               >
-                <Text fontSize="$4">
-                  {profile.avatar}
-                </Text>
+                <Text fontSize="$4">{profile.avatar}</Text>
               </View>
             ) : (
               <View
@@ -164,15 +155,14 @@ function ProfileItem({
         </XStack>
       </XStack>
 
-      {/* Separator Line */}
-      <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
-
       {/* Accounts List using RecipientList */}
       <RecipientList
         data={accountsData}
         isLoading={false}
         onItemPress={handleAccountPress}
         contentPadding={0}
+        showSeparators={false}
+        itemSpacing={13}
       />
     </YStack>
   );

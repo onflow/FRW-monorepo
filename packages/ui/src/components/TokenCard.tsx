@@ -23,6 +23,7 @@ export function TokenCard({
       {...(onPress &&
         isAccessible && {
           pressStyle: { opacity: 0.7 },
+          hoverStyle: { opacity: 0.7 },
           onPress: onPress,
           cursor: 'pointer',
         })}

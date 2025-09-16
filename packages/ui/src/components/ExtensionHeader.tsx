@@ -1,4 +1,4 @@
-import { ArrowBack, InfoIcon } from '@onflow/frw-icons';
+import { ArrowBack } from '@onflow/frw-icons';
 import React from 'react';
 import { View, XStack } from 'tamagui';
 
@@ -23,7 +23,7 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
   };
 
   return (
-    <XStack w="100%" h={48} items="center" justify="space-between" px="$4">
+    <XStack w="100%" h={48} items="center" justify="space-between" px="$4" bg="$bgDrawer">
       {/* Left section - Back button (Grid size=1 equivalent) */}
       <View
         w={32}
@@ -44,26 +44,7 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
         </Text>
       </View>
 
-      <View w={32} h={32} items="center" justify="center">
-        {props.right
-          ? props.right
-          : props.help && (
-              <View
-                w={32}
-                h={32}
-                items="center"
-                justify="center"
-                onPress={() => {
-                  window.open('https://wallet.flow.com/contact', '_blank');
-                }}
-                cursor="pointer"
-                hoverStyle={{ opacity: 0.8 }}
-                pressStyle={{ opacity: 0.6 }}
-              >
-                <InfoIcon size={20} color="#ffffff" />
-              </View>
-            )}
-      </View>
+      <View w={32} h={32} items="center" justify="center"></View>
     </XStack>
   );
 };

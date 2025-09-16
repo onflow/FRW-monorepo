@@ -149,9 +149,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         exitStyle={{ opacity: 0 }}
         bg="rgba(0,0,0,0.5)"
       />
-
-      <Sheet.Handle bg="$gray8" />
-
+      {!isExtension && <Sheet.Handle bg="$gray8" />}
       <Sheet.Frame
         bg="$bgDrawer"
         borderTopLeftRadius={isExtension ? 0 : '$6'}

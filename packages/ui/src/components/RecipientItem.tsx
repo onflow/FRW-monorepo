@@ -64,6 +64,7 @@ export function RecipientItem({
       bg="transparent"
       borderRadius={16}
       pressStyle={pressStyle || { opacity: 0.8, scale: 0.98 }}
+      hoverStyle={{ width: '100%', opacity: 0.8 }}
       disabled={isDisabled}
       onPress={onPress}
       opacity={isDisabled ? 0.5 : 1}
@@ -71,6 +72,7 @@ export function RecipientItem({
       borderWidth={0}
       p={0}
       minHeight={56}
+      cursor="pointer"
     >
       <XStack items="center" justify="space-between" flex={1} p={0} height={56}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
@@ -136,7 +138,14 @@ export function RecipientItem({
               {name || emojiInfo?.name}
             </Text>
             {isEVM && (
-              <XStack bg="$primary" rounded="$4" px={4} items="center" justify="center" height={16}>
+              <XStack
+                bg="$accentEVM"
+                rounded="$4"
+                px={4}
+                items="center"
+                justify="center"
+                height={16}
+              >
                 <Text
                   fontSize={8}
                   fontWeight="400"

@@ -117,6 +117,7 @@ export function TokenAmountInput({
           pressStyle={{ opacity: 0.8 }}
           onPress={onTokenSelectorPress}
           disabled={disabled}
+          cursor="pointer"
         >
           <XStack items="center" gap={3}>
             <Text fontSize={12} fontWeight="600" color="$white" lineHeight={18} numberOfLines={1}>
@@ -146,6 +147,7 @@ export function TokenAmountInput({
               pressStyle={{ opacity: 0.8 }}
               onPress={onToggleInputMode}
               disabled={disabled}
+              cursor="pointer"
             >
               <SwitchVertical size={11.36} color="rgba(255, 255, 255, 0.4)" />
             </XStack>
@@ -188,6 +190,7 @@ export function TokenAmountInput({
             pressStyle={{ opacity: 0.8 }}
             onPress={onMaxPress}
             px="$2.5"
+            cursor="pointer"
           >
             <Text fontSize="$3" fontWeight="600">
               MAX

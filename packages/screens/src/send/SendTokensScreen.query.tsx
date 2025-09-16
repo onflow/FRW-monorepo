@@ -107,7 +107,7 @@ export const SendTokensScreen = (props) => {
     isLoading: isLoadingAccount,
     error: accountError,
   } = useQuery({
-    queryKey: ['selectedAccount'],
+    queryKey: ['selectedAccount', bridge.getSelectedAddress()],
     queryFn: () => bridge.getSelectedAccount(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: true,
@@ -145,7 +145,7 @@ export const SendTokensScreen = (props) => {
   const usdFee = '$0.02';
   const isAccountIncompatible = false;
   const isBalanceLoading = false;
-  const showStorageWarning = true;
+  const showStorageWarning = false;
   const storageWarningMessage =
     'Account balance will fall below the minimum FLOW required for storage after this transaction.';
   const showEditButtons = true;

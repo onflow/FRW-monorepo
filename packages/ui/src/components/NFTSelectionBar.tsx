@@ -199,6 +199,7 @@ export function NFTSelectionBar({
             justify="center"
             disabled={selectedNFTs.length === 0}
             onPress={onContinue}
+            cursor="pointer"
           >
             <Text fontSize="$5" fontWeight="600" color="#000000">
               Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
