@@ -40,6 +40,11 @@ export function TokenAmountInput({
   showConverter = true,
   disabled = false,
   inputRef: externalInputRef,
+  currency = {
+    name: 'USD',
+    symbol: '$',
+    rate: '1',
+  },
   ...props
 }: TokenAmountInputProps): React.ReactElement {
   const [_focused, setFocused] = useState(false);
@@ -49,6 +54,7 @@ export function TokenAmountInput({
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
+  console.log('selectedToken ', selectedToken);
   return (
     <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - aligned with From Account */}
@@ -79,7 +85,7 @@ export function TokenAmountInput({
           <XStack items="center" width={169} height={35}>
             {!isTokenMode && (
               <Text fontSize={28} fontWeight="500" color="$white" lineHeight={35} mr={4}>
-                $
+                {currency.symbol}
               </Text>
             )}
             <Input
@@ -176,7 +182,7 @@ export function TokenAmountInput({
               minW={0}
             >
               {isTokenMode
-                ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
+                ? `${currency.symbol}${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
                 : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)}`}
             </Text>
           </XStack>
