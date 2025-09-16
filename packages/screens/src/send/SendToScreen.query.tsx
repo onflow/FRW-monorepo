@@ -62,7 +62,6 @@ export function SendToScreen(): React.ReactElement {
 
   // Get all profiles with their accounts - using stable hook
   const allProfiles = useAllProfiles();
-  console.log('SendToScreen - allProfiles:', allProfiles);
   const loadProfilesFromBridge = useProfileStore((state) => state.loadProfilesFromBridge);
 
   const addressBookStore = useAddressBookStore();

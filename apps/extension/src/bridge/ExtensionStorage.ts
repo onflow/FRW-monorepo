@@ -16,7 +16,6 @@ export class ExtensionStorage implements Storage {
 
   async get<K extends keyof StorageKeyMap>(key: K): Promise<StorageKeyMap[K] | undefined> {
     try {
-      // ChromeStorage.get() returns the value directly, not wrapped in an object
       const value = await this.storageArea.get(key as string);
 
       if (!value) return undefined;
