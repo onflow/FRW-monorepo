@@ -186,9 +186,13 @@ export const SendTokensScreen = (props) => {
         return; // Don't update if there are multiple decimal points
       }
 
-      // Limit decimal places to 8 (common for crypto)
-      if (parts.length === 2 && parts[1].length > 8) {
-        return; // Don't update if more than 8 decimal places
+      // Limit decimal places based on mode
+      if (parts.length === 2) {
+        if (isTokenMode && parts[1].length > 8) {
+          return; // Max 8 decimal places for tokens
+        } else if (!isTokenMode && parts[1].length > 2) {
+          return; // Max 2 decimal places for USD
+        }
       }
 
       // Prevent leading zeros (except for decimal numbers like 0.123)
@@ -202,21 +206,57 @@ export const SendTokensScreen = (props) => {
         const maxBalance = parseFloat(selectedToken.balance.toString());
         const inputAmount = parseFloat(sanitized);
 
-        if (!isNaN(inputAmount) && !isNaN(maxBalance) && inputAmount > maxBalance) {
-          // Set to max balance if exceeded
-          setAmount(maxBalance.toString());
-          return;
+        if (!isNaN(inputAmount) && !isNaN(maxBalance)) {
+          if (isTokenMode) {
+            // In token mode, check directly against balance
+            if (inputAmount > maxBalance) {
+              setAmount(maxBalance.toString());
+              return;
+            }
+          } else if (selectedToken?.priceInUSD) {
+            // In USD mode, convert to tokens and check against balance
+            const price = parseFloat(selectedToken.priceInUSD);
+            if (!isNaN(price) && price > 0) {
+              const tokenEquivalent = inputAmount / price;
+              if (tokenEquivalent > maxBalance) {
+                // Set to max USD value (balance * price)
+                const maxUSD = maxBalance * price;
+                setAmount(maxUSD.toFixed(2));
+                return;
+              }
+            }
+          }
         }
       }
 
       setAmount(sanitized);
     },
-    [selectedToken]
+    [selectedToken, isTokenMode]
   );
 
   const handleToggleInputMode = useCallback(() => {
+    // Convert the amount when switching modes
+    if (selectedToken?.priceInUSD) {
+      const price = parseFloat(selectedToken.priceInUSD);
+      const currentAmount = parseFloat(amount || '0');
+
+      if (!isNaN(price) && !isNaN(currentAmount) && price > 0) {
+        if (isTokenMode) {
+          // Converting from token to USD
+          const usdAmount = currentAmount * price;
+          setAmount(usdAmount.toFixed(2));
+        } else {
+          // Converting from USD to token
+          const tokenAmount = currentAmount / price;
+          // Keep up to 8 decimal places for token amount
+          const rounded = Math.round(tokenAmount * 100000000) / 100000000;
+          setAmount(rounded.toString());
+        }
+      }
+    }
+
     setIsTokenMode((prev) => !prev);
-  }, []);
+  }, [isTokenMode, amount, selectedToken]);
 
   const handleMaxPress = useCallback(() => {
     if (selectedToken?.balance) {
