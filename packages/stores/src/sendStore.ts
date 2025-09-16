@@ -46,6 +46,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   transactionType: 'tokens',
   formData: defaultFormData,
   selectedNFTs: [],
+  currentNFT: null,
   selectedNFTQuantities: {},
   selectedCollection: null,
   currentStep: 'select-tokens',
@@ -67,6 +68,8 @@ export const useSendStore = create<SendState>((set, get) => ({
   setFromAccount: (account: WalletAccount | null) => set({ fromAccount: account, error: null }),
 
   setToAccount: (account: WalletAccount | null) => set({ toAccount: account, error: null }),
+
+  setCurrentNFT: (nft: NFTModel | null) => set({ currentNFT: nft, error: null }),
 
   setTransactionType: (type: TransactionType) =>
     set((state) => {
