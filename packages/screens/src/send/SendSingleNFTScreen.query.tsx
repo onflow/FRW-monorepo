@@ -140,7 +140,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const usdFee = '$0.02';
 
   // Mock storage warning - TODO: Replace with real storage check
-  const showStorageWarning = true;
+  const showStorageWarning = false;
   const storageWarningMessage =
     'Account balance will fall below the minimum FLOW required for storage after this transaction.';
 
@@ -233,7 +233,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
               {fromAccount && (
-                <View mt={-8} mb={-16}>
+                <View mb={-18}>
                   <AccountCard
                     account={transformAccountForCard(fromAccount)}
                     title={t('send.fromAccount')}

@@ -49,6 +49,7 @@ export function ProfileList({
       {profiles.map((profile, index) => {
         return (
           <React.Fragment key={profile.uid}>
+            <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
             <ProfileItem
               profile={profile}
               onAccountPress={onAccountPress}
@@ -119,7 +120,6 @@ function ProfileItem({
             size={26}
             bgColor="$gray8"
           />
-
           {/* Profile Name */}
           <Text
             color="$color"

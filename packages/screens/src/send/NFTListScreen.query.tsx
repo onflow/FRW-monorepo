@@ -10,6 +10,7 @@ import {
   YStack,
   ExtensionHeader,
   Text,
+  SearchBar,
 } from '@onflow/frw-ui';
 import { getNFTId, logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
@@ -142,7 +143,8 @@ export function NFTListScreen(): React.ReactElement {
       (nft) =>
         !searchQuery ||
         nft.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (nft.collection && nft.collection.toLowerCase().includes(searchQuery.toLowerCase()))
+        (nft.collection && nft.collection.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        nft.id.toLowerCase().includes(searchQuery.toLowerCase())
     );
     console.log('Filtered NFTs:', filtered.length, 'from', nftData.length);
     return filtered;
@@ -382,6 +384,14 @@ export function NFTListScreen(): React.ReactElement {
 
         {/* Search and Content */}
         <YStack flex={1} pl="$4" pr="$6">
+          <YStack pb={24}>
+            <SearchBar
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder={t('common.Search')}
+              width="100%"
+            />
+          </YStack>
           <NFTGrid
             data={filteredNFTs}
             selectedIds={selectedIds}

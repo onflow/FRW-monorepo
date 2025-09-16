@@ -142,16 +142,21 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   };
 
   return (
-    <Sheet modal open={visible} onOpenChange={onClose} snapPointsMode="fit" dismissOnSnapToBottom>
+    <Sheet
+      modal
+      open={visible}
+      onOpenChange={onClose}
+      snapPointsMode={!isExtension ? 'fit' : undefined}
+      dismissOnSnapToBottom
+      snapPoints={isExtension ? [91] : undefined}
+    >
       <Sheet.Overlay
-        animation="lazy"
+        animation={!isExtension ? 'lazy' : undefined}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
         bg="rgba(0,0,0,0.5)"
       />
-
-      <Sheet.Handle bg="$gray8" />
-
+      {!isExtension && <Sheet.Handle bg="$gray8" />}
       <Sheet.Frame
         bg="$bgDrawer"
         borderTopLeftRadius={isExtension ? 0 : '$6'}
@@ -241,8 +246,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 speed={1}
               /> */}
               <WalletCard width={114.62} height={129.195} />
-
-              {isExtension && <WalletCard width={114.62} height={129.195} />}
             </View>
           </View>
 
@@ -401,7 +404,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$5" fontWeight="600" color="#000000">
-              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm' : 'Hold to send'}
+              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm send' : 'Hold to send'}
             </Text>
           </YStack>
         </YStack>

@@ -16,7 +16,8 @@
     "previous": "Anterior",
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Éxito"
+    "success": "Éxito",
+    "Search": "Buscar"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -30,6 +31,7 @@
       "title": "Enviar a"
     },
     "searchAddress": "Buscar dirección o contacto...",
+    "searchPasteAddress": "Buscar/ Pegar dirección",
     "selectedToken": "Token Seleccionado",
     "noAccounts": {
       "title": "Sin Cuentas",

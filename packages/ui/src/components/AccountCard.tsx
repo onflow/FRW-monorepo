@@ -54,9 +54,6 @@ export function AccountCard({
       px="$1"
       pb="$6"
       gap="$1"
-      pressStyle={{
-        bg: '$light25',
-      }}
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
       cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
