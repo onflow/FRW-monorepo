@@ -46,7 +46,6 @@ class ExtensionNavigation implements Navigation {
         let tokenId = params.tokenId;
 
         if (!tokenId && this.locationRef?.current) {
-          // Try to extract token ID from current URL path
           const currentPath = this.locationRef.current.pathname;
           const tokenMatch = currentPath.match(/\/token\/([^/]+)\//);
           if (tokenMatch) {

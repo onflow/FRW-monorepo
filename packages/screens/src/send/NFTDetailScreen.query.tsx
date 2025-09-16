@@ -76,7 +76,6 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Get the current NFT to display - either from selectedNFTs or first NFT in collection
   const currentNFT = useMemo(() => {
-    console.log(currentViewNFT, 'currentViewNFT===');
     if (currentViewNFT) {
       return currentViewNFT;
     }
