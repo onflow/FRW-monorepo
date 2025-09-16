@@ -35,6 +35,7 @@ export function NFTDetailScreen(): React.ReactElement {
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const selectedCollection = useSendStore((state) => state.selectedCollection);
   const selectedNFTs = useSendStore((state) => state.selectedNFTs);
+  const currentViewNFT = useSendStore((state) => state.currentNFT);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
@@ -75,6 +76,10 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Get the current NFT to display - either from selectedNFTs or first NFT in collection
   const currentNFT = useMemo(() => {
+    console.log(currentViewNFT, 'currentViewNFT===');
+    if (currentViewNFT) {
+      return currentViewNFT;
+    }
     if (selectedNFTs && selectedNFTs.length > 0) {
       return selectedNFTs[0]; // Show first selected NFT
     }
