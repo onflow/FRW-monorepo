@@ -12,6 +12,7 @@ export interface NFTData {
   thumbnail?: string;
   collection?: string;
   amount?: string | number;
+  contractType?: string; // 'ERC721' | 'ERC1155'
 }
 
 export interface NFTGridProps {

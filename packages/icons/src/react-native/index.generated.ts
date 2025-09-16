@@ -12,6 +12,8 @@ export { default as Edit } from './Edit.generated';
 export { default as FlowLogo } from './FlowLogo.generated';
 export { default as InfoIcon } from './InfoIcon.generated';
 export { default as Link } from './Link.generated';
+export { default as Minus } from './Minus.generated';
+export { default as Plus } from './Plus.generated';
 export { default as Scan } from './Scan.generated';
 export { default as Search } from './Search.generated';
 export { default as SendConfirmation } from './SendConfirmation.generated';

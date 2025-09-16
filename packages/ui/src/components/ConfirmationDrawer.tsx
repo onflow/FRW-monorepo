@@ -240,6 +240,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 loop={false}
                 speed={1}
               /> */}
+              <WalletCard width={114.62} height={129.195} />
 
               {isExtension && <WalletCard width={114.62} height={129.195} />}
             </View>
@@ -291,7 +292,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
-                Send Tokens
+                Send NFTs
               </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
@@ -302,6 +303,35 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 borderRadius={14.4}
                 contentPadding={0}
               />
+
+              {/* ERC1155 Quantity Display - Read-only */}
+              {selectedNFTs.length === 1 &&
+                selectedNFTs[0].contractType === 'ERC1155' &&
+                selectedNFTs[0].selectedQuantity && (
+                  <XStack
+                    bg="rgba(255, 255, 255, 0.1)"
+                    rounded="$10"
+                    items="center"
+                    justify="center"
+                    px="$2.5"
+                    py="$1"
+                    width="100%"
+                    mt="$2"
+                  >
+                    <Text
+                      fontSize={18}
+                      fontWeight="600"
+                      color="$white"
+                      letterSpacing={-0.072}
+                      text="center"
+                      flex={1}
+                      numberOfLines={1}
+                      lineHeight={22}
+                    >
+                      {selectedNFTs[0].selectedQuantity.toLocaleString()}
+                    </Text>
+                  </XStack>
+                )}
             </YStack>
           ) : (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>

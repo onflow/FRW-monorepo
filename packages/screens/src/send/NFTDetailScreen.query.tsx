@@ -143,6 +143,8 @@ export function NFTDetailScreen(): React.ReactElement {
         contractAddress: nftModel.contractAddress,
         collectionContractName: nftModel.collectionContractName,
         properties: additionalProperties.length > 0 ? additionalProperties : undefined,
+        contractType: nftModel.contractType, // Preserve ERC1155/ERC721 type
+        amount: nftModel.amount, // Include amount for ERC1155
       };
     },
     [activeCollection?.name]
@@ -156,6 +158,7 @@ export function NFTDetailScreen(): React.ReactElement {
       image: getNFTCover(nftModel),
       collection: nftModel.collectionName || activeCollection?.name || 'Unknown',
       amount: nftModel.amount,
+      contractType: nftModel.contractType, // Preserve ERC1155/ERC721 type
     }),
     [activeCollection?.name]
   );

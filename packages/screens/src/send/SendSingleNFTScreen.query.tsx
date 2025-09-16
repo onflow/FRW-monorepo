@@ -19,6 +19,7 @@ import {
   type NFTSendData,
   type TransactionFormData,
   XStack,
+  ERC1155QuantitySelector,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -48,9 +49,53 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const isLoading = useSendStore(sendSelectors.isLoading);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
+  const getNFTQuantity = useSendStore((state) => state.getNFTQuantity);
+  const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
 
   // Get the first selected NFT (should only be one for single NFT flow)
   const selectedNFT = selectedNFTs?.[0] || null;
+
+  // For ERC1155, get the quantity from the store
+  const getInitialQuantity = () => {
+    if (selectedNFT && selectedNFT.contractType === 'ERC1155') {
+      const nftId = selectedNFT.id || '';
+      return getNFTQuantity(nftId);
+    }
+    return 1;
+  };
+
+  const [selectedQuantity, setSelectedQuantity] = useState(getInitialQuantity);
+
+  // Check if NFT is ERC1155
+  const isERC1155 = selectedNFT?.contractType === 'ERC1155';
+  const maxQuantity =
+    typeof selectedNFT?.amount === 'number'
+      ? selectedNFT.amount
+      : parseInt(selectedNFT?.amount as string) || 1;
+
+  // Debug the title - Swapped: ERC1155 shows "Send S/NFTs", regular shows "Send NFTs"
+  const sectionTitle = isERC1155 ? 'Send S/NFTs' : 'Send NFTs';
+
+  // Log ERC1155 detection
+  useEffect(() => {
+    if (selectedNFT) {
+      if (isERC1155) {
+        logger.info('[SendSingleNFTScreen] ERC1155 NFT detected:', {
+          nftId: selectedNFT.id,
+          nftName: selectedNFT.name,
+          contractType: selectedNFT.contractType,
+          availableAmount: selectedNFT.amount,
+          maxQuantity,
+        });
+      } else {
+        logger.info('[SendSingleNFTScreen] Standard NFT detected (non-ERC1155):', {
+          nftId: selectedNFT.id,
+          nftName: selectedNFT.name,
+          contractType: selectedNFT.contractType || 'ERC721',
+        });
+      }
+    }
+  }, [selectedNFT, isERC1155, maxQuantity]);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -83,6 +128,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
     collectionContractName: selectedNFT?.collectionContractName,
     description: selectedNFT?.description || '',
     type: selectedNFT?.type, // Pass the NFT type for EVM badge
+    contractType: selectedNFT?.contractType, // Pass for ERC1155 detection
+    amount: maxQuantity, // Pass total amount for display
   };
 
   // Calculate if send button should be disabled
@@ -99,7 +146,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = {
-    tokenAmount: '1',
+    tokenAmount: isERC1155 ? selectedQuantity.toString() : '1',
     fiatAmount: '0.00',
     isTokenMode: true,
     transactionFee,
@@ -121,8 +168,18 @@ export function SendSingleNFTScreen(): React.ReactElement {
   }, []);
 
   const handleSendPress = useCallback(() => {
+    // Log send action with quantity info
+    if (isERC1155) {
+      logger.info('[SendSingleNFTScreen] Sending ERC1155 NFT with quantity:', {
+        quantity: selectedQuantity,
+        maxQuantity,
+        nftId: selectedNFT?.id,
+      });
+    } else {
+      logger.info('[SendSingleNFTScreen] Sending standard NFT');
+    }
     setIsConfirmationVisible(true);
-  }, []);
+  }, [isERC1155, selectedQuantity, maxQuantity, selectedNFT]);
 
   const handleConfirmationClose = useCallback(() => {
     setIsConfirmationVisible(false);
@@ -194,7 +251,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
               />
 
               <SendSectionHeader
-                title="Send NFTs"
+                title={sectionTitle}
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
                 editButtonText="Change"
@@ -212,6 +269,28 @@ export function SendSingleNFTScreen(): React.ReactElement {
                   imageSize="$24"
                 />
               </View>
+
+              {/* ERC1155 Quantity Selector */}
+              {isERC1155 && (
+                <YStack gap="$2" mb="$3">
+                  <ERC1155QuantitySelector
+                    quantity={selectedQuantity}
+                    maxQuantity={maxQuantity}
+                    onQuantityChange={(newQuantity) => {
+                      logger.info('[SendSingleNFTScreen] ERC1155 quantity changed:', {
+                        from: selectedQuantity,
+                        to: newQuantity,
+                        maxQuantity,
+                      });
+                      setSelectedQuantity(newQuantity);
+                      if (selectedNFT?.id) {
+                        setNFTQuantity(selectedNFT.id, newQuantity);
+                      }
+                    }}
+                    disabled={false}
+                  />
+                </YStack>
+              )}
             </YStack>
 
             {/* Arrow Down Indicator */}
@@ -298,6 +377,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
                     collectionContractName:
                       selectedNFT.collectionContractName || selectedNFT.contractName || '',
                     description: selectedNFT.description || '',
+                    contractType: selectedNFT.contractType,
+                    amount: maxQuantity,
+                    selectedQuantity: isERC1155 ? selectedQuantity : undefined,
                   },
                 ]
               : undefined
