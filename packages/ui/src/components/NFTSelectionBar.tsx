@@ -122,7 +122,7 @@ export function NFTSelectionBar({
 
   return (
     <YStack
-      pos="absolute"
+      pos="fixed"
       b="$0"
       l="$0"
       r="$0"
