@@ -1,22 +1,30 @@
 import { SwitchVertical, ChevronDown, VerifiedToken } from '@onflow/frw-icons';
-import React, { useState } from 'react';
+import BN from 'bignumber.js';
+import React, { useState, useRef } from 'react';
 import { Input, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 import type { TokenAmountInputProps } from '../types';
 
-// Helper function to format balance with max 8 decimal places
+// Helper function to format balance with max 8 decimal places using BigNumber
 function formatBalance(balance?: string | number): string {
   if (!balance) return '0';
 
-  const num = typeof balance === 'number' ? balance : parseFloat(balance);
-  if (isNaN(num)) return balance.toString();
+  try {
+    const balanceBN = new BN(balance.toString());
 
-  // If the number has more than 8 decimal places, round to 8
-  // Otherwise, show the number as is (without trailing zeros)
-  const rounded = Math.round(num * 100000000) / 100000000;
-  return rounded.toString();
+    // If the number is invalid, return the original string
+    if (balanceBN.isNaN()) {
+      return balance.toString();
+    }
+
+    // Round to 8 decimal places and remove trailing zeros
+    return balanceBN.toFixed(8).replace(/\.?0+$/, '');
+  } catch (error) {
+    // Fallback to original string if BigNumber parsing fails
+    return balance.toString();
+  }
 }
 
 export function TokenAmountInput({
@@ -31,9 +39,12 @@ export function TokenAmountInput({
   showBalance = true,
   showConverter = true,
   disabled = false,
+  inputRef: externalInputRef,
   ...props
 }: TokenAmountInputProps): React.ReactElement {
   const [_focused, setFocused] = useState(false);
+  const internalInputRef = useRef<any>(null);
+  const inputRef = externalInputRef || internalInputRef;
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
@@ -72,6 +83,7 @@ export function TokenAmountInput({
               </Text>
             )}
             <Input
+              ref={inputRef}
               value={displayAmount}
               onChangeText={onAmountChange}
               placeholder={placeholder}

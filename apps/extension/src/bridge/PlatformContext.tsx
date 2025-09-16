@@ -344,6 +344,11 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                     name: evmName,
                     color: account.evmAccount.color || '#6B7280',
                   },
+                  parentEmoji: {
+                    emoji: account?.icon || '',
+                    name: account?.name || '',
+                    color: account?.color || '#6B7280',
+                  },
                   isActive: false,
                 });
               }
@@ -485,6 +490,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         type: activeAccountType === 'none' ? 'main' : activeAccountType, // Default type for extension accounts
         isActive: true,
         id: currentWallet.address,
+        balance: currentWallet.balance || '0',
       };
 
       if (fromAccount?.address !== currentWallet.address) {

@@ -29,7 +29,7 @@ import {
 import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -72,6 +72,11 @@ export const SendTokensScreen = (props) => {
   useEffect(() => {
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
+
+  // Reset amount when selected token changes
+  useEffect(() => {
+    setAmount('');
+  }, [selectedToken]);
 
   // Check free gas status
   useEffect(() => {
@@ -166,6 +171,7 @@ export const SendTokensScreen = (props) => {
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const inputRef = useRef<any>(null);
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
@@ -212,6 +218,10 @@ export const SendTokensScreen = (props) => {
             // In token mode, check directly against balance
             if (inputAmount.gt(maxBalance)) {
               setAmount(maxBalance.toString());
+              // Blur the input to deselect it and show the full value
+              if (inputRef.current) {
+                inputRef.current.blur();
+              }
               return;
             }
           } else if (selectedToken?.priceInUSD) {
@@ -223,6 +233,10 @@ export const SendTokensScreen = (props) => {
                 // Set to max USD value (balance * price)
                 const maxUSD = maxBalance.times(price);
                 setAmount(maxUSD.toFixed(2));
+                // Blur the input to deselect it and show the full value
+                if (inputRef.current) {
+                  inputRef.current.blur();
+                }
                 return;
               }
             }
@@ -360,11 +374,29 @@ export const SendTokensScreen = (props) => {
   // Calculate if send button should be disabled
   const isSendDisabled = useMemo(() => {
     if (transactionType === 'tokens') {
-      return !selectedToken || !fromAccount || !toAccount || new BN(amount || '0').lte(0);
+      const amountNum = new BN(amount || '0');
+      const balanceNum = new BN(selectedToken?.balance?.toString() || '0');
+
+      // Convert amount to token equivalent if in USD mode
+      let tokenAmount = amountNum;
+      if (!isTokenMode && selectedToken?.priceInUSD) {
+        const price = new BN(selectedToken.priceInUSD);
+        if (!price.isNaN() && price.gt(0)) {
+          tokenAmount = amountNum.div(price);
+        }
+      }
+
+      return (
+        !selectedToken ||
+        !fromAccount ||
+        !toAccount ||
+        amountNum.lte(0) ||
+        tokenAmount.gt(balanceNum)
+      );
     } else {
       return !selectedNFTs.length || !fromAccount || !toAccount;
     }
-  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount]);
+  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount, isTokenMode]);
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = useMemo(
@@ -446,7 +478,7 @@ export const SendTokensScreen = (props) => {
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb="$2">
+              <View mb={-18}>
                 <AccountCard
                   account={transformAccountForCard(fromAccount)}
                   title="From Account"
@@ -492,6 +524,7 @@ export const SendTokensScreen = (props) => {
                   showBalance={true}
                   showConverter={true}
                   disabled={false}
+                  inputRef={inputRef}
                 />
               </YStack>
             ) : (

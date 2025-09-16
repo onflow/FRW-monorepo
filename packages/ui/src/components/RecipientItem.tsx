@@ -99,7 +99,7 @@ export function RecipientItem({
           </YStack>
 
           {/* Small overlay avatar for parent account */}
-          {isLinked && (parentAvatar || parentEmojiInfo) && (
+          {(isLinked || isEVM) && (parentAvatar || parentEmojiInfo) && (
             <YStack
               position="absolute"
               style={{
@@ -126,7 +126,7 @@ export function RecipientItem({
         {/* Content */}
         <YStack flex={1} gap={2} width={151.34} ml={16}>
           <XStack items="center" gap={4}>
-            {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+            {(isLinked || isEVM) && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
             <Text
               fontSize={14}
               fontWeight="600"

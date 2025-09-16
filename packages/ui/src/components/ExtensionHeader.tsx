@@ -34,7 +34,7 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
         hoverStyle={{ opacity: 0.8 }}
         pressStyle={{ opacity: 0.6 }}
       >
-        <ArrowBack size={24} color="rgba(255, 255, 255, 0.8)" />
+        <ArrowBack size={28} color="rgba(255, 255, 255, 0.8)" />
       </XStack>
 
       <View flex={1} items="center" justify="center" px="$2">

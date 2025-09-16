@@ -87,7 +87,14 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         <XStack items="center" width={217}>
           {/* Avatar Container - 46x36 with 5px left offset */}
           {showAvatar && (
-            <XStack width={46} height={36} items="center" justify="flex-start" pl={5} position="relative">
+            <XStack
+              width={46}
+              height={36}
+              items="center"
+              justify="flex-start"
+              pl={5}
+              position="relative"
+            >
               <Avatar
                 src={account.avatar}
                 fallback={account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()}
@@ -147,7 +154,14 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 </Text>
                 {/* EVM Badge - inline with name */}
                 {account.type === 'evm' && (
-                  <XStack bg="$primary" rounded="$4" px={4} items="center" justify="center" height={16}>
+                  <XStack
+                    bg="$accentEVM"
+                    rounded="$4"
+                    px={4}
+                    items="center"
+                    justify="center"
+                    height={16}
+                  >
                     <Text
                       fontSize={8}
                       fontWeight="400"

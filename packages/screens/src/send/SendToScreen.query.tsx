@@ -19,7 +19,7 @@ import {
   ExtensionHeader,
   BackgroundWrapper,
 } from '@onflow/frw-ui';
-import { isValidEthereumAddress, isValidFlowAddress } from '@onflow/frw-utils';
+import { isValidEthereumAddress, isValidFlowAddress, logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -273,13 +273,7 @@ export function SendToScreen(): React.ReactElement {
         return total + (collection.count || 0);
       }, 0);
 
-      if (fromAccount) {
-        setFromAccount({
-          ...fromAccount,
-          balance: balanceData?.displayBalance || '0 FLOW',
-          nfts: totalNFTCount ? `${totalNFTCount} NFTs` : '0 NFTs',
-        });
-      }
+      logger.debug('fromAccount selected', fromAccount);
 
       const emojiValue = recipient.emojiInfo?.emoji;
       const isRealEmoji = emojiValue && !emojiValue.startsWith('http') && emojiValue.length <= 4;
@@ -295,6 +289,14 @@ export function SendToScreen(): React.ReactElement {
         isActive: false,
         type: accountType,
       });
+
+      if (fromAccount) {
+        setFromAccount({
+          ...fromAccount,
+          balance: balanceData?.displayBalance || '0 FLOW',
+          nfts: totalNFTCount ? `${totalNFTCount} NFTs` : '0 NFTs',
+        });
+      }
 
       // Add to recent recipients (only if not selecting from "My Accounts" tab)
       if (activeTab !== 'accounts') {
