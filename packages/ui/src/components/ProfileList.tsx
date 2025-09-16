@@ -4,6 +4,7 @@ import { YStack, XStack, Text, View } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
+import { RefreshView } from './RefreshView';
 import { Avatar } from '../foundation/Avatar';
 
 export interface ProfileListProps {
@@ -32,20 +33,7 @@ export function ProfileList({
   }
 
   if (!profiles || profiles.length === 0) {
-    return (
-      <YStack flex={1} items="center" justifyContent="center" pt="$4" pb="$8">
-        {emptyTitle && (
-          <Text color="$textSecondary" fontSize="$5" fontWeight="600" text="center" mb="$2">
-            {emptyTitle}
-          </Text>
-        )}
-        {emptyMessage && (
-          <Text color="$textSecondary" fontSize="$4" text="center">
-            {emptyMessage}
-          </Text>
-        )}
-      </YStack>
-    );
+    return <RefreshView type="empty" title={emptyTitle} message={emptyMessage} />;
   }
 
   return (

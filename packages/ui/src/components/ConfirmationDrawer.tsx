@@ -220,21 +220,39 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             justify="center"
             my="$2"
           >
-            {/* Gradient Background Circle */}
-            <View
-              position="absolute"
-              width={300}
-              height={300}
-              style={{
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                borderRadius: 150,
-                opacity: 0.1,
-                background:
-                  'radial-gradient(27.35% 27.35% at 50% 50%, #00EF8B 25.48%, rgba(0, 239, 139, 0.00) 100%)',
-              }}
-            />
+            {/* Gradient Background Circle - Platform specific */}
+            {typeof window !== 'undefined' ? (
+              // Web version with CSS gradient
+              <View
+                position="absolute"
+                width={300}
+                height={300}
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  borderRadius: 150,
+                  opacity: 0.1,
+                  background:
+                    'radial-gradient(27.35% 27.35% at 50% 50%, #00EF8B 25.48%, rgba(0, 239, 139, 0.00) 100%)',
+                }}
+              />
+            ) : (
+              // React Native version - simple colored circle
+              <View
+                position="absolute"
+                width={300}
+                height={300}
+                borderRadius={150}
+                bg="#00EF8B"
+                opacity={0.05}
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: [{ translateX: -150 }, { translateY: -150 }],
+                }}
+              />
+            )}
 
             <View items="center" justify="center" position="relative" style={{ zIndex: 10 }}>
               {/* <LottieAnimation
