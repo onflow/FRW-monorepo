@@ -1,6 +1,7 @@
 import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
+import BN from 'bignumber.js';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -9,6 +10,7 @@ import { userInfoCachekey, getCachedMainAccounts } from '@/data-model/cache-data
 import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
 import { getLocalData } from '@/data-model/storage';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -80,6 +82,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const setFromAccount = useSendStore((state) => state.setFromAccount);
   const wallet = useWallet();
   const { coins } = useCoins();
+  const currency = useCurrency();
 
   // Use the appropriate NFT hook based on address type
   const isEvmAddress = isValidEthereumAddress(currentWallet?.address || '');
@@ -428,9 +431,29 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       };
     };
 
+    // Add currency override to enhanced platform
+    enhancedPlatform.getCurrency = () => {
+      if (currency && coins && coins.length > 0) {
+        const price = new BN(coins[0].price || 0);
+        const priceInUSD = new BN(coins[0].priceInUSD || 1);
+        const rate = price.div(priceInUSD).toString();
+        return {
+          name: currency.code,
+          symbol: currency.symbol,
+          rate: rate,
+        };
+      } else {
+        return {
+          name: 'USD',
+          symbol: '$',
+          rate: '1',
+        };
+      }
+    };
+
     // Always reinitialize ServiceContext when data changes
     ServiceContext.initialize(enhancedPlatform);
-  }, [platform, coins, userWallets, currentWallet]);
+  }, [platform, coins, userWallets, currentWallet, currency]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
