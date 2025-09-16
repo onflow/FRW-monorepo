@@ -391,6 +391,18 @@ export const useSendStore = create<SendState>((set, get) => ({
         ? selectedToken?.evmAddress || ''
         : selectedNFTs[0]?.evmAddress || '';
 
+      // For ERC1155 NFTs, we need to include the amount/quantity
+      let nftAmount = '';
+      if (isNFTTransaction && selectedNFTs.length > 0) {
+        const firstNFT = selectedNFTs[0];
+        // Check if it's an ERC1155 NFT
+        if (firstNFT.contractType === 'ERC1155') {
+          const nftId = firstNFT.id || '';
+          const quantity = state.selectedNFTQuantities[nftId] || 1;
+          nftAmount = quantity.toString();
+        }
+      }
+
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
         assetType: addressType(fromAccount.address),
@@ -409,7 +421,7 @@ export const useSendStore = create<SendState>((set, get) => ({
               )
               .filter((id) => typeof id === 'number' && !isNaN(id)) as number[])
           : [],
-        amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : '',
+        amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : nftAmount,
         decimal: selectedToken?.decimal || 8,
         coaAddr: coaAddr,
         tokenContractAddr: contractAddress,
