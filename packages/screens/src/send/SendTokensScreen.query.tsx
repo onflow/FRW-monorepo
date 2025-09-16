@@ -580,7 +580,7 @@ export const SendTokensScreen = (props) => {
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
             <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
-              Next
+              {t('common.next')}
             </Text>
           </YStack>
         </YStack>
