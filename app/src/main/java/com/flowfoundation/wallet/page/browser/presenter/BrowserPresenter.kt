@@ -14,8 +14,8 @@ import com.flowfoundation.wallet.page.browser.tools.*
 import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
-import com.flowfoundation.wallet.ReactNativeDemoActivity
-import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.page.window.WindowFrame
@@ -48,7 +48,7 @@ class BrowserPresenter(
                         BaseActivity.getCurrentActivity() ?: return@setOnClickListener
                     if (WalletManager.haveChildAccount() || WalletManager.isChildAccountSelected() || EVMWalletManager.haveEVMAddress()) {
                         // Launch React Native send workflow directly instead of MoveDialog
-                        ReactNativeDemoActivity.launch(activity, RNBridge.ScreenType.SEND_ASSET)
+                        ReactNativeActivity.launch(activity, RNBridge.ScreenType.SEND_ASSET)
                         // Minimize browser to allow React Native to show prominently
                         shrinkBrowser()
                     } else {

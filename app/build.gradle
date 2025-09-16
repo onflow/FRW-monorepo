@@ -13,6 +13,10 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.compose'
 }
 
+react {
+    autolinkLibrariesWithApp()
+}
+
 apply from: "../../node_modules/@outblock/react-native-code-push/android/codepush.gradle"
 
 def properties = new Properties()
@@ -43,10 +47,6 @@ def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKe
 def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
 def codePushKeyStaging = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_STAGING") ?: "staging-placeholder"
 def codePushKeyProduction = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_PRODUCTION") ?: "production-placeholder"
-
-react {
-    autolinkLibrariesWithApp()
-}
 
 android {
     compileSdk 35
@@ -233,11 +233,6 @@ configurations.all {
         force 'org.bouncycastle:bcprov-jdk18on:1.77'
     }
 }
-
-// Fix RevoPush CodePush duplicate class conflict
-android.packagingOptions.pickFirsts += [
-    '**/NativeFRWBridgeSpec.class'
-]
 
 // Clean task to remove conflicting generated classes
 task cleanCodegenClasses {

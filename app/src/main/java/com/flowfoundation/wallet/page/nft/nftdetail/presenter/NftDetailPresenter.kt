@@ -45,8 +45,8 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import jp.wasabeef.glide.transformations.BlurTransformation
-import com.flowfoundation.wallet.ReactNativeDemoActivity
-import com.flowfoundation.wallet.bridge.toRNBridgeNFTModel
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.toRNBridgeNFTModel
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 
 import java.net.URL
@@ -109,7 +109,7 @@ class NftDetailPresenter(
             }
             sendButton.setOnClickListener {
                 val nftModel = nft?.toRNBridgeNFTModel() ?: return@setOnClickListener
-                ReactNativeDemoActivity.launchNFTSend(activity, listOf(nftModel))
+                ReactNativeActivity.launchNFTSend(activity, listOf(nftModel))
             }
         }
     }

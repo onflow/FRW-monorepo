@@ -69,7 +69,7 @@
             android:theme="@style/AppTheme"/>
 
         <activity
-            android:name=".ReactNativeDemoActivity"
+            android:name=".reactnative.ReactNativeActivity"
             android:exported="false"
             android:launchMode="standard"
             android:theme="@style/AppTheme"

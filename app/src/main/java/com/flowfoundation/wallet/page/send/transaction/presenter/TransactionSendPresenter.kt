@@ -27,7 +27,7 @@ import com.flowfoundation.wallet.page.scan.METAMASK_ETH_SCHEME
 import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewModel
 import com.flowfoundation.wallet.page.send.transaction.adapter.TransactionSendPageAdapter
 import com.flowfoundation.wallet.page.send.transaction.model.TransactionSendModel
-import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.addressPattern
@@ -196,7 +196,7 @@ class TransactionSendPresenter(
 
     private fun launchSendAmountActivity(address: AddressBookContact) {
         // Launch React Native send workflow instead of native SendAmountActivity
-        ReactNativeDemoActivity.launchWalletSend(activity, null, address.address)
+        ReactNativeActivity.launchWalletSend(activity, null, address.address)
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {

@@ -9,8 +9,8 @@ import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveBinding
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.ReactNativeDemoActivity
-import com.flowfoundation.wallet.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -51,14 +51,14 @@ class MoveDialog : BottomSheetDialogFragment() {
             }
             clMoveNft.setOnClickListener {
                 // Launch React Native send workflow for NFTs instead of native SelectNFTDialog
-                ReactNativeDemoActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
+                ReactNativeActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
                 result?.resume(true)
                 dismissAllowingStateLoss()
             }
             clMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     // Launch React Native send workflow for tokens instead of native MoveTokenDialog
-                    ReactNativeDemoActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
+                    ReactNativeActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
                     result?.resume(true)
                     dismissAllowingStateLoss()
                 } else {

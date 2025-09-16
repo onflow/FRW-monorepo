@@ -78,7 +78,11 @@ class RNBridge {
         @SerializedName("isActive")
         val isActive: Boolean,
         @SerializedName("type")
-        val type: AccountType?
+        val type: AccountType?,
+        @SerializedName("balance")
+        val balance: String?,
+        @SerializedName("nfts")
+        val nfts: String?
     )
 
     data class RecentContactsResponse(
