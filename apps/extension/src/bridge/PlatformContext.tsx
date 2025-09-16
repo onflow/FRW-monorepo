@@ -75,6 +75,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     activeAccountType,
     profileIds,
     parentWallet,
+    currentBalance,
   } = useProfiles();
 
   // Send store hooks for synchronization
@@ -490,7 +491,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         type: activeAccountType === 'none' ? 'main' : activeAccountType, // Default type for extension accounts
         isActive: true,
         id: currentWallet.address,
-        balance: currentWallet.balance || '0',
+        balance: currentBalance || '0',
       };
 
       if (fromAccount?.address !== currentWallet.address) {

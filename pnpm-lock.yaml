@@ -1033,6 +1033,9 @@ importers:
       '@tamagui/web':
         specifier: ^1.132.20
         version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      bignumber.js:
+        specifier: ^9.1.2
+        version: 9.3.1
       lottie-react-native:
         specifier: ^7.3.2
         version: 7.3.2(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
