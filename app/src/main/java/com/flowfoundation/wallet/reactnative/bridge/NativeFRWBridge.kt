@@ -4,10 +4,8 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
-import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.flow.wallet.errors.WalletError
-import com.flowfoundation.wallet.reactnative.bridge.NativeFRWBridgeSpec
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -18,7 +16,6 @@ import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.cache.recentTransactionCache
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
@@ -34,7 +31,6 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCur
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import org.onflow.flow.models.TransactionStatus
-import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.FlowAddress
 import android.content.Intent
@@ -42,7 +38,8 @@ import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
 import com.google.gson.Gson
 import org.json.JSONObject
 import org.json.JSONArray
-import android.os.Bundle
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.account.AccountManager
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -333,7 +330,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 // Hardware-backed key fallback: use the selected address
                 address = WalletManager.selectedWalletAddress()
             }
-            
+
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
 
             if (address.isNullOrEmpty() || cryptoProvider == null) {
@@ -569,6 +566,124 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
         val selectedAddress = WalletManager.selectedWalletAddress()
         return selectedAddress.equals(address, ignoreCase = true)
+    }
+
+    override fun getWalletProfiles(promise: Promise) {
+        android.util.Log.d(TAG, "getWalletProfiles() called")
+        ioScope {
+            try {
+                android.util.Log.d(TAG, "getWalletProfiles() - getting user info and wallet accounts...")
+
+                // Get user info from cache
+                val userInfo = AccountManager.userInfo()
+                val userId = firebaseUid() ?: AccountManager.get()?.wallet?.id ?: ""
+
+                // Get wallet accounts (reuse logic from getWalletAccounts)
+                val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
+
+                // Get main wallet address - for hardware-backed keys, wallet() returns null,
+                // so we need to use selectedWalletAddress() as fallback
+                var mainAddress = WalletManager.wallet()?.walletAddress()
+                if (mainAddress.isNullOrEmpty()) {
+                    // Hardware-backed key fallback: use the selected address
+                    mainAddress = WalletManager.selectedWalletAddress()
+                }
+                val mainEmojiInfo = createEmojiInfo(mainAddress)
+                if (!mainAddress.isNullOrEmpty()) {
+                    val mainAccount = RNBridge.WalletAccount(
+                        id = "main",
+                        name = mainEmojiInfo?.name ?: "Main Account",
+                        address = mainAddress,
+                        emojiInfo = mainEmojiInfo,
+                        parentEmoji = null,
+                        parentAddress = null,
+                        avatar = null,
+                        isActive = isSelectedWalletAddress(mainAddress),
+                        type = RNBridge.AccountType.MAIN,
+                        balance = null,
+                        nfts = null,
+                    )
+                    bridgeAccounts.add(mainAccount)
+                }
+
+                // Get child accounts
+                try {
+                    val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
+                    childAccounts?.forEach { childAccount ->
+                        val childAccountBridge = RNBridge.WalletAccount(
+                            id = "child_${childAccount.address}",
+                            name = childAccount.name ?: "Child Account",
+                            address = childAccount.address,
+                            emojiInfo = null,
+                            parentEmoji = mainEmojiInfo,
+                            parentAddress = mainAddress,
+                            avatar = childAccount.icon,
+                            isActive = isSelectedWalletAddress(childAccount.address),
+                            type = RNBridge.AccountType.CHILD,
+                            balance = null,
+                            nfts = null,
+                        )
+                        bridgeAccounts.add(childAccountBridge)
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w(TAG, "getWalletProfiles() - child accounts not available: ${e.message}")
+                }
+
+                // Get EVM address if available
+                try {
+                    val evmAddress = EVMWalletManager.getEVMAddress()
+                    if (!evmAddress.isNullOrEmpty()) {
+                        val evmEmojiInfo = createEmojiInfo(evmAddress)
+
+                        val evmAccount = RNBridge.WalletAccount(
+                            id = "evm",
+                            name = evmEmojiInfo?.name ?: "EVM Account",
+                            address = evmAddress,
+                            parentAddress = mainAddress,
+                            emojiInfo = evmEmojiInfo,
+                            parentEmoji = mainEmojiInfo,
+                            avatar = null,
+                            isActive = isSelectedWalletAddress(evmAddress),
+                            type = RNBridge.AccountType.EVM,
+                            balance = null,
+                            nfts = null,
+                        )
+                        bridgeAccounts.add(evmAccount)
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w(TAG, "getWalletProfiles() - EVM account not available: ${e.message}")
+                }
+
+                // Create wallet profile
+                val walletProfile = RNBridge.WalletProfile(
+                    name = userInfo?.nickname ?: "",
+                    avatar = userInfo?.avatar ?: "",
+                    uid = userId,
+                    accounts = bridgeAccounts
+                )
+
+                // For now, we return a single profile. In the future, this could be extended
+                // to support multiple profiles if the app supports multiple users/profiles
+                val profiles = listOf(walletProfile)
+                val response = RNBridge.WalletProfilesResponse(profiles = profiles)
+                val result = bridgeModelToWritableMap(response)
+
+                android.util.Log.d(TAG, "getWalletProfiles() - profiles mapped successfully")
+                uiScope {
+                    promise.resolve(result)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "getWalletProfiles() - error: ${e.message}")
+                e.printStackTrace()
+
+                // Return empty profiles on error to maintain consistency
+                val emptyResponse = RNBridge.WalletProfilesResponse(profiles = emptyList())
+                val result = bridgeModelToWritableMap(emptyResponse)
+                uiScope {
+                    promise.resolve(result)
+                }
+            }
+        }
     }
 
     companion object {

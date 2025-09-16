@@ -95,6 +95,22 @@ class RNBridge {
         val accounts: List<WalletAccount>
     )
 
+    data class WalletProfile(
+        @SerializedName("name")
+        val name: String,
+        @SerializedName("avatar")
+        val avatar: String,
+        @SerializedName("uid")
+        val uid: String,
+        @SerializedName("accounts")
+        val accounts: List<WalletAccount>
+    )
+
+    data class WalletProfilesResponse(
+        @SerializedName("profiles")
+        val profiles: List<WalletProfile>
+    )
+
     data class AddressBookResponse(
         @SerializedName("contacts")
         val contacts: List<AddressBookContact>
