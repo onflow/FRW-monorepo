@@ -409,13 +409,13 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           >
             {internalIsSending ? (
               <XStack items="center" gap="$2">
-                <Spinner size="small" color="#000000" />
-                <Text fontSize="$5" fontWeight="600" color="#000000">
+                <Spinner size="small" color="black" />
+                <Text fontSize="$5" fontWeight="600" color="black">
                   Sending...
                 </Text>
               </XStack>
             ) : (
-              <Text fontSize="$5" fontWeight="600" color="#000000">
+              <Text fontSize="$5" fontWeight="600" color="black">
                 {isExtension ? 'Confirm send' : 'Hold to send'}
               </Text>
             )}
