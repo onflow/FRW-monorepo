@@ -4,6 +4,7 @@ import { YStack, XStack, Text, Image } from 'tamagui';
 import type { NFTData } from './NFTGrid';
 
 export interface NFTCardProps {
+  idx: number;
   nft: NFTData;
   selected?: boolean;
   onPress?: () => void;

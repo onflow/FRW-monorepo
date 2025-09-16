@@ -368,7 +368,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             onPress={internalIsSending ? undefined : handleConfirm}
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$5" fontWeight="600" color="#000000">
+            <Text data-testid="confirm" fontSize="$5" fontWeight="600" color="#000000">
               {internalIsSending ? 'Sending...' : isExtension ? 'Confirm' : 'Hold to send'}
             </Text>
           </YStack>

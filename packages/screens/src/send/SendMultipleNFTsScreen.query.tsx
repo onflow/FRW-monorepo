@@ -128,22 +128,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     // console.log('Learn more pressed');
   }, []);
 
-  const handleRemoveNFT = useCallback(
-    (nftId: string) => {
-      if (!selectedNFTs) return;
-      const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
-      setSelectedNFTs(updatedNFTs);
-
-      // If no NFTs remain, navigate back to the NFT selection screen
-      if (updatedNFTs.length === 0) {
-        // Navigate to NFT selection screen (same as edit button behavior)
-        navigation.navigate('NFTList');
-      }
-      // Stay on the same screen even with 1 NFT remaining
-    },
-    [selectedNFTs, setSelectedNFTs]
-  );
-
   const handleSendPress = useCallback(() => {
     setIsConfirmationVisible(true);
   }, []);
@@ -187,22 +171,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     return (
       <BackgroundWrapper backgroundColor="$bgDrawer">
         <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFTs selected. Please go back and select NFTs to send.
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
-  // Early return if essential data is missing
-  if (!selectedNFTs || selectedNFTs.length === 0) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
           <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
             {t('nft.notFound.title')}
           </Text>
@@ -214,27 +182,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     );
   }
 
-  // Calculate if send button should be disabled
-  const isSendDisabled =
-    !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
-
-  // Mock transaction fee data - TODO: Replace with real fee calculation
-  const transactionFee = '0.001';
-  const usdFee = '0.00';
   const isFeesFree = true; // Following Figma design "Covered by Flow Wallet"
-
-  // Mock storage warning - TODO: Replace with real storage check
-  const showStorageWarning = false;
-  const storageWarningMessage =
-    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
-
-  // Create form data for transaction confirmation
-  const formData: TransactionFormData = {
-    tokenAmount: selectedNFTs.length.toString(),
-    fiatAmount: '0.00',
-    isTokenMode: true,
-    transactionFee: `${transactionFee} FLOW`,
-  };
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">

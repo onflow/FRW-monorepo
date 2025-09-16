@@ -22,6 +22,7 @@ export const sendNFT = async ({ page, collectionName, receiver, successtext }) =
 
   await page.getByTestId(`NFTs`).isVisible();
   await page.getByTestId(`NFTs`).click();
+  await page.getByTestId(collectionName).isVisible();
   await page.getByTestId(collectionName).click();
   await page.getByTestId('0').isVisible();
   await page.getByTestId('0').click();
@@ -32,7 +33,7 @@ export const sendNFT = async ({ page, collectionName, receiver, successtext }) =
 
   await page.getByTestId('next').isVisible();
   await page.getByTestId('next').click();
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByTestId('confirm').click();
 
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext });
@@ -64,7 +65,7 @@ export const sendNFTs = async ({
 
   await page.getByTestId('next').isVisible();
   await page.getByTestId('next').click();
-  await page.getByRole('button', { name: 'Confirm' }).click();
+  await page.getByTestId('confirm').click();
 
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext });

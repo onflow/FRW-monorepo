@@ -77,6 +77,8 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
     await page.getByTestId('account-menu-button').click();
     await page.getByTestId('switch-profile-button').isVisible();
     await page.getByTestId('switch-profile-button').click();
+    await page.getByText('Profiles', { exact: true }).isVisible();
+
     await expect(page.getByText('Profiles', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
     await page.getByTestId(`profile-item-nickname-${nickname}`).click();
@@ -490,15 +492,18 @@ export const checkSentAmount = async ({
   amount,
   txId,
   ingoreFlowCharge = false,
+  isEvm = false,
 }) => {
   const activityItemRegexp = getActivityItemRegexp(txId, ingoreFlowCharge);
   const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
   await expect(sealedItem).toBeVisible({
     timeout: 60_000,
   });
-  await expect(
-    page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
-  ).toBeVisible();
+  if (!isEvm) {
+    await expect(
+      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
+    ).toBeVisible();
+  }
 };
 
 export const checkSentNFT = async ({

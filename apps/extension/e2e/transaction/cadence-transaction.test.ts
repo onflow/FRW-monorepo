@@ -23,8 +23,8 @@ export const sendTokenFlow = async ({
   await page.getByPlaceholder('Search address').click();
   await page.getByPlaceholder('Search address').fill(receiver);
   await page.getByPlaceholder('0.00').fill(amount);
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByTestId('next').click();
+  await page.getByTestId('confirm').click();
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
   return { txId, tokenname, amount, ingoreFlowCharge };

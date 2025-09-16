@@ -31,7 +31,7 @@ export function TokenCard({
       width="100%"
       height={64}
     >
-      <XStack items="center" gap="$2" width="100%">
+      <XStack items="center" gap="$2" width="100%" data-testid={symbol}>
         <Avatar src={logoURI} alt={symbol} fallback={symbol?.[0] || name?.[0] || '?'} size={48} />
         <YStack flex={1} gap="$1">
           {/* Top row: Token name + verified badge + balance */}

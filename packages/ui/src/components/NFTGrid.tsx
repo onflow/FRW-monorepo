@@ -160,29 +160,33 @@ export function NFTGrid({
   for (let i = 0; i < data.length; i += columns) {
     rows.push(data.slice(i, i + columns));
   }
-  const idx = -1;
+  let idx = -1;
 
   // Main grid content
   return (
     <YStack gap="$4">
       {rows.map((row, rowIndex) => (
         <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
-          {row.map((nft) => (
-            <YStack key={nft.id} width="50%" flex={0}>
-              <NFTCard
-                nft={nft}
-                size="medium"
-                selected={selectedIds.includes(nft.id)}
-                onPress={() => onNFTPress(nft.id)}
-                onSelect={() => onNFTSelect(nft.id)}
-                aspectRatio={aspectRatio}
-                accountEmoji={accountEmoji}
-                accountAvatar={accountAvatar}
-                accountName={accountName}
-                accountColor={accountColor}
-              />
-            </YStack>
-          ))}
+          {row.map((nft) => {
+            idx = idx + 1;
+            return (
+              <YStack key={nft.id} width="50%" flex={0}>
+                <NFTCard
+                  idx={idx}
+                  nft={nft}
+                  size="medium"
+                  selected={selectedIds.includes(nft.id)}
+                  onPress={() => onNFTPress(nft.id)}
+                  onSelect={() => onNFTSelect(nft.id)}
+                  aspectRatio={aspectRatio}
+                  accountEmoji={accountEmoji}
+                  accountAvatar={accountAvatar}
+                  accountName={accountName}
+                  accountColor={accountColor}
+                />
+              </YStack>
+            );
+          })}
         </XStack>
       ))}
     </YStack>
