@@ -45,6 +45,7 @@ export function TokenAmountInput({
     symbol: '$',
     rate: '1',
   },
+  amountError,
   ...props
 }: TokenAmountInputProps): React.ReactElement {
   const [_focused, setFocused] = useState(false);
@@ -219,6 +220,13 @@ export function TokenAmountInput({
           </YStack>
         </XStack>
       </XStack>
+
+      {/* Error Message */}
+      {amountError && (
+        <Text fontSize="$2" color="$error" mt="$2" ml="$1" lineHeight={16}>
+          {amountError}
+        </Text>
+      )}
     </YStack>
   );
 }

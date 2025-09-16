@@ -26,7 +26,11 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
+import {
+  logger,
+  transformAccountForCard,
+  transformAccountForDisplay,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -77,6 +81,7 @@ export const SendTokensScreen = (props) => {
   // Reset amount when selected token changes
   useEffect(() => {
     setAmount('');
+    setAmountError('');
   }, [selectedToken]);
 
   // Check free gas status
@@ -172,6 +177,7 @@ export const SendTokensScreen = (props) => {
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
 
   // Handler functions - now internal to the screen
@@ -208,46 +214,9 @@ export const SendTokensScreen = (props) => {
         setAmount(sanitized.substring(1));
         return;
       }
-
-      // Check if amount exceeds max balance
-      if (selectedToken?.balance) {
-        const maxBalance = new BN(selectedToken.balance.toString());
-        const inputAmount = new BN(sanitized);
-
-        if (!inputAmount.isNaN() && !maxBalance.isNaN()) {
-          if (isTokenMode) {
-            // In token mode, check directly against balance
-            if (inputAmount.gt(maxBalance)) {
-              setAmount(maxBalance.toString());
-              // Blur the input to deselect it and show the full value
-              if (inputRef.current) {
-                inputRef.current.blur();
-              }
-              return;
-            }
-          } else if (selectedToken?.priceInUSD) {
-            // In USD mode, convert to tokens and check against balance
-            const price = new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1));
-            if (!price.isNaN() && price.gt(0)) {
-              const tokenEquivalent = inputAmount.div(price);
-              if (tokenEquivalent.gt(maxBalance)) {
-                // Set to max USD value (balance * price)
-                const maxUSD = maxBalance.times(price);
-                setAmount(maxUSD.toFixed(2));
-                // Blur the input to deselect it and show the full value
-                if (inputRef.current) {
-                  inputRef.current.blur();
-                }
-                return;
-              }
-            }
-          }
-        }
-      }
-
       setAmount(sanitized);
     },
-    [selectedToken, isTokenMode]
+    [selectedToken, isTokenMode, currency.rate]
   );
 
   const handleToggleInputMode = useCallback(() => {
@@ -386,6 +355,12 @@ export const SendTokensScreen = (props) => {
         if (!price.isNaN() && price.gt(0)) {
           tokenAmount = amountNum.div(price);
         }
+      }
+
+      if (tokenAmount.gt(balanceNum)) {
+        setAmountError('Amount exceeds available balance');
+      } else {
+        setAmountError('');
       }
 
       return (
@@ -533,6 +508,7 @@ export const SendTokensScreen = (props) => {
                   disabled={false}
                   inputRef={inputRef}
                   currency={currency}
+                  amountError={amountError}
                 />
               </YStack>
             ) : (

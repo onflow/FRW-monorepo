@@ -124,6 +124,7 @@ export interface TokenAmountInputProps {
   disabled?: boolean;
   inputRef?: React.RefObject<any>;
   currency?: Currency;
+  amountError?: string;
 }
 
 export interface AddressTextProps extends Omit<TextProps, 'children'> {
