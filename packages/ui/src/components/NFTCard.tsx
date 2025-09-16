@@ -90,8 +90,8 @@ export function NFTCard({
           h="$6"
           zIndex={1}
           position="absolute"
-          top="$2"
-          right="$2"
+          top="$2.5"
+          right="$2.5"
           onPress={(e) => {
             e?.stopPropagation?.();
             onSelect(nft.id);
@@ -99,54 +99,66 @@ export function NFTCard({
           pressStyle={{ opacity: 0.8 }}
           cursor="pointer"
         >
-          <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
+          <CheckCircle size={24} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>
       </YStack>
 
       {/* NFT Info */}
-      <YStack gap="$-0.75">
-        {/* NFT Name */}
-        <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
-          {nft.name && nft.name.length > 18
-            ? `${nft.name.slice(0, 18)}...`
-            : nft.name || 'Unnamed NFT'}
-        </Text>
+      <XStack gap="$-0.75" flex={1} justify="space-between">
+        <YStack gap="$-0.75">
+          {/* NFT Name */}
+          <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
+            {nft.name && nft.name.length > 18
+              ? `${nft.name.slice(0, 18)}...`
+              : nft.name || 'Unnamed NFT'}
+          </Text>
 
-        {/* Collection Info with Account Avatar/Emoji */}
-        {nft.collection && (
-          <XStack items="center" gap="$1">
-            {/* Account Avatar/Emoji - only show if available */}
-            {accountEmoji && (
-              <YStack
-                width="$4"
-                height="$4"
-                bg={accountColor || '$warning'}
-                rounded="$12"
-                items="center"
-                justify="center"
+          {/* Collection Info with Account Avatar/Emoji */}
+          {nft.collection && (
+            <XStack items="center" gap="$1">
+              {/* Account Avatar/Emoji - only show if available */}
+              {accountEmoji && (
+                <YStack
+                  width="$4"
+                  height="$4"
+                  bg={accountColor || '$warning'}
+                  rounded="$12"
+                  items="center"
+                  justify="center"
+                >
+                  <Text fontSize="$2" fontWeight="600">
+                    {accountEmoji}
+                  </Text>
+                </YStack>
+              )}
+              {accountAvatar && !accountEmoji ? (
+                <Image src={accountAvatar} width="$5" height="$5" rounded="$6" />
+              ) : (
+                ''
+              )}
+              {!accountEmoji && !accountAvatar && collectionAvatar ? (
+                <Image src={collectionAvatar} width="$5" height="$5" rounded="$6" />
+              ) : (
+                ''
+              )}
+
+              {/* From Account Name */}
+              <Text
+                fontSize="$4"
+                fontWeight="400"
+                color="$textSecondary"
+                numberOfLines={1}
+                flex={1}
               >
-                <Text fontSize="$2" fontWeight="600">
-                  {accountEmoji}
-                </Text>
-              </YStack>
-            )}
-            {accountAvatar && <Image src={accountAvatar} width="$5" height="$5" rounded="$6" />}
-            {!accountEmoji && !accountAvatar && collectionAvatar && (
-              <Image src={collectionAvatar} width="$5" height="$5" rounded="$6" />
-            )}
-
-            {/* From Account Name */}
-            <Text fontSize="$4" fontWeight="400" color="$textSecondary" numberOfLines={1} flex={1}>
-              {accountName || nft.collection}
-            </Text>
-
-            {/* Right Chevron */}
-            <YStack justify="center">
-              <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
-            </YStack>
-          </XStack>
-        )}
-      </YStack>
+                {accountName || nft.collection}
+              </Text>
+            </XStack>
+          )}
+        </YStack>
+        <YStack verticalAlign={'center'} justify="center">
+          <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
+        </YStack>
+      </XStack>
     </YStack>
   );
 }
