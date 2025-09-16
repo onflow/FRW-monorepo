@@ -610,6 +610,21 @@ importers:
       '@react-navigation/native-stack':
         specifier: ^7.1.13
         version: 7.3.25(@react-navigation/native@7.1.17(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.4.0(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native-screens@4.15.2(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      '@tamagui/config':
+        specifier: ^1.132.20
+        version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      '@tamagui/core':
+        specifier: ^1.132.20
+        version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      '@tamagui/theme-builder':
+        specifier: ^1.132.20
+        version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      '@tamagui/web':
+        specifier: ^1.132.20
+        version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      '@tanstack/query-core':
+        specifier: ^5.85.6
+        version: 5.85.6
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
@@ -617,7 +632,7 @@ importers:
         specifier: ^10.1.1
         version: 10.1.1
       instabug-reactnative:
-        specifier: ^15.0.1
+        specifier: ^15.0.3
         version: 15.0.3(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
       ios:
         specifier: ^0.0.1
@@ -625,6 +640,9 @@ importers:
       lottie-react-native:
         specifier: ^7.3.2
         version: 7.3.2(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      lottie-web:
+        specifier: ^5.13.0
+        version: 5.13.0
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -655,6 +673,12 @@ importers:
       react-native-worklets:
         specifier: ^0.4.1
         version: 0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      tamagui:
+        specifier: ^1.132.20
+        version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
+      zustand:
+        specifier: ^5.0.6
+        version: 5.0.8(@types/react@19.1.11)(immer@10.1.1)(react@19.0.0)(use-sync-external-store@1.5.0(react@19.0.0))
     devDependencies:
       '@babel/core':
         specifier: ^7.25.2
@@ -1018,6 +1042,12 @@ importers:
       '@onflow/frw-icons':
         specifier: workspace:*
         version: link:../icons
+      '@onflow/frw-types':
+        specifier: workspace:^
+        version: link:../types
+      '@onflow/frw-utils':
+        specifier: workspace:^
+        version: link:../utils
       '@tamagui/config':
         specifier: ^1.132.20
         version: 1.132.21(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@4.0.2(@babel/core@7.28.3)(react-native-worklets@0.4.1(@babel/core@7.28.3)(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.3)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.11)(react@19.0.0))(react@19.0.0)
@@ -12164,7 +12194,7 @@ snapshots:
   '@babel/helper-member-expression-to-functions@7.27.1':
     dependencies:
       '@babel/traverse': 7.28.3
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
     transitivePeerDependencies:
       - supports-color
 
@@ -12186,7 +12216,7 @@ snapshots:
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
 
   '@babel/helper-plugin-utils@7.27.1': {}
 
@@ -12225,7 +12255,7 @@ snapshots:
     dependencies:
       '@babel/template': 7.27.2
       '@babel/traverse': 7.28.3
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
     transitivePeerDependencies:
       - supports-color
 
@@ -15000,9 +15030,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
@@ -17003,12 +17031,12 @@ snapshots:
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.28.2
+      '@babel/types': 7.28.4
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.28.3
-      '@babel/types': 7.28.2
+      '@babel/parser': 7.28.4
+      '@babel/types': 7.28.4
 
   '@types/babel__traverse@7.28.0':
     dependencies:
@@ -22256,8 +22284,8 @@ snapshots:
     dependencies:
       '@babel/core': 7.28.3
       '@babel/generator': 7.28.3
-      '@babel/parser': 7.28.3
-      '@babel/types': 7.28.2
+      '@babel/parser': 7.28.4
+      '@babel/types': 7.28.4
       flow-enums-runtime: 0.0.6
       metro: 0.82.5
       metro-babel-transformer: 0.82.5

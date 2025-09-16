@@ -1,5 +1,4 @@
-import React from 'react';
-import { ScrollView, YStack, XStack, Text, Separator } from 'tamagui';
+import { ListItem, Text, XStack, YGroup, YStack } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 import { RefreshView } from './RefreshView';
@@ -117,42 +116,6 @@ export function RecipientList({
       onCopy={() => onItemCopy?.(item)}
     />
   );
-
-  // Render section
-  const renderSection = (section: RecipientSection, sectionIndex: number) => (
-    <YStack
-      key={`section-${sectionIndex}`}
-      gap={itemSpacing}
-      mb={sectionIndex < normalizedSections.length - 1 ? sectionSpacing : 0}
-    >
-      {/* Section Header */}
-      {showSectionHeaders && section.title && (
-        <YStack mb="$2">
-          <Text fontSize="$3" fontWeight="600" color="$textSecondary" mb="$1">
-            {section.title}
-          </Text>
-          {showSeparators && <Separator borderColor="rgba(255, 255, 255, 0.1)" />}
-        </YStack>
-      )}
-
-      {/* Section Items */}
-      {section.data.map((item, itemIndex) => (
-        <YStack key={item.id}>
-          {renderItem(item)}
-          {showSeparators && itemIndex < section.data.length - 1 && (
-            <Separator
-              my={6.5}
-              mx={0}
-              width={336}
-              borderColor="rgba(255, 255, 255, 0.1)"
-              borderWidth={1}
-            />
-          )}
-        </YStack>
-      ))}
-    </YStack>
-  );
-
   // Show loading skeleton
   if (isLoading && !isRefreshing) {
     return renderSkeleton();
@@ -170,8 +133,23 @@ export function RecipientList({
 
   // Main content
   return (
-    <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-      <YStack p={contentPadding}>{normalizedSections.map(renderSection)}</YStack>
-    </ScrollView>
+    <YGroup gap={itemSpacing} p={contentPadding}>
+      {normalizedSections.map((section, sectionIndex) => (
+        <YGroup.Item key={`section-${sectionIndex}`}>
+          {showSectionHeaders && section.title && (
+            <Text fontSize="$3" fontWeight="600" color="$textSecondary" mb="$1">
+              {section.title}
+            </Text>
+          )}
+
+          {/* Section Items */}
+          {section.data.map((item) => (
+            <ListItem hoverTheme pressTheme key={item.id}>
+              {renderItem(item)}
+            </ListItem>
+          ))}
+        </YGroup.Item>
+      ))}
+    </YGroup>
   );
 }
