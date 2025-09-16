@@ -239,8 +239,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 speed={1}
               /> */}
               <WalletCard width={114.62} height={129.195} />
-
-              {isExtension && <WalletCard width={114.62} height={129.195} />}
             </View>
           </View>
 
