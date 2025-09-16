@@ -33,13 +33,17 @@ export function ProfileList({
 
   if (!profiles || profiles.length === 0) {
     return (
-      <YStack items="center" justifyContent="center" py="$4">
-        <Text color="$color" fontSize="$3" fontWeight="600" mb="$2">
-          {emptyTitle}
-        </Text>
-        <Text color="$color" fontSize="$2" textAlign="center">
-          {emptyMessage}
-        </Text>
+      <YStack flex={1} items="center" justifyContent="center" pt="$4" pb="$8">
+        {emptyTitle && (
+          <Text color="$textSecondary" fontSize="$5" fontWeight="600" text="center" mb="$2">
+            {emptyTitle}
+          </Text>
+        )}
+        {emptyMessage && (
+          <Text color="$textSecondary" fontSize="$4" text="center">
+            {emptyMessage}
+          </Text>
+        )}
       </YStack>
     );
   }

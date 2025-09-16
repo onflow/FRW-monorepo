@@ -425,6 +425,18 @@ export function SendToScreen(): React.ReactElement {
   }, []);
 
   const getEmptyStateForTab = () => {
+    // If there's a search query, show search-specific empty states
+    if (searchQuery && searchQuery.trim()) {
+      return {
+        title: t('send.noSearchResults.title', 'No Results'),
+        message: t(
+          'send.noSearchResults.message',
+          `No accounts or contacts match "${searchQuery}"`
+        ),
+      };
+    }
+
+    // Default empty states for each tab
     switch (activeTab) {
       case 'accounts':
         return {

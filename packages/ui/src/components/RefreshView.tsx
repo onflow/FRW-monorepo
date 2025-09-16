@@ -7,6 +7,7 @@ import type { RefreshViewProps } from '../types';
 
 export function RefreshView({
   type = 'empty',
+  title,
   message,
   onRefresh,
   refreshText = type === 'error' ? 'Retry' : 'Refresh',
@@ -14,14 +15,27 @@ export function RefreshView({
 }: RefreshViewProps): React.ReactElement {
   return (
     <YStack flex={1} justify="center" items="center" pt="$4" pb="$8" {...props}>
-      <Text
-        color={type === 'error' ? '$error' : '$textSecondary'}
-        text="center"
-        mb="$3"
-        fontSize="$4"
-      >
-        {message}
-      </Text>
+      {title && (
+        <Text
+          color={type === 'error' ? '$error' : '$textSecondary'}
+          text="center"
+          mb="$2"
+          fontSize="$5"
+          fontWeight="600"
+        >
+          {title}
+        </Text>
+      )}
+      {message && (
+        <Text
+          color={type === 'error' ? '$error' : '$textSecondary'}
+          text="center"
+          mb="$3"
+          fontSize="$4"
+        >
+          {message}
+        </Text>
+      )}
       {onRefresh && (
         <Button size="medium" variant="secondary" onPress={onRefresh}>
           {refreshText}
