@@ -16,7 +16,8 @@
     "previous": "上一步",
     "loading": "加载中...",
     "error": "错误",
-    "success": "成功"
+    "success": "成功",
+    "Search": "搜索"
   },
   "tabs": {
     "tokens": "代币",

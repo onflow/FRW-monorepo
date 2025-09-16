@@ -487,7 +487,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         id: currentWallet.address,
       };
 
-      // Only update if the address has changed
       if (fromAccount?.address !== currentWallet.address) {
         setFromAccount(walletAccount);
       }

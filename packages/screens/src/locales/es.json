@@ -16,7 +16,8 @@
     "previous": "Anterior",
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Éxito"
+    "success": "Éxito",
+    "Search": "Buscar"
   },
   "tabs": {
     "tokens": "Tokens",
