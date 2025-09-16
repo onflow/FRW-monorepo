@@ -41,6 +41,7 @@ export function NFTListScreen(): React.ReactElement {
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setTransactionType = useSendStore((state) => state.setTransactionType);
+  const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
@@ -266,24 +267,25 @@ export function NFTListScreen(): React.ReactElement {
   }, []);
 
   // Handle quantity change for ERC1155 NFTs
-  const handleQuantityChange = useCallback((nftId: string, quantity: number) => {
-    logger.info('[NFTListScreen] ERC1155 quantity changed', { nftId, quantity });
-    setNftQuantities((prev) => ({ ...prev, [nftId]: quantity }));
-  }, []);
+  const handleQuantityChange = useCallback(
+    (nftId: string, quantity: number) => {
+      logger.info('[NFTListScreen] ERC1155 quantity changed', { nftId, quantity });
+      setNftQuantities((prev) => ({ ...prev, [nftId]: quantity }));
+      setNFTQuantity(nftId, quantity); // Store in the send store
+    },
+    [setNFTQuantity]
+  );
 
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
     const selectedNFTs = (nfts || []).filter((nft) => selectedIds.includes(getNFTId(nft)));
 
-    // For ERC1155 NFTs, store the selected quantity in sessionStorage
-    // This is a temporary solution until we add it to the store
+    // For ERC1155 NFTs, ensure quantity is set in the store
     if (selectedNFTs.length === 1 && selectedNFTs[0].contractType === 'ERC1155') {
       const nftId = getNFTId(selectedNFTs[0]);
       const quantity = nftQuantities[nftId] || 1;
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.setItem('erc1155_selected_quantity', quantity.toString());
-      }
-      logger.info('[NFTListScreen] Storing ERC1155 quantity for send screen', {
+      setNFTQuantity(nftId, quantity);
+      logger.info('[NFTListScreen] Setting ERC1155 quantity in store', {
         nftId,
         quantity,
         nftName: selectedNFTs[0].name,
@@ -293,7 +295,7 @@ export function NFTListScreen(): React.ReactElement {
     setSelectedNFTs(selectedNFTs);
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
-  }, [selectedIds, nfts, setSelectedNFTs, setCurrentStep, nftQuantities]);
+  }, [selectedIds, nfts, setSelectedNFTs, setCurrentStep, nftQuantities, setNFTQuantity]);
 
   // Refresh function - TanStack Query makes this super simple!
   const refreshNFTs = useCallback(() => {

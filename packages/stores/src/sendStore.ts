@@ -46,6 +46,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   transactionType: 'tokens',
   formData: defaultFormData,
   selectedNFTs: [],
+  selectedNFTQuantities: {},
   selectedCollection: null,
   currentStep: 'select-tokens',
   isLoading: false,
@@ -111,10 +112,28 @@ export const useSendStore = create<SendState>((set, get) => ({
     }),
 
   removeSelectedNFT: (nftId: string) =>
+    set((state) => {
+      const newQuantities = { ...state.selectedNFTQuantities };
+      delete newQuantities[nftId];
+      return {
+        selectedNFTs: state.selectedNFTs.filter((n) => n.id !== nftId),
+        selectedNFTQuantities: newQuantities,
+        error: null,
+      };
+    }),
+
+  setNFTQuantity: (nftId: string, quantity: number) =>
     set((state) => ({
-      selectedNFTs: state.selectedNFTs.filter((n) => n.id !== nftId),
-      error: null,
+      selectedNFTQuantities: {
+        ...state.selectedNFTQuantities,
+        [nftId]: quantity,
+      },
     })),
+
+  getNFTQuantity: (nftId: string) => {
+    const state = get();
+    return state.selectedNFTQuantities[nftId] || 1;
+  },
 
   setCurrentStep: (step: SendState['currentStep']) => set({ currentStep: step, error: null }),
 
@@ -296,6 +315,7 @@ export const useSendStore = create<SendState>((set, get) => ({
       transactionType: 'tokens',
       formData: defaultFormData,
       selectedNFTs: [],
+      selectedNFTQuantities: {},
       currentStep: 'select-tokens',
       isLoading: false,
       error: null,
@@ -311,6 +331,7 @@ export const useSendStore = create<SendState>((set, get) => ({
     set({
       selectedToken: null,
       selectedNFTs: [],
+      selectedNFTQuantities: {},
       formData: defaultFormData,
       transactionType: 'tokens',
       currentStep: 'select-tokens',

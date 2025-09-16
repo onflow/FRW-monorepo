@@ -42,21 +42,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
-  // For ERC1155, retrieve the quantity from sessionStorage if available
-  const getInitialQuantity = () => {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      const storedQuantity = window.sessionStorage.getItem('erc1155_selected_quantity');
-      if (storedQuantity) {
-        // Clear it after reading to prevent stale data
-        window.sessionStorage.removeItem('erc1155_selected_quantity');
-        return parseInt(storedQuantity, 10) || 1;
-      }
-    }
-    return 1;
-  };
-
-  const [selectedQuantity, setSelectedQuantity] = useState(getInitialQuantity);
-
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
   const fromAccount = useSendStore(sendSelectors.fromAccount);
@@ -64,9 +49,22 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const isLoading = useSendStore(sendSelectors.isLoading);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
+  const getNFTQuantity = useSendStore((state) => state.getNFTQuantity);
+  const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
 
   // Get the first selected NFT (should only be one for single NFT flow)
   const selectedNFT = selectedNFTs?.[0] || null;
+
+  // For ERC1155, get the quantity from the store
+  const getInitialQuantity = () => {
+    if (selectedNFT && selectedNFT.contractType === 'ERC1155') {
+      const nftId = selectedNFT.id || '';
+      return getNFTQuantity(nftId);
+    }
+    return 1;
+  };
+
+  const [selectedQuantity, setSelectedQuantity] = useState(getInitialQuantity);
 
   // Check if NFT is ERC1155
   const isERC1155 = selectedNFT?.contractType === 'ERC1155';
@@ -285,6 +283,9 @@ export function SendSingleNFTScreen(): React.ReactElement {
                         maxQuantity,
                       });
                       setSelectedQuantity(newQuantity);
+                      if (selectedNFT?.id) {
+                        setNFTQuantity(selectedNFT.id, newQuantity);
+                      }
                     }}
                     disabled={false}
                   />
