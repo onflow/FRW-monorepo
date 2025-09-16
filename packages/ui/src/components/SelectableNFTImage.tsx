@@ -87,14 +87,16 @@ export function SelectableNFTImage({
           pos="absolute"
           top={14}
           left={14}
-          bg="$blackA11"
-          rounded="$2"
-          px="$2.5"
-          py="$1.5"
+          bg="#D9D9D9"
+          width={22.26}
+          height={22.26}
+          rounded={11.13}
+          items="center"
+          justify="center"
           zIndex={1}
         >
-          <Text fontSize="$3" fontWeight="600" color="$white">
-            x{amount}
+          <Text fontSize={14} fontWeight="600" color="#000000" lineHeight={19.6}>
+            {amount}
           </Text>
         </XStack>
       )}
