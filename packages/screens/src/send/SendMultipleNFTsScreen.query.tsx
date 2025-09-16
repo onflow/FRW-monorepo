@@ -242,7 +242,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
-              <View mt={-8}>
+              <View mt={-4}>
                 <ToAccountSection
                   account={toAccount}
                   title={t('send.toAccount')}
