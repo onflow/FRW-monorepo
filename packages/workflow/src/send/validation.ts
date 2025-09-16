@@ -68,8 +68,17 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
   }
 
   // Validate all required fields are present
-  if (!proposer || !receiver || !flowIdentifier || !sender || !type || !assetType) {
+  if (!proposer || !receiver || !sender || !type || !assetType) {
     throw new Error('invalid send transaction payload');
+  }
+
+  // for EVM to Flow, verify flowIdentifier
+  if (assetType === 'evm' && validateFlowAddress(receiver) && !flowIdentifier) {
+    throw new Error('flowIdentifier of transaction payload is missing when bridge');
+  }
+
+  if (assetType === 'flow' && !flowIdentifier) {
+    throw new Error('flowIdentifier of transaction payload is missing');
   }
 
   // Validate asset-specific requirements
