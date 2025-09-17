@@ -5,7 +5,11 @@ import {
   useWalletStore,
   walletSelectors,
   useAddressBookStore,
+  storageQueryKeys,
+  storageQueries,
+  storageUtils,
 } from '@onflow/frw-stores';
+import { isFlow } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -36,7 +40,7 @@ import { useTranslation } from 'react-i18next';
  * Query-integrated version of SendTokensScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export const SendTokensScreen = (props) => {
+export const SendTokensScreen = (): React.ReactElement => {
   const { t } = useTranslation();
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
@@ -55,7 +59,7 @@ export const SendTokensScreen = (props) => {
     toAccount,
     updateFormData,
     executeTransaction,
-    isLoading: storeLoading,
+    isLoading,
     setCurrentStep,
   } = useSendStore();
 
@@ -84,7 +88,7 @@ export const SendTokensScreen = (props) => {
       try {
         // Check if the platform supports free gas
         const platform = bridge.getPlatform();
-        if (platform === 'extension' || platform === 'mobile') {
+        if (platform === 'extension' || platform === 'android' || platform === 'ios') {
           // For now, default to true since the method might not be available yet
           setIsFreeGasEnabled(true);
         } else {
@@ -144,25 +148,44 @@ export const SendTokensScreen = (props) => {
     enabled: !!selectedAccount?.address,
   });
 
+  // Query for complete account information including storage and balance
+  const { data: accountInfo } = useQuery({
+    queryKey: storageQueryKeys.accountInfo(selectedAccount || null),
+    queryFn: () => storageQueries.fetchAccountInfo(selectedAccount || null),
+    enabled: !!selectedAccount?.address,
+    staleTime: 0, // Always fresh for financial data
+  });
+
+  // Query for resource compatibility check (tokens only)
+  const { data: isResourceCompatible = true } = useQuery({
+    queryKey: storageQueryKeys.resourceCheck(
+      toAccount?.address || '',
+      selectedToken?.identifier || ''
+    ),
+    queryFn: () =>
+      storageQueries.checkResourceCompatibility(
+        toAccount?.address || '',
+        selectedToken?.identifier || ''
+      ),
+    enabled: !!(toAccount?.address && selectedToken?.identifier),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
+  });
+
+  // Calculate account incompatibility (invert the compatibility result)
+  const isAccountIncompatible = !isResourceCompatible;
+
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
   const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
   const contentPadding = 16;
   const usdFee = '$0.02';
-  const isAccountIncompatible = false;
   const isBalanceLoading = false;
-  const showStorageWarning = false;
-  const storageWarningMessage =
-    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
   const showEditButtons = true;
 
   // Internal callback handlers
   const onEditAccountPress = () => {
     // Navigate back to SendTo screen to select a different recipient
     navigation.goBack();
-  };
-  const onLearnMorePress = () => {
-    // Handle learn more press internally
   };
 
   // Internal state - no more props for data
@@ -173,9 +196,26 @@ export const SendTokensScreen = (props) => {
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
   const inputRef = useRef<any>(null);
 
+  // Calculate storage warning state based on real validation logic
+  const validationResult = useMemo(() => {
+    if (!accountInfo) return { canProceed: true, showWarning: false, warningType: null };
+
+    const transactionAmount = parseFloat(amount) || 0;
+    const isFlowTransaction = selectedToken ? isFlow(selectedToken) : false;
+
+    if (isFlowTransaction) {
+      return storageUtils.validateFlowTokenTransaction(accountInfo, transactionAmount);
+    } else {
+      return storageUtils.validateOtherTransaction(accountInfo);
+    }
+  }, [accountInfo, amount, selectedToken]);
+
+  const showStorageWarning = validationResult.showWarning;
+  const storageWarningMessage = storageUtils.getStorageWarningMessage(validationResult.warningType);
+
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
-    (token: any) => {
+    (token: unknown) => {
       setSelectedToken(token);
       setIsTokenSelectorVisible(false);
     },
@@ -292,10 +332,6 @@ export const SendTokensScreen = (props) => {
     setIsTokenSelectorVisible(false);
   }, []);
 
-  const handleConfirmationOpen = useCallback(() => {
-    setIsConfirmationVisible(true);
-  }, []);
-
   const handleConfirmationClose = useCallback(() => {
     setIsConfirmationVisible(false);
   }, []);
@@ -391,12 +427,24 @@ export const SendTokensScreen = (props) => {
         !fromAccount ||
         !toAccount ||
         amountNum.lte(0) ||
-        tokenAmount.gt(balanceNum)
+        tokenAmount.gt(balanceNum) ||
+        showStorageWarning ||
+        isAccountIncompatible
       );
     } else {
       return !selectedNFTs.length || !fromAccount || !toAccount;
     }
-  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount, isTokenMode]);
+  }, [
+    transactionType,
+    selectedToken,
+    selectedNFTs,
+    fromAccount,
+    toAccount,
+    amount,
+    isTokenMode,
+    showStorageWarning,
+    isAccountIncompatible,
+  ]);
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = useMemo(
@@ -425,7 +473,7 @@ export const SendTokensScreen = (props) => {
 
   // Calculate overall loading state - only show loading screen for critical data
   // Don't block on wallet store loading if we already have accounts
-  const isLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
+  const isOverallLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
 
   // Calculate error state
   const error = useMemo(() => {
@@ -438,7 +486,7 @@ export const SendTokensScreen = (props) => {
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
   // Show loading state
-  if (isLoading) {
+  if (isOverallLoading) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
         {isExtension && <ExtensionHeader title="Send to" help={true} />}
@@ -565,7 +613,6 @@ export const SendTokensScreen = (props) => {
               fromAccount={fromAccount || undefined}
               isAccountIncompatible={isAccountIncompatible}
               onEditPress={onEditAccountPress}
-              onLearnMorePress={onLearnMorePress}
               showEditButton={showEditButtons}
               title={t('send.toAccount')}
               isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
