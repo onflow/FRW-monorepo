@@ -186,7 +186,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={20} color="white" />
+                  <Close size={15} color="#ffffff" />
                 </XStack>
               </>
             ) : (
@@ -209,7 +209,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={20} color="$white" />
+                  <Close size={15} color="#ffffff" />
                 </XStack>
               </>
             )}
