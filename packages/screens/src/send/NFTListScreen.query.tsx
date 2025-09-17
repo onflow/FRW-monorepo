@@ -371,7 +371,7 @@ export function NFTListScreen(): React.ReactElement {
           />
         )}
         {activeCollection && (
-          <YStack px="$4" pt="$2">
+          <YStack>
             <CollectionHeader
               name={collectionName}
               image={activeCollection.logoURI || activeCollection.logo}
@@ -383,7 +383,7 @@ export function NFTListScreen(): React.ReactElement {
         )}
 
         {/* Search and Content */}
-        <YStack flex={1} pl="$4" pr="$6">
+        <YStack flex={1}>
           <YStack pb={24}>
             <SearchBar
               value={searchQuery}

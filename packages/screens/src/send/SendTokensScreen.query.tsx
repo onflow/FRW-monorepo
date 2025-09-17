@@ -26,11 +26,7 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import {
-  logger,
-  transformAccountForCard,
-  transformAccountForDisplay,
-} from '@onflow/frw-utils';
+import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -153,7 +149,7 @@ export const SendTokensScreen = (props) => {
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
   const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
-  const contentPadding = 16;
+  const contentPadding = '$4';
   const usdFee = '$0.02';
   const isAccountIncompatible = false;
   const isBalanceLoading = false;
@@ -454,7 +450,7 @@ export const SendTokensScreen = (props) => {
         />
       )}
 
-      <YStack flex={1} p={contentPadding}>
+      <YStack flex={1}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">

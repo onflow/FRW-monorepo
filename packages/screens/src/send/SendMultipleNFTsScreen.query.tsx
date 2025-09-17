@@ -195,7 +195,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$4">
+          <YStack gap="$4">
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
@@ -219,7 +219,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
-              <View mt={-8} mb={-8}>
+              <View mt={-8} mb={-8} pb="$7">
                 <MultipleNFTsPreview
                   nfts={nftsForUI}
                   onRemoveNFT={handleRemoveNFT}
@@ -280,7 +280,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack pt="$2">
           <YStack
             width="100%"
             height={52}

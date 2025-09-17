@@ -278,7 +278,7 @@ export function SelectTokensScreen(): React.ReactElement {
           onNavigate={(link: string) => navigation.navigate(link)}
         />
       )}
-      <YStack flex={1} px="$4" pt="$2">
+      <YStack flex={1}>
         {/* Header */}
 
         {/* Account Selector - Show balance from React Query */}
