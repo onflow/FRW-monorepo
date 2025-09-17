@@ -21,6 +21,8 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
+import { NavigationBackButton } from '@/components/NavigationBackButton';
+import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
@@ -197,8 +199,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerShown: true,
               headerBackTitle: '', // Ensure no back title text
               headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
-              // headerLeft: () => <NavigationBackButton />,
-              // headerRight: () => <NavigationCloseButton />,
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
             }}
           >
             <Stack.Screen

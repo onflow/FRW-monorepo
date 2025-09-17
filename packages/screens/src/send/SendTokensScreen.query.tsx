@@ -485,6 +485,14 @@ export const SendTokensScreen = (): React.ReactElement => {
     return null;
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
+  // Helper function to handle press outside input
+  const handlePressOutside = useCallback(() => {
+    // Blur the input ref if it exists (works on all platforms)
+    if (inputRef.current && inputRef.current.blur) {
+      inputRef.current.blur();
+    }
+  }, []);
+
   // Show loading state
   if (isOverallLoading) {
     return (
@@ -520,7 +528,7 @@ export const SendTokensScreen = (): React.ReactElement => {
         />
       )}
 
-      <YStack flex={1} p={contentPadding}>
+      <YStack flex={1} p={contentPadding} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
