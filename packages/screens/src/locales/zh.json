@@ -45,6 +45,10 @@
       "title": "无联系人",
       "message": "您的地址簿为空。"
     },
+    "noSearchResults": {
+      "title": "无结果",
+      "message": "没有账户或联系人匹配您的搜索"
+    },
     "noRecipients": "未找到收件人",
     "selectToken": "选择代币",
     "selectRecipient": "选择收件人",

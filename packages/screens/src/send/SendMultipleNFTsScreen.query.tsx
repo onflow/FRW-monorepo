@@ -1,5 +1,11 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, sendSelectors, useTokenQueryStore } from '@onflow/frw-stores';
+import {
+  useSendStore,
+  sendSelectors,
+  storageQueryKeys,
+  storageQueries,
+  storageUtils,
+} from '@onflow/frw-stores';
 import {
   BackgroundWrapper,
   YStack,
@@ -27,6 +33,7 @@ import {
   transformAccountForCard,
   transformAccountForDisplay,
 } from '@onflow/frw-utils';
+import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -52,28 +59,34 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const executeTransaction = useSendStore((state) => state.executeTransaction);
   const selectedCollection = useSendStore((state) => state.selectedCollection);
 
-  // Update current step when screen loads
-  useEffect(() => {
-    setCurrentStep('send-nft');
-  }, [setCurrentStep]);
+  // Query for complete account information including storage and balance
+  const { data: accountInfo } = useQuery({
+    queryKey: storageQueryKeys.accountInfo(fromAccount || null),
+    queryFn: () => storageQueries.fetchAccountInfo(fromAccount || null),
+    enabled: !!fromAccount?.address,
+    staleTime: 0, // Always fresh for financial data
+  });
 
-  // Check free gas status
-  useEffect(() => {
-    const checkFreeGasStatus = async () => {
-      try {
-        const isEnabled = await bridge.isFreeGasEnabled?.();
-        setIsFreeGasEnabled(isEnabled ?? true);
-      } catch (error) {
-        console.error('Failed to check free gas status:', error);
-        // Default to enabled if we can't determine the status
-        setIsFreeGasEnabled(true);
-      }
-    };
+  // Query for resource compatibility check (multiple NFTs - use first NFT's identifier)
+  const firstNFTFlowIdentifier = selectedNFTs?.[0]?.flowIdentifier;
+  const { data: isResourceCompatible = true } = useQuery({
+    queryKey: storageQueryKeys.resourceCheck(
+      toAccount?.address || '',
+      firstNFTFlowIdentifier || ''
+    ),
+    queryFn: () =>
+      storageQueries.checkResourceCompatibility(
+        toAccount?.address || '',
+        firstNFTFlowIdentifier || ''
+      ),
+    enabled: !!(toAccount?.address && firstNFTFlowIdentifier),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
+  });
 
-    checkFreeGasStatus();
-  }, []);
+  // Calculate account incompatibility (invert the compatibility result)
+  const isAccountIncompatible = !isResourceCompatible;
 
-  // Transform NFT data for UI using getNFTCover utility
+  // Transform NFT data for UI - following Figma design structure
   const nftsForUI: NFTSendData[] = useMemo(
     () =>
       selectedNFTs?.map((nft) => {
@@ -92,27 +105,34 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
       }) || [],
     [selectedNFTs]
   );
+  // Mock transaction fee data - TODO: Replace with real fee calculation
+  const transactionFee = '0.001';
+  const usdFee = '0.00';
+  const isFeesFree = true; // Following Figma design "Covered by Flow Wallet"
+
+  // Calculate storage warning state based on account validation for multiple NFT transfer
+  const validationResult = useMemo(() => {
+    if (!accountInfo) {
+      return { canProceed: true, showWarning: false, warningType: null };
+    }
+    // Multiple NFT transfers are treated as "other" transactions (non-FLOW)
+    return storageUtils.validateOtherTransaction(accountInfo, isFeesFree);
+  }, [accountInfo, isFeesFree]);
+
+  const showStorageWarning = validationResult.showWarning;
+  const storageWarningMessage = useMemo(() => {
+    return storageUtils.getStorageWarningMessage(validationResult.warningType);
+  }, [validationResult.warningType, accountInfo]);
 
   // Calculate if send button should be disabled
   const isSendDisabled =
-    !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
-
-  // Transaction fee data
-  const transactionFee = '0.001 FLOW';
-  const usdFee = '$0.02';
-
-  // Mock storage warning - TODO: Replace with real storage check
-  const showStorageWarning = false;
-  const storageWarningMessage =
-    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
-
-  // Create form data for transaction confirmation
-  const formData: TransactionFormData = {
-    tokenAmount: selectedNFTs?.length.toString() || '0',
-    fiatAmount: '0.00',
-    isTokenMode: true,
-    transactionFee,
-  };
+    !selectedNFTs ||
+    selectedNFTs.length === 0 ||
+    !fromAccount ||
+    !toAccount ||
+    isLoading ||
+    !validationResult.canProceed ||
+    isAccountIncompatible;
 
   // Event handlers
   const handleEditNFTsPress = useCallback(() => {
@@ -122,11 +142,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   const handleEditAccountPress = useCallback(() => {
     navigation.navigate('SendTo'); // Go back to account selection
-  }, []);
-
-  const handleLearnMorePress = useCallback(() => {
-    // TODO: Navigate to help/learn more screen
-    // console.log('Learn more pressed');
   }, []);
 
   const handleRemoveNFT = useCallback(
@@ -172,6 +187,35 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
       // Error handling will be managed by the store
     }
   }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
+
+  // Update current step when screen loads
+  useEffect(() => {
+    setCurrentStep('send-nft');
+  }, [setCurrentStep]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async () => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        console.error('Failed to check free gas status:', error);
+        // Default to enabled if we can't determine the status
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
+
+  // Create form data for transaction confirmation
+  const formData: TransactionFormData = {
+    tokenAmount: selectedNFTs?.length.toString() || '0',
+    fiatAmount: '0.00',
+    isTokenMode: true,
+    transactionFee,
+  };
 
   // Early return if essential data is missing
   if (!selectedNFTs || selectedNFTs.length === 0) {
@@ -250,13 +294,12 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
-              <View mt={-8}>
+              <View mt={-4}>
                 <ToAccountSection
                   account={toAccount}
                   title={t('send.toAccount')}
-                  isAccountIncompatible={false} // TODO: Real compatibility check
+                  isAccountIncompatible={isAccountIncompatible} // TODO: Real compatibility check
                   onEditPress={handleEditAccountPress}
-                  onLearnMorePress={handleLearnMorePress}
                   showEditButton={true}
                   isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
                 />

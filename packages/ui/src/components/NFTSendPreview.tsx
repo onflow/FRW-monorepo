@@ -98,21 +98,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
               rounded="$4"
               borderWidth="$0.25"
               borderColor="$text3"
-            >
-              <View
-                width="$8"
-                height="$8"
-                bg="$light10"
-                rounded="$2"
-                items="center"
-                justify="center"
-              >
-                <View width="$4" height="$4" opacity={0.2} rounded="$1" />
-              </View>
-              <Text fontSize="$2.5" opacity={0.4} mt="$2" fontWeight="500">
-                NFT
-              </Text>
-            </YStack>
+            ></YStack>
           )}
         </View>
 

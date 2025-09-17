@@ -52,7 +52,8 @@ export interface BackgroundWrapperProps {
 
 export interface RefreshViewProps {
   type?: 'empty' | 'error';
-  message: string;
+  title?: string;
+  message?: string;
   onRefresh?: () => void;
   refreshText?: string;
 }

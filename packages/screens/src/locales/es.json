@@ -45,6 +45,10 @@
       "title": "Sin Contactos",
       "message": "Tu libreta de direcciones está vacía."
     },
+    "noSearchResults": {
+      "title": "Sin Resultados",
+      "message": "Ninguna cuenta o contacto coincide con tu búsqueda"
+    },
     "noRecipients": "No se encontraron destinatarios",
     "selectToken": "Seleccionar Token",
     "selectRecipient": "Seleccionar Destinatario",

@@ -2,7 +2,10 @@ import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, Text, View } from 'tamagui';
 
-import { RecipientList, type RecipientData } from './RecipientList';
+import { RecipientItem } from './RecipientItem';
+import { type RecipientData } from './RecipientList';
+import { RefreshView } from './RefreshView';
+import { Avatar } from '../foundation/Avatar';
 
 export interface ProfileListProps {
   profiles: WalletProfile[];
@@ -30,20 +33,11 @@ export function ProfileList({
   }
 
   if (!profiles || profiles.length === 0) {
-    return (
-      <YStack items="center" justifyContent="center" py="$4">
-        <Text color="$color" fontSize="$3" fontWeight="600" mb="$2">
-          {emptyTitle}
-        </Text>
-        <Text color="$color" fontSize="$2" textAlign="center">
-          {emptyMessage}
-        </Text>
-      </YStack>
-    );
+    return <RefreshView type="empty" title={emptyTitle} message={emptyMessage} />;
   }
 
   return (
-    <YStack gap="$4">
+    <YStack gap="$2">
       {profiles.map((profile, index) => {
         return (
           <React.Fragment key={profile.uid}>
@@ -53,6 +47,15 @@ export function ProfileList({
               onAccountPress={onAccountPress}
               isLast={index === profiles.length - 1}
             />
+            {index < profiles.length - 1 && (
+              <View
+                mt="$1"
+                height={0}
+                width="100%"
+                borderBottomWidth={1}
+                borderBottomColor="$borderColor"
+              />
+            )}
           </React.Fragment>
         );
       })}
@@ -95,75 +98,54 @@ function ProfileItem({
   });
 
   return (
-    <YStack gap="$3" items="flex-start" justifyContent="flex-start" width="100%">
+    <YStack gap="$3" items="flex-start" justifyContent="flex-start" width="100%" p="$3">
       {/* Profile Header */}
       <XStack items="center" justifyContent="space-between" width="100%">
-        <XStack gap="$4" items="center" justifyContent="flex-start">
+        <XStack gap="$3" items="center" justifyContent="flex-start">
           {/* Profile Icon */}
-          <View borderRadius="$2" width={26} height={26} items="center" justifyContent="center">
-            {profile.avatar && profile.avatar.startsWith('http') ? (
-              <View
-                width="100%"
-                height="100%"
-                borderRadius="$1"
-                bg="$background"
-                style={{
-                  backgroundImage: `url(${profile.avatar})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
-            ) : profile.avatar && profile.avatar.length <= 4 ? (
-              <View
-                width="100%"
-                height="100%"
-                borderRadius="$1"
-                bg="$gray8"
-                items="center"
-                justifyContent="center"
-              >
-                <Text fontSize="$4">{profile.avatar}</Text>
-              </View>
-            ) : (
-              <View
-                width="100%"
-                height="100%"
-                borderRadius="$1"
-                bg="$gray8"
-                items="center"
-                justifyContent="center"
-              >
-                <Text color="$color" fontSize="$1" fontWeight="600">
-                  {profile.name.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-            )}
-          </View>
-
+          <Avatar
+            src={profile.avatar?.startsWith('http') ? profile.avatar : undefined}
+            fallback={
+              profile.avatar && profile.avatar.length <= 4
+                ? profile.avatar
+                : profile.name.charAt(0).toUpperCase()
+            }
+            size={26}
+            bgColor="$gray8"
+          />
           {/* Profile Name */}
-          <XStack gap="$2" items="center" justifyContent="flex-start">
-            <Text
-              color="$color"
-              fontSize="$3"
-              fontWeight="600"
-              whiteSpace="nowrap"
-              letterSpacing={-0.084}
-            >
-              {profile.name}
-            </Text>
-          </XStack>
+          <Text
+            color="$color"
+            fontSize="$3"
+            fontWeight="600"
+            whiteSpace="nowrap"
+            letterSpacing={-0.084}
+          >
+            {profile.name}
+          </Text>
         </XStack>
       </XStack>
 
-      {/* Accounts List using RecipientList */}
-      <RecipientList
-        data={accountsData}
-        isLoading={false}
-        onItemPress={handleAccountPress}
-        contentPadding={0}
-        showSeparators={false}
-        itemSpacing={13}
-      />
+      {/* Separator Line */}
+      <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
+
+      {/* Accounts List - render items directly to avoid nested ScrollView */}
+      <YStack width="100%" gap="$2">
+        {accountsData.map((account, index) => (
+          <View key={account.id}>
+            <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
+            {index < accountsData.length - 1 && (
+              <View
+                mt="$2"
+                height={0}
+                width="100%"
+                borderBottomWidth={1}
+                borderBottomColor="$borderColor"
+              />
+            )}
+          </View>
+        ))}
+      </YStack>
     </YStack>
   );
 }
