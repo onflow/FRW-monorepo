@@ -1,5 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, sendSelectors } from '@onflow/frw-stores';
+import { useSendStore, sendSelectors, useTokenQueryStore } from '@onflow/frw-stores';
 import {
   BackgroundWrapper,
   YStack,
@@ -50,6 +50,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -158,12 +159,19 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         setIsConfirmationVisible(false);
       }
       await executeTransaction();
-      // Navigation after successful transaction will be handled by the store
+      // Invalidate NFT caches after successful transaction
+      const tokenStore = useTokenQueryStore.getState();
+      if (selectedCollection && fromAccount) {
+        const network = bridge.getNetwork();
+        const currentAddress = fromAccount.address;
+
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+      }
     } catch (error) {
       logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction, isExtension]);
+  }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
 
   // Early return if essential data is missing
   if (!selectedNFTs || selectedNFTs.length === 0) {
