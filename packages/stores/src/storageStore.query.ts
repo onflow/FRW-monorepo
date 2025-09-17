@@ -1,7 +1,7 @@
 import { type Result } from '@onflow/frw-cadence';
 import { cadence } from '@onflow/frw-context';
 import { FlatQueryDomain, type WalletAccount } from '@onflow/frw-types';
-import { logger } from '@onflow/frw-utils';
+import { logger, isValidFlowAddress } from '@onflow/frw-utils';
 
 /**
  * Extended Result interface with calculated available storage and converted number fields
@@ -107,6 +107,16 @@ export const storageQueries = {
         flowIdentifier,
       });
       return false;
+    }
+
+    // Check if it's a valid Flow address
+    const isFlowAddress = isValidFlowAddress(address);
+    if (!isFlowAddress) {
+      logger.info('Address is not a valid Flow address, returning true for compatibility', {
+        address,
+        flowIdentifier,
+      });
+      return true;
     }
 
     try {
