@@ -525,6 +525,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           currentPath.includes('send-tokens') ||
           currentPath.endsWith('/send') ||
           currentPath.includes('/nested') ||
+          currentPath.includes('/tokendetail') ||
           currentPath.includes('/nftevm/detail');
 
         if (isInSendWorkflow) {
