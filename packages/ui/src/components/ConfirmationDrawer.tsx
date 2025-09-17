@@ -402,6 +402,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             pressStyle={{ opacity: 0.9 }}
             onPress={internalIsSending ? undefined : handleConfirm}
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
+            data-testid="confirm"
           >
             <Text fontSize="$5" fontWeight="600" color="#000000">
               {internalIsSending ? 'Sending...' : isExtension ? 'Confirm send' : 'Hold to send'}

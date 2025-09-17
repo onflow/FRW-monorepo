@@ -465,6 +465,18 @@ export const switchToMainAccount = async ({ page, address }) => {
   await getCurrentAddress(page);
 };
 
+export const switchToChildAccount = async ({ page, address }) => {
+  // Assume the user is on the dashboard page
+  await page.getByTestId('account-menu-button').click();
+  // switch to another flow account
+  await page
+    .getByTestId(new RegExp(`child-account-${address}`, 'i'))
+    .first()
+    .click();
+  // get address
+  await getCurrentAddress(page);
+};
+
 const getActivityItemRegexp = (txId: string, ingoreFlowCharge = false) => {
   return new RegExp(`^.*${txId}.*${ingoreFlowCharge ? '(?<!FlowToken)' : ''}$`);
 };

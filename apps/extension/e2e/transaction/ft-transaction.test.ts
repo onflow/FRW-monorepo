@@ -12,6 +12,8 @@ import {
 } from '../utils/helper';
 import { test } from '../utils/loader';
 
+// const senderChildAddr = process.env.TEST_SENDER_CHILD_ADDR!;
+
 export const sendFT = async ({ page, tokenName, receiver, amount, ingoreFlowCharge = false }) => {
   // Wait for the EVM account to be loaded
   await getCurrentAddress(page);
@@ -126,3 +128,123 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
     })
   );
 });
+
+// // child account ft receive test
+// test('send FTs with child ', async ({ page, extensionId }) => {
+//   test.setTimeout(120_000);
+//   const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
+//     [];
+//   await switchToMainAccount({
+//     page,
+//     address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+//   });
+
+//   const tx1 = await sendFT({
+//     page,
+//     tokenName: 'USDC.e',
+//     receiver: senderChildAddr,
+//     amount: '0.000001',
+//   });
+//   txList.push(tx1);
+
+//   const tx2 = await sendFT({
+//     page,
+//     tokenName: 'flow',
+//     receiver: senderChildAddr,
+//     amount: '0.000002',
+//   });
+//   txList.push(tx2);
+
+//   await Promise.all(
+//     txList.map(async (tx) => {
+//       await checkSentAmount({
+//         page,
+//         txId: tx.txId,
+//         amount: tx.amount,
+//         sealedText: 'sealed',
+//         ingoreFlowCharge: tx.ingoreFlowCharge,
+//         isEvm: true,
+//       });
+//     })
+//   );
+// });
+
+// // child account ft receive test
+// test('send FTs with child ', async ({ page, extensionId }) => {
+//   test.setTimeout(120_000);
+//   const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
+//     [];
+//   await switchToMainAccount({
+//     page,
+//     address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+//   });
+
+//   const tx1 = await sendFT({
+//     page,
+//     tokenName: 'USDC.e',
+//     receiver: senderChildAddr,
+//     amount: '0.000001',
+//   });
+//   txList.push(tx1);
+
+//   const tx2 = await sendFT({
+//     page,
+//     tokenName: 'flow',
+//     receiver: senderChildAddr,
+//     amount: '0.000002',
+//   });
+//   txList.push(tx2);
+
+//   await Promise.all(
+//     txList.map(async (tx) => {
+//       await checkSentAmount({
+//         page,
+//         txId: tx.txId,
+//         amount: tx.amount,
+//         sealedText: 'sealed',
+//         ingoreFlowCharge: tx.ingoreFlowCharge,
+//         isEvm: true,
+//       });
+//     })
+//   );
+// });
+
+// // child account ft send test
+// test('send FTs with child ', async ({ page, extensionId }) => {
+//   test.setTimeout(120_000);
+//   const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
+//     [];
+//   await switchToChildAccount({
+//     page,
+//     address: senderChildAddr,
+//   });
+
+//   const tx1 = await sendFT({
+//     page,
+//     tokenName: 'USDC.e',
+//     receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
+//     amount: '0.000001',
+//   });
+//   txList.push(tx1);
+
+//   const tx2 = await sendFT({
+//     page,
+//     tokenName: 'flow',
+//     receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
+//     amount: '0.000002',
+//   });
+//   txList.push(tx2);
+
+//   await Promise.all(
+//     txList.map(async (tx) => {
+//       await checkSentAmount({
+//         page,
+//         txId: tx.txId,
+//         amount: tx.amount,
+//         sealedText: 'sealed',
+//         ingoreFlowCharge: tx.ingoreFlowCharge,
+//         isEvm: true,
+//       });
+//     })
+//   );
+// });
