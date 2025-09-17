@@ -171,7 +171,9 @@ export const tokenQueries = {
         });
         // Extract FLOW balance
         const flowToken = tokens.find(
-          (token) => token.identifier === getFlowTokenVault(network as 'mainnet' | 'testnet')
+          (token) =>
+            token.identifier === getFlowTokenVault(network as 'mainnet' | 'testnet') ||
+            token.symbol?.toLowerCase() === 'flow'
         );
 
         let balance = '0 FLOW';

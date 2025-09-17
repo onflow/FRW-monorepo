@@ -481,7 +481,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     if (currentWallet && currentWallet.address) {
       // Convert currentWallet to WalletAccount format for send store
       let nftCount = 0;
-      let balance;
       if (isEvmAddress) {
         nftCount =
           evmNftCollections?.reduce((total, collection) => {
@@ -494,11 +493,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           }, 0) || 0;
       }
 
-      // Use the fresh balance data if available
-      const freshBalance = coins?.find((coin) => coin.unit.toLowerCase() === 'flow')?.balance;
-      if (freshBalance) {
-        balance = freshBalance;
-      }
       const walletAccount: WalletAccount = {
         name: currentWallet.name || 'Unnamed Account',
         address: currentWallet.address,
@@ -511,7 +505,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         type: activeAccountType === 'none' ? 'main' : activeAccountType, // Default type for extension accounts
         isActive: true,
         id: currentWallet.address,
-        balance,
         nfts: `${nftCount} NFT${nftCount !== 1 ? 's' : ''}`,
       };
 

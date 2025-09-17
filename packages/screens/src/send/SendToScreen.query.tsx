@@ -130,17 +130,6 @@ export function SendToScreen(): React.ReactElement {
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
   });
-
-  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching
-  const { data: nftCollections = [] } = useQuery({
-    queryKey: tokenQueryKeys.nfts(fromAddress, network),
-    queryFn: () => tokenQueries.fetchNFTCollections(fromAddress, network),
-    enabled: !!fromAccount?.address,
-    staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-  });
-
   // Convert batch balances and NFT counts to the expected format
   const accountBalances = useMemo(() => {
     const results: { [address: string]: { balance: string; nftCount: string } } = {};
@@ -268,12 +257,7 @@ export function SendToScreen(): React.ReactElement {
         accountType = 'main';
       }
 
-      // Calculate total NFT count from all collections
-      const totalNFTCount = nftCollections.reduce((total, collection) => {
-        return total + (collection.count || 0);
-      }, 0);
-
-      logger.debug('fromAccount selected', fromAccount);
+      logger.debug('fromAccount selected', fromAccount, balanceData);
 
       const emojiValue = recipient.emojiInfo?.emoji;
       const isRealEmoji = emojiValue && !emojiValue.startsWith('http') && emojiValue.length <= 4;
@@ -294,7 +278,7 @@ export function SendToScreen(): React.ReactElement {
         setFromAccount({
           ...fromAccount,
           balance: balanceData?.displayBalance || '0 FLOW',
-          nfts: totalNFTCount ? `${totalNFTCount} NFTs` : '0 NFTs',
+          nfts: balanceData?.nftCount ? `${balanceData.nftCount} NFTs` : '0 NFTs',
         });
       }
 

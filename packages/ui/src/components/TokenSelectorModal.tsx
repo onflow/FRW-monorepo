@@ -240,8 +240,6 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
     </YStack>
   );
 
-  if (!visible) return null;
-
   // Determine if we should use sheet
   const shouldUseSheet =
     platform === 'mobile' || (platform === 'auto' && (isMobile || isReactNative));
@@ -252,10 +250,11 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
       <Sheet
         modal
         open={visible}
-        onOpenChange={(open) => !open && onClose()}
-        snapPoints={isExtension ? [91] : [85, 50]}
-        dismissOnSnapToBottom={!isExtension}
-        disableDrag={isExtension}
+        onOpenChange={onClose}
+        snapPointsMode={!isExtension ? 'fit' : undefined}
+        dismissOnSnapToBottom
+        snapPoints={isExtension ? [91] : undefined}
+        animation={isExtension ? 'quick' : 'lazy'}
       >
         <Sheet.Overlay
           animation={isExtension ? undefined : 'lazy'}
