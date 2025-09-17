@@ -9,7 +9,7 @@ import {
   storageQueries,
   storageUtils,
 } from '@onflow/frw-stores';
-import { type WalletAccount, isFlow } from '@onflow/frw-types';
+import { isFlow } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -434,7 +434,17 @@ export const SendTokensScreen = (): React.ReactElement => {
     } else {
       return !selectedNFTs.length || !fromAccount || !toAccount;
     }
-  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount, isTokenMode, showStorageWarning, isAccountIncompatible]);
+  }, [
+    transactionType,
+    selectedToken,
+    selectedNFTs,
+    fromAccount,
+    toAccount,
+    amount,
+    isTokenMode,
+    showStorageWarning,
+    isAccountIncompatible,
+  ]);
 
   // Create form data for transaction confirmation
   const formData: TransactionFormData = useMemo(

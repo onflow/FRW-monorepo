@@ -6,7 +6,6 @@ import {
   storageQueries,
   storageUtils,
 } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,

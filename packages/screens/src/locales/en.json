@@ -34,7 +34,7 @@
     },
     "toAccount": "To Account",
     "searchAddress": "Search address",
-    "searchPasteAddress": "Search/ Paste address",
+    "searchPasteAddress": "Search / Paste address",
     "selectedToken": "Selected Token",
     "noAccounts": {
       "title": "No Accounts",
@@ -47,6 +47,10 @@
     "noContacts": {
       "title": "No Contacts",
       "message": "Your address book is empty."
+    },
+    "noSearchResults": {
+      "title": "No Results",
+      "message": "No accounts or contacts match your search"
     },
     "noRecipients": "No recipients found",
     "selectToken": "Select Token",

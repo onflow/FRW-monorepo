@@ -4,6 +4,7 @@ import { YStack, XStack, Text, View } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
+import { RefreshView } from './RefreshView';
 import { Avatar } from '../foundation/Avatar';
 
 export interface ProfileListProps {
@@ -32,16 +33,7 @@ export function ProfileList({
   }
 
   if (!profiles || profiles.length === 0) {
-    return (
-      <YStack items="center" justifyContent="center" py="$4">
-        <Text color="$color" fontSize="$3" fontWeight="600" mb="$2">
-          {emptyTitle}
-        </Text>
-        <Text color="$color" fontSize="$2" textAlign="center">
-          {emptyMessage}
-        </Text>
-      </YStack>
-    );
+    return <RefreshView type="empty" title={emptyTitle} message={emptyMessage} />;
   }
 
   return (
@@ -57,6 +49,7 @@ export function ProfileList({
             />
             {index < profiles.length - 1 && (
               <View
+                mt="$1"
                 height={0}
                 width="100%"
                 borderBottomWidth={1}
@@ -143,6 +136,7 @@ function ProfileItem({
             <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
             {index < accountsData.length - 1 && (
               <View
+                mt="$2"
                 height={0}
                 width="100%"
                 borderBottomWidth={1}

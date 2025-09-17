@@ -87,7 +87,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   // Transform NFT data for UI - following Figma design structure
   const nftsForUI: NFTSendData[] = useMemo(
-    () => selectedNFTs?.map((nft) => {
+    () =>
+      selectedNFTs?.map((nft) => {
         const image = getNFTCover(nft);
         // console.log('[SendMultipleNFTs] NFT image URL:', image);
 
@@ -285,7 +286,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
-              <View mt={-8}>
+              <View mt={-4}>
                 <ToAccountSection
                   account={toAccount}
                   title={t('send.toAccount')}
