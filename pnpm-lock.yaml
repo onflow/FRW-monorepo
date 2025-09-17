@@ -33,6 +33,12 @@ importers:
         specifier: 0.79.2
         version: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
     devDependencies:
+      '@babel/parser':
+        specifier: ^7.28.4
+        version: 7.28.4
+      '@babel/types':
+        specifier: ^7.28.4
+        version: 7.28.4
       '@commitlint/cli':
         specifier: ^19.6.0
         version: 19.8.1(@types/node@22.18.5)(typescript@5.7.2)

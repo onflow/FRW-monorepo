@@ -27,6 +27,8 @@
     "commitlint": "commitlint --from HEAD~1 --to HEAD --verbose"
   },
   "devDependencies": {
+    "@babel/parser": "^7.28.4",
+    "@babel/types": "^7.28.4",
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/js": "^9.18.0",
@@ -55,10 +57,10 @@
   },
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
+    "@tamagui/animations-react-native": "^1.132.20",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native": "0.79.2",
-    "@tamagui/animations-react-native": "^1.132.20"
+    "react-native": "0.79.2"
   },
   "pnpm": {
     "overrides": {

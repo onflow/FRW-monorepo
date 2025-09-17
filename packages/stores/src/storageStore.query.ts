@@ -1,4 +1,4 @@
-import { type Result } from '@onflow/frw-cadence';
+import type { Result } from '@onflow/frw-cadence';
 import { cadence } from '@onflow/frw-context';
 import { FlatQueryDomain, type WalletAccount } from '@onflow/frw-types';
 import { logger, isValidFlowAddress } from '@onflow/frw-utils';
