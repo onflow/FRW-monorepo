@@ -22,6 +22,7 @@ export const QueryDomain = {
     TRANSACTIONS: 'transactions',
     PRICES: 'prices',
     ACCESSIBLE_ASSETS: 'accessible-assets',
+    STORAGE: 'storage',
   },
 
   // User settings domains - medium cache (5min)

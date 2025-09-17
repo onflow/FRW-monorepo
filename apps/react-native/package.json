@@ -46,11 +46,10 @@
     "react-native": "workspace:*",
     "react-native-gesture-handler": "^2.27.2",
     "react-native-get-random-values": "^1.11.0",
-    "react-native-reanimated": "^4.0.1",
+    "react-native-reanimated": "^3.8.1",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "^4.14.1",
-    "react-native-svg": "^15.12.1",
-    "react-native-worklets": "^0.4.1"
+    "react-native-svg": "^15.12.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
