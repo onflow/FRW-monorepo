@@ -24,6 +24,7 @@
     "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "@tanstack/react-query": "^5.85.6",
+    "bignumber.js": "^9.1.2",
     "i18next": "^24.1.0",
     "react": "^19.1.0",
     "react-i18next": "^15.6.1"

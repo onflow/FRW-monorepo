@@ -35,6 +35,7 @@ export function NFTDetailScreen(): React.ReactElement {
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const selectedCollection = useSendStore((state) => state.selectedCollection);
   const selectedNFTs = useSendStore((state) => state.selectedNFTs);
+  const currentViewNFT = useSendStore((state) => state.currentNFT);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
@@ -75,6 +76,9 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Get the current NFT to display - either from selectedNFTs or first NFT in collection
   const currentNFT = useMemo(() => {
+    if (currentViewNFT) {
+      return currentViewNFT;
+    }
     if (selectedNFTs && selectedNFTs.length > 0) {
       return selectedNFTs[0]; // Show first selected NFT
     }
@@ -143,6 +147,8 @@ export function NFTDetailScreen(): React.ReactElement {
         contractAddress: nftModel.contractAddress,
         collectionContractName: nftModel.collectionContractName,
         properties: additionalProperties.length > 0 ? additionalProperties : undefined,
+        contractType: nftModel.contractType, // Preserve ERC1155/ERC721 type
+        amount: nftModel.amount, // Include amount for ERC1155
       };
     },
     [activeCollection?.name]
@@ -156,6 +162,7 @@ export function NFTDetailScreen(): React.ReactElement {
       image: getNFTCover(nftModel),
       collection: nftModel.collectionName || activeCollection?.name || 'Unknown',
       amount: nftModel.amount,
+      contractType: nftModel.contractType, // Preserve ERC1155/ERC721 type
     }),
     [activeCollection?.name]
   );

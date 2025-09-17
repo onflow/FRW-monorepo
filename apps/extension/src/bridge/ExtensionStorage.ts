@@ -16,7 +16,6 @@ export class ExtensionStorage implements Storage {
 
   async get<K extends keyof StorageKeyMap>(key: K): Promise<StorageKeyMap[K] | undefined> {
     try {
-      // ChromeStorage.get() returns the value directly, not wrapped in an object
       const value = await this.storageArea.get(key as string);
 
       if (!value) return undefined;
@@ -44,10 +43,8 @@ export class ExtensionStorage implements Storage {
         updatedAt: now,
       } as StorageKeyMap[K];
 
-      // ChromeStorage.set() expects raw data, not JSON string
       await this.storageArea.set(key as string, dataWithMetadata);
     } catch (error) {
-      console.error(`Failed to set ${key as string}:`, error);
       throw new Error(`Storage write failed: ${error}`);
     }
   }

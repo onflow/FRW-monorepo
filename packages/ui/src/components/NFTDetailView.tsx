@@ -17,6 +17,8 @@ export interface NFTDetailData {
   collectionContractName?: string;
   properties?: NFTProperty[];
   type?: 'evm' | 'flow'; // determines if EVM badge should show
+  contractType?: string; // 'ERC721' | 'ERC1155'
+  amount?: number; // Available quantity for ERC1155
 }
 
 export interface NFTDetailViewProps {
@@ -90,6 +92,8 @@ export function NFTDetailView({
               selectable={selectable}
               onImagePress={selectable ? onToggleSelection : undefined}
               borderRadius={16}
+              contractType={nft.contractType}
+              amount={nft.amount}
             />
           </YStack>
 

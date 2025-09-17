@@ -31,6 +31,7 @@ export function NFTCollectionRow({
         justify="space-between"
         {...(onPress && {
           pressStyle: { opacity: 0.7 },
+          hoverStyle: { opacity: 0.7 },
           onPress: onPress,
           cursor: 'pointer',
         })}

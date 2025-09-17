@@ -155,7 +155,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 {/* EVM Badge - inline with name */}
                 {account.type === 'evm' && (
                   <XStack
-                    bg="$primary"
+                    bg="$accentEVM"
                     rounded="$4"
                     px={4}
                     items="center"

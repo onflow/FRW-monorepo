@@ -1,5 +1,5 @@
 import { CheckCircle, ChevronRight } from '@onflow/frw-icons';
-import { YStack, XStack, Text, Image } from 'tamagui';
+import { YStack, XStack, Text, Image, View } from 'tamagui';
 
 import type { NFTData } from './NFTGrid';
 
@@ -66,11 +66,31 @@ export function NFTCard({
           </YStack>
         )}
 
+        {/* ERC1155 Badge - top left corner */}
+        {nft.contractType === 'ERC1155' && nft.amount && (
+          <View
+            position="absolute"
+            top={8}
+            left={8}
+            backgroundColor="#D9D9D9"
+            width={22.26}
+            height={22.26}
+            borderRadius={11.13}
+            alignItems="center"
+            justifyContent="center"
+            zIndex={1}
+          >
+            <Text fontSize={14} fontWeight="600" color="#000000" lineHeight={19.6}>
+              {nft.amount}
+            </Text>
+          </View>
+        )}
+
         {/* Selection Indicator - top right corner */}
         <YStack
           w="$6"
           h="$6"
-          zIndex="$2"
+          zIndex={1}
           position="absolute"
           top="$2"
           right="$2"

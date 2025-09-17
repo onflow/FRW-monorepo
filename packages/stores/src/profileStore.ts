@@ -41,9 +41,7 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 
       // Try to use the new getWalletProfiles method first
       try {
-        console.log('ProfileStore: Attempting to load profiles with getWalletProfiles');
         const walletProfilesData = await flow.getWalletProfiles();
-        console.log('ProfileStore: getWalletProfiles result:', walletProfilesData);
 
         if (!Array.isArray(walletProfilesData.profiles)) {
           throw new Error('Invalid profiles data from bridge');
@@ -51,7 +49,6 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 
         // Clean profile data
         const profiles: WalletProfile[] = walletProfilesData.profiles;
-        console.log('ProfileStore: Using profiles data:', profiles);
 
         set({
           profiles,
@@ -59,14 +56,7 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
           error: null,
         });
       } catch (profileError) {
-        // Fallback to getWalletAccounts if getWalletProfiles is not available
-        console.log(
-          'ProfileStore: getWalletProfiles failed, falling back to getWalletAccounts. Error:',
-          profileError
-        );
-
         const walletAccountsData = await flow.getWalletAccounts();
-        console.log('ProfileStore: walletAccountsData:', walletAccountsData);
 
         if (!walletAccountsData.accounts || !Array.isArray(walletAccountsData.accounts)) {
           throw new Error('Invalid accounts data from bridge');
@@ -81,8 +71,6 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
             accounts: walletAccountsData.accounts,
           },
         ];
-
-        console.log('Fallback profiles created:', profiles);
 
         set({
           profiles,
@@ -117,6 +105,5 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 // Custom hook to get full profiles with their accounts
 export const useAllProfiles = () => {
   const profiles = useProfileStore((state) => state.profiles);
-  console.log('useAllProfiles returning:', profiles);
   return profiles;
 };

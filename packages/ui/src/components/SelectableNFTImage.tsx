@@ -1,6 +1,6 @@
 import { CheckCircle } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, Image } from 'tamagui';
+import { YStack, XStack, Image, Text } from 'tamagui';
 
 export interface SelectableNFTImageProps {
   src: string;
@@ -15,6 +15,9 @@ export interface SelectableNFTImageProps {
   accountEmoji?: string;
   accountAvatar?: string;
   showAccountAvatar?: boolean;
+  // ERC1155 quantity
+  contractType?: string;
+  amount?: number;
 }
 
 export function SelectableNFTImage({
@@ -29,6 +32,8 @@ export function SelectableNFTImage({
   accountEmoji,
   accountAvatar,
   showAccountAvatar = false,
+  contractType,
+  amount,
 }: SelectableNFTImageProps) {
   const getSizeStyles = () => {
     switch (size) {
@@ -76,21 +81,35 @@ export function SelectableNFTImage({
         }
       />
 
-      {/* Selection Indicator */}
-      {selectable && selected && (
-        <YStack
+      {/* ERC1155 Quantity Badge - top left corner */}
+      {contractType === 'ERC1155' && amount && (
+        <XStack
           pos="absolute"
           top={14}
-          right={14}
-          w={30}
-          h={30}
-          onPress={(e) => {
-            e.stopPropagation();
-            onToggleSelection?.();
-          }}
-          cursor="pointer"
+          left={14}
+          bg="#D9D9D9"
+          width={22.26}
+          height={22.26}
+          rounded={11.13}
+          items="center"
+          justify="center"
+          zIndex={1}
         >
+          <Text fontSize={14} fontWeight="600" color="#000000" lineHeight={19.6}>
+            {amount}
+          </Text>
+        </XStack>
+      )}
+
+      {/* Selection Indicator */}
+      {selectable && selected && (
+        <YStack pos="absolute" top={14} right={14} w={30} h={30} cursor="pointer">
           <CheckCircle size={30} color="#00EF8B" />
+        </YStack>
+      )}
+      {selectable && !selected && (
+        <YStack pos="absolute" top={14} right={14} w={30} h={30} cursor="pointer">
+          <CheckCircle size={30} color="gray" />
         </YStack>
       )}
     </YStack>

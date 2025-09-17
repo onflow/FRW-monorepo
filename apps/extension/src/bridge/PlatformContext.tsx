@@ -1,6 +1,7 @@
 import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
+import BN from 'bignumber.js';
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -9,6 +10,7 @@ import { userInfoCachekey, getCachedMainAccounts } from '@/data-model/cache-data
 import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
 import { getLocalData } from '@/data-model/storage';
 import { isValidEthereumAddress } from '@/shared/utils/address';
+import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
@@ -73,6 +75,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     activeAccountType,
     profileIds,
     parentWallet,
+    currentBalance,
   } = useProfiles();
 
   // Send store hooks for synchronization
@@ -80,6 +83,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const setFromAccount = useSendStore((state) => state.setFromAccount);
   const wallet = useWallet();
   const { coins } = useCoins();
+  const currency = useCurrency();
 
   // Use the appropriate NFT hook based on address type
   const isEvmAddress = isValidEthereumAddress(currentWallet?.address || '');
@@ -220,6 +224,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             name: evmName,
             color: evmWallet.color || '#6B7280',
           },
+          parentAddress: mainAddress,
           isActive: false,
         });
       }
@@ -261,8 +266,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           name: currentName,
           type: accountType,
           balance: '0',
-          avatar: currentWallet.icon || '', // Use icon as avatar
-          emoji: currentWallet.icon || '', // Use icon as emoji
+          avatar: currentWallet.icon || '',
+          emoji: currentWallet.icon || '',
           emojiInfo: {
             emoji: currentWallet.icon || '',
             name: currentName,
@@ -340,6 +345,11 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                     emoji: account.evmAccount.icon || '',
                     name: evmName,
                     color: account.evmAccount.color || '#6B7280',
+                  },
+                  parentEmoji: {
+                    emoji: account?.icon || '',
+                    name: account?.name || '',
+                    color: account?.color || '#6B7280',
                   },
                   isActive: false,
                 });
@@ -420,17 +430,37 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         name: selectedName,
         type: activeAccountType,
         balance: '0',
-        avatar: currentWallet.icon || '', // Use icon as avatar
-        emoji: currentWallet.icon || '', // Use icon as emoji
+        avatar: currentWallet.icon || '',
+        emoji: currentWallet.icon || '',
         emojiInfo,
         parentAddress: mainAddress,
         parentEmoji,
       };
     };
 
+    // Add currency override to enhanced platform
+    enhancedPlatform.getCurrency = () => {
+      if (currency && coins && coins.length > 0) {
+        const price = new BN(coins[0].price || 0);
+        const priceInUSD = new BN(coins[0].priceInUSD || 1);
+        const rate = price.div(priceInUSD).toString();
+        return {
+          name: currency.code,
+          symbol: currency.symbol,
+          rate: rate,
+        };
+      } else {
+        return {
+          name: 'USD',
+          symbol: '$',
+          rate: '1',
+        };
+      }
+    };
+
     // Always reinitialize ServiceContext when data changes
     ServiceContext.initialize(enhancedPlatform);
-  }, [platform, coins, userWallets, currentWallet]);
+  }, [platform, coins, userWallets, currentWallet, currency]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
@@ -450,6 +480,25 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (currentWallet && currentWallet.address) {
       // Convert currentWallet to WalletAccount format for send store
+      let nftCount = 0;
+      let balance;
+      if (isEvmAddress) {
+        nftCount =
+          evmNftCollections?.reduce((total, collection) => {
+            return total + (collection.count || 0);
+          }, 0) || 0;
+      } else {
+        nftCount =
+          cadenceNftCollections?.reduce((total, collection) => {
+            return total + (collection.count || 0);
+          }, 0) || 0;
+      }
+
+      // Use the fresh balance data if available
+      const freshBalance = coins?.find((coin) => coin.unit.toLowerCase() === 'flow')?.balance;
+      if (freshBalance) {
+        balance = freshBalance;
+      }
       const walletAccount: WalletAccount = {
         name: currentWallet.name || 'Unnamed Account',
         address: currentWallet.address,
@@ -462,14 +511,24 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         type: activeAccountType === 'none' ? 'main' : activeAccountType, // Default type for extension accounts
         isActive: true,
         id: currentWallet.address,
+        balance,
+        nfts: `${nftCount} NFT${nftCount !== 1 ? 's' : ''}`,
       };
 
-      // Only update if the address has changed
       if (fromAccount?.address !== currentWallet.address) {
         setFromAccount(walletAccount);
       }
     }
-  }, [currentWallet, fromAccount?.address, setFromAccount, activeAccountType]);
+  }, [
+    currentWallet,
+    fromAccount?.address,
+    setFromAccount,
+    activeAccountType,
+    currentBalance,
+    coins,
+    evmNftCollections,
+    cadenceNftCollections,
+  ]);
 
   // Set up extension navigation
   useEffect(() => {

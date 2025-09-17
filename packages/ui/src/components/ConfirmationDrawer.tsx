@@ -1,4 +1,4 @@
-import { ChevronDown, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View, Sheet } from 'tamagui';
@@ -142,16 +142,21 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   };
 
   return (
-    <Sheet modal open={visible} onOpenChange={onClose} snapPointsMode="fit" dismissOnSnapToBottom>
+    <Sheet
+      modal
+      open={visible}
+      onOpenChange={onClose}
+      snapPointsMode={!isExtension ? 'fit' : undefined}
+      dismissOnSnapToBottom
+      snapPoints={isExtension ? [91] : undefined}
+    >
       <Sheet.Overlay
-        animation="lazy"
+        animation={!isExtension ? 'lazy' : undefined}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
         bg="rgba(0,0,0,0.5)"
       />
-
-      <Sheet.Handle bg="$gray8" />
-
+      {!isExtension && <Sheet.Handle bg="$gray8" />}
       <Sheet.Frame
         bg="$bgDrawer"
         borderTopLeftRadius={isExtension ? 0 : '$6'}
@@ -240,6 +245,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 loop={false}
                 speed={1}
               /> */}
+              <WalletCard width={114.62} height={129.195} />
             </View>
           </View>
 
@@ -289,7 +295,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
-                Send Tokens
+                Send NFTs
               </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
@@ -300,6 +306,35 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 borderRadius={14.4}
                 contentPadding={0}
               />
+
+              {/* ERC1155 Quantity Display - Read-only */}
+              {selectedNFTs.length === 1 &&
+                selectedNFTs[0].contractType === 'ERC1155' &&
+                selectedNFTs[0].selectedQuantity && (
+                  <XStack
+                    bg="rgba(255, 255, 255, 0.1)"
+                    rounded="$10"
+                    items="center"
+                    justify="center"
+                    px="$2.5"
+                    py="$1"
+                    width="100%"
+                    mt="$2"
+                  >
+                    <Text
+                      fontSize={18}
+                      fontWeight="600"
+                      color="$white"
+                      letterSpacing={-0.072}
+                      text="center"
+                      flex={1}
+                      numberOfLines={1}
+                      lineHeight={22}
+                    >
+                      {selectedNFTs[0].selectedQuantity.toLocaleString()}
+                    </Text>
+                  </XStack>
+                )}
             </YStack>
           ) : (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
@@ -368,8 +403,8 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             onPress={internalIsSending ? undefined : handleConfirm}
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
-            <Text data-testid="confirm" fontSize="$5" fontWeight="600" color="#000000">
-              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm' : 'Hold to send'}
+            <Text fontSize="$5" fontWeight="600" color="#000000">
+              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm send' : 'Hold to send'}
             </Text>
           </YStack>
         </YStack>

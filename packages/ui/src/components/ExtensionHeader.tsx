@@ -1,4 +1,4 @@
-import { ArrowBack, InfoIcon } from '@onflow/frw-icons';
+import { ArrowBack, Close } from '@onflow/frw-icons';
 import React from 'react';
 import { View, XStack } from 'tamagui';
 
@@ -23,11 +23,10 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
   };
 
   return (
-    <XStack w="100%" h={48} items="center" justify="space-between" px="$4">
+    <XStack width="100%" height={48} items="center" justify="space-between" px="$4" bg="$bgDrawer">
       {/* Left section - Back button (Grid size=1 equivalent) */}
-      <View
-        w={32}
-        h={32}
+      <XStack
+        style={{ width: 32, height: 32 }}
         items="center"
         justify="center"
         onPress={handleGoBack}
@@ -35,35 +34,29 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
         hoverStyle={{ opacity: 0.8 }}
         pressStyle={{ opacity: 0.6 }}
       >
-        <ArrowBack size={20} color="#ffffff" />
-      </View>
+        <ArrowBack size={28} color="rgba(255, 255, 255, 0.8)" />
+      </XStack>
 
       <View flex={1} items="center" justify="center" px="$2">
-        <Text fontSize={16} fontWeight="700" color="$white" textAlign="center" py="$3">
+        <Text fontSize={18} fontWeight="700" color="$white" textAlign="center" py="$3">
           {props.title}
         </Text>
       </View>
-
-      <View w={32} h={32} items="center" justify="center">
-        {props.right
-          ? props.right
-          : props.help && (
-              <View
-                w={32}
-                h={32}
-                items="center"
-                justify="center"
-                onPress={() => {
-                  window.open('https://wallet.flow.com/contact', '_blank');
-                }}
-                cursor="pointer"
-                hoverStyle={{ opacity: 0.8 }}
-                pressStyle={{ opacity: 0.6 }}
-              >
-                <InfoIcon size={20} color="#ffffff" />
-              </View>
-            )}
-      </View>
+      {props.help ? (
+        <XStack
+          style={{ width: 32, height: 32 }}
+          items="center"
+          justify="center"
+          hoverStyle={{ opacity: 0.8 }}
+          pressStyle={{ opacity: 0.6 }}
+          cursor="pointer"
+          onPress={handleGoBack}
+        >
+          <Close size={20} color="rgba(255, 255, 255, 0.8)" />
+        </XStack>
+      ) : (
+        <XStack style={{ width: 32, height: 32 }} items="center" justify="center"></XStack>
+      )}
     </XStack>
   );
 };
