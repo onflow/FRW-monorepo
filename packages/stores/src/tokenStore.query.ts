@@ -9,6 +9,7 @@ import {
   type NFTModel,
 } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
+import { getFlowTokenVault } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
 // Balance data interface
@@ -168,10 +169,11 @@ export const tokenQueries = {
           queryFn: () => tokenQueries.fetchTokens(address, network),
           staleTime: 0, // Always fetch fresh for financial data
         });
-
         // Extract FLOW balance
         const flowToken = tokens.find(
-          (token) => token.symbol === 'FLOW' || token.contractName?.toLowerCase().includes('flow')
+          (token) =>
+            token.identifier === getFlowTokenVault(network as 'mainnet' | 'testnet') ||
+            token.symbol?.toLowerCase() === 'flow'
         );
 
         let balance = '0 FLOW';

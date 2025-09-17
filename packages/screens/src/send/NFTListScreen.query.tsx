@@ -101,7 +101,7 @@ export function NFTListScreen(): React.ReactElement {
       return tokenQueries.fetchNFTCollection(currentAddress!, activeCollection!, network);
     },
     enabled: isQueryEnabled,
-    staleTime: 5 * 60 * 1000, // NFT items can be cached for 5 minutes
+    staleTime: 1 * 60 * 1000, // NFT items can be cached for 1 minutes
     refetchOnWindowFocus: false, // Keep disabled for now
     refetchOnReconnect: false, // Keep disabled for now
     retry: 1, // Only retry once to avoid infinite loops
@@ -125,18 +125,14 @@ export function NFTListScreen(): React.ReactElement {
   // Memoize the NFT data conversion to prevent unnecessary recalculations
   const nftData: NFTData[] = useMemo(() => {
     if (!nfts || !Array.isArray(nfts)) {
-      console.log('Converting NFT data: No NFTs available or invalid data');
       return [];
     }
-    console.log('Converting NFT data:', nfts.length, 'NFTs');
-    console.log('NFTs:', nfts);
     return nfts.map(convertToNFTData);
   }, [nfts, convertToNFTData]);
 
   // Memoize filtered NFTs to prevent unnecessary recalculations
   const filteredNFTs = useMemo(() => {
     if (!Array.isArray(nftData)) {
-      console.log('Filtered NFTs: nftData is not an array, returning empty array');
       return [];
     }
     const filtered = nftData.filter(
@@ -146,7 +142,6 @@ export function NFTListScreen(): React.ReactElement {
         (nft.collection && nft.collection.toLowerCase().includes(searchQuery.toLowerCase())) ||
         nft.id.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log('Filtered NFTs:', filtered.length, 'from', nftData.length);
     return filtered;
   }, [nftData, searchQuery]);
 
