@@ -1,8 +1,8 @@
 import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
-import { Platform } from 'react-native';
-import { YStack, XStack, View, Sheet, Image } from 'tamagui';
+import { Platform, Image as RNImage } from 'react-native';
+import { YStack, XStack, View, Sheet } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
@@ -114,9 +114,6 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
     </View>
   );
 };
-
-// Import the PNG for mobile platforms
-const sendStaticImage = Platform.OS !== 'web' ? require('../assets/images/send_static.png') : null;
 
 export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   visible,
@@ -274,12 +271,11 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               }}
             >
               {/* Wallet Card Icon */}
-              {Platform.OS !== 'web' && sendStaticImage ? (
-                <Image
-                  source={sendStaticImage}
-                  width={114.62}
-                  height={129.195}
-                  objectFit="contain"
+              {Platform.OS !== 'web' ? (
+                <RNImage
+                  source={require('../assets/images/send_static.png')}
+                  style={{ width: 114.62, height: 129.195 }}
+                  resizeMode="contain"
                 />
               ) : (
                 <WalletCard width={114.62} height={129.195} />
