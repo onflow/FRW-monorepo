@@ -88,24 +88,24 @@ export function NFTListScreen(): React.ReactElement {
   // Query is enabled only when we have valid data
   const isQueryEnabled = !!currentAddress && !!activeCollection;
 
-  // 🔥 TanStack Query: Fetch NFTs from collection with intelligent caching
+  // 🔥 TanStack Query: Fetch ALL NFTs from collection with concurrent batching
   const {
     data: nfts = [],
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: queryKey || [],
+    queryKey: queryKey ? [...queryKey, 'all'] : [],
     queryFn: () => {
       // Safe to use non-null assertion due to early returns
-      return tokenQueries.fetchNFTCollection(currentAddress!, activeCollection!, network);
+      return tokenQueries.fetchAllNFTsFromCollection(currentAddress!, activeCollection!, network);
     },
     enabled: isQueryEnabled,
-    staleTime: 1 * 60 * 1000, // NFT items can be cached for 1 minutes
+    staleTime: 10 * 60 * 1000, // All NFTs can be cached longer (10 minutes)
     refetchOnWindowFocus: false, // Keep disabled for now
     refetchOnReconnect: false, // Keep disabled for now
     retry: 1, // Only retry once to avoid infinite loops
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
 
   // Convert NFTModel to NFTData for UI components
@@ -405,6 +405,9 @@ export function NFTListScreen(): React.ReactElement {
             accountAvatar={fromAccount?.avatar}
             accountName={fromAccount?.name}
             accountColor={fromAccount?.emojiInfo?.color}
+            enableVirtualization={true}
+            itemsPerBatch={20}
+            loadMoreThreshold={200}
           />
         </YStack>
 
