@@ -1,10 +1,11 @@
-import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { platform } from '@/bridge/PlatformImpl';
+
 const CloseIcon: React.FC<{ size?: number; color?: string }> = ({
-  size = 22,
+  size = 15,
   color = '#ffffff',
 }) => (
   <Svg width={size} height={size} viewBox="0 0 17 15" fill="none">
@@ -16,14 +17,17 @@ const CloseIcon: React.FC<{ size?: number; color?: string }> = ({
 );
 
 export const NavigationCloseButton: React.FC = () => {
-  const navigation = useNavigation();
+  const handleClose = () => {
+    // Close the React Native workflow
+    platform.closeRN();
+  };
 
   return (
     <Pressable
       style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-      onPress={() => navigation.goBack()}
+      onPress={handleClose}
     >
-      <CloseIcon size={22} color="#ffffff" />
+      <CloseIcon size={15} color="#ffffff" />
     </Pressable>
   );
 };
