@@ -384,7 +384,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack p={20} pt="$2" mb={'$10'}>
           <YStack
             width="100%"
             height={52}

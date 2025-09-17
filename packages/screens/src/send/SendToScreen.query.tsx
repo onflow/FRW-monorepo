@@ -463,7 +463,7 @@ export function SendToScreen(): React.ReactElement {
   const emptyState = getEmptyStateForTab();
 
   return (
-    <BackgroundWrapper>
+    <BackgroundWrapper backgroundColor="$bgDrawer">
       {isExtension && (
         <ExtensionHeader
           title={t('send.sendTo.title', 'Send To')}

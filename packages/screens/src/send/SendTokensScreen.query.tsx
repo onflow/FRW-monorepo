@@ -644,7 +644,7 @@ export const SendTokensScreen = (): React.ReactElement => {
         </YStack>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack pt="$4">
+        <YStack pt="$4" mb={'$10'}>
           <YStack
             width="100%"
             height={52}
