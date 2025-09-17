@@ -1,6 +1,5 @@
-import React from 'react';
-import { XStack, YStack, Text } from 'tamagui';
-
+import React, { useMemo, useState, useCallback } from 'react';
+import { XStack, YStack, Text, ScrollView } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
@@ -50,6 +49,11 @@ export interface NFTGridProps {
   // Layout
   gap?: string;
   aspectRatio?: number;
+
+  // Virtualization options
+  enableVirtualization?: boolean;
+  itemsPerBatch?: number;
+  loadMoreThreshold?: number;
 }
 
 export function NFTGrid({
@@ -72,8 +76,76 @@ export function NFTGrid({
   accountColor,
   gap = '$3',
   aspectRatio = 1,
+  enableVirtualization = true,
+  itemsPerBatch = 20,
+  loadMoreThreshold = 10,
 }: NFTGridProps) {
   const columns = 2;
+
+  // Virtualization state
+  const [visibleItemCount, setVisibleItemCount] = useState(itemsPerBatch);
+
+  // Memoize visible data for performance
+  const visibleData = useMemo(() => {
+    if (!enableVirtualization) {
+      return data;
+    }
+    return data.slice(0, visibleItemCount);
+  }, [data, visibleItemCount, enableVirtualization]);
+
+  // Load more items when scrolling
+  const handleLoadMore = useCallback(() => {
+    if (!enableVirtualization || visibleItemCount >= data.length) {
+      return;
+    }
+
+    const newCount = Math.min(visibleItemCount + itemsPerBatch, data.length);
+    setVisibleItemCount(newCount);
+  }, [enableVirtualization, visibleItemCount, data.length, itemsPerBatch]);
+
+  // Reset visible count when data changes
+  const prevDataLength = React.useRef(data.length);
+  React.useEffect(() => {
+    if (prevDataLength.current !== data.length) {
+      setVisibleItemCount(itemsPerBatch);
+      prevDataLength.current = data.length;
+    }
+  }, [data.length, itemsPerBatch]);
+
+  // Memoized scroll handler
+  const handleScroll = useCallback(
+    (event: any) => {
+      if (!enableVirtualization) return;
+
+      const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent || {};
+      if (!layoutMeasurement || !contentOffset || !contentSize) return;
+
+      const paddingToBottom = loadMoreThreshold;
+      const isCloseToBottom =
+        layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+
+      if (isCloseToBottom && visibleItemCount < data.length) {
+        handleLoadMore();
+      }
+    },
+    [enableVirtualization, loadMoreThreshold, visibleItemCount, data.length, handleLoadMore]
+  );
+
+  // Memoize rows for performance
+  const rows = useMemo(() => {
+    const result: NFTData[][] = [];
+    for (let i = 0; i < visibleData.length; i += columns) {
+      result.push(visibleData.slice(i, i + columns));
+    }
+    return result;
+  }, [visibleData, columns]);
+
+  // Show loading indicator at bottom when loading more
+  const shouldShowLoadMoreIndicator = useMemo(() => {
+    return (
+      enableVirtualization && visibleItemCount < data.length && visibleItemCount > itemsPerBatch
+    );
+  }, [enableVirtualization, visibleItemCount, data.length, itemsPerBatch]);
 
   // Loading skeleton - match the responsive 2-column layout
   const renderSkeleton = () => {
@@ -152,35 +224,52 @@ export function NFTGrid({
     return renderEmpty();
   }
 
-  // Group NFTs into rows
-  const rows: NFTData[][] = [];
-  for (let i = 0; i < data.length; i += columns) {
-    rows.push(data.slice(i, i + columns));
-  }
-
-  // Main grid content
+  // Main grid content with ScrollView
   return (
-    <YStack gap="$4">
-      {rows.map((row, rowIndex) => (
-        <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
-          {row.map((nft) => (
-            <YStack key={nft.id} width="50%" flex={0}>
-              <NFTCard
-                nft={nft}
-                size="medium"
-                selected={selectedIds.includes(nft.id)}
-                onPress={() => onNFTPress(nft.id)}
-                onSelect={() => onNFTSelect(nft.id)}
-                aspectRatio={aspectRatio}
-                accountEmoji={accountEmoji}
-                accountAvatar={accountAvatar}
-                accountName={accountName}
-                accountColor={accountColor}
-              />
-            </YStack>
-          ))}
-        </XStack>
-      ))}
-    </YStack>
+    <ScrollView
+      flex={1}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+      showsVerticalScrollIndicator={true}
+    >
+      <YStack gap="$4" pb="$4" px="$0">
+        {rows.map((row, rowIndex) => (
+          <XStack key={`row-${rowIndex}`} gap="$4" justify="space-between" width="100%" px="$0">
+            {row.map((nft, nftIndex) => (
+              <YStack
+                key={nft.id}
+                flex={1}
+                maxWidth="calc(50% - 8px)"
+                mr={nftIndex === 0 ? '$2' : '$0'}
+                ml={nftIndex === 1 ? '$2' : '$0'}
+              >
+                <NFTCard
+                  nft={nft}
+                  size="medium"
+                  selected={selectedIds.includes(nft.id)}
+                  onPress={() => onNFTPress(nft.id)}
+                  onSelect={() => onNFTSelect(nft.id)}
+                  aspectRatio={aspectRatio}
+                  accountEmoji={accountEmoji}
+                  accountAvatar={accountAvatar}
+                  accountName={accountName}
+                  accountColor={accountColor}
+                />
+              </YStack>
+            ))}
+            {/* Fill empty space if row has only one item */}
+            {row.length === 1 && <YStack flex={1} maxWidth="calc(50% - 8px)" ml="$2" />}
+          </XStack>
+        ))}
+
+        {/* Load more indicator */}
+        {shouldShowLoadMoreIndicator && (
+          <YStack py="$4" items="center" justify="center">
+            <Skeleton width="50%" height="$4" borderRadius="$2" animated />
+            <Skeleton width="30%" height="$3" borderRadius="$2" animated mt="$2" />
+          </YStack>
+        )}
+      </YStack>
+    </ScrollView>
   );
 }
