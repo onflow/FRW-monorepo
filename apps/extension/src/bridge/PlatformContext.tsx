@@ -2,7 +2,7 @@ import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import BN from 'bignumber.js';
-import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { getCachedData } from '@/data-model/cache-data-access';
@@ -511,19 +511,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       if (fromAccount?.address !== currentWallet.address) {
         setFromAccount(walletAccount);
         // Check if we're in a send workflow and navigate to dashboard if so
-        const currentPath = location.pathname;
-        const isInSendWorkflow =
-          currentPath.includes('/nested/send-single-nft') ||
-          currentPath.includes('/nested/send-multiple-nfts') ||
-          currentPath.includes('send-tokens') ||
-          currentPath.endsWith('/send') ||
-          currentPath.includes('/nested') ||
-          currentPath.includes('/tokendetail') ||
-          currentPath.includes('/nftevm/detail');
-
-        if (isInSendWorkflow) {
-          navigate('/dashboard');
-        }
       }
     }
   }, [
@@ -535,8 +522,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     coins,
     evmNftCollections,
     cadenceNftCollections,
-    location.pathname,
-    navigate,
   ]);
 
   // Set up extension navigation

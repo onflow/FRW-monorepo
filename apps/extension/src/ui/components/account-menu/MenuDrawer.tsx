@@ -11,11 +11,7 @@ import {
 import React, { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import {
-  type UserInfoResponse,
-  type MainAccount,
-  type WalletAccount,
-} from '@/shared/types';
+import { type UserInfoResponse, type MainAccount, type WalletAccount } from '@/shared/types';
 import { consoleError } from '@/shared/utils';
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';
@@ -75,6 +71,7 @@ const MenuDrawer = ({
         .setActiveAccount(currentAccount.address, parentAccount?.address || currentAccount.address)
         .then(() => {
           toggleDrawer();
+          navigate('/dashboard');
         });
     },
     [wallet, toggleDrawer]
