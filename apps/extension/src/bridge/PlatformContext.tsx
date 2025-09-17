@@ -524,8 +524,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           currentPath.includes('/nested/send-multiple-nfts') ||
           currentPath.includes('send-tokens') ||
           currentPath.endsWith('/send') ||
-          currentPath.includes('nested/nftlistscreen') ||
-          currentPath.includes('/nested/nftdetailscreenview');
+          currentPath.includes('/nested') ||
+          currentPath.includes('/nftevm/detail');
 
         if (isInSendWorkflow) {
           navigate('/dashboard');
