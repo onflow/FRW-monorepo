@@ -8,7 +8,7 @@ export function BackgroundWrapper({
   ...rest
 }: BackgroundWrapperProps): React.ReactElement {
   return (
-    <YStack flex={1} bg={backgroundColor as any} minH="100vh" {...rest}>
+    <YStack flex={1} px="$4" pb="$4" bg={backgroundColor as any} minH="100vh" {...rest}>
       {children}
     </YStack>
   );

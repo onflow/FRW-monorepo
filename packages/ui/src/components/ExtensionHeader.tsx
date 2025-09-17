@@ -26,7 +26,7 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
   };
 
   return (
-    <XStack width="100%" height={48} items="center" justify="space-between" px="$4" bg="$bgDrawer">
+    <XStack width="100%" height={48} items="center" justify="space-between" bg="$bgDrawer">
       {/* Left section - Back button (Grid size=1 equivalent) */}
       <XStack
         style={{ width: 32, height: 32, borderRadius: 16 }}

@@ -142,7 +142,6 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                   justify="center"
                   width="100%"
                   height={64}
-                  px={12}
                   hoverStyle={{ opacity: 0.7 }}
                 >
                   <XStack items="center" gap="$2" width="100%">
@@ -270,7 +269,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           borderTopLeftRadius={isExtension ? 0 : 16}
           borderTopRightRadius={isExtension ? 0 : 16}
           pt={isExtension ? 0 : 25}
-          px={isExtension ? 16 : 18}
+          px={'$4'}
           pb={isExtension ? 0 : 36}
           animation={isExtension ? 'quick' : 'lazy'}
           enterStyle={{ y: '100%' }}
