@@ -1384,7 +1384,7 @@ export class TransactionService {
     );
     const result = await fcl.query({
       cadence: script,
-      args: (arg, t) => [arg(address, t.Address)],
+      args: (arg, t) => [arg(address, t.String)],
     });
     return result;
   }
