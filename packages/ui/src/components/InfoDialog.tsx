@@ -81,8 +81,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
         w={339}
         minW={300}
         maxW="90%"
-        h={326}
-        minH={300}
+        minH={200}
         maxH="90%"
         bg="#28282A"
         rounded={16}
@@ -94,29 +93,14 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
         pressStyle={{ opacity: 1 }}
         onPress={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <YStack
-          pos="absolute"
-          top={19.56}
-          right={18}
-          w={24}
-          h={24}
-          items="center"
-          justify="center"
-          bg="rgba(0, 0, 0, 0.03)"
-          rounded={12}
-          pressStyle={{ opacity: 0.7 }}
-          onPress={onClose}
-          cursor="pointer"
-          aria-label="Close dialog"
-        >
-          <Close size={10} color="#FFFFFF" />
-        </YStack>
-
-        {/* Content area */}
-        <YStack p={20} pt={60} flex={1} gap={16}>
+        {/* Header with title and close button aligned */}
+        <YStack pos="relative" pt={20} px={20} pb={title ? 16 : 20}>
           {title && (
-            <YStack w="100%" items="center">
+            <YStack
+              w="100%"
+              items="center"
+              px={44} // Left and right padding equal to close button width + spacing (24 + 20 = 44)
+            >
               <Text
                 id="info-dialog-title"
                 fontSize={16}
@@ -129,8 +113,33 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
             </YStack>
           )}
 
+          {/* Close button - aligned with title baseline */}
+          <YStack
+            pos="absolute"
+            top={20}
+            right={20}
+            w={24}
+            h={24}
+            items="center"
+            justify="center"
+            bg="rgba(0, 0, 0, 0.03)"
+            rounded={12}
+            pressStyle={{ opacity: 0.7 }}
+            onPress={onClose}
+            cursor="pointer"
+            aria-label="Close dialog"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Close size={10} color="#FFFFFF" style={{ alignSelf: 'center' }} />
+          </YStack>
+        </YStack>
+
+        {/* Content area - grows with content */}
+        <YStack px={20} pb={20} gap={16}>
           {/* Content */}
-          <YStack flex={1} justify="center" items="center" w="100%" px={10}>
+          <YStack w="100%" items="center" px={10}>
             {children}
           </YStack>
 

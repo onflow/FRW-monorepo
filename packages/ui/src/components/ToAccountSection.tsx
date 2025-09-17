@@ -224,11 +224,16 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         onButtonClick={handleDialogClose}
         onClose={handleDialogClose}
       >
-        <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
-          Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are
-          compatible with EVM apps, and Cadence accounts are compatible with Cadence apps. If an
-          application is on EVM or Cadence, only compatible accounts will be available to connect.
-        </Text>
+        <YStack gap={20} w="100%">
+          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+            Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are
+            compatible with EVM apps, and Cadence accounts are compatible with Cadence apps.
+          </Text>
+          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+            If an application is on EVM or Cadence, only compatible accounts will be available to
+            connect.
+          </Text>
+        </YStack>
       </InfoDialog>
     </YStack>
   );
