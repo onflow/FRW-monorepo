@@ -187,25 +187,17 @@ export const tokenQueries = {
             offset += BATCH_SIZE;
           }
 
-          // Wait for current batch to complete
-          const batchResults = await Promise.allSettled(batchPromises);
-
-          // Process results
+          // Process each promise individually to get real-time progress updates
           let batchHasData = false;
-          for (let i = 0; i < batchResults.length; i++) {
-            const result = batchResults[i];
 
-            // Report progress immediately after each individual request completes
-            if (onProgress && totalCount) {
-              const progress = Math.min((allNFTs.length / totalCount) * 100, 100);
-              onProgress(Math.round(progress), allNFTs.length);
-            }
-
-            if (result.status === 'fulfilled') {
-              const { nfts } = result.value;
+          // Create individual promise handlers that report progress immediately
+          const individualPromises = batchPromises.map(async (promise, index) => {
+            const requestOffset = currentBatchOffsets[index];
+            try {
+              const nfts = await promise;
 
               // Check for duplicates and filter out already seen NFTs
-              const newNfts = nfts.filter((nft) => {
+              const newNfts = nfts.nfts.filter((nft) => {
                 const nftId = nft.id || `${nft.name}-${nft.contractAddress}`;
                 if (nftIds.has(nftId)) {
                   return false;
@@ -216,11 +208,22 @@ export const tokenQueries = {
 
               allNFTs.push(...newNfts);
               batchHasData = true;
-            } else {
+
+              // Report progress immediately after each individual request completes
+              if (onProgress && totalCount) {
+                const progress = Math.min((allNFTs.length / totalCount) * 100, 100);
+                onProgress(Math.round(progress), allNFTs.length);
+              }
+
+              return { nfts, offset: requestOffset, success: true };
+            } catch (error) {
               hasMore = false;
-              break;
+              return { nfts: [], offset: requestOffset, success: false, error };
             }
-          }
+          });
+
+          // Wait for all individual promises to complete
+          await Promise.allSettled(individualPromises);
 
           if (!batchHasData) {
             hasMore = false;
