@@ -127,7 +127,7 @@ export interface TokenAmountInputProps {
 }
 
 export interface AddressTextProps extends Omit<TextProps, 'children'> {
-  address: string;
+  address: string | undefined | null;
   truncate?: boolean;
   startLength?: number;
   endLength?: number;
