@@ -36,11 +36,17 @@ import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ScreenAssets } from '../assets/images';
+
+interface SendTokensScreenProps {
+  assets?: ScreenAssets;
+}
+
 /**
  * Query-integrated version of SendTokensScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export const SendTokensScreen = (): React.ReactElement => {
+export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
@@ -552,7 +558,7 @@ export const SendTokensScreen = (): React.ReactElement => {
             )}
             <Separator
               mx="$0"
-              my="$0"
+              mt="$2"
               mb="$2"
               borderColor="rgba(255, 255, 255, 0.1)"
               borderWidth={0.5}
@@ -696,6 +702,7 @@ export const SendTokensScreen = (): React.ReactElement => {
           visible={isConfirmationVisible}
           transactionType={transactionType}
           selectedToken={selectedToken}
+          sendStaticImage={assets?.sendStaticImage}
           selectedNFTs={selectedNFTs?.map((nft) => ({
             id: nft.id || '',
             name: nft.name || '',

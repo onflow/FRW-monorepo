@@ -38,11 +38,17 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ScreenAssets } from '../assets/images';
+
+interface SendSingleNFTScreenProps {
+  assets?: ScreenAssets;
+}
+
 /**
  * Query-integrated version of SendSingleNFTScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export function SendSingleNFTScreen(): React.ReactElement {
+export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
 
@@ -416,6 +422,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
           visible={isConfirmationVisible}
           transactionType="single-nft"
           selectedToken={null}
+          sendStaticImage={assets?.sendStaticImage}
           selectedNFTs={
             selectedNFT
               ? [

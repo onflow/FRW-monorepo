@@ -38,11 +38,17 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ScreenAssets } from '../assets/images';
+
+interface SendMultipleNFTsScreenProps {
+  assets?: ScreenAssets;
+}
+
 /**
  * Query-integrated version of SendMultipleNFTsScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export function SendMultipleNFTsScreen(): React.ReactElement {
+export function SendMultipleNFTsScreen({ assets }: SendMultipleNFTsScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
 
@@ -352,6 +358,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
           visible={isConfirmationVisible}
           transactionType="multiple-nfts"
           selectedToken={null}
+          sendStaticImage={assets?.sendStaticImage}
           selectedNFTs={nftsForUI}
           fromAccount={transformAccountForDisplay(fromAccount)}
           toAccount={transformAccountForDisplay(toAccount)}

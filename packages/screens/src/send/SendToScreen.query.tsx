@@ -79,9 +79,28 @@ export function SendToScreen(): React.ReactElement {
     // Only load if we haven't loaded yet and we're not currently loading
     if (!profilesLoadedRef.current && !isLoadingProfiles && !profileError) {
       profilesLoadedRef.current = true;
+      console.log('📊 [SendToScreen] Loading profiles from bridge...');
       loadProfilesFromBridge();
     }
   }, [isLoadingProfiles, loadProfilesFromBridge, profileError]);
+
+  // Debug: Log profiles when they change
+  useEffect(() => {
+    console.log('📊 [SendToScreen] All profiles loaded:', {
+      profilesCount: allProfiles.length,
+      profiles: allProfiles.map(profile => ({
+        uid: profile.uid,
+        name: profile.name,
+        accountsCount: profile.accounts.length,
+        accounts: profile.accounts.map(acc => ({
+          name: acc.name,
+          address: acc.address,
+          type: acc.type,
+          parentAddress: acc.parentAddress
+        }))
+      }))
+    });
+  }, [allProfiles]);
 
   // Query for recent contacts with automatic caching
   const {
