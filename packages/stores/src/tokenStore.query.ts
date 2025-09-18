@@ -203,7 +203,6 @@ export const tokenQueries = {
               hasMore = false;
               break;
             }
-
             if (result.status === 'fulfilled') {
               const { nfts } = result.value;
 
@@ -247,6 +246,7 @@ export const tokenQueries = {
               }
             } else {
               hasMore = false;
+              break;
             }
           }
 
@@ -310,6 +310,7 @@ export const tokenQueries = {
             // Additional safety: If we got duplicates, might be hitting repeat data
             if (newNfts.length < nfts.length) {
               const duplicateCount = nfts.length - newNfts.length;
+
               // If more than 50% duplicates, stop to avoid infinite loop
               if (duplicateCount > nfts.length / 2) {
                 hasMore = false;
@@ -318,18 +319,11 @@ export const tokenQueries = {
             }
           } catch (error) {
             hasMore = false;
-            return { nfts: [], offset: requestOffset, success: false, error };
+            break;
           }
+
+          batchNumber++;
         }
-
-        // Wait for all individual promises to complete
-        await Promise.allSettled(individualPromises);
-
-        if (!batchHasData) {
-          hasMore = false;
-        }
-
-        batchNumber++;
       }
 
       return allNFTs;
