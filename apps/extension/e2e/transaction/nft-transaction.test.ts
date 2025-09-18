@@ -16,6 +16,7 @@ import {
 import { test } from '../utils/loader';
 
 const senderChildAddr = process.env.TEST_SENDER_CHILD_ADDR!;
+const senderChildAddr2 = process.env.TEST_SENDER_CHILD_ADDR2!;
 
 export const sendNFT = async ({ page, collectionName, receiver, successtext }) => {
   // Wait for the EVM account to be loaded
@@ -84,7 +85,7 @@ test.beforeEach(async ({ page, extensionId }) => {
   });
 });
 
-test('NFT transactions', async ({ page, extensionId }) => {
+test('NFT to flow', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -115,7 +116,7 @@ test('NFT transactions', async ({ page, extensionId }) => {
   );
 });
 
-test('NFT transactions to Coa', async ({ page, extensionId }) => {
+test('NFT to Coa', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -150,7 +151,7 @@ test('NFT transactions to Coa', async ({ page, extensionId }) => {
   );
 });
 
-test('NFT transactions Coa to Coa', async ({ page, extensionId }) => {
+test('NFT Coa to Coa', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -191,7 +192,7 @@ test('NFT transactions Coa to Coa', async ({ page, extensionId }) => {
   );
 });
 
-test('NFT transactions to Flow', async ({ page, extensionId }) => {
+test('NFT to Flow', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -232,7 +233,7 @@ test('NFT transactions to Flow', async ({ page, extensionId }) => {
   );
 });
 
-test('multi NFT transactions to Flow', async ({ page, extensionId }) => {
+test('multi NFT to Flow', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -274,7 +275,7 @@ test('multi NFT transactions to Flow', async ({ page, extensionId }) => {
   );
 });
 
-test('NFT 1155 transactions to Flow', async ({ page, extensionId }) => {
+test('NFT 1155 transactions to evm', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -317,7 +318,7 @@ test('NFT 1155 transactions to Flow', async ({ page, extensionId }) => {
 
 // child account nft test
 
-test('NFT transactions to child', async ({ page, extensionId }) => {
+test('NFT to child', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -368,7 +369,7 @@ test('NFT transactions to child', async ({ page, extensionId }) => {
   );
 });
 
-test('NFT transactions from evm to child', async ({ page, extensionId }) => {
+test('NFT from evm to child', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -410,7 +411,7 @@ test('NFT transactions from evm to child', async ({ page, extensionId }) => {
 });
 
 // test child sender
-test('NFT transactions from child to others', async ({ page, extensionId }) => {
+test('NFT from child to evm', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
@@ -425,11 +426,12 @@ test('NFT transactions from child to others', async ({ page, extensionId }) => {
     address: senderChildAddr,
   });
 
-  const tx1 = await sendNFT({
+  const tx1 = await sendNFTs({
     page,
     collectionName: 'FLOAT',
-    receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
     successtext: /success|Finalized|Executed|Sealed/,
+    idx: ['0'],
   });
 
   txList.push(tx1);
@@ -437,9 +439,9 @@ test('NFT transactions from child to others', async ({ page, extensionId }) => {
   const tx2 = await sendNFTs({
     page,
     collectionName: 'FLOAT',
-    receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     successtext: /success|Finalized|Executed|Sealed/,
-    idx: ['1'],
+    idx: ['1', '2'],
   });
 
   txList.push(tx2);
@@ -454,6 +456,80 @@ test('NFT transactions from child to others', async ({ page, extensionId }) => {
         page,
         txId: tx.txId,
         collectionName: 'FLOAT',
+        sealedText: 'Sealed',
+        isEvm: true,
+      });
+    })
+  );
+});
+
+// test child sender to child
+test('NFT from child to child', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  const txList: { txId: string; collectionName: string }[] = [];
+
+  //Send NFT to sender COA
+  await switchToChildAccount({
+    page,
+    address: senderChildAddr,
+  });
+
+  const tx1 = await sendNFT({
+    page,
+    collectionName: 'NBA Top Shot',
+    receiver: senderChildAddr2,
+    successtext: /success|Finalized|Executed|Sealed/,
+  });
+
+  txList.push(tx1);
+
+  // Go to the activity page
+  await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
+  await page.waitForURL(/.*\/dashboard.*/);
+  // Check the amounts that were sent for each transaction
+  await Promise.all(
+    txList.map(async (tx) => {
+      await checkNFTTrx({
+        page,
+        txId: tx.txId,
+        collectionName: 'NBA Top Shot',
+        sealedText: 'Sealed',
+        isEvm: true,
+      });
+    })
+  );
+});
+
+// test child sender back to main
+test('NFT from child to child back', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  const txList: { txId: string; collectionName: string }[] = [];
+
+  //Send NFT to sender COA
+  await switchToChildAccount({
+    page,
+    address: senderChildAddr2,
+  });
+
+  const tx1 = await sendNFT({
+    page,
+    collectionName: 'NBA Top Shot',
+    receiver: senderChildAddr,
+    successtext: /success|Finalized|Executed|Sealed/,
+  });
+
+  txList.push(tx1);
+
+  // Go to the activity page
+  await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
+  await page.waitForURL(/.*\/dashboard.*/);
+  // Check the amounts that were sent for each transaction
+  await Promise.all(
+    txList.map(async (tx) => {
+      await checkNFTTrx({
+        page,
+        txId: tx.txId,
+        collectionName: 'NBA Top Shot',
         sealedText: 'Sealed',
         isEvm: true,
       });
