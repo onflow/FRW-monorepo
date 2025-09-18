@@ -36,7 +36,9 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
     try {
       const flow = flowService();
+      console.log('📊 [WalletStore] Fetching wallet accounts from bridge...');
       const walletAccountsData = await flow.getWalletAccounts();
+      console.log('📊 [WalletStore] Wallet accounts data from bridge:', walletAccountsData);
 
       if (!Array.isArray(walletAccountsData.accounts)) {
         throw new Error('Invalid accounts data from bridge');
@@ -44,6 +46,16 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
 
       // Clean account data - only identity information
       const accounts: WalletAccount[] = walletAccountsData.accounts;
+      console.log('📊 [WalletStore] Processed accounts:', {
+        accountsCount: accounts.length,
+        accounts: accounts.map(a => ({
+          name: a.name,
+          address: a.address,
+          type: a.type,
+          parentAddress: a.parentAddress,
+          isActive: a.isActive
+        }))
+      });
 
       // Find active account
       const activeAccount = accounts.find((acc) => acc.isActive) || accounts[0] || null;
@@ -55,6 +67,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
         error: null,
       });
     } catch (error) {
+      console.error('📊 [WalletStore] Error loading accounts:', error);
       set({
         accounts: [],
         activeAccount: null,

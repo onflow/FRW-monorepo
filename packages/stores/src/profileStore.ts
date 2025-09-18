@@ -41,7 +41,9 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 
       // Try to use the new getWalletProfiles method first
       try {
+        console.log('📊 [ProfileStore] Attempting to fetch wallet profiles from bridge...');
         const walletProfilesData = await flow.getWalletProfiles();
+        console.log('📊 [ProfileStore] Wallet profiles data from bridge:', walletProfilesData);
 
         if (!Array.isArray(walletProfilesData.profiles)) {
           throw new Error('Invalid profiles data from bridge');
@@ -49,6 +51,20 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
 
         // Clean profile data
         const profiles: WalletProfile[] = walletProfilesData.profiles;
+        console.log('📊 [ProfileStore] Processed profiles:', {
+          profilesCount: profiles.length,
+          profiles: profiles.map(p => ({
+            uid: p.uid,
+            name: p.name,
+            accountsCount: p.accounts.length,
+            accounts: p.accounts.map(a => ({
+              name: a.name,
+              address: a.address,
+              type: a.type,
+              parentAddress: a.parentAddress
+            }))
+          }))
+        });
 
         set({
           profiles,
@@ -56,7 +72,9 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
           error: null,
         });
       } catch (profileError) {
+        console.log('📊 [ProfileStore] getWalletProfiles failed, falling back to getWalletAccounts:', profileError);
         const walletAccountsData = await flow.getWalletAccounts();
+        console.log('📊 [ProfileStore] Wallet accounts data from bridge:', walletAccountsData);
 
         if (!walletAccountsData.accounts || !Array.isArray(walletAccountsData.accounts)) {
           throw new Error('Invalid accounts data from bridge');
@@ -71,6 +89,20 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
             accounts: walletAccountsData.accounts,
           },
         ];
+        console.log('📊 [ProfileStore] Processed profiles from accounts fallback:', {
+          profilesCount: profiles.length,
+          profiles: profiles.map(p => ({
+            uid: p.uid,
+            name: p.name,
+            accountsCount: p.accounts.length,
+            accounts: p.accounts.map(a => ({
+              name: a.name,
+              address: a.address,
+              type: a.type,
+              parentAddress: a.parentAddress
+            }))
+          }))
+        });
 
         set({
           profiles,
@@ -79,6 +111,7 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
         });
       }
     } catch (error) {
+      console.error('📊 [ProfileStore] Error loading profiles:', error);
       set({
         profiles: [],
         isLoading: false,
