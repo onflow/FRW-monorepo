@@ -160,22 +160,9 @@ export const tokenQueries = {
       // Calculate maximum offset needed if we have total count
       const maxOffset = totalCount ? Math.ceil(totalCount / BATCH_SIZE) * BATCH_SIZE : undefined;
 
-      logger.info('[TokenQuery] Starting concurrent NFT collection fetch:', {
-        address,
-        collection: collection.name,
-        network,
-        batchSize: BATCH_SIZE,
-        maxConcurrent: MAX_CONCURRENT,
-        totalCount,
-        maxOffset,
-      });
-
       while (hasMore) {
         // If we have a total count and we've reached the max offset, stop
         if (totalCount && maxOffset && offset >= maxOffset) {
-          logger.debug(
-            `[TokenQuery] Reached max offset (${maxOffset}) for total count (${totalCount}), stopping fetch`
-          );
           hasMore = false;
           break;
         }
@@ -193,14 +180,6 @@ export const tokenQueries = {
           batchPromises.push(nftSvc.getNFTs(address, collection, offset, BATCH_SIZE));
           offset += BATCH_SIZE;
         }
-
-        logger.debug(
-          `[TokenQuery] Executing batch ${batchNumber} with ${batchPromises.length} concurrent requests:`,
-          {
-            offsets: currentBatchOffsets,
-            totalNFTsSoFar: allNFTs.length,
-          }
-        );
 
         // Process each promise individually to get real-time progress updates
         let batchHasData = false;
@@ -235,7 +214,6 @@ export const tokenQueries = {
 
             return { nfts, offset: requestOffset, success: true };
           } catch (error) {
-            logger.error(`[TokenQuery] Request failed at offset ${requestOffset}:`, error);
             hasMore = false;
             return { nfts: [], offset: requestOffset, success: false, error };
           }
@@ -248,22 +226,8 @@ export const tokenQueries = {
           hasMore = false;
         }
 
-        logger.debug(`[TokenQuery] Batch ${batchNumber} completed:`, {
-          batchResults: individualPromises.length,
-          totalNFTs: allNFTs.length,
-          hasMore,
-        });
-
         batchNumber++;
       }
-
-      logger.info('[TokenQuery] Completed concurrent NFT collection fetch:', {
-        address,
-        collection: collection.name,
-        network,
-        totalNFTs: allNFTs.length,
-        totalBatches: batchNumber - 1,
-      });
 
       return allNFTs;
     } catch (error: unknown) {
