@@ -9,7 +9,7 @@ import {
   storageQueries,
   storageUtils,
 } from '@onflow/frw-stores';
-import { isFlow } from '@onflow/frw-types';
+import { isFlow, Platform } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -388,6 +388,12 @@ export const SendTokensScreen = (): React.ReactElement => {
         await addressBookStore.setRecentContact(recentContact);
       } catch (error) {
         logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+      }
+
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (platform === Platform.iOS || platform === Platform.Android) {
+        bridge.closeRN();
       }
     }
 

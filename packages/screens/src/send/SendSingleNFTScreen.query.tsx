@@ -1,4 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
+import { Platform } from '@onflow/frw-types';
 import {
   useSendStore,
   sendSelectors,
@@ -235,7 +236,13 @@ export function SendSingleNFTScreen(): React.ReactElement {
       if (!isExtension) {
         setIsConfirmationVisible(false);
       }
-      await executeTransaction();
+      const result = await executeTransaction();
+
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (result && (platform === Platform.iOS || platform === Platform.Android)) {
+        bridge.closeRN();
+      }
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendSingleNFTScreen] Transaction failed:', error);

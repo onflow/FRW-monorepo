@@ -1,4 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
+import { Platform } from '@onflow/frw-types';
 import {
   useSendStore,
   sendSelectors,
@@ -172,7 +173,13 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
       if (!isExtension) {
         setIsConfirmationVisible(false);
       }
-      await executeTransaction();
+      const result = await executeTransaction();
+
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (result && (platform === Platform.iOS || platform === Platform.Android)) {
+        bridge.closeRN();
+      }
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
@@ -192,7 +199,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         const isEnabled = await bridge.isFreeGasEnabled?.();
         setIsFreeGasEnabled(isEnabled ?? true);
       } catch (error) {
-        console.error('Failed to check free gas status:', error);
         // Default to enabled if we can't determine the status
         setIsFreeGasEnabled(true);
       }

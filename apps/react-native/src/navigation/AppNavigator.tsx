@@ -95,12 +95,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       }
       try {
         if (sendToConfig.fromAccount) {
-          console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
           setFromAccount(walletAccount);
         }
         if (sendToConfig.selectedToken) {
-          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
           // Convert to TokenInfo type
           const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
@@ -109,7 +107,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
         if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
           // Set selected NFTs if provided
-          console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
           const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
           setSelectedNFTs(nftModels);
         }
@@ -131,7 +128,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setCurrentStep('send-to');
         }
       } catch (error) {
-        console.error('Failed to initialize SendTo flow:', error);
+      //  console.error('Failed to initialize SendTo flow:', error);
       }
     }
   }, [

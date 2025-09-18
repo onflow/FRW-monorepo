@@ -128,6 +128,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   title = 'Summary',
   isSending = false,
   isExtension = false,
+  sendStaticImage,
 }) => {
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
@@ -136,7 +137,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
-      console.error('Transaction failed:', error);
+      //
     } finally {
       setInternalIsSending(false);
     }
@@ -271,9 +272,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               }}
             >
               {/* Wallet Card Icon */}
-              {Platform.OS !== 'web' ? (
+              {Platform.OS !== 'web' && sendStaticImage ? (
                 <RNImage
-                  source={require('../assets/images/send_static.png')}
+                  source={sendStaticImage}
                   style={{ width: 114.62, height: 129.195 }}
                   resizeMode="contain"
                 />
