@@ -180,13 +180,10 @@ class EvmNFTProvider implements NFTProvider {
         endpoint: '/api/v3/evm/nft/collectionList',
       });
 
-      // For EVM API, convert string offset to number, empty string becomes 0
-      const numericOffset = offset ? parseInt(offset, 10) : 0;
-
       const res = await FlowEvmNftService.collectionList({
         address,
         collectionIdentifier: collection.id || '',
-        offset: numericOffset,
+        offset,
         limit,
       });
 
