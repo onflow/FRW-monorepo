@@ -383,8 +383,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             // Create profile object with the specific data
             const profile = {
               name:
-                (profileUserInfo as any)?.username ||
                 (profileUserInfo as any)?.nickname ||
+                (profileUserInfo as any)?.username ||
                 `Profile ${profileId}`,
               avatar: (profileUserInfo as any)?.avatar || '',
               uid: profileId,
