@@ -188,8 +188,8 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = useMemo(() => {
-    return storageUtils.getStorageWarningMessage(validationResult.warningType);
-  }, [validationResult.warningType, accountInfo]);
+    return t(storageUtils.getStorageWarningMessageKey(validationResult.warningType));
+  }, [validationResult.warningType, accountInfo, t]);
 
   // Calculate if send button should be disabled
   const isSendDisabled =
@@ -365,6 +365,13 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
                 onEditPress={handleEditAccountPress}
                 showEditButton={true}
                 isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                incompatibleAccountText={t('account.compatibility.incompatible')}
+                learnMoreText={t('account.compatibility.learnMore')}
+                unknownAccountText={t('account.compatibility.unknown')}
+                dialogTitle={t('account.compatibility.dialog.title')}
+                dialogButtonText={t('account.compatibility.dialog.button')}
+                dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+                dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
               />
               </YStack>
             )}
@@ -387,7 +394,7 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
                 <StorageWarning
                   message={storageWarningMessage}
                   showIcon={true}
-                  title="Storage warning"
+                  title={t('storage.warning.title')}
                   visible={true}
                 />
               )}

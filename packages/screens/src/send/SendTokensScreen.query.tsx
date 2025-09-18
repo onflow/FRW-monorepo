@@ -219,7 +219,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, [accountInfo, amount, selectedToken]);
 
   const showStorageWarning = validationResult.showWarning;
-  const storageWarningMessage = storageUtils.getStorageWarningMessage(validationResult.warningType);
+  const storageWarningMessage = t(
+    storageUtils.getStorageWarningMessageKey(validationResult.warningType)
+  );
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
@@ -614,6 +616,13 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               showEditButton={showEditButtons}
               title={t('send.toAccount')}
               isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+              incompatibleAccountText={t('account.compatibility.incompatible')}
+              learnMoreText={t('account.compatibility.learnMore')}
+              unknownAccountText={t('account.compatibility.unknown')}
+              dialogTitle={t('account.compatibility.dialog.title')}
+              dialogButtonText={t('account.compatibility.dialog.button')}
+              dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+              dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
             />
           )}
 
@@ -634,7 +643,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               <StorageWarning
                 message={storageWarningMessage}
                 showIcon={true}
-                title="Storage warning"
+                title={t('storage.warning.title')}
                 visible={true}
               />
             )}

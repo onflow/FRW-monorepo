@@ -237,21 +237,23 @@ export const storageUtils = {
   },
 
   /**
-   * Get storage warning message based on validation result
+   * Get storage warning message keys based on validation result
+   * @param warningType - Type of warning to get the i18n key for
+   * @returns i18n key for the warning message
    */
-  getStorageWarningMessage: (
+  getStorageWarningMessageKey: (
     warningType: 'balance' | 'storage' | 'storage_after_action' | null
   ): string => {
     switch (warningType) {
       case 'balance':
-        return 'Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.';
+        return 'storage.warning.balance';
 
       case 'storage': {
-        return 'This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. ';
+        return 'storage.warning.storage';
       }
 
       case 'storage_after_action':
-        return 'Account balance will fall below the minimum FLOW required for storage after this transaction, causing this transaction to fail.';
+        return 'storage.warning.storageAfterAction';
 
       default:
         return '';

@@ -1,6 +1,10 @@
 /** Generate by swagger-axios-codegen */
 // @ts-nocheck
 /* eslint-disable */
+
+/** Generate by swagger-axios-codegen */
+/* eslint-disable */
+// @ts-nocheck
 import axiosStatic, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 
 export interface IRequestOptions extends AxiosRequestConfig {
@@ -39,11 +43,7 @@ export interface ServiceOptions {
 export const serviceOptions: ServiceOptions = {};
 
 // Instance selector
-export function axios(
-  configs: IRequestConfig,
-  resolve: (p: any) => void,
-  reject: (p: any) => void
-): Promise<any> {
+export function axios(configs: IRequestConfig, resolve: (p: any) => void, reject: (p: any) => void): Promise<any> {
   if (serviceOptions.axios) {
     return serviceOptions.axios
       .request(configs)
@@ -58,22 +58,17 @@ export function axios(
   }
 }
 
-export function getConfigs(
-  method: string,
-  contentType: string,
-  url: string,
-  options: any
-): IRequestConfig {
+export function getConfigs(method: string, contentType: string, url: string, options: any): IRequestConfig {
   const configs: IRequestConfig = {
     loading: serviceOptions.loading,
     showError: serviceOptions.showError,
     ...options,
     method,
-    url,
+    url
   };
   configs.headers = {
     ...options.headers,
-    'Content-Type': contentType,
+    'Content-Type': contentType
   };
   return configs;
 }
@@ -186,7 +181,7 @@ export class AccountService {
         address: params['address'],
         limit: params['limit'],
         after: params['after'],
-        token: params['token'],
+        token: params['token']
       };
 
       axios(configs, resolve, reject);
@@ -210,11 +205,7 @@ export class AccountService {
       let url = basePath + '/api/v1/account/transfers';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
-      configs.params = {
-        address: params['address'],
-        limit: params['limit'],
-        after: params['after'],
-      };
+      configs.params = { address: params['address'], limit: params['limit'], after: params['after'] };
 
       axios(configs, resolve, reject);
     });
@@ -242,7 +233,7 @@ export class AccountService {
 
 export class NftService {
   /**
-   * Get specific collection NFT under flow address with pagination
+   * Get a list of NFTs from a specific collection under a FLOW address
    */
   static collectionList(
     params: {
@@ -265,14 +256,14 @@ export class NftService {
         address: params['address'],
         collectionIdentifier: params['collectionIdentifier'],
         offset: params['offset'],
-        limit: params['limit'],
+        limit: params['limit']
       };
 
       axios(configs, resolve, reject);
     });
   }
   /**
-   * Get list of NFT collections
+   * Get a list of ALL the Cadence NFT collections on the Flow network
    */
   static collections(options: IRequestOptions = {}): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -284,7 +275,7 @@ export class NftService {
     });
   }
   /**
-   * Get NFT collections with IDs for an address
+   * Get a list of the NFT collections and the ids of the nfts owned in each by an account on the Flow network
    */
   static id(
     params: {
@@ -303,7 +294,7 @@ export class NftService {
     });
   }
   /**
-   * Get all NFTs under flow address with pagination
+   * Get a list of Nfts owned by an account on the Flow network across all collections
    */
   static list(
     params: {
@@ -320,11 +311,7 @@ export class NftService {
       let url = basePath + '/api/v2/nft/list';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
-      configs.params = {
-        address: params['address'],
-        offset: params['offset'],
-        limit: params['limit'],
-      };
+      configs.params = { address: params['address'], offset: params['offset'], limit: params['limit'] };
 
       axios(configs, resolve, reject);
     });
@@ -423,7 +410,7 @@ export class UserFtTokensService {
 
 export class FlowEvmNftService {
   /**
-   * Get specific collection NFT under flow-EVM address with pagination
+   * Get a list of NFTs from a specific collection under a EVM address
    */
   static collectionList(
     params: {
@@ -431,8 +418,8 @@ export class FlowEvmNftService {
       address: string;
       /** Collection identifier */
       collectionIdentifier: string;
-      /** Number of records to skip */
-      offset?: number;
+      /** Offset string of records to skip */
+      offset?: string;
       /** Maximum number of records to return */
       limit?: number;
     } = {} as any,
@@ -446,14 +433,14 @@ export class FlowEvmNftService {
         address: params['address'],
         collectionIdentifier: params['collectionIdentifier'],
         offset: params['offset'],
-        limit: params['limit'],
+        limit: params['limit']
       };
 
       axios(configs, resolve, reject);
     });
   }
   /**
-   * Get all NFT collections for an address
+   * Get a list of EVM NFT collections and ids of NFTs owned in each collection by an account
    */
   static id(
     params: {
@@ -470,17 +457,13 @@ export class FlowEvmNftService {
       let url = basePath + '/api/v3/evm/nft/id';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
-      configs.params = {
-        address: params['address'],
-        offset: params['offset'],
-        limit: params['limit'],
-      };
+      configs.params = { address: params['address'], offset: params['offset'], limit: params['limit'] };
 
       axios(configs, resolve, reject);
     });
   }
   /**
-   * Get NFTs for an address
+   * Get a list of NFTs owned by an account on the EVM network across all collections
    */
   static list(
     params: {
@@ -497,11 +480,7 @@ export class FlowEvmNftService {
       let url = basePath + '/api/v3/evm/nft/list';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
-      configs.params = {
-        address: params['address'],
-        offset: params['offset'],
-        limit: params['limit'],
-      };
+      configs.params = { address: params['address'], offset: params['offset'], limit: params['limit'] };
 
       axios(configs, resolve, reject);
     });
@@ -681,7 +660,7 @@ export interface CadenceTokenDataWithCurrency {
 /** Structure of the successful API response. */
 export interface CadenceFTApiResponseWithCurrencyInData {
   /**  */
-  data?: CadenceFTApiResponseWithCurrency;
+  data?: object;
 }
 
 /** Structure of the successful API response. */
@@ -1340,5 +1319,5 @@ export interface NFTListResponse {
 
 export enum Network {
   'mainnet' = 'mainnet',
-  'testnet' = 'testnet',
+  'testnet' = 'testnet'
 }
