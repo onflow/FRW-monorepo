@@ -2,7 +2,7 @@ import { Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Platform, Modal } from 'react-native';
-import { YStack, Stack } from 'tamagui';
+import { YStack, Stack, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -29,6 +29,8 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
   buttonText,
   onButtonClick,
 }) => {
+  const theme = useTheme();
+
   // Handle escape key press and body scroll prevention
   useEffect(() => {
     // Only run in browser environment
@@ -67,7 +69,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
       left={0}
       right={0}
       bottom={0}
-      bg="rgba(0, 0, 0, 0.5)"
+      bg="$dark40"
       z={1000}
       items="center"
       justify="center"
@@ -83,9 +85,9 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
         maxW="90%"
         minH={200}
         maxH="90%"
-        bg="#28282A"
+        bg="$bg2"
         rounded={16}
-        shadowColor="rgba(0, 0, 0, 0.25)"
+        shadowColor="$shadow"
         shadowOffset={{ width: 0, height: 5 }}
         shadowOpacity={0.25}
         shadowRadius={12}
@@ -101,13 +103,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
               items="center"
               px={44} // Left and right padding equal to close button width + spacing (24 + 20 = 44)
             >
-              <Text
-                id="info-dialog-title"
-                fontSize={16}
-                fontWeight="600"
-                color="$white"
-                ta="center"
-              >
+              <Text id="info-dialog-title" fontSize="$4" fontWeight="600" color="$text" ta="center">
                 {title}
               </Text>
             </YStack>
@@ -122,7 +118,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
             h={24}
             items="center"
             justify="center"
-            bg="rgba(0, 0, 0, 0.03)"
+            bg="$dark5"
             rounded={12}
             pressStyle={{ opacity: 0.7 }}
             onPress={onClose}
@@ -132,14 +128,14 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Close size={10} color="#FFFFFF" style={{ alignSelf: 'center' }} />
+            <Close size={10} color={theme.white.val} style={{ alignSelf: 'center' }} />
           </YStack>
         </YStack>
 
         {/* Content area - grows with content */}
-        <YStack px={20} pb={20} gap={16}>
+        <YStack px="$5" pb="$5" gap="$4">
           {/* Content */}
-          <YStack w="100%" items="center" px={10}>
+          <YStack w="100%" items="center" px="$2.5">
             {children}
           </YStack>
 
@@ -147,13 +143,13 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
           {buttonText && (
             <YStack
               self="stretch"
-              h={44}
+              h="$11"
               bg="$white"
-              rounded={12}
+              rounded="$3"
               items="center"
               justify="center"
-              px={16}
-              py={12}
+              px="$4"
+              py="$3"
               pressStyle={{ opacity: 0.8 }}
               onPress={onButtonClick}
               cursor="pointer"
@@ -164,7 +160,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
                 lineHeight={20}
                 letterSpacing={0}
                 ta="center"
-                color="rgba(0, 0, 0, 0.9)"
+                color="$dark80"
               >
                 {buttonText}
               </Text>

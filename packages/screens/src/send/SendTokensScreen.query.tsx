@@ -618,6 +618,13 @@ export const SendTokensScreen = (): React.ReactElement => {
               showEditButton={showEditButtons}
               title={t('send.toAccount')}
               isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+              incompatibleAccountText={t('account.compatibility.incompatible')}
+              learnMoreText={t('account.compatibility.learnMore')}
+              unknownAccountText={t('account.compatibility.unknown')}
+              dialogTitle={t('account.compatibility.dialog.title')}
+              dialogButtonText={t('account.compatibility.dialog.button')}
+              dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+              dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
             />
           )}
 

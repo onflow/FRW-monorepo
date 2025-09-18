@@ -133,5 +133,18 @@
       "storage": "This action may fail because it may reduce the amount of FLOW in your account below what is required to cover its storage usage.",
       "storageAfterAction": "Account balance will fall below the minimum FLOW required for storage after this transaction, causing this transaction to fail."
     }
+  },
+  "account": {
+    "compatibility": {
+      "incompatible": "Incompatible Account",
+      "learnMore": "Learn more",
+      "unknown": "Unknown Account",
+      "dialog": {
+        "title": "Account Compatibility",
+        "button": "Okay",
+        "descriptionMain": "Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are compatible with EVM apps, and Cadence accounts are compatible with Cadence apps.",
+        "descriptionSecondary": "If an application is on EVM or Cadence, only compatible accounts will be available to connect."
+      }
+    }
   }
 }
