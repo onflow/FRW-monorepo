@@ -48,7 +48,8 @@ export function NFTListScreen(): React.ReactElement {
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
   const currentAddress = fromAccount?.address;
-
+  // Get the total count from the collection info
+  const totalCount = activeCollection?.count || 0;
   // Update current step when screen loads (following SendToScreen pattern)
   useEffect(() => {
     setCurrentStep('select-tokens');
@@ -88,6 +89,26 @@ export function NFTListScreen(): React.ReactElement {
   // Query is enabled only when we have valid data
   const isQueryEnabled = !!currentAddress && !!activeCollection;
 
+  // Track real loading progress
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const setLoadingProgressRef = useRef(setLoadingProgress);
+  setLoadingProgressRef.current = setLoadingProgress;
+
+  // Custom query function with progress tracking
+  const fetchNFTsWithProgress = useCallback(async () => {
+    if (!activeCollection) return [];
+
+    return tokenQueries.fetchAllNFTsFromCollection(
+      currentAddress!,
+      activeCollection,
+      network,
+      activeCollection.count,
+      (progress) => {
+        setLoadingProgressRef.current(progress);
+      }
+    );
+  }, [activeCollection, network, totalCount]);
+
   // 🔥 TanStack Query: Fetch ALL NFTs from collection with concurrent batching
   const {
     data: nfts = [],
@@ -96,10 +117,7 @@ export function NFTListScreen(): React.ReactElement {
     refetch,
   } = useQuery({
     queryKey: queryKey ? [...queryKey, 'all'] : [],
-    queryFn: () => {
-      // Safe to use non-null assertion due to early returns
-      return tokenQueries.fetchAllNFTsFromCollection(currentAddress!, activeCollection!, network);
-    },
+    queryFn: fetchNFTsWithProgress,
     enabled: isQueryEnabled,
     staleTime: 10 * 60 * 1000, // All NFTs can be cached longer (10 minutes)
     refetchOnWindowFocus: false, // Keep disabled for now
@@ -107,6 +125,13 @@ export function NFTListScreen(): React.ReactElement {
     retry: 1, // Only retry once to avoid infinite loops
     gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
+
+  // Reset progress when loading starts
+  useEffect(() => {
+    if (isLoading) {
+      setLoadingProgress(0);
+    }
+  }, [isLoading]);
 
   // Convert NFTModel to NFTData for UI components
   const convertToNFTData = useCallback(
@@ -307,6 +332,17 @@ export function NFTListScreen(): React.ReactElement {
     [filteredNFTs, selectedIds]
   );
 
+  // Calculate loading progress
+  const finalLoadingProgress = useMemo(() => {
+    if (!isLoading) {
+      // When not loading, show 100% if we have data, 0% if no data
+      return nfts?.length > 0 ? 100 : 0;
+    }
+
+    if (totalCount === 0) return 0;
+    return loadingProgress;
+  }, [isLoading, totalCount, nfts?.length, loadingProgress]);
+
   // Early return if essential data is missing from store
   if (!activeCollection) {
     return (
@@ -391,6 +427,7 @@ export function NFTListScreen(): React.ReactElement {
             data={filteredNFTs}
             selectedIds={selectedIds}
             isLoading={isLoading}
+            loadingProgress={finalLoadingProgress}
             error={error?.message || undefined}
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
@@ -408,6 +445,8 @@ export function NFTListScreen(): React.ReactElement {
             enableVirtualization={true}
             itemsPerBatch={20}
             loadMoreThreshold={200}
+            isExtension={isExtension}
+            totalCount={totalCount}
           />
         </YStack>
 

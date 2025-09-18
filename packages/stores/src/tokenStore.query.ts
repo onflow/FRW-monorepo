@@ -140,7 +140,9 @@ export const tokenQueries = {
   fetchAllNFTsFromCollection: async (
     address: string,
     collection: CollectionModel,
-    network: string = 'mainnet'
+    network: string = 'mainnet',
+    totalCount?: number,
+    onProgress?: (progress: number, loadedCount: number) => void
   ): Promise<NFTModel[]> => {
     if (!address || !collection) return [];
 
@@ -155,20 +157,38 @@ export const tokenQueries = {
       let hasMore = true;
       let batchNumber = 1;
 
+      // Calculate maximum offset needed if we have total count
+      const maxOffset = totalCount ? Math.ceil(totalCount / BATCH_SIZE) * BATCH_SIZE : undefined;
+
       logger.info('[TokenQuery] Starting concurrent NFT collection fetch:', {
         address,
         collection: collection.name,
         network,
         batchSize: BATCH_SIZE,
         maxConcurrent: MAX_CONCURRENT,
+        totalCount,
+        maxOffset,
       });
 
       while (hasMore) {
+        // If we have a total count and we've reached the max offset, stop
+        if (totalCount && maxOffset && offset >= maxOffset) {
+          logger.debug(
+            `[TokenQuery] Reached max offset (${maxOffset}) for total count (${totalCount}), stopping fetch`
+          );
+          hasMore = false;
+          break;
+        }
         // Create concurrent request batch
         const batchPromises: Promise<NFTModel[]>[] = [];
         const currentBatchOffsets: number[] = [];
 
         for (let i = 0; i < MAX_CONCURRENT && hasMore; i++) {
+          // Check if we've reached the max offset for this request
+          if (totalCount && maxOffset && offset >= maxOffset) {
+            break;
+          }
+
           currentBatchOffsets.push(offset);
           batchPromises.push(nftSvc.getNFTs(address, collection, offset, BATCH_SIZE));
           offset += BATCH_SIZE;
@@ -182,47 +202,54 @@ export const tokenQueries = {
           }
         );
 
-        // Wait for current batch to complete
-        const batchResults = await Promise.allSettled(batchPromises);
-
-        // Process results
+        // Process each promise individually to get real-time progress updates
         let batchHasData = false;
-        for (let i = 0; i < batchResults.length; i++) {
-          const result = batchResults[i];
-          const requestOffset = currentBatchOffsets[i];
 
-          if (result.status === 'fulfilled') {
-            const nfts: NFTModel[] = result.value;
+        // Create individual promise handlers that report progress immediately
+        const individualPromises = batchPromises.map(async (promise, index) => {
+          const requestOffset = currentBatchOffsets[index];
+          try {
+            const nfts = await promise;
 
             if (nfts.length === 0) {
               logger.debug(`[TokenQuery] Empty result at offset ${requestOffset}, stopping`);
               hasMore = false;
-              break;
+              return { nfts: [], offset: requestOffset, success: true };
             }
 
             allNFTs.push(...nfts);
             batchHasData = true;
+
+            // Report progress immediately after each individual request completes
+            if (onProgress && totalCount) {
+              const progress = Math.min((allNFTs.length / totalCount) * 100, 100);
+              onProgress(Math.round(progress), allNFTs.length);
+            }
 
             if (nfts.length < BATCH_SIZE) {
               logger.debug(
                 `[TokenQuery] Partial result at offset ${requestOffset} (${nfts.length}/${BATCH_SIZE}), stopping`
               );
               hasMore = false;
-              break;
             }
-          } else {
-            logger.error(`[TokenQuery] Request failed at offset ${requestOffset}:`, result.reason);
+
+            return { nfts, offset: requestOffset, success: true };
+          } catch (error) {
+            logger.error(`[TokenQuery] Request failed at offset ${requestOffset}:`, error);
             hasMore = false;
-            break;
+            return { nfts: [], offset: requestOffset, success: false, error };
           }
-        }
+        });
+
+        // Wait for all individual promises to complete
+        await Promise.allSettled(individualPromises);
 
         if (!batchHasData) {
           hasMore = false;
         }
 
         logger.debug(`[TokenQuery] Batch ${batchNumber} completed:`, {
-          batchResults: batchResults.length,
+          batchResults: individualPromises.length,
           totalNFTs: allNFTs.length,
           hasMore,
         });
@@ -480,7 +507,8 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
   ): Promise<NFTModel[]> => {
     return await queryClient.fetchQuery({
       queryKey: tokenQueryKeys.nftCollectionAll(address, collection, network),
-      queryFn: () => tokenQueries.fetchAllNFTsFromCollection(address, collection, network),
+      queryFn: () =>
+        tokenQueries.fetchAllNFTsFromCollection(address, collection, network, collection.count),
       staleTime: 10 * 60 * 1000, // All NFTs can be cached longer (10 minutes)
       gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
     });
