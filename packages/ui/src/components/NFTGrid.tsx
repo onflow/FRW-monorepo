@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { XStack, YStack, Text } from 'tamagui';
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import { XStack, YStack, ScrollView, Text } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
@@ -90,14 +90,47 @@ export function NFTGrid({
 
   // Virtualization state
   const [visibleItemCount, setVisibleItemCount] = useState(itemsPerBatch);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Memoize visible data for performance
   const visibleData = useMemo(() => {
-    if (!enableVirtualization || isExtension) {
+    if (!enableVirtualization) {
       return data;
     }
     return data.slice(0, visibleItemCount);
   }, [data, visibleItemCount, enableVirtualization]);
+
+  // Load more items when scrolling
+  const handleLoadMore = useCallback(() => {
+    if (!enableVirtualization || visibleItemCount >= data.length) {
+      return;
+    }
+
+    const newCount = Math.min(visibleItemCount + itemsPerBatch, data.length);
+    setVisibleItemCount(newCount);
+  }, [enableVirtualization, visibleItemCount, data.length, itemsPerBatch]);
+
+  // Intersection Observer for load more
+  useEffect(() => {
+    if (!enableVirtualization || !loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && visibleItemCount < data.length) {
+          handleLoadMore();
+        }
+      },
+      {
+        rootMargin: '100px', // Start loading 100px before the trigger comes into view
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [enableVirtualization, visibleItemCount, data.length, handleLoadMore]);
 
   // Reset visible count when data changes
   const prevDataLength = React.useRef(data.length);
@@ -168,7 +201,14 @@ export function NFTGrid({
         </XStack>
 
         {/* Progress bar */}
-        <YStack height="$2" width="$46" position="relative" bg="$grayBg1" overflow="hidden">
+        <YStack
+          height="$2"
+          width="$46"
+          position="relative"
+          bg="$grayBg1"
+          overflow="hidden"
+          style={{ borderRadius: 10 }}
+        >
           {/* Progress fill */}
           <YStack
             height="100%"
@@ -235,7 +275,7 @@ export function NFTGrid({
     return renderEmpty();
   }
 
-  // Main grid content with ScrollView
+  // Main grid content
   return (
     <YStack gap="$4">
       {rows.map((row, rowIndex) => (
@@ -258,6 +298,17 @@ export function NFTGrid({
           ))}
         </XStack>
       ))}
+
+      {/* Load more trigger - invisible element for intersection observer */}
+      {enableVirtualization && visibleItemCount < data.length && (
+        <ScrollView ref={loadMoreRef} style={{ height: '1px', width: '100%' }}>
+          <YStack items="center" py="$4">
+            <Text fontSize="$3" color="$textSecondary">
+              Loading more NFTs... ({visibleItemCount} of {data.length})
+            </Text>
+          </YStack>
+        </ScrollView>
+      )}
     </YStack>
   );
 }
