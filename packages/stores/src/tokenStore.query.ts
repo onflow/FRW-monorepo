@@ -117,124 +117,302 @@ export const tokenQueries = {
       const walletType = addressType(address);
       const nftSvc = nftService(walletType);
 
-      const nfts = await nftSvc.getNFTs(address, collection, offset, limit);
+      const result = await nftSvc.getNFTs(address, collection, offset.toString(), limit);
 
       logger.debug('[TokenQuery] Fetched NFTs from collection:', {
         address,
         collection: collection.name,
         network,
-        count: nfts.length,
+        count: result.nfts.length,
         offset,
         limit,
+        nextOffset: result.offset,
       });
 
-      return nfts;
+      return result.nfts;
     } catch (error: unknown) {
       logger.error('[TokenQuery] Error fetching NFTs from collection:', error);
       throw error;
     }
   },
 
-  // Fetch ALL NFTs from a collection with concurrent batching
+  // Fetch ALL NFTs from a collection with address-specific batching logic
   fetchAllNFTsFromCollection: async (
     address: string,
     collection: CollectionModel,
-    network: string = 'mainnet'
+    network: string = 'mainnet',
+    signal?: AbortSignal
   ): Promise<NFTModel[]> => {
     if (!address || !collection) return [];
 
     try {
       const BATCH_SIZE = 50;
-      const MAX_CONCURRENT = 5;
+      const MAX_CONCURRENT_FLOW = 5; // Flow addresses can use concurrent requests
+      const MAX_BATCHES = 100; // Maximum 100 batches = 5000 NFTs max
+      const MAX_TOTAL_NFTS = 10000; // Absolute maximum NFTs to prevent memory issues
       const walletType = addressType(address);
       const nftSvc = nftService(walletType);
+      const isFlowAddress = walletType === 'flow';
 
-      let offset = 0;
       const allNFTs: NFTModel[] = [];
+      const nftIds = new Set<string>(); // Track seen NFT IDs to detect duplicates
       let hasMore = true;
       let batchNumber = 1;
 
-      logger.info('[TokenQuery] Starting concurrent NFT collection fetch:', {
+      logger.info('[TokenQuery] Starting NFT collection fetch:', {
         address,
+        addressType: walletType,
         collection: collection.name,
         network,
         batchSize: BATCH_SIZE,
-        maxConcurrent: MAX_CONCURRENT,
+        strategy: isFlowAddress ? 'concurrent' : 'sequential',
+        maxBatches: MAX_BATCHES,
+        maxTotalNfts: MAX_TOTAL_NFTS,
       });
 
-      while (hasMore) {
-        // Create concurrent request batch
-        const batchPromises: Promise<NFTModel[]>[] = [];
-        const currentBatchOffsets: number[] = [];
+      if (isFlowAddress) {
+        // Flow address: Use concurrent requests with calculated offsets
+        let offset = 0;
 
-        for (let i = 0; i < MAX_CONCURRENT && hasMore; i++) {
-          currentBatchOffsets.push(offset);
-          batchPromises.push(nftSvc.getNFTs(address, collection, offset, BATCH_SIZE));
-          offset += BATCH_SIZE;
-        }
-
-        logger.debug(
-          `[TokenQuery] Executing batch ${batchNumber} with ${batchPromises.length} concurrent requests:`,
-          {
-            offsets: currentBatchOffsets,
-            totalNFTsSoFar: allNFTs.length,
+        while (hasMore && batchNumber <= MAX_BATCHES && allNFTs.length < MAX_TOTAL_NFTS) {
+          // Check if request has been aborted - throw error to prevent caching incomplete data
+          if (signal?.aborted) {
+            logger.info('[TokenQuery] Flow NFT collection fetch aborted by user', {
+              address,
+              collection: collection.name,
+              totalNFTsSoFar: allNFTs.length,
+              batchNumber,
+              reason: 'USER_ABORTED',
+            });
+            const abortError = new Error('Request aborted by user');
+            abortError.name = 'AbortError';
+            throw abortError;
           }
-        );
 
-        // Wait for current batch to complete
-        const batchResults = await Promise.allSettled(batchPromises);
+          // Create concurrent request batch
+          const batchPromises: Promise<{ nfts: NFTModel[]; offset?: string }>[] = [];
+          const currentBatchOffsets: number[] = [];
 
-        // Process results
-        let batchHasData = false;
-        for (let i = 0; i < batchResults.length; i++) {
-          const result = batchResults[i];
-          const requestOffset = currentBatchOffsets[i];
+          for (let i = 0; i < MAX_CONCURRENT_FLOW && hasMore; i++) {
+            currentBatchOffsets.push(offset);
+            batchPromises.push(nftSvc.getNFTs(address, collection, offset.toString(), BATCH_SIZE));
+            offset += BATCH_SIZE;
+          }
 
-          if (result.status === 'fulfilled') {
-            const nfts: NFTModel[] = result.value;
+          logger.debug(
+            `[TokenQuery] Flow concurrent batch ${batchNumber} with ${batchPromises.length} requests:`,
+            { offsets: currentBatchOffsets, totalNFTsSoFar: allNFTs.length }
+          );
 
-            if (nfts.length === 0) {
-              logger.debug(`[TokenQuery] Empty result at offset ${requestOffset}, stopping`);
-              hasMore = false;
-              break;
-            }
+          // Wait for current batch to complete
+          const batchResults = await Promise.allSettled(batchPromises);
 
-            allNFTs.push(...nfts);
-            batchHasData = true;
+          // Process results
+          let batchHasData = false;
+          for (let i = 0; i < batchResults.length; i++) {
+            const result = batchResults[i];
+            const requestOffset = currentBatchOffsets[i];
 
-            if (nfts.length < BATCH_SIZE) {
-              logger.debug(
-                `[TokenQuery] Partial result at offset ${requestOffset} (${nfts.length}/${BATCH_SIZE}), stopping`
+            if (result.status === 'fulfilled') {
+              const { nfts } = result.value;
+
+              if (nfts.length === 0) {
+                logger.debug(`[TokenQuery] Empty result at offset ${requestOffset}, stopping`);
+                hasMore = false;
+                break;
+              }
+
+              // Check for duplicates and filter out already seen NFTs
+              const newNfts = nfts.filter((nft) => {
+                const nftId = nft.id || `${nft.name}-${nft.contractAddress}`;
+                if (nftIds.has(nftId)) {
+                  logger.warn(`[TokenQuery] Duplicate NFT detected at offset ${requestOffset}:`, {
+                    nftId,
+                  });
+                  return false;
+                }
+                nftIds.add(nftId);
+                return true;
+              });
+
+              if (newNfts.length === 0) {
+                logger.warn(
+                  `[TokenQuery] All NFTs were duplicates at offset ${requestOffset}, stopping`
+                );
+                hasMore = false;
+                break;
+              }
+
+              allNFTs.push(...newNfts);
+              batchHasData = true;
+
+              if (nfts.length < BATCH_SIZE) {
+                logger.debug(
+                  `[TokenQuery] Partial result at offset ${requestOffset} (${nfts.length}/${BATCH_SIZE}), stopping`
+                );
+                hasMore = false;
+                break;
+              }
+
+              // Additional safety: If we got duplicates, might be hitting repeat data
+              if (newNfts.length < nfts.length) {
+                const duplicateCount = nfts.length - newNfts.length;
+                logger.warn(
+                  `[TokenQuery] Found ${duplicateCount} duplicates at offset ${requestOffset}, might be repeating data`
+                );
+
+                // If more than 50% duplicates, stop to avoid infinite loop
+                if (duplicateCount > nfts.length / 2) {
+                  logger.warn(
+                    `[TokenQuery] Too many duplicates (${duplicateCount}/${nfts.length}), stopping`
+                  );
+                  hasMore = false;
+                  break;
+                }
+              }
+            } else {
+              logger.error(
+                `[TokenQuery] Request failed at offset ${requestOffset}:`,
+                result.reason
               );
               hasMore = false;
               break;
             }
-          } else {
-            logger.error(`[TokenQuery] Request failed at offset ${requestOffset}:`, result.reason);
+          }
+
+          if (!batchHasData) {
+            hasMore = false;
+          }
+
+          batchNumber++;
+        }
+      } else {
+        // EVM address: Use sequential requests with cursor/offset from previous response
+        let currentOffset = '';
+
+        while (hasMore && batchNumber <= MAX_BATCHES && allNFTs.length < MAX_TOTAL_NFTS) {
+          // Check if request has been aborted - throw error to prevent caching incomplete data
+          if (signal?.aborted) {
+            logger.info('[TokenQuery] EVM NFT collection fetch aborted by user', {
+              address,
+              collection: collection.name,
+              totalNFTsSoFar: allNFTs.length,
+              batchNumber,
+              reason: 'USER_ABORTED',
+            });
+            const abortError = new Error('Request aborted by user');
+            abortError.name = 'AbortError';
+            throw abortError;
+          }
+          logger.debug(`[TokenQuery] EVM sequential request ${batchNumber}:`, {
+            offset: currentOffset,
+            totalNFTsSoFar: allNFTs.length,
+          });
+
+          try {
+            const result = await nftSvc.getNFTs(address, collection, currentOffset, BATCH_SIZE);
+            const { nfts, offset: nextOffset } = result;
+
+            if (nfts.length === 0) {
+              logger.debug(`[TokenQuery] Empty result at offset ${currentOffset}, stopping`);
+              hasMore = false;
+              break;
+            }
+
+            // Check for duplicates and filter out already seen NFTs
+            const newNfts = nfts.filter((nft) => {
+              const nftId = nft.id || `${nft.name}-${nft.contractAddress}`;
+              if (nftIds.has(nftId)) {
+                logger.warn(`[TokenQuery] Duplicate NFT detected at offset ${currentOffset}:`, {
+                  nftId,
+                });
+                return false;
+              }
+              nftIds.add(nftId);
+              return true;
+            });
+
+            if (newNfts.length === 0) {
+              logger.warn(
+                `[TokenQuery] All NFTs were duplicates at offset ${currentOffset}, stopping`
+              );
+              hasMore = false;
+              break;
+            }
+
+            allNFTs.push(...newNfts);
+
+            // Use the offset returned from the API response for next request
+            if (nextOffset) {
+              currentOffset = nextOffset;
+            } else {
+              // If no offset is returned, we've reached the end
+              hasMore = false;
+            }
+
+            if (nfts.length < BATCH_SIZE) {
+              logger.debug(
+                `[TokenQuery] Partial result at offset ${currentOffset} (${nfts.length}/${BATCH_SIZE}), stopping`
+              );
+              hasMore = false;
+              break;
+            }
+
+            // Additional safety: If we got duplicates, might be hitting repeat data
+            if (newNfts.length < nfts.length) {
+              const duplicateCount = nfts.length - newNfts.length;
+              logger.warn(
+                `[TokenQuery] Found ${duplicateCount} duplicates at offset ${currentOffset}, might be repeating data`
+              );
+
+              // If more than 50% duplicates, stop to avoid infinite loop
+              if (duplicateCount > nfts.length / 2) {
+                logger.warn(
+                  `[TokenQuery] Too many duplicates (${duplicateCount}/${nfts.length}), stopping`
+                );
+                hasMore = false;
+                break;
+              }
+            }
+          } catch (error) {
+            logger.error(`[TokenQuery] EVM request failed at offset ${currentOffset}:`, error);
             hasMore = false;
             break;
           }
+
+          batchNumber++;
         }
-
-        if (!batchHasData) {
-          hasMore = false;
-        }
-
-        logger.debug(`[TokenQuery] Batch ${batchNumber} completed:`, {
-          batchResults: batchResults.length,
-          totalNFTs: allNFTs.length,
-          hasMore,
-        });
-
-        batchNumber++;
       }
 
-      logger.info('[TokenQuery] Completed concurrent NFT collection fetch:', {
+      // Check if we hit safety limits and warn
+      if (batchNumber > MAX_BATCHES) {
+        logger.warn('[TokenQuery] Stopped due to maximum batch limit reached:', {
+          maxBatches: MAX_BATCHES,
+          totalNFTs: allNFTs.length,
+          addressType: walletType,
+          reason: 'SAFETY_LIMIT_BATCHES',
+        });
+      }
+
+      if (allNFTs.length >= MAX_TOTAL_NFTS) {
+        logger.warn('[TokenQuery] Stopped due to maximum NFT count reached:', {
+          maxTotalNfts: MAX_TOTAL_NFTS,
+          totalNFTs: allNFTs.length,
+          addressType: walletType,
+          reason: 'SAFETY_LIMIT_COUNT',
+        });
+      }
+
+      logger.info('[TokenQuery] Completed NFT collection fetch:', {
         address,
+        addressType: walletType,
         collection: collection.name,
         network,
         totalNFTs: allNFTs.length,
         totalBatches: batchNumber - 1,
+        uniqueNFTs: nftIds.size,
+        strategy: isFlowAddress ? 'concurrent' : 'sequential',
+        hitSafetyLimit: batchNumber > MAX_BATCHES || allNFTs.length >= MAX_TOTAL_NFTS,
       });
 
       return allNFTs;
@@ -380,7 +558,8 @@ interface TokenStoreActions {
   fetchAllNFTsFromCollection: (
     address: string,
     collection: CollectionModel,
-    network?: string
+    network?: string,
+    signal?: AbortSignal
   ) => Promise<NFTModel[]>;
 
   // Batch operations
@@ -474,11 +653,18 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
   fetchAllNFTsFromCollection: async (
     address: string,
     collection: CollectionModel,
-    network: string = 'mainnet'
+    network: string = 'mainnet',
+    signal?: AbortSignal
   ): Promise<NFTModel[]> => {
     return await queryClient.fetchQuery({
       queryKey: tokenQueryKeys.nftCollectionAll(address, collection, network),
-      queryFn: () => tokenQueries.fetchAllNFTsFromCollection(address, collection, network),
+      queryFn: ({ signal: querySignal }) =>
+        tokenQueries.fetchAllNFTsFromCollection(
+          address,
+          collection,
+          network,
+          signal || querySignal
+        ),
       staleTime: 10 * 60 * 1000, // All NFTs can be cached longer (10 minutes)
       gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
     });
