@@ -25,6 +25,7 @@ export function AccountCard({
   account,
   title,
   isLoading = false,
+  isSendTokensScreen = false,
   // Modal-style selection props
   accounts,
   onAccountSelect,
@@ -59,7 +60,7 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text fontSize="$2" mb="$1" fontWeight="400" color="$light80" lineHeight={16}>
+      <Text fontSize="$2" mb={isSendTokensScreen?"$8":"$1"} fontWeight="400" color="$light80" lineHeight={16}>
         {title}
       </Text>
 

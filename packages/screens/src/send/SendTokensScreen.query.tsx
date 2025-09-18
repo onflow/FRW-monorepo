@@ -522,8 +522,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb={-18}>
+              <View mb={"$2"}>
                 <AccountCard
+                  isSendTokensScreen={true}
                   account={transformAccountForCard(fromAccount)}
                   title="From Account"
                   isLoading={isBalanceLoading}
