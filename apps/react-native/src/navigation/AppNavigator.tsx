@@ -1,11 +1,13 @@
 import {
   SelectTokensScreen,
-  SendTokensScreen,
   NFTListScreen,
   NFTDetailScreen,
+} from '@onflow/frw-screens';
+import {
+  SendTokensScreen,
   SendSingleNFTScreen,
   SendMultipleNFTsScreen,
-} from '@onflow/frw-screens';
+} from '@/screens/SendScreenWrappers';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,

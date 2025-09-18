@@ -233,9 +233,6 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      if (!isExtension) {
-        setIsConfirmationVisible(false);
-      }
       const result = await executeTransaction();
 
       // Close the React Native view after successful transaction
@@ -354,6 +351,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
+               <YStack mt={"$1"}>
               <ToAccountSection
                 account={toAccount}
                 title={t('send.toAccount')}
@@ -362,6 +360,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 showEditButton={true}
                 isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
               />
+              </YStack>
             )}
 
             {/* Transaction Fee and Storage Warning Section */}

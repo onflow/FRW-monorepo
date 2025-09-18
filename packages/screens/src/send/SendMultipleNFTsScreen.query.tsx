@@ -170,9 +170,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      if (!isExtension) {
-        setIsConfirmationVisible(false);
-      }
       const result = await executeTransaction();
 
       // Close the React Native view after successful transaction
