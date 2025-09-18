@@ -320,7 +320,7 @@
           "hashAlgoString"
         ],
         "example": {
-          "address": 11114000254959286000,
+          "address": 1.1114000254959286e19,
           "publicKey": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593",
           "keyIndex": 0,
           "weight": 1000,
@@ -624,17 +624,11 @@
             "example": "Invalid address"
           }
         },
-        "required": [
-          "status",
-          "message *"
-        ]
+        "required": ["status", "message *"]
       },
       "Network": {
         "type": "string",
-        "enum": [
-          "mainnet",
-          "testnet"
-        ],
+        "enum": ["mainnet", "testnet"],
         "description": "Flow-EVM network (mainnet/testnet)",
         "example": "mainnet",
         "default": "mainnet"
@@ -661,20 +655,11 @@
             "example": "Invalid EVM address format"
           }
         },
-        "required": [
-          "data",
-          "status"
-        ]
+        "required": ["data", "status"]
       },
       "FungibleToken": {
         "type": "object",
-        "required": [
-          "chainId",
-          "address",
-          "symbol",
-          "name",
-          "decimals"
-        ],
+        "required": ["chainId", "address", "symbol", "name", "decimals"],
         "properties": {
           "chainId": {
             "type": "integer",
@@ -894,11 +879,7 @@
             "description": "Path to the balance resource."
           }
         },
-        "required": [
-          "vault",
-          "receiver",
-          "balance"
-        ]
+        "required": ["vault", "receiver", "balance"]
       },
       "TokenExtensions": {
         "type": "object",
@@ -996,10 +977,7 @@
             "description": "A description of the tag."
           }
         },
-        "required": [
-          "name",
-          "description"
-        ]
+        "required": ["name", "description"]
       },
       "TokenListVersion": {
         "type": "object",
@@ -1014,11 +992,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "major",
-          "minor",
-          "patch"
-        ]
+        "required": ["major", "minor", "patch"]
       },
       "FTList": {
         "type": "object",
@@ -1434,9 +1408,7 @@
     "/api/metadata/user/{address}": {
       "get": {
         "summary": "Get user address metadata",
-        "tags": [
-          "Metadata"
-        ],
+        "tags": ["Metadata"],
         "parameters": [
           {
             "in": "path",
@@ -1473,9 +1445,7 @@
       },
       "post": {
         "summary": "Create or update user metadata",
-        "tags": [
-          "Metadata"
-        ],
+        "tags": ["Metadata"],
         "parameters": [
           {
             "in": "path",
@@ -1541,9 +1511,7 @@
     "/api/metadata/user/metadatas": {
       "get": {
         "summary": "Get user metadatas",
-        "tags": [
-          "Metadata"
-        ],
+        "tags": ["Metadata"],
         "responses": {
           "200": {
             "description": "User addresses metadatas",
@@ -1569,9 +1537,7 @@
       "get": {
         "summary": "Get account transfer history by token types",
         "description": "Retrieves the transaction history for a specific account address and token type.",
-        "tags": [
-          "Account"
-        ],
+        "tags": ["Account"],
         "parameters": [
           {
             "in": "query",
@@ -1669,9 +1635,7 @@
       "get": {
         "summary": "Get account transfer history",
         "description": "Retrieves the transaction history for a specific account address",
-        "tags": [
-          "Account"
-        ],
+        "tags": ["Account"],
         "parameters": [
           {
             "in": "query",
@@ -1757,8 +1721,8 @@
     },
     "/api/v2/nft/collectionList": {
       "get": {
-        "summary": "Get specific collection NFT under flow address with pagination",
-        "description": "Returns the specific collection NFT under flow address with pagination",
+        "summary": "Get a list of NFTs from a specific collection under a FLOW address",
+        "description": "Use this endpoint to get a list of NFTs that the user owns within a specific collection on the Flow network.\nFlow Address -\u003E NFT Collection -\u003E NFTs\n",
         "parameters": [
           {
             "in": "query",
@@ -1774,10 +1738,7 @@
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": [
-                "mainnet",
-                "testnet"
-              ]
+              "enum": ["mainnet", "testnet"]
             },
             "description": "Flow network (mainnet/testnet)",
             "default": "mainnet"
@@ -1822,15 +1783,13 @@
             }
           }
         },
-        "tags": [
-          "NFT"
-        ]
+        "tags": ["NFT"]
       }
     },
     "/api/v2/nft/collections": {
       "get": {
-        "summary": "Get list of NFT collections",
-        "description": "Returns a list of all NFT collections with their details",
+        "summary": "Get a list of ALL the Cadence NFT collections on the Flow network",
+        "description": "Use this endpoint to get a list of ALL the Cadence NFT collections on the Flow network.\nThis list is used to populate the \"Collections\" section in the wallet where the user can enable/disable collections.\nThis is needed on the Flow network as Collections need to be enabled on accounts to receive NFTs.\n",
         "parameters": [
           {
             "in": "header",
@@ -1865,15 +1824,13 @@
             }
           }
         },
-        "tags": [
-          "NFT"
-        ]
+        "tags": ["NFT"]
       }
     },
     "/api/v2/nft/id": {
       "get": {
-        "summary": "Get NFT collections with IDs for an address",
-        "description": "Retrieves a list of NFT collections and their IDs owned by the specified address",
+        "summary": "Get a list of the NFT collections and the ids of the nfts owned in each by an account on the Flow network",
+        "description": "Use this endpoint to get a list of the NFT collections and the ids of the nfts owned in each collection by an account on the Flow network.\nThis is used to populate the NFT collection list in the UI.\nFlow Address -\u003E NFT Collections\n",
         "parameters": [
           {
             "in": "query",
@@ -1907,15 +1864,13 @@
             }
           }
         },
-        "tags": [
-          "NFT"
-        ]
+        "tags": ["NFT"]
       }
     },
     "/api/v2/nft/list": {
       "get": {
-        "summary": "Get all NFTs under flow address with pagination",
-        "description": "Returns all NFTs under flow address with pagination",
+        "summary": "Get a list of Nfts owned by an account on the Flow network across all collections",
+        "description": "Use this endpoint if you need to display an agregated list of NFTs owned by an account across all collections\nFlow Address -\u003E NFTs\n",
         "parameters": [
           {
             "in": "query",
@@ -1964,18 +1919,14 @@
             }
           }
         },
-        "tags": [
-          "NFT"
-        ]
+        "tags": ["NFT"]
       }
     },
     "/api/v2/scripts": {
       "get": {
         "summary": "Get the cadence scripts",
         "description": "Returns the cadence scripts",
-        "tags": [
-          "Scripts"
-        ],
+        "tags": ["Scripts"],
         "parameters": [
           {
             "in": "header",
@@ -2054,9 +2005,7 @@
       "get": {
         "summary": "V3 ERC20 tokens for  EVM address",
         "description": "Retrieves all ERC20 tokens owned by the specified EVM address",
-        "tags": [
-          "User FT Tokens"
-        ],
+        "tags": ["User FT Tokens"],
         "parameters": [
           {
             "in": "path",
@@ -2124,8 +2073,8 @@
     },
     "/api/v3/evm/nft/collectionList": {
       "get": {
-        "summary": "Get specific collection NFT under flow-EVM address with pagination",
-        "description": "Returns the specific collection NFT under flow-EVM address with pagination",
+        "summary": "Get a list of NFTs from a specific collection under a EVM address",
+        "description": "Use this endpoint to get a list of NFTs that the user owns within a specific collection on the EVM network.\nEVM Address -\u003E NFT Collection -\u003E NFTs\n",
         "parameters": [
           {
             "in": "header",
@@ -2158,9 +2107,9 @@
             "in": "query",
             "name": "offset",
             "schema": {
-              "type": "integer"
+              "type": "string"
             },
-            "description": "Number of records to skip"
+            "description": "Offset string of records to skip"
           },
           {
             "in": "query",
@@ -2184,18 +2133,14 @@
             }
           }
         },
-        "tags": [
-          "Flow-EVM NFT"
-        ]
+        "tags": ["Flow-EVM NFT"]
       }
     },
     "/api/v3/evm/nft/id": {
       "get": {
-        "summary": "Get all NFT collections for an address",
-        "description": "Retrieves all NFT collections associated with a specific address",
-        "tags": [
-          "Flow-EVM NFT"
-        ],
+        "summary": "Get a list of EVM NFT collections and ids of NFTs owned in each collection by an account",
+        "description": "EVM Address -\u003E NFT Collections\nThis endpoint returns a list of EVM NFT collections and the ids of the NFTs owned in each collection by an account.\nThis is used to populate the NFT collection list in the UI\n",
+        "tags": ["Flow-EVM NFT"],
         "parameters": [
           {
             "in": "header",
@@ -2249,21 +2194,16 @@
     },
     "/api/v3/evm/nft/list": {
       "get": {
-        "summary": "Get NFTs for an address",
-        "description": "Retrieves NFTs associated with a specific address with pagination",
-        "tags": [
-          "Flow-EVM NFT"
-        ],
+        "summary": "Get a list of NFTs owned by an account on the EVM network across all collections",
+        "description": "EVM Address -\u003E NFTs\nThis endpoint returns a list of NFTs owned by an account across all collections on the EVM network.\nThis is used to populate the NFT list in the UI\n",
+        "tags": ["Flow-EVM NFT"],
         "parameters": [
           {
             "in": "header",
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": [
-                "mainnet",
-                "testnet"
-              ],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The blockchain network (mainnet, testnet, etc.)"
@@ -2313,9 +2253,7 @@
       "get": {
         "summary": "V3 FT list including automated additions.",
         "description": "Retrieves a comprehensive list of Fungible Tokens for a specified network and chain type, merging the default list with automatically discovered tokens.",
-        "tags": [
-          "FT"
-        ],
+        "tags": ["FT"],
         "parameters": [
           {
             "in": "query",
@@ -2333,10 +2271,7 @@
             "schema": {
               "type": "string",
               "default": "flow",
-              "enum": [
-                "flow",
-                "evm"
-              ]
+              "enum": ["flow", "evm"]
             },
             "required": false,
             "description": "The chain type (e.g., 'flow', 'evm'). Defaults to 'flow'."
@@ -2386,13 +2321,28 @@
         }
       }
     },
+    "/api/v3/nfts": {
+      "get": {
+        "summary": "Get an NFT collection list for a specific network",
+        "deprecated": true,
+        "description": "This endpoint is deprecated. Please use the new endpoint at /api/v2/nft/collections/collections\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            }
+          }
+        ]
+      }
+    },
     "/api/v4/cadence/tokens/ft/{address}": {
       "get": {
         "summary": "V4 Flow tokens for a Flow address (with currency)",
         "description": "Retrieves a list of fungible tokens owned by a specific Flow address, including balances, metadata, and price information with currency conversion.",
-        "tags": [
-          "User FT Tokens"
-        ],
+        "tags": ["User FT Tokens"],
         "parameters": [
           {
             "in": "path",
@@ -2409,10 +2359,7 @@
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": [
-                "mainnet",
-                "testnet"
-              ],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The Flow network to query (mainnet or testnet)."
@@ -2493,9 +2440,7 @@
       "get": {
         "summary": "Get a list of supported currencies",
         "description": "Returns an array of supported currency details for the wallet",
-        "tags": [
-          "Currencies"
-        ],
+        "tags": ["Currencies"],
         "responses": {
           "200": {
             "description": "A list of supported currencies",
@@ -2573,9 +2518,7 @@
       "get": {
         "summary": "V4 ERC20 tokens for an EVM address",
         "description": "Retrieves a list of fungible tokens owned by a specific EVM address, including balances and price information.",
-        "tags": [
-          "User FT Tokens"
-        ],
+        "tags": ["User FT Tokens"],
         "parameters": [
           {
             "in": "path",
@@ -2592,10 +2535,7 @@
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": [
-                "mainnet",
-                "testnet"
-              ],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The network to query (mainnet or testnet)."
@@ -2752,18 +2692,14 @@
       "post": {
         "summary": "Lookup EVM token data with price information",
         "description": "Returns metadata and price information for specified EVM token addresses",
-        "tags": [
-          "Flow-EVM Tokens"
-        ],
+        "tags": ["Flow-EVM Tokens"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "addresses"
-                ],
+                "required": ["addresses"],
                 "properties": {
                   "addresses": {
                     "type": "array",
@@ -2783,10 +2719,7 @@
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": [
-                "mainnet",
-                "testnet"
-              ],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The network to query (mainnet or testnet)"
@@ -2879,9 +2812,7 @@
       "get": {
         "summary": "Flow accounts associated with a public key",
         "description": "Retrieves all Flow accounts that have the specified public key registered.\nThis endpoint proxies requests to the Flow Key Indexer service, transforms the data, and adds caching.\n",
-        "tags": [
-          "Account"
-        ],
+        "tags": ["Account"],
         "parameters": [
           {
             "in": "path",
@@ -2898,10 +2829,7 @@
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": [
-                "mainnet",
-                "testnet"
-              ],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The network to query (mainnet or testnet)"
@@ -2920,7 +2848,7 @@
                 },
                 "example": [
                   {
-                    "address": 11114000254959286000,
+                    "address": 1.1114000254959286e19,
                     "publicKey": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593",
                     "keyIndex": 0,
                     "weight": 1000,
@@ -2986,9 +2914,7 @@
       "get": {
         "summary": "Get token prices",
         "description": "Returns price data for Flow and EVM tokens, with optional currency conversion",
-        "tags": [
-          "Prices"
-        ],
+        "tags": ["Prices"],
         "parameters": [
           {
             "in": "query",
