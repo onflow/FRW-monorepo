@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { XStack, YStack, Text, ScrollView } from 'tamagui';
+import { XStack, YStack, Text } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
@@ -273,50 +273,27 @@ export function NFTGrid({
 
   // Main grid content with ScrollView
   return (
-    <ScrollView
-      flex={1}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
-      showsVerticalScrollIndicator={true}
-    >
-      <YStack gap="$4" pb="$4" px="$0">
-        {rows.map((row, rowIndex) => (
-          <XStack key={`row-${rowIndex}`} gap="$4" justify="space-between" width="100%" px="$0">
-            {row.map((nft, nftIndex) => (
-              <YStack
-                key={nft.id}
-                flex={1}
-                maxWidth="calc(50% - 8px)"
-                mr={nftIndex === 0 ? '$2' : '$0'}
-                ml={nftIndex === 1 ? '$2' : '$0'}
-              >
-                <NFTCard
-                  nft={nft}
-                  size="medium"
-                  selected={selectedIds.includes(nft.id)}
-                  onPress={() => onNFTPress(nft.id)}
-                  onSelect={() => onNFTSelect(nft.id)}
-                  aspectRatio={aspectRatio}
-                  accountEmoji={accountEmoji}
-                  accountAvatar={accountAvatar}
-                  accountName={accountName}
-                  accountColor={accountColor}
-                />
-              </YStack>
-            ))}
-            {/* Fill empty space if row has only one item */}
-            {row.length === 1 && <YStack flex={1} maxWidth="calc(50% - 8px)" ml="$2" />}
-          </XStack>
-        ))}
-
-        {/* Load more indicator */}
-        {shouldShowLoadMoreIndicator && (
-          <YStack py="$4" items="center" justify="center">
-            <Skeleton width="50%" height="$4" borderRadius="$2" animated />
-            <Skeleton width="30%" height="$3" borderRadius="$2" animated mt="$2" />
-          </YStack>
-        )}
-      </YStack>
-    </ScrollView>
+    <YStack gap="$4">
+      {rows.map((row, rowIndex) => (
+        <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
+          {row.map((nft) => (
+            <YStack key={nft.id} width="50%" flex={0}>
+              <NFTCard
+                nft={nft}
+                size="medium"
+                selected={selectedIds.includes(nft.id)}
+                onPress={() => onNFTPress(nft.id)}
+                onSelect={() => onNFTSelect(nft.id)}
+                aspectRatio={aspectRatio}
+                accountEmoji={accountEmoji}
+                accountAvatar={accountAvatar}
+                accountName={accountName}
+                accountColor={accountColor}
+              />
+            </YStack>
+          ))}
+        </XStack>
+      ))}
+    </YStack>
   );
 }
