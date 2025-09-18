@@ -3,6 +3,7 @@ import { XStack, YStack, Text, ScrollView } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
+import { Button } from '../foundation/Button';
 import { Skeleton } from '../foundation/Skeleton';
 
 export interface NFTData {
