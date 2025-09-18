@@ -2,7 +2,7 @@ import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { Platform, Image as RNImage } from 'react-native';
-import { YStack, XStack, View, Sheet } from 'tamagui';
+import { YStack, XStack, View, Sheet, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
@@ -130,6 +130,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   isExtension = false,
   sendStaticImage,
 }) => {
+  const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
   const handleConfirm = async () => {
@@ -184,7 +185,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color="#ffffff" />
+                  <Close size={15} color={theme.white.val} />
                 </XStack>
               </>
             ) : (
@@ -207,7 +208,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color="#ffffff" />
+                  <Close size={15} color={theme.white.val} />
                 </XStack>
               </>
             )}
