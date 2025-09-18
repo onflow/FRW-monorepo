@@ -394,7 +394,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
             }
             const tokenStore = useTokenQueryStore.getState();
             const selectedAccount = await this.getSelectedAccount();
-            const selectedCollection = useSendStore((state) => state.selectedCollection);
+            const selectedCollection = useSendStore.getState().selectedCollection;
             if (selectedCollection && selectedAccount) {
               tokenStore.invalidateNFTCollection(
                 selectedAccount.address,
