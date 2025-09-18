@@ -161,12 +161,15 @@ export const tokenQueries = {
       const nftIds = new Set<string>(); // Track seen NFT IDs to detect duplicates
       let hasMore = true;
       let batchNumber = 1;
-
+      const maxOffset = totalCount ? Math.ceil(totalCount / BATCH_SIZE) * BATCH_SIZE : undefined;
       if (isFlowAddress) {
         // Flow address: Use concurrent requests with calculated offsets
         let offset = 0;
 
-        while (hasMore && batchNumber <= MAX_BATCHES && allNFTs.length < MAX_TOTAL_NFTS) {
+        while (hasMore) {
+          if (totalCount && maxOffset && offset >= maxOffset) {
+            break;
+          }
           // Check if request has been aborted - throw error to prevent caching incomplete data
           if (signal?.aborted) {
             const abortError = new Error('Request aborted by user');
@@ -198,10 +201,6 @@ export const tokenQueries = {
               onProgress(Math.round(progress), allNFTs.length);
             }
 
-            if (allNFTs.length < BATCH_SIZE) {
-              hasMore = false;
-              break;
-            }
             if (result.status === 'fulfilled') {
               const { nfts } = result.value;
 
