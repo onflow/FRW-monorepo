@@ -298,11 +298,6 @@ export function SendToScreen(): React.ReactElement {
     [getTypeByTitle]
   );
 
-  const handleScanPress = useCallback(async () => {
-    // TODO: Implement QR scanning functionality
-    console.log('Scan QR code');
-  }, []);
-
   // Helper function to proceed with recipient selection
   const proceedWithRecipientSelection = useCallback(
     async (recipient: RecipientData) => {
@@ -459,6 +454,20 @@ export function SendToScreen(): React.ReactElement {
     },
     [allProfiles, handleRecipientPress]
   );
+
+  const handleScanPress = useCallback(async () => {
+    try {
+      const scannedText = await bridge.scanQRCode();
+      if (scannedText) {
+        handleSearchChange(scannedText);
+      }
+    } catch (error: any) {
+      // Don't show alert for cancelled scans
+      if (error.code !== 'SCAN_CANCELLED') {
+        alert(`${t('common.error')}: ${t('errors.networkError')}`);
+      }
+    }
+  }, [handleSearchChange, t]);
 
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {
     // TODO: Handle edit recipient
