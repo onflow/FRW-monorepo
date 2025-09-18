@@ -1,47 +1,30 @@
+import { Close } from '@onflow/frw-icons';
+import { useTheme } from '@react-navigation/native';
 import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import { TouchableOpacity } from 'react-native';
 
 import { platform } from '@/bridge/PlatformImpl';
 
-const CloseIcon: React.FC<{ size?: number; color?: string }> = ({
-  size = 15,
-  color = '#ffffff',
-}) => (
-  <Svg width={size} height={size} viewBox="0 0 17 15" fill="none">
-    <Path
-      d="M15.8444 13.7189C15.9147 13.7886 15.9705 13.8713 16.0085 13.9624C16.0465 14.0534 16.0661 14.151 16.0661 14.2496C16.0661 14.3481 16.0465 14.4457 16.0085 14.5367C15.9705 14.6278 15.9147 14.7105 15.8444 14.7802C15.7741 14.8499 15.6907 14.9051 15.5988 14.9429C15.507 14.9806 15.4085 15 15.3091 15C15.2097 15 15.1113 14.9806 15.0195 14.9429C14.9276 14.9051 14.8442 14.8499 14.7739 14.7802L8.5001 8.55987L2.22633 14.7802C2.08437 14.9209 1.89183 15 1.69106 15C1.4903 15 1.29776 14.9209 1.1558 14.7802C1.01384 14.6395 0.934082 14.4486 0.934082 14.2496C0.934082 14.0505 1.01384 13.8597 1.1558 13.7189L7.43051 7.49956L1.1558 1.28019C1.01384 1.13946 0.934082 0.948585 0.934082 0.749563C0.934082 0.55054 1.01384 0.359668 1.1558 0.218938C1.29776 0.078207 1.4903 -0.000854492 1.69106 -0.000854492C1.89183 -0.000854492 2.08437 0.078207 2.22633 0.218938L8.5001 6.43925L14.7739 0.218938C14.9158 0.078207 15.1084 -0.000854496 15.3091 -0.000854492C15.5099 -0.000854488 15.7024 0.078207 15.8444 0.218938C15.9864 0.359668 16.0661 0.55054 16.0661 0.749563C16.0661 0.948585 15.9864 1.13946 15.8444 1.28019L9.56969 7.49956L15.8444 13.7189Z"
-      fill={color}
-    />
-  </Svg>
-);
-
 export const NavigationCloseButton: React.FC = () => {
+  const theme = useTheme();
+
   const handleClose = () => {
     // Close the React Native workflow
     platform.closeRN();
   };
 
   return (
-    <Pressable
-      style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+    <TouchableOpacity
       onPress={handleClose}
+      style={{
+        padding: 8,
+        minWidth: 44,
+        minHeight: 44,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
     >
-      <CloseIcon size={15} color="#ffffff" />
-    </Pressable>
+      <Close size={15} color={theme.colors.text} />
+    </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-});
