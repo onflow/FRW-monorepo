@@ -83,7 +83,9 @@
     "description": "描述",
     "creator": "创建者",
     "title": "发送",
-    "inaccessible": "不可访问"
+    "inaccessible": "不可访问",
+    "confirmAddress": "确认地址",
+    "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。"
   },
   "messages": {
     "loading": "加载中...",
@@ -118,6 +120,14 @@
     "notFound": {
       "title": "未找到NFT",
       "message": "无法找到或加载请求的NFT"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "存储警告",
+      "balance": "您的账户FLOW余额低于存储使用所需的最低要求，这可能会导致后续交易失败。",
+      "storage": "此操作可能会失败，因为它可能会将您账户中的FLOW数量减少到低于覆盖其存储使用所需的数量。",
+      "storageAfterAction": "此次交易后，账户余额将低于存储所需的最低FLOW数量，会导致此次交易失败。"
     }
   }
 }

@@ -181,8 +181,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = useMemo(() => {
-    return storageUtils.getStorageWarningMessage(validationResult.warningType);
-  }, [validationResult.warningType, accountInfo]);
+    return t(storageUtils.getStorageWarningMessageKey(validationResult.warningType));
+  }, [validationResult.warningType, accountInfo, t]);
 
   // Calculate if send button should be disabled
   const isSendDisabled =
@@ -375,7 +375,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 <StorageWarning
                   message={storageWarningMessage}
                   showIcon={true}
-                  title="Storage warning"
+                  title={t('storage.warning.title')}
                   visible={true}
                 />
               )}

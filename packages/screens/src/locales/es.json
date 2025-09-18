@@ -83,7 +83,9 @@
     "description": "Descripción",
     "creator": "Creador",
     "title": "Enviar",
-    "inaccessible": "Inaccesible"
+    "inaccessible": "Inaccesible",
+    "confirmAddress": "Confirmar dirección",
+    "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino."
   },
   "messages": {
     "loading": "Cargando...",
@@ -118,6 +120,14 @@
     "notFound": {
       "title": "NFT No Encontrado",
       "message": "El NFT solicitado no se pudo encontrar o cargar"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "Advertencia de Almacenamiento",
+      "balance": "Su cuenta está por debajo del saldo mínimo de FLOW requerido para el uso de almacenamiento, lo que puede causar que fallen las transacciones posteriores.",
+      "storage": "Esta acción puede fallar porque puede reducir la cantidad de FLOW en su cuenta por debajo de lo requerido para cubrir el uso de almacenamiento.",
+      "storageAfterAction": "El saldo de la cuenta caerá por debajo del FLOW mínimo requerido para el almacenamiento después de esta transacción, causando que falle."
     }
   }
 }

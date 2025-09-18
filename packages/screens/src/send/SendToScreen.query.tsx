@@ -605,15 +605,15 @@ export function SendToScreen(): React.ReactElement {
       {/* First Time Send Confirmation Dialog */}
       <InfoDialog
         visible={showFirstTimeSendDialog}
-        title="Confirm address"
-        buttonText="Confirm address"
+        title={t('send.confirmAddress')}
+        buttonText={t('send.confirmAddress')}
         onButtonClick={handleFirstTimeSendConfirm}
         onClose={handleFirstTimeSendCancel}
       >
-        <YStack gap={20} self="stretch" items="center">
+        <YStack gap="$5" self="stretch" items="center">
           {/* Body Text */}
           <Text
-            fontSize={14}
+            fontSize="$3"
             fontWeight="300"
             lineHeight={20}
             letterSpacing={-0.084}
@@ -621,22 +621,21 @@ export function SendToScreen(): React.ReactElement {
             color="$white"
             self="stretch"
           >
-            We noticed this may be your first time sending to this address. Please confirm the
-            destination address.
+            {t('send.firstTimeSendMessage')}
           </Text>
 
           {/* Address Container */}
           <YStack
-            bg="rgba(255, 255, 255, 0.1)"
-            rounded={8}
-            py={16}
-            px={26}
+            bg="$light10"
+            rounded="$2"
+            py="$4"
+            px="$6"
             items="center"
             justify="center"
             self="stretch"
           >
             <Text
-              fontSize={14}
+              fontSize="$3"
               fontWeight="600"
               lineHeight={16.8}
               letterSpacing={-0.084}

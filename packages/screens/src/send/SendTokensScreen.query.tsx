@@ -211,7 +211,9 @@ export const SendTokensScreen = (): React.ReactElement => {
   }, [accountInfo, amount, selectedToken]);
 
   const showStorageWarning = validationResult.showWarning;
-  const storageWarningMessage = storageUtils.getStorageWarningMessage(validationResult.warningType);
+  const storageWarningMessage = t(
+    storageUtils.getStorageWarningMessageKey(validationResult.warningType)
+  );
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
@@ -636,7 +638,7 @@ export const SendTokensScreen = (): React.ReactElement => {
               <StorageWarning
                 message={storageWarningMessage}
                 showIcon={true}
-                title="Storage warning"
+                title={t('storage.warning.title')}
                 visible={true}
               />
             )}
