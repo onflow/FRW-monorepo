@@ -15,5 +15,3 @@ gem 'logger'
 gem 'benchmark'
 gem 'mutex_m'
 
-# Fastlane for iOS CI/CD
-gem 'fastlane'
