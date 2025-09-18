@@ -34,7 +34,7 @@ export function NFTCard({
   const imageHeight = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
   return (
     <YStack
-      width={width}
+      style={{ width: width }}
       gap="$1.5"
       pressStyle={{ opacity: 0.8, scale: 0.98 }}
       onPress={onPress}
@@ -43,8 +43,7 @@ export function NFTCard({
     >
       {/* NFT Image */}
       <YStack
-        w="100%"
-        h={imageHeight}
+        style={{ width: '100%', height: imageHeight }}
         rounded="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}
@@ -67,16 +66,18 @@ export function NFTCard({
         {/* ERC1155 Badge - top left corner */}
         {nft.contractType === 'ERC1155' && nft.amount && (
           <View
-            position="absolute"
-            top={8}
-            left={8}
-            backgroundColor="#D9D9D9"
-            width={22.26}
-            height={22.26}
-            borderRadius={11.13}
-            alignItems="center"
-            justifyContent="center"
-            zIndex={1}
+            style={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              backgroundColor: '#D9D9D9',
+              width: 22.26,
+              height: 22.26,
+              borderRadius: 11.13,
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+            }}
           >
             <Text fontSize={14} fontWeight="600" color="#000000" lineHeight={19.6}>
               {nft.amount}
@@ -86,12 +87,14 @@ export function NFTCard({
 
         {/* Selection Indicator - top right corner */}
         <YStack
-          w="$6"
-          h="$6"
-          zIndex={1}
-          position="absolute"
-          top="$2.5"
-          right="$2.5"
+          width="$6"
+          height="$6"
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 1,
+          }}
           onPress={(e) => {
             e?.stopPropagation?.();
             onSelect(nft.id);
@@ -121,7 +124,7 @@ export function NFTCard({
                 <YStack
                   width="$4"
                   height="$4"
-                  bg={accountColor || '$warning'}
+                  style={{ backgroundColor: accountColor || '#f59e0b' }}
                   rounded="$12"
                   items="center"
                   justify="center"

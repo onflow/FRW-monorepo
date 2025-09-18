@@ -1,4 +1,5 @@
 import { type PlatformSpec, type Storage, type Cache } from '@onflow/frw-context';
+import { useSendStore, useTokenQueryStore } from '@onflow/frw-stores';
 import {
   Platform,
   type RecentContactsResponse,
@@ -80,21 +81,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
   async getJWT(): Promise<string> {
     try {
       if (!this.walletController) {
-        this.log('warn', 'Cannot get JWT - wallet controller not initialized');
         throw new Error('Wallet controller not initialized');
       }
 
       if (!this.walletController.getJWT) {
-        this.log('warn', 'getJWT method not available on wallet controller');
         throw new Error('getJWT method not available on wallet controller');
       }
-
-      this.log('debug', 'Extension getJWT called via wallet controller');
 
       const jwt = await this.walletController.getJWT();
       return jwt;
     } catch (error) {
-      this.log('error', 'Failed to get JWT token:', error);
       throw new Error('Failed to get JWT token: ' + (error as Error).message);
     }
   }
@@ -389,13 +385,22 @@ class ExtensionPlatformImpl implements PlatformSpec {
             if (this.walletController && this.walletController.listenTransaction) {
               this.walletController.listenTransaction(txId);
             }
-
             // Navigate to transaction complete
             const navigation = this.navigation();
             if (navigation && navigation.navigate) {
               navigation.navigate('TransactionComplete', {
                 txId: txId,
               });
+            }
+            const tokenStore = useTokenQueryStore.getState();
+            const selectedAccount = await this.getSelectedAccount();
+            const selectedCollection = useSendStore.getState().selectedCollection;
+            if (selectedCollection && selectedAccount) {
+              tokenStore.invalidateNFTCollection(
+                selectedAccount.address,
+                selectedCollection,
+                network
+              );
             }
           } catch (error) {
             this.log('error', 'Failed to execute post-transaction actions:', error);

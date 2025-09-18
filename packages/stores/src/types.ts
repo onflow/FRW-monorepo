@@ -121,6 +121,7 @@ export interface SendState {
   // Actions
   setSelectedToken: (token: TokenModel | null) => void;
   setSelectedCollection: (collection: CollectionModel | null) => void;
+  setCurrentNFT: (nft: NFTModel | null) => void;
   setFromAccount: (account: WalletAccount | null) => void;
   setToAccount: (account: WalletAccount | null) => void;
   setTransactionType: (type: TransactionType) => void;
