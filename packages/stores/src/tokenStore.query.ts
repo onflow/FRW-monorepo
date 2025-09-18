@@ -269,6 +269,12 @@ export const tokenQueries = {
 
             allNFTs.push(...newNfts);
 
+            // Report progress immediately after each EVM request completes
+            if (onProgress && totalCount) {
+              const progress = Math.min((allNFTs.length / totalCount) * 100, 100);
+              onProgress(Math.round(progress), allNFTs.length);
+            }
+
             // Use the offset returned from the API response for next request
             if (nextOffset) {
               currentOffset = nextOffset;
