@@ -191,7 +191,6 @@ export const tokenQueries = {
           let batchHasData = false;
           for (let i = 0; i < batchResults.length; i++) {
             const result = batchResults[i];
-            const requestOffset = currentBatchOffsets[i];
 
             // Report progress immediately after each individual request completes
             if (onProgress && totalCount) {
@@ -206,11 +205,6 @@ export const tokenQueries = {
             if (result.status === 'fulfilled') {
               const { nfts } = result.value;
 
-              if (nfts.length === 0) {
-                hasMore = false;
-                break;
-              }
-
               // Check for duplicates and filter out already seen NFTs
               const newNfts = nfts.filter((nft) => {
                 const nftId = nft.id || `${nft.name}-${nft.contractAddress}`;
@@ -221,29 +215,8 @@ export const tokenQueries = {
                 return true;
               });
 
-              if (newNfts.length === 0) {
-                hasMore = false;
-                break;
-              }
-
               allNFTs.push(...newNfts);
               batchHasData = true;
-
-              if (nfts.length < BATCH_SIZE) {
-                hasMore = false;
-                break;
-              }
-
-              // Additional safety: If we got duplicates, might be hitting repeat data
-              if (newNfts.length < nfts.length) {
-                const duplicateCount = nfts.length - newNfts.length;
-
-                // If more than 50% duplicates, stop to avoid infinite loop
-                if (duplicateCount > nfts.length / 2) {
-                  hasMore = false;
-                  break;
-                }
-              }
             } else {
               hasMore = false;
               break;
