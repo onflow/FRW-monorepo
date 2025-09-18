@@ -18,6 +18,9 @@ import {
   type RecipientData,
   ExtensionHeader,
   BackgroundWrapper,
+  InfoDialog,
+  Text,
+  YStack,
 } from '@onflow/frw-ui';
 import { isValidEthereumAddress, isValidFlowAddress, logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
@@ -50,6 +53,10 @@ export function SendToScreen(): React.ReactElement {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  // First time send modal state
+  const [showFirstTimeSendDialog, setShowFirstTimeSendDialog] = useState(false);
+  const [pendingRecipient, setPendingRecipient] = useState<RecipientData | null>(null);
 
   // Get selected token from send store
   const transactionType = useSendStore((state) => state.transactionType);
@@ -218,6 +225,29 @@ export function SendToScreen(): React.ReactElement {
     return result.filter((profile) => profile.accounts.length > 0);
   }, [allProfiles, accountBalances, filterBySearchQuery]);
 
+  // Get all wallet accounts for first time send check
+  const allWalletAccounts = useMemo(() => {
+    return allProfiles.flatMap((profile) => profile.accounts);
+  }, [allProfiles]);
+
+  // Helper function to check if address is first-time send
+  const isFirstTimeSend = useCallback(
+    async (address: string): Promise<boolean> => {
+      // Check if address is in recent recipients (await the Promise)
+      const recentService = RecentRecipientsService.getInstance();
+      const isInRecents = await recentService.isAddressInRecents(address);
+
+      // Also check if it's user's own account (case-insensitive comparison)
+      const normalizedAddress = address.toLowerCase();
+      const isOwnAccount = allWalletAccounts.some(
+        (acc) => acc.address.toLowerCase() === normalizedAddress
+      );
+
+      return !isInRecents && !isOwnAccount;
+    },
+    [allWalletAccounts]
+  );
+
   // Get current recipients based on active tab
   const recipients = useMemo(() => {
     switch (activeTab) {
@@ -273,7 +303,8 @@ export function SendToScreen(): React.ReactElement {
     console.log('Scan QR code');
   }, []);
 
-  const handleRecipientPress = useCallback(
+  // Helper function to proceed with recipient selection
+  const proceedWithRecipientSelection = useCallback(
     async (recipient: RecipientData) => {
       // Determine the correct account type
       let accountType: 'main' | 'child' | 'evm' | undefined;
@@ -342,7 +373,38 @@ export function SendToScreen(): React.ReactElement {
         navigation.navigate('SendTokens', { address: recipient.address, recipient });
       }
     },
-    [setToAccount, activeTab, transactionType]
+    [setToAccount, activeTab, transactionType, nftCollections, fromAccount, balanceData]
+  );
+
+  // Dialog handlers
+  const handleFirstTimeSendConfirm = useCallback(async () => {
+    if (pendingRecipient) {
+      await proceedWithRecipientSelection(pendingRecipient);
+    }
+    setShowFirstTimeSendDialog(false);
+    setPendingRecipient(null);
+  }, [pendingRecipient, proceedWithRecipientSelection]);
+
+  const handleFirstTimeSendCancel = useCallback(() => {
+    setShowFirstTimeSendDialog(false);
+    setPendingRecipient(null);
+  }, []);
+
+  const handleRecipientPress = useCallback(
+    async (recipient: RecipientData) => {
+      // Check if this is a first-time send (await the Promise)
+      const shouldShowDialog = await isFirstTimeSend(recipient.address);
+
+      if (shouldShowDialog) {
+        // Show confirmation dialog for first-time sends
+        setPendingRecipient(recipient);
+        setShowFirstTimeSendDialog(true);
+      } else {
+        // Proceed directly for known recipients
+        await proceedWithRecipientSelection(recipient);
+      }
+    },
+    [isFirstTimeSend, proceedWithRecipientSelection]
   );
 
   // Handle search input changes and auto-navigation for valid addresses
@@ -358,35 +420,40 @@ export function SendToScreen(): React.ReactElement {
         const isEvmAddress = isValidEthereumAddress(trimmedValue);
 
         if (isFlowAddress || isEvmAddress) {
-          // Find matching account from the profile accounts
-          let matchingAccount: WalletAccount | undefined = undefined;
-          for (const profile of allProfiles) {
-            matchingAccount = profile.accounts.find(
-              (account) =>
-                account.address.toLowerCase() === trimmedValue.toLowerCase() ||
-                account.address === trimmedValue
-            );
-            if (matchingAccount) break;
-          }
+          // Add a small delay to prevent immediate action while user might still be typing/pasting
+          const timer = setTimeout(() => {
+            // Find matching account from the profile accounts
+            let matchingAccount: WalletAccount | undefined = undefined;
+            for (const profile of allProfiles) {
+              matchingAccount = profile.accounts.find(
+                (account) =>
+                  account.address.toLowerCase() === trimmedValue.toLowerCase() ||
+                  account.address === trimmedValue
+              );
+              if (matchingAccount) break;
+            }
 
-          // Create recipient data
-          const recipient: RecipientData = {
-            id: trimmedValue,
-            name: matchingAccount?.name || 'Unknown Account',
-            address: trimmedValue,
-            avatar: matchingAccount?.emojiInfo ? undefined : matchingAccount?.avatar,
-            emojiInfo: matchingAccount?.emojiInfo,
-            parentEmojiInfo: matchingAccount?.parentEmoji || null,
-            type: 'account' as const,
-            isSelected: false,
-            isLinked: !!(matchingAccount?.parentAddress || matchingAccount?.type === 'child'),
-            isEVM: isEvmAddress,
-            balance: '',
-            showBalance: false,
-          };
+            // Create recipient data
+            const recipient: RecipientData = {
+              id: trimmedValue,
+              name: matchingAccount?.name || 'Unknown Account',
+              address: trimmedValue,
+              avatar: matchingAccount?.emojiInfo ? undefined : matchingAccount?.avatar,
+              emojiInfo: matchingAccount?.emojiInfo,
+              parentEmojiInfo: matchingAccount?.parentEmoji || null,
+              type: 'account' as const,
+              isSelected: false,
+              isLinked: !!(matchingAccount?.parentAddress || matchingAccount?.type === 'child'),
+              isEVM: isEvmAddress,
+              balance: '',
+              showBalance: false,
+            };
 
-          // Auto-navigate to the next screen
-          handleRecipientPress(recipient);
+            // Auto-navigate to the next screen (will trigger firstTimeSend check)
+            handleRecipientPress(recipient);
+          }, 300); // 300ms delay to allow for complete address input
+
+          return () => clearTimeout(timer);
         }
       }
     },
@@ -534,6 +601,54 @@ export function SendToScreen(): React.ReactElement {
           />
         )}
       </SearchableTabLayout>
+
+      {/* First Time Send Confirmation Dialog */}
+      <InfoDialog
+        visible={showFirstTimeSendDialog}
+        title={t('send.confirmAddress')}
+        buttonText={t('send.confirmAddress')}
+        onButtonClick={handleFirstTimeSendConfirm}
+        onClose={handleFirstTimeSendCancel}
+      >
+        <YStack gap="$5" self="stretch" items="center">
+          {/* Body Text */}
+          <Text
+            fontSize="$3"
+            fontWeight="300"
+            lineHeight={20}
+            letterSpacing={-0.084}
+            ta="center"
+            color="$white"
+            self="stretch"
+          >
+            {t('send.firstTimeSendMessage')}
+          </Text>
+
+          {/* Address Container */}
+          <YStack
+            bg="$light10"
+            rounded="$2"
+            py="$4"
+            px="$6"
+            items="center"
+            justify="center"
+            self="stretch"
+          >
+            <Text
+              fontSize="$3"
+              fontWeight="600"
+              lineHeight={16.8}
+              letterSpacing={-0.084}
+              ta="center"
+              color="$white"
+              numberOfLines={1}
+              ellipsizeMode="middle"
+            >
+              {pendingRecipient?.address || ''}
+            </Text>
+          </YStack>
+        </YStack>
+      </InfoDialog>
     </BackgroundWrapper>
   );
 }
