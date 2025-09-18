@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState } from 'react';
 import { XStack, YStack, Text } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
@@ -99,16 +99,6 @@ export function NFTGrid({
     return data.slice(0, visibleItemCount);
   }, [data, visibleItemCount, enableVirtualization]);
 
-  // Load more items when scrolling
-  const handleLoadMore = useCallback(() => {
-    if (!enableVirtualization || visibleItemCount >= data.length) {
-      return;
-    }
-
-    const newCount = Math.min(visibleItemCount + itemsPerBatch, data.length);
-    setVisibleItemCount(newCount);
-  }, [enableVirtualization, visibleItemCount, data.length, itemsPerBatch]);
-
   // Reset visible count when data changes
   const prevDataLength = React.useRef(data.length);
   React.useEffect(() => {
@@ -118,25 +108,6 @@ export function NFTGrid({
     }
   }, [data.length, itemsPerBatch]);
 
-  // Memoized scroll handler
-  const handleScroll = useCallback(
-    (event: any) => {
-      if (!enableVirtualization) return;
-
-      const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent || {};
-      if (!layoutMeasurement || !contentOffset || !contentSize) return;
-
-      const paddingToBottom = loadMoreThreshold;
-      const isCloseToBottom =
-        layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
-
-      if (isCloseToBottom && visibleItemCount < data.length) {
-        handleLoadMore();
-      }
-    },
-    [enableVirtualization, loadMoreThreshold, visibleItemCount, data.length, handleLoadMore]
-  );
-
   // Memoize rows for performance
   const rows = useMemo(() => {
     const result: NFTData[][] = [];
@@ -145,13 +116,6 @@ export function NFTGrid({
     }
     return result;
   }, [visibleData, columns]);
-
-  // Show loading indicator at bottom when loading more
-  const shouldShowLoadMoreIndicator = useMemo(() => {
-    return (
-      enableVirtualization && visibleItemCount < data.length && visibleItemCount > itemsPerBatch
-    );
-  }, [enableVirtualization, visibleItemCount, data.length, itemsPerBatch]);
 
   // Loading skeleton - match the responsive 2-column layout
   const renderSkeleton = () => {
