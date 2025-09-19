@@ -57,6 +57,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
   const getNFTQuantity = useSendStore((state) => state.getNFTQuantity);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
   const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
 
   // Get the first selected NFT (should only be one for single NFT flow)
@@ -236,12 +237,22 @@ export function SendSingleNFTScreen(): React.ReactElement {
         setIsConfirmationVisible(false);
       }
       await executeTransaction();
+
+      // Invalidate NFT caches after successful transaction
+      const tokenStore = useTokenQueryStore.getState();
+      if (selectedCollection && fromAccount) {
+        const network = bridge.getNetwork();
+        const currentAddress = fromAccount.address;
+
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+      }
+
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendSingleNFTScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction, isExtension]);
+  }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
 
   // Early return if essential data is missing
   if (!selectedNFT) {
@@ -273,7 +284,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$3">
+          <YStack gap="$3">
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
@@ -391,7 +402,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack pt="$2">
           <YStack
             width="100%"
             height={52}
