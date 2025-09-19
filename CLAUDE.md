@@ -527,6 +527,65 @@ The UI package includes comprehensive Storybook integration:
 - **Strict boundaries**: ESLint enforces layer separation (View ↔ ViewModel ↔
   Business Logic)
 
+### Logging Guidelines
+
+- **NEVER use `console.log`, `console.debug`, `console.info`, `console.warn`, or
+  `console.error`**
+- **ALWAYS use the centralized logger from `@onflow/frw-context`**
+- **Available log levels**: `'debug' | 'info' | 'warn' | 'error'`
+- **Automatic filtering**: Debug logs are filtered out in production
+- **Platform abstraction**: All logs go through the platform layer for
+  consistency
+
+**Logger Import and Usage**:
+
+```typescript
+// ✅ Preferred - Use global logger from context
+import { logger } from '@onflow/frw-context';
+
+logger.debug('User selected account:', account);
+logger.info('Services initialized successfully');
+logger.warn('Falling back to default language:', language);
+logger.error('Failed to load tokens:', error);
+
+// ✅ Alternative - Create component-specific logger with prefix
+import { createLogger } from '@onflow/frw-utils';
+import { bridge } from '@onflow/frw-context';
+
+const componentLogger = createLogger(bridge, 'MyComponent');
+componentLogger.info('Component initialized');
+
+// ✅ For PlatformImpl classes - Use built-in log method
+this.log('info', 'Platform initialized');
+this.log('debug', 'Current language detected:', language);
+```
+
+**Platform Implementation**:
+
+- **React Native**: Console output + Instabug integration
+- **Extension**: Console output + Chrome runtime messaging
+- **Automatic filtering**: Debug level respects `isDebug()` flag
+- **Global access**: Logger is initialized by ServiceContext and available
+  everywhere
+
+**Examples**:
+
+```typescript
+// ❌ Bad - Direct console usage
+console.log('User selected account:', account);
+console.error('Failed to load tokens:', error);
+
+// ✅ Good - Centralized logger
+import { logger } from '@onflow/frw-context';
+
+logger.debug('User selected account:', account);
+logger.error('Failed to load tokens:', error);
+
+// ✅ Good - With component context
+const myLogger = createLogger(bridge, 'TokenService');
+myLogger.warn('Token refresh failed, retrying...');
+```
+
 ### Testing Requirements
 
 - **Unit tests**: Vitest for all packages (run with `pnpm test`)
