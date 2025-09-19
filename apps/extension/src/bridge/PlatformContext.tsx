@@ -1,4 +1,4 @@
-import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import { ServiceContext, type PlatformSpec, logger } from '@onflow/frw-context';
 import { initializeI18n } from '@onflow/frw-screens';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
@@ -116,10 +116,10 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         try {
           const language = platform.getLanguage();
           await initializeI18n(language);
-          console.debug('[PlatformProvider] i18n initialized with language:', language);
+          logger.debug('[PlatformProvider] i18n initialized with language:', language);
           i18nInitialized.current = true;
         } catch (error) {
-          console.error('[PlatformProvider] Failed to initialize i18n:', error);
+          logger.error('[PlatformProvider] Failed to initialize i18n:', error);
         }
       };
       initI18n();
@@ -324,7 +324,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           const profilePublicKey = profileVaultEntry?.publicKey;
 
           if (!profilePublicKey) {
-            console.warn(`No public key found for profile ${profileId}`);
+            logger.warn(`No public key found for profile ${profileId}`);
             continue;
           }
 
@@ -414,7 +414,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             profilesArray.push(profile);
           }
         } catch (error) {
-          console.warn(`Failed to get data for profile ${profileId}:`, error);
+          logger.warn(`Failed to get data for profile ${profileId}:`, error);
         }
       }
 
@@ -628,7 +628,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       try {
         return await platform.getSelectedAccount();
       } catch (error) {
-        console.warn('Failed to get selected account from platform:', error);
+        logger.warn('Failed to get selected account from platform:', error);
         throw error;
       }
     },
