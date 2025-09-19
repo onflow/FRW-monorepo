@@ -1,8 +1,9 @@
 import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import { initializeI18n } from '@onflow/frw-screens';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import BN from 'bignumber.js';
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { getCachedData } from '@/data-model/cache-data-access';
@@ -78,6 +79,9 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     currentBalance,
   } = useProfiles();
 
+  // Track i18n initialization to avoid multiple initializations
+  const i18nInitialized = useRef(false);
+
   // Send store hooks for synchronization
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const setFromAccount = useSendStore((state) => state.setFromAccount);
@@ -104,6 +108,23 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize platform singleton
   const platform = initializePlatform();
+
+  // Initialize i18n with platform-detected language (only once)
+  useEffect(() => {
+    if (!i18nInitialized.current) {
+      const initI18n = async () => {
+        try {
+          const language = platform.getLanguage();
+          await initializeI18n(language);
+          console.debug('[PlatformProvider] i18n initialized with language:', language);
+          i18nInitialized.current = true;
+        } catch (error) {
+          console.error('[PlatformProvider] Failed to initialize i18n:', error);
+        }
+      };
+      initI18n();
+    }
+  }, [platform]);
 
   // Initialize ServiceContext with enhanced platform that includes hook data
   useEffect(() => {
