@@ -50,6 +50,24 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return chrome.runtime.getManifest().version_name || this.getVersion();
   }
 
+  getLanguage(): string {
+    try {
+      // Get language from Chrome API
+      const languageCode = chrome.i18n.getUILanguage().split('-')[0].toLowerCase();
+
+      // Validate against supported languages
+      const supportedLanguages = ['en', 'es', 'zh', 'ru', 'jp'];
+      return supportedLanguages.includes(languageCode) ? languageCode : 'en';
+    } catch (error) {
+      this.log(
+        'warn',
+        '[PlatformImpl] Failed to get Chrome UI language, falling back to en:',
+        error
+      );
+      return 'en';
+    }
+  }
+
   getCurrency(): Currency {
     return {
       name: 'USD',

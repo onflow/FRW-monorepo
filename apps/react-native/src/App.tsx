@@ -1,11 +1,10 @@
 import { ServiceContext } from '@onflow/frw-context';
-import { QueryProvider } from '@onflow/frw-screens';
+import { QueryProvider, initializeI18n } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
 import { TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 
 import 'react-native-get-random-values';
 import { version } from '../package.json';
@@ -29,6 +28,11 @@ const App = (props: AppProps) => {
       // Initialize services with RNBridge dependency injection
       ServiceContext.initialize(platform);
       console.debug('[App] Services initialized with RNBridge successfully');
+
+      // Initialize i18n with platform-detected language
+      const language = platform.getLanguage();
+      await initializeI18n(language);
+      console.debug('[App] i18n initialized with language:', language);
 
       // Initialize Instabug after ServiceContext is ready
       initializeInstabug(props);
