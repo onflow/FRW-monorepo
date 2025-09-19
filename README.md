@@ -102,8 +102,6 @@ For detailed development guidelines and best practices:
   project
 - **[Architecture Guide](./docs/ARCHITECTURE.md)** - Technical architecture
   documentation
-- **[Xcode Cloud Setup](./docs/xcode-cloud.md)** - Configure iOS CI/CD with
-  Xcode Cloud, RN bundling, and submodules
 
 ## 🤝 Contributing
 
