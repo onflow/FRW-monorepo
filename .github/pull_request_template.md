@@ -1,5 +1,3 @@
-# Pull Request
-
 ## 🔗 Related Issues
 
 <!-- Link to related issues using one of the following formats: -->
