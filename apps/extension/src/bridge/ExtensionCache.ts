@@ -157,7 +157,6 @@ export class ExtensionCache implements Cache {
         keyCount: keys.length,
       };
     } catch (error) {
-      console.warn('[ExtensionCache] Failed to get cache stats:', error);
       return { keyCount: 0 };
     }
   }

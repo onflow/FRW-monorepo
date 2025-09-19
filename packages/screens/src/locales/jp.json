@@ -1,0 +1,123 @@
+{
+  "navigation": {
+    "send": "送信",
+    "sendTo": "送信先",
+    "sending": "送信中",
+    "selectTokens": "トークンを選択",
+    "colorDemo": "カラーデモ"
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "back": "戻る",
+    "close": "閉じる",
+    "done": "完了",
+    "next": "次へ",
+    "previous": "前へ",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "Search": "検索"
+  },
+  "tabs": {
+    "tokens": "トークン",
+    "nfts": "NFT"
+  },
+  "send": {
+    "tokens": "トークン",
+    "nfts": "NFT",
+    "myAccounts": "マイアカウント",
+    "recent": "最近",
+    "addressBook": "アドレス帳",
+    "sendTo": {
+      "title": "送信先"
+    },
+    "toAccount": "送信先アカウント",
+    "searchAddress": "アドレスを検索",
+    "searchPasteAddress": "アドレスを検索/貼り付け",
+    "selectedToken": "選択されたトークン",
+    "noAccounts": {
+      "title": "アカウントがありません",
+      "message": "まだアカウントがありません。"
+    },
+    "noRecent": {
+      "title": "最近の受信者がいません",
+      "message": "最近送信した相手がいません。"
+    },
+    "noContacts": {
+      "title": "連絡先がありません",
+      "message": "アドレス帳が空です。"
+    },
+    "noRecipients": "受信者が見つかりません",
+    "selectToken": "トークンを選択",
+    "selectRecipient": "受信者を選択",
+    "enterAmount": "金額を入力",
+    "reviewTransaction": "取引を確認",
+    "transactionFee": "取引手数料",
+    "total": "合計",
+    "balance": "残高",
+    "available": "利用可能",
+    "insufficient": "残高不足",
+    "recipient": "受信者",
+    "from": "送信者",
+    "fromAccount": "送信元アカウント",
+    "to": "送信先",
+    "amount": "金額",
+    "asset": "アセット",
+    "confirm": "取引を確認",
+    "sending": "送信中...",
+    "sent": "取引が送信されました",
+    "failed": "取引が失敗しました",
+    "searchRecipients": "受信者を検索...",
+    "recentRecipients": "最近の受信者",
+    "contactsList": "連絡先",
+    "enterAddress": "Flowアドレスを入力",
+    "invalidAddress": "無効なアドレス",
+    "sameAddress": "同じアドレスには送信できません",
+    "selectNFTs": "NFTを選択",
+    "selectedNFTs": "選択されたNFT",
+    "nftDetails": "NFT詳細",
+    "collectionName": "コレクション",
+    "tokenId": "トークンID",
+    "properties": "プロパティ",
+    "description": "説明",
+    "creator": "作成者",
+    "title": "送信",
+    "inaccessible": "アクセス不可"
+  },
+  "messages": {
+    "loading": "読み込み中...",
+    "noTokensWithBalance": "残高のあるトークンがありません",
+    "noNFTCollectionsForAccount": "NFTコレクションが見つかりません"
+  },
+  "buttons": {
+    "retry": "再試行",
+    "refresh": "更新",
+    "continue": "続行",
+    "clearSearch": "検索をクリア"
+  },
+  "errors": {
+    "networkError": "ネットワークエラーが発生しました",
+    "invalidInput": "無効な入力",
+    "transactionFailed": "取引が失敗しました",
+    "insufficientFunds": "残高不足",
+    "addressNotFound": "アドレスが見つかりません",
+    "nftNotFound": "NFTが見つかりません",
+    "tokenNotSupported": "サポートされていないトークン",
+    "unauthorized": "認証されていません",
+    "timeout": "リクエストがタイムアウトしました",
+    "unknown": "不明なエラーが発生しました",
+    "failedToLoadTokens": "トークンの読み込みに失敗しました",
+    "failedToLoadNFTs": "NFTの読み込みに失敗しました"
+  },
+  "nft": {
+    "noSearchResults": "検索結果がありません",
+    "noNFTsMatchSearch": "'{{search}}'に一致するNFTがありません",
+    "noNFTsFound": "NFTが見つかりません",
+    "collectionEmpty": "このコレクションにはNFTが含まれていません",
+    "notFound": {
+      "title": "NFTが見つかりません",
+      "message": "要求されたNFTが見つからないか、読み込めませんでした"
+    }
+  }
+}

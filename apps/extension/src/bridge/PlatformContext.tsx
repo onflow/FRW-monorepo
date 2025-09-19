@@ -2,7 +2,7 @@ import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import BN from 'bignumber.js';
-import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { getCachedData } from '@/data-model/cache-data-access';
@@ -383,8 +383,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             // Create profile object with the specific data
             const profile = {
               name:
-                (profileUserInfo as any)?.username ||
                 (profileUserInfo as any)?.nickname ||
+                (profileUserInfo as any)?.username ||
                 `Profile ${profileId}`,
               avatar: (profileUserInfo as any)?.avatar || '',
               uid: profileId,
@@ -481,7 +481,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     if (currentWallet && currentWallet.address) {
       // Convert currentWallet to WalletAccount format for send store
       let nftCount = 0;
-      let balance;
       if (isEvmAddress) {
         nftCount =
           evmNftCollections?.reduce((total, collection) => {
@@ -494,11 +493,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           }, 0) || 0;
       }
 
-      // Use the fresh balance data if available
-      const freshBalance = coins?.find((coin) => coin.unit.toLowerCase() === 'flow')?.balance;
-      if (freshBalance) {
-        balance = freshBalance;
-      }
       const walletAccount: WalletAccount = {
         name: currentWallet.name || 'Unnamed Account',
         address: currentWallet.address,
@@ -511,12 +505,12 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         type: activeAccountType === 'none' ? 'main' : activeAccountType, // Default type for extension accounts
         isActive: true,
         id: currentWallet.address,
-        balance,
         nfts: `${nftCount} NFT${nftCount !== 1 ? 's' : ''}`,
       };
 
       if (fromAccount?.address !== currentWallet.address) {
         setFromAccount(walletAccount);
+        // Check if we're in a send workflow and navigate to dashboard if so
       }
     }
   }, [

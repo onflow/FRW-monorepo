@@ -142,7 +142,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                   justify="center"
                   width="100%"
                   height={64}
-                  px={12}
+                  hoverStyle={{ opacity: 0.7 }}
                 >
                   <XStack items="center" gap="$2" width="100%">
                     <Avatar
@@ -240,8 +240,6 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
     </YStack>
   );
 
-  if (!visible) return null;
-
   // Determine if we should use sheet
   const shouldUseSheet =
     platform === 'mobile' || (platform === 'auto' && (isMobile || isReactNative));
@@ -252,9 +250,11 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
       <Sheet
         modal
         open={visible}
-        onOpenChange={(open) => !open && onClose()}
-        snapPoints={isExtension ? [91] : [85, 50]}
+        onOpenChange={onClose}
+        snapPointsMode={!isExtension ? 'fit' : undefined}
         dismissOnSnapToBottom
+        snapPoints={isExtension ? [91] : undefined}
+        animation={isExtension ? 'quick' : 'lazy'}
       >
         <Sheet.Overlay
           animation={isExtension ? undefined : 'lazy'}
@@ -267,9 +267,12 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           bg="#121212"
           borderTopLeftRadius={isExtension ? 0 : 16}
           borderTopRightRadius={isExtension ? 0 : 16}
-          pt={25}
-          px={18}
-          pb={36}
+          pt={isExtension ? 0 : 25}
+          px={'$4'}
+          pb={isExtension ? 0 : 36}
+          animation={isExtension ? 'quick' : 'lazy'}
+          enterStyle={{ y: '100%' }}
+          exitStyle={{ y: '100%' }}
         >
           {renderContent()}
         </Sheet.Frame>

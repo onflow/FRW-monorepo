@@ -57,6 +57,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
 
   // Query for complete account information including storage and balance
   const { data: accountInfo } = useQuery({
@@ -173,12 +174,19 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         setIsConfirmationVisible(false);
       }
       await executeTransaction();
-      // Navigation after successful transaction will be handled by the store
+      // Invalidate NFT caches after successful transaction
+      const tokenStore = useTokenQueryStore.getState();
+      if (selectedCollection && fromAccount) {
+        const network = bridge.getNetwork();
+        const currentAddress = fromAccount.address;
+
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+      }
     } catch (error) {
       logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction, isExtension]);
+  }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -239,7 +247,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$4">
+          <YStack gap="$4">
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
@@ -263,7 +271,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
-              <View mt={8} pb={16} mb={-8}>
+              <View mt={-8} mb={-8} pb="$7">
                 <MultipleNFTsPreview
                   nfts={nftsForUI}
                   onRemoveNFT={handleRemoveNFT}
@@ -278,7 +286,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-            <XStack position="relative" height={0} mt="$1">
+            <XStack position="relative" height="$1" mt="$1">
               <XStack width="100%" position="absolute" t={-40} justify="center">
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
@@ -332,7 +340,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack pt="$2">
           <YStack
             width="100%"
             height={52}
