@@ -1,11 +1,13 @@
 import {
   SelectTokensScreen,
-  SendTokensScreen,
   NFTListScreen,
   NFTDetailScreen,
+} from '@onflow/frw-screens';
+import {
+  SendTokensScreen,
   SendSingleNFTScreen,
   SendMultipleNFTsScreen,
-} from '@onflow/frw-screens';
+} from '@/screens/SendScreenWrappers';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -21,6 +23,8 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
+import { NavigationBackButton } from '@/components/NavigationBackButton';
+import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
@@ -93,12 +97,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       }
       try {
         if (sendToConfig.fromAccount) {
-          console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
           setFromAccount(walletAccount);
         }
         if (sendToConfig.selectedToken) {
-          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
           // Convert to TokenInfo type
           const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
@@ -107,7 +109,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
         if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
           // Set selected NFTs if provided
-          console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
           const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
           setSelectedNFTs(nftModels);
         }
@@ -129,7 +130,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setCurrentStep('send-to');
         }
       } catch (error) {
-        console.error('Failed to initialize SendTo flow:', error);
+      //  console.error('Failed to initialize SendTo flow:', error);
       }
     }
   }, [
@@ -197,8 +198,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerShown: true,
               headerBackTitle: '', // Ensure no back title text
               headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
-              // headerLeft: () => <NavigationBackButton />,
-              // headerRight: () => <NavigationCloseButton />,
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
             }}
           >
             <Stack.Screen

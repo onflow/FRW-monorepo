@@ -33,6 +33,9 @@
       "title": "Send To"
     },
     "toAccount": "To Account",
+    "errors": {
+      "amountExceedsBalance": "Amount exceeds available balance"
+    },
     "searchAddress": "Search address",
     "searchPasteAddress": "Search / Paste address",
     "selectedToken": "Selected Token",

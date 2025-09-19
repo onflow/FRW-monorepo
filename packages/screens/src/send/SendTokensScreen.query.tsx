@@ -9,7 +9,7 @@ import {
   storageQueries,
   storageUtils,
 } from '@onflow/frw-stores';
-import { isFlow } from '@onflow/frw-types';
+import { isFlow, Platform } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -36,11 +36,17 @@ import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ScreenAssets } from '../assets/images';
+
+interface SendTokensScreenProps {
+  assets?: ScreenAssets;
+}
+
 /**
  * Query-integrated version of SendTokensScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export const SendTokensScreen = (): React.ReactElement => {
+export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
@@ -77,9 +83,10 @@ export const SendTokensScreen = (): React.ReactElement => {
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
 
-  // Reset amount when selected token changes
+  // Reset amount and error when selected token changes
   useEffect(() => {
     setAmount('');
+    setAmountError('');
   }, [selectedToken]);
 
   // Check free gas status
@@ -194,6 +201,7 @@ export const SendTokensScreen = (): React.ReactElement => {
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
 
   // Calculate storage warning state based on real validation logic
@@ -250,42 +258,7 @@ export const SendTokensScreen = (): React.ReactElement => {
         return;
       }
 
-      // Check if amount exceeds max balance
-      if (selectedToken?.balance) {
-        const maxBalance = new BN(selectedToken.balance.toString());
-        const inputAmount = new BN(sanitized);
-
-        if (!inputAmount.isNaN() && !maxBalance.isNaN()) {
-          if (isTokenMode) {
-            // In token mode, check directly against balance
-            if (inputAmount.gt(maxBalance)) {
-              setAmount(maxBalance.toString());
-              // Blur the input to deselect it and show the full value
-              if (inputRef.current) {
-                inputRef.current.blur();
-              }
-              return;
-            }
-          } else if (selectedToken?.priceInUSD) {
-            // In USD mode, convert to tokens and check against balance
-            const price = new BN(selectedToken.priceInUSD);
-            if (!price.isNaN() && price.gt(0)) {
-              const tokenEquivalent = inputAmount.div(price);
-              if (tokenEquivalent.gt(maxBalance)) {
-                // Set to max USD value (balance * price)
-                const maxUSD = maxBalance.times(price);
-                setAmount(maxUSD.toFixed(2));
-                // Blur the input to deselect it and show the full value
-                if (inputRef.current) {
-                  inputRef.current.blur();
-                }
-                return;
-              }
-            }
-          }
-        }
-      }
-
+      // Allow user to type any amount - validation will show error if exceeds balance
       setAmount(sanitized);
     },
     [selectedToken, isTokenMode]
@@ -391,6 +364,12 @@ export const SendTokensScreen = (): React.ReactElement => {
       } catch (error) {
         logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
       }
+
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (platform === Platform.iOS || platform === Platform.Android) {
+        bridge.closeRN();
+      }
     }
 
     return result;
@@ -409,7 +388,7 @@ export const SendTokensScreen = (): React.ReactElement => {
     addressBookStore,
   ]);
 
-  // Calculate if send button should be disabled
+  // Calculate if send button should be disabled and set amount error
   const isSendDisabled = useMemo(() => {
     if (transactionType === 'tokens') {
       const amountNum = new BN(amount || '0');
@@ -424,6 +403,13 @@ export const SendTokensScreen = (): React.ReactElement => {
         }
       }
 
+      // Check if amount exceeds balance and set error
+      if (tokenAmount.gt(balanceNum) && amountNum.gt(0)) {
+        setAmountError(t('send.errors.amountExceedsBalance', 'Amount exceeds available balance'));
+      } else {
+        setAmountError('');
+      }
+
       return (
         !selectedToken ||
         !fromAccount ||
@@ -434,6 +420,7 @@ export const SendTokensScreen = (): React.ReactElement => {
         isAccountIncompatible
       );
     } else {
+      setAmountError(''); // Clear error for non-token transactions
       return !selectedNFTs.length || !fromAccount || !toAccount;
     }
   }, [
@@ -446,6 +433,7 @@ export const SendTokensScreen = (): React.ReactElement => {
     isTokenMode,
     showStorageWarning,
     isAccountIncompatible,
+    t,
   ]);
 
   // Create form data for transaction confirmation
@@ -487,6 +475,14 @@ export const SendTokensScreen = (): React.ReactElement => {
     return null;
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
+  // Helper function to handle press outside input
+  const handlePressOutside = useCallback(() => {
+    // Blur the input ref if it exists (works on all platforms)
+    if (inputRef.current && inputRef.current.blur) {
+      inputRef.current.blur();
+    }
+  }, []);
+
   // Show loading state
   if (isOverallLoading) {
     return (
@@ -522,14 +518,15 @@ export const SendTokensScreen = (): React.ReactElement => {
         />
       )}
 
-      <YStack flex={1} p={contentPadding}>
+      <YStack flex={1} p={contentPadding} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb={-18}>
+              <View mb={"$2"}>
                 <AccountCard
+                  isSendTokensScreen={true}
                   account={transformAccountForCard(fromAccount)}
                   title="From Account"
                   isLoading={isBalanceLoading}
@@ -540,7 +537,7 @@ export const SendTokensScreen = (): React.ReactElement => {
             )}
             <Separator
               mx="$0"
-              my="$0"
+              mt="$2"
               mb="$2"
               borderColor="rgba(255, 255, 255, 0.1)"
               borderWidth={0.5}
@@ -575,6 +572,7 @@ export const SendTokensScreen = (): React.ReactElement => {
                   showConverter={true}
                   disabled={false}
                   inputRef={inputRef}
+                  amountError={amountError}
                 />
               </YStack>
             ) : (
@@ -653,7 +651,7 @@ export const SendTokensScreen = (): React.ReactElement => {
         </YStack>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack pt="$4">
+        <YStack pt="$4" mb={'$10'}>
           <YStack
             width="100%"
             height={52}
@@ -691,6 +689,7 @@ export const SendTokensScreen = (): React.ReactElement => {
           visible={isConfirmationVisible}
           transactionType={transactionType}
           selectedToken={selectedToken}
+          sendStaticImage={assets?.sendStaticImage}
           selectedNFTs={selectedNFTs?.map((nft) => ({
             id: nft.id || '',
             name: nft.name || '',

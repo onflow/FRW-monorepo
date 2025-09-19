@@ -55,6 +55,7 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
         error: null,
       });
     } catch (error) {
+      console.error('📊 [WalletStore] Error loading accounts:', error);
       set({
         accounts: [],
         activeAccount: null,

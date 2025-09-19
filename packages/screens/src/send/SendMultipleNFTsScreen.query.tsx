@@ -1,4 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
+import { Platform } from '@onflow/frw-types';
 import {
   useSendStore,
   sendSelectors,
@@ -37,11 +38,17 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ScreenAssets } from '../assets/images';
+
+interface SendMultipleNFTsScreenProps {
+  assets?: ScreenAssets;
+}
+
 /**
  * Query-integrated version of SendMultipleNFTsScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export function SendMultipleNFTsScreen(): React.ReactElement {
+export function SendMultipleNFTsScreen({ assets }: SendMultipleNFTsScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
 
@@ -169,10 +176,13 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      if (!isExtension) {
-        setIsConfirmationVisible(false);
+      const result = await executeTransaction();
+
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (result && (platform === Platform.iOS || platform === Platform.Android)) {
+        bridge.closeRN();
       }
-      await executeTransaction();
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
@@ -192,7 +202,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         const isEnabled = await bridge.isFreeGasEnabled?.();
         setIsFreeGasEnabled(isEnabled ?? true);
       } catch (error) {
-        console.error('Failed to check free gas status:', error);
         // Default to enabled if we can't determine the status
         setIsFreeGasEnabled(true);
       }
@@ -332,7 +341,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack p={20} pt="$2" mb={'$10'}>
           <YStack
             width="100%"
             height={52}
@@ -358,6 +367,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
           visible={isConfirmationVisible}
           transactionType="multiple-nfts"
           selectedToken={null}
+          sendStaticImage={assets?.sendStaticImage}
           selectedNFTs={nftsForUI}
           fromAccount={transformAccountForDisplay(fromAccount)}
           toAccount={transformAccountForDisplay(toAccount)}

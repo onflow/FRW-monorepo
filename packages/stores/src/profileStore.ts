@@ -57,7 +57,6 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
         });
       } catch (profileError) {
         const walletAccountsData = await flow.getWalletAccounts();
-
         if (!walletAccountsData.accounts || !Array.isArray(walletAccountsData.accounts)) {
           throw new Error('Invalid accounts data from bridge');
         }

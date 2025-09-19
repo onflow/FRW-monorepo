@@ -40,6 +40,12 @@ export function TokenAmountInput({
   showConverter = true,
   disabled = false,
   inputRef: externalInputRef,
+  currency = {
+    name: 'USD',
+    symbol: '$',
+    rate: '1',
+  },
+  amountError,
   ...props
 }: TokenAmountInputProps): React.ReactElement {
   const [_focused, setFocused] = useState(false);
@@ -79,7 +85,7 @@ export function TokenAmountInput({
           <XStack items="center" width={169} height={35}>
             {!isTokenMode && (
               <Text fontSize={28} fontWeight="500" color="$white" lineHeight={35} mr={4}>
-                $
+                {currency.symbol}
               </Text>
             )}
             <Input
@@ -103,6 +109,9 @@ export function TokenAmountInput({
                 borderWidth: 0,
                 outlineWidth: 0,
                 boxShadow: 'none',
+              }}
+              style={{
+                borderRadius: 0,
               }}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
@@ -173,7 +182,7 @@ export function TokenAmountInput({
               minW={0}
             >
               {isTokenMode
-                ? `$${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
+                ? `${currency.symbol}${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
                 : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)}`}
             </Text>
           </XStack>
@@ -210,6 +219,13 @@ export function TokenAmountInput({
           </YStack>
         </XStack>
       </XStack>
+
+      {/* Error Message */}
+      {amountError && (
+        <Text fontSize="$2" color="$error" mt="$2" ml="$1" lineHeight={16}>
+          {amountError}
+        </Text>
+      )}
     </YStack>
   );
 }

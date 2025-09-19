@@ -41,19 +41,20 @@ export function ProfileList({
       {profiles.map((profile, index) => {
         return (
           <React.Fragment key={profile.uid}>
-            <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
+            {/* <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" /> */}
             <ProfileItem
               profile={profile}
               onAccountPress={onAccountPress}
               isLast={index === profiles.length - 1}
             />
             {index < profiles.length - 1 && (
-              <View
-                mt="$1"
-                height={0}
-                width="100%"
-                borderBottomWidth={1}
-                borderBottomColor="$borderColor"
+              <YStack
+                mt={'$2'}
+                mb={'$2'}
+                height={1}
+                bg="rgba(255, 255, 255, 0.1)"
+                w="100%"
+                ml={0}
               />
             )}
           </React.Fragment>
@@ -134,15 +135,7 @@ function ProfileItem({
         {accountsData.map((account, index) => (
           <View key={account.id}>
             <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
-            {index < accountsData.length - 1 && (
-              <View
-                mt="$2"
-                height={0}
-                width="100%"
-                borderBottomWidth={1}
-                borderBottomColor="$borderColor"
-              />
-            )}
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
           </View>
         ))}
       </YStack>

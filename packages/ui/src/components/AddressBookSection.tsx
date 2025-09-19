@@ -41,9 +41,7 @@ export function AddressBookSection({
               showCopyButton={true}
               copiedFeedback={copiedAddress === contact.address ? 'Copied!' : undefined}
             />
-            {index < contacts.length - 1 && (
-              <YStack height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
-            )}
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
           </YStack>
         ))}
       </YStack>

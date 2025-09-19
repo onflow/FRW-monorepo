@@ -1,7 +1,8 @@
 import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, View, Sheet } from 'tamagui';
+import { Platform, Image as RNImage } from 'react-native';
+import { YStack, XStack, View, Sheet, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
@@ -127,7 +128,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   title = 'Summary',
   isSending = false,
   isExtension = false,
+  sendStaticImage,
 }) => {
+  const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
   const handleConfirm = async () => {
@@ -135,7 +138,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
-      console.error('Transaction failed:', error);
+      //
     } finally {
       setInternalIsSending(false);
     }
@@ -182,7 +185,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={20} color="white" />
+                  <Close size={15} color={theme.white.val} />
                 </XStack>
               </>
             ) : (
@@ -205,7 +208,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={20} color="$white" />
+                  <Close size={15} color={theme.white.val} />
                 </XStack>
               </>
             )}
@@ -270,7 +273,15 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               }}
             >
               {/* Wallet Card Icon */}
-              <WalletCard width={114.62} height={129.195} />
+              {Platform.OS !== 'web' && sendStaticImage ? (
+                <RNImage
+                  source={sendStaticImage}
+                  style={{ width: 114.62, height: 129.195 }}
+                  resizeMode="contain"
+                />
+              ) : (
+                <WalletCard width={114.62} height={129.195} />
+              )}
             </View>
           </View>
 
@@ -419,6 +430,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Confirm Button */}
           <YStack
+            mb={'$10'}
             bg="#FFFFFF"
             rounded="$4"
             height={56}
