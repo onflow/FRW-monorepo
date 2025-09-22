@@ -189,8 +189,8 @@ export function RecipientItem({
         <XStack gap="$2" items="center" position="relative">
           {onAddToAddressBook && (
             <Card
-              width={24}
-              height={24}
+              width="$6"
+              height="$6"
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onAddToAddressBook();
@@ -203,15 +203,15 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <Text fontSize={20} fontWeight="600" color="#FFFFFF">
+              <Text fontSize="$5" fontWeight="600" color="$white">
                 +
               </Text>
             </Card>
           )}
           {showCopyButton && onCopy && (
             <Card
-              width={24}
-              height={24}
+              width="$6"
+              height="$6"
               opacity={copiedFeedback ? 1 : 0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
@@ -225,7 +225,7 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <Copy size={24} color={copiedFeedback ? '#00D964' : '#FFFFFF'} />
+              <Copy size="$6" color={copiedFeedback ? '#00D964' : '#FFFFFF'} />
             </Card>
           )}
           {copiedFeedback && (
