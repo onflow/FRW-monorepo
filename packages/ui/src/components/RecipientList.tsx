@@ -146,7 +146,7 @@ export function RecipientList({
             <Separator
               my={6.5}
               mx={0}
-              width={336}
+              width="100%"
               borderColor="rgba(255, 255, 255, 0.1)"
               borderWidth={1}
             />
