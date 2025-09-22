@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# NOTE: This hook is executed via husky's wrapper with `sh -e` (errexit).
+# To ensure our custom error message is shown, avoid commands that return
+# non‑zero unintentionally; use sed (which exits 0 even on no‑match) or `|| true`.
+
+# 1) Exit quietly if in detached HEAD
+if ! git symbolic-ref --quiet HEAD; then
+  exit 0
+fi
+
+# 2) Resolve current branch name safely
+BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+[ -z "$BRANCH_NAME" ] && exit 0
+
+# 3) Skip agent/automation branches
+case "$BRANCH_NAME" in
+  cursor*|dependabot/*)
+    exit 0
+    ;;
+esac
+
+# 4) Allow main/maintenance branches without ticket numbers
+case "$BRANCH_NAME" in
+  main|master|dev|develop|hotfix*|release*)
+    : # allowed
+    ;;
+  *)
+    # Try to extract issue number from common patterns using sed (no non‑zero exit)
+    ISSUE_NUMBER=
+    # 123-feature
+    [ -z "$ISSUE_NUMBER" ] && ISSUE_NUMBER=$(printf %s "$BRANCH_NAME" | sed -n 's/^\([0-9][0-9]*\)-.*/\1/p')
+    # feature-123
+    [ -z "$ISSUE_NUMBER" ] && ISSUE_NUMBER=$(printf %s "$BRANCH_NAME" | sed -n 's/.*-\([0-9][0-9]*\)$/\1/p')
+    # dev/123-feature or anyprefix/123-something
+    [ -z "$ISSUE_NUMBER" ] && ISSUE_NUMBER=$(printf %s "$BRANCH_NAME" | sed -n 's#.*/\([0-9][0-9]*\)-.*#\1#p')
+    # feature/abc-123 or anyprefix/any-123
+    [ -z "$ISSUE_NUMBER" ] && ISSUE_NUMBER=$(printf %s "$BRANCH_NAME" | sed -n 's#.*/.*-\([0-9][0-9]*\)$#\1#p')
+
+    if [ -z "$ISSUE_NUMBER" ]; then
+      # Print a friendly error BEFORE failing so husky shows it
+      {
+        echo "✖ Branch name must contain an issue number"
+        echo "  Current branch: \"$BRANCH_NAME\""
+        echo
+        echo "  Valid patterns:"
+        echo "    • 123-feature-name (GitHub default)"
+        echo "    • feature-123"
+        echo "    • dev/123-feature"
+        echo "    • feature/abc-123"
+        echo
+        echo "  Allowed without numbers: main, master, dev, develop, hotfix-*, release-*"
+        echo
+        echo "  The issue number will be added automatically to your commit message."
+      } >&2
+      exit 1
+    fi
+    ;;
+esac
+
+# 5) Append "Closes #<issue>" to commit message when applicable
+COMMIT_MSG=$(cat "$1" 2>/dev/null || true)
+if [ -n "$ISSUE_NUMBER" ] && ! printf %s "$COMMIT_MSG" | grep -q "Closes #$ISSUE_NUMBER" 2>/dev/null; then
+  {
+    printf %s "$COMMIT_MSG"
+    printf '\n\nCloses #%s\n' "$ISSUE_NUMBER"
+  } > "$1" 2>/dev/null || true
+fi
+
+exit 0
