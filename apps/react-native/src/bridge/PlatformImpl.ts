@@ -10,7 +10,7 @@ import { Platform } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
-import { Platform as RNPlatform } from 'react-native';
+import { Platform as RNPlatform, NativeModules } from 'react-native';
 
 import { storage, cache } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
@@ -107,6 +107,28 @@ class PlatformImpl implements PlatformSpec {
 
   getBuildNumber(): string {
     return NativeFRWBridge.getBuildNumber();
+  }
+
+  getLanguage(): string {
+    try {
+      // Get language from system locale
+      const locale =
+        RNPlatform.OS === 'ios'
+          ? NativeModules.SettingsManager?.settings?.AppleLocale ||
+            NativeModules.SettingsManager?.settings?.AppleLanguages?.[0] ||
+            'en'
+          : NativeModules.I18nManager?.localeIdentifier || 'en';
+
+      // Extract language code (e.g., 'en-US' -> 'en', 'zh-CN' -> 'zh')
+      const languageCode = locale.split('-')[0].toLowerCase();
+
+      // Validate against supported languages
+      const supportedLanguages = ['en', 'es', 'zh', 'ru', 'jp'];
+      return supportedLanguages.includes(languageCode) ? languageCode : 'en';
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to get system language, falling back to en:', error);
+      return 'en';
+    }
   }
 
   getCurrency(): Currency {

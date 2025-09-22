@@ -5,10 +5,12 @@ on:
     paths:
       - "apps/extension/**"
       - ".github/workflows/extension-build.yml"
+      - "packages/**"
   pull_request:
     paths:
       - "apps/extension/**"
       - ".github/workflows/extension-build.yml"
+      - "packages/**"
   workflow_dispatch:
 
 jobs:
@@ -21,7 +23,7 @@ jobs:
     steps:
       - id: set_env
         run: |
-          ENV_NAME="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || contains(github.ref_name, 'prod') && 'production' || startsWith(github.ref_name, 'release/') && 'production' || 'development' }}"
+          ENV_NAME="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || contains(github.ref_name, 'release') && 'production' || startsWith(github.ref_name, 'release/') && 'production' || 'development' }}"
           IS_BETA="false"
           BETA_VERSION=""
           if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" == *"beta"* ]]; then
@@ -157,6 +159,8 @@ jobs:
           fi
         env:
           CI: true
+          CI_BUILD_ID: ${{ github.run_number }}
+          BUILD_NUMBER: ${{ github.run_number }}
           COMMIT_SHA: ${{ github.sha }}
           BRANCH_NAME: ${{ github.ref_name }}
           PR_TITLE: ${{ github.event.pull_request.title || '' }}
@@ -174,70 +178,72 @@ jobs:
           echo "Build size:"
           du -sh apps/extension/dist/
 
-  # test:
-  #   needs: [determine-env, build]
-  #   runs-on: ubuntu-latest
-  #   concurrency:
-  #     group: tests-${{ github.workflow }}
-  #     cancel-in-progress: false
-  #   environment: ${{ needs.determine-env.outputs.env_name }}
-  #   strategy:
-  #     matrix:
-  #       node-version: [22.x]
+  test:
+    needs: [determine-env, build]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: tests-${{ github.workflow }}
+      cancel-in-progress: false
+    environment: ${{ needs.determine-env.outputs.env_name }}
+    strategy:
+      matrix:
+        node-version: [22.x]
 
-  #   steps:
-  #     - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Install pnpm
-  #       uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
 
-  #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
-  #         cache: "pnpm"
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
 
-  #     - name: Download build artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: extension-build
-  #         path: apps/extension/dist/
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: extension-build
+          path: apps/extension/dist/
 
-  #     - name: Create .env.test file
-  #       run: |
-  #         cat << EOF > apps/extension/.env.test
-  #         # Test secrets
-  #         TEST_PASSWORD="${{ secrets.TEST_PASSWORD }}"
-  #         TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
-  #         TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
-  #         TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"
-  #         TEST_SENDER_NICKNAME="${{ vars.TEST_SENDER_NICKNAME }}"
-  #         TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
-  #         TEST_RECEIVER_NICKNAME="${{ vars.TEST_RECEIVER_NICKNAME }}"
-  #         TEST_SENDER_EVM_ADDR="${{ secrets.TEST_SENDER_EVM_ADDR }}"
-  #         TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
-  #         TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
-  #         TEST_MULTI_ACCOUNT_TESTER_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_ADDR2 }}"
-  #         TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2 }}"
-  #         # Extension ID for Playwright tests
-  #         TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
-  #         EOF
+      - name: Create .env.test file
+        run: |
+          cat << EOF > apps/extension/.env.test
+          # Test secrets
+          TEST_PASSWORD="${{ secrets.TEST_PASSWORD }}"
+          TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
+          TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
+          TEST_SENDER_ADDR="${{ vars.TEST_SENDER_ADDR }}"
+          TEST_SENDER_NICKNAME="${{ vars.TEST_SENDER_NICKNAME }}"
+          TEST_RECEIVER_ADDR="${{ vars.TEST_RECEIVER_ADDR }}"
+          TEST_RECEIVER_NICKNAME="${{ vars.TEST_RECEIVER_NICKNAME }}"
+          TEST_SENDER_EVM_ADDR="${{ vars.TEST_SENDER_EVM_ADDR }}"
+          TEST_RECEIVER_EVM_ADDR="${{ vars.TEST_RECEIVER_EVM_ADDR }}"
+          TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
+          TEST_SENDER_CHILD_ADDR="${{ vars.TEST_SENDER_CHILD_ADDR }}"
+          TEST_SENDER_CHILD_ADDR2="${{ vars.TEST_SENDER_CHILD_ADDR2 }}"
+          TEST_MULTI_ACCOUNT_TESTER_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_ADDR2 }}"
+          TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2 }}"
+          # Extension ID for Playwright tests
+          TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
+          EOF
 
-  #     - name: Install dependencies
-  #       run: pnpm install
-  #     - name: Install Playwright Browsers
-  #       run: pnpm -F frw-extension exec playwright install --with-deps chromium
-  #     - name: Run Playwright tests
-  #       run: pnpm -F frw-extension test:e2e
-  #       env:
-  #         CI: true
-  #         HEADLESS: true
-  #     - name: Sanitize Playwright Report
-  #       if: always()
-  #       run: cd apps/extension && pnpm tsx build/sanitize-playwright.ts
-  #     - uses: actions/upload-artifact@v4
-  #       if: always()
-  #       with:
-  #         name: playwright-report
-  #         path: apps/extension/playwright-report/
-  #         retention-days: 30
+      - name: Install dependencies
+        run: pnpm install
+      - name: Install Playwright Browsers
+        run: pnpm -F frw-extension exec playwright install --with-deps chromium
+      - name: Run Playwright tests
+        run: xvfb-run -a --server-args="-screen 0 1280x720x24 -nolisten tcp -nolisten unix" pnpm -F frw-extension test:e2e
+        env:
+          CI: true
+          HEADLESS: true
+      - name: Sanitize Playwright Report
+        if: always()
+        run: cd apps/extension && pnpm tsx build/sanitize-playwright.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/extension/playwright-report/
+          retention-days: 30

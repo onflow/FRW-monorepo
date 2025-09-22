@@ -104,7 +104,7 @@ class FlowService {
     if ('getWalletProfiles' in this.bridge && typeof this.bridge.getWalletProfiles === 'function') {
       return this.bridge.getWalletProfiles();
     }
-    
+
     // If not available, throw an error to trigger fallback
     throw new Error('getWalletProfiles not implemented on this platform');
   }

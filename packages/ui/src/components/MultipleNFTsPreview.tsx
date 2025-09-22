@@ -49,12 +49,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
     >
       {displayImage ? (
         <View width="100%" height="100%" overflow="hidden" rounded={14.4}>
-          <Image
-            src={imageUrl}
-            width="100%"
-            height="100%"
-            onError={() => setImageError(true)}
-          />
+          <Image src={imageUrl} width="100%" height="100%" onError={() => setImageError(true)} />
         </View>
       ) : (
         <View flex={1} bg="$light10" rounded={14.4} />
@@ -182,15 +177,10 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         {/* Section Header */}
         <XStack items="center" justify="space-between" gap={15} width="100%">
           {/* NFT Count */}
-          <Text
-            fontSize={20}
-            fontWeight="500"
-            color="$light80"
-            lineHeight={24}
-          >
+          <Text fontSize={20} fontWeight="500" color="$light80" lineHeight={24}>
             {totalCount} NFT{totalCount !== 1 ? 's' : ''}
           </Text>
-          
+
           {/* Action Buttons */}
           <XStack items="center" gap={12}>
             {showEditButton && onEditPress && (
@@ -222,7 +212,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         </XStack>
 
         {/* Expanded List */}
-        <ScrollView height={300} showsVerticalScrollIndicator={false}>
+        <ScrollView height="auto" showsVerticalScrollIndicator={false}>
           <YStack gap="$2">
             {nfts.map((nft, index) => (
               <YStack key={nft.id}>
@@ -275,7 +265,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
             );
           })}
         </XStack>
-        
+
         {/* Expand Button at the end */}
         {expandable && (
           <XStack

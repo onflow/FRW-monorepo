@@ -1,8 +1,9 @@
-import { ServiceContext, type PlatformSpec } from '@onflow/frw-context';
+import { ServiceContext, type PlatformSpec, logger } from '@onflow/frw-context';
+import { initializeI18n } from '@onflow/frw-screens';
 import { useSendStore, sendSelectors } from '@onflow/frw-stores';
 import { type WalletAccount } from '@onflow/frw-types';
 import BN from 'bignumber.js';
-import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { getCachedData } from '@/data-model/cache-data-access';
@@ -78,6 +79,9 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     currentBalance,
   } = useProfiles();
 
+  // Track i18n initialization to avoid multiple initializations
+  const i18nInitialized = useRef(false);
+
   // Send store hooks for synchronization
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const setFromAccount = useSendStore((state) => state.setFromAccount);
@@ -104,6 +108,23 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize platform singleton
   const platform = initializePlatform();
+
+  // Initialize i18n with platform-detected language (only once)
+  useEffect(() => {
+    if (!i18nInitialized.current) {
+      const initI18n = async () => {
+        try {
+          const language = platform.getLanguage();
+          await initializeI18n(language);
+          logger.debug('[PlatformProvider] i18n initialized with language:', language);
+          i18nInitialized.current = true;
+        } catch (error) {
+          logger.error('[PlatformProvider] Failed to initialize i18n:', error);
+        }
+      };
+      initI18n();
+    }
+  }, [platform]);
 
   // Initialize ServiceContext with enhanced platform that includes hook data
   useEffect(() => {
@@ -303,7 +324,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           const profilePublicKey = profileVaultEntry?.publicKey;
 
           if (!profilePublicKey) {
-            console.warn(`No public key found for profile ${profileId}`);
+            logger.warn(`No public key found for profile ${profileId}`);
             continue;
           }
 
@@ -383,8 +404,8 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             // Create profile object with the specific data
             const profile = {
               name:
-                (profileUserInfo as any)?.username ||
                 (profileUserInfo as any)?.nickname ||
+                (profileUserInfo as any)?.username ||
                 `Profile ${profileId}`,
               avatar: (profileUserInfo as any)?.avatar || '',
               uid: profileId,
@@ -393,7 +414,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             profilesArray.push(profile);
           }
         } catch (error) {
-          console.warn(`Failed to get data for profile ${profileId}:`, error);
+          logger.warn(`Failed to get data for profile ${profileId}:`, error);
         }
       }
 
@@ -481,7 +502,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
     if (currentWallet && currentWallet.address) {
       // Convert currentWallet to WalletAccount format for send store
       let nftCount = 0;
-      let balance;
       if (isEvmAddress) {
         nftCount =
           evmNftCollections?.reduce((total, collection) => {
@@ -494,11 +514,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           }, 0) || 0;
       }
 
-      // Use the fresh balance data if available
-      const freshBalance = coins?.find((coin) => coin.unit.toLowerCase() === 'flow')?.balance;
-      if (freshBalance) {
-        balance = freshBalance;
-      }
       const walletAccount: WalletAccount = {
         name: currentWallet.name || 'Unnamed Account',
         address: currentWallet.address,
@@ -511,12 +526,12 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         type: activeAccountType === 'none' ? 'main' : activeAccountType, // Default type for extension accounts
         isActive: true,
         id: currentWallet.address,
-        balance,
         nfts: `${nftCount} NFT${nftCount !== 1 ? 's' : ''}`,
       };
 
       if (fromAccount?.address !== currentWallet.address) {
         setFromAccount(walletAccount);
+        // Check if we're in a send workflow and navigate to dashboard if so
       }
     }
   }, [
@@ -613,7 +628,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       try {
         return await platform.getSelectedAccount();
       } catch (error) {
-        console.warn('Failed to get selected account from platform:', error);
+        logger.warn('Failed to get selected account from platform:', error);
         throw error;
       }
     },

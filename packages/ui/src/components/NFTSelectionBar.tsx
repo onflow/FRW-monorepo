@@ -47,7 +47,7 @@ export function NFTSelectionBar({
 
     return (
       <YStack key={nft.id} gap="$2" width="100%">
-        <XStack items="center" justify="space-between" gap="$2" width="100%">
+        <XStack items="center" justify="space-between" gap="$2" width="100%" position="relative">
           <XStack
             items="center"
             gap="$2"
@@ -122,7 +122,7 @@ export function NFTSelectionBar({
 
   return (
     <YStack
-      pos="absolute"
+      pos="fixed"
       b="$0"
       l="$0"
       r="$0"
@@ -151,7 +151,6 @@ export function NFTSelectionBar({
           <XStack
             pos="absolute"
             r="$0"
-            t="$2.5"
             width="$6"
             height="$6"
             items="center"
@@ -191,6 +190,7 @@ export function NFTSelectionBar({
         {/* Action Button - Always visible at bottom */}
         {onContinue && (
           <YStack
+            data-testid={'confirm'}
             shrink={0}
             bg="#FFFFFF"
             rounded="$4"

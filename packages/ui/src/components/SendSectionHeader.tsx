@@ -36,11 +36,7 @@ export const SendSectionHeader: React.FC<SendSectionHeaderProps> = ({
             cursor="pointer"
             opacity={1}
           >
-            <Edit
-              size={24}
-              color={'#767676'}
-              theme="outline"
-            />
+            <Edit size={24} color={'#767676'} theme="outline" />
           </XStack>
         </XStack>
       )}

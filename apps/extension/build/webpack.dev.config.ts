@@ -17,9 +17,16 @@ const config: webpack.Configuration = {
   plugins: [
     new webpack.DefinePlugin({
       'process.env.BUILD_ENV': JSON.stringify('DEV'),
+      'process.env.CI_BUILD_ID': JSON.stringify(process.env.CI_BUILD_ID || process.env.BUILD_NUMBER || ''),
+      'process.env.BRANCH_NAME': JSON.stringify(process.env.BRANCH_NAME || ''),
+      'process.env.COMMIT_SHA': JSON.stringify(process.env.COMMIT_SHA || ''),
     }),
     new Dotenv({
       path: '.env.dev',
+      safe: false, // Don't check against .env.example
+      systemvars: true, // Load system environment variables as well
+      silent: false, // Log warnings/errors
+      defaults: false, // Don't load .env.defaults
     }),
     new CopyPlugin({
       patterns: [

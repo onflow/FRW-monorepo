@@ -57,6 +57,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
 
   // Query for complete account information including storage and balance
   const { data: accountInfo } = useQuery({
@@ -120,8 +121,8 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = useMemo(() => {
-    return storageUtils.getStorageWarningMessage(validationResult.warningType);
-  }, [validationResult.warningType, accountInfo]);
+    return t(storageUtils.getStorageWarningMessageKey(validationResult.warningType));
+  }, [validationResult.warningType, accountInfo, t]);
 
   // Calculate if send button should be disabled
   const isSendDisabled =
@@ -173,12 +174,19 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         setIsConfirmationVisible(false);
       }
       await executeTransaction();
-      // Navigation after successful transaction will be handled by the store
+      // Invalidate NFT caches after successful transaction
+      const tokenStore = useTokenQueryStore.getState();
+      if (selectedCollection && fromAccount) {
+        const network = bridge.getNetwork();
+        const currentAddress = fromAccount.address;
+
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+      }
     } catch (error) {
       logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction, isExtension]);
+  }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -214,10 +222,10 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     return (
       <BackgroundWrapper backgroundColor="$bgDrawer">
         <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" text="center">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
             {t('nft.notFound.title')}
           </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center">
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
             No NFTs selected. Please go back and select NFTs to send.
           </Text>
         </YStack>
@@ -239,7 +247,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$4">
+          <YStack gap="$4">
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
@@ -263,7 +271,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
-              <View mt={8} pb={16} mb={-8}>
+              <View mt={-8} mb={-8} pb="$7">
                 <MultipleNFTsPreview
                   nfts={nftsForUI}
                   onRemoveNFT={handleRemoveNFT}
@@ -278,7 +286,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-            <XStack position="relative" height={0} mt="$1">
+            <XStack position="relative" height="$1" mt="$1">
               <XStack width="100%" position="absolute" t={-40} justify="center">
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
@@ -294,6 +302,15 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
                   onEditPress={handleEditAccountPress}
                   showEditButton={true}
                   isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                  incompatibleAccountText={t('account.compatibility.incompatible')}
+                  learnMoreText={t('account.compatibility.learnMore')}
+                  unknownAccountText={t('account.compatibility.unknown')}
+                  dialogTitle={t('account.compatibility.dialog.title')}
+                  dialogButtonText={t('account.compatibility.dialog.button')}
+                  dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+                  dialogDescriptionSecondary={t(
+                    'account.compatibility.dialog.descriptionSecondary'
+                  )}
                 />
               </View>
             )}
@@ -315,7 +332,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               <StorageWarning
                 message={storageWarningMessage}
                 showIcon={true}
-                title="Storage warning"
+                title={t('storage.warning.title')}
                 visible={true}
               />
             )}
@@ -323,7 +340,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack pt="$2">
           <YStack
             width="100%"
             height={52}
@@ -338,7 +355,12 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              data-testid="next"
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? '#999' : '#000000'}
+            >
               {t('common.next')}
             </Text>
           </YStack>

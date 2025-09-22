@@ -57,6 +57,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
   const getNFTQuantity = useSendStore((state) => state.getNFTQuantity);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
   const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
 
   // Get the first selected NFT (should only be one for single NFT flow)
@@ -181,8 +182,8 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = useMemo(() => {
-    return storageUtils.getStorageWarningMessage(validationResult.warningType);
-  }, [validationResult.warningType, accountInfo]);
+    return t(storageUtils.getStorageWarningMessageKey(validationResult.warningType));
+  }, [validationResult.warningType, accountInfo, t]);
 
   // Calculate if send button should be disabled
   const isSendDisabled =
@@ -236,12 +237,22 @@ export function SendSingleNFTScreen(): React.ReactElement {
         setIsConfirmationVisible(false);
       }
       await executeTransaction();
+
+      // Invalidate NFT caches after successful transaction
+      const tokenStore = useTokenQueryStore.getState();
+      if (selectedCollection && fromAccount) {
+        const network = bridge.getNetwork();
+        const currentAddress = fromAccount.address;
+
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+      }
+
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendSingleNFTScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction, isExtension]);
+  }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
 
   // Early return if essential data is missing
   if (!selectedNFT) {
@@ -252,6 +263,22 @@ export function SendSingleNFTScreen(): React.ReactElement {
             {t('nft.notFound.title')}
           </Text>
           <Text fontSize="$4" color="$textSecondary" text="center">
+            No NFT selected. Please go back and select an NFT to send.
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
+
+  // Early return if essential data is missing
+  if (!selectedNFT) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
             No NFT selected. Please go back and select an NFT to send.
           </Text>
         </YStack>
@@ -273,7 +300,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$3">
+          <YStack gap="$3">
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
@@ -354,6 +381,13 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 onEditPress={handleEditAccountPress}
                 showEditButton={true}
                 isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                incompatibleAccountText={t('account.compatibility.incompatible')}
+                learnMoreText={t('account.compatibility.learnMore')}
+                unknownAccountText={t('account.compatibility.unknown')}
+                dialogTitle={t('account.compatibility.dialog.title')}
+                dialogButtonText={t('account.compatibility.dialog.button')}
+                dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+                dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
               />
             )}
 
@@ -375,7 +409,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 <StorageWarning
                   message={storageWarningMessage}
                   showIcon={true}
-                  title="Storage warning"
+                  title={t('storage.warning.title')}
                   visible={true}
                 />
               )}
@@ -384,7 +418,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack pt="$2">
           <YStack
             width="100%"
             height={52}
@@ -399,7 +433,12 @@ export function SendSingleNFTScreen(): React.ReactElement {
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              data-testid="next"
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? '#999' : '#000000'}
+            >
               {t('common.next')}
             </Text>
           </YStack>
