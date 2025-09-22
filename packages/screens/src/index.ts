@@ -6,6 +6,7 @@ export * from './send/NFTDetailScreen.query';
 export { SendTokensScreen } from './send/SendTokensScreen.query';
 export { SendSingleNFTScreen } from './send/SendSingleNFTScreen.query';
 export { SendMultipleNFTsScreen } from './send/SendMultipleNFTsScreen.query';
+export { SendNFTScreen } from './send/SendNFTScreen.query';
 
 // Export providers
 export * from './providers/QueryProvider';
