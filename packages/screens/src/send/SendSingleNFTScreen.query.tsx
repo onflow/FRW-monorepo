@@ -1,5 +1,4 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { Platform } from '@onflow/frw-types';
 import {
   useSendStore,
   sendSelectors,
@@ -8,6 +7,7 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
+import { Platform } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,

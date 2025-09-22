@@ -316,12 +316,8 @@ type AddressBookStore = AddressBookStoreState & AddressBookStoreActions;
 export const useAddressBookStore = create<AddressBookStore>((_set, _get) => ({
   // Query methods - Direct API calls without TanStack Query for now
   fetchContacts: async () => {
-    try {
-      const result = await addressBookQueries.fetchContacts();
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await addressBookQueries.fetchContacts();
+    return result;
   },
 
   fetchContact: async (id: string) => {

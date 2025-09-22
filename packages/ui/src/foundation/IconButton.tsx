@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button as TamaguiButton, ButtonProps } from 'tamagui';
+import { Button as TamaguiButton, type ButtonProps } from 'tamagui';
 
 interface IconButtonProps extends Omit<ButtonProps, 'children'> {
   icon: React.ReactElement;

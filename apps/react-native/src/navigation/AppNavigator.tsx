@@ -1,13 +1,14 @@
+import React, { useEffect, useRef, useMemo } from 'react';
+
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 import {
   SelectTokensScreen,
   NFTListScreen,
   NFTDetailScreen,
 } from '@onflow/frw-screens';
-import {
-  SendTokensScreen,
-  SendSingleNFTScreen,
-  SendMultipleNFTsScreen,
-} from '@/screens/SendScreenWrappers';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -16,11 +17,12 @@ import {
   type InitialProps,
   type NFTModel,
 } from '@onflow/frw-types';
-import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useRef, useMemo } from 'react';
-// import { useTranslation } from 'react-i18next';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import {
+  SendTokensScreen,
+  SendSingleNFTScreen,
+  SendMultipleNFTsScreen,
+} from '@/screens/SendScreenWrappers';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
