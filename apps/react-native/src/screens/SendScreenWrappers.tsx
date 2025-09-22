@@ -6,8 +6,8 @@ import {
 } from '@onflow/frw-screens';
 import React from 'react';
 
-// Import the static send image for React Native
-const sendStaticImage = require('../assets/images/send_static.png');
+// Import the static send image from centralized UI package
+const sendStaticImage = require('@onflow/frw-ui/src/assets/send_static.png');
 
 // Create assets object
 const screenAssets: ScreenAssets = {

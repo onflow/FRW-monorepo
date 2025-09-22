@@ -21,6 +21,7 @@ export {
 // These are enhanced versions with custom variants and better design system integration
 export * from './foundation/Avatar';
 export * from './foundation/Button';
+export * from './foundation/IconButton';
 export * from './foundation/Card';
 export * from './foundation/Divider';
 export * from './foundation/Input';

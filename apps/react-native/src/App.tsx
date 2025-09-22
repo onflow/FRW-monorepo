@@ -43,7 +43,6 @@ const App = (props: AppProps) => {
   const initializeInstabug = useCallback((appProps: AppProps) => {
     try {
       const instabugToken = platform.getInstabugToken();
-      console.log('🚀 ~ initializeInstabug ~ instabugToken:', instabugToken);
 
       // Skip initialization if token is empty or invalid
       if (!instabugToken || instabugToken.trim() === '') {

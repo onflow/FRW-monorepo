@@ -215,8 +215,6 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
-    console.log('Continue with selected NFTs:', selectedNFTs?.length);
-
     // Get transaction type from store
     const setTransactionType = useSendStore.getState().setTransactionType;
 
@@ -233,7 +231,6 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Handle NFT press in selection bar (navigate to different NFT detail)
   const handleNFTPress = useCallback((nftId: string) => {
-    console.log('🔍 Viewing different NFT:', nftId);
     // For now, just log - could implement NFT switching in future
   }, []);
 
