@@ -188,7 +188,7 @@ export function RecipientItem({
         {/* Action Buttons */}
         <XStack gap="$2" items="center" position="relative">
           {onAddToAddressBook && (
-            <Button
+            <Card
               width="$6"
               height="$6"
               onPress={(e: React.BaseSyntheticEvent) => {
@@ -196,14 +196,14 @@ export function RecipientItem({
                 onAddToAddressBook();
               }}
               cursor="pointer"
-              bg="transparent"
-              borderWidth={0}
+              chromeless
               p={0}
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-              icon={<UserRoundPlus size="$6" />}
-            ></Button>
+            >
+              <UserRoundPlus size="$6" color="white" />
+            </Card>
           )}
           {showCopyButton && onCopy && (
             <Button
@@ -214,7 +214,6 @@ export function RecipientItem({
                 e.stopPropagation();
                 onCopy();
               }}
-              cursor="pointer"
               bg="transparent"
               borderWidth={0}
               p={0}
