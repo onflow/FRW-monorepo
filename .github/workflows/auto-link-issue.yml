@@ -39,15 +39,41 @@ jobs:
             }
             if (!issue) return;
 
-            const body = pr.body || '';
-            const closes = new RegExp(`(^|\n)Closes #${issue}(\n|$)`, 'i');
-            if (closes.test(body)) {
+            let body = pr.body || '';
+            const exact = new RegExp(`(^|\n)Closes #${issue}(\n|$)`, 'i');
+            if (exact.test(body)) {
               core.info(`PR body already links issue #${issue}`);
               return;
             }
 
-            // Append a single, standardized line. Idempotent by regex check above.
-            const newBody = (body.trim() + "\n\nCloses #" + issue).trim() + "\n";
+            // 1) Replace placeholder like "Closes #" or "Closes #<wrong>" in template's Related Issues section
+            const placeholder = /(^|\n)Closes #\s*($|\n)/i;
+            if (placeholder.test(body)) {
+              body = body.replace(placeholder, (_m, pre, _post) => `${pre}Closes #${issue}\n`);
+            } else {
+              // 2) If "## 🔗 Related Issues" exists, insert under it
+              const relatedHeader = /(##\s*🔗\s*Related Issues\s*\n+)/i;
+              if (relatedHeader.test(body)) {
+                body = body.replace(relatedHeader, (m) => `${m}Closes #${issue}\n\n`);
+              } else {
+                // 3) Fallback: append to end
+                body = (body.trim() + `\n\nCloses #${issue}`).trim() + "\n";
+              }
+            }
+
+            // Ensure single line: remove duplicate "Closes #<issue>" if any
+            const lines = body.split(/\r?\n/);
+            const seen = new Set();
+            const deduped = lines.filter((ln) => {
+              const m = ln.match(/^\s*Closes\s+#(\d+)\s*$/i);
+              if (!m) return true;
+              const key = `closes-${m[1]}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            }).join("\n");
+
+            const newBody = deduped;
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
