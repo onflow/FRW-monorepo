@@ -1,6 +1,6 @@
-import { Copy, Link } from '@onflow/frw-icons';
+import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Text } from 'tamagui';
+import { Button, Card, XStack, YStack, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -31,6 +31,7 @@ export interface RecipientItemProps {
   // Actions
   onPress?: () => void;
   onCopy?: () => void;
+  onAddToAddressBook?: () => void;
   copiedFeedback?: string;
 
   // Styling
@@ -56,6 +57,7 @@ export function RecipientItem({
   parentEmojiInfo,
   onPress,
   onCopy,
+  onAddToAddressBook,
   copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
@@ -185,25 +187,41 @@ export function RecipientItem({
 
         {/* Action Buttons */}
         <XStack gap="$2" items="center" position="relative">
-          {showCopyButton && onCopy && (
+          {onAddToAddressBook && (
             <Card
-              width={24}
-              height={24}
+              width="$6"
+              height="$6"
+              onPress={(e: React.BaseSyntheticEvent) => {
+                e.stopPropagation();
+                onAddToAddressBook();
+              }}
+              cursor="pointer"
+              chromeless
+              p={0}
+              pressStyle={{ opacity: 0.3 }}
+              items="center"
+              justify="center"
+            >
+              <UserRoundPlus size="$6" color="white" />
+            </Card>
+          )}
+          {showCopyButton && onCopy && (
+            <Button
+              width="$6"
+              height="$6"
               opacity={copiedFeedback ? 1 : 0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
               }}
-              cursor="pointer"
               bg="transparent"
               borderWidth={0}
               p={0}
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-            >
-              <Copy size={24} color={copiedFeedback ? '#00D964' : '#FFFFFF'} />
-            </Card>
+              icon={<Copy size="$6" color={copiedFeedback ? '#00D964' : '#FFFFFF'} />}
+            ></Button>
           )}
           {copiedFeedback && (
             <YStack

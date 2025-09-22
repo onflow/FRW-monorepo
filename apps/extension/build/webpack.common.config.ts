@@ -199,6 +199,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
+        '@onflow/frw-api': path.resolve(__dirname, '../../../packages/api/src/index.ts'),
         '@onflow/frw-cadence': path.resolve(__dirname, '../../../packages/cadence/src/index.ts'),
         '@onflow/frw-ui': path.resolve(__dirname, '../../../packages/ui/src/index.ts'),
         '@onflow/frw-screens': path.resolve(__dirname, '../../../packages/screens/src/index.ts'),

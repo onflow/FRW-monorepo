@@ -867,6 +867,9 @@ importers:
 
   packages/screens:
     dependencies:
+      '@onflow/frw-api':
+        specifier: workspace:*
+        version: link:../api
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context

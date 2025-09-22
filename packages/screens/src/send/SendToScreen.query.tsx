@@ -1,3 +1,4 @@
+import { AddressbookService } from '@onflow/frw-api';
 import { bridge, navigation } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
@@ -106,6 +107,7 @@ export function SendToScreen(): React.ReactElement {
     data: allContacts = [],
     isLoading: isLoadingContacts,
     error: contactsError,
+    refetch: refetchContacts,
   } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
@@ -198,6 +200,19 @@ export function SendToScreen(): React.ReactElement {
       }))
       .filter((contact) => filterBySearchQuery(contact.name, contact.address));
   }, [allContacts, isLoadingContacts, contactsError, filterBySearchQuery]);
+
+  // Create a set of existing addresses for quick lookup
+  const existingAddresses = useMemo(() => {
+    return new Set(allContacts.map((contact: any) => contact.address?.toLowerCase()));
+  }, [allContacts]);
+
+  // Helper function to check if address already exists in address book
+  const isAddressInAddressBook = useCallback(
+    (address: string) => {
+      return existingAddresses.has(address?.toLowerCase());
+    },
+    [existingAddresses]
+  );
 
   // Convert and filter profiles data for display
   const profilesData = useMemo(() => {
@@ -480,9 +495,33 @@ export function SendToScreen(): React.ReactElement {
         }
       }
     } catch (error) {
-      console.error('Failed to copy address:', error);
+      logger.error('Failed to copy address:', error);
     }
   }, []);
+
+  const handleRecipientAddToAddressBook = useCallback(
+    async (recipient: RecipientData) => {
+      // Check if address already exists in address book
+      if (isAddressInAddressBook(recipient.address)) {
+        return;
+      }
+
+      try {
+        await AddressbookService.external({
+          contactName: recipient.name,
+          address: recipient.address,
+          domain: '', // Empty domain for external contacts
+          domainType: 0, // 0 for external contacts
+        });
+
+        // Refresh the address book data
+        refetchContacts();
+      } catch (error) {
+        logger.error('Failed to add to address book:', error);
+      }
+    },
+    [refetchContacts, isAddressInAddressBook]
+  );
 
   const getEmptyStateForTab = () => {
     // If there's a search query, show search-specific empty states
@@ -590,6 +629,7 @@ export function SendToScreen(): React.ReactElement {
             onItemPress={handleRecipientPress}
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
+            onItemAddToAddressBook={handleRecipientAddToAddressBook}
             contentPadding={0}
           />
         )}
