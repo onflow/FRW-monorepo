@@ -24,6 +24,8 @@ export const sendTokenFlow = async ({
   await page.getByTestId(`send-button`).click();
   await page.getByPlaceholder('Search / Paste address').click();
   await page.getByPlaceholder('Search / Paste address').fill(receiver);
+  await page.getByPlaceholder('0.00').click();
+
   await page.getByPlaceholder('0.00').fill(amount);
   await page.getByTestId('next').click();
   await page.getByTestId('confirm').click();
@@ -42,7 +44,7 @@ export const moveTokenFlow = async ({
   await page.getByRole('tab', { name: 'coins' }).click();
   await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByRole('button', { name: 'Move' }).click();
-  await page.getByPlaceholder('0.00').click();
+  await page.getByPlaceholder('0.00').click({ delay: 500 });
   await page.getByPlaceholder('0.00').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
 

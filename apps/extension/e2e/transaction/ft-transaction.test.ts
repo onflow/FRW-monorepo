@@ -21,11 +21,12 @@ export const sendFT = async ({ page, tokenName, receiver, amount, ingoreFlowChar
   await page.getByTestId(`send-button`).click();
 
   await page.getByTestId(`Tokens`).isVisible();
-  await page.getByTestId(`Tokens`).click();
-  await page.getByTestId(tokenName).click();
+  await page.getByTestId(`Tokens`).click({ delay: 500 });
+  await page.getByTestId(tokenName).click({ delay: 500 });
 
-  await page.getByPlaceholder('Search / Paste address').click();
+  await page.getByPlaceholder('Search / Paste address').click({ delay: 500 });
   await page.getByPlaceholder('Search / Paste address').fill(receiver);
+  await page.getByPlaceholder('0.00').click({ delay: 500 });
   await page.getByPlaceholder('0.00').fill(amount);
   await page.getByTestId('next').click();
   await page.getByTestId('confirm').click();
