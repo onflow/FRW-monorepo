@@ -201,6 +201,19 @@ export function SendToScreen(): React.ReactElement {
       .filter((contact) => filterBySearchQuery(contact.name, contact.address));
   }, [allContacts, isLoadingContacts, contactsError, filterBySearchQuery]);
 
+  // Create a set of existing addresses for quick lookup
+  const existingAddresses = useMemo(() => {
+    return new Set(allContacts.map((contact: any) => contact.address?.toLowerCase()));
+  }, [allContacts]);
+
+  // Helper function to check if address already exists in address book
+  const isAddressInAddressBook = useCallback(
+    (address: string) => {
+      return existingAddresses.has(address?.toLowerCase());
+    },
+    [existingAddresses]
+  );
+
   // Convert and filter profiles data for display
   const profilesData = useMemo(() => {
     const result = allProfiles.map((profile) => ({
@@ -488,6 +501,11 @@ export function SendToScreen(): React.ReactElement {
 
   const handleRecipientAddToAddressBook = useCallback(
     async (recipient: RecipientData) => {
+      // Check if address already exists in address book
+      if (isAddressInAddressBook(recipient.address)) {
+        return;
+      }
+
       try {
         await AddressbookService.external({
           contactName: recipient.name,
@@ -502,7 +520,7 @@ export function SendToScreen(): React.ReactElement {
         logger.error('Failed to add to address book:', error);
       }
     },
-    [refetchContacts]
+    [refetchContacts, isAddressInAddressBook]
   );
 
   const getEmptyStateForTab = () => {
