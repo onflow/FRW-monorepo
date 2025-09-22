@@ -1,0 +1,69 @@
+name: "PR: Auto link and verify issue"
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  link-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect issue from branch and update PR body
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) return;
+
+            const branch = pr.head.ref || '';
+            const mainBranches = ['main', 'master', 'dev', 'develop'];
+            if (mainBranches.includes(branch)) return;
+            if (branch.startsWith('hotfix/') || branch.startsWith('release/')) return; // don't auto-close for maintenance branches
+
+            // Extract issue number from common patterns
+            const patterns = [
+              /^(\d+)-/,       // 123-feature
+              /-(\d+)$/,       // feature-123
+              /\/(\d+)-/,     // dev/123-feature
+              /\/(\d+)$/,     // dev/123
+              /^[a-z]+\/[a-z]+-(\d+)/, // feature/abc-123
+            ];
+            let issue = null;
+            for (const re of patterns) {
+              const m = branch.match(re);
+              if (m) { issue = m[1]; break; }
+            }
+            if (!issue) return;
+
+            const body = pr.body || '';
+            const closes = new RegExp(`(^|\n)Closes #${issue}(\n|$)`, 'i');
+            if (closes.test(body)) {
+              core.info(`PR body already links issue #${issue}`);
+              return;
+            }
+
+            // Append a single, standardized line. Idempotent by regex check above.
+            const newBody = (body.trim() + "\n\nCloses #" + issue).trim() + "\n";
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: newBody,
+            });
+            core.notice(`Linked PR #${pr.number} to issue #${issue}`);
+
+  verify-linked-issue:
+    runs-on: ubuntu-latest
+    needs: link-issue
+    if: >-
+      !startsWith(github.event.pull_request.head.ref, 'hotfix/') &&
+      !startsWith(github.event.pull_request.head.ref, 'release/')
+    steps:
+      - name: Verify Linked Issue
+        uses: outblock/verify-linked-issue-action@v1.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
