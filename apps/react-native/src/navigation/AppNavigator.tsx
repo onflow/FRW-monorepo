@@ -1,8 +1,4 @@
-import {
-  SelectTokensScreen,
-  NFTListScreen,
-  NFTDetailScreen,
-} from '@onflow/frw-screens';
+import { SelectTokensScreen, NFTListScreen, NFTDetailScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -129,7 +125,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setCurrentStep('send-to');
         }
       } catch (error) {
-      //  console.error('Failed to initialize SendTo flow:', error);
+        //  console.error('Failed to initialize SendTo flow:', error);
       }
     }
   }, [
@@ -200,6 +196,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerBackVisible: false, // Hide default back button
               headerLeft: () => <NavigationBackButton />,
               headerRight: () => <NavigationCloseButton />,
+              headerLeftContainerStyle: { paddingLeft: 8, alignItems: 'center' },
+              headerRightContainerStyle: { paddingRight: 16, alignItems: 'center' },
             }}
           >
             <Stack.Screen

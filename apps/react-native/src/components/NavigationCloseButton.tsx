@@ -15,7 +15,7 @@ export const NavigationCloseButton: React.FC = () => {
 
   return (
     <IconButton
-      icon={<Close color={theme.colors.text} />}
+      icon={<Close color={theme.colors.text} size={15} />}
       variant="ghost"
       size="small"
       onPress={handleClose}

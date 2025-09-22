@@ -60,7 +60,13 @@ export function AccountCard({
       {...props}
     >
       {/* Title */}
-      <Text fontSize="$2" mb={isSendTokensScreen?"$8":"$1"} fontWeight="400" color="$light80" lineHeight={16}>
+      <Text
+        fontSize="$2"
+        mb={isSendTokensScreen ? '$8' : '$1'}
+        fontWeight="400"
+        color="$light80"
+        lineHeight={16}
+      >
         {title}
       </Text>
 
@@ -160,7 +166,7 @@ export function AccountCard({
                   numberOfLines={1}
                   flex={1}
                 >
-                  {formatBalance(account.balance)} FLOW | {account.nfts}
+                  {formatBalance(account.balance)} FLOW
                 </Text>
               ) : null}
             </XStack>

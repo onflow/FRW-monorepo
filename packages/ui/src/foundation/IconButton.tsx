@@ -122,8 +122,8 @@ export function IconButton({
       {...props}
     >
       {React.cloneElement(icon, {
-        size: iconSize,
-        color: icon.props.color || buttonStyles.color || 'currentColor'
+        size: icon.props.size || iconSize,
+        color: icon.props.color || buttonStyles.color || 'currentColor',
       })}
     </TamaguiButton>
   );

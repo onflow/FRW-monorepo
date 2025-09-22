@@ -13,10 +13,11 @@ export const NavigationBackButton: React.FC = () => {
 
   return (
     <IconButton
-      icon={<ArrowBack color={theme.colors.text} />}
+      icon={<ArrowBack color={theme.colors.text} size={24} />}
       variant="ghost"
-      size="medium"
+      size="small"
       onPress={() => navigation.goBack()}
+      pl="$1"
     />
   );
 };
