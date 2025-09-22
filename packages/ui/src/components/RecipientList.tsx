@@ -35,6 +35,7 @@ export interface RecipientListProps {
   onItemPress?: (item: RecipientData) => void;
   onItemEdit?: (item: RecipientData) => void;
   onItemCopy?: (item: RecipientData) => void;
+  onItemAddToAddressBook?: (item: RecipientData) => void;
   onRefresh?: () => void;
   onRetry?: () => void;
 
@@ -60,6 +61,7 @@ export function RecipientList({
   onItemPress,
   onItemEdit,
   onItemCopy,
+  onItemAddToAddressBook,
   onRefresh,
   onRetry,
   showSeparators = true,
@@ -115,6 +117,7 @@ export function RecipientList({
       onPress={() => onItemPress?.(item)}
       onEdit={() => onItemEdit?.(item)}
       onCopy={() => onItemCopy?.(item)}
+      onAddToAddressBook={() => onItemAddToAddressBook?.(item)}
     />
   );
 

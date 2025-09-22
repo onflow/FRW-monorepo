@@ -1,3 +1,4 @@
+import { AddressbookService } from '@onflow/frw-api';
 import { bridge, navigation } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
@@ -106,6 +107,7 @@ export function SendToScreen(): React.ReactElement {
     data: allContacts = [],
     isLoading: isLoadingContacts,
     error: contactsError,
+    refetch: refetchContacts,
   } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
@@ -480,9 +482,28 @@ export function SendToScreen(): React.ReactElement {
         }
       }
     } catch (error) {
-      console.error('Failed to copy address:', error);
+      logger.error('Failed to copy address:', error);
     }
   }, []);
+
+  const handleRecipientAddToAddressBook = useCallback(
+    async (recipient: RecipientData) => {
+      try {
+        await AddressbookService.external({
+          contactName: recipient.name,
+          address: recipient.address,
+          domain: '', // Empty domain for external contacts
+          domainType: 0, // 0 for external contacts
+        });
+
+        // Refresh the address book data
+        refetchContacts();
+      } catch (error) {
+        logger.error('Failed to add to address book:', error);
+      }
+    },
+    [refetchContacts]
+  );
 
   const getEmptyStateForTab = () => {
     // If there's a search query, show search-specific empty states
@@ -590,6 +611,7 @@ export function SendToScreen(): React.ReactElement {
             onItemPress={handleRecipientPress}
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
+            onItemAddToAddressBook={handleRecipientAddToAddressBook}
             contentPadding={0}
           />
         )}

@@ -31,6 +31,7 @@ export interface RecipientItemProps {
   // Actions
   onPress?: () => void;
   onCopy?: () => void;
+  onAddToAddressBook?: () => void;
   copiedFeedback?: string;
 
   // Styling
@@ -56,6 +57,7 @@ export function RecipientItem({
   parentEmojiInfo,
   onPress,
   onCopy,
+  onAddToAddressBook,
   copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
@@ -185,6 +187,27 @@ export function RecipientItem({
 
         {/* Action Buttons */}
         <XStack gap="$2" items="center" position="relative">
+          {onAddToAddressBook && (
+            <Card
+              width={24}
+              height={24}
+              onPress={(e: React.BaseSyntheticEvent) => {
+                e.stopPropagation();
+                onAddToAddressBook();
+              }}
+              cursor="pointer"
+              bg="transparent"
+              borderWidth={0}
+              p={0}
+              pressStyle={{ opacity: 0.3 }}
+              items="center"
+              justify="center"
+            >
+              <Text fontSize={20} fontWeight="600" color="#FFFFFF">
+                +
+              </Text>
+            </Card>
+          )}
           {showCopyButton && onCopy && (
             <Card
               width={24}
