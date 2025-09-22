@@ -1,4 +1,4 @@
-import { Box, CardMedia, Typography } from '@mui/material';
+import { Box, CardMedia, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -59,16 +59,17 @@ const About = () => {
             Flow Wallet
           </Typography>
         </a>
-        <Typography
-          variant="body1"
-          component="div"
-          color="text.secondary"
-          sx={{ textAlign: 'center', fontWeight: 300 }}
-        >
-          {chrome.i18n.getMessage('Version')} {`${version}`}
-          {BETA_VERSION && ` (${BETA_VERSION})`}
-          {` - ${getBuildInfo()}`}
-        </Typography>
+        <Tooltip title={getBuildInfo()} placement="top" arrow>
+          <Typography
+            variant="body1"
+            component="div"
+            color="text.secondary"
+            sx={{ textAlign: 'center', fontWeight: 300, cursor: 'help' }}
+          >
+            {chrome.i18n.getMessage('Version')} {`${version}`}
+            {BETA_VERSION && ` (${BETA_VERSION})`}
+          </Typography>
+        </Tooltip>
 
         {process.env.DEPLOYMENT_ENV !== 'production' && (
           <Typography

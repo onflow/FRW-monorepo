@@ -47,7 +47,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   getBuildNumber(): string {
-    return chrome.runtime.getManifest().version_name || this.getVersion();
+    return process.env.CI_BUILD_ID || process.env.BUILD_NUMBER || 'local';
   }
 
   getLanguage(): string {
