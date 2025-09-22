@@ -1,6 +1,6 @@
 import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Text } from 'tamagui';
+import { Button, Card, XStack, YStack, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -188,7 +188,7 @@ export function RecipientItem({
         {/* Action Buttons */}
         <XStack gap="$2" items="center" position="relative">
           {onAddToAddressBook && (
-            <Card
+            <Button
               width="$6"
               height="$6"
               onPress={(e: React.BaseSyntheticEvent) => {
@@ -202,12 +202,11 @@ export function RecipientItem({
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-            >
-              <UserRoundPlus />
-            </Card>
+              icon={<UserRoundPlus size="$6" />}
+            ></Button>
           )}
           {showCopyButton && onCopy && (
-            <Card
+            <Button
               width="$6"
               height="$6"
               opacity={copiedFeedback ? 1 : 0.5}
@@ -222,9 +221,8 @@ export function RecipientItem({
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-            >
-              <Copy size="$6" color={copiedFeedback ? '#00D964' : '#FFFFFF'} />
-            </Card>
+              icon={<Copy size="$6" color={copiedFeedback ? '#00D964' : '#FFFFFF'} />}
+            ></Button>
           )}
           {copiedFeedback && (
             <YStack
