@@ -88,8 +88,8 @@ jobs:
                 limit: 1000
               });
 
-              if (response.data && response.data.value) {
-                return convertFlowUnits(response.data.value);
+              if (response) {
+                return convertFlowUnits(response);
               }
               throw new Error('Invalid response format');
             } catch (error) {
@@ -199,9 +199,9 @@ jobs:
           node balance-monitor.js
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          PAYER_ACCOUNT_ADDRESS: ${{ env.PAYER_ACCOUNT_ADDRESS }}
-          CREATOR_ACCOUNT_ADDRESS: ${{ env.CREATOR_ACCOUNT_ADDRESS }}
-          BRIDGE_PAYER_ACCOUNT_ADDRESS: ${{ env.BRIDGE_PAYER_ACCOUNT_ADDRESS }}
+          PAYER_ACCOUNT_ADDRESS: ${{ vars.PAYER_ACCOUNT_ADDRESS }}
+          CREATOR_ACCOUNT_ADDRESS: ${{ vars.CREATOR_ACCOUNT_ADDRESS }}
+          BRIDGE_PAYER_ACCOUNT_ADDRESS: ${{ vars.BRIDGE_PAYER_ACCOUNT_ADDRESS }}
 
       - name: Workflow Summary
         if: always()
