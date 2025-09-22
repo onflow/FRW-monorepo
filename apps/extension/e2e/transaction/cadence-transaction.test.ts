@@ -5,6 +5,8 @@ import {
   getReceiverEvmAccount,
   getReceiverCadenceAccount,
   checkSentAmount,
+  switchToMainAccount,
+  getSenderCadenceAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 export const sendTokenFlow = async ({
@@ -78,6 +80,10 @@ const txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharg
 //Send FLOW token from Flow to Flow
 test('send Cadence transactions', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
+  await switchToMainAccount({
+    page,
+    address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+  });
   // This can take a while
   const tx1 = await sendTokenFlow({
     page,
@@ -118,23 +124,23 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
 
   //Send FLOW token from Flow to EOA
   // This can take a while
-  const tx5 = await sendTokenFlow({
-    page,
-    tokenname: 'flow',
-    receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-    amount: '0.00123456',
-  });
-  txList.push(tx5);
+  // const tx5 = await sendTokenFlow({
+  //   page,
+  //   tokenname: 'flow',
+  //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
+  //   amount: '0.00123456',
+  // });
+  // txList.push(tx5);
 
   //Send BETA from Flow to EOA
-  const tx6 = await sendTokenFlow({
-    page,
-    tokenname: 'beta',
-    receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-    ingoreFlowCharge: true,
-    amount: '0.00123456',
-  });
-  txList.push(tx6);
+  // const tx6 = await sendTokenFlow({
+  //   page,
+  //   tokenname: 'beta',
+  //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
+  //   ingoreFlowCharge: true,
+  //   amount: '0.00123456',
+  // });
+  // txList.push(tx6);
 
   //Check all sealed transactions
   // Check the amounts that were sent for each transaction

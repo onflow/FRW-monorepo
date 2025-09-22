@@ -74,9 +74,9 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
   }
   if (flowAddr !== addr) {
     // switch to the correct account
-    await page.getByTestId('account-menu-button').click();
+    await page.getByTestId('account-menu-button').click({ delay: 500 });
     await page.getByTestId('switch-profile-button').isVisible();
-    await page.getByTestId('switch-profile-button').click();
+    await page.getByTestId('switch-profile-button').click({ delay: 500 });
 
     await page.getByTestId('Profiles', { exact: true }).isVisible();
 

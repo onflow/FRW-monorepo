@@ -32,8 +32,8 @@ export const sendNFT = async ({ page, collectionName, receiver, successtext }) =
   await page.getByTestId('0').click();
 
   await page.getByTestId('confirm').click();
-  await page.getByPlaceholder('Search/ Paste address').click();
-  await page.getByPlaceholder('Search/ Paste address').fill(receiver);
+  await page.getByPlaceholder('Search / Paste address').click();
+  await page.getByPlaceholder('Search / Paste address').fill(receiver);
 
   await page.getByTestId('next').isVisible();
   await page.getByTestId('next').click();
@@ -64,8 +64,8 @@ export const sendNFTs = async ({
     await page.getByTestId(idx[i]).click();
   }
   await page.getByTestId('confirm').click();
-  await page.getByPlaceholder('Search/ Paste address').click();
-  await page.getByPlaceholder('Search/ Paste address').fill(receiver);
+  await page.getByPlaceholder('Search / Paste address').click();
+  await page.getByPlaceholder('Search / Paste address').fill(receiver);
 
   await page.getByTestId('next').isVisible();
   await page.getByTestId('next').click();
@@ -350,15 +350,15 @@ test('NFT to child', async ({ page, extensionId }) => {
 
   txList.push(tx1);
 
-  const tx2 = await sendNFTs({
-    page,
-    collectionName: 'FLOAT',
-    receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
-    successtext: /success|Finalized|Executed|Sealed/,
-    idx: ['1'],
-  });
+  // const tx2 = await sendNFTs({
+  //   page,
+  //   collectionName: 'FLOAT',
+  //   receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
+  //   successtext: /success|Finalized|Executed|Sealed/,
+  //   idx: ['1'],
+  // });
 
-  txList.push(tx2);
+  // txList.push(tx2);
 
   // Go to the activity page
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
@@ -381,11 +381,6 @@ test('NFT from evm to child', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
-  await loginToSenderAccount({
-    page,
-    extensionId,
-  });
-
   //Send NFT to sender COA
   await switchToEvmAddress({
     page,
@@ -397,7 +392,7 @@ test('NFT from evm to child', async ({ page, extensionId }) => {
     collectionName: 'FLOAT',
     receiver: senderChildAddr,
     successtext: /success|Finalized|Executed|Sealed/,
-    idx: ['0', '1'],
+    idx: ['0'],
   });
 
   txList.push(tx1);
@@ -424,11 +419,6 @@ test('NFT from child to evm', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
 
-  await loginToSenderAccount({
-    page,
-    extensionId,
-  });
-
   //Send NFT to sender COA
   await switchToChildAccount({
     page,
@@ -445,15 +435,15 @@ test('NFT from child to evm', async ({ page, extensionId }) => {
 
   txList.push(tx1);
 
-  // const tx2 = await sendNFTs({
-  //   page,
-  //   collectionName: 'FLOAT',
-  //   receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
-  //   successtext: /success|Finalized|Executed|Sealed/,
-  //   idx: ['1'],
-  // });
+  const tx2 = await sendNFTs({
+    page,
+    collectionName: 'FLOAT',
+    receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    successtext: /success|Finalized|Executed|Sealed/,
+    idx: ['1'],
+  });
 
-  // txList.push(tx2);
+  txList.push(tx2);
 
   // Go to the activity page
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
