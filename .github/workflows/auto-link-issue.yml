@@ -1,4 +1,4 @@
-name: "PR: Auto link and verify issue"
+name: VerifyIssue
 
 on:
   pull_request:
@@ -89,7 +89,7 @@ jobs:
       !startsWith(github.event.pull_request.head.ref, 'hotfix/') &&
       !startsWith(github.event.pull_request.head.ref, 'release/')
     steps:
-      - name: Verify Linked Issue
+      - name: Ensure Pull Request has a linked issue.
         uses: outblock/verify-linked-issue-action@v1.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
