@@ -123,7 +123,7 @@ export function IconButton({
     >
       {React.cloneElement(icon, {
         size: iconSize,
-        color: buttonStyles.color || '$text'
+        color: icon.props.color || buttonStyles.color || 'currentColor'
       })}
     </TamaguiButton>
   );
