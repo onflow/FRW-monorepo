@@ -511,6 +511,50 @@ The UI package includes comprehensive Storybook integration:
 - **Conversational communication with Claude Code can be in Chinese or English**
 - **Variable names, function names, and API responses should be in English**
 
+### Branch Naming & Commit Requirements (CRITICAL)
+
+- Non-maintenance branches MUST contain issue numbers for automatic tracking
+- Issue numbers are automatically added to commit messages
+- Recommended: GitHub default `<issue-number>-<description>` when branching from
+  an issue
+
+**Allowed Branches (no issue number required)**
+
+- `main`, `master`, `dev`, `develop`
+- Maintenance branches (GitFlow): `hotfix/<desc>` or `hotfix/<issue>-<desc>`,
+  `release/<version>` or `release/<issue>-<version>`
+
+**Feature/Fix Branch Examples (must include issue number)**
+
+- ✅ `123-add-user-authentication` (GitHub default)
+- ✅ `feature-285-ui-improvements`
+- ✅ `dev/789-new-feature`
+- ✅ `feature/abc-123`
+- ❌ `add-user-authentication` (no issue number)
+- ❌ `random-feature-branch` (no issue number)
+
+**Commit Message Format**: `<type>[optional scope]: <description>`
+
+- ✅ `feat: add user authentication` → Auto becomes:
+  `feat: add user authentication\n\nCloses #123`
+- ✅ `fix(api): resolve token refresh issue` → Auto becomes:
+  `fix(api): resolve token refresh issue\n\nCloses #456`
+- ✅ `docs: update API documentation` → Auto becomes:
+  `docs: update API documentation\n\nCloses #789`
+
+**Valid Types**: feat, fix, docs, style, refactor, perf, test, build, ci, chore,
+revert
+
+**Valid Scopes**: types, api, cadence, services, workflow, stores, context,
+utils, react-native, extension, docs, ci, deps
+
+**Automation**:
+
+- Husky `prepare-commit-msg` extracts issue numbers from branch names and
+  injects `Closes #<issue>`
+- iOS CI Release Notes automatically collect all referenced issues
+- Commitlint validates Conventional Commit format only (no branch name checks)
+
 ### File Naming Conventions
 
 - **React Components**: `kebab-case.tsx` (in `components/` folders)

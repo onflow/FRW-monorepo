@@ -53,21 +53,74 @@ guidelines for the Flow Reference Wallet monorepo.
    pnpm dev:packages
    ```
 
+## 🌿 Branch Naming & Issue Tracking
+
+All non-maintenance branches must include an issue number for automatic tracking
+and commit linking.
+
+### Recommended Patterns
+
+- Main branches (no issue number required): `main`, `master`, `dev`, `develop`
+- Maintenance branches (recommended GitFlow style):
+  - `hotfix/<desc>` or `hotfix/<issue>-<desc>` (e.g., `hotfix/249-critical-bug`)
+  - `release/<version>` or `release/<issue>-<version>` (e.g., `release/1.2.3`)
+- Feature/fix branches (must contain issue number):
+  - `123-feature-title` (GitHub default when branching from an issue)
+  - `feature-123`
+  - `dev/123-feature-title`
+  - `feature/abc-123`
+
+Note: We recommend `hotfix/*` and `release/*` (with slashes). Hyphen forms like
+`hotfix-...` and `release-...` are currently permitted for compatibility but may
+be restricted later.
+
+### Invalid Patterns (blocked by hooks)
+
+- Missing issue number on feature/fix branches: `feature/add-authentication`,
+  `random-branch`
+- Obsolete maintenance naming: `update-*` (no longer allowed)
+- Generic names without numbers: `experiment-x`, `bugfix/something`
+
+### Quick Start
+
+Use GitHub's default format when creating branches from issues:
+
+```bash
+# ✅ Correct (contains issue number)
+123-add-user-authentication
+feature-789-wallet-integration
+dev/285-improve-performance
+
+# ❌ Incorrect (no issue number)
+add-user-authentication
+my-cool-feature
+```
+
+### Automated Workflow
+
+1. **Create Issue** → GitHub generates branch name `123-feature-name`
+2. **Create Branch** → `git checkout -b 123-feature-name`
+3. **Normal Commits** → `git commit -m "feat: add authentication"`
+4. **Auto-Enhancement** → Husky adds `Closes #123` automatically (from branch
+   name)
+5. **Result** → Full traceability in release notes
+
 ## 📝 Commit Message Guidelines
 
 We use [Conventional Commits](https://www.conventionalcommits.org/)
-specification to ensure consistent commit messages and enable automated
-changelog generation.
+specification with **automatic issue number injection**.
 
 ### Format
 
 ```
 <type>[optional scope]: <description>
 
-[optional body]
-
-[optional footer(s)]
+[Automatically added by Husky]
+Closes #123
 ```
+
+**Note**: Issue numbers are automatically extracted from branch names and added
+to commit messages!
 
 ### Commit Types
 

@@ -35,9 +35,10 @@ FRW/
    - Generates environment configuration files
 
 2. **`ci_post_xcodebuild.sh`** - Runs after successful build
-   - Generates comprehensive TestFlight release notes
-   - Fetches GitHub issue details via API
-   - Creates user-friendly "What to Test" documentation
+   - Generates TestFlight release notes from merge commits
+   - Parses PR number, issue number (from source branch), and PR title (as issue
+     title)
+   - Creates user-friendly "What to Test" documentation (no GitHub API calls)
 
 ## 🔧 CI Scripts Details
 
@@ -88,20 +89,17 @@ bundle exec pod install --repo-update
 
 ### ci_post_xcodebuild.sh
 
-**Purpose**: Generate comprehensive TestFlight release notes from git history
-and GitHub issues.
+**Purpose**: Generate TestFlight release notes from git merge commits and PR
+metadata in commit messages.
 
 **Key Features**:
 
-- **Monorepo git history analysis**: Analyzes commits from the main repository,
-  not iOS submodule
-- **Intelligent issue detection**: Finds issue references in commit messages and
-  PR descriptions
-- **GitHub API integration**: Fetches real issue titles and descriptions
-- **Multiple commit formats supported**:
-  - `feat: [#123] add new feature`
-  - `fix: resolve bug (closes #456)`
-  - `chore: update deps (fixes #789)`
+- **Monorepo git history analysis**: Analyzes commits from the main repository
+- **Merge title parsing**: Extracts PR number and source branch from lines like
+  `Merge pull request #288 from onflow/283-bug-use-random-avatars...`
+- **Issue title source**: Uses the PR title (next line) as the issue title;
+  falls back to branch slug
+- **No network dependency**: Does not call the GitHub API
 
 **Generated TestFlight Notes Format**:
 
@@ -110,9 +108,9 @@ What's New in This Build
 =================================
 
 Resolved Issues:
-* #123: Add dark mode support to settings
-* #456: Fix authentication timeout bug
-* #789: Update dependency versions
+* #283: Use random avatars for accounts (PR #288)
+* #456: Fix authentication timeout bug (PR #312)
+* Update dependency versions (PR #305)
 
 =================================
 Recent Changes:
