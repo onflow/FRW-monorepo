@@ -1,7 +1,7 @@
 [submodule "apps/react-native/ios"]
 	path = apps/react-native/ios
 	url = https://github.com/onflow/FRW-iOS.git
-	branch = develop
+	branch = dev
 
 [submodule "apps/react-native/android"]
 	path = apps/react-native/android
