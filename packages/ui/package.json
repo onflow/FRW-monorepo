@@ -24,6 +24,7 @@
     "bignumber.js": "^9.1.2",
     "lottie-react-native": "^7.3.2",
     "lottie-web": "^5.13.0",
+    "lucide-react": "^0.544.0",
     "tamagui": "^1.132.20"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import { Copy, Link } from '@onflow/frw-icons';
+import { UserRoundPlus } from 'lucide-react';
 import React from 'react';
 import { Card, XStack, YStack, Text } from 'tamagui';
 
@@ -203,9 +204,7 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <Text fontSize="$5" fontWeight="600" color="$white">
-                +
-              </Text>
+              <UserRoundPlus />
             </Card>
           )}
           {showCopyButton && onCopy && (
