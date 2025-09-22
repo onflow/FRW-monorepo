@@ -13,8 +13,23 @@ const BETA_VERSION = process.env.BETA_VERSION;
 // import '../../Unlock/style.css';
 
 const BRANCH_NAME = process.env.BRANCH_NAME;
-
 const COMMIT_SHA = process.env.COMMIT_SHA;
+const BUILD_NUMBER = process.env.BUILD_NUMBER;
+const CI_BUILD_ID = process.env.CI_BUILD_ID;
+
+// Determine build type and version
+const getBuildInfo = () => {
+  if (CI_BUILD_ID || BUILD_NUMBER) {
+    // CI build
+    const buildId = CI_BUILD_ID || BUILD_NUMBER;
+    const branch = BRANCH_NAME ? ` (${BRANCH_NAME})` : '';
+    const commit = COMMIT_SHA ? ` - ${COMMIT_SHA.substring(0, 7)}` : '';
+    return `${buildId}${branch}${commit}`;
+  } else {
+    // Local build
+    return 'local';
+  }
+};
 
 const About = () => {
   const navigate = useNavigate();
@@ -52,6 +67,7 @@ const About = () => {
         >
           {chrome.i18n.getMessage('Version')} {`${version}`}
           {BETA_VERSION && ` (${BETA_VERSION})`}
+          {` - ${getBuildInfo()}`}
         </Typography>
 
         {process.env.DEPLOYMENT_ENV !== 'production' && (
