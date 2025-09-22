@@ -4,7 +4,6 @@ import { YStack, ScrollView } from 'tamagui';
 import { NFTInfoSection } from './NFTInfoSection';
 import { NFTPropertiesGrid, type NFTProperty } from './NFTPropertiesGrid';
 import { SelectableNFTImage } from './SelectableNFTImage';
-import { BackgroundWrapper } from '../layout/BackgroundWrapper';
 
 export interface NFTDetailData {
   id?: string;
@@ -48,7 +47,7 @@ export function NFTDetailView({
   owner,
   showOwner = false,
   backgroundColor = '$bgDrawer',
-  contentPadding = 14,
+  contentPadding = 0,
 }: NFTDetailViewProps) {
   // Generate properties from NFT data
   const generateProperties = (): NFTProperty[] => {
@@ -81,7 +80,7 @@ export function NFTDetailView({
   const allProperties = generateProperties();
 
   return (
-    <BackgroundWrapper backgroundColor={backgroundColor}>
+    <YStack bg={backgroundColor}>
       <ScrollView flex={1} showsVerticalScrollIndicator={false}>
         <YStack px={contentPadding} pb={20}>
           {/* NFT Image */}
@@ -121,6 +120,6 @@ export function NFTDetailView({
           )}
         </YStack>
       </ScrollView>
-    </BackgroundWrapper>
+    </YStack>
   );
 }

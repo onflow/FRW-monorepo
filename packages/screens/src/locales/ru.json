@@ -1,0 +1,123 @@
+{
+  "navigation": {
+    "send": "Отправить",
+    "sendTo": "Отправить",
+    "sending": "Отправка",
+    "selectTokens": "Выбрать токены",
+    "colorDemo": "Демо цветов"
+  },
+  "common": {
+    "cancel": "Отмена",
+    "confirm": "Подтвердить",
+    "back": "Назад",
+    "close": "Закрыть",
+    "done": "Готово",
+    "next": "Далее",
+    "previous": "Предыдущий",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "Search": "Поиск"
+  },
+  "tabs": {
+    "tokens": "Токены",
+    "nfts": "NFT"
+  },
+  "send": {
+    "tokens": "Токены",
+    "nfts": "NFT",
+    "myAccounts": "Мои аккаунты",
+    "recent": "Недавние",
+    "addressBook": "Адресная книга",
+    "sendTo": {
+      "title": "Отправить"
+    },
+    "toAccount": "На аккаунт",
+    "searchAddress": "Поиск адреса",
+    "searchPasteAddress": "Поиск/ Вставить адрес",
+    "selectedToken": "Выбранный токен",
+    "noAccounts": {
+      "title": "Нет аккаунтов",
+      "message": "У вас пока нет аккаунтов."
+    },
+    "noRecent": {
+      "title": "Нет недавних получателей",
+      "message": "Вы не отправляли никому в последнее время."
+    },
+    "noContacts": {
+      "title": "Нет контактов",
+      "message": "Ваша адресная книга пуста."
+    },
+    "noRecipients": "Получатели не найдены",
+    "selectToken": "Выбрать токен",
+    "selectRecipient": "Выбрать получателя",
+    "enterAmount": "Введите сумму",
+    "reviewTransaction": "Проверить транзакцию",
+    "transactionFee": "Комиссия за транзакцию",
+    "total": "Итого",
+    "balance": "Баланс",
+    "available": "Доступно",
+    "insufficient": "Недостаточно средств",
+    "recipient": "Получатель",
+    "from": "От",
+    "fromAccount": "С аккаунта",
+    "to": "Кому",
+    "amount": "Сумма",
+    "asset": "Актив",
+    "confirm": "Подтвердить транзакцию",
+    "sending": "Отправка...",
+    "sent": "Транзакция отправлена",
+    "failed": "Транзакция не удалась",
+    "searchRecipients": "Поиск получателей...",
+    "recentRecipients": "Недавние получатели",
+    "contactsList": "Контакты",
+    "enterAddress": "Введите Flow адрес",
+    "invalidAddress": "Неверный адрес",
+    "sameAddress": "Нельзя отправить на тот же адрес",
+    "selectNFTs": "Выбрать NFT",
+    "selectedNFTs": "Выбранные NFT",
+    "nftDetails": "Детали NFT",
+    "collectionName": "Коллекция",
+    "tokenId": "ID токена",
+    "properties": "Свойства",
+    "description": "Описание",
+    "creator": "Создатель",
+    "title": "Отправить",
+    "inaccessible": "Недоступно"
+  },
+  "messages": {
+    "loading": "Загрузка...",
+    "noTokensWithBalance": "Нет токенов с балансом",
+    "noNFTCollectionsForAccount": "Коллекции NFT не найдены"
+  },
+  "buttons": {
+    "retry": "Повторить",
+    "refresh": "Обновить",
+    "continue": "Продолжить",
+    "clearSearch": "Очистить поиск"
+  },
+  "errors": {
+    "networkError": "Произошла сетевая ошибка",
+    "invalidInput": "Неверный ввод",
+    "transactionFailed": "Транзакция не удалась",
+    "insufficientFunds": "Недостаточно средств",
+    "addressNotFound": "Адрес не найден",
+    "nftNotFound": "NFT не найден",
+    "tokenNotSupported": "Токен не поддерживается",
+    "unauthorized": "Неавторизованный доступ",
+    "timeout": "Превышено время ожидания",
+    "unknown": "Произошла неизвестная ошибка",
+    "failedToLoadTokens": "Не удалось загрузить токены",
+    "failedToLoadNFTs": "Не удалось загрузить NFT"
+  },
+  "nft": {
+    "noSearchResults": "Результаты поиска отсутствуют",
+    "noNFTsMatchSearch": "NFT не найдены по запросу '{{search}}'",
+    "noNFTsFound": "NFT не найдены",
+    "collectionEmpty": "Эта коллекция не содержит NFT",
+    "notFound": {
+      "title": "NFT не найден",
+      "message": "Запрашиваемый NFT не может быть найден или загружен"
+    }
+  }
+}

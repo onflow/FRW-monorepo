@@ -6,6 +6,7 @@ import {
   storageQueryKeys,
   storageQueries,
   storageUtils,
+  useTokenQueryStore,
 } from '@onflow/frw-stores';
 import {
   BackgroundWrapper,
@@ -64,6 +65,7 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
   const getNFTQuantity = useSendStore((state) => state.getNFTQuantity);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
   const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
 
   // Get the first selected NFT (should only be one for single NFT flow)
@@ -246,12 +248,22 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
       if (result && (platform === Platform.iOS || platform === Platform.Android)) {
         bridge.closeRN();
       }
+
+      // Invalidate NFT caches after successful transaction
+      const tokenStore = useTokenQueryStore.getState();
+      if (selectedCollection && fromAccount) {
+        const network = bridge.getNetwork();
+        const currentAddress = fromAccount.address;
+
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+      }
+
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendSingleNFTScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction, isExtension]);
+  }, [executeTransaction, selectedCollection, fromAccount]);
 
   // Early return if essential data is missing
   if (!selectedNFT) {
@@ -283,7 +295,7 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$3">
+          <YStack gap="$3">
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}

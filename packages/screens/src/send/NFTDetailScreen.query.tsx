@@ -51,20 +51,27 @@ export function NFTDetailScreen(): React.ReactElement {
   // Memoize the query key to prevent unnecessary re-renders
   const queryKey = useMemo(() => {
     if (!activeCollection || !currentAddress) return null;
-    const key = tokenQueryKeys.nftCollection(currentAddress, activeCollection, network);
+    const key = tokenQueryKeys.nftCollectionAll(currentAddress, activeCollection, network);
     return key;
   }, [activeCollection, currentAddress, network]);
 
-  // 🔥 TanStack Query: Fetch NFTs from collection to get the detailed NFT data
+  // 🔥 TanStack Query: Fetch ALL NFTs from collection to get all available NFTs
   const {
     data: collectionNFTs = [],
     isLoading,
     error,
   } = useQuery<NFTModel[]>({
     queryKey: queryKey || [],
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       if (!currentAddress || !activeCollection) return Promise.resolve([]);
-      return tokenQueries.fetchNFTCollection(currentAddress, activeCollection, network);
+      return tokenQueries.fetchAllNFTsFromCollection(
+        currentAddress,
+        activeCollection,
+        network,
+        activeCollection.count,
+        undefined,
+        signal
+      );
     },
     enabled: !!queryKey,
     staleTime: 5 * 60 * 1000, // NFT items can be cached for 5 minutes
@@ -280,8 +287,8 @@ export function NFTDetailScreen(): React.ReactElement {
     );
   }
 
-  // Error state
-  if (error) {
+  // Error state - but ignore abort errors
+  if (error && !error.message?.includes('aborted')) {
     return (
       <BackgroundWrapper backgroundColor="$bgDrawer">
         <YStack flex={1} items="center" justify="center" px="$6">

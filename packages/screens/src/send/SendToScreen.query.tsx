@@ -1,3 +1,4 @@
+import { AddressbookService } from '@onflow/frw-api';
 import { bridge, navigation } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
@@ -109,6 +110,7 @@ export function SendToScreen(): React.ReactElement {
     data: allContacts = [],
     isLoading: isLoadingContacts,
     error: contactsError,
+    refetch: refetchContacts,
   } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
@@ -140,17 +142,6 @@ export function SendToScreen(): React.ReactElement {
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
   });
-
-  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching
-  const { data: nftCollections = [] } = useQuery({
-    queryKey: tokenQueryKeys.nfts(fromAddress, network),
-    queryFn: () => tokenQueries.fetchNFTCollections(fromAddress, network),
-    enabled: !!fromAccount?.address,
-    staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-  });
-
   // Convert batch balances and NFT counts to the expected format
   const accountBalances = useMemo(() => {
     const results: { [address: string]: { balance: string; nftCount: string } } = {};
@@ -212,6 +203,19 @@ export function SendToScreen(): React.ReactElement {
       }))
       .filter((contact) => filterBySearchQuery(contact.name, contact.address));
   }, [allContacts, isLoadingContacts, contactsError, filterBySearchQuery]);
+
+  // Create a set of existing addresses for quick lookup
+  const existingAddresses = useMemo(() => {
+    return new Set(allContacts.map((contact: any) => contact.address?.toLowerCase()));
+  }, [allContacts]);
+
+  // Helper function to check if address already exists in address book
+  const isAddressInAddressBook = useCallback(
+    (address: string) => {
+      return existingAddresses.has(address?.toLowerCase());
+    },
+    [existingAddresses]
+  );
 
   // Convert and filter profiles data for display
   const profilesData = useMemo(() => {
@@ -301,11 +305,6 @@ export function SendToScreen(): React.ReactElement {
     [getTypeByTitle]
   );
 
-  const handleScanPress = useCallback(async () => {
-    // TODO: Implement QR scanning functionality
-    console.log('Scan QR code');
-  }, []);
-
   // Helper function to proceed with recipient selection
   const proceedWithRecipientSelection = useCallback(
     async (recipient: RecipientData) => {
@@ -319,12 +318,7 @@ export function SendToScreen(): React.ReactElement {
         accountType = 'main';
       }
 
-      // Calculate total NFT count from all collections
-      const totalNFTCount = nftCollections.reduce((total, collection) => {
-        return total + (collection.count || 0);
-      }, 0);
-
-      logger.debug('fromAccount selected', fromAccount);
+      logger.debug('fromAccount selected', fromAccount, balanceData);
 
       const emojiValue = recipient.emojiInfo?.emoji;
       const isRealEmoji = emojiValue && !emojiValue.startsWith('http') && emojiValue.length <= 4;
@@ -345,7 +339,7 @@ export function SendToScreen(): React.ReactElement {
         setFromAccount({
           ...fromAccount,
           balance: balanceData?.displayBalance || '0 FLOW',
-          nfts: totalNFTCount ? `${totalNFTCount} NFTs` : '0 NFTs',
+          nfts: balanceData?.nftCount ? `${balanceData.nftCount} NFTs` : '0 NFTs',
         });
       }
 
@@ -376,7 +370,7 @@ export function SendToScreen(): React.ReactElement {
         navigation.navigate('SendTokens', { address: recipient.address, recipient });
       }
     },
-    [setToAccount, activeTab, transactionType, nftCollections, fromAccount, balanceData]
+    [setToAccount, activeTab, transactionType, fromAccount, balanceData]
   );
 
   // Dialog handlers
@@ -463,6 +457,20 @@ export function SendToScreen(): React.ReactElement {
     [allProfiles, handleRecipientPress]
   );
 
+  const handleScanPress = useCallback(async () => {
+    try {
+      const scannedText = await bridge.scanQRCode();
+      if (scannedText) {
+        handleSearchChange(scannedText);
+      }
+    } catch (error: any) {
+      // Don't show alert for cancelled scans
+      if (error.code !== 'SCAN_CANCELLED') {
+        alert(`${t('common.error')}: ${t('errors.networkError')}`);
+      }
+    }
+  }, [handleSearchChange, t]);
+
   const handleRecipientEdit = useCallback((recipient: RecipientData) => {
     // TODO: Handle edit recipient
     console.log('Edit recipient:', recipient);
@@ -490,9 +498,33 @@ export function SendToScreen(): React.ReactElement {
         }
       }
     } catch (error) {
-      console.error('Failed to copy address:', error);
+      logger.error('Failed to copy address:', error);
     }
   }, []);
+
+  const handleRecipientAddToAddressBook = useCallback(
+    async (recipient: RecipientData) => {
+      // Check if address already exists in address book
+      if (isAddressInAddressBook(recipient.address)) {
+        return;
+      }
+
+      try {
+        await AddressbookService.external({
+          contactName: recipient.name,
+          address: recipient.address,
+          domain: '', // Empty domain for external contacts
+          domainType: 0, // 0 for external contacts
+        });
+
+        // Refresh the address book data
+        refetchContacts();
+      } catch (error) {
+        logger.error('Failed to add to address book:', error);
+      }
+    },
+    [refetchContacts, isAddressInAddressBook]
+  );
 
   const getEmptyStateForTab = () => {
     // If there's a search query, show search-specific empty states
@@ -537,7 +569,7 @@ export function SendToScreen(): React.ReactElement {
       {isExtension && (
         <ExtensionHeader
           title={t('send.sendTo.title', 'Send To')}
-          help={false}
+          help={true}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
         />
@@ -600,6 +632,7 @@ export function SendToScreen(): React.ReactElement {
             onItemPress={handleRecipientPress}
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
+            onItemAddToAddressBook={handleRecipientAddToAddressBook}
             contentPadding={0}
           />
         )}

@@ -15,7 +15,11 @@ export * from './types';
 export type { ScreenAssets } from './assets/images';
 
 // Export i18n utilities
-export { default as screensI18n, resources as screensTranslations } from './lib/i18n';
+export {
+  default as screensI18n,
+  resources as screensTranslations,
+  initializeI18n,
+} from './lib/i18n';
 
 // Navigation is available directly via: import { navigation } from '@onflow/frw-context'
 

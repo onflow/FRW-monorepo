@@ -1,8 +1,8 @@
-import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
 import { Platform, Image as RNImage } from 'react-native';
-import { YStack, XStack, View, Sheet, useTheme } from 'tamagui';
+import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
@@ -31,6 +31,7 @@ export interface ConfirmationDrawerProps {
   title?: string;
   isSending?: boolean;
   isExtension?: boolean;
+  sendStaticImage?: any;
 }
 
 interface LoadingIndicatorProps {
@@ -152,9 +153,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       snapPointsMode={!isExtension ? 'fit' : undefined}
       dismissOnSnapToBottom
       snapPoints={isExtension ? [91] : undefined}
+      animation={isExtension ? 'quick' : 'lazy'}
     >
       <Sheet.Overlay
-        animation={!isExtension ? 'lazy' : undefined}
+        animation={isExtension ? 'quick' : 'lazy'}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
         bg="rgba(0,0,0,0.5)"
@@ -164,6 +166,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         bg="$bgDrawer"
         borderTopLeftRadius={isExtension ? 0 : '$6'}
         borderTopRightRadius={isExtension ? 0 : '$6'}
+        animation={isExtension ? 'quick' : 'lazy'}
+        enterStyle={{ y: '100%' }}
+        exitStyle={{ y: '100%' }}
       >
         <YStack p="$4" gap="$4">
           {/* Header */}
@@ -329,7 +334,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
-            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
+            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
                 Send NFTs
               </Text>
@@ -373,7 +378,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 )}
             </YStack>
           ) : (
-            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
+            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
                 Send Tokens
               </Text>
@@ -415,7 +420,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
                   <VerifiedToken size={10} color="#41CC5D" />
-                  <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>
 
@@ -440,9 +444,18 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             onPress={internalIsSending ? undefined : handleConfirm}
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$5" fontWeight="600" color="#000000">
-              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm send' : 'Hold to send'}
-            </Text>
+            {internalIsSending ? (
+              <XStack items="center" gap="$2">
+                <Spinner size="small" color="$black" />
+                <Text fontSize="$5" fontWeight="600" color="$black">
+                  Sending...
+                </Text>
+              </XStack>
+            ) : (
+              <Text fontSize="$5" fontWeight="600" color="$black">
+                {isExtension ? 'Confirm send' : 'Hold to send'}
+              </Text>
+            )}
           </YStack>
         </YStack>
       </Sheet.Frame>

@@ -19,5 +19,6 @@ export { default as Search } from './Search.generated';
 export { default as SendConfirmation } from './SendConfirmation.generated';
 export { default as SwitchVertical } from './SwitchVertical.generated';
 export { default as Trash } from './Trash.generated';
+export { default as UserRoundPlus } from './UserRoundPlus.generated';
 export { default as VerifiedToken } from './VerifiedToken.generated';
 export { default as WalletCard } from './WalletCard.generated';

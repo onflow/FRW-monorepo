@@ -3,14 +3,19 @@ import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import { WalletType, type CollectionModel, type NFTModel } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
+interface NFTCollectionResult {
+  nfts: NFTModel[];
+  offset?: string; // Next page offset/cursor
+}
+
 interface NFTProvider {
   getCollections(address: string): Promise<CollectionModel[]>;
   getNFTs(
     address: string,
     collection: CollectionModel,
-    offset: number,
+    offset: string,
     limit: number
-  ): Promise<NFTModel[]>;
+  ): Promise<NFTCollectionResult>;
 }
 
 class FlowNFTProvider implements NFTProvider {
@@ -37,9 +42,9 @@ class FlowNFTProvider implements NFTProvider {
   async getNFTs(
     address: string,
     collection: CollectionModel,
-    offset: number = 0,
+    offset: string = '0',
     limit: number = 50
-  ): Promise<NFTModel[]> {
+  ): Promise<NFTCollectionResult> {
     const path = collection.path?.storage_path.split('/').pop();
     if (!path) {
       throw new Error('Collection path not found');
@@ -47,16 +52,21 @@ class FlowNFTProvider implements NFTProvider {
     const res = await NftService.collectionList({
       address,
       collectionIdentifier: path,
-      offset,
+      offset: parseInt(offset, 10) || 0,
       limit,
     });
     logger.debug('NFT list response:', res.data);
-    return (
+
+    const nfts =
       res.data?.nfts?.map((nft) => ({
         ...nft,
         type: WalletType.Flow,
-      })) ?? []
-    );
+      })) ?? [];
+
+    return {
+      nfts,
+      offset: res.data?.offset,
+    };
   }
 }
 
@@ -145,9 +155,9 @@ class EvmNFTProvider implements NFTProvider {
   async getNFTs(
     address: string,
     collection: CollectionModel,
-    offset: number = 0,
+    offset: string = '',
     limit: number = 50
-  ): Promise<NFTModel[]> {
+  ): Promise<NFTCollectionResult> {
     const startTime = Date.now();
     logger.debug('[NFTService] Starting EVM NFTs fetch', {
       address,
@@ -187,6 +197,7 @@ class EvmNFTProvider implements NFTProvider {
         hasData: !!res?.data,
         nftCount: res?.data?.nfts?.length || 0,
         totalNftCount: res?.data?.nftCount || 0,
+        responseOffset: res?.data?.offset,
         status: res?.status || 'unknown',
       });
 
@@ -196,13 +207,18 @@ class EvmNFTProvider implements NFTProvider {
           type: WalletType.EVM,
         })) ?? [];
 
+      // For EVM addresses, use the offset returned from the API response
+      const nextOffset = res.data?.offset;
+
       logger.debug('[NFTService] Successfully processed EVM NFTs', {
         address,
         collectionId: collection.id,
         duration: `${duration}ms`,
         nftsCount: nfts.length,
-        offset,
+        requestOffset: offset,
+        responseOffset: nextOffset,
         limit,
+        hasMore: !!nextOffset,
         nfts: nfts.slice(0, 3).map((nft) => ({
           id: nft.id,
           name: nft.name,
@@ -212,7 +228,10 @@ class EvmNFTProvider implements NFTProvider {
         })),
       });
 
-      return nfts;
+      return {
+        nfts,
+        offset: nextOffset,
+      };
     } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Failed to fetch EVM NFTs', {
@@ -235,7 +254,7 @@ class EvmNFTProvider implements NFTProvider {
         provider: 'EvmNFTProvider',
         method: 'getNFTs',
       });
-      return [];
+      return { nfts: [] };
     }
   }
 }
@@ -327,9 +346,9 @@ export class NFTService {
   async getNFTs(
     address: string,
     collection: CollectionModel,
-    offset: number = 0,
+    offset: string = '',
     limit: number = 50
-  ): Promise<NFTModel[]> {
+  ): Promise<NFTCollectionResult> {
     const startTime = Date.now();
     const providerType = this.nftProvider instanceof EvmNFTProvider ? 'EVM' : 'Flow';
 
@@ -352,10 +371,10 @@ export class NFTService {
           providerType,
           timestamp: new Date().toISOString(),
         });
-        return [];
+        return { nfts: [] };
       }
 
-      const nfts = await this.nftProvider.getNFTs(address, collection, offset, limit);
+      const result = await this.nftProvider.getNFTs(address, collection, offset, limit);
       const duration = Date.now() - startTime;
 
       logger.debug('[NFTService] NFTs fetch completed', {
@@ -363,13 +382,15 @@ export class NFTService {
         providerType,
         collectionId: collection.id,
         duration: `${duration}ms`,
-        nftsCount: nfts.length,
+        nftsCount: result.nfts.length,
         offset,
+        responseOffset: result.offset,
         limit,
+        hasMore: !!result.offset,
         timestamp: new Date().toISOString(),
       });
 
-      return nfts;
+      return result;
     } catch (_error) {
       const duration = Date.now() - startTime;
       logger.error('[NFTService] Error in getNFTs', {
@@ -391,7 +412,7 @@ export class NFTService {
         timestamp: new Date().toISOString(),
         method: 'getNFTs',
       });
-      return [];
+      return { nfts: [] };
     }
   }
 }

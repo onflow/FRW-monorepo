@@ -34,7 +34,7 @@ export function NFTCard({
   const imageHeight = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
   return (
     <YStack
-      width={width as any}
+      style={{ width: width }}
       gap="$1.5"
       pressStyle={{ opacity: 0.8, scale: 0.98 }}
       onPress={onPress}
@@ -43,8 +43,7 @@ export function NFTCard({
     >
       {/* NFT Image */}
       <YStack
-        w="100%"
-        h={imageHeight}
+        style={{ width: '100%', height: imageHeight }}
         rounded="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}
@@ -60,16 +59,18 @@ export function NFTCard({
         {/* ERC1155 Badge - top left corner */}
         {nft.contractType === 'ERC1155' && nft.amount && (
           <View
-            position="absolute"
-            top={8}
-            left={8}
-            backgroundColor="#D9D9D9"
-            width={22.26}
-            height={22.26}
-            borderRadius={11.13}
-            alignItems="center"
-            justifyContent="center"
-            zIndex={1}
+            style={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              backgroundColor: '#D9D9D9',
+              width: 22.26,
+              height: 22.26,
+              borderRadius: 11.13,
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+            }}
           >
             <Text fontSize={14} fontWeight="600" color="#000000" lineHeight={19.6}>
               {nft.amount}
@@ -79,12 +80,14 @@ export function NFTCard({
 
         {/* Selection Indicator - top right corner */}
         <YStack
-          w="$6"
-          h="$6"
-          zIndex={1}
-          position="absolute"
-          top="$2"
-          right="$2"
+          width="$6"
+          height="$6"
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 1,
+          }}
           onPress={(e) => {
             e?.stopPropagation?.();
             onSelect(nft.id);
@@ -92,51 +95,66 @@ export function NFTCard({
           pressStyle={{ opacity: 0.8 }}
           cursor="pointer"
         >
-          <CheckCircle size={20} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
+          <CheckCircle size={24} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>
       </YStack>
 
       {/* NFT Info */}
-      <YStack gap="$-0.75">
-        {/* NFT Name */}
-        <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
-          {nft.name && nft.name.length > 18
-            ? `${nft.name.slice(0, 18)}...`
-            : nft.name || 'Unnamed NFT'}
-        </Text>
+      <XStack gap="$-0.75" flex={1} justify="space-between">
+        <YStack gap="$-0.75">
+          {/* NFT Name */}
+          <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
+            {nft.name && nft.name.length > 18
+              ? `${nft.name.slice(0, 18)}...`
+              : nft.name || 'Unnamed NFT'}
+          </Text>
 
-        {/* Collection Info with Account Avatar/Emoji */}
-        {nft.collection && (
-          <XStack items="center" gap="$1">
-            {/* Account Avatar/Emoji - only show if available */}
-            {accountEmoji && (
-              <YStack
-                width={16}
-                height={16}
-                bg={accountColor ? (accountColor as any) : '$warning'}
-                rounded={8}
-                items="center"
-                justify="center"
+          {/* Collection Info with Account Avatar/Emoji */}
+          {nft.collection && (
+            <XStack items="center" gap="$1">
+              {/* Account Avatar/Emoji - only show if available */}
+              {accountEmoji && (
+                <YStack
+                  width="$4"
+                  height="$4"
+                  style={{ backgroundColor: accountColor || '#f59e0b' }}
+                  rounded="$12"
+                  items="center"
+                  justify="center"
+                >
+                  <Text fontSize="$2" fontWeight="600">
+                    {accountEmoji}
+                  </Text>
+                </YStack>
+              )}
+              {accountAvatar && !accountEmoji ? (
+                <Image src={accountAvatar} width="$5" height="$5" rounded="$6" />
+              ) : (
+                ''
+              )}
+              {!accountEmoji && !accountAvatar && collectionAvatar ? (
+                <Image src={collectionAvatar} width="$5" height="$5" rounded="$6" />
+              ) : (
+                ''
+              )}
+
+              {/* From Account Name */}
+              <Text
+                fontSize="$4"
+                fontWeight="400"
+                color="$textSecondary"
+                numberOfLines={1}
+                flex={1}
               >
-                <Text fontSize={10} fontWeight="600">
-                  {accountEmoji}
-                </Text>
-              </YStack>
-            )}
-            {accountAvatar && <Image src={accountAvatar} width="$5" height="$5" rounded="$6" />}
-
-            {/* From Account Name */}
-            <Text fontSize="$4" fontWeight="400" color="$textSecondary" numberOfLines={1} flex={1}>
-              {accountName || nft.collection}
-            </Text>
-
-            {/* Right Chevron */}
-            <YStack justify="center">
-              <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
-            </YStack>
-          </XStack>
-        )}
-      </YStack>
+                {accountName || nft.collection}
+              </Text>
+            </XStack>
+          )}
+        </YStack>
+        <YStack verticalAlign={'center'} justify="center">
+          <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
+        </YStack>
+      </XStack>
     </YStack>
   );
 }

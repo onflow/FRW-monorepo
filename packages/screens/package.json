@@ -17,6 +17,7 @@
     "translate:force": "node scripts/translate-i18n.js --force"
   },
   "dependencies": {
+    "@onflow/frw-api": "workspace:*",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",

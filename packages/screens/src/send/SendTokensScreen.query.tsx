@@ -51,6 +51,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
+  const currency = bridge.getCurrency();
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get send store
@@ -102,7 +103,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           setIsFreeGasEnabled(true);
         }
       } catch (error) {
-        console.error('Failed to check free gas status:', error);
+        logger.error('Failed to check free gas status:', error);
         // Default to enabled if we can't determine the status
         setIsFreeGasEnabled(true);
       }
@@ -184,7 +185,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
   const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
-  const contentPadding = 16;
+  const contentPadding = '$4';
   const usdFee = '$0.02';
   const isBalanceLoading = false;
   const showEditButtons = true;
@@ -261,13 +262,13 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       // Allow user to type any amount - validation will show error if exceeds balance
       setAmount(sanitized);
     },
-    [selectedToken, isTokenMode]
+    [selectedToken, isTokenMode, currency.rate]
   );
 
   const handleToggleInputMode = useCallback(() => {
     // Convert the amount when switching modes
     if (selectedToken?.priceInUSD) {
-      const price = new BN(selectedToken.priceInUSD);
+      const price = new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1));
       const currentAmount = new BN(amount || '0');
 
       if (!price.isNaN() && !currentAmount.isNaN() && price.gt(0)) {
@@ -285,7 +286,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     }
 
     setIsTokenMode((prev) => !prev);
-  }, [isTokenMode, amount, selectedToken]);
+  }, [isTokenMode, amount, selectedToken, currency.rate]);
 
   const handleMaxPress = useCallback(() => {
     if (selectedToken?.balance) {
@@ -336,7 +337,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     const decimals = selectedToken.decimal || 8;
     if (!isTokenMode) {
       // Converting from USD to token
-      tokenAmount = inputAmount.div(selectedToken.priceInUSD || 0).toFixed(decimals);
+      const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
+      tokenAmount = inputAmount.div(price).toFixed(decimals);
     } else {
       // Already in token mode
       tokenAmount = inputAmount.toFixed(decimals);
@@ -397,15 +399,14 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       // Convert amount to token equivalent if in USD mode
       let tokenAmount = amountNum;
       if (!isTokenMode && selectedToken?.priceInUSD) {
-        const price = new BN(selectedToken.priceInUSD);
+        const price = new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1));
         if (!price.isNaN() && price.gt(0)) {
           tokenAmount = amountNum.div(price);
         }
       }
 
-      // Check if amount exceeds balance and set error
-      if (tokenAmount.gt(balanceNum) && amountNum.gt(0)) {
-        setAmountError(t('send.errors.amountExceedsBalance', 'Amount exceeds available balance'));
+      if (tokenAmount.gt(balanceNum)) {
+        setAmountError('Amount exceeds available balance');
       } else {
         setAmountError('');
       }
@@ -442,11 +443,15 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       tokenAmount: isTokenMode
         ? amount
         : selectedToken?.priceInUSD
-          ? new BN(amount || '0').div(new BN(selectedToken.priceInUSD)).toFixed(2)
+          ? new BN(amount || '0')
+              .div(new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1)))
+              .toFixed(2)
           : amount,
       fiatAmount:
         isTokenMode && selectedToken?.priceInUSD
-          ? new BN(amount || '0').times(new BN(selectedToken.priceInUSD)).toFixed(2)
+          ? new BN(amount || '0')
+              .times(new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1)))
+              .toFixed(2)
           : amount,
       isTokenMode,
       transactionFee: transactionFee,
@@ -458,6 +463,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       selectedNFTs.length,
       isTokenMode,
       transactionFee,
+      currency.rate,
     ]
   );
 
@@ -555,7 +561,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                           logoURI: selectedToken.logoURI,
                           balance: selectedToken.balance?.toString(),
                           price: selectedToken.priceInUSD
-                            ? new BN(selectedToken.priceInUSD)
+                            ? new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1))
                             : undefined,
                           isVerified: selectedToken.isVerified,
                         }
@@ -572,6 +578,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                   showConverter={true}
                   disabled={false}
                   inputRef={inputRef}
+                  currency={currency}
                   amountError={amountError}
                 />
               </YStack>
@@ -681,7 +688,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           onClose={handleTokenSelectorClose}
           platform="mobile"
           title="Tokens"
-          currency={bridge.getCurrency()}
+          currency={currency}
           isExtension={isExtension}
         />
 
