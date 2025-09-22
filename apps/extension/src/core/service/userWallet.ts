@@ -1601,7 +1601,12 @@ const loadMainAccountsWithPubKey = async (
   // Transform the address array into MainAccount objects
   const mainAccounts: MainAccount[] = mainPublicKeyAccounts.map(
     (publicKeyAccount, index): MainAccount => {
-      const defaultEmoji = getEmojiByIndex(index);
+      // Generate a hash from the address to get a consistent 0-9 index for emoji selection
+      const addressHash = publicKeyAccount.address.split('').reduce((hash, char) => {
+        return hash + char.charCodeAt(0);
+      }, 0);
+      const emojiIndex = addressHash % 10;
+      const defaultEmoji = getEmojiByIndex(emojiIndex);
 
       // Check if there's custom metadata for this address
       const customData = customMetadata[publicKeyAccount.address];
