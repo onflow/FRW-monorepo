@@ -26,6 +26,7 @@ export interface PlatformSpec {
   getJWT(): Promise<string>;
   getVersion(): string;
   getBuildNumber(): string;
+  getLanguage(): string;
 
   getCurrency(): Currency;
   getPlatform(): Platform;

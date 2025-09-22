@@ -1,8 +1,9 @@
-import React from 'react';
-import { XStack, YStack, Text, Button } from 'tamagui';
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import { XStack, YStack, ScrollView, Text } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
+import { Button } from '../foundation/Button';
 import { Skeleton } from '../foundation/Skeleton';
 
 export interface NFTData {
@@ -16,12 +17,15 @@ export interface NFTData {
 }
 
 export interface NFTGridProps {
+  isExtension?: boolean;
+  totalCount?: number;
   // Data
   data: NFTData[];
   selectedIds?: string[];
 
   // Loading states
   isLoading?: boolean;
+  loadingProgress?: number; // 0-100 percentage
 
   // Empty states
   emptyTitle?: string;
@@ -48,12 +52,18 @@ export interface NFTGridProps {
   // Layout
   gap?: string;
   aspectRatio?: number;
+
+  // Virtualization options
+  enableVirtualization?: boolean;
+  itemsPerBatch?: number;
+  loadMoreThreshold?: number;
 }
 
 export function NFTGrid({
   data,
   selectedIds = [],
   isLoading = false,
+  loadingProgress = 0,
   emptyTitle,
   emptyMessage,
   showClearSearch = false,
@@ -70,8 +80,75 @@ export function NFTGrid({
   accountColor,
   gap = '$3',
   aspectRatio = 1,
+  enableVirtualization = true,
+  itemsPerBatch = 20,
+  loadMoreThreshold = 10,
+  isExtension = false,
+  totalCount = 51,
 }: NFTGridProps) {
   const columns = 2;
+
+  // Virtualization state
+  const [visibleItemCount, setVisibleItemCount] = useState(itemsPerBatch);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Memoize visible data for performance
+  const visibleData = useMemo(() => {
+    if (!enableVirtualization) {
+      return data;
+    }
+    return data.slice(0, visibleItemCount);
+  }, [data, visibleItemCount, enableVirtualization]);
+
+  // Load more items when scrolling
+  const handleLoadMore = useCallback(() => {
+    if (!enableVirtualization || visibleItemCount >= data.length) {
+      return;
+    }
+
+    const newCount = Math.min(visibleItemCount + itemsPerBatch, data.length);
+    setVisibleItemCount(newCount);
+  }, [enableVirtualization, visibleItemCount, data.length, itemsPerBatch]);
+
+  // Intersection Observer for load more
+  useEffect(() => {
+    if (!enableVirtualization || !loadMoreRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && visibleItemCount < data.length) {
+          handleLoadMore();
+        }
+      },
+      {
+        rootMargin: '100px', // Start loading 100px before the trigger comes into view
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [enableVirtualization, visibleItemCount, data.length, handleLoadMore]);
+
+  // Reset visible count when data changes
+  const prevDataLength = React.useRef(data.length);
+  React.useEffect(() => {
+    if (prevDataLength.current !== data.length) {
+      setVisibleItemCount(itemsPerBatch);
+      prevDataLength.current = data.length;
+    }
+  }, [data.length, itemsPerBatch]);
+
+  // Memoize rows for performance
+  const rows = useMemo(() => {
+    const result: NFTData[][] = [];
+    for (let i = 0; i < visibleData.length; i += columns) {
+      result.push(visibleData.slice(i, i + columns));
+    }
+    return result;
+  }, [visibleData, columns]);
 
   // Loading skeleton - match the responsive 2-column layout
   const renderSkeleton = () => {
@@ -97,6 +174,53 @@ export function NFTGrid({
     return <YStack gap="$4">{skeletonRows}</YStack>;
   };
 
+  // Loading state with progress bar - based on Figma design
+  const renderLoading = () => {
+    const progress = Math.min(Math.max(loadingProgress, 0), 100);
+    const progressWidth = `${progress}%`;
+
+    return (
+      <YStack
+        flex={1}
+        justify="center"
+        items="center"
+        gap="$2.5"
+        px="$0"
+        py="$0"
+        mt="$-20"
+        width="100%"
+      >
+        {/* Loading text and percentage */}
+        <XStack justify="space-between" items="center" width="$34">
+          <Text fontSize="$4" fontWeight="400" color="white">
+            Loading NFTs
+          </Text>
+          <Text fontSize="$4" fontWeight="400" color="white">
+            {Math.round(progress)}%
+          </Text>
+        </XStack>
+
+        {/* Progress bar */}
+        <YStack
+          height="$2"
+          width="$46"
+          position="relative"
+          bg="$grayBg1"
+          overflow="hidden"
+          style={{ borderRadius: 10 }}
+        >
+          {/* Progress fill */}
+          <YStack
+            height="100%"
+            style={{ width: progressWidth, borderRadius: 10, left: 0, top: 0 }}
+            bg="#00ef8b"
+            position="absolute"
+          />
+        </YStack>
+      </YStack>
+    );
+  };
+
   // Error state
   const renderError = () => (
     <RefreshView
@@ -110,7 +234,7 @@ export function NFTGrid({
   // Empty state
   const renderEmpty = () => (
     <YStack flex={1} justify="center" items="center" px="$6" py="$12">
-      <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+      <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" style={{ textAlign: 'center' }}>
         {emptyTitle || 'No NFTs Found'}
       </Text>
 
@@ -118,32 +242,29 @@ export function NFTGrid({
         fontSize="$4"
         color="$textSecondary"
         mb="$8"
-        textAlign="center"
-        maxWidth="$24"
+        style={{ textAlign: 'center' }}
         lineHeight="$5"
       >
         {emptyMessage || 'No NFTs available in this collection.'}
       </Text>
 
       {showClearSearch && onClearSearch && (
-        <Button
-          variant="outlined"
-          onPress={onClearSearch}
-          bg="$bg2"
-          borderColor="$borderColor"
-          color="$color"
-          px="$4"
-          py="$3"
-        >
-          {clearSearchText}
-        </Button>
+        <YStack mt="$4" items="center">
+          <Button variant="outline" size="medium" onPress={onClearSearch}>
+            {clearSearchText}
+          </Button>
+        </YStack>
       )}
     </YStack>
   );
 
   // Show loading skeleton
   if (isLoading) {
-    return renderSkeleton();
+    if (totalCount > 50) {
+      return renderLoading();
+    } else {
+      return renderSkeleton();
+    }
   }
 
   // Show error state
@@ -156,11 +277,6 @@ export function NFTGrid({
     return renderEmpty();
   }
 
-  // Group NFTs into rows
-  const rows: NFTData[][] = [];
-  for (let i = 0; i < data.length; i += columns) {
-    rows.push(data.slice(i, i + columns));
-  }
   let idx = -1;
 
   // Main grid content
@@ -190,6 +306,17 @@ export function NFTGrid({
           })}
         </XStack>
       ))}
+
+      {/* Load more trigger - invisible element for intersection observer */}
+      {enableVirtualization && visibleItemCount < data.length && (
+        <ScrollView ref={loadMoreRef} style={{ height: '1px', width: '100%' }}>
+          <YStack items="center" py="$4">
+            <Text fontSize="$3" color="$textSecondary">
+              Loading more NFTs... ({visibleItemCount} of {data.length})
+            </Text>
+          </YStack>
+        </ScrollView>
+      )}
     </YStack>
   );
 }

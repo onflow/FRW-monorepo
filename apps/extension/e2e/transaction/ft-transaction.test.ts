@@ -24,8 +24,8 @@ export const sendFT = async ({ page, tokenName, receiver, amount, ingoreFlowChar
   await page.getByTestId(`Tokens`).click();
   await page.getByTestId(tokenName).click();
 
-  await page.getByPlaceholder('Search/ Paste address').click();
-  await page.getByPlaceholder('Search/ Paste address').fill(receiver);
+  await page.getByPlaceholder('Search / Paste address').click();
+  await page.getByPlaceholder('Search / Paste address').fill(receiver);
   await page.getByPlaceholder('0.00').fill(amount);
   await page.getByTestId('next').click();
   await page.getByTestId('confirm').click();
@@ -49,7 +49,6 @@ test('send FTs ', async ({ page, extensionId }) => {
     [];
 
   test.setTimeout(120_000);
-  test.setTimeout(120_000);
   // send USDC.e to flow
   const tx1 = await sendFT({
     page,
@@ -57,6 +56,7 @@ test('send FTs ', async ({ page, extensionId }) => {
     receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.000001',
   });
+
   txList.push(tx1);
 
   //Send USDC.e from Flow to Coa
@@ -66,6 +66,7 @@ test('send FTs ', async ({ page, extensionId }) => {
     receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
     amount: '0.000001',
   });
+
   txList.push(tx2);
 
   //Send FLOW token from Flow to COA

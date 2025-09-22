@@ -1,9 +1,10 @@
 import { Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
-import React from 'react';
+import React, { useState } from 'react';
 import { YStack, XStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { InfoDialog } from './InfoDialog';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -12,7 +13,6 @@ export interface ToAccountSectionProps {
   fromAccount?: WalletAccount;
   isAccountIncompatible?: boolean;
   onEditPress?: () => void;
-  onLearnMorePress?: () => void;
   showEditButton?: boolean;
   title: string;
   backgroundColor?: string;
@@ -21,6 +21,14 @@ export interface ToAccountSectionProps {
   showAvatar?: boolean;
   avatarSize?: number;
   isLinked?: boolean;
+  // Text strings for i18n
+  incompatibleAccountText?: string;
+  learnMoreText?: string;
+  unknownAccountText?: string;
+  dialogTitle?: string;
+  dialogButtonText?: string;
+  dialogDescriptionMain?: string;
+  dialogDescriptionSecondary?: string;
 }
 
 export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
@@ -28,16 +36,34 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   fromAccount, // For conditional border logic
   isAccountIncompatible = false,
   onEditPress,
-  onLearnMorePress,
   showEditButton = true,
   title,
-  backgroundColor = 'rgba(255, 255, 255, 0.1)',
-  borderRadius = 16,
+  backgroundColor = '$light10',
+  borderRadius = '$4',
   contentPadding: _contentPadding = 16,
   showAvatar = true,
   avatarSize = 36,
   isLinked = false,
+  // Text strings for i18n
+  incompatibleAccountText = 'Incompatible Account',
+  learnMoreText = 'Learn more',
+  unknownAccountText = 'Unknown Account',
+  dialogTitle = 'Account Compatibility',
+  dialogButtonText = 'Okay',
+  dialogDescriptionMain = 'Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are compatible with EVM apps, and Cadence accounts are compatible with Cadence apps.',
+  dialogDescriptionSecondary = 'If an application is on EVM or Cadence, only compatible accounts will be available to connect.',
 }) => {
+  // Internal state for compatibility dialog
+  const [isCompatibilityDialogVisible, setIsCompatibilityDialogVisible] = useState(false);
+
+  // Handle learn more press - show internal dialog
+  const handleLearnMorePress = () => {
+    setIsCompatibilityDialogVisible(true);
+  };
+
+  const handleDialogClose = () => {
+    setIsCompatibilityDialogVisible(false);
+  };
   return (
     <YStack
       bg={backgroundColor as any}
@@ -50,29 +76,27 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       width="100%"
     >
       {/* Section Header */}
-      <Text fontSize="$2" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
+      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16}>
         {title}
       </Text>
 
       {/* Incompatible Account Header */}
       {isAccountIncompatible && (
         <XStack justify="space-between" items="flex-end">
-          <Text fontSize="$3" fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={16}>
-            Incompatible Account
+          <Text fontSize="$3" fontWeight="400" color="$light80" lineHeight={16}>
+            {incompatibleAccountText}
           </Text>
-          {onLearnMorePress && (
-            <Text
-              fontSize="$3"
-              fontWeight="400"
-              color="#16FF99"
-              lineHeight={16}
-              onPress={onLearnMorePress}
-              cursor="pointer"
-              pressStyle={{ opacity: 0.7 }}
-            >
-              Learn more
-            </Text>
-          )}
+          <Text
+            fontSize="$3"
+            fontWeight="400"
+            color="$primary"
+            lineHeight={16}
+            onPress={handleLearnMorePress}
+            cursor="pointer"
+            pressStyle={{ opacity: 0.7 }}
+          >
+            {learnMoreText}
+          </Text>
         </XStack>
       )}
 
@@ -89,7 +113,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
           {showAvatar && (
             <XStack
               width={46}
-              height={36}
+              height="$9"
               items="center"
               justify="flex-start"
               pl={5}
@@ -102,9 +126,9 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                 size={avatarSize}
                 borderColor={
                   isAccountIncompatible
-                    ? '#D9D9D9'
+                    ? '$textSecondary'
                     : fromAccount && account.address === fromAccount.address
-                      ? '#00EF8B'
+                      ? '$primary'
                       : undefined
                 }
                 borderWidth={
@@ -115,52 +139,52 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               />
               {/* Parent emoji overlay bubble for linked accounts */}
               {account.parentEmoji && (
-                <XStack
+                <YStack
                   position="absolute"
                   left={-1}
                   top={-2}
-                  width={18}
-                  height={18}
+                  width="$4.5"
+                  height="$4.5"
                   rounded={9}
-                  bg="#D9D9D9"
+                  bg="$textSecondary"
                   borderWidth={2}
-                  borderColor="#0A0A0B"
+                  borderColor="$dark80"
                   items="center"
                   justify="center"
-                  overflow="visible"
+                  overflow="hidden"
                 >
-                  <Text fontSize={10} fontWeight="600" lineHeight={18} textAlign="center">
+                  <Text fontSize={8} fontWeight="600" lineHeight={12}>
                     {account.parentEmoji.emoji}
                   </Text>
-                </XStack>
+                </YStack>
               )}
             </XStack>
           )}
 
           {/* Account Details - Fixed width with 12px gap from avatar */}
-          <XStack ml={12}>
-            <YStack width={151.34} gap={2}>
+          <XStack ml="$3">
+            <YStack width={151.34} gap="$0.5">
               {/* Account Name with linked icon and EVM badge */}
-              <XStack items="center" gap={4}>
-                {isLinked && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+              <XStack items="center" gap="$1">
+                {isLinked && <Link size={12.8} color="$light40" />}
                 <Text
-                  color="$white"
+                  color={isAccountIncompatible ? '$textSecondary' : '$white'}
                   fontSize="$3"
                   fontWeight="600"
                   lineHeight={17}
                   numberOfLines={1}
                 >
-                  {account.name || 'Unknown Account'}
+                  {account.name || unknownAccountText}
                 </Text>
                 {/* EVM Badge - inline with name */}
                 {account.type === 'evm' && (
                   <XStack
                     bg="$accentEVM"
                     rounded="$4"
-                    px={4}
+                    px="$1"
                     items="center"
                     justify="center"
-                    height={16}
+                    height="$4"
                   >
                     <Text
                       fontSize={8}
@@ -187,10 +211,10 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
 
         {/* Right Side: Edit Icon */}
         {showEditButton && onEditPress && (
-          <XStack justify="flex-end" items="center" gap={16}>
+          <XStack justify="flex-end" items="center" gap="$4">
             <XStack
-              width={24}
-              height={24}
+              width="$6"
+              height="$6"
               items="center"
               justify="center"
               pressStyle={{ opacity: 0.7 }}
@@ -199,14 +223,32 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               opacity={isAccountIncompatible ? 0.5 : 1}
             >
               <Edit
-                size={24}
-                color={isAccountIncompatible ? '#FFFFFF' : '#767676'}
+                size="$6"
+                color={isAccountIncompatible ? '$white' : '$textSecondary'}
                 theme="outline"
               />
             </XStack>
           </XStack>
         )}
       </XStack>
+
+      {/* Account Compatibility InfoDialog */}
+      <InfoDialog
+        visible={isCompatibilityDialogVisible}
+        title={dialogTitle}
+        buttonText={dialogButtonText}
+        onButtonClick={handleDialogClose}
+        onClose={handleDialogClose}
+      >
+        <YStack gap="$5" w="100%">
+          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+            {dialogDescriptionMain}
+          </Text>
+          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+            {dialogDescriptionSecondary}
+          </Text>
+        </YStack>
+      </InfoDialog>
     </YStack>
   );
 };

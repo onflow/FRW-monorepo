@@ -13,7 +13,12 @@ export function AddressText({
   onPress,
   ...props
 }: AddressTextProps): React.ReactElement {
-  const formatAddress = (addr: string): string => {
+  const formatAddress = (addr: string | undefined | null): string => {
+    // Handle null/undefined addresses
+    if (!addr || typeof addr !== 'string') {
+      return '';
+    }
+
     if (!truncate || addr.length <= startLength + endLength + separator.length) {
       return addr;
     }

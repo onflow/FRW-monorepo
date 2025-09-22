@@ -52,7 +52,8 @@ export interface BackgroundWrapperProps {
 
 export interface RefreshViewProps {
   type?: 'empty' | 'error';
-  message: string;
+  title?: string;
+  message?: string;
   onRefresh?: () => void;
   refreshText?: string;
 }
@@ -123,10 +124,12 @@ export interface TokenAmountInputProps {
   showConverter?: boolean;
   disabled?: boolean;
   inputRef?: React.RefObject<any>;
+  currency?: Currency;
+  amountError?: string;
 }
 
 export interface AddressTextProps extends Omit<TextProps, 'children'> {
-  address: string;
+  address: string | undefined | null;
   truncate?: boolean;
   startLength?: number;
   endLength?: number;

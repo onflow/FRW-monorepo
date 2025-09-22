@@ -77,9 +77,10 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
     await page.getByTestId('account-menu-button').click();
     await page.getByTestId('switch-profile-button').isVisible();
     await page.getByTestId('switch-profile-button').click();
-    await page.getByText('Profiles', { exact: true }).isVisible();
 
-    await expect(page.getByText('Profiles', { exact: true })).toBeVisible();
+    await page.getByTestId('Profiles', { exact: true }).isVisible();
+
+    await expect(page.getByTestId('Profiles', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
     await page.getByTestId(`profile-item-nickname-${nickname}`).click();
     await expect(page.getByRole('progressbar').getByRole('img')).not.toBeVisible();

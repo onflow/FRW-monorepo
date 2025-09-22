@@ -49,7 +49,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
           fontWeight="400"
           color={titleColor}
           lineHeight={20}
-          letterSpacing="-0.6%"
+          letterSpacing={-0.084}
         >
           {title}
         </Text>
@@ -64,7 +64,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
                 fontWeight="400"
                 color={feeColor}
                 lineHeight={20}
-                letterSpacing="-0.6%"
+                letterSpacing={-0.084}
                 textDecorationLine="line-through"
                 opacity={0.6}
               >
@@ -76,10 +76,8 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
                 color={feeColor}
                 lineHeight={20}
                 letterSpacing="-0.6%"
-                textDecorationLine="line-through"
-                opacity={0.6}
               >
-                {usdFee}
+                {'0.00'}
               </Text>
               <FlowLogo size={18} theme="multicolor" style={{ opacity: 0.6 }} />
             </XStack>
@@ -91,7 +89,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
                 fontWeight="400"
                 color="rgba(255, 255, 255, 0.6)"
                 lineHeight={20}
-                letterSpacing="-0.6%"
+                letterSpacing={-0.084}
               >
                 {flowFee}
               </Text>
@@ -100,7 +98,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
                 fontWeight="400"
                 color={feeColor}
                 lineHeight={20}
-                letterSpacing="-0.6%"
+                letterSpacing={-0.084}
               >
                 {usdFee}
               </Text>
@@ -118,7 +116,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
             fontWeight="400"
             color="rgba(255, 255, 255, 0.4)"
             lineHeight={17}
-            letterSpacing="-0.6%"
+            letterSpacing={-0.084}
             text="right"
           >
             {coveredMessage}

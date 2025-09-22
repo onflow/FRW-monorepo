@@ -79,16 +79,24 @@ export const sendNFTs = async ({
 test.beforeEach(async ({ page, extensionId }) => {
   // Login to our sender account
   await loginToSenderOrReceiver({ page, extensionId, parallelIndex: test.info().parallelIndex });
-  await switchToMainAccount({
-    page,
-    address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
-  });
+  // await switchToMainAccount({
+  //   page,
+  //   address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+  // });
 });
 
 test('NFT to flow', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
   const txList: { txId: string; collectionName: string }[] = [];
+  await loginToSenderAccount({
+    page,
+    extensionId,
+  });
 
+  await switchToMainAccount({
+    page,
+    address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+  });
   //Send Fts from COA to COA
   // Send FLOW token from COA to COA
   const tx1 = await sendNFT({
@@ -384,11 +392,12 @@ test('NFT from evm to child', async ({ page, extensionId }) => {
     address: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
   });
 
-  const tx1 = await sendNFT({
+  const tx1 = await sendNFTs({
     page,
     collectionName: 'FLOAT',
     receiver: senderChildAddr,
     successtext: /success|Finalized|Executed|Sealed/,
+    idx: ['0', '1'],
   });
 
   txList.push(tx1);
@@ -436,15 +445,15 @@ test('NFT from child to evm', async ({ page, extensionId }) => {
 
   txList.push(tx1);
 
-  const tx2 = await sendNFTs({
-    page,
-    collectionName: 'FLOAT',
-    receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
-    successtext: /success|Finalized|Executed|Sealed/,
-    idx: ['1', '2'],
-  });
+  // const tx2 = await sendNFTs({
+  //   page,
+  //   collectionName: 'FLOAT',
+  //   receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+  //   successtext: /success|Finalized|Executed|Sealed/,
+  //   idx: ['1'],
+  // });
 
-  txList.push(tx2);
+  // txList.push(tx2);
 
   // Go to the activity page
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);

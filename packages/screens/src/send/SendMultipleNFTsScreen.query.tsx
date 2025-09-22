@@ -1,5 +1,11 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { useSendStore, sendSelectors } from '@onflow/frw-stores';
+import {
+  useSendStore,
+  sendSelectors,
+  storageQueryKeys,
+  storageQueries,
+  storageUtils,
+} from '@onflow/frw-stores';
 import {
   BackgroundWrapper,
   YStack,
@@ -27,6 +33,7 @@ import {
   transformAccountForCard,
   transformAccountForDisplay,
 } from '@onflow/frw-utils';
+import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -50,6 +57,136 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
+  const selectedCollection = useSendStore((state) => state.selectedCollection);
+
+  // Query for complete account information including storage and balance
+  const { data: accountInfo } = useQuery({
+    queryKey: storageQueryKeys.accountInfo(fromAccount || null),
+    queryFn: () => storageQueries.fetchAccountInfo(fromAccount || null),
+    enabled: !!fromAccount?.address,
+    staleTime: 0, // Always fresh for financial data
+  });
+
+  // Query for resource compatibility check (multiple NFTs - use first NFT's identifier)
+  const firstNFTFlowIdentifier = selectedNFTs?.[0]?.flowIdentifier;
+  const { data: isResourceCompatible = true } = useQuery({
+    queryKey: storageQueryKeys.resourceCheck(
+      toAccount?.address || '',
+      firstNFTFlowIdentifier || ''
+    ),
+    queryFn: () =>
+      storageQueries.checkResourceCompatibility(
+        toAccount?.address || '',
+        firstNFTFlowIdentifier || ''
+      ),
+    enabled: !!(toAccount?.address && firstNFTFlowIdentifier),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
+  });
+
+  // Calculate account incompatibility (invert the compatibility result)
+  const isAccountIncompatible = !isResourceCompatible;
+
+  // Transform NFT data for UI - following Figma design structure
+  const nftsForUI: NFTSendData[] = useMemo(
+    () =>
+      selectedNFTs?.map((nft) => {
+        const image = getNFTCover(nft);
+        // console.log('[SendMultipleNFTs] NFT image URL:', image);
+
+        return {
+          id: nft.id || '',
+          name: nft.name || 'Untitled',
+          image: image,
+          collection: nft.collectionName || 'Unknown Collection',
+          collectionContractName: nft.collectionContractName,
+          description: nft.description || '',
+          type: nft.type, // Pass the NFT type for EVM badge
+        };
+      }) || [],
+    [selectedNFTs]
+  );
+  // Mock transaction fee data - TODO: Replace with real fee calculation
+  const transactionFee = '0.001';
+  const usdFee = '0.00';
+  const isFeesFree = true; // Following Figma design "Covered by Flow Wallet"
+
+  // Calculate storage warning state based on account validation for multiple NFT transfer
+  const validationResult = useMemo(() => {
+    if (!accountInfo) {
+      return { canProceed: true, showWarning: false, warningType: null };
+    }
+    // Multiple NFT transfers are treated as "other" transactions (non-FLOW)
+    return storageUtils.validateOtherTransaction(accountInfo, isFeesFree);
+  }, [accountInfo, isFeesFree]);
+
+  const showStorageWarning = validationResult.showWarning;
+  const storageWarningMessage = useMemo(() => {
+    return t(storageUtils.getStorageWarningMessageKey(validationResult.warningType));
+  }, [validationResult.warningType, accountInfo, t]);
+
+  // Calculate if send button should be disabled
+  const isSendDisabled =
+    !selectedNFTs ||
+    selectedNFTs.length === 0 ||
+    !fromAccount ||
+    !toAccount ||
+    isLoading ||
+    !validationResult.canProceed ||
+    isAccountIncompatible;
+
+  // Event handlers
+  const handleEditNFTsPress = useCallback(() => {
+    // Navigate back to NFT selection screen
+    navigation.navigate('NFTList');
+  }, []);
+
+  const handleEditAccountPress = useCallback(() => {
+    navigation.navigate('SendTo'); // Go back to account selection
+  }, []);
+
+  const handleRemoveNFT = useCallback(
+    (nftId: string) => {
+      if (!selectedNFTs) return;
+      const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
+      setSelectedNFTs(updatedNFTs);
+
+      // If no NFTs remain, navigate back to the NFT selection screen
+      if (updatedNFTs.length === 0) {
+        // Navigate to NFT selection screen (same as edit button behavior)
+        navigation.navigate('NFTList');
+      }
+      // Stay on the same screen even with 1 NFT remaining
+    },
+    [selectedNFTs, setSelectedNFTs]
+  );
+
+  const handleSendPress = useCallback(() => {
+    setIsConfirmationVisible(true);
+  }, []);
+
+  const handleConfirmationClose = useCallback(() => {
+    setIsConfirmationVisible(false);
+  }, []);
+
+  const handleTransactionConfirm = useCallback(async () => {
+    try {
+      if (!isExtension) {
+        setIsConfirmationVisible(false);
+      }
+      await executeTransaction();
+      // Invalidate NFT caches after successful transaction
+      const tokenStore = useTokenQueryStore.getState();
+      if (selectedCollection && fromAccount) {
+        const network = bridge.getNetwork();
+        const currentAddress = fromAccount.address;
+
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+      }
+    } catch (error) {
+      logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
+      // Error handling will be managed by the store
+    }
+  }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
 
   // Update current step when screen loads
   useEffect(() => {
@@ -72,39 +209,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     checkFreeGasStatus();
   }, []);
 
-  // Transform NFT data for UI using getNFTCover utility
-  const nftsForUI: NFTSendData[] = useMemo(
-    () =>
-      selectedNFTs?.map((nft) => {
-        const image = getNFTCover(nft);
-        // console.log('[SendMultipleNFTs] NFT image URL:', image);
-
-        return {
-          id: nft.id || '',
-          name: nft.name || 'Untitled',
-          image: image,
-          collection: nft.collectionName || 'Unknown Collection',
-          collectionContractName: nft.collectionContractName,
-          description: nft.description || '',
-          type: nft.type, // Pass the NFT type for EVM badge
-        };
-      }) || [],
-    [selectedNFTs]
-  );
-
-  // Calculate if send button should be disabled
-  const isSendDisabled =
-    !selectedNFTs || selectedNFTs.length === 0 || !fromAccount || !toAccount || isLoading;
-
-  // Transaction fee data
-  const transactionFee = '0.001 FLOW';
-  const usdFee = '$0.02';
-
-  // Mock storage warning - TODO: Replace with real storage check
-  const showStorageWarning = false;
-  const storageWarningMessage =
-    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
-
   // Create form data for transaction confirmation
   const formData: TransactionFormData = {
     tokenAmount: selectedNFTs?.length.toString() || '0',
@@ -112,59 +216,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     isTokenMode: true,
     transactionFee,
   };
-
-  // Event handlers
-  const handleEditNFTsPress = useCallback(() => {
-    // Navigate back to NFT selection screen
-    navigation.navigate('NFTList');
-  }, []);
-
-  const handleEditAccountPress = useCallback(() => {
-    navigation.navigate('SendTo'); // Go back to account selection
-  }, []);
-
-  const handleLearnMorePress = useCallback(() => {
-    // TODO: Navigate to help/learn more screen
-    // console.log('Learn more pressed');
-  }, []);
-
-  const handleSendPress = useCallback(() => {
-    setIsConfirmationVisible(true);
-  }, []);
-
-  const handleConfirmationClose = useCallback(() => {
-    setIsConfirmationVisible(false);
-  }, []);
-
-  const handleTransactionConfirm = useCallback(async () => {
-    try {
-      if (!isExtension) {
-        setIsConfirmationVisible(false);
-      }
-      await executeTransaction();
-      // Navigation after successful transaction will be handled by the store
-    } catch (error) {
-      logger.error('[SendMultipleNFTsScreen] Transaction failed:', error);
-      // Error handling will be managed by the store
-    }
-  }, [executeTransaction, isExtension]);
-
-  const handleRemoveNFT = useCallback(
-    (nftId: string) => {
-      const updatedNFTs = selectedNFTs.filter((nft) => getNFTId(nft) !== nftId);
-      setSelectedNFTs(updatedNFTs);
-
-      // If only one NFT remains, navigate to single NFT screen
-      if (updatedNFTs.length === 1) {
-        navigation.navigate('SendSingleNFT');
-      }
-      // If no NFTs remain, go back to selection
-      else if (updatedNFTs.length === 0) {
-        navigation.goBack();
-      }
-    },
-    [selectedNFTs, setSelectedNFTs]
-  );
 
   // Early return if essential data is missing
   if (!selectedNFTs || selectedNFTs.length === 0) {
@@ -182,8 +233,6 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
     );
   }
 
-  const isFeesFree = true; // Following Figma design "Covered by Flow Wallet"
-
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       <YStack flex={1}>
@@ -198,7 +247,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         )}
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack p={20} gap="$4">
+          <YStack gap="$4">
             {/* NFT Section */}
             <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$2">
               {/* From Account Section */}
@@ -222,7 +271,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
-              <View mt={8} pb={16} mb={-8}>
+              <View mt={-8} mb={-8} pb="$7">
                 <MultipleNFTsPreview
                   nfts={nftsForUI}
                   onRemoveNFT={handleRemoveNFT}
@@ -237,7 +286,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             </YStack>
 
             {/* Arrow Down Indicator */}
-            <XStack position="relative" height={0} mt="$1">
+            <XStack position="relative" height="$1" mt="$1">
               <XStack width="100%" position="absolute" t={-40} justify="center">
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
@@ -245,15 +294,23 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
-              <View mt={-8}>
+              <View mt={-4}>
                 <ToAccountSection
                   account={toAccount}
                   title={t('send.toAccount')}
-                  isAccountIncompatible={false} // TODO: Real compatibility check
+                  isAccountIncompatible={isAccountIncompatible} // TODO: Real compatibility check
                   onEditPress={handleEditAccountPress}
-                  onLearnMorePress={handleLearnMorePress}
                   showEditButton={true}
                   isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                  incompatibleAccountText={t('account.compatibility.incompatible')}
+                  learnMoreText={t('account.compatibility.learnMore')}
+                  unknownAccountText={t('account.compatibility.unknown')}
+                  dialogTitle={t('account.compatibility.dialog.title')}
+                  dialogButtonText={t('account.compatibility.dialog.button')}
+                  dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+                  dialogDescriptionSecondary={t(
+                    'account.compatibility.dialog.descriptionSecondary'
+                  )}
                 />
               </View>
             )}
@@ -275,7 +332,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               <StorageWarning
                 message={storageWarningMessage}
                 showIcon={true}
-                title="Storage warning"
+                title={t('storage.warning.title')}
                 visible={true}
               />
             )}
@@ -283,7 +340,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2">
+        <YStack pt="$2">
           <YStack
             width="100%"
             height={52}

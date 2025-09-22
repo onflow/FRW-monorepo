@@ -34,7 +34,7 @@
     },
     "toAccount": "To Account",
     "searchAddress": "Search address",
-    "searchPasteAddress": "Search/ Paste address",
+    "searchPasteAddress": "Search / Paste address",
     "selectedToken": "Selected Token",
     "noAccounts": {
       "title": "No Accounts",
@@ -47,6 +47,10 @@
     "noContacts": {
       "title": "No Contacts",
       "message": "Your address book is empty."
+    },
+    "noSearchResults": {
+      "title": "No Results",
+      "message": "No accounts or contacts match your search"
     },
     "noRecipients": "No recipients found",
     "selectToken": "Select Token",
@@ -83,7 +87,9 @@
     "description": "Description",
     "creator": "Creator",
     "title": "Send",
-    "inaccessible": "Inaccessible"
+    "inaccessible": "Inaccessible",
+    "confirmAddress": "Confirm address",
+    "firstTimeSendMessage": "We noticed this may be your first time sending to this address. Please confirm the destination address."
   },
   "messages": {
     "loading": "Loading...",
@@ -118,6 +124,27 @@
     "notFound": {
       "title": "NFT Not Found",
       "message": "The requested NFT could not be found or loaded"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "Storage Warning",
+      "balance": "Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.",
+      "storage": "This action may fail because it may reduce the amount of FLOW in your account below what is required to cover its storage usage.",
+      "storageAfterAction": "Account balance will fall below the minimum FLOW required for storage after this transaction, causing this transaction to fail."
+    }
+  },
+  "account": {
+    "compatibility": {
+      "incompatible": "Incompatible Account",
+      "learnMore": "Learn more",
+      "unknown": "Unknown Account",
+      "dialog": {
+        "title": "Account Compatibility",
+        "button": "Okay",
+        "descriptionMain": "Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are compatible with EVM apps, and Cadence accounts are compatible with Cadence apps.",
+        "descriptionSecondary": "If an application is on EVM or Cadence, only compatible accounts will be available to connect."
+      }
     }
   }
 }

@@ -45,6 +45,10 @@
       "title": "无联系人",
       "message": "您的地址簿为空。"
     },
+    "noSearchResults": {
+      "title": "无结果",
+      "message": "没有账户或联系人匹配您的搜索"
+    },
     "noRecipients": "未找到收件人",
     "selectToken": "选择代币",
     "selectRecipient": "选择收件人",
@@ -79,7 +83,9 @@
     "description": "描述",
     "creator": "创建者",
     "title": "发送",
-    "inaccessible": "不可访问"
+    "inaccessible": "不可访问",
+    "confirmAddress": "确认地址",
+    "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。"
   },
   "messages": {
     "loading": "加载中...",
@@ -114,6 +120,27 @@
     "notFound": {
       "title": "未找到NFT",
       "message": "无法找到或加载请求的NFT"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "存储警告",
+      "balance": "您的账户FLOW余额低于存储使用所需的最低要求，这可能会导致后续交易失败。",
+      "storage": "此操作可能会失败，因为它可能会将您账户中的FLOW数量减少到低于覆盖其存储使用所需的数量。",
+      "storageAfterAction": "此次交易后，账户余额将低于存储所需的最低FLOW数量，会导致此次交易失败。"
+    }
+  },
+  "account": {
+    "compatibility": {
+      "incompatible": "不兼容账户",
+      "learnMore": "了解更多",
+      "unknown": "未知账户",
+      "dialog": {
+        "title": "账户兼容性",
+        "button": "确定",
+        "descriptionMain": "Flow 钱包管理您在 Flow 上的 EVM 和 Cadence 账户。EVM 账户与 EVM 应用兼容，Cadence 账户与 Cadence 应用兼容。",
+        "descriptionSecondary": "如果应用是基于 EVM 或 Cadence，只有兼容的账户可用于连接。"
+      }
     }
   }
 }

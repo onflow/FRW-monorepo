@@ -1,7 +1,7 @@
-import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, View, Sheet } from 'tamagui';
+import { YStack, XStack, View, Sheet, Spinner } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
@@ -149,9 +149,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       snapPointsMode={!isExtension ? 'fit' : undefined}
       dismissOnSnapToBottom
       snapPoints={isExtension ? [91] : undefined}
+      animation={isExtension ? 'quick' : 'lazy'}
     >
       <Sheet.Overlay
-        animation={!isExtension ? 'lazy' : undefined}
+        animation={isExtension ? 'quick' : 'lazy'}
         enterStyle={{ opacity: 0 }}
         exitStyle={{ opacity: 0 }}
         bg="rgba(0,0,0,0.5)"
@@ -161,6 +162,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         bg="$bgDrawer"
         borderTopLeftRadius={isExtension ? 0 : '$6'}
         borderTopRightRadius={isExtension ? 0 : '$6'}
+        animation={isExtension ? 'quick' : 'lazy'}
+        enterStyle={{ y: '100%' }}
+        exitStyle={{ y: '100%' }}
       >
         <YStack p="$4" gap="$4">
           {/* Header */}
@@ -220,31 +224,56 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             justify="center"
             my="$2"
           >
-            {/* Gradient Background Circle */}
-            <View
-              position="absolute"
-              width={300}
-              height={300}
-              style={{
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                borderRadius: 150,
-                opacity: 0.1,
-                background:
-                  'radial-gradient(27.35% 27.35% at 50% 50%, #00EF8B 25.48%, rgba(0, 239, 139, 0.00) 100%)',
-              }}
-            />
+            {/* Gradient Background Circle - Platform specific */}
+            {typeof window !== 'undefined' ? (
+              // Web version with CSS gradient
+              <View
+                position="absolute"
+                width={300}
+                height={300}
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  borderRadius: 150,
+                  opacity: 0.1,
+                  background:
+                    'radial-gradient(27.35% 27.35% at 50% 50%, #00EF8B 25.48%, rgba(0, 239, 139, 0.00) 100%)',
+                }}
+              />
+            ) : (
+              // React Native version - simple colored circle
+              <View
+                position="absolute"
+                width={300}
+                height={300}
+                borderRadius={150}
+                bg="#00EF8B"
+                opacity={0.05}
+                style={
+                  {
+                    // top: '50%',
+                    // left: '50%',
+                    // transform: [{ translateX: -150 }, { translateY: -150 }],
+                  }
+                }
+              />
+            )}
 
-            <View items="center" justify="center" position="relative" style={{ zIndex: 10 }}>
-              {/* <LottieAnimation
-                source={sendConfirmationAnimation}
-                width={120}
-                height={120}
-                autoPlay={true}
-                loop={false}
-                speed={1}
-              /> */}
+            <View
+              width={0}
+              height={0}
+              items="center"
+              justify="center"
+              position="relative"
+              style={{
+                zIndex: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {/* Wallet Card Icon */}
               <WalletCard width={114.62} height={129.195} />
             </View>
           </View>
@@ -270,7 +299,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
 
             {/* Loading Indicator */}
-            {/* <LoadingIndicator isAnimating={internalIsSending} width={90} /> */}
+            <LoadingIndicator isAnimating={internalIsSending} width={90} />
 
             {/* To Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
@@ -293,7 +322,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
-            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
+            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
                 Send NFTs
               </Text>
@@ -337,7 +366,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 )}
             </YStack>
           ) : (
-            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={120}>
+            <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
                 Send Tokens
               </Text>
@@ -379,7 +408,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
                   <VerifiedToken size={10} color="#41CC5D" />
-                  <ChevronDown size={10} color="$white" />
                 </View>
               </XStack>
 
@@ -394,6 +422,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Confirm Button */}
           <YStack
+            width="100%"
             bg="#FFFFFF"
             rounded="$4"
             height={56}
@@ -404,9 +433,18 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
             data-testid="confirm"
           >
-            <Text fontSize="$5" fontWeight="600" color="#000000">
-              {internalIsSending ? 'Sending...' : isExtension ? 'Confirm send' : 'Hold to send'}
-            </Text>
+            {internalIsSending ? (
+              <XStack items="center" gap="$2">
+                <Spinner size="small" color="$black" />
+                <Text fontSize="$5" fontWeight="600" color="$black">
+                  Sending...
+                </Text>
+              </XStack>
+            ) : (
+              <Text fontSize="$5" fontWeight="600" color="$black">
+                {isExtension ? 'Confirm send' : 'Hold to send'}
+              </Text>
+            )}
           </YStack>
         </YStack>
       </Sheet.Frame>

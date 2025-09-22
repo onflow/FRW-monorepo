@@ -20,8 +20,8 @@ export const sendTokenFlow = async ({
   // send Ft token from COA
   await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByTestId(`send-button`).click();
-  await page.getByPlaceholder('Search/ Paste address').click();
-  await page.getByPlaceholder('Search/ Paste address').fill(receiver);
+  await page.getByPlaceholder('Search / Paste address').click();
+  await page.getByPlaceholder('Search / Paste address').fill(receiver);
   await page.getByPlaceholder('0.00').fill(amount);
   await page.getByTestId('next').click();
   await page.getByTestId('confirm').click();

@@ -212,7 +212,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         </XStack>
 
         {/* Expanded List */}
-        <ScrollView height={300} showsVerticalScrollIndicator={false}>
+        <ScrollView height="auto" showsVerticalScrollIndicator={false}>
           <YStack gap="$2">
             {nfts.map((nft, index) => (
               <YStack key={nft.id}>

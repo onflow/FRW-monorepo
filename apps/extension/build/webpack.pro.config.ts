@@ -15,6 +15,9 @@ const config: webpack.Configuration = {
     // new BundleAnalyzerPlugin(),
     new webpack.DefinePlugin({
       'process.env.BUILD_ENV': JSON.stringify('PRO'),
+      'process.env.CI_BUILD_ID': JSON.stringify(process.env.CI_BUILD_ID || process.env.BUILD_NUMBER || ''),
+      'process.env.BRANCH_NAME': JSON.stringify(process.env.BRANCH_NAME || ''),
+      'process.env.COMMIT_SHA': JSON.stringify(process.env.COMMIT_SHA || ''),
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser',

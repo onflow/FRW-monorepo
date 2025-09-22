@@ -5,10 +5,12 @@ on:
     paths:
       - "apps/extension/**"
       - ".github/workflows/extension-build.yml"
+      - "packages/**"
   pull_request:
     paths:
       - "apps/extension/**"
       - ".github/workflows/extension-build.yml"
+      - "packages/**"
   workflow_dispatch:
 
 jobs:
@@ -21,7 +23,7 @@ jobs:
     steps:
       - id: set_env
         run: |
-          ENV_NAME="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || contains(github.ref_name, 'prod') && 'production' || startsWith(github.ref_name, 'release/') && 'production' || 'development' }}"
+          ENV_NAME="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || contains(github.ref_name, 'release') && 'production' || startsWith(github.ref_name, 'release/') && 'production' || 'development' }}"
           IS_BETA="false"
           BETA_VERSION=""
           if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" == *"beta"* ]]; then
@@ -157,6 +159,8 @@ jobs:
           fi
         env:
           CI: true
+          CI_BUILD_ID: ${{ github.run_number }}
+          BUILD_NUMBER: ${{ github.run_number }}
           COMMIT_SHA: ${{ github.sha }}
           BRANCH_NAME: ${{ github.ref_name }}
           PR_TITLE: ${{ github.event.pull_request.title || '' }}
@@ -210,13 +214,15 @@ jobs:
           TEST_PASSWORD="${{ secrets.TEST_PASSWORD }}"
           TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
           TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
-          TEST_SENDER_ADDR="${{ secrets.TEST_SENDER_ADDR }}"
+          TEST_SENDER_ADDR="${{ vars.TEST_SENDER_ADDR }}"
           TEST_SENDER_NICKNAME="${{ vars.TEST_SENDER_NICKNAME }}"
-          TEST_RECEIVER_ADDR="${{ secrets.TEST_RECEIVER_ADDR }}"
+          TEST_RECEIVER_ADDR="${{ vars.TEST_RECEIVER_ADDR }}"
           TEST_RECEIVER_NICKNAME="${{ vars.TEST_RECEIVER_NICKNAME }}"
-          TEST_SENDER_EVM_ADDR="${{ secrets.TEST_SENDER_EVM_ADDR }}"
-          TEST_RECEIVER_EVM_ADDR="${{ secrets.TEST_RECEIVER_EVM_ADDR }}"
+          TEST_SENDER_EVM_ADDR="${{ vars.TEST_SENDER_EVM_ADDR }}"
+          TEST_RECEIVER_EVM_ADDR="${{ vars.TEST_RECEIVER_EVM_ADDR }}"
           TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
+          TEST_SENDER_CHILD_ADDR="${{ vars.TEST_SENDER_CHILD_ADDR }}"
+          TEST_SENDER_CHILD_ADDR2="${{ vars.TEST_SENDER_CHILD_ADDR2 }}"
           TEST_MULTI_ACCOUNT_TESTER_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_ADDR2 }}"
           TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2 }}"
           # Extension ID for Playwright tests

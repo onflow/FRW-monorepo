@@ -35,6 +35,9 @@ export function Button({
     case 'large':
       buttonSize = '$14';
       break;
+    case 'medium':
+      buttonSize = '$6';
+      break;
     default:
       buttonSize = '$4';
   }
@@ -74,7 +77,11 @@ export function Button({
         borderColor: '$border',
         borderWidth: 1,
         hoverStyle: { bg: '$bg1' },
-        pressStyle: { bg: '$bg2' },
+        pressStyle: {
+          bg: '$bg2',
+          borderColor: '$border',
+          color: '$text',
+        },
       };
       break;
     case 'ghost':
@@ -112,7 +119,7 @@ export function Button({
       ) : (
         <XStack items="center" gap="$2">
           {icon && React.cloneElement(icon, { color: 'currentColor' })}
-          {children}
+          {typeof children === 'string' ? <Text>{children}</Text> : children}
         </XStack>
       )}
     </TamaguiButton>
