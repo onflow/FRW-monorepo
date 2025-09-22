@@ -7,7 +7,6 @@ import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
-// import { LottieAnimation } from './LottieAnimation';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 

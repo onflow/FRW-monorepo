@@ -81,7 +81,6 @@ export * from './components/ExtensionHeader';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
-export * from './components/LottieAnimation';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
