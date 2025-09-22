@@ -1,7 +1,7 @@
 import { Close } from '@onflow/frw-icons';
+import { IconButton } from '@onflow/frw-ui';
 import { useTheme } from '@react-navigation/native';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
 
 import { platform } from '@/bridge/PlatformImpl';
 
@@ -14,17 +14,11 @@ export const NavigationCloseButton: React.FC = () => {
   };
 
   return (
-    <TouchableOpacity
+    <IconButton
+      icon={<Close color={theme.colors.text} />}
+      variant="ghost"
+      size="small"
       onPress={handleClose}
-      style={{
-        padding: 8,
-        minWidth: 44,
-        minHeight: 44,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <Close size={15} color={theme.colors.text} />
-    </TouchableOpacity>
+    />
   );
 };

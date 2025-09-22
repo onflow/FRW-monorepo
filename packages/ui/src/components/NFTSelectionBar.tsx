@@ -32,12 +32,10 @@ export function NFTSelectionBar({
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
   if (selectedNFTs.length === 0) {
-    console.log('🔍 NFTSelectionBar: No selected NFTs, returning null');
     return null;
   }
 
   const handleToggleExpanded = () => {
-    console.log('🔄 Toggling selection bar expanded:', !isExpanded);
     setIsExpanded(!isExpanded);
   };
 
@@ -94,7 +92,6 @@ export function NFTSelectionBar({
               borderRadius="$2"
               pressStyle={{ opacity: 0.7 }}
               onPress={() => {
-                console.log('🗑️ Trash icon clicked for NFT:', nft.id);
                 onRemoveNFT(nft.id);
               }}
               cursor="pointer"
