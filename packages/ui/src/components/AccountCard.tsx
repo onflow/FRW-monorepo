@@ -51,8 +51,10 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      pt="$2"
-      px="$1"
+      bg="$bg2"
+      rounded="$4"
+      pt="$4"
+      px="$4"
       pb="$6"
       gap="$1"
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
@@ -64,7 +66,7 @@ export function AccountCard({
         fontSize="$2"
         mb={isSendTokensScreen ? '$8' : '$1'}
         fontWeight="400"
-        color="$light80"
+        color="$textSecondary"
         lineHeight={16}
       >
         {title}
@@ -115,7 +117,7 @@ export function AccountCard({
               {(account.type === 'child' || account.parentEmoji) && (
                 <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
               )}
-              <Text color="$white" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
+              <Text color="$text" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}
               </Text>
               {/* EVM Badge - inline with name */}

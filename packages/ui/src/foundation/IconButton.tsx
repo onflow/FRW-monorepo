@@ -112,12 +112,20 @@ export function IconButton({
       onPress={onPress}
       circular
       p="$2"
-      minW={44}
-      minH={44}
+      minW={48}
+      minH={48}
       items="center"
       justify="center"
       borderWidth={0}
       unstyled={false}
+      // Android touch improvement: Add hit slop for better touch detection
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      // Android touch improvement: Use activeOpacity for visual feedback
+      pressStyle={{
+        ...buttonStyles.pressStyle,
+        opacity: 0.7,
+        transform: [{ scale: 0.95 }]
+      }}
       {...buttonStyles}
       {...props}
     >

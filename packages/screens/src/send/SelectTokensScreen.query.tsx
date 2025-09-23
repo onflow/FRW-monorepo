@@ -283,7 +283,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
         {/* Account Selector - Show balance from React Query */}
         {!isExtension && currentAccount && (
-          <YStack bg="$light10" rounded="$4" p={16} gap={12}>
+          <YStack bg="$bg2" rounded="$4" p={16} gap={12}>
             <AccountSelector
               currentAccount={{
                 ...currentAccount,

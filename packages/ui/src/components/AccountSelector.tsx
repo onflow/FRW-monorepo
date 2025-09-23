@@ -61,7 +61,7 @@ export function AccountSelector({
       {/* Current Account Display */}
       <YStack height={120} gap={12}>
         {/* Title */}
-        <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16}>
+        <Text fontSize={12} fontWeight="400" color="$textSecondary" lineHeight={16}>
           {title}
         </Text>
 
@@ -111,7 +111,7 @@ export function AccountSelector({
                   <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
                 )}
                 <Text
-                  color="$white"
+                  color="$text"
                   fontSize={14}
                   fontWeight="600"
                   lineHeight={17}
@@ -198,19 +198,19 @@ export function AccountSelector({
 
         <Sheet.Frame
           padding="$4"
-          backgroundColor="$bg2"
+          backgroundColor="$bg"
           borderTopLeftRadius={16}
           borderTopRightRadius={16}
         >
           <YStack gap={16}>
             {/* Header */}
             <XStack items="center" justify="space-between" pt={10}>
-              <Text fontSize={14} fontWeight="400" color="$white">
+              <Text fontSize={14} fontWeight="400" color="$text">
                 Select Account
               </Text>
 
               <XStack onPress={() => setOpen(false)} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
-                <Close size={15} color="rgba(255, 255, 255, 0.8)" theme="outline" />
+                <Close size={15} color="$textSecondary" theme="outline" />
               </XStack>
             </XStack>
 
@@ -232,7 +232,7 @@ export function AccountSelector({
                       onPress={() => handleAccountSelect(account)}
                       cursor="pointer"
                       borderRadius={8}
-                      backgroundColor={isSelected ? 'rgba(255, 255, 255, 0.05)' : 'transparent'}
+                      backgroundColor={isSelected ? '$bg2' : 'transparent'}
                     >
                       <XStack items="center" gap={16} flex={1}>
                         {/* Account Avatar with parent emoji overlay */}
@@ -258,7 +258,7 @@ export function AccountSelector({
                               rounded={9}
                               bg="#D9D9D9"
                               borderWidth={2}
-                              borderColor="rgba(10, 10, 11, 0.8)"
+                              borderColor="$bg2"
                               items="center"
                               justify="center"
                               overflow="hidden"
@@ -275,12 +275,12 @@ export function AccountSelector({
                           <XStack items="center" gap={4}>
                             {/* Link icon for linked accounts */}
                             {(account.type === 'child' || account.parentEmoji) && (
-                              <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                              <Link size={12.8} color="#000000" theme="outline" />
                             )}
                             <Text
                               fontSize={14}
                               fontWeight="600"
-                              color="rgba(255, 255, 255, 0.9)"
+                              color="$text"
                               numberOfLines={1}
                             >
                               {account.name || 'Unnamed Account'}
@@ -313,12 +313,12 @@ export function AccountSelector({
                             endLength={4}
                             fontSize={12}
                             fontWeight="400"
-                            color="rgba(255, 255, 255, 0.6)"
+                            color="$textSecondary"
                           />
                           <Text
                             fontSize={12}
                             fontWeight="400"
-                            color="rgba(255, 255, 255, 0.6)"
+                            color="$textSecondary"
                             numberOfLines={1}
                           >
                             {formatBalance(account.balance || '0')}

@@ -10,6 +10,7 @@ import {
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useMemo } from 'react';
+import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
@@ -138,7 +139,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   ]);
 
   // Since TamaguiProvider is set to defaultTheme="dark", use that
-  const isDarkMode = true; // Based on TamaguiProvider defaultTheme="dark" in App.tsx
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
   // Memoize navigation themes with hardcoded colors
   const navigationThemes = useMemo(() => {
@@ -147,7 +149,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       colors: {
         ...DefaultTheme.colors,
         background: '#FFFFFF', // White background for light mode
-        card: '#F2F2F7', // Light card color
+        card: '#FFFFFF', // Header should be white in light mode (per Figma)
         text: '#000000', // Black text for light mode
         border: '#767676', // Gray border
         primary: '#00EF8B', // Flow brand green

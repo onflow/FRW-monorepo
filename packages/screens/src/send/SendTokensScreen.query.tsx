@@ -184,7 +184,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
-  const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
+  const cardBackgroundColor = '$bg2'; // #F2F2F7 in light mode, #1A1A1A in dark mode
   const contentPadding = '$4';
   const usdFee = '$0.02';
   const isBalanceLoading = false;
@@ -527,7 +527,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       <YStack flex={1} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
+          <YStack gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
               <View mb={'$2'}>
