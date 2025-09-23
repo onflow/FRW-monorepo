@@ -17,6 +17,8 @@ jobs:
           submodules: false
 
       - name: Validate submodule SHAs exist on remotes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x scripts/validate-submodules.sh
           scripts/validate-submodules.sh
