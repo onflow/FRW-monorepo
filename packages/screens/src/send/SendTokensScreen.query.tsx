@@ -27,6 +27,7 @@ import {
   Separator,
   XStack,
   View,
+  useTheme,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
@@ -48,6 +49,11 @@ interface SendTokensScreenProps {
  */
 export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
+  const theme = useTheme();
+
+  // Theme-aware background color for cards
+  const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
+
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
@@ -184,7 +190,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
-  const cardBackgroundColor = '$bg2'; // #F2F2F7 in light mode, #1A1A1A in dark mode
   const contentPadding = '$4';
   const usdFee = '$0.02';
   const isBalanceLoading = false;
@@ -527,7 +532,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       <YStack flex={1} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack gap="$1">
+          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
             {/* From Account Section */}
             {fromAccount ? (
               <View mb={'$2'}>
@@ -608,7 +613,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Arrow Down Indicator */}
           <XStack position="relative" height={0} mt="$1">
-            <XStack width="100%" position="absolute" t={-40} justify="center">
+            <XStack width="100%" position="absolute" t={-40} justify="center" z={10}>
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>
           </XStack>
@@ -635,7 +640,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Transaction Fee and Storage Warning Section */}
           <YStack gap="$3">
-            <TransactionFeeSection
+            {/* <TransactionFeeSection
               flowFee={transactionFee}
               usdFee={usdFee}
               isFree={isFreeGasEnabled}
@@ -644,7 +649,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               backgroundColor="transparent"
               borderRadius={16}
               contentPadding={0}
-            />
+            /> */}
 
             {showStorageWarning && (
               <StorageWarning

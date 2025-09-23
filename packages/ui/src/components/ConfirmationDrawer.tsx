@@ -180,8 +180,8 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         borderTopLeftRadius={isExtension ? 0 : '$6'}
         borderTopRightRadius={isExtension ? 0 : '$6'}
         animation={isExtension ? 'quick' : 'lazy'}
-        enterStyle={{ y: '100%' }}
-        exitStyle={{ y: '100%' }}
+        enterStyle={{ y: 1000 }}
+        exitStyle={{ y: 1000 }}
       >
         <YStack p="$4" gap="$4">
           {/* Header */}
@@ -232,8 +232,8 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             )}
           </XStack>
 
-          {/* Transaction Visual */}
-          <View
+          {/* Transaction Visual - COMMENTED OUT FOR TESTING */}
+          {/* <View
             height={120}
             width="100%"
             position="relative"
@@ -241,56 +241,36 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             justify="center"
             my="$2"
           >
-            {/* Gradient Background Circle - Platform specific */}
             {typeof window !== 'undefined' ? (
-              // Web version with CSS gradient
               <View
                 position="absolute"
                 width={300}
                 height={300}
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  borderRadius: 150,
-                  opacity: 0.1,
-                  background:
-                    'radial-gradient(27.35% 27.35% at 50% 50%, #00EF8B 25.48%, rgba(0, 239, 139, 0.00) 100%)',
-                }}
+                top={-90}
+                left={-150}
+                borderRadius={150}
+                bg="#00EF8B"
+                opacity={0.1}
               />
             ) : (
-              // React Native version - simple colored circle
               <View
                 position="absolute"
                 width={300}
                 height={300}
+                top={-90}
+                left={-150}
                 borderRadius={150}
                 bg="#00EF8B"
                 opacity={0.05}
-                style={
-                  {
-                    // top: '50%',
-                    // left: '50%',
-                    // transform: [{ translateX: -150 }, { translateY: -150 }],
-                  }
-                }
               />
             )}
 
             <View
-              width={0}
-              height={0}
               items="center"
               justify="center"
               position="relative"
-              style={{
-                zIndex: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              zIndex={10}
             >
-              {/* Wallet Card Icon */}
               {!isExtension ? (
                 <RNImage
                   source={sendStaticImage}
@@ -301,11 +281,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <WalletCard width={114.62} height={129.195} />
               )}
             </View>
-          </View>
+          </View> */}
 
           {/* Accounts Row */}
           <XStack items="center" justify="space-between" width="100%" gap="$2" px="$2">
-            {/* From Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
               <Avatar
                 src={fromAccount?.avatarSrc}
@@ -323,10 +302,8 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               </YStack>
             </YStack>
 
-            {/* Loading Indicator */}
             <LoadingIndicator isAnimating={internalIsSending} width={90} />
 
-            {/* To Account */}
             <YStack flex={1} items="center" gap="$2" maxW={100}>
               <Avatar
                 src={toAccount?.avatarSrc}
@@ -358,10 +335,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 thumbnailSize={60}
                 backgroundColor="transparent"
                 borderRadius={14.4}
-                contentPadding={0}
+                contentPadding="0"
               />
 
-              {/* ERC1155 Quantity Display - Read-only */}
               {selectedNFTs.length === 1 &&
                 selectedNFTs[0].contractType === 'ERC1155' &&
                 selectedNFTs[0].selectedQuantity && (
@@ -396,7 +372,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 {sendTokensText}
               </Text>
 
-              {/* Token Amount */}
               <XStack items="center" justify="space-between" width="100%">
                 <XStack items="center" gap="$3">
                   {selectedToken?.logoURI ? (
@@ -412,7 +387,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     {(() => {
                       const amount = parseFloat(formData.tokenAmount);
                       if (isNaN(amount)) return formData.tokenAmount;
-                      // Round to at most 8 decimal places
                       return parseFloat(amount.toFixed(8)).toString();
                     })()}
                   </Text>
@@ -436,7 +410,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 </View>
               </XStack>
 
-              {/* Fiat Amount */}
               <XStack justify="flex-start" width="100%">
                 <Text fontSize="$3" color="$light80" fontWeight="400">
                   ${formData.fiatAmount || '0.69'}

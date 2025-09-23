@@ -1,7 +1,7 @@
 import { Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack, XStack, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { InfoDialog } from './InfoDialog';
@@ -38,7 +38,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   onEditPress,
   showEditButton = true,
   title,
-  backgroundColor = '$light10',
+  backgroundColor,
   borderRadius = '$4',
   contentPadding: _contentPadding = 16,
   showAvatar = true,
@@ -55,6 +55,10 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
 }) => {
   // Internal state for compatibility dialog
   const [isCompatibilityDialogVisible, setIsCompatibilityDialogVisible] = useState(false);
+  const theme = useTheme();
+
+  // Theme-aware background color (use prop if provided, otherwise use theme-based default)
+  const dynamicBackgroundColor = backgroundColor || (String(theme.name)?.includes('dark') ? '$light10' : '$bg2');
 
   // Handle learn more press - show internal dialog
   const handleLearnMorePress = () => {
@@ -66,7 +70,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   };
   return (
     <YStack
-      bg={backgroundColor as any}
+      bg={dynamicBackgroundColor as any}
       rounded={borderRadius as any}
       gap={12}
       pt={16}

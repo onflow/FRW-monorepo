@@ -1,6 +1,6 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import React, { useState } from 'react';
-import { ScrollView, XStack, YStack } from 'tamagui';
+import { ScrollView, XStack, YStack, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
@@ -35,6 +35,10 @@ export function AccountCard({
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
+  const theme = useTheme();
+
+  // Theme-aware background color
+  const backgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
 
   // Early return if no account data
   if (!account) {
@@ -51,7 +55,7 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      bg="$bg2"
+      bg={backgroundColor}
       rounded="$4"
       pt="$4"
       px="$4"
