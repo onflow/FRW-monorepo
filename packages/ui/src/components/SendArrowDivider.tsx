@@ -30,7 +30,7 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
   const isCurrentlyDarkMode = isDarkMode(theme);
 
   // Always use primary green background (theme-aware: #00B877 light, #00EF8B dark)
-  const defaultBackgroundColor = theme.primary?.val;
+  const defaultBackgroundColor = isCurrentlyDarkMode ? '#00EF8B' : '#00B877';
 
   // Icon color should be dark in dark mode (on green background) and white in light mode
   // Use theme tokens for more reliable color detection
