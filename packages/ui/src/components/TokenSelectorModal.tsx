@@ -1,8 +1,7 @@
 import { Search, Close, VerifiedToken } from '@onflow/frw-icons';
-import { type TokenModel, formatCurrencyStringForDisplay } from '@onflow/frw-types';
-import { getDisplayBalanceWithSymbol } from '@onflow/frw-utils';
+import { type TokenModel } from '@onflow/frw-types';
 import React, { useState, useMemo } from 'react';
-import { YStack, XStack, ScrollView, Input, Sheet, useMedia, Stack, useTheme, View } from 'tamagui';
+import { YStack, XStack, ScrollView, Input, Sheet, useMedia, Stack, useTheme, View, Separator } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
@@ -73,7 +72,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   const renderContent = () => (
     <YStack flex={1} gap={20}>
       {/* Header - exact ConfirmationDrawer structure that works */}
-      <XStack items="center" width="100%">
+      <XStack items="center" width="100%" shrink={0}>
         {isExtension ? (
           <>
             <View flex={1} items="center">
@@ -130,6 +129,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           gap="$2"
           borderWidth={0}
           height={44}
+          shrink={0}
         >
           <Search size={20} color="rgba(255, 255, 255, 0.6)" />
           <Input
@@ -141,7 +141,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
             fontSize={16}
             color="$white"
             borderWidth={0}
-            backgroundColor="transparent"
+            bg="transparent"
             unstyled
             fontWeight="400"
             height="100%"
@@ -152,16 +152,30 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         </XStack>
       )}
 
-      {/* Token List ScrollView */}
-      <ScrollView flex={1}>
-        <YStack>
-          {filteredTokens.length === 0 ? (
-            <Text text="center" color="$text" py="$4">
-              {emptyMessage}
-            </Text>
-          ) : (
-            filteredTokens.map((token, index) => (
-              <YStack key={token.id || `${token.symbol}-${index}`}>
+      {/* Token List ScrollView with explicit height constraints */}
+      <View style={{ flex: 1, minHeight: 0, height: '100%' }}>
+        <ScrollView
+          style={{
+            flex: 1,
+            maxHeight: 400,
+            height: '100%'
+          }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: 20
+          }}
+          showsVerticalScrollIndicator={true}
+          scrollEnabled={true}
+          nestedScrollEnabled={true}
+        >
+          <YStack gap="$2">
+            {filteredTokens.length === 0 ? (
+              <Text text="center" color="$text" py="$4">
+                {emptyMessage}
+              </Text>
+            ) : (
+              filteredTokens.map((token, index) => (
+                <YStack key={`${token.symbol}-${index}`}>
                 <Stack
                   pressStyle={{ opacity: 0.7 }}
                   onPress={() => handleTokenSelect(token)}
@@ -237,11 +251,16 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                     </YStack>
                   </XStack>
                 </Stack>
+                {/* Separator between rows, but not after the last item */}
+                {index < filteredTokens.length - 1 && (
+                  <Separator borderColor="$borderColor" my="$2" />
+                )}
               </YStack>
             ))
           )}
         </YStack>
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       {/* Comment out any remaining components */}
       {/*
@@ -289,7 +308,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
             fontSize={16}
             color="$white"
             borderWidth={0}
-            backgroundColor="transparent"
+            bg="transparent"
             unstyled
             fontFamily="Inter"
             fontWeight="400"
@@ -336,13 +355,16 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           borderTopLeftRadius={isExtension ? 0 : 16}
           borderTopRightRadius={isExtension ? 0 : 16}
           pt={isExtension ? 0 : 25}
-          px={'$4'}
           pb={isExtension ? 0 : 36}
           animation={isExtension ? 'quick' : 'lazy'}
           enterStyle={{ y: 500 }}
           exitStyle={{ y: 500 }}
+          flex={1}
+          height="100%"
         >
-          {renderContent()}
+          <YStack p="$4" gap="$4" flex={1} height="100%">
+            {renderContent()}
+          </YStack>
         </Sheet.Frame>
       </Sheet>
     );
@@ -351,22 +373,23 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   // Desktop: Use modal
   return (
     <YStack
-      position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+      }}
       bg="$backgroundTransparent"
       items="center"
       justify="center"
-      zIndex={1000}
       pressStyle={{ opacity: 1 }}
       onPress={onClose}
     >
       <YStack
-        bg={backgroundColor}
+        bg={backgroundColor as any}
         rounded="$4"
-        p="$3"
         minW={320}
         maxW="90%"
         maxH={maxHeight}
@@ -376,8 +399,12 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         elevation={8}
         pressStyle={{ opacity: 1 }}
         onPress={(e) => e.stopPropagation()}
+        flex={1}
+        my="$4"
       >
-        {renderContent()}
+        <YStack p="$4" gap="$4" flex={1}>
+          {renderContent()}
+        </YStack>
       </YStack>
     </YStack>
   );
