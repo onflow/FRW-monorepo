@@ -12,6 +12,7 @@ export * from './providers/QueryProvider';
 
 // Export types
 export * from './types';
+export type { ScreenAssets } from './assets/images';
 
 // Export i18n utilities
 export {

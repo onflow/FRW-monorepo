@@ -22,8 +22,6 @@
     "@tamagui/theme-builder": "^1.132.20",
     "@tamagui/web": "^1.132.20",
     "bignumber.js": "^9.1.2",
-    "lottie-react-native": "^7.3.2",
-    "lottie-web": "^5.13.0",
     "tamagui": "^1.132.20"
   },
   "devDependencies": {
