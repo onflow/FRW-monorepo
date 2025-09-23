@@ -45,7 +45,6 @@ export function ProfileList({
             onAccountPress={onAccountPress}
             isLast={index === profiles.length - 1}
           />
-          {index < profiles.length - 1 && <Separator />}
         </React.Fragment>
       ))}
     </YStack>
