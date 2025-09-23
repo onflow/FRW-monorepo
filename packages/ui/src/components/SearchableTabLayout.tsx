@@ -1,6 +1,6 @@
 import { Scan } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, XStack, Button, useTheme } from 'tamagui';
+import { YStack, XStack, Button, useThemeName } from 'tamagui';
 
 import { SearchBar } from './SearchBar';
 import { SegmentedControl } from '../foundation/SegmentedControl';
@@ -53,10 +53,10 @@ export function SearchableTabLayout({
   contentPadding = '$4',
   backgroundColor = '$background',
 }: SearchableTabLayoutProps) {
-  const theme = useTheme();
+  const themeName = useThemeName();
 
-  // Determine if we're in dark mode by checking if text color is light
-  const isDarkMode = theme.text?.toString().includes('255'); // White text indicates dark mode
+  // Use Tamagui's built-in theme detection
+  const isDarkMode = themeName?.includes('dark') || false;
   const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
   return (
     <YStack flex={1}>

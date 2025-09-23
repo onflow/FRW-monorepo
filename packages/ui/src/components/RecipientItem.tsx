@@ -1,6 +1,6 @@
 import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
 import React from 'react';
-import { Button, Card, XStack, YStack, Text, useTheme } from 'tamagui';
+import { Button, Card, XStack, YStack, Text, useThemeName } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -61,10 +61,10 @@ export function RecipientItem({
   copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
-  const theme = useTheme();
+  const themeName = useThemeName();
 
-  // Determine if we're in dark mode by checking if text color is light
-  const isDarkMode = theme.text?.toString().includes('255'); // White text indicates dark mode
+  // Use Tamagui's built-in theme detection
+  const isDarkMode = themeName?.includes('dark') || false;
   const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
   return (
     <Card
@@ -101,7 +101,7 @@ export function RecipientItem({
                 type.charAt(0).toUpperCase()
               }
               bgColor={emojiInfo?.color || (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')}
-              textColor={emojiInfo?.color ? undefined : (isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)')}
+              textColor={emojiInfo?.color ? undefined : (isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)')}
               size={avatarSize}
             />
           </YStack>
@@ -226,7 +226,7 @@ export function RecipientItem({
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-              icon={<Copy size={24} color={copiedFeedback ? '#00D964' : iconColor} />}
+              icon={<Copy size={24} color={copiedFeedback ? '$primary' : iconColor} />}
             ></Button>
           )}
           {copiedFeedback && (
@@ -234,7 +234,7 @@ export function RecipientItem({
               position="absolute"
               top={-30}
               right={0}
-              bg="#00D964"
+              bg="$primary"
               rounded={8}
               px={8}
               py={4}

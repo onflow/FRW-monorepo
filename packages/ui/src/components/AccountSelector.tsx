@@ -1,7 +1,7 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
-import { XStack, YStack, Sheet, ScrollView, useTheme } from 'tamagui';
+import { XStack, YStack, Sheet, ScrollView, useThemeName } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -42,11 +42,13 @@ export function AccountSelector({
   onEditClick,
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
-  const theme = useTheme();
+  const themeName = useThemeName();
 
-  // Determine if we're in dark mode by checking if text color is light
-  const isDarkMode = theme.text?.toString().includes('255'); // White text indicates dark mode
-  const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+  // Use Tamagui's built-in theme detection
+  const isDarkMode = themeName?.includes('dark') || false;
+  const iconColor = isDarkMode ? '#767676' : 'rgba(0, 0, 0, 0.8)';
+  const editIconColor = isDarkMode ? '#767676' : 'rgba(0, 0, 0, 0.8)';
+  const avatarTextColor = isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
 
   const handleAccountSelect = (account: WalletAccount) => {
     onAccountSelect(account);
@@ -80,6 +82,7 @@ export function AccountSelector({
                 src={currentAccount.avatar}
                 fallback={currentAccount.emojiInfo?.emoji || currentAccount.name?.charAt(0) || '?'}
                 bgColor={currentAccount.emojiInfo?.color}
+                textColor={currentAccount.emojiInfo?.color ? undefined : avatarTextColor}
                 size={36}
                 borderColor="$primary"
                 borderWidth={1}
@@ -93,7 +96,7 @@ export function AccountSelector({
                   width={18}
                   height={18}
                   rounded={9}
-                  bg={currentAccount.parentEmoji.color || "$bg2"}
+                  bg={(currentAccount.parentEmoji.color as any) || "$bg2"}
                   borderWidth={2}
                   borderColor="$bg2"
                   items="center"
@@ -181,7 +184,7 @@ export function AccountSelector({
               onPress={handleEditClick}
               cursor="pointer"
             >
-              <Edit size={24} color={iconColor} theme="outline" />
+              <Edit size={24} color={editIconColor} theme="outline" />
             </XStack>
           )}
         </XStack>
@@ -248,6 +251,7 @@ export function AccountSelector({
                               account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
                             }
                             bgColor={account.emojiInfo?.color}
+                            textColor={account.emojiInfo?.color ? undefined : avatarTextColor}
                             size={40}
                             borderColor={isSelected ? '$primary' : undefined}
                             borderWidth={isSelected ? 1 : undefined}
@@ -256,12 +260,14 @@ export function AccountSelector({
                           {account.parentEmoji && (
                             <YStack
                               position="absolute"
-                              left={-6}
-                              top={-6}
+                              style={{
+                                left: -6,
+                                top: -6,
+                              }}
                               width={18}
                               height={18}
                               rounded={9}
-                              bg={account.parentEmoji.color || "$bg2"}
+                              bg={(account.parentEmoji.color as any) || "$bg2"}
                               borderWidth={2}
                               borderColor="$bg2"
                               items="center"
