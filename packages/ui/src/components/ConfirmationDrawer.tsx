@@ -248,56 +248,24 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             )}
           </XStack>
 
-          {/* Transaction Visual - COMMENTED OUT FOR TESTING */}
-          {/* <View
+          {/* Transaction Visual - Simple Static Image */}
+          <View
             height={120}
             width="100%"
-            position="relative"
             items="center"
             justify="center"
             my="$2"
           >
-            {typeof window !== 'undefined' ? (
-              <View
-                position="absolute"
-                width={300}
-                height={300}
-                top={-90}
-                left={-150}
-                borderRadius={150}
-                bg="#00EF8B"
-                opacity={0.1}
+            {!isExtension && sendStaticImage ? (
+              <RNImage
+                source={sendStaticImage}
+                style={{ width: 114.62, height: 129.195 }}
+                resizeMode="contain"
               />
             ) : (
-              <View
-                position="absolute"
-                width={300}
-                height={300}
-                top={-90}
-                left={-150}
-                borderRadius={150}
-                bg="#00EF8B"
-                opacity={0.05}
-              />
+              <WalletCard size={120} />
             )}
-
-            <View
-              items="center"
-              justify="center"
-              position="relative"
-              zIndex={10}
-            >
-              {!isExtension ? (
-                <RNImage
-                  source={sendStaticImage}
-                  style={{ width: 114.62, height: 129.195 }}
-                  resizeMode="contain"
-                />
-              ) : (
-                <WalletCard width={114.62} height={129.195} />
-              )}
-            </View>
-          </View> */}
+          </View>
 
           {/* Accounts Row */}
           <XStack items="center" justify="space-between" width="100%" gap="$2" px="$2">
