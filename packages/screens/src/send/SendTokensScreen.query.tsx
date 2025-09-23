@@ -524,7 +524,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         />
       )}
 
-      <YStack flex={1} p={contentPadding} onPress={handlePressOutside}>
+      <YStack flex={1} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">

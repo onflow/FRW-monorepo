@@ -1,7 +1,7 @@
 import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
-import { Platform, Image as RNImage } from 'react-native';
+import { Image as RNImage } from 'react-native';
 import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
 
 import { AddressText } from './AddressText';
@@ -291,7 +291,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               }}
             >
               {/* Wallet Card Icon */}
-              {Platform.OS !== 'web' && sendStaticImage ? (
+              {!isExtension ? (
                 <RNImage
                   source={sendStaticImage}
                   style={{ width: 114.62, height: 129.195 }}
