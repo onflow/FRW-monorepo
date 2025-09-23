@@ -180,18 +180,19 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     staleTime: 0, // Always fresh for financial data
   });
 
+  // Extract and format identifier with .Vault suffix if needed
+  const resourceIdentifier = useMemo(() => {
+    if (!selectedToken?.identifier) return '';
+    const identifier = selectedToken.identifier;
+    return identifier.includes('.Vault') ? identifier : `${identifier}.Vault`;
+  }, [selectedToken?.identifier]);
+
   // Query for resource compatibility check (tokens only)
   const { data: isResourceCompatible = true } = useQuery({
-    queryKey: storageQueryKeys.resourceCheck(
-      toAccount?.address || '',
-      selectedToken?.identifier || ''
-    ),
+    queryKey: storageQueryKeys.resourceCheck(toAccount?.address || '', resourceIdentifier),
     queryFn: () =>
-      storageQueries.checkResourceCompatibility(
-        toAccount?.address || '',
-        selectedToken?.identifier || ''
-      ),
-    enabled: !!(toAccount?.address && selectedToken?.identifier),
+      storageQueries.checkResourceCompatibility(toAccount?.address || '', resourceIdentifier),
+    enabled: !!(toAccount?.address && resourceIdentifier),
     staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
   });
 
