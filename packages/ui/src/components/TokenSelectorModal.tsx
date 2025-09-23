@@ -205,7 +205,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                           text="right"
                           lineHeight="$1"
                         >
-                          {getDisplayBalanceWithSymbol(token)}
+                          {token.displayBalance || token.balance || '0'} {token.symbol}
                         </Text>
                       </XStack>
 
@@ -226,7 +226,12 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                           text="right"
                           lineHeight="$1"
                         >
-                          {formatCurrencyStringForDisplay(token.balance || '0', currency.symbol)}
+                          {token.balanceInUSD
+                            ? `$${parseFloat(token.balanceInUSD).toFixed(2)}`
+                            : token.balanceInCurrency
+                              ? parseFloat(token.balanceInCurrency).toFixed(2)
+                              : ''
+                          }
                         </Text>
                       </XStack>
                     </YStack>
