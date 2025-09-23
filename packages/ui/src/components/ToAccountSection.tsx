@@ -223,7 +223,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               opacity={isAccountIncompatible ? 0.5 : 1}
             >
               <Edit
-                size="$6"
+                size={24}
                 color={isAccountIncompatible ? '$white' : '$textSecondary'}
                 theme="outline"
               />
