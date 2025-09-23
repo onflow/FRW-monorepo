@@ -23,6 +23,7 @@ import {
   TokenCard,
   XStack,
   YStack,
+  useTheme,
 } from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
@@ -268,6 +269,11 @@ export function SelectTokensScreen(): React.ReactElement {
     }));
   }, [accounts, balanceLookup]);
 
+  const theme = useTheme();
+  const isDarkMode = String(theme.name)?.includes('dark') || false;
+  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       {isExtension && (
@@ -357,7 +363,7 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < tokensWithBalance.length - 1 && <Divider />}
+                      {idx < tokensWithBalance.length - 1 && <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />}
                     </React.Fragment>
                   ))}
                 </YStack>
@@ -414,7 +420,7 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < nftCollections.length - 1 && <Divider />}
+                      {idx < nftCollections.length - 1 && <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />}
                     </React.Fragment>
                   ))}
                 </YStack>

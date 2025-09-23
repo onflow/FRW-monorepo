@@ -25,12 +25,12 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
 }) => {
   const theme = useTheme();
 
-  // Theme-aware default colors - use theme's primary green
-  const defaultBackgroundColor = theme.primary?.val || '#00EF8B';
+  // Always use primary green background (theme-aware: #00B877 light, #00EF8B dark)
+  const defaultBackgroundColor = theme.primary?.val;
 
   const defaultIconColor = String(theme.name)?.includes('dark')
     ? 'rgba(0, 0, 0, 0.8)' // Keep existing dark gray for dark mode
-    : '#000000'; // Black for light mode
+    : '#FFFFFF'; 
 
   const finalBackgroundColor = backgroundColor || defaultBackgroundColor;
   const finalIconColor = iconColor || defaultIconColor;

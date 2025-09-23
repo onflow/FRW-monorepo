@@ -49,7 +49,7 @@ export function AccountCard({
   if (!account) {
     return (
       <YStack width="100%" pt="$2" px="$1" pb="$6" gap="$1" {...props}>
-        <Text fontSize="$2" mb="$1" fontWeight="400" color="$light80" lineHeight={16}>
+        <Text fontSize="$2" mb="$1" fontWeight="400" color="$textSecondary" lineHeight={16}>
           {title}
         </Text>
         <Text color="$error">No account data available</Text>
@@ -75,7 +75,7 @@ export function AccountCard({
         fontSize="$2"
         mb={isSendTokensScreen ? '$8' : '$1'}
         fontWeight="400"
-        color="$textSecondary"
+       // color="$textSecondary"
         lineHeight={16}
       >
         {title}
@@ -142,7 +142,7 @@ export function AccountCard({
                   <Text
                     fontSize={8}
                     fontWeight="400"
-                    color="$white"
+                    color="#FFFFFF"
                     lineHeight={9.7}
                     letterSpacing={0.128}
                   >
@@ -339,7 +339,7 @@ export function AccountCard({
                                       <Text
                                         fontSize={8}
                                         fontWeight="400"
-                                        color="$white"
+                                        color="#FFFFFF"
                                         lineHeight={9.7}
                                         letterSpacing={0.128}
                                       >

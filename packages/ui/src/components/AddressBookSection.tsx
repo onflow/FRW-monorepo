@@ -22,6 +22,7 @@ export function AddressBookSection({
   const isDarkMode = themeName?.includes('dark') || false;
   const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
+
   if (contacts.length === 0) {
     return null;
   }

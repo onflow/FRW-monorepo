@@ -67,6 +67,7 @@ function ProfileItem({
   // Use Tamagui's built-in theme detection
   const isDarkMode = themeName?.includes('dark') || false;
   const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
   const handleAccountPress = (account: any) => {
     onAccountPress?.(account);
   };

@@ -54,15 +54,14 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   // Theme-aware background color for cards
   const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
 
-  // Theme-aware send button colors - should match Hold to send button
+  // Theme-aware send button colors - white bg + black text on dark mode, black bg + white text on light mode
   const sendButtonBackgroundColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
   const sendButtonTextColor = String(theme.name)?.includes('dark') ? '#000000' : '#FFFFFF';
   const disabledButtonTextColor = String(theme.name)?.includes('dark') ? '#999999' : '#FFFFFF';
 
   // Theme-aware separator color
   const separatorColor = String(theme.name)?.includes('dark')
-    ? 'rgba(255, 255, 255, 0.1)'
-    : 'rgba(0, 0, 0, 0.1)';
+    ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';

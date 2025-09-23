@@ -54,20 +54,20 @@ export function TokenAmountInput({
   const theme = useTheme();
 
   // Theme-aware text color
-  const textColor = String(theme.name)?.includes('dark') ? '$white' : '$black';
+  const textColor = String(theme.name)?.includes('dark') ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
 
   // Theme-aware token selector colors
-  const tokenSelectorBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : 'rgba(0, 0, 0, 0.05)';
-  const tokenSelectorTextColor = String(theme.name)?.includes('dark') ? '$white' : '$black';
-  const chevronColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
+  const tokenSelectorBackgroundColor = String(theme.name)?.includes('dark') ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const tokenSelectorTextColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
+  const chevronColor = '#767676'; // Same color as edit icon for both modes
 
   // Theme-aware converter colors
-  const converterButtonColor = String(theme.name)?.includes('dark') ? '$light10' : 'rgba(0, 0, 0, 0.05)';
-  const converterIconColor = chevronColor; // Match the chevron color in token selector
+  const converterButtonColor = String(theme.name)?.includes('dark') ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const converterIconColor = '#767676'; // Same color as edit icon for both modes
   const converterTextColor = String(theme.name)?.includes('dark') ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 
   // Theme-aware header text color
-  const headerTextColor = String(theme.name)?.includes('dark') ? '$light80' : '$textSecondary';
+  const headerTextColor = String(theme.name)?.includes('dark') ? (theme.light80?.val || '#CCCCCC') : (theme.textSecondary?.val || '#666666');
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
@@ -80,7 +80,6 @@ export function TokenAmountInput({
         mb="$3"
         ml="$1"
         fontWeight="400"
-        color={headerTextColor}
         lineHeight={16}
         text="left"
       >
@@ -101,7 +100,7 @@ export function TokenAmountInput({
           {/* Amount Input - fixed width 169px, height 35px to match input */}
           <XStack items="center" width={169} height={35}>
             {!isTokenMode && (
-              <Text fontSize={28} fontWeight="500" color={textColor} lineHeight={35} mr={4}>
+              <Text fontSize={28} fontWeight="500" lineHeight={35} mr={4}>
                 {currency.symbol}
               </Text>
             )}
@@ -113,7 +112,6 @@ export function TokenAmountInput({
               keyboardType="numeric"
               fontSize={28}
               fontWeight="500"
-              color={textColor}
               lineHeight={35}
               height={35}
               width={!isTokenMode ? 145 : 169}
@@ -158,7 +156,7 @@ export function TokenAmountInput({
           cursor="pointer"
         >
           <XStack items="center" gap={3}>
-            <Text fontSize={12} fontWeight="600" color={tokenSelectorTextColor} lineHeight={18} numberOfLines={1}>
+            <Text fontSize={12} fontWeight="600" lineHeight={18} numberOfLines={1}>
               {tokenSymbol}
             </Text>
             {selectedToken?.isVerified && <VerifiedToken size={10} color="#41CC5D" />}
@@ -193,10 +191,10 @@ export function TokenAmountInput({
             <Text
               fontSize={14}
               fontWeight="400"
-              color={converterTextColor}
               lineHeight={16}
               flex={1}
               minW={0}
+              opacity={0.8}
             >
               {isTokenMode
                 ? `${currency.symbol}${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
@@ -220,7 +218,7 @@ export function TokenAmountInput({
             </Text>
           )}
           <YStack
-            bg={tokenSelectorBackgroundColor}
+            bg={String(theme.name)?.includes('dark') ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)'}
             rounded={40}
             height="$6"
             items="center"
@@ -230,7 +228,7 @@ export function TokenAmountInput({
             px="$2.5"
             cursor="pointer"
           >
-            <Text fontSize="$3" fontWeight="600" color={tokenSelectorTextColor}>
+            <Text fontSize="$3" fontWeight="600">
               MAX
             </Text>
           </YStack>

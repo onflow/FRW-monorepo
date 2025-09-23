@@ -147,17 +147,17 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
-  // Theme-aware button colors
-  const buttonBackgroundColor = String(theme.name)?.includes('dark') ? '$white' : '$black';
-  const buttonTextColor = String(theme.name)?.includes('dark') ? '$black' : '$white';
+  // Theme-aware button colors - white bg + black text on dark mode, black bg + white text on light mode
+  const buttonBackgroundColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
+  const buttonTextColor = String(theme.name)?.includes('dark') ? '#000000' : '#FFFFFF';
 
   // Theme-aware text colors
-  const drawerTextColor = String(theme.name)?.includes('dark') ? '$white' : '$black';
-  const secondaryTextColor = String(theme.name)?.includes('dark') ? '$light80' : '$textSecondary';
+  const drawerTextColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
+  const secondaryTextColor = String(theme.name)?.includes('dark') ? '#CCCCCC' : '#666666';
 
   // Theme-aware background colors
   const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
-  const badgeBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : 'rgba(0, 0, 0, 0.05)';
+  const badgeBackgroundColor = String(theme.name)?.includes('dark') ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)';
 
   const handleConfirm = async () => {
     try {

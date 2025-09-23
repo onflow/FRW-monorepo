@@ -63,8 +63,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
     backgroundColor || (String(theme.name)?.includes('dark') ? '$light10' : '$bg2');
 
   // Theme-aware text colors
-  const primaryTextColor = String(theme.name)?.includes('dark') ? '$white' : '$black';
-  const secondaryTextColor = String(theme.name)?.includes('dark') ? '$light80' : '$textSecondary';
+  const primaryTextColor = String(theme.name)?.includes('dark') ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
   const editIconColor = '#767676'; // Same color for both dark and light mode
 
   // Use RecipientItem's working chain link icon color logic
@@ -91,14 +90,14 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       width="100%"
     >
       {/* Section Header */}
-      <Text fontSize="$2" fontWeight="400" color={secondaryTextColor} lineHeight={16}>
+      <Text fontSize="$2" fontWeight="400" lineHeight={16}>
         {title}
       </Text>
 
       {/* Incompatible Account Header */}
       {isAccountIncompatible && (
         <XStack justify="space-between" items="flex-end">
-          <Text fontSize="$3" fontWeight="400" color={secondaryTextColor} lineHeight={16}>
+          <Text fontSize="$3" fontWeight="400" lineHeight={16}>
             {incompatibleAccountText}
           </Text>
           <Text
@@ -183,7 +182,6 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               <XStack items="center" gap="$1">
                 {isLinked && <Link size={12.8} color={chainLinkIconColor} theme="outline" />}
                 <Text
-                  color={isAccountIncompatible ? '$textSecondary' : primaryTextColor}
                   fontSize="$3"
                   fontWeight="600"
                   lineHeight={17}
@@ -204,7 +202,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                     <Text
                       fontSize={8}
                       fontWeight="400"
-                      color={primaryTextColor}
+                      color="#FFFFFF"
                       lineHeight={9.7}
                       letterSpacing={0.128}
                     >
