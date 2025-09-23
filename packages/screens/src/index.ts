@@ -4,6 +4,8 @@ export { SendToScreen } from './send/SendToScreen.query';
 export * from './send/NFTListScreen.query';
 export * from './send/NFTDetailScreen.query';
 export { SendTokensScreen } from './send/SendTokensScreen.query';
+export { SendSingleNFTScreen } from './send/SendSingleNFTScreen.query';
+export { SendMultipleNFTsScreen } from './send/SendMultipleNFTsScreen.query';
 export { SendSummaryScreen } from './send/SendSummaryScreen.query';
 
 // Export providers
