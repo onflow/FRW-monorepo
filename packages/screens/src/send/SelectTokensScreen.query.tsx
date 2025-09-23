@@ -13,7 +13,6 @@ import { type CollectionModel, type TokenModel, type WalletAccount } from '@onfl
 import {
   AccountSelector,
   BackgroundWrapper,
-  Divider,
   ExtensionHeader,
   NFTCollectionRow,
   RefreshView,
@@ -25,10 +24,10 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
+import { isDarkMode } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { isDarkMode } from '@onflow/frw-utils';
 
 import { useQueryClient } from '../providers/QueryProvider';
 import type { TabType } from '../types';
