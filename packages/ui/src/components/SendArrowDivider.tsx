@@ -1,6 +1,7 @@
 import { ArrowDown } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
-import { YStack } from 'tamagui';
+import { YStack, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -16,17 +17,33 @@ export interface SendArrowDividerProps {
 
 export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
   size = 44,
-  backgroundColor = '#00EF8B',
-  iconColor = 'rgba(0, 0, 0, 0.8)',
+  backgroundColor,
+  iconColor,
   variant = 'arrow',
   text = '↓',
   padding = 8,
   margin = 0,
 }) => {
+  const theme = useTheme();
+
+  // Theme detection using helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
+
+  // Always use primary green background (theme-aware: #00B877 light, #00EF8B dark)
+  const defaultBackgroundColor = isCurrentlyDarkMode ? '#00EF8B' : '#00B877';
+
+  // Icon color should be dark in dark mode (on green background) and white in light mode
+  // Use theme tokens for more reliable color detection
+  const defaultIconColor = isCurrentlyDarkMode
+    ? 'rgba(0, 0, 0, 0.8)' // Dark gray on green background in dark mode
+    : (theme.white?.val || '#FFFFFF'); // White on green background in light mode 
+
+  const finalBackgroundColor = defaultBackgroundColor;
+  const finalIconColor = iconColor || defaultIconColor;
   return (
     <YStack items="center" py={padding} my={margin}>
       <YStack
-        bg={backgroundColor}
+        bg={finalBackgroundColor}
         rounded="$12"
         width={size}
         height={size}
@@ -34,9 +51,9 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
         justify="center"
       >
         {variant === 'arrow' ? (
-          <ArrowDown size={24} color={iconColor} />
+          <ArrowDown size={24} color={finalIconColor} />
         ) : (
-          <Text fontSize="$4" color={iconColor} textAlign="center">
+          <Text fontSize="$4" color={finalIconColor} text="center">
             {text}
           </Text>
         )}

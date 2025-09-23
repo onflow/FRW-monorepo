@@ -22,8 +22,9 @@ import {
   InfoDialog,
   Text,
   YStack,
+  useTheme,
 } from '@onflow/frw-ui';
-import { isValidEthereumAddress, isValidFlowAddress, logger } from '@onflow/frw-utils';
+import { isValidEthereumAddress, isValidFlowAddress, logger, isDarkMode } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +43,9 @@ interface TabConfig {
 export function SendToScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
 
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
@@ -53,7 +57,9 @@ export function SendToScreen(): React.ReactElement {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
+  // Track copied entry uniquely by name+address to avoid highlighting duplicates
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // First time send modal state
   const [showFirstTimeSendDialog, setShowFirstTimeSendDialog] = useState(false);
@@ -489,22 +495,23 @@ export function SendToScreen(): React.ReactElement {
       // Check platform and use appropriate clipboard method
       const platform = bridge.getPlatform();
 
-      // Check for React Native environment (ios, android, or react-native)
-      if (platform === 'react-native' || platform === 'ios' || platform === 'android') {
-        // Use global clipboard provided by React Native wrapper
-        if ((global as any).clipboard?.setString) {
-          (global as any).clipboard.setString(recipient.address);
-          setCopiedAddress(recipient.address);
-          setTimeout(() => setCopiedAddress(null), 1000);
+      // Use RN clipboard via global injected helper when not web/extension
+      if (platform !== 'extension' && typeof window === 'undefined') {
+        const rnClipboard = (globalThis as any).clipboard;
+        if (rnClipboard?.setString) {
+          rnClipboard.setString(recipient.address);
         }
-      } else {
-        // Use web clipboard API for extension
-        if (navigator.clipboard) {
-          await navigator.clipboard.writeText(recipient.address);
-          setCopiedAddress(recipient.address);
-          setTimeout(() => setCopiedAddress(null), 1000);
-        }
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(recipient.address);
       }
+
+      // Set both string key and stable id to scope feedback precisely
+      setCopiedAddress(`${recipient.name}::${recipient.address}`);
+      setCopiedId(recipient.id);
+      setTimeout(() => {
+        setCopiedAddress(null);
+        setCopiedId(null);
+      }, 1000);
     } catch (error) {
       logger.error('Failed to copy address:', error);
     }
@@ -629,6 +636,7 @@ export function SendToScreen(): React.ReactElement {
               }))}
               groupByLetter={true}
               copiedAddress={copiedAddress}
+              copiedId={copiedId}
             />
           )
         ) : (
@@ -662,7 +670,7 @@ export function SendToScreen(): React.ReactElement {
             lineHeight={20}
             letterSpacing={-0.084}
             ta="center"
-            color="$white"
+            color="$text"
             self="stretch"
           >
             {t('send.firstTimeSendMessage')}
@@ -670,7 +678,7 @@ export function SendToScreen(): React.ReactElement {
 
           {/* Address Container */}
           <YStack
-            bg="$light10"
+            bg={cardBackgroundColor}
             rounded="$2"
             py="$4"
             px="$6"
@@ -684,7 +692,7 @@ export function SendToScreen(): React.ReactElement {
               lineHeight={16.8}
               letterSpacing={-0.084}
               ta="center"
-              color="$white"
+              color="$text"
               numberOfLines={1}
               ellipsizeMode="middle"
             >

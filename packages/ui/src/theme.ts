@@ -2,10 +2,18 @@ import { createThemeBuilder } from '@tamagui/theme-builder';
 
 // Flow Wallet Brand Colors (from Figma design system)
 const flowColors = {
-  // Primary brand color (from Figma)
-  primary: '#00EF8B', // Flow brand green - consistent across both modes
-  primary20: 'rgba(0, 239, 139, 0.2)', // 20% opacity
-  primary10: 'rgba(0, 239, 139, 0.1)', // 10% opacity
+  // Primary brand colors (different for light and dark modes)
+  primaryLight: '#00B877', // Flow brand green for light mode
+  primaryDark: '#00EF8B', // Flow brand green for dark mode
+  primary: '#00B877', // Default fallback (light mode)
+
+  // Light mode primary with opacity
+  primaryLight20: 'rgba(0, 184, 119, 0.2)', // 20% opacity
+  primaryLight10: 'rgba(0, 184, 119, 0.1)', // 10% opacity
+
+  // Dark mode primary with opacity
+  primaryDark20: 'rgba(0, 239, 139, 0.2)', // 20% opacity
+  primaryDark10: 'rgba(0, 239, 139, 0.1)', // 10% opacity
 
   // Light Mode surfaces (from Figma)
   surfaceLight1: '#FFFFFF', // 100% - primary background
@@ -74,13 +82,13 @@ const flowColors = {
   shadowLight: 'rgba(0, 0, 0, 0.1)',
   shadowLightHover: 'rgba(0, 0, 0, 0.15)',
   shadowLightPress: 'rgba(0, 0, 0, 0.2)',
-  shadowLightFocus: 'rgba(0, 239, 139, 0.3)',
+  shadowLightFocus: 'rgba(0, 184, 119, 0.3)',
 
   // Shadow colors for dark mode
   shadowDark: 'rgba(0, 0, 0, 0.3)',
   shadowDarkHover: 'rgba(0, 0, 0, 0.4)',
   shadowDarkPress: 'rgba(0, 0, 0, 0.5)',
-  shadowDarkFocus: 'rgba(0, 239, 139, 0.3)',
+  shadowDarkFocus: 'rgba(0, 184, 119, 0.3)',
 };
 
 // Size system
@@ -235,7 +243,7 @@ const themesBuilder = createThemeBuilder()
       background: 0, // Use palette[0] for main background
       backgroundHover: 1, // Use palette[1] for hover states
       backgroundPress: 2, // Use palette[2] for press states
-      backgroundFocus: flowColors.primary10, // Custom focus color
+      backgroundFocus: flowColors.primaryLight10, // Custom focus color
       backgroundStrong: 1, // Use palette[1] for strong backgrounds
       background4: 4,
       backgroundTransparent: 'transparent',
@@ -316,14 +324,14 @@ const themesBuilder = createThemeBuilder()
       error10: flowColors.error10, // $error10 (10% transparency)
 
       // Primary colors - long names
-      primaryColor: flowColors.primary,
-      primary20: flowColors.primary20,
-      primary10: flowColors.primary10,
+      primaryColor: flowColors.primaryLight, // Will be overridden per theme
+      primary20: flowColors.primaryLight20, // Will be overridden per theme
+      primary10: flowColors.primaryLight10, // Will be overridden per theme
 
       // Primary colors - shortcuts
-      primary: flowColors.primary, // $primary
-      primaryLight: flowColors.primary10, // $primaryLight (10%)
-      primaryStrong: flowColors.primary, // $primaryStrong
+      primary: flowColors.primaryLight, // $primary - will be overridden per theme
+      primaryLight: flowColors.primaryLight10, // $primaryLight (10%) - will be overridden per theme
+      primaryStrong: flowColors.primaryLight, // $primaryStrong - will be overridden per theme
 
       // Essential grayscale colors
       white: flowColors.white,
@@ -351,10 +359,26 @@ const themesBuilder = createThemeBuilder()
     light: {
       template: 'base',
       palette: 'light',
+      // Light mode uses light primary colors
+      primaryColor: flowColors.primaryLight,
+      primary: flowColors.primaryLight,
+      primaryStrong: flowColors.primaryLight,
+      primary20: flowColors.primaryLight20,
+      primary10: flowColors.primaryLight10,
+      primaryLight: flowColors.primaryLight10,
+      backgroundFocus: flowColors.primaryLight10,
     },
     dark: {
       template: 'base',
       palette: 'dark',
+      // Dark mode uses dark primary colors
+      primaryColor: flowColors.primaryDark,
+      primary: flowColors.primaryDark,
+      primaryStrong: flowColors.primaryDark,
+      primary20: flowColors.primaryDark20,
+      primary10: flowColors.primaryDark10,
+      primaryLight: flowColors.primaryDark10,
+      backgroundFocus: flowColors.primaryDark10,
       // Override dark-specific shadow colors
       shadowColor: flowColors.shadowDark,
       shadowColorHover: flowColors.shadowDarkHover,
@@ -364,7 +388,6 @@ const themesBuilder = createThemeBuilder()
       shadowHover: flowColors.shadowDarkHover, // $shadowHover
       shadowPress: flowColors.shadowDarkPress, // $shadowPress
       shadowFocus: flowColors.shadowDarkFocus, // $shadowFocus
-      // Override theme-aware muted text for dark mode
     },
   });
 

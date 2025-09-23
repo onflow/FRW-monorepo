@@ -1,7 +1,8 @@
 import { SwitchVertical, ChevronDown, VerifiedToken } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import BN from 'bignumber.js';
 import React, { useState, useRef } from 'react';
-import { Input, XStack, YStack } from 'tamagui';
+import { Input, XStack, YStack, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
@@ -51,6 +52,26 @@ export function TokenAmountInput({
   const [_focused, setFocused] = useState(false);
   const internalInputRef = useRef<any>(null);
   const inputRef = externalInputRef || internalInputRef;
+  const theme = useTheme();
+
+  // Theme detection using helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
+
+  // Theme-aware text color
+  const textColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+
+  // Theme-aware token selector colors
+  const tokenSelectorBackgroundColor = isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const tokenSelectorTextColor = isCurrentlyDarkMode ? '#FFFFFF' : '#000000';
+  const chevronColor = '#767676'; // Same color as edit icon for both modes
+
+  // Theme-aware converter colors
+  const converterButtonColor = isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const converterIconColor = '#767676'; // Same color as edit icon for both modes
+  const converterTextColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+
+  // Theme-aware header text color
+  const headerTextColor = isCurrentlyDarkMode ? (theme.light80?.val || '#CCCCCC') : (theme.textSecondary?.val || '#666666');
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
@@ -63,9 +84,8 @@ export function TokenAmountInput({
         mb="$3"
         ml="$1"
         fontWeight="400"
-        color="$light80"
         lineHeight={16}
-        textAlign="left"
+        text="left"
       >
         Send Tokens
       </Text>
@@ -84,7 +104,7 @@ export function TokenAmountInput({
           {/* Amount Input - fixed width 169px, height 35px to match input */}
           <XStack items="center" width={169} height={35}>
             {!isTokenMode && (
-              <Text fontSize={28} fontWeight="500" color="$white" lineHeight={35} mr={4}>
+              <Text fontSize={28} fontWeight="500" lineHeight={35} mr={4}>
                 {currency.symbol}
               </Text>
             )}
@@ -96,7 +116,6 @@ export function TokenAmountInput({
               keyboardType="numeric"
               fontSize={28}
               fontWeight="500"
-              color="$white"
               lineHeight={35}
               height={35}
               width={!isTokenMode ? 145 : 169}
@@ -126,7 +145,7 @@ export function TokenAmountInput({
         <XStack
           items="center"
           justify="space-between"
-          bg="$light10"
+          bg={tokenSelectorBackgroundColor}
           rounded={39}
           minW={85}
           height={35.2}
@@ -141,12 +160,12 @@ export function TokenAmountInput({
           cursor="pointer"
         >
           <XStack items="center" gap={3}>
-            <Text fontSize={12} fontWeight="600" color="$white" lineHeight={18} numberOfLines={1}>
+            <Text fontSize={12} fontWeight="600" lineHeight={18} numberOfLines={1}>
               {tokenSymbol}
             </Text>
             {selectedToken?.isVerified && <VerifiedToken size={10} color="#41CC5D" />}
           </XStack>
-          <ChevronDown size={14} color="#FFFFFF" />
+          <ChevronDown size={14} color={chevronColor} />
         </XStack>
       </XStack>
 
@@ -161,7 +180,7 @@ export function TokenAmountInput({
               justify="center"
               width={25}
               height={25}
-              bg="$light10"
+              bg={converterButtonColor}
               rounded={56.818}
               p={4.545}
               mr="$1"
@@ -170,16 +189,16 @@ export function TokenAmountInput({
               disabled={disabled}
               cursor="pointer"
             >
-              <SwitchVertical size={11.36} color="rgba(255, 255, 255, 0.4)" />
+              <SwitchVertical size={11.36} color={converterIconColor} />
             </XStack>
 
             <Text
               fontSize={14}
               fontWeight="400"
-              color="rgba(255, 255, 255, 0.8)"
               lineHeight={16}
               flex={1}
               minW={0}
+              opacity={0.8}
             >
               {isTokenMode
                 ? `${currency.symbol}${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
@@ -203,7 +222,7 @@ export function TokenAmountInput({
             </Text>
           )}
           <YStack
-            bg={'rgba(255, 255, 255, 0.2)'}
+            bg={isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)'}
             rounded={40}
             height="$6"
             items="center"

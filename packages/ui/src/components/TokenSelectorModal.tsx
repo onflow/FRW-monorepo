@@ -1,8 +1,7 @@
 import { Search, Close, VerifiedToken } from '@onflow/frw-icons';
-import { type TokenModel, formatCurrencyStringForDisplay } from '@onflow/frw-types';
-import { getDisplayBalanceWithSymbol } from '@onflow/frw-utils';
+import { type TokenModel } from '@onflow/frw-types';
 import React, { useState, useMemo } from 'react';
-import { YStack, XStack, ScrollView, Input, Sheet, useMedia, Stack } from 'tamagui';
+import { YStack, XStack, ScrollView, Input, Sheet, useMedia, Stack, useTheme, View, Separator } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
@@ -40,7 +39,11 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const media = useMedia();
+  const theme = useTheme();
   const isMobile = media.xs || media.sm;
+
+  // Theme-aware close icon color - same logic as ConfirmationDrawer
+  const closeIconColor = theme.color?.val || '#000000';
 
   // Alternative detection: check if we're on React Native
   const isReactNative = typeof window === 'undefined' || !window.document;
@@ -65,29 +68,58 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
     onClose();
   };
 
-  // Shared content component
+  // Working version with proper header structure
   const renderContent = () => (
     <YStack flex={1} gap={20}>
-      {/* Header */}
-      <XStack items="center" justify="space-between">
-        <XStack width={40} /> {/* Invisible spacer to balance the close button */}
-        <Text fontSize={18} fontWeight="700" color="#FFFFFF" flex={1} textAlign="center">
-          {title}
-        </Text>
-        <XStack
-          width={40}
-          height={40}
-          items="center"
-          justify="center"
-          pressStyle={{ opacity: 0.7 }}
-          onPress={onClose}
-          cursor="pointer"
-        >
-          <Close size={15} color="#FFFFFF" />
-        </XStack>
+      {/* Header - exact ConfirmationDrawer structure that works */}
+      <XStack items="center" width="100%" shrink={0}>
+        {isExtension ? (
+          <>
+            <View flex={1} items="center">
+              <Text fontSize="$5" fontWeight="700" color="$text" text="center">
+                {title}
+              </Text>
+            </View>
+
+            <XStack
+              width={32}
+              height={32}
+              items="center"
+              justify="center"
+              pressStyle={{ opacity: 0.8 }}
+              onPress={onClose}
+              cursor="pointer"
+            >
+              <Close size={15} color={closeIconColor} />
+            </XStack>
+          </>
+        ) : (
+          <>
+            <View width={32} height={32} />
+
+            <View flex={1} items="center">
+              <Text fontSize="$5" fontWeight="700" color="$text" text="center">
+                {title}
+              </Text>
+            </View>
+
+            <XStack
+              width={32}
+              height={32}
+              items="center"
+              justify="center"
+              rounded="$4"
+              pressStyle={{ opacity: 0.8 }}
+              onPress={onClose}
+              cursor="pointer"
+            >
+              <Close size={15} color={closeIconColor} />
+            </XStack>
+          </>
+        )}
       </XStack>
 
-      {/* Search Input */}
+      {/* Search Input - using working structure */}
       {searchable && (
         <XStack
           bg="$light10"
@@ -97,6 +129,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           gap="$2"
           borderWidth={0}
           height={44}
+          shrink={0}
         >
           <Search size={20} color="rgba(255, 255, 255, 0.6)" />
           <Input
@@ -108,32 +141,41 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
             fontSize={16}
             color="$white"
             borderWidth={0}
-            backgroundColor="transparent"
+            bg="transparent"
             unstyled
-            fontFamily="Inter"
             fontWeight="400"
             height="100%"
-            textAlignVertical="center"
             focusStyle={{
               borderWidth: 0,
-              outline: 'none',
             }}
           />
         </XStack>
       )}
 
-      {/* Token List */}
-      <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-        <YStack>
-          {filteredTokens.length === 0 ? (
-            <YStack py={20} items="center">
-              <Text fontSize={14} color="rgba(255, 255, 255, 0.6)">
+      {/* Token List ScrollView with explicit height constraints */}
+      <View style={{ flex: 1, minHeight: 0, height: '100%' }}>
+        <ScrollView
+          style={{
+            flex: 1,
+            maxHeight: 400,
+            height: '100%'
+          }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: 20
+          }}
+          showsVerticalScrollIndicator={true}
+          scrollEnabled={true}
+          nestedScrollEnabled={true}
+        >
+          <YStack gap="$2">
+            {filteredTokens.length === 0 ? (
+              <Text text="center" color="$text" py="$4">
                 {emptyMessage}
               </Text>
-            </YStack>
-          ) : (
-            filteredTokens.map((token, index) => (
-              <YStack key={token.id || `${token.symbol}-${index}`}>
+            ) : (
+              filteredTokens.map((token, index) => (
+                <YStack key={`${token.symbol}-${index}`}>
                 <Stack
                   pressStyle={{ opacity: 0.7 }}
                   onPress={() => handleTokenSelect(token)}
@@ -162,7 +204,6 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                               color="$text1"
                               numberOfLines={1}
                               lineHeight="$1"
-                              letterSpacing={-0.6}
                               shrink={1}
                             >
                               {token.name || token.symbol}
@@ -178,65 +219,111 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                           text="right"
                           lineHeight="$1"
                         >
-                          {getDisplayBalanceWithSymbol(token)}
+                          {token.displayBalance || token.balance || '0'} {token.symbol}
                         </Text>
                       </XStack>
 
-                      {/* Bottom row: Price per token + total balance in currency */}
-                      <XStack items="center" gap="$1" justify="space-between">
-                        <XStack items="center" gap="$1">
-                          <Text
-                            color="$text2"
-                            fontSize={14}
-                            fontWeight="400"
-                            numberOfLines={1}
-                            lineHeight="$1"
-                          >
-                            {(() => {
-                              if (token.priceInCurrency === '0' || token.priceInCurrency === '0.00')
-                                return '';
-                              const currencyValue = parseFloat(token.priceInCurrency ?? '0');
-                              return !isNaN(currencyValue) && currencyValue > 0
-                                ? `${currency.symbol}${formatCurrencyStringForDisplay({ value: currencyValue, digits: 4 })}`
-                                : '';
-                            })()}
-                          </Text>
-                        </XStack>
-
+                      {/* Bottom row: Symbol + USD value */}
+                      <XStack justify="space-between" items="center" gap="$1">
                         <Text
+                          fontSize={12}
                           color="$text2"
-                          fontSize={14}
-                          fontWeight="400"
                           numberOfLines={1}
                           lineHeight="$1"
                         >
-                          {(() => {
-                            if (
-                              !token.balanceInCurrency ||
-                              token.balanceInCurrency === '0' ||
-                              token.balanceInCurrency === '0.00'
-                            )
-                              return '';
-                            const currencyValue = parseFloat(token.balanceInCurrency);
-                            return !isNaN(currencyValue) && currencyValue > 0
-                              ? `${currency.symbol}${currencyValue.toFixed(2)}`
-                              : '';
-                          })()}
+                          {token.symbol}
+                        </Text>
+                        <Text
+                          fontSize={12}
+                          color="$text2"
+                          numberOfLines={1}
+                          text="right"
+                          lineHeight="$1"
+                        >
+                          {token.balanceInUSD
+                            ? `$${parseFloat(token.balanceInUSD).toFixed(2)}`
+                            : token.balanceInCurrency
+                              ? parseFloat(token.balanceInCurrency).toFixed(2)
+                              : ''
+                          }
                         </Text>
                       </XStack>
                     </YStack>
                   </XStack>
                 </Stack>
-
-                {/* Divider - show for all items except the last one */}
+                {/* Separator between rows, but not after the last item */}
                 {index < filteredTokens.length - 1 && (
-                  <YStack height={1} bg="rgba(255, 255, 255, 0.1)" mx={0} />
+                  <Separator borderColor="$borderColor" my="$2" />
                 )}
               </YStack>
             ))
           )}
         </YStack>
-      </ScrollView>
+        </ScrollView>
+      </View>
+
+      {/* Comment out any remaining components */}
+      {/*
+      <XStack items="center" justify="space-between">
+        <XStack width={40} />
+        <Text fontSize={18} fontWeight="700" color="#FFFFFF" flex={1} textAlign="center">
+          {title}
+        </Text>
+        <XStack
+          width={40}
+          height={40}
+          items="center"
+          justify="center"
+          pressStyle={{ opacity: 0.7 }}
+          onPress={onClose}
+          cursor="pointer"
+        >
+          <Close size={15} color="#FFFFFF" />
+        </XStack>
+      </XStack>
+
+      <Text>Found {filteredTokens.length} tokens</Text>
+      */}
+
+      {/* Still commented out - search and other components */}
+      {/*
+
+      {searchable && (
+        <XStack
+          bg="$light10"
+          rounded="$4"
+          px="$4"
+          items="center"
+          gap="$2"
+          borderWidth={0}
+          height={44}
+        >
+          <Search size={20} color="rgba(255, 255, 255, 0.6)" />
+          <Input
+            flex={1}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search Token"
+            placeholderTextColor="$light40"
+            fontSize={16}
+            color="$white"
+            borderWidth={0}
+            bg="transparent"
+            unstyled
+            fontFamily="Inter"
+            fontWeight="400"
+            height="100%"
+            textAlignVertical="center"
+            focusStyle={{
+              borderWidth: 0,
+              outline: 'none',
+            }}
+          />
+        </XStack>
+      )}
+
+      <Text>Found {filteredTokens.length} tokens</Text>
+      */}
     </YStack>
   );
 
@@ -268,13 +355,16 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           borderTopLeftRadius={isExtension ? 0 : 16}
           borderTopRightRadius={isExtension ? 0 : 16}
           pt={isExtension ? 0 : 25}
-          px={'$4'}
           pb={isExtension ? 0 : 36}
           animation={isExtension ? 'quick' : 'lazy'}
-          enterStyle={{ y: '100%' }}
-          exitStyle={{ y: '100%' }}
+          enterStyle={{ y: 500 }}
+          exitStyle={{ y: 500 }}
+          flex={1}
+          height="100%"
         >
-          {renderContent()}
+          <YStack p="$4" gap="$4" flex={1} height="100%">
+            {renderContent()}
+          </YStack>
         </Sheet.Frame>
       </Sheet>
     );
@@ -283,22 +373,23 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   // Desktop: Use modal
   return (
     <YStack
-      position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+      }}
       bg="$backgroundTransparent"
       items="center"
       justify="center"
-      zIndex={1000}
       pressStyle={{ opacity: 1 }}
       onPress={onClose}
     >
       <YStack
-        bg={backgroundColor}
+        bg={backgroundColor as any}
         rounded="$4"
-        p="$3"
         minW={320}
         maxW="90%"
         maxH={maxHeight}
@@ -308,8 +399,12 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         elevation={8}
         pressStyle={{ opacity: 1 }}
         onPress={(e) => e.stopPropagation()}
+        flex={1}
+        my="$4"
       >
-        {renderContent()}
+        <YStack p="$4" gap="$4" flex={1}>
+          {renderContent()}
+        </YStack>
       </YStack>
     </YStack>
   );

@@ -1,7 +1,8 @@
 import { Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack, XStack, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { InfoDialog } from './InfoDialog';
@@ -38,7 +39,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   onEditPress,
   showEditButton = true,
   title,
-  backgroundColor = '$light10',
+  backgroundColor,
   borderRadius = '$4',
   contentPadding: _contentPadding = 16,
   showAvatar = true,
@@ -55,6 +56,21 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
 }) => {
   // Internal state for compatibility dialog
   const [isCompatibilityDialogVisible, setIsCompatibilityDialogVisible] = useState(false);
+  const theme = useTheme();
+
+  // Theme detection using helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
+
+  // Theme-aware background color (use prop if provided, otherwise use theme-based default)
+  const dynamicBackgroundColor =
+    backgroundColor || (isCurrentlyDarkMode ? '$light10' : '$bg2');
+
+  // Theme-aware text colors
+  const primaryTextColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+  const editIconColor = '#767676'; // Same color for both dark and light mode
+
+  // Chain link icon color logic
+  const chainLinkIconColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 
   // Handle learn more press - show internal dialog
   const handleLearnMorePress = () => {
@@ -66,7 +82,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   };
   return (
     <YStack
-      bg={backgroundColor as any}
+      bg={dynamicBackgroundColor as any}
       rounded={borderRadius as any}
       gap={12}
       pt={16}
@@ -76,14 +92,14 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       width="100%"
     >
       {/* Section Header */}
-      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16}>
+      <Text fontSize="$2" fontWeight="400" lineHeight={16}>
         {title}
       </Text>
 
       {/* Incompatible Account Header */}
       {isAccountIncompatible && (
         <XStack justify="space-between" items="flex-end">
-          <Text fontSize="$3" fontWeight="400" color="$light80" lineHeight={16}>
+          <Text fontSize="$3" fontWeight="400" lineHeight={16}>
             {incompatibleAccountText}
           </Text>
           <Text
@@ -146,9 +162,9 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                   width="$4.5"
                   height="$4.5"
                   rounded={9}
-                  bg="$textSecondary"
+                  bg={account.parentEmoji.color || '$bg2'}
                   borderWidth={2}
-                  borderColor="$dark80"
+                  borderColor="$bg2"
                   items="center"
                   justify="center"
                   overflow="hidden"
@@ -166,9 +182,8 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <YStack width={151.34} gap="$0.5">
               {/* Account Name with linked icon and EVM badge */}
               <XStack items="center" gap="$1">
-                {isLinked && <Link size={12.8} color="$light40" />}
+                {isLinked && <Link size={12.8} color={chainLinkIconColor} theme="outline" />}
                 <Text
-                  color={isAccountIncompatible ? '$textSecondary' : '$white'}
                   fontSize="$3"
                   fontWeight="600"
                   lineHeight={17}
@@ -189,7 +204,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                     <Text
                       fontSize={8}
                       fontWeight="400"
-                      color="$white"
+                      color="#FFFFFF"
                       lineHeight={9.7}
                       letterSpacing={0.128}
                     >
@@ -223,8 +238,8 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               opacity={isAccountIncompatible ? 0.5 : 1}
             >
               <Edit
-                size="$6"
-                color={isAccountIncompatible ? '$white' : '$textSecondary'}
+                size={24}
+                color={editIconColor}
                 theme="outline"
               />
             </XStack>
@@ -241,10 +256,10 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         onClose={handleDialogClose}
       >
         <YStack gap="$5" w="100%">
-          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+          <Text fontSize="$4" fontWeight="400" color={primaryTextColor} text="center" lineHeight={20}>
             {dialogDescriptionMain}
           </Text>
-          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+          <Text fontSize="$4" fontWeight="400" color={primaryTextColor} text="center" lineHeight={20}>
             {dialogDescriptionSecondary}
           </Text>
         </YStack>
