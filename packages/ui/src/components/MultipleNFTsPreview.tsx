@@ -16,7 +16,7 @@ export interface MultipleNFTsPreviewProps {
   thumbnailSize?: number;
   backgroundColor?: string;
   borderRadius?: string | number;
-  contentPadding?: number;
+  contentPadding?: string;
 }
 
 interface NFTThumbnailProps {
@@ -148,7 +148,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   thumbnailSize = 77.33,
   backgroundColor = 'transparent',
   borderRadius = 14.4,
-  contentPadding = 0,
+  contentPadding = '$0',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -173,7 +173,13 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
 
   if (isExpanded) {
     return (
-      <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
+      <YStack
+        bg={backgroundColor}
+        borderRadius={borderRadius}
+        padding={contentPadding}
+        pb="$7"
+        gap="$3"
+      >
         {/* Section Header */}
         <XStack items="center" justify="space-between" gap={15} width="100%">
           {/* NFT Count */}
@@ -228,7 +234,13 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   }
 
   return (
-    <YStack bg={backgroundColor} borderRadius={borderRadius} padding={contentPadding} gap={12}>
+    <YStack
+      bg={backgroundColor}
+      borderRadius={borderRadius}
+      padding={contentPadding}
+      pb="$7"
+      gap={12}
+    >
       {/* Section Header */}
       {showEditButton && onEditPress && (
         <XStack items="center" justify="flex-end" gap={15} width="100%">
