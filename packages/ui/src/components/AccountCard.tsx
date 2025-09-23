@@ -1,6 +1,6 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import React, { useState } from 'react';
-import { ScrollView, XStack, YStack, useTheme } from 'tamagui';
+import { ScrollView, XStack, YStack, useTheme, useThemeName } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
@@ -36,9 +36,14 @@ export function AccountCard({
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
   const theme = useTheme();
+  const themeName = useThemeName();
 
   // Theme-aware background color
   const backgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
+
+  // Use RecipientItem's working chain link icon color logic
+  const isDarkMode = themeName?.includes('dark') || false;
+  const chainLinkIconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 
   // Early return if no account data
   if (!account) {
@@ -119,7 +124,7 @@ export function AccountCard({
             <XStack items="center" gap={4} minH={20}>
               {/* Link icon for linked accounts */}
               {(account.type === 'child' || account.parentEmoji) && (
-                <Link size={12.8} color="$text" theme="outline" />
+                <Link size={12.8} color={chainLinkIconColor} theme="outline" />
               )}
               <Text color="$text" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}
@@ -182,7 +187,7 @@ export function AccountCard({
         {/* Edit Icon */}
         {showEditButton && (
           <XStack width={24} height={24} items="center" justify="center">
-            <Edit size={24} color="$textSecondary" theme="outline" />
+            <Edit size={24} color="#767676" theme="outline" />
           </XStack>
         )}
       </XStack>
@@ -310,7 +315,7 @@ export function AccountCard({
                                 <XStack items="center" gap={4}>
                                   {/* Link icon for linked accounts */}
                                   {(acc.type === 'child' || acc.parentEmoji) && (
-                                    <Link size={12.8} color="#000000" theme="outline" />
+                                    <Link size={12.8} color={chainLinkIconColor} theme="outline" />
                                   )}
                                   <Text
                                     fontSize={14}

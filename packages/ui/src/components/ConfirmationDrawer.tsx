@@ -153,9 +153,11 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
   // Theme-aware text colors
   const drawerTextColor = String(theme.name)?.includes('dark') ? '$white' : '$black';
+  const secondaryTextColor = String(theme.name)?.includes('dark') ? '$light80' : '$textSecondary';
 
   // Theme-aware background colors
   const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
+  const badgeBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : 'rgba(0, 0, 0, 0.05)';
 
   const handleConfirm = async () => {
     try {
@@ -335,7 +337,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
-              <Text fontSize="$2" color="$light80" fontWeight="400">
+              <Text fontSize="$2" color={secondaryTextColor} fontWeight="400">
                 {sendNFTsText}
               </Text>
               <MultipleNFTsPreview
@@ -378,7 +380,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
           ) : (
             <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
-              <Text fontSize="$2" color="$light80" fontWeight="400">
+              <Text fontSize="$2" color={secondaryTextColor} fontWeight="400">
                 {sendTokensText}
               </Text>
 
@@ -403,7 +405,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 </XStack>
 
                 <View
-                  bg={cardBackgroundColor}
+                  bg={badgeBackgroundColor}
                   rounded="$10"
                   px="$2"
                   py="$1"
@@ -421,7 +423,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               </XStack>
 
               <XStack justify="flex-start" width="100%">
-                <Text fontSize="$3" color="$light80" fontWeight="400">
+                <Text fontSize="$3" color={secondaryTextColor} fontWeight="400">
                   ${formData.fiatAmount || '0.69'}
                 </Text>
               </XStack>
