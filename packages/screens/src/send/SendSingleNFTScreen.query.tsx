@@ -28,6 +28,7 @@ import {
   type TransactionFormData,
   XStack,
   ERC1155QuantitySelector,
+  Toast,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -56,6 +57,11 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
+
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'error' | 'success' | 'warning' | 'info'>('error');
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -261,7 +267,18 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
       // Navigation after successful transaction will be handled by the store
     } catch (error) {
       logger.error('[SendSingleNFTScreen] Transaction failed:', error);
-      // Error handling will be managed by the store
+
+      // Handle transaction errors with toast
+      const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
+
+      // Show appropriate toast based on error type
+      if (errorMessage.includes('payload') || errorMessage.includes('Failed to create')) {
+        setToastMessage(t('errors.transactionPayloadError'));
+      } else {
+        setToastMessage(t('errors.transactionExecutionError'));
+      }
+      setToastType('error');
+      setToastVisible(true);
     }
   }, [executeTransaction, selectedCollection, fromAccount]);
 
@@ -473,6 +490,14 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
+        />
+
+        {/* Toast for error notifications */}
+        <Toast
+          visible={toastVisible}
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastVisible(false)}
         />
       </YStack>
     </BackgroundWrapper>

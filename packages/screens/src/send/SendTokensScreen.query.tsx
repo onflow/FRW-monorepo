@@ -27,6 +27,7 @@ import {
   Separator,
   XStack,
   View,
+  Toast,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
@@ -53,6 +54,11 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const network = bridge.getNetwork() || 'mainnet';
   const currency = bridge.getCurrency();
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
+
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(true);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'error' | 'success' | 'warning' | 'info'>('error');
 
   // Get send store
   const {
@@ -346,35 +352,52 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
     updateFormData({ tokenAmount: tokenAmount });
 
-    const result = await executeTransaction();
+    try {
+      const result = await executeTransaction();
 
-    // Set the recipient as a recent contact after successful transaction
-    if (result && toAccount) {
-      try {
-        // Convert WalletAccount to Contact format
-        const recentContact = {
-          id: toAccount.id || toAccount.address,
-          name: toAccount.name,
-          address: toAccount.address,
-          avatar: toAccount.avatar || '',
-          isFavorite: false,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
+      // Set the recipient as a recent contact after successful transaction
+      if (result && toAccount) {
+        try {
+          // Convert WalletAccount to Contact format
+          const recentContact = {
+            id: toAccount.id || toAccount.address,
+            name: toAccount.name,
+            address: toAccount.address,
+            avatar: toAccount.avatar || '',
+            isFavorite: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
 
-        await addressBookStore.setRecentContact(recentContact);
-      } catch (error) {
-        logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+          await addressBookStore.setRecentContact(recentContact);
+        } catch (error) {
+          logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+        }
+
+        // Close the React Native view after successful transaction
+        const platform = bridge.getPlatform();
+        if (platform === Platform.iOS || platform === Platform.Android) {
+          bridge.closeRN();
+        }
       }
 
-      // Close the React Native view after successful transaction
-      const platform = bridge.getPlatform();
-      if (platform === Platform.iOS || platform === Platform.Android) {
-        bridge.closeRN();
+      return result;
+    } catch (error) {
+      // Handle transaction errors with toast
+      const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
+      logger.error('❌ [SendTokensScreen] Transaction error:', error);
+
+      // Show appropriate toast based on error type
+      if (errorMessage.includes('payload') || errorMessage.includes('Failed to create')) {
+        setToastMessage(t('errors.transactionPayloadError'));
+      } else {
+        setToastMessage(t('errors.transactionExecutionError'));
       }
+      setToastType('error');
+      setToastVisible(true);
+
+      throw error;
     }
-
-    return result;
   }, [
     transactionType,
     selectedToken,
@@ -717,6 +740,14 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
+        />
+
+        {/* Toast for error notifications */}
+        <Toast
+          visible={toastVisible}
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastVisible(false)}
         />
       </YStack>
     </BackgroundWrapper>

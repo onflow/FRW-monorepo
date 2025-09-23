@@ -123,7 +123,9 @@
     "timeout": "リクエストがタイムアウトしました",
     "unknown": "不明なエラーが発生しました",
     "failedToLoadTokens": "トークンの読み込みに失敗しました",
-    "failedToLoadNFTs": "NFTの読み込みに失敗しました"
+    "failedToLoadNFTs": "NFTの読み込みに失敗しました",
+    "transactionPayloadError": "トランザクションペイロードの作成に失敗しました",
+    "transactionExecutionError": "トランザクションの実行に失敗しました"
   },
   "nft": {
     "noSearchResults": "検索結果がありません",
