@@ -658,7 +658,7 @@ export function SendToScreen(): React.ReactElement {
             lineHeight={20}
             letterSpacing={-0.084}
             ta="center"
-            color="$white"
+            color="$text"
             self="stretch"
           >
             {t('send.firstTimeSendMessage')}
@@ -666,7 +666,7 @@ export function SendToScreen(): React.ReactElement {
 
           {/* Address Container */}
           <YStack
-            bg="$light10"
+            bg="$bg2"
             rounded="$2"
             py="$4"
             px="$6"
@@ -680,7 +680,7 @@ export function SendToScreen(): React.ReactElement {
               lineHeight={16.8}
               letterSpacing={-0.084}
               ta="center"
-              color="$white"
+              color="$text"
               numberOfLines={1}
               ellipsizeMode="middle"
             >
