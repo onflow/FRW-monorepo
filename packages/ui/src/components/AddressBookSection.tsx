@@ -26,7 +26,7 @@ export function AddressBookSection({
       <Text
         fontSize={14}
         fontWeight="400"
-        color="rgba(255, 255, 255, 0.4)"
+        color="$textSecondary"
         lineHeight={16.8}
         w="100%"
       >
@@ -51,7 +51,7 @@ export function AddressBookSection({
                     : undefined
               }
             />
-            <YStack mt={'$2'} mb={'$2'} height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$dark10" w="100%" ml={0} />
           </YStack>
         ))}
       </YStack>
@@ -92,7 +92,7 @@ export function AddressBookList({
               }
             />
             {index < contacts.length - 1 && (
-              <YStack height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
+              <YStack height={1} bg="$dark10" w="100%" ml={0} />
             )}
           </YStack>
         ))}

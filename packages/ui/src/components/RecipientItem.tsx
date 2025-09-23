@@ -1,6 +1,6 @@
 import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
 import React from 'react';
-import { Button, Card, XStack, YStack, Text } from 'tamagui';
+import { Button, Card, XStack, YStack, Text, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -61,6 +61,11 @@ export function RecipientItem({
   copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
+  const theme = useTheme();
+
+  // Determine if we're in dark mode by checking if text color is light
+  const isDarkMode = theme.text?.toString().includes('255'); // White text indicates dark mode
+  const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
   return (
     <Card
       bg="transparent"
@@ -95,7 +100,8 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={emojiInfo?.color || 'rgba(255, 255, 255, 0.25)'}
+              bgColor={emojiInfo?.color || (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')}
+              textColor={emojiInfo?.color ? undefined : (isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)')}
               size={avatarSize}
             />
           </YStack>
@@ -111,9 +117,9 @@ export function RecipientItem({
               width={18}
               height={18}
               rounded={9}
-              bg="#D9D9D9"
+              bg={parentEmojiInfo?.color || "#D9D9D9"}
               borderWidth={2}
-              borderColor="rgba(10, 10, 11, 0.8)"
+              borderColor="$bg2"
               items="center"
               justify="center"
               overflow="hidden"
@@ -128,11 +134,11 @@ export function RecipientItem({
         {/* Content */}
         <YStack flex={1} gap={2} width={151.34} ml={16}>
           <XStack items="center" gap={4}>
-            {(isLinked || isEVM) && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+            {(isLinked || isEVM) && <Link size={12.8} color={iconColor} theme="outline" />}
             <Text
               fontSize={14}
               fontWeight="600"
-              color="#FFFFFF"
+              color="$text"
               numberOfLines={1}
               lineHeight={16.8}
               letterSpacing={-0.084}
@@ -165,7 +171,7 @@ export function RecipientItem({
             address={address}
             fontSize={12}
             fontWeight="400"
-            color="#B3B3B3"
+            color="$textSecondary"
             lineHeight={16.8}
           />
 
@@ -202,7 +208,7 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <UserRoundPlus size={24} color="white" />
+              <UserRoundPlus size={24} color={iconColor} theme="outline" />
             </Card>
           )}
           {showCopyButton && onCopy && (
@@ -220,7 +226,7 @@ export function RecipientItem({
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-              icon={<Copy size={24} color={copiedFeedback ? '#00D964' : '#FFFFFF'} />}
+              icon={<Copy size={24} color={copiedFeedback ? '#00D964' : iconColor} />}
             ></Button>
           )}
           {copiedFeedback && (

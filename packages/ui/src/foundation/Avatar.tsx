@@ -10,6 +10,7 @@ export function Avatar({
   size = 40,
   fallback,
   bgColor,
+  textColor,
   borderColor,
   borderWidth,
   borderRadius,
@@ -40,7 +41,7 @@ export function Avatar({
           position="absolute"
         />
       ) : (
-        <Text color="$text" fontSize={size * 0.5} fontWeight="600">
+        <Text color={textColor || "$text"} fontSize={size * 0.5} fontWeight="600">
           {fallback || alt?.[0]?.toUpperCase() || '?'}
         </Text>
       )}

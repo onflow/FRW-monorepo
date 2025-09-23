@@ -25,7 +25,7 @@ export function ProfileList({
   if (isLoading) {
     return (
       <YStack items="center" justifyContent="center" py="$4">
-        <Text color="$color" fontSize="$3">
+        <Text color="$text" fontSize="$3">
           Loading profiles...
         </Text>
       </YStack>
@@ -103,7 +103,7 @@ function ProfileItem({
             borderRadius="$1"
           />
           <Text
-            color="$color"
+            color="$text"
             fontSize="$3"
             fontWeight="600"
             whiteSpace="nowrap"
@@ -115,10 +115,15 @@ function ProfileItem({
       </YStack>
 
       {/* Accounts List */}
-      <YStack gap="$3">
+      <YStack gap="$0">
         {accountsData.map((account, index) => (
           <React.Fragment key={account.id}>
             <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
+            {index < accountsData.length - 1 && (
+              <YStack py="$2" items="center">
+                <YStack height={1} bg="$dark10" width="100%" />
+              </YStack>
+            )}
           </React.Fragment>
         ))}
       </YStack>
