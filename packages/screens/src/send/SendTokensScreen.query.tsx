@@ -20,6 +20,7 @@ import {
   SendArrowDivider,
   StorageWarning,
   ExtensionHeader,
+  TransactionFeeSection,
   type TransactionFormData,
   Text,
   Separator,
@@ -648,7 +649,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Transaction Fee and Storage Warning Section */}
           <YStack gap="$3">
-            {/* <TransactionFeeSection
+            <TransactionFeeSection
               flowFee={transactionFee}
               usdFee={usdFee}
               isFree={isFreeGasEnabled}
@@ -657,7 +658,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               backgroundColor="transparent"
               borderRadius={16}
               contentPadding={0}
-            /> */}
+            />
 
             {showStorageWarning && (
               <StorageWarning
