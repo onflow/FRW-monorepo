@@ -226,7 +226,7 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
             {t('nft.notFound.title')}
           </Text>
           <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFTs selected. Please go back and select NFTs to send.
+            {t('send.noNFTSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -264,10 +264,10 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
               <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
 
               <SendSectionHeader
-                title="Send NFTs"
+                title={t('send.sendNFTs')}
                 onEditPress={handleEditNFTsPress}
                 showEditButton={true}
-                editButtonText="Change"
+                editButtonText={t('send.change')}
               />
 
               {/* Multiple NFTs Preview with expandable dropdown */}
@@ -373,6 +373,11 @@ export function SendMultipleNFTsScreen(): React.ReactElement {
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
           isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
         />
       </YStack>
     </BackgroundWrapper>

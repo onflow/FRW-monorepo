@@ -24,12 +24,15 @@
     "nfts": "NFT"
   },
   "send": {
+    "tokens": "代币",
+    "nfts": "NFT",
     "myAccounts": "我的账户",
     "recent": "最近",
     "addressBook": "地址簿",
     "sendTo": {
       "title": "发送至"
     },
+    "toAccount": "至账户",
     "searchAddress": "搜索地址或联系人...",
     "searchPasteAddress": "搜索/ 粘贴地址",
     "selectedToken": "已选代币",
@@ -61,6 +64,7 @@
     "insufficient": "余额不足",
     "recipient": "收件人",
     "from": "从",
+    "fromAccount": "从账户",
     "to": "至",
     "amount": "金额",
     "asset": "资产",
@@ -85,7 +89,16 @@
     "title": "发送",
     "inaccessible": "不可访问",
     "confirmAddress": "确认地址",
-    "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。"
+    "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。",
+    "sendSNFTs": "发送S/NFT",
+    "sendNFTs": "发送NFT",
+    "change": "更改",
+    "noNFTSelected": "未选择NFT。请返回并选择要发送的NFT。",
+    "summary": "摘要",
+    "sendTokens": "发送代币",
+    "sending": "发送中...",
+    "confirmSend": "确认发送",
+    "holdToSend": "长按发送"
   },
   "messages": {
     "loading": "加载中...",

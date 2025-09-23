@@ -82,7 +82,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
       : parseInt(selectedNFT?.amount as string) || 1;
 
   // Debug the title - Swapped: ERC1155 shows "Send S/NFTs", regular shows "Send NFTs"
-  const sectionTitle = isERC1155 ? 'Send S/NFTs' : 'Send NFTs';
+  const sectionTitle = isERC1155 ? t('send.sendSNFTs') : t('send.sendNFTs');
 
   // Log ERC1155 detection
   useEffect(() => {
@@ -263,7 +263,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
             {t('nft.notFound.title')}
           </Text>
           <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFT selected. Please go back and select an NFT to send.
+            {t('send.noNFTSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -310,7 +310,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 title={sectionTitle}
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
-                editButtonText="Change"
+                editButtonText={t('send.change')}
               />
 
               <View mt={-8} mb={-8}>
@@ -452,6 +452,11 @@ export function SendSingleNFTScreen(): React.ReactElement {
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
           isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
         />
       </YStack>
     </BackgroundWrapper>

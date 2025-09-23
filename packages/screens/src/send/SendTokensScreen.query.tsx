@@ -469,9 +469,9 @@ export const SendTokensScreen = (): React.ReactElement => {
   if (isOverallLoading) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
-          <Text>Loading wallet data...</Text>
+          <Text>{t('messages.loading')}</Text>
         </YStack>
       </BackgroundWrapper>
     );
@@ -481,7 +481,7 @@ export const SendTokensScreen = (): React.ReactElement => {
   if (error) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
           <Text color="$error">{error}</Text>
         </YStack>
@@ -493,7 +493,7 @@ export const SendTokensScreen = (): React.ReactElement => {
     <BackgroundWrapper backgroundColor={backgroundColor}>
       {isExtension && (
         <ExtensionHeader
-          title={t('send.sendTokens.title', 'Sending')}
+          title={t('send.title')}
           help={true}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
@@ -509,12 +509,12 @@ export const SendTokensScreen = (): React.ReactElement => {
               <View mb={-18}>
                 <AccountCard
                   account={transformAccountForCard(fromAccount)}
-                  title="From Account"
+                  title={t('send.fromAccount')}
                   isLoading={isBalanceLoading}
                 />
               </View>
             ) : (
-              <Text>No account data available</Text>
+              <Text>{t('errors.addressNotFound')}</Text>
             )}
             <Separator
               mx="$0"
@@ -615,7 +615,7 @@ export const SendTokensScreen = (): React.ReactElement => {
               usdFee={usdFee}
               isFree={isFreeGasEnabled}
               showCovered={true}
-              title="Transaction Fee"
+              title={t('send.transactionFee')}
               backgroundColor="transparent"
               borderRadius={16}
               contentPadding={0}
@@ -662,7 +662,7 @@ export const SendTokensScreen = (): React.ReactElement => {
           onTokenSelect={handleTokenSelect}
           onClose={handleTokenSelectorClose}
           platform="mobile"
-          title="Tokens"
+          title={t('tabs.tokens')}
           currency={currency}
           isExtension={isExtension}
         />
@@ -685,6 +685,12 @@ export const SendTokensScreen = (): React.ReactElement => {
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
           isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendTokensText={t('send.sendTokens')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
         />
       </YStack>
     </BackgroundWrapper>

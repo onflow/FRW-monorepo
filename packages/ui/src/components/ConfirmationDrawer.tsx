@@ -30,6 +30,13 @@ export interface ConfirmationDrawerProps {
   title?: string;
   isSending?: boolean;
   isExtension?: boolean;
+  // Translation props
+  summaryText?: string;
+  sendTokensText?: string;
+  sendNFTsText?: string;
+  sendingText?: string;
+  confirmSendText?: string;
+  holdToSendText?: string;
 }
 
 interface LoadingIndicatorProps {
@@ -127,6 +134,13 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   title = 'Summary',
   isSending = false,
   isExtension = false,
+  // Translation props with defaults
+  summaryText = 'Summary',
+  sendTokensText = 'Send Tokens',
+  sendNFTsText = 'Send NFTs',
+  sendingText = 'Sending...',
+  confirmSendText = 'Confirm send',
+  holdToSendText = 'Hold to send',
 }) => {
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
@@ -173,7 +187,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               <>
                 <View flex={1} items="center">
                   <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
-                    {title}
+                    {title || summaryText}
                   </Text>
                 </View>
 
@@ -195,7 +209,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
                 <View flex={1} items="center">
                   <Text fontSize="$5" fontWeight="700" color="$white" textAlign="center">
-                    {title}
+                    {title || summaryText}
                   </Text>
                 </View>
 
@@ -324,7 +338,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
-                Send NFTs
+                {sendNFTsText}
               </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
@@ -368,7 +382,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           ) : (
             <YStack bg="$light10" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$light80" fontWeight="400">
-                Send Tokens
+                {sendTokensText}
               </Text>
 
               {/* Token Amount */}
@@ -436,12 +450,12 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               <XStack items="center" gap="$2">
                 <Spinner size="small" color="$black" />
                 <Text fontSize="$5" fontWeight="600" color="$black">
-                  Sending...
+                  {sendingText}
                 </Text>
               </XStack>
             ) : (
               <Text fontSize="$5" fontWeight="600" color="$black">
-                {isExtension ? 'Confirm send' : 'Hold to send'}
+                {isExtension ? confirmSendText : holdToSendText}
               </Text>
             )}
           </YStack>
