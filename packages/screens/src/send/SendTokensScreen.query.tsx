@@ -54,6 +54,15 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   // Theme-aware background color for cards
   const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
 
+  // Theme-aware send button colors - should match Hold to send button
+  const sendButtonBackgroundColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
+  const sendButtonTextColor = String(theme.name)?.includes('dark') ? '#000000' : '#FFFFFF';
+
+  // Theme-aware separator color
+  const separatorColor = String(theme.name)?.includes('dark')
+    ? 'rgba(255, 255, 255, 0.1)'
+    : 'rgba(0, 0, 0, 0.1)';
+
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
@@ -550,7 +559,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               mx="$0"
               mt="$2"
               mb="$2"
-              borderColor="rgba(255, 255, 255, 0.1)"
+              borderColor={separatorColor}
               borderWidth={0.5}
             />
             {transactionType === 'tokens' ? (
@@ -667,18 +676,18 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            bg={isSendDisabled ? '#6b7280' : sendButtonBackgroundColor}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            borderColor={isSendDisabled ? '#6b7280' : sendButtonBackgroundColor}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : sendButtonTextColor}>
               {t('common.next')}
             </Text>
           </YStack>

@@ -99,7 +99,7 @@ export function AccountCard({
                 width={18}
                 height={18}
                 rounded={9}
-                bg={account.parentEmoji.color || "$bg2"}
+                bg={account.parentEmoji.color || '$bg2'}
                 borderWidth={2}
                 borderColor="$bg2"
                 items="center"
@@ -290,7 +290,7 @@ export function AccountCard({
                                     width={18}
                                     height={18}
                                     rounded={9}
-                                    bg={acc.parentEmoji.color || "$bg2"}
+                                    bg={acc.parentEmoji.color || '$bg2'}
                                     borderWidth={2}
                                     borderColor="$bg2"
                                     items="center"

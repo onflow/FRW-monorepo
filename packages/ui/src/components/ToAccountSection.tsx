@@ -58,7 +58,13 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   const theme = useTheme();
 
   // Theme-aware background color (use prop if provided, otherwise use theme-based default)
-  const dynamicBackgroundColor = backgroundColor || (String(theme.name)?.includes('dark') ? '$light10' : '$bg2');
+  const dynamicBackgroundColor =
+    backgroundColor || (String(theme.name)?.includes('dark') ? '$light10' : '$bg2');
+
+  // Theme-aware text colors
+  const primaryTextColor = String(theme.name)?.includes('dark') ? '$white' : '$black';
+  const secondaryTextColor = String(theme.name)?.includes('dark') ? '$light80' : '$textSecondary';
+  const iconColor = String(theme.name)?.includes('dark') ? '$textSecondary' : '$black';
 
   // Handle learn more press - show internal dialog
   const handleLearnMorePress = () => {
@@ -80,14 +86,14 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       width="100%"
     >
       {/* Section Header */}
-      <Text fontSize="$2" fontWeight="400" color="$light80" lineHeight={16}>
+      <Text fontSize="$2" fontWeight="400" color={secondaryTextColor} lineHeight={16}>
         {title}
       </Text>
 
       {/* Incompatible Account Header */}
       {isAccountIncompatible && (
         <XStack justify="space-between" items="flex-end">
-          <Text fontSize="$3" fontWeight="400" color="$light80" lineHeight={16}>
+          <Text fontSize="$3" fontWeight="400" color={secondaryTextColor} lineHeight={16}>
             {incompatibleAccountText}
           </Text>
           <Text
@@ -172,7 +178,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               <XStack items="center" gap="$1">
                 {isLinked && <Link size={12.8} color="$light40" />}
                 <Text
-                  color={isAccountIncompatible ? '$textSecondary' : '$white'}
+                  color={isAccountIncompatible ? '$textSecondary' : primaryTextColor}
                   fontSize="$3"
                   fontWeight="600"
                   lineHeight={17}
@@ -193,7 +199,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
                     <Text
                       fontSize={8}
                       fontWeight="400"
-                      color="$white"
+                      color={primaryTextColor}
                       lineHeight={9.7}
                       letterSpacing={0.128}
                     >
@@ -228,7 +234,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             >
               <Edit
                 size={24}
-                color={isAccountIncompatible ? '$white' : '$textSecondary'}
+                color={isAccountIncompatible ? primaryTextColor : iconColor}
                 theme="outline"
               />
             </XStack>
@@ -245,10 +251,10 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         onClose={handleDialogClose}
       >
         <YStack gap="$5" w="100%">
-          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+          <Text fontSize="$4" fontWeight="400" color={primaryTextColor} text="center" lineHeight={20}>
             {dialogDescriptionMain}
           </Text>
-          <Text fontSize="$4" fontWeight="400" color="$white" textAlign="center" lineHeight={20}>
+          <Text fontSize="$4" fontWeight="400" color={primaryTextColor} text="center" lineHeight={20}>
             {dialogDescriptionSecondary}
           </Text>
         </YStack>
