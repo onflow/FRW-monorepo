@@ -680,7 +680,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         </YStack>
 
         {/* Token Selector Modal */}
-        <TokenSelectorModal
+        {/* <TokenSelectorModal
           visible={isTokenSelectorVisible}
           selectedToken={selectedToken}
           tokens={tokens}
@@ -690,7 +690,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           title={t('tabs.tokens')}
           currency={currency}
           isExtension={isExtension}
-        />
+        /> */}
 
         <ConfirmationDrawer
           visible={isConfirmationVisible}
