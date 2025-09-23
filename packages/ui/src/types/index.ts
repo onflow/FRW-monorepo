@@ -16,6 +16,7 @@ export interface AvatarProps {
   bgColor?: string;
   borderColor?: string;
   borderWidth?: number;
+  borderRadius?: number | string;
   style?: React.CSSProperties;
 }
 

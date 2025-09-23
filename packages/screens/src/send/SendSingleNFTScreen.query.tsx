@@ -5,7 +5,9 @@ import {
   storageQueryKeys,
   storageQueries,
   storageUtils,
+  useTokenQueryStore,
 } from '@onflow/frw-stores';
+import { Platform } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -37,11 +39,17 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { ScreenAssets } from '../assets/images';
+
+interface SendSingleNFTScreenProps {
+  assets?: ScreenAssets;
+}
+
 /**
  * Query-integrated version of SendSingleNFTScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export function SendSingleNFTScreen(): React.ReactElement {
+export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
 
@@ -82,7 +90,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
       : parseInt(selectedNFT?.amount as string) || 1;
 
   // Debug the title - Swapped: ERC1155 shows "Send S/NFTs", regular shows "Send NFTs"
-  const sectionTitle = isERC1155 ? 'Send S/NFTs' : 'Send NFTs';
+  const sectionTitle = isERC1155 ? t('send.sendSNFTs') : t('send.sendNFTs');
 
   // Log ERC1155 detection
   useEffect(() => {
@@ -233,10 +241,13 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      if (!isExtension) {
-        setIsConfirmationVisible(false);
+      const result = await executeTransaction();
+
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (result && (platform === Platform.iOS || platform === Platform.Android)) {
+        bridge.closeRN();
       }
-      await executeTransaction();
 
       // Invalidate NFT caches after successful transaction
       const tokenStore = useTokenQueryStore.getState();
@@ -252,7 +263,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
       logger.error('[SendSingleNFTScreen] Transaction failed:', error);
       // Error handling will be managed by the store
     }
-  }, [executeTransaction, isExtension, selectedCollection, fromAccount]);
+  }, [executeTransaction, selectedCollection, fromAccount]);
 
   // Early return if essential data is missing
   if (!selectedNFT) {
@@ -263,7 +274,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
             {t('nft.notFound.title')}
           </Text>
           <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFT selected. Please go back and select an NFT to send.
+            {t('send.noNFTSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -310,7 +321,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
                 title={sectionTitle}
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
-                editButtonText="Change"
+                editButtonText={t('send.change')}
               />
 
               <View mt={-8} mb={-8}>
@@ -358,21 +369,25 @@ export function SendSingleNFTScreen(): React.ReactElement {
 
             {/* To Account Section */}
             {toAccount && (
-              <ToAccountSection
-                account={toAccount}
-                title={t('send.toAccount')}
-                isAccountIncompatible={isAccountIncompatible}
-                onEditPress={handleEditAccountPress}
-                showEditButton={true}
-                isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
-                incompatibleAccountText={t('account.compatibility.incompatible')}
-                learnMoreText={t('account.compatibility.learnMore')}
-                unknownAccountText={t('account.compatibility.unknown')}
-                dialogTitle={t('account.compatibility.dialog.title')}
-                dialogButtonText={t('account.compatibility.dialog.button')}
-                dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
-                dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
-              />
+              <YStack mt={'$1'}>
+                <ToAccountSection
+                  account={toAccount}
+                  title={t('send.toAccount')}
+                  isAccountIncompatible={isAccountIncompatible}
+                  onEditPress={handleEditAccountPress}
+                  showEditButton={true}
+                  isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                  incompatibleAccountText={t('account.compatibility.incompatible')}
+                  learnMoreText={t('account.compatibility.learnMore')}
+                  unknownAccountText={t('account.compatibility.unknown')}
+                  dialogTitle={t('account.compatibility.dialog.title')}
+                  dialogButtonText={t('account.compatibility.dialog.button')}
+                  dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+                  dialogDescriptionSecondary={t(
+                    'account.compatibility.dialog.descriptionSecondary'
+                  )}
+                />
+              </YStack>
             )}
 
             {/* Transaction Fee and Storage Warning Section */}
@@ -402,7 +417,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack pt="$2">
+        <YStack p={20} pt="$2" mb={'$10'}>
           <YStack
             width="100%"
             height={52}
@@ -428,6 +443,7 @@ export function SendSingleNFTScreen(): React.ReactElement {
           visible={isConfirmationVisible}
           transactionType="single-nft"
           selectedToken={null}
+          sendStaticImage={assets?.sendStaticImage}
           selectedNFTs={
             selectedNFT
               ? [
@@ -452,6 +468,11 @@ export function SendSingleNFTScreen(): React.ReactElement {
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
           isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
         />
       </YStack>
     </BackgroundWrapper>

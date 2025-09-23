@@ -1,6 +1,6 @@
 import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, Text, View } from 'tamagui';
+import { YStack, XStack, Text, Separator } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
@@ -37,28 +37,16 @@ export function ProfileList({
   }
 
   return (
-    <YStack gap="$2">
-      {profiles.map((profile, index) => {
-        return (
-          <React.Fragment key={profile.uid}>
-            <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
-            <ProfileItem
-              profile={profile}
-              onAccountPress={onAccountPress}
-              isLast={index === profiles.length - 1}
-            />
-            {index < profiles.length - 1 && (
-              <View
-                mt="$1"
-                height={0}
-                width="100%"
-                borderBottomWidth={1}
-                borderBottomColor="$borderColor"
-              />
-            )}
-          </React.Fragment>
-        );
-      })}
+    <YStack gap="$3">
+      {profiles.map((profile, index) => (
+        <React.Fragment key={profile.uid}>
+          <ProfileItem
+            profile={profile}
+            onAccountPress={onAccountPress}
+            isLast={index === profiles.length - 1}
+          />
+        </React.Fragment>
+      ))}
     </YStack>
   );
 }
@@ -98,11 +86,11 @@ function ProfileItem({
   });
 
   return (
-    <YStack gap="$3" items="flex-start" justifyContent="flex-start" width="100%" p="$3">
+    <YStack gap="$3">
       {/* Profile Header */}
-      <XStack items="center" justifyContent="space-between" width="100%">
-        <XStack gap="$3" items="center" justifyContent="flex-start">
-          {/* Profile Icon */}
+      <YStack gap="$3" bg="$bgDrawer">
+        <Separator />
+        <XStack items="center" gap="$3">
           <Avatar
             src={profile.avatar?.startsWith('http') ? profile.avatar : undefined}
             fallback={
@@ -112,8 +100,8 @@ function ProfileItem({
             }
             size={26}
             bgColor="$gray8"
+            borderRadius="$1"
           />
-          {/* Profile Name */}
           <Text
             color="$color"
             fontSize="$3"
@@ -124,26 +112,14 @@ function ProfileItem({
             {profile.name}
           </Text>
         </XStack>
-      </XStack>
+      </YStack>
 
-      {/* Separator Line */}
-      <View height={0} width="100%" borderBottomWidth={1} borderBottomColor="$borderColor" />
-
-      {/* Accounts List - render items directly to avoid nested ScrollView */}
-      <YStack width="100%" gap="$2">
+      {/* Accounts List */}
+      <YStack gap="$3">
         {accountsData.map((account, index) => (
-          <View key={account.id}>
+          <React.Fragment key={account.id}>
             <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
-            {index < accountsData.length - 1 && (
-              <View
-                mt="$2"
-                height={0}
-                width="100%"
-                borderBottomWidth={1}
-                borderBottomColor="$borderColor"
-              />
-            )}
-          </View>
+          </React.Fragment>
         ))}
       </YStack>
     </YStack>

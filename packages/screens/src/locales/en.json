@@ -33,6 +33,9 @@
       "title": "Send To"
     },
     "toAccount": "To Account",
+    "errors": {
+      "amountExceedsBalance": "Amount exceeds available balance"
+    },
     "searchAddress": "Search address",
     "searchPasteAddress": "Search / Paste address",
     "selectedToken": "Selected Token",
@@ -89,7 +92,16 @@
     "title": "Send",
     "inaccessible": "Inaccessible",
     "confirmAddress": "Confirm address",
-    "firstTimeSendMessage": "We noticed this may be your first time sending to this address. Please confirm the destination address."
+    "firstTimeSendMessage": "We noticed this may be your first time sending to this address. Please confirm the destination address.",
+    "sendSNFTs": "Send S/NFTs",
+    "sendNFTs": "Send NFTs",
+    "change": "Change",
+    "noNFTSelected": "No NFT selected. Please go back and select an NFT to send.",
+    "summary": "Summary",
+    "sendTokens": "Send Tokens",
+    "sending": "Sending...",
+    "confirmSend": "Confirm send",
+    "holdToSend": "Hold to send"
   },
   "messages": {
     "loading": "Loading...",
