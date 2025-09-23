@@ -88,9 +88,9 @@ export function AccountSelector({
                   width={18}
                   height={18}
                   rounded={9}
-                  bg="#D9D9D9"
+                  bg="$bg2"
                   borderWidth={2}
-                  borderColor="rgba(10, 10, 11, 0.8)"
+                  borderColor="$bg2"
                   items="center"
                   justify="center"
                   overflow="hidden"
@@ -108,7 +108,7 @@ export function AccountSelector({
               <XStack items="center" gap={4}>
                 {/* Link icon for linked accounts */}
                 {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
-                  <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                  <Link size={12.8} color="#000000" theme="outline" />
                 )}
                 <Text
                   color="$text"

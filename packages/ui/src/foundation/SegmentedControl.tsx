@@ -32,7 +32,7 @@ export function SegmentedControl({
     <XStack
       bg="transparent"
       borderWidth={2}
-      borderColor="#292929"
+      borderColor="$dark10"
       rounded={200}
       p={3}
       items="center"

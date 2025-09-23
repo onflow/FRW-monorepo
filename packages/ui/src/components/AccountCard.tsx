@@ -95,9 +95,9 @@ export function AccountCard({
                 width={18}
                 height={18}
                 rounded={9}
-                bg="$light80"
+                bg="$bg2"
                 borderWidth={2}
-                borderColor="rgba(10, 10, 11, 0.8)"
+                borderColor="$bg2"
                 items="center"
                 justify="center"
                 overflow="hidden"
@@ -115,7 +115,7 @@ export function AccountCard({
             <XStack items="center" gap={4} minH={20}>
               {/* Link icon for linked accounts */}
               {(account.type === 'child' || account.parentEmoji) && (
-                <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                <Link size={12.8} color="#000000" theme="outline" />
               )}
               <Text color="$text" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}
@@ -286,9 +286,9 @@ export function AccountCard({
                                     width={18}
                                     height={18}
                                     rounded={9}
-                                    bg="$light80"
+                                    bg="$bg2"
                                     borderWidth={2}
-                                    borderColor="rgba(10, 10, 11, 0.8)"
+                                    borderColor="$bg2"
                                     items="center"
                                     justify="center"
                                     overflow="hidden"
@@ -306,7 +306,7 @@ export function AccountCard({
                                 <XStack items="center" gap={4}>
                                   {/* Link icon for linked accounts */}
                                   {(acc.type === 'child' || acc.parentEmoji) && (
-                                    <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                                    <Link size={12.8} color="#000000" theme="outline" />
                                   )}
                                   <Text
                                     fontSize={14}
