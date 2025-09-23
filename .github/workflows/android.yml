@@ -1,0 +1,167 @@
+name: Android Build & Release
+
+on:
+  push:
+    paths:
+      - "apps/react-native/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/android.yml"
+    branches: [main, dev, "release/*"]
+    tags:
+      - "release/rn-*"
+  pull_request:
+    paths:
+      - "apps/react-native/**"
+      - "packages/**"
+    branches: [main, dev, "release/*"]
+  workflow_dispatch:
+    inputs:
+      buildType:
+        description: "Build type (debug|dev|release)"
+        default: "debug"
+        required: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    env:
+      # GitHub Packages (Flow Wallet Kit + wallet-core)
+      GITHUB_USERNAME: ${{ secrets.GPR_USER }}
+      GITHUB_TOKEN: ${{ secrets.GPR_KEY }}
+      # Also expose as Gradle properties preferred by our build
+      GPR_USER: ${{ secrets.GPR_USER }}
+      GPR_KEY: ${{ secrets.GPR_KEY }}
+
+      # Firebase App Distribution (optional; used on release paths/tags)
+      FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
+
+      # Monorepo paths
+      RN_APP_DIR: apps/react-native
+      ANDROID_DIR: apps/react-native/android
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build monorepo packages
+        run: pnpm -r --filter='./packages/*' build
+
+      - name: Regenerate RN bridge models
+        run: pnpm -F "frw-rn" codegen:bridge
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Android SDK components
+        shell: bash
+        run: |
+          yes | sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "platforms;android-36" || true
+
+      - name: Prepare Android config files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$ANDROID_DIR"
+
+          # Configure Gradle properties for GitHub Packages auth
+          mkdir -p "$HOME/.gradle"
+          {
+            echo "gpr.user=${GPR_USER:-}"
+            echo "gpr.key=${GPR_KEY:-}"
+          } >> "$HOME/.gradle/gradle.properties"
+
+          # Optional: Google Services JSONs (base64 secrets)
+          if [ -n "${{ secrets.ANDROID_GOOGLE_SERVICES_DEV_B64 }}" ]; then
+            echo "${{ secrets.ANDROID_GOOGLE_SERVICES_DEV_B64 }}" | base64 -d > app/google-services.json || true
+          fi
+          if [ -n "${{ secrets.ANDROID_GOOGLE_SERVICES_PROD_B64 }}" ]; then
+            mkdir -p app/src/release
+            echo "${{ secrets.ANDROID_GOOGLE_SERVICES_PROD_B64 }}" | base64 -d > app/src/release/google-services.json || true
+          fi
+
+          # Optional: key.properties (signing) via base64
+          if [ -n "${{ secrets.ANDROID_KEY_PROPERTIES_B64 }}" ]; then
+            echo "${{ secrets.ANDROID_KEY_PROPERTIES_B64 }}" | base64 -d > key.properties
+          fi
+
+          # Optional: Firebase App Distribution service account
+          if [ -n "${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}" ]; then
+            echo "${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}" | base64 -d > firebase-appdist.json
+            # Ensure local.properties provides serviceCredentialsFile & testers
+            {
+              echo "sdk.dir=${ANDROID_SDK_ROOT}"
+              echo "serviceCredentialsFile=$(pwd)/firebase-appdist.json"
+              echo "testers=${FIREBASE_TESTERS:-}"
+            } > local.properties
+          fi
+
+      - name: Determine build type
+        id: meta
+        shell: bash
+        run: |
+          # Decide buildType: PRs -> debug; Release tags/branches -> dev (if secrets present) else debug
+          INPUT="${{ github.event_name }}:${{ github.ref }}:${{ inputs.buildType }}"
+          TYPE="debug"
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            if [[ "${{ github.ref }}" == refs/tags/release/rn-* || "${{ github.ref }}" == refs/heads/release/* ]]; then
+              TYPE="dev"
+            fi
+          fi
+          if [[ -n "${{ inputs.buildType }}" ]]; then TYPE="${{ inputs.buildType }}"; fi
+          echo "buildType=$TYPE" >> $GITHUB_OUTPUT
+          echo "Resolved build type: $TYPE"
+
+      - name: Build Android (${{ steps.meta.outputs.buildType }})
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: |
+          case "${{ steps.meta.outputs.buildType }}" in
+            debug)
+              ./gradlew :app:assembleDebug --stacktrace
+              ;;
+            dev)
+              ./gradlew :app:assembleDev --stacktrace
+              ;;
+            release)
+              ./gradlew :app:assembleRelease --stacktrace
+              ;;
+          esac
+
+      - name: Upload APK artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ steps.meta.outputs.buildType }}-apk
+          path: |
+            apps/react-native/android/app/build/outputs/apk/**/**/*.apk
+          if-no-files-found: warn
+
+      - name: Firebase App Distribution (dev)
+        if: >-
+          steps.meta.outputs.buildType == 'dev' &&
+          (secrets.ANDROID_FIREBASE_CREDENTIALS_B64 != '' && secrets.FIREBASE_TESTERS != '')
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: |
+          ./gradlew :app:appDistributionUploadDev --stacktrace
