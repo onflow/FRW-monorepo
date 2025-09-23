@@ -57,6 +57,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   // Theme-aware send button colors - should match Hold to send button
   const sendButtonBackgroundColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
   const sendButtonTextColor = String(theme.name)?.includes('dark') ? '#000000' : '#FFFFFF';
+  const disabledButtonTextColor = String(theme.name)?.includes('dark') ? '#999999' : '#FFFFFF';
 
   // Theme-aware separator color
   const separatorColor = String(theme.name)?.includes('dark')
@@ -687,7 +688,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : sendButtonTextColor}>
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? disabledButtonTextColor : sendButtonTextColor}>
               {t('common.next')}
             </Text>
           </YStack>
