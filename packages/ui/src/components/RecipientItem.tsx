@@ -202,7 +202,7 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <UserRoundPlus size="$6" color="white" />
+              <UserRoundPlus size={24} color="white" />
             </Card>
           )}
           {showCopyButton && onCopy && (
@@ -220,7 +220,7 @@ export function RecipientItem({
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-              icon={<Copy size="$6" color={copiedFeedback ? '#00D964' : '#FFFFFF'} />}
+              icon={<Copy size={24} color={copiedFeedback ? '#00D964' : '#FFFFFF'} />}
             ></Button>
           )}
           {copiedFeedback && (
