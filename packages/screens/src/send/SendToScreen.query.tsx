@@ -239,20 +239,28 @@ export function SendToScreen(): React.ReactElement {
 
   // Helper function to check if address is first-time send
   const isFirstTimeSend = useCallback(
-    async (address: string): Promise<boolean> => {
-      // Check if address is in recent recipients (await the Promise)
-      const recentService = RecentRecipientsService.getInstance();
-      const isInRecents = await recentService.isAddressInRecents(address);
-
-      // Also check if it's user's own account (case-insensitive comparison)
+    (address: string): boolean => {
       const normalizedAddress = address.toLowerCase();
+
+      // Check if it's user's own account (case-insensitive comparison)
       const isOwnAccount = allWalletAccounts.some(
         (acc) => acc.address.toLowerCase() === normalizedAddress
       );
 
-      return !isInRecents && !isOwnAccount;
+      // Check if address is in recent recipients
+      const isInRecents = recentContacts.some(
+        (contact: any) => contact.address.toLowerCase() === normalizedAddress
+      );
+
+      // Check if address is in address book
+      const isInAddressBook = allContacts.some(
+        (contact: any) => contact.address.toLowerCase() === normalizedAddress
+      );
+
+      // Return true only if it's NOT in any of the above categories
+      return !isOwnAccount && !isInRecents && !isInAddressBook;
     },
-    [allWalletAccounts]
+    [allWalletAccounts, recentContacts, allContacts]
   );
 
   // Get current recipients based on active tab
@@ -389,8 +397,8 @@ export function SendToScreen(): React.ReactElement {
 
   const handleRecipientPress = useCallback(
     async (recipient: RecipientData) => {
-      // Check if this is a first-time send (await the Promise)
-      const shouldShowDialog = await isFirstTimeSend(recipient.address);
+      // Check if this is a first-time send
+      const shouldShowDialog = isFirstTimeSend(recipient.address);
 
       if (shouldShowDialog) {
         // Show confirmation dialog for first-time sends
