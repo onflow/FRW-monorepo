@@ -12,6 +12,7 @@ export function Avatar({
   bgColor,
   borderColor,
   borderWidth,
+  borderRadius,
   style,
 }: AvatarProps): React.ReactElement {
   return (
@@ -21,7 +22,7 @@ export function Avatar({
       bg={bgColor || '$bg3'}
       items="center"
       justify="center"
-      rounded={size / 2}
+      rounded={borderRadius || size / 2}
       overflow="hidden"
       position="relative"
       borderColor={borderColor as any}
@@ -35,7 +36,7 @@ export function Avatar({
           width="100%"
           height="100%"
           objectFit="cover"
-          borderRadius={size / 2}
+          borderRadius={borderRadius || size / 2}
           position="absolute"
         />
       ) : (
