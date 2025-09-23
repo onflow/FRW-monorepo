@@ -28,6 +28,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isDarkMode } from '@onflow/frw-utils';
 
 import { useQueryClient } from '../providers/QueryProvider';
 import type { TabType } from '../types';
@@ -270,8 +271,9 @@ export function SelectTokensScreen(): React.ReactElement {
   }, [accounts, balanceLookup]);
 
   const theme = useTheme();
-  const isDarkMode = String(theme.name)?.includes('dark') || false;
-  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const dividerColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
 
 
   return (
@@ -289,7 +291,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
         {/* Account Selector - Show balance from React Query */}
         {!isExtension && currentAccount && (
-          <YStack bg="$bg2" rounded="$4" p={16} gap={12}>
+          <YStack bg={cardBackgroundColor} rounded="$4" p={16} gap={12}>
             <AccountSelector
               currentAccount={{
                 ...currentAccount,

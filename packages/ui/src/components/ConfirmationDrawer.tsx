@@ -1,5 +1,6 @@
 import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
+import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
 import { Image as RNImage } from 'react-native';
 import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
@@ -147,19 +148,20 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
-  // Theme-aware button colors - use theme tokens for better reliability
-  const isDarkMode = String(theme.name)?.includes('dark');
-  const buttonBackgroundColor = isDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
-  const buttonTextColor = isDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
+  // Theme-aware button colors using helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
+
+  const buttonBackgroundColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+  const buttonTextColor = isCurrentlyDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
 
   // Theme-aware close icon color - use theme's color value directly
   const closeIconColor = theme.color?.val || '#000000';
 
   // Theme-aware card background color - same as SendTokensScreen
-  const cardBackgroundColor = isDarkMode ? '$light10' : '$bg2';
+  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
 
   // Theme-aware background colors for badges
-  const badgeBackgroundColor = theme.white10?.val || (String(theme.name)?.includes('dark') ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
+  const badgeBackgroundColor = theme.white10?.val || (isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
 
   const handleConfirm = async () => {
     try {

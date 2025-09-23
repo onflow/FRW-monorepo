@@ -1,4 +1,5 @@
 import { ArrowDown } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
 import { YStack, useTheme } from 'tamagui';
 
@@ -25,15 +26,15 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
 }) => {
   const theme = useTheme();
 
-  // Theme detection
-  const isDarkMode = String(theme.name)?.includes('dark');
+  // Theme detection using helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
 
   // Always use primary green background (theme-aware: #00B877 light, #00EF8B dark)
   const defaultBackgroundColor = theme.primary?.val;
 
   // Icon color should be dark in dark mode (on green background) and white in light mode
   // Use theme tokens for more reliable color detection
-  const defaultIconColor = isDarkMode
+  const defaultIconColor = isCurrentlyDarkMode
     ? 'rgba(0, 0, 0, 0.8)' // Dark gray on green background in dark mode
     : (theme.white?.val || '#FFFFFF'); // White on green background in light mode 
 

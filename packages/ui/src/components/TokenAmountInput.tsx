@@ -1,4 +1,5 @@
 import { SwitchVertical, ChevronDown, VerifiedToken } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import BN from 'bignumber.js';
 import React, { useState, useRef } from 'react';
 import { Input, XStack, YStack, useTheme } from 'tamagui';
@@ -53,21 +54,24 @@ export function TokenAmountInput({
   const inputRef = externalInputRef || internalInputRef;
   const theme = useTheme();
 
+  // Theme detection using helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
+
   // Theme-aware text color
-  const textColor = String(theme.name)?.includes('dark') ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+  const textColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
 
   // Theme-aware token selector colors
-  const tokenSelectorBackgroundColor = String(theme.name)?.includes('dark') ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
-  const tokenSelectorTextColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
+  const tokenSelectorBackgroundColor = isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const tokenSelectorTextColor = isCurrentlyDarkMode ? '#FFFFFF' : '#000000';
   const chevronColor = '#767676'; // Same color as edit icon for both modes
 
   // Theme-aware converter colors
-  const converterButtonColor = String(theme.name)?.includes('dark') ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const converterButtonColor = isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
   const converterIconColor = '#767676'; // Same color as edit icon for both modes
-  const converterTextColor = String(theme.name)?.includes('dark') ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+  const converterTextColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 
   // Theme-aware header text color
-  const headerTextColor = String(theme.name)?.includes('dark') ? (theme.light80?.val || '#CCCCCC') : (theme.textSecondary?.val || '#666666');
+  const headerTextColor = isCurrentlyDarkMode ? (theme.light80?.val || '#CCCCCC') : (theme.textSecondary?.val || '#666666');
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
@@ -218,7 +222,7 @@ export function TokenAmountInput({
             </Text>
           )}
           <YStack
-            bg={String(theme.name)?.includes('dark') ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)'}
+            bg={isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)'}
             rounded={40}
             height="$6"
             items="center"

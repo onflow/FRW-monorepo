@@ -31,7 +31,7 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
+import { logger, transformAccountForCard, transformAccountForDisplay, isDarkMode } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -52,16 +52,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const theme = useTheme();
 
   // Theme-aware background color for cards
-  const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
+  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
 
   // Theme-aware send button colors - use theme tokens for better reliability
-  const isDarkMode = String(theme.name)?.includes('dark');
-  const sendButtonBackgroundColor = isDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
-  const sendButtonTextColor = isDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
-  const disabledButtonTextColor = theme.color?.val || (isDarkMode ? '#999999' : '#FFFFFF');
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const sendButtonBackgroundColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+  const sendButtonTextColor = isCurrentlyDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
+  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
 
   // Theme-aware separator color
-  const separatorColor = String(theme.name)?.includes('dark')
+  const separatorColor = isDarkMode(theme)
     ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
   // Check if we're running in extension platform
