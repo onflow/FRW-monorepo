@@ -54,10 +54,11 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   // Theme-aware background color for cards
   const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
 
-  // Theme-aware send button colors - white bg + black text on dark mode, black bg + white text on light mode
-  const sendButtonBackgroundColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
-  const sendButtonTextColor = String(theme.name)?.includes('dark') ? '#000000' : '#FFFFFF';
-  const disabledButtonTextColor = String(theme.name)?.includes('dark') ? '#999999' : '#FFFFFF';
+  // Theme-aware send button colors - use theme tokens for better reliability
+  const isDarkMode = String(theme.name)?.includes('dark');
+  const sendButtonBackgroundColor = isDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+  const sendButtonTextColor = isDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
+  const disabledButtonTextColor = theme.color?.val || (isDarkMode ? '#999999' : '#FFFFFF');
 
   // Theme-aware separator color
   const separatorColor = String(theme.name)?.includes('dark')
@@ -541,7 +542,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       <YStack flex={1} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
+          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4">
             {/* From Account Section */}
             {fromAccount ? (
               <View mb={'$2'}>

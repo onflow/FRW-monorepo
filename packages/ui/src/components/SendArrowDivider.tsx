@@ -25,14 +25,19 @@ export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
 }) => {
   const theme = useTheme();
 
+  // Theme detection
+  const isDarkMode = String(theme.name)?.includes('dark');
+
   // Always use primary green background (theme-aware: #00B877 light, #00EF8B dark)
   const defaultBackgroundColor = theme.primary?.val;
 
-  const defaultIconColor = String(theme.name)?.includes('dark')
-    ? 'rgba(0, 0, 0, 0.8)' // Keep existing dark gray for dark mode
-    : '#FFFFFF'; 
+  // Icon color should be dark in dark mode (on green background) and white in light mode
+  // Use theme tokens for more reliable color detection
+  const defaultIconColor = isDarkMode
+    ? 'rgba(0, 0, 0, 0.8)' // Dark gray on green background in dark mode
+    : (theme.white?.val || '#FFFFFF'); // White on green background in light mode 
 
-  const finalBackgroundColor = backgroundColor || defaultBackgroundColor;
+  const finalBackgroundColor = defaultBackgroundColor;
   const finalIconColor = iconColor || defaultIconColor;
   return (
     <YStack items="center" py={padding} my={margin}>

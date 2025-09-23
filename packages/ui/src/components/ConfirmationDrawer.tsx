@@ -147,17 +147,19 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
-  // Theme-aware button colors - white bg + black text on dark mode, black bg + white text on light mode
-  const buttonBackgroundColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
-  const buttonTextColor = String(theme.name)?.includes('dark') ? '#000000' : '#FFFFFF';
+  // Theme-aware button colors - use theme tokens for better reliability
+  const isDarkMode = String(theme.name)?.includes('dark');
+  const buttonBackgroundColor = isDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+  const buttonTextColor = isDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
 
-  // Theme-aware text colors
-  const drawerTextColor = String(theme.name)?.includes('dark') ? '#FFFFFF' : '#000000';
-  const secondaryTextColor = String(theme.name)?.includes('dark') ? '#CCCCCC' : '#666666';
+  // Theme-aware close icon color - use theme's color value directly
+  const closeIconColor = theme.color?.val || '#000000';
 
-  // Theme-aware background colors
-  const cardBackgroundColor = String(theme.name)?.includes('dark') ? '$light10' : '$bg2';
-  const badgeBackgroundColor = String(theme.name)?.includes('dark') ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)';
+  // Theme-aware card background color - same as SendTokensScreen
+  const cardBackgroundColor = isDarkMode ? '$light10' : '$bg2';
+
+  // Theme-aware background colors for badges
+  const badgeBackgroundColor = theme.white10?.val || (String(theme.name)?.includes('dark') ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
 
   const handleConfirm = async () => {
     try {
@@ -201,7 +203,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             {isExtension ? (
               <>
                 <View flex={1} items="center">
-                  <Text fontSize="$5" fontWeight="700" color={drawerTextColor} text="center">
+                  <Text fontSize="$5" fontWeight="700" color="$text" text="center">
                     {title || summaryText}
                   </Text>
                 </View>
@@ -215,7 +217,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={String(theme.name)?.includes('dark') ? theme.white.val : theme.black.val} />
+                  <Close size={15} color={closeIconColor} />
                 </XStack>
               </>
             ) : (
@@ -223,7 +225,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <View width={32} height={32} />
 
                 <View flex={1} items="center">
-                  <Text fontSize="$5" fontWeight="700" color={drawerTextColor} text="center">
+                  <Text fontSize="$5" fontWeight="700" color="$text" text="center">
                     {title || summaryText}
                   </Text>
                 </View>
@@ -233,12 +235,12 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   height={32}
                   items="center"
                   justify="center"
-                  borderRadius="$4"
+                  rounded="$4"
                   pressStyle={{ opacity: 0.8 }}
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={String(theme.name)?.includes('dark') ? theme.white.val : theme.black.val} />
+                  <Close size={15} color={closeIconColor} />
                 </XStack>
               </>
             )}
@@ -305,7 +307,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color={drawerTextColor}>
+                <Text fontSize="$3" fontWeight="600" color="$text">
                   {fromAccount?.name || 'Unknown'}
                 </Text>
                 {fromAccount?.address && (
@@ -324,7 +326,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color={drawerTextColor}>
+                <Text fontSize="$3" fontWeight="600" color="$text">
                   {toAccount?.name || 'Unknown'}
                 </Text>
                 {toAccount?.address && (
@@ -337,7 +339,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
-              <Text fontSize="$2" color={secondaryTextColor} fontWeight="400">
+              <Text fontSize="$2" color="$textSecondary" fontWeight="400">
                 {sendNFTsText}
               </Text>
               <MultipleNFTsPreview
@@ -354,7 +356,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 selectedNFTs[0].contractType === 'ERC1155' &&
                 selectedNFTs[0].selectedQuantity && (
                   <XStack
-                    bg={cardBackgroundColor}
+                    bg="$light10"
                     rounded="$10"
                     items="center"
                     justify="center"
@@ -366,7 +368,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                     <Text
                       fontSize={18}
                       fontWeight="600"
-                      color={drawerTextColor}
+                      color="$text"
                       letterSpacing={-0.072}
                       text="center"
                       flex={1}
@@ -380,7 +382,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
           ) : (
             <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
-              <Text fontSize="$2" color={secondaryTextColor} fontWeight="400">
+              <Text fontSize="$2" color="$textSecondary" fontWeight="400">
                 {sendTokensText}
               </Text>
 
@@ -395,7 +397,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   ) : (
                     <FlowLogo size={32} />
                   )}
-                  <Text fontSize="$6" fontWeight="500" color={drawerTextColor}>
+                  <Text fontSize="$6" fontWeight="500" color="$text">
                     {(() => {
                       const amount = parseFloat(formData.tokenAmount);
                       if (isNaN(amount)) return formData.tokenAmount;
@@ -415,7 +417,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   height={32}
                   minW={60}
                 >
-                  <Text fontSize="$2" fontWeight="600" color={drawerTextColor} letterSpacing={-0.072}>
+                  <Text fontSize="$2" fontWeight="600" color="$text" letterSpacing={-0.072}>
                     {selectedToken?.symbol || 'FLOW'}
                   </Text>
                   <VerifiedToken size={10} color="#41CC5D" />
@@ -423,7 +425,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               </XStack>
 
               <XStack justify="flex-start" width="100%">
-                <Text fontSize="$3" color={secondaryTextColor} fontWeight="400">
+                <Text fontSize="$3" color="$textSecondary" fontWeight="400">
                   ${formData.fiatAmount || '0.69'}
                 </Text>
               </XStack>
