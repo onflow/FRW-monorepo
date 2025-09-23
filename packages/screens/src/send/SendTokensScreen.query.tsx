@@ -542,7 +542,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       <YStack flex={1} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4">
+          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
             {/* From Account Section */}
             {fromAccount ? (
               <View mb={'$2'}>
