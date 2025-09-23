@@ -91,6 +91,9 @@ export function SendToScreen(): React.ReactElement {
     }
   }, [isLoadingProfiles, loadProfilesFromBridge, profileError]);
 
+  // Debug: Log profiles when they change
+  useEffect(() => {}, [allProfiles]);
+
   // Query for recent contacts with automatic caching
   const {
     data: recentContacts = [],

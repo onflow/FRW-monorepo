@@ -1,12 +1,12 @@
 import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, View, Sheet, Spinner } from 'tamagui';
+import { Platform, Image as RNImage } from 'react-native';
+import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
-// import { LottieAnimation } from './LottieAnimation';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -37,6 +37,7 @@ export interface ConfirmationDrawerProps {
   sendingText?: string;
   confirmSendText?: string;
   holdToSendText?: string;
+  sendStaticImage?: any;
 }
 
 interface LoadingIndicatorProps {
@@ -141,7 +142,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   sendingText = 'Sending...',
   confirmSendText = 'Confirm send',
   holdToSendText = 'Hold to send',
+  sendStaticImage,
 }) => {
+  const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
 
   const handleConfirm = async () => {
@@ -149,7 +152,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
-      console.error('Transaction failed:', error);
+      //
     } finally {
       setInternalIsSending(false);
     }
@@ -200,7 +203,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={20} color="white" />
+                  <Close size={15} color={theme.white.val} />
                 </XStack>
               </>
             ) : (
@@ -223,7 +226,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={20} color="$white" />
+                  <Close size={15} color={theme.white.val} />
                 </XStack>
               </>
             )}
@@ -288,7 +291,15 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               }}
             >
               {/* Wallet Card Icon */}
-              <WalletCard width={114.62} height={129.195} />
+              {Platform.OS !== 'web' && sendStaticImage ? (
+                <RNImage
+                  source={sendStaticImage}
+                  style={{ width: 114.62, height: 129.195 }}
+                  resizeMode="contain"
+                />
+              ) : (
+                <WalletCard width={114.62} height={129.195} />
+              )}
             </View>
           </View>
 
@@ -436,7 +447,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Confirm Button */}
           <YStack
-            width="100%"
+            mb={'$10'}
             bg="#FFFFFF"
             rounded="$4"
             height={56}

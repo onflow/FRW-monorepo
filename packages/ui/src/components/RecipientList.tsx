@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, YStack, XStack, Text, Separator } from 'tamagui';
+import { ScrollView, YStack, XStack, Text } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 import { RefreshView } from './RefreshView';
@@ -134,7 +134,9 @@ export function RecipientList({
           <Text fontSize="$3" fontWeight="600" color="$textSecondary" mb="$1">
             {section.title}
           </Text>
-          {showSeparators && <Separator borderColor="rgba(255, 255, 255, 0.1)" />}
+          {showSeparators && (
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
+          )}
         </YStack>
       )}
 
@@ -142,14 +144,8 @@ export function RecipientList({
       {section.data.map((item, itemIndex) => (
         <YStack key={item.id}>
           {renderItem(item)}
-          {showSeparators && itemIndex < section.data.length - 1 && (
-            <Separator
-              my={6.5}
-              mx={0}
-              width="100%"
-              borderColor="rgba(255, 255, 255, 0.1)"
-              borderWidth={1}
-            />
+          {showSeparators && (
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="rgba(255, 255, 255, 0.1)" w="100%" ml={0} />
           )}
         </YStack>
       ))}

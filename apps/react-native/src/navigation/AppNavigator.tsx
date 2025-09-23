@@ -1,11 +1,4 @@
-import {
-  SelectTokensScreen,
-  SendTokensScreen,
-  NFTListScreen,
-  NFTDetailScreen,
-  SendSingleNFTScreen,
-  SendMultipleNFTsScreen,
-} from '@onflow/frw-screens';
+import { SelectTokensScreen, NFTListScreen, NFTDetailScreen } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -17,11 +10,17 @@ import {
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useMemo } from 'react';
-// import { useTranslation } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
+import { NavigationBackButton } from '@/components/NavigationBackButton';
+import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
+import {
+  SendTokensScreen,
+  SendSingleNFTScreen,
+  SendMultipleNFTsScreen,
+} from '@/screens/SendScreenWrappers';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
 
@@ -93,12 +92,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       }
       try {
         if (sendToConfig.fromAccount) {
-          console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
           setFromAccount(walletAccount);
         }
         if (sendToConfig.selectedToken) {
-          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
           // Convert to TokenInfo type
           const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
@@ -107,7 +104,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
         if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
           // Set selected NFTs if provided
-          console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
           const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
           setSelectedNFTs(nftModels);
         }
@@ -129,7 +125,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setCurrentStep('send-to');
         }
       } catch (error) {
-        console.error('Failed to initialize SendTo flow:', error);
+        //  console.error('Failed to initialize SendTo flow:', error);
       }
     }
   }, [
@@ -197,8 +193,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerShown: true,
               headerBackTitle: '', // Ensure no back title text
               headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
-              // headerLeft: () => <NavigationBackButton />,
-              // headerRight: () => <NavigationCloseButton />,
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
+              headerLeftContainerStyle: { paddingLeft: 8, alignItems: 'center' },
+              headerRightContainerStyle: { paddingRight: 16, alignItems: 'center' },
             }}
           >
             <Stack.Screen
