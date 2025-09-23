@@ -1,7 +1,6 @@
 import {
   getCurrentAddress,
   waitForTransaction,
-  loginToSenderOrReceiver,
   getReceiverEvmAccount,
   getReceiverCadenceAccount,
   getSenderCadenceAccount,
@@ -9,6 +8,7 @@ import {
   getSenderEvmAccount,
   switchToMainAccount,
   checkSentAmount,
+  loginToSenderAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 
@@ -37,7 +37,7 @@ export const sendFT = async ({ page, tokenName, receiver, amount, ingoreFlowChar
 
 test.beforeEach(async ({ page, extensionId }) => {
   // Login to our sender account
-  await loginToSenderOrReceiver({ page, extensionId, parallelIndex: test.info().parallelIndex });
+  await loginToSenderAccount({ page, extensionId });
   await switchToMainAccount({
     page,
     address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
