@@ -43,6 +43,15 @@ allprojects {
                 password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("github.token") ?: ""
             }
         }
+        // Flow Wallet Kit (Android) from GitHub Packages
+        maven {
+            url = uri("https://maven.pkg.github.com/onflow/Flow-Wallet-Kit")
+            credentials {
+                // Prefer Gradle properties (gpr.user/gpr.key), fallback to env vars
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 
