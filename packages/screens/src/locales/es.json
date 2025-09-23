@@ -24,12 +24,15 @@
     "nfts": "NFTs"
   },
   "send": {
+    "tokens": "Tokens",
+    "nfts": "NFTs",
     "myAccounts": "Mis Cuentas",
     "recent": "Reciente",
     "addressBook": "Libreta de Direcciones",
     "sendTo": {
       "title": "Enviar a"
     },
+    "toAccount": "A Cuenta",
     "searchAddress": "Buscar dirección o contacto...",
     "searchPasteAddress": "Buscar/ Pegar dirección",
     "selectedToken": "Token Seleccionado",
@@ -61,6 +64,7 @@
     "insufficient": "Saldo Insuficiente",
     "recipient": "Destinatario",
     "from": "De",
+    "fromAccount": "De Cuenta",
     "to": "Para",
     "amount": "Cantidad",
     "asset": "Activo",
@@ -85,7 +89,16 @@
     "title": "Enviar",
     "inaccessible": "Inaccesible",
     "confirmAddress": "Confirmar dirección",
-    "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino."
+    "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino.",
+    "sendSNFTs": "Enviar S/NFTs",
+    "sendNFTs": "Enviar NFTs",
+    "change": "Cambiar",
+    "noNFTSelected": "No se seleccionó NFT. Por favor regresa y selecciona un NFT para enviar.",
+    "summary": "Resumen",
+    "sendTokens": "Enviar Tokens",
+    "sending": "Enviando...",
+    "confirmSend": "Confirmar envío",
+    "holdToSend": "Mantener para enviar"
   },
   "messages": {
     "loading": "Cargando...",

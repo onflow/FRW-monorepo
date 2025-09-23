@@ -90,7 +90,7 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
       : parseInt(selectedNFT?.amount as string) || 1;
 
   // Debug the title - Swapped: ERC1155 shows "Send S/NFTs", regular shows "Send NFTs"
-  const sectionTitle = isERC1155 ? 'Send S/NFTs' : 'Send NFTs';
+  const sectionTitle = isERC1155 ? t('send.sendSNFTs') : t('send.sendNFTs');
 
   // Log ERC1155 detection
   useEffect(() => {
@@ -274,7 +274,7 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
             {t('nft.notFound.title')}
           </Text>
           <Text fontSize="$4" color="$textSecondary" text="center">
-            No NFT selected. Please go back and select an NFT to send.
+            {t('send.noNFTSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -321,7 +321,7 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
                 title={sectionTitle}
                 onEditPress={handleEditNFTPress}
                 showEditButton={true}
-                editButtonText="Change"
+                editButtonText={t('send.change')}
               />
 
               <View mt={-8} mb={-8}>
@@ -369,22 +369,24 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
 
             {/* To Account Section */}
             {toAccount && (
-               <YStack mt={"$1"}>
-              <ToAccountSection
-                account={toAccount}
-                title={t('send.toAccount')}
-                isAccountIncompatible={isAccountIncompatible}
-                onEditPress={handleEditAccountPress}
-                showEditButton={true}
-                isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
-                incompatibleAccountText={t('account.compatibility.incompatible')}
-                learnMoreText={t('account.compatibility.learnMore')}
-                unknownAccountText={t('account.compatibility.unknown')}
-                dialogTitle={t('account.compatibility.dialog.title')}
-                dialogButtonText={t('account.compatibility.dialog.button')}
-                dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
-                dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
-              />
+              <YStack mt={'$1'}>
+                <ToAccountSection
+                  account={toAccount}
+                  title={t('send.toAccount')}
+                  isAccountIncompatible={isAccountIncompatible}
+                  onEditPress={handleEditAccountPress}
+                  showEditButton={true}
+                  isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                  incompatibleAccountText={t('account.compatibility.incompatible')}
+                  learnMoreText={t('account.compatibility.learnMore')}
+                  unknownAccountText={t('account.compatibility.unknown')}
+                  dialogTitle={t('account.compatibility.dialog.title')}
+                  dialogButtonText={t('account.compatibility.dialog.button')}
+                  dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+                  dialogDescriptionSecondary={t(
+                    'account.compatibility.dialog.descriptionSecondary'
+                  )}
+                />
               </YStack>
             )}
 
@@ -466,6 +468,11 @@ export function SendSingleNFTScreen({ assets }: SendSingleNFTScreenProps = {}): 
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
           isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
         />
       </YStack>
     </BackgroundWrapper>

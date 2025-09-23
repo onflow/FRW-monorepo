@@ -37,7 +37,7 @@ export function ProfileList({
   }
 
   return (
-    <YStack>
+    <YStack gap="$3">
       {profiles.map((profile, index) => (
         <React.Fragment key={profile.uid}>
           <ProfileItem
@@ -45,7 +45,6 @@ export function ProfileList({
             onAccountPress={onAccountPress}
             isLast={index === profiles.length - 1}
           />
-          {index < profiles.length - 1 && <Separator />}
         </React.Fragment>
       ))}
     </YStack>
@@ -87,9 +86,10 @@ function ProfileItem({
   });
 
   return (
-    <YStack>
+    <YStack gap="$3">
       {/* Profile Header */}
-      <YStack p="$3" bg="$bgDrawer">
+      <YStack gap="$3" bg="$bgDrawer">
+        <Separator />
         <XStack items="center" gap="$3">
           <Avatar
             src={profile.avatar?.startsWith('http') ? profile.avatar : undefined}
@@ -100,6 +100,7 @@ function ProfileItem({
             }
             size={26}
             bgColor="$gray8"
+            borderRadius="$1"
           />
           <Text
             color="$color"
@@ -113,14 +114,11 @@ function ProfileItem({
         </XStack>
       </YStack>
 
-      <Separator mt="$2" mb="$2" />
-
       {/* Accounts List */}
-      <YStack px="$3">
+      <YStack gap="$3">
         {accountsData.map((account, index) => (
           <React.Fragment key={account.id}>
             <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
-            {index < accountsData.length - 1 && <Separator mt="$2" mb="$2" />}
           </React.Fragment>
         ))}
       </YStack>

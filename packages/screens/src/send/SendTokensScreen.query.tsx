@@ -493,9 +493,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   if (isOverallLoading) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
-          <Text>Loading wallet data...</Text>
+          <Text>{t('messages.loading')}</Text>
         </YStack>
       </BackgroundWrapper>
     );
@@ -505,7 +505,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   if (error) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
           <Text color="$error">{error}</Text>
         </YStack>
@@ -517,7 +517,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     <BackgroundWrapper backgroundColor={backgroundColor}>
       {isExtension && (
         <ExtensionHeader
-          title={t('send.sendTokens.title', 'Sending')}
+          title={t('send.title')}
           help={true}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
@@ -530,16 +530,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb={"$2"}>
+              <View mb={'$2'}>
                 <AccountCard
                   isSendTokensScreen={true}
                   account={transformAccountForCard(fromAccount)}
-                  title="From Account"
+                  title={t('send.fromAccount')}
                   isLoading={isBalanceLoading}
                 />
               </View>
             ) : (
-              <Text>No account data available</Text>
+              <Text>{t('errors.addressNotFound')}</Text>
             )}
             <Separator
               mx="$0"
@@ -640,7 +640,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               usdFee={usdFee}
               isFree={isFreeGasEnabled}
               showCovered={true}
-              title="Transaction Fee"
+              title={t('send.transactionFee')}
               backgroundColor="transparent"
               borderRadius={16}
               contentPadding={0}
@@ -687,7 +687,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           onTokenSelect={handleTokenSelect}
           onClose={handleTokenSelectorClose}
           platform="mobile"
-          title="Tokens"
+          title={t('tabs.tokens')}
           currency={currency}
           isExtension={isExtension}
         />
@@ -711,6 +711,12 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
           isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendTokensText={t('send.sendTokens')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
         />
       </YStack>
     </BackgroundWrapper>
