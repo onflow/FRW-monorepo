@@ -152,12 +152,93 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         </XStack>
       )}
 
-      {/* Token count display */}
-      <Text>
-        Found {filteredTokens.length} tokens
-      </Text>
+      {/* Token List ScrollView */}
+      <ScrollView flex={1}>
+        <YStack>
+          {filteredTokens.length === 0 ? (
+            <Text text="center" color="$text" py="$4">
+              {emptyMessage}
+            </Text>
+          ) : (
+            filteredTokens.map((token, index) => (
+              <YStack key={token.id || `${token.symbol}-${index}`}>
+                <Stack
+                  pressStyle={{ opacity: 0.7 }}
+                  onPress={() => handleTokenSelect(token)}
+                  cursor="pointer"
+                  items="center"
+                  justify="center"
+                  width="100%"
+                  height={64}
+                  hoverStyle={{ opacity: 0.7 }}
+                >
+                  <XStack items="center" gap="$2" width="100%">
+                    <Avatar
+                      src={token.logoURI}
+                      alt={token.symbol}
+                      fallback={token.symbol?.[0] || token.name?.[0] || '?'}
+                      size={48}
+                    />
+                    <YStack flex={1} gap="$1">
+                      {/* Top row: Token name + verified badge + balance */}
+                      <XStack justify="space-between" items="center" gap="$1">
+                        <XStack items="center" gap="$1" flex={1} shrink={1}>
+                          <XStack items="center" gap="$1" shrink={1}>
+                            <Text
+                              fontWeight="600"
+                              fontSize={14}
+                              color="$text1"
+                              numberOfLines={1}
+                              lineHeight="$1"
+                              shrink={1}
+                            >
+                              {token.name || token.symbol}
+                            </Text>
+                            {token.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
+                          </XStack>
+                        </XStack>
+                        <Text
+                          fontSize={14}
+                          fontWeight="400"
+                          color="$text1"
+                          numberOfLines={1}
+                          text="right"
+                          lineHeight="$1"
+                        >
+                          {getDisplayBalanceWithSymbol(token)}
+                        </Text>
+                      </XStack>
 
-      {/* Comment out dynamic content and Close icon for now */}
+                      {/* Bottom row: Symbol + USD value */}
+                      <XStack justify="space-between" items="center" gap="$1">
+                        <Text
+                          fontSize={12}
+                          color="$text2"
+                          numberOfLines={1}
+                          lineHeight="$1"
+                        >
+                          {token.symbol}
+                        </Text>
+                        <Text
+                          fontSize={12}
+                          color="$text2"
+                          numberOfLines={1}
+                          text="right"
+                          lineHeight="$1"
+                        >
+                          {formatCurrencyStringForDisplay(token.balance || '0', currency.symbol)}
+                        </Text>
+                      </XStack>
+                    </YStack>
+                  </XStack>
+                </Stack>
+              </YStack>
+            ))
+          )}
+        </YStack>
+      </ScrollView>
+
+      {/* Comment out any remaining components */}
       {/*
       <XStack items="center" justify="space-between">
         <XStack width={40} />
