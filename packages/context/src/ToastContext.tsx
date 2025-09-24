@@ -1,12 +1,14 @@
 import { Toast, type ToastProps } from '@onflow/frw-ui';
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
+import type { ToastMessage } from './interfaces/ToastManager';
+
 // Import Toast component from UI package
 
 export interface ToastContextValue {
-  showToast: (message: string, type?: ToastProps['type'], duration?: number) => void;
-  hideToast: (id: string) => void;
-  clearAllToasts: () => void;
+  show: (toast: ToastMessage) => void;
+  hide: (id: string) => void;
+  clear: () => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -22,35 +24,32 @@ export interface ToastState {
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastState[]>([]);
 
-  const showToast = useCallback(
-    (message: string, type: ToastProps['type'] = 'info', duration = 4000) => {
-      const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const show = useCallback((toast: ToastMessage) => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      const newToast: ToastState = {
-        id,
-        message,
-        type,
-        duration,
-        visible: true,
-      };
+    const newToast: ToastState = {
+      id,
+      message: toast.message,
+      type: toast.type || 'info',
+      duration: toast.duration || 4000,
+      visible: true,
+    };
 
-      setToasts((prev) => [...prev, newToast]);
+    setToasts((prev) => [...prev, newToast]);
 
-      // Auto-hide after duration
-      if (duration > 0) {
-        setTimeout(() => {
-          hideToast(id);
-        }, duration);
-      }
-    },
-    []
-  );
+    // Auto-hide after duration
+    if (newToast.duration > 0) {
+      setTimeout(() => {
+        hide(id);
+      }, newToast.duration);
+    }
+  }, []);
 
-  const hideToast = useCallback((id: string) => {
+  const hide = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
-  const clearAllToasts = useCallback(() => {
+  const clear = useCallback(() => {
     setToasts([]);
   }, []);
 
@@ -59,16 +58,16 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // Access bridge through global or window object to avoid direct import
     const globalBridge = (globalThis as any).__FLOW_WALLET_BRIDGE__;
     if (globalBridge?.setToastCallback) {
-      globalBridge.setToastCallback((toast: any) => {
-        showToast(toast.message, toast.type, toast.duration);
+      globalBridge.setToastCallback((toast: ToastMessage) => {
+        show(toast);
       });
     }
-  }, [showToast]);
+  }, [show]);
 
   const contextValue: ToastContextValue = {
-    showToast,
-    hideToast,
-    clearAllToasts,
+    show,
+    hide,
+    clear,
   };
 
   return (
@@ -82,7 +81,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           message={toast.message}
           type={toast.type}
           duration={toast.duration}
-          onClose={() => hideToast(toast.id)}
+          onClose={() => hide(toast.id)}
         />
       ))}
     </ToastContext.Provider>
@@ -102,13 +101,13 @@ export const usePlatformToast = () => {
   const toast = useToast();
 
   const showPlatformToast = useCallback(
-    (message: string, type?: ToastProps['type'], duration?: number) => {
+    (toastMessage: ToastMessage) => {
       // Try platform first, fallback to local toast
       const globalBridge = (globalThis as any).__FLOW_WALLET_BRIDGE__;
       if (globalBridge?.showToast) {
-        globalBridge.showToast(message, type, duration);
+        globalBridge.showToast(toastMessage.message, toastMessage.type, toastMessage.duration);
       } else {
-        toast.showToast(message, type, duration);
+        toast.show(toastMessage);
       }
     },
     [toast]
@@ -116,6 +115,6 @@ export const usePlatformToast = () => {
 
   return {
     ...toast,
-    showToast: showPlatformToast,
+    show: showPlatformToast,
   };
 };

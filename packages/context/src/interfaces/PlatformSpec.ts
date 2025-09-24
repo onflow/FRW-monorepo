@@ -79,6 +79,8 @@ export interface PlatformSpec {
     type?: 'success' | 'error' | 'warning' | 'info',
     duration?: number
   ): void;
+  hideToast?(id: string): void;
+  clearAllToasts?(): void;
   setToastCallback?(
     callback: (toast: {
       message: string;

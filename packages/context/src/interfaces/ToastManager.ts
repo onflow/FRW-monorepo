@@ -6,9 +6,9 @@ export interface ToastMessage {
 }
 
 export interface ToastManager {
-  showToast(toast: ToastMessage): void;
-  hideToast(id: string): void;
-  clearAllToasts(): void;
+  show(toast: ToastMessage): void;
+  hide(id: string): void;
+  clear(): void;
 }
 
 export type ToastCallback = (toast: ToastMessage) => void;

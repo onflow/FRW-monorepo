@@ -6,7 +6,7 @@ import type { Cache } from './interfaces/caching/Cache';
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/storage/Storage';
-import type { ToastManager } from './interfaces/ToastManager';
+import type { ToastManager, ToastMessage } from './interfaces/ToastManager';
 
 /**
  * Service Context - Provides centralized access to all services
@@ -230,14 +230,16 @@ export const toast = new Proxy({} as ToastManager, {
       const bridge = ServiceContext.current().bridge;
 
       // Check if bridge has toast methods
-      if (prop === 'showToast' && bridge.showToast) {
-        return (toastMessage: {
-          message: string;
-          type?: 'success' | 'error' | 'warning' | 'info';
-          duration?: number;
-        }) => {
+      if (prop === 'show' && bridge.showToast) {
+        return (toastMessage: ToastMessage) => {
           bridge.showToast?.(toastMessage.message, toastMessage.type, toastMessage.duration);
         };
+      }
+      if (prop === 'hide' && bridge.hideToast) {
+        return bridge.hideToast.bind(bridge);
+      }
+      if (prop === 'clear' && bridge.clearAllToasts) {
+        return bridge.clearAllToasts.bind(bridge);
       }
       if (prop === 'setToastCallback' && bridge.setToastCallback) {
         return bridge.setToastCallback.bind(bridge);
