@@ -18,6 +18,7 @@ export { default as Scan } from './Scan.generated';
 export { default as Search } from './Search.generated';
 export { default as SendConfirmation } from './SendConfirmation.generated';
 export { default as SurgeActive } from './SurgeActive.generated';
+export { default as SurgeIcon } from './SurgeIcon.generated';
 export { default as SwitchVertical } from './SwitchVertical.generated';
 export { default as Trash } from './Trash.generated';
 export { default as UserRoundPlus } from './UserRoundPlus.generated';

@@ -1,7 +1,9 @@
-import { SurgeActive, InfoIcon } from '@onflow/frw-icons';
-import React from 'react';
-import { YStack, XStack, Separator } from 'tamagui';
+import { FlowLogo, SurgeIcon, InfoIcon } from '@onflow/frw-icons';
+import React, { useState } from 'react';
+import { YStack, XStack, Separator, Button } from 'tamagui';
 
+import { PriceBreakdown } from './PriceBreakdown';
+import { SurgeInfo } from './SurgeInfo';
 import { Text } from '../../foundation/Text';
 
 export interface SurgeFeeSectionProps {
@@ -17,26 +19,30 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
   showWarning = true,
   className,
 }) => {
+  const [isSurgeInfoOpen, setIsSurgeInfoOpen] = useState(false);
+  const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
   return (
     <YStack gap="$4" className={className}>
       {/* Surge Price Active Indicator */}
       <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
         <XStack style={{ alignItems: 'center' }} gap="$2">
-          <SurgeActive size={24} />
+          <SurgeIcon size={24} />
           <Text fontSize={14} fontWeight="600" color="$warning" lineHeight="$4">
             Surge price active
           </Text>
         </XStack>
-        <InfoIcon size={24} />
+        <Button
+          background="transparent"
+          borderWidth={0}
+          padding={0}
+          onPress={() => setIsSurgeInfoOpen(true)}
+          icon={<InfoIcon size={24} />}
+          chromeless
+        />
       </XStack>
 
       {/* Fee Breakdown Card */}
-      <YStack
-        background="$light10"
-        style={{ borderRadius: '$4', padding: '$4' }}
-        gap="$1.5"
-        width="100%"
-      >
+      <YStack background="$light10" borderRadius="$4" padding="$4" gap="$1.5" width="100%">
         {/* Transaction Fee Section */}
         <YStack gap="$1" width="100%">
           <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
@@ -53,7 +59,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
               >
                 {transactionFee}
               </Text>
-              <InfoIcon size={16} />
+              <FlowLogo size={18} theme="multicolor" />
             </XStack>
           </XStack>
 
@@ -69,7 +75,14 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
               >
                 Price breakdown
               </Text>
-              <InfoIcon size={14} />
+              <Button
+                background="transparent"
+                borderWidth={0}
+                padding={0}
+                onPress={() => setIsPriceBreakdownOpen(true)}
+                icon={<InfoIcon size={14} />}
+                chromeless
+              />
             </XStack>
           </XStack>
         </YStack>
@@ -78,7 +91,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
         <Separator background="$light10" />
 
         {/* Free Transaction Allowance Section */}
-        <YStack gap="$4" width="100%">
+        <YStack gap="$3" width="100%">
           <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
             <Text fontSize={14} fontWeight="400" color="$white" lineHeight="$4">
               Free transaction allowance
@@ -93,18 +106,54 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
               >
                 {freeAllowance}
               </Text>
-              <InfoIcon size={16} />
             </XStack>
           </XStack>
 
+          {/* Allowance Progress Bar */}
+          <YStack gap="$2" width="100%">
+            <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
+              <Text fontSize={12} fontWeight="400" color="$light60" lineHeight="$3">
+                Used
+              </Text>
+              <Text fontSize={12} fontWeight="400" color="$light60" lineHeight="$3">
+                0.8643 / 1.1357
+              </Text>
+            </XStack>
+
+            {/* Progress Bar Container */}
+            <YStack
+              height={6}
+              background="$light20"
+              borderRadius="$2"
+              width="100%"
+              overflow="hidden"
+            >
+              {/* Progress Fill */}
+              <YStack height="100%" width="76%" background="$warning" borderRadius="$2" />
+            </YStack>
+          </YStack>
+
           {/* Warning Message */}
-          {showWarning && (
+          {!showWarning && (
             <Text fontSize={14} fontWeight="400" color="$warning" lineHeight="$5">
               Your free transaction allowance will not cover this transaction.
             </Text>
           )}
         </YStack>
       </YStack>
+
+      {/* Surge Info Modal */}
+      <SurgeInfo isOpen={isSurgeInfoOpen} onClose={() => setIsSurgeInfoOpen(false)} />
+
+      {/* Price Breakdown Modal */}
+      <PriceBreakdown
+        isOpen={isPriceBreakdownOpen}
+        onClose={() => setIsPriceBreakdownOpen(false)}
+        transactionFee={transactionFee}
+        surgeRate="4X standard rate"
+        freeAllowance={freeAllowance}
+        finalFee={transactionFee}
+      />
     </YStack>
   );
 };

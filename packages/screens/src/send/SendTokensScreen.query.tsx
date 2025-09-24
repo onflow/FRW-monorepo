@@ -31,6 +31,7 @@ import {
   useTheme,
   // NFT-related components
   MultipleNFTsPreview,
+  SurgeFeeSection,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -665,6 +666,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               borderRadius={16}
               contentPadding={0}
             />
+
+            <SurgeFeeSection transactionFee={transactionFee} showWarning={isSurgeWarningVisible} />
 
             {showStorageWarning && (
               <StorageWarning

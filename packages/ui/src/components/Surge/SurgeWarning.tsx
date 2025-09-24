@@ -1,6 +1,6 @@
-import { SurgeActive } from '@onflow/frw-icons';
+import { SurgeActive, Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
-import { YStack } from 'tamagui';
+import { YStack, Button } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
 
@@ -175,7 +175,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
         data-node-id="4633:31373"
       >
         {/* Close Button */}
-        <YStack
+        <Button
           items="center"
           justify="center"
           width={24}
@@ -189,11 +189,8 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
             right: '$4',
             zIndex: 1,
           }}
-        >
-          <Text fontSize="$4" fontWeight="600" color="$light40" style={{ textAlign: 'center' }}>
-            ×
-          </Text>
-        </YStack>
+          icon={<Close size={24} />}
+        />
 
         {/* Content Frame */}
         <YStack items="center" gap="$4" style={{ alignSelf: 'stretch' }}>
