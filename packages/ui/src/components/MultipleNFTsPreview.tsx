@@ -198,7 +198,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   if (isExpanded) {
     return (
       <YStack
-        mt={'$2'}
+        mt={'$3'}
         bg={backgroundColor}
         borderRadius={borderRadius}
         padding={contentPadding}
@@ -265,7 +265,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
 
   return (
     <YStack
-      mt={'$2'}
+      mt={'$3'}
       bg={backgroundColor}
       borderRadius={borderRadius}
       padding={contentPadding}
