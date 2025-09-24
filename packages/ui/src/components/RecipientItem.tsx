@@ -100,8 +100,17 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={emojiInfo?.color || (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')}
-              textColor={emojiInfo?.color ? undefined : (isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)')}
+              bgColor={
+                emojiInfo?.color ||
+                (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')
+              }
+              textColor={
+                emojiInfo?.color
+                  ? undefined
+                  : isDarkMode
+                    ? 'rgba(0, 0, 0, 0.9)'
+                    : 'rgba(255, 255, 255, 0.9)'
+              }
               size={avatarSize}
             />
           </YStack>
@@ -117,7 +126,7 @@ export function RecipientItem({
               width={18}
               height={18}
               rounded={9}
-              bg={parentEmojiInfo?.color || "#D9D9D9"}
+              bg={parentEmojiInfo?.color || '#D9D9D9'}
               borderWidth={2}
               borderColor="$bg2"
               items="center"

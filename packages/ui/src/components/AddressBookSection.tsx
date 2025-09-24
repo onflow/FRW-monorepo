@@ -22,7 +22,6 @@ export function AddressBookSection({
   const isDarkMode = themeName?.includes('dark') || false;
   const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
-
   if (contacts.length === 0) {
     return null;
   }
@@ -30,13 +29,7 @@ export function AddressBookSection({
   return (
     <YStack gap={4} w="$100">
       {/* Letter Header */}
-      <Text
-        fontSize={14}
-        fontWeight="400"
-        color="$textSecondary"
-        lineHeight={16.8}
-        w="100%"
-      >
+      <Text fontSize={14} fontWeight="400" color="$textSecondary" lineHeight={16.8} w="100%">
         {letter}
       </Text>
 
@@ -103,9 +96,7 @@ export function AddressBookList({
                     : undefined
               }
             />
-            {index < contacts.length - 1 && (
-              <YStack height={1} bg={dividerColor} w="100%" ml={0} />
-            )}
+            {index < contacts.length - 1 && <YStack height={1} bg={dividerColor} w="100%" ml={0} />}
           </YStack>
         ))}
       </YStack>

@@ -96,7 +96,7 @@ export function AccountSelector({
                   width={18}
                   height={18}
                   rounded={9}
-                  bg={(currentAccount.parentEmoji.color as any) || "$bg2"}
+                  bg={(currentAccount.parentEmoji.color as any) || '$bg2'}
                   borderWidth={2}
                   borderColor="$bg2"
                   items="center"
@@ -267,7 +267,7 @@ export function AccountSelector({
                               width={18}
                               height={18}
                               rounded={9}
-                              bg={(account.parentEmoji.color as any) || "$bg2"}
+                              bg={(account.parentEmoji.color as any) || '$bg2'}
                               borderWidth={2}
                               borderColor="$bg2"
                               items="center"
@@ -288,12 +288,7 @@ export function AccountSelector({
                             {(account.type === 'child' || account.parentEmoji) && (
                               <Link size={12.8} color={iconColor} theme="outline" />
                             )}
-                            <Text
-                              fontSize={14}
-                              fontWeight="600"
-                              color="$text"
-                              numberOfLines={1}
-                            >
+                            <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
                               {account.name || 'Unnamed Account'}
                             </Text>
                             {account.type === 'evm' && (

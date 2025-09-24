@@ -52,7 +52,12 @@ export type { BridgeLogger } from './logger';
 export { transformAccountForCard, transformAccountForDisplay } from './accountTransformers';
 
 // Theme utilities
-export { isDarkMode, getThemeTextColor, getThemeBackgroundColor, getThemeCardBackground } from './theme';
+export {
+  isDarkMode,
+  getThemeTextColor,
+  getThemeBackgroundColor,
+  getThemeCardBackground,
+} from './theme';
 
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';

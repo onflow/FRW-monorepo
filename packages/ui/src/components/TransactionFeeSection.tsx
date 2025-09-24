@@ -44,12 +44,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
       {/* Main fee row */}
       <XStack justify="space-between" items="center">
         {/* Left side - Title */}
-        <Text
-          fontSize="$3"
-          fontWeight="400"
-          color={titleColor}
-          lineHeight={20}
-        >
+        <Text fontSize="$3" fontWeight="400" color={titleColor} lineHeight={20}>
           {title}
         </Text>
 
@@ -68,12 +63,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               >
                 {flowFee}
               </Text>
-              <Text
-                fontSize="$4"
-                fontWeight="400"
-                color={feeColor}
-                lineHeight={20}
-              >
+              <Text fontSize="$4" fontWeight="400" color={feeColor} lineHeight={20}>
                 {'0.00'}
               </Text>
               <FlowLogo size={18} theme="multicolor" style={{ opacity: 0.6 }} />
@@ -81,20 +71,10 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
           ) : (
             // Show normal fee display
             <XStack items="center" gap={6}>
-              <Text
-                fontSize="$4"
-                fontWeight="400"
-                color="rgba(255, 255, 255, 0.6)"
-                lineHeight={20}
-              >
+              <Text fontSize="$4" fontWeight="400" color="rgba(255, 255, 255, 0.6)" lineHeight={20}>
                 {flowFee}
               </Text>
-              <Text
-                fontSize="$4"
-                fontWeight="400"
-                color={feeColor}
-                lineHeight={20}
-              >
+              <Text fontSize="$4" fontWeight="400" color={feeColor} lineHeight={20}>
                 {usdFee}
               </Text>
               <FlowLogo size={18} theme="multicolor" />

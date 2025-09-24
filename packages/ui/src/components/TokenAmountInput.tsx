@@ -58,20 +58,30 @@ export function TokenAmountInput({
   const isCurrentlyDarkMode = isDarkMode(theme);
 
   // Theme-aware text color
-  const textColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
+  const textColor = isCurrentlyDarkMode
+    ? theme.white?.val || '#FFFFFF'
+    : theme.black?.val || '#000000';
 
   // Theme-aware token selector colors
-  const tokenSelectorBackgroundColor = isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const tokenSelectorBackgroundColor = isCurrentlyDarkMode
+    ? theme.white10?.val || 'rgba(255, 255, 255, 0.10)'
+    : 'rgba(0, 0, 0, 0.05)';
   const tokenSelectorTextColor = isCurrentlyDarkMode ? '#FFFFFF' : '#000000';
   const chevronColor = '#767676'; // Same color as edit icon for both modes
 
   // Theme-aware converter colors
-  const converterButtonColor = isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)';
+  const converterButtonColor = isCurrentlyDarkMode
+    ? theme.white10?.val || 'rgba(255, 255, 255, 0.10)'
+    : 'rgba(0, 0, 0, 0.05)';
   const converterIconColor = '#767676'; // Same color as edit icon for both modes
-  const converterTextColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+  const converterTextColor = isCurrentlyDarkMode
+    ? 'rgba(255, 255, 255, 0.8)'
+    : 'rgba(0, 0, 0, 0.8)';
 
   // Theme-aware header text color
-  const headerTextColor = isCurrentlyDarkMode ? (theme.light80?.val || '#CCCCCC') : (theme.textSecondary?.val || '#666666');
+  const headerTextColor = isCurrentlyDarkMode
+    ? theme.light80?.val || '#CCCCCC'
+    : theme.textSecondary?.val || '#666666';
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
@@ -79,14 +89,7 @@ export function TokenAmountInput({
   return (
     <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - aligned with From Account */}
-      <Text
-        fontSize="$2"
-        mb="$3"
-        ml="$1"
-        fontWeight="400"
-        lineHeight={16}
-        text="left"
-      >
+      <Text fontSize="$2" mb="$3" ml="$1" fontWeight="400" lineHeight={16} text="left">
         Send Tokens
       </Text>
 
@@ -192,14 +195,7 @@ export function TokenAmountInput({
               <SwitchVertical size={11.36} color={converterIconColor} />
             </XStack>
 
-            <Text
-              fontSize={14}
-              fontWeight="400"
-              lineHeight={16}
-              flex={1}
-              minW={0}
-              opacity={0.8}
-            >
+            <Text fontSize={14} fontWeight="400" lineHeight={16} flex={1} minW={0} opacity={0.8}>
               {isTokenMode
                 ? `${currency.symbol}${(parseFloat(displayAmount || '0') * (selectedToken?.price || 0)).toFixed(2)}`
                 : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)}`}
@@ -222,7 +218,11 @@ export function TokenAmountInput({
             </Text>
           )}
           <YStack
-            bg={isCurrentlyDarkMode ? (theme.white10?.val || 'rgba(255, 255, 255, 0.10)') : 'rgba(0, 0, 0, 0.05)'}
+            bg={
+              isCurrentlyDarkMode
+                ? theme.white10?.val || 'rgba(255, 255, 255, 0.10)'
+                : 'rgba(0, 0, 0, 0.05)'
+            }
             rounded={40}
             height="$6"
             items="center"

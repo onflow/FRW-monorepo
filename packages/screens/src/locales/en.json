@@ -126,7 +126,9 @@
     "timeout": "Request timed out",
     "unknown": "An unknown error occurred",
     "failedToLoadTokens": "Failed to load tokens",
-    "failedToLoadNFTs": "Failed to load NFTs"
+    "failedToLoadNFTs": "Failed to load NFTs",
+    "transactionPayloadError": "Failed to create transaction payload",
+    "transactionExecutionError": "Transaction execution failed"
   },
   "nft": {
     "noSearchResults": "No Search Results",
