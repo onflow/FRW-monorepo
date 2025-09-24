@@ -38,6 +38,7 @@ export interface ConfirmationDrawerProps {
   sendingText?: string;
   confirmSendText?: string;
   holdToSendText?: string;
+  unknownAccountText?: string;
   sendStaticImage?: any;
 }
 
@@ -143,6 +144,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   sendingText = 'Sending...',
   confirmSendText = 'Confirm send',
   holdToSendText = 'Hold to send',
+  unknownAccountText = 'Unknown',
   sendStaticImage,
 }) => {
   const theme = useTheme();
@@ -279,7 +281,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               />
               <YStack items="center" gap="$1">
                 <Text fontSize="$3" fontWeight="600" color="$text">
-                  {fromAccount?.name || 'Unknown'}
+                  {fromAccount?.name || unknownAccountText}
                 </Text>
                 {fromAccount?.address && (
                   <AddressText address={fromAccount.address} fontSize="$2" color="$textSecondary" />
@@ -298,7 +300,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               />
               <YStack items="center" gap="$1">
                 <Text fontSize="$3" fontWeight="600" color="$text">
-                  {toAccount?.name || 'Unknown'}
+                  {toAccount?.name || unknownAccountText}
                 </Text>
                 {toAccount?.address && (
                   <AddressText address={toAccount.address} fontSize="$2" color="$textSecondary" />

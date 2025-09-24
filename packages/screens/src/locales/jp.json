@@ -98,7 +98,8 @@
     "sendTokens": "トークンを送信",
     "sending": "送信中...",
     "confirmSend": "送信を確認",
-    "holdToSend": "長押しで送信"
+    "holdToSend": "長押しで送信",
+    "unknownAccount": "不明なアカウント"
   },
   "messages": {
     "loading": "読み込み中...",
@@ -128,6 +129,7 @@
   "nft": {
     "untitled": "無題",
     "unknownCollection": "不明なコレクション",
+    "noNFTsSelected": "NFTが選択されていません",
     "noSearchResults": "検索結果がありません",
     "noNFTsMatchSearch": "'{{search}}'に一致するNFTがありません",
     "noNFTsFound": "NFTが見つかりません",

@@ -101,11 +101,7 @@ export function SendToScreen(): React.ReactElement {
   useEffect(() => {}, [allProfiles]);
 
   // Query for recent contacts with automatic caching
-  const {
-    data: recentContacts = [],
-    isLoading: isLoadingRecent,
-    error: recentError,
-  } = useQuery({
+  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -446,7 +442,7 @@ export function SendToScreen(): React.ReactElement {
             // Create recipient data
             const recipient: RecipientData = {
               id: trimmedValue,
-              name: matchingAccount?.name || 'Unknown Account',
+              name: matchingAccount?.name || t('send.unknownAccount'),
               address: trimmedValue,
               avatar: matchingAccount?.emojiInfo ? undefined : matchingAccount?.avatar,
               emojiInfo: matchingAccount?.emojiInfo,
@@ -484,9 +480,8 @@ export function SendToScreen(): React.ReactElement {
     }
   }, [handleSearchChange, t]);
 
-  const handleRecipientEdit = useCallback((recipient: RecipientData) => {
+  const handleRecipientEdit = useCallback((_recipient: RecipientData) => {
     // TODO: Handle edit recipient
-    console.log('Edit recipient:', recipient);
   }, []);
 
   const handleRecipientCopy = useCallback(async (recipient: RecipientData) => {
@@ -668,7 +663,7 @@ export function SendToScreen(): React.ReactElement {
             fontWeight="300"
             lineHeight={20}
             letterSpacing={-0.084}
-            ta="center"
+            textAlign="center"
             color="$text"
             self="stretch"
           >
@@ -690,7 +685,7 @@ export function SendToScreen(): React.ReactElement {
               fontWeight="600"
               lineHeight={16.8}
               letterSpacing={-0.084}
-              ta="center"
+              textAlign="center"
               color="$text"
               numberOfLines={1}
               ellipsizeMode="middle"

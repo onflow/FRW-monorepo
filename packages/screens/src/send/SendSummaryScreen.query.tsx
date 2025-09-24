@@ -364,6 +364,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                     backgroundColor="transparent"
                     borderRadius={14.4}
                     contentPadding="$0"
+                    unnamedNFTText={t('nft.untitled')}
+                    unknownCollectionText={t('nft.unknownCollection')}
+                    noNFTsSelectedText={t('nft.noNFTsSelected')}
                   />
                 ) : (
                   <NFTSendPreview

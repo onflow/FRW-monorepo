@@ -96,9 +96,9 @@
     "noNFTSelected": "NFT не выбран. Пожалуйста, вернитесь и выберите NFT для отправки.",
     "summary": "Сводка",
     "sendTokens": "Отправить токены",
-    "sending": "Отправка...",
     "confirmSend": "Подтвердить отправку",
-    "holdToSend": "Удерживайте для отправки"
+    "holdToSend": "Удерживайте для отправки",
+    "unknownAccount": "Неизвестный аккаунт"
   },
   "messages": {
     "loading": "Загрузка...",
@@ -128,6 +128,7 @@
   "nft": {
     "untitled": "Без названия",
     "unknownCollection": "Неизвестная коллекция",
+    "noNFTsSelected": "NFT не выбраны",
     "noSearchResults": "Результаты поиска отсутствуют",
     "noNFTsMatchSearch": "NFT не найдены по запросу '{{search}}'",
     "noNFTsFound": "NFT не найдены",

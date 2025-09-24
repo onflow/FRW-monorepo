@@ -101,7 +101,8 @@
     "sendTokens": "Send Tokens",
     "sending": "Sending...",
     "confirmSend": "Confirm send",
-    "holdToSend": "Hold to send"
+    "holdToSend": "Hold to send",
+    "unknownAccount": "Unknown Account"
   },
   "messages": {
     "loading": "Loading...",
@@ -131,6 +132,7 @@
   "nft": {
     "untitled": "Untitled",
     "unknownCollection": "Unknown Collection",
+    "noNFTsSelected": "No NFTs selected",
     "noSearchResults": "No Search Results",
     "noNFTsMatchSearch": "No NFTs match '{{search}}'",
     "noNFTsFound": "No NFTs Found",
