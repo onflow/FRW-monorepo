@@ -15,6 +15,7 @@ export {
   View,
   XStack,
   YStack,
+  useTheme,
 } from 'tamagui';
 
 // Export our custom UI foundation components

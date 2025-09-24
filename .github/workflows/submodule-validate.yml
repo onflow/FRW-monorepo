@@ -1,0 +1,24 @@
+name: Validate Submodule SHAs
+
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: [main, dev, "release/*"]
+
+jobs:
+  validate-submodules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository (no submodules)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Validate submodule SHAs exist on remotes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x scripts/validate-submodules.sh
+          scripts/validate-submodules.sh

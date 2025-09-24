@@ -14,24 +14,29 @@ import {
   BackgroundWrapper,
   YStack,
   TokenAmountInput,
-  TokenSelectorModal,
   ConfirmationDrawer,
   AccountCard,
   ToAccountSection,
-  TransactionFeeSection,
   SendArrowDivider,
   StorageWarning,
   ExtensionHeader,
+  TransactionFeeSection,
+  TokenSelectorModal,
   type TransactionFormData,
   Text,
   Separator,
   XStack,
   View,
-  Toast,
+  useTheme,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
+import {
+  logger,
+  transformAccountForCard,
+  transformAccountForDisplay,
+  isDarkMode,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -49,16 +54,29 @@ interface SendTokensScreenProps {
  */
 export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
+  const theme = useTheme();
+
+  // Theme-aware background color for cards
+  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
+
+  // Theme-aware send button colors - use theme tokens for better reliability
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const sendButtonBackgroundColor = isCurrentlyDarkMode
+    ? theme.white?.val || '#FFFFFF'
+    : theme.black?.val || '#000000';
+  const sendButtonTextColor = isCurrentlyDarkMode
+    ? theme.black?.val || '#000000'
+    : theme.white?.val || '#FFFFFF';
+  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
+
+  // Theme-aware separator color
+  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
   const currency = bridge.getCurrency();
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
-
-  // Toast state
-  const [toastVisible, setToastVisible] = useState(true);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastType, setToastType] = useState<'error' | 'success' | 'warning' | 'info'>('error');
 
   // Get send store
   const {
@@ -170,18 +188,19 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     staleTime: 0, // Always fresh for financial data
   });
 
+  // Extract and format identifier with .Vault suffix if needed
+  const resourceIdentifier = useMemo(() => {
+    if (!selectedToken?.identifier) return '';
+    const identifier = selectedToken.identifier;
+    return identifier.includes('.Vault') ? identifier : `${identifier}.Vault`;
+  }, [selectedToken?.identifier]);
+
   // Query for resource compatibility check (tokens only)
   const { data: isResourceCompatible = true } = useQuery({
-    queryKey: storageQueryKeys.resourceCheck(
-      toAccount?.address || '',
-      selectedToken?.identifier || ''
-    ),
+    queryKey: storageQueryKeys.resourceCheck(toAccount?.address || '', resourceIdentifier),
     queryFn: () =>
-      storageQueries.checkResourceCompatibility(
-        toAccount?.address || '',
-        selectedToken?.identifier || ''
-      ),
-    enabled: !!(toAccount?.address && selectedToken?.identifier),
+      storageQueries.checkResourceCompatibility(toAccount?.address || '', resourceIdentifier),
+    enabled: !!(toAccount?.address && resourceIdentifier),
     staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
   });
 
@@ -190,7 +209,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
-  const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
   const contentPadding = '$4';
   const usdFee = '$0.02';
   const isBalanceLoading = false;
@@ -352,52 +370,35 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
     updateFormData({ tokenAmount: tokenAmount });
 
-    try {
-      const result = await executeTransaction();
+    const result = await executeTransaction();
 
-      // Set the recipient as a recent contact after successful transaction
-      if (result && toAccount) {
-        try {
-          // Convert WalletAccount to Contact format
-          const recentContact = {
-            id: toAccount.id || toAccount.address,
-            name: toAccount.name,
-            address: toAccount.address,
-            avatar: toAccount.avatar || '',
-            isFavorite: false,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          };
+    // Set the recipient as a recent contact after successful transaction
+    if (result && toAccount) {
+      try {
+        // Convert WalletAccount to Contact format
+        const recentContact = {
+          id: toAccount.id || toAccount.address,
+          name: toAccount.name,
+          address: toAccount.address,
+          avatar: toAccount.avatar || '',
+          isFavorite: false,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
 
-          await addressBookStore.setRecentContact(recentContact);
-        } catch (error) {
-          logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
-        }
-
-        // Close the React Native view after successful transaction
-        const platform = bridge.getPlatform();
-        if (platform === Platform.iOS || platform === Platform.Android) {
-          bridge.closeRN();
-        }
+        await addressBookStore.setRecentContact(recentContact);
+      } catch (error) {
+        logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
       }
 
-      return result;
-    } catch (error) {
-      // Handle transaction errors with toast
-      const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
-      logger.error('❌ [SendTokensScreen] Transaction error:', error);
-
-      // Show appropriate toast based on error type
-      if (errorMessage.includes('payload') || errorMessage.includes('Failed to create')) {
-        setToastMessage(t('errors.transactionPayloadError'));
-      } else {
-        setToastMessage(t('errors.transactionExecutionError'));
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (platform === Platform.iOS || platform === Platform.Android) {
+        bridge.closeRN();
       }
-      setToastType('error');
-      setToastVisible(true);
-
-      throw error;
     }
+
+    return result;
   }, [
     transactionType,
     selectedToken,
@@ -547,10 +548,10 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         />
       )}
 
-      <YStack flex={1} p={contentPadding} onPress={handlePressOutside}>
+      <YStack flex={1} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
+          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
             {/* From Account Section */}
             {fromAccount ? (
               <View mb={'$2'}>
@@ -564,13 +565,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             ) : (
               <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator
-              mx="$0"
-              mt="$2"
-              mb="$2"
-              borderColor="rgba(255, 255, 255, 0.1)"
-              borderWidth={0.5}
-            />
+            <Separator mx="$0" mt="$2" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -631,7 +626,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Arrow Down Indicator */}
           <XStack position="relative" height={0} mt="$1">
-            <XStack width="100%" position="absolute" t={-40} justify="center">
+            <XStack width="100%" position="absolute" t={-40} justify="center" z={10}>
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>
           </XStack>
@@ -685,18 +680,22 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            bg={isSendDisabled ? '#6b7280' : sendButtonBackgroundColor}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            borderColor={isSendDisabled ? '#6b7280' : sendButtonBackgroundColor}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? disabledButtonTextColor : sendButtonTextColor}
+            >
               {t('common.next')}
             </Text>
           </YStack>
@@ -740,14 +739,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
-        />
-
-        {/* Toast for error notifications */}
-        <Toast
-          visible={toastVisible}
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setToastVisible(false)}
         />
       </YStack>
     </BackgroundWrapper>

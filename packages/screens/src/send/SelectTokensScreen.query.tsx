@@ -13,7 +13,6 @@ import { type CollectionModel, type TokenModel, type WalletAccount } from '@onfl
 import {
   AccountSelector,
   BackgroundWrapper,
-  Divider,
   ExtensionHeader,
   NFTCollectionRow,
   RefreshView,
@@ -23,7 +22,9 @@ import {
   TokenCard,
   XStack,
   YStack,
+  useTheme,
 } from '@onflow/frw-ui';
+import { isDarkMode } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -268,6 +269,11 @@ export function SelectTokensScreen(): React.ReactElement {
     }));
   }, [accounts, balanceLookup]);
 
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const dividerColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
+
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       {isExtension && (
@@ -283,7 +289,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
         {/* Account Selector - Show balance from React Query */}
         {!isExtension && currentAccount && (
-          <YStack bg="$light10" rounded="$4" p={16} gap={12}>
+          <YStack bg={cardBackgroundColor} rounded="$4" p={16} gap={12}>
             <AccountSelector
               currentAccount={{
                 ...currentAccount,
@@ -357,7 +363,9 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < tokensWithBalance.length - 1 && <Divider />}
+                      {idx < tokensWithBalance.length - 1 && (
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+                      )}
                     </React.Fragment>
                   ))}
                 </YStack>
@@ -414,7 +422,9 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < nftCollections.length - 1 && <Divider />}
+                      {idx < nftCollections.length - 1 && (
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+                      )}
                     </React.Fragment>
                   ))}
                 </YStack>

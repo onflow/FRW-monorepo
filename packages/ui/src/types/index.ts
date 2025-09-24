@@ -14,6 +14,7 @@ export interface AvatarProps {
   size?: number;
   fallback?: string;
   bgColor?: string;
+  textColor?: string;
   borderColor?: string;
   borderWidth?: number;
   borderRadius?: number | string;
