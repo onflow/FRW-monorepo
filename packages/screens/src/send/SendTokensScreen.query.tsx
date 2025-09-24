@@ -19,6 +19,7 @@ import {
   ToAccountSection,
   SendArrowDivider,
   StorageWarning,
+  SurgeWarning,
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
@@ -31,7 +32,12 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger, transformAccountForCard, transformAccountForDisplay, isDarkMode } from '@onflow/frw-utils';
+import {
+  logger,
+  transformAccountForCard,
+  transformAccountForDisplay,
+  isDarkMode,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -56,13 +62,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Theme-aware send button colors - use theme tokens for better reliability
   const isCurrentlyDarkMode = isDarkMode(theme);
-  const sendButtonBackgroundColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
-  const sendButtonTextColor = isCurrentlyDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
+  const sendButtonBackgroundColor = isCurrentlyDarkMode
+    ? theme.white?.val || '#FFFFFF'
+    : theme.black?.val || '#000000';
+  const sendButtonTextColor = isCurrentlyDarkMode
+    ? theme.black?.val || '#000000'
+    : theme.white?.val || '#FFFFFF';
   const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
 
   // Theme-aware separator color
-  const separatorColor = isDarkMode(theme)
-    ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
@@ -217,6 +226,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(true);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
@@ -557,13 +567,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             ) : (
               <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator
-              mx="$0"
-              mt="$2"
-              mb="$2"
-              borderColor={separatorColor}
-              borderWidth={0.5}
-            />
+            <Separator mx="$0" mt="$2" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -689,7 +693,11 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? disabledButtonTextColor : sendButtonTextColor}>
+            <Text
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? disabledButtonTextColor : sendButtonTextColor}
+            >
               {t('common.next')}
             </Text>
           </YStack>
@@ -735,6 +743,18 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           holdToSendText={t('send.holdToSend')}
         />
       </YStack>
+      {/* SurgeWarning Modal */}
+      <SurgeWarning
+        message="Due to high network activity, transaction fees are elevated. Current network fees are 4x higher than usual."
+        title="Surge price active"
+        variant="warning"
+        visible={isSurgeWarningVisible}
+        onClose={() => setIsSurgeWarningVisible(false)}
+        onButtonPress={() => {
+          console.log('Surge warning acknowledged');
+          setIsSurgeWarningVisible(false);
+        }}
+      />
     </BackgroundWrapper>
   );
 };
