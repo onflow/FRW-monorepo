@@ -2,7 +2,7 @@ import { SurgeActive } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { YStack } from 'tamagui';
 
-import { Text } from '../foundation/Text';
+import { Text } from '../../foundation/Text';
 
 export interface SurgeWarningProps {
   /**
@@ -82,14 +82,12 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
           background: backgroundColor || ('$bg5' as any),
           title: titleColor || ('$white' as any),
           text: textColor || ('$error' as any),
-          icon: '#FF6B6B',
         };
       case 'info':
         return {
           background: backgroundColor || ('$bg5' as any),
           title: titleColor || ('$white' as any),
           text: textColor || ('$primary' as any),
-          icon: '#4A90E2',
         };
       case 'warning':
       default:
@@ -97,7 +95,6 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
           background: backgroundColor || ('$bg5' as any),
           title: titleColor || ('$white' as any),
           text: textColor || ('$warning' as any),
-          icon: '#FDB022',
         };
     }
   };
@@ -139,7 +136,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
 
   return (
     <YStack
-      bg="rgba(0, 0, 0, 0.5)"
+      bg="$dark80"
       items="center"
       justify="center"
       pressStyle={{ opacity: 1 }}
@@ -160,10 +157,10 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
       <YStack
         width={343}
         bg={colors.background}
-        rounded={16}
-        p={16}
-        gap={16}
-        shadowColor="rgba(0, 0, 0, 0.25)"
+        rounded="$4"
+        p="$4"
+        gap="$4"
+        shadowColor="$shadow"
         shadowOffset={{ width: 0, height: 5 }}
         shadowOpacity={0.25}
         shadowRadius={12}
@@ -188,23 +185,18 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
           cursor="pointer"
           style={{
             position: 'absolute',
-            top: 16,
-            right: 16,
+            top: '$4',
+            right: '$4',
             zIndex: 1,
           }}
         >
-          <Text
-            fontSize={16}
-            fontWeight="600"
-            color="rgba(255, 255, 255, 0.6)"
-            style={{ textAlign: 'center' }}
-          >
+          <Text fontSize="$4" fontWeight="600" color="$light40" style={{ textAlign: 'center' }}>
             ×
           </Text>
         </YStack>
 
         {/* Content Frame */}
-        <YStack items="center" gap={16} style={{ alignSelf: 'stretch' }}>
+        <YStack items="center" gap="$4" style={{ alignSelf: 'stretch' }}>
           {/* Icon */}
           {showIcon && icon && (
             <YStack items="center" justify="center" width={48} height={48}>
@@ -223,7 +215,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
               fontSize={18}
               fontWeight="700"
               color={colors.title}
-              lineHeight={20}
+              lineHeight="$5"
               style={
                 titleColor ? { color: titleColor, textAlign: 'center' } : { textAlign: 'center' }
               }
@@ -238,7 +230,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
             fontSize={14}
             fontWeight="400"
             color={colors.text}
-            lineHeight={20}
+            lineHeight="$5"
             style={textColor ? { color: textColor, textAlign: 'center' } : { textAlign: 'center' }}
           >
             {message}
@@ -249,19 +241,14 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
             width="100%"
             height={44}
             bg="$white"
-            rounded={12}
+            rounded="$3"
             items="center"
             justify="center"
             pressStyle={{ opacity: 0.8 }}
             onPress={handleButtonPress}
             cursor="pointer"
           >
-            <Text
-              fontSize={14}
-              fontWeight="700"
-              color="rgba(0, 0, 0, 0.9)"
-              style={{ textAlign: 'center' }}
-            >
+            <Text fontSize={14} fontWeight="700" color="$dark80" style={{ textAlign: 'center' }}>
               {buttonText}
             </Text>
           </YStack>
