@@ -375,10 +375,9 @@ export function SendToScreen(): React.ReactElement {
       }
 
       // Navigate to appropriate screen based on transaction type
-      if (transactionType === 'single-nft') {
-        navigation.navigate('SendSingleNFT', { address: recipient.address, recipient });
-      } else if (transactionType === 'multiple-nfts') {
-        navigation.navigate('SendMultipleNFTs', { address: recipient.address, recipient });
+      if (transactionType === 'single-nft' || transactionType === 'multiple-nfts') {
+        // Use the shared SendSummary screen for both single and multiple NFTs
+        navigation.navigate('SendSummary', { address: recipient.address, recipient });
       } else {
         // Default to tokens screen
         navigation.navigate('SendTokens', { address: recipient.address, recipient });
