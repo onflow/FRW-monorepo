@@ -103,7 +103,12 @@
   "messages": {
     "loading": "Загрузка...",
     "noTokensWithBalance": "Нет токенов с балансом",
-    "noNFTCollectionsForAccount": "Коллекции NFT не найдены"
+    "noNFTCollectionsForAccount": "Коллекции NFT не найдены",
+    "loadingProfiles": "Загрузка профилей...",
+    "noProfiles": "Нет профилей",
+    "noProfilesFound": "Профили не найдены",
+    "failedToLoadRecipients": "Не удалось загрузить получателей",
+    "copied": "Скопировано!"
   },
   "buttons": {
     "retry": "Повторить",

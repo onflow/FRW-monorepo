@@ -104,7 +104,12 @@
   "messages": {
     "loading": "Cargando...",
     "noTokensWithBalance": "No hay tokens con saldo",
-    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT"
+    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT",
+    "loadingProfiles": "Cargando perfiles...",
+    "noProfiles": "Sin Perfiles",
+    "noProfilesFound": "No se encontraron perfiles",
+    "failedToLoadRecipients": "Error al cargar destinatarios",
+    "copied": "¡Copiado!"
   },
   "buttons": {
     "retry": "Reintentar",

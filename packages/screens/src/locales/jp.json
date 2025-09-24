@@ -104,7 +104,12 @@
   "messages": {
     "loading": "読み込み中...",
     "noTokensWithBalance": "残高のあるトークンがありません",
-    "noNFTCollectionsForAccount": "NFTコレクションが見つかりません"
+    "noNFTCollectionsForAccount": "NFTコレクションが見つかりません",
+    "loadingProfiles": "プロファイル読み込み中...",
+    "noProfiles": "プロファイルがありません",
+    "noProfilesFound": "プロファイルが見つかりません",
+    "failedToLoadRecipients": "受信者の読み込みに失敗しました",
+    "copied": "コピーしました！"
   },
   "buttons": {
     "retry": "再試行",

@@ -107,7 +107,12 @@
   "messages": {
     "loading": "Loading...",
     "noTokensWithBalance": "No tokens with balance",
-    "noNFTCollectionsForAccount": "No NFT collections found"
+    "noNFTCollectionsForAccount": "No NFT collections found",
+    "loadingProfiles": "Loading profiles...",
+    "noProfiles": "No Profiles",
+    "noProfilesFound": "No profiles found",
+    "failedToLoadRecipients": "Failed to load recipients",
+    "copied": "Copied!"
   },
   "buttons": {
     "retry": "Retry",

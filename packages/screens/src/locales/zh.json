@@ -104,7 +104,12 @@
   "messages": {
     "loading": "加载中...",
     "noTokensWithBalance": "无余额代币",
-    "noNFTCollectionsForAccount": "未找到NFT收藏"
+    "noNFTCollectionsForAccount": "未找到NFT收藏",
+    "loadingProfiles": "加载配置文件中...",
+    "noProfiles": "无配置文件",
+    "noProfilesFound": "未找到配置文件",
+    "failedToLoadRecipients": "无法加载收件人",
+    "copied": "已复制！"
   },
   "buttons": {
     "retry": "重试",
