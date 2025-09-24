@@ -147,12 +147,17 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 }) => {
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
+  const [isLongPressing, setIsLongPressing] = React.useState(false);
 
   // Theme-aware button colors using helper function
   const isCurrentlyDarkMode = isDarkMode(theme);
 
-  const buttonBackgroundColor = isCurrentlyDarkMode ? (theme.white?.val || '#FFFFFF') : (theme.black?.val || '#000000');
-  const buttonTextColor = isCurrentlyDarkMode ? (theme.black?.val || '#000000') : (theme.white?.val || '#FFFFFF');
+  const buttonBackgroundColor = isCurrentlyDarkMode
+    ? theme.white?.val || '#FFFFFF'
+    : theme.black?.val || '#000000';
+  const buttonTextColor = isCurrentlyDarkMode
+    ? theme.black?.val || '#000000'
+    : theme.white?.val || '#FFFFFF';
 
   // Theme-aware close icon color - use theme's color value directly
   const closeIconColor = theme.color?.val || '#000000';
@@ -161,7 +166,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
 
   // Theme-aware background colors for badges
-  const badgeBackgroundColor = theme.white10?.val || (isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
+  const badgeBackgroundColor =
+    theme.white10?.val ||
+    (isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
 
   const handleConfirm = async () => {
     try {
@@ -249,13 +256,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           </XStack>
 
           {/* Transaction Visual - Simple Static Image */}
-          <View
-            height={120}
-            width="100%"
-            items="center"
-            justify="center"
-            my="$2"
-          >
+          <View height={120} width="100%" items="center" justify="center" my="$2">
             {!isExtension && sendStaticImage ? (
               <RNImage
                 source={sendStaticImage}
@@ -411,7 +412,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             items="center"
             justify="center"
             pressStyle={{ opacity: 0.9 }}
-            onPress={internalIsSending ? undefined : handleConfirm}
+            onLongPress={internalIsSending ? undefined : handleConfirm}
+            onPressIn={internalIsSending ? undefined : () => setIsLongPressing(true)}
+            onPressOut={() => setIsLongPressing(false)}
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
             {internalIsSending ? (
@@ -419,6 +422,13 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <Spinner size="small" color={buttonTextColor} />
                 <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
                   {sendingText}
+                </Text>
+              </XStack>
+            ) : isLongPressing && !isExtension ? (
+              <XStack items="center" gap="$2">
+                <Spinner size="small" color={buttonTextColor} />
+                <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
+                  {holdToSendText}
                 </Text>
               </XStack>
             ) : (
