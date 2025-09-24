@@ -602,6 +602,7 @@ export function SendToScreen(): React.ReactElement {
             isLoading={isLoading}
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
+            loadingText={t('messages.loadingProfiles')}
           />
         ) : activeTab === 'contacts' ? (
           isLoading ? (
@@ -610,6 +611,8 @@ export function SendToScreen(): React.ReactElement {
               isLoading={true}
               emptyTitle={emptyState.title}
               emptyMessage={emptyState.message}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
               contentPadding={0}
             />
           ) : contactsData.length === 0 ? (
@@ -618,6 +621,8 @@ export function SendToScreen(): React.ReactElement {
               isLoading={false}
               emptyTitle={emptyState.title}
               emptyMessage={emptyState.message}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
               contentPadding={0}
             />
           ) : (
@@ -631,6 +636,7 @@ export function SendToScreen(): React.ReactElement {
               groupByLetter={true}
               copiedAddress={copiedAddress}
               copiedId={copiedId}
+              copiedText={t('messages.copied')}
             />
           )
         ) : (
@@ -639,6 +645,8 @@ export function SendToScreen(): React.ReactElement {
             isLoading={isLoading}
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
+            retryButtonText={t('buttons.retry')}
+            errorDefaultMessage={t('messages.failedToLoadRecipients')}
             onItemPress={handleRecipientPress}
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}

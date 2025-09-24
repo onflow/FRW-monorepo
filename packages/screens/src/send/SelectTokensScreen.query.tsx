@@ -1,4 +1,4 @@
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, navigation, logger } from '@onflow/frw-context';
 import {
   useSendStore,
   tokenQueryKeys,
@@ -68,7 +68,7 @@ export function SelectTokensScreen(): React.ReactElement {
       setCurrentAccount(account);
       setFromAccount(account);
     } catch (error) {
-      console.error('Failed to load current account:', error);
+      logger.error('Failed to load current account:', error);
     }
   }, []);
 
@@ -274,7 +274,6 @@ export function SelectTokensScreen(): React.ReactElement {
   const dividerColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
   const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
 
-
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       {isExtension && (
@@ -364,7 +363,9 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < tokensWithBalance.length - 1 && <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />}
+                      {idx < tokensWithBalance.length - 1 && (
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+                      )}
                     </React.Fragment>
                   ))}
                 </YStack>
@@ -421,7 +422,9 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < nftCollections.length - 1 && <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />}
+                      {idx < nftCollections.length - 1 && (
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+                      )}
                     </React.Fragment>
                   ))}
                 </YStack>

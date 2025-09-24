@@ -30,6 +30,7 @@ export interface RecipientListProps {
   // Error states
   error?: string;
   retryButtonText?: string;
+  errorDefaultMessage?: string;
 
   // Callbacks
   onItemPress?: (item: RecipientData) => void;
@@ -58,6 +59,7 @@ export function RecipientList({
   emptyMessage,
   error,
   retryButtonText = 'Retry',
+  errorDefaultMessage = 'Failed to load recipients',
   onItemPress,
   onItemEdit,
   onItemCopy,
@@ -101,15 +103,13 @@ export function RecipientList({
   );
 
   // Empty state
-  const renderEmpty = () => (
-    <RefreshView type="empty" title={emptyTitle} message={emptyMessage || 'No recipients found'} />
-  );
+  const renderEmpty = () => <RefreshView type="empty" title={emptyTitle} message={emptyMessage} />;
 
   // Error state
   const renderError = () => (
     <RefreshView
       type="error"
-      message={error || 'Failed to load recipients'}
+      message={error || errorDefaultMessage}
       onRefresh={onRetry}
       refreshText={retryButtonText}
     />

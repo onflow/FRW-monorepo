@@ -8,6 +8,7 @@ export interface AddressBookSectionProps {
   contacts: RecipientItemProps[];
   copiedAddress?: string | null;
   copiedId?: string | null;
+  copiedText?: string;
 }
 
 export function AddressBookSection({
@@ -15,13 +16,13 @@ export function AddressBookSection({
   contacts,
   copiedAddress,
   copiedId,
+  copiedText = 'Copied!',
 }: AddressBookSectionProps): React.JSX.Element | null {
   const themeName = useThemeName();
 
   // Use Tamagui's built-in theme detection
   const isDarkMode = themeName?.includes('dark') || false;
   const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
 
   if (contacts.length === 0) {
     return null;
@@ -30,13 +31,7 @@ export function AddressBookSection({
   return (
     <YStack gap={4} w="$100">
       {/* Letter Header */}
-      <Text
-        fontSize={14}
-        fontWeight="400"
-        color="$textSecondary"
-        lineHeight={16.8}
-        w="100%"
-      >
+      <Text fontSize={14} fontWeight="400" color="$textSecondary" lineHeight={16.8} w="100%">
         {letter}
       </Text>
 
@@ -51,10 +46,10 @@ export function AddressBookSection({
               copiedFeedback={
                 copiedId
                   ? copiedId === (contact as any).id
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
                   : copiedAddress === `${contact.name}::${contact.address}`
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
               }
             />
@@ -71,6 +66,7 @@ export interface AddressBookListProps {
   groupByLetter?: boolean;
   copiedAddress?: string | null;
   copiedId?: string | null;
+  copiedText?: string;
 }
 
 export function AddressBookList({
@@ -78,6 +74,7 @@ export function AddressBookList({
   groupByLetter = true,
   copiedAddress,
   copiedId,
+  copiedText = 'Copied!',
 }: AddressBookListProps): React.JSX.Element {
   const themeName = useThemeName();
 
@@ -96,16 +93,14 @@ export function AddressBookList({
               copiedFeedback={
                 copiedId
                   ? copiedId === (contact as any).id
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
                   : copiedAddress === `${contact.name}::${contact.address}`
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
               }
             />
-            {index < contacts.length - 1 && (
-              <YStack height={1} bg={dividerColor} w="100%" ml={0} />
-            )}
+            {index < contacts.length - 1 && <YStack height={1} bg={dividerColor} w="100%" ml={0} />}
           </YStack>
         ))}
       </YStack>
@@ -137,6 +132,7 @@ export function AddressBookList({
           contacts={groupedContacts[letter]}
           copiedAddress={copiedAddress}
           copiedId={copiedId}
+          copiedText={copiedText}
         />
       ))}
     </YStack>

@@ -13,6 +13,7 @@ export interface ProfileListProps {
   isLoading?: boolean;
   emptyTitle?: string;
   emptyMessage?: string;
+  loadingText?: string;
 }
 
 export function ProfileList({
@@ -21,12 +22,13 @@ export function ProfileList({
   isLoading = false,
   emptyTitle = 'No Profiles',
   emptyMessage = 'No profiles found',
+  loadingText = 'Loading profiles...',
 }: ProfileListProps): React.ReactElement {
   if (isLoading) {
     return (
       <YStack items="center" justifyContent="center" py="$4">
         <Text color="$text" fontSize="$3">
-          Loading profiles...
+          {loadingText}
         </Text>
       </YStack>
     );
