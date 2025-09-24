@@ -232,7 +232,12 @@ export const toast = new Proxy({} as ToastManager, {
       // Check if bridge has toast methods
       if (prop === 'show' && bridge.showToast) {
         return (toastMessage: ToastMessage) => {
-          bridge.showToast?.(toastMessage.message, toastMessage.type, toastMessage.duration);
+          bridge.showToast?.(
+            toastMessage.title,
+            toastMessage.message,
+            toastMessage.type,
+            toastMessage.duration
+          );
         };
       }
       if (prop === 'hide' && bridge.hideToast) {
@@ -240,9 +245,6 @@ export const toast = new Proxy({} as ToastManager, {
       }
       if (prop === 'clear' && bridge.clearAllToasts) {
         return bridge.clearAllToasts.bind(bridge);
-      }
-      if (prop === 'setToastCallback' && bridge.setToastCallback) {
-        return bridge.setToastCallback.bind(bridge);
       }
       // Return no-op if not available
       return (): void => {};
