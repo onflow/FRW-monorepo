@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Trash, Edit } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
+import { YStack, XStack, ScrollView, Image, View, useTheme } from 'tamagui';
 
 import { type NFTSendData } from './NFTSendPreview';
 import { Text } from '../foundation/Text';
@@ -39,6 +40,11 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
   const imageUrl = nft.image || nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
+  // Theme-aware placeholder background
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const placeholderBackground = isCurrentlyDarkMode ? '$light10' : '$gray7';
+
   return (
     <View
       width={size}
@@ -55,7 +61,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
           <Image src={imageUrl} width="100%" height="100%" onError={() => setImageError(true)} />
         </View>
       ) : (
-        <View flex={1} bg="$light10" rounded={14.4} />
+        <View flex={1} bg={placeholderBackground} rounded={14.4} />
       )}
 
       {/* Overlay */}
@@ -93,6 +99,11 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
   const imageUrl = nft.image || nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
+  // Theme-aware placeholder background
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const placeholderBackground = isCurrentlyDarkMode ? '$light10' : '$gray7';
+
   return (
     <XStack items="center" gap={8} height={71}>
       {/* NFT Image */}
@@ -115,7 +126,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
             />
           </View>
         ) : (
-          <View flex={1} bg="$light10" rounded={16} />
+          <View flex={1} bg={placeholderBackground} rounded={16} />
         )}
       </View>
 
@@ -187,6 +198,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   if (isExpanded) {
     return (
       <YStack
+        mt={'$2'}
         bg={backgroundColor}
         borderRadius={borderRadius}
         padding={contentPadding}
@@ -253,6 +265,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
 
   return (
     <YStack
+      mt={'$2'}
       bg={backgroundColor}
       borderRadius={borderRadius}
       padding={contentPadding}
