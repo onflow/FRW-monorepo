@@ -72,23 +72,46 @@ export const bridgeAuthorization = async (account: any) => {
   };
 };
 
-const getPayerSignature = async (endPoint: string, signable: any) => {
-  const response = await fetch(endPoint, {
-    method: 'POST',
-    headers: {
-      network: 'mainnet',
-      'Content-Type': 'application/json',
+export const payerAuth = async (account: any) => {
+  // TODO: get payer address and key id from config
+  const ADDRESS = '0x319e67f2ef9d937f'; // Fixed payer address
+  const KEY_ID = 0;
+  return {
+    ...account,
+    tempId: `${ADDRESS}-${KEY_ID}`,
+    addr: ADDRESS.replace('0x', ''),
+    keyId: Number(KEY_ID),
+    signingFunction: async (signable: any) => {
+      return {
+        addr: ADDRESS,
+        keyId: Number(KEY_ID),
+        signature: await getPayerSignature('http://localhost:3000/api/signAsFeePayer', signable),
+      };
     },
-    body: JSON.stringify({
-      transaction: signable.voucher,
-      message: {
-        envelope_message: signable.message,
+  };
+};
+
+const getPayerSignature = async (endPoint: string, signable: any) => {
+  try {
+    const response = await fetch(endPoint, {
+      method: 'POST',
+      headers: {
+        network: 'mainnet',
+        'Content-Type': 'application/json',
       },
-    }),
-  });
-  const data = (await response.json()) as { envelopeSigs: { sig: string } };
-  const signature = data.envelopeSigs.sig;
-  return signature;
+      body: JSON.stringify({
+        transaction: signable.voucher,
+        message: {
+          envelope_message: signable.message,
+        },
+      }),
+    });
+    const data = (await response.json()) as { envelopeSigs: { sig: string } };
+    const signature = data.envelopeSigs.sig;
+    return signature;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export function test1Authz() {

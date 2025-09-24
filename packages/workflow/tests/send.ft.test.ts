@@ -2,7 +2,7 @@ import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { accounts } from './utils/accounts';
-import { authz } from './utils/authz';
+import { authz, payerAuth } from './utils/authz';
 
 // dotenv.config();
 
@@ -18,7 +18,7 @@ describe('Test send strategies', () => {
 
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        config.payer = authz;
+        config.payer = payerAuth;
         config.proposer = authz;
         config.authorizations = [authz];
       }
