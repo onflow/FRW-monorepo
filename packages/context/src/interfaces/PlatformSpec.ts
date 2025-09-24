@@ -72,4 +72,18 @@ export interface PlatformSpec {
   // UI interaction methods
   scanQRCode(): Promise<string>;
   closeRN(id?: string | null): void;
+
+  // Toast/Notification methods
+  showToast?(
+    message: string,
+    type?: 'success' | 'error' | 'warning' | 'info',
+    duration?: number
+  ): void;
+  setToastCallback?(
+    callback: (toast: {
+      message: string;
+      type?: 'success' | 'error' | 'warning' | 'info';
+      duration?: number;
+    }) => void
+  ): void;
 }

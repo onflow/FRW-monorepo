@@ -6,6 +6,7 @@ import type { Cache } from './interfaces/caching/Cache';
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/storage/Storage';
+import type { ToastManager } from './interfaces/ToastManager';
 
 /**
  * Service Context - Provides centralized access to all services
@@ -219,6 +220,41 @@ export const logger = new Proxy({} as Logger, {
     } catch {
       // Return no-op functions if ServiceContext not available
       return prop === 'isDebug' ? false : (): void => {};
+    }
+  },
+});
+
+export const toast = new Proxy({} as ToastManager, {
+  get(target, prop): unknown {
+    console.log('[Toast Proxy] Getting property:', prop);
+    try {
+      const bridge = ServiceContext.current().bridge;
+      console.log('[Toast Proxy] Bridge available:', !!bridge);
+      console.log('[Toast Proxy] Bridge has showToast:', !!bridge.showToast);
+
+      // Check if bridge has toast methods
+      if (prop === 'showToast' && bridge.showToast) {
+        console.log('[Toast Proxy] Returning showToast function');
+        return (toastMessage: {
+          message: string;
+          type?: 'success' | 'error' | 'warning' | 'info';
+          duration?: number;
+        }) => {
+          console.log('[Toast Proxy] showToast called with:', toastMessage);
+          bridge.showToast?.(toastMessage.message, toastMessage.type, toastMessage.duration);
+        };
+      }
+      if (prop === 'setToastCallback' && bridge.setToastCallback) {
+        console.log('[Toast Proxy] Returning setToastCallback function');
+        return bridge.setToastCallback.bind(bridge);
+      }
+      // Return no-op if not available
+      console.log('[Toast Proxy] Returning no-op function for:', prop);
+      return (): void => {};
+    } catch (error) {
+      console.error('[Toast Proxy] Error:', error);
+      // Return no-op functions if ServiceContext not available
+      return (): void => {};
     }
   },
 });

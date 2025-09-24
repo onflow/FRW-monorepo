@@ -1,4 +1,4 @@
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, navigation, useToast } from '@onflow/frw-context';
 import {
   useSendStore,
   sendSelectors,
@@ -54,6 +54,7 @@ interface SendSummaryScreenProps {
 export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
+  const toast = useToast();
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
@@ -266,6 +267,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   const handleTransactionConfirm = useCallback(async () => {
     try {
       const result = await executeTransaction();
+      toast.showToast('Submission success', 'success', 4000);
 
       const platform = bridge.getPlatform();
       if (result && (platform === Platform.iOS || platform === Platform.Android)) {
