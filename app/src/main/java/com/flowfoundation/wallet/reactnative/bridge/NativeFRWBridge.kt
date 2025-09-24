@@ -34,12 +34,14 @@ import org.onflow.flow.models.TransactionStatus
 import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.FlowAddress
 import android.content.Intent
+import android.widget.Toast
 import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
 import com.google.gson.Gson
 import org.json.JSONObject
 import org.json.JSONArray
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.utils.toast
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -683,6 +685,43 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     promise.resolve(result)
                 }
             }
+        }
+    }
+
+    // Toast methods
+    override fun showToast(message: String, type: String, duration: Double) {
+        try {
+            android.util.Log.d(TAG, "showToast() called - message: $message, type: $type, duration: ${duration}ms")
+
+            // Convert duration from milliseconds to boolean (long or short)
+            val isLongDuration = duration > 2000.0
+
+            uiScope {
+                toast(msg = message, duration = if (isLongDuration) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "showToast() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun hideToast(id: String) {
+        try {
+            android.util.Log.d(TAG, "hideToast() called - id: $id")
+            // Android native toast typically auto-dismiss, but we can implement custom logic here
+            // For now, this is mainly for API compatibility
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "hideToast() error: ${e.message}")
+        }
+    }
+
+    override fun clearAllToasts() {
+        try {
+            android.util.Log.d(TAG, "clearAllToasts() called")
+            // Android native toast typically auto-dismiss, but we can implement custom logic here
+            // For now, this is mainly for API compatibility
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "clearAllToasts() error: ${e.message}")
         }
     }
 
