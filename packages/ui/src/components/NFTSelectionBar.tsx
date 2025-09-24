@@ -22,20 +22,18 @@ export function NFTSelectionBar({
   onRemoveNFT,
   onContinue,
   onNFTPress = (id: string) => {},
-  continueText = 'Continue',
-  isEditing = false,
-  maxHeight = '$20',
-  selectedQuantity = 1,
   onQuantityChange,
 }: NFTSelectionBarProps) {
   const [isExpanded, setIsExpanded] = useState(true); // Start expanded so trash icons are visible
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
   if (selectedNFTs.length === 0) {
+    console.log('🔍 NFTSelectionBar: No selected NFTs, returning null');
     return null;
   }
 
   const handleToggleExpanded = () => {
+    console.log('🔄 Toggling selection bar expanded:', !isExpanded);
     setIsExpanded(!isExpanded);
   };
 
@@ -45,7 +43,7 @@ export function NFTSelectionBar({
 
     return (
       <YStack key={nft.id} gap="$2" width="100%">
-        <XStack items="center" justify="space-between" gap="$2" width="100%" position="relative">
+        <XStack items="center" justify="space-between" gap="$2" width="100%">
           <XStack
             items="center"
             gap="$2"
@@ -92,6 +90,7 @@ export function NFTSelectionBar({
               borderRadius="$2"
               pressStyle={{ opacity: 0.7 }}
               onPress={() => {
+                console.log('🗑️ Trash icon clicked for NFT:', nft.id);
                 onRemoveNFT(nft.id);
               }}
               cursor="pointer"
@@ -119,7 +118,7 @@ export function NFTSelectionBar({
 
   return (
     <YStack
-      pos="fixed"
+      pos="absolute"
       b="$0"
       l="$0"
       r="$0"
@@ -148,6 +147,7 @@ export function NFTSelectionBar({
           <XStack
             pos="absolute"
             r="$0"
+            t="$2.5"
             width="$6"
             height="$6"
             items="center"
@@ -195,7 +195,6 @@ export function NFTSelectionBar({
             justify="center"
             disabled={selectedNFTs.length === 0}
             onPress={onContinue}
-            cursor="pointer"
           >
             <Text fontSize="$5" fontWeight="600" color="#000000">
               Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
