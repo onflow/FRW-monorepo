@@ -1,5 +1,5 @@
 import { Toast, type ToastProps } from '@onflow/frw-ui';
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
 import type { ToastMessage } from './interfaces/ToastManager';
 
@@ -15,6 +15,7 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 export interface ToastState {
   id: string;
+  title: string;
   message: string;
   type: ToastProps['type'];
   duration: number;
@@ -29,7 +30,8 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     const newToast: ToastState = {
       id,
-      message: toast.message,
+      title: toast.title,
+      message: toast.message || '',
       type: toast.type || 'info',
       duration: toast.duration || 4000,
       visible: true,
@@ -52,17 +54,6 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const clear = useCallback(() => {
     setToasts([]);
   }, []);
-
-  // Set up bridge callback if available
-  React.useEffect(() => {
-    // Access bridge through global or window object to avoid direct import
-    const globalBridge = (globalThis as any).__FLOW_WALLET_BRIDGE__;
-    if (globalBridge?.setToastCallback) {
-      globalBridge.setToastCallback((toast: ToastMessage) => {
-        show(toast);
-      });
-    }
-  }, [show]);
 
   const contextValue: ToastContextValue = {
     show,
@@ -105,7 +96,12 @@ export const usePlatformToast = () => {
       // Try platform first, fallback to local toast
       const globalBridge = (globalThis as any).__FLOW_WALLET_BRIDGE__;
       if (globalBridge?.showToast) {
-        globalBridge.showToast(toastMessage.message, toastMessage.type, toastMessage.duration);
+        globalBridge.showToast(
+          toastMessage.title,
+          toastMessage.message,
+          toastMessage.type,
+          toastMessage.duration
+        );
       } else {
         toast.show(toastMessage);
       }

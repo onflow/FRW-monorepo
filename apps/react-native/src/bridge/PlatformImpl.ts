@@ -1,10 +1,4 @@
-import {
-  type PlatformSpec,
-  type Storage,
-  type Cache,
-  type Navigation,
-  type ToastCallback,
-} from '@onflow/frw-context';
+import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   Currency,
   RecentContactsResponse,
@@ -16,9 +10,9 @@ import { Platform } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
-import { Platform as RNPlatform, NativeModules } from 'react-native';
+import { NativeModules, Platform as RNPlatform } from 'react-native';
 
-import { storage, cache } from '../storage';
+import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
@@ -26,7 +20,6 @@ import { bridgeAuthorization, payer, proposer } from './signWithRole';
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
-  private toastCallback?: ToastCallback;
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -258,33 +251,19 @@ class PlatformImpl implements PlatformSpec {
 
   // Toast Manager implementation
   showToast(
-    message: string,
+    title: string,
+    message?: string,
     type: 'success' | 'error' | 'warning' | 'info' = 'info',
     duration: number = 4000
   ): void {
-    this.log('debug', '[PlatformImpl] Showing toast:', message, type, duration);
-
-    // First try to show toast via React Native component (ToastContext)
-    if (this.toastCallback) {
-      this.toastCallback({
-        message,
-        type,
-        duration,
-      });
-      return;
-    }
-
-    // Fallback to native implementation via bridge
     try {
-      NativeFRWBridge.showToast(message, type, duration);
-      this.log('debug', '[PlatformImpl] Toast shown via native bridge');
+      NativeFRWBridge.showToast(title, message, type, duration);
     } catch (error) {
       this.log('error', '[PlatformImpl] Failed to show native toast via bridge:', error);
     }
   }
 
   hideToast(id: string): void {
-    this.log('debug', '[PlatformImpl] Hide toast called for id:', id);
     try {
       NativeFRWBridge.hideToast(id);
     } catch (error) {
@@ -293,32 +272,11 @@ class PlatformImpl implements PlatformSpec {
   }
 
   clearAllToasts(): void {
-    this.log('debug', '[PlatformImpl] Clear all toasts called');
     try {
       NativeFRWBridge.clearAllToasts();
     } catch (error) {
       this.log('error', '[PlatformImpl] Failed to clear toasts via bridge:', error);
     }
-  }
-
-  setToastCallback(callback: ToastCallback): void {
-    this.log('debug', '[PlatformImpl] Toast callback set');
-    this.toastCallback = callback;
-
-    // Make callback available globally for ToastContext to use
-    (globalThis as any).__FLOW_WALLET_BRIDGE__ = {
-      ...(globalThis as any).__FLOW_WALLET_BRIDGE__,
-      setToastCallback: (cb: ToastCallback) => {
-        this.toastCallback = cb;
-      },
-      showToast: (
-        message: string,
-        type?: 'success' | 'error' | 'warning' | 'info',
-        duration?: number
-      ) => {
-        this.showToast(message, type, duration);
-      },
-    };
   }
 }
 

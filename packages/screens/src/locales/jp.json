@@ -96,7 +96,6 @@
     "noNFTSelected": "NFTが選択されていません。戻って送信するNFTを選択してください。",
     "summary": "概要",
     "sendTokens": "トークンを送信",
-    "sending": "送信中...",
     "confirmSend": "送信を確認",
     "holdToSend": "長押しで送信"
   },

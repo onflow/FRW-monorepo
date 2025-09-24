@@ -1,12 +1,12 @@
-import { type PlatformSpec, type Storage, type Cache } from '@onflow/frw-context';
+import { type Cache, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import { useSendStore, useTokenQueryStore } from '@onflow/frw-stores';
 import {
   Platform,
+  type Currency,
   type RecentContactsResponse,
   type WalletAccount,
   type WalletAccountsResponse,
   type WalletProfilesResponse,
-  type Currency,
 } from '@onflow/frw-types';
 
 import { ExtensionCache } from './ExtensionCache';
@@ -499,18 +499,20 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   // Toast/Notification methods
   showToast(
-    message: string,
+    title: string,
+    message?: string,
     type: 'success' | 'error' | 'warning' | 'info' = 'info',
     duration = 4000
   ): void {
     // Call the registered callback if available
     if ((this as any).toastCallback) {
-      (this as any).toastCallback({ message, type, duration });
+      (this as any).toastCallback({ title, message, type, duration });
     }
   }
 
   setToastCallback(
     callback: (toast: {
+      title: string;
       message: string;
       type?: 'success' | 'error' | 'warning' | 'info';
       duration?: number;
