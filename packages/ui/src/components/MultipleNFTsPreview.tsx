@@ -121,10 +121,10 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
 
       {/* NFT Details */}
       <YStack flex={1} justify="center" gap={2}>
-        <Text fontSize={14} fontWeight="600" color="$light80" numberOfLines={1}>
+        <Text fontSize={14} fontWeight="600" color="$color" numberOfLines={1}>
           {nft.name || unnamedNFTText}
         </Text>
-        <Text fontSize={14} fontWeight="400" color="$light80" numberOfLines={1}>
+        <Text fontSize={14} fontWeight="400" color="$color" numberOfLines={1}>
           {nft.collection || unknownCollectionText}
         </Text>
       </YStack>
@@ -140,7 +140,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
           onPress={() => onRemove(nft.id)}
           cursor="pointer"
         >
-          <Trash size={24} color="rgba(255, 255, 255, 0.5)" theme="outline" />
+          <Trash size={24} color="#767676" theme="outline" />
         </XStack>
       )}
     </XStack>
@@ -196,7 +196,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         {/* Section Header */}
         <XStack items="center" justify="space-between" gap={15} width="100%">
           {/* NFT Count */}
-          <Text fontSize={20} fontWeight="500" color="$light80" lineHeight={24}>
+          <Text fontSize={20} fontWeight="500" color="$color" lineHeight={24}>
             {totalCount} NFT{totalCount !== 1 ? 's' : ''}
           </Text>
 
