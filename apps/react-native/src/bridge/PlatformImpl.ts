@@ -1,4 +1,10 @@
-import { type PlatformSpec, type Storage, type Cache, type Navigation } from '@onflow/frw-context';
+import {
+  type PlatformSpec,
+  type Storage,
+  type Cache,
+  type Navigation,
+  type ToastCallback,
+} from '@onflow/frw-context';
 import type {
   Currency,
   RecentContactsResponse,
@@ -20,6 +26,7 @@ import { bridgeAuthorization, payer, proposer } from './signWithRole';
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
+  private toastCallback?: ToastCallback;
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -247,6 +254,71 @@ class PlatformImpl implements PlatformSpec {
   navigation(): Navigation {
     // Return the navigation implementation - will be set up separately
     return reactNativeNavigation;
+  }
+
+  // Toast Manager implementation
+  showToast(
+    message: string,
+    type: 'success' | 'error' | 'warning' | 'info' = 'info',
+    duration: number = 4000
+  ): void {
+    this.log('debug', '[PlatformImpl] Showing toast:', message, type, duration);
+
+    // First try to show toast via React Native component (ToastContext)
+    if (this.toastCallback) {
+      this.toastCallback({
+        message,
+        type,
+        duration,
+      });
+      return;
+    }
+
+    // Fallback to native implementation via bridge
+    try {
+      NativeFRWBridge.showToast(message, type, duration);
+      this.log('debug', '[PlatformImpl] Toast shown via native bridge');
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to show native toast via bridge:', error);
+    }
+  }
+
+  hideToast(id: string): void {
+    this.log('debug', '[PlatformImpl] Hide toast called for id:', id);
+    try {
+      NativeFRWBridge.hideToast(id);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to hide toast via bridge:', error);
+    }
+  }
+
+  clearAllToasts(): void {
+    this.log('debug', '[PlatformImpl] Clear all toasts called');
+    try {
+      NativeFRWBridge.clearAllToasts();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to clear toasts via bridge:', error);
+    }
+  }
+
+  setToastCallback(callback: ToastCallback): void {
+    this.log('debug', '[PlatformImpl] Toast callback set');
+    this.toastCallback = callback;
+
+    // Make callback available globally for ToastContext to use
+    (globalThis as any).__FLOW_WALLET_BRIDGE__ = {
+      ...(globalThis as any).__FLOW_WALLET_BRIDGE__,
+      setToastCallback: (cb: ToastCallback) => {
+        this.toastCallback = cb;
+      },
+      showToast: (
+        message: string,
+        type?: 'success' | 'error' | 'warning' | 'info',
+        duration?: number
+      ) => {
+        this.showToast(message, type, duration);
+      },
+    };
   }
 }
 
