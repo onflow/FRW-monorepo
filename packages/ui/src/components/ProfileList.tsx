@@ -124,8 +124,11 @@ function ProfileItem({
       <YStack gap="$0">
         {accountsData.map((account, index) => (
           <React.Fragment key={account.id}>
+            <YStack py="$2" items="center">
+              <YStack height={1} bg={dividerColor} width="100%" />
+            </YStack>
             <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
-            {index < accountsData.length - 1 && (
+            {index === accountsData.length - 1 && (
               <YStack py="$2" items="center">
                 <YStack height={1} bg={dividerColor} width="100%" />
               </YStack>
