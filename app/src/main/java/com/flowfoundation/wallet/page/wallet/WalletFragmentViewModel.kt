@@ -29,6 +29,8 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateListener, StakingInfoUpdateListener,
     OnUserInfoReload, FungibleTokenListUpdateListener, FungibleTokenUpdateListener, OnAccountUpdate {
@@ -38,6 +40,12 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
     val headerLiveData = MutableLiveData<WalletHeaderModel?>()
 
     private val dataList = CopyOnWriteArrayList<WalletCoinItemModel>()
+    
+    // Add mutex lock to ensure thread safety
+    private val updateLock = Mutex()
+    
+    // Cache latest staking information
+    private var cachedStakingInfo: Pair<Boolean, Float>? = null
 
     private var needReload = true
 
@@ -94,19 +102,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             }
             
             if (finalTokens.isNotEmpty() || allTokens.isNotEmpty()) {
-                val isHideBalance = isHideWalletBalance()
-                uiScope {
-                    dataList.clear()
-                    dataList.addAll(finalTokens.map {
-                        WalletCoinItemModel(
-                            it, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
-                        )
-                    })
-                    sortDataList()
-                    dataListLiveData.postValue(dataList.toList())
-                    updateWalletHeader(count = dataList.size)
-                    logd(TAG, "refreshWithCurrentTokens: Updated UI with ${finalTokens.size} tokens")
-                }
+                // Use centralized update method to preserve staking info
+                updateDataListSafely(finalTokens, preserveStakingInfo = true)
+                logd(TAG, "refreshWithCurrentTokens: Updated UI with ${finalTokens.size} tokens")
             }
         }
     }
@@ -134,20 +132,87 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
         }
     }
 
+    /**
+     * Centralized data list update method to ensure staking info is not lost
+     */
+    private suspend fun updateDataListSafely(
+        tokens: List<FungibleToken>,
+        preserveStakingInfo: Boolean = true
+    ) {
+        updateLock.withLock {
+            val isHideBalance = isHideWalletBalance()
+            
+            // If need to preserve staking info, get current staking state first
+            val currentStakingInfo = if (preserveStakingInfo) {
+                cachedStakingInfo ?: Pair(StakingManager.isStaked(), StakingManager.stakingCount())
+            } else {
+                Pair(StakingManager.isStaked(), StakingManager.stakingCount())
+            }
+            
+            val newDataList = tokens.map { token ->
+                WalletCoinItemModel(
+                    token = token,
+                    isHideBalance = isHideBalance,
+                    isStaked = if (token.isFlowToken()) currentStakingInfo.first else false,
+                    stakeAmount = if (token.isFlowToken()) currentStakingInfo.second else 0f
+                )
+            }
+            
+            uiScope {
+                dataList.clear()
+                dataList.addAll(newDataList)
+                sortDataList()
+                dataListLiveData.postValue(dataList.toList())
+                updateWalletHeader(count = dataList.size)
+                
+                logd(TAG, "updateDataListSafely: Updated ${newDataList.size} tokens, Flow staking: isStaked=${currentStakingInfo.first}, amount=${currentStakingInfo.second}")
+            }
+        }
+    }
+
     override fun onStakingInfoUpdate() {
-        val flow = dataList.firstOrNull { it.token.isFlowToken() } ?: return
-        dataList[dataList.indexOf(flow)] = flow.copy(
-            isStaked = StakingManager.isStaked(),
-            stakeAmount = StakingManager.stakingCount()
-        )
-        dataListLiveData.postValue(dataList.toList())
+        logd(TAG, "onStakingInfoUpdate called")
+        viewModelIOScope(this) {
+            val isStaked = StakingManager.isStaked()
+            val stakingCount = StakingManager.stakingCount()
+            
+            // Cache latest staking information
+            cachedStakingInfo = Pair(isStaked, stakingCount)
+            
+            logd(TAG, "onStakingInfoUpdate: isStaked=$isStaked, stakingCount=$stakingCount")
+            
+            updateLock.withLock {
+                val updatedList = dataList.map { item ->
+                    if (item.token.isFlowToken()) {
+                        item.copy(isStaked = isStaked, stakeAmount = stakingCount)
+                    } else {
+                        item
+                    }
+                }
+                
+                uiScope {
+                    dataList.clear()
+                    dataList.addAll(updatedList)
+                    dataListLiveData.postValue(dataList.toList())
+                    logd(TAG, "onStakingInfoUpdate: Successfully updated Flow token staking info")
+                }
+            }
+        }
     }
 
     fun onBalanceHideStateUpdate() {
         viewModelIOScope(this) {
-            val isHideBalance = isHideWalletBalance()
-            val data = dataList.toList().map { it.copy(isHideBalance = isHideBalance) }
-            dataListLiveData.postValue(data)
+            updateLock.withLock {
+                val isHideBalance = isHideWalletBalance()
+                val updatedList = dataList.map { it.copy(isHideBalance = isHideBalance) }
+                
+                uiScope {
+                    dataList.clear()
+                    dataList.addAll(updatedList)
+                    dataListLiveData.postValue(dataList.toList())
+                    logd(TAG, "onBalanceHideStateUpdate: Updated hide balance state to $isHideBalance")
+                }
+            }
         }
     }
 
@@ -181,21 +246,17 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
                 val displayTokens = FungibleTokenListManager.getCurrentDisplayTokenListSnapshot()
                 logd(TAG, "loadCoinInfo: displayTokens.size=${displayTokens.size}")
                 ioScope {
-                    val isHideBalance = isHideWalletBalance()
-                    uiScope {
-                        dataList.clear()
-                        if (displayTokens.isNotEmpty()) {
-                            dataList.addAll(displayTokens.map {
-                                WalletCoinItemModel(
-                                    it, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
-                                )
-                            })
-                        } else {
-                            logd(TAG, "loadCoinInfo: No tokens to display (filtered out)")
+                    if (displayTokens.isNotEmpty()) {
+                        updateDataListSafely(displayTokens, preserveStakingInfo = true)
+                    } else {
+                        updateLock.withLock {
+                            uiScope {
+                                dataList.clear()
+                                dataListLiveData.postValue(emptyList())
+                                updateWalletHeader(count = 0)
+                                logd(TAG, "loadCoinInfo: No tokens to display (filtered out)")
+                            }
                         }
-                        sortDataList()
-                        dataListLiveData.postValue(dataList.toList())
-                        updateWalletHeader(count = dataList.size)
                     }
                 }
             }
@@ -231,28 +292,26 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
     }
 
     override fun onTokenListUpdated(list: List<FungibleToken>) {
-        ioScope {
-            logd(TAG, "coinList :: ${list.size}")
+        viewModelIOScope(this) {
+            logd(TAG, "onTokenListUpdated: ${list.size} tokens")
             val displayTokens = FungibleTokenListManager.getCurrentDisplayTokenListSnapshot()
             logd(TAG, "onTokenListUpdated: displayTokens.size=${displayTokens.size}")
             
-            val isHideBalance = isHideWalletBalance()
-            uiScope {
-                dataList.clear()
-                if (displayTokens.isNotEmpty()) {
-                    dataList.addAll(displayTokens.map {
-                        WalletCoinItemModel(
-                            it, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
-                        )
-                    })
-                    logd(TAG, "loadCoinList dataList:${dataList.map { it.token.contractId() }}")
-                } else {
-                    logd(TAG, "onTokenListUpdated: No tokens to display (filtered out or empty)")
+            // Use centralized update method to preserve staking info
+            if (displayTokens.isNotEmpty()) {
+                updateDataListSafely(displayTokens, preserveStakingInfo = true)
+                logd(TAG, "onTokenListUpdated: Updated UI with displayTokens")
+            } else {
+                updateLock.withLock {
+                    uiScope {
+                        dataList.clear()
+                        dataListLiveData.postValue(emptyList())
+                        updateWalletHeader(count = 0)
+                        logd(TAG, "onTokenListUpdated: No tokens to display (filtered out or empty)")
+                    }
                 }
-                sortDataList()
-                dataListLiveData.postValue(dataList.toList())
-                updateWalletHeader(count = dataList.size)
             }
+            
             if (isMainnet() && WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not()) {
                 StakingManager.refresh()
             }
@@ -269,17 +328,25 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             if (displayTokens.none { it.isSameToken(token.contractId()) }) {
                 return // Token is filtered out, don't add it
             }
-            ioScope {
-                val isHideBalance = isHideWalletBalance()
-                uiScope {
-                    dataList.add(
-                        WalletCoinItemModel(
-                            token, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
-                        )
+            viewModelIOScope(this) {
+                updateLock.withLock {
+                    val isHideBalance = isHideWalletBalance()
+                    val stakingInfo = cachedStakingInfo ?: Pair(StakingManager.isStaked(), StakingManager.stakingCount())
+                    
+                    val newItem = WalletCoinItemModel(
+                        token = token,
+                        isHideBalance = isHideBalance,
+                        isStaked = if (token.isFlowToken()) stakingInfo.first else false,
+                        stakeAmount = if (token.isFlowToken()) stakingInfo.second else 0f
                     )
-                    sortDataList()
-                    dataListLiveData.postValue(dataList.toList())
-                    updateWalletHeader(count = dataList.size)
+                    
+                    uiScope {
+                        dataList.add(newItem)
+                        sortDataList()
+                        dataListLiveData.postValue(dataList.toList())
+                        updateWalletHeader(count = dataList.size)
+                        logd(TAG, "onTokenDisplayUpdated: Added token ${token.contractId()}")
+                    }
                 }
             }
         } else {
@@ -294,13 +361,27 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
     }
 
     override fun onTokenUpdated(token: FungibleToken) {
-        logd(TAG, "updateToken :${token.contractId()}")
-        val oldItem = dataList.firstOrNull { it.token.isSameToken(token.contractId()) } ?: return
-        val index = dataList.indexOf(oldItem)
-        dataList[index] = oldItem.copy(token = token)
-        sortDataList()
-        dataListLiveData.postValue(dataList.toList())
-        updateWalletHeader()
+        logd(TAG, "onTokenUpdated: ${token.contractId()}")
+        viewModelIOScope(this) {
+            updateLock.withLock {
+                val index = dataList.indexOfFirst { it.token.isSameToken(token.contractId()) }
+                if (index >= 0) {
+                    val oldItem = dataList[index]
+                    // Preserve existing staking information
+                    val newItem = oldItem.copy(token = token)
+                    
+                    uiScope {
+                        dataList[index] = newItem
+                        sortDataList()
+                        dataListLiveData.postValue(dataList.toList())
+                        updateWalletHeader()
+                        logd(TAG, "onTokenUpdated: Successfully updated token ${token.contractId()}")
+                    }
+                } else {
+                    logd(TAG, "onTokenUpdated: Token ${token.contractId()} not found in dataList")
+                }
+            }
+        }
     }
 
 }
