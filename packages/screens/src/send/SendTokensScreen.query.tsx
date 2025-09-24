@@ -745,13 +745,12 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       </YStack>
       {/* SurgeWarning Modal */}
       <SurgeWarning
-        message="Due to high network activity, transaction fees are elevated. Current network fees are 4x higher than usual."
-        title="Surge price active"
+        message={t('surge.message')}
+        title={t('surge.title')}
         variant="warning"
         visible={isSurgeWarningVisible}
         onClose={() => setIsSurgeWarningVisible(false)}
         onButtonPress={() => {
-          console.log('Surge warning acknowledged');
           setIsSurgeWarningVisible(false);
         }}
       />
