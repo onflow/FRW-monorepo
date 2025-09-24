@@ -96,7 +96,6 @@
     "noNFTSelected": "No se seleccionó NFT. Por favor regresa y selecciona un NFT para enviar.",
     "summary": "Resumen",
     "sendTokens": "Enviar Tokens",
-    "sending": "Enviando...",
     "confirmSend": "Confirmar envío",
     "holdToSend": "Mantener para enviar"
   },

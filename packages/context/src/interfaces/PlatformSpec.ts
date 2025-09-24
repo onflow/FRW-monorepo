@@ -75,17 +75,11 @@ export interface PlatformSpec {
 
   // Toast/Notification methods
   showToast?(
-    message: string,
+    title: string,
+    message?: string,
     type?: 'success' | 'error' | 'warning' | 'info',
     duration?: number
   ): void;
   hideToast?(id: string): void;
   clearAllToasts?(): void;
-  setToastCallback?(
-    callback: (toast: {
-      message: string;
-      type?: 'success' | 'error' | 'warning' | 'info';
-      duration?: number;
-    }) => void
-  ): void;
 }

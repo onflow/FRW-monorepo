@@ -99,7 +99,6 @@
     "noNFTSelected": "No NFT selected. Please go back and select an NFT to send.",
     "summary": "Summary",
     "sendTokens": "Send Tokens",
-    "sending": "Sending...",
     "confirmSend": "Confirm send",
     "holdToSend": "Hold to send"
   },

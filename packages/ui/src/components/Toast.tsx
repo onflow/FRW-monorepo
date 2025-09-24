@@ -5,7 +5,8 @@ import { Text } from '../foundation/Text';
 
 export interface ToastProps {
   visible: boolean;
-  message: string;
+  title: string;
+  message?: string;
   type?: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
   onClose?: () => void;
@@ -13,6 +14,7 @@ export interface ToastProps {
 
 export const Toast: React.FC<ToastProps> = ({
   visible,
+  title,
   message,
   type = 'error',
   duration = 4000,
@@ -88,8 +90,25 @@ export const Toast: React.FC<ToastProps> = ({
       enterStyle={{ opacity: 0, y: -20, scale: 0.95 }}
       exitStyle={{ opacity: 0, y: -20, scale: 0.95 }}
     >
-      <Text color="$white" fontSize="$3" fontWeight="500" textAlign="center" numberOfLines={3}>
-        {message}
+      <Text
+        color="$text"
+        fontSize="$3"
+        fontWeight="500"
+        numberOfLines={3}
+        style={{ textAlign: 'center' }}
+      >
+        {title}
+        {message && (
+          <Text
+            color="$textSecondary"
+            fontSize="$2"
+            fontWeight="400"
+            numberOfLines={3}
+            style={{ textAlign: 'center' }}
+          >
+            {message}
+          </Text>
+        )}
       </Text>
     </YStack>
   );
