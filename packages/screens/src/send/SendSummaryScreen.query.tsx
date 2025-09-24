@@ -267,7 +267,6 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   const handleTransactionConfirm = useCallback(async () => {
     try {
       const result = await executeTransaction();
-      toast.showToast('Submission success', 'success', 4000);
 
       const platform = bridge.getPlatform();
       if (result && (platform === Platform.iOS || platform === Platform.Android)) {

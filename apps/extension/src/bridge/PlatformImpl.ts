@@ -503,8 +503,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     type: 'success' | 'error' | 'warning' | 'info' = 'info',
     duration = 4000
   ): void {
-    console.log(`[Toast ${type.toUpperCase()}] ${message}`);
-
     // Call the registered callback if available
     if ((this as any).toastCallback) {
       (this as any).toastCallback({ message, type, duration });
@@ -535,6 +533,8 @@ export const getPlatform = (): ExtensionPlatformImpl => {
 export const initializePlatform = (): ExtensionPlatformImpl => {
   if (!platformInstance) {
     platformInstance = new ExtensionPlatformImpl();
+    // Make platform available globally for ToastContext
+    (globalThis as any).__FLOW_WALLET_BRIDGE__ = platformInstance;
   }
   return platformInstance;
 };
