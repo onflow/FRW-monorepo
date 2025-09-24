@@ -126,6 +126,8 @@
     "failedToLoadNFTs": "NFTの読み込みに失敗しました"
   },
   "nft": {
+    "untitled": "無題",
+    "unknownCollection": "不明なコレクション",
     "noSearchResults": "検索結果がありません",
     "noNFTsMatchSearch": "'{{search}}'に一致するNFTがありません",
     "noNFTsFound": "NFTが見つかりません",

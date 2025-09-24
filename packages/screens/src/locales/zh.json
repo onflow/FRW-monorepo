@@ -126,6 +126,8 @@
     "failedToLoadNFTs": "加载NFT失败"
   },
   "nft": {
+    "untitled": "无标题",
+    "unknownCollection": "未知收藏",
     "noSearchResults": "无搜索结果",
     "noNFTsMatchSearch": "没有NFT与'{{search}}'匹配",
     "noNFTsFound": "未找到NFT",

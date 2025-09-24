@@ -126,6 +126,8 @@
     "failedToLoadNFTs": "Не удалось загрузить NFT"
   },
   "nft": {
+    "untitled": "Без названия",
+    "unknownCollection": "Неизвестная коллекция",
     "noSearchResults": "Результаты поиска отсутствуют",
     "noNFTsMatchSearch": "NFT не найдены по запросу '{{search}}'",
     "noNFTsFound": "NFT не найдены",

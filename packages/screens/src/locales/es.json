@@ -126,6 +126,8 @@
     "failedToLoadNFTs": "Error al cargar NFTs"
   },
   "nft": {
+    "untitled": "Sin título",
+    "unknownCollection": "Colección desconocida",
     "noSearchResults": "Sin Resultados de Búsqueda",
     "noNFTsMatchSearch": "Ningún NFT coincide con '{{search}}'",
     "noNFTsFound": "No se Encontraron NFTs",

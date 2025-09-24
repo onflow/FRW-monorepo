@@ -129,6 +129,8 @@
     "failedToLoadNFTs": "Failed to load NFTs"
   },
   "nft": {
+    "untitled": "Untitled",
+    "unknownCollection": "Unknown Collection",
     "noSearchResults": "No Search Results",
     "noNFTsMatchSearch": "No NFTs match '{{search}}'",
     "noNFTsFound": "No NFTs Found",
