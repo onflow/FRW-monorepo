@@ -176,10 +176,6 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
             maxHeight: 400,
             height: '100%',
           }}
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingBottom: 20,
-          }}
           showsVerticalScrollIndicator={true}
           scrollEnabled={true}
           nestedScrollEnabled={true}
