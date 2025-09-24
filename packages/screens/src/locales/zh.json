@@ -123,7 +123,9 @@
     "timeout": "请求超时",
     "unknown": "发生未知错误",
     "failedToLoadTokens": "加载代币失败",
-    "failedToLoadNFTs": "加载NFT失败"
+    "failedToLoadNFTs": "加载NFT失败",
+    "transactionPayloadError": "创建交易载荷失败",
+    "transactionExecutionError": "交易执行失败"
   },
   "nft": {
     "noSearchResults": "无搜索结果",

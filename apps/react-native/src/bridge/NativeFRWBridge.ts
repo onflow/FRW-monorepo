@@ -61,6 +61,10 @@ export interface Spec extends TurboModule {
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
+  // Toast methods
+  showToast(message: string, type: string, duration: number): void;
+  hideToast(id: string): void;
+  clearAllToasts(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

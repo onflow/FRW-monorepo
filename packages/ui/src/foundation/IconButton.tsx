@@ -124,7 +124,7 @@ export function IconButton({
       pressStyle={{
         ...buttonStyles.pressStyle,
         opacity: 0.7,
-        transform: [{ scale: 0.95 }]
+        transform: [{ scale: 0.95 }],
       }}
       {...buttonStyles}
       {...props}

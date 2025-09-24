@@ -1,4 +1,4 @@
-import { ServiceContext } from '@onflow/frw-context';
+import { ServiceContext, ToastProvider } from '@onflow/frw-context';
 import { QueryProvider, initializeI18n } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
 import { TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
@@ -82,13 +82,18 @@ const App = (props: AppProps) => {
   const colorScheme = useColorScheme();
 
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
-      <QueryProvider>
-        <QueryDebugger />
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AppNavigator {...props} />
-        </GestureHandlerRootView>
-      </QueryProvider>
+    <TamaguiProvider
+      config={tamaguiConfig}
+      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+    >
+      <ToastProvider>
+        <QueryProvider>
+          <QueryDebugger />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <AppNavigator {...props} />
+          </GestureHandlerRootView>
+        </QueryProvider>
+      </ToastProvider>
     </TamaguiProvider>
   );
 };

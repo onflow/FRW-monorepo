@@ -1,5 +1,6 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ToastProvider } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
 import { extensionTamaguiConfig } from '@onflow/frw-ui';
 import React, { useEffect } from 'react';
@@ -81,13 +82,15 @@ const App = ({ wallet }: { wallet: any }) => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
-        <QueryProvider>
-          <div className="t_dark" style={{ minHeight: '100vh' }}>
-            <WalletProvider wallet={wallet}>
-              <Main />
-            </WalletProvider>
-          </div>
-        </QueryProvider>
+        <ToastProvider>
+          <QueryProvider>
+            <div className="t_dark" style={{ minHeight: '100vh' }}>
+              <WalletProvider wallet={wallet}>
+                <Main />
+              </WalletProvider>
+            </div>
+          </QueryProvider>
+        </ToastProvider>
       </TamaguiProvider>
     </ThemeProvider>
   );

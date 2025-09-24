@@ -123,7 +123,9 @@
     "timeout": "Tiempo de espera agotado",
     "unknown": "Ocurrió un error desconocido",
     "failedToLoadTokens": "Error al cargar tokens",
-    "failedToLoadNFTs": "Error al cargar NFTs"
+    "failedToLoadNFTs": "Error al cargar NFTs",
+    "transactionPayloadError": "Error al crear la carga de la transacción",
+    "transactionExecutionError": "Error en la ejecución de la transacción"
   },
   "nft": {
     "noSearchResults": "Sin Resultados de Búsqueda",

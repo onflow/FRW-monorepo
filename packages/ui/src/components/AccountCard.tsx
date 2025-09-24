@@ -42,7 +42,9 @@ export function AccountCard({
   const isCurrentlyDarkMode = isDarkMode(theme);
 
   // Chain link icon color logic
-  const chainLinkIconColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+  const chainLinkIconColor = isCurrentlyDarkMode
+    ? 'rgba(255, 255, 255, 0.8)'
+    : 'rgba(0, 0, 0, 0.8)';
 
   // Early return if no account data
   if (!account) {
@@ -59,7 +61,7 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-     // bg={backgroundColor}
+      // bg={backgroundColor}
       rounded="$4"
       pt="$4"
       px="$4"
@@ -74,7 +76,7 @@ export function AccountCard({
         fontSize="$2"
         mb={isSendTokensScreen ? '$8' : '$1'}
         fontWeight="400"
-       // color="$textSecondary"
+        // color="$textSecondary"
         lineHeight={16}
       >
         {title}

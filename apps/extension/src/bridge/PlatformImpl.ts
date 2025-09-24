@@ -496,6 +496,29 @@ class ExtensionPlatformImpl implements PlatformSpec {
       chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
     }
   }
+
+  // Toast/Notification methods
+  showToast(
+    message: string,
+    type: 'success' | 'error' | 'warning' | 'info' = 'info',
+    duration = 4000
+  ): void {
+    // Call the registered callback if available
+    if ((this as any).toastCallback) {
+      (this as any).toastCallback({ message, type, duration });
+    }
+  }
+
+  setToastCallback(
+    callback: (toast: {
+      message: string;
+      type?: 'success' | 'error' | 'warning' | 'info';
+      duration?: number;
+    }) => void
+  ): void {
+    // Store the callback for the platform to use
+    (this as any).toastCallback = callback;
+  }
 }
 
 let platformInstance: ExtensionPlatformImpl | null = null;
@@ -510,6 +533,8 @@ export const getPlatform = (): ExtensionPlatformImpl => {
 export const initializePlatform = (): ExtensionPlatformImpl => {
   if (!platformInstance) {
     platformInstance = new ExtensionPlatformImpl();
+    // Make platform available globally for ToastContext
+    (globalThis as any).__FLOW_WALLET_BRIDGE__ = platformInstance;
   }
   return platformInstance;
 };
