@@ -1,5 +1,6 @@
 import { Search, Close, VerifiedToken } from '@onflow/frw-icons';
 import { type TokenModel } from '@onflow/frw-types';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState, useMemo } from 'react';
 import {
   YStack,
@@ -12,7 +13,6 @@ import {
   useTheme,
   View,
   Separator,
-  useThemeName,
 } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
@@ -52,15 +52,14 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const media = useMedia();
   const theme = useTheme();
-  const themeName = useThemeName();
   const isMobile = media.xs || media.sm;
 
   // Theme-aware close icon color - same logic as ConfirmationDrawer
   const closeIconColor = theme.color?.val || '#000000';
 
-  // Theme-aware search icon color - same logic as SearchBar
-  const isDarkMode = themeName?.includes('dark') || false;
-  const searchIconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+  // Theme-aware search icon color - using isDarkMode helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const searchIconColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 
   // Alternative detection: check if we're on React Native
   const isReactNative = typeof window === 'undefined' || !window.document;
