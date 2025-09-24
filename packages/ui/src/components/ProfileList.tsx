@@ -1,6 +1,6 @@
 import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, Text, Separator, useThemeName } from 'tamagui';
+import { YStack, XStack, Text, useThemeName } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
@@ -95,7 +95,9 @@ function ProfileItem({
     <YStack gap="$3">
       {/* Profile Header */}
       <YStack gap="$3" bg="$bgDrawer">
-        <Separator />
+        <YStack py="$2" items="center">
+          <YStack height={1} bg={dividerColor} width="100%" />
+        </YStack>
         <XStack items="center" gap="$3">
           <Avatar
             src={profile.avatar?.startsWith('http') ? profile.avatar : undefined}

@@ -143,9 +143,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   const nftForUI: NFTSendData = useMemo(
     () => ({
       id: selectedNFT?.id || '',
-      name: selectedNFT?.name || 'Untitled',
+      name: selectedNFT?.name || t('nft.untitled'),
       image: selectedNFT ? getNFTCover(selectedNFT) : '',
-      collection: selectedNFT?.collectionName || 'Unknown Collection',
+      collection: selectedNFT?.collectionName || t('nft.unknownCollection'),
       collectionContractName: selectedNFT?.collectionContractName,
       description: selectedNFT?.description || '',
       type: selectedNFT?.type,
@@ -159,9 +159,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     () =>
       selectedNFTs?.map((nft) => ({
         id: nft.id || '',
-        name: nft.name || 'Untitled',
+        name: nft.name || t('nft.untitled'),
         image: getNFTCover(nft),
-        collection: nft.collectionName || 'Unknown Collection',
+        collection: nft.collectionName || t('nft.unknownCollection'),
         collectionContractName: nft.collectionContractName,
         description: nft.description || '',
         type: nft.type,
@@ -497,9 +497,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                 ? [
                     {
                       id: selectedNFT.id || '',
-                      name: selectedNFT.name || '',
+                      name: selectedNFT.name || t('nft.untitled'),
                       image: selectedNFT.thumbnail || '',
-                      collection: selectedNFT.collectionName || '',
+                      collection: selectedNFT.collectionName || t('nft.unknownCollection'),
                       collectionContractName:
                         selectedNFT.collectionContractName || selectedNFT.contractName || '',
                       description: selectedNFT.description || '',
