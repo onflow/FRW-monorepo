@@ -4,7 +4,8 @@ import type { NFTModel } from './NFTModel';
 import type { TokenModel } from './TokenModel';
 
 export type { NFTModel } from './NFTModel';
-export type { FlowPath, TokenModel } from './TokenModel';
+export type { FlowPath } from './TokenModel';
+export type { TokenModel } from './TokenModel';
 export type { WalletType } from './Wallet';
 
 export interface EmojiInfo {
