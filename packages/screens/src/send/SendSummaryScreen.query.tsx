@@ -29,6 +29,7 @@ import {
   type TransactionFormData,
   XStack,
   ERC1155QuantitySelector,
+  useTheme,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -36,6 +37,7 @@ import {
   getNFTId,
   transformAccountForCard,
   transformAccountForDisplay,
+  isDarkMode,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -93,6 +95,19 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     typeof selectedNFT?.amount === 'number'
       ? selectedNFT.amount
       : parseInt(selectedNFT?.amount as string) || 1;
+
+  // Theme-aware styling - same as SendTokensScreen
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
+  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const sendButtonBackgroundColor = isCurrentlyDarkMode
+    ? theme.white?.val || '#FFFFFF'
+    : theme.black?.val || '#000000';
+  const sendButtonTextColor = isCurrentlyDarkMode
+    ? theme.black?.val || '#000000'
+    : theme.white?.val || '#FFFFFF';
+  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
 
   // Dynamic section title based on transfer type
   const sectionTitle = useMemo(() => {
@@ -316,7 +331,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack gap="$3">
             {/* NFT Section */}
-            <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
+            <YStack px={16} bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
               {fromAccount && (
                 <View mb={-18}>
@@ -328,13 +343,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                 </View>
               )}
 
-              <Separator
-                mx="$0"
-                my="$0"
-                mb="$2"
-                borderColor="rgba(255, 255, 255, 0.1)"
-                borderWidth={0.5}
-              />
+              <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
 
               <SendSectionHeader
                 title={sectionTitle}
@@ -395,7 +404,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
             {/* Arrow Down Indicator */}
             <XStack position="relative" height={0}>
-              <XStack width="100%" position="absolute" t={-30} justify="center">
+              <XStack width="100%" position="absolute" t={-30} justify="center" z={10}>
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
             </XStack>
@@ -454,18 +463,22 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            bg={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            borderColor={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? disabledButtonTextColor : (sendButtonTextColor as any)}
+            >
               {t('common.next')}
             </Text>
           </YStack>
