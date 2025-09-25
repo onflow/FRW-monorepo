@@ -29,6 +29,6 @@ export {
   usePayerStatusStore,
   payerStatusQueryKeys,
   payerStatusQueries,
-  fetchPayerStatus,
+  fetchPayerStatusWithCache,
   type PayerStatusInfo,
 } from './payerStatusStore.query';

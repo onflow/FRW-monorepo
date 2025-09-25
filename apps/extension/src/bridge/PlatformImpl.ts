@@ -1,5 +1,5 @@
 import { type Cache, type PlatformSpec, type Storage } from '@onflow/frw-context';
-import { useSendStore, useTokenQueryStore, fetchPayerStatus } from '@onflow/frw-stores';
+import { useSendStore, useTokenQueryStore, fetchPayerStatusWithCache } from '@onflow/frw-stores';
 import {
   Platform,
   type Currency,
@@ -315,7 +315,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
             },
           };
         };
-        const payerStatus = await fetchPayerStatus(network as 'mainnet' | 'testnet');
+        const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
         const isSurge = payerStatus.surge?.active;
         // Determine payer function based on transaction name and fee coverage logic
         const withPayer = config.name && config.name.endsWith('WithPayer');

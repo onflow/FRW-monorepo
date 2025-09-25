@@ -14,9 +14,6 @@ interface PayerStatusStoreState {
 }
 
 interface PayerStatusStoreActions {
-  // Core operations
-  fetchPayerStatus: (network?: 'mainnet' | 'testnet') => Promise<PayerStatusInfo>;
-
   // Utilities
   getCachedPayerStatus: (network?: 'mainnet' | 'testnet') => PayerStatusInfo | null;
   clearCache: (network?: 'mainnet' | 'testnet') => void;
@@ -25,14 +22,6 @@ interface PayerStatusStoreActions {
 type PayerStatusStore = PayerStatusStoreState & PayerStatusStoreActions;
 
 export const usePayerStatusStore = create<PayerStatusStore>((_set, _get) => ({
-  // Fetch payer status using TanStack Query for caching
-  fetchPayerStatus: async (network: 'mainnet' | 'testnet' = 'mainnet') => {
-    return await queryClient.fetchQuery({
-      queryKey: payerStatusQueryKeys.payerStatus(network),
-      queryFn: () => payerStatusQueries.fetchPayerStatus(network),
-    });
-  },
-
   // Get cached payer status without fetching
   getCachedPayerStatus: (network: 'mainnet' | 'testnet' = 'mainnet') => {
     return queryClient.getQueryData(payerStatusQueryKeys.payerStatus(network)) || null;
@@ -111,15 +100,17 @@ export const payerStatusQueries = {
  * @param network - The network to query (mainnet/testnet)
  * @returns Promise<PayerStatusInfo> - Raw API response
  */
-export const fetchPayerStatus = async (
+export const fetchPayerStatusWithCache = async (
   network: 'mainnet' | 'testnet' = 'mainnet'
 ): Promise<PayerStatusInfo> => {
-  const result = await queryClient.fetchQuery({
-    queryKey: payerStatusQueryKeys.payerStatus(network),
-    queryFn: () => payerStatusQueries.fetchPayerStatus(network),
-    staleTime: 0, // Always consider data stale for real-time financial data
-    gcTime: 30 * 1000, // Default 30 seconds, will be updated dynamically
-  });
+  // Check cache first
+  const cachedData = queryClient.getQueryData(payerStatusQueryKeys.payerStatus(network));
+  if (cachedData) {
+    return cachedData as PayerStatusInfo;
+  }
+
+  // If not in cache, fetch fresh data
+  const result = await payerStatusQueries.fetchPayerStatus(network);
 
   // Update cache time based on TTL from response
   const ttlSeconds = result.surge?.ttlSeconds || 30;
@@ -129,6 +120,9 @@ export const fetchPayerStatus = async (
       gcTime: ttlSeconds * 1000,
     });
   }
+
+  // Store in cache
+  queryClient.setQueryData(payerStatusQueryKeys.payerStatus(network), result);
 
   return result;
 };
