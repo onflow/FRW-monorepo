@@ -398,9 +398,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 </View>
               </XStack>
 
-              <SurgeFeeConfirmationSection
-                transactionFee={formData.transactionFee || '- 5.00'}
-              />
 
               <XStack justify="flex-start" width="100%">
                 <Text fontSize="$3" color="$textSecondary" fontWeight="400">
@@ -409,6 +406,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               </XStack>
             </YStack>
           )}
+
+<SurgeFeeConfirmationSection
+                transactionFee={formData.transactionFee || '- 5.00'}
+              />
 
           {/* Confirm Button */}
           <YStack

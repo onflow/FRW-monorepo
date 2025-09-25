@@ -14,23 +14,34 @@ export const SurgeInfo: React.FC<SurgeInfoProps> = ({ isOpen, onClose }) => {
 
   return (
     <YStack
-      position="fixed"
+      pos="absolute"
       top={0}
       left={0}
       right={0}
       bottom={0}
-      backgroundColor="rgba(0, 0, 0, 0.72)"
+      bg="rgba(0, 0, 0, 0.72)"
       zIndex={999999}
       style={{ alignItems: 'center', justifyContent: 'flex-end' }}
     >
-      {/* Modal Content */}
+      {/* Bottom Sheet Content - positioned like NFTSelectionBar */}
       <YStack
-        backgroundColor="$background"
+        pos="absolute"
+        b="$0"
+        l="$0"
+        r="$0"
+        width="100%"
+        bg="$background"
         borderTopLeftRadius="$4"
         borderTopRightRadius="$4"
-        padding="$4"
-        width="100%"
-        maxWidth={375}
+        shadowColor="$shadowColor"
+        shadowOffset={{ width: 0, height: -2 }}
+        shadowOpacity={0.1}
+        shadowRadius="$2"
+        elevation={8}
+        pt="$3"
+        px="$4"
+        pb="$5"
+        maxH="75vh"
         gap="$4"
       >
         {/* Header */}

@@ -3,6 +3,7 @@ import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { YStack, XStack, Separator, Button, useTheme } from 'tamagui';
 
+import { SurgeWarning } from './SurgeWarning';
 import { SurgeInfo } from './SurgeInfo';
 import { Text } from '../../foundation/Text';
 
@@ -22,6 +23,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
   onSurgeInfoPress,
 }) => {
   const theme = useTheme();
+  const [isSurgeWarningOpen, setIsSurgeWarningOpen] = useState(false);
   const [isSurgeInfoOpen, setIsSurgeInfoOpen] = useState(false);
 
   // Theme-aware colors
@@ -38,10 +40,10 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
           </Text>
         </XStack>
         <Button
-          background="transparent"
+          bg="transparent"
           borderWidth={0}
-          padding={0}
-          onPress={onSurgeInfoPress || (() => setIsSurgeInfoOpen(true))}
+          p={0}
+          onPress={onSurgeInfoPress || (() => setIsSurgeWarningOpen(true))}
           icon={<InfoIcon size={24} />}
           chromeless
         />
@@ -82,10 +84,10 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
                 Price breakdown
               </Text>
               <Button
-                background="transparent"
+                bg="transparent"
                 borderWidth={0}
-                padding={0}
-                onPress={onSurgeInfoPress || (() => setIsSurgeInfoOpen(true))}
+                p={0}
+                onPress={() => setIsSurgeInfoOpen(true)}
                 icon={<InfoIcon size={14} />}
                 chromeless
               />
@@ -140,7 +142,16 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
         </YStack>
       </YStack>
 
-      {/* Surge Info Modal */}
+      {/* Surge Warning Modal */}
+      <SurgeWarning
+        message="Due to high network activity, transaction fees are elevated. Current network fees are 4× higher than usual and your free allowance will not cover the fee for this transaction."
+        title="Surge pricing"
+        variant="warning"
+        visible={isSurgeWarningOpen}
+        onClose={() => setIsSurgeWarningOpen(false)}
+      />
+
+      {/* Surge Info Bottom Sheet */}
       <SurgeInfo isOpen={isSurgeInfoOpen} onClose={() => setIsSurgeInfoOpen(false)} />
     </YStack>
   );
