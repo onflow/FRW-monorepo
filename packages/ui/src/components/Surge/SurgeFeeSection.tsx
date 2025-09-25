@@ -133,7 +133,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
 
           {/* Warning Message */}
           {!showWarning && (
-            <Text fontSize={14} fontWeight="400" color="$warning" lineHeight="$5">
+            <Text fontSize={14} fontWeight="400" color="$warning" lineHeight={20} letterSpacing={-0.084}>
               Your free transaction allowance will not cover this transaction.
             </Text>
           )}

@@ -687,11 +687,13 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               />
             )}
 
-            <SurgeFeeSection
-              transactionFee={transactionFee}
-              showWarning={isSurgeWarningVisible}
-              onSurgeInfoPress={() => setIsSurgeWarningVisible(true)}
-            />
+            <YStack mt="$-4">
+              <SurgeFeeSection
+                transactionFee={transactionFee}
+                showWarning={isSurgeWarningVisible}
+                onSurgeInfoPress={() => setIsSurgeWarningVisible(true)}
+              />
+            </YStack>
 
             {showStorageWarning && (
               <StorageWarning
