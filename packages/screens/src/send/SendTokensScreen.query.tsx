@@ -9,7 +9,7 @@ import {
   storageQueries,
   storageUtils,
   payerStatusQueryKeys,
-  fetchPayerStatus,
+  payerStatusQueries,
 } from '@onflow/frw-stores';
 import { isFlow, Platform } from '@onflow/frw-types';
 import {
@@ -165,8 +165,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     isLoading: isLoadingPayerStatus,
     error: payerStatusError,
   } = useQuery({
-    queryKey: payerStatusQueryKeys.payerStatus('mainnet'),
-    queryFn: () => fetchPayerStatus('mainnet'),
+    queryKey: payerStatusQueryKeys.payerStatus(network as 'mainnet' | 'testnet'),
+    queryFn: () => payerStatusQueries.fetchPayerStatus(network as 'mainnet' | 'testnet'),
     staleTime: 0, // Always fresh for financial data
     enabled: true,
     retry: 3,
