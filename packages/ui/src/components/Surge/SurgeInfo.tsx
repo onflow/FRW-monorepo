@@ -23,76 +23,83 @@ export const SurgeInfo: React.FC<SurgeInfoProps> = ({ isOpen, onClose }) => {
       zIndex={999999}
       style={{ alignItems: 'center', justifyContent: 'flex-end' }}
     >
-      {/* Bottom Sheet Content - positioned like NFTSelectionBar */}
+      {/* Bottom Sheet Content - matching Figma design */}
       <YStack
         pos="absolute"
         b="$0"
         l="$0"
         r="$0"
         width="100%"
-        bg="$background"
-        borderTopLeftRadius="$4"
-        borderTopRightRadius="$4"
+        bg="#121212"
+        borderTopLeftRadius={16}
+        borderTopRightRadius={16}
         shadowColor="$shadowColor"
         shadowOffset={{ width: 0, height: -2 }}
         shadowOpacity={0.1}
         shadowRadius="$2"
         elevation={8}
-        pt="$3"
-        px="$4"
-        pb="$5"
+        p="$4.5"
+        pb="$9"
         maxH="75vh"
         gap="$4"
+        items="center"
       >
-        {/* Header */}
-        <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
-          <Text fontSize="$4" fontWeight="700" color="$white">
-            Surge pricing
-          </Text>
-          <Button
-            backgroundColor="transparent"
-            borderWidth={0}
-            padding={0}
-            onPress={onClose}
-            hoverStyle={{
-              backgroundColor: '$light10',
-              borderRadius: '$2',
-            }}
-          >
-            <Close size={24} color="$white" />
-          </Button>
+        {/* Header with close button */}
+        <XStack justify="space-between" items="center" alignSelf="stretch" gap="$3.25" width="100%">
+          <XStack items="center" gap="$2" width={240}>
+            <XStack items="center" alignSelf="stretch" gap="$2" flex={1}>
+              <Text fontSize={16} fontWeight="700" color="#FFFFFF" lineHeight="$6" letterSpacing={-0.16}>
+                Surge pricing
+              </Text>
+            </XStack>
+          </XStack>
+          <YStack width={24} height={24} items="center" justify="center" onPress={onClose} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
+            <Close size={15} color="#FFFFFF" />
+          </YStack>
         </XStack>
 
         {/* Content Card */}
-        <YStack background="$light10" borderRadius="$4" padding="$4" gap="$4" width="100%">
+        <YStack bg="rgba(255, 255, 255, 0.1)" borderRadius={16} p={0} px="$4.5" width={342} items="center">
           {/* Transaction Fee Row */}
-          <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
-            <Text fontSize="$3" fontWeight="400" color="$light80">
-              Transaction fee
-            </Text>
-            <Text fontSize="$3" fontWeight="500" color="$light40">
-              - 5.00 Flow
-            </Text>
+          <XStack justify="space-between" items="center" alignSelf="stretch" gap="$11" p="$4" py="$4" borderBottomWidth={1} borderBottomColor="rgba(255, 255, 255, 0.1)">
+            <XStack items="center" gap="$3" width={306}>
+              <XStack items="center" gap="$3.5" width={282}>
+                <XStack justify="flex-end" items="center" gap="$1.25">
+                  <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={20} letterSpacing={0.28}>
+                    Transaction fee
+                  </Text>
+                </XStack>
+              </XStack>
+            </XStack>
+            <XStack items="center" gap="$1.25">
+              <Text fontSize={14} fontWeight="500" color="rgba(255, 255, 255, 0.4)" lineHeight={20} letterSpacing={0.28} textAlign="right">
+                - 5.00 Flow
+              </Text>
+            </XStack>
           </XStack>
 
-          {/* Separator */}
-          <YStack height={1} background="$light10" width="100%" />
-
           {/* Surge Rate Row */}
-          <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
-            <Text fontSize="$3" fontWeight="400" color="$light80">
-              Surge rate
-            </Text>
-            <Text fontSize="$3" fontWeight="500" color="$light40">
-              4X standard rate
-            </Text>
+          <XStack justify="space-between" items="center" alignSelf="stretch" gap="$11" p="$4" py="$4">
+            <XStack items="center" gap="$3">
+              <XStack items="center" gap="$3.5">
+                <XStack justify="flex-end" items="center" gap="$1.25">
+                  <Text fontSize={14} fontWeight="400" color="rgba(255, 255, 255, 0.8)" lineHeight={20} letterSpacing={0.28}>
+                    Surge rate
+                  </Text>
+                </XStack>
+              </XStack>
+            </XStack>
+            <XStack items="center" gap="$1.25">
+              <Text fontSize={14} fontWeight="500" color="rgba(255, 255, 255, 0.4)" lineHeight={20} letterSpacing={0.28} textAlign="right">
+                4X standard rate
+              </Text>
+            </XStack>
           </XStack>
         </YStack>
 
         {/* Description */}
-        <Text fontSize="$2" fontWeight="400" color="$white" lineHeight="$4">
-          Surge pricing may apply during periods of high network demand, and the wallet will
-          automatically adjust transaction fees to prioritize speed while balancing cost efficiency.
+        <Text fontSize={12} fontWeight="400" color="#FFFFFF" lineHeight={16} textAlign="left" width={339}>
+          Surge pricing may apply during periods of high network demand, and the wallet will automatically adjust transaction fees to prioritize speed while balancing cost efficiency.
         </Text>
       </YStack>
     </YStack>
