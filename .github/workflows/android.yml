@@ -149,6 +149,90 @@ jobs:
               ;;
           esac
 
+      - name: Generate release notes (last 3 days)
+        if: >-
+          steps.meta.outputs.buildType == 'dev' &&
+          (secrets.ANDROID_FIREBASE_CREDENTIALS_B64 != '' && secrets.FIREBASE_TESTERS != '')
+        shell: bash
+        run: |
+          set -euo pipefail
+          REPO_ROOT="$GITHUB_WORKSPACE"
+          NOTES_FILE="$REPO_ROOT/apps/react-native/android/release-notes.txt"
+          echo "[Android CI] Generating Firebase App Distribution release notes..."
+
+          # Ensure sufficient git history for logs
+          (git fetch --unshallow 2>/dev/null || git fetch --deepen=50) || true
+
+          # Compute date 3 days ago (GNU date on ubuntu)
+          SINCE_DATE=$(date -d '3 days ago' '+%Y-%m-%d')
+
+          {
+            echo "What's New in This Build"
+            echo "========================"
+            echo
+
+            # Collect merge commits and extract PR + issue info
+            MERGES=$(git log --since="$SINCE_DATE" --merges --pretty=format:'%H|%s|%b|%ct' 2>/dev/null || true)
+            if [ -n "$MERGES" ]; then
+              TMP_ITEMS=$(mktemp)
+              while IFS='|' read -r commit_hash subject body ts; do
+                [ -z "${commit_hash:-}" ] && continue
+                PR_AND_SLUG=$(echo "$subject" | sed -n 's/.*Merge pull request #\([0-9][0-9]*\) from [^/]*\/\([^ ]*\).*/\1|\2/p')
+                [ -z "${PR_AND_SLUG:-}" ] && continue
+                PR_NUM=$(echo "$PR_AND_SLUG" | cut -d'|' -f1)
+                BRANCH_SLUG=$(echo "$PR_AND_SLUG" | cut -d'|' -f2)
+                ISSUE_NUM=$(echo "$BRANCH_SLUG" | sed -n 's/^\([0-9][0-9]*\).*/\1/p')
+                PR_TITLE=$(echo "$body" | sed -n '/./{s/^\s*//;p;q;}')
+                if [ -z "${PR_TITLE:-}" ]; then
+                  PR_TITLE=$(echo "$BRANCH_SLUG" | sed -E 's/^[0-9]+-//' | sed -E 's/[-_]+/ /g')
+                  PR_TITLE=$(awk 'BEGIN{FS="\n"} {if (length($0)>0){$1=toupper(substr($1,1,1)) substr($1,2)}; print}' <<< "$PR_TITLE")
+                fi
+                echo "$ts|$ISSUE_NUM|$PR_TITLE|$PR_NUM" >> "$TMP_ITEMS"
+              done < <(echo "$MERGES")
+
+              if [ -s "$TMP_ITEMS" ]; then
+                echo "Resolved Issues:"
+                sort -t'|' -k1 -nr "$TMP_ITEMS" | awk -F'|' 'BEGIN{OFS="|"} { key = ($2 != "" ? $2 : $4); if (!seen[key]++) print $0; }' |
+                while IFS='|' read -r _ts issue title pr; do
+                  if [ -n "$issue" ]; then
+                    echo "  • #$issue: $title (PR #$pr)"
+                  else
+                    echo "  • $title (PR #$pr)"
+                  fi
+                done
+                echo
+                echo "------------------------"
+                echo
+              fi
+            fi
+
+            echo "Recent Changes:"
+            echo
+            git log --since="$SINCE_DATE" --pretty=format:'  • %s (%an)' | head -8 || true
+            RECENT_COUNT=$(git log --since="$SINCE_DATE" --oneline 2>/dev/null | wc -l | tr -d ' ')
+            if [ "${RECENT_COUNT:-0}" -eq 0 ]; then
+              echo "  • No commits in last 3 days"
+              git log --pretty=format:'  • %s (%an, %ar)' | head -5 || true
+            fi
+
+            echo
+            echo "------------------------"
+            echo
+            echo "Build Information:"
+            echo "  • Build Date (Sydney): $(TZ=Australia/Sydney date '+%Y-%m-%d %H:%M %Z')"
+            echo "  • Branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'detached')"
+            echo "  • Latest Commit: $(git log -1 --pretty=format:'%h - %s' 2>/dev/null || true)"
+            echo "  • Total Commits (3 days): $(git log --since="$SINCE_DATE" --oneline 2>/dev/null | wc -l | tr -d ' ')"
+
+            echo
+            echo "------------------------"
+            echo
+            echo "Thank you for testing!"
+          } > "$NOTES_FILE"
+
+          echo "[Android CI] Release notes written to $NOTES_FILE"
+          echo "FIREBASE_APP_DIST_RELEASE_NOTES_FILE=$NOTES_FILE" >> $GITHUB_ENV
+
       - name: Upload APK artifact
         if: always()
         uses: actions/upload-artifact@v4
