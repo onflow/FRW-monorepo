@@ -61,6 +61,7 @@
   - `dev` → `:app:assembleDev`
   - `debug` → `:app:assembleDebug`
 - Artifacts: Uploads all generated APKs as `android-<buildType>-apk` artifact.
+  - Also uploads Android App Bundles (.aab) as `android-<buildType>-aab`.
 - Release notes: Generates a `release-notes.txt` from recent commits (last 3
   days) and attaches to Firebase upload when credentials and testers are
   present.
@@ -70,8 +71,10 @@
 
 **Manual Run**
 
-- GitHub → Actions → “Android Build & Release” → “Run workflow”. Choose branch
-  and `buildType` (default `release`).
+- GitHub → Actions → “Android Build & Release” → “Run workflow”.
+  - buildType: default `release`.
+  - targetRef: default `dev` (builds that branch even if you launch from
+    default).
 
 **Common Issues**
 
