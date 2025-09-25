@@ -14,23 +14,29 @@ import {
   BackgroundWrapper,
   YStack,
   TokenAmountInput,
-  TokenSelectorModal,
   ConfirmationDrawer,
   AccountCard,
   ToAccountSection,
-  TransactionFeeSection,
   SendArrowDivider,
   StorageWarning,
   ExtensionHeader,
+  TransactionFeeSection,
+  TokenSelectorModal,
   type TransactionFormData,
   Text,
   Separator,
   XStack,
   View,
+  useTheme,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
+import {
+  logger,
+  transformAccountForCard,
+  transformAccountForDisplay,
+  isDarkMode,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -48,6 +54,24 @@ interface SendTokensScreenProps {
  */
 export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
+  const theme = useTheme();
+
+  // Theme-aware background color for cards
+  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
+
+  // Theme-aware send button colors - use theme tokens for better reliability
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const sendButtonBackgroundColor = isCurrentlyDarkMode
+    ? theme.white?.val || '#FFFFFF'
+    : theme.black?.val || '#000000';
+  const sendButtonTextColor = isCurrentlyDarkMode
+    ? theme.black?.val || '#000000'
+    : theme.white?.val || '#FFFFFF';
+  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
+
+  // Theme-aware separator color
+  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
@@ -164,18 +188,19 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     staleTime: 0, // Always fresh for financial data
   });
 
+  // Extract and format identifier with .Vault suffix if needed
+  const resourceIdentifier = useMemo(() => {
+    if (!selectedToken?.identifier) return '';
+    const identifier = selectedToken.identifier;
+    return identifier.includes('.Vault') ? identifier : `${identifier}.Vault`;
+  }, [selectedToken?.identifier]);
+
   // Query for resource compatibility check (tokens only)
   const { data: isResourceCompatible = true } = useQuery({
-    queryKey: storageQueryKeys.resourceCheck(
-      toAccount?.address || '',
-      selectedToken?.identifier || ''
-    ),
+    queryKey: storageQueryKeys.resourceCheck(toAccount?.address || '', resourceIdentifier),
     queryFn: () =>
-      storageQueries.checkResourceCompatibility(
-        toAccount?.address || '',
-        selectedToken?.identifier || ''
-      ),
-    enabled: !!(toAccount?.address && selectedToken?.identifier),
+      storageQueries.checkResourceCompatibility(toAccount?.address || '', resourceIdentifier),
+    enabled: !!(toAccount?.address && resourceIdentifier),
     staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
   });
 
@@ -184,7 +209,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
-  const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
   const contentPadding = '$4';
   const usdFee = '$0.02';
   const isBalanceLoading = false;
@@ -493,9 +517,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   if (isOverallLoading) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
-          <Text>Loading wallet data...</Text>
+          <Text>{t('messages.loading')}</Text>
         </YStack>
       </BackgroundWrapper>
     );
@@ -505,7 +529,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   if (error) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
           <Text color="$error">{error}</Text>
         </YStack>
@@ -517,37 +541,31 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     <BackgroundWrapper backgroundColor={backgroundColor}>
       {isExtension && (
         <ExtensionHeader
-          title={t('send.sendTokens.title', 'Sending')}
+          title={t('send.title')}
           help={true}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
         />
       )}
 
-      <YStack flex={1} p={contentPadding} onPress={handlePressOutside}>
+      <YStack flex={1} onPress={handlePressOutside}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
+          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb={"$2"}>
+              <View mb={'$2'}>
                 <AccountCard
                   isSendTokensScreen={true}
                   account={transformAccountForCard(fromAccount)}
-                  title="From Account"
+                  title={t('send.fromAccount')}
                   isLoading={isBalanceLoading}
                 />
               </View>
             ) : (
-              <Text>No account data available</Text>
+              <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator
-              mx="$0"
-              mt="$2"
-              mb="$2"
-              borderColor="rgba(255, 255, 255, 0.1)"
-              borderWidth={0.5}
-            />
+            <Separator mx="$0" mt="$2" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -608,7 +626,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Arrow Down Indicator */}
           <XStack position="relative" height={0} mt="$1">
-            <XStack width="100%" position="absolute" t={-40} justify="center">
+            <XStack width="100%" position="absolute" t={-40} justify="center" z={10}>
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>
           </XStack>
@@ -640,7 +658,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               usdFee={usdFee}
               isFree={isFreeGasEnabled}
               showCovered={true}
-              title="Transaction Fee"
+              title={t('send.transactionFee')}
               backgroundColor="transparent"
               borderRadius={16}
               contentPadding={0}
@@ -662,18 +680,22 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            bg={isSendDisabled ? '#6b7280' : sendButtonBackgroundColor}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            borderColor={isSendDisabled ? '#6b7280' : sendButtonBackgroundColor}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? disabledButtonTextColor : sendButtonTextColor}
+            >
               {t('common.next')}
             </Text>
           </YStack>
@@ -687,7 +709,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           onTokenSelect={handleTokenSelect}
           onClose={handleTokenSelectorClose}
           platform="mobile"
-          title="Tokens"
+          title={t('tabs.tokens')}
           currency={currency}
           isExtension={isExtension}
         />
@@ -711,6 +733,12 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           onConfirm={handleTransactionConfirm}
           onClose={handleConfirmationClose}
           isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendTokensText={t('send.sendTokens')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
         />
       </YStack>
     </BackgroundWrapper>

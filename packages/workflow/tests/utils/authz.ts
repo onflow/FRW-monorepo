@@ -64,7 +64,7 @@ export const bridgeAuthorization = async (account: any) => {
         addr: ADDRESS,
         keyId: Number(KEY_ID),
         signature: await getPayerSignature(
-          'http://localhost:3000/api/signAsBridgeFeePayer',
+          `${process.env.API_BASE_URL}/api/signAsBridgeFeePayer`,
           signable
         ),
       };
@@ -85,7 +85,10 @@ export const payerAuth = async (account: any) => {
       return {
         addr: ADDRESS,
         keyId: Number(KEY_ID),
-        signature: await getPayerSignature('http://localhost:3000/api/signAsFeePayer', signable),
+        signature: await getPayerSignature(
+          `${process.env.API_BASE_URL}/api/signAsFeePayer`,
+          signable
+        ),
       };
     },
   };
@@ -98,6 +101,7 @@ const getPayerSignature = async (endPoint: string, signable: any) => {
       headers: {
         network: 'mainnet',
         'Content-Type': 'application/json',
+        'x-api-key': process.env.NEXT_API_KEY,
       },
       body: JSON.stringify({
         transaction: signable.voucher,
