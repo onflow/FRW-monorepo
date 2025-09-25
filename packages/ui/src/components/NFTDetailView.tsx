@@ -37,7 +37,7 @@ export interface NFTDetailViewProps {
   };
   showOwner?: boolean;
   backgroundColor?: string;
-  contentPadding?: number;
+  contentPadding?: number | string;
 }
 
 export function NFTDetailView({
@@ -48,7 +48,7 @@ export function NFTDetailView({
   owner,
   showOwner = false,
   backgroundColor = '$bgDrawer',
-  contentPadding = 14,
+  contentPadding = '$1',
 }: NFTDetailViewProps) {
   // Generate properties from NFT data
   const generateProperties = (): NFTProperty[] => {
@@ -83,7 +83,7 @@ export function NFTDetailView({
   return (
     <BackgroundWrapper backgroundColor={backgroundColor}>
       <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-        <YStack px={contentPadding} pb={20}>
+        <YStack pb={20}>
           {/* NFT Image */}
           <YStack mb={23}>
             <SelectableNFTImage
