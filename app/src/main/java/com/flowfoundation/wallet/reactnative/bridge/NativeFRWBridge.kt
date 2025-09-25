@@ -689,15 +689,30 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     // Toast methods
-    override fun showToast(message: String, type: String, duration: Double) {
+    override fun showToast(title: String, message: String?, type: String?, duration: Double?) {
         try {
-            android.util.Log.d(TAG, "showToast() called - message: $message, type: $type, duration: ${duration}ms")
+            // Concatenate title and message
+            val displayMessage = when {
+                title.isNotEmpty() && !message.isNullOrEmpty() -> "$title: $message"
+                title.isNotEmpty() -> title
+                !message.isNullOrEmpty() -> message
+                else -> ""
+            }
+            if (displayMessage.isEmpty()) {
+                android.util.Log.w(TAG, "showToast() skipped - empty message")
+                return
+            }
+
+            val toastDuration = duration ?: 2000.0
+
+            android.util.Log.d(TAG, "showToast() called - title: $title, message: $message, type:" +
+              " ${type ?: "info"}, duration: ${toastDuration}ms")
 
             // Convert duration from milliseconds to boolean (long or short)
-            val isLongDuration = duration > 2000.0
+            val isLongDuration = toastDuration > 2000.0
 
             uiScope {
-                toast(msg = message, duration = if (isLongDuration) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
+                toast(msg = displayMessage, duration = if (isLongDuration) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
             }
         } catch (e: Exception) {
             android.util.Log.e(TAG, "showToast() error: ${e.message}")

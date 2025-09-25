@@ -206,6 +206,13 @@ class RNBridge {
         val title: String?
     )
 
+    data class FlowPath(
+        @SerializedName("domain")
+        val domain: String?,
+        @SerializedName("identifier")
+        val identifier: String?
+    )
+
     data class TokenModel(
         @SerializedName("type")
         val type: WalletType,
@@ -265,12 +272,5 @@ class RNBridge {
         @SerializedName("flow") FLOW,
         @SerializedName("evm") EVM
     }
-
-    data class FlowPath(
-        @SerializedName("domain")
-        val domain: String?,
-        @SerializedName("identifier")
-        val identifier: String?
-    )
 
 }
