@@ -26,7 +26,8 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
   const [isSurgeInfoOpen, setIsSurgeInfoOpen] = useState(false);
   const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
 
-  // Theme-aware warning color for the surge icon
+  // Theme-aware colors
+  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
   const warningIconColor = theme.warning?.val || '#FDB022';
   return (
     <YStack gap="$4" className={className}>
@@ -49,7 +50,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
       </XStack>
 
       {/* Fee Breakdown Card */}
-      <YStack background="$light10" borderRadius="$4" padding="$4" gap="$1.5" width="100%">
+      <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$1.5" width="100%">
         {/* Transaction Fee Section */}
         <YStack gap="$1" width="100%">
           <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
@@ -113,6 +114,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
               >
                 {freeAllowance}
               </Text>
+              <FlowLogo size={18} theme="multicolor" />
             </XStack>
           </XStack>
 
