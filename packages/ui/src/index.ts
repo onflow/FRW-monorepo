@@ -69,6 +69,7 @@ export * from './components/SendArrowDivider';
 export * from './components/SendSectionHeader';
 export * from './components/StorageWarning';
 export * from './components/Surge/SurgeWarning';
+export * from './components/Surge/SurgeModal';
 export * from './components/Surge/SurgeFeeSection';
 export * from './components/Tag';
 export * from './components/ToAccountSection';

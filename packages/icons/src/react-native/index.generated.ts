@@ -1,3 +1,4 @@
+export { default as AlertTriangle } from './AlertTriangle.generated';
 export { default as ArrowBack } from './ArrowBack.generated';
 export { default as ArrowDown } from './ArrowDown.generated';
 export { default as CheckCircle } from './CheckCircle.generated';
