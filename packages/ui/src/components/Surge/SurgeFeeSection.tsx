@@ -3,7 +3,6 @@ import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { YStack, XStack, Separator, Button, useTheme } from 'tamagui';
 
-import { PriceBreakdown } from './PriceBreakdown';
 import { SurgeInfo } from './SurgeInfo';
 import { Text } from '../../foundation/Text';
 
@@ -24,7 +23,6 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
 }) => {
   const theme = useTheme();
   const [isSurgeInfoOpen, setIsSurgeInfoOpen] = useState(false);
-  const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
 
   // Theme-aware colors
   const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
@@ -87,7 +85,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
                 background="transparent"
                 borderWidth={0}
                 padding={0}
-                onPress={() => setIsPriceBreakdownOpen(true)}
+                onPress={onSurgeInfoPress || (() => setIsSurgeInfoOpen(true))}
                 icon={<InfoIcon size={14} />}
                 chromeless
               />
@@ -120,25 +118,16 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
 
           {/* Allowance Progress Bar */}
           <YStack gap="$2" width="100%">
-            <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
-              <Text fontSize={12} fontWeight="400" color="$light60" lineHeight="$3">
-                Used
-              </Text>
-              <Text fontSize={12} fontWeight="400" color="$light60" lineHeight="$3">
-                0.8643 / 1.1357
-              </Text>
-            </XStack>
-
             {/* Progress Bar Container */}
             <YStack
-              height={6}
-              background="$light20"
-              borderRadius="$2"
+              height={10}
+              bg="rgba(255, 255, 255, 0.2)"
+              rounded="$5"
               width="100%"
               overflow="hidden"
             >
               {/* Progress Fill */}
-              <YStack height="100%" width="76%" background="$warning" borderRadius="$2" />
+              <YStack height="100%" width="76%" bg="#FDB022" rounded="$5" />
             </YStack>
           </YStack>
 
@@ -153,16 +142,6 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
 
       {/* Surge Info Modal */}
       <SurgeInfo isOpen={isSurgeInfoOpen} onClose={() => setIsSurgeInfoOpen(false)} />
-
-      {/* Price Breakdown Modal */}
-      <PriceBreakdown
-        isOpen={isPriceBreakdownOpen}
-        onClose={() => setIsPriceBreakdownOpen(false)}
-        transactionFee={transactionFee}
-        surgeRate="4X standard rate"
-        freeAllowance={freeAllowance}
-        finalFee={transactionFee}
-      />
     </YStack>
   );
 };
