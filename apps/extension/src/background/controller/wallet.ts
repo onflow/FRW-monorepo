@@ -1,4 +1,5 @@
 import * as fcl from '@onflow/fcl';
+import { PayerService } from '@onflow/frw-api';
 import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
 
 import notification from '@/background/webapi/notification';
@@ -1421,6 +1422,49 @@ export class WalletController extends BaseController {
 
   signBridgeFeePayer = async (signable): Promise<string> => {
     return await userWalletService.signBridgeFeePayer(signable);
+  };
+
+  // New API methods using generated PayerService directly
+  signAsFeePayer = async (signable): Promise<string> => {
+    const tx = signable.voucher;
+    const message = signable.message;
+    const messages = {
+      envelope_message: message,
+    };
+
+    try {
+      const envelope = await PayerService.signAsFeePayer({
+        data: { transaction: tx, message: messages },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return envelope.envelopeSigs.sig;
+    } catch (error) {
+      console.error('Error calling signAsFeePayer:', error);
+      throw error;
+    }
+  };
+
+  signAsBridgeFeePayer = async (signable): Promise<string> => {
+    const tx = signable.voucher;
+    const message = signable.message;
+    const messages = {
+      envelope_message: message,
+    };
+
+    try {
+      const envelope = await PayerService.signAsBridgeFeePayer({
+        data: { transaction: tx, message: messages },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return envelope.envelopeSigs.sig;
+    } catch (error) {
+      console.error('Error calling signAsBridgeFeePayer:', error);
+      throw error;
+    }
   };
 
   signProposer = async (signable): Promise<string> => {
