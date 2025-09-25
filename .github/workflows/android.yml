@@ -1,6 +1,7 @@
 name: Android Build & Release
 
 on:
+  workflow_call:
   push:
     paths:
       - "apps/react-native/**"
@@ -16,8 +17,26 @@ on:
         required: true
 
 jobs:
+  determine-env:
+    runs-on: ubuntu-latest
+    outputs:
+      env_name: ${{ steps.set_env.outputs.env_name }}
+    steps:
+      - id: set_env
+        run: |
+          # Map buildType to environment name
+          TYPE="${{ inputs.buildType || '' }}"
+          if [ -z "$TYPE" ]; then TYPE="debug"; fi
+          ENV_NAME="development"
+          if [ "$TYPE" = "release" ]; then ENV_NAME="production"; fi
+          if [ "$TYPE" = "dev" ]; then ENV_NAME="development"; fi
+          echo "env_name=$ENV_NAME" >> $GITHUB_OUTPUT
+          echo "Environment name: $ENV_NAME"
+
   android:
     runs-on: ubuntu-latest
+    needs: determine-env
+    environment: ${{ needs.determine-env.outputs.env_name }}
     env:
       # GitHub Packages (Flow Wallet Kit + wallet-core)
       GITHUB_USERNAME: ${{ secrets.GPR_USER }}
@@ -27,13 +46,16 @@ jobs:
       GPR_KEY: ${{ secrets.GPR_KEY }}
 
       # Firebase App Distribution (optional; used on release paths/tags)
-      FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
+      FIREBASE_TESTERS: ${{ vars.FIREBASE_TESTERS }}
       ANDROID_FIREBASE_CREDENTIALS_B64: ${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}
       # Backward-compat names from previous repo
       LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
-      KEY_PROPERTIES_B64: ${{ secrets.KEY_PROPERTIES }}
-      GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES }}
-      SERVICE_ACCOUNT_JSON_B64: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+      KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+      KEY_PROPERTIES_B64: ${{ secrets.KEY_PROPERTIES_B64 }}
+      GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+      GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_B64 }}
+      SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+      SERVICE_ACCOUNT_JSON_B64: ${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
       # Monorepo paths
@@ -98,8 +120,8 @@ jobs:
 
           # Always ensure local.properties exists
           if [ -n "${LOCAL_PROPERTIES:-}" ]; then
-            echo "[Android CI] Writing local.properties from LOCAL_PROPERTIES secret"
-            echo "$LOCAL_PROPERTIES" | base64 -d > local.properties
+            echo "[Android CI] Writing local.properties from LOCAL_PROPERTIES secret (raw)"
+            printf '%s' "$LOCAL_PROPERTIES" > local.properties
           else
             echo "[Android CI] Creating minimal local.properties"
             {
@@ -109,6 +131,13 @@ jobs:
           fi
 
           # Optional: Google Services JSONs (multiple supported secret names)
+          if [ -n "${GOOGLE_SERVICES:-}" ]; then
+            echo "[Android CI] Writing GOOGLE_SERVICES (raw) to app/src/dev/google-services.json"
+            mkdir -p app/src/dev
+            printf '%s' "$GOOGLE_SERVICES" > app/src/dev/google-services.json || true
+            # Also place a default copy for plugins that expect default location
+            printf '%s' "$GOOGLE_SERVICES" > app/google-services.json || true
+          fi
           if [ -n "${GOOGLE_SERVICES_B64:-}" ]; then
             echo "[Android CI] Decoding GOOGLE_SERVICES_B64 to app/google-services.json"
             echo "$GOOGLE_SERVICES_B64" | base64 -d > app/google-services.json || true
@@ -122,7 +151,10 @@ jobs:
           fi
 
           # Optional: key.properties (multiple supported secret names)
-          if [ -n "${KEY_PROPERTIES_B64:-}" ]; then
+          if [ -n "${KEY_PROPERTIES:-}" ]; then
+            echo "[Android CI] Writing KEY_PROPERTIES (raw) to key.properties"
+            printf '%s' "$KEY_PROPERTIES" > key.properties
+          elif [ -n "${KEY_PROPERTIES_B64:-}" ]; then
             echo "[Android CI] Decoding KEY_PROPERTIES_B64 to key.properties"
             echo "$KEY_PROPERTIES_B64" | base64 -d > key.properties
           elif [ -n "${{ secrets.ANDROID_KEY_PROPERTIES_B64 }}" ]; then
@@ -141,7 +173,11 @@ jobs:
 
           # Optional: Firebase App Distribution service account (either name)
           SERVICE_JSON_PATH=""
-          if [ -n "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ]; then
+          if [ -n "${SERVICE_ACCOUNT_JSON:-}" ]; then
+            echo "[Android CI] Writing SERVICE_ACCOUNT_JSON (raw) to firebase-appdist.json"
+            printf '%s' "$SERVICE_ACCOUNT_JSON" > firebase-appdist.json
+            SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
+          elif [ -n "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ]; then
             echo "[Android CI] Decoding ANDROID_FIREBASE_CREDENTIALS_B64 to firebase-appdist.json"
             echo "$ANDROID_FIREBASE_CREDENTIALS_B64" | base64 -d > firebase-appdist.json
             SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
