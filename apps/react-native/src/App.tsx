@@ -82,7 +82,10 @@ const App = (props: AppProps) => {
   const colorScheme = useColorScheme();
 
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}>
+    <TamaguiProvider
+      config={tamaguiConfig}
+      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+    >
       <QueryProvider>
         <QueryDebugger />
         <GestureHandlerRootView style={{ flex: 1 }}>

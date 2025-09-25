@@ -96,7 +96,6 @@
     "noNFTSelected": "NFTが選択されていません。戻って送信するNFTを選択してください。",
     "summary": "概要",
     "sendTokens": "トークンを送信",
-    "sending": "送信中...",
     "confirmSend": "送信を確認",
     "holdToSend": "長押しで送信",
     "unknownAccount": "不明なアカウント"
@@ -129,7 +128,9 @@
     "timeout": "リクエストがタイムアウトしました",
     "unknown": "不明なエラーが発生しました",
     "failedToLoadTokens": "トークンの読み込みに失敗しました",
-    "failedToLoadNFTs": "NFTの読み込みに失敗しました"
+    "failedToLoadNFTs": "NFTの読み込みに失敗しました",
+    "transactionPayloadError": "トランザクションペイロードの作成に失敗しました",
+    "transactionExecutionError": "トランザクションの実行に失敗しました"
   },
   "nft": {
     "untitled": "無題",

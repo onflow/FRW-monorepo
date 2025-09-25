@@ -96,7 +96,6 @@
     "noNFTSelected": "未选择NFT。请返回并选择要发送的NFT。",
     "summary": "摘要",
     "sendTokens": "发送代币",
-    "sending": "发送中...",
     "confirmSend": "确认发送",
     "holdToSend": "长按发送",
     "unknownAccount": "未知账户"
@@ -129,7 +128,9 @@
     "timeout": "请求超时",
     "unknown": "发生未知错误",
     "failedToLoadTokens": "加载代币失败",
-    "failedToLoadNFTs": "加载NFT失败"
+    "failedToLoadNFTs": "加载NFT失败",
+    "transactionPayloadError": "创建交易载荷失败",
+    "transactionExecutionError": "交易执行失败"
   },
   "nft": {
     "untitled": "无标题",

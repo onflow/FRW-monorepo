@@ -6,6 +6,7 @@ import type { Cache } from './interfaces/caching/Cache';
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
 import type { Storage } from './interfaces/storage/Storage';
+import type { ToastManager, ToastMessage } from './interfaces/ToastManager';
 
 /**
  * Service Context - Provides centralized access to all services
@@ -219,6 +220,37 @@ export const logger = new Proxy({} as Logger, {
     } catch {
       // Return no-op functions if ServiceContext not available
       return prop === 'isDebug' ? false : (): void => {};
+    }
+  },
+});
+
+export const toast = new Proxy({} as ToastManager, {
+  get(target, prop): unknown {
+    try {
+      const bridge = ServiceContext.current().bridge;
+
+      // Check if bridge has toast methods
+      if (prop === 'show' && bridge.showToast) {
+        return (toastMessage: ToastMessage) => {
+          bridge.showToast?.(
+            toastMessage.title,
+            toastMessage.message,
+            toastMessage.type,
+            toastMessage.duration
+          );
+        };
+      }
+      if (prop === 'hide' && bridge.hideToast) {
+        return bridge.hideToast.bind(bridge);
+      }
+      if (prop === 'clear' && bridge.clearAllToasts) {
+        return bridge.clearAllToasts.bind(bridge);
+      }
+      // Return no-op if not available
+      return (): void => {};
+    } catch (error) {
+      // Return no-op functions if ServiceContext not available
+      return (): void => {};
     }
   },
 });
