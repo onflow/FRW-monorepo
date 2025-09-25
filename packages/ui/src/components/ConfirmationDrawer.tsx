@@ -8,6 +8,7 @@ import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
+import { SurgeFeeConfirmationSection } from './Surge/SurgeFeeConfirmationSection';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -396,6 +397,10 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   <VerifiedToken size={10} color="#41CC5D" />
                 </View>
               </XStack>
+
+              <SurgeFeeConfirmationSection
+                transactionFee={formData.transactionFee || '- 5.00'}
+              />
 
               <XStack justify="flex-start" width="100%">
                 <Text fontSize="$3" color="$textSecondary" fontWeight="400">
