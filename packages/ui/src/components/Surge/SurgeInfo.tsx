@@ -7,9 +7,10 @@ import { Text } from '../../foundation/Text';
 export interface SurgeInfoProps {
   isOpen: boolean;
   onClose: () => void;
+  transactionFee?: string;
 }
 
-export const SurgeInfo: React.FC<SurgeInfoProps> = ({ isOpen, onClose }) => {
+export const SurgeInfo: React.FC<SurgeInfoProps> = ({ isOpen, onClose, transactionFee = "- 5.00 Flow" }) => {
   return (
     <Sheet
       modal
@@ -65,7 +66,7 @@ export const SurgeInfo: React.FC<SurgeInfoProps> = ({ isOpen, onClose }) => {
             </XStack>
             <XStack items="center" gap="$1.25">
               <Text fontSize={14} fontWeight="500" color="rgba(255, 255, 255, 0.4)" lineHeight={20} letterSpacing={0.28} textAlign="right">
-                - 5.00 Flow
+                {transactionFee}
               </Text>
             </XStack>
           </XStack>

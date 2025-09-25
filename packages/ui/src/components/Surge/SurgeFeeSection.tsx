@@ -152,7 +152,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
       />
 
       {/* Surge Info Bottom Sheet */}
-      <SurgeInfo isOpen={isSurgeInfoOpen} onClose={() => setIsSurgeInfoOpen(false)} />
+      <SurgeInfo isOpen={isSurgeInfoOpen} onClose={() => setIsSurgeInfoOpen(false)} transactionFee={"-5.00 FLOW"} />
     </YStack>
   );
 };

@@ -1,4 +1,4 @@
-import { bridge, navigation, useToast } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import {
   useSendStore,
   sendSelectors,
@@ -58,7 +58,6 @@ interface SendSummaryScreenProps {
 export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
-  const toast = useToast();
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
