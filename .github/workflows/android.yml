@@ -151,14 +151,16 @@ jobs:
           esac
 
       - name: Generate release notes (last 3 days)
-        if: >-
-          steps.meta.outputs.buildType == 'dev' &&
-          (env.ANDROID_FIREBASE_CREDENTIALS_B64 != '' && env.FIREBASE_TESTERS != '')
+        if: steps.meta.outputs.buildType == 'dev'
         shell: bash
         run: |
           set -euo pipefail
           REPO_ROOT="$GITHUB_WORKSPACE"
           NOTES_FILE="$REPO_ROOT/apps/react-native/android/release-notes.txt"
+          if [ -z "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ] || [ -z "${FIREBASE_TESTERS:-}" ]; then
+            echo "[Android CI] Firebase credentials or testers not set; skipping release notes generation."
+            exit 0
+          fi
           echo "[Android CI] Generating Firebase App Distribution release notes..."
 
           # Ensure sufficient git history for logs
@@ -244,9 +246,11 @@ jobs:
           if-no-files-found: warn
 
       - name: Firebase App Distribution (dev)
-        if: >-
-          steps.meta.outputs.buildType == 'dev' &&
-          (env.ANDROID_FIREBASE_CREDENTIALS_B64 != '' && env.FIREBASE_TESTERS != '')
+        if: steps.meta.outputs.buildType == 'dev'
         working-directory: ${{ env.ANDROID_DIR }}
         run: |
+          if [ ! -f firebase-appdist.json ] || [ -z "${FIREBASE_TESTERS:-}" ]; then
+            echo "[Android CI] Firebase credentials or testers not configured; skipping App Distribution upload."
+            exit 0
+          fi
           ./gradlew :app:appDistributionUploadDev --stacktrace
