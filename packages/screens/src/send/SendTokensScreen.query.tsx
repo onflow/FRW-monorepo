@@ -19,6 +19,7 @@ import {
   ToAccountSection,
   SendArrowDivider,
   StorageWarning,
+  SurgeWarning,
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
@@ -30,6 +31,7 @@ import {
   useTheme,
   // NFT-related components
   MultipleNFTsPreview,
+  SurgeFeeSection,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -225,6 +227,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(true);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
@@ -664,6 +667,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               contentPadding={0}
             />
 
+            <SurgeFeeSection transactionFee={transactionFee} showWarning={isSurgeWarningVisible} />
+
             {showStorageWarning && (
               <StorageWarning
                 message={storageWarningMessage}
@@ -742,6 +747,17 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           unknownAccountText={t('send.unknownAccount')}
         />
       </YStack>
+      {/* SurgeWarning Modal */}
+      <SurgeWarning
+        message={t('surge.message')}
+        title={t('surge.title')}
+        variant="warning"
+        visible={isSurgeWarningVisible}
+        onClose={() => setIsSurgeWarningVisible(false)}
+        onButtonPress={() => {
+          setIsSurgeWarningVisible(false);
+        }}
+      />
     </BackgroundWrapper>
   );
 };
