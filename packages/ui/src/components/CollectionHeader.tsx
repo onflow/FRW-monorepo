@@ -7,6 +7,7 @@ export interface CollectionHeaderProps {
   image?: string;
   description?: string;
   itemCount?: number;
+  itemCountText?: string;
   isLoading?: boolean;
   size?: 'small' | 'medium' | 'large';
 }
@@ -16,6 +17,7 @@ export function CollectionHeader({
   image,
   description,
   itemCount,
+  itemCountText,
   isLoading = false,
   size = 'medium',
 }: CollectionHeaderProps) {
@@ -39,7 +41,7 @@ export function CollectionHeader({
 
         {!isLoading && itemCount !== undefined && (
           <Text fontSize="$4" fontWeight="500" color="$textSecondary">
-            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+            {itemCountText || `${itemCount} item${itemCount === 1 ? '' : 's'}`}
           </Text>
         )}
 

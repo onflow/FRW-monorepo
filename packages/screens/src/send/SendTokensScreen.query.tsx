@@ -430,7 +430,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       }
 
       if (tokenAmount.gt(balanceNum)) {
-        setAmountError('Amount exceeds available balance');
+        setAmountError(t('send.insufficient'));
       } else {
         setAmountError('');
       }
@@ -739,6 +739,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
+          unknownAccountText={t('send.unknownAccount')}
         />
       </YStack>
     </BackgroundWrapper>

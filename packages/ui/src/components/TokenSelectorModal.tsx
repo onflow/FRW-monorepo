@@ -28,7 +28,7 @@ export interface TokenSelectorModalProps {
   title?: string;
   emptyMessage?: string;
   backgroundColor?: string;
-  maxHeight?: number;
+  maxHeight?: number | string;
   platform?: 'mobile' | 'desktop' | 'auto';
   currency?: { symbol: string };
   isExtension?: boolean;
@@ -44,7 +44,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
   title = 'Select Token',
   emptyMessage = 'No tokens available',
   backgroundColor = '$bgDrawer',
-  maxHeight = 600,
+  maxHeight = '90%',
   platform = 'auto',
   currency = { symbol: '$' },
   isExtension = false,
@@ -168,112 +168,106 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         </XStack>
       )}
 
-      {/* Token List ScrollView with explicit height constraints */}
-      <View style={{ flex: 1, minHeight: 0, height: '100%' }}>
-        <ScrollView
-          style={{
-            flex: 1,
-            maxHeight: 400,
-            height: '100%',
-          }}
-          showsVerticalScrollIndicator={true}
-          scrollEnabled={true}
-          nestedScrollEnabled={true}
-        >
-          <YStack gap="$2">
-            {filteredTokens.length === 0 ? (
-              <Text text="center" color="$color" py="$4">
-                {emptyMessage}
-              </Text>
-            ) : (
-              filteredTokens.map((token, index) => (
-                <YStack key={`${token.symbol}-${index}`}>
-                  <Stack
-                    pressStyle={{ opacity: 0.7 }}
-                    onPress={() => handleTokenSelect(token)}
-                    cursor="pointer"
-                    items="center"
-                    justify="center"
-                    width="100%"
-                    height={64}
-                    hoverStyle={{ opacity: 0.7 }}
-                  >
-                    <XStack items="center" gap="$2" width="100%">
-                      <Avatar
-                        src={token.logoURI}
-                        alt={token.symbol}
-                        fallback={token.symbol?.[0] || token.name?.[0] || '?'}
-                        size={48}
-                      />
-                      <YStack flex={1} gap="$1">
-                        {/* Top row: Token name + verified badge + balance */}
-                        <XStack justify="space-between" items="center" gap="$1">
-                          <XStack items="center" gap="$1" flex={1} shrink={1}>
-                            <XStack items="center" gap="$1" shrink={1}>
-                              <Text
-                                fontWeight="600"
-                                fontSize={14}
-                                color="$color"
-                                numberOfLines={1}
-                                lineHeight="$1"
-                                shrink={1}
-                              >
-                                {token.name || token.symbol}
-                              </Text>
-                              {token.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
-                            </XStack>
+      {/* Token List ScrollView with full flex layout */}
+      <ScrollView
+        flex={1}
+        showsVerticalScrollIndicator={true}
+        scrollEnabled={true}
+        nestedScrollEnabled={true}
+      >
+        <YStack gap="$2">
+          {filteredTokens.length === 0 ? (
+            <Text text="center" color="$color" py="$4">
+              {emptyMessage}
+            </Text>
+          ) : (
+            filteredTokens.map((token, index) => (
+              <YStack key={`${token.symbol}-${index}`}>
+                <Stack
+                  pressStyle={{ opacity: 0.7 }}
+                  onPress={() => handleTokenSelect(token)}
+                  cursor="pointer"
+                  items="center"
+                  justify="center"
+                  width="100%"
+                  height={64}
+                  hoverStyle={{ opacity: 0.7 }}
+                >
+                  <XStack items="center" gap="$2" width="100%">
+                    <Avatar
+                      src={token.logoURI}
+                      alt={token.symbol}
+                      fallback={token.symbol?.[0] || token.name?.[0] || '?'}
+                      size={48}
+                    />
+                    <YStack flex={1} gap="$1">
+                      {/* Top row: Token name + verified badge + balance */}
+                      <XStack justify="space-between" items="center" gap="$1">
+                        <XStack items="center" gap="$1" flex={1} shrink={1}>
+                          <XStack items="center" gap="$1" shrink={1}>
+                            <Text
+                              fontWeight="600"
+                              fontSize={14}
+                              color="$color"
+                              numberOfLines={1}
+                              lineHeight="$1"
+                              shrink={1}
+                            >
+                              {token.name || token.symbol}
+                            </Text>
+                            {token.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
                           </XStack>
-                          <Text
-                            fontSize={14}
-                            fontWeight="400"
-                            color="$color"
-                            numberOfLines={1}
-                            text="right"
-                            lineHeight="$1"
-                          >
-                            {token.displayBalance || token.balance || '0'} {token.symbol}
-                          </Text>
                         </XStack>
+                        <Text
+                          fontSize={14}
+                          fontWeight="400"
+                          color="$color"
+                          numberOfLines={1}
+                          text="right"
+                          lineHeight="$1"
+                        >
+                          {token.displayBalance || token.balance || '0'} {token.symbol}
+                        </Text>
+                      </XStack>
 
-                        {/* Bottom row: Symbol + USD value */}
-                        <XStack justify="space-between" items="center" gap="$1">
-                          <Text
-                            fontSize={12}
-                            color="$color"
-                            opacity={0.7}
-                            numberOfLines={1}
-                            lineHeight="$1"
-                          >
-                            {token.symbol}
-                          </Text>
-                          <Text
-                            fontSize={12}
-                            color="$color"
-                            opacity={0.7}
-                            numberOfLines={1}
-                            text="right"
-                            lineHeight="$1"
-                          >
-                            {token.balanceInUSD
-                              ? `$${parseFloat(token.balanceInUSD).toFixed(2)}`
-                              : token.balanceInCurrency
-                                ? parseFloat(token.balanceInCurrency).toFixed(2)
-                                : ''}
-                          </Text>
-                        </XStack>
-                      </YStack>
-                    </XStack>
-                  </Stack>
-                  {/* Separator between rows, but not after the last item */}
-                  {index < filteredTokens.length - 1 && (
-                    <Separator borderColor="$borderColor" my="$2" />
-                  )}
-                </YStack>
-              ))
-            )}
-          </YStack>
-        </ScrollView>
-      </View>
+                      {/* Bottom row: Symbol + USD value */}
+                      <XStack justify="space-between" items="center" gap="$1">
+                        <Text
+                          fontSize={12}
+                          color="$color"
+                          opacity={0.7}
+                          numberOfLines={1}
+                          lineHeight="$1"
+                        >
+                          {token.symbol}
+                        </Text>
+                        <Text
+                          fontSize={12}
+                          color="$color"
+                          opacity={0.7}
+                          numberOfLines={1}
+                          text="right"
+                          lineHeight="$1"
+                        >
+                          {token.balanceInUSD
+                            ? `$${parseFloat(token.balanceInUSD).toFixed(2)}`
+                            : token.balanceInCurrency
+                              ? parseFloat(token.balanceInCurrency).toFixed(2)
+                              : ''}
+                        </Text>
+                      </XStack>
+                    </YStack>
+                  </XStack>
+                </Stack>
+                {/* Separator between rows, but not after the last item */}
+                {index < filteredTokens.length - 1 && (
+                  <Separator borderColor="$borderColor" my="$2" />
+                )}
+              </YStack>
+            ))
+          )}
+        </YStack>
+      </ScrollView>
 
       {/* Comment out any remaining components */}
       {/*
@@ -351,9 +345,8 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         modal
         open={visible}
         onOpenChange={onClose}
-        snapPointsMode={!isExtension ? 'fit' : undefined}
+        snapPoints={[95]}
         dismissOnSnapToBottom
-        snapPoints={isExtension ? [91] : undefined}
         animation={isExtension ? 'quick' : 'lazy'}
       >
         <Sheet.Overlay
@@ -374,6 +367,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           exitStyle={{ y: 500 }}
           flex={1}
           height="100%"
+          minH="90%"
         >
           <YStack p="$4" gap="$4" flex={1} height="100%">
             {renderContent()}
@@ -405,7 +399,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         rounded="$4"
         minW={320}
         maxW="90%"
-        maxH={maxHeight}
+        style={{ maxHeight }}
         shadowColor="$shadowColor"
         shadowOpacity={0.25}
         shadowRadius="$4"
@@ -414,6 +408,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
         onPress={(e) => e.stopPropagation()}
         flex={1}
         my="$4"
+        minH="80%"
       >
         <YStack p="$4" gap="$4" flex={1}>
           {renderContent()}

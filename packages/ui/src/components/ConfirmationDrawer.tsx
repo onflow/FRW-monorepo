@@ -38,6 +38,7 @@ export interface ConfirmationDrawerProps {
   sendingText?: string;
   confirmSendText?: string;
   holdToSendText?: string;
+  unknownAccountText?: string;
   sendStaticImage?: any;
 }
 
@@ -143,10 +144,12 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   sendingText = 'Sending...',
   confirmSendText = 'Confirm send',
   holdToSendText = 'Hold to send',
+  unknownAccountText = 'Unknown',
   sendStaticImage,
 }) => {
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
+  const [isLongPressing, setIsLongPressing] = React.useState(false);
 
   // Theme-aware button colors using helper function
   const isCurrentlyDarkMode = isDarkMode(theme);
@@ -278,7 +281,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               />
               <YStack items="center" gap="$1">
                 <Text fontSize="$3" fontWeight="600" color="$text">
-                  {fromAccount?.name || 'Unknown'}
+                  {fromAccount?.name || unknownAccountText}
                 </Text>
                 {fromAccount?.address && (
                   <AddressText address={fromAccount.address} fontSize="$2" color="$textSecondary" />
@@ -297,7 +300,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               />
               <YStack items="center" gap="$1">
                 <Text fontSize="$3" fontWeight="600" color="$text">
-                  {toAccount?.name || 'Unknown'}
+                  {toAccount?.name || unknownAccountText}
                 </Text>
                 {toAccount?.address && (
                   <AddressText address={toAccount.address} fontSize="$2" color="$textSecondary" />
@@ -411,7 +414,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             items="center"
             justify="center"
             pressStyle={{ opacity: 0.9 }}
-            onPress={internalIsSending ? undefined : handleConfirm}
+            onLongPress={internalIsSending ? undefined : handleConfirm}
+            onPressIn={internalIsSending ? undefined : () => setIsLongPressing(true)}
+            onPressOut={() => setIsLongPressing(false)}
             cursor={internalIsSending ? 'not-allowed' : 'pointer'}
           >
             {internalIsSending ? (
@@ -419,6 +424,13 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 <Spinner size="small" color={buttonTextColor} />
                 <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
                   {sendingText}
+                </Text>
+              </XStack>
+            ) : isLongPressing && !isExtension ? (
+              <XStack items="center" gap="$2">
+                <Spinner size="small" color={buttonTextColor} />
+                <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
+                  {holdToSendText}
                 </Text>
               </XStack>
             ) : (

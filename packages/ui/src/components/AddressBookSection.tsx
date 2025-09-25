@@ -8,6 +8,8 @@ export interface AddressBookSectionProps {
   contacts: RecipientItemProps[];
   copiedAddress?: string | null;
   copiedId?: string | null;
+  copiedText?: string;
+  isMobile?: boolean;
 }
 
 export function AddressBookSection({
@@ -15,6 +17,8 @@ export function AddressBookSection({
   contacts,
   copiedAddress,
   copiedId,
+  copiedText = 'Copied!',
+  isMobile = false,
 }: AddressBookSectionProps): React.JSX.Element | null {
   const themeName = useThemeName();
 
@@ -41,13 +45,14 @@ export function AddressBookSection({
               {...contact}
               type="contact"
               showCopyButton={true}
+              isMobile={isMobile}
               copiedFeedback={
                 copiedId
                   ? copiedId === (contact as any).id
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
                   : copiedAddress === `${contact.name}::${contact.address}`
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
               }
             />
@@ -64,6 +69,8 @@ export interface AddressBookListProps {
   groupByLetter?: boolean;
   copiedAddress?: string | null;
   copiedId?: string | null;
+  copiedText?: string;
+  isMobile?: boolean;
 }
 
 export function AddressBookList({
@@ -71,6 +78,8 @@ export function AddressBookList({
   groupByLetter = true,
   copiedAddress,
   copiedId,
+  copiedText = 'Copied!',
+  isMobile = false,
 }: AddressBookListProps): React.JSX.Element {
   const themeName = useThemeName();
 
@@ -86,13 +95,14 @@ export function AddressBookList({
               {...contact}
               type="contact"
               showCopyButton={true}
+              isMobile={isMobile}
               copiedFeedback={
                 copiedId
                   ? copiedId === (contact as any).id
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
                   : copiedAddress === `${contact.name}::${contact.address}`
-                    ? 'Copied!'
+                    ? copiedText
                     : undefined
               }
             />
@@ -128,6 +138,8 @@ export function AddressBookList({
           contacts={groupedContacts[letter]}
           copiedAddress={copiedAddress}
           copiedId={copiedId}
+          copiedText={copiedText}
+          isMobile={isMobile}
         />
       ))}
     </YStack>

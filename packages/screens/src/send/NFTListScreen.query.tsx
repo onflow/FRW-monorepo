@@ -250,7 +250,7 @@ export function NFTListScreen(): React.ReactElement {
 
         // Regular NFT selection logic (non-ERC1155)
         if (prev.length >= 9) {
-          console.warn('Maximum 9 NFTs can be selected');
+          logger.warn(t('nft.maxSelectionReached'));
           return prev;
         }
 
@@ -276,7 +276,7 @@ export function NFTListScreen(): React.ReactElement {
         setCurrentNFT(foundNFT);
         navigation.navigate('NFTDetail', { nft: foundNFT });
       } else {
-        console.warn('NFT not found for ID:', nftId);
+        logger.warn(t('nft.nftNotFound'), nftId);
       }
     },
     [nfts]
@@ -352,7 +352,7 @@ export function NFTListScreen(): React.ReactElement {
             {t('nft.noNFTsFound')}
           </Text>
           <Text fontSize="$4" color="$textSecondary">
-            No collection selected. Please go back and select an NFT collection.
+            {t('nft.noCollectionSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -367,7 +367,7 @@ export function NFTListScreen(): React.ReactElement {
             {t('errors.unknown')}
           </Text>
           <Text fontSize="$4" color="$textSecondary">
-            No account address available. Please select an account.
+            {t('nft.noAccountSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
