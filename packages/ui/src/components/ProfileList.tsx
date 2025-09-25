@@ -130,14 +130,10 @@ function ProfileItem({
       </YStack>
 
       {/* Accounts List */}
-      <YStack gap="$0">
+      <YStack gap="$3">
         {accountsData.map((account, index) => (
           <React.Fragment key={account.id}>
-            <RecipientItem
-              {...account}
-              onPress={() => handleAccountPress(account)}
-              isMobile={isMobile}
-            />
+            <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
           </React.Fragment>
         ))}
       </YStack>
