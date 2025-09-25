@@ -57,6 +57,9 @@ jobs:
       SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
       SERVICE_ACCOUNT_JSON_B64: ${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      # Force Android debug keystore to be created in a writable temp dir
+      XDG_CONFIG_HOME: ${{ runner.temp }}
+      ANDROID_SDK_HOME: ${{ runner.temp }}
 
       # Monorepo paths
       RN_APP_DIR: apps/react-native
@@ -201,14 +204,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Ensure paths used by Android Gradle plugin exist and are writable
-          mkdir -p "$HOME/.config/.android" "$HOME/.android"
-          chmod -R u+rwX "$HOME/.config" "$HOME/.android"
-          # Pre-create a debug.keystore if absent to avoid permission issues
-          if [ ! -f "$HOME/.config/.android/debug.keystore" ]; then
-            echo "[Android CI] Generating default debug.keystore under ~/.config/.android"
-            keytool -genkeypair -v \
-              -keystore "$HOME/.config/.android/debug.keystore" \
+          # Use writable temp directory for debug keystore
+          mkdir -p "$XDG_CONFIG_HOME/.android"
+          if [ ! -f "$XDG_CONFIG_HOME/.android/debug.keystore" ]; then
+            echo "[Android CI] Generating default debug.keystore under $XDG_CONFIG_HOME/.android"
+            keytool -genkeypair -v -noprompt \
+              -keystore "$XDG_CONFIG_HOME/.android/debug.keystore" \
               -storepass android \
               -alias androiddebugkey \
               -keypass android \
