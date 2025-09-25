@@ -197,6 +197,27 @@ jobs:
             fi
           fi
 
+      - name: Ensure debug keystore path is writable
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Ensure paths used by Android Gradle plugin exist and are writable
+          mkdir -p "$HOME/.config/.android" "$HOME/.android"
+          chmod -R u+rwX "$HOME/.config" "$HOME/.android"
+          # Pre-create a debug.keystore if absent to avoid permission issues
+          if [ ! -f "$HOME/.config/.android/debug.keystore" ]; then
+            echo "[Android CI] Generating default debug.keystore under ~/.config/.android"
+            keytool -genkeypair -v \
+              -keystore "$HOME/.config/.android/debug.keystore" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US" || true
+          fi
+
       - name: Determine build type
         id: meta
         shell: bash
