@@ -29,6 +29,12 @@ jobs:
       # Firebase App Distribution (optional; used on release paths/tags)
       FIREBASE_TESTERS: ${{ secrets.FIREBASE_TESTERS }}
       ANDROID_FIREBASE_CREDENTIALS_B64: ${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}
+      # Backward-compat names from previous repo
+      LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+      KEY_PROPERTIES_B64: ${{ secrets.KEY_PROPERTIES }}
+      GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES }}
+      SERVICE_ACCOUNT_JSON_B64: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
       # Monorepo paths
       RN_APP_DIR: apps/react-native
@@ -90,7 +96,23 @@ jobs:
             echo "gpr.key=${GPR_KEY:-}"
           } >> "$HOME/.gradle/gradle.properties"
 
-          # Optional: Google Services JSONs (base64 secrets)
+          # Always ensure local.properties exists
+          if [ -n "${LOCAL_PROPERTIES:-}" ]; then
+            echo "[Android CI] Writing local.properties from LOCAL_PROPERTIES secret"
+            echo "$LOCAL_PROPERTIES" | base64 -d > local.properties
+          else
+            echo "[Android CI] Creating minimal local.properties"
+            {
+              echo "sdk.dir=${ANDROID_SDK_ROOT}"
+              echo "testers=${FIREBASE_TESTERS:-}"
+            } > local.properties
+          fi
+
+          # Optional: Google Services JSONs (multiple supported secret names)
+          if [ -n "${GOOGLE_SERVICES_B64:-}" ]; then
+            echo "[Android CI] Decoding GOOGLE_SERVICES_B64 to app/google-services.json"
+            echo "$GOOGLE_SERVICES_B64" | base64 -d > app/google-services.json || true
+          fi
           if [ -n "${{ secrets.ANDROID_GOOGLE_SERVICES_DEV_B64 }}" ]; then
             echo "${{ secrets.ANDROID_GOOGLE_SERVICES_DEV_B64 }}" | base64 -d > app/google-services.json || true
           fi
@@ -99,20 +121,44 @@ jobs:
             echo "${{ secrets.ANDROID_GOOGLE_SERVICES_PROD_B64 }}" | base64 -d > app/src/release/google-services.json || true
           fi
 
-          # Optional: key.properties (signing) via base64
-          if [ -n "${{ secrets.ANDROID_KEY_PROPERTIES_B64 }}" ]; then
+          # Optional: key.properties (multiple supported secret names)
+          if [ -n "${KEY_PROPERTIES_B64:-}" ]; then
+            echo "[Android CI] Decoding KEY_PROPERTIES_B64 to key.properties"
+            echo "$KEY_PROPERTIES_B64" | base64 -d > key.properties
+          elif [ -n "${{ secrets.ANDROID_KEY_PROPERTIES_B64 }}" ]; then
             echo "${{ secrets.ANDROID_KEY_PROPERTIES_B64 }}" | base64 -d > key.properties
           fi
 
-          # Optional: Firebase App Distribution service account
-          if [ -n "${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}" ]; then
-            echo "${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}" | base64 -d > firebase-appdist.json
-            # Ensure local.properties provides serviceCredentialsFile & testers
-            {
-              echo "sdk.dir=${ANDROID_SDK_ROOT}"
-              echo "serviceCredentialsFile=$(pwd)/firebase-appdist.json"
-              echo "testers=${FIREBASE_TESTERS:-}"
-            } > local.properties
+          # Optional: Decode keystore if provided and wire via local.properties
+          if [ -n "${KEYSTORE_BASE64:-}" ]; then
+            echo "[Android CI] Decoding KEYSTORE_BASE64 to app/release.keystore"
+            echo "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
+            # Append storeFile to local.properties only if not present
+            if ! grep -q '^storeFile=' local.properties; then
+              echo "storeFile=$(pwd)/app/release.keystore" >> local.properties
+            fi
+          fi
+
+          # Optional: Firebase App Distribution service account (either name)
+          SERVICE_JSON_PATH=""
+          if [ -n "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ]; then
+            echo "[Android CI] Decoding ANDROID_FIREBASE_CREDENTIALS_B64 to firebase-appdist.json"
+            echo "$ANDROID_FIREBASE_CREDENTIALS_B64" | base64 -d > firebase-appdist.json
+            SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
+          elif [ -n "${SERVICE_ACCOUNT_JSON_B64:-}" ]; then
+            echo "[Android CI] Decoding SERVICE_ACCOUNT_JSON_B64 to firebase-appdist.json"
+            echo "$SERVICE_ACCOUNT_JSON_B64" | base64 -d > firebase-appdist.json
+            SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
+          fi
+
+          if [ -n "$SERVICE_JSON_PATH" ]; then
+            # Ensure local.properties includes serviceCredentialsFile & testers
+            if ! grep -q '^serviceCredentialsFile=' local.properties; then
+              echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
+            fi
+            if ! grep -q '^testers=' local.properties; then
+              echo "testers=${FIREBASE_TESTERS:-}" >> local.properties
+            fi
           fi
 
       - name: Determine build type
