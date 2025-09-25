@@ -1,7 +1,13 @@
 name: Android Build & Release
 
 on:
-  # Manual runs only (for debugging/testing). Re-enable push/PR triggers if needed.
+  push:
+    paths:
+      - "apps/react-native/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/android.yml"
+    # Run on any branch push so feature branches can test builds
   workflow_dispatch:
     inputs:
       buildType:
