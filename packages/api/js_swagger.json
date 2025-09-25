@@ -1468,19 +1468,24 @@
         ]
       },
       "PayerStatusApiResponseV1": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse"
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "description": "HTTP status code",
+            "enum": [200, 429, 500, 503],
+            "example": 200
           },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "$ref": "#/components/schemas/PayerStatusPayloadV1"
-              }
-            }
+          "data": {
+            "$ref": "#/components/schemas/PayerStatusPayloadV1"
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message for API response",
+            "example": "Success"
           }
-        ]
+        },
+        "required": ["status", "data"]
       }
     }
   },

@@ -243,7 +243,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
-  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(true);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
+  const [isSurgePricingActive, setIsSurgePricingActive] = useState(true); // Set to true for testing
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
@@ -672,18 +673,27 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Transaction Fee and Storage Warning Section */}
           <YStack gap="$3">
-            <TransactionFeeSection
-              flowFee={transactionFee}
-              usdFee={usdFee}
-              isFree={isFreeGasEnabled}
-              showCovered={true}
-              title={t('send.transactionFee')}
-              backgroundColor="transparent"
-              borderRadius={16}
-              contentPadding={0}
-            />
+            {/* Only show normal transaction fee when surge pricing is NOT active */}
+            {!isSurgePricingActive && (
+              <TransactionFeeSection
+                flowFee={transactionFee}
+                usdFee={usdFee}
+                isFree={isFreeGasEnabled}
+                showCovered={true}
+                title={t('send.transactionFee')}
+                backgroundColor="transparent"
+                borderRadius={16}
+                contentPadding={0}
+              />
+            )}
 
-            <SurgeFeeSection transactionFee={transactionFee} showWarning={isSurgeWarningVisible} />
+            <YStack mt="$-4">
+              <SurgeFeeSection
+                transactionFee={transactionFee}
+                showWarning={isSurgeWarningVisible}
+                onSurgeInfoPress={() => setIsSurgeWarningVisible(true)}
+              />
+            </YStack>
 
             {showStorageWarning && (
               <StorageWarning

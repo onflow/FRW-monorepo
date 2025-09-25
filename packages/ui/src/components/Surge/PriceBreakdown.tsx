@@ -1,4 +1,4 @@
-import { Close } from '@onflow/frw-icons';
+import { Close, FlowLogo } from '@onflow/frw-icons';
 import React from 'react';
 import { YStack, XStack, Button } from 'tamagui';
 
@@ -108,8 +108,7 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
               <Text fontSize="$3" fontWeight="500" color="$light40">
                 {freeAllowance}
               </Text>
-              {/* Flow icon placeholder */}
-              <YStack width={18} height={18} backgroundColor="$success" borderRadius="$2" />
+              <FlowLogo size={18} theme="multicolor" />
             </XStack>
           </XStack>
 
