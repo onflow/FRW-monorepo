@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+import type { AccountKey, Account as FclAccount } from '@onflow/fcl';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
@@ -1421,6 +1421,15 @@ export class WalletController extends BaseController {
 
   signBridgeFeePayer = async (signable): Promise<string> => {
     return await userWalletService.signBridgeFeePayer(signable);
+  };
+
+  // New API methods using openapi service
+  signAsFeePayer = async (signable): Promise<string> => {
+    return await userWalletService.signAsFeePayer(signable);
+  };
+
+  signAsBridgeFeePayer = async (signable): Promise<string> => {
+    return await userWalletService.signAsBridgeFeePayer(signable);
   };
 
   signProposer = async (signable): Promise<string> => {

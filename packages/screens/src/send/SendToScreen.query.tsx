@@ -101,11 +101,7 @@ export function SendToScreen(): React.ReactElement {
   useEffect(() => {}, [allProfiles]);
 
   // Query for recent contacts with automatic caching
-  const {
-    data: recentContacts = [],
-    isLoading: isLoadingRecent,
-    error: recentError,
-  } = useQuery({
+  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -375,10 +371,9 @@ export function SendToScreen(): React.ReactElement {
       }
 
       // Navigate to appropriate screen based on transaction type
-      if (transactionType === 'single-nft') {
-        navigation.navigate('SendSingleNFT', { address: recipient.address, recipient });
-      } else if (transactionType === 'multiple-nfts') {
-        navigation.navigate('SendMultipleNFTs', { address: recipient.address, recipient });
+      if (transactionType === 'single-nft' || transactionType === 'multiple-nfts') {
+        // Use the shared SendSummary screen for both single and multiple NFTs
+        navigation.navigate('SendSummary', { address: recipient.address, recipient });
       } else {
         // Default to tokens screen
         navigation.navigate('SendTokens', { address: recipient.address, recipient });
@@ -447,7 +442,7 @@ export function SendToScreen(): React.ReactElement {
             // Create recipient data
             const recipient: RecipientData = {
               id: trimmedValue,
-              name: matchingAccount?.name || 'Unknown Account',
+              name: matchingAccount?.name || t('send.unknownAccount'),
               address: trimmedValue,
               avatar: matchingAccount?.emojiInfo ? undefined : matchingAccount?.avatar,
               emojiInfo: matchingAccount?.emojiInfo,
@@ -485,9 +480,8 @@ export function SendToScreen(): React.ReactElement {
     }
   }, [handleSearchChange, t]);
 
-  const handleRecipientEdit = useCallback((recipient: RecipientData) => {
+  const handleRecipientEdit = useCallback((_recipient: RecipientData) => {
     // TODO: Handle edit recipient
-    console.log('Edit recipient:', recipient);
   }, []);
 
   const handleRecipientCopy = useCallback(async (recipient: RecipientData) => {
@@ -608,6 +602,8 @@ export function SendToScreen(): React.ReactElement {
             isLoading={isLoading}
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
+            loadingText={t('messages.loadingProfiles')}
+            isMobile={!isExtension}
           />
         ) : activeTab === 'contacts' ? (
           isLoading ? (
@@ -616,6 +612,8 @@ export function SendToScreen(): React.ReactElement {
               isLoading={true}
               emptyTitle={emptyState.title}
               emptyMessage={emptyState.message}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
               contentPadding={0}
             />
           ) : contactsData.length === 0 ? (
@@ -624,6 +622,8 @@ export function SendToScreen(): React.ReactElement {
               isLoading={false}
               emptyTitle={emptyState.title}
               emptyMessage={emptyState.message}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
               contentPadding={0}
             />
           ) : (
@@ -637,6 +637,7 @@ export function SendToScreen(): React.ReactElement {
               groupByLetter={true}
               copiedAddress={copiedAddress}
               copiedId={copiedId}
+              copiedText={t('messages.copied')}
             />
           )
         ) : (
@@ -645,6 +646,8 @@ export function SendToScreen(): React.ReactElement {
             isLoading={isLoading}
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
+            retryButtonText={t('buttons.retry')}
+            errorDefaultMessage={t('messages.failedToLoadRecipients')}
             onItemPress={handleRecipientPress}
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
@@ -669,7 +672,7 @@ export function SendToScreen(): React.ReactElement {
             fontWeight="300"
             lineHeight={20}
             letterSpacing={-0.084}
-            ta="center"
+            textAlign="center"
             color="$text"
             self="stretch"
           >
@@ -691,7 +694,7 @@ export function SendToScreen(): React.ReactElement {
               fontWeight="600"
               lineHeight={16.8}
               letterSpacing={-0.084}
-              ta="center"
+              textAlign="center"
               color="$text"
               numberOfLines={1}
               ellipsizeMode="middle"

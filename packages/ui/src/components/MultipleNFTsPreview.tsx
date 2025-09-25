@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Trash, Edit } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
+import { YStack, XStack, ScrollView, Image, View, useTheme } from 'tamagui';
 
 import { type NFTSendData } from './NFTSendPreview';
 import { Text } from '../foundation/Text';
@@ -17,6 +18,9 @@ export interface MultipleNFTsPreviewProps {
   backgroundColor?: string;
   borderRadius?: string | number;
   contentPadding?: string;
+  unnamedNFTText?: string;
+  unknownCollectionText?: string;
+  noNFTsSelectedText?: string;
 }
 
 interface NFTThumbnailProps {
@@ -36,6 +40,11 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
   const imageUrl = nft.image || nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
+  // Theme-aware placeholder background
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const placeholderBackground = isCurrentlyDarkMode ? '$light10' : '$gray7';
+
   return (
     <View
       width={size}
@@ -52,7 +61,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
           <Image src={imageUrl} width="100%" height="100%" onError={() => setImageError(true)} />
         </View>
       ) : (
-        <View flex={1} bg="$light10" rounded={14.4} />
+        <View flex={1} bg={placeholderBackground} rounded={14.4} />
       )}
 
       {/* Overlay */}
@@ -76,12 +85,24 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
 interface ExpandedNFTItemProps {
   nft: NFTSendData;
   onRemove?: (nftId: string) => void;
+  unnamedNFTText?: string;
+  unknownCollectionText?: string;
 }
 
-const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove }) => {
+const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
+  nft,
+  onRemove,
+  unnamedNFTText = 'Unnamed NFT',
+  unknownCollectionText = 'Unknown Collection',
+}) => {
   const [imageError, setImageError] = useState(false);
   const imageUrl = nft.image || nft.thumbnail;
   const displayImage = imageUrl && !imageError;
+
+  // Theme-aware placeholder background
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const placeholderBackground = isCurrentlyDarkMode ? '$light10' : '$gray7';
 
   return (
     <XStack items="center" gap={8} height={71}>
@@ -105,17 +126,17 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove }) => {
             />
           </View>
         ) : (
-          <View flex={1} bg="$light10" rounded={16} />
+          <View flex={1} bg={placeholderBackground} rounded={16} />
         )}
       </View>
 
       {/* NFT Details */}
       <YStack flex={1} justify="center" gap={2}>
-        <Text fontSize={14} fontWeight="600" color="$light80" numberOfLines={1}>
-          {nft.name || 'Unnamed NFT'}
+        <Text fontSize={14} fontWeight="600" color="$color" numberOfLines={1}>
+          {nft.name || unnamedNFTText}
         </Text>
-        <Text fontSize={14} fontWeight="400" color="$light80" numberOfLines={1}>
-          {nft.collection || 'Unknown Collection'}
+        <Text fontSize={14} fontWeight="400" color="$color" numberOfLines={1}>
+          {nft.collection || unknownCollectionText}
         </Text>
       </YStack>
 
@@ -130,7 +151,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({ nft, onRemove }) => {
           onPress={() => onRemove(nft.id)}
           cursor="pointer"
         >
-          <Trash size={24} color="rgba(255, 255, 255, 0.5)" theme="outline" />
+          <Trash size={24} color="#767676" theme="outline" />
         </XStack>
       )}
     </XStack>
@@ -149,6 +170,9 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   backgroundColor = 'transparent',
   borderRadius = 14.4,
   contentPadding = '$0',
+  unnamedNFTText = 'Unnamed NFT',
+  unknownCollectionText = 'Unknown Collection',
+  noNFTsSelectedText = 'No NFTs selected',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -164,7 +188,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         {/* Empty State */}
         <XStack items="center" justify="center" gap={8} width={304} height={thumbnailSize}>
           <Text fontSize={14} color="$textMuted" fontWeight="400">
-            No NFTs selected
+            {noNFTsSelectedText}
           </Text>
         </XStack>
       </YStack>
@@ -174,6 +198,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
   if (isExpanded) {
     return (
       <YStack
+        mt={'$3'}
         bg={backgroundColor}
         borderRadius={borderRadius}
         padding={contentPadding}
@@ -183,7 +208,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
         {/* Section Header */}
         <XStack items="center" justify="space-between" gap={15} width="100%">
           {/* NFT Count */}
-          <Text fontSize={20} fontWeight="500" color="$light80" lineHeight={24}>
+          <Text fontSize={20} fontWeight="500" color="$color" lineHeight={24}>
             {totalCount} NFT{totalCount !== 1 ? 's' : ''}
           </Text>
 
@@ -222,7 +247,12 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
           <YStack gap="$2">
             {nfts.map((nft, index) => (
               <YStack key={nft.id}>
-                <ExpandedNFTItem nft={nft} onRemove={onRemoveNFT} />
+                <ExpandedNFTItem
+                  nft={nft}
+                  onRemove={onRemoveNFT}
+                  unnamedNFTText={unnamedNFTText}
+                  unknownCollectionText={unknownCollectionText}
+                />
                 {/* Divider */}
                 {index < nfts.length - 1 && <View height={1} bg="$gray6" marginHorizontal="$2" />}
               </YStack>
@@ -235,6 +265,7 @@ export const MultipleNFTsPreview: React.FC<MultipleNFTsPreviewProps> = ({
 
   return (
     <YStack
+      mt={'$3'}
       bg={backgroundColor}
       borderRadius={borderRadius}
       padding={contentPadding}

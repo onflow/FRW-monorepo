@@ -156,6 +156,45 @@ export class MetadataService {
   }
 }
 
+export class PayerService {
+  /**
+   * Sign as bridge fee payer
+   */
+  static signAsBridgeFeePayer(options: IRequestOptions = {}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/signAsBridgeFeePayer';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
+   * Sign as fee payer
+   */
+  static signAsFeePayer(options: IRequestOptions = {}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/signAsFeePayer';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
+   * Get payer status
+   */
+  static status(options: IRequestOptions = {}): Promise<PayerStatusPayloadV1> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/v1/payer/status';
+
+      const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
 export class AccountService {
   /**
    * Get account transfer history by token types
@@ -1317,7 +1356,71 @@ export interface NFTListResponse {
   status?: number;
 }
 
+/** ApiResponse */
+export interface ApiResponse {
+  /**  */
+  status: number;
+
+  /**  */
+  data: object;
+
+  /**  */
+  message?: string;
+}
+
+/** PayerInfoV1 */
+export interface PayerInfoV1 {
+  /**  */
+  available: boolean;
+
+  /** Flow address, hex with 0x prefix */
+  address?: string;
+
+  /** signing key index */
+  keyIndex?: number;
+}
+
+/** SurgeInfoV1 */
+export interface SurgeInfoV1 {
+  /**  */
+  active: boolean;
+
+  /**  */
+  multiplier?: number;
+
+  /** timestamp */
+  expiresAt?: number;
+
+  /**  */
+  ttlSeconds?: number;
+
+  /** timestamp */
+  sampledAt?: number;
+}
+
+/** PayerStatusPayloadV1 */
+export interface PayerStatusPayloadV1 {
+  /**  */
+  statusVersion: IPayerStatusPayloadV1StatusVersion;
+
+  /**  */
+  surge: SurgeInfoV1;
+
+  /**  */
+  feePayer: PayerInfoV1;
+
+  /**  */
+  bridgePayer: PayerInfoV1;
+
+  /** timestamp */
+  updatedAt: number;
+
+  /**  */
+  reason?: string;
+}
+
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'
 }
+type IPayerStatusPayloadV1StatusVersion = 1;

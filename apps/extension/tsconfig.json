@@ -16,6 +16,7 @@
     "customConditions": ["@onflow/source"],
     "paths": {
       "@/*": ["./src/*"],
+      "@onflow/frw-api": ["./node_modules/@onflow/frw-api/src/index.ts"],
       "@onflow/frw-cadence": ["./node_modules/@onflow/frw-cadence/src/index.ts"],
       "@onflow/frw-context": ["./node_modules/@onflow/frw-context/src/index.ts"],
       "@onflow/frw-ui": ["./node_modules/@onflow/frw-ui/src/index.ts"],

@@ -1,4 +1,4 @@
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, navigation, logger } from '@onflow/frw-context';
 import {
   useSendStore,
   tokenQueryKeys,
@@ -68,7 +68,7 @@ export function SelectTokensScreen(): React.ReactElement {
       setCurrentAccount(account);
       setFromAccount(account);
     } catch (error) {
-      console.error('Failed to load current account:', error);
+      logger.error('Failed to load current account:', error);
     }
   }, []);
 

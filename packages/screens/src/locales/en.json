@@ -100,12 +100,18 @@
     "summary": "Summary",
     "sendTokens": "Send Tokens",
     "confirmSend": "Confirm send",
-    "holdToSend": "Hold to send"
+    "holdToSend": "Hold to send",
+    "unknownAccount": "Unknown Account"
   },
   "messages": {
     "loading": "Loading...",
     "noTokensWithBalance": "No tokens with balance",
-    "noNFTCollectionsForAccount": "No NFT collections found"
+    "noNFTCollectionsForAccount": "No NFT collections found",
+    "loadingProfiles": "Loading profiles...",
+    "noProfiles": "No Profiles",
+    "noProfilesFound": "No profiles found",
+    "failedToLoadRecipients": "Failed to load recipients",
+    "copied": "Copied!"
   },
   "buttons": {
     "retry": "Retry",
@@ -130,10 +136,23 @@
     "transactionExecutionError": "Transaction execution failed"
   },
   "nft": {
+    "untitled": "Untitled",
+    "unknownCollection": "Unknown Collection",
+    "noNFTsSelected": "No NFTs selected",
     "noSearchResults": "No Search Results",
     "noNFTsMatchSearch": "No NFTs match '{{search}}'",
     "noNFTsFound": "No NFTs Found",
     "collectionEmpty": "This collection doesn't contain any NFTs",
+    "noCollectionSelected": "No collection selected. Please go back and select an NFT collection.",
+    "noAccountSelected": "No account address available. Please select an account.",
+    "maxSelectionReached": "Maximum 9 NFTs can be selected",
+    "nftNotFound": "NFT not found for ID:",
+    "selectedCount": "{{count}} Selected NFT",
+    "selectedCount_plural": "{{count}} Selected NFTs",
+    "confirmSelection": "Confirm {{count}} NFT",
+    "confirmSelection_plural": "Confirm {{count}} NFTs",
+    "itemCount": "{{count}} item",
+    "itemCount_plural": "{{count}} items",
     "notFound": {
       "title": "NFT Not Found",
       "message": "The requested NFT could not be found or loaded"

@@ -97,12 +97,18 @@
     "summary": "Сводка",
     "sendTokens": "Отправить токены",
     "confirmSend": "Подтвердить отправку",
-    "holdToSend": "Удерживайте для отправки"
+    "holdToSend": "Удерживайте для отправки",
+    "unknownAccount": "Неизвестный аккаунт"
   },
   "messages": {
     "loading": "Загрузка...",
     "noTokensWithBalance": "Нет токенов с балансом",
-    "noNFTCollectionsForAccount": "Коллекции NFT не найдены"
+    "noNFTCollectionsForAccount": "Коллекции NFT не найдены",
+    "loadingProfiles": "Загрузка профилей...",
+    "noProfiles": "Нет профилей",
+    "noProfilesFound": "Профили не найдены",
+    "failedToLoadRecipients": "Не удалось загрузить получателей",
+    "copied": "Скопировано!"
   },
   "buttons": {
     "retry": "Повторить",
@@ -127,6 +133,9 @@
     "transactionExecutionError": "Ошибка выполнения транзакции"
   },
   "nft": {
+    "untitled": "Без названия",
+    "unknownCollection": "Неизвестная коллекция",
+    "noNFTsSelected": "NFT не выбраны",
     "noSearchResults": "Результаты поиска отсутствуют",
     "noNFTsMatchSearch": "NFT не найдены по запросу '{{search}}'",
     "noNFTsFound": "NFT не найдены",

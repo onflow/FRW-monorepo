@@ -97,12 +97,18 @@
     "summary": "Resumen",
     "sendTokens": "Enviar Tokens",
     "confirmSend": "Confirmar envío",
-    "holdToSend": "Mantener para enviar"
+    "holdToSend": "Mantener para enviar",
+    "unknownAccount": "Cuenta Desconocida"
   },
   "messages": {
     "loading": "Cargando...",
     "noTokensWithBalance": "No hay tokens con saldo",
-    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT"
+    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT",
+    "loadingProfiles": "Cargando perfiles...",
+    "noProfiles": "Sin Perfiles",
+    "noProfilesFound": "No se encontraron perfiles",
+    "failedToLoadRecipients": "Error al cargar destinatarios",
+    "copied": "¡Copiado!"
   },
   "buttons": {
     "retry": "Reintentar",
@@ -127,6 +133,9 @@
     "transactionExecutionError": "Error en la ejecución de la transacción"
   },
   "nft": {
+    "untitled": "Sin título",
+    "unknownCollection": "Colección desconocida",
+    "noNFTsSelected": "No se seleccionaron NFTs",
     "noSearchResults": "Sin Resultados de Búsqueda",
     "noNFTsMatchSearch": "Ningún NFT coincide con '{{search}}'",
     "noNFTsFound": "No se Encontraron NFTs",

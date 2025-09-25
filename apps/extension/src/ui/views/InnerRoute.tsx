@@ -202,15 +202,7 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="nested/send-single-nft"
-              element={
-                <PrivateRoute>
-                  <SendSummaryScreen />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="nested/send-multiple-nfts"
+              path="nested/sendsummary"
               element={
                 <PrivateRoute>
                   <SendSummaryScreen />
