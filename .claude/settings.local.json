@@ -63,7 +63,8 @@
       "Bash(rbenv version:*)",
       "Bash(xcodebuild:*)",
       "Bash(git:*)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(npx react-native:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
