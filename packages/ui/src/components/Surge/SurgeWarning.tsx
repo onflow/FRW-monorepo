@@ -1,7 +1,7 @@
 import { SurgeIcon, Close } from '@onflow/frw-icons';
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useEffect } from 'react';
-import { YStack, XStack, useTheme } from 'tamagui';
+import { YStack, useTheme } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
 
@@ -58,6 +58,10 @@ export interface SurgeWarningProps {
    * Additional CSS classes for the container
    */
   className?: string;
+  /**
+   * Surge pricing multiplier for dynamic messaging
+   */
+  surgeMultiplier?: number;
 }
 
 export const SurgeWarning: React.FC<SurgeWarningProps> = ({
@@ -74,6 +78,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
   onClose,
   onButtonPress,
   className,
+  surgeMultiplier,
 }) => {
   const theme = useTheme();
   const isCurrentlyDarkMode = isDarkMode(theme);

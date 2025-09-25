@@ -3,8 +3,8 @@ import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { YStack, XStack, Separator, Button, useTheme } from 'tamagui';
 
-import { SurgeWarning } from './SurgeWarning';
 import { SurgeInfo } from './SurgeInfo';
+import { SurgeWarning } from './SurgeWarning';
 import { Text } from '../../foundation/Text';
 
 export interface SurgeFeeSectionProps {
@@ -13,6 +13,8 @@ export interface SurgeFeeSectionProps {
   showWarning?: boolean;
   className?: string;
   onSurgeInfoPress?: () => void;
+  surgeMultiplier?: number;
+  isSurgePricingActive?: boolean;
 }
 
 export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
@@ -21,6 +23,8 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
   showWarning = true,
   className,
   onSurgeInfoPress,
+  surgeMultiplier = 1,
+  isSurgePricingActive = false,
 }) => {
   const theme = useTheme();
   const [isSurgeWarningOpen, setIsSurgeWarningOpen] = useState(false);
@@ -29,6 +33,12 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
   // Theme-aware colors
   const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
   const warningIconColor = theme.warning?.val || '#FDB022';
+
+  // Don't render if surge pricing is not active
+  if (!isSurgePricingActive) {
+    return null;
+  }
+
   return (
     <YStack gap="$4" className={className}>
       {/* Surge Price Active Indicator */}
@@ -36,7 +46,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
         <XStack style={{ alignItems: 'center' }} gap="$2">
           <SurgeIcon size={24} color={warningIconColor} />
           <Text fontSize={14} fontWeight="600" color="$warning" lineHeight="$4">
-            Surge price active
+            Surge price active ({surgeMultiplier}× higher)
           </Text>
         </XStack>
         <Button
@@ -135,7 +145,13 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
 
           {/* Warning Message */}
           {!showWarning && (
-            <Text fontSize={14} fontWeight="400" color="$warning" lineHeight={20} letterSpacing={-0.084}>
+            <Text
+              fontSize={14}
+              fontWeight="400"
+              color="$warning"
+              lineHeight={20}
+              letterSpacing={-0.084}
+            >
               Your free transaction allowance will not cover this transaction.
             </Text>
           )}
@@ -144,15 +160,21 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
 
       {/* Surge Warning Modal */}
       <SurgeWarning
-        message="Due to high network activity, transaction fees are elevated. Current network fees are 4× higher than usual and your free allowance will not cover the fee for this transaction."
+        message={`Due to high network activity, transaction fees are elevated. Current network fees are ${surgeMultiplier}× higher than usual and your free allowance will not cover the fee for this transaction.`}
         title="Surge pricing"
         variant="warning"
         visible={isSurgeWarningOpen}
         onClose={() => setIsSurgeWarningOpen(false)}
+        surgeMultiplier={surgeMultiplier}
       />
 
       {/* Surge Info Bottom Sheet */}
-      <SurgeInfo isOpen={isSurgeInfoOpen} onClose={() => setIsSurgeInfoOpen(false)} transactionFee={"-5.00 FLOW"} />
+      <SurgeInfo
+        isOpen={isSurgeInfoOpen}
+        onClose={() => setIsSurgeInfoOpen(false)}
+        transactionFee={transactionFee}
+        surgeMultiplier={surgeMultiplier}
+      />
     </YStack>
   );
 };

@@ -244,7 +244,30 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
-  const [isSurgePricingActive, setIsSurgePricingActive] = useState(true); // Set to true for testing
+  // Dynamic surge pricing state based on API response
+  const isSurgePricingActive = payerStatus?.surge?.active ?? false;
+  const surgeMultiplier = payerStatus?.surge?.multiplier ?? 1;
+
+  // Log payer status API response for debugging
+  React.useEffect(() => {
+    if (payerStatus) {
+      logger.info('Payer Status API Response:', {
+        surge: payerStatus.surge,
+        feePayer: payerStatus.feePayer,
+        bridgePayer: payerStatus.bridgePayer,
+        updatedAt: payerStatus.updatedAt,
+        reason: payerStatus.reason,
+        isSurgePricingActive,
+        surgeMultiplier,
+      });
+    }
+    if (isLoadingPayerStatus) {
+      logger.info('Loading payer status...');
+    }
+    if (payerStatusError) {
+      logger.error('Payer status error:', payerStatusError);
+    }
+  }, [payerStatus, isLoadingPayerStatus, payerStatusError, isSurgePricingActive, surgeMultiplier]);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
@@ -691,6 +714,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               <SurgeFeeSection
                 transactionFee={transactionFee}
                 showWarning={isSurgeWarningVisible}
+                surgeMultiplier={surgeMultiplier}
+                isSurgePricingActive={isSurgePricingActive}
                 onSurgeInfoPress={() => setIsSurgeWarningVisible(true)}
               />
             </YStack>
@@ -775,7 +800,11 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       </YStack>
       {/* SurgeWarning Modal */}
       <SurgeWarning
-        message={t('surge.message')}
+        message={
+          isSurgePricingActive && surgeMultiplier
+            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${surgeMultiplier}× higher than usual and your free allowance will not cover the fee for this transaction.`
+            : t('surge.message')
+        }
         title={t('surge.title')}
         variant="warning"
         visible={isSurgeWarningVisible}
@@ -783,6 +812,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         onButtonPress={() => {
           setIsSurgeWarningVisible(false);
         }}
+        surgeMultiplier={surgeMultiplier}
       />
     </BackgroundWrapper>
   );
