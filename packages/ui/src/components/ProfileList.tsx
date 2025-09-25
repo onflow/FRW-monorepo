@@ -14,6 +14,7 @@ export interface ProfileListProps {
   emptyTitle?: string;
   emptyMessage?: string;
   loadingText?: string;
+  isMobile?: boolean;
 }
 
 export function ProfileList({
@@ -23,6 +24,7 @@ export function ProfileList({
   emptyTitle = 'No Profiles',
   emptyMessage = 'No profiles found',
   loadingText = 'Loading profiles...',
+  isMobile = false,
 }: ProfileListProps): React.ReactElement {
   if (isLoading) {
     return (
@@ -46,6 +48,7 @@ export function ProfileList({
             profile={profile}
             onAccountPress={onAccountPress}
             isLast={index === profiles.length - 1}
+            isMobile={isMobile}
           />
         </React.Fragment>
       ))}
@@ -57,12 +60,14 @@ interface ProfileItemProps {
   profile: WalletProfile;
   onAccountPress?: (recipient: any) => void;
   isLast?: boolean;
+  isMobile?: boolean;
 }
 
 function ProfileItem({
   profile,
   onAccountPress,
   isLast = false,
+  isMobile = false,
 }: ProfileItemProps): React.ReactElement {
   const themeName = useThemeName();
 
@@ -128,15 +133,11 @@ function ProfileItem({
       <YStack gap="$0">
         {accountsData.map((account, index) => (
           <React.Fragment key={account.id}>
-            <YStack py="$2" items="center">
-              <YStack height={1} bg={dividerColor} width="100%" />
-            </YStack>
-            <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
-            {index === accountsData.length - 1 && (
-              <YStack py="$2" items="center">
-                <YStack height={1} bg={dividerColor} width="100%" />
-              </YStack>
-            )}
+            <RecipientItem
+              {...account}
+              onPress={() => handleAccountPress(account)}
+              isMobile={isMobile}
+            />
           </React.Fragment>
         ))}
       </YStack>

@@ -279,7 +279,7 @@ export function NFTGrid({
 
   // Main grid content
   return (
-    <YStack gap="$4" pr="$4">
+    <YStack gap="$4" pr={!isExtension && '$4'}>
       {rows.map((row, rowIndex) => (
         <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
           {row.map((nft) => (

@@ -36,6 +36,7 @@ export interface RecipientItemProps {
 
   // Styling
   pressStyle?: object;
+  isMobile?: boolean;
 }
 
 export function RecipientItem({
@@ -60,6 +61,7 @@ export function RecipientItem({
   onAddToAddressBook,
   copiedFeedback,
   pressStyle,
+  isMobile = false,
 }: RecipientItemProps): React.JSX.Element {
   const themeName = useThemeName();
 
@@ -80,6 +82,7 @@ export function RecipientItem({
       p={0}
       minHeight={56}
       cursor="pointer"
+      mb={isMobile && '$3'}
     >
       <XStack items="center" justify="space-between" flex={1} p={0} height={56}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
@@ -100,8 +103,17 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={emojiInfo?.color || (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')}
-              textColor={emojiInfo?.color ? undefined : (isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)')}
+              bgColor={
+                emojiInfo?.color ||
+                (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')
+              }
+              textColor={
+                emojiInfo?.color
+                  ? undefined
+                  : isDarkMode
+                    ? 'rgba(0, 0, 0, 0.9)'
+                    : 'rgba(255, 255, 255, 0.9)'
+              }
               size={avatarSize}
             />
           </YStack>
@@ -117,7 +129,7 @@ export function RecipientItem({
               width={18}
               height={18}
               rounded={9}
-              bg={parentEmojiInfo?.color || "#D9D9D9"}
+              bg={parentEmojiInfo?.color || '#D9D9D9'}
               borderWidth={2}
               borderColor="$bg2"
               items="center"

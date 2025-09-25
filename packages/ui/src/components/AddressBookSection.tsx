@@ -9,6 +9,7 @@ export interface AddressBookSectionProps {
   copiedAddress?: string | null;
   copiedId?: string | null;
   copiedText?: string;
+  isMobile?: boolean;
 }
 
 export function AddressBookSection({
@@ -17,6 +18,7 @@ export function AddressBookSection({
   copiedAddress,
   copiedId,
   copiedText = 'Copied!',
+  isMobile = false,
 }: AddressBookSectionProps): React.JSX.Element | null {
   const themeName = useThemeName();
 
@@ -43,6 +45,7 @@ export function AddressBookSection({
               {...contact}
               type="contact"
               showCopyButton={true}
+              isMobile={isMobile}
               copiedFeedback={
                 copiedId
                   ? copiedId === (contact as any).id
@@ -67,6 +70,7 @@ export interface AddressBookListProps {
   copiedAddress?: string | null;
   copiedId?: string | null;
   copiedText?: string;
+  isMobile?: boolean;
 }
 
 export function AddressBookList({
@@ -75,6 +79,7 @@ export function AddressBookList({
   copiedAddress,
   copiedId,
   copiedText = 'Copied!',
+  isMobile = false,
 }: AddressBookListProps): React.JSX.Element {
   const themeName = useThemeName();
 
@@ -90,6 +95,7 @@ export function AddressBookList({
               {...contact}
               type="contact"
               showCopyButton={true}
+              isMobile={isMobile}
               copiedFeedback={
                 copiedId
                   ? copiedId === (contact as any).id
@@ -133,6 +139,7 @@ export function AddressBookList({
           copiedAddress={copiedAddress}
           copiedId={copiedId}
           copiedText={copiedText}
+          isMobile={isMobile}
         />
       ))}
     </YStack>

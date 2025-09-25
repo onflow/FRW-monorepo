@@ -45,6 +45,7 @@ export interface RecipientListProps {
   showSectionHeaders?: boolean;
   itemSpacing?: number;
   sectionSpacing?: number;
+  isMobile?: boolean;
 
   // Style
   contentPadding?: number;
@@ -70,6 +71,7 @@ export function RecipientList({
   showSectionHeaders = true,
   itemSpacing = 8,
   sectionSpacing = 16,
+  isMobile = false,
   contentPadding = 16,
 }: RecipientListProps) {
   const themeName = useThemeName();
@@ -124,6 +126,7 @@ export function RecipientList({
       onEdit={() => onItemEdit?.(item)}
       onCopy={() => onItemCopy?.(item)}
       onAddToAddressBook={() => onItemAddToAddressBook?.(item)}
+      isMobile={isMobile}
     />
   );
 

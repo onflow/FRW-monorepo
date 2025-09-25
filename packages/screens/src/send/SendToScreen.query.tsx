@@ -603,6 +603,7 @@ export function SendToScreen(): React.ReactElement {
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
             loadingText={t('messages.loadingProfiles')}
+            isMobile={!isExtension}
           />
         ) : activeTab === 'contacts' ? (
           isLoading ? (

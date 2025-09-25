@@ -135,7 +135,7 @@ export function NFTCard({
 
             {/* Right Chevron */}
             <YStack justify="center">
-              <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
+              <ChevronRight size={24} color="#767676" />
             </YStack>
           </XStack>
         )}
