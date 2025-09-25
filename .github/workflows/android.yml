@@ -1,20 +1,7 @@
 name: Android Build & Release
 
 on:
-  push:
-    paths:
-      - "apps/react-native/**"
-      - "packages/**"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/android.yml"
-    branches: [main, dev, "release/*"]
-    tags:
-      - "release/rn-*"
-  pull_request:
-    paths:
-      - "apps/react-native/**"
-      - "packages/**"
-    branches: [main, dev, "release/*"]
+  # Manual runs only (for debugging/testing). Re-enable push/PR triggers if needed.
   workflow_dispatch:
     inputs:
       buildType:
@@ -42,8 +29,11 @@ jobs:
       ANDROID_DIR: apps/react-native/android
 
     steps:
-      - name: Checkout
+      - name: Checkout (with submodules)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
