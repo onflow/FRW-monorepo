@@ -1420,10 +1420,20 @@ export interface PayerStatusPayloadV1 {
 }
 
 /** PayerStatusApiResponseV1 */
-export interface PayerStatusApiResponseV1 {}
+export interface PayerStatusApiResponseV1 {
+  /** HTTP status code */
+  status: IPayerStatusApiResponseV1Status;
+
+  /**  */
+  data: PayerStatusPayloadV1;
+
+  /** Optional message for API response */
+  message?: string;
+}
 
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'
 }
 type IPayerStatusPayloadV1StatusVersion = 1;
+type IPayerStatusApiResponseV1Status = 200 | 429 | 500 | 503;
