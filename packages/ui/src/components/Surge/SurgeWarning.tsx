@@ -1,6 +1,7 @@
 import { SurgeActive, Close } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useEffect } from 'react';
-import { YStack, Button } from 'tamagui';
+import { YStack, XStack, useTheme } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
 
@@ -74,35 +75,51 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
   onButtonPress,
   className,
 }) => {
-  // Get colors based on variant
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+
+  // Theme-aware colors using the helper function
+  const closeIconColor = theme.white?.val || '#FFFFFF';
+  const activityIconColor = theme.black?.val || '#000000';
+  const warningBackgroundColor = theme.warning?.val || '#FDB022';
+  const dynamicTitleColor = titleColor || theme.white?.val || '#FFFFFF';
+  const dynamicTextColor = textColor || theme.white?.val || '#FFFFFF';
+  const modalBackgroundColor = backgroundColor || theme.bg5?.val || '#2A2A2A';
+
+  // Get colors based on variant (keeping original structure but using theme values)
   const getVariantColors = () => {
     switch (variant) {
       case 'error':
         return {
-          background: backgroundColor || ('$bg5' as any),
-          title: titleColor || ('$white' as any),
-          text: textColor || ('$error' as any),
+          background: modalBackgroundColor,
+          title: dynamicTitleColor,
+          text: dynamicTextColor,
         };
       case 'info':
         return {
-          background: backgroundColor || ('$bg5' as any),
-          title: titleColor || ('$white' as any),
-          text: textColor || ('$primary' as any),
+          background: modalBackgroundColor,
+          title: dynamicTitleColor,
+          text: dynamicTextColor,
         };
       case 'warning':
       default:
         return {
-          background: backgroundColor || ('$bg5' as any),
-          title: titleColor || ('$white' as any),
-          text: textColor || ('$warning' as any),
+          background: modalBackgroundColor,
+          title: dynamicTitleColor,
+          text: dynamicTextColor,
         };
     }
   };
 
   const colors = getVariantColors();
 
-  // Handle escape key press and body scroll prevention
+  // Handle escape key press and body scroll prevention (web only)
   useEffect(() => {
+    // Check if we're in a web environment
+    if (typeof document === 'undefined') {
+      return;
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && visible && onClose) {
         onClose();
@@ -156,96 +173,111 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
     >
       <YStack
         width={343}
+        height={280}
         bg={colors.background}
         rounded="$4"
         p="$4"
         gap="$4"
-        shadowColor="$shadow"
+        shadowColor="$shadowColor"
         shadowOffset={{ width: 0, height: 5 }}
         shadowOpacity={0.25}
         shadowRadius={12}
         elevation={8}
         pressStyle={{ opacity: 1 }}
         onPress={(e) => e.stopPropagation()}
-        style={
-          backgroundColor
-            ? { backgroundColor, minWidth: 300, maxWidth: '90vw' }
-            : { minWidth: 300, maxWidth: '90vw' }
-        }
         data-node-id="4633:31373"
       >
         {/* Close Button */}
-        <Button
+        <YStack
+          pos="absolute"
+          top={16}
+          right={16}
+          w={24}
+          h={24}
           items="center"
           justify="center"
-          width={24}
-          height={24}
+          bg="$dark5"
+          rounded={12}
           pressStyle={{ opacity: 0.7 }}
           onPress={onClose}
           cursor="pointer"
-          style={{
-            position: 'absolute',
-            top: '$4',
-            right: '$4',
-            zIndex: 1,
-          }}
-          icon={<Close size={24} />}
-        />
+          aria-label="Close dialog"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Close size={10} color={closeIconColor} />
+        </YStack>
 
         {/* Content Frame */}
-        <YStack items="center" gap="$4" style={{ alignSelf: 'stretch' }}>
+        <YStack items="center" gap="$6" style={{ alignSelf: 'stretch', paddingTop: '$2' }}>
           {/* Icon */}
           {showIcon && icon && (
-            <YStack items="center" justify="center" width={48} height={48}>
+            <YStack
+              items="center"
+              justify="center"
+              width={48}
+              height={48}
+              bg={warningBackgroundColor}
+              rounded="$12"
+            >
               {React.isValidElement(icon)
                 ? React.cloneElement(icon as React.ReactElement<any>, {
-                    size: 48,
+                    size: 26,
+                    color: activityIconColor,
                   })
                 : icon}
             </YStack>
           )}
 
-          {/* Title */}
-          {title && (
-            <Text
-              id="surge-warning-title"
-              fontSize={18}
-              fontWeight="700"
-              color={colors.title}
-              lineHeight="$5"
-              style={
-                titleColor ? { color: titleColor, textAlign: 'center' } : { textAlign: 'center' }
-              }
-            >
-              {title}
-            </Text>
-          )}
+          {/* Text Content */}
+          <YStack items="center" gap="$2" style={{ alignSelf: 'stretch' }}>
+            {/* Title */}
+            {title && (
+              <Text
+                id="surge-warning-title"
+                fontSize="$6"
+                fontWeight="700"
+                color={colors.title}
+                lineHeight="$6"
+                style={{ textAlign: 'center', width: 264 }}
+              >
+                {title}
+              </Text>
+            )}
 
-          {/* Warning message */}
-          <Text
-            id="surge-warning-message"
-            fontSize={14}
-            fontWeight="400"
-            color={colors.text}
-            lineHeight="$5"
-            style={textColor ? { color: textColor, textAlign: 'center' } : { textAlign: 'center' }}
-          >
-            {message}
-          </Text>
+            {/* Warning message */}
+            <Text
+              id="surge-warning-message"
+              fontSize="$4"
+              fontWeight="400"
+              color={colors.text}
+              lineHeight="$4"
+              style={{ textAlign: 'center', width: 275 }}
+            >
+              {message}
+            </Text>
+          </YStack>
 
           {/* Button */}
           <YStack
             width="100%"
-            height={44}
+            height={52}
             bg="$white"
-            rounded="$3"
+            rounded="$4"
             items="center"
             justify="center"
             pressStyle={{ opacity: 0.8 }}
             onPress={handleButtonPress}
             cursor="pointer"
+            p="$4"
+            shadowColor="$shadowColor"
+            shadowOffset={{ width: 0, height: 1 }}
+            shadowOpacity={1}
+            shadowRadius={2}
+            elevation={1}
           >
-            <Text fontSize={14} fontWeight="700" color="$dark80" style={{ textAlign: 'center' }}>
+            <Text fontSize="$5" fontWeight="600" color="$black" style={{ textAlign: 'center' }}>
               {buttonText}
             </Text>
           </YStack>

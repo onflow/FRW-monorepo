@@ -11,6 +11,7 @@ export interface SurgeFeeSectionProps {
   freeAllowance?: string;
   showWarning?: boolean;
   className?: string;
+  onSurgeInfoPress?: () => void;
 }
 
 export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
@@ -18,6 +19,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
   freeAllowance = '1.1357',
   showWarning = true,
   className,
+  onSurgeInfoPress,
 }) => {
   const [isSurgeInfoOpen, setIsSurgeInfoOpen] = useState(false);
   const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
@@ -35,7 +37,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
           background="transparent"
           borderWidth={0}
           padding={0}
-          onPress={() => setIsSurgeInfoOpen(true)}
+          onPress={onSurgeInfoPress || (() => setIsSurgeInfoOpen(true))}
           icon={<InfoIcon size={24} />}
           chromeless
         />
