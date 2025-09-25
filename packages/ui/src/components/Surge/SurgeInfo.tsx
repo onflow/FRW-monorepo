@@ -1,6 +1,6 @@
 import { Close } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, XStack, Button } from 'tamagui';
+import { YStack, XStack, Sheet } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
 
@@ -10,40 +10,32 @@ export interface SurgeInfoProps {
 }
 
 export const SurgeInfo: React.FC<SurgeInfoProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   return (
-    <YStack
-      pos="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
-      bg="rgba(0, 0, 0, 0.72)"
-      zIndex={999999}
-      style={{ alignItems: 'center', justifyContent: 'flex-end' }}
+    <Sheet
+      modal
+      open={isOpen}
+      onOpenChange={onClose}
+      snapPointsMode="fit"
+      dismissOnSnapToBottom
+      animation="lazy"
     >
-      {/* Bottom Sheet Content - matching Figma design */}
-      <YStack
-        pos="absolute"
-        b="$0"
-        l="$0"
-        r="$0"
-        width="100%"
+      <Sheet.Overlay
+        animation="lazy"
+        enterStyle={{ opacity: 0 }}
+        exitStyle={{ opacity: 0 }}
+        bg="rgba(0, 0, 0, 0.72)"
+      />
+      <Sheet.Handle bg="$gray8" />
+      <Sheet.Frame
         bg="#121212"
-        borderTopLeftRadius={16}
-        borderTopRightRadius={16}
-        shadowColor="$shadowColor"
-        shadowOffset={{ width: 0, height: -2 }}
-        shadowOpacity={0.1}
-        shadowRadius="$2"
-        elevation={8}
-        p="$4.5"
-        pb="$9"
-        maxH="75vh"
-        gap="$4"
-        items="center"
+        borderTopLeftRadius="$6"
+        borderTopRightRadius="$6"
+        animation="lazy"
+        enterStyle={{ y: 1000 }}
+        exitStyle={{ y: 1000 }}
       >
+        <YStack p="$4.5" pb="$9" gap="$4" items="center" maxWidth={375} alignSelf="center">
+
         {/* Header with close button */}
         <XStack justify="space-between" items="center" alignSelf="stretch" gap="$3.25" width="100%">
           <XStack items="center" gap="$2" width={240}>
@@ -97,11 +89,12 @@ export const SurgeInfo: React.FC<SurgeInfoProps> = ({ isOpen, onClose }) => {
           </XStack>
         </YStack>
 
-        {/* Description */}
-        <Text fontSize={12} fontWeight="400" color="#FFFFFF" lineHeight={16} textAlign="left" width={339}>
-          Surge pricing may apply during periods of high network demand, and the wallet will automatically adjust transaction fees to prioritize speed while balancing cost efficiency.
-        </Text>
-      </YStack>
-    </YStack>
+          {/* Description */}
+          <Text fontSize={12} fontWeight="400" color="#FFFFFF" lineHeight={16} textAlign="left" width={339}>
+            Surge pricing may apply during periods of high network demand, and the wallet will automatically adjust transaction fees to prioritize speed while balancing cost efficiency.
+          </Text>
+        </YStack>
+      </Sheet.Frame>
+    </Sheet>
   );
 };

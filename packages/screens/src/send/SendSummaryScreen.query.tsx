@@ -31,6 +31,7 @@ import {
   XStack,
   ERC1155QuantitySelector,
   useTheme,
+  SurgeWarning,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -542,6 +543,18 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
           unknownAccountText={t('send.unknownAccount')}
+        />
+
+        {/* SurgeWarning Modal */}
+        <SurgeWarning
+          message={t('surge.message')}
+          title={t('surge.title')}
+          variant="warning"
+          visible={isSurgeWarningVisible}
+          onClose={() => setIsSurgeWarningVisible(false)}
+          onButtonPress={() => {
+            setIsSurgeWarningVisible(false);
+          }}
         />
       </YStack>
     </BackgroundWrapper>
