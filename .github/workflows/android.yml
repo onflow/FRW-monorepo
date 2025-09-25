@@ -172,11 +172,21 @@ jobs:
 
           # Optional: Decode keystore if provided and wire via local.properties
           if [ -n "${KEYSTORE_BASE64:-}" ]; then
-            echo "[Android CI] Decoding KEYSTORE_BASE64 to app/release.keystore"
-            echo "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
-            # Append storeFile to local.properties only if not present
-            if ! grep -q '^storeFile=' local.properties; then
-              echo "storeFile=$(pwd)/app/release.keystore" >> local.properties
+            echo "[Android CI] Preparing keystore from KEYSTORE_BASE64"
+            # Resolve desired keystore path: honor existing storeFile in local.properties if present
+            EXISTING_STORE_FILE=$(grep -E '^storeFile=' local.properties | sed -E 's/^storeFile=//') || true
+            if [ -n "${EXISTING_STORE_FILE:-}" ]; then
+              KEYSTORE_PATH="$EXISTING_STORE_FILE"
+            else
+              KEYSTORE_PATH="$(pwd)/app/keystore.jks"
+            fi
+            mkdir -p "$(dirname "$KEYSTORE_PATH")"
+            echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+            # Ensure local.properties points to the decoded keystore path
+            if grep -q '^storeFile=' local.properties; then
+              sed -i.bak "s|^storeFile=.*$|storeFile=$KEYSTORE_PATH|" local.properties && rm -f local.properties.bak
+            else
+              echo "storeFile=$KEYSTORE_PATH" >> local.properties
             fi
           fi
 
