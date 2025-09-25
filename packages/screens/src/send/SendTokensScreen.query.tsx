@@ -8,6 +8,8 @@ import {
   storageQueryKeys,
   storageQueries,
   storageUtils,
+  payerStatusQueryKeys,
+  fetchPayerStatus,
 } from '@onflow/frw-stores';
 import { isFlow, Platform } from '@onflow/frw-types';
 import {
@@ -155,6 +157,20 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     queryFn: () => bridge.getSelectedAccount(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: true,
+  });
+
+  // Query for payer status with automatic caching
+  const {
+    data: payerStatus,
+    isLoading: isLoadingPayerStatus,
+    error: payerStatusError,
+  } = useQuery({
+    queryKey: payerStatusQueryKeys.payerStatus('mainnet'),
+    queryFn: () => fetchPayerStatus('mainnet'),
+    staleTime: 0, // Always fresh for financial data
+    enabled: true,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Query for tokens with automatic caching

@@ -1,4 +1,4 @@
-import { AlertTriangle, Activity, X, Loader } from '@onflow/frw-icons';
+import { AlertTriangle, SurgeIcon, Close } from '@onflow/frw-icons';
 import React, { useEffect, useState } from 'react';
 import { YStack, XStack, Button } from 'tamagui';
 
@@ -173,7 +173,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
             right: '$4',
             zIndex: 1,
           }}
-          icon={<X size={24} />}
+          icon={<Close size={24} />}
         />
 
         {/* Content Frame */}
@@ -223,7 +223,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
 
             {/* Surge Active Section */}
             <XStack items="center" gap="$2">
-              <Activity size={24} color="$warning" />
+              <SurgeIcon size={24} color="$warning" />
               <YStack flex={1}>
                 <Text fontSize={14} fontWeight="600" color="$warning">
                   Surge price active
@@ -276,11 +276,6 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
               )}
 
               <XStack items="center" gap="$2">
-                {isLoading ? (
-                  <Loader size={20} color="$white" />
-                ) : (
-                  <YStack width={20} height={20} />
-                )}
                 <Text fontSize={16} fontWeight="600" color="$white">
                   Hold to agree to surge pricing
                 </Text>
