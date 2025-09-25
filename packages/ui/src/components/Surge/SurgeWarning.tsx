@@ -1,4 +1,4 @@
-import { SurgeActive, Close } from '@onflow/frw-icons';
+import { SurgeIcon, Close } from '@onflow/frw-icons';
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useEffect } from 'react';
 import { YStack, XStack, useTheme } from 'tamagui';
@@ -63,7 +63,7 @@ export interface SurgeWarningProps {
 export const SurgeWarning: React.FC<SurgeWarningProps> = ({
   message,
   title,
-  icon = <SurgeActive />,
+  icon = <SurgeIcon />,
   visible = true,
   variant = 'warning',
   backgroundColor,
@@ -224,7 +224,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
               {React.isValidElement(icon)
                 ? React.cloneElement(icon as React.ReactElement<any>, {
                     size: 26,
-                    color: activityIconColor,
+                    color: activityIconColor, // SurgeIcon only has stroke, so black will show on yellow background
                   })
                 : icon}
             </YStack>

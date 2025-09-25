@@ -1,6 +1,7 @@
 import { FlowLogo, SurgeIcon, InfoIcon } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, Separator, Button } from 'tamagui';
+import { YStack, XStack, Separator, Button, useTheme } from 'tamagui';
 
 import { PriceBreakdown } from './PriceBreakdown';
 import { SurgeInfo } from './SurgeInfo';
@@ -21,14 +22,18 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
   className,
   onSurgeInfoPress,
 }) => {
+  const theme = useTheme();
   const [isSurgeInfoOpen, setIsSurgeInfoOpen] = useState(false);
   const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
+
+  // Theme-aware warning color for the surge icon
+  const warningIconColor = theme.warning?.val || '#FDB022';
   return (
     <YStack gap="$4" className={className}>
       {/* Surge Price Active Indicator */}
       <XStack style={{ alignItems: 'center', justifyContent: 'space-between' }} width="100%">
         <XStack style={{ alignItems: 'center' }} gap="$2">
-          <SurgeIcon size={24} />
+          <SurgeIcon size={24} color={warningIconColor} />
           <Text fontSize={14} fontWeight="600" color="$warning" lineHeight="$4">
             Surge price active
           </Text>
