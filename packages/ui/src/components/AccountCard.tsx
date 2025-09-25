@@ -1,6 +1,7 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { ScrollView, XStack, YStack } from 'tamagui';
+import { ScrollView, XStack, YStack, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
@@ -35,12 +36,21 @@ export function AccountCard({
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
+  const theme = useTheme();
+
+  // Theme-aware background color using helper function
+  const isCurrentlyDarkMode = isDarkMode(theme);
+
+  // Chain link icon color logic
+  const chainLinkIconColor = isCurrentlyDarkMode
+    ? 'rgba(255, 255, 255, 0.8)'
+    : 'rgba(0, 0, 0, 0.8)';
 
   // Early return if no account data
   if (!account) {
     return (
       <YStack width="100%" pt="$2" px="$1" pb="$6" gap="$1" {...props}>
-        <Text fontSize="$2" mb="$1" fontWeight="400" color="$light80" lineHeight={16}>
+        <Text fontSize="$2" mb="$1" fontWeight="400" color="$textSecondary" lineHeight={16}>
           {title}
         </Text>
         <Text color="$error">No account data available</Text>
@@ -51,8 +61,10 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      pt="$2"
-      px="$1"
+      // bg={backgroundColor}
+      rounded="$4"
+      pt="$4"
+      px="$4"
       pb="$6"
       gap="$1"
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
@@ -64,7 +76,7 @@ export function AccountCard({
         fontSize="$2"
         mb={isSendTokensScreen ? '$8' : '$1'}
         fontWeight="400"
-        color="$light80"
+        // color="$textSecondary"
         lineHeight={16}
       >
         {title}
@@ -93,9 +105,9 @@ export function AccountCard({
                 width={18}
                 height={18}
                 rounded={9}
-                bg="$light80"
+                bg={account.parentEmoji.color || '$bg2'}
                 borderWidth={2}
-                borderColor="rgba(10, 10, 11, 0.8)"
+                borderColor="$bg2"
                 items="center"
                 justify="center"
                 overflow="hidden"
@@ -113,9 +125,9 @@ export function AccountCard({
             <XStack items="center" gap={4} minH={20}>
               {/* Link icon for linked accounts */}
               {(account.type === 'child' || account.parentEmoji) && (
-                <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                <Link size={12.8} color={chainLinkIconColor} theme="outline" />
               )}
-              <Text color="$white" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
+              <Text color="$text" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}
               </Text>
               {/* EVM Badge - inline with name */}
@@ -131,7 +143,7 @@ export function AccountCard({
                   <Text
                     fontSize={8}
                     fontWeight="400"
-                    color="$white"
+                    color="#FFFFFF"
                     lineHeight={9.7}
                     letterSpacing={0.128}
                   >
@@ -176,7 +188,7 @@ export function AccountCard({
         {/* Edit Icon */}
         {showEditButton && (
           <XStack width={24} height={24} items="center" justify="center">
-            <Edit size={24} color="$textSecondary" theme="outline" />
+            <Edit size={24} color="#767676" theme="outline" />
           </XStack>
         )}
       </XStack>
@@ -284,9 +296,9 @@ export function AccountCard({
                                     width={18}
                                     height={18}
                                     rounded={9}
-                                    bg="$light80"
+                                    bg={acc.parentEmoji.color || '$bg2'}
                                     borderWidth={2}
-                                    borderColor="rgba(10, 10, 11, 0.8)"
+                                    borderColor="$bg2"
                                     items="center"
                                     justify="center"
                                     overflow="hidden"
@@ -304,7 +316,7 @@ export function AccountCard({
                                 <XStack items="center" gap={4}>
                                   {/* Link icon for linked accounts */}
                                   {(acc.type === 'child' || acc.parentEmoji) && (
-                                    <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />
+                                    <Link size={12.8} color={chainLinkIconColor} theme="outline" />
                                   )}
                                   <Text
                                     fontSize={14}
@@ -328,7 +340,7 @@ export function AccountCard({
                                       <Text
                                         fontSize={8}
                                         fontWeight="400"
-                                        color="$white"
+                                        color="#FFFFFF"
                                         lineHeight={9.7}
                                         letterSpacing={0.128}
                                       >

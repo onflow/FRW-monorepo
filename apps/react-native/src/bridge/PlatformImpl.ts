@@ -1,4 +1,4 @@
-import { type PlatformSpec, type Storage, type Cache, type Navigation } from '@onflow/frw-context';
+import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   Currency,
   RecentContactsResponse,
@@ -10,9 +10,9 @@ import { Platform } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
-import { Platform as RNPlatform, NativeModules } from 'react-native';
+import { NativeModules, Platform as RNPlatform } from 'react-native';
 
-import { storage, cache } from '../storage';
+import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
@@ -247,6 +247,36 @@ class PlatformImpl implements PlatformSpec {
   navigation(): Navigation {
     // Return the navigation implementation - will be set up separately
     return reactNativeNavigation;
+  }
+
+  // Toast Manager implementation
+  showToast(
+    title: string,
+    message?: string,
+    type: 'success' | 'error' | 'warning' | 'info' = 'info',
+    duration: number = 4000
+  ): void {
+    try {
+      NativeFRWBridge.showToast(title, message, type, duration);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to show native toast via bridge:', error);
+    }
+  }
+
+  hideToast(id: string): void {
+    try {
+      NativeFRWBridge.hideToast(id);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to hide toast via bridge:', error);
+    }
+  }
+
+  clearAllToasts(): void {
+    try {
+      NativeFRWBridge.clearAllToasts();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to clear toasts via bridge:', error);
+    }
   }
 }
 

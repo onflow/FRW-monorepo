@@ -59,7 +59,7 @@ export function NFTCollectionRow({
           </YStack>
         </XStack>
         {/* Chevron Icon */}
-        <ChevronRight size={24} color="rgba(255, 255, 255, 0.5)" />
+        <ChevronRight size={24} color="#767676" theme="outline" />
       </XStack>
     </YStack>
   );

@@ -1,9 +1,9 @@
 import type {
   RecentContactsResponse,
+  Currency as SharedCurrency,
   EnvironmentVariables as SharedEnvironmentVariables,
   WalletAccount,
   WalletAccountsResponse,
-  Currency as SharedCurrency,
   WalletProfilesResponse,
 } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
@@ -61,6 +61,15 @@ export interface Spec extends TurboModule {
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
+  // Toast methods
+  showToast(
+    title: string,
+    message?: string,
+    type?: 'success' | 'error' | 'warning' | 'info',
+    duration?: number
+  ): void;
+  hideToast(id: string): void;
+  clearAllToasts(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

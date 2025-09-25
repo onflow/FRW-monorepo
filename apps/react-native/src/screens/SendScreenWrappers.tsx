@@ -1,7 +1,6 @@
 import {
   SendTokensScreen as BaseSendTokensScreen,
-  SendSingleNFTScreen as BaseSendSingleNFTScreen,
-  SendMultipleNFTsScreen as BaseSendMultipleNFTsScreen,
+  SendSummaryScreen as BaseSendSummaryScreen,
   type ScreenAssets,
 } from '@onflow/frw-screens';
 import React from 'react';
@@ -16,5 +15,4 @@ const screenAssets: ScreenAssets = {
 
 // Wrapper components that pass the assets
 export const SendTokensScreen = () => <BaseSendTokensScreen assets={screenAssets} />;
-export const SendSingleNFTScreen = () => <BaseSendSingleNFTScreen assets={screenAssets} />;
-export const SendMultipleNFTsScreen = () => <BaseSendMultipleNFTsScreen assets={screenAssets} />;
+export const SendSummaryScreen = () => <BaseSendSummaryScreen assets={screenAssets} />;

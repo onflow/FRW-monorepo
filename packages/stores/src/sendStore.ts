@@ -1,10 +1,10 @@
-import { bridge, cadence } from '@onflow/frw-context';
+import { bridge, cadence, toast } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
+  type CollectionModel,
   type NFTModel,
   type TokenModel,
   addressType,
-  type CollectionModel,
 } from '@onflow/frw-types';
 import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
@@ -471,6 +471,12 @@ export const useSendStore = create<SendState>((set, get) => ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       logger.error('[SendStore] Transaction error:', error);
+      toast.show({
+        title: 'Transaction failed',
+        message: errorMessage,
+        type: 'error',
+        duration: 4000,
+      });
 
       set({
         isLoading: false,

@@ -96,14 +96,19 @@
     "noNFTSelected": "未选择NFT。请返回并选择要发送的NFT。",
     "summary": "摘要",
     "sendTokens": "发送代币",
-    "sending": "发送中...",
     "confirmSend": "确认发送",
-    "holdToSend": "长按发送"
+    "holdToSend": "长按发送",
+    "unknownAccount": "未知账户"
   },
   "messages": {
     "loading": "加载中...",
     "noTokensWithBalance": "无余额代币",
-    "noNFTCollectionsForAccount": "未找到NFT收藏"
+    "noNFTCollectionsForAccount": "未找到NFT收藏",
+    "loadingProfiles": "加载配置文件中...",
+    "noProfiles": "无配置文件",
+    "noProfilesFound": "未找到配置文件",
+    "failedToLoadRecipients": "无法加载收件人",
+    "copied": "已复制！"
   },
   "buttons": {
     "retry": "重试",
@@ -123,9 +128,14 @@
     "timeout": "请求超时",
     "unknown": "发生未知错误",
     "failedToLoadTokens": "加载代币失败",
-    "failedToLoadNFTs": "加载NFT失败"
+    "failedToLoadNFTs": "加载NFT失败",
+    "transactionPayloadError": "创建交易载荷失败",
+    "transactionExecutionError": "交易执行失败"
   },
   "nft": {
+    "untitled": "无标题",
+    "unknownCollection": "未知收藏",
+    "noNFTsSelected": "未选择NFT",
     "noSearchResults": "无搜索结果",
     "noNFTsMatchSearch": "没有NFT与'{{search}}'匹配",
     "noNFTsFound": "未找到NFT",

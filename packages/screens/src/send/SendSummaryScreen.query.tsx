@@ -1,4 +1,4 @@
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, navigation, useToast } from '@onflow/frw-context';
 import {
   useSendStore,
   sendSelectors,
@@ -29,6 +29,7 @@ import {
   type TransactionFormData,
   XStack,
   ERC1155QuantitySelector,
+  useTheme,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -36,6 +37,7 @@ import {
   getNFTId,
   transformAccountForCard,
   transformAccountForDisplay,
+  isDarkMode,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -54,6 +56,7 @@ interface SendSummaryScreenProps {
 export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
+  const toast = useToast();
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
@@ -94,6 +97,19 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       ? selectedNFT.amount
       : parseInt(selectedNFT?.amount as string) || 1;
 
+  // Theme-aware styling - same as SendTokensScreen
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
+  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const sendButtonBackgroundColor = isCurrentlyDarkMode
+    ? theme.white?.val || '#FFFFFF'
+    : theme.black?.val || '#000000';
+  const sendButtonTextColor = isCurrentlyDarkMode
+    ? theme.black?.val || '#000000'
+    : theme.white?.val || '#FFFFFF';
+  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
+
   // Dynamic section title based on transfer type
   const sectionTitle = useMemo(() => {
     if (isMultipleNFTs) {
@@ -128,9 +144,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   const nftForUI: NFTSendData = useMemo(
     () => ({
       id: selectedNFT?.id || '',
-      name: selectedNFT?.name || 'Untitled',
+      name: selectedNFT?.name || t('nft.untitled'),
       image: selectedNFT ? getNFTCover(selectedNFT) : '',
-      collection: selectedNFT?.collectionName || 'Unknown Collection',
+      collection: selectedNFT?.collectionName || t('nft.unknownCollection'),
       collectionContractName: selectedNFT?.collectionContractName,
       description: selectedNFT?.description || '',
       type: selectedNFT?.type,
@@ -144,9 +160,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     () =>
       selectedNFTs?.map((nft) => ({
         id: nft.id || '',
-        name: nft.name || 'Untitled',
+        name: nft.name || t('nft.untitled'),
         image: getNFTCover(nft),
-        collection: nft.collectionName || 'Unknown Collection',
+        collection: nft.collectionName || t('nft.unknownCollection'),
         collectionContractName: nft.collectionContractName,
         description: nft.description || '',
         type: nft.type,
@@ -316,7 +332,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack gap="$3">
             {/* NFT Section */}
-            <YStack px={16} bg="rgba(255, 255, 255, 0.1)" rounded="$4" p="$3" gap="$1">
+            <YStack px={16} bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
               {fromAccount && (
                 <View mb={-18}>
@@ -328,13 +344,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                 </View>
               )}
 
-              <Separator
-                mx="$0"
-                my="$0"
-                mb="$2"
-                borderColor="rgba(255, 255, 255, 0.1)"
-                borderWidth={0.5}
-              />
+              <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
 
               <SendSectionHeader
                 title={sectionTitle}
@@ -355,6 +365,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                     backgroundColor="transparent"
                     borderRadius={14.4}
                     contentPadding="$0"
+                    unnamedNFTText={t('nft.untitled')}
+                    unknownCollectionText={t('nft.unknownCollection')}
+                    noNFTsSelectedText={t('nft.noNFTsSelected')}
                   />
                 ) : (
                   <NFTSendPreview
@@ -395,7 +408,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
             {/* Arrow Down Indicator */}
             <XStack position="relative" height={0}>
-              <XStack width="100%" position="absolute" t={-30} justify="center">
+              <XStack width="100%" position="absolute" t={-30} justify="center" z={10}>
                 <SendArrowDivider variant="arrow" size={48} />
               </XStack>
             </XStack>
@@ -450,22 +463,26 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         </ScrollView>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack p={20} pt="$2" mb={'$10'}>
+        <YStack pt="$4" mb={'$10'}>
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            bg={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : '#FFFFFF'}
+            borderColor={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
+            <Text
+              fontSize="$4"
+              fontWeight="600"
+              color={isSendDisabled ? disabledButtonTextColor : (sendButtonTextColor as any)}
+            >
               {t('common.next')}
             </Text>
           </YStack>
@@ -484,9 +501,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                 ? [
                     {
                       id: selectedNFT.id || '',
-                      name: selectedNFT.name || '',
+                      name: selectedNFT.name || t('nft.untitled'),
                       image: selectedNFT.thumbnail || '',
-                      collection: selectedNFT.collectionName || '',
+                      collection: selectedNFT.collectionName || t('nft.unknownCollection'),
                       collectionContractName:
                         selectedNFT.collectionContractName || selectedNFT.contractName || '',
                       description: selectedNFT.description || '',
@@ -508,6 +525,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
+          unknownAccountText={t('send.unknownAccount')}
         />
       </YStack>
     </BackgroundWrapper>

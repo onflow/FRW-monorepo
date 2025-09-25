@@ -1,4 +1,8 @@
 /** Generate by swagger-axios-codegen */
+// @ts-nocheck
+/* eslint-disable */
+
+/** Generate by swagger-axios-codegen */
 /* eslint-disable */
 // @ts-nocheck
 import axiosStatic, { type AxiosInstance, type AxiosRequestConfig } from 'axios';

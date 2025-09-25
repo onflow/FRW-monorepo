@@ -2,6 +2,7 @@ import { Close } from '@onflow/frw-icons';
 import { IconButton } from '@onflow/frw-ui';
 import { useTheme } from '@react-navigation/native';
 import React from 'react';
+import { Platform } from 'react-native';
 
 import { platform } from '@/bridge/PlatformImpl';
 
@@ -19,6 +20,9 @@ export const NavigationCloseButton: React.FC = () => {
       variant="ghost"
       size="small"
       onPress={handleClose}
+      style={{
+        marginRight: Platform.OS === 'android' ? 16 : 0,
+      }}
     />
   );
 };

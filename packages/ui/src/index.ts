@@ -15,6 +15,7 @@ export {
   View,
   XStack,
   YStack,
+  useTheme,
 } from 'tamagui';
 
 // Export our custom UI foundation components
@@ -78,6 +79,7 @@ export * from './components/StorageWarning';
 export * from './components/ErrorDialog';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ExtensionHeader';
+export * from './components/Toast';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
