@@ -2,18 +2,18 @@ name: Android Build & Release
 
 on:
   workflow_call:
-  push:
-    paths:
-      - "apps/react-native/**"
-      - "packages/**"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/android.yml"
-    # Run on any branch push so feature branches can test builds
+  schedule:
+    # Sydney standard time (AEST, UTC+10): 10:30 -> 00:30 UTC; 16:00 -> 06:00 UTC
+    - cron: "30 0 * 4-9 *"
+    - cron: "0 6 * 4-9 *"
+    # Sydney daylight time (AEDT, UTC+11): 10:30 -> 23:30 UTC; 16:00 -> 05:00 UTC
+    - cron: "30 23 * 1,2,3,10,11,12 *"
+    - cron: "0 5 * 1,2,3,10,11,12 *"
   workflow_dispatch:
     inputs:
       buildType:
         description: "Build type (debug|dev|release)"
-        default: "debug"
+        default: "release"
         required: true
 
 jobs:
@@ -26,7 +26,10 @@ jobs:
         run: |
           # Map buildType to environment name
           TYPE="${{ inputs.buildType || '' }}"
-          if [ -z "$TYPE" ]; then TYPE="debug"; fi
+          EVENT="${{ github.event_name }}"
+          if [ -z "$TYPE" ]; then TYPE="release"; fi
+          # Default scheduled runs to release
+          if [ "$EVENT" = "schedule" ]; then TYPE="release"; fi
           ENV_NAME="development"
           if [ "$TYPE" = "release" ]; then ENV_NAME="production"; fi
           if [ "$TYPE" = "dev" ]; then ENV_NAME="development"; fi
@@ -227,7 +230,10 @@ jobs:
         run: |
           # Decide buildType: PRs -> debug; Release tags/branches -> dev (if secrets present) else debug
           INPUT="${{ github.event_name }}:${{ github.ref }}:${{ inputs.buildType }}"
-          TYPE="debug"
+          TYPE="release"
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            TYPE="release"
+          fi
           if [[ "${{ github.event_name }}" == "push" ]]; then
             if [[ "${{ github.ref }}" == refs/tags/release/rn-* || "${{ github.ref }}" == refs/heads/release/* ]]; then
               TYPE="dev"
@@ -253,7 +259,7 @@ jobs:
           esac
 
       - name: Generate release notes (last 3 days)
-        if: steps.meta.outputs.buildType == 'dev'
+        if: steps.meta.outputs.buildType == 'dev' || steps.meta.outputs.buildType == 'release'
         shell: bash
         run: |
           set -euo pipefail
@@ -356,3 +362,13 @@ jobs:
             exit 0
           fi
           ./gradlew :app:appDistributionUploadDev --stacktrace
+
+      - name: Firebase App Distribution (release)
+        if: steps.meta.outputs.buildType == 'release'
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: |
+          if [ ! -f firebase-appdist.json ] || [ -z "${FIREBASE_TESTERS:-}" ]; then
+            echo "[Android CI] Firebase credentials or testers not configured; skipping App Distribution upload."
+            exit 0
+          fi
+          ./gradlew :app:appDistributionUploadRelease --stacktrace

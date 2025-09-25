@@ -1,95 +1,88 @@
-# Android CI/CD (GitHub Actions)
+**Android CI/CD**
 
-This document outlines the Android CI/CD setup for the FRW monorepo. The
-workflow mirrors the iOS approach: build monorepo packages first, then build the
-Android app with Gradle, and optionally distribute dev builds via Firebase App
-Distribution.
+- Overview: Automated builds for the React Native Android app under
+  `apps/react-native/android` with Firebase App Distribution and optional
+  AI-style release notes.
 
-## Overview
+**Triggers**
+
+- Schedule: Runs twice daily at Sydney local time.
+  - 10:30 Sydney
+    - AEST months (Apr–Sep): 00:30 UTC (cron `30 0 * 4-9 *`)
+    - AEDT months (Oct–Mar): 23:30 UTC (cron `30 23 * 1,2,3,10,11,12 *`)
+  - 16:00 Sydney
+    - AEST months (Apr–Sep): 06:00 UTC (cron `0 6 * 4-9 *`)
+    - AEDT months (Oct–Mar): 05:00 UTC (cron `0 5 * 1,2,3,10,11,12 *`)
+- Manual: `workflow_dispatch` with `buildType` input (`release` default; `dev`
+  optional; `debug` for local testing only).
+
+**Build Types**
+
+- `release`: Default. Signs with provided keystore and uploads to Firebase if
+  credentials are present.
+- `dev`: Optional. Same as release but uses the `dev` product flavor/variant and
+  uploads to Firebase App Distribution if configured.
+- `debug`: For local CI debugging; does not upload.
+
+**Secrets and Variables**
+
+- Environment: Uses GitHub Environments (`production` for `release`,
+  `development` for `dev`/`debug`) so environment‑scoped secrets/vars apply
+  automatically.
+- Required for Firebase upload:
+  - `secrets.SERVICE_ACCOUNT_JSON` or `secrets.SERVICE_ACCOUNT_JSON_B64`: Google
+    service account credentials (JSON or base64).
+  - `vars.FIREBASE_TESTERS`: Comma‑separated emails for testers.
+- Optional/compat secrets (raw or base64). Any not provided are skipped
+  gracefully:
+  - `secrets.LOCAL_PROPERTIES` (raw)
+  - `secrets.KEY_PROPERTIES` or `secrets.KEY_PROPERTIES_B64`
+  - `secrets.GOOGLE_SERVICES` or `secrets.GOOGLE_SERVICES_B64` (writes to
+    `app/src/dev/google-services.json` and `app/google-services.json`)
+  - `secrets.ANDROID_GOOGLE_SERVICES_DEV_B64`,
+    `secrets.ANDROID_GOOGLE_SERVICES_PROD_B64` (fallbacks)
+  - `secrets.ANDROID_FIREBASE_CREDENTIALS_B64` (fallback for service account)
+  - `secrets.KEYSTORE_BASE64` (optional keystore; appended to `local.properties`
+    as `storeFile`)
+
+**Key Steps**
+
+- Checkout with submodules and full history to ensure `./gradlew` exists.
+- Prepare config files:
+  - Writes `local.properties` from `LOCAL_PROPERTIES` (raw) or creates a minimal
+    file with `sdk.dir` and `testers`.
+  - Writes `key.properties` from `KEY_PROPERTIES` (raw) or `_B64`.
+  - Writes Google Services JSON from `GOOGLE_SERVICES` (raw) or
+    `_B64`/Android‑specific fallbacks.
+  - Writes `firebase-appdist.json` from `SERVICE_ACCOUNT_JSON` (raw) or `_B64`;
+    injects `serviceCredentialsFile` and `testers` into `local.properties`.
+- Build:
+  - `release` → `:app:assembleRelease`
+  - `dev` → `:app:assembleDev`
+  - `debug` → `:app:assembleDebug`
+- Artifacts: Uploads all generated APKs as `android-<buildType>-apk` artifact.
+- Release notes: Generates a `release-notes.txt` from recent commits (last 3
+  days) and attaches to Firebase upload when credentials and testers are
+  present.
+- Firebase upload:
+  - `dev`: `:app:appDistributionUploadDev`
+  - `release`: `:app:appDistributionUploadRelease`
+
+**Manual Run**
+
+- GitHub → Actions → “Android Build & Release” → “Run workflow”. Choose branch
+  and `buildType` (default `release`).
+
+**Common Issues**
+
+- No manual button: Workflows only show the button when present on the default
+  branch. Merge the workflow first.
+- Firebase skipped: Ensure `SERVICE_ACCOUNT_JSON` (or `_B64`) and
+  `vars.FIREBASE_TESTERS` exist in the active Environment.
+- Debug keystore error: The workflow generates `debug.keystore` in a writable
+  temp dir and sets `XDG_CONFIG_HOME`/`ANDROID_SDK_HOME` accordingly.
+
+**Files**
 
 - Workflow: `.github/workflows/android.yml`
-- Triggers: PRs to `apps/react-native/**`, pushes to `dev`, `release/*`, and
-  tags `release/rn-*`, plus manual `workflow_dispatch`.
-- Build Types:
-  - `debug` (default for PRs)
-  - `dev` (on release branches/tags; uses Firebase App Distribution if secrets
-    provided)
-  - `release` (manual via workflow input)
-
-## Secrets
-
-Add these repository secrets to enable dependency resolution and distribution:
-
-- GitHub Packages
-  - `GPR_USER`: GitHub username (e.g., `lmcmz`)
-  - `GPR_KEY`: GitHub Personal Access Token with `read:packages`
-
-- Firebase App Distribution (optional for `dev` uploads)
-  - `ANDROID_FIREBASE_CREDENTIALS_B64`: Base64 of Google service account JSON
-  - `FIREBASE_TESTERS`: Comma-separated tester emails
-
-- Google Services JSON (optional; if not provided, build proceeds without
-  Firebase features)
-  - `ANDROID_GOOGLE_SERVICES_DEV_B64`: Base64 of `app/google-services.json` for
-    dev
-  - `ANDROID_GOOGLE_SERVICES_PROD_B64`: Base64 of
-    `app/src/release/google-services.json`
-
-- Signing (optional; required for `dev`/`release` if you want non-debug signing)
-  - `ANDROID_KEY_PROPERTIES_B64`: Base64 of `android/key.properties`
-
-Example `key.properties` content:
-
-```
-storeFile=/path/to/keystore.jks
-storePassword=***
-keyAlias=***
-keyPassword=***
-```
-
-Note: The project defaults to the debug keystore when these are not present, so
-`assembleDebug` works without secrets.
-
-## What the Workflow Does
-
-1. Checks out the repo and installs Node 20 + pnpm
-2. Installs and builds monorepo packages (`packages/*`) and regenerates RN
-   bridge models
-3. Sets up Java 17, Gradle, and Android SDK Build-Tools 35 + platforms 35/36
-4. Writes Gradle credentials for GitHub Packages to
-   `~/.gradle/gradle.properties` so Gradle can download:
-   - `com.github.onflow.flow-wallet-kit:flow-wallet-android`
-   - TrustWallet `wallet-core` from GitHub Packages
-5. Optionally writes:
-   - `app/google-services.json` and `app/src/release/google-services.json`
-   - `key.properties`
-   - `local.properties` with `serviceCredentialsFile` and `testers` for Firebase
-6. Builds the selected variant with Gradle
-7. Uploads generated APK(s) as workflow artifacts
-8. For `dev` builds (on release branches/tags) with Firebase secrets, uploads to
-   App Distribution
-
-## Local Parity
-
-To reproduce CI locally:
-
-```
-# From repo root
-pnpm install --frozen-lockfile
-pnpm -r --filter='./packages/*' build
-pnpm -F "frw-rn" codegen:bridge
-
-cd apps/react-native/android
-./gradlew :app:assembleDebug
-```
-
-## Notes
-
-- The Android build reads GitHub Packages credentials from Gradle properties as
-  `gpr.user` / `gpr.key` and also supports `GITHUB_USERNAME` / `GITHUB_TOKEN`
-  env vars.
-- Firebase App Distribution requires `local.properties` to include
-  `serviceCredentialsFile` and optionally `testers`. The workflow writes these
-  if `ANDROID_FIREBASE_CREDENTIALS_B64` is provided.
-- For `dev`/`release` variants, ensure signing is configured (use
-  `ANDROID_KEY_PROPERTIES_B64`).
+- App: `apps/react-native/android`
