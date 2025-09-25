@@ -979,6 +979,39 @@ export class OpenApiService {
     // (config.method, config.path, {}, { transaction, message: messages });
     return data;
   };
+
+  signAsFeePayer = async (transaction, message: string) => {
+    const messages = {
+      envelope_message: message,
+    };
+    const baseURL = this.store.functionsUrl;
+    // 'http://localhost:5001/lilico-dev/us-central1'
+    const data = await this.sendRequest(
+      'POST',
+      '/api/signAsFeePayer',
+      {},
+      { transaction, message: messages },
+      this.store.webNextUrl
+    );
+    // (config.method, config.path, {}, { transaction, message: messages });
+    return data;
+  };
+
+  signAsBridgeFeePayer = async (transaction, message: string) => {
+    const messages = {
+      envelope_message: message,
+    };
+    const data = await this.sendRequest(
+      'POST',
+      '/api/signAsBridgeFeePayer',
+      {},
+      { transaction, message: messages },
+      this.store.webNextUrl
+    );
+    // (config.method, config.path, {}, { transaction, message: messages });
+    return data;
+  };
+
   signProposer = async (transaction, message: string) => {
     const messages = {
       envelope_message: message,

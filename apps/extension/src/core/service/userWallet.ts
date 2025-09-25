@@ -974,6 +974,22 @@ class UserWallet {
     return signature;
   };
 
+  signAsFeePayer = async (signable): Promise<string> => {
+    const tx = signable.voucher;
+    const message = signable.message;
+    const envelope = await openapiService.signAsFeePayer(tx, message);
+    const signature = envelope.envelopeSigs.sig;
+    return signature;
+  };
+
+  signAsBridgeFeePayer = async (signable): Promise<string> => {
+    const tx = signable.voucher;
+    const message = signable.message;
+    const envelope = await openapiService.signAsBridgeFeePayer(tx, message);
+    const signature = envelope.envelopeSigs.sig;
+    return signature;
+  };
+
   signProposer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;

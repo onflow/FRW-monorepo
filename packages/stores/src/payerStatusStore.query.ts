@@ -1,4 +1,5 @@
 import { PayerService, type PayerStatusPayloadV1 } from '@onflow/frw-api';
+import { queryClient } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 import { create } from 'zustand';
 
@@ -7,15 +8,9 @@ import { create } from 'zustand';
  */
 export type PayerStatusInfo = PayerStatusPayloadV1;
 
-interface PayerStatusCacheEntry {
-  data: PayerStatusInfo;
-  expiresAt: number;
-}
-
 interface PayerStatusStoreState {
-  cache: Map<string, PayerStatusCacheEntry>;
-  isLoading: boolean;
-  error: string | null;
+  // Minimal state - TanStack Query handles caching
+  placeholder?: never; // Prevent empty interface warning
 }
 
 interface PayerStatusStoreActions {
@@ -29,58 +24,49 @@ interface PayerStatusStoreActions {
 
 type PayerStatusStore = PayerStatusStoreState & PayerStatusStoreActions;
 
-export const usePayerStatusStore = create<PayerStatusStore>((set, get) => ({
-  // Initial state
-  cache: new Map(),
-  isLoading: false,
-  error: null,
-
-  // Fetch payer status with TTL-based caching
+export const usePayerStatusStore = create<PayerStatusStore>((_set, _get) => ({
+  // Fetch payer status using TanStack Query for caching
   fetchPayerStatus: async (network: 'mainnet' | 'testnet' = 'mainnet') => {
-    const currentState = get();
-    const cacheKey = `payer-status-${network}`;
-    const now = Date.now();
+    return await queryClient.fetchQuery({
+      queryKey: payerStatusQueryKeys.payerStatus(network),
+      queryFn: () => payerStatusQueries.fetchPayerStatus(network),
+    });
+  },
 
-    // Check if we have valid cached data
-    const cached = currentState.cache.get(cacheKey);
-    if (cached && cached.expiresAt > now) {
-      logger.info('Using cached payer status', {
-        network,
-        cacheAge: now - (cached.expiresAt - (cached.data.surge?.ttlSeconds || 30) * 1000),
-        ttlSeconds: cached.data.surge?.ttlSeconds,
-      });
-      return cached.data;
+  // Get cached payer status without fetching
+  getCachedPayerStatus: (network: 'mainnet' | 'testnet' = 'mainnet') => {
+    return queryClient.getQueryData(payerStatusQueryKeys.payerStatus(network)) || null;
+  },
+
+  // Clear cache
+  clearCache: (network?: 'mainnet' | 'testnet') => {
+    if (network) {
+      queryClient.removeQueries({ queryKey: payerStatusQueryKeys.payerStatus(network) });
+      logger.info('Cleared payer status cache', { network });
+    } else {
+      queryClient.removeQueries({ queryKey: payerStatusQueryKeys.all });
+      logger.info('Cleared all payer status cache');
     }
+  },
+}));
 
-    // Prevent multiple simultaneous loads
-    if (currentState.isLoading) {
-      if (cached?.data) {
-        return cached.data;
-      }
-      // If loading and no cache, wait for the current request to complete
-      return new Promise((resolve) => {
-        const checkLoading = () => {
-          const state = get();
-          if (!state.isLoading) {
-            const currentCached = state.cache.get(cacheKey);
-            if (currentCached && currentCached.expiresAt > Date.now()) {
-              resolve(currentCached.data);
-            } else {
-              // If still no valid cache, fetch fresh
-              state.fetchPayerStatus(network).then(resolve);
-            }
-          } else {
-            setTimeout(checkLoading, 100);
-          }
-        };
-        checkLoading();
-      });
-    }
+/**
+ * Query keys for payer status data
+ */
+export const payerStatusQueryKeys = {
+  all: ['payer-status'] as const,
+  payerStatus: (network: 'mainnet' | 'testnet' = 'mainnet') =>
+    [...payerStatusQueryKeys.all, network] as const,
+};
 
-    set({ isLoading: true, error: null });
-
+// Query Functions - Pure data fetching logic for payer status
+export const payerStatusQueries = {
+  // Fetch payer status information including surge pricing and payer availability
+  fetchPayerStatus: async (
+    network: 'mainnet' | 'testnet' = 'mainnet'
+  ): Promise<PayerStatusInfo> => {
     try {
-      logger.info('Fetching fresh payer status', { network });
+      logger.info('Fetching payer status', { network });
 
       const response = await PayerService.status({
         headers: {
@@ -109,77 +95,15 @@ export const usePayerStatusStore = create<PayerStatusStore>((set, get) => ({
 
       logger.info('Extracted payer status data', { payerStatusData });
 
-      // Calculate cache expiration based on TTL from surge data
-      const ttlSeconds = payerStatusData.surge?.ttlSeconds || 30; // Default to 30 seconds if not provided
-      const expiresAt = now + ttlSeconds * 1000;
-
-      // Update cache
-      const newCache = new Map(currentState.cache);
-      newCache.set(cacheKey, {
-        data: payerStatusData,
-        expiresAt,
-      });
-
-      set({
-        cache: newCache,
-        isLoading: false,
-        error: null,
-      });
-
-      logger.info('Cached payer status', {
-        network,
-        ttlSeconds,
-        expiresAt: new Date(expiresAt).toISOString(),
-      });
-
       return payerStatusData;
     } catch (error) {
-      set({
-        isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch payer status',
+      logger.error('Failed to fetch payer status', {
+        error: error instanceof Error ? error.message : String(error),
+        network,
       });
       throw error;
     }
   },
-
-  // Get cached payer status without fetching
-  getCachedPayerStatus: (network: 'mainnet' | 'testnet' = 'mainnet') => {
-    const cacheKey = `payer-status-${network}`;
-    const cached = get().cache.get(cacheKey);
-    const now = Date.now();
-
-    if (cached && cached.expiresAt > now) {
-      return cached.data;
-    }
-
-    return null;
-  },
-
-  // Clear cache
-  clearCache: (network?: 'mainnet' | 'testnet') => {
-    const currentState = get();
-    const newCache = new Map(currentState.cache);
-
-    if (network) {
-      const cacheKey = `payer-status-${network}`;
-      newCache.delete(cacheKey);
-      logger.info('Cleared payer status cache', { network });
-    } else {
-      newCache.clear();
-      logger.info('Cleared all payer status cache');
-    }
-
-    set({ cache: newCache });
-  },
-}));
-
-/**
- * Query keys for payer status data
- */
-export const payerStatusQueryKeys = {
-  all: ['payer-status'] as const,
-  payerStatus: (network: 'mainnet' | 'testnet' = 'mainnet') =>
-    [...payerStatusQueryKeys.all, network] as const,
 };
 
 /**
@@ -190,6 +114,21 @@ export const payerStatusQueryKeys = {
 export const fetchPayerStatus = async (
   network: 'mainnet' | 'testnet' = 'mainnet'
 ): Promise<PayerStatusInfo> => {
-  const store = usePayerStatusStore.getState();
-  return store.fetchPayerStatus(network);
+  const result = await queryClient.fetchQuery({
+    queryKey: payerStatusQueryKeys.payerStatus(network),
+    queryFn: () => payerStatusQueries.fetchPayerStatus(network),
+    staleTime: 0, // Always consider data stale for real-time financial data
+    gcTime: 30 * 1000, // Default 30 seconds, will be updated dynamically
+  });
+
+  // Update cache time based on TTL from response
+  const ttlSeconds = result.surge?.ttlSeconds || 30;
+  if (ttlSeconds !== 30) {
+    // Update the query's cache time to match the API TTL
+    queryClient.setQueryDefaults(payerStatusQueryKeys.payerStatus(network), {
+      gcTime: ttlSeconds * 1000,
+    });
+  }
+
+  return result;
 };
