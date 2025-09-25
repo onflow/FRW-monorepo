@@ -170,9 +170,10 @@ jobs:
             echo "${{ secrets.ANDROID_KEY_PROPERTIES_B64 }}" | base64 -d > key.properties
           fi
 
-          # Optional: Decode keystore if provided and wire via local.properties (inline secret)
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "[Android CI] Preparing keystore from secrets.KEYSTORE_BASE64"
+          # Optional: Decode keystore if provided and wire via local.properties (safer handling)
+          KEYSTORE_DATA='${{ secrets.KEYSTORE_BASE64 }}'
+          if [ -n "$KEYSTORE_DATA" ]; then
+            echo "[Android CI] Preparing keystore from injected secret"
             # Resolve desired keystore path: honor existing storeFile in local.properties if present
             EXISTING_STORE_FILE=$(grep -E '^storeFile=' local.properties | sed -E 's/^storeFile=//') || true
             if [ -n "${EXISTING_STORE_FILE:-}" ]; then
@@ -181,8 +182,8 @@ jobs:
               KEYSTORE_PATH="$(pwd)/app/keystore.jks"
             fi
             mkdir -p "$(dirname "$KEYSTORE_PATH")"
-            # Use printf to avoid injecting a trailing newline
-            printf '%s' '${{ secrets.KEYSTORE_BASE64 }}' | base64 -d > "$KEYSTORE_PATH"
+            # Use printf to avoid injecting a trailing newline; avoid passing secret on command line
+            printf '%s' "$KEYSTORE_DATA" | base64 -d > "$KEYSTORE_PATH"
             chmod 600 "$KEYSTORE_PATH"
             # Ensure local.properties points to the decoded keystore path
             if grep -q '^storeFile=' local.properties; then
@@ -269,7 +270,8 @@ jobs:
           echo "[Diag] buildType: ${{ steps.meta.outputs.buildType }}"
           if [ -f local.properties ]; then
             echo "[Diag] local.properties exists"
-            grep -E '^(storeFile|keyAlias|keyPassword|storePassword)=' local.properties || true
+            # Only print non-sensitive fields
+            grep -E '^(storeFile|keyAlias)=' local.properties || true
             STORE_FILE=$(grep -E '^storeFile=' local.properties | sed -E 's/^storeFile=//') || true
             if [ -n "${STORE_FILE:-}" ]; then
               if [ -f "$STORE_FILE" ]; then
