@@ -57,9 +57,7 @@ jobs:
       SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
       SERVICE_ACCOUNT_JSON_B64: ${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-      # Force Android debug keystore to be created in a writable temp dir
-      XDG_CONFIG_HOME: ${{ runner.temp }}
-      ANDROID_SDK_HOME: ${{ runner.temp }}
+      # Debug keystore location set in step using RUNNER_TEMP
 
       # Monorepo paths
       RN_APP_DIR: apps/react-native
@@ -205,6 +203,10 @@ jobs:
         run: |
           set -euo pipefail
           # Use writable temp directory for debug keystore
+          XDG_CONFIG_HOME="${RUNNER_TEMP:-$HOME}"
+          ANDROID_SDK_HOME="${RUNNER_TEMP:-$HOME}"
+          echo "XDG_CONFIG_HOME=$XDG_CONFIG_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_HOME=$ANDROID_SDK_HOME" >> $GITHUB_ENV
           mkdir -p "$XDG_CONFIG_HOME/.android"
           if [ ! -f "$XDG_CONFIG_HOME/.android/debug.keystore" ]; then
             echo "[Android CI] Generating default debug.keystore under $XDG_CONFIG_HOME/.android"
