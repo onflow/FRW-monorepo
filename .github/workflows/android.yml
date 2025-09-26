@@ -298,6 +298,28 @@ jobs:
           echo "buildType=$TYPE" >> $GITHUB_OUTPUT
           echo "Resolved build type: $TYPE"
 
+      - name: Resolve next versionCode (release only)
+        if: steps.meta.outputs.buildType == 'release'
+        shell: bash
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: |
+          set -euo pipefail
+          # Simple scheme: vCode = 400000000 + GITHUB_RUN_NUMBER
+          BASE=400000000
+          RUN_NUM=${GITHUB_RUN_NUMBER:-0}
+          NEXT=$(( BASE + RUN_NUM ))
+          # Ensure we never go backwards vs current file value
+          CUR=$(grep -E '^vCode=' gradle.properties | sed -E 's/^vCode=//' || true)
+          if [[ -n "${CUR:-}" ]] && [ "$NEXT" -le "$CUR" ]; then
+            NEXT=$(( CUR + 1 ))
+          fi
+          echo "[Android CI] Using versionCode (vCode) = $NEXT"
+          if grep -q '^vCode=' gradle.properties; then
+            sed -i.bak "s/^vCode=.*/vCode=$NEXT/" gradle.properties && rm -f gradle.properties.bak
+          else
+            echo "vCode=$NEXT" >> gradle.properties
+          fi
+
       - name: Signing diagnostics
         shell: bash
         working-directory: ${{ env.ANDROID_DIR }}
