@@ -24,6 +24,14 @@
   uploads to Firebase App Distribution if configured.
 - `debug`: For local CI debugging; does not upload.
 
+Signing
+
+- Release and dev builds use the release signing config and require a keystore.
+  Set `KEYSTORE_BASE64` and `KEY_PROPERTIES` (or `_B64`) in the active
+  Environment:
+  - production (for `release`)
+  - development (for `dev`)
+
 **Secrets and Variables**
 
 - Environment: Uses GitHub Environments (`production` for `release`,
@@ -32,7 +40,8 @@
 - Required for Firebase upload:
   - `secrets.SERVICE_ACCOUNT_JSON` or `secrets.SERVICE_ACCOUNT_JSON_B64`: Google
     service account credentials (JSON or base64).
-  - `vars.FIREBASE_TESTERS`: Comma‑separated emails for testers.
+  - `vars.FIREBASE_TESTERS`: Comma‑separated emails for testers (Environment
+    Variable; no secret fallback).
 - Optional/compat secrets (raw or base64). Any not provided are skipped
   gracefully:
   - `secrets.LOCAL_PROPERTIES` (raw)
@@ -68,6 +77,16 @@
 - Firebase upload:
   - `dev`: `:app:appDistributionUploadDev`
   - `release`: `:app:appDistributionUploadRelease`
+  - Both dev and release upload to Firebase by default when credentials exist.
+
+**Google Play (release)**
+
+- Uses Gradle Play Publisher to upload the release AAB to the Internal track.
+- Requirements:
+  - Service account JSON with Android Publisher permissions (we reuse
+    `firebase-appdist.json` via `playServiceAccountFile` unless overridden).
+  - `applicationId` must match the Play Console app package.
+- Task: `:app:publishReleaseBundle`
 
 **Manual Run**
 
