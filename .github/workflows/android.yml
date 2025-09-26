@@ -204,11 +204,15 @@ jobs:
 
           if [ -n "$SERVICE_JSON_PATH" ]; then
             # Ensure local.properties includes serviceCredentialsFile & testers
-            if ! grep -q '^serviceCredentialsFile=' local.properties; then
+            if grep -q '^serviceCredentialsFile=' local.properties; then
+              sed -i.bak "s|^serviceCredentialsFile=.*$|serviceCredentialsFile=$SERVICE_JSON_PATH|" local.properties && rm -f local.properties.bak
+            else
               echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
             fi
-            # Also provide Play Publisher credentials unless explicitly set
-            if ! grep -q '^playServiceAccountFile=' local.properties; then
+            # Also provide Play Publisher credentials (override stale values)
+            if grep -q '^playServiceAccountFile=' local.properties; then
+              sed -i.bak "s|^playServiceAccountFile=.*$|playServiceAccountFile=$SERVICE_JSON_PATH|" local.properties && rm -f local.properties.bak
+            else
               echo "playServiceAccountFile=$SERVICE_JSON_PATH" >> local.properties
             fi
             # Prefer Environment variable for testers
@@ -221,6 +225,8 @@ jobs:
                 sed -i.bak "s|^testers=.*$|testers=${FIREBASE_TESTERS}|" local.properties && rm -f local.properties.bak
               fi
             fi
+            # Diagnostics (non-sensitive): show the credential file path configured
+            echo "[Android CI] serviceCredentialsFile set to: $SERVICE_JSON_PATH"
           fi
 
       - name: Ensure debug keystore path is writable
@@ -276,6 +282,35 @@ jobs:
             echo "[Diag] local.properties exists"
             # Only print non-sensitive fields
             grep -E '^(storeFile|keyAlias)=' local.properties || true
+            # Print Firebase/Play credentials file paths from local.properties
+            SVC_FILE=$(grep -E '^serviceCredentialsFile=' local.properties | sed -E 's/^serviceCredentialsFile=//') || true
+            PLAY_FILE=$(grep -E '^playServiceAccountFile=' local.properties | sed -E 's/^playServiceAccountFile=//') || true
+            REL_NOTES=$(grep -E '^releaseNotesFile=' local.properties | sed -E 's/^releaseNotesFile=//') || true
+            if [ -n "${SVC_FILE:-}" ]; then
+              echo "[Diag] serviceCredentialsFile: $SVC_FILE"
+              if [ -f "$SVC_FILE" ]; then
+                echo "[Diag] Firebase credentials present at: $SVC_FILE (size: $(wc -c < "$SVC_FILE" | tr -d ' '))"
+              else
+                echo "[Diag] Firebase credentials file not found at: $SVC_FILE"
+                ls -la "$(dirname "$SVC_FILE")" || true
+              fi
+            else
+              echo "[Diag] serviceCredentialsFile not set in local.properties"
+            fi
+            if [ -n "${PLAY_FILE:-}" ]; then
+              echo "[Diag] playServiceAccountFile: $PLAY_FILE"
+              if [ -f "$PLAY_FILE" ]; then
+                echo "[Diag] Play credentials present at: $PLAY_FILE (size: $(wc -c < "$PLAY_FILE" | tr -d ' '))"
+              else
+                echo "[Diag] Play credentials file not found at: $PLAY_FILE"
+                ls -la "$(dirname "$PLAY_FILE")" || true
+              fi
+            else
+              echo "[Diag] playServiceAccountFile not set in local.properties"
+            fi
+            if [ -n "${REL_NOTES:-}" ]; then
+              echo "[Diag] releaseNotesFile: $REL_NOTES"
+            fi
             STORE_FILE=$(grep -E '^storeFile=' local.properties | sed -E 's/^storeFile=//') || true
             if [ -n "${STORE_FILE:-}" ]; then
               if [ -f "$STORE_FILE" ]; then
@@ -441,7 +476,7 @@ jobs:
             echo "[Android CI] Firebase credentials not configured; skipping App Distribution upload."
             exit 0
           fi
-          ./gradlew :app:appDistributionUploadDev --stacktrace
+          ./gradlew :app:appDistributionUploadDev -PserviceCredentialsFile="$PWD/firebase-appdist.json" --stacktrace
 
       - name: Firebase App Distribution (release)
         if: steps.meta.outputs.buildType == 'release'
@@ -451,7 +486,7 @@ jobs:
             echo "[Android CI] Firebase credentials not configured; skipping App Distribution upload."
             exit 0
           fi
-          ./gradlew :app:appDistributionUploadRelease --stacktrace
+          ./gradlew :app:appDistributionUploadRelease -PserviceCredentialsFile="$PWD/firebase-appdist.json" --stacktrace
 
       - name: Google Play Internal (release)
         if: steps.meta.outputs.buildType == 'release'
