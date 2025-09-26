@@ -36,6 +36,7 @@ const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
+  getDebugAddress(): string | null;
   getNetwork(): string;
   getJWT(): Promise<string>;
   getVersion(): string;
