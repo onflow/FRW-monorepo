@@ -11,6 +11,7 @@ plugins {
     // id 'jacoco'
     id 'com.facebook.react'
     id 'org.jetbrains.kotlin.plugin.compose'
+    id 'com.github.triplet.play'
 }
 
 react {
@@ -22,6 +23,16 @@ apply from: "../../node_modules/@outblock/react-native-code-push/android/codepus
 def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
 properties.load(inputStream)
+
+// Resolve service account credentials path from local.properties or -P props
+def resolveServiceCreds = {
+    def p = properties.getProperty("serviceCredentialsFile", "")
+    if (!p || p.trim().isEmpty()) {
+        def cliProp = project.findProperty("serviceCredentialsFile") ?: project.findProperty("firebaseServiceCredentialsFile")
+        p = cliProp ? cliProp.toString() : ""
+    }
+    return p
+}
 
 repositories {
     google()
@@ -157,8 +168,13 @@ android {
 
             firebaseAppDistribution {
                 artifactType = "APK"
-                releaseNotes = "Automatic build from CI/CD pipeline."
-                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
+                def rnFile = properties.getProperty("releaseNotesFile", "")
+                if (rnFile) {
+                    releaseNotesFile = file(rnFile)
+                } else {
+                    releaseNotes = "Automatic build from CI/CD pipeline."
+                }
+                serviceCredentialsFile = resolveServiceCreds()
                 testers = mergedTesters
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
@@ -176,8 +192,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseAppDistribution {
                 artifactType = "APK"
-                releaseNotes = "Automatic build from CI/CD pipeline."
-                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
+                def rnFile = properties.getProperty("releaseNotesFile", "")
+                if (rnFile) {
+                    releaseNotesFile = file(rnFile)
+                } else {
+                    releaseNotes = "Automatic build from CI/CD pipeline."
+                }
+                serviceCredentialsFile = resolveServiceCreds()
                 testers = mergedTesters
             }
             firebaseCrashlytics {
@@ -225,6 +246,17 @@ android {
         abortOnError true // stop the build if errors found
         warningsAsErrors false // do not treat warnings as errors
     }
+}
+
+// Google Play Publisher configuration (reads from local.properties)
+play {
+    // Use the same service account JSON if playServiceAccountFile not provided
+    def playCreds = properties.getProperty("playServiceAccountFile", "firebase-appdist.json")
+    serviceAccountCredentials.set(file(playCreds))
+    track.set("internal")
+    defaultToAppBundles.set(true)
+    // Upload as completed to make build visible to internal testers
+    releaseStatus.set(com.github.triplet.gradle.androidpublisher.ReleaseStatus.COMPLETED)
 }
 
 configurations.all {
