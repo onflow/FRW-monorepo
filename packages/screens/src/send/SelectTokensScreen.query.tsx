@@ -87,7 +87,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Get effective address with proper reactive updates
   const effectiveAddress = React.useMemo(() => {
-    const debugAddress = bridge.getDebugAddress()?.trim();
+    const debugAddress = bridge.getDebugAddress();
     const currentAddress = currentAccount?.address || '';
 
     logger.debug('SelectTokensScreen effectiveAddress calculated:', {
@@ -98,7 +98,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
     if (debugAddress) {
       if (validateEvmAddress(debugAddress) || validateFlowAddress(debugAddress)) {
-        return debugAddress;
+        return debugAddress.trim();
       }
     }
     return currentAddress;
