@@ -177,7 +177,10 @@ jobs:
             # Resolve desired keystore path: honor existing storeFile in local.properties if present
             EXISTING_STORE_FILE=$(grep -E '^storeFile=' local.properties | sed -E 's/^storeFile=//') || true
             if [ -n "${EXISTING_STORE_FILE:-}" ]; then
-              KEYSTORE_PATH="$EXISTING_STORE_FILE"
+              case "$EXISTING_STORE_FILE" in
+                /*) KEYSTORE_PATH="$EXISTING_STORE_FILE" ;;
+                *)  KEYSTORE_PATH="$(pwd)/app/$EXISTING_STORE_FILE" ;;
+              esac
             else
               KEYSTORE_PATH="$(pwd)/app/keystore.jks"
             fi
