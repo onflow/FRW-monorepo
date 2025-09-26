@@ -137,6 +137,14 @@ jobs:
             } > local.properties
           fi
 
+          # Ensure local.properties ends with a newline to avoid concatenated appends
+          if [ -f local.properties ]; then
+            END_CHAR=$(tail -c1 local.properties || true)
+            if [ -n "${END_CHAR}" ] && [ "${END_CHAR}" != $'\n' ]; then
+              printf '\n' >> local.properties
+            fi
+          fi
+
           # Optional: Google Services JSONs (multiple supported secret names)
           if [ -n "${GOOGLE_SERVICES:-}" ]; then
             echo "[Android CI] Writing GOOGLE_SERVICES (raw) to app/src/dev/google-services.json"
@@ -204,17 +212,17 @@ jobs:
 
           if [ -n "$SERVICE_JSON_PATH" ]; then
             # Ensure local.properties includes serviceCredentialsFile & testers
-            if grep -q '^serviceCredentialsFile=' local.properties; then
-              sed -i.bak "s|^serviceCredentialsFile=.*$|serviceCredentialsFile=$SERVICE_JSON_PATH|" local.properties && rm -f local.properties.bak
-            else
-              echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
+            # First, guarantee file ends with a newline to avoid concatenation
+            if [ -s local.properties ]; then
+              LAST_CHAR=$(tail -c1 local.properties || true)
+              if [ -n "${LAST_CHAR}" ] && [ "${LAST_CHAR}" != $'\n' ]; then
+                printf '\n' >> local.properties
+              fi
             fi
-            # Also provide Play Publisher credentials (override stale values)
-            if grep -q '^playServiceAccountFile=' local.properties; then
-              sed -i.bak "s|^playServiceAccountFile=.*$|playServiceAccountFile=$SERVICE_JSON_PATH|" local.properties && rm -f local.properties.bak
-            else
-              echo "playServiceAccountFile=$SERVICE_JSON_PATH" >> local.properties
-            fi
+            # Remove any existing (possibly malformed) lines and append fresh ones
+            sed -i.bak -E '/^serviceCredentialsFile=/d; /^playServiceAccountFile=/d' local.properties && rm -f local.properties.bak || true
+            echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
+            echo "playServiceAccountFile=$SERVICE_JSON_PATH" >> local.properties
             # Prefer Environment variable for testers
             if ! grep -q '^testers=' local.properties; then
               echo "testers=${FIREBASE_TESTERS:-}" >> local.properties
@@ -227,6 +235,8 @@ jobs:
             fi
             # Diagnostics (non-sensitive): show the credential file path configured
             echo "[Android CI] serviceCredentialsFile set to: $SERVICE_JSON_PATH"
+            echo "[Android CI] local.properties lines for creds:"
+            nl -ba local.properties | sed -n '1,120p' | grep -n -E 'serviceCredentialsFile=|playServiceAccountFile=' || true
           fi
 
       - name: Ensure debug keystore path is writable
@@ -283,6 +293,10 @@ jobs:
             # Only print non-sensitive fields
             grep -E '^(storeFile|keyAlias)=' local.properties || true
             # Print Firebase/Play credentials file paths from local.properties
+            echo "[Diag] Count serviceCredentialsFile occurrences: $(grep -c 'serviceCredentialsFile=' local.properties || true)"
+            echo "[Diag] Count playServiceAccountFile occurrences: $(grep -c 'playServiceAccountFile=' local.properties || true)"
+            echo "[Diag] Lines containing credentials keys (for newline issues):"
+            nl -ba local.properties | sed -n '1,160p' | grep -n -E 'serviceCredentialsFile=|playServiceAccountFile=' || true
             SVC_FILE=$(grep -E '^serviceCredentialsFile=' local.properties | sed -E 's/^serviceCredentialsFile=//') || true
             PLAY_FILE=$(grep -E '^playServiceAccountFile=' local.properties | sed -E 's/^playServiceAccountFile=//') || true
             REL_NOTES=$(grep -E '^releaseNotesFile=' local.properties | sed -E 's/^releaseNotesFile=//') || true
