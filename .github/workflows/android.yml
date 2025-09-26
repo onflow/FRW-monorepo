@@ -389,12 +389,7 @@ jobs:
           set -euo pipefail
           REPO_ROOT="$GITHUB_WORKSPACE"
           NOTES_FILE="$REPO_ROOT/apps/react-native/android/release-notes.txt"
-          # Attach release notes only when SERVICE_ACCOUNT_JSON is present
-          if [ -z "${SERVICE_ACCOUNT_JSON:-}" ]; then
-            echo "[Android CI] SERVICE_ACCOUNT_JSON not provided; skipping release notes generation."
-            exit 0
-          fi
-          echo "[Android CI] Generating Firebase App Distribution release notes..."
+          echo "[Android CI] Generating release notes..."
 
           # Ensure sufficient git history for logs
           (git fetch --unshallow 2>/dev/null || git fetch --deepen=50) || true
@@ -476,6 +471,40 @@ jobs:
               echo "releaseNotesFile=$NOTES_FILE" >> "$ANDROID_DIR_PATH/local.properties"
             fi
           fi
+
+      - name: Prepare Play release notes (whatsnew)
+        if: steps.meta.outputs.buildType == 'release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC_FILE="apps/react-native/android/release-notes.txt"
+          DEST_DIR="apps/react-native/android/app/src/release/play/release-notes/en-US"
+          DEST_FILE="$DEST_DIR/default.txt"
+          if [ ! -f "$SRC_FILE" ]; then
+            echo "[Android CI] No release notes file found at $SRC_FILE; skipping whatsnew preparation."
+            exit 0
+          fi
+          mkdir -p "$DEST_DIR"
+          # Ensure <= 500 bytes while preserving the tail (keeps build info)
+          BYTES=$(wc -c < "$SRC_FILE" | tr -d ' ' || echo 0)
+          mkdir -p "$DEST_DIR"
+          if [ "${BYTES:-0}" -le 500 ]; then
+            # Normalize CRLF to LF
+            sed -e 's/\r$//' "$SRC_FILE" > "$DEST_FILE"
+          else
+            # Keep last 500 bytes so the trailing build info is preserved
+            tail -c 500 "$SRC_FILE" | sed -e 's/\r$//' > "$DEST_FILE"
+          fi
+          echo "[Android CI] Wrote Play whatsnew to $DEST_FILE ($(wc -c < "$DEST_FILE" | tr -d ' ') bytes)"
+          echo "[Android CI] Prepared Play 'whatsnew' at $DEST_FILE"
+
+      - name: Upload release notes
+        if: steps.meta.outputs.buildType == 'dev' || steps.meta.outputs.buildType == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ steps.meta.outputs.buildType }}-release-notes
+          path: apps/react-native/android/release-notes.txt
+          if-no-files-found: warn
 
       - name: Upload APK artifact
         if: always()
