@@ -89,8 +89,8 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getSelectedAddress();
   }
 
-  getWatchAddress(): string {
-    return NativeFRWBridge.getWatchAddress();
+  getDebugAddress(): string | null {
+    return NativeFRWBridge.getDebugAddress();
   }
 
   getNetwork(): string {

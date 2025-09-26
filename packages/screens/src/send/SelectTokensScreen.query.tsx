@@ -86,17 +86,17 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Get effective address with proper reactive updates
   const effectiveAddress = React.useMemo(() => {
-    const watchAddress = bridge.getWatchAddress();
+    const debugAddress = bridge.getDebugAddress();
     const currentAddress = currentAccount?.address || '';
 
     logger.debug('SelectTokensScreen effectiveAddress calculated:', {
-      watchAddress,
+      debugAddress,
       currentAddress,
-      willUse: watchAddress && watchAddress.length > 0 ? watchAddress : currentAddress,
+      willUse: debugAddress ? debugAddress : currentAddress,
     });
 
-    if (watchAddress && watchAddress.length > 0) {
-      return watchAddress;
+    if (debugAddress) {
+      return debugAddress;
     }
     return currentAddress;
   }, [selectedAddress, currentAccount?.address]);

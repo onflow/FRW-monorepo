@@ -92,8 +92,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.currentAddress;
   }
 
-  getWatchAddress(): string {
-    return this.walletController?.getWatchAddress?.() || '';
+  getDebugAddress(): string | null {
+    return this.walletController?.getDebugAddress?.() || null;
   }
 
   getNetwork(): string {
