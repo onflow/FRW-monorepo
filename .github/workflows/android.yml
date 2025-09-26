@@ -54,7 +54,6 @@ jobs:
 
       # Firebase App Distribution (optional; used on release paths/tags)
       FIREBASE_TESTERS: ${{ vars.FIREBASE_TESTERS }}
-      ANDROID_FIREBASE_CREDENTIALS_B64: ${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}
       # Backward-compat names from previous repo
       LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
       KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
@@ -62,7 +61,6 @@ jobs:
       GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_B64 }}
       SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-      SERVICE_ACCOUNT_JSON_B64: ${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
       # Debug keystore location set in step using RUNNER_TEMP
 
@@ -202,14 +200,6 @@ jobs:
             echo "[Android CI] Writing SERVICE_ACCOUNT_JSON (raw) to firebase-appdist.json"
             printf '%s' "$SERVICE_ACCOUNT_JSON" > firebase-appdist.json
             SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
-          elif [ -n "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ]; then
-            echo "[Android CI] Decoding ANDROID_FIREBASE_CREDENTIALS_B64 to firebase-appdist.json"
-            echo "$ANDROID_FIREBASE_CREDENTIALS_B64" | base64 -d > firebase-appdist.json
-            SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
-          elif [ -n "${SERVICE_ACCOUNT_JSON_B64:-}" ]; then
-            echo "[Android CI] Decoding SERVICE_ACCOUNT_JSON_B64 to firebase-appdist.json"
-            echo "$SERVICE_ACCOUNT_JSON_B64" | base64 -d > firebase-appdist.json
-            SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
           fi
 
           if [ -n "$SERVICE_JSON_PATH" ]; then
@@ -337,9 +327,9 @@ jobs:
           set -euo pipefail
           REPO_ROOT="$GITHUB_WORKSPACE"
           NOTES_FILE="$REPO_ROOT/apps/react-native/android/release-notes.txt"
-          # Only require service account creds for release notes attach; testers not required here
-          if [ -z "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ] && [ -z "${SERVICE_ACCOUNT_JSON:-}" ] && [ -z "${SERVICE_ACCOUNT_JSON_B64:-}" ]; then
-            echo "[Android CI] Firebase credentials not set; skipping release notes generation."
+          # Attach release notes only when SERVICE_ACCOUNT_JSON is present
+          if [ -z "${SERVICE_ACCOUNT_JSON:-}" ]; then
+            echo "[Android CI] SERVICE_ACCOUNT_JSON not provided; skipping release notes generation."
             exit 0
           fi
           echo "[Android CI] Generating Firebase App Distribution release notes..."
