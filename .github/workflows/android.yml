@@ -61,6 +61,7 @@ jobs:
       GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_B64 }}
       SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+      FASTLANE_SA: ${{ secrets.FASTLANE_SA }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
       # Debug keystore location set in step using RUNNER_TEMP
 
@@ -202,7 +203,7 @@ jobs:
             fi
           fi
 
-          # Optional: Firebase App Distribution service account (either name)
+          # Optional: Firebase App Distribution service account
           SERVICE_JSON_PATH=""
           if [ -n "${SERVICE_ACCOUNT_JSON:-}" ]; then
             echo "[Android CI] Writing SERVICE_ACCOUNT_JSON (raw) to firebase-appdist.json"
@@ -210,7 +211,15 @@ jobs:
             SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
           fi
 
-          if [ -n "$SERVICE_JSON_PATH" ]; then
+          # Optional: Google Play Publisher service account (prefer FASTLANE_SA if present)
+          PLAY_JSON_PATH=""
+          if [ -n "${FASTLANE_SA:-}" ]; then
+            echo "[Android CI] Writing FASTLANE_SA (raw) to play-service-account.json"
+            printf '%s' "$FASTLANE_SA" > play-service-account.json
+            PLAY_JSON_PATH="$(pwd)/play-service-account.json"
+          fi
+
+          if [ -n "$SERVICE_JSON_PATH" ] || [ -n "$PLAY_JSON_PATH" ]; then
             # Ensure local.properties includes serviceCredentialsFile & testers
             # First, guarantee file ends with a newline to avoid concatenation
             if [ -s local.properties ]; then
@@ -221,8 +230,18 @@ jobs:
             fi
             # Remove any existing (possibly malformed) lines and append fresh ones
             sed -i.bak -E '/^serviceCredentialsFile=/d; /^playServiceAccountFile=/d' local.properties && rm -f local.properties.bak || true
-            echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
-            echo "playServiceAccountFile=$SERVICE_JSON_PATH" >> local.properties
+            if [ -n "$SERVICE_JSON_PATH" ]; then
+              echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
+              echo "[Android CI] serviceCredentialsFile set to: $SERVICE_JSON_PATH"
+            fi
+            # For Play: prefer dedicated FASTLANE_SA; otherwise fallback to SERVICE_ACCOUNT_JSON if present
+            if [ -n "$PLAY_JSON_PATH" ]; then
+              echo "playServiceAccountFile=$PLAY_JSON_PATH" >> local.properties
+              echo "[Android CI] playServiceAccountFile set to: $PLAY_JSON_PATH"
+            elif [ -n "$SERVICE_JSON_PATH" ]; then
+              echo "playServiceAccountFile=$SERVICE_JSON_PATH" >> local.properties
+              echo "[Android CI] playServiceAccountFile set to (fallback): $SERVICE_JSON_PATH"
+            fi
             # Prefer Environment variable for testers
             if ! grep -q '^testers=' local.properties; then
               echo "testers=${FIREBASE_TESTERS:-}" >> local.properties
@@ -233,10 +252,8 @@ jobs:
                 sed -i.bak "s|^testers=.*$|testers=${FIREBASE_TESTERS}|" local.properties && rm -f local.properties.bak
               fi
             fi
-            # Diagnostics (non-sensitive): show the credential file path configured
-            echo "[Android CI] serviceCredentialsFile set to: $SERVICE_JSON_PATH"
-            echo "[Android CI] local.properties lines for creds:"
-            nl -ba local.properties | sed -n '1,120p' | grep -n -E 'serviceCredentialsFile=|playServiceAccountFile=' || true
+            # Minimal diagnostics: confirm paths set
+            grep -E '^(serviceCredentialsFile|playServiceAccountFile)=' local.properties || true
           fi
 
       - name: Ensure debug keystore path is writable
@@ -293,10 +310,6 @@ jobs:
             # Only print non-sensitive fields
             grep -E '^(storeFile|keyAlias)=' local.properties || true
             # Print Firebase/Play credentials file paths from local.properties
-            echo "[Diag] Count serviceCredentialsFile occurrences: $(grep -c 'serviceCredentialsFile=' local.properties || true)"
-            echo "[Diag] Count playServiceAccountFile occurrences: $(grep -c 'playServiceAccountFile=' local.properties || true)"
-            echo "[Diag] Lines containing credentials keys (for newline issues):"
-            nl -ba local.properties | sed -n '1,160p' | grep -n -E 'serviceCredentialsFile=|playServiceAccountFile=' || true
             SVC_FILE=$(grep -E '^serviceCredentialsFile=' local.properties | sed -E 's/^serviceCredentialsFile=//') || true
             PLAY_FILE=$(grep -E '^playServiceAccountFile=' local.properties | sed -E 's/^playServiceAccountFile=//') || true
             REL_NOTES=$(grep -E '^releaseNotesFile=' local.properties | sed -E 's/^releaseNotesFile=//') || true
@@ -376,12 +389,7 @@ jobs:
           set -euo pipefail
           REPO_ROOT="$GITHUB_WORKSPACE"
           NOTES_FILE="$REPO_ROOT/apps/react-native/android/release-notes.txt"
-          # Attach release notes only when SERVICE_ACCOUNT_JSON is present
-          if [ -z "${SERVICE_ACCOUNT_JSON:-}" ]; then
-            echo "[Android CI] SERVICE_ACCOUNT_JSON not provided; skipping release notes generation."
-            exit 0
-          fi
-          echo "[Android CI] Generating Firebase App Distribution release notes..."
+          echo "[Android CI] Generating release notes..."
 
           # Ensure sufficient git history for logs
           (git fetch --unshallow 2>/dev/null || git fetch --deepen=50) || true
@@ -464,6 +472,40 @@ jobs:
             fi
           fi
 
+      - name: Prepare Play release notes (whatsnew)
+        if: steps.meta.outputs.buildType == 'release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC_FILE="apps/react-native/android/release-notes.txt"
+          DEST_DIR="apps/react-native/android/app/src/release/play/release-notes/en-US"
+          DEST_FILE="$DEST_DIR/default.txt"
+          if [ ! -f "$SRC_FILE" ]; then
+            echo "[Android CI] No release notes file found at $SRC_FILE; skipping whatsnew preparation."
+            exit 0
+          fi
+          mkdir -p "$DEST_DIR"
+          # Ensure <= 500 bytes while preserving the tail (keeps build info)
+          BYTES=$(wc -c < "$SRC_FILE" | tr -d ' ' || echo 0)
+          mkdir -p "$DEST_DIR"
+          if [ "${BYTES:-0}" -le 500 ]; then
+            # Normalize CRLF to LF
+            sed -e 's/\r$//' "$SRC_FILE" > "$DEST_FILE"
+          else
+            # Keep last 500 bytes so the trailing build info is preserved
+            tail -c 500 "$SRC_FILE" | sed -e 's/\r$//' > "$DEST_FILE"
+          fi
+          echo "[Android CI] Wrote Play whatsnew to $DEST_FILE ($(wc -c < "$DEST_FILE" | tr -d ' ') bytes)"
+          echo "[Android CI] Prepared Play 'whatsnew' at $DEST_FILE"
+
+      - name: Upload release notes
+        if: steps.meta.outputs.buildType == 'dev' || steps.meta.outputs.buildType == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ steps.meta.outputs.buildType }}-release-notes
+          path: apps/react-native/android/release-notes.txt
+          if-no-files-found: warn
+
       - name: Upload APK artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -506,9 +548,17 @@ jobs:
         if: steps.meta.outputs.buildType == 'release'
         working-directory: ${{ env.ANDROID_DIR }}
         run: |
-          if [ ! -f firebase-appdist.json ]; then
+          # Determine which credentials to use for Play
+          PLAY_JSON=""
+          if [ -f play-service-account.json ]; then
+            PLAY_JSON="$PWD/play-service-account.json"
+          elif [ -f firebase-appdist.json ]; then
+            PLAY_JSON="$PWD/firebase-appdist.json"
+          fi
+          if [ -z "${PLAY_JSON}" ]; then
             echo "[Android CI] Play credentials not configured; skipping Play upload."
             exit 0
           fi
+          echo "[Android CI] Using Play credentials: $PLAY_JSON"
           # Publish the release bundle to the Internal track
           ./gradlew :app:publishReleaseBundle --stacktrace
