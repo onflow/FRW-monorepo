@@ -119,7 +119,7 @@ function ProfileItem({
           />
           <Text
             color="$text"
-            fontSize="$3"
+            fontSize="$3.5"
             fontWeight="600"
             whiteSpace="nowrap"
             letterSpacing={-0.084}
