@@ -25,6 +25,7 @@ import {
   useTheme,
 } from '@onflow/frw-ui';
 import { isDarkMode } from '@onflow/frw-utils';
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -86,7 +87,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Get effective address with proper reactive updates
   const effectiveAddress = React.useMemo(() => {
-    const debugAddress = bridge.getDebugAddress();
+    const debugAddress = bridge.getDebugAddress()?.trim();
     const currentAddress = currentAccount?.address || '';
 
     logger.debug('SelectTokensScreen effectiveAddress calculated:', {
@@ -96,10 +97,12 @@ export function SelectTokensScreen(): React.ReactElement {
     });
 
     if (debugAddress) {
-      return debugAddress;
+      if (validateEvmAddress(debugAddress) || validateFlowAddress(debugAddress)) {
+        return debugAddress;
+      }
     }
     return currentAddress;
-  }, [selectedAddress, currentAccount?.address]);
+  }, [currentAccount?.address]);
 
   // 🔥 TanStack Query: Fetch tokens with automatic caching, retry, and background refresh
   const {
