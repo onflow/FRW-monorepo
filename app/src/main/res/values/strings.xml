@@ -772,4 +772,7 @@
     <string name="transfer_failed">Transaction Failed</string>
     <string name="nft_amount_items">%1$s Items</string>
     <string name="pending_request_from">You have a pending request from %1$s</string>
+    <string name="my_own_address">My Own Address</string>
+    <string name="custom_address">Custom Address</string>
+    <string name="enter_custom_address">Enter custom address</string>
 </resources>

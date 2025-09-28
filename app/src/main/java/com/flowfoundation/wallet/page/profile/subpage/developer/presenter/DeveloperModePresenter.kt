@@ -28,6 +28,9 @@ import com.flowfoundation.wallet.utils.setDeveloperModeEnable
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
+import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.setWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.clearWatchCollectibleAddress
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import kotlinx.coroutines.delay
 
@@ -45,6 +48,9 @@ class DeveloperModePresenter(
     private var clickThresholdTime = 2000L
     private var lastClickTime = 0L
     private var showLocalAccountKeys = false
+    
+    private var customAddressText = ""
+    private var isCustomAddressSelected = false
 
     init {
         uiScope {
@@ -67,6 +73,9 @@ class DeveloperModePresenter(
                     mainnetPreference.setChecked(!it)
                     changeNetwork(if (it) NETWORK_TESTNET else NETWORK_MAINNET)
                 }
+                
+                // Initialize Watch Collectible Address
+                setupWatchCollectibleAddress()
 
                 developerModePreference.setOnCheckedChangeListener {
                     setDevelopContentVisible(it)
@@ -115,6 +124,7 @@ class DeveloperModePresenter(
 
     private fun setDevelopContentVisible(visible: Boolean) {
         binding.group2.setVisible(visible)
+        binding.group3.setVisible(visible)
         binding.cvDebug.setVisible(visible)
         binding.cvAccountKey.setVisible(visible && showLocalAccountKeys)
         binding.cvReloadConfig.setVisible(visible)
@@ -146,6 +156,65 @@ class DeveloperModePresenter(
                     binding.testnetPreference.setChecked(isTestnet())
                 }
             }
+        }
+    }
+    
+    private fun setupWatchCollectibleAddress() {
+        val savedAddress = getWatchCollectibleAddress()
+        
+        with(binding) {
+                if (savedAddress.isNotEmpty()) {
+                    // Has saved address, select custom address and show EditText
+                    isCustomAddressSelected = true
+                    customAddressText = savedAddress
+                    customAddressPreference.setChecked(true)
+                    myOwnAddressPreference.setChecked(false)
+                    etCustomAddress.setText(savedAddress)
+                    etCustomAddress.setVisible(true)
+                } else {
+                    // No saved address, select my own address
+                    isCustomAddressSelected = false
+                    customAddressText = ""
+                    myOwnAddressPreference.setChecked(true)
+                    customAddressPreference.setChecked(false)
+                    etCustomAddress.setVisible(false)
+                }
+                
+                // Set up checkbox listeners
+                myOwnAddressPreference.setOnCheckedChangeListener { isChecked ->
+                    if (isChecked) {
+                        isCustomAddressSelected = false
+                        customAddressPreference.setChecked(false)
+                        etCustomAddress.setVisible(false)
+                        customAddressText = ""
+                    }
+                }
+                
+                customAddressPreference.setOnCheckedChangeListener { isChecked ->
+                    if (isChecked) {
+                        isCustomAddressSelected = true
+                        myOwnAddressPreference.setChecked(false)
+                        etCustomAddress.setVisible(true)
+                        etCustomAddress.requestFocus()
+                    }
+                }
+                
+                // Set up EditText text change listener
+                etCustomAddress.addTextChangedListener(object : android.text.TextWatcher {
+                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                    override fun afterTextChanged(s: android.text.Editable?) {
+                        customAddressText = s?.toString() ?: ""
+                    }
+                })
+            }
+        }
+    
+    fun saveWatchCollectibleAddress() {
+        if (isCustomAddressSelected && customAddressText.isNotEmpty()) {
+            setWatchCollectibleAddress(customAddressText)
+        } else {
+            clearWatchCollectibleAddress()
         }
     }
 }

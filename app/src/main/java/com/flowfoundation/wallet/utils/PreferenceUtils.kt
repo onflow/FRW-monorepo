@@ -46,6 +46,7 @@ private val KEY_DO_NOT_SHOW_BACKUP_DIALOG = booleanPreferencesKey("KEY_DO_NOT_SH
 private val KEY_NOTIFICATION_READ_LIST = stringPreferencesKey("KEY_NOTIFICATION_READ_LIST")
 
 private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
+private const val KEY_WATCH_COLLECTIBLE_ADDRESS = "KEY_WATCH_COLLECTIBLE_ADDRESS"
 
 
 private val KEY_VERSION_CODE = intPreferencesKey("KEY_VERSION_CODE")
@@ -246,8 +247,20 @@ fun getCOALinkCheckedAddressSet(): Set<String> {
     return sharedPreferencesTraditional.getStringSet(KEY_COA_LINK_CHECKED_ADDRESS_SET, setOf()) ?: setOf()
 }
 
-fun setCOALinkCheckedAddresssSet(addressSet: Set<String>) {
+fun setCOALinkCheckedAddressSet(addressSet: Set<String>) {
     sharedPreferencesTraditional.edit().putStringSet(KEY_COA_LINK_CHECKED_ADDRESS_SET, addressSet).apply()
+}
+
+fun getWatchCollectibleAddress(): String {
+    return sharedPreferencesTraditional.getString(KEY_WATCH_COLLECTIBLE_ADDRESS, "") ?: ""
+}
+
+fun setWatchCollectibleAddress(address: String) {
+    sharedPreferencesTraditional.edit().putString(KEY_WATCH_COLLECTIBLE_ADDRESS, address).apply()
+}
+
+fun clearWatchCollectibleAddress() {
+    sharedPreferencesTraditional.edit().remove(KEY_WATCH_COLLECTIBLE_ADDRESS).apply()
 }
 
 private fun edit(unit: suspend () -> Unit) {

@@ -58,6 +58,9 @@ class DeveloperModeActivity : BaseActivity() {
     }
 
     override fun finish() {
+        // Save watch collectible address before finishing
+        presenter.saveWatchCollectibleAddress()
+        
         super.finish()
         if (initNetWork != chainNetwork()) {
             uiScope {
