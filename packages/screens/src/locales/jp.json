@@ -4,6 +4,8 @@
     "sendTo": "送信先",
     "sending": "送信中",
     "selectTokens": "トークンを選択",
+    "sendTokens": "トークンを送信",
+    "nftDetails": "NFT詳細",
     "colorDemo": "カラーデモ"
   },
   "common": {

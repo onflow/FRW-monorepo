@@ -4,6 +4,8 @@
     "sendTo": "发送至",
     "sending": "发送中",
     "selectTokens": "选择代币",
+    "sendTokens": "发送代币",
+    "nftDetails": "NFT详情",
     "colorDemo": "颜色演示"
   },
   "common": {
