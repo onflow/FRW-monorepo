@@ -83,9 +83,17 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
   // Initialize SendTo flow if requested
   useEffect(() => {
+    console.log('[AppNavigator] 🔍 Checking initialProps:', {
+      screen: initialProps?.screen,
+      hasSendToConfig: !!initialProps?.sendToConfig,
+      initialProps: initialProps,
+    });
+
     if (initialProps?.screen === 'send-asset') {
       const sendToConfig = initialProps?.sendToConfig;
+      console.log('[AppNavigator] ✅ send-asset screen detected, sendToConfig:', sendToConfig);
       if (!sendToConfig) {
+        console.log('[AppNavigator] ❌ No sendToConfig found');
         return;
       }
       try {
