@@ -1415,14 +1415,6 @@ export class WalletController extends BaseController {
     return userWalletService.allowFreeGas();
   };
 
-  signPayer = async (signable): Promise<string> => {
-    return await userWalletService.signPayer(signable);
-  };
-
-  signBridgeFeePayer = async (signable): Promise<string> => {
-    return await userWalletService.signBridgeFeePayer(signable);
-  };
-
   // New API methods using openapi service
   signAsFeePayer = async (signable): Promise<string> => {
     return await userWalletService.signAsFeePayer(signable);

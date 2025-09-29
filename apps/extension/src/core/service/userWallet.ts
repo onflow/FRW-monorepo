@@ -958,22 +958,6 @@ class UserWallet {
     };
   };
 
-  signBridgeFeePayer = async (signable): Promise<string> => {
-    const tx = signable.voucher;
-    const message = signable.message;
-    const envelope = await openapiService.signBridgeFeePayer(tx, message);
-    const signature = envelope.envelopeSigs.sig;
-    return signature;
-  };
-
-  signPayer = async (signable): Promise<string> => {
-    const tx = signable.voucher;
-    const message = signable.message;
-    const envelope = await openapiService.signPayer(tx, message);
-    const signature = envelope.envelopeSigs.sig;
-    return signature;
-  };
-
   signAsFeePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
@@ -1052,7 +1036,7 @@ class UserWallet {
       signingFunction: async (signable) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signPayer(signable);
+        const signature = await this.signAsFeePayer(signable);
         return {
           addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
           keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string
@@ -1091,7 +1075,7 @@ class UserWallet {
       signingFunction: async (signable) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signBridgeFeePayer(signable);
+        const signature = await this.signAsBridgeFeePayer(signable);
         return {
           addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
           keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string
