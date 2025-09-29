@@ -4,6 +4,8 @@
     "sendTo": "Отправить",
     "sending": "Отправка",
     "selectTokens": "Выбрать токены",
+    "sendTokens": "Отправить токены",
+    "nftDetails": "Детали NFT",
     "colorDemo": "Демо цветов"
   },
   "common": {
