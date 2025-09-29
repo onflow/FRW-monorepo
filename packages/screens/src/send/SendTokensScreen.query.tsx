@@ -506,10 +506,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
   // Helper function to handle press outside input
-  const handlePressOutside = useCallback(() => {
-    // Blur the input ref if it exists (works on all platforms)
+  const handlePressOutside = useCallback((event: any) => {
+    // Only blur if the click target is not the input or its children
     if (inputRef.current && inputRef.current.blur) {
-      inputRef.current.blur();
+      const target = event.target;
+      const inputElement = inputRef.current;
+
+      // Check if the clicked element is the input or a child of the input
+      if (target !== inputElement && !inputElement.contains(target)) {
+        inputRef.current.blur();
+      }
     }
   }, []);
 

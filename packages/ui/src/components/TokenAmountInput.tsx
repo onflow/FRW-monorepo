@@ -1,7 +1,7 @@
 import { SwitchVertical, ChevronDown, VerifiedToken } from '@onflow/frw-icons';
 import { isDarkMode } from '@onflow/frw-utils';
 import BN from 'bignumber.js';
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Input, XStack, YStack, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
@@ -49,7 +49,6 @@ export function TokenAmountInput({
   amountError,
   ...props
 }: TokenAmountInputProps): React.ReactElement {
-  const [_focused, setFocused] = useState(false);
   const internalInputRef = useRef<any>(null);
   const inputRef = externalInputRef || internalInputRef;
   const theme = useTheme();
@@ -86,6 +85,7 @@ export function TokenAmountInput({
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
   const tokenBalance = selectedToken?.balance || '0';
+
   return (
     <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - aligned with From Account */}
@@ -135,8 +135,6 @@ export function TokenAmountInput({
               style={{
                 borderRadius: 0,
               }}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
               disabled={disabled}
               selectTextOnFocus
               textAlign="left"
