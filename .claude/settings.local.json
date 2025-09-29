@@ -64,7 +64,9 @@
       "Bash(xcodebuild:*)",
       "Bash(git:*)",
       "Bash(pnpm:*)",
-      "Bash(npx react-native:*)"
+      "Bash(npx react-native:*)",
+      "Bash(gh label:*)",
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
