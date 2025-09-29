@@ -335,13 +335,11 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             <YStack px={16} bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
               {/* From Account Section */}
               {fromAccount && (
-                <View mb={-18}>
-                  <AccountCard
-                    account={transformAccountForCard(fromAccount)}
-                    title={t('send.fromAccount')}
-                    isLoading={false}
-                  />
-                </View>
+                <AccountCard
+                  account={transformAccountForCard(fromAccount)}
+                  title={t('send.fromAccount')}
+                  isLoading={false}
+                />
               )}
 
               <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />

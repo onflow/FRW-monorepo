@@ -26,7 +26,6 @@ import {
   Text,
   Separator,
   XStack,
-  View,
   useTheme,
   // NFT-related components
   MultipleNFTsPreview,
@@ -560,14 +559,11 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb={'$2'}>
-                <AccountCard
-                  isSendTokensScreen={true}
-                  account={transformAccountForCard(fromAccount)}
-                  title={t('send.fromAccount')}
-                  isLoading={isBalanceLoading}
-                />
-              </View>
+              <AccountCard
+                account={transformAccountForCard(fromAccount)}
+                title={t('send.fromAccount')}
+                isLoading={isBalanceLoading}
+              />
             ) : (
               <Text>{t('errors.addressNotFound')}</Text>
             )}
