@@ -90,12 +90,27 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     });
 
     if (initialProps?.screen === 'send-asset') {
-      const sendToConfig = initialProps?.sendToConfig;
-      console.log('[AppNavigator] ✅ send-asset screen detected, sendToConfig:', sendToConfig);
-      if (!sendToConfig) {
+      const rawSendToConfig = initialProps?.sendToConfig;
+      console.log(
+        '[AppNavigator] ✅ send-asset screen detected, rawSendToConfig:',
+        rawSendToConfig
+      );
+      if (!rawSendToConfig) {
         console.log('[AppNavigator] ❌ No sendToConfig found');
         return;
       }
+
+      // Parse sendToConfig if it's a string
+      let sendToConfig;
+      try {
+        sendToConfig =
+          typeof rawSendToConfig === 'string' ? JSON.parse(rawSendToConfig) : rawSendToConfig;
+        console.log('[AppNavigator] 📋 Parsed sendToConfig:', sendToConfig);
+      } catch (parseError) {
+        console.log('[AppNavigator] ❌ Failed to parse sendToConfig:', parseError);
+        return;
+      }
+
       try {
         if (sendToConfig.fromAccount) {
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
