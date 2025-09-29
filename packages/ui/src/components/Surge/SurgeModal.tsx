@@ -134,12 +134,12 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
       aria-labelledby="surge-modal-title"
       aria-describedby="surge-modal-description"
       style={{
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 1000,
+        zIndex: 999999,
       }}
     >
       <YStack
