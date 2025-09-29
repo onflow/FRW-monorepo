@@ -757,6 +757,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun getDebugAddress(): String? {
+        // TODO: - implement this
+        return null
+    }
+
     companion object {
         const val NAME = "NativeFRWBridge"
     }
