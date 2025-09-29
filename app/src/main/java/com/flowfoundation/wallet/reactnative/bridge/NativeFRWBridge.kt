@@ -43,6 +43,7 @@ import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
+import java.util.Locale
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -120,6 +121,10 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun getBuildNumber(): String {
         return BuildConfig.VERSION_CODE.toString()
+    }
+
+    override fun getLanguage(): String? {
+        return Locale.getDefault().language
     }
 
     override fun sign(hexData: String, promise: Promise) {
