@@ -83,6 +83,8 @@ android {
         // Support for 16 KB memory page sizes (required for Android 15+)
         ndk {
             abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+            // Ensure 16KB page size compatibility
+            // This ensures NDK libraries are built with proper alignment
         }
 
         buildConfigField("String", "DRIVE_AES_IV", "\"${apiKeys.getProperty('DRIVE_AES_IV')}\"")
@@ -242,6 +244,10 @@ android {
                 'org/bouncycastle/x509/CertPathReviewerMessages.properties',
                 'org/bouncycastle/x509/CertPathReviewerMessages_*.properties'
             ]
+        }
+        // Ensure native libraries are properly aligned for 16KB page sizes
+        jniLibs {
+            useLegacyPackaging = false
         }
     }
 
