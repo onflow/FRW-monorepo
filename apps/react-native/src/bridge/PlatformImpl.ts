@@ -11,6 +11,7 @@ import { isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
 import { NativeModules, Platform as RNPlatform } from 'react-native';
+import { getLocales } from 'react-native-localize';
 
 import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
@@ -114,23 +115,59 @@ class PlatformImpl implements PlatformSpec {
   }
 
   getLanguage(): string {
+    const supportedLanguages = ['en', 'es', 'zh', 'ru', 'jp'];
+
     try {
-      // Get language from system locale
-      const locale =
-        RNPlatform.OS === 'ios'
-          ? NativeModules.SettingsManager?.settings?.AppleLocale ||
-            NativeModules.SettingsManager?.settings?.AppleLanguages?.[0] ||
-            'en'
-          : NativeModules.I18nManager?.localeIdentifier || 'en';
+      // Method 1: Use react-native-localize (most reliable)
+      try {
+        const locales = getLocales();
+        if (locales && locales.length > 0) {
+          const languageCode = locales[0].languageCode.toLowerCase();
+          if (supportedLanguages.includes(languageCode)) {
+            this.log('info', `[PlatformImpl] Language from react-native-localize: ${languageCode}`);
+            return languageCode;
+          }
+          this.log(
+            'debug',
+            `[PlatformImpl] Unsupported language from localize: ${languageCode}, fallback needed`
+          );
+        }
+      } catch (localizeError) {
+        this.log('warn', '[PlatformImpl] react-native-localize failed:', localizeError);
+      }
 
-      // Extract language code (e.g., 'en-US' -> 'en', 'zh-CN' -> 'zh')
-      const languageCode = locale.split('-')[0].toLowerCase();
+      // Method 2: Fallback to platform-specific native modules
+      let locale: string | null = null;
 
-      // Validate against supported languages
-      const supportedLanguages = ['en', 'es', 'zh', 'ru', 'jp'];
-      return supportedLanguages.includes(languageCode) ? languageCode : 'en';
+      if (RNPlatform.OS === 'ios') {
+        locale =
+          NativeModules.SettingsManager?.settings?.AppleLocale ||
+          NativeModules.SettingsManager?.settings?.AppleLanguages?.[0] ||
+          null;
+      } else {
+        locale = NativeModules.I18nManager?.localeIdentifier || null;
+      }
+
+      if (locale && typeof locale === 'string' && locale.trim() !== '') {
+        const languageCode = locale.split('-')[0].toLowerCase().trim();
+        if (supportedLanguages.includes(languageCode)) {
+          this.log(
+            'info',
+            `[PlatformImpl] Language from native modules: ${locale} -> ${languageCode}`
+          );
+          return languageCode;
+        }
+        this.log(
+          'debug',
+          `[PlatformImpl] Unsupported language from native: ${languageCode}, using fallback`
+        );
+      }
+
+      // Method 3: Final fallback
+      this.log('info', '[PlatformImpl] All language detection methods failed, using default: en');
+      return 'en';
     } catch (error) {
-      this.log('warn', '[PlatformImpl] Failed to get system language, falling back to en:', error);
+      this.log('warn', '[PlatformImpl] Unexpected error in language detection:', error);
       return 'en';
     }
   }

@@ -643,6 +643,9 @@ importers:
       react-native-get-random-values:
         specifier: ^1.11.0
         version: 1.11.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))
+      react-native-localize:
+        specifier: ^3.5.2
+        version: 3.5.2(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
       react-native-reanimated:
         specifier: ^3.8.1
         version: 3.19.1(@babel/core@7.28.4)(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
@@ -9875,6 +9878,19 @@ packages:
     peerDependencies:
       react: 19.0.0
       react-native: 0.79.2
+
+  react-native-localize@3.5.2:
+    resolution: {integrity: sha512-HfQdwv5sRjh4AQ8a97OTjXYcxPNRlBxiQb861c7Ob6mRuNYCPtaJ45QTcZxZr31vAM3THvtOBp1soqWlQFxjnA==}
+    peerDependencies:
+      '@expo/config-plugins': ^9.0.0 || ^10.0.0
+      react: 19.0.0
+      react-native: 0.79.2
+      react-native-macos: '*'
+    peerDependenciesMeta:
+      '@expo/config-plugins':
+        optional: true
+      react-native-macos:
+        optional: true
 
   react-native-reanimated@3.19.1:
     resolution: {integrity: sha512-ILL0FSNzSVIg6WuawrsMBvNxk2yJFiTUcahimXDAeNiE/09eagVUlHhYWXAAmH0umvAOafBaGjO7YfBhUrf5ZQ==}
@@ -23187,6 +23203,11 @@ snapshots:
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
 
   react-native-is-edge-to-edge@1.2.1(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
+
+  react-native-localize@3.5.2(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
     dependencies:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
