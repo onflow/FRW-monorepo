@@ -80,6 +80,11 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+        // Support for 16 KB memory page sizes (required for Android 15+)
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+        }
+
         buildConfigField("String", "DRIVE_AES_IV", "\"${apiKeys.getProperty('DRIVE_AES_IV')}\"")
         buildConfigField("String", "DRIVE_AES_KEY", "\"${apiKeys.getProperty('DRIVE_AES_KEY')}\"")
         buildConfigField("String", "WALLET_CONNECT_PROJECT_ID", "\"${apiKeys.getProperty('WALLET_CONNECT_PROJECT_ID')}\"")
@@ -241,6 +246,23 @@ android {
     }
 
     namespace 'com.flowfoundation.wallet'
+    
+    // Android App Bundle configuration for 16 KB page size support
+    bundle {
+        language {
+            // Enable per-language APKs to reduce size
+            enableSplit = true
+        }
+        density {
+            // Enable per-density APKs
+            enableSplit = true
+        }
+        abi {
+            // Enable per-ABI APKs and ensure 16KB page size support
+            enableSplit = true
+        }
+    }
+    
     lintOptions {
         checkAllWarnings true
         abortOnError true // stop the build if errors found
