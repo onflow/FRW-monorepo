@@ -25,6 +25,6 @@ jobs:
       - name: Monitor Flow Account Balances
         run: node scripts/monitor-balance.js
         env:
-          FLOW_ADDRESSES: ${{ vars.FLOW_ADDRESSES || '0x1654653399040a61' }}
+          FLOW_ADDRESSES: ${{ vars.FLOW_ADDRESSES }}
           BALANCE_THRESHOLD: ${{ vars.BALANCE_THRESHOLD || '500000000' }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
