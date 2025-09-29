@@ -140,6 +140,8 @@ export function TokenAmountInput({
               disabled={disabled}
               selectTextOnFocus
               textAlign="left"
+              as
+              any
             />
           </XStack>
         </XStack>
@@ -175,7 +177,7 @@ export function TokenAmountInput({
       {/* Bottom Row - space-between layout */}
       <XStack items="center" justify="space-between">
         {/* Left Side - Converter Toggle and USD Value */}
-        {showConverter && (
+        {showConverter ? (
           <XStack items="center" gap={4} flex={1} minW={0}>
             {/* Swap Button - exactly 25x25px with 4.545px padding */}
             <XStack
@@ -201,11 +203,11 @@ export function TokenAmountInput({
                 : `${(parseFloat(displayAmount || '0') / (selectedToken?.price || 1)).toFixed(5)}`}
             </Text>
           </XStack>
-        )}
+        ) : null}
 
         {/* Right Side - Balance */}
         <XStack justify="space-between" items="center" gap="$2.5">
-          {showBalance && (
+          {showBalance ? (
             <Text
               fontSize={14}
               fontWeight="400"
@@ -213,10 +215,12 @@ export function TokenAmountInput({
               lineHeight={16}
               text="right"
               flexShrink={0}
+              as
+              any
             >
               {formatBalance(tokenBalance)} {tokenSymbol}
             </Text>
-          )}
+          ) : null}
           <YStack
             bg={
               isCurrentlyDarkMode
@@ -240,11 +244,11 @@ export function TokenAmountInput({
       </XStack>
 
       {/* Error Message */}
-      {amountError && (
+      {amountError ? (
         <Text fontSize="$2" color="$error" mt="$2" ml="$1" lineHeight={16}>
           {amountError}
         </Text>
-      )}
+      ) : null}
     </YStack>
   );
 }
