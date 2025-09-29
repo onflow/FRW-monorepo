@@ -1,4 +1,11 @@
-import { SelectTokensScreen, NFTListScreen, NFTDetailScreen } from '@onflow/frw-screens';
+import {
+  SelectTokensScreen,
+  NFTListScreen,
+  NFTDetailScreen,
+  SendTokensScreen as BaseSendTokensScreen,
+  SendSummaryScreen as BaseSendSummaryScreen,
+  type ScreenAssets,
+} from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -13,11 +20,11 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { sendStaticImage } from '@/assets';
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-import { SendTokensScreen, SendSummaryScreen } from '@/screens/SendScreenWrappers';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
 
@@ -57,6 +64,15 @@ interface AppNavigatorProps {
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Create assets object for screens
+const screenAssets: ScreenAssets = {
+  sendStaticImage,
+};
+
+// Create wrapped screen components with assets
+const SendTokensScreen = () => <BaseSendTokensScreen assets={screenAssets} />;
+const SendSummaryScreen = () => <BaseSendSummaryScreen assets={screenAssets} />;
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   // const { t } = useTranslation();

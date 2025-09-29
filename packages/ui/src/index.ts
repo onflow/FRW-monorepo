@@ -36,6 +36,9 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
+// Assets and types
+export type { ScreenAssets } from './assets/images';
+
 export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';
 export * from './components/AddressText';
