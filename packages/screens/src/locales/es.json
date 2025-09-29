@@ -165,5 +165,9 @@
         "descriptionSecondary": "Si una aplicación está en EVM o Cadence, solo las cuentas compatibles estarán disponibles para conectar."
       }
     }
+  },
+  "surge": {
+    "title": "Precio de congestión activo",
+    "message": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas. Las tarifas de red actuales son 4 veces más altas de lo habitual."
   }
 }

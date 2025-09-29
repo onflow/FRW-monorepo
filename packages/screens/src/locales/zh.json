@@ -165,5 +165,9 @@
         "descriptionSecondary": "如果应用是基于 EVM 或 Cadence，只有兼容的账户可用于连接。"
       }
     }
+  },
+  "surge": {
+    "title": "网络拥堵价格激活",
+    "message": "由于网络活动频繁，交易费用已提高。当前网络费用比平时高 4 倍。"
   }
 }

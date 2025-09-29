@@ -184,7 +184,7 @@ export class PayerService {
   /**
    * Get payer status
    */
-  static status(options: IRequestOptions = {}): Promise<PayerStatusApiResponseV1> {
+  static status(options: IRequestOptions = {}): Promise<PayerStatusPayloadV1> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v1/payer/status';
 
@@ -1430,7 +1430,6 @@ export interface PayerStatusApiResponseV1 {
   /** Optional message for API response */
   message?: string;
 }
-
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'

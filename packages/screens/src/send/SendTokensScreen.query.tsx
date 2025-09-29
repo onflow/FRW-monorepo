@@ -8,6 +8,8 @@ import {
   storageQueryKeys,
   storageQueries,
   storageUtils,
+  payerStatusQueryKeys,
+  payerStatusQueries,
 } from '@onflow/frw-stores';
 import { isFlow, Platform } from '@onflow/frw-types';
 import {
@@ -19,6 +21,7 @@ import {
   ToAccountSection,
   SendArrowDivider,
   StorageWarning,
+  SurgeWarning,
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
@@ -30,6 +33,7 @@ import {
   useTheme,
   // NFT-related components
   MultipleNFTsPreview,
+  SurgeFeeSection,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -155,6 +159,20 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     enabled: true,
   });
 
+  // Query for payer status with automatic caching
+  const {
+    data: payerStatus,
+    isLoading: isLoadingPayerStatus,
+    error: payerStatusError,
+  } = useQuery({
+    queryKey: payerStatusQueryKeys.payerStatus(network as 'mainnet' | 'testnet'),
+    queryFn: () => payerStatusQueries.fetchPayerStatus(network as 'mainnet' | 'testnet'),
+    staleTime: 0, // Always fresh for financial data
+    enabled: true,
+    retry: 3,
+    retryDelay: 1000,
+  });
+
   // Query for tokens with automatic caching
   const {
     data: tokens = [],
@@ -225,6 +243,31 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
+  // Dynamic surge pricing state based on API response
+  const isSurgePricingActive = payerStatus?.surge?.active ?? false;
+  const surgeMultiplier = payerStatus?.surge?.multiplier ?? 1;
+
+  // Log payer status API response for debugging
+  React.useEffect(() => {
+    if (payerStatus) {
+      logger.info('Payer Status API Response:', {
+        surge: payerStatus.surge,
+        feePayer: payerStatus.feePayer,
+        bridgePayer: payerStatus.bridgePayer,
+        updatedAt: payerStatus.updatedAt,
+        reason: payerStatus.reason,
+        isSurgePricingActive,
+        surgeMultiplier,
+      });
+    }
+    if (isLoadingPayerStatus) {
+      logger.info('Loading payer status...');
+    }
+    if (payerStatusError) {
+      logger.error('Payer status error:', payerStatusError);
+    }
+  }, [payerStatus, isLoadingPayerStatus, payerStatusError, isSurgePricingActive, surgeMultiplier]);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
@@ -653,16 +696,29 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Transaction Fee and Storage Warning Section */}
           <YStack gap="$3">
-            <TransactionFeeSection
-              flowFee={transactionFee}
-              usdFee={usdFee}
-              isFree={isFreeGasEnabled}
-              showCovered={true}
-              title={t('send.transactionFee')}
-              backgroundColor="transparent"
-              borderRadius={16}
-              contentPadding={0}
-            />
+            {/* Only show normal transaction fee when surge pricing is NOT active */}
+            {!isSurgePricingActive && (
+              <TransactionFeeSection
+                flowFee={transactionFee}
+                usdFee={usdFee}
+                isFree={isFreeGasEnabled}
+                showCovered={true}
+                title={t('send.transactionFee')}
+                backgroundColor="transparent"
+                borderRadius={16}
+                contentPadding={0}
+              />
+            )}
+
+            <YStack mt="$-4">
+              <SurgeFeeSection
+                transactionFee={transactionFee}
+                showWarning={isSurgeWarningVisible}
+                surgeMultiplier={surgeMultiplier}
+                isSurgePricingActive={isSurgePricingActive}
+                onSurgeInfoPress={() => setIsSurgeWarningVisible(true)}
+              />
+            </YStack>
 
             {showStorageWarning && (
               <StorageWarning
@@ -742,6 +798,22 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           unknownAccountText={t('send.unknownAccount')}
         />
       </YStack>
+      {/* SurgeWarning Modal */}
+      <SurgeWarning
+        message={
+          isSurgePricingActive && surgeMultiplier
+            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${surgeMultiplier}× higher than usual and your free allowance will not cover the fee for this transaction.`
+            : t('surge.message')
+        }
+        title={t('surge.title')}
+        variant="warning"
+        visible={isSurgeWarningVisible}
+        onClose={() => setIsSurgeWarningVisible(false)}
+        onButtonPress={() => {
+          setIsSurgeWarningVisible(false);
+        }}
+        surgeMultiplier={surgeMultiplier}
+      />
     </BackgroundWrapper>
   );
 };

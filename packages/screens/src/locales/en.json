@@ -178,5 +178,9 @@
         "descriptionSecondary": "If an application is on EVM or Cadence, only compatible accounts will be available to connect."
       }
     }
+  },
+  "surge": {
+    "title": "Surge price active",
+    "message": "Due to high network activity, transaction fees are elevated. Current network fees are 4x higher than usual."
   }
 }

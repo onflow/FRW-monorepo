@@ -1,5 +1,5 @@
 import { type Cache, type PlatformSpec, type Storage } from '@onflow/frw-context';
-import { useSendStore, useTokenQueryStore } from '@onflow/frw-stores';
+import { useSendStore, useTokenQueryStore, fetchPayerStatusWithCache } from '@onflow/frw-stores';
 import {
   Platform,
   type Currency,
@@ -319,13 +319,14 @@ class ExtensionPlatformImpl implements PlatformSpec {
             },
           };
         };
-
+        const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+        const isSurge = payerStatus.surge?.active;
         // Determine payer function based on transaction name and fee coverage logic
         const withPayer = config.name && config.name.endsWith('WithPayer');
         if (withPayer) {
-          // Use bridge fee payer function
-          const { address: payerAddress, keyId: payerKeyId } =
-            await this.walletController.getBridgeFeePayerAddressAndKeyId();
+          // Use bridge fee payer function - get address from payer status
+          const payerAddress = payerStatus.bridgePayer?.address;
+          const payerKeyId = payerStatus.bridgePayer?.keyIndex || 0;
 
           config.payer = async (account: any) => {
             const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
@@ -337,7 +338,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
               addr: ADDRESS.replace('0x', ''),
               keyId: KEY_ID,
               signingFunction: async (signable: any) => {
-                const signature = await this.walletController.signBridgeFeePayer(signable);
+                const signature = await this.walletController.signAsBridgeFeePayer(signable);
                 return {
                   addr: ADDRESS,
                   keyId: KEY_ID,
@@ -352,9 +353,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
           const allowed = await this.walletController.allowLilicoPay();
 
           if (allowed) {
-            // Use regular payer function
-            const { address: payerAddress, keyId: payerKeyId } =
-              await this.walletController.getPayerAddressAndKeyId();
+            // Use regular payer function - get address from payer status
+            const payerAddress = payerStatus.feePayer?.address;
+            const payerKeyId = payerStatus.feePayer?.keyIndex || 0;
+
             config.payer = async (account: any) => {
               const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
               const KEY_ID = Number(payerKeyId) || 0;
@@ -368,7 +370,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
                   return {
                     addr: ADDRESS,
                     keyId: KEY_ID,
-                    signature: await this.walletController.signPayer(signable),
+                    signature: await this.walletController.signAsFeePayer(signable),
                   };
                 },
               };
