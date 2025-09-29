@@ -55,7 +55,7 @@ export const ExtensionHeader: React.FC<ExtensionHeaderProps> = (props) => {
           cursor="pointer"
           onPress={handleClose}
         >
-          <Close size={19} color="rgba(255, 255, 255, 0.8)" />
+          <Close size={28} color="rgba(255, 255, 255, 0.8)" />
         </XStack>
       ) : (
         <XStack style={{ width: 32, height: 32 }} items="center" justify="center"></XStack>

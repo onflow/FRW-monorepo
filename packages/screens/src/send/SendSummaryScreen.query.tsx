@@ -11,7 +11,6 @@ import { Platform } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
-  ScrollView,
   View,
   NFTSendPreview,
   MultipleNFTsPreview,
@@ -334,19 +333,17 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           />
         )}
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack gap="$3">
-            {/* NFT Section */}
-            <YStack px={16} bg={cardBackgroundColor} rounded="$4" p="$3" gap="$1">
+        <YStack flex={1}>
+          {/* Scrollable Content */}
+          <YStack flex={1} gap="$3">
+            <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
               {/* From Account Section */}
               {fromAccount && (
-                <View mb={-18}>
-                  <AccountCard
-                    account={transformAccountForCard(fromAccount)}
-                    title={t('send.fromAccount')}
-                    isLoading={false}
-                  />
-                </View>
+                <AccountCard
+                  account={transformAccountForCard(fromAccount)}
+                  title={t('send.fromAccount')}
+                  isLoading={false}
+                />
               )}
 
               <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
@@ -476,7 +473,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               )}
             </YStack>
           </YStack>
-        </ScrollView>
+        </YStack>
 
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4" mb={'$10'}>

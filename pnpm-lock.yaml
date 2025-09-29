@@ -135,6 +135,9 @@ importers:
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../../packages/context
+      '@onflow/frw-icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@onflow/frw-screens':
         specifier: workspace:*
         version: link:../../packages/screens
