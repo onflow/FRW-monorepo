@@ -66,6 +66,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const toAccount = useSendStore(sendSelectors.toAccount);
+  const navigationSource = useSendStore(sendSelectors.navigationSource);
   const isLoading = useSendStore(sendSelectors.isLoading);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
@@ -349,7 +350,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               <SendSectionHeader
                 title={sectionTitle}
                 onEditPress={handleEditNFTPress}
-                showEditButton={true}
+                showEditButton={navigationSource !== 'nft-detail'}
                 editButtonText={t('send.change')}
               />
 

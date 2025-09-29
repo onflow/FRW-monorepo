@@ -46,6 +46,7 @@ export function NFTListScreen(): React.ReactElement {
   const setTransactionType = useSendStore((state) => state.setTransactionType);
   const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
   const setCurrentNFT = useSendStore((state) => state.setCurrentNFT);
+  const setNavigationSource = useSendStore((state) => state.setNavigationSource);
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
@@ -337,10 +338,21 @@ export function NFTListScreen(): React.ReactElement {
       });
     }
 
+    // Set navigation source to track that user came from NFT list page
+    setNavigationSource('nft-list');
+
     setSelectedNFTs(selectedNFTs);
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
-  }, [selectedIds, nfts, setSelectedNFTs, setCurrentStep, nftQuantities, setNFTQuantity]);
+  }, [
+    selectedIds,
+    nfts,
+    setSelectedNFTs,
+    setCurrentStep,
+    setNavigationSource,
+    nftQuantities,
+    setNFTQuantity,
+  ]);
 
   // Refresh function - TanStack Query makes this super simple!
   const refreshNFTs = useCallback(() => {

@@ -50,6 +50,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   selectedNFTQuantities: {},
   selectedCollection: null,
   currentStep: 'select-tokens',
+  navigationSource: null,
   isLoading: false,
   error: null,
 
@@ -139,6 +140,8 @@ export const useSendStore = create<SendState>((set, get) => ({
   },
 
   setCurrentStep: (step: SendState['currentStep']) => set({ currentStep: step, error: null }),
+
+  setNavigationSource: (source: SendState['navigationSource']) => set({ navigationSource: source }),
 
   setLoading: (loading: boolean) => set({ isLoading: loading }),
 
@@ -320,6 +323,7 @@ export const useSendStore = create<SendState>((set, get) => ({
       selectedNFTs: [],
       selectedNFTQuantities: {},
       currentStep: 'select-tokens',
+      navigationSource: null,
       isLoading: false,
       error: null,
       balances: {
@@ -516,6 +520,7 @@ export const sendSelectors = {
   formData: (state: SendState) => state.formData,
   selectedNFTs: (state: SendState) => state.selectedNFTs,
   currentStep: (state: SendState) => state.currentStep,
+  navigationSource: (state: SendState) => state.navigationSource,
   isLoading: (state: SendState) => state.isLoading,
   error: (state: SendState) => state.error,
 

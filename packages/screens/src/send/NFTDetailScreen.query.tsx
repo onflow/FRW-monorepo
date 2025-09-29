@@ -38,6 +38,7 @@ export function NFTDetailScreen(): React.ReactElement {
   const currentViewNFT = useSendStore((state) => state.currentNFT);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
+  const setNavigationSource = useSendStore((state) => state.setNavigationSource);
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
@@ -232,9 +233,12 @@ export function NFTDetailScreen(): React.ReactElement {
       setTransactionType('multiple-nfts');
     }
 
+    // Set navigation source to track that user came from NFT detail page
+    setNavigationSource('nft-detail');
+
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
-  }, [selectedNFTs, setCurrentStep]);
+  }, [selectedNFTs, setCurrentStep, setNavigationSource]);
 
   // Handle NFT press in selection bar (navigate to different NFT detail)
   const handleNFTPress = useCallback((nftId: string) => {

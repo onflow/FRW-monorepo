@@ -50,6 +50,7 @@ export function SelectTokensScreen(): React.ReactElement {
     setCurrentStep,
     clearTransactionData,
     setSelectedCollection,
+    setNavigationSource,
   } = useSendStore();
 
   // Tab options
@@ -242,6 +243,8 @@ export function SelectTokensScreen(): React.ReactElement {
       }
     }
     setTransactionType('multiple-nfts');
+    // Set navigation source to track that user came from select tokens screen
+    setNavigationSource('select-tokens');
     navigation.navigate('NFTList', { collection, address: effectiveAddress });
   };
 

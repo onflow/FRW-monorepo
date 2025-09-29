@@ -98,6 +98,7 @@ export interface SendState {
   selectedNFTQuantities: Record<string, number>; // ERC1155 quantities keyed by NFT ID
   selectedCollection: CollectionModel | null;
   currentNFT: NFTModel | null; // current nft for NFT detail screen
+  navigationSource: 'nft-detail' | 'nft-list' | 'select-tokens' | null; // track where user came from
   // Balance management
   balances: {
     coa: Record<string, BalanceData>; // keyed by flowAddress
@@ -132,6 +133,7 @@ export interface SendState {
   setNFTQuantity: (nftId: string, quantity: number) => void;
   getNFTQuantity: (nftId: string) => number;
   setCurrentStep: (step: SendState['currentStep']) => void;
+  setNavigationSource: (source: SendState['navigationSource']) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   resetSendFlow: () => void;
