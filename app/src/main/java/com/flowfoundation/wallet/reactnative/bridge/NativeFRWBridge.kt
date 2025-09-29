@@ -42,6 +42,7 @@ import org.json.JSONArray
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -65,6 +66,22 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         } catch (e: Exception) {
             android.util.Log.e(TAG, "getSelectedAddress() error: ${e.message}")
             return null
+        }
+    }
+
+    override fun getDebugAddress(): String? {
+        try {
+            val watchAddress = getWatchCollectibleAddress()
+            val resultAddress = watchAddress.ifEmpty {
+              WalletManager.selectedWalletAddress()
+            }
+
+            android.util.Log.d(TAG, "getDebugAddress() called, watchAddress: '$watchAddress', returning: $resultAddress")
+            return resultAddress
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "getDebugAddress() error: ${e.message}")
+            // Fallback to selected wallet address on error
+            return WalletManager.selectedWalletAddress()
         }
     }
 

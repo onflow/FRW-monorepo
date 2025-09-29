@@ -11,7 +11,7 @@ import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.getCOALinkCheckedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.setCOALinkCheckedAddresssSet
+import com.flowfoundation.wallet.utils.setCOALinkCheckedAddressSet
 import com.flowfoundation.wallet.utils.uiScope
 import org.onflow.flow.models.TransactionStatus
 
@@ -25,7 +25,7 @@ object COALinkCheckManager {
     private fun setAddressChecked(address: String) {
         ioScope {
             if (addressSet.add(address)) {
-                setCOALinkCheckedAddresssSet(addressSet)
+                setCOALinkCheckedAddressSet(addressSet)
             }
         }
     }
