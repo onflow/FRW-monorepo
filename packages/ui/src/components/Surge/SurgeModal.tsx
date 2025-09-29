@@ -1,4 +1,4 @@
-import { AlertTriangle, SurgeIcon, Close } from '@onflow/frw-icons';
+import { AlertTriangle, FlowLogo, SurgeIcon, Close } from '@onflow/frw-icons';
 import React, { useEffect, useState } from 'react';
 import { YStack, XStack, Button } from 'tamagui';
 
@@ -160,27 +160,28 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
       >
         {/* Close Button */}
         <Button
+          position="absolute"
+          top="$4"
+          right="$4"
+          zIndex={1}
           items="center"
           justify="center"
-          width={24}
-          height={24}
+          width="$6"
+          height="$6"
+          borderRadius="$10"
+          padding={0}
           pressStyle={{ opacity: 0.7 }}
           onPress={onClose}
           cursor="pointer"
-          style={{
-            position: 'absolute',
-            top: '$4',
-            right: '$4',
-            zIndex: 1,
-          }}
-          icon={<Close size={24} />}
+          chromeless
+          icon={<Close size={12} color="white" />}
         />
 
         {/* Content Frame */}
         <YStack items="center" gap="$4" style={{ alignSelf: 'stretch' }}>
           {/* Alert Icon */}
           <YStack items="center" justify="center" width={64} height={64} bg="$error" rounded="$10">
-            <AlertTriangle size={32} color="$white" />
+            <AlertTriangle size={32} color="white" />
           </YStack>
 
           {/* Title */}
@@ -188,7 +189,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
             id="surge-modal-title"
             fontSize={24}
             fontWeight="700"
-            color="$white"
+            color="white"
             lineHeight="$5"
             style={{ textAlign: 'center', maxWidth: 303 }}
           >
@@ -216,14 +217,15 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
                 <Text fontSize={14} fontWeight="500" color="$white">
                   {transactionFee}
                 </Text>
-                {/* FLOW token icon placeholder - you may need to replace with actual token icon */}
-                <YStack width={17.6} height={17.6} bg="$primary" rounded="$2" />
+                <FlowLogo size={18} theme="multicolor" />
               </XStack>
             </XStack>
 
             {/* Surge Active Section */}
             <XStack items="center" gap="$2">
-              <SurgeIcon size={24} color="$warning" />
+              <YStack items="center" justify="center" style={{ color: 'var(--warning)' }}>
+                <SurgeIcon size={24} />
+              </YStack>
               <YStack flex={1}>
                 <Text fontSize={14} fontWeight="600" color="$warning">
                   Surge price active
@@ -249,8 +251,13 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
             <Button
               height={52}
               bg="$error"
+              borderWidth={2}
+              borderColor={isHolding ? '$error' : 'transparent'}
               rounded="$4"
-              pressStyle={{ opacity: 0.8 }}
+              pressStyle={{
+                opacity: 0.8,
+                borderColor: isHolding ? '$error' : 'transparent',
+              }}
               onPressIn={handleMouseDown}
               onPressOut={handleMouseUp}
               onMouseLeave={handleMouseLeave}
