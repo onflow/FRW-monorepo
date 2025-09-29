@@ -117,9 +117,14 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setCurrentStep('send-tokens');
         } else if (sendToConfig.selectedNFTs && sendToConfig.selectedNFTs.length >= 1) {
           // Use single navigation for both single and multiple NFTs - the screen will handle the logic
-          setTransactionType(
-            sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts'
-          );
+          const transactionType =
+            sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts';
+          console.log('[AppNavigator] 🔥 NATIVE NFT ENTRY DETECTED', {
+            selectedNFTsCount: sendToConfig.selectedNFTs.length,
+            transactionType,
+            settingNavigationSource: 'native-nft-detail',
+          });
+          setTransactionType(transactionType);
           // Set navigation source to track that user came from native NFT detail page
           setNavigationSource('native-nft-detail');
           setCurrentStep('send-to');

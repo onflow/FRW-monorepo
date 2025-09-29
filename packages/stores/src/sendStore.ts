@@ -141,7 +141,13 @@ export const useSendStore = create<SendState>((set, get) => ({
 
   setCurrentStep: (step: SendState['currentStep']) => set({ currentStep: step, error: null }),
 
-  setNavigationSource: (source: SendState['navigationSource']) => set({ navigationSource: source }),
+  setNavigationSource: (source: SendState['navigationSource']) => {
+    console.log('[SendStore] 📍 Setting navigation source:', {
+      from: get().navigationSource,
+      to: source,
+    });
+    set({ navigationSource: source });
+  },
 
   setLoading: (loading: boolean) => set({ isLoading: loading }),
 
@@ -313,7 +319,8 @@ export const useSendStore = create<SendState>((set, get) => ({
     });
   },
 
-  resetSendFlow: () =>
+  resetSendFlow: () => {
+    console.log('[SendStore] 🔄 RESETTING SEND FLOW - navigationSource will be cleared');
     set({
       selectedToken: null,
       fromAccount: null,
@@ -331,10 +338,12 @@ export const useSendStore = create<SendState>((set, get) => ({
         evm: {},
       },
       accessibleAssetStores: {},
-    }),
+    });
+  },
 
   // Clear transaction-specific data while preserving accounts
-  clearTransactionData: () =>
+  clearTransactionData: () => {
+    console.log('[SendStore] 🧹 CLEARING TRANSACTION DATA - navigationSource preserved');
     set({
       selectedToken: null,
       selectedNFTs: [],
@@ -343,7 +352,8 @@ export const useSendStore = create<SendState>((set, get) => ({
       transactionType: 'tokens',
       currentStep: 'select-tokens',
       error: null,
-    }),
+    });
+  },
 
   // Create send payload for transaction execution
   createSendPayload: async (): Promise<SendPayload | null> => {
