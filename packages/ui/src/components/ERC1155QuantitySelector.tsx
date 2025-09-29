@@ -59,14 +59,13 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
       </YStack>
 
       <Text
-        fontSize="$4.5"
+        fontSize="$5"
         fontWeight="600"
         color="$white"
-        letterSpacing="$xs"
         textAlign="center"
         flex={1}
         numberOfLines={1}
-        lineHeight="$4.5"
+        lineHeight="$5"
       >
         {formatNumber(quantity)}
       </Text>
