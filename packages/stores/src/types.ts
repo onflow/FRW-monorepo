@@ -98,7 +98,12 @@ export interface SendState {
   selectedNFTQuantities: Record<string, number>; // ERC1155 quantities keyed by NFT ID
   selectedCollection: CollectionModel | null;
   currentNFT: NFTModel | null; // current nft for NFT detail screen
-  navigationSource: 'nft-detail' | 'nft-list' | 'select-tokens' | null; // track where user came from
+  navigationSource:
+    | 'native-nft-detail'
+    | 'rn-nft-detail'
+    | 'rn-nft-list'
+    | 'rn-select-tokens'
+    | null; // track where user came from
   // Balance management
   balances: {
     coa: Record<string, BalanceData>; // keyed by flowAddress

@@ -350,7 +350,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               <SendSectionHeader
                 title={sectionTitle}
                 onEditPress={handleEditNFTPress}
-                showEditButton={navigationSource !== 'nft-detail'}
+                showEditButton={navigationSource !== 'native-nft-detail'}
                 editButtonText={t('send.change')}
               />
 

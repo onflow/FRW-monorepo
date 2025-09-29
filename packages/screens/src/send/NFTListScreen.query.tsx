@@ -338,8 +338,8 @@ export function NFTListScreen(): React.ReactElement {
       });
     }
 
-    // Set navigation source to track that user came from NFT list page
-    setNavigationSource('nft-list');
+    // Set navigation source to track that user came from RN NFT list page
+    setNavigationSource('rn-nft-list');
 
     setSelectedNFTs(selectedNFTs);
     setCurrentStep('send-to');

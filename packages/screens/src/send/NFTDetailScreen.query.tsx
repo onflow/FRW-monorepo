@@ -233,8 +233,8 @@ export function NFTDetailScreen(): React.ReactElement {
       setTransactionType('multiple-nfts');
     }
 
-    // Set navigation source to track that user came from NFT detail page
-    setNavigationSource('nft-detail');
+    // Set navigation source to track that user came from RN NFT detail page
+    setNavigationSource('rn-nft-detail');
 
     setCurrentStep('send-to');
     navigation.navigate('SendTo');

@@ -73,6 +73,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setFromAccount,
     setSelectedNFTs,
     setToAccount,
+    setNavigationSource,
   } = useSendStore();
 
   // Set navigation ref for the platform implementation
@@ -119,6 +120,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setTransactionType(
             sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts'
           );
+          // Set navigation source to track that user came from native NFT detail page
+          setNavigationSource('native-nft-detail');
           setCurrentStep('send-to');
         }
       } catch (error) {
@@ -132,6 +135,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     setTransactionType,
     setFromAccount,
     setSelectedNFTs,
+    setNavigationSource,
   ]);
 
   // Since TamaguiProvider is set to defaultTheme="dark", use that

@@ -243,8 +243,8 @@ export function SelectTokensScreen(): React.ReactElement {
       }
     }
     setTransactionType('multiple-nfts');
-    // Set navigation source to track that user came from select tokens screen
-    setNavigationSource('select-tokens');
+    // Set navigation source to track that user came from RN select tokens screen
+    setNavigationSource('rn-select-tokens');
     navigation.navigate('NFTList', { collection, address: effectiveAddress });
   };
 
