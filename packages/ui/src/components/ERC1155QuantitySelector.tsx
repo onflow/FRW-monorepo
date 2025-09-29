@@ -1,6 +1,7 @@
 import { Minus, Plus } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
-import { XStack, Text, YStack } from 'tamagui';
+import { XStack, Text, YStack, useTheme } from 'tamagui';
 
 export interface ERC1155QuantitySelectorProps {
   quantity: number;
@@ -15,6 +16,9 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
   onQuantityChange,
   disabled = false,
 }) => {
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const iconColor = isCurrentlyDarkMode ? 'white' : 'black';
   const handleDecrease = () => {
     if (quantity > 1 && !disabled) {
       onQuantityChange(quantity - 1);
@@ -55,13 +59,13 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
         items="center"
         justify="center"
       >
-        <Minus size={24} color="white" theme="outline" />
+        <Minus size={24} color={iconColor} theme="outline" />
       </YStack>
 
       <Text
         fontSize="$5"
         fontWeight="600"
-        color="$white"
+        color="$text"
         textAlign="center"
         flex={1}
         numberOfLines={1}
@@ -80,7 +84,7 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
         items="center"
         justify="center"
       >
-        <Plus size={24} color="white" theme="outline" />
+        <Plus size={24} color={iconColor} theme="outline" />
       </YStack>
     </XStack>
   );
