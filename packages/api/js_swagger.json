@@ -320,7 +320,7 @@
           "hashAlgoString"
         ],
         "example": {
-          "address": 1.1114000254959286e19,
+          "address": 11114000254959286000,
           "publicKey": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593",
           "keyIndex": 0,
           "weight": 1000,
@@ -1377,6 +1377,115 @@
             "example": 200
           }
         }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["status", "data"]
+      },
+      "PayerInfoV1": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "address": {
+            "type": "string",
+            "description": "Flow address, hex with 0x prefix"
+          },
+          "keyIndex": {
+            "type": "integer",
+            "description": "signing key index"
+          }
+        },
+        "required": ["available"]
+      },
+      "SurgeInfoV1": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "multiplier": {
+            "type": "number"
+          },
+          "expiresAt": {
+            "type": "integer",
+            "description": "timestamp"
+          },
+          "ttlSeconds": {
+            "type": "integer"
+          },
+          "sampledAt": {
+            "type": "integer",
+            "description": "timestamp"
+          }
+        },
+        "required": ["active"]
+      },
+      "PayerStatusPayloadV1": {
+        "type": "object",
+        "properties": {
+          "statusVersion": {
+            "type": "integer",
+            "enum": [1]
+          },
+          "surge": {
+            "$ref": "#/components/schemas/SurgeInfoV1"
+          },
+          "feePayer": {
+            "$ref": "#/components/schemas/PayerInfoV1"
+          },
+          "bridgePayer": {
+            "$ref": "#/components/schemas/PayerInfoV1"
+          },
+          "updatedAt": {
+            "type": "integer",
+            "description": "timestamp"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "statusVersion",
+          "status",
+          "surge",
+          "feePayer",
+          "bridgePayer",
+          "updatedAt"
+        ]
+      },
+      "PayerStatusApiResponseV1": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "description": "HTTP status code",
+            "enum": [200, 429, 500, 503],
+            "example": 200
+          },
+          "data": {
+            "$ref": "#/components/schemas/PayerStatusPayloadV1"
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message for API response",
+            "example": "Success"
+          }
+        },
+        "required": ["status", "data"]
       }
     }
   },
@@ -1524,6 +1633,290 @@
                       "name": "name",
                       "background": "E91E63",
                       "icon": "🍋"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/signAsBridgeFeePayer": {
+      "post": {
+        "summary": "Sign as bridge fee payer",
+        "description": "Signs a Flow transaction as the bridge fee payer for approved bridge transactions",
+        "tags": ["Payer"],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet", "sandboxnet"],
+              "default": "mainnet"
+            },
+            "description": "The Flow network to use for signing",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": {
+                    "type": "object",
+                    "required": ["envelope_message"],
+                    "properties": {
+                      "envelope_message": {
+                        "type": "string",
+                        "description": "The encoded transaction message to sign",
+                        "example": "464c4f572d56302e302d7472616e73616374696f6e0000000000000000000000..."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful signature response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "envelopeSigs": {
+                      "type": "object",
+                      "properties": {
+                        "address": {
+                          "type": "string",
+                          "description": "The bridge fee payer address",
+                          "example": "0x1234567890abcdef"
+                        },
+                        "keyId": {
+                          "type": "number",
+                          "description": "The key index used for signing",
+                          "example": 0
+                        },
+                        "sig": {
+                          "type": "string",
+                          "description": "The transaction signature",
+                          "example": "a1b2c3d4e5f6..."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - transaction verification failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "verify transaction failed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - surge pricing active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Many Requests for surge: communicates temporary pressure and supports standard client backoff via Retry-After. Compatible with rate/fee surge semantics."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable - bridge payer disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service Unavailable for disabled/stopped payer: indicates the service is intentionally unavailable or down; distinct from surge."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/signAsFeePayer": {
+      "post": {
+        "summary": "Sign as fee payer",
+        "description": "Signs a Flow transaction as the fee payer for general transactions",
+        "tags": ["Payer"],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"],
+              "default": "mainnet"
+            },
+            "description": "The Flow network to use for signing",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["message"],
+                "properties": {
+                  "message": {
+                    "type": "object",
+                    "required": ["envelope_message"],
+                    "properties": {
+                      "envelope_message": {
+                        "type": "string",
+                        "description": "The encoded transaction message to sign",
+                        "example": "464c4f572d56302e302d7472616e73616374696f6e0000000000000000000000..."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful signature response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "envelopeSigs": {
+                      "type": "object",
+                      "properties": {
+                        "address": {
+                          "type": "string",
+                          "description": "The fee payer address",
+                          "example": "0x1234567890abcdef"
+                        },
+                        "keyId": {
+                          "type": "number",
+                          "description": "The key index used for signing",
+                          "example": 0
+                        },
+                        "sig": {
+                          "type": "string",
+                          "description": "The transaction signature",
+                          "example": "a1b2c3d4e5f6..."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - transaction verification failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "verify transaction failed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - surge pricing active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Many Requests for surge: communicates temporary pressure and supports standard client backoff via Retry-After. Compatible with rate/fee surge semantics."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable - fee payer disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Service Unavailable for disabled/stopped payer: indicates the service is intentionally unavailable or down; distinct from surge."
                     }
                   }
                 }
@@ -1719,10 +2112,62 @@
         }
       }
     },
+    "/api/v1/payer/status": {
+      "get": {
+        "summary": "Get payer status",
+        "description": "Retrieves the current status of fee payers and surge pricing information",
+        "tags": ["Payer"],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"],
+              "default": "mainnet"
+            },
+            "description": "The Flow network to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with payer status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayerStatusApiResponseV1"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Method Not Allowed"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayerStatusApiResponseV1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/nft/collectionList": {
       "get": {
         "summary": "Get a list of NFTs from a specific collection under a FLOW address",
-        "description": "Use this endpoint to get a list of NFTs that the user owns within a specific collection on the Flow network.\nFlow Address -\u003E NFT Collection -\u003E NFTs\n",
+        "description": "Use this endpoint to get a list of NFTs that the user owns within a specific collection on the Flow network.\nFlow Address -> NFT Collection -> NFTs\n",
         "parameters": [
           {
             "in": "query",
@@ -1830,7 +2275,7 @@
     "/api/v2/nft/id": {
       "get": {
         "summary": "Get a list of the NFT collections and the ids of the nfts owned in each by an account on the Flow network",
-        "description": "Use this endpoint to get a list of the NFT collections and the ids of the nfts owned in each collection by an account on the Flow network.\nThis is used to populate the NFT collection list in the UI.\nFlow Address -\u003E NFT Collections\n",
+        "description": "Use this endpoint to get a list of the NFT collections and the ids of the nfts owned in each collection by an account on the Flow network.\nThis is used to populate the NFT collection list in the UI.\nFlow Address -> NFT Collections\n",
         "parameters": [
           {
             "in": "query",
@@ -1870,7 +2315,7 @@
     "/api/v2/nft/list": {
       "get": {
         "summary": "Get a list of Nfts owned by an account on the Flow network across all collections",
-        "description": "Use this endpoint if you need to display an agregated list of NFTs owned by an account across all collections\nFlow Address -\u003E NFTs\n",
+        "description": "Use this endpoint if you need to display an agregated list of NFTs owned by an account across all collections\nFlow Address -> NFTs\n",
         "parameters": [
           {
             "in": "query",
@@ -2074,7 +2519,7 @@
     "/api/v3/evm/nft/collectionList": {
       "get": {
         "summary": "Get a list of NFTs from a specific collection under a EVM address",
-        "description": "Use this endpoint to get a list of NFTs that the user owns within a specific collection on the EVM network.\nEVM Address -\u003E NFT Collection -\u003E NFTs\n",
+        "description": "Use this endpoint to get a list of NFTs that the user owns within a specific collection on the EVM network.\nEVM Address -> NFT Collection -> NFTs\n",
         "parameters": [
           {
             "in": "header",
@@ -2139,7 +2584,7 @@
     "/api/v3/evm/nft/id": {
       "get": {
         "summary": "Get a list of EVM NFT collections and ids of NFTs owned in each collection by an account",
-        "description": "EVM Address -\u003E NFT Collections\nThis endpoint returns a list of EVM NFT collections and the ids of the NFTs owned in each collection by an account.\nThis is used to populate the NFT collection list in the UI\n",
+        "description": "EVM Address -> NFT Collections\nThis endpoint returns a list of EVM NFT collections and the ids of the NFTs owned in each collection by an account.\nThis is used to populate the NFT collection list in the UI\n",
         "tags": ["Flow-EVM NFT"],
         "parameters": [
           {
@@ -2195,7 +2640,7 @@
     "/api/v3/evm/nft/list": {
       "get": {
         "summary": "Get a list of NFTs owned by an account on the EVM network across all collections",
-        "description": "EVM Address -\u003E NFTs\nThis endpoint returns a list of NFTs owned by an account across all collections on the EVM network.\nThis is used to populate the NFT list in the UI\n",
+        "description": "EVM Address -> NFTs\nThis endpoint returns a list of NFTs owned by an account across all collections on the EVM network.\nThis is used to populate the NFT list in the UI\n",
         "tags": ["Flow-EVM NFT"],
         "parameters": [
           {
@@ -2848,7 +3293,7 @@
                 },
                 "example": [
                   {
-                    "address": 1.1114000254959286e19,
+                    "address": 11114000254959286000,
                     "publicKey": "b7ead20cebc8fe7e8ad825db2e7489a0ebeb37b2845ba5ce781776be30375a3708e954a53c76c88a9b8cb7e5ab43252cc013401c0e017d8f598dad74f719c593",
                     "keyIndex": 0,
                     "weight": 1000,
