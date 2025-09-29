@@ -1,5 +1,5 @@
 import { Search, Close, VerifiedToken } from '@onflow/frw-icons';
-import { type TokenModel } from '@onflow/frw-types';
+import { formatCurrencyStringForDisplay, type TokenModel } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState, useMemo } from 'react';
 import {
@@ -226,7 +226,10 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
                           text="right"
                           lineHeight="$1"
                         >
-                          {token.displayBalance || token.balance || '0'} {token.symbol}
+                          {formatCurrencyStringForDisplay({
+                            value: parseFloat(token.displayBalance || token.balance || '0'),
+                          })}{' '}
+                          {token.symbol}
                         </Text>
                       </XStack>
 

@@ -1,4 +1,11 @@
-import { SelectTokensScreen, NFTListScreen, NFTDetailScreen } from '@onflow/frw-screens';
+import {
+  SelectTokensScreen,
+  NFTListScreen,
+  NFTDetailScreen,
+  SendTokensScreen as BaseSendTokensScreen,
+  SendSummaryScreen as BaseSendSummaryScreen,
+  type ScreenAssets,
+} from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -10,14 +17,15 @@ import {
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { sendStaticImage } from '@/assets';
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-import { SendTokensScreen, SendSummaryScreen } from '@/screens/SendScreenWrappers';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
 
@@ -58,8 +66,17 @@ interface AppNavigatorProps {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// Create assets object for screens
+const screenAssets: ScreenAssets = {
+  sendStaticImage,
+};
+
+// Create wrapped screen components with assets
+const SendTokensScreen = () => <BaseSendTokensScreen assets={screenAssets} />;
+const SendSummaryScreen = () => <BaseSendSummaryScreen assets={screenAssets} />;
+
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
   // const { isDark } = useTheme();
   const navigationRef = useRef<any>(null);
@@ -201,42 +218,42 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="SelectTokens"
               component={SelectTokensScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.send'),
               }}
             />
             <Stack.Screen
               name="NFTList"
               component={NFTListScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.send'),
               }}
             />
             <Stack.Screen
               name="NFTDetail"
               component={NFTDetailScreen}
               options={{
-                headerTitle: 'NFT Details',
+                headerTitle: t('navigation.nftDetails'),
               }}
             />
             <Stack.Screen
               name="SendTo"
               component={SendToScreen}
               options={{
-                headerTitle: 'Send To',
+                headerTitle: t('navigation.sendTo'),
               }}
             />
             <Stack.Screen
               name="SendTokens"
               component={SendTokensScreen}
               options={{
-                headerTitle: 'Send Tokens',
+                headerTitle: t('navigation.sendTokens'),
               }}
             />
             <Stack.Screen
               name="SendSummary"
               component={SendSummaryScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.sending'),
               }}
             />
           </Stack.Group>

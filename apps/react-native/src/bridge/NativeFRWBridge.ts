@@ -41,6 +41,7 @@ export interface Spec extends TurboModule {
   getJWT(): Promise<string>;
   getVersion(): string;
   getBuildNumber(): string;
+  getLanguage(): string;
   // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
   sign(hexData: string): Promise<string>;
   getRecentContacts(): Promise<RecentContactsResponse>;
