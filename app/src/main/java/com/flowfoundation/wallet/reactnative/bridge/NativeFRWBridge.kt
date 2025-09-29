@@ -73,15 +73,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         try {
             val watchAddress = getWatchCollectibleAddress()
             val resultAddress = watchAddress.ifEmpty {
-              WalletManager.selectedWalletAddress()
+              null
             }
 
             android.util.Log.d(TAG, "getDebugAddress() called, watchAddress: '$watchAddress', returning: $resultAddress")
             return resultAddress
         } catch (e: Exception) {
             android.util.Log.e(TAG, "getDebugAddress() error: ${e.message}")
-            // Fallback to selected wallet address on error
-            return WalletManager.selectedWalletAddress()
+            return null
         }
     }
 
