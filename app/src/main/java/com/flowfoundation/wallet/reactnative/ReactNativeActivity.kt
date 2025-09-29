@@ -5,9 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.ReactRootView
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.flowfoundation.wallet.reactnative.bridge.QRCodeScanManager
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -104,6 +102,29 @@ class ReactNativeActivity : ReactActivity() {
         private const val TAG = "ReactNativeActivity"
 
         /**
+         * Determine the route name based on screen type and sendToConfig
+         */
+        private fun getRouteName(screenType: RNBridge.ScreenType, sendToConfig: RNBridge.SendToConfig?): String {
+            return when (screenType) {
+                RNBridge.ScreenType.SEND_ASSET -> {
+                    sendToConfig?.let { config ->
+                        when {
+                            // If both targetAddress and selectedToken exist, go to sendToken
+                            config.targetAddress != null && config.selectedToken != null -> "SendTokens"
+                            // If only selectedToken exists, go to selectAddress
+                            config.selectedToken != null -> "SendTo"
+                            // If selectedNFTs exist and not empty, go to selectAddress
+                            config.selectedNFTs != null && config.selectedNFTs.isNotEmpty() -> "SendTo"
+                            // Otherwise, go to selectAssets
+                            else -> "SelectTokens"
+                        }
+                    } ?: "SelectTokens"
+                }
+                RNBridge.ScreenType.TOKEN_DETAIL -> "Home"
+            }
+        }
+
+        /**
          * Launch the React Native Demo Activity
          */
         fun launch(context: Context) {
@@ -142,9 +163,9 @@ class ReactNativeActivity : ReactActivity() {
                 intent.putExtra("network", it)
             }
             screenType?.let {
-                // Convert screen enum to string and set both screen and initialRoute
+                // Convert screen enum to string and determine route based on screen type
                 val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
-                val routeName = if (it == RNBridge.ScreenType.SEND_ASSET) "SelectTokens" else "Home"
+                val routeName = getRouteName(it, null)
 
                 intent.putExtra("screen", screenString)
                 intent.putExtra("initialRoute", routeName)
@@ -175,9 +196,9 @@ class ReactNativeActivity : ReactActivity() {
                 intent.putExtra("network", it)
             }
 
-            // Convert screen enum to string and set both screen and initialRoute
+            // Convert screen enum to string and determine route based on screen type and config
             val screenString = if (screenType == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
-            val routeName = if (screenType == RNBridge.ScreenType.SEND_ASSET) "SelectTokens" else "Home"
+            val routeName = getRouteName(screenType, sendToConfig)
 
             intent.putExtra("screen", screenString)
             intent.putExtra("initialRoute", routeName)
@@ -186,7 +207,7 @@ class ReactNativeActivity : ReactActivity() {
             sendToConfig?.let {
                 val sendToConfigJson = Gson().toJson(it)
                 intent.putExtra("sendToConfig", sendToConfigJson)
-                Log.d(TAG, "  sendToConfig JSON: $sendToConfigJson")
+                Log.d(TAG, "sendToConfig JSON: $sendToConfigJson")
             }
 
             context.startActivity(intent)
