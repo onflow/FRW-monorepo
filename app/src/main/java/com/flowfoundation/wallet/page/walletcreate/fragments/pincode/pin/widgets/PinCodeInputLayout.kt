@@ -68,9 +68,13 @@ class PinCodeInputLayout : LinearLayout {
         child.isSelected = false
         child.backgroundTintList = unselectedColor
         if (isChecking) {
-            checkKeys.removeLast()
+            if (checkKeys.isNotEmpty()) {
+                checkKeys.removeAt(checkKeys.lastIndex)
+            }
         } else {
-            keys.removeLast()
+            if (keys.isNotEmpty()) {
+                keys.removeAt(keys.lastIndex)
+            }
         }
     }
 
