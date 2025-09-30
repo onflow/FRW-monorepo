@@ -47,6 +47,7 @@ export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationDrawer';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
 export * from './components/InfoDialog';
 export * from './components/MultipleNFTsPreview';
