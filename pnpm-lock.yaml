@@ -261,6 +261,9 @@ importers:
       loglevel:
         specifier: ^1.9.2
         version: 1.9.2
+      lottie-react-native:
+        specifier: ^7.3.4
+        version: 7.3.4(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
       lru-cache:
         specifier: ^11.1.0
         version: 11.2.1

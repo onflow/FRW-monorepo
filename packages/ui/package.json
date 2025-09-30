@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "build:watch": "tsup --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",
     "storybook": "storybook dev -p 6006",
@@ -46,7 +47,8 @@
   },
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "lottie-react-native": "^6.0.0"
   },
   "peerDependenciesMeta": {
     "react-native": {
@@ -54,6 +56,9 @@
     },
     "@tamagui/animations-react-native": {
       "optional": true
+    },
+    "lottie-react-native": {
+      "optional": false
     }
   },
   "files": [
