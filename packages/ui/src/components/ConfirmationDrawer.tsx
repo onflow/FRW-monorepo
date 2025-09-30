@@ -1,13 +1,14 @@
 import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image as RNImage } from 'react-native';
 import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
+import { PriceBreakdown } from './Surge/PriceBreakdown';
 import { SurgeFeeConfirmationSection } from './Surge/SurgeFeeConfirmationSection';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
@@ -17,6 +18,7 @@ export interface TransactionFormData {
   fiatAmount: string;
   isTokenMode: boolean;
   transactionFee?: string;
+  surgeMultiplier?: number;
 }
 
 export interface ConfirmationDrawerProps {
@@ -151,6 +153,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
+  const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
 
   // Theme-aware button colors using helper function
   const isCurrentlyDarkMode = isDarkMode(theme);
@@ -398,7 +401,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 </View>
               </XStack>
 
-
               <XStack justify="flex-start" width="100%">
                 <Text fontSize="$3" color="$textSecondary" fontWeight="400">
                   ${formData.fiatAmount || '0.69'}
@@ -407,9 +409,11 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
           )}
 
-<SurgeFeeConfirmationSection
-                transactionFee={formData.transactionFee || '- 5.00'}
-              />
+          <SurgeFeeConfirmationSection
+            transactionFee={formData.transactionFee || '- 5.00'}
+            surgeMultiplier={formData.surgeMultiplier || 1}
+            onPriceBreakdownPress={() => setIsPriceBreakdownOpen(true)}
+          />
 
           {/* Confirm Button */}
           <YStack
@@ -447,6 +451,17 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           </YStack>
         </YStack>
       </Sheet.Frame>
+
+      {/* Price Breakdown Modal */}
+      <PriceBreakdown
+        isOpen={isPriceBreakdownOpen}
+        onClose={() => setIsPriceBreakdownOpen(false)}
+        transactionFee={formData.transactionFee || '- 5.00'}
+        surgeRate={`${Number(formData.surgeMultiplier || 1)
+          .toFixed(2)
+          .replace(/\.?0+$/, '')}X standard rate`}
+        finalFee={formData.transactionFee || '- 5.00'}
+      />
     </Sheet>
   );
 };

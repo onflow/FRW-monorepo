@@ -1,23 +1,25 @@
 import { FlowLogo, SurgeIcon, InfoIcon } from '@onflow/frw-icons';
-import React, { useState } from 'react';
+import React from 'react';
 import { YStack, XStack, Button, useTheme } from 'tamagui';
 
-import { PriceBreakdown } from './PriceBreakdown';
 import { Text } from '../../foundation/Text';
 
 export interface SurgeFeeConfirmationSectionProps {
   transactionFee?: string;
   className?: string;
   onSurgeInfoPress?: () => void;
+  surgeMultiplier?: number;
+  onPriceBreakdownPress?: () => void;
 }
 
 export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionProps> = ({
   transactionFee = '- 5.00',
   className,
   onSurgeInfoPress,
+  surgeMultiplier = 1,
+  onPriceBreakdownPress,
 }) => {
   const theme = useTheme();
-  const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
 
   // Theme-aware colors
   const warningIconColor = theme.warning?.val || '#FDB022';
@@ -35,11 +37,23 @@ export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionPr
         {/* Fee Info */}
         <YStack gap="$1" flex={1}>
           <XStack justify="space-between" items="center" width="100%">
-            <Text fontSize={14} fontWeight="400" color="$white" lineHeight={18} letterSpacing={-0.084}>
+            <Text
+              fontSize={14}
+              fontWeight="400"
+              color="$white"
+              lineHeight={18}
+              letterSpacing={-0.084}
+            >
               Your transaction fee
             </Text>
             <XStack items="center" gap="$1.5">
-              <Text fontSize={14} fontWeight="500" color="$white" lineHeight={20} letterSpacing={-0.084}>
+              <Text
+                fontSize={14}
+                fontWeight="500"
+                color="$white"
+                lineHeight={20}
+                letterSpacing={-0.084}
+              >
                 {transactionFee}
               </Text>
               <FlowLogo size={18} theme="multicolor" />
@@ -56,7 +70,13 @@ export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionPr
         {/* Warning Content */}
         <YStack flex={1} gap="$2.5">
           <XStack justify="space-between" items="center" width="100%">
-            <Text fontSize={14} fontWeight="600" color="$warning" lineHeight={17} letterSpacing={-0.084}>
+            <Text
+              fontSize={14}
+              fontWeight="600"
+              color="$warning"
+              lineHeight={17}
+              letterSpacing={-0.084}
+            >
               Surge price active
             </Text>
             <XStack items="center" gap="$0.5">
@@ -75,7 +95,7 @@ export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionPr
                 bg="transparent"
                 borderWidth={0}
                 p={0}
-                onPress={onSurgeInfoPress || (() => setIsPriceBreakdownOpen(true))}
+                onPress={onSurgeInfoPress || onPriceBreakdownPress}
                 icon={<InfoIcon size={15} color="rgba(255, 255, 255, 0.7)" />}
                 chromeless
               />
@@ -86,17 +106,12 @@ export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionPr
 
       {/* Descriptive Warning Message */}
       <Text fontSize={14} fontWeight="400" color="$warning" lineHeight={17} letterSpacing={-0.084}>
-        Due to high network activity, transaction fees are elevated. Current network fees are 4× higher than usual and your free allowance will not cover the fee for this transaction.
+        Due to high network activity, transaction fees are elevated. Current network fees are{' '}
+        {Number(surgeMultiplier)
+          .toFixed(2)
+          .replace(/\.?0+$/, '')}
+        × higher than usual and your free allowance will not cover the fee for this transaction.
       </Text>
-
-      {/* Price Breakdown Modal */}
-      <PriceBreakdown
-        isOpen={isPriceBreakdownOpen}
-        onClose={() => setIsPriceBreakdownOpen(false)}
-        transactionFee={transactionFee}
-        surgeRate="4X standard rate"
-        finalFee={transactionFee}
-      />
     </YStack>
   );
 };
