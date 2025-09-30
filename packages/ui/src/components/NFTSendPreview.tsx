@@ -1,25 +1,15 @@
 import { Edit } from '@onflow/frw-icons';
+import type { NFTModel } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { YStack, XStack, Image, View } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
-export interface NFTSendData {
-  id: string;
-  name: string;
-  image?: string;
-  thumbnail?: string;
-  collection: string;
-  collectionContractName?: string;
-  description?: string;
-  type?: 'evm' | 'flow'; // determines if EVM badge should show
-  contractType?: string; // 'ERC721' | 'ERC1155'
-  amount?: number; // Total amount for ERC1155
-  selectedQuantity?: number; // Selected quantity for ERC1155 sending
-}
-
 export interface NFTSendPreviewProps {
-  nft: NFTSendData;
+  nft: NFTModel & {
+    selectedQuantity?: number; // Selected quantity for ERC1155 sending
+    collection?: string; // Add for backward compatibility
+  };
   onEditPress?: () => void;
   showEditButton?: boolean;
   sectionTitle?: string;
@@ -42,7 +32,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   const [imageError, setImageError] = useState(false);
 
   // Get the best available image URL
-  const imageUrl = nft.image || nft.thumbnail;
+  const imageUrl = nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
   return (
@@ -113,11 +103,11 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {nft.collection}
+              {nft.collection || nft.collectionName || ''}
             </Text>
 
             {/* EVM Badge - Only show for EVM NFTs */}
-            {nft.type === 'evm' && (
+            {(nft.type === 'evm' || nft.evmAddress) && (
               <XStack
                 bg="$accentEVM"
                 rounded="$4"
@@ -152,9 +142,9 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
           </Text>
 
           {/* ERC1155 Total Amount */}
-          {nft.contractType === 'ERC1155' && nft.amount && nft.amount > 0 && (
+          {nft.contractType === 'ERC1155' && nft.amount && Number(nft.amount) > 0 && (
             <Text fontSize={12} fontWeight="400" color="$color" opacity={0.6} numberOfLines={1}>
-              ({nft.amount.toLocaleString()} Tokens)
+              ({Number(nft.amount).toLocaleString()} Tokens)
             </Text>
           )}
         </YStack>

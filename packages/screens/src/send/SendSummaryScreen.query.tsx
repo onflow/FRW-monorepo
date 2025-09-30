@@ -7,7 +7,7 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
-import { Platform } from '@onflow/frw-types';
+import { Platform, type NFTModel } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -25,7 +25,6 @@ import {
   Text,
   ExtensionHeader,
   Separator,
-  type NFTSendData,
   type TransactionFormData,
   XStack,
   ERC1155QuantitySelector,
@@ -141,32 +140,38 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   }, []);
 
   // Transform NFT data for UI
-  const nftForUI: NFTSendData = useMemo(
-    () => ({
-      id: selectedNFT?.id || '',
-      name: selectedNFT?.name || t('nft.untitled'),
-      image: selectedNFT ? getNFTCover(selectedNFT) : '',
-      collection: selectedNFT?.collectionName || t('nft.unknownCollection'),
-      collectionContractName: selectedNFT?.collectionContractName,
-      description: selectedNFT?.description || '',
-      type: selectedNFT?.type,
-      contractType: selectedNFT?.contractType,
-      amount: maxQuantity,
-    }),
+  const nftForUI: NFTModel & { selectedQuantity?: number; collection?: string } = useMemo(
+    () =>
+      ({
+        ...selectedNFT,
+        id: selectedNFT?.id || '',
+        name: selectedNFT?.name || t('nft.untitled'),
+        thumbnail: selectedNFT ? getNFTCover(selectedNFT) : '',
+        collection: selectedNFT?.collectionName || t('nft.unknownCollection'),
+        collectionContractName: selectedNFT?.collectionContractName,
+        description: selectedNFT?.description || '',
+        type: selectedNFT?.type || 'flow',
+        contractType: selectedNFT?.contractType,
+        amount: maxQuantity.toString(),
+      }) as NFTModel & { selectedQuantity?: number; collection?: string },
     [selectedNFT, maxQuantity]
   );
 
-  const nftsForUI: NFTSendData[] = useMemo(
+  const nftsForUI: (NFTModel & { selectedQuantity?: number; collection?: string })[] = useMemo(
     () =>
-      selectedNFTs?.map((nft) => ({
-        id: nft.id || '',
-        name: nft.name || t('nft.untitled'),
-        image: getNFTCover(nft),
-        collection: nft.collectionName || t('nft.unknownCollection'),
-        collectionContractName: nft.collectionContractName,
-        description: nft.description || '',
-        type: nft.type,
-      })) || [],
+      selectedNFTs?.map(
+        (nft) =>
+          ({
+            ...nft,
+            id: nft.id || '',
+            name: nft.name || t('nft.untitled'),
+            thumbnail: getNFTCover(nft),
+            collection: nft.collectionName || t('nft.unknownCollection'),
+            collectionContractName: nft.collectionContractName,
+            description: nft.description || '',
+            type: nft.type || 'flow',
+          }) as NFTModel & { selectedQuantity?: number; collection?: string }
+      ) || [],
     [selectedNFTs]
   );
 

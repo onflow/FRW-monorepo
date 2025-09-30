@@ -1,13 +1,16 @@
 import { ChevronDown, ChevronUp, Trash, Edit } from '@onflow/frw-icons';
+import type { NFTModel } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View, useTheme } from 'tamagui';
 
-import { type NFTSendData } from './NFTSendPreview';
 import { Text } from '../foundation/Text';
 
 export interface MultipleNFTsPreviewProps {
-  nfts: NFTSendData[];
+  nfts: (NFTModel & {
+    selectedQuantity?: number;
+    collection?: string;
+  })[];
   onRemoveNFT?: (nftId: string) => void;
   onEditPress?: () => void;
   showEditButton?: boolean;
@@ -24,7 +27,10 @@ export interface MultipleNFTsPreviewProps {
 }
 
 interface NFTThumbnailProps {
-  nft: NFTSendData;
+  nft: NFTModel & {
+    selectedQuantity?: number;
+    collection?: string;
+  };
   size: number;
   showOverlay?: boolean;
   overlayText?: string;
@@ -37,7 +43,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
   overlayText,
 }) => {
   const [imageError, setImageError] = useState(false);
-  const imageUrl = nft.image || nft.thumbnail;
+  const imageUrl = nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
   // Theme-aware placeholder background
@@ -83,7 +89,10 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
 };
 
 interface ExpandedNFTItemProps {
-  nft: NFTSendData;
+  nft: NFTModel & {
+    selectedQuantity?: number;
+    collection?: string;
+  };
   onRemove?: (nftId: string) => void;
   unnamedNFTText?: string;
   unknownCollectionText?: string;
@@ -96,7 +105,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
   unknownCollectionText = 'Unknown Collection',
 }) => {
   const [imageError, setImageError] = useState(false);
-  const imageUrl = nft.image || nft.thumbnail;
+  const imageUrl = nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
   // Theme-aware placeholder background
@@ -136,7 +145,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
           {nft.name || unnamedNFTText}
         </Text>
         <Text fontSize={14} fontWeight="400" color="$color" numberOfLines={1}>
-          {nft.collection || unknownCollectionText}
+          {nft.collection || nft.collectionName || unknownCollectionText}
         </Text>
       </YStack>
 
