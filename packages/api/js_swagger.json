@@ -1432,7 +1432,7 @@
             "description": "timestamp"
           },
           "maxFee": {
-            "type": "integer",
+            "type": "number",
             "description": "max fee with surge factor"
           }
         },
