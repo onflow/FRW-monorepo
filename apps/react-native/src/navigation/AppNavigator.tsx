@@ -1,3 +1,4 @@
+import { logger } from '@onflow/frw-context';
 import {
   NFTDetailScreen,
   NFTListScreen,
@@ -87,29 +88,47 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   // Initialize SendTo flow if requested
   useEffect(() => {
     if (initialProps?.screen === 'send-asset') {
-      const sendToConfig = initialProps?.sendToConfig;
-      if (!sendToConfig) {
+      const sendToConfigJson = initialProps?.sendToConfig;
+      if (!sendToConfigJson) {
         return;
       }
       try {
+        const sendToConfig = JSON.parse(sendToConfigJson);
+        logger.debug('SendTo flow initialization started', { sendToConfig });
+
         if (sendToConfig.fromAccount) {
+          logger.debug('Processing fromAccount config', { fromAccount: sendToConfig.fromAccount });
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
           setFromAccount(walletAccount);
+          logger.debug('FromAccount set successfully', { walletAccount });
         }
+
         if (sendToConfig.selectedToken) {
+          logger.debug('Processing selectedToken config', {
+            selectedToken: sendToConfig.selectedToken,
+          });
           // Convert to TokenInfo type
           const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
           setCurrentStep('send-to');
+          logger.debug('SelectedToken set and step updated to send-to', { tokenInfo });
         }
 
         if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
+          logger.debug('Processing selectedNFTs config', {
+            selectedNFTs: sendToConfig.selectedNFTs,
+            count: sendToConfig.selectedNFTs.length,
+          });
           // Set selected NFTs if provided
           const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
           setSelectedNFTs(nftModels);
+          logger.debug('SelectedNFTs set successfully', { nftModels });
         }
 
         if (sendToConfig.targetAddress) {
+          logger.debug('Processing targetAddress config', {
+            targetAddress: sendToConfig.targetAddress,
+          });
           const walletAccount = createWalletAccountFromConfig({
             address: sendToConfig.targetAddress,
             name: sendToConfig.targetAddress,
@@ -118,15 +137,26 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setToAccount(walletAccount);
           setTransactionType('tokens');
           setCurrentStep('send-tokens');
+          logger.debug(
+            'TargetAddress processed, transaction type set to tokens and step updated to send-tokens',
+            { walletAccount }
+          );
         } else if (sendToConfig.selectedNFTs && sendToConfig.selectedNFTs.length >= 1) {
           // Use single navigation for both single and multiple NFTs - the screen will handle the logic
-          setTransactionType(
-            sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts'
-          );
+          const transactionType =
+            sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts';
+          logger.debug('Setting NFT transaction type based on count', {
+            nftCount: sendToConfig.selectedNFTs.length,
+            transactionType,
+          });
+          setTransactionType(transactionType);
           setCurrentStep('send-to');
+          logger.debug('NFT transaction flow configured and step updated to send-to');
         }
+
+        logger.debug('SendTo flow initialization completed successfully');
       } catch (error) {
-        //  console.error('Failed to initialize SendTo flow:', error);
+        logger.error('Failed to initialize SendTo flow', { error, sendToConfigJson });
       }
     }
   }, [
