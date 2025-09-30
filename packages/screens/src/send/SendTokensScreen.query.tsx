@@ -560,7 +560,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
-                isSenTokenScreen={!isExtension}
+                isSendTokensScreen={!isExtension}
                 account={transformAccountForCard(fromAccount)}
                 title={t('send.fromAccount')}
                 isLoading={isBalanceLoading}
