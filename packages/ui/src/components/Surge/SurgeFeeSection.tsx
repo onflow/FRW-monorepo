@@ -1,7 +1,7 @@
 import { FlowLogo, SurgeIcon, InfoIcon } from '@onflow/frw-icons';
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, Separator, Button, useTheme } from 'tamagui';
+import { YStack, XStack, Button, useTheme } from 'tamagui';
 
 import { SurgeInfo } from './SurgeInfo';
 import { SurgeWarning } from './SurgeWarning';
@@ -106,7 +106,7 @@ export const SurgeFeeSection: React.FC<SurgeFeeSectionProps> = ({
         </YStack>
 
         {/* Separator Line */}
-        <Separator background="$light10" />
+        {/* <Separator background="$light10" /> */}
 
         {/* Free Transaction Allowance Section */}
         {/* <YStack gap="$3" width="100%">

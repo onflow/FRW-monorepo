@@ -77,8 +77,6 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
   buttonText = 'Okay',
   onClose,
   onButtonPress,
-  className,
-  surgeMultiplier,
 }) => {
   const theme = useTheme();
   const isCurrentlyDarkMode = isDarkMode(theme);

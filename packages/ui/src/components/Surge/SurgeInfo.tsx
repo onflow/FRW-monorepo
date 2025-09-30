@@ -90,77 +90,56 @@ export const SurgeInfo: React.FC<SurgeInfoProps> = ({
               justify="space-between"
               items="center"
               alignSelf="stretch"
-              gap="$11"
               p="$4"
               py="$4"
               borderBottomWidth={1}
               borderBottomColor="rgba(255, 255, 255, 0.1)"
             >
-              <XStack items="center" gap="$3" width={306}>
-                <XStack items="center" gap="$3.5" width={282}>
-                  <XStack justify="flex-end" items="center" gap="$1.25">
-                    <Text
-                      fontSize={14}
-                      fontWeight="400"
-                      color="rgba(255, 255, 255, 0.8)"
-                      lineHeight={20}
-                      letterSpacing={0.28}
-                    >
-                      Transaction fee
-                    </Text>
-                  </XStack>
-                </XStack>
-              </XStack>
-              <XStack items="center" gap="$1.25">
-                <Text
-                  fontSize={14}
-                  fontWeight="500"
-                  color="rgba(255, 255, 255, 0.4)"
-                  lineHeight={20}
-                  letterSpacing={0.28}
-                  textAlign="right"
-                >
-                  {transactionFee}
-                </Text>
-              </XStack>
+              <Text
+                fontSize={14}
+                fontWeight="400"
+                color="rgba(255, 255, 255, 0.8)"
+                lineHeight={20}
+                letterSpacing={0.28}
+              >
+                Transaction fee
+              </Text>
+              <Text
+                fontSize={14}
+                fontWeight="500"
+                color="rgba(255, 255, 255, 0.4)"
+                lineHeight={20}
+                letterSpacing={0.28}
+                textAlign="right"
+              >
+                {transactionFee}
+              </Text>
             </XStack>
 
             {/* Surge Rate Row */}
-            <XStack
-              justify="space-between"
-              items="center"
-              alignSelf="stretch"
-              gap="$11"
-              p="$4"
-              py="$4"
-            >
-              <XStack items="center" gap="$3">
-                <XStack items="center" gap="$3.5">
-                  <XStack justify="flex-end" items="center" gap="$1.25">
-                    <Text
-                      fontSize={14}
-                      fontWeight="400"
-                      color="rgba(255, 255, 255, 0.8)"
-                      lineHeight={20}
-                      letterSpacing={0.28}
-                    >
-                      Surge rate
-                    </Text>
-                  </XStack>
-                </XStack>
-              </XStack>
-              <XStack items="center" gap="$1.25">
-                <Text
-                  fontSize={14}
-                  fontWeight="500"
-                  color="rgba(255, 255, 255, 0.4)"
-                  lineHeight={20}
-                  letterSpacing={0.28}
-                  textAlign="right"
-                >
-                  {surgeMultiplier}X standard rate
-                </Text>
-              </XStack>
+            <XStack justify="space-between" items="center" alignSelf="stretch" p="$4" py="$4">
+              <Text
+                fontSize={14}
+                fontWeight="400"
+                color="rgba(255, 255, 255, 0.8)"
+                lineHeight={20}
+                letterSpacing={0.28}
+              >
+                Surge rate
+              </Text>
+              <Text
+                fontSize={14}
+                fontWeight="500"
+                color="rgba(255, 255, 255, 0.4)"
+                lineHeight={20}
+                letterSpacing={0.28}
+                textAlign="right"
+              >
+                {Number(surgeMultiplier)
+                  .toFixed(2)
+                  .replace(/\.?0+$/, '')}
+                X standard rate
+              </Text>
             </XStack>
           </YStack>
 
