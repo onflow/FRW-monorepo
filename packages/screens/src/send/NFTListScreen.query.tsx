@@ -480,6 +480,16 @@ export function NFTListScreen(): React.ReactElement {
           onNFTPress={handleNFTDetail}
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
+          selectedCountText={t('nft.selectedCount', { count: selectedNFTsForBar.length })}
+          confirmText={(() => {
+            const totalQuantity = selectedNFTsForBar.reduce((total, nft) => {
+              if (nft.contractType === 'ERC1155') {
+                return total + (nftQuantities[nft.id] || 1);
+              }
+              return total + 1;
+            }, 0);
+            return t('nft.confirmSelection', { count: totalQuantity });
+          })()}
           isEditing={false}
           onQuantityChange={handleQuantityChange}
         />

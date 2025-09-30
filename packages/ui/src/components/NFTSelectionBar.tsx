@@ -45,6 +45,16 @@ export function NFTSelectionBar({
     setIsExpanded(!isExpanded);
   };
 
+  // Calculate total quantity including ERC1155 quantities
+  const getTotalQuantity = () => {
+    return selectedNFTs.reduce((total, nft) => {
+      if (nft.contractType === 'ERC1155') {
+        return total + (quantities[nft.id] || 1);
+      }
+      return total + 1;
+    }, 0);
+  };
+
   const renderNFTItem = (nft: NFTData) => {
     const isERC1155 = nft.contractType === 'ERC1155';
     const nftQuantity = quantities[nft.id] || 1;
@@ -211,7 +221,10 @@ export function NFTSelectionBar({
               color={isCurrentlyDarkMode ? '#000000' : '#FFFFFF'}
             >
               {confirmText ||
-                `Confirm ${selectedNFTs.length} NFT${selectedNFTs.length === 1 ? '' : 's'}`}
+                (() => {
+                  const totalQuantity = getTotalQuantity();
+                  return `Confirm ${totalQuantity} NFT${totalQuantity === 1 ? '' : 's'}`;
+                })()}
             </Text>
           </YStack>
         )}
