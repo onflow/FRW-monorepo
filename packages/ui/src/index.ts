@@ -15,12 +15,14 @@ export {
   View,
   XStack,
   YStack,
+  useTheme,
 } from 'tamagui';
 
 // Export our custom UI foundation components
 // These are enhanced versions with custom variants and better design system integration
 export * from './foundation/Avatar';
 export * from './foundation/Button';
+export * from './foundation/IconButton';
 export * from './foundation/Card';
 export * from './foundation/Divider';
 export * from './foundation/Input';
@@ -34,6 +36,9 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
+// Assets and types
+export type { ScreenAssets } from './assets/images';
+
 export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';
 export * from './components/AddressText';
@@ -77,10 +82,10 @@ export * from './components/StorageWarning';
 export * from './components/ErrorDialog';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ExtensionHeader';
+export * from './components/Toast';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
-export * from './components/LottieAnimation';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';

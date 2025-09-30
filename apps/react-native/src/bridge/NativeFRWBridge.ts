@@ -1,9 +1,9 @@
 import type {
   RecentContactsResponse,
+  Currency as SharedCurrency,
   EnvironmentVariables as SharedEnvironmentVariables,
   WalletAccount,
   WalletAccountsResponse,
-  Currency as SharedCurrency,
   WalletProfilesResponse,
 } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
@@ -36,10 +36,12 @@ const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
+  getDebugAddress(): string | null;
   getNetwork(): string;
   getJWT(): Promise<string>;
   getVersion(): string;
   getBuildNumber(): string;
+  getLanguage(): string;
   // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
   sign(hexData: string): Promise<string>;
   getRecentContacts(): Promise<RecentContactsResponse>;
@@ -61,6 +63,15 @@ export interface Spec extends TurboModule {
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
+  // Toast methods
+  showToast(
+    title: string,
+    message?: string,
+    type?: 'success' | 'error' | 'warning' | 'info',
+    duration?: number
+  ): void;
+  hideToast(id: string): void;
+  clearAllToasts(): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

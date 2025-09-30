@@ -4,6 +4,8 @@
     "sendTo": "发送至",
     "sending": "发送中",
     "selectTokens": "选择代币",
+    "sendTokens": "发送代币",
+    "nftDetails": "NFT详情",
     "colorDemo": "颜色演示"
   },
   "common": {
@@ -24,12 +26,15 @@
     "nfts": "NFT"
   },
   "send": {
+    "tokens": "代币",
+    "nfts": "NFT",
     "myAccounts": "我的账户",
     "recent": "最近",
     "addressBook": "地址簿",
     "sendTo": {
       "title": "发送至"
     },
+    "toAccount": "至账户",
     "searchAddress": "搜索地址或联系人...",
     "searchPasteAddress": "搜索/ 粘贴地址",
     "selectedToken": "已选代币",
@@ -61,6 +66,7 @@
     "insufficient": "余额不足",
     "recipient": "收件人",
     "from": "从",
+    "fromAccount": "从账户",
     "to": "至",
     "amount": "金额",
     "asset": "资产",
@@ -85,12 +91,26 @@
     "title": "发送",
     "inaccessible": "不可访问",
     "confirmAddress": "确认地址",
-    "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。"
+    "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。",
+    "sendSNFTs": "发送S/NFT",
+    "sendNFTs": "发送NFT",
+    "change": "更改",
+    "noNFTSelected": "未选择NFT。请返回并选择要发送的NFT。",
+    "summary": "摘要",
+    "sendTokens": "发送代币",
+    "confirmSend": "确认发送",
+    "holdToSend": "长按发送",
+    "unknownAccount": "未知账户"
   },
   "messages": {
     "loading": "加载中...",
     "noTokensWithBalance": "无余额代币",
-    "noNFTCollectionsForAccount": "未找到NFT收藏"
+    "noNFTCollectionsForAccount": "未找到NFT收藏",
+    "loadingProfiles": "加载配置文件中...",
+    "noProfiles": "无配置文件",
+    "noProfilesFound": "未找到配置文件",
+    "failedToLoadRecipients": "无法加载收件人",
+    "copied": "已复制！"
   },
   "buttons": {
     "retry": "重试",
@@ -110,9 +130,14 @@
     "timeout": "请求超时",
     "unknown": "发生未知错误",
     "failedToLoadTokens": "加载代币失败",
-    "failedToLoadNFTs": "加载NFT失败"
+    "failedToLoadNFTs": "加载NFT失败",
+    "transactionPayloadError": "创建交易载荷失败",
+    "transactionExecutionError": "交易执行失败"
   },
   "nft": {
+    "untitled": "无标题",
+    "unknownCollection": "未知收藏",
+    "noNFTsSelected": "未选择NFT",
     "noSearchResults": "无搜索结果",
     "noNFTsMatchSearch": "没有NFT与'{{search}}'匹配",
     "noNFTsFound": "未找到NFT",

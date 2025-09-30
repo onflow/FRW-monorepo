@@ -4,6 +4,8 @@
     "sendTo": "Enviar a",
     "sending": "Enviando",
     "selectTokens": "Seleccionar Tokens",
+    "sendTokens": "Enviar Tokens",
+    "nftDetails": "Detalles NFT",
     "colorDemo": "Demo de Colores"
   },
   "common": {
@@ -24,12 +26,15 @@
     "nfts": "NFTs"
   },
   "send": {
+    "tokens": "Tokens",
+    "nfts": "NFTs",
     "myAccounts": "Mis Cuentas",
     "recent": "Reciente",
     "addressBook": "Libreta de Direcciones",
     "sendTo": {
       "title": "Enviar a"
     },
+    "toAccount": "A Cuenta",
     "searchAddress": "Buscar dirección o contacto...",
     "searchPasteAddress": "Buscar/ Pegar dirección",
     "selectedToken": "Token Seleccionado",
@@ -61,6 +66,7 @@
     "insufficient": "Saldo Insuficiente",
     "recipient": "Destinatario",
     "from": "De",
+    "fromAccount": "De Cuenta",
     "to": "Para",
     "amount": "Cantidad",
     "asset": "Activo",
@@ -85,12 +91,26 @@
     "title": "Enviar",
     "inaccessible": "Inaccesible",
     "confirmAddress": "Confirmar dirección",
-    "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino."
+    "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino.",
+    "sendSNFTs": "Enviar S/NFTs",
+    "sendNFTs": "Enviar NFTs",
+    "change": "Cambiar",
+    "noNFTSelected": "No se seleccionó NFT. Por favor regresa y selecciona un NFT para enviar.",
+    "summary": "Resumen",
+    "sendTokens": "Enviar Tokens",
+    "confirmSend": "Confirmar envío",
+    "holdToSend": "Mantener para enviar",
+    "unknownAccount": "Cuenta Desconocida"
   },
   "messages": {
     "loading": "Cargando...",
     "noTokensWithBalance": "No hay tokens con saldo",
-    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT"
+    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT",
+    "loadingProfiles": "Cargando perfiles...",
+    "noProfiles": "Sin Perfiles",
+    "noProfilesFound": "No se encontraron perfiles",
+    "failedToLoadRecipients": "Error al cargar destinatarios",
+    "copied": "¡Copiado!"
   },
   "buttons": {
     "retry": "Reintentar",
@@ -110,9 +130,14 @@
     "timeout": "Tiempo de espera agotado",
     "unknown": "Ocurrió un error desconocido",
     "failedToLoadTokens": "Error al cargar tokens",
-    "failedToLoadNFTs": "Error al cargar NFTs"
+    "failedToLoadNFTs": "Error al cargar NFTs",
+    "transactionPayloadError": "Error al crear la carga de la transacción",
+    "transactionExecutionError": "Error en la ejecución de la transacción"
   },
   "nft": {
+    "untitled": "Sin título",
+    "unknownCollection": "Colección desconocida",
+    "noNFTsSelected": "No se seleccionaron NFTs",
     "noSearchResults": "Sin Resultados de Búsqueda",
     "noNFTsMatchSearch": "Ningún NFT coincide con '{{search}}'",
     "noNFTsFound": "No se Encontraron NFTs",

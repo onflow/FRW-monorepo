@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@onflow/frw-context": "workspace:*",
+    "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-screens": "workspace:^",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
@@ -40,7 +41,7 @@
     "immer": "^10.1.1",
     "instabug-reactnative": "^15.0.1",
     "ios": "^0.0.1",
-    "lottie-react-native": "^7.3.2",
+    "lottie-react-native": "^7.3.4",
     "react": "workspace:*",
     "react-i18next": "^15.6.1",
     "react-native": "workspace:*",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, YStack, XStack, Text, Separator } from 'tamagui';
+import { ScrollView, YStack, XStack, Text, useThemeName } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 import { RefreshView } from './RefreshView';
@@ -30,11 +30,13 @@ export interface RecipientListProps {
   // Error states
   error?: string;
   retryButtonText?: string;
+  errorDefaultMessage?: string;
 
   // Callbacks
   onItemPress?: (item: RecipientData) => void;
   onItemEdit?: (item: RecipientData) => void;
   onItemCopy?: (item: RecipientData) => void;
+  onItemAddToAddressBook?: (item: RecipientData) => void;
   onRefresh?: () => void;
   onRetry?: () => void;
 
@@ -43,6 +45,7 @@ export interface RecipientListProps {
   showSectionHeaders?: boolean;
   itemSpacing?: number;
   sectionSpacing?: number;
+  isMobile?: boolean;
 
   // Style
   contentPadding?: number;
@@ -57,17 +60,26 @@ export function RecipientList({
   emptyMessage,
   error,
   retryButtonText = 'Retry',
+  errorDefaultMessage = 'Failed to load recipients',
   onItemPress,
   onItemEdit,
   onItemCopy,
+  onItemAddToAddressBook,
   onRefresh,
   onRetry,
   showSeparators = true,
   showSectionHeaders = true,
   itemSpacing = 8,
   sectionSpacing = 16,
+  isMobile = false,
   contentPadding = 16,
 }: RecipientListProps) {
+  const themeName = useThemeName();
+
+  // Use Tamagui's built-in theme detection
+  const isDarkMode = themeName?.includes('dark') || false;
+  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
   // Normalize data - either use sections or create a single section from data
   const normalizedSections = sections || (data ? [{ data }] : []);
 
@@ -93,15 +105,13 @@ export function RecipientList({
   );
 
   // Empty state
-  const renderEmpty = () => (
-    <RefreshView type="empty" title={emptyTitle} message={emptyMessage || 'No recipients found'} />
-  );
+  const renderEmpty = () => <RefreshView type="empty" title={emptyTitle} message={emptyMessage} />;
 
   // Error state
   const renderError = () => (
     <RefreshView
       type="error"
-      message={error || 'Failed to load recipients'}
+      message={error || errorDefaultMessage}
       onRefresh={onRetry}
       refreshText={retryButtonText}
     />
@@ -115,6 +125,8 @@ export function RecipientList({
       onPress={() => onItemPress?.(item)}
       onEdit={() => onItemEdit?.(item)}
       onCopy={() => onItemCopy?.(item)}
+      onAddToAddressBook={() => onItemAddToAddressBook?.(item)}
+      isMobile={isMobile}
     />
   );
 
@@ -131,7 +143,9 @@ export function RecipientList({
           <Text fontSize="$3" fontWeight="600" color="$textSecondary" mb="$1">
             {section.title}
           </Text>
-          {showSeparators && <Separator borderColor="rgba(255, 255, 255, 0.1)" />}
+          {showSeparators && (
+            <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+          )}
         </YStack>
       )}
 
@@ -139,14 +153,8 @@ export function RecipientList({
       {section.data.map((item, itemIndex) => (
         <YStack key={item.id}>
           {renderItem(item)}
-          {showSeparators && itemIndex < section.data.length - 1 && (
-            <Separator
-              my={6.5}
-              mx={0}
-              width={336}
-              borderColor="rgba(255, 255, 255, 0.1)"
-              borderWidth={1}
-            />
+          {showSeparators && (
+            <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
           )}
         </YStack>
       ))}

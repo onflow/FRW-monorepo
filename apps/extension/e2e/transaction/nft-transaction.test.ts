@@ -3,7 +3,6 @@ import {
   waitForTransaction,
   loginToSenderOrReceiver,
   getReceiverEvmAccount,
-  getReceiverCadenceAccount,
   getSenderCadenceAccount,
   switchToEvmAddress,
   getSenderEvmAccount,
@@ -102,7 +101,7 @@ test('NFT to flow', async ({ page, extensionId }) => {
   const tx1 = await sendNFT({
     page,
     collectionName: 'FLOAT',
-    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_ADDR!,
     successtext: /success|Finalized|Executed|Sealed/,
   });
 

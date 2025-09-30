@@ -1,3 +1,4 @@
+import { AddressbookService } from '@onflow/frw-api';
 import { bridge, navigation } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
@@ -21,8 +22,9 @@ import {
   InfoDialog,
   Text,
   YStack,
+  useTheme,
 } from '@onflow/frw-ui';
-import { isValidEthereumAddress, isValidFlowAddress, logger } from '@onflow/frw-utils';
+import { isValidEthereumAddress, isValidFlowAddress, logger, isDarkMode } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +43,9 @@ interface TabConfig {
 export function SendToScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
 
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
@@ -52,7 +57,9 @@ export function SendToScreen(): React.ReactElement {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<RecipientTabType>('accounts');
+  // Track copied entry uniquely by name+address to avoid highlighting duplicates
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // First time send modal state
   const [showFirstTimeSendDialog, setShowFirstTimeSendDialog] = useState(false);
@@ -90,12 +97,11 @@ export function SendToScreen(): React.ReactElement {
     }
   }, [isLoadingProfiles, loadProfilesFromBridge, profileError]);
 
+  // Debug: Log profiles when they change
+  useEffect(() => {}, [allProfiles]);
+
   // Query for recent contacts with automatic caching
-  const {
-    data: recentContacts = [],
-    isLoading: isLoadingRecent,
-    error: recentError,
-  } = useQuery({
+  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
     queryFn: () => addressBookStore.fetchRecent(),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -106,6 +112,7 @@ export function SendToScreen(): React.ReactElement {
     data: allContacts = [],
     isLoading: isLoadingContacts,
     error: contactsError,
+    refetch: refetchContacts,
   } = useQuery({
     queryKey: addressBookQueryKeys.contacts(),
     queryFn: () => addressBookStore.fetchContacts(),
@@ -199,6 +206,19 @@ export function SendToScreen(): React.ReactElement {
       .filter((contact) => filterBySearchQuery(contact.name, contact.address));
   }, [allContacts, isLoadingContacts, contactsError, filterBySearchQuery]);
 
+  // Create a set of existing addresses for quick lookup
+  const existingAddresses = useMemo(() => {
+    return new Set(allContacts.map((contact: any) => contact.address?.toLowerCase()));
+  }, [allContacts]);
+
+  // Helper function to check if address already exists in address book
+  const isAddressInAddressBook = useCallback(
+    (address: string) => {
+      return existingAddresses.has(address?.toLowerCase());
+    },
+    [existingAddresses]
+  );
+
   // Convert and filter profiles data for display
   const profilesData = useMemo(() => {
     const result = allProfiles.map((profile) => ({
@@ -221,20 +241,28 @@ export function SendToScreen(): React.ReactElement {
 
   // Helper function to check if address is first-time send
   const isFirstTimeSend = useCallback(
-    async (address: string): Promise<boolean> => {
-      // Check if address is in recent recipients (await the Promise)
-      const recentService = RecentRecipientsService.getInstance();
-      const isInRecents = await recentService.isAddressInRecents(address);
-
-      // Also check if it's user's own account (case-insensitive comparison)
+    (address: string): boolean => {
       const normalizedAddress = address.toLowerCase();
+
+      // Check if it's user's own account (case-insensitive comparison)
       const isOwnAccount = allWalletAccounts.some(
         (acc) => acc.address.toLowerCase() === normalizedAddress
       );
 
-      return !isInRecents && !isOwnAccount;
+      // Check if address is in recent recipients
+      const isInRecents = recentContacts.some(
+        (contact: any) => contact.address.toLowerCase() === normalizedAddress
+      );
+
+      // Check if address is in address book
+      const isInAddressBook = allContacts.some(
+        (contact: any) => contact.address.toLowerCase() === normalizedAddress
+      );
+
+      // Return true only if it's NOT in any of the above categories
+      return !isOwnAccount && !isInRecents && !isInAddressBook;
     },
-    [allWalletAccounts]
+    [allWalletAccounts, recentContacts, allContacts]
   );
 
   // Get current recipients based on active tab
@@ -343,10 +371,9 @@ export function SendToScreen(): React.ReactElement {
       }
 
       // Navigate to appropriate screen based on transaction type
-      if (transactionType === 'single-nft') {
-        navigation.navigate('SendSingleNFT', { address: recipient.address, recipient });
-      } else if (transactionType === 'multiple-nfts') {
-        navigation.navigate('SendMultipleNFTs', { address: recipient.address, recipient });
+      if (transactionType === 'single-nft' || transactionType === 'multiple-nfts') {
+        // Use the shared SendSummary screen for both single and multiple NFTs
+        navigation.navigate('SendSummary', { address: recipient.address, recipient });
       } else {
         // Default to tokens screen
         navigation.navigate('SendTokens', { address: recipient.address, recipient });
@@ -371,8 +398,8 @@ export function SendToScreen(): React.ReactElement {
 
   const handleRecipientPress = useCallback(
     async (recipient: RecipientData) => {
-      // Check if this is a first-time send (await the Promise)
-      const shouldShowDialog = await isFirstTimeSend(recipient.address);
+      // Check if this is a first-time send
+      const shouldShowDialog = isFirstTimeSend(recipient.address);
 
       if (shouldShowDialog) {
         // Show confirmation dialog for first-time sends
@@ -415,7 +442,7 @@ export function SendToScreen(): React.ReactElement {
             // Create recipient data
             const recipient: RecipientData = {
               id: trimmedValue,
-              name: matchingAccount?.name || 'Unknown Account',
+              name: matchingAccount?.name || t('send.unknownAccount'),
               address: trimmedValue,
               avatar: matchingAccount?.emojiInfo ? undefined : matchingAccount?.avatar,
               emojiInfo: matchingAccount?.emojiInfo,
@@ -453,9 +480,8 @@ export function SendToScreen(): React.ReactElement {
     }
   }, [handleSearchChange, t]);
 
-  const handleRecipientEdit = useCallback((recipient: RecipientData) => {
+  const handleRecipientEdit = useCallback((_recipient: RecipientData) => {
     // TODO: Handle edit recipient
-    console.log('Edit recipient:', recipient);
   }, []);
 
   const handleRecipientCopy = useCallback(async (recipient: RecipientData) => {
@@ -463,26 +489,51 @@ export function SendToScreen(): React.ReactElement {
       // Check platform and use appropriate clipboard method
       const platform = bridge.getPlatform();
 
-      // Check for React Native environment (ios, android, or react-native)
-      if (platform === 'react-native' || platform === 'ios' || platform === 'android') {
-        // Use global clipboard provided by React Native wrapper
-        if ((global as any).clipboard?.setString) {
-          (global as any).clipboard.setString(recipient.address);
-          setCopiedAddress(recipient.address);
-          setTimeout(() => setCopiedAddress(null), 1000);
+      // Use RN clipboard via global injected helper when not web/extension
+      if (platform !== 'extension' && typeof window === 'undefined') {
+        const rnClipboard = (globalThis as any).clipboard;
+        if (rnClipboard?.setString) {
+          rnClipboard.setString(recipient.address);
         }
-      } else {
-        // Use web clipboard API for extension
-        if (navigator.clipboard) {
-          await navigator.clipboard.writeText(recipient.address);
-          setCopiedAddress(recipient.address);
-          setTimeout(() => setCopiedAddress(null), 1000);
-        }
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(recipient.address);
       }
+
+      // Set both string key and stable id to scope feedback precisely
+      setCopiedAddress(`${recipient.name}::${recipient.address}`);
+      setCopiedId(recipient.id);
+      setTimeout(() => {
+        setCopiedAddress(null);
+        setCopiedId(null);
+      }, 1000);
     } catch (error) {
-      console.error('Failed to copy address:', error);
+      logger.error('Failed to copy address:', error);
     }
   }, []);
+
+  const handleRecipientAddToAddressBook = useCallback(
+    async (recipient: RecipientData) => {
+      // Check if address already exists in address book
+      if (isAddressInAddressBook(recipient.address)) {
+        return;
+      }
+
+      try {
+        await AddressbookService.external({
+          contactName: recipient.name,
+          address: recipient.address,
+          domain: '', // Empty domain for external contacts
+          domainType: 0, // 0 for external contacts
+        });
+
+        // Refresh the address book data
+        refetchContacts();
+      } catch (error) {
+        logger.error('Failed to add to address book:', error);
+      }
+    },
+    [refetchContacts, isAddressInAddressBook]
+  );
 
   const getEmptyStateForTab = () => {
     // If there's a search query, show search-specific empty states
@@ -551,6 +602,8 @@ export function SendToScreen(): React.ReactElement {
             isLoading={isLoading}
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
+            loadingText={t('messages.loadingProfiles')}
+            isMobile={!isExtension}
           />
         ) : activeTab === 'contacts' ? (
           isLoading ? (
@@ -559,6 +612,8 @@ export function SendToScreen(): React.ReactElement {
               isLoading={true}
               emptyTitle={emptyState.title}
               emptyMessage={emptyState.message}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
               contentPadding={0}
             />
           ) : contactsData.length === 0 ? (
@@ -567,6 +622,8 @@ export function SendToScreen(): React.ReactElement {
               isLoading={false}
               emptyTitle={emptyState.title}
               emptyMessage={emptyState.message}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
               contentPadding={0}
             />
           ) : (
@@ -579,6 +636,8 @@ export function SendToScreen(): React.ReactElement {
               }))}
               groupByLetter={true}
               copiedAddress={copiedAddress}
+              copiedId={copiedId}
+              copiedText={t('messages.copied')}
             />
           )
         ) : (
@@ -587,9 +646,12 @@ export function SendToScreen(): React.ReactElement {
             isLoading={isLoading}
             emptyTitle={emptyState.title}
             emptyMessage={emptyState.message}
+            retryButtonText={t('buttons.retry')}
+            errorDefaultMessage={t('messages.failedToLoadRecipients')}
             onItemPress={handleRecipientPress}
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
+            onItemAddToAddressBook={handleRecipientAddToAddressBook}
             contentPadding={0}
           />
         )}
@@ -610,8 +672,8 @@ export function SendToScreen(): React.ReactElement {
             fontWeight="300"
             lineHeight={20}
             letterSpacing={-0.084}
-            ta="center"
-            color="$white"
+            textAlign="center"
+            color="$text"
             self="stretch"
           >
             {t('send.firstTimeSendMessage')}
@@ -619,7 +681,7 @@ export function SendToScreen(): React.ReactElement {
 
           {/* Address Container */}
           <YStack
-            bg="$light10"
+            bg={cardBackgroundColor}
             rounded="$2"
             py="$4"
             px="$6"
@@ -632,8 +694,8 @@ export function SendToScreen(): React.ReactElement {
               fontWeight="600"
               lineHeight={16.8}
               letterSpacing={-0.084}
-              ta="center"
-              color="$white"
+              textAlign="center"
+              color="$text"
               numberOfLines={1}
               ellipsizeMode="middle"
             >

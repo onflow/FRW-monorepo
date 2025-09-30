@@ -4,6 +4,7 @@ import { useWalletStore } from '@onflow/frw-stores';
 import { TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
+import { useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import 'react-native-get-random-values';
@@ -47,7 +48,6 @@ const App = (props: AppProps) => {
   const initializeInstabug = useCallback((appProps: AppProps) => {
     try {
       const instabugToken = platform.getInstabugToken();
-      platform.log('debug', '🚀 ~ initializeInstabug ~ instabugToken:', instabugToken);
 
       // Skip initialization if token is empty or invalid
       if (!instabugToken || instabugToken.trim() === '') {
@@ -79,8 +79,13 @@ const App = (props: AppProps) => {
     initializeApp();
   }, [initializeApp]);
 
+  const colorScheme = useColorScheme();
+
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
+    <TamaguiProvider
+      config={tamaguiConfig}
+      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+    >
       <QueryProvider>
         <QueryDebugger />
         <GestureHandlerRootView style={{ flex: 1 }}>

@@ -103,61 +103,46 @@ export function NFTCard({
       </YStack>
 
       {/* NFT Info */}
-      <XStack gap="$-0.75" flex={1} justify="space-between">
-        <YStack gap="$-0.75">
-          {/* NFT Name */}
-          <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
-            {nft.name && nft.name.length > 18
-              ? `${nft.name.slice(0, 18)}...`
-              : nft.name || 'Unnamed NFT'}
-          </Text>
+      <YStack gap="$-0.75">
+        {/* NFT Name */}
+        <Text fontSize="$4" fontWeight="600" color="$text" numberOfLines={1}>
+          {nft.name && nft.name.length > 18
+            ? `${nft.name.slice(0, 18)}...`
+            : nft.name || 'Unnamed NFT'}
+        </Text>
 
-          {/* Collection Info with Account Avatar/Emoji */}
-          {nft.collection && (
-            <XStack items="center" gap="$1">
-              {/* Account Avatar/Emoji - only show if available */}
-              {accountEmoji && (
-                <YStack
-                  width="$4"
-                  height="$4"
-                  style={{ backgroundColor: accountColor || '#f59e0b' }}
-                  rounded="$12"
-                  items="center"
-                  justify="center"
-                >
-                  <Text fontSize="$2" fontWeight="600">
-                    {accountEmoji}
-                  </Text>
-                </YStack>
-              )}
-              {accountAvatar && !accountEmoji ? (
-                <Image src={accountAvatar} width="$5" height="$5" rounded="$6" />
-              ) : (
-                ''
-              )}
-              {!accountEmoji && !accountAvatar && collectionAvatar ? (
-                <Image src={collectionAvatar} width="$5" height="$5" rounded="$6" />
-              ) : (
-                ''
-              )}
-
-              {/* From Account Name */}
-              <Text
-                fontSize="$4"
-                fontWeight="400"
-                color="$textSecondary"
-                numberOfLines={1}
-                flex={1}
+        {/* Collection Info with Account Avatar/Emoji */}
+        {nft.collection && (
+          <XStack items="center" gap="$1">
+            {/* Account Avatar/Emoji - only show if available */}
+            {accountEmoji && (
+              <YStack
+                width={16}
+                height={16}
+                bg={accountColor ? (accountColor as any) : '$warning'}
+                rounded={8}
+                items="center"
+                justify="center"
               >
-                {accountName || nft.collection}
-              </Text>
-            </XStack>
-          )}
-        </YStack>
-        <YStack verticalAlign={'center'} justify="center">
-          <ChevronRight size={24} color="rgba(255, 255, 255, 0.6)" />
-        </YStack>
-      </XStack>
+                <Text fontSize={10} fontWeight="600">
+                  {accountEmoji}
+                </Text>
+              </YStack>
+            )}
+            {accountAvatar && <Image src={accountAvatar} width="$5" height="$5" rounded="$6" />}
+
+            {/* From Account Name */}
+            <Text fontSize="$4" fontWeight="400" color="$textSecondary" numberOfLines={1} flex={1}>
+              {accountName || nft.collection}
+            </Text>
+
+            {/* Right Chevron */}
+            <YStack justify="center">
+              <ChevronRight size={24} color="#767676" />
+            </YStack>
+          </XStack>
+        )}
+      </YStack>
     </YStack>
   );
 }

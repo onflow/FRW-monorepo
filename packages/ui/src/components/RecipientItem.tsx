@@ -1,6 +1,6 @@
-import { Copy, Link } from '@onflow/frw-icons';
+import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
 import React from 'react';
-import { Card, XStack, YStack, Text } from 'tamagui';
+import { Button, Card, XStack, YStack, Text, useThemeName } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -31,10 +31,12 @@ export interface RecipientItemProps {
   // Actions
   onPress?: () => void;
   onCopy?: () => void;
+  onAddToAddressBook?: () => void;
   copiedFeedback?: string;
 
   // Styling
   pressStyle?: object;
+  isMobile?: boolean;
 }
 
 export function RecipientItem({
@@ -56,9 +58,16 @@ export function RecipientItem({
   parentEmojiInfo,
   onPress,
   onCopy,
+  onAddToAddressBook,
   copiedFeedback,
   pressStyle,
+  isMobile = false,
 }: RecipientItemProps): React.JSX.Element {
+  const themeName = useThemeName();
+
+  // Use Tamagui's built-in theme detection
+  const isDarkMode = themeName?.includes('dark') || false;
+  const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
   return (
     <Card
       bg="transparent"
@@ -73,6 +82,7 @@ export function RecipientItem({
       p={0}
       minHeight={56}
       cursor="pointer"
+      mb={isMobile && '$3'}
     >
       <XStack items="center" justify="space-between" flex={1} p={0} height={56}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
@@ -93,7 +103,17 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={emojiInfo?.color || 'rgba(255, 255, 255, 0.25)'}
+              bgColor={
+                emojiInfo?.color ||
+                (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')
+              }
+              textColor={
+                emojiInfo?.color
+                  ? undefined
+                  : isDarkMode
+                    ? 'rgba(0, 0, 0, 0.9)'
+                    : 'rgba(255, 255, 255, 0.9)'
+              }
               size={avatarSize}
             />
           </YStack>
@@ -109,9 +129,9 @@ export function RecipientItem({
               width={18}
               height={18}
               rounded={9}
-              bg="#D9D9D9"
+              bg={parentEmojiInfo?.color || '#D9D9D9'}
               borderWidth={2}
-              borderColor="rgba(10, 10, 11, 0.8)"
+              borderColor="$bg2"
               items="center"
               justify="center"
               overflow="hidden"
@@ -126,11 +146,11 @@ export function RecipientItem({
         {/* Content */}
         <YStack flex={1} gap={2} width={151.34} ml={16}>
           <XStack items="center" gap={4}>
-            {(isLinked || isEVM) && <Link size={12.8} color="rgba(255, 255, 255, 0.5)" />}
+            {(isLinked || isEVM) && <Link size={12.8} color={iconColor} theme="outline" />}
             <Text
               fontSize={14}
               fontWeight="600"
-              color="#FFFFFF"
+              color="$text"
               numberOfLines={1}
               lineHeight={16.8}
               letterSpacing={-0.084}
@@ -163,7 +183,7 @@ export function RecipientItem({
             address={address}
             fontSize={12}
             fontWeight="400"
-            color="#B3B3B3"
+            color="$textSecondary"
             lineHeight={16.8}
           />
 
@@ -185,32 +205,48 @@ export function RecipientItem({
 
         {/* Action Buttons */}
         <XStack gap="$2" items="center" position="relative">
-          {showCopyButton && onCopy && (
+          {onAddToAddressBook && (
             <Card
-              width={24}
-              height={24}
+              width="$6"
+              height="$6"
+              onPress={(e: React.BaseSyntheticEvent) => {
+                e.stopPropagation();
+                onAddToAddressBook();
+              }}
+              cursor="pointer"
+              chromeless
+              p={0}
+              pressStyle={{ opacity: 0.3 }}
+              items="center"
+              justify="center"
+            >
+              <UserRoundPlus size={24} color={iconColor} theme="outline" />
+            </Card>
+          )}
+          {showCopyButton && onCopy && (
+            <Button
+              width="$6"
+              height="$6"
               opacity={copiedFeedback ? 1 : 0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
               }}
-              cursor="pointer"
               bg="transparent"
               borderWidth={0}
               p={0}
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-            >
-              <Copy size={24} color={copiedFeedback ? '#00D964' : '#FFFFFF'} />
-            </Card>
+              icon={<Copy size={24} color={copiedFeedback ? '$primary' : iconColor} />}
+            ></Button>
           )}
           {copiedFeedback && (
             <YStack
               position="absolute"
               top={-30}
               right={0}
-              bg="#00D964"
+              bg="$primary"
               rounded={8}
               px={8}
               py={4}

@@ -4,224 +4,27 @@ on:
   schedule:
     # Run every hour at minute 0
     - cron: "0 * * * *"
-  workflow_dispatch: # Allow manual triggering
-
-env:
-  BALANCE_THRESHOLD: "5.0" # FLOW tokens
-  FLOW_MAINNET_RPC: "https://rest-mainnet.onflow.org"
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
-  monitor-balances:
+  monitor-balance:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: "22"
 
-      - name: Install dependencies
-        run: |
-          npm install -g @onflow/fcl
-          npm install axios
+      - name: Make script executable
+        run: chmod +x scripts/monitor-balance.js
 
-      - name: Monitor Account Balances
-        id: balance-check
-        run: |
-          cat > balance-monitor.js << 'EOF'
-          const { spawn } = require('child_process');
-          const axios = require('axios');
-          const fcl = require('@onflow/fcl');
-
-          // Configuration
-          const BALANCE_THRESHOLD = parseFloat(process.env.BALANCE_THRESHOLD || '5.0');
-          const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
-          const FLOW_RPC_URL = process.env.FLOW_MAINNET_RPC;
-
-          // Critical accounts to monitor
-          const CRITICAL_ACCOUNTS = [
-            {
-              name: 'Payer Account',
-              address: process.env.PAYER_ACCOUNT_ADDRESS,
-              emoji: '💳',
-              description: 'Transaction fee payments'
-            },
-            {
-              name: 'Creator Account', 
-              address: process.env.CREATOR_ACCOUNT_ADDRESS,
-              emoji: '🏭',
-              description: 'Service account operations'
-            },
-            {
-              name: 'Bridge Payer Account',
-              address: process.env.BRIDGE_PAYER_ACCOUNT_ADDRESS,
-              emoji: '🌉',
-              description: 'Cross-chain operations'
-            }
-          ];
-
-          // Flow balance query script
-          const FLOW_BALANCE_SCRIPT = `
-            access(all) fun main(address: Address): UFix64 {
-              let account = getAccount(address)
-              return account.balance
-            }
-          `;
-
-          // Convert Flow units (smallest unit to FLOW tokens)
-          function convertFlowUnits(balance) {
-            return parseFloat(balance) / 100000000; // 1 FLOW = 10^8 smallest units
-          }
-
-          // Query account balance from Flow blockchain
-          async function getAccountBalance(address) {
-            try {
-            
-              const response = await fcl.query({
-                cadence: FLOW_BALANCE_SCRIPT,   
-                args: (arg, t) => [arg(address, t.Address)],
-                limit: 1000
-              });
-
-              if (response) {
-                return convertFlowUnits(response);
-              }
-              throw new Error('Invalid response format');
-            } catch (error) {
-              console.error(`Failed to get balance for ${address}:`, error.message);
-              return null;
-            }
-          }
-
-          // Send Discord notification
-          async function sendDiscordAlert(lowBalanceAccounts) {
-            if (!DISCORD_WEBHOOK_URL) {
-              console.log('Discord webhook URL not configured');
-              return;
-            }
-
-            const timestamp = new Date().toISOString();
-            const fields = lowBalanceAccounts.map(account => ({
-              name: `${account.emoji} ${account.name}`,
-              value: `**Address:** \`${account.address}\`\n**Balance:** ${account.balance.toFixed(4)} FLOW\n**Purpose:** ${account.description}`,
-              inline: false
-            }));
-
-            const embed = {
-              title: '🚨 Critical Flow Account Balance Alert',
-              description: `**Action Required:** The following accounts have fallen below the ${BALANCE_THRESHOLD} FLOW threshold`,
-              color: 15158332, // Red color
-              fields: fields,
-              footer: {
-                text: `Flow Reference Wallet Monitor • ${timestamp}`
-              },
-              timestamp: timestamp
-            };
-
-            try {
-              await axios.post(DISCORD_WEBHOOK_URL, {
-                embeds: [embed],
-                username: 'Flow Balance Monitor',
-                avatar_url: 'https://cdn.onflow.org/assets/flow-token.png'
-              }, {
-                timeout: 5000
-              });
-              console.log('Discord notification sent successfully');
-            } catch (error) {
-              console.error('Failed to send Discord notification:', error.message);
-            }
-          }
-
-          // Main monitoring function
-          async function monitorBalances() {
-            console.log(`Starting balance monitoring at ${new Date().toISOString()}`);
-            console.log(`Threshold: ${BALANCE_THRESHOLD} FLOW`);
-
-            const lowBalanceAccounts = [];
-            fcl.config().put('accessNode.api', FLOW_MAINNET_RPC);
-
-            for (const account of CRITICAL_ACCOUNTS) {
-              if (!account.address) {
-                console.log(`Skipping ${account.name}: No address configured`);
-                continue;
-              }
-
-              console.log(`Checking balance for ${account.name} (${account.address})`);
-              
-              const balance = await getAccountBalance(account.address);
-              
-              if (balance === null) {
-                console.error(`Failed to retrieve balance for ${account.name}`);
-                continue;
-              }
-
-              console.log(`${account.name}: ${balance.toFixed(4)} FLOW`);
-
-              if (balance < BALANCE_THRESHOLD) {
-                console.warn(`⚠️ LOW BALANCE ALERT: ${account.name} has ${balance.toFixed(4)} FLOW (below ${BALANCE_THRESHOLD} FLOW threshold)`);
-                lowBalanceAccounts.push({ ...account, balance });
-              } else {
-                console.log(`✅ ${account.name} balance is healthy`);
-              }
-
-              // Rate limiting: 100ms delay between requests
-              await new Promise(resolve => setTimeout(resolve, 100));
-            }
-
-            // Send notifications if any accounts have low balances
-            if (lowBalanceAccounts.length > 0) {
-              console.log(`Sending Discord alert for ${lowBalanceAccounts.length} account(s) with low balance`);
-              await sendDiscordAlert(lowBalanceAccounts);
-              
-              // Set GitHub Actions output for workflow status
-              console.log('::set-output name=alert_sent::true');
-              console.log(`::set-output name=low_balance_count::${lowBalanceAccounts.length}`);
-              process.exit(1); // Exit with error to mark workflow as failed
-            } else {
-              console.log('All monitored accounts have sufficient balance');
-              console.log('::set-output name=alert_sent::false');
-              console.log('::set-output name=low_balance_count::0');
-            }
-          }
-
-          // Run the monitor
-          monitorBalances().catch(error => {
-            console.error('Balance monitoring failed:', error);
-            process.exit(1);
-          });
-          EOF
-
-          node balance-monitor.js
+      - name: Monitor Flow Account Balances
+        run: node scripts/monitor-balance.js
         env:
+          FLOW_ADDRESSES: ${{ vars.FLOW_ADDRESSES }}
+          BALANCE_THRESHOLD: ${{ vars.BALANCE_THRESHOLD || '500000000' }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          PAYER_ACCOUNT_ADDRESS: ${{ vars.PAYER_ACCOUNT_ADDRESS }}
-          CREATOR_ACCOUNT_ADDRESS: ${{ vars.CREATOR_ACCOUNT_ADDRESS }}
-          BRIDGE_PAYER_ACCOUNT_ADDRESS: ${{ vars.BRIDGE_PAYER_ACCOUNT_ADDRESS }}
-
-      - name: Workflow Summary
-        if: always()
-        run: |
-          echo "## Flow Account Balance Monitor Results" >> $GITHUB_STEP_SUMMARY
-          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
-          echo "**Threshold:** ${{ env.BALANCE_THRESHOLD }} FLOW" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ steps.balance-check.outputs.alert_sent }}" == "true" ]; then
-            echo "**Status:** 🚨 **ALERT SENT**" >> $GITHUB_STEP_SUMMARY
-            echo "**Accounts Below Threshold:** ${{ steps.balance-check.outputs.low_balance_count }}" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "⚠️ **Action Required:** Check Discord for details and top up account balances immediately." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Status:** ✅ **All accounts healthy**" >> $GITHUB_STEP_SUMMARY
-            echo "**Accounts Below Threshold:** 0" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Notify on Failure
-        if: failure()
-        run: |
-          echo "Balance monitoring workflow failed. Check the logs and account configurations."
-          exit 1

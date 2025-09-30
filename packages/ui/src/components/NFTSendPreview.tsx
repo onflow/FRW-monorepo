@@ -1,6 +1,6 @@
 import { Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
-import { YStack, XStack, Image, View } from 'tamagui';
+import { YStack, XStack, Image, View, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -40,6 +40,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   contentPadding = '$4',
 }) => {
   const [imageError, setImageError] = useState(false);
+  const theme = useTheme();
 
   // Get the best available image URL
   const imageUrl = nft.image || nft.thumbnail;
@@ -57,7 +58,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
     >
       {/* Section Header */}
       <XStack items="center" justify="space-between" gap="$3.5" width="100%">
-        <Text fontSize="$3" fontWeight="400" opacity={0.8} flex={1}>
+        <Text fontSize="$3" fontWeight="400" color="$color" opacity={0.8} flex={1}>
           {sectionTitle}
         </Text>
         {showEditButton && onEditPress && (
@@ -109,7 +110,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
             <Text
               fontSize={14}
               fontWeight="600"
-              color="$white"
+              color="$color"
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -143,7 +144,8 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
           <Text
             fontSize={14}
             fontWeight="400"
-            color="rgba(255, 255, 255, 0.8)"
+            color="$color"
+            opacity={0.8}
             numberOfLines={2}
             ellipsizeMode="tail"
           >
@@ -152,7 +154,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
 
           {/* ERC1155 Total Amount */}
           {nft.contractType === 'ERC1155' && nft.amount && nft.amount > 0 && (
-            <Text fontSize={12} fontWeight="400" color="rgba(255, 255, 255, 0.6)" numberOfLines={1}>
+            <Text fontSize={12} fontWeight="400" color="$color" opacity={0.6} numberOfLines={1}>
               ({nft.amount.toLocaleString()} Tokens)
             </Text>
           )}

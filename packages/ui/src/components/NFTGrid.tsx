@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
-import { XStack, YStack, ScrollView, Text } from 'tamagui';
+import { XStack, YStack, Text } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
@@ -90,7 +90,7 @@ export function NFTGrid({
 
   // Virtualization state
   const [visibleItemCount, setVisibleItemCount] = useState(itemsPerBatch);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<any>(null); // Generic ref for both web (HTMLDivElement) and React Native
 
   // Memoize visible data for performance
   const visibleData = useMemo(() => {
@@ -110,27 +110,47 @@ export function NFTGrid({
     setVisibleItemCount(newCount);
   }, [enableVirtualization, visibleItemCount, data.length, itemsPerBatch]);
 
-  // Intersection Observer for load more
+  // Intersection Observer for load more (Web only - React Native uses different approach)
   useEffect(() => {
     if (!enableVirtualization || !loadMoreRef.current) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && visibleItemCount < data.length) {
-          handleLoadMore();
+    // Check if IntersectionObserver is available (Web environment)
+    if (typeof IntersectionObserver !== 'undefined') {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          if (entry.isIntersecting && visibleItemCount < data.length) {
+            handleLoadMore();
+          }
+        },
+        {
+          rootMargin: '100px', // Start loading 100px before the trigger comes into view
+          threshold: 0.1,
         }
-      },
-      {
-        rootMargin: '100px', // Start loading 100px before the trigger comes into view
-        threshold: 0.1,
-      }
-    );
+      );
 
-    observer.observe(loadMoreRef.current);
+      observer.observe(loadMoreRef.current);
 
-    return () => observer.disconnect();
+      return () => observer.disconnect();
+    }
   }, [enableVirtualization, visibleItemCount, data.length, handleLoadMore]);
+
+  // React Native lazy loading - automatically load more when approaching the end
+  useEffect(() => {
+    if (!enableVirtualization || isExtension) return;
+
+    // In React Native, automatically load more items when we're showing close to all visible items
+    const remainingItems = data.length - visibleItemCount;
+    const shouldLoadMore = remainingItems > 0 && remainingItems <= loadMoreThreshold;
+
+    if (shouldLoadMore) {
+      const timer = setTimeout(() => {
+        handleLoadMore();
+      }, 100); // Small delay to prevent rapid updates
+
+      return () => clearTimeout(timer);
+    }
+  }, [enableVirtualization, visibleItemCount, data.length, loadMoreThreshold, handleLoadMore]);
 
   // Reset visible count when data changes
   const prevDataLength = React.useRef(data.length);
@@ -281,7 +301,7 @@ export function NFTGrid({
 
   // Main grid content
   return (
-    <YStack gap="$4">
+    <YStack gap="$4" pr={!isExtension && '$4'}>
       {rows.map((row, rowIndex) => (
         <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
           {row.map((nft) => {
@@ -309,13 +329,11 @@ export function NFTGrid({
 
       {/* Load more trigger - invisible element for intersection observer */}
       {enableVirtualization && visibleItemCount < data.length && (
-        <ScrollView ref={loadMoreRef} style={{ height: '1px', width: '100%' }}>
-          <YStack items="center" py="$4">
-            <Text fontSize="$3" color="$textSecondary">
-              Loading more NFTs... ({visibleItemCount} of {data.length})
-            </Text>
-          </YStack>
-        </ScrollView>
+        <YStack ref={loadMoreRef} items="center" py="$4">
+          <Text fontSize="$3" color="$textSecondary">
+            Loading more NFTs... ({visibleItemCount} of {data.length})
+          </Text>
+        </YStack>
       )}
     </YStack>
   );

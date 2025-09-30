@@ -1,6 +1,7 @@
 import { ChevronUp, ChevronDown, Trash } from '@onflow/frw-icons';
+import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, ScrollView, Text, Image } from 'tamagui';
+import { YStack, XStack, ScrollView, Text, Image, useTheme } from 'tamagui';
 
 import { ERC1155QuantitySelector } from './ERC1155QuantitySelector';
 import type { NFTData } from './NFTGrid';
@@ -15,6 +16,9 @@ export interface NFTSelectionBarProps {
   maxHeight?: string;
   selectedQuantity?: number;
   onQuantityChange?: (nftId: string, quantity: number) => void;
+  // Text props for localization
+  selectedCountText?: string;
+  confirmText?: string;
 }
 
 export function NFTSelectionBar({
@@ -22,12 +26,12 @@ export function NFTSelectionBar({
   onRemoveNFT,
   onContinue,
   onNFTPress = (id: string) => {},
-  continueText = 'Continue',
-  isEditing = false,
-  maxHeight = '$20',
-  selectedQuantity = 1,
   onQuantityChange,
+  selectedCountText,
+  confirmText,
 }: NFTSelectionBarProps) {
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
   const [isExpanded, setIsExpanded] = useState(true); // Start expanded so trash icons are visible
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
@@ -47,7 +51,7 @@ export function NFTSelectionBar({
 
     return (
       <YStack key={nft.id} gap="$2" width="100%">
-        <XStack items="center" justify="space-between" gap="$2" width="100%" position="relative">
+        <XStack items="center" justify="space-between" gap="$2" width="100%">
           <XStack
             items="center"
             gap="$2"
@@ -99,7 +103,7 @@ export function NFTSelectionBar({
               }}
               cursor="pointer"
             >
-              <Trash size={24} color="rgba(255, 255, 255, 0.5)" theme="outline" />
+              <Trash size={24} color="#767676" theme="outline" />
             </XStack>
           )}
         </XStack>
@@ -122,7 +126,7 @@ export function NFTSelectionBar({
 
   return (
     <YStack
-      pos="fixed"
+      pos="absolute"
       b="$0"
       l="$0"
       r="$0"
@@ -145,12 +149,14 @@ export function NFTSelectionBar({
         {/* Header */}
         <XStack items="center" justify="space-between" pt="$2.5" position="relative">
           <Text fontSize="$4" fontWeight="400" color="$text">
-            {selectedNFTs.length} Selected NFT{selectedNFTs.length === 1 ? '' : 's'}
+            {selectedCountText ||
+              `${selectedNFTs.length} Selected NFT${selectedNFTs.length === 1 ? '' : 's'}`}
           </Text>
 
           <XStack
             pos="absolute"
             r="$0"
+            t="$2.5"
             width="$6"
             height="$6"
             items="center"
@@ -160,9 +166,9 @@ export function NFTSelectionBar({
             pressStyle={{ opacity: 0.7 }}
           >
             {isExpanded ? (
-              <ChevronDown size={20} color="#FFFFFF" theme="outline" />
+              <ChevronDown size={20} color="#767676" theme="outline" />
             ) : (
-              <ChevronUp size={20} color="#FFFFFF" theme="outline" />
+              <ChevronUp size={20} color="#767676" theme="outline" />
             )}
           </XStack>
         </XStack>
@@ -192,17 +198,21 @@ export function NFTSelectionBar({
           <YStack
             data-testid={'confirm'}
             shrink={0}
-            bg="#FFFFFF"
+            bg={isCurrentlyDarkMode ? '#FFFFFF' : '#000000'}
             rounded="$4"
             height={56}
             items="center"
             justify="center"
             disabled={selectedNFTs.length === 0}
             onPress={onContinue}
-            cursor="pointer"
           >
-            <Text fontSize="$5" fontWeight="600" color="#000000">
-              Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
+            <Text
+              fontSize="$5"
+              fontWeight="600"
+              color={isCurrentlyDarkMode ? '#000000' : '#FFFFFF'}
+            >
+              {confirmText ||
+                `Confirm ${selectedNFTs.length} NFT${selectedNFTs.length === 1 ? '' : 's'}`}
             </Text>
           </YStack>
         )}

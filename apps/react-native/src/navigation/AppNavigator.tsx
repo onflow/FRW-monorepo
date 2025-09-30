@@ -1,10 +1,10 @@
 import {
   SelectTokensScreen,
-  SendTokensScreen,
   NFTListScreen,
   NFTDetailScreen,
-  SendSingleNFTScreen,
-  SendMultipleNFTsScreen,
+  SendTokensScreen as BaseSendTokensScreen,
+  SendSummaryScreen as BaseSendSummaryScreen,
+  type ScreenAssets,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -17,10 +17,14 @@ import {
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useMemo } from 'react';
-// import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { sendStaticImage } from '@/assets';
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
+import { NavigationBackButton } from '@/components/NavigationBackButton';
+import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
@@ -42,8 +46,7 @@ export type RootStackParamList = {
   SelectTokens: undefined;
   SendTo: undefined;
   SendTokens: undefined;
-  SendSingleNFT: undefined;
-  SendMultipleNFTs: undefined;
+  SendSummary: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -63,8 +66,17 @@ interface AppNavigatorProps {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// Create assets object for screens
+const screenAssets: ScreenAssets = {
+  sendStaticImage,
+};
+
+// Create wrapped screen components with assets
+const SendTokensScreen = () => <BaseSendTokensScreen assets={screenAssets} />;
+const SendSummaryScreen = () => <BaseSendSummaryScreen assets={screenAssets} />;
+
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
   // const { isDark } = useTheme();
   const navigationRef = useRef<any>(null);
@@ -93,12 +105,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       }
       try {
         if (sendToConfig.fromAccount) {
-          console.log('🚀 DEBUG: Setting from account', sendToConfig.fromAccount);
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
           setFromAccount(walletAccount);
         }
         if (sendToConfig.selectedToken) {
-          console.log('🚀 DEBUG: Setting selected token', sendToConfig.selectedToken);
           // Convert to TokenInfo type
           const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
@@ -107,7 +117,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
         if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
           // Set selected NFTs if provided
-          console.log('🚀 DEBUG: Setting selected NFTs', sendToConfig.selectedNFTs);
           const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
           setSelectedNFTs(nftModels);
         }
@@ -121,15 +130,15 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setToAccount(walletAccount);
           setTransactionType('tokens');
           setCurrentStep('send-tokens');
-        } else if (sendToConfig.selectedNFTs?.length === 1) {
-          setTransactionType('single-nft');
-          setCurrentStep('send-to');
-        } else if (sendToConfig.selectedNFTs && sendToConfig.selectedNFTs.length > 1) {
-          setTransactionType('multiple-nfts');
+        } else if (sendToConfig.selectedNFTs && sendToConfig.selectedNFTs.length >= 1) {
+          // Use single navigation for both single and multiple NFTs - the screen will handle the logic
+          setTransactionType(
+            sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts'
+          );
           setCurrentStep('send-to');
         }
       } catch (error) {
-        console.error('Failed to initialize SendTo flow:', error);
+        //  console.error('Failed to initialize SendTo flow:', error);
       }
     }
   }, [
@@ -142,7 +151,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   ]);
 
   // Since TamaguiProvider is set to defaultTheme="dark", use that
-  const isDarkMode = true; // Based on TamaguiProvider defaultTheme="dark" in App.tsx
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
   // Memoize navigation themes with hardcoded colors
   const navigationThemes = useMemo(() => {
@@ -151,7 +161,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       colors: {
         ...DefaultTheme.colors,
         background: '#FFFFFF', // White background for light mode
-        card: '#F2F2F7', // Light card color
+        card: '#FFFFFF', // Header should be white in light mode (per Figma)
         text: '#000000', // Black text for light mode
         border: '#767676', // Gray border
         primary: '#00EF8B', // Flow brand green
@@ -197,57 +207,53 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerShown: true,
               headerBackTitle: '', // Ensure no back title text
               headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
-              // headerLeft: () => <NavigationBackButton />,
-              // headerRight: () => <NavigationCloseButton />,
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
+              headerLeftContainerStyle: { paddingLeft: 8, alignItems: 'center' },
+              headerRightContainerStyle: { paddingRight: 16, alignItems: 'center' },
             }}
           >
             <Stack.Screen
               name="SelectTokens"
               component={SelectTokensScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.send'),
               }}
             />
             <Stack.Screen
               name="NFTList"
               component={NFTListScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.send'),
               }}
             />
             <Stack.Screen
               name="NFTDetail"
               component={NFTDetailScreen}
               options={{
-                headerTitle: 'NFT Details',
+                headerTitle: t('navigation.nftDetails'),
               }}
             />
             <Stack.Screen
               name="SendTo"
               component={SendToScreen}
               options={{
-                headerTitle: 'Send To',
+                headerTitle: t('navigation.sendTo'),
               }}
             />
             <Stack.Screen
               name="SendTokens"
               component={SendTokensScreen}
               options={{
-                headerTitle: 'Send Tokens',
+                headerTitle: t('navigation.sendTokens'),
               }}
             />
             <Stack.Screen
-              name="SendSingleNFT"
-              component={SendSingleNFTScreen}
+              name="SendSummary"
+              component={SendSummaryScreen}
               options={{
-                headerTitle: 'Send NFT',
-              }}
-            />
-            <Stack.Screen
-              name="SendMultipleNFTs"
-              component={SendMultipleNFTsScreen}
-              options={{
-                headerTitle: 'Send NFTs',
+                headerTitle: t('navigation.sending'),
               }}
             />
           </Stack.Group>

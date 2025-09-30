@@ -1,13 +1,11 @@
-# Pull Request
-
 ## 🔗 Related Issues
 
-<!-- Link to related issues using one of the following formats: -->
+Linked automatically from the branch name. If incorrect, edit:
+
+<!-- Examples: -->
 <!-- Closes #123 -->
 <!-- Fixes #456 -->
 <!-- Resolves #789 -->
-
-Closes #
 
 ## 📝 Description
 

@@ -11,8 +11,10 @@ import {
   ExtensionHeader,
   Text,
   SearchBar,
+  ScrollView,
 } from '@onflow/frw-ui';
 import { getNFTId, logger } from '@onflow/frw-utils';
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +49,26 @@ export function NFTListScreen(): React.ReactElement {
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
-  const currentAddress = fromAccount?.address;
+
+  // Get effective address with debugAddress logic (same as SelectTokensScreen)
+  const currentAddress = useMemo(() => {
+    const debugAddress = bridge.getDebugAddress();
+    const accountAddress = fromAccount?.address || '';
+
+    logger.debug('NFTListScreen currentAddress calculated:', {
+      debugAddress,
+      accountAddress,
+      willUse: debugAddress ? debugAddress : accountAddress,
+    });
+
+    if (debugAddress) {
+      if (validateEvmAddress(debugAddress) || validateFlowAddress(debugAddress)) {
+        return debugAddress.trim();
+      }
+    }
+    return accountAddress;
+  }, [fromAccount?.address]);
+
   // Get the total count from the collection info
   const totalCount = activeCollection?.count || 0;
   // Update current step when screen loads (following SendToScreen pattern)
@@ -250,7 +271,7 @@ export function NFTListScreen(): React.ReactElement {
 
         // Regular NFT selection logic (non-ERC1155)
         if (prev.length >= 9) {
-          console.warn('Maximum 9 NFTs can be selected');
+          logger.warn(t('nft.maxSelectionReached'));
           return prev;
         }
 
@@ -276,7 +297,7 @@ export function NFTListScreen(): React.ReactElement {
         setCurrentNFT(foundNFT);
         navigation.navigate('NFTDetail', { nft: foundNFT });
       } else {
-        console.warn('NFT not found for ID:', nftId);
+        logger.warn(t('nft.nftNotFound'), nftId);
       }
     },
     [nfts]
@@ -352,7 +373,7 @@ export function NFTListScreen(): React.ReactElement {
             {t('nft.noNFTsFound')}
           </Text>
           <Text fontSize="$4" color="$textSecondary">
-            No collection selected. Please go back and select an NFT collection.
+            {t('nft.noCollectionSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -367,7 +388,7 @@ export function NFTListScreen(): React.ReactElement {
             {t('errors.unknown')}
           </Text>
           <Text fontSize="$4" color="$textSecondary">
-            No account address available. Please select an account.
+            {t('nft.noAccountSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -423,31 +444,33 @@ export function NFTListScreen(): React.ReactElement {
               width="100%"
             />
           </YStack>
-          <NFTGrid
-            data={filteredNFTs}
-            selectedIds={selectedIds}
-            isLoading={isLoading}
-            loadingProgress={finalLoadingProgress}
-            error={error?.message || undefined}
-            emptyTitle={emptyState.title}
-            emptyMessage={emptyState.message}
-            onNFTSelect={handleNFTSelect}
-            onNFTPress={handleNFTDetail}
-            onRetry={refreshNFTs}
-            retryText={t('buttons.retry')}
-            clearSearchText={t('buttons.clearSearch')}
-            onClearSearch={() => setSearchQuery('')}
-            showClearSearch={!!searchQuery}
-            accountEmoji={fromAccount?.emojiInfo?.emoji}
-            accountAvatar={fromAccount?.avatar}
-            accountName={fromAccount?.name}
-            accountColor={fromAccount?.emojiInfo?.color}
-            enableVirtualization={true}
-            itemsPerBatch={20}
-            loadMoreThreshold={200}
-            isExtension={isExtension}
-            totalCount={totalCount}
-          />
+          <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+            <NFTGrid
+              data={filteredNFTs}
+              selectedIds={selectedIds}
+              isLoading={isLoading}
+              loadingProgress={finalLoadingProgress}
+              error={error?.message || undefined}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              onNFTSelect={handleNFTSelect}
+              onNFTPress={handleNFTDetail}
+              onRetry={refreshNFTs}
+              retryText={t('buttons.retry')}
+              clearSearchText={t('buttons.clearSearch')}
+              onClearSearch={() => setSearchQuery('')}
+              showClearSearch={!!searchQuery}
+              accountEmoji={fromAccount?.emojiInfo?.emoji}
+              accountAvatar={fromAccount?.avatar}
+              accountName={fromAccount?.name}
+              accountColor={fromAccount?.emojiInfo?.color}
+              enableVirtualization={true}
+              itemsPerBatch={20}
+              loadMoreThreshold={200}
+              isExtension={isExtension}
+              totalCount={totalCount}
+            />
+          </ScrollView>
         </YStack>
 
         {/* Selection Bar */}
