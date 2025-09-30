@@ -1,4 +1,4 @@
- 
+// eslint-disable-next-line import/no-unresolved  
 import RNAnimatedLottieView, { type AnimationObject } from 'lottie-react-native';
 import React from 'react';
 
