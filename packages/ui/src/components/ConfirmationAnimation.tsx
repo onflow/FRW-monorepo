@@ -1,7 +1,7 @@
-import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'tamagui';
 
+import LottieView from './LottieView';
 import sendConfirmationAnimation from '../assets/animations/send-confirmation-noblur.json';
 import { injectImageWithFallbacks } from '../utils/lottie-image-injection';
 
@@ -32,7 +32,8 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
   transactionType,
   onAnimationReady,
 }) => {
-  const animationRef = useRef<LottieView>(null);
+  // Unified ref; concrete type differs per platform implementation
+  const animationRef = useRef<any>(null);
   const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(null);
   const [isAnimationReady, setIsAnimationReady] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);

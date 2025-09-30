@@ -23,6 +23,7 @@
     "@tamagui/theme-builder": "^1.132.20",
     "@tamagui/web": "^1.132.20",
     "bignumber.js": "^9.1.2",
+    "lottie-web": "^5.12.2",
     "tamagui": "^1.132.20"
   },
   "devDependencies": {
@@ -58,7 +59,7 @@
       "optional": true
     },
     "lottie-react-native": {
-      "optional": false
+      "optional": true
     }
   },
   "files": [
@@ -68,6 +69,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
