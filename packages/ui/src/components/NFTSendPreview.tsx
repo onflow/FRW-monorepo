@@ -1,6 +1,6 @@
 import { Edit } from '@onflow/frw-icons';
 import React, { useState } from 'react';
-import { YStack, XStack, Image, View, useTheme } from 'tamagui';
+import { YStack, XStack, Image, View } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -40,7 +40,6 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   contentPadding = '$4',
 }) => {
   const [imageError, setImageError] = useState(false);
-  const theme = useTheme();
 
   // Get the best available image URL
   const imageUrl = nft.image || nft.thumbnail;

@@ -1,10 +1,9 @@
 import {
-  SelectTokensScreen,
-  NFTListScreen,
   NFTDetailScreen,
-  SendTokensScreen as BaseSendTokensScreen,
-  SendSummaryScreen as BaseSendSummaryScreen,
-  type ScreenAssets,
+  NFTListScreen,
+  SelectTokensScreen,
+  SendSummaryScreen,
+  SendTokensScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -16,12 +15,11 @@ import {
 } from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { sendStaticImage } from '@/assets';
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
@@ -66,19 +64,9 @@ interface AppNavigatorProps {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Create assets object for screens
-const screenAssets: ScreenAssets = {
-  sendStaticImage,
-};
-
-// Create wrapped screen components with assets
-const SendTokensScreen = () => <BaseSendTokensScreen assets={screenAssets} />;
-const SendSummaryScreen = () => <BaseSendSummaryScreen assets={screenAssets} />;
-
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
-  // const { isDark } = useTheme();
   const navigationRef = useRef<any>(null);
 
   // Send store actions
@@ -190,7 +178,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
   return (
     <SafeAreaProvider>
-      {/* <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}> */}
       <NavigationContainer ref={navigationRef} theme={currentTheme}>
         <Stack.Navigator
           initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
@@ -210,8 +197,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerBackVisible: false, // Hide default back button
               headerLeft: () => <NavigationBackButton />,
               headerRight: () => <NavigationCloseButton />,
-              headerLeftContainerStyle: { paddingLeft: 8, alignItems: 'center' },
-              headerRightContainerStyle: { paddingRight: 16, alignItems: 'center' },
             }}
           >
             <Stack.Screen
