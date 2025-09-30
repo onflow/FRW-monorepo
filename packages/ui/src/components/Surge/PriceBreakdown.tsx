@@ -53,7 +53,6 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
       {/* Modal Content */}
       <YStack
         width={343}
-        height={350}
         bg={modalBackgroundColor}
         rounded="$4"
         p="$4"
@@ -86,7 +85,7 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
         </YStack>
 
         {/* Content Frame */}
-        <YStack items="center" gap="$6" style={{ alignSelf: 'stretch', paddingTop: '$2' }}>
+        <YStack items="center" gap="$4" style={{ alignSelf: 'stretch', paddingTop: '$2' }}>
           {/* Icon */}
           <YStack
             items="center"
