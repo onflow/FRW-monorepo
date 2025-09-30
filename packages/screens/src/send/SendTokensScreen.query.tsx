@@ -806,7 +806,14 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       <SurgeWarning
         message={
           isSurgePricingActive && surgeMultiplier
-            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${surgeMultiplier}× higher than usual and your free allowance will not cover the fee for this transaction.`
+            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${Number(
+                surgeMultiplier
+              )
+                .toFixed(2)
+                .replace(
+                  /\.?0+$/,
+                  ''
+                )}× higher than usual and your free allowance will not cover the fee for this transaction.`
             : t('surge.message')
         }
         title={t('surge.title')}
