@@ -1,3 +1,4 @@
+ 
 import RNAnimatedLottieView, { type AnimationObject } from 'lottie-react-native';
 import React from 'react';
 
