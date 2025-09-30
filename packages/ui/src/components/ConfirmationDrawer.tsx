@@ -1,23 +1,17 @@
-import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
+import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { type AccountDisplayData, type TokenModel, type TransactionType } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
-import { Image as RNImage } from 'react-native';
-import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
+import { Sheet, Spinner, useTheme, View, XStack, YStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { ConfirmationAnimation } from './ConfirmationAnimation';
+import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
+import { type TransactionFormData } from './TransactionConfirmationModal';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
-
-export interface TransactionFormData {
-  tokenAmount: string;
-  fiatAmount: string;
-  isTokenMode: boolean;
-  transactionFee?: string;
-}
-
 export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
@@ -39,7 +33,6 @@ export interface ConfirmationDrawerProps {
   confirmSendText?: string;
   holdToSendText?: string;
   unknownAccountText?: string;
-  sendStaticImage?: any;
 }
 
 interface LoadingIndicatorProps {
@@ -145,7 +138,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   confirmSendText = 'Confirm send',
   holdToSendText = 'Hold to send',
   unknownAccountText = 'Unknown',
-  sendStaticImage,
 }) => {
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
@@ -257,17 +249,42 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             )}
           </XStack>
 
-          {/* Transaction Visual - Simple Static Image */}
-          <View height={120} width="100%" items="center" justify="center" my="$2">
-            {!isExtension && sendStaticImage ? (
-              <RNImage
-                source={sendStaticImage}
-                style={{ width: 114.62, height: 129.195 }}
-                resizeMode="contain"
-              />
-            ) : (
-              <WalletCard size={120} />
-            )}
+          {/* Transaction Visual - Enhanced Lottie Animation */}
+          <View
+            height={120}
+            width="100%"
+            items="center"
+            justify="center"
+            my="$2"
+            position="relative"
+          >
+            {/* Background Gradient - Centered on Animation */}
+            <View
+              position="absolute"
+              t={0}
+              l={0}
+              r={0}
+              b={0}
+              items="center"
+              justify="center"
+              opacity={0.15}
+              style={{ zIndex: -1 }}
+            >
+              <ConfirmDialogBg width={600} height={600} color="url(#confirm-dialog-bg_svg__a)" />
+            </View>
+
+            <ConfirmationAnimation
+              width={400}
+              height={150}
+              imageUri={
+                transactionType !== 'tokens' && selectedNFTs && selectedNFTs.length > 0
+                  ? selectedNFTs[0].image || selectedNFTs[0].thumbnail || selectedToken?.logoURI
+                  : selectedToken?.logoURI
+              }
+              transactionType={transactionType}
+              autoPlay
+              loop
+            />
           </View>
 
           {/* Accounts Row */}
@@ -406,39 +423,40 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           )}
 
           {/* Confirm Button */}
-          <YStack
-            mb={'$10'}
-            bg={buttonBackgroundColor}
-            rounded="$4"
-            height={56}
-            items="center"
-            justify="center"
-            pressStyle={{ opacity: 0.9 }}
-            onLongPress={internalIsSending ? undefined : handleConfirm}
-            onPressIn={internalIsSending ? undefined : () => setIsLongPressing(true)}
-            onPressOut={() => setIsLongPressing(false)}
-            cursor={internalIsSending ? 'not-allowed' : 'pointer'}
-          >
-            {internalIsSending ? (
-              <XStack items="center" gap="$2">
-                <Spinner size="small" color={buttonTextColor} />
+          {isExtension ? (
+            <YStack
+              mb={'$10'}
+              bg={buttonBackgroundColor}
+              rounded="$4"
+              height={56}
+              items="center"
+              justify="center"
+              pressStyle={{ opacity: 0.9 }}
+              onPress={internalIsSending ? undefined : handleConfirm}
+              cursor={internalIsSending ? 'not-allowed' : 'pointer'}
+            >
+              {internalIsSending ? (
+                <XStack items="center" gap="$2">
+                  <Spinner size="small" color={buttonTextColor} />
+                  <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
+                    {sendingText}
+                  </Text>
+                </XStack>
+              ) : (
                 <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                  {sendingText}
+                  {confirmSendText}
                 </Text>
-              </XStack>
-            ) : isLongPressing && !isExtension ? (
-              <XStack items="center" gap="$2">
-                <Spinner size="small" color={buttonTextColor} />
-                <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                  {holdToSendText}
-                </Text>
-              </XStack>
-            ) : (
-              <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                {isExtension ? confirmSendText : holdToSendText}
-              </Text>
-            )}
-          </YStack>
+              )}
+            </YStack>
+          ) : (
+            <View mb={'$10'}>
+              <HoldToSendButton
+                onPress={handleConfirm}
+                stopSignal={internalIsSending}
+                holdToSendText={holdToSendText}
+              />
+            </View>
+          )}
         </YStack>
       </Sheet.Frame>
     </Sheet>

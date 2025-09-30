@@ -83,7 +83,7 @@ export interface SendToConfig {
  */
 export interface InitialProps {
   screen: 'send-asset' | 'token-detail';
-  sendToConfig?: SendToConfig;
+  sendToConfig?: string;
 }
 
 export interface EnvironmentVariables {

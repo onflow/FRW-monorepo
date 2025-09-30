@@ -15,10 +15,11 @@ on:
         description: "Build type (debug|dev|release)"
         default: "release"
         required: true
-      targetRef:
-        description: "Git ref to build (branch/tag)"
-        default: "dev"
-        required: false
+        type: choice
+        options:
+          - debug
+          - dev
+          - release
 
 jobs:
   determine-env:
@@ -73,7 +74,7 @@ jobs:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.targetRef || github.ref }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
           submodules: recursive
 

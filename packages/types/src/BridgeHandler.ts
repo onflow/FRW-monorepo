@@ -78,7 +78,7 @@ export function createNFTModelsFromConfig(iosNFTs: any[]): NFTModel[] {
 // the model from native must be like TokenModel
 export function createTokenModelFromConfig(tokenConfig: any): TokenModel {
   return {
-    type: tokenConfig.type === 'Flow' ? WalletType.Flow : WalletType.EVM,
+    type: tokenConfig.type === 'flow' ? WalletType.Flow : WalletType.EVM,
     name: tokenConfig.name,
     symbol: tokenConfig.symbol,
     description: tokenConfig.description,
