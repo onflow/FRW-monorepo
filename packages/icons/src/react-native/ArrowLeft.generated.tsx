@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Svg, { type SvgProps, Path } from 'react-native-svg';
-const Plus = ({
+const ArrowLeft = ({
   color = 'currentColor',
   size = 24,
   width,
@@ -12,15 +12,11 @@ const Plus = ({
     width={width ?? size}
     height={height ?? size}
     fill="none"
-    viewBox="0 0 25 24"
+    viewBox="0 0 24 24"
     {...props}
   >
     <Path
-      stroke={color}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12.125 5v14m-7-7h14"
+      d="m12 19-7-7 7-7M19 12H5"
       stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
@@ -28,4 +24,4 @@ const Plus = ({
     />
   </Svg>
 );
-export default Plus;
+export default ArrowLeft;
