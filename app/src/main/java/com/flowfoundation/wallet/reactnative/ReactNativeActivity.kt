@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.reactnative.bridge.QRCodeScanManager
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.reactnative.bridge.createWalletAccountFromAddress
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.Gson
 
@@ -60,9 +61,9 @@ class ReactNativeActivity : ReactActivity() {
                             initialPropsBundle.putString("screen", it)
                             Log.d(TAG, "Added screen to initialProps: $it")
                         }
-                        sendToConfigJson?.let {
-                            initialPropsBundle.putString("sendToConfig", it)
-                            Log.d(TAG, "Added sendToConfig to initialProps: $it")
+                        sendToConfigJson?.let { jsonString ->
+                            Log.d(TAG, "Processing sendToConfig JSON: $jsonString")
+                            initialPropsBundle.putString("sendToConfig", jsonString)
                         }
 
                         launchOptions.putBundle("initialProps", initialPropsBundle)
@@ -219,7 +220,8 @@ class ReactNativeActivity : ReactActivity() {
         fun launchTokenSend(context: Context, token: RNBridge.TokenModel) {
             val address = WalletManager.selectedWalletAddress().toAddress()
             val network = chainNetWorkString()
-            val sendToConfig = RNBridge.SendToConfig(token, null, null, null)
+            val fromAccount = createWalletAccountFromAddress(address)
+            val sendToConfig = RNBridge.SendToConfig(token, fromAccount, null, null)
             launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network)
         }
 
@@ -229,19 +231,21 @@ class ReactNativeActivity : ReactActivity() {
         fun launchNFTSend(context: Context, nfts: List<RNBridge.NFTModel>) {
             val address = WalletManager.selectedWalletAddress().toAddress()
             val network = chainNetWorkString()
-            val sendToConfig = RNBridge.SendToConfig(null, null, nfts, null)
+            val fromAccount = createWalletAccountFromAddress(address)
+            val sendToConfig = RNBridge.SendToConfig(null, fromAccount, nfts, null)
             launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network)
         }
 
         /**
          * Convenience method for Wallet send with default address and network
-         * @param fromAccount can be null - if null, RN will handle account selection
+         * @param fromAccount can be null - if null, will generate from selected wallet address
          * @param targetAddress can be null - if null, user will select target in RN
          */
         fun launchWalletSend(context: Context, fromAccount: RNBridge.WalletAccount?, targetAddress: String?) {
             val address = WalletManager.selectedWalletAddress().toAddress()
             val network = chainNetWorkString()
-            val sendToConfig = RNBridge.SendToConfig(null, fromAccount, null, targetAddress)
+            val finalFromAccount = fromAccount ?: createWalletAccountFromAddress(address)
+            val sendToConfig = RNBridge.SendToConfig(null, finalFromAccount, null, targetAddress)
             launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network)
         }
     }
