@@ -1,8 +1,17 @@
 package com.flowfoundation.wallet.reactnative.bridge
 
+import android.os.Bundle
+import android.util.Log
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.emoji.model.Emoji
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.Nft
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Convert FungibleToken to RNBridge.TokenModel
@@ -65,7 +74,7 @@ fun FungibleToken.toRNBridgeTokenModel(): RNBridge.TokenModel {
 fun Nft.toRNBridgeNFTModel(): RNBridge.NFTModel {
     return RNBridge.NFTModel(
         id = this.id,
-        name = this.title,
+        name = this.title ?: postMedia?.title,
         description = this.description,
         thumbnail = this.postMedia?.image,
         externalURL = this.collectionExternalURL,
@@ -91,5 +100,74 @@ fun Nft.toRNBridgeNFTModel(): RNBridge.NFTModel {
         contractType = this.contractType,
         amount = this.amount,
         type = if (this.getEVMAddress() != null) RNBridge.WalletType.EVM else RNBridge.WalletType.FLOW
+    )
+}
+
+// ================================================
+// SECTION: Account Utilities
+// ================================================
+
+/**
+ * Create EmojiInfo from address
+ */
+fun createEmojiInfo(address: String?): RNBridge.EmojiInfo? {
+    if (address.isNullOrEmpty()) {
+        return null
+    }
+    val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
+    val emoji = Emoji.getEmojiById(emojiInfo.emojiId)
+    val colorHex = Emoji.getEmojiColorHex(emojiInfo.emojiId)
+    return RNBridge.EmojiInfo(
+        emoji = emoji,
+        name = emojiInfo.emojiName,
+        color = colorHex
+    )
+}
+
+/**
+ * Check if address is the selected wallet address
+ */
+fun isSelectedWalletAddress(address: String?): Boolean {
+    if (address.isNullOrEmpty()) {
+        return false
+    }
+    val selectedAddress = WalletManager.selectedWalletAddress()
+    return selectedAddress.equals(address, ignoreCase = true)
+}
+
+/**
+ * Generate WalletAccount model from address, following the same logic as getSelectedAccount
+ */
+fun createWalletAccountFromAddress(address: String): RNBridge.WalletAccount {
+    val mainAddress = WalletManager.wallet()?.walletAddress()
+
+    // Determine account type based on address using utility methods
+    val accountType = when {
+        EVMWalletManager.isEVMWalletAddress(address) -> RNBridge.AccountType.EVM
+        WalletManager.isChildAccount(address) -> RNBridge.AccountType.CHILD
+        else -> RNBridge.AccountType.MAIN
+    }
+
+    val emojiInfo = createEmojiInfo(address)
+    return RNBridge.WalletAccount(
+        id = when (accountType) {
+            RNBridge.AccountType.MAIN -> "main"
+            RNBridge.AccountType.CHILD -> "child"
+            RNBridge.AccountType.EVM -> "evm"
+        },
+        name = emojiInfo?.name ?: when (accountType) {
+            RNBridge.AccountType.MAIN -> "Main Account"
+            RNBridge.AccountType.CHILD -> "Child Account"
+            RNBridge.AccountType.EVM -> "EVM Account"
+        },
+        address = address,
+        emojiInfo = emojiInfo,
+        parentEmoji = if (accountType != RNBridge.AccountType.MAIN) createEmojiInfo(mainAddress) else null,
+        parentAddress = if (accountType != RNBridge.AccountType.MAIN) mainAddress else null,
+        avatar = null,
+        isActive = isSelectedWalletAddress(address),
+        type = accountType,
+        balance = null,
+        nfts = null,
     )
 }

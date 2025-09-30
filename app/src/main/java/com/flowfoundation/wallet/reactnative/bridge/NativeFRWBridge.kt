@@ -564,32 +564,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         return array
     }
 
-    // Helper method to create EmojiInfo from AccountEmojiManager data
-    private fun createEmojiInfo(address: String?): RNBridge.EmojiInfo? {
-        if (address.isNullOrEmpty()) {
-            return null
-        }
-
-        val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
-        val emoji = Emoji.getEmojiById(emojiInfo.emojiId)
-        val colorHex = Emoji.getEmojiColorHex(emojiInfo.emojiId)
-
-        return RNBridge.EmojiInfo(
-            emoji = emoji,
-            name = emojiInfo.emojiName,
-            color = colorHex
-        )
-    }
-
-    // Helper method to check if address is the selected wallet address (case-insensitive)
-    private fun isSelectedWalletAddress(address: String?): Boolean {
-        if (address.isNullOrEmpty()) {
-            return false
-        }
-
-        val selectedAddress = WalletManager.selectedWalletAddress()
-        return selectedAddress.equals(address, ignoreCase = true)
-    }
 
     override fun getWalletProfiles(promise: Promise) {
         android.util.Log.d(TAG, "getWalletProfiles() called")
