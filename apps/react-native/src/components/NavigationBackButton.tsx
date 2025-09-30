@@ -7,8 +7,6 @@ export const NavigationBackButton: React.FC = () => {
   const navigation = useNavigation();
   const theme = useTheme();
 
-  console.log('theme.colors.text', theme.colors.text);
-
   if (!navigation.canGoBack()) {
     return null;
   }
