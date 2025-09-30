@@ -99,20 +99,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
   // Initialize SendTo flow if requested
   useEffect(() => {
-    console.log('[AppNavigator] 🔍 Checking initialProps:', {
-      screen: initialProps?.screen,
-      hasSendToConfig: !!initialProps?.sendToConfig,
-      initialProps: initialProps,
-    });
-
     if (initialProps?.screen === 'send-asset') {
       const rawSendToConfig = initialProps?.sendToConfig;
-      console.log(
-        '[AppNavigator] ✅ send-asset screen detected, rawSendToConfig:',
-        rawSendToConfig
-      );
       if (!rawSendToConfig) {
-        console.log('[AppNavigator] ❌ No sendToConfig found');
         return;
       }
 
@@ -121,9 +110,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       try {
         sendToConfig =
           typeof rawSendToConfig === 'string' ? JSON.parse(rawSendToConfig) : rawSendToConfig;
-        console.log('[AppNavigator] 📋 Parsed sendToConfig:', sendToConfig);
       } catch (parseError) {
-        console.log('[AppNavigator] ❌ Failed to parse sendToConfig:', parseError);
         return;
       }
 
@@ -158,11 +145,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           // Use single navigation for both single and multiple NFTs - the screen will handle the logic
           const transactionType =
             sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts';
-          console.log('[AppNavigator] 🔥 NATIVE NFT ENTRY DETECTED', {
-            selectedNFTsCount: sendToConfig.selectedNFTs.length,
-            transactionType,
-            settingNavigationSource: 'native-nft-detail',
-          });
           setTransactionType(transactionType);
           // Set navigation source to track that user came from native NFT detail page
           setNavigationSource('native-nft-detail');

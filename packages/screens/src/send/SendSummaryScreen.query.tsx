@@ -69,12 +69,6 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   const navigationSource = useSendStore(sendSelectors.navigationSource);
   const isLoading = useSendStore(sendSelectors.isLoading);
 
-  // Debug logging for navigation source
-  console.log('[SendSummaryScreen] 🔍 Navigation source check:', {
-    navigationSource,
-    shouldHideEditButton: navigationSource === 'native-nft-detail',
-    selectedNFTsCount: selectedNFTs?.length || 0,
-  });
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const executeTransaction = useSendStore((state) => state.executeTransaction);
@@ -360,12 +354,6 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                 showEditButton={navigationSource !== 'native-nft-detail'}
                 editButtonText={t('send.change')}
               />
-              {/* Debug info */}
-              {console.log('[SendSectionHeader] 🎯 Edit button render:', {
-                navigationSource,
-                showEditButton: navigationSource !== 'native-nft-detail',
-                isNativeNFTDetail: navigationSource === 'native-nft-detail',
-              })}
 
               {/* NFT Preview - Conditional rendering based on transfer type */}
               <View mt={-8} mb={-8}>
