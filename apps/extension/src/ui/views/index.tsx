@@ -2,8 +2,8 @@ import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ToastProvider } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
-import { extensionTamaguiConfig } from '@onflow/frw-ui';
-import React, { useEffect } from 'react';
+import { extensionTamaguiConfig, SurgeModal } from '@onflow/frw-ui';
+import React, { useEffect, useState } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
 
@@ -78,6 +78,29 @@ function Main() {
 }
 
 const App = ({ wallet }: { wallet: any }) => {
+  const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
+
+  // Global surge modal for 429 errors
+  useEffect(() => {
+    const handleApiRateLimit = (message: any) => {
+      console.log('API_RATE_LIMIT message received:', message);
+      if (message.type === 'API_RATE_LIMIT' && message.data?.status === 429) {
+        console.log('API rate limit detected, showing global surge modal:', message.data);
+        setIsSurgeModalVisible(true);
+      } else {
+        console.log('Message is not API_RATE_LIMIT or status is not 429:', message);
+      }
+    };
+
+    // Add Chrome extension message listener
+    chrome.runtime.onMessage.addListener(handleApiRateLimit);
+
+    // Cleanup message listener on unmount
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleApiRateLimit);
+    };
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -88,6 +111,20 @@ const App = ({ wallet }: { wallet: any }) => {
               <WalletProvider wallet={wallet}>
                 <Main />
               </WalletProvider>
+
+              {console.log('Rendering SurgeModal with visible:', isSurgeModalVisible)}
+              <SurgeModal
+                visible={isSurgeModalVisible}
+                onClose={() => {
+                  console.log('SurgeModal onClose called');
+                  setIsSurgeModalVisible(false);
+                }}
+                onAgree={() => {
+                  console.log('SurgeModal onAgree called');
+                  setIsSurgeModalVisible(false);
+                }}
+                isLoading={false}
+              />
             </div>
           </QueryProvider>
         </ToastProvider>

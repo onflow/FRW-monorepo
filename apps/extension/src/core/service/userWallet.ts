@@ -79,6 +79,7 @@ import openapiService, { getScripts } from './openapi';
 import preferenceService from './preference';
 import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '../../shared/constant/domain-constants';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import { fetchAccountsByPublicKey } from '../utils/key-indexer';
@@ -961,17 +962,108 @@ class UserWallet {
   signAsFeePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
-    const envelope = await openapiService.signAsFeePayer(tx, message);
-    const signature = envelope.envelopeSigs.sig;
-    return signature;
+    try {
+      const envelope = await openapiService.signAsFeePayer(tx, message);
+      console.log('envelope', envelope);
+
+      // Check if envelope has an error property
+      if (envelope && envelope.error) {
+        console.log('Envelope contains error:', envelope.error);
+        throw new Error(envelope.error);
+      }
+
+      const signature = envelope.envelopeSigs.sig;
+      return signature;
+    } catch (error) {
+      console.log(error, 'error');
+      // Handle 429 rate limit errors by showing surge modal
+      const isSurgeError =
+        error instanceof Error &&
+        (error.message.includes(HTTP_STATUS_TOO_MANY_REQUESTS.toString()) ||
+          error.message.includes('Too Many Requests') ||
+          error.message.includes('Many Requests for surge') ||
+          error.message.includes(
+            'communicates temporary pressure and supports standard client backoff via Retry-After'
+          ));
+
+      if (isSurgeError) {
+        console.log('Rate limit detected in signAsFeePayer:', {
+          status: HTTP_STATUS_TOO_MANY_REQUESTS,
+          error: error.message,
+          timestamp: Date.now(),
+        });
+
+        // Send message to UI to show surge modal
+        console.log('Sending api-rate-limit message to UI');
+        try {
+          chrome.runtime.sendMessage({
+            type: 'API_RATE_LIMIT',
+            data: {
+              status: HTTP_STATUS_TOO_MANY_REQUESTS,
+              api: 'signAsFeePayer',
+              timestamp: Date.now(),
+            },
+          });
+          console.log('Message sent successfully');
+        } catch (error) {
+          console.log('Failed to send message:', error);
+        }
+      }
+      throw error;
+    }
   };
 
   signAsBridgeFeePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
-    const envelope = await openapiService.signAsBridgeFeePayer(tx, message);
-    const signature = envelope.envelopeSigs.sig;
-    return signature;
+    try {
+      const envelope = await openapiService.signAsBridgeFeePayer(tx, message);
+      console.log('signAsBridgeFeePayer envelope', envelope);
+
+      // Check if envelope has an error property
+      if (envelope && envelope.error) {
+        console.log('Envelope contains error:', envelope.error);
+        throw new Error(envelope.error);
+      }
+
+      const signature = envelope.envelopeSigs.sig;
+      return signature;
+    } catch (error) {
+      // Handle 429 rate limit errors by showing surge modal
+      const isSurgeError =
+        error instanceof Error &&
+        (error.message.includes(HTTP_STATUS_TOO_MANY_REQUESTS.toString()) ||
+          error.message.includes('Too Many Requests') ||
+          error.message.includes('Many Requests for surge') ||
+          error.message.includes(
+            'communicates temporary pressure and supports standard client backoff via Retry-After'
+          ));
+
+      if (isSurgeError) {
+        console.log('Rate limit detected in signAsBridgeFeePayer:', {
+          status: HTTP_STATUS_TOO_MANY_REQUESTS,
+          error: error.message,
+          timestamp: Date.now(),
+        });
+
+        // Send message to UI to show surge modal
+        console.log('Sending api-rate-limit message to UI');
+        try {
+          chrome.runtime.sendMessage({
+            type: 'API_RATE_LIMIT',
+            data: {
+              status: HTTP_STATUS_TOO_MANY_REQUESTS,
+              api: 'signAsBridgeFeePayer',
+              timestamp: Date.now(),
+            },
+          });
+          console.log('Message sent successfully');
+        } catch (error) {
+          console.log('Failed to send message:', error);
+        }
+      }
+      throw error;
+    }
   };
 
   signProposer = async (signable): Promise<string> => {

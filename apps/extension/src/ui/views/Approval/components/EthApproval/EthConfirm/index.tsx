@@ -2,7 +2,6 @@ import { Box, Stack } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { MAINNET_CHAIN_ID } from '@/shared/constant';
 import { consoleError } from '@/shared/utils';
 import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
@@ -80,10 +79,10 @@ const EthConfirm = ({ params }: ConnectProps) => {
 
   const handleAllow = async () => {
     await checkCoa();
-    resolveApproval({
-      defaultChain: MAINNET_CHAIN_ID,
-      signPermission: 'MAINNET_AND_TESTNET',
-    });
+    // resolveApproval({
+    //   defaultChain: MAINNET_CHAIN_ID,
+    //   signPermission: 'MAINNET_AND_TESTNET',
+    // });
   };
 
   const loadPayer = useCallback(async () => {
