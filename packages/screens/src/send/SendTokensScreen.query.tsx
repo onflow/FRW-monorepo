@@ -161,7 +161,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Query for payer status with automatic caching
   const {
-    data: payerStatus,
+    data: payerStatus = null,
     isLoading: isLoadingPayerStatus,
     error: payerStatusError,
   } = useQuery({
@@ -171,6 +171,10 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     enabled: true,
     retry: 3,
     retryDelay: 1000,
+    // Add explicit error handling to prevent undefined access
+    onError: (error) => {
+      logger.error('Failed to fetch payer status:', error);
+    },
   });
 
   // Query for tokens with automatic caching
@@ -244,19 +248,19 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
-  // Dynamic surge pricing state based on API response
-  const isSurgePricingActive = payerStatus?.surge?.active ?? false;
-  const surgeMultiplier = payerStatus?.surge?.multiplier ?? 1;
+  // Dynamic surge pricing state based on API response - with defensive defaults
+  const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
+  const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
 
   // Log payer status API response for debugging
   React.useEffect(() => {
-    if (payerStatus) {
+    if (payerStatus && typeof payerStatus === 'object') {
       logger.info('Payer Status API Response:', {
-        surge: payerStatus.surge,
-        feePayer: payerStatus.feePayer,
-        bridgePayer: payerStatus.bridgePayer,
-        updatedAt: payerStatus.updatedAt,
-        reason: payerStatus.reason,
+        surge: payerStatus?.surge || null,
+        feePayer: payerStatus?.feePayer || null,
+        bridgePayer: payerStatus?.bridgePayer || null,
+        updatedAt: payerStatus?.updatedAt || null,
+        reason: payerStatus?.reason || null,
         isSurgePricingActive,
         surgeMultiplier,
       });
