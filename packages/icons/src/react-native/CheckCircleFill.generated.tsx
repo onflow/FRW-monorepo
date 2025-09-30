@@ -17,10 +17,6 @@ const CheckCircleFill = ({
     <Path
       fill={color}
       d="M12.944 2.75a9.75 9.75 0 1 0 9.75 9.75 9.76 9.76 0 0 0-9.75-9.75m4.281 8.03-5.25 5.25a.75.75 0 0 1-1.061 0l-2.25-2.25a.75.75 0 1 1 1.061-1.06l1.72 1.72 4.719-4.72a.75.75 0 0 1 1.061 1.06"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

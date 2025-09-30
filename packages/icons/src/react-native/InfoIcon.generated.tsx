@@ -22,10 +22,6 @@ const InfoIcon = ({
       strokeOpacity={0.4}
       strokeWidth={1.167}
       d="M7.75 9.569v-2.5m0-2.5h.006M14 7.069a6.25 6.25 0 1 1-12.5 0 6.25 6.25 0 0 1 12.5 0"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

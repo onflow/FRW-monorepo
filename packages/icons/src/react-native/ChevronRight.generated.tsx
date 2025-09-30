@@ -22,10 +22,6 @@ const ChevronRight = ({
       strokeOpacity={0.502}
       strokeWidth={1.62}
       d="m9.875 18.444 6-6-6-6"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

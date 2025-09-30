@@ -21,10 +21,6 @@ const Edit = ({
       strokeLinejoin="round"
       strokeWidth={2}
       d="M12.444 20.23h9m-4.5-16.5a2.121 2.121 0 0 1 3 3l-12.5 12.5-4 1 1-4z"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

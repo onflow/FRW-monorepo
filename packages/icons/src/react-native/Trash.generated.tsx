@@ -21,10 +21,6 @@ const Trash = ({
       strokeLinejoin="round"
       strokeWidth={2}
       d="M3.625 6h2m0 0h16m-16 0v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6zm3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

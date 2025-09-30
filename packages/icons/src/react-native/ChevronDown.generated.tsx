@@ -21,10 +21,6 @@ const ChevronDown = ({
       strokeLinejoin="round"
       strokeWidth={0.972}
       d="m3.944 5.88 3.5 3.5 3.5-3.5"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

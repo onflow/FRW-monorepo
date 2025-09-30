@@ -22,10 +22,6 @@ const SwitchVertical = ({
       strokeOpacity={0.4}
       strokeWidth={0.947}
       d="M3.576 9.518V1.942m0 0L5.47 3.836M3.576 1.942 1.682 3.836m6.63-1.894v7.576m0 0 1.893-1.894M8.311 9.518 6.417 7.624"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

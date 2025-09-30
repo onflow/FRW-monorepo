@@ -21,10 +21,6 @@ const Minus = ({
       strokeLinejoin="round"
       strokeWidth={2}
       d="M5.125 12h14"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

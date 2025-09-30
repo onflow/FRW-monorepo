@@ -21,10 +21,6 @@ const ChevronUp = ({
       strokeLinejoin="round"
       strokeWidth={2}
       d="m18.5 15-6-6-6 6"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );

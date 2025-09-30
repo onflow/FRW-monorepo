@@ -21,10 +21,6 @@ const Plus = ({
       strokeLinejoin="round"
       strokeWidth={2}
       d="M12.125 5v14m-7-7h14"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     />
   </Svg>
 );
