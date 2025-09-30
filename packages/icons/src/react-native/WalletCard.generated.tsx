@@ -1,8 +1,21 @@
-import * as React from "react"
-import Svg, { type SvgProps, ClipPath, Defs, ForeignObject, Path } from "react-native-svg"
+import * as React from 'react';
+import Svg, { type SvgProps, ClipPath, Defs, ForeignObject, Path } from 'react-native-svg';
 /* SVGR has dropped some elements not supported by react-native-svg: div */
-const WalletCard = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (
-  <Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size} fill="none" viewBox="0 0 146 156" {...props}>
+const WalletCard = ({
+  color = 'currentColor',
+  size = 24,
+  width,
+  height,
+  ...props
+}: SvgProps & { size?: number }) => (
+  <Svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={width ?? size}
+    height={height ?? size}
+    fill="none"
+    viewBox="0 0 146 156"
+    {...props}
+  >
     <ForeignObject width={189.777} height={211.021} x={-36.938} y={-8.176}></ForeignObject>
     <Path
       fill={color}
@@ -39,15 +52,33 @@ const WalletCard = ({ color = "currentColor", size = 24, width, height, ...props
     />
     <Defs>
       <ClipPath id="wallet-card_svg__a" transform="translate(36.938 8.176)">
-        <Path d="M13.704 79.555a13.474 13.474 0 0 1 7.168-15.74l42.815-20.507c7.569-3.625 16.574.475 18.809 8.565l19.698 71.31c1.982 7.173-2.227 14.594-9.4 16.576L47.75 152.201c-7.173 1.982-14.594-2.227-16.576-9.4z" />
+        <Path
+          d="M13.704 79.555a13.474 13.474 0 0 1 7.168-15.74l42.815-20.507c7.569-3.625 16.574.475 18.809 8.565l19.698 71.31c1.982 7.173-2.227 14.594-9.4 16.576L47.75 152.201c-7.173 1.982-14.594-2.227-16.576-9.4z"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </ClipPath>
       <ClipPath id="wallet-card_svg__b" transform="translate(34.184 1.293)">
-        <Path d="M16.46 89.251c-1.98-7.173 2.228-14.594 9.401-16.576l84.434-23.323c7.173-1.982 14.594 2.227 16.575 9.4l14.787 53.531c1.982 7.173-2.227 14.594-9.4 16.575l-84.434 23.324c-7.172 1.981-14.594-2.227-16.575-9.4z" />
+        <Path
+          d="M16.46 89.251c-1.98-7.173 2.228-14.594 9.401-16.576l84.434-23.323c7.173-1.982 14.594 2.227 16.575 9.4l14.787 53.531c1.982 7.173-2.227 14.594-9.4 16.575l-84.434 23.324c-7.172 1.981-14.594-2.227-16.575-9.4z"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </ClipPath>
       <ClipPath id="wallet-card_svg__c" transform="translate(-97.845 -62.7)">
-        <Path d="M111.889 87.121a4.99 4.99 0 0 1 3.529-6.112l16.34-4.378 4.343 16.205-16.341 4.378a4.99 4.99 0 0 1-6.112-3.529z" />
+        <Path
+          d="M111.889 87.121a4.99 4.99 0 0 1 3.529-6.112l16.34-4.378 4.343 16.205-16.341 4.378a4.99 4.99 0 0 1-6.112-3.529z"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </ClipPath>
     </Defs>
   </Svg>
 );
-export default WalletCard
+export default WalletCard;

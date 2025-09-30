@@ -46,6 +46,7 @@ export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationAnimation';
 export * from './components/ConfirmationDrawer';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
 export * from './components/ExtensionHeader';
 export * from './components/InfoDialog';

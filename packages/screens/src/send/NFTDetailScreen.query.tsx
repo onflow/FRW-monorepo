@@ -350,6 +350,8 @@ export function NFTDetailScreen(): React.ReactElement {
             onNFTPress={handleNFTPress}
             onContinue={handleContinue}
             continueText={t('buttons.continue')}
+            selectedCountText={t('nft.selectedCount', { count: selectedNFTsForBar.length })}
+            confirmText={t('nft.confirmSelection', { count: selectedNFTsForBar.length })}
             isEditing={false}
           />
         )}

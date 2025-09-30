@@ -6,6 +6,7 @@ import { Sheet, Spinner, useTheme, View, XStack, YStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
+import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
 import { type TransactionFormData } from './TransactionConfirmationModal';
@@ -422,39 +423,40 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           )}
 
           {/* Confirm Button */}
-          <YStack
-            mb={'$10'}
-            bg={buttonBackgroundColor}
-            rounded="$4"
-            height={56}
-            items="center"
-            justify="center"
-            pressStyle={{ opacity: 0.9 }}
-            onLongPress={internalIsSending ? undefined : handleConfirm}
-            onPressIn={internalIsSending ? undefined : () => setIsLongPressing(true)}
-            onPressOut={() => setIsLongPressing(false)}
-            cursor={internalIsSending ? 'not-allowed' : 'pointer'}
-          >
-            {internalIsSending ? (
-              <XStack items="center" gap="$2">
-                <Spinner size="small" color={buttonTextColor} />
+          {isExtension ? (
+            <YStack
+              mb={'$10'}
+              bg={buttonBackgroundColor}
+              rounded="$4"
+              height={56}
+              items="center"
+              justify="center"
+              pressStyle={{ opacity: 0.9 }}
+              onPress={internalIsSending ? undefined : handleConfirm}
+              cursor={internalIsSending ? 'not-allowed' : 'pointer'}
+            >
+              {internalIsSending ? (
+                <XStack items="center" gap="$2">
+                  <Spinner size="small" color={buttonTextColor} />
+                  <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
+                    {sendingText}
+                  </Text>
+                </XStack>
+              ) : (
                 <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                  {sendingText}
+                  {confirmSendText}
                 </Text>
-              </XStack>
-            ) : isLongPressing && !isExtension ? (
-              <XStack items="center" gap="$2">
-                <Spinner size="small" color={buttonTextColor} />
-                <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                  {holdToSendText}
-                </Text>
-              </XStack>
-            ) : (
-              <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                {isExtension ? confirmSendText : holdToSendText}
-              </Text>
-            )}
-          </YStack>
+              )}
+            </YStack>
+          ) : (
+            <View mb={'$10'}>
+              <HoldToSendButton
+                onPress={handleConfirm}
+                stopSignal={internalIsSending}
+                holdToSendText={holdToSendText}
+              />
+            </View>
+          )}
         </YStack>
       </Sheet.Frame>
     </Sheet>
