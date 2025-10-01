@@ -25,7 +25,6 @@ const App = (props: AppProps) => {
   const { loadAccountsFromBridge } = useWalletStore();
 
   // Ensure ServiceContext is initialized BEFORE any children render that access `bridge`
-  // This prevents early render crashes when initialRoute is a deep screen that uses `bridge` in render.
   if (!ServiceContext.isInitialized()) {
     ServiceContext.initialize(platform);
     platform.log('debug', '[App] Services initialized with RNBridge (sync)');
@@ -33,8 +32,6 @@ const App = (props: AppProps) => {
 
   const initializeApp = useCallback(async () => {
     try {
-      // Services are initialized synchronously above to avoid early render race.
-      // Keep this for idempotency and downstream setup.
       if (!ServiceContext.isInitialized()) {
         ServiceContext.initialize(platform);
       }
