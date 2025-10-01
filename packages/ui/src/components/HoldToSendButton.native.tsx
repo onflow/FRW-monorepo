@@ -14,6 +14,8 @@ interface HoldToSendButtonProps {
   stopSignal?: boolean;
   holdDuration?: number;
   holdToSendText: string;
+  errorSignal?: boolean;
+  errorDisplayDurationMs?: number;
 }
 
 export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
@@ -22,6 +24,8 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   stopSignal = false,
   holdDuration = 1500,
   holdToSendText,
+  errorSignal = false,
+  errorDisplayDurationMs = 1200,
 }) => {
   const theme = useTheme();
   const [isHolding, setIsHolding] = useState(false);
@@ -29,16 +33,20 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isRollingBack, setIsRollingBack] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   const progressValue = useRef(new Animated.Value(0)).current;
   const rotateValue = useRef(new Animated.Value(0)).current; // Native driver for rotation
   const scaleValue = useRef(new Animated.Value(1)).current;
   const progressAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
   const rotateAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const errorShakeX = useRef(new Animated.Value(0)).current;
   const progressCurrentRef = useRef(0);
   const progressListenerIdRef = useRef<string | null>(null);
   const completedRef = useRef(false);
   const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevErrorSignalRef = useRef<boolean>(errorSignal);
 
   const CIRCLE_RADIUS = 8;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -47,6 +55,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const buttonBackgroundColor = theme.text?.val ?? '#000000';
   const buttonTextColor = theme.bg?.val ?? '#FFFFFF';
   const progressBackgroundColor = theme.textSecondary?.val ?? '#767676';
+  const errorColor = theme.error?.val ?? '#FF3B30';
 
   const handleStop = useCallback(() => {
     if (progressAnimationRef.current) {
@@ -64,10 +73,13 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
     setIsAnimating(false);
     setIsDisabled(false);
     setIsRollingBack(false);
+    setIsError(false);
 
     progressValue.setValue(0);
     rotateValue.setValue(0);
     scaleValue.setValue(1);
+    errorShakeX.stopAnimation();
+    errorShakeX.setValue(0);
     progressCurrentRef.current = 0;
     completedRef.current = false;
     try {
@@ -82,7 +94,11 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       clearTimeout(holdTimeoutRef.current);
       holdTimeoutRef.current = null;
     }
-  }, [progressValue, rotateValue, scaleValue]);
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = null;
+    }
+  }, [progressValue, rotateValue, scaleValue, errorShakeX]);
 
   // Handle stop signal from external source
   useEffect(() => {
@@ -91,6 +107,57 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       handleStop();
     }
   }, [stopSignal, isAnimating, isHolding, isRollingBack, handleStop]);
+
+  // Handle error signal: enter error state briefly, then reset
+  useEffect(() => {
+    const prev = prevErrorSignalRef.current;
+    if (!prev && errorSignal) {
+      // stop any running animations
+      if (progressAnimationRef.current) {
+        progressAnimationRef.current.stop();
+        progressAnimationRef.current = null;
+      }
+      if (rotateAnimationRef.current) {
+        rotateAnimationRef.current.stop();
+        rotateAnimationRef.current = null;
+      }
+      setIsHolding(false);
+      setIsRollingBack(false);
+      setIsAnimating(false);
+      setIsCompleted(false);
+      setIsDisabled(false);
+      setIsError(true);
+      // trigger shake animation on error icon
+      errorShakeX.setValue(0);
+      const amplitude = 6;
+      const steps = [
+        -amplitude,
+        amplitude,
+        -amplitude * 0.7,
+        amplitude * 0.7,
+        -amplitude * 0.4,
+        amplitude * 0.4,
+        0,
+      ];
+      Animated.sequence(
+        steps.map((to, idx) =>
+          Animated.timing(errorShakeX, {
+            toValue: to,
+            duration: idx < steps.length - 1 ? 40 : 60,
+            useNativeDriver: true,
+          })
+        )
+      ).start();
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = setTimeout(
+        () => {
+          handleStop();
+        },
+        Math.max(600, errorDisplayDurationMs)
+      );
+    }
+    prevErrorSignalRef.current = errorSignal;
+  }, [errorSignal, errorDisplayDurationMs, handleStop]);
 
   const handlePressIn = useCallback(() => {
     if (isDisabled || isAnimating) return;
@@ -243,7 +310,9 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       if (holdTimeoutRef.current) {
         clearTimeout(holdTimeoutRef.current);
       }
-      // removed leftover spinStopTimeoutRef cleanup
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -263,12 +332,27 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             alignSelf: 'stretch',
-            transform: [{ scale: scaleValue }],
+            transform: [
+              { scale: scaleValue },
+              { translateX: isError ? (errorShakeX as unknown as number) : 0 },
+            ],
           },
         ]}
       >
-        {isAnimating ? (
-          <View flexDirection="row" items="center" justify="center" gap="$3">
+        <View flexDirection="row" items="center" justify="center" gap="$3">
+          {/* Icon renderer: one container, different visual states */}
+          {isError ? (
+            <Svg width={24} height={24} viewBox="0 0 24 24">
+              <Circle
+                cx={12}
+                cy={12}
+                r={CIRCLE_RADIUS}
+                stroke={errorColor}
+                strokeWidth={3}
+                fill="none"
+              />
+            </Svg>
+          ) : isAnimating ? (
             <Animated.View
               style={{
                 width: 24,
@@ -283,7 +367,6 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                 ],
               }}
             >
-              {/* Background ring */}
               <Svg width={24} height={24} viewBox="0 0 24 24">
                 <Circle
                   cx={12}
@@ -293,7 +376,6 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                   strokeWidth={3}
                   fill="none"
                 />
-                {/* Quarter-arc */}
                 <Circle
                   cx={12}
                   cy={12}
@@ -307,12 +389,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                 />
               </Svg>
             </Animated.View>
-            <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-              {holdToSendText}
-            </Text>
-          </View>
-        ) : (
-          <View flexDirection="row" items="center" justify="center" gap="$3">
+          ) : (
             <View width={20} height={20} items="center" justify="center">
               {isHolding || isCompleted || isRollingBack ? (
                 <Svg width={24} height={24} viewBox="0 0 24 24">
@@ -350,17 +427,17 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                 />
               )}
             </View>
-            <Text
-              fontSize="$5"
-              fontWeight="600"
-              color={buttonTextColor}
-              textAlign="center"
-              flexShrink={0}
-            >
-              {holdToSendText}
-            </Text>
-          </View>
-        )}
+          )}
+          <Text
+            fontSize="$5"
+            fontWeight="600"
+            color={isError ? (errorColor as string) : (buttonTextColor as string)}
+            textAlign="center"
+            flexShrink={0}
+          >
+            {holdToSendText}
+          </Text>
+        </View>
       </Animated.View>
     </TouchableWithoutFeedback>
   );

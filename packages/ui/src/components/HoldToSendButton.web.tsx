@@ -9,6 +9,8 @@ interface HoldToSendButtonProps {
   stopSignal?: boolean;
   holdDuration?: number;
   holdToSendText: string;
+  errorSignal?: boolean;
+  errorDisplayDurationMs?: number;
 }
 
 export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
@@ -17,6 +19,8 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   stopSignal = false,
   holdDuration = 1500,
   holdToSendText,
+  errorSignal = false,
+  errorDisplayDurationMs = 1200,
 }) => {
   const theme = useTheme();
 
@@ -26,6 +30,8 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const [isDisabled, setIsDisabled] = useState(false);
   const [progress, setProgress] = useState(0); // 0..1
   const [spinAngle, setSpinAngle] = useState(0); // 0..360
+  const [isError, setIsError] = useState(false);
+  const [errorShakeX, setErrorShakeX] = useState(0);
 
   const startRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -34,6 +40,9 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const spinStartRef = useRef<number | null>(null);
   const isHoldingRef = useRef(false);
   const isAnimatingRef = useRef(false);
+  const errorTimeoutRef = useRef<number | null>(null);
+  const prevErrorSignalRef = useRef<boolean>(errorSignal);
+  const errorShakeTimeoutsRef = useRef<number[]>([]);
 
   const CIRCLE_RADIUS = 8;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -42,14 +51,21 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const buttonBackgroundColor = theme.text?.val ?? '#000000';
   const buttonTextColor = theme.bg?.val ?? '#FFFFFF';
   const progressBackgroundColor = theme.textSecondary?.val ?? '#767676';
+  const errorColor = theme.error?.val ?? '#FF3B30';
 
   const stopAll = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
     if (spinRafRef.current) cancelAnimationFrame(spinRafRef.current);
+    if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+    if (errorShakeTimeoutsRef.current.length) {
+      errorShakeTimeoutsRef.current.forEach((id) => clearTimeout(id));
+      errorShakeTimeoutsRef.current = [];
+    }
     rafRef.current = null;
     completeTimeoutRef.current = null;
     spinRafRef.current = null;
+    errorTimeoutRef.current = null;
     spinStartRef.current = null;
     startRef.current = null;
     setIsHolding(false);
@@ -58,15 +74,60 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
     setIsDisabled(false);
     setProgress(0);
     setSpinAngle(0);
+    setIsError(false);
+    setErrorShakeX(0);
     isHoldingRef.current = false;
     isAnimatingRef.current = false;
   }, []);
 
   useEffect(() => {
-    if (stopSignal && (isAnimating || isCompleted)) {
+    // Align with native: only stop when not in spinner phase
+    if (stopSignal && !isAnimating && isHolding) {
       stopAll();
     }
-  }, [stopSignal, isAnimating, isCompleted, stopAll]);
+  }, [stopSignal, isAnimating, isHolding, stopAll]);
+
+  // Error signal: show error ring briefly then reset
+  useEffect(() => {
+    const prev = prevErrorSignalRef.current;
+    if (!prev && errorSignal) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+      if (spinRafRef.current) cancelAnimationFrame(spinRafRef.current);
+      setIsHolding(false);
+      setIsCompleted(false);
+      setIsAnimating(false);
+      setIsDisabled(false);
+      setIsError(true);
+      // trigger shake animation for the icon
+      setErrorShakeX(0);
+      const amplitude = 6;
+      const steps = [
+        -amplitude,
+        amplitude,
+        -amplitude * 0.7,
+        amplitude * 0.7,
+        -amplitude * 0.4,
+        amplitude * 0.4,
+        0,
+      ];
+      let acc = 0;
+      steps.forEach((val, idx) => {
+        const dur = idx < steps.length - 1 ? 40 : 60;
+        acc += dur;
+        const id = window.setTimeout(() => setErrorShakeX(val), acc) as unknown as number;
+        errorShakeTimeoutsRef.current.push(id);
+      });
+      if (errorTimeoutRef.current) clearTimeout(errorTimeoutRef.current);
+      errorTimeoutRef.current = window.setTimeout(
+        () => {
+          stopAll();
+        },
+        Math.max(600, errorDisplayDurationMs)
+      );
+    }
+    prevErrorSignalRef.current = errorSignal;
+  }, [errorSignal, errorDisplayDurationMs, stopAll]);
 
   const tick = useCallback(
     (ts: number) => {
@@ -139,14 +200,28 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
         opacity: isDisabled ? 0.9 : 1,
         pointerEvents: isDisabled ? 'none' : 'auto',
         transition: 'transform 100ms ease',
+        transform: isError ? `translateX(${errorShakeX}px)` : undefined,
       }}
     >
-      {isAnimating ? (
-        <View flexDirection="row" items="center" justify="center" gap="$3">
+      <View flexDirection="row" items="center" justify="center" gap="$3">
+        {/* Icon renderer: one container, different visual states */}
+        {isError ? (
+          <View width={24} height={24} items="center" justify="center">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <circle
+                cx="12"
+                cy="12"
+                r={CIRCLE_RADIUS}
+                stroke={errorColor}
+                strokeWidth={3}
+                fill="none"
+              />
+            </svg>
+          </View>
+        ) : isAnimating ? (
           <View width={24} height={24} items="center" justify="center">
             <svg width="24" height="24" viewBox="0 0 24 24">
               <g transform={`rotate(${spinAngle - 90} 12 12)`}>
-                {/* background ring for contrast */}
                 <circle
                   cx="12"
                   cy="12"
@@ -163,18 +238,12 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                   strokeWidth={3}
                   fill="none"
                   strokeDasharray={`${(CIRCLE_CIRCUMFERENCE * 0.25).toFixed(2)} ${(CIRCLE_CIRCUMFERENCE * 0.75).toFixed(2)}`}
-                  strokeDashoffset={0}
                   strokeLinecap="round"
                 />
               </g>
             </svg>
           </View>
-          <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-            {holdToSendText}
-          </Text>
-        </View>
-      ) : (
-        <View flexDirection="row" items="center" justify="center" gap="$3">
+        ) : (
           <View width={20} height={20} items="center" justify="center">
             {isHolding || isCompleted ? (
               <svg width="24" height="24" viewBox="0 0 24 24">
@@ -209,17 +278,17 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
               />
             )}
           </View>
-          <Text
-            fontSize="$5"
-            fontWeight="600"
-            color={buttonTextColor}
-            textAlign="center"
-            flexShrink={0}
-          >
-            {holdToSendText}
-          </Text>
-        </View>
-      )}
+        )}
+        <Text
+          fontSize="$5"
+          fontWeight="600"
+          color={isError ? (errorColor as string) : (buttonTextColor as string)}
+          textAlign="center"
+          flexShrink={0}
+        >
+          {holdToSendText}
+        </Text>
+      </View>
     </View>
   );
 };
