@@ -1,4 +1,4 @@
-import type { NFTModel } from '@onflow/frw-types';
+import type { NFTTransactionData } from '@onflow/frw-types';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 import { YStack } from 'tamagui';
@@ -39,7 +39,6 @@ export default meta;
 type Story = StoryObj<typeof NFTSendPreview>;
 
 // Mock NFT data
-import type { NFTTransactionData } from '@onflow/frw-types';
 type NFTWithExtras = NFTTransactionData & { collection?: string };
 
 const mockNFT: NFTWithExtras = {
