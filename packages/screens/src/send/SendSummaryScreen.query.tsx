@@ -243,10 +243,97 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
   // Event handlers
   const handleEditNFTPress = useCallback(() => {
-    // Simply navigate to NFTList without setting collection to avoid infinite fetch loops
-    // The NFTListScreen should handle the current selection appropriately
+    // Get current NFT data from store
+    const currentSelectedNFTs = useSendStore.getState().selectedNFTs;
+    const currentSelectedNFT = currentSelectedNFTs?.[0] || null;
+
+    if (currentSelectedNFT && fromAccount) {
+      // Instead of creating a new collection, find the existing one from the token store
+      // This ensures we have all the required properties including the path
+      const tokenStore = useTokenQueryStore.getState();
+
+      // For EVM NFTs, we might need to check both Flow and EVM addresses
+      const addressesToCheck = [fromAccount.address];
+      if (fromAccount.evmAddress) {
+        addressesToCheck.push(fromAccount.evmAddress);
+      }
+
+      let matchingCollection = null;
+
+      // Try each address until we find the collection
+      for (const address of addressesToCheck) {
+        const existingCollections = tokenStore.getNFTCollectionsForAddress(address);
+
+        logger.debug('[SendSummaryScreen] Checking collections for address', {
+          address,
+          hasCollections: !!existingCollections,
+          collectionsCount: existingCollections?.length || 0,
+          collections:
+            existingCollections?.map((c) => ({
+              id: c.id,
+              name: c.name,
+              contractName: c.contractName,
+              flowIdentifier: c.flowIdentifier,
+              evmAddress: c.evmAddress,
+              type: c.type,
+            })) || [],
+          targetNFT: {
+            collectionName: currentSelectedNFT.collectionName,
+            collectionContractName: currentSelectedNFT.collectionContractName,
+            flowIdentifier: currentSelectedNFT.flowIdentifier,
+            evmAddress: currentSelectedNFT.evmAddress,
+            type: currentSelectedNFT.type,
+          },
+        });
+
+        if (existingCollections) {
+          // Find the collection that matches this NFT
+          matchingCollection = existingCollections.find((collection) => {
+            // Try multiple matching strategies
+            const matches = {
+              name: collection.name === currentSelectedNFT.collectionName,
+              contractName: collection.contractName === currentSelectedNFT.collectionContractName,
+              id: collection.id === currentSelectedNFT.collectionContractName,
+              flowIdentifier: collection.flowIdentifier === currentSelectedNFT.flowIdentifier,
+              evmAddress: collection.evmAddress === currentSelectedNFT.evmAddress,
+            };
+
+            const hasMatch = Object.values(matches).some(Boolean);
+
+            logger.debug('[SendSummaryScreen] Collection matching attempt', {
+              collection: {
+                id: collection.id,
+                name: collection.name,
+                contractName: collection.contractName,
+                flowIdentifier: collection.flowIdentifier,
+                evmAddress: collection.evmAddress,
+              },
+              matches,
+              hasMatch,
+            });
+
+            return hasMatch;
+          });
+
+          if (matchingCollection) {
+            logger.info('[SendSummaryScreen] Found matching collection', {
+              collectionId: matchingCollection.id,
+              collectionName: matchingCollection.name,
+              address,
+            });
+            break; // Found it, stop searching
+          }
+        }
+      }
+
+      if (matchingCollection) {
+        const setSelectedCollection = useSendStore.getState().setSelectedCollection;
+        setSelectedCollection(matchingCollection);
+      }
+    }
+
     navigation.navigate('NFTList');
-  }, []);
+  }, [fromAccount]);
 
   const handleEditAccountPress = useCallback(() => {
     navigation.navigate('SendTo');

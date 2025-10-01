@@ -76,7 +76,7 @@ export function NFTListScreen(): React.ReactElement {
     setCurrentStep('select-tokens');
   }, [setCurrentStep]);
 
-  // Initialize selectedIds from store's selectedNFTs when component mounts
+  // Initialize selectedIds from store's selectedNFTs when component mounts or when selectedNFTs changes
   useEffect(() => {
     if (selectedNFTs && selectedNFTs.length > 0) {
       const nftIds = selectedNFTs.map((nft) => getNFTId(nft));
@@ -88,8 +88,11 @@ export function NFTListScreen(): React.ReactElement {
       } else if (nftIds.length > 1) {
         setTransactionType('multiple-nfts');
       }
+    } else {
+      // Clear local selection if store has no selected NFTs
+      setSelectedIds([]);
     }
-  }, []); // Only run on mount
+  }, [selectedNFTs, setTransactionType]); // Update when selectedNFTs changes
 
   const collectionName = activeCollection?.name || 'NFT Collection';
 
