@@ -141,6 +141,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 }) => {
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
+  const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
 
   // Theme-aware button colors using helper function
@@ -169,7 +170,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
-      //
+      // Trigger HoldToSendButton error state (rising edge)
+      setErrorSignal(true);
+      setTimeout(() => setErrorSignal(false), 50);
     } finally {
       setInternalIsSending(false);
     }
@@ -453,6 +456,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               <HoldToSendButton
                 onPress={handleConfirm}
                 stopSignal={internalIsSending}
+                errorSignal={errorSignal}
                 holdToSendText={holdToSendText}
               />
             </View>
