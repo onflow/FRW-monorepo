@@ -4,7 +4,6 @@ import { YStack, ScrollView } from 'tamagui';
 import { NFTInfoSection } from './NFTInfoSection';
 import { NFTPropertiesGrid, type NFTProperty } from './NFTPropertiesGrid';
 import { SelectableNFTImage } from './SelectableNFTImage';
-import { BackgroundWrapper } from '../layout/BackgroundWrapper';
 
 export interface NFTDetailData {
   id?: string;
@@ -81,46 +80,44 @@ export function NFTDetailView({
   const allProperties = generateProperties();
 
   return (
-    <BackgroundWrapper backgroundColor={backgroundColor}>
-      <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-        <YStack pb={20}>
-          {/* NFT Image */}
-          <YStack mb={23}>
-            <SelectableNFTImage
-              src={nft.image}
-              selected={selected}
-              selectable={selectable}
-              onImagePress={selectable ? onToggleSelection : undefined}
-              borderRadius={16}
-              contractType={nft.contractType}
-              amount={nft.amount}
-            />
-          </YStack>
-
-          {/* NFT Info */}
-          <YStack mb={20}>
-            <NFTInfoSection
-              name={nft.name}
-              collection={nft.collection}
-              description={nft.description}
-              owner={owner}
-              showOwner={showOwner}
-              spacing={18}
-            />
-          </YStack>
-
-          {/* Properties */}
-          {allProperties.length > 0 && (
-            <NFTPropertiesGrid
-              properties={allProperties}
-              title="Properties"
-              columns={2}
-              gap={9}
-              titleSpacing={13}
-            />
-          )}
+    <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+      <YStack pb={20}>
+        {/* NFT Image */}
+        <YStack mb={23}>
+          <SelectableNFTImage
+            src={nft.image}
+            selected={selected}
+            selectable={selectable}
+            onImagePress={selectable ? onToggleSelection : undefined}
+            borderRadius={16}
+            contractType={nft.contractType}
+            amount={nft.amount}
+          />
         </YStack>
-      </ScrollView>
-    </BackgroundWrapper>
+
+        {/* NFT Info */}
+        <YStack mb={20}>
+          <NFTInfoSection
+            name={nft.name}
+            collection={nft.collection}
+            description={nft.description}
+            owner={owner}
+            showOwner={showOwner}
+            spacing={18}
+          />
+        </YStack>
+
+        {/* Properties */}
+        {allProperties.length > 0 && (
+          <NFTPropertiesGrid
+            properties={allProperties}
+            title="Properties"
+            columns={2}
+            gap={9}
+            titleSpacing={13}
+          />
+        )}
+      </YStack>
+    </ScrollView>
   );
 }

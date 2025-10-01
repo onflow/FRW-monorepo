@@ -64,7 +64,6 @@ export function AccountCard({
       // bg={backgroundColor}
       rounded="$4"
       pt="$4"
-      px="$4"
       pb="$6"
       gap="$1"
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}

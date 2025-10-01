@@ -9,9 +9,16 @@ import { ConfirmationAnimation } from './ConfirmationAnimation';
 import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
-import { type TransactionFormData } from './TransactionConfirmationModal';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
+
+export interface TransactionFormData {
+  tokenAmount: string;
+  fiatAmount: string;
+  isTokenMode: boolean;
+  transactionFee?: string;
+}
+
 export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
@@ -220,7 +227,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={closeIconColor} />
+                  <Close size={24} color={closeIconColor} />
                 </XStack>
               </>
             ) : (
@@ -243,7 +250,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={closeIconColor} />
+                  <Close size={24} color={closeIconColor} />
                 </XStack>
               </>
             )}
