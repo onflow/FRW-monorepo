@@ -24,11 +24,18 @@ const App = (props: AppProps) => {
   // Initialize walletStore when the app starts
   const { loadAccountsFromBridge } = useWalletStore();
 
+  // Ensure ServiceContext is initialized BEFORE any children render that access `bridge`
+  if (!ServiceContext.isInitialized()) {
+    ServiceContext.initialize(platform);
+    platform.log('debug', '[App] Services initialized with RNBridge (sync)');
+  }
+
   const initializeApp = useCallback(async () => {
     try {
-      // Initialize services with RNBridge dependency injection
-      ServiceContext.initialize(platform);
-      platform.log('debug', '[App] Services initialized with RNBridge successfully');
+      if (!ServiceContext.isInitialized()) {
+        ServiceContext.initialize(platform);
+      }
+      platform.log('debug', '[App] Services initialized with RNBridge successfully (effect)');
 
       // Initialize i18n with platform-detected language
       const language = platform.getLanguage();
