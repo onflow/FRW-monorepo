@@ -1,5 +1,6 @@
 export { default as ArrowBack } from './ArrowBack.generated';
 export { default as ArrowDown } from './ArrowDown.generated';
+export { default as ArrowLeft } from './ArrowLeft.generated';
 export { default as CheckCircle } from './CheckCircle.generated';
 export { default as CheckCircleFill } from './CheckCircleFill.generated';
 export { default as ChevronDown } from './ChevronDown.generated';
@@ -22,3 +23,4 @@ export { default as Trash } from './Trash.generated';
 export { default as UserRoundPlus } from './UserRoundPlus.generated';
 export { default as VerifiedToken } from './VerifiedToken.generated';
 export { default as WalletCard } from './WalletCard.generated';
+export { default as X } from './X.generated';

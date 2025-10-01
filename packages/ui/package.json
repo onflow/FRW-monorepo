@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "build:watch": "tsup --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",
     "storybook": "storybook dev -p 6006",
@@ -22,6 +23,7 @@
     "@tamagui/theme-builder": "^1.132.20",
     "@tamagui/web": "^1.132.20",
     "bignumber.js": "^9.1.2",
+    "lottie-web": "^5.12.2",
     "tamagui": "^1.132.20"
   },
   "devDependencies": {
@@ -46,13 +48,21 @@
   },
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-native-svg": ">=15.0.0",
+    "lottie-react-native": "^6.0.0"
   },
   "peerDependenciesMeta": {
     "react-native": {
       "optional": true
     },
+    "react-native-svg": {
+      "optional": true
+    },
     "@tamagui/animations-react-native": {
+      "optional": true
+    },
+    "lottie-react-native": {
       "optional": true
     }
   },
@@ -63,6 +73,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }

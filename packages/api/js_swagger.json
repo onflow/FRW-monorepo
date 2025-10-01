@@ -1430,6 +1430,10 @@
           "sampledAt": {
             "type": "integer",
             "description": "timestamp"
+          },
+          "maxFee": {
+            "type": "number",
+            "description": "max fee with surge factor"
           }
         },
         "required": ["active"]

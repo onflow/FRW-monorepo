@@ -4,6 +4,8 @@
     "sendTo": "送信先",
     "sending": "送信中",
     "selectTokens": "トークンを選択",
+    "sendTokens": "トークンを送信",
+    "nftDetails": "NFT詳細",
     "colorDemo": "カラーデモ"
   },
   "common": {
@@ -140,6 +142,13 @@
     "noNFTsMatchSearch": "'{{search}}'に一致するNFTがありません",
     "noNFTsFound": "NFTが見つかりません",
     "collectionEmpty": "このコレクションにはNFTが含まれていません",
+    "noCollectionSelected": "コレクションが選択されていません。戻ってNFTコレクションを選択してください。",
+    "noAccountSelected": "利用可能なアカウントアドレスがありません。アカウントを選択してください。",
+    "maxSelectionReached": "最大9個のNFTを選択できます",
+    "nftNotFound": "NFT IDが見つかりません:",
+    "selectedCount": "{{count}} 個のNFTを選択中",
+    "confirmSelection": "{{count}} 個のNFTを確認",
+    "itemCount": "{{count}}個のアイテム",
     "notFound": {
       "title": "NFTが見つかりません",
       "message": "要求されたNFTが見つからないか、読み込めませんでした"

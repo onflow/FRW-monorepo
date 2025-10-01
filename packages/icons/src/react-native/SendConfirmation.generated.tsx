@@ -1,8 +1,21 @@
-import * as React from "react"
-import Svg, { type SvgProps, ClipPath, Defs, ForeignObject, Path } from "react-native-svg"
+import * as React from 'react';
+import Svg, { type SvgProps, ClipPath, Defs, ForeignObject, Path } from 'react-native-svg';
 /* SVGR has dropped some elements not supported by react-native-svg: div */
-const SendConfirmation = ({ color = "currentColor", size = 24, width, height, ...props }: SvgProps & { size?: number }) => (
-  <Svg xmlns="http://www.w3.org/2000/svg" width={width ?? size} height={height ?? size} fill="none" viewBox="0 0 146 156" {...props}>
+const SendConfirmation = ({
+  color = 'currentColor',
+  size = 24,
+  width,
+  height,
+  ...props
+}: SvgProps & { size?: number }) => (
+  <Svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={width ?? size}
+    height={height ?? size}
+    fill="none"
+    viewBox="0 0 146 156"
+    {...props}
+  >
     <ForeignObject width={189.777} height={211.022} x={-36.355} y={-8.175}></ForeignObject>
     <Path
       fill={color}
@@ -40,15 +53,33 @@ const SendConfirmation = ({ color = "currentColor", size = 24, width, height, ..
     />
     <Defs>
       <ClipPath id="send-confirmation_svg__a" transform="translate(36.355 8.175)">
-        <Path d="M14.288 79.556a13.475 13.475 0 0 1 7.168-15.74L64.27 43.308c7.569-3.625 16.574.476 18.809 8.565l19.698 71.31c1.982 7.173-2.227 14.595-9.4 16.576l-45.043 12.442c-7.173 1.982-14.595-2.227-16.576-9.4z" />
+        <Path
+          d="M14.288 79.556a13.475 13.475 0 0 1 7.168-15.74L64.27 43.308c7.569-3.625 16.574.476 18.809 8.565l19.698 71.31c1.982 7.173-2.227 14.595-9.4 16.576l-45.043 12.442c-7.173 1.982-14.595-2.227-16.576-9.4z"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </ClipPath>
       <ClipPath id="send-confirmation_svg__b" transform="translate(33.6 1.293)">
-        <Path d="M17.045 89.251c-1.982-7.173 2.227-14.594 9.4-16.575l84.434-23.324c7.173-1.981 14.594 2.227 16.575 9.4l14.787 53.531c1.982 7.173-2.227 14.594-9.4 16.576l-84.434 23.323c-7.172 1.982-14.594-2.227-16.575-9.4z" />
+        <Path
+          d="M17.045 89.251c-1.982-7.173 2.227-14.594 9.4-16.575l84.434-23.324c7.173-1.981 14.594 2.227 16.575 9.4l14.787 53.531c1.982 7.173-2.227 14.594-9.4 16.576l-84.434 23.323c-7.172 1.982-14.594-2.227-16.575-9.4z"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </ClipPath>
       <ClipPath id="send-confirmation_svg__c" transform="translate(-98.429 -62.701)">
-        <Path d="M112.473 87.121a4.99 4.99 0 0 1 3.529-6.112l16.34-4.378 4.343 16.205-16.341 4.378a4.99 4.99 0 0 1-6.112-3.528z" />
+        <Path
+          d="M112.473 87.121a4.99 4.99 0 0 1 3.529-6.112l16.34-4.378 4.343 16.205-16.341 4.378a4.99 4.99 0 0 1-6.112-3.528z"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </ClipPath>
     </Defs>
   </Svg>
 );
-export default SendConfirmation
+export default SendConfirmation;
