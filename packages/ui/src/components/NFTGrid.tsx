@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
-import { XStack, YStack, Text } from 'tamagui';
+import { XStack, YStack, Text, View } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
@@ -299,7 +299,7 @@ export function NFTGrid({
 
   // Main grid content
   return (
-    <YStack gap="$4" pr={!isExtension && '$4'}>
+    <YStack gap="$4" pr={!isExtension ? '$4' : undefined}>
       {rows.map((row, rowIndex) => (
         <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
           {row.map((nft) => (
@@ -323,11 +323,13 @@ export function NFTGrid({
 
       {/* Load more trigger - invisible element for intersection observer */}
       {enableVirtualization && visibleItemCount < data.length && (
-        <YStack ref={loadMoreRef} items="center" py="$4">
-          <Text fontSize="$3" color="$textSecondary">
-            Loading more NFTs... ({visibleItemCount} of {data.length})
-          </Text>
-        </YStack>
+        <View ref={loadMoreRef} height={1} width="100%" overflow="scroll" position="relative">
+          <YStack items="center" py="$4">
+            <Text fontSize="$3" color="$textSecondary">
+              Loading more NFTs... ({visibleItemCount} of {data.length})
+            </Text>
+          </YStack>
+        </View>
       )}
     </YStack>
   );

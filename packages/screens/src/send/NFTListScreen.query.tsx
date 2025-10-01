@@ -11,7 +11,6 @@ import {
   ExtensionHeader,
   Text,
   SearchBar,
-  ScrollView,
 } from '@onflow/frw-ui';
 import { getNFTId, logger } from '@onflow/frw-utils';
 import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
@@ -444,33 +443,31 @@ export function NFTListScreen(): React.ReactElement {
               width="100%"
             />
           </YStack>
-          <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-            <NFTGrid
-              data={filteredNFTs}
-              selectedIds={selectedIds}
-              isLoading={isLoading}
-              loadingProgress={finalLoadingProgress}
-              error={error?.message || undefined}
-              emptyTitle={emptyState.title}
-              emptyMessage={emptyState.message}
-              onNFTSelect={handleNFTSelect}
-              onNFTPress={handleNFTDetail}
-              onRetry={refreshNFTs}
-              retryText={t('buttons.retry')}
-              clearSearchText={t('buttons.clearSearch')}
-              onClearSearch={() => setSearchQuery('')}
-              showClearSearch={!!searchQuery}
-              accountEmoji={fromAccount?.emojiInfo?.emoji}
-              accountAvatar={fromAccount?.avatar}
-              accountName={fromAccount?.name}
-              accountColor={fromAccount?.emojiInfo?.color}
-              enableVirtualization={true}
-              itemsPerBatch={20}
-              loadMoreThreshold={200}
-              isExtension={isExtension}
-              totalCount={totalCount}
-            />
-          </ScrollView>
+          <NFTGrid
+            data={filteredNFTs}
+            selectedIds={selectedIds}
+            isLoading={isLoading}
+            loadingProgress={finalLoadingProgress}
+            error={error?.message || undefined}
+            emptyTitle={emptyState.title}
+            emptyMessage={emptyState.message}
+            onNFTSelect={handleNFTSelect}
+            onNFTPress={handleNFTDetail}
+            onRetry={refreshNFTs}
+            retryText={t('buttons.retry')}
+            clearSearchText={t('buttons.clearSearch')}
+            onClearSearch={() => setSearchQuery('')}
+            showClearSearch={!!searchQuery}
+            accountEmoji={fromAccount?.emojiInfo?.emoji}
+            accountAvatar={fromAccount?.avatar}
+            accountName={fromAccount?.name}
+            accountColor={fromAccount?.emojiInfo?.color}
+            enableVirtualization={true}
+            itemsPerBatch={20}
+            loadMoreThreshold={200}
+            isExtension={isExtension}
+            totalCount={totalCount}
+          />
         </YStack>
 
         {/* Selection Bar */}
