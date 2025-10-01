@@ -297,6 +297,9 @@ importers:
       react-infinite-scroll-component:
         specifier: ^6.1.0
         version: 6.1.0(react@19.0.0)
+      react-native-web:
+        specifier: ^0.21.1
+        version: 0.21.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-qrcode-logo:
         specifier: ^3.0.0
         version: 3.0.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1089,7 +1092,7 @@ importers:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
       react-native-web:
-        specifier: ^0.21.0
+        specifier: ^0.21.1
         version: 0.21.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       rimraf:
         specifier: ^5.0.1
