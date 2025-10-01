@@ -11,8 +11,10 @@ import {
   ExtensionHeader,
   Text,
   SearchBar,
+  ScrollView,
 } from '@onflow/frw-ui';
 import { getNFTId, logger } from '@onflow/frw-utils';
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +49,26 @@ export function NFTListScreen(): React.ReactElement {
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
-  const currentAddress = fromAccount?.address;
+
+  // Get effective address with debugAddress logic (same as SelectTokensScreen)
+  const currentAddress = useMemo(() => {
+    const debugAddress = bridge.getDebugAddress();
+    const accountAddress = fromAccount?.address || '';
+
+    logger.debug('NFTListScreen currentAddress calculated:', {
+      debugAddress,
+      accountAddress,
+      willUse: debugAddress ? debugAddress : accountAddress,
+    });
+
+    if (debugAddress) {
+      if (validateEvmAddress(debugAddress) || validateFlowAddress(debugAddress)) {
+        return debugAddress.trim();
+      }
+    }
+    return accountAddress;
+  }, [fromAccount?.address]);
+
   // Get the total count from the collection info
   const totalCount = activeCollection?.count || 0;
   // Update current step when screen loads (following SendToScreen pattern)
@@ -423,31 +444,33 @@ export function NFTListScreen(): React.ReactElement {
               width="100%"
             />
           </YStack>
-          <NFTGrid
-            data={filteredNFTs}
-            selectedIds={selectedIds}
-            isLoading={isLoading}
-            loadingProgress={finalLoadingProgress}
-            error={error?.message || undefined}
-            emptyTitle={emptyState.title}
-            emptyMessage={emptyState.message}
-            onNFTSelect={handleNFTSelect}
-            onNFTPress={handleNFTDetail}
-            onRetry={refreshNFTs}
-            retryText={t('buttons.retry')}
-            clearSearchText={t('buttons.clearSearch')}
-            onClearSearch={() => setSearchQuery('')}
-            showClearSearch={!!searchQuery}
-            accountEmoji={fromAccount?.emojiInfo?.emoji}
-            accountAvatar={fromAccount?.avatar}
-            accountName={fromAccount?.name}
-            accountColor={fromAccount?.emojiInfo?.color}
-            enableVirtualization={true}
-            itemsPerBatch={20}
-            loadMoreThreshold={200}
-            isExtension={isExtension}
-            totalCount={totalCount}
-          />
+          <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+            <NFTGrid
+              data={filteredNFTs}
+              selectedIds={selectedIds}
+              isLoading={isLoading}
+              loadingProgress={finalLoadingProgress}
+              error={error?.message || undefined}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              onNFTSelect={handleNFTSelect}
+              onNFTPress={handleNFTDetail}
+              onRetry={refreshNFTs}
+              retryText={t('buttons.retry')}
+              clearSearchText={t('buttons.clearSearch')}
+              onClearSearch={() => setSearchQuery('')}
+              showClearSearch={!!searchQuery}
+              accountEmoji={fromAccount?.emojiInfo?.emoji}
+              accountAvatar={fromAccount?.avatar}
+              accountName={fromAccount?.name}
+              accountColor={fromAccount?.emojiInfo?.color}
+              enableVirtualization={true}
+              itemsPerBatch={20}
+              loadMoreThreshold={200}
+              isExtension={isExtension}
+              totalCount={totalCount}
+            />
+          </ScrollView>
         </YStack>
 
         {/* Selection Bar */}
@@ -457,6 +480,16 @@ export function NFTListScreen(): React.ReactElement {
           onNFTPress={handleNFTDetail}
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
+          selectedCountText={t('nft.selectedCount', { count: selectedNFTsForBar.length })}
+          confirmText={(() => {
+            const totalQuantity = selectedNFTsForBar.reduce((total, nft) => {
+              if (nft.contractType === 'ERC1155') {
+                return total + (nftQuantities[nft.id] || 1);
+              }
+              return total + 1;
+            }, 0);
+            return t('nft.confirmSelection', { count: totalQuantity });
+          })()}
           isEditing={false}
           onQuantityChange={handleQuantityChange}
         />

@@ -1,5 +1,4 @@
-import { getGlobalQueryClient } from '@onflow/frw-context';
-import { logger } from '@onflow/frw-context';
+import { getGlobalQueryClient, logger } from '@onflow/frw-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import { Platform } from 'react-native';
@@ -34,8 +33,9 @@ const ProdQueryDebugger: React.FC = () => null;
  * Only enabled in development mode for security and performance
  */
 export const QueryDebugger: React.FC = () => {
+  const isEnabled = false;
   // Use different components for development and production
-  if (typeof __DEV__ !== 'undefined' && __DEV__) {
+  if (typeof __DEV__ !== 'undefined' && __DEV__ && isEnabled) {
     return <DevQueryDebugger />;
   }
 

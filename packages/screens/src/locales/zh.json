@@ -4,6 +4,8 @@
     "sendTo": "发送至",
     "sending": "发送中",
     "selectTokens": "选择代币",
+    "sendTokens": "发送代币",
+    "nftDetails": "NFT详情",
     "colorDemo": "颜色演示"
   },
   "common": {
@@ -140,6 +142,13 @@
     "noNFTsMatchSearch": "没有NFT与'{{search}}'匹配",
     "noNFTsFound": "未找到NFT",
     "collectionEmpty": "此收藏不包含任何NFT",
+    "noCollectionSelected": "未选择收藏。请返回并选择一个NFT收藏。",
+    "noAccountSelected": "无可用账户地址。请选择一个账户。",
+    "maxSelectionReached": "最多可选择9个NFT",
+    "nftNotFound": "未找到NFT ID:",
+    "selectedCount": "已选择 {{count}} 个NFT",
+    "confirmSelection": "确认 {{count}} 个NFT",
+    "itemCount": "{{count}}项",
     "notFound": {
       "title": "未找到NFT",
       "message": "无法找到或加载请求的NFT"

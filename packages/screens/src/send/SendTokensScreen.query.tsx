@@ -160,7 +160,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Query for payer status with automatic caching
   const {
-    data: payerStatus,
+    data: payerStatus = null,
     isLoading: isLoadingPayerStatus,
     error: payerStatusError,
   } = useQuery({
@@ -170,6 +170,10 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     enabled: true,
     retry: 3,
     retryDelay: 1000,
+    // Add explicit error handling to prevent undefined access
+    onError: (error) => {
+      logger.error('Failed to fetch payer status:', error);
+    },
   });
 
   // Query for tokens with automatic caching
@@ -243,21 +247,23 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
-  // Dynamic surge pricing state based on API response
-  const isSurgePricingActive = payerStatus?.surge?.active ?? false;
-  const surgeMultiplier = payerStatus?.surge?.multiplier ?? 1;
+  // Dynamic surge pricing state based on API response - with defensive defaults
+  const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
+  const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
 
   // Log payer status API response for debugging
   React.useEffect(() => {
-    if (payerStatus) {
+    if (payerStatus && typeof payerStatus === 'object') {
       logger.info('Payer Status API Response:', {
-        surge: payerStatus.surge,
-        feePayer: payerStatus.feePayer,
-        bridgePayer: payerStatus.bridgePayer,
-        updatedAt: payerStatus.updatedAt,
-        reason: payerStatus.reason,
+        surge: payerStatus?.surge || null,
+        feePayer: payerStatus?.feePayer || null,
+        bridgePayer: payerStatus?.bridgePayer || null,
+        updatedAt: payerStatus?.updatedAt || null,
+        reason: payerStatus?.reason || null,
         isSurgePricingActive,
         surgeMultiplier,
+        maxFee: payerStatus?.surge?.maxFee || null,
+        calculatedTransactionFee: transactionFee,
       });
     }
     if (isLoadingPayerStatus) {
@@ -266,10 +272,36 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     if (payerStatusError) {
       logger.error('Payer status error:', payerStatusError);
     }
-  }, [payerStatus, isLoadingPayerStatus, payerStatusError, isSurgePricingActive, surgeMultiplier]);
-  const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  }, [
+    payerStatus,
+    isLoadingPayerStatus,
+    payerStatusError,
+    isSurgePricingActive,
+    surgeMultiplier,
+    transactionFee,
+  ]);
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
+
+  // Calculate transaction fee from API's maxFee field or fallback to default
+  const transactionFee = useMemo(() => {
+    if (payerStatus?.surge?.maxFee) {
+      // maxFee is provided by the API with surge factor already applied
+      const fee = payerStatus.surge.maxFee;
+
+      // Format the fee with appropriate precision
+      if (fee < 0.01) {
+        return `~${fee.toFixed(4)} FLOW`;
+      } else if (fee < 0.1) {
+        return `~${fee.toFixed(3)} FLOW`;
+      } else {
+        return `~${fee.toFixed(2)} FLOW`;
+      }
+    }
+
+    // Fallback to default fee if maxFee is not available
+    return '~0.001 FLOW';
+  }, [payerStatus?.surge?.maxFee]);
 
   // Calculate storage warning state based on real validation logic
   const validationResult = useMemo(() => {
@@ -521,6 +553,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           : amount,
       isTokenMode,
       transactionFee: transactionFee,
+      surgeMultiplier: isSurgePricingActive ? surgeMultiplier : undefined,
     }),
     [
       transactionType,
@@ -530,6 +563,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       isTokenMode,
       transactionFee,
       currency.rate,
+      isSurgePricingActive,
+      surgeMultiplier,
     ]
   );
 
@@ -804,7 +839,14 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       <SurgeWarning
         message={
           isSurgePricingActive && surgeMultiplier
-            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${surgeMultiplier}× higher than usual and your free allowance will not cover the fee for this transaction.`
+            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${Number(
+                surgeMultiplier
+              )
+                .toFixed(2)
+                .replace(
+                  /\.?0+$/,
+                  ''
+                )}× higher than usual and your free allowance will not cover the fee for this transaction.`
             : t('surge.message')
         }
         title={t('surge.title')}

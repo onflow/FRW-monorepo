@@ -77,8 +77,6 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
   buttonText = 'Okay',
   onClose,
   onButtonPress,
-  className,
-  surgeMultiplier,
 }) => {
   const theme = useTheme();
   const isCurrentlyDarkMode = isDarkMode(theme);
@@ -178,7 +176,6 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
     >
       <YStack
         width={343}
-        height={280}
         bg={colors.background}
         rounded="$4"
         p="$4"
@@ -215,7 +212,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
         </YStack>
 
         {/* Content Frame */}
-        <YStack items="center" gap="$6" style={{ alignSelf: 'stretch', paddingTop: '$2' }}>
+        <YStack items="center" gap="$4" style={{ alignSelf: 'stretch', paddingTop: '$2' }}>
           {/* Icon */}
           {showIcon && icon && (
             <YStack

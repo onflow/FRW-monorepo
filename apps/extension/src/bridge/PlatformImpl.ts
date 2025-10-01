@@ -320,13 +320,13 @@ class ExtensionPlatformImpl implements PlatformSpec {
           };
         };
         const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
-        const isSurge = payerStatus.surge?.active;
+        const isSurge = payerStatus?.surge?.active;
         // Determine payer function based on transaction name and fee coverage logic
         const withPayer = config.name && config.name.endsWith('WithPayer');
         if (withPayer) {
           // Use bridge fee payer function - get address from payer status
-          const payerAddress = payerStatus.bridgePayer?.address;
-          const payerKeyId = payerStatus.bridgePayer?.keyIndex || 0;
+          const payerAddress = payerStatus?.bridgePayer?.address;
+          const payerKeyId = payerStatus?.bridgePayer?.keyIndex || 0;
 
           config.payer = async (account: any) => {
             const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
@@ -354,8 +354,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
           if (allowed) {
             // Use regular payer function - get address from payer status
-            const payerAddress = payerStatus.feePayer?.address;
-            const payerKeyId = payerStatus.feePayer?.keyIndex || 0;
+            const payerAddress = payerStatus?.feePayer?.address;
+            const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
 
             config.payer = async (account: any) => {
               const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
