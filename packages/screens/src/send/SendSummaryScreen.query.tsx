@@ -383,7 +383,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                     backgroundColor="transparent"
                     borderRadius={0}
                     contentPadding="$0"
-                    imageSize="$24"
+                    imageSize={76}
                   />
                 )}
               </View>
@@ -503,11 +503,11 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             isMultipleNFTs
               ? nftsForUI
               : selectedNFT
-                ? [
+                  ? [
                     {
                       id: selectedNFT.id || '',
                       name: selectedNFT.name || t('nft.untitled'),
-                      image: selectedNFT.thumbnail || '',
+                      thumbnail: selectedNFT.thumbnail || '',
                       collection: selectedNFT.collectionName || t('nft.unknownCollection'),
                       collectionContractName:
                         selectedNFT.collectionContractName || selectedNFT.contractName || '',

@@ -8,12 +8,11 @@ import { Text } from '../foundation/Text';
 export interface NFTSendPreviewProps {
   nft: NFTModel & {
     selectedQuantity?: number; // Selected quantity for ERC1155 sending
-    collection?: string; // Add for backward compatibility
   };
   onEditPress?: () => void;
   showEditButton?: boolean;
   sectionTitle?: string;
-  imageSize?: string;
+  imageSize?: number;
   backgroundColor?: string;
   borderRadius?: any;
   contentPadding?: string;
@@ -24,7 +23,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   onEditPress,
   showEditButton = true,
   sectionTitle = 'Send NFTs',
-  imageSize = '$19',
+  imageSize = 76,
   backgroundColor = 'rgba(255, 255, 255, 0.1)',
   borderRadius = '$4',
   contentPadding = '$4',
@@ -32,7 +31,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   const [imageError, setImageError] = useState(false);
 
   // Get the best available image URL
-  const imageUrl = nft.thumbnail;
+  const imageUrl = nft.thumbnail || nft.postMedia?.image || '';
   const displayImage = imageUrl && !imageError;
 
   return (
@@ -72,13 +71,14 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
         {/* NFT Image */}
         <View width={imageSize} height={imageSize} rounded="$4" overflow="hidden" bg="$bg1">
           {displayImage ? (
-            <Image
-              src={imageUrl}
-              width={imageSize}
-              height={imageSize}
-              onError={() => setImageError(true)}
-              objectFit="cover"
-            />
+            <View width={imageSize} height={imageSize} overflow="hidden" rounded="$4">
+              <Image
+                source={{ uri: imageUrl }}
+                width="100%"
+                height="100%"
+                onError={() => setImageError(true)}
+              />
+            </View>
           ) : (
             <YStack
               flex={1}
@@ -103,7 +103,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {nft.collection || nft.collectionName || ''}
+              {nft.collectionName || ''}
             </Text>
 
             {/* EVM Badge - Only show for EVM NFTs */}

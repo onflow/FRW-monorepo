@@ -722,7 +722,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           selectedNFTs={selectedNFTs?.map((nft) => ({
             id: nft.id || '',
             name: nft.name || '',
-            image: nft.thumbnail || '',
+            thumbnail: nft.thumbnail || '',
             collection: nft.collectionName || '',
             collectionContractName: nft.collectionContractName || '',
             description: nft.description || '',
