@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
-import { Platform } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
@@ -138,7 +137,7 @@ export function NFTGrid({
 
   // React Native lazy loading - automatically load more when approaching the end
   useEffect(() => {
-    if (!enableVirtualization || Platform.OS === 'web') return;
+    if (!enableVirtualization || isExtension) return;
 
     // In React Native, automatically load more items when we're showing close to all visible items
     const remainingItems = data.length - visibleItemCount;
