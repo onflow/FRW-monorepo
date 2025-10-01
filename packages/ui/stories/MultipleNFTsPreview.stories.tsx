@@ -39,7 +39,8 @@ export default meta;
 type Story = StoryObj<typeof MultipleNFTsPreview>;
 
 // Mock NFT data
-type NFTWithExtras = NFTModel & { selectedQuantity?: number; collection?: string };
+import type { NFTTransactionData } from '@onflow/frw-types';
+type NFTWithExtras = NFTTransactionData & { collection?: string };
 
 const createMockNFTs = (count: number): NFTWithExtras[] =>
   Array.from({ length: count }, (_, index) => ({

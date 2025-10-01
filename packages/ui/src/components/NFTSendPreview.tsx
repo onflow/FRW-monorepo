@@ -1,14 +1,12 @@
 import { Edit } from '@onflow/frw-icons';
-import type { NFTModel } from '@onflow/frw-types';
+import type { NFTModel, NFTTransactionData } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { YStack, XStack, Image, View } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
 export interface NFTSendPreviewProps {
-  nft: NFTModel & {
-    selectedQuantity?: number; // Selected quantity for ERC1155 sending
-  };
+  nft: NFTTransactionData;
   onEditPress?: () => void;
   showEditButton?: boolean;
   sectionTitle?: string;

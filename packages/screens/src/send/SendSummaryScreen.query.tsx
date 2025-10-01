@@ -7,7 +7,7 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
-import { Platform, type NFTModel, type SendFormData } from '@onflow/frw-types';
+import { Platform, type NFTModel, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -139,7 +139,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   }, []);
 
   // Transform NFT data for UI
-  const nftForUI: NFTModel & { selectedQuantity?: number; collection?: string } = useMemo(
+  const nftForUI: NFTTransactionDisplayData = useMemo(
     () =>
       ({
         ...selectedNFT,
@@ -152,11 +152,11 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         type: selectedNFT?.type || 'flow',
         contractType: selectedNFT?.contractType,
         amount: maxQuantity.toString(),
-      }) as NFTModel & { selectedQuantity?: number; collection?: string },
+      }) as NFTTransactionDisplayData,
     [selectedNFT, maxQuantity]
   );
 
-  const nftsForUI: (NFTModel & { selectedQuantity?: number; collection?: string })[] = useMemo(
+  const nftsForUI: NFTTransactionDisplayData[] = useMemo(
     () =>
       selectedNFTs?.map(
         (nft) =>
@@ -169,7 +169,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             collectionContractName: nft.collectionContractName,
             description: nft.description || '',
             type: nft.type || 'flow',
-          }) as NFTModel & { selectedQuantity?: number; collection?: string }
+          }) as NFTTransactionDisplayData
       ) || [],
     [selectedNFTs]
   );

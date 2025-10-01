@@ -2,6 +2,7 @@ import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-ico
 import {
   type AccountDisplayData,
   type NFTModel,
+  type NFTTransactionData,
   type TokenModel,
   type TransactionType,
   type SendFormData,
@@ -20,9 +21,7 @@ export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
-  selectedNFTs?: (NFTModel & {
-    selectedQuantity?: number;
-  })[];
+  selectedNFTs?: NFTTransactionData[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
   formData: SendFormData;

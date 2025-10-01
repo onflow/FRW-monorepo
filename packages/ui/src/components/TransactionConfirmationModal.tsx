@@ -4,6 +4,7 @@ import {
   type TokenModel,
   type AccountDisplayData,
   type NFTModel,
+  type NFTTransactionData,
   type SendFormData,
 } from '@onflow/frw-types';
 import React from 'react';
@@ -18,9 +19,7 @@ export interface TransactionConfirmationModalProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
-  selectedNFTs?: (NFTModel & {
-    selectedQuantity?: number;
-  })[];
+  selectedNFTs?: NFTTransactionData[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
   formData: SendFormData;

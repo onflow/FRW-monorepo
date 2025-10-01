@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, Trash, Edit } from '@onflow/frw-icons';
-import type { NFTModel } from '@onflow/frw-types';
+import type { NFTModel, NFTTransactionData } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View, useTheme } from 'tamagui';
@@ -7,9 +7,7 @@ import { YStack, XStack, ScrollView, Image, View, useTheme } from 'tamagui';
 import { Text } from '../foundation/Text';
 
 export interface MultipleNFTsPreviewProps {
-  nfts: (NFTModel & {
-    selectedQuantity?: number;
-  })[];
+  nfts: NFTTransactionData[];
   onRemoveNFT?: (nftId: string) => void;
   onEditPress?: () => void;
   showEditButton?: boolean;
@@ -26,9 +24,7 @@ export interface MultipleNFTsPreviewProps {
 }
 
 interface NFTThumbnailProps {
-  nft: NFTModel & {
-    selectedQuantity?: number;
-  };
+  nft: NFTTransactionData;
   size: number;
   showOverlay?: boolean;
   overlayText?: string;
@@ -87,9 +83,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
 };
 
 interface ExpandedNFTItemProps {
-  nft: NFTModel & {
-    selectedQuantity?: number;
-  };
+  nft: NFTTransactionData;
   onRemove?: (nftId: string) => void;
   unnamedNFTText?: string;
   unknownCollectionText?: string;
