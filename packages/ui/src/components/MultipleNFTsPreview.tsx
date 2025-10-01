@@ -9,7 +9,6 @@ import { Text } from '../foundation/Text';
 export interface MultipleNFTsPreviewProps {
   nfts: (NFTModel & {
     selectedQuantity?: number;
-    collection?: string;
   })[];
   onRemoveNFT?: (nftId: string) => void;
   onEditPress?: () => void;
@@ -29,7 +28,6 @@ export interface MultipleNFTsPreviewProps {
 interface NFTThumbnailProps {
   nft: NFTModel & {
     selectedQuantity?: number;
-    collection?: string;
   };
   size: number;
   showOverlay?: boolean;
@@ -91,7 +89,6 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
 interface ExpandedNFTItemProps {
   nft: NFTModel & {
     selectedQuantity?: number;
-    collection?: string;
   };
   onRemove?: (nftId: string) => void;
   unnamedNFTText?: string;
@@ -145,7 +142,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
           {nft.name || unnamedNFTText}
         </Text>
         <Text fontSize={14} fontWeight="400" color="$color" numberOfLines={1}>
-          {nft.collection || nft.collectionName || unknownCollectionText}
+          {nft.collectionName || unknownCollectionText}
         </Text>
       </YStack>
 

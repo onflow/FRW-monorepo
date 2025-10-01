@@ -12,5 +12,6 @@ export * from './Send';
 export * from './BridgeHandler';
 export * from './StoreTypes';
 export * from './Platform';
+export * from './Transaction';
 export * from './utils/string';
 export * from './query/QueryDomain';

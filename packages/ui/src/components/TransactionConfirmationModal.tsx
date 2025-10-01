@@ -4,6 +4,7 @@ import {
   type TokenModel,
   type AccountDisplayData,
   type NFTModel,
+  type TransactionFormData,
 } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
@@ -13,20 +14,12 @@ import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
-export interface TransactionFormData {
-  tokenAmount: string;
-  fiatAmount: string;
-  isTokenMode: boolean;
-  transactionFee?: string;
-}
-
 export interface TransactionConfirmationModalProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
   selectedNFTs?: (NFTModel & {
     selectedQuantity?: number;
-    collection?: string;
   })[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;

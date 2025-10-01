@@ -4,6 +4,7 @@ import {
   type NFTModel,
   type TokenModel,
   type TransactionType,
+  type TransactionFormData,
 } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
@@ -13,7 +14,6 @@ import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
 import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
-import { type TransactionFormData } from './TransactionConfirmationModal';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 export interface ConfirmationDrawerProps {
@@ -22,7 +22,6 @@ export interface ConfirmationDrawerProps {
   selectedToken?: TokenModel | null;
   selectedNFTs?: (NFTModel & {
     selectedQuantity?: number;
-    collection?: string;
   })[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
