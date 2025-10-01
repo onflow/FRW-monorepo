@@ -264,6 +264,9 @@ importers:
       loglevel:
         specifier: ^1.9.2
         version: 1.9.2
+      lottie-react-native:
+        specifier: ^7.3.4
+        version: 7.3.4(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
       lru-cache:
         specifier: ^11.1.0
         version: 11.2.1
@@ -1048,6 +1051,9 @@ importers:
       bignumber.js:
         specifier: ^9.1.2
         version: 9.3.1
+      lottie-web:
+        specifier: ^5.12.2
+        version: 5.13.0
       tamagui:
         specifier: ^1.132.20
         version: 1.132.24(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
@@ -8611,6 +8617,9 @@ packages:
         optional: true
       react-native-windows:
         optional: true
+
+  lottie-web@5.13.0:
+    resolution: {integrity: sha512-+gfBXl6sxXMPe8tKQm7qzLnUy5DUPJPKIyRHwtpCpyUEYjHYRJC/5gjUvdkuO2c3JllrPtHXH5UJJK8LRYl5yQ==}
 
   loud-rejection@1.6.0:
     resolution: {integrity: sha512-RPNliZOFkqFumDhvYqOaNY4Uz9oJM2K9tC6JWsJJsNdhuONW4LQHRBpb0qf4pJApVffI5N39SwzWZJuEhfd7eQ==}
@@ -21803,6 +21812,8 @@ snapshots:
     dependencies:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
+
+  lottie-web@5.13.0: {}
 
   loud-rejection@1.6.0:
     dependencies:

@@ -65,9 +65,8 @@
       "Bash(git:*)",
       "Bash(pnpm:*)",
       "Bash(npx react-native:*)",
-      "Bash(lsof:*)",
-      "Bash(xargs kill:*)",
-      "Bash(awk:*)"
+      "Bash(gh label:*)",
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

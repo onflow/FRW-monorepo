@@ -36,10 +36,12 @@ const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
+  getDebugAddress(): string | null;
   getNetwork(): string;
   getJWT(): Promise<string>;
   getVersion(): string;
   getBuildNumber(): string;
+  getLanguage(): string;
   // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
   sign(hexData: string): Promise<string>;
   getRecentContacts(): Promise<RecentContactsResponse>;

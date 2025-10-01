@@ -15,10 +15,11 @@ on:
         description: "Build type (debug|dev|release)"
         default: "release"
         required: true
-      targetRef:
-        description: "Git ref to build (branch/tag)"
-        default: "dev"
-        required: false
+        type: choice
+        options:
+          - debug
+          - dev
+          - release
 
 jobs:
   determine-env:
@@ -54,7 +55,6 @@ jobs:
 
       # Firebase App Distribution (optional; used on release paths/tags)
       FIREBASE_TESTERS: ${{ vars.FIREBASE_TESTERS }}
-      ANDROID_FIREBASE_CREDENTIALS_B64: ${{ secrets.ANDROID_FIREBASE_CREDENTIALS_B64 }}
       # Backward-compat names from previous repo
       LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
       KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
@@ -62,7 +62,7 @@ jobs:
       GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_B64 }}
       SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-      SERVICE_ACCOUNT_JSON_B64: ${{ secrets.SERVICE_ACCOUNT_JSON_B64 }}
+      FASTLANE_SA: ${{ secrets.FASTLANE_SA }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
       # Debug keystore location set in step using RUNNER_TEMP
 
@@ -74,7 +74,7 @@ jobs:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.targetRef || github.ref }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
           submodules: recursive
 
@@ -139,6 +139,14 @@ jobs:
             } > local.properties
           fi
 
+          # Ensure local.properties ends with a newline to avoid concatenated appends
+          if [ -f local.properties ]; then
+            END_CHAR=$(tail -c1 local.properties || true)
+            if [ -n "${END_CHAR}" ] && [ "${END_CHAR}" != $'\n' ]; then
+              printf '\n' >> local.properties
+            fi
+          fi
+
           # Optional: Google Services JSONs (multiple supported secret names)
           if [ -n "${GOOGLE_SERVICES:-}" ]; then
             echo "[Android CI] Writing GOOGLE_SERVICES (raw) to app/src/dev/google-services.json"
@@ -177,7 +185,10 @@ jobs:
             # Resolve desired keystore path: honor existing storeFile in local.properties if present
             EXISTING_STORE_FILE=$(grep -E '^storeFile=' local.properties | sed -E 's/^storeFile=//') || true
             if [ -n "${EXISTING_STORE_FILE:-}" ]; then
-              KEYSTORE_PATH="$EXISTING_STORE_FILE"
+              case "$EXISTING_STORE_FILE" in
+                /*) KEYSTORE_PATH="$EXISTING_STORE_FILE" ;;
+                *)  KEYSTORE_PATH="$(pwd)/app/$EXISTING_STORE_FILE" ;;
+              esac
             else
               KEYSTORE_PATH="$(pwd)/app/keystore.jks"
             fi
@@ -193,30 +204,57 @@ jobs:
             fi
           fi
 
-          # Optional: Firebase App Distribution service account (either name)
+          # Optional: Firebase App Distribution service account
           SERVICE_JSON_PATH=""
           if [ -n "${SERVICE_ACCOUNT_JSON:-}" ]; then
             echo "[Android CI] Writing SERVICE_ACCOUNT_JSON (raw) to firebase-appdist.json"
             printf '%s' "$SERVICE_ACCOUNT_JSON" > firebase-appdist.json
             SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
-          elif [ -n "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ]; then
-            echo "[Android CI] Decoding ANDROID_FIREBASE_CREDENTIALS_B64 to firebase-appdist.json"
-            echo "$ANDROID_FIREBASE_CREDENTIALS_B64" | base64 -d > firebase-appdist.json
-            SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
-          elif [ -n "${SERVICE_ACCOUNT_JSON_B64:-}" ]; then
-            echo "[Android CI] Decoding SERVICE_ACCOUNT_JSON_B64 to firebase-appdist.json"
-            echo "$SERVICE_ACCOUNT_JSON_B64" | base64 -d > firebase-appdist.json
-            SERVICE_JSON_PATH="$(pwd)/firebase-appdist.json"
           fi
 
-          if [ -n "$SERVICE_JSON_PATH" ]; then
+          # Optional: Google Play Publisher service account (prefer FASTLANE_SA if present)
+          PLAY_JSON_PATH=""
+          if [ -n "${FASTLANE_SA:-}" ]; then
+            echo "[Android CI] Writing FASTLANE_SA (raw) to play-service-account.json"
+            printf '%s' "$FASTLANE_SA" > play-service-account.json
+            PLAY_JSON_PATH="$(pwd)/play-service-account.json"
+          fi
+
+          if [ -n "$SERVICE_JSON_PATH" ] || [ -n "$PLAY_JSON_PATH" ]; then
             # Ensure local.properties includes serviceCredentialsFile & testers
-            if ! grep -q '^serviceCredentialsFile=' local.properties; then
-              echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
+            # First, guarantee file ends with a newline to avoid concatenation
+            if [ -s local.properties ]; then
+              LAST_CHAR=$(tail -c1 local.properties || true)
+              if [ -n "${LAST_CHAR}" ] && [ "${LAST_CHAR}" != $'\n' ]; then
+                printf '\n' >> local.properties
+              fi
             fi
+            # Remove any existing (possibly malformed) lines and append fresh ones
+            sed -i.bak -E '/^serviceCredentialsFile=/d; /^playServiceAccountFile=/d' local.properties && rm -f local.properties.bak || true
+            if [ -n "$SERVICE_JSON_PATH" ]; then
+              echo "serviceCredentialsFile=$SERVICE_JSON_PATH" >> local.properties
+              echo "[Android CI] serviceCredentialsFile set to: $SERVICE_JSON_PATH"
+            fi
+            # For Play: prefer dedicated FASTLANE_SA; otherwise fallback to SERVICE_ACCOUNT_JSON if present
+            if [ -n "$PLAY_JSON_PATH" ]; then
+              echo "playServiceAccountFile=$PLAY_JSON_PATH" >> local.properties
+              echo "[Android CI] playServiceAccountFile set to: $PLAY_JSON_PATH"
+            elif [ -n "$SERVICE_JSON_PATH" ]; then
+              echo "playServiceAccountFile=$SERVICE_JSON_PATH" >> local.properties
+              echo "[Android CI] playServiceAccountFile set to (fallback): $SERVICE_JSON_PATH"
+            fi
+            # Prefer Environment variable for testers
             if ! grep -q '^testers=' local.properties; then
               echo "testers=${FIREBASE_TESTERS:-}" >> local.properties
+            else
+              # If testers already present but empty and we have a value, update it
+              CURR_TESTERS=$(grep -E '^testers=' local.properties | sed -E 's/^testers=//') || true
+              if [ -z "$CURR_TESTERS" ] && [ -n "${FIREBASE_TESTERS:-}" ]; then
+                sed -i.bak "s|^testers=.*$|testers=${FIREBASE_TESTERS}|" local.properties && rm -f local.properties.bak
+              fi
             fi
+            # Minimal diagnostics: confirm paths set
+            grep -E '^(serviceCredentialsFile|playServiceAccountFile)=' local.properties || true
           fi
 
       - name: Ensure debug keystore path is writable
@@ -261,6 +299,28 @@ jobs:
           echo "buildType=$TYPE" >> $GITHUB_OUTPUT
           echo "Resolved build type: $TYPE"
 
+      - name: Resolve next versionCode (release only)
+        if: steps.meta.outputs.buildType == 'release'
+        shell: bash
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: |
+          set -euo pipefail
+          # Simple scheme: vCode = 400000000 + GITHUB_RUN_NUMBER
+          BASE=400000000
+          RUN_NUM=${GITHUB_RUN_NUMBER:-0}
+          NEXT=$(( BASE + RUN_NUM ))
+          # Ensure we never go backwards vs current file value
+          CUR=$(grep -E '^vCode=' gradle.properties | sed -E 's/^vCode=//' || true)
+          if [[ -n "${CUR:-}" ]] && [ "$NEXT" -le "$CUR" ]; then
+            NEXT=$(( CUR + 1 ))
+          fi
+          echo "[Android CI] Using versionCode (vCode) = $NEXT"
+          if grep -q '^vCode=' gradle.properties; then
+            sed -i.bak "s/^vCode=.*/vCode=$NEXT/" gradle.properties && rm -f gradle.properties.bak
+          else
+            echo "vCode=$NEXT" >> gradle.properties
+          fi
+
       - name: Signing diagnostics
         shell: bash
         working-directory: ${{ env.ANDROID_DIR }}
@@ -272,6 +332,35 @@ jobs:
             echo "[Diag] local.properties exists"
             # Only print non-sensitive fields
             grep -E '^(storeFile|keyAlias)=' local.properties || true
+            # Print Firebase/Play credentials file paths from local.properties
+            SVC_FILE=$(grep -E '^serviceCredentialsFile=' local.properties | sed -E 's/^serviceCredentialsFile=//') || true
+            PLAY_FILE=$(grep -E '^playServiceAccountFile=' local.properties | sed -E 's/^playServiceAccountFile=//') || true
+            REL_NOTES=$(grep -E '^releaseNotesFile=' local.properties | sed -E 's/^releaseNotesFile=//') || true
+            if [ -n "${SVC_FILE:-}" ]; then
+              echo "[Diag] serviceCredentialsFile: $SVC_FILE"
+              if [ -f "$SVC_FILE" ]; then
+                echo "[Diag] Firebase credentials present at: $SVC_FILE (size: $(wc -c < "$SVC_FILE" | tr -d ' '))"
+              else
+                echo "[Diag] Firebase credentials file not found at: $SVC_FILE"
+                ls -la "$(dirname "$SVC_FILE")" || true
+              fi
+            else
+              echo "[Diag] serviceCredentialsFile not set in local.properties"
+            fi
+            if [ -n "${PLAY_FILE:-}" ]; then
+              echo "[Diag] playServiceAccountFile: $PLAY_FILE"
+              if [ -f "$PLAY_FILE" ]; then
+                echo "[Diag] Play credentials present at: $PLAY_FILE (size: $(wc -c < "$PLAY_FILE" | tr -d ' '))"
+              else
+                echo "[Diag] Play credentials file not found at: $PLAY_FILE"
+                ls -la "$(dirname "$PLAY_FILE")" || true
+              fi
+            else
+              echo "[Diag] playServiceAccountFile not set in local.properties"
+            fi
+            if [ -n "${REL_NOTES:-}" ]; then
+              echo "[Diag] releaseNotesFile: $REL_NOTES"
+            fi
             STORE_FILE=$(grep -E '^storeFile=' local.properties | sed -E 's/^storeFile=//') || true
             if [ -n "${STORE_FILE:-}" ]; then
               if [ -f "$STORE_FILE" ]; then
@@ -323,11 +412,7 @@ jobs:
           set -euo pipefail
           REPO_ROOT="$GITHUB_WORKSPACE"
           NOTES_FILE="$REPO_ROOT/apps/react-native/android/release-notes.txt"
-          if [ -z "${ANDROID_FIREBASE_CREDENTIALS_B64:-}" ] || [ -z "${FIREBASE_TESTERS:-}" ]; then
-            echo "[Android CI] Firebase credentials or testers not set; skipping release notes generation."
-            exit 0
-          fi
-          echo "[Android CI] Generating Firebase App Distribution release notes..."
+          echo "[Android CI] Generating release notes..."
 
           # Ensure sufficient git history for logs
           (git fetch --unshallow 2>/dev/null || git fetch --deepen=50) || true
@@ -400,7 +485,49 @@ jobs:
           } > "$NOTES_FILE"
 
           echo "[Android CI] Release notes written to $NOTES_FILE"
-          echo "FIREBASE_APP_DIST_RELEASE_NOTES_FILE=$NOTES_FILE" >> $GITHUB_ENV
+          # Ensure Gradle plugin reads the release notes file via local.properties
+          ANDROID_DIR_PATH="$REPO_ROOT/${{ env.ANDROID_DIR }}"
+          if [ -f "$ANDROID_DIR_PATH/local.properties" ]; then
+            if grep -q '^releaseNotesFile=' "$ANDROID_DIR_PATH/local.properties"; then
+              sed -i.bak "s|^releaseNotesFile=.*$|releaseNotesFile=$NOTES_FILE|" "$ANDROID_DIR_PATH/local.properties" && rm -f "$ANDROID_DIR_PATH/local.properties.bak"
+            else
+              echo "releaseNotesFile=$NOTES_FILE" >> "$ANDROID_DIR_PATH/local.properties"
+            fi
+          fi
+
+      - name: Prepare Play release notes (whatsnew)
+        if: steps.meta.outputs.buildType == 'release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC_FILE="apps/react-native/android/release-notes.txt"
+          DEST_DIR="apps/react-native/android/app/src/release/play/release-notes/en-US"
+          DEST_FILE="$DEST_DIR/default.txt"
+          if [ ! -f "$SRC_FILE" ]; then
+            echo "[Android CI] No release notes file found at $SRC_FILE; skipping whatsnew preparation."
+            exit 0
+          fi
+          mkdir -p "$DEST_DIR"
+          # Ensure <= 500 bytes while preserving the tail (keeps build info)
+          BYTES=$(wc -c < "$SRC_FILE" | tr -d ' ' || echo 0)
+          mkdir -p "$DEST_DIR"
+          if [ "${BYTES:-0}" -le 500 ]; then
+            # Normalize CRLF to LF
+            sed -e 's/\r$//' "$SRC_FILE" > "$DEST_FILE"
+          else
+            # Keep last 500 bytes so the trailing build info is preserved
+            tail -c 500 "$SRC_FILE" | sed -e 's/\r$//' > "$DEST_FILE"
+          fi
+          echo "[Android CI] Wrote Play whatsnew to $DEST_FILE ($(wc -c < "$DEST_FILE" | tr -d ' ') bytes)"
+          echo "[Android CI] Prepared Play 'whatsnew' at $DEST_FILE"
+
+      - name: Upload release notes
+        if: steps.meta.outputs.buildType == 'dev' || steps.meta.outputs.buildType == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ steps.meta.outputs.buildType }}-release-notes
+          path: apps/react-native/android/release-notes.txt
+          if-no-files-found: warn
 
       - name: Upload APK artifact
         if: always()
@@ -424,18 +551,37 @@ jobs:
         if: steps.meta.outputs.buildType == 'dev'
         working-directory: ${{ env.ANDROID_DIR }}
         run: |
-          if [ ! -f firebase-appdist.json ] || [ -z "${FIREBASE_TESTERS:-}" ]; then
-            echo "[Android CI] Firebase credentials or testers not configured; skipping App Distribution upload."
+          if [ ! -f firebase-appdist.json ]; then
+            echo "[Android CI] Firebase credentials not configured; skipping App Distribution upload."
             exit 0
           fi
-          ./gradlew :app:appDistributionUploadDev --stacktrace
+          ./gradlew :app:appDistributionUploadDev -PserviceCredentialsFile="$PWD/firebase-appdist.json" --stacktrace
 
       - name: Firebase App Distribution (release)
         if: steps.meta.outputs.buildType == 'release'
         working-directory: ${{ env.ANDROID_DIR }}
         run: |
-          if [ ! -f firebase-appdist.json ] || [ -z "${FIREBASE_TESTERS:-}" ]; then
-            echo "[Android CI] Firebase credentials or testers not configured; skipping App Distribution upload."
+          if [ ! -f firebase-appdist.json ]; then
+            echo "[Android CI] Firebase credentials not configured; skipping App Distribution upload."
             exit 0
           fi
-          ./gradlew :app:appDistributionUploadRelease --stacktrace
+          ./gradlew :app:appDistributionUploadRelease -PserviceCredentialsFile="$PWD/firebase-appdist.json" --stacktrace
+
+      - name: Google Play Internal (release)
+        if: steps.meta.outputs.buildType == 'release'
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: |
+          # Determine which credentials to use for Play
+          PLAY_JSON=""
+          if [ -f play-service-account.json ]; then
+            PLAY_JSON="$PWD/play-service-account.json"
+          elif [ -f firebase-appdist.json ]; then
+            PLAY_JSON="$PWD/firebase-appdist.json"
+          fi
+          if [ -z "${PLAY_JSON}" ]; then
+            echo "[Android CI] Play credentials not configured; skipping Play upload."
+            exit 0
+          fi
+          echo "[Android CI] Using Play credentials: $PLAY_JSON"
+          # Publish the release bundle to the Internal track
+          ./gradlew :app:publishReleaseBundle --stacktrace

@@ -1,4 +1,11 @@
-import { SelectTokensScreen, NFTListScreen, NFTDetailScreen } from '@onflow/frw-screens';
+import { logger } from '@onflow/frw-context';
+import {
+  NFTDetailScreen,
+  NFTListScreen,
+  SelectTokensScreen,
+  SendSummaryScreen,
+  SendTokensScreen,
+} from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
   createNFTModelsFromConfig,
@@ -9,7 +16,8 @@ import {
 } from '@onflow/frw-types';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -17,7 +25,6 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-import { SendTokensScreen, SendSummaryScreen } from '@/screens/SendScreenWrappers';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
 
@@ -59,9 +66,8 @@ interface AppNavigatorProps {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
-  // const { isDark } = useTheme();
   const navigationRef = useRef<any>(null);
 
   // Send store actions
@@ -82,29 +88,47 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   // Initialize SendTo flow if requested
   useEffect(() => {
     if (initialProps?.screen === 'send-asset') {
-      const sendToConfig = initialProps?.sendToConfig;
-      if (!sendToConfig) {
+      const sendToConfigJson = initialProps?.sendToConfig;
+      if (!sendToConfigJson) {
         return;
       }
       try {
+        const sendToConfig = JSON.parse(sendToConfigJson);
+        logger.debug('SendTo flow initialization started', { sendToConfig });
+
         if (sendToConfig.fromAccount) {
+          logger.debug('Processing fromAccount config', { fromAccount: sendToConfig.fromAccount });
           const walletAccount = createWalletAccountFromConfig(sendToConfig.fromAccount);
           setFromAccount(walletAccount);
+          logger.debug('FromAccount set successfully', { walletAccount });
         }
+
         if (sendToConfig.selectedToken) {
+          logger.debug('Processing selectedToken config', {
+            selectedToken: sendToConfig.selectedToken,
+          });
           // Convert to TokenInfo type
           const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
           setCurrentStep('send-to');
+          logger.debug('SelectedToken set and step updated to send-to', { tokenInfo });
         }
 
         if (sendToConfig.selectedNFTs && Array.isArray(sendToConfig.selectedNFTs)) {
+          logger.debug('Processing selectedNFTs config', {
+            selectedNFTs: sendToConfig.selectedNFTs,
+            count: sendToConfig.selectedNFTs.length,
+          });
           // Set selected NFTs if provided
           const nftModels = createNFTModelsFromConfig(sendToConfig.selectedNFTs);
           setSelectedNFTs(nftModels);
+          logger.debug('SelectedNFTs set successfully', { nftModels });
         }
 
         if (sendToConfig.targetAddress) {
+          logger.debug('Processing targetAddress config', {
+            targetAddress: sendToConfig.targetAddress,
+          });
           const walletAccount = createWalletAccountFromConfig({
             address: sendToConfig.targetAddress,
             name: sendToConfig.targetAddress,
@@ -113,15 +137,26 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           setToAccount(walletAccount);
           setTransactionType('tokens');
           setCurrentStep('send-tokens');
+          logger.debug(
+            'TargetAddress processed, transaction type set to tokens and step updated to send-tokens',
+            { walletAccount }
+          );
         } else if (sendToConfig.selectedNFTs && sendToConfig.selectedNFTs.length >= 1) {
           // Use single navigation for both single and multiple NFTs - the screen will handle the logic
-          setTransactionType(
-            sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts'
-          );
+          const transactionType =
+            sendToConfig.selectedNFTs.length === 1 ? 'single-nft' : 'multiple-nfts';
+          logger.debug('Setting NFT transaction type based on count', {
+            nftCount: sendToConfig.selectedNFTs.length,
+            transactionType,
+          });
+          setTransactionType(transactionType);
           setCurrentStep('send-to');
+          logger.debug('NFT transaction flow configured and step updated to send-to');
         }
+
+        logger.debug('SendTo flow initialization completed successfully');
       } catch (error) {
-        //  console.error('Failed to initialize SendTo flow:', error);
+        logger.error('Failed to initialize SendTo flow', { error, sendToConfigJson });
       }
     }
   }, [
@@ -173,7 +208,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
   return (
     <SafeAreaProvider>
-      {/* <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}> */}
       <NavigationContainer ref={navigationRef} theme={currentTheme}>
         <Stack.Navigator
           initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
@@ -193,50 +227,48 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerBackVisible: false, // Hide default back button
               headerLeft: () => <NavigationBackButton />,
               headerRight: () => <NavigationCloseButton />,
-              headerLeftContainerStyle: { paddingLeft: 8, alignItems: 'center' },
-              headerRightContainerStyle: { paddingRight: 16, alignItems: 'center' },
             }}
           >
             <Stack.Screen
               name="SelectTokens"
               component={SelectTokensScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.send'),
               }}
             />
             <Stack.Screen
               name="NFTList"
               component={NFTListScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.send'),
               }}
             />
             <Stack.Screen
               name="NFTDetail"
               component={NFTDetailScreen}
               options={{
-                headerTitle: 'NFT Details',
+                headerTitle: t('navigation.nftDetails'),
               }}
             />
             <Stack.Screen
               name="SendTo"
               component={SendToScreen}
               options={{
-                headerTitle: 'Send To',
+                headerTitle: t('navigation.sendTo'),
               }}
             />
             <Stack.Screen
               name="SendTokens"
               component={SendTokensScreen}
               options={{
-                headerTitle: 'Send Tokens',
+                headerTitle: t('navigation.sendTokens'),
               }}
             />
             <Stack.Screen
               name="SendSummary"
               component={SendSummaryScreen}
               options={{
-                headerTitle: 'Send',
+                headerTitle: t('navigation.sending'),
               }}
             />
           </Stack.Group>

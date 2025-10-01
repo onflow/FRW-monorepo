@@ -1,11 +1,12 @@
 import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, Text, useThemeName } from 'tamagui';
+import { YStack, XStack, useThemeName } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
 import { RefreshView } from './RefreshView';
 import { Avatar } from '../foundation/Avatar';
+import { Text } from '../foundation/Text';
 
 export interface ProfileListProps {
   profiles: WalletProfile[];
@@ -119,7 +120,7 @@ function ProfileItem({
           />
           <Text
             color="$text"
-            fontSize="$3"
+            fontSize="$4"
             fontWeight="600"
             whiteSpace="nowrap"
             letterSpacing={-0.084}

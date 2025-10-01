@@ -22,6 +22,7 @@ export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 export interface PlatformSpec {
   // Basic platform methods
   getSelectedAddress(): string | null;
+  getDebugAddress(): string | null;
   getNetwork(): string;
   getJWT(): Promise<string>;
   getVersion(): string;

@@ -1756,7 +1756,11 @@ const evmAddressToWalletAccount = (network: string, evmAddress?: EvmAddress): Wa
   // The index of the evm wallet - always 0 as we only support one evm wallet
   const index = 0;
   // Add 9 to the index to get the evm emoji
-  const emoji = getEmojiByIndex(index + 9);
+  const addressHash = checksummedAddress.split('').reduce((hash, char) => {
+    return hash + char.charCodeAt(0);
+  }, 0);
+  const emojiIndex = addressHash % 10;
+  const emoji = getEmojiByIndex(emojiIndex);
   const evmAccount: WalletAccount = {
     address: checksummedAddress,
     name: emoji.name,

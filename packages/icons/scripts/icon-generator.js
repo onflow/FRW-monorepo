@@ -149,6 +149,15 @@ function generateReactNativeIcon(componentName, svgPath, outputDir) {
         // Keep stroke-opacity and fill-opacity as they're important for visual accuracy
         // Only remove general opacity which can be controlled externally
         .replace(/\s+opacity=\{[^}]+\}/g, '')
+        // Add stroke attributes to Path elements that have neither fill nor stroke
+        // This handles outline icons that SVGR doesn't generate with color attributes
+        .replace(/<(Path)([^>]*?)(\/?>)/g, (match, tagName, attributes, closing) => {
+          // Only add stroke attributes if the element has neither fill nor stroke
+          if (!attributes.includes('fill=') && !attributes.includes('stroke=')) {
+            return `<${tagName}${attributes} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"${closing}`;
+          }
+          return match;
+        })
         // Update export statement to match svgr CLI format
         .replace(/export default Svg\w+;/, `export default ${componentName}`);
 

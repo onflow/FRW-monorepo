@@ -10,7 +10,7 @@ import { Platform } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
-import { NativeModules, Platform as RNPlatform } from 'react-native';
+import { Platform as RNPlatform } from 'react-native';
 
 import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
@@ -89,6 +89,10 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getSelectedAddress();
   }
 
+  getDebugAddress(): string | null {
+    return NativeFRWBridge.getDebugAddress();
+  }
+
   getNetwork(): string {
     return NativeFRWBridge.getNetwork();
   }
@@ -111,22 +115,18 @@ class PlatformImpl implements PlatformSpec {
 
   getLanguage(): string {
     try {
-      // Get language from system locale
-      const locale =
-        RNPlatform.OS === 'ios'
-          ? NativeModules.SettingsManager?.settings?.AppleLocale ||
-            NativeModules.SettingsManager?.settings?.AppleLanguages?.[0] ||
-            'en'
-          : NativeModules.I18nManager?.localeIdentifier || 'en';
+      // Get language from native bridge
+      const language = NativeFRWBridge.getLanguage();
 
-      // Extract language code (e.g., 'en-US' -> 'en', 'zh-CN' -> 'zh')
-      const languageCode = locale.split('-')[0].toLowerCase();
-
-      // Validate against supported languages
+      // Validate the language is supported
       const supportedLanguages = ['en', 'es', 'zh', 'ru', 'jp'];
-      return supportedLanguages.includes(languageCode) ? languageCode : 'en';
+      return supportedLanguages.includes(language) ? language : 'en';
     } catch (error) {
-      this.log('warn', '[PlatformImpl] Failed to get system language, falling back to en:', error);
+      this.log(
+        'warn',
+        '[PlatformImpl] Failed to get language from native bridge, falling back to en:',
+        error
+      );
       return 'en';
     }
   }
