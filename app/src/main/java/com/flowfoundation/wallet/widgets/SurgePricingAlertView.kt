@@ -18,6 +18,10 @@ import android.widget.*
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.mixpanel.SurgePricingMetrics
 import com.flowfoundation.wallet.utils.logd
+import android.util.TypedValue
+import android.graphics.Typeface
+import androidx.core.content.ContextCompat
+import com.flowfoundation.wallet.R
 
 /**
  * SurgePricingAlertView - Manages the horizontal alert banner for surge pricing
@@ -40,16 +44,6 @@ class SurgePricingAlertView {
 
         @Volatile
         private var userDecisionCallback: ((Boolean) -> Unit)? = null
-
-        // Design colors matching SurgeModal.tsx
-        private const val COLOR_BACKGROUND = "#1A1A1A" // Dark background ($bg5)
-        private const val COLOR_MODAL_BG = "#2A2A2A" // Modal background
-        private const val COLOR_WHITE = "#FFFFFF"
-        private const val COLOR_ERROR = "#FF5252" // Error/warning red
-        private const val COLOR_WARNING = "#FDB022" // Warning orange
-        private const val COLOR_WARNING_BG = "#FDB02226" // Warning background with opacity
-        private const val COLOR_BORDER = "#3A3A3A" // Border color
-        private const val COLOR_TEXT_SECONDARY = "#9CA3AF" // Secondary text
 
         /**
          * Show surge pricing alert dialog
@@ -107,7 +101,7 @@ class SurgePricingAlertView {
 
             // Set dialog window properties for full-screen overlay effect
             dialog.window?.apply {
-                setBackgroundDrawable(ColorDrawable(Color.parseColor(COLOR_BACKGROUND + "CC"))) // 80% opacity
+                setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(context, R.color.surge_modal_overlay)))
                 setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
                 // Add dim behind
@@ -130,139 +124,228 @@ class SurgePricingAlertView {
             context: Context,
             errorResponse: PayerServiceInterceptor.PayerErrorResponse
         ): View {
-            val inflater = LayoutInflater.from(context)
-            val parentView = ViewGroup(context) as? ViewGroup
-
-            // Create a simple vertical layout programmatically
-            val rootLayout = android.widget.LinearLayout(context).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(48, 48, 48, 48)
-                setBackgroundColor(Color.WHITE)
-
-                // Add rounded corners background
-                val drawable = android.graphics.drawable.GradientDrawable().apply {
-                    cornerRadius = 24f
-                    setColor(Color.WHITE)
+            // Main container that centers the modal
+            val mainContainer = FrameLayout(context).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                setOnClickListener {
+                    // Clicking outside does nothing (modal is not dismissible by outside click)
                 }
-                background = drawable
             }
 
-            // Close button (X)
-            val closeButton = TextView(context).apply {
-                id = android.R.id.closeButton
-                text = "✕"
-                textSize = 24f
-                setTextColor(Color.BLACK)
-                setPadding(16, 0, 16, 16)
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            // Modal card container (width: 343, matching React component)
+            val modalCard = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dpToPx(context, 16), dpToPx(context, 16), dpToPx(context, 16), dpToPx(context, 16))
+
+                // Set background with rounded corners
+                background = GradientDrawable().apply {
+                    setColor(ContextCompat.getColor(context, R.color.surge_modal_bg))
+                    cornerRadius = dpToPx(context, 16).toFloat()
+                }
+
+                val cardParams = FrameLayout.LayoutParams(
+                    dpToPx(context, 343),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    gravity = android.view.Gravity.END
+                    gravity = Gravity.CENTER
                 }
-            }
-            rootLayout.addView(closeButton)
-
-            // Alert icon and title
-            val titleLayout = android.widget.LinearLayout(context).apply {
-                orientation = android.widget.LinearLayout.HORIZONTAL
-                gravity = android.view.Gravity.CENTER
-                setPadding(0, 0, 0, 24)
+                layoutParams = cardParams
             }
 
-            val alertIcon = TextView(context).apply {
-                text = "⚠️"
-                textSize = 32f
-                setPadding(0, 0, 16, 0)
-            }
-            titleLayout.addView(alertIcon)
+            // Close button container (positioned absolutely in top-right)
+            val closeButtonContainer = FrameLayout(context).apply {
+                val closeButton = ImageButton(context).apply {
+                    // Use text "✕" for close icon
+                    background = null
+                    setPadding(dpToPx(context, 8), dpToPx(context, 8), dpToPx(context, 8), dpToPx(context, 8))
 
-            val titleText = TextView(context).apply {
-                text = if (errorResponse.isSurgePricing()) {
-                    "Surge Pricing Active"
-                } else {
-                    "Payer Service Error"
-                }
-                textSize = 24f
-                setTextColor(Color.BLACK)
-                setTypeface(null, android.graphics.Typeface.BOLD)
-            }
-            titleLayout.addView(titleText)
-            rootLayout.addView(titleLayout)
-
-            // Message text
-            val messageText = TextView(context).apply {
-                text = errorResponse.getDisplayMessage()
-                textSize = 16f
-                setTextColor(Color.DKGRAY)
-                setPadding(0, 0, 0, 32)
-                gravity = android.view.Gravity.CENTER
-            }
-            rootLayout.addView(messageText)
-
-            // Transaction fee display (if available)
-            if (errorResponse.estimatedFee != null) {
-                val feeLayout = android.widget.LinearLayout(context).apply {
-                    orientation = android.widget.LinearLayout.HORIZONTAL
-                    gravity = android.view.Gravity.CENTER
-                    setPadding(24, 16, 24, 16)
-                    setBackgroundColor(Color.parseColor("#FFF3E0"))
-                }
-
-                val feeLabel = TextView(context).apply {
-                    text = "Estimated Transaction Fee: "
-                    textSize = 14f
-                    setTextColor(Color.BLACK)
-                }
-                feeLayout.addView(feeLabel)
-
-                val feeValue = TextView(context).apply {
-                    text = errorResponse.estimatedFee
-                    textSize = 14f
-                    setTextColor(Color.BLACK)
-                    setTypeface(null, android.graphics.Typeface.BOLD)
-                }
-                feeLayout.addView(feeValue)
-
-                rootLayout.addView(feeLayout)
-            }
-
-            // Hold to confirm button (for surge pricing)
-            if (errorResponse.isSurgePricing()) {
-                val holdButton = createHoldToConfirmButton(context, errorResponse) { accepted ->
-                    if (accepted) {
-                        logd(TAG, "User accepted surge pricing")
-                        // Track telemetry for user acceptance
-                        SurgePricingMetrics.trackSurgeDecision(true, errorResponse)
-                        userDecisionCallback?.invoke(true)
+                    setOnClickListener {
+                        logd(TAG, "User cancelled surge pricing")
+                        SurgePricingMetrics.trackSurgeDecision(false, errorResponse)
+                        userDecisionCallback?.invoke(false)
                         dismissCurrentAlert()
                     }
                 }
-                rootLayout.addView(holdButton)
+
+                // Add close icon text
+                val closeIcon = TextView(context).apply {
+                    text = "✕"
+                    textSize = 20f
+                    setTextColor(ContextCompat.getColor(context, R.color.surge_text_secondary))
+                    gravity = Gravity.CENTER
+                    isClickable = false
+                }
+
+                closeButton.addView(closeIcon)
+
+                val closeParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    gravity = Gravity.TOP or Gravity.END
+                }
+                closeButton.layoutParams = closeParams
+
+                addView(closeButton)
             }
 
-            // Cancel button
-            val cancelButton = Button(context).apply {
-                text = "Cancel Transaction"
-                setBackgroundColor(Color.LTGRAY)
-                setTextColor(Color.BLACK)
-                setPadding(32, 16, 32, 16)
-                setOnClickListener {
-                    logd(TAG, "User cancelled transaction")
-                    userDecisionCallback?.invoke(false)
+            // Content container
+            val contentContainer = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER_HORIZONTAL
+            }
+
+            // Alert icon (64x64)
+            val alertIconContainer = FrameLayout(context).apply {
+                val iconBg = View(context).apply {
+                    background = GradientDrawable().apply {
+                        setColor(ContextCompat.getColor(context, R.color.surge_error))
+                        shape = GradientDrawable.OVAL
+                    }
+                    layoutParams = FrameLayout.LayoutParams(dpToPx(context, 64), dpToPx(context, 64))
+                }
+
+                val alertIcon = TextView(context).apply {
+                    text = "⚠"
+                    textSize = 32f
+                    setTextColor(ContextCompat.getColor(context, R.color.white))
+                    gravity = Gravity.CENTER
+                    layoutParams = FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+
+                addView(iconBg)
+                addView(alertIcon)
+
+                val iconParams = LinearLayout.LayoutParams(dpToPx(context, 64), dpToPx(context, 64))
+                iconParams.bottomMargin = dpToPx(context, 16)
+                layoutParams = iconParams
+            }
+            contentContainer.addView(alertIconContainer)
+
+            // Title text
+            val titleText = TextView(context).apply {
+                text = "Are you really sure that you want to continue with surge pricing?"
+                textSize = 24f
+                setTextColor(ContextCompat.getColor(context, R.color.surge_text_primary))
+                setTypeface(typeface, Typeface.BOLD)
+                gravity = Gravity.CENTER
+                setPadding(dpToPx(context, 16), 0, dpToPx(context, 16), dpToPx(context, 16))
+            }
+            contentContainer.addView(titleText)
+
+            // Divider line
+            val divider = View(context).apply {
+                setBackgroundColor(ContextCompat.getColor(context, R.color.surge_border))
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    dpToPx(context, 1)
+                ).apply {
+                    topMargin = dpToPx(context, 16)
+                    bottomMargin = dpToPx(context, 16)
+                }
+            }
+            contentContainer.addView(divider)
+
+            // Transaction fee section (warning background)
+            val feeSection = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dpToPx(context, 16), dpToPx(context, 16), dpToPx(context, 16), dpToPx(context, 16))
+
+                background = GradientDrawable().apply {
+                    setColor(ContextCompat.getColor(context, R.color.surge_warning_bg))
+                    cornerRadius = dpToPx(context, 8).toFloat()
+                }
+            }
+
+            // Transaction fee row
+            val feeRow = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+
+            val feeLabel = TextView(context).apply {
+                text = "Your transaction fee"
+                textSize = 14f
+                setTextColor(ContextCompat.getColor(context, R.color.surge_text_primary))
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            feeRow.addView(feeLabel)
+
+            val feeValue = TextView(context).apply {
+                text = errorResponse.estimatedFee ?: "- 500.00 FLOW"
+                textSize = 14f
+                setTextColor(ContextCompat.getColor(context, R.color.surge_text_primary))
+                setTypeface(typeface, Typeface.BOLD)
+            }
+            feeRow.addView(feeValue)
+            feeSection.addView(feeRow)
+
+            // Surge price active row
+            val surgeRow = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(0, dpToPx(context, 8), 0, dpToPx(context, 8))
+            }
+
+            val surgeIcon = TextView(context).apply {
+                text = "⚡"
+                textSize = 20f
+                setTextColor(ContextCompat.getColor(context, R.color.surge_warning))
+                setPadding(0, 0, dpToPx(context, 8), 0)
+            }
+            surgeRow.addView(surgeIcon)
+
+            val surgeText = TextView(context).apply {
+                text = "Surge price active"
+                textSize = 14f
+                setTextColor(ContextCompat.getColor(context, R.color.surge_warning))
+                setTypeface(typeface, Typeface.BOLD)
+            }
+            surgeRow.addView(surgeText)
+            feeSection.addView(surgeRow)
+
+            // Description text
+            val descriptionText = TextView(context).apply {
+                text = errorResponse.getDisplayMessage()
+                textSize = 14f
+                setTextColor(ContextCompat.getColor(context, R.color.surge_warning))
+                lineSpacingMultiplier = 1.2f
+            }
+            feeSection.addView(descriptionText)
+            contentContainer.addView(feeSection)
+
+            // Hold to agree button
+            val holdButton = createHoldToConfirmButton(context, errorResponse) { accepted ->
+                if (accepted) {
+                    logd(TAG, "User accepted surge pricing")
+                    SurgePricingMetrics.trackSurgeDecision(true, errorResponse)
+                    userDecisionCallback?.invoke(true)
                     dismissCurrentAlert()
                 }
             }
-            val cancelButtonParams = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            val buttonParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dpToPx(context, 52)
             ).apply {
-                setMargins(0, 16, 0, 0)
+                topMargin = dpToPx(context, 24)
             }
-            cancelButton.layoutParams = cancelButtonParams
-            rootLayout.addView(cancelButton)
+            holdButton.layoutParams = buttonParams
+            contentContainer.addView(holdButton)
 
-            return rootLayout
+            // Add content to modal card
+            modalCard.addView(closeButtonContainer)
+            modalCard.addView(contentContainer)
+
+            // Add modal card to main container
+            mainContainer.addView(modalCard)
+
+            return mainContainer
         }
 
         private fun createHoldToConfirmButton(
@@ -270,43 +353,58 @@ class SurgePricingAlertView {
             errorResponse: PayerServiceInterceptor.PayerErrorResponse,
             onConfirm: (Boolean) -> Unit
         ): View {
-            val buttonLayout = android.widget.FrameLayout(context)
+            val buttonContainer = FrameLayout(context)
 
-            val button = Button(context).apply {
-                text = "Hold to Accept Surge Pricing"
-                setBackgroundColor(Color.parseColor("#FF5252"))
-                setTextColor(Color.WHITE)
-                setPadding(32, 24, 32, 24)
-            }
-
-            val progressBar = ProgressBar(
-                context,
-                null,
-                android.R.attr.progressBarStyleHorizontal
-            ).apply {
-                max = 100
-                progress = 0
-                layoutParams = android.widget.FrameLayout.LayoutParams(
-                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                    android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+            // Button background
+            val buttonBg = View(context).apply {
+                background = GradientDrawable().apply {
+                    setColor(ContextCompat.getColor(context, R.color.surge_error))
+                    cornerRadius = dpToPx(context, 8).toFloat()
+                }
+                layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
                 )
-                alpha = 0.3f
             }
+            buttonContainer.addView(buttonBg)
 
-            buttonLayout.addView(button)
-            buttonLayout.addView(progressBar)
+            // Progress overlay
+            val progressOverlay = View(context).apply {
+                background = GradientDrawable().apply {
+                    setColor(ContextCompat.getColor(context, R.color.surge_button_overlay))
+                    cornerRadius = dpToPx(context, 8).toFloat()
+                }
+                layoutParams = FrameLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT)
+                visibility = View.GONE
+            }
+            buttonContainer.addView(progressOverlay)
 
+            // Button text
+            val buttonText = TextView(context).apply {
+                text = "Hold to agree to surge pricing"
+                textSize = 16f
+                setTextColor(ContextCompat.getColor(context, R.color.white))
+                setTypeface(typeface, Typeface.BOLD)
+                gravity = Gravity.CENTER
+                layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            }
+            buttonContainer.addView(buttonText)
+
+            // Touch handling
             var isHolding = false
             var holdStartTime = 0L
             val handler = Handler(Looper.getMainLooper())
             var progressRunnable: Runnable? = null
 
-            button.setOnTouchListener { _, event ->
+            buttonContainer.setOnTouchListener { _, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
                         isHolding = true
                         holdStartTime = System.currentTimeMillis()
-                        progressBar.progress = 0
+                        progressOverlay.visibility = View.VISIBLE
 
                         progressRunnable = object : Runnable {
                             override fun run() {
@@ -315,13 +413,18 @@ class SurgePricingAlertView {
                                     val progress = ((elapsed.toFloat() / HOLD_DURATION_MS) * 100).toInt()
 
                                     if (progress >= 100) {
-                                        progressBar.progress = 100
+                                        // Complete
+                                        val params = progressOverlay.layoutParams as FrameLayout.LayoutParams
+                                        params.width = ViewGroup.LayoutParams.MATCH_PARENT
+                                        progressOverlay.layoutParams = params
                                         isHolding = false
-                                        // Track hold-to-confirm completion
                                         SurgePricingMetrics.trackHoldToConfirm(true, elapsed)
                                         onConfirm(true)
                                     } else {
-                                        progressBar.progress = progress
+                                        // Update progress width
+                                        val params = progressOverlay.layoutParams as FrameLayout.LayoutParams
+                                        params.width = (buttonContainer.width * progress / 100)
+                                        progressOverlay.layoutParams = params
                                         handler.postDelayed(this, 50)
                                     }
                                 }
@@ -333,27 +436,29 @@ class SurgePricingAlertView {
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                         if (isHolding) {
                             val elapsed = System.currentTimeMillis() - holdStartTime
-                            // Track incomplete hold-to-confirm
                             SurgePricingMetrics.trackHoldToConfirm(false, elapsed)
                         }
                         isHolding = false
                         progressRunnable?.let { handler.removeCallbacks(it) }
-                        progressBar.progress = 0
+                        progressOverlay.visibility = View.GONE
+                        val params = progressOverlay.layoutParams as FrameLayout.LayoutParams
+                        params.width = 0
+                        progressOverlay.layoutParams = params
                         true
                     }
                     else -> false
                 }
             }
 
-            val params = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 24, 0, 0)
-            }
-            buttonLayout.layoutParams = params
+            return buttonContainer
+        }
 
-            return buttonLayout
+        private fun dpToPx(context: Context, dp: Int): Int {
+            return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp.toFloat(),
+                context.resources.displayMetrics
+            ).toInt()
         }
     }
 }
