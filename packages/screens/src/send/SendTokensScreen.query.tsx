@@ -251,6 +251,26 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
   const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
 
+  // Calculate transaction fee from API's maxFee field or fallback to default
+  const transactionFee = useMemo(() => {
+    if (payerStatus?.surge?.maxFee) {
+      // maxFee is provided by the API with surge factor already applied
+      const fee = payerStatus.surge.maxFee;
+
+      // Format the fee with appropriate precision
+      if (fee < 0.01) {
+        return `~${fee.toFixed(4)} FLOW`;
+      } else if (fee < 0.1) {
+        return `~${fee.toFixed(3)} FLOW`;
+      } else {
+        return `~${fee.toFixed(2)} FLOW`;
+      }
+    }
+
+    // Fallback to default fee if maxFee is not available
+    return '~0.001 FLOW';
+  }, [payerStatus?.surge?.maxFee]);
+
   // Log payer status API response for debugging
   React.useEffect(() => {
     if (payerStatus && typeof payerStatus === 'object') {
@@ -282,26 +302,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   ]);
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
-
-  // Calculate transaction fee from API's maxFee field or fallback to default
-  const transactionFee = useMemo(() => {
-    if (payerStatus?.surge?.maxFee) {
-      // maxFee is provided by the API with surge factor already applied
-      const fee = payerStatus.surge.maxFee;
-
-      // Format the fee with appropriate precision
-      if (fee < 0.01) {
-        return `~${fee.toFixed(4)} FLOW`;
-      } else if (fee < 0.1) {
-        return `~${fee.toFixed(3)} FLOW`;
-      } else {
-        return `~${fee.toFixed(2)} FLOW`;
-      }
-    }
-
-    // Fallback to default fee if maxFee is not available
-    return '~0.001 FLOW';
-  }, [payerStatus?.surge?.maxFee]);
 
   // Calculate storage warning state based on real validation logic
   const validationResult = useMemo(() => {

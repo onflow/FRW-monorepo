@@ -79,6 +79,7 @@ function Main() {
 
 const App = ({ wallet }: { wallet: any }) => {
   const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
+  const [hasResponded, setHasResponded] = useState(false);
 
   // Global surge modal for 429 errors
   useEffect(() => {
@@ -87,6 +88,7 @@ const App = ({ wallet }: { wallet: any }) => {
       if (message.type === 'API_RATE_LIMIT' && message.data?.status === 429) {
         console.log('API rate limit detected, showing global surge modal:', message.data);
         setIsSurgeModalVisible(true);
+        setHasResponded(false); // Reset response flag when showing modal
       } else {
         console.log('Message is not API_RATE_LIMIT or status is not 429:', message);
       }
@@ -100,6 +102,38 @@ const App = ({ wallet }: { wallet: any }) => {
       chrome.runtime.onMessage.removeListener(handleApiRateLimit);
     };
   }, []);
+
+  const handleSurgeModalClose = () => {
+    if (hasResponded) return; // Prevent multiple responses
+
+    console.log('SurgeModal onClose called');
+    setIsSurgeModalVisible(false);
+    setHasResponded(true);
+
+    // Send rejection response
+    chrome.runtime.sendMessage({
+      type: 'SURGE_APPROVAL_RESPONSE',
+      data: { approved: false },
+    });
+  };
+
+  const handleSurgeModalAgree = () => {
+    if (hasResponded) {
+      console.log('SurgeModal onAgree called but already responded, ignoring');
+      return; // Prevent multiple responses
+    }
+
+    console.log('SurgeModal onAgree called - sending approval response');
+    setIsSurgeModalVisible(false);
+    setHasResponded(true);
+
+    // Send approval response
+    chrome.runtime.sendMessage({
+      type: 'SURGE_APPROVAL_RESPONSE',
+      data: { approved: true },
+    });
+    console.log('Surge approval response sent');
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -115,14 +149,8 @@ const App = ({ wallet }: { wallet: any }) => {
               {console.log('Rendering SurgeModal with visible:', isSurgeModalVisible)}
               <SurgeModal
                 visible={isSurgeModalVisible}
-                onClose={() => {
-                  console.log('SurgeModal onClose called');
-                  setIsSurgeModalVisible(false);
-                }}
-                onAgree={() => {
-                  console.log('SurgeModal onAgree called');
-                  setIsSurgeModalVisible(false);
-                }}
+                onClose={handleSurgeModalClose}
+                onAgree={handleSurgeModalAgree}
                 isLoading={false}
               />
             </div>
