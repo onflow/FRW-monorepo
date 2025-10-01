@@ -264,63 +264,20 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       for (const address of addressesToCheck) {
         const existingCollections = tokenStore.getNFTCollectionsForAddress(address);
 
-        logger.debug('[SendSummaryScreen] Checking collections for address', {
-          address,
-          hasCollections: !!existingCollections,
-          collectionsCount: existingCollections?.length || 0,
-          collections:
-            existingCollections?.map((c) => ({
-              id: c.id,
-              name: c.name,
-              contractName: c.contractName,
-              flowIdentifier: c.flowIdentifier,
-              evmAddress: c.evmAddress,
-              type: c.type,
-            })) || [],
-          targetNFT: {
-            collectionName: currentSelectedNFT.collectionName,
-            collectionContractName: currentSelectedNFT.collectionContractName,
-            flowIdentifier: currentSelectedNFT.flowIdentifier,
-            evmAddress: currentSelectedNFT.evmAddress,
-            type: currentSelectedNFT.type,
-          },
-        });
-
         if (existingCollections) {
           // Find the collection that matches this NFT
           matchingCollection = existingCollections.find((collection) => {
             // Try multiple matching strategies
-            const matches = {
-              name: collection.name === currentSelectedNFT.collectionName,
-              contractName: collection.contractName === currentSelectedNFT.collectionContractName,
-              id: collection.id === currentSelectedNFT.collectionContractName,
-              flowIdentifier: collection.flowIdentifier === currentSelectedNFT.flowIdentifier,
-              evmAddress: collection.evmAddress === currentSelectedNFT.evmAddress,
-            };
-
-            const hasMatch = Object.values(matches).some(Boolean);
-
-            logger.debug('[SendSummaryScreen] Collection matching attempt', {
-              collection: {
-                id: collection.id,
-                name: collection.name,
-                contractName: collection.contractName,
-                flowIdentifier: collection.flowIdentifier,
-                evmAddress: collection.evmAddress,
-              },
-              matches,
-              hasMatch,
-            });
-
-            return hasMatch;
+            return (
+              collection.name === currentSelectedNFT.collectionName ||
+              collection.contractName === currentSelectedNFT.collectionContractName ||
+              collection.id === currentSelectedNFT.collectionContractName ||
+              collection.flowIdentifier === currentSelectedNFT.flowIdentifier ||
+              collection.evmAddress === currentSelectedNFT.evmAddress
+            );
           });
 
           if (matchingCollection) {
-            logger.info('[SendSummaryScreen] Found matching collection', {
-              collectionId: matchingCollection.id,
-              collectionName: matchingCollection.name,
-              address,
-            });
             break; // Found it, stop searching
           }
         }
