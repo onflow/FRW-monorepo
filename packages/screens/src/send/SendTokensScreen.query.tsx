@@ -9,7 +9,7 @@ import {
   storageQueries,
   storageUtils,
 } from '@onflow/frw-stores';
-import { isFlow, Platform } from '@onflow/frw-types';
+import { isFlow, Platform, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -22,7 +22,6 @@ import {
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
-  type TransactionFormData,
   Text,
   Separator,
   XStack,
@@ -462,7 +461,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   ]);
 
   // Create form data for transaction confirmation
-  const formData: TransactionFormData = useMemo(
+  const formData: SendFormData = useMemo(
     () => ({
       tokenAmount: isTokenMode
         ? amount

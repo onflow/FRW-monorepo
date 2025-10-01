@@ -1,9 +1,9 @@
-import type { TokenModel, WalletAccount, Currency, NFTModel, Token } from '@onflow/frw-types';
+import type { TokenModel, WalletAccount, Currency, NFTModel } from '@onflow/frw-types';
 import type { ComponentProps } from 'react';
 import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiText } from 'tamagui';
 
 // Re-export from frw-types
-export type { NFTModel, Token };
+export type { NFTModel };
 
 // Base component props
 export type ButtonProps = ComponentProps<typeof TamaguiButton>;
@@ -99,7 +99,7 @@ export interface NFTCoverProps {
 }
 
 export interface TokenAmountInputProps {
-  selectedToken?: Token;
+  selectedToken?: TokenModel;
   amount?: string;
   onAmountChange?: (amount: string) => void;
   isTokenMode?: boolean;

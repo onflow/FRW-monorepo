@@ -4,7 +4,7 @@ import {
   type NFTModel,
   type TokenModel,
   type TransactionType,
-  type TransactionFormData,
+  type SendFormData,
 } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
@@ -25,7 +25,7 @@ export interface ConfirmationDrawerProps {
   })[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
-  formData: TransactionFormData;
+  formData: SendFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
   title?: string;

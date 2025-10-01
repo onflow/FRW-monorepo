@@ -4,7 +4,7 @@ import {
   type TokenModel,
   type AccountDisplayData,
   type NFTModel,
-  type TransactionFormData,
+  type SendFormData,
 } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
@@ -23,7 +23,7 @@ export interface TransactionConfirmationModalProps {
   })[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
-  formData: TransactionFormData;
+  formData: SendFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
   title?: string;

@@ -7,7 +7,7 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
-import { Platform, type NFTModel } from '@onflow/frw-types';
+import { Platform, type NFTModel, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -25,7 +25,6 @@ import {
   Text,
   ExtensionHeader,
   Separator,
-  type TransactionFormData,
   XStack,
   ERC1155QuantitySelector,
   useTheme,
@@ -230,7 +229,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     isAccountIncompatible;
 
   // Create form data for transaction confirmation
-  const formData: TransactionFormData = {
+  const formData: SendFormData = {
     tokenAmount: isMultipleNFTs
       ? selectedNFTs.length.toString()
       : isERC1155
