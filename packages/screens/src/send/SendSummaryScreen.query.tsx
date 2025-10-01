@@ -243,6 +243,8 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
   // Event handlers
   const handleEditNFTPress = useCallback(() => {
+    // Simply navigate to NFTList without setting collection to avoid infinite fetch loops
+    // The NFTListScreen should handle the current selection appropriately
     navigation.navigate('NFTList');
   }, []);
 
@@ -503,7 +505,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             isMultipleNFTs
               ? nftsForUI
               : selectedNFT
-                  ? [
+                ? [
                     {
                       id: selectedNFT.id || '',
                       name: selectedNFT.name || t('nft.untitled'),
