@@ -31,10 +31,10 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const [isRollingBack, setIsRollingBack] = useState(false);
 
   const progressValue = useRef(new Animated.Value(0)).current;
-  const spinValue = useRef(new Animated.Value(0)).current;
+  const rotateValue = useRef(new Animated.Value(0)).current; // Native driver for rotation
   const scaleValue = useRef(new Animated.Value(1)).current;
   const progressAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
-  const spinAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const rotateAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
   const progressCurrentRef = useRef(0);
   const progressListenerIdRef = useRef<string | null>(null);
   const completedRef = useRef(false);
@@ -54,9 +54,9 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       progressAnimationRef.current = null;
     }
 
-    if (spinAnimationRef.current) {
-      spinAnimationRef.current.stop();
-      spinAnimationRef.current = null;
+    if (rotateAnimationRef.current) {
+      rotateAnimationRef.current.stop();
+      rotateAnimationRef.current = null;
     }
 
     setIsHolding(false);
@@ -66,7 +66,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
     setIsRollingBack(false);
 
     progressValue.setValue(0);
-    spinValue.setValue(0);
+    rotateValue.setValue(0);
     scaleValue.setValue(1);
     progressCurrentRef.current = 0;
     completedRef.current = false;
@@ -82,22 +82,20 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       clearTimeout(holdTimeoutRef.current);
       holdTimeoutRef.current = null;
     }
-  }, [progressValue, spinValue, scaleValue]);
+  }, [progressValue, rotateValue, scaleValue]);
 
   // Handle stop signal from external source
   useEffect(() => {
-    if (stopSignal && (isAnimating || isCompleted)) {
+    // Only allow stopSignal to cancel when not in spinner phase
+    if (stopSignal && !isAnimating && (isHolding || isRollingBack)) {
       handleStop();
     }
-  }, [stopSignal, isAnimating, isCompleted, handleStop]);
+  }, [stopSignal, isAnimating, isHolding, isRollingBack, handleStop]);
 
   const handlePressIn = useCallback(() => {
     if (isDisabled || isAnimating) return;
 
     setIsHolding(true);
-
-    // Reset spin value to ensure smooth start
-    spinValue.setValue(0);
 
     // Ensure any rollback/progress animation is stopped and baseline is 0
     if (progressAnimationRef.current) {
@@ -145,35 +143,38 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       if (completedRef.current) return;
       completedRef.current = true;
 
-      // Prepare spinning animation and state
-      spinValue.setValue(0);
-      spinAnimationRef.current = Animated.loop(
-        Animated.timing(spinValue, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-          easing: Easing.linear,
-        })
-      );
-
       setIsCompleted(true);
       setIsAnimating(true);
       setIsDisabled(true);
       setIsRollingBack(false);
-
-      spinAnimationRef.current.start();
       onPress().finally(() => onComplete?.());
     }, holdDuration);
-  }, [
-    isDisabled,
-    isAnimating,
-    holdDuration,
-    onPress,
-    onComplete,
-    progressValue,
-    spinValue,
-    scaleValue,
-  ]);
+  }, [isDisabled, isAnimating, holdDuration, onPress, onComplete, progressValue, scaleValue]);
+
+  // Ensure spinner starts whenever isAnimating flips true, and stops otherwise
+  useEffect(() => {
+    if (isAnimating) {
+      if (!rotateAnimationRef.current) {
+        rotateValue.setValue(0);
+        rotateAnimationRef.current = Animated.loop(
+          Animated.timing(rotateValue, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+            easing: Easing.linear,
+          }),
+          { resetBeforeIteration: true }
+        );
+        rotateAnimationRef.current.start();
+      }
+    } else {
+      if (rotateAnimationRef.current) {
+        rotateAnimationRef.current.stop();
+        rotateAnimationRef.current = null;
+      }
+      rotateValue.stopAnimation();
+    }
+  }, [isAnimating, rotateValue]);
 
   const handlePressOut = useCallback(() => {
     // Always scale back to normal, regardless of state
@@ -230,9 +231,10 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       if (progressAnimationRef.current) {
         progressAnimationRef.current.stop();
       }
-      if (spinAnimationRef.current) {
-        spinAnimationRef.current.stop();
+      if (rotateAnimationRef.current) {
+        rotateAnimationRef.current.stop();
       }
+      // no-op
       try {
         progressValue.removeAllListeners();
       } catch {
@@ -241,6 +243,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       if (holdTimeoutRef.current) {
         clearTimeout(holdTimeoutRef.current);
       }
+      // removed leftover spinStopTimeoutRef cleanup
     };
   }, []);
 
@@ -270,20 +273,40 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
               style={{
                 width: 24,
                 height: 24,
-                borderWidth: 3,
-                borderColor: progressBackgroundColor,
-                borderTopColor: buttonTextColor,
-                borderRadius: 12,
                 transform: [
                   {
-                    rotate: spinValue.interpolate({
+                    rotate: rotateValue.interpolate({
                       inputRange: [0, 1],
                       outputRange: ['0deg', '360deg'],
                     }),
                   },
                 ],
               }}
-            />
+            >
+              {/* Background ring */}
+              <Svg width={24} height={24} viewBox="0 0 24 24">
+                <Circle
+                  cx={12}
+                  cy={12}
+                  r={CIRCLE_RADIUS}
+                  stroke={progressBackgroundColor}
+                  strokeWidth={3}
+                  fill="none"
+                />
+                {/* Quarter-arc */}
+                <Circle
+                  cx={12}
+                  cy={12}
+                  r={CIRCLE_RADIUS}
+                  stroke={buttonTextColor}
+                  strokeWidth={3}
+                  fill="none"
+                  strokeDasharray={[CIRCLE_CIRCUMFERENCE * 0.25, CIRCLE_CIRCUMFERENCE * 0.75]}
+                  strokeLinecap="round"
+                  transform="rotate(-90 12 12)"
+                />
+              </Svg>
+            </Animated.View>
             <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
               {holdToSendText}
             </Text>
