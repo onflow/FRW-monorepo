@@ -231,7 +231,13 @@ export function NFTGrid({
         removeClippedSubviews
         contentContainerStyle={{ paddingBottom: 16 }}
         renderItem={({ item, index }) => (
-          <YStack width="50%" flex={0} mb="$4" pr={index % columns === 0 ? '$4' : 0}>
+          <YStack
+            width="50%"
+            flex={0}
+            mb="$4"
+            pr={index % columns === 0 ? '$2' : 0}
+            pl={index % columns === 1 ? '$2' : 0}
+          >
             <NFTCard
               nft={item}
               size="medium"
