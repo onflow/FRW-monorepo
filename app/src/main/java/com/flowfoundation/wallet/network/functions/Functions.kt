@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.network.functions
 import com.google.gson.GsonBuilder
 import com.flowfoundation.wallet.firebase.analytics.reportEvent
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
+import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.utils.*
 import com.instabug.library.okhttplogger.InstabugOkhttpInterceptor
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -43,6 +44,7 @@ private suspend fun executeHttp(host: String, functionName: String, data: Any? =
         writeTimeout(10, TimeUnit.SECONDS)
 
         addInterceptor(HeaderInterceptor())
+        addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
         addInterceptor(InstabugOkhttpInterceptor())
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })

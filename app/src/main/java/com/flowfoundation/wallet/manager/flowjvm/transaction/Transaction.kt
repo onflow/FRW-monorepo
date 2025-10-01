@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.flowjvm.transaction
 
+import android.app.Activity
 import com.flow.wallet.CryptoProvider
 import com.google.gson.Gson
 import com.flowfoundation.wallet.manager.config.AppConfig
@@ -10,6 +11,11 @@ import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_BRIDGE_PAYER
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
+import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
+import com.flowfoundation.wallet.widgets.SurgePricingAlertView
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.InvalidKeyException
 import com.flowfoundation.wallet.utils.error.WalletError
@@ -26,6 +32,7 @@ import org.onflow.flow.models.*
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.app.ActivityManager
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
@@ -33,6 +40,79 @@ import org.onflow.flow.infrastructure.removeHexPrefix
 import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
 
 private const val TAG = "Transaction"
+
+/**
+ * Helper function to execute payer requests with surge pricing handling
+ * Shows alert dialog if surge pricing is detected and waits for user decision
+ */
+private suspend fun executePayerRequestWithSurgeHandling(
+    functionName: String,
+    data: Any?,
+    host: String? = null
+): String? = suspendCancellableCoroutine { continuation ->
+    // Set up callback for interceptor errors
+    PayerServiceInterceptor.setErrorCallback { errorResponse ->
+        // Get current activity context (you might need to pass this through or get from a manager)
+        val currentActivity = getCurrentActivity()
+
+        if (currentActivity != null && (errorResponse.isSurgePricing() || errorResponse.isServerError())) {
+            currentActivity.runOnUiThread {
+                SurgePricingAlertView.showAlert(
+                    activity = currentActivity,
+                    errorResponse = errorResponse,
+                    onDecision = { accepted ->
+                        if (accepted && errorResponse.isSurgePricing()) {
+                            // User accepted surge pricing, retry the request
+                            ioScope {
+                                try {
+                                    val retryResponse = executeHttpFunction(functionName, data, host)
+                                    continuation.resume(retryResponse)
+                                } catch (e: Exception) {
+                                    logd(TAG, "Retry failed after surge acceptance: ${e.message}")
+                                    continuation.resume(null)
+                                }
+                            }
+                        } else {
+                            // User cancelled or server error
+                            logd(TAG, "User cancelled transaction due to: ${errorResponse.getDisplayMessage()}")
+                            continuation.resume(null)
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    // Execute the initial request
+    ioScope {
+        try {
+            val response = executeHttpFunction(functionName, data, host)
+
+            // Check if we have a pending error that wasn't handled
+            val lastError = PayerServiceInterceptor.getLastErrorResponse()
+            if (lastError != null && (lastError.isSurgePricing() || lastError.isServerError())) {
+                // Wait for user decision from the alert
+                // The callback above will handle the continuation
+            } else {
+                // Success or non-surge error
+                continuation.resume(response)
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Payer request failed: ${e.message}")
+            continuation.resume(null)
+        } finally {
+            // Clean up
+            PayerServiceInterceptor.setErrorCallback(null)
+        }
+    }
+}
+
+/**
+ * Get current activity from the ActivityManager
+ */
+private fun getCurrentActivity(): Activity? {
+    return ActivityManager.getCurrentActivity()
+}
 
 suspend fun sendTransaction(
     builder: TransactionBuilder.() -> Unit,
@@ -802,7 +882,14 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
 suspend fun Transaction.addFreeGasEnvelope(): Transaction {
     val signable = buildPayerSignable()
     logd(TAG, "Building payer signable: $signable")
-    val response = executeHttpFunction(FUNCTION_SIGN_AS_PAYER, signable)
+
+    // Execute with surge pricing handling
+    val response = executePayerRequestWithSurgeHandling(FUNCTION_SIGN_AS_PAYER, signable)
+
+    if (response == null) {
+        throw RuntimeException("Payer service request failed or was cancelled by user")
+    }
+
     logd(TAG, "Received envelope signature response: $response")
 
     val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
@@ -819,7 +906,17 @@ suspend fun Transaction.addFreeGasEnvelope(): Transaction {
 }
 
 suspend fun Transaction.addFreeBridgeFeeEnvelope(): Transaction {
-    val response = executeHttpFunction(FUNCTION_SIGN_AS_BRIDGE_PAYER, buildBridgeFeePayerSignable(), BASE_HOST)
+    // Execute with surge pricing handling for bridge transactions too
+    val response = executePayerRequestWithSurgeHandling(
+        FUNCTION_SIGN_AS_BRIDGE_PAYER,
+        buildBridgeFeePayerSignable(),
+        BASE_HOST
+    )
+
+    if (response == null) {
+        throw RuntimeException("Bridge payer service request failed or was cancelled by user")
+    }
+
     logd(TAG, "response:$response")
 
     val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
