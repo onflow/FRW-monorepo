@@ -1,7 +1,7 @@
 import React from 'react';
+import { FlatList } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
 
-import { FlatList } from '../index';
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
 import { Button } from '../foundation/Button';
