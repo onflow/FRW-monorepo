@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Spinner, View, useTheme } from 'tamagui';
+import { View, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -25,10 +25,15 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [progress, setProgress] = useState(0); // 0..1
+  const [spinAngle, setSpinAngle] = useState(0); // 0..360
 
   const startRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const completeTimeoutRef = useRef<number | null>(null);
+  const spinRafRef = useRef<number | null>(null);
+  const spinStartRef = useRef<number | null>(null);
+  const isHoldingRef = useRef(false);
+  const isAnimatingRef = useRef(false);
 
   const CIRCLE_RADIUS = 8;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -41,14 +46,20 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const stopAll = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+    if (spinRafRef.current) cancelAnimationFrame(spinRafRef.current);
     rafRef.current = null;
     completeTimeoutRef.current = null;
+    spinRafRef.current = null;
+    spinStartRef.current = null;
     startRef.current = null;
     setIsHolding(false);
     setIsCompleted(false);
     setIsAnimating(false);
     setIsDisabled(false);
     setProgress(0);
+    setSpinAngle(0);
+    isHoldingRef.current = false;
+    isAnimatingRef.current = false;
   }, []);
 
   useEffect(() => {
@@ -63,22 +74,35 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       const elapsed = ts - startRef.current;
       const p = Math.min(1, elapsed / holdDuration);
       setProgress(p);
-      if (p < 1 && isHolding && !isAnimating) {
+      if (p < 1 && isHoldingRef.current && !isAnimatingRef.current) {
         rafRef.current = requestAnimationFrame(tick);
       }
     },
-    [holdDuration, isHolding, isAnimating]
+    [holdDuration]
   );
 
   const handlePressStart = useCallback(() => {
     if (isDisabled || isAnimating) return;
     setIsHolding(true);
+    isHoldingRef.current = true;
     startRef.current = null;
     rafRef.current = requestAnimationFrame(tick);
     completeTimeoutRef.current = window.setTimeout(() => {
       setIsCompleted(true);
       setIsAnimating(true);
       setIsDisabled(true);
+      isAnimatingRef.current = true;
+      // Start JS-driven spinner rotation (fallback across browsers)
+      spinStartRef.current = null;
+      const SPIN_DURATION = 800; // ms per full rotation
+      const spinLoop = (ts: number) => {
+        if (spinStartRef.current === null) spinStartRef.current = ts;
+        const elapsed = ts - spinStartRef.current;
+        const angle = ((elapsed % SPIN_DURATION) / SPIN_DURATION) * 360;
+        setSpinAngle(angle);
+        spinRafRef.current = requestAnimationFrame(spinLoop);
+      };
+      spinRafRef.current = requestAnimationFrame(spinLoop);
       onPress()
         .catch(() => void 0)
         .finally(() => onComplete?.());
@@ -113,12 +137,38 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
         justifyContent: 'center',
         alignSelf: 'stretch',
         opacity: isDisabled ? 0.9 : 1,
+        pointerEvents: isDisabled ? 'none' : 'auto',
         transition: 'transform 100ms ease',
       }}
     >
       {isAnimating ? (
-        <View flexDirection="row" items="center" justify="center" gap="$2">
-          <Spinner size="small" color={progressBackgroundColor} />
+        <View flexDirection="row" items="center" justify="center" gap="$3">
+          <View width={24} height={24} items="center" justify="center">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <g transform={`rotate(${spinAngle - 90} 12 12)`}>
+                {/* background ring for contrast */}
+                <circle
+                  cx="12"
+                  cy="12"
+                  r={CIRCLE_RADIUS}
+                  stroke={progressBackgroundColor}
+                  strokeWidth={3}
+                  fill="none"
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r={CIRCLE_RADIUS}
+                  stroke={buttonTextColor}
+                  strokeWidth={3}
+                  fill="none"
+                  strokeDasharray={`${(CIRCLE_CIRCUMFERENCE * 0.25).toFixed(2)} ${(CIRCLE_CIRCUMFERENCE * 0.75).toFixed(2)}`}
+                  strokeDashoffset={0}
+                  strokeLinecap="round"
+                />
+              </g>
+            </svg>
+          </View>
           <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
             {holdToSendText}
           </Text>
@@ -150,7 +200,13 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                 />
               </svg>
             ) : (
-              <View width={20} height={20} borderWidth={3} borderColor="$gray8" rounded="$10" />
+              <View
+                width={20}
+                height={20}
+                borderWidth={3}
+                borderColor={progressBackgroundColor}
+                rounded="$10"
+              />
             )}
           </View>
           <Text

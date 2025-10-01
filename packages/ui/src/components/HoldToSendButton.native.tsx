@@ -28,12 +28,17 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const [isCompleted, setIsCompleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isRollingBack, setIsRollingBack] = useState(false);
 
   const progressValue = useRef(new Animated.Value(0)).current;
   const spinValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
   const progressAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
   const spinAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const progressCurrentRef = useRef(0);
+  const progressListenerIdRef = useRef<string | null>(null);
+  const completedRef = useRef(false);
+  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const CIRCLE_RADIUS = 8;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -58,10 +63,25 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
     setIsCompleted(false);
     setIsAnimating(false);
     setIsDisabled(false);
+    setIsRollingBack(false);
 
     progressValue.setValue(0);
     spinValue.setValue(0);
     scaleValue.setValue(1);
+    progressCurrentRef.current = 0;
+    completedRef.current = false;
+    try {
+      if (progressListenerIdRef.current) {
+        progressValue.removeListener(progressListenerIdRef.current);
+        progressListenerIdRef.current = null;
+      }
+    } catch {
+      void 0;
+    }
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
   }, [progressValue, spinValue, scaleValue]);
 
   // Handle stop signal from external source
@@ -79,6 +99,25 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
     // Reset spin value to ensure smooth start
     spinValue.setValue(0);
 
+    // Ensure any rollback/progress animation is stopped and baseline is 0
+    if (progressAnimationRef.current) {
+      progressAnimationRef.current.stop();
+      progressAnimationRef.current = null;
+    }
+    progressValue.stopAnimation();
+    progressValue.setValue(0);
+    progressCurrentRef.current = 0;
+    completedRef.current = false;
+    setIsRollingBack(false);
+    try {
+      if (progressListenerIdRef.current) {
+        progressValue.removeListener(progressListenerIdRef.current);
+        progressListenerIdRef.current = null;
+      }
+    } catch {
+      void 0;
+    }
+
     // Scale down animation on press
     Animated.timing(scaleValue, {
       toValue: 0.95,
@@ -86,45 +125,48 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       useNativeDriver: true,
     }).start();
 
-    // Start progress animation
+    // Track current progress value for smooth rollback if released
+    const listenerId = progressValue.addListener(({ value }) => {
+      progressCurrentRef.current = value as number;
+    });
+    progressListenerIdRef.current = listenerId as unknown as string;
+
+    // Start progress animation (JS driver because it drives SVG props)
     progressAnimationRef.current = Animated.timing(progressValue, {
       toValue: 1,
       duration: holdDuration,
-      useNativeDriver: true,
+      useNativeDriver: false,
     });
 
-    progressAnimationRef.current.start(({ finished }) => {
-      if (finished) {
-        // Prepare spinning animation before state changes
-        spinAnimationRef.current = Animated.loop(
-          Animated.timing(spinValue, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-            // Add linear easing for smooth continuous rotation
-            easing: Easing.linear,
-          }),
-          { iterations: -1 } // Infinite loop
-        );
+    progressAnimationRef.current.start();
 
-        // Update states and start spinning simultaneously
-        setIsCompleted(true);
-        setIsAnimating(true);
-        setIsDisabled(true);
+    // Use a timeout to mark completion reliably (robust under Hermes/Fabric)
+    holdTimeoutRef.current = setTimeout(() => {
+      if (completedRef.current) return;
+      completedRef.current = true;
 
-        // Start spinning animation immediately
-        spinAnimationRef.current.start();
+      // Prepare spinning animation and state
+      spinValue.setValue(0);
+      spinAnimationRef.current = Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+          easing: Easing.linear,
+        })
+      );
 
-        // Call onPress and onComplete
-        onPress().finally(() => {
-          onComplete?.();
-        });
-      }
-    });
+      setIsCompleted(true);
+      setIsAnimating(true);
+      setIsDisabled(true);
+      setIsRollingBack(false);
+
+      spinAnimationRef.current.start();
+      onPress().finally(() => onComplete?.());
+    }, holdDuration);
   }, [
     isDisabled,
     isAnimating,
-    isHolding,
     holdDuration,
     onPress,
     onComplete,
@@ -141,18 +183,46 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       useNativeDriver: true,
     }).start();
 
-    if (isCompleted || isAnimating) return;
+    // If completed (or about to be), don't rollback
+    if (completedRef.current || isCompleted || isAnimating) return;
 
     setIsHolding(false);
 
-    // Stop progress animation
+    // Stop progress animation and roll back smoothly to 0
     if (progressAnimationRef.current) {
       progressAnimationRef.current.stop();
       progressAnimationRef.current = null;
     }
 
-    progressValue.setValue(0);
-  }, [isCompleted, isAnimating, progressValue, scaleValue]);
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
+
+    // Remove progress listener; not needed during rollback
+    try {
+      if (progressListenerIdRef.current) {
+        progressValue.removeListener(progressListenerIdRef.current);
+        progressListenerIdRef.current = null;
+      }
+    } catch {
+      void 0;
+    }
+
+    const rollbackDuration = Math.max(
+      150,
+      Math.min(400, progressCurrentRef.current * holdDuration * 0.5)
+    );
+    setIsRollingBack(true);
+    Animated.timing(progressValue, {
+      toValue: 0,
+      duration: rollbackDuration,
+      useNativeDriver: false,
+    }).start(() => {
+      progressCurrentRef.current = 0;
+      setIsRollingBack(false);
+    });
+  }, [isCompleted, isAnimating, progressValue, scaleValue, holdDuration]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -162,6 +232,14 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
       }
       if (spinAnimationRef.current) {
         spinAnimationRef.current.stop();
+      }
+      try {
+        progressValue.removeAllListeners();
+      } catch {
+        void 0;
+      }
+      if (holdTimeoutRef.current) {
+        clearTimeout(holdTimeoutRef.current);
       }
     };
   }, []);
@@ -189,25 +267,22 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
         {isAnimating ? (
           <View flexDirection="row" items="center" justify="center" gap="$3">
             <Animated.View
-              style={[
-                {
-                  width: 20,
-                  height: 20,
-                  borderWidth: 4,
-                  backgroundColor: '$red',
-                  borderColor: progressBackgroundColor,
-                  borderTopColor: progressBackgroundColor,
-                  borderRadius: 10,
-                  transform: [
-                    {
-                      rotate: spinValue.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '360deg'],
-                      }),
-                    },
-                  ],
-                },
-              ]}
+              style={{
+                width: 24,
+                height: 24,
+                borderWidth: 3,
+                borderColor: progressBackgroundColor,
+                borderTopColor: buttonTextColor,
+                borderRadius: 12,
+                transform: [
+                  {
+                    rotate: spinValue.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '360deg'],
+                    }),
+                  },
+                ],
+              }}
             />
             <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
               {holdToSendText}
@@ -216,7 +291,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
         ) : (
           <View flexDirection="row" items="center" justify="center" gap="$3">
             <View width={20} height={20} items="center" justify="center">
-              {isHolding || isCompleted ? (
+              {isHolding || isCompleted || isRollingBack ? (
                 <Svg width={24} height={24} viewBox="0 0 24 24">
                   <Circle
                     cx={12}
@@ -243,7 +318,13 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                   />
                 </Svg>
               ) : (
-                <View width={20} height={20} borderWidth={3} borderColor="$gray8" rounded="$10" />
+                <View
+                  width={20}
+                  height={20}
+                  borderWidth={3}
+                  borderColor={progressBackgroundColor}
+                  rounded="$10"
+                />
               )}
             </View>
             <Text
