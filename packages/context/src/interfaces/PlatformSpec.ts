@@ -83,4 +83,5 @@ export interface PlatformSpec {
   ): void;
   hideToast?(id: string): void;
   clearAllToasts?(): void;
+  setToastCallback?(callback: (toast: any) => void): void;
 }
