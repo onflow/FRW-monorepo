@@ -50,7 +50,7 @@ export function AccountCard({
   if (!account) {
     return (
       <YStack width="100%" pt="$2" px="$1" pb="$6" gap="$1" {...props}>
-        <Text fontSize="$2" mb="$1" fontWeight="400" color="$textSecondary" lineHeight={16}>
+        <Text fontSize="$3" mb="$1" fontWeight="400" color="$textSecondary" lineHeight={16}>
           {title}
         </Text>
         <Text color="$error">No account data available</Text>
