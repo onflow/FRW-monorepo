@@ -55,6 +55,17 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setToasts([]);
   }, []);
 
+  // Set up bridge callback if available
+  React.useEffect(() => {
+    // Access bridge through global or window object to avoid direct import
+    const globalBridge = (globalThis as any).__FLOW_WALLET_BRIDGE__;
+    if (globalBridge?.setToastCallback) {
+      globalBridge.setToastCallback((toast: ToastMessage) => {
+        show(toast);
+      });
+    }
+  }, [show]);
+
   const contextValue: ToastContextValue = {
     show,
     hide,

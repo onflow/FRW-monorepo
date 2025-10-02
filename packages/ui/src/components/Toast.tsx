@@ -100,7 +100,7 @@ export const Toast: React.FC<ToastProps> = ({
         {title}
         {message && (
           <Text
-            color="$textSecondary"
+            color="$text"
             fontSize="$2"
             fontWeight="400"
             numberOfLines={3}
