@@ -26,8 +26,6 @@ import {
   Text,
   Separator,
   XStack,
-  useTheme,
-  useThemeName,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
@@ -53,23 +51,9 @@ interface SendTokensScreenProps {
  */
 export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const themeName = useThemeName();
 
-  // Theme-aware background color for cards
+  // Theme-aware styling
   const cardBackgroundColor = '$bg2';
-
-  // Theme-aware send button colors - use theme tokens for better reliability
-  const isCurrentlyDarkMode = themeName?.includes('dark') || false;
-  const sendButtonBackgroundColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const sendButtonTextColor = isCurrentlyDarkMode
-    ? theme.black?.val || '#000000'
-    : theme.white?.val || '#FFFFFF';
-  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
-
-  // Theme-aware separator color
   const separatorColor = '$border1';
 
   // Check if we're running in extension platform

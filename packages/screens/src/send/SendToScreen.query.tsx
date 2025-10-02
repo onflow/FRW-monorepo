@@ -22,8 +22,6 @@ import {
   InfoDialog,
   Text,
   YStack,
-  useTheme,
-  useThemeName,
 } from '@onflow/frw-ui';
 import { isValidEthereumAddress, isValidFlowAddress, logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
@@ -44,8 +42,6 @@ interface TabConfig {
 export function SendToScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
-  const theme = useTheme();
-  const themeName = useThemeName();
   const cardBackgroundColor = '$bg2';
 
   const TABS: TabConfig[] = [

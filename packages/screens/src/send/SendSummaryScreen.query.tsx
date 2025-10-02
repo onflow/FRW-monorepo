@@ -28,8 +28,6 @@ import {
   type TransactionFormData,
   XStack,
   ERC1155QuantitySelector,
-  useTheme,
-  useThemeName,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -96,19 +94,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       ? selectedNFT.amount
       : parseInt(selectedNFT?.amount as string) || 1;
 
-  // Theme-aware styling - same as SendTokensScreen
-  const theme = useTheme();
-  const themeName = useThemeName();
-  const isCurrentlyDarkMode = themeName?.includes('dark') || false;
+  // Theme-aware styling
   const cardBackgroundColor = '$bg2';
   const separatorColor = '$border1';
-  const sendButtonBackgroundColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const sendButtonTextColor = isCurrentlyDarkMode
-    ? theme.black?.val || '#000000'
-    : theme.white?.val || '#FFFFFF';
-  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
 
   // Dynamic section title based on transfer type
   const sectionTitle = useMemo(() => {
@@ -465,12 +453,12 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
+            bg={isSendDisabled ? '$textMuted' : '$text'}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
+            borderColor={isSendDisabled ? '$textMuted' : '$text'}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
@@ -479,7 +467,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             <Text
               fontSize="$4"
               fontWeight="600"
-              color={isSendDisabled ? disabledButtonTextColor : (sendButtonTextColor as any)}
+              color={isSendDisabled ? '$bg' : '$bg'}
             >
               {t('common.next')}
             </Text>
