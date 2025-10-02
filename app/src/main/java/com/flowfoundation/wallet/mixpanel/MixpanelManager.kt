@@ -282,6 +282,14 @@ object MixpanelManager {
         }
     }
 
+    fun track(eventName: String, properties: Map<String, Any>) {
+        val jsonProperties = JSONObject()
+        properties.forEach { (key, value) ->
+            jsonProperties.put(key, value)
+        }
+        trackEvent(eventName, jsonProperties)
+    }
+
     private fun trackEvent(eventName: String, properties: JSONObject? = null) {
         if (this::mixpanel.isInitialized) {
             mixpanel.track(eventName, properties)

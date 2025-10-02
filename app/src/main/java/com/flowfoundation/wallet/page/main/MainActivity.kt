@@ -21,6 +21,10 @@ import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
+import com.flowfoundation.wallet.TestSurgeTriggerNative
+import com.flowfoundation.wallet.BuildConfig
+import android.os.Handler
+import android.os.Looper
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
@@ -49,6 +53,17 @@ class MainActivity : BaseActivity() {
         INSTANCE = this
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // TEST: Trigger surge pricing dialog after 3 seconds (REMOVE IN PRODUCTION)
+        if (BuildConfig.DEBUG) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                // Test the horizontal interceptor flow
+                TestSurgeTriggerNative.simulateInterceptorFlow(
+                    this,
+                    TestSurgeTriggerNative.InterceptorScenario.SURGE_HIGH
+                )
+            }, 3000)
+        }
 
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
 

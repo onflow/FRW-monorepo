@@ -157,10 +157,15 @@ class SurgePricingAlertView {
 
             // Close button container (positioned absolutely in top-right)
             val closeButtonContainer = FrameLayout(context).apply {
-                val closeButton = ImageButton(context).apply {
-                    // Use text "✕" for close icon
-                    background = null
+                // Use TextView styled as a button instead of ImageButton
+                val closeButton = TextView(context).apply {
+                    text = "✕"
+                    textSize = 20f
+                    setTextColor(ContextCompat.getColor(context, R.color.surge_text_secondary))
+                    gravity = Gravity.CENTER
                     setPadding(dpToPx(context, 8), dpToPx(context, 8), dpToPx(context, 8), dpToPx(context, 8))
+                    isClickable = true
+                    isFocusable = true
 
                     setOnClickListener {
                         logd(TAG, "User cancelled surge pricing")
@@ -169,17 +174,6 @@ class SurgePricingAlertView {
                         dismissCurrentAlert()
                     }
                 }
-
-                // Add close icon text
-                val closeIcon = TextView(context).apply {
-                    text = "✕"
-                    textSize = 20f
-                    setTextColor(ContextCompat.getColor(context, R.color.surge_text_secondary))
-                    gravity = Gravity.CENTER
-                    isClickable = false
-                }
-
-                closeButton.addView(closeIcon)
 
                 val closeParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -315,7 +309,7 @@ class SurgePricingAlertView {
                 text = errorResponse.getDisplayMessage()
                 textSize = 14f
                 setTextColor(ContextCompat.getColor(context, R.color.surge_warning))
-                lineSpacingMultiplier = 1.2f
+                setLineSpacing(0f, 1.2f)  // (add, mult) - 0 additional spacing, 1.2x multiplier
             }
             feeSection.addView(descriptionText)
             contentContainer.addView(feeSection)
@@ -358,7 +352,7 @@ class SurgePricingAlertView {
             // Button background
             val buttonBg = View(context).apply {
                 background = GradientDrawable().apply {
-                    setColor(ContextCompat.getColor(context, R.color.surge_error))
+                    setColor(ContextCompat.getColor(context, R.color.surge_button_bg))
                     cornerRadius = dpToPx(context, 8).toFloat()
                 }
                 layoutParams = FrameLayout.LayoutParams(
@@ -371,7 +365,7 @@ class SurgePricingAlertView {
             // Progress overlay
             val progressOverlay = View(context).apply {
                 background = GradientDrawable().apply {
-                    setColor(ContextCompat.getColor(context, R.color.surge_button_overlay))
+                    setColor(ContextCompat.getColor(context, R.color.surge_button_progress))
                     cornerRadius = dpToPx(context, 8).toFloat()
                 }
                 layoutParams = FrameLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT)

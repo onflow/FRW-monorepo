@@ -222,4 +222,7 @@
     <color name="surge_text_primary">#000000</color>
     <color name="surge_text_secondary">#9CA3AF</color>
     <color name="surge_button_overlay">#33FFFFFF</color>
+    <color name="surge_card_bg">#FFFFFF</color>
+    <color name="surge_button_bg">#F04438</color>
+    <color name="surge_button_progress">#F97066</color>
 </resources>
