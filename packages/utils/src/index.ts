@@ -35,6 +35,7 @@ export {
 
 // Token utilities
 export {
+  extractNumericBalance,
   getDisplayBalanceInFLOW,
   getDisplayBalanceWithSymbol,
   getTokenResourceIdentifier,
@@ -46,6 +47,9 @@ export { convertedSVGURL } from './svgtopng';
 
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
+
+// Query retry utilities
+export { retryConfigs, getRetryConfig, createRetryFunction } from './query-retry';
 export type { BridgeLogger } from './logger';
 
 // Account transformer utilities

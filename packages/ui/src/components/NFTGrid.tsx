@@ -88,7 +88,7 @@ export function NFTGrid({
   totalCount = 51,
 }: NFTGridProps) {
   const columns = 2;
-
+  
   // Loading skeleton - match the responsive 2-column layout
   const renderSkeleton = () => {
     const skeletonRows: React.ReactElement[] = [];

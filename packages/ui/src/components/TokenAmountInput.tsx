@@ -1,5 +1,5 @@
 import { SwitchVertical, ChevronDown, VerifiedToken } from '@onflow/frw-icons';
-import { isDarkMode } from '@onflow/frw-utils';
+import { isDarkMode, extractNumericBalance } from '@onflow/frw-utils';
 import BN from 'bignumber.js';
 import React, { useRef } from 'react';
 import { Input, XStack, YStack, useTheme } from 'tamagui';
@@ -13,18 +13,23 @@ function formatBalance(balance?: string | number): string {
   if (!balance) return '0';
 
   try {
-    const balanceBN = new BN(balance.toString());
+    // Extract numeric value from balance string (handle cases like "123.45 FUSD")
+    const numericBalance = extractNumericBalance(balance);
+    
+    if (!numericBalance || numericBalance === '0') return '0';
+    
+    const balanceBN = new BN(numericBalance);
 
-    // If the number is invalid, return the original string
+    // If the number is invalid, return '0'
     if (balanceBN.isNaN()) {
-      return balance.toString();
+      return '0';
     }
 
     // Round to 8 decimal places and remove trailing zeros
     return balanceBN.toFixed(8).replace(/\.?0+$/, '');
   } catch (error) {
-    // Fallback to original string if BigNumber parsing fails
-    return balance.toString();
+    // Fallback to '0' if parsing fails
+    return '0';
   }
 }
 
