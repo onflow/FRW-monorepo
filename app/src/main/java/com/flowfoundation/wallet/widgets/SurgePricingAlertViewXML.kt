@@ -8,9 +8,9 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Handler
 import android.os.Looper
 import android.view.*
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
@@ -118,13 +118,9 @@ class SurgePricingAlertViewXML {
             errorResponse: PayerServiceInterceptor.PayerErrorResponse,
             context: Context
         ) {
-            // Title
+            // Title (now centered)
             val titleText = dialogView.findViewById<TextView>(R.id.titleText)
-            titleText.text = if (errorResponse.isSurgePricing()) {
-                context.getString(R.string.surge_pricing_title)
-            } else {
-                "Service Error"
-            }
+            titleText.text = context.getString(R.string.surge_pricing_title)
 
             // Surge fee value
             val surgeFeeValue = dialogView.findViewById<TextView>(R.id.surgeFeeValue)
@@ -159,7 +155,7 @@ class SurgePricingAlertViewXML {
             dialogView: View,
             errorResponse: PayerServiceInterceptor.PayerErrorResponse
         ) {
-            val holdButton = dialogView.findViewById<Button>(R.id.holdButton)
+            val holdButton = dialogView.findViewById<AppCompatButton>(R.id.holdButton)
             val progressBackground = dialogView.findViewById<View>(R.id.holdProgressBackground)
             val holdButtonContainer = dialogView.findViewById<FrameLayout>(R.id.holdButtonContainer)
 
