@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, Trash, Edit } from '@onflow/frw-icons';
-import type { NFTModel, NFTTransactionData } from '@onflow/frw-types';
+import type { NFTTransactionData } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View, useTheme } from 'tamagui';
@@ -58,7 +58,12 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
     >
       {displayImage ? (
         <View width="100%" height="100%" overflow="hidden" rounded={14.4}>
-          <Image source={{ uri: imageUrl }} width="100%" height="100%" onError={() => setImageError(true)} />
+          <Image
+            source={{ uri: imageUrl }}
+            width="100%"
+            height="100%"
+            onError={() => setImageError(true)}
+          />
         </View>
       ) : (
         <View flex={1} bg={placeholderBackground} rounded={14.4} />

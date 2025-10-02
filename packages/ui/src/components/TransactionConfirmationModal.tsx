@@ -3,7 +3,6 @@ import {
   type TransactionType,
   type TokenModel,
   type AccountDisplayData,
-  type NFTModel,
   type NFTTransactionData,
   type SendFormData,
 } from '@onflow/frw-types';

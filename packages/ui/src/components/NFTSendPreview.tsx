@@ -1,5 +1,5 @@
 import { Edit } from '@onflow/frw-icons';
-import type { NFTModel, NFTTransactionData } from '@onflow/frw-types';
+import type { NFTTransactionData } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { YStack, XStack, Image, View } from 'tamagui';
 
