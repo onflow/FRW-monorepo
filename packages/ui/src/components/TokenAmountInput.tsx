@@ -76,7 +76,7 @@ export function TokenAmountInput({
   return (
     <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - aligned with From Account */}
-      <Text fontSize="$3" mb="$3" ml="$1" fontWeight="400" lineHeight={16} text="left">
+      <Text fontSize="$3" mb="$3" fontWeight="400" lineHeight={16} text="left">
         {headerText}
       </Text>
 
