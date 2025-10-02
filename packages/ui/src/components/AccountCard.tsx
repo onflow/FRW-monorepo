@@ -1,7 +1,6 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
-import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { ScrollView, XStack, YStack, useTheme } from 'tamagui';
+import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
@@ -36,15 +35,6 @@ export function AccountCard({
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
-  const theme = useTheme();
-
-  // Theme-aware background color using helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
-
-  // Chain link icon color logic
-  const chainLinkIconColor = isCurrentlyDarkMode
-    ? 'rgba(255, 255, 255, 0.8)'
-    : 'rgba(0, 0, 0, 0.8)';
 
   // Early return if no account data
   if (!account) {
