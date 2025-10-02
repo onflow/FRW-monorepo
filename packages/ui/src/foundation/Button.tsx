@@ -137,13 +137,20 @@ export function Button({
     >
       {loading ? (
         <XStack items="center" gap="$2">
-          <Spinner size="small" color="currentColor" />
-          {loadingText && <Text color="currentColor">{loadingText}</Text>}
+          <Spinner size="small" color={(finalStyles as any)?.color || 'currentColor'} />
+          {loadingText && (
+            <Text color={(finalStyles as any)?.color || 'currentColor'}>{loadingText}</Text>
+          )}
         </XStack>
       ) : (
         <XStack items="center" gap="$2">
-          {icon && React.cloneElement(icon, { color: 'currentColor' })}
-          {typeof children === 'string' ? <Text color="currentColor">{children}</Text> : children}
+          {icon &&
+            React.cloneElement(icon, { color: (finalStyles as any)?.color || 'currentColor' })}
+          {typeof children === 'string' ? (
+            <Text color={(finalStyles as any)?.color || 'currentColor'}>{children}</Text>
+          ) : (
+            children
+          )}
         </XStack>
       )}
     </TamaguiButton>

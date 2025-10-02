@@ -109,7 +109,7 @@ export function AccountSelector({
               <XStack items="center" gap={4}>
                 {/* Link icon for linked accounts */}
                 {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
-                  <Link size={12.8} color="$icon" theme="outline" />
+                  <Link size={12.8} color="#767676" theme="outline" />
                 )}
                 <Text
                   color="$text"
@@ -177,7 +177,7 @@ export function AccountSelector({
               onPress={handleEditClick}
               cursor="pointer"
             >
-              <Edit size={24} color="$icon" theme="outline" />
+              <Edit size={24} color="#767676" theme="outline" />
             </XStack>
           )}
         </XStack>
@@ -211,7 +211,7 @@ export function AccountSelector({
               </Text>
 
               <XStack onPress={() => setOpen(false)} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
-                <Close size={15} color="$icon" theme="outline" />
+                <Close size={15} color="#767676" theme="outline" />
               </XStack>
             </XStack>
 
@@ -279,7 +279,7 @@ export function AccountSelector({
                           <XStack items="center" gap={4}>
                             {/* Link icon for linked accounts */}
                             {(account.type === 'child' || account.parentEmoji) && (
-                              <Link size={12.8} color="$icon" theme="outline" />
+                              <Link size={12.8} color="#767676" theme="outline" />
                             )}
                             <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
                               {account.name || 'Unnamed Account'}

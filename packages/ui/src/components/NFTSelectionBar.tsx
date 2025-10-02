@@ -1,7 +1,7 @@
 import { ChevronUp, ChevronDown, Trash } from '@onflow/frw-icons';
-import { isDarkMode, logger } from '@onflow/frw-utils';
+import { logger } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, ScrollView, Text, Image, useTheme } from 'tamagui';
+import { YStack, XStack, ScrollView, Text, Image } from 'tamagui';
 
 import { ERC1155QuantitySelector } from './ERC1155QuantitySelector';
 import type { NFTData } from './NFTGrid';
@@ -33,8 +33,6 @@ export function NFTSelectionBar({
   confirmText,
   isExtension,
 }: NFTSelectionBarProps) {
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
   const [isExpanded, setIsExpanded] = useState(true); // Start expanded so trash icons are visible
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
@@ -107,8 +105,6 @@ export function NFTSelectionBar({
               minHeight={32}
               items="center"
               justify="center"
-              bg="$red"
-              borderRadius="$2"
               pressStyle={{ opacity: 0.7 }}
               onPress={() => {
                 logger.debug('🗑️ Trash icon clicked for NFT:', nft.id);

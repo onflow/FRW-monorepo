@@ -95,8 +95,8 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       : parseInt(selectedNFT?.amount as string) || 1;
 
   // Theme-aware styling
-  const cardBackgroundColor = '$cardBg';
-  const separatorColor = '$separator';
+  const cardBackgroundColor = '$bg1';
+  const separatorColor = '$border1';
 
   // Dynamic section title based on transfer type
   const sectionTitle = useMemo(() => {
