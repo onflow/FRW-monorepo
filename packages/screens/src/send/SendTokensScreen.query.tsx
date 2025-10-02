@@ -49,7 +49,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const { t } = useTranslation();
 
   // Theme-aware styling
-  const cardBackgroundColor = '$bg2';
+  const cardBackgroundColor = '$bg1';
   const separatorColor = '$border1';
 
   // Check if we're running in extension platform

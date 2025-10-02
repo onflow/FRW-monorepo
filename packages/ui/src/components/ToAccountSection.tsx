@@ -57,7 +57,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
   const [isCompatibilityDialogVisible, setIsCompatibilityDialogVisible] = useState(false);
 
   // Theme-aware background color (use prop if provided, otherwise use theme-based default)
-  const dynamicBackgroundColor = backgroundColor || '$bg2';
+  const dynamicBackgroundColor = backgroundColor || '$bg1';
 
   // Handle learn more press - show internal dialog
   const handleLearnMorePress = () => {

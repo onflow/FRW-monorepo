@@ -80,7 +80,7 @@ export function SearchableTabLayout({
               hoverStyle={{ bg: '$light10' }}
               disabled={!onScanPress}
             >
-              <Scan size={24} color="$textSecondary" theme="outline" />
+              <Scan size={24} color="#767676" theme="outline" />
             </Button>
           )}
         </XStack>

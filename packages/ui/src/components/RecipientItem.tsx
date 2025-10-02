@@ -210,7 +210,6 @@ export function RecipientItem({
             <Button
               width="$6"
               height="$6"
-              opacity={copiedFeedback ? 1 : 0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
