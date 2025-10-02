@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@onflow/frw-icons": "workspace:*",
+    "@onflow/frw-types": "workspace:^",
+    "@onflow/frw-utils": "workspace:^",
     "@tamagui/config": "^1.132.20",
     "@tamagui/core": "^1.132.20",
     "@tamagui/theme-builder": "^1.132.20",
@@ -38,7 +40,7 @@
     "eslint-plugin-storybook": "9.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native-web": "^0.21.0",
+    "react-native-web": "^0.21.1",
     "rimraf": "^5.0.1",
     "storybook": "^9.1.1",
     "tsup": "^8.0.0",
@@ -47,12 +49,16 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
+    "lottie-react-native": "^6.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-native-svg": ">=15.0.0",
-    "lottie-react-native": "^6.0.0"
+    "react-native-web": ">=0.21.0"
   },
   "peerDependenciesMeta": {
+    "react-native-web": {
+      "optional": true
+    },
     "react-native": {
       "optional": true
     },
