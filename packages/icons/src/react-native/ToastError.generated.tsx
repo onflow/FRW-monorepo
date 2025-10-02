@@ -1,6 +1,6 @@
 import * as React from 'react';
-import Svg, { type SvgProps, Path } from 'react-native-svg';
-const Close = ({
+import Svg, { type SvgProps, Circle, Path } from 'react-native-svg';
+const ToastError = ({
   color = '#000',
   size = 24,
   width,
@@ -15,7 +15,14 @@ const Close = ({
     viewBox="0 0 24 24"
     {...props}
   >
-    <Path d="M18 6 6 18M6 6l12 12" />
+    <Circle cx={12} cy={12} r={10} />
+    <Path
+      d="m15 9-6 6M9 9l6 6"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </Svg>
 );
-export default Close;
+export default ToastError;

@@ -25,6 +25,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "generate:icons": "node scripts/icon-generator.js --force",
     "generate:icons:incremental": "node scripts/icon-generator.js",

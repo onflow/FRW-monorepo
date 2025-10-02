@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
+    "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",

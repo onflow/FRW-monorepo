@@ -1,5 +1,6 @@
+import { ToastSuccess, ToastWarning, ToastInfo, ToastError } from '@onflow/frw-icons';
 import React, { useEffect, useState } from 'react';
-import { YStack, useTheme } from 'tamagui';
+import { XStack, YStack, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -42,24 +43,32 @@ export const Toast: React.FC<ToastProps> = ({
     switch (type) {
       case 'success':
         return {
-          bg: '$success',
-          borderColor: '$success',
+          bg: '$grayBg1',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
+          icon: <ToastSuccess color={theme.success?.val || theme.success} />,
         };
       case 'warning':
         return {
-          bg: '$warning',
-          borderColor: '$warning',
+          bg: '$grayBg1',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
+          icon: <ToastWarning color={theme.warning?.val || theme.warning} />,
         };
       case 'info':
         return {
-          bg: '$primary',
-          borderColor: '$primary',
+          bg: '$grayBg1',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
+          icon: <ToastInfo color={theme.textPrimary?.val || theme.textPrimary} />,
         };
       case 'error':
       default:
         return {
-          bg: '$error',
-          borderColor: '$error',
+          bg: '$grayBg1',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
+          icon: <ToastError color={theme.error?.val || theme.error} />,
         };
     }
   };
@@ -67,20 +76,15 @@ export const Toast: React.FC<ToastProps> = ({
   const styles = getToastStyles();
 
   const toastContent = (
-    <YStack
-      position="fixed"
-      top={20}
-      left="50%"
-      transform="translateX(-50%)"
-      zIndex={999999}
-      bg={styles.bg}
-      borderColor={styles.borderColor}
-      borderWidth={1}
-      borderRadius="$3"
-      px="$4"
-      py="$3"
-      maxWidth="90%"
-      minWidth={200}
+    <XStack
+      role="status"
+      aria-live="off"
+      aria-atomic="true"
+      data-state="open"
+      data-swipe-direction="vertical"
+      data-disable-theme="true"
+      tabIndex={0}
+      bg={styles.bg as any}
       shadowColor="$shadowColor"
       shadowOffset={{ width: 0, height: 4 }}
       shadowOpacity={0.3}
@@ -89,28 +93,46 @@ export const Toast: React.FC<ToastProps> = ({
       animation="quick"
       enterStyle={{ opacity: 0, y: -20, scale: 0.95 }}
       exitStyle={{ opacity: 0, y: -20, scale: 0.95 }}
+      style={{
+        position: 'fixed',
+        bottom: 20,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 999999,
+        borderRadius: 34,
+        minWidth: 200,
+        margin: '2px auto',
+        pointerEvents: 'auto',
+        touchAction: 'none',
+        userSelect: 'none',
+        padding: '6px 24px',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+      }}
     >
-      <Text
-        color="$text"
-        fontSize="$3"
-        fontWeight="500"
-        numberOfLines={3}
-        style={{ textAlign: 'center' }}
-      >
-        {title}
+      <YStack>{styles.icon}</YStack>
+      <YStack style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
+        <Text
+          color={styles.titleColor as any}
+          fontSize="$4"
+          fontWeight="500"
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {title}
+        </Text>
         {message && (
           <Text
-            color="$textSecondary"
-            fontSize="$2"
+            color={styles.messageColor as any}
+            fontSize="$1"
             fontWeight="400"
-            numberOfLines={3}
-            style={{ textAlign: 'center' }}
+            style={{ whiteSpace: 'nowrap' }}
           >
             {message}
           </Text>
         )}
-      </Text>
-    </YStack>
+      </YStack>
+    </XStack>
   );
 
   // For React Native, render directly

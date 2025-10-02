@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Svg, { type SvgProps, Path } from 'react-native-svg';
 const CheckCircle = ({
-  color = 'currentColor',
+  color = '#000',
   size = 24,
   width,
   height,
