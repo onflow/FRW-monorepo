@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, YStack, useThemeName } from 'tamagui';
+import { Text, YStack } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 
@@ -20,12 +20,6 @@ export function AddressBookSection({
   copiedText = 'Copied!',
   isMobile = false,
 }: AddressBookSectionProps): React.JSX.Element | null {
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
   if (contacts.length === 0) {
     return null;
   }
@@ -56,7 +50,7 @@ export function AddressBookSection({
                     : undefined
               }
             />
-            <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           </YStack>
         ))}
       </YStack>
@@ -81,11 +75,6 @@ export function AddressBookList({
   copiedText = 'Copied!',
   isMobile = false,
 }: AddressBookListProps): React.JSX.Element {
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
   if (!groupByLetter) {
     return (
       <YStack gap={0}>
@@ -106,7 +95,7 @@ export function AddressBookList({
                     : undefined
               }
             />
-            {index < contacts.length - 1 && <YStack height={1} bg={dividerColor} w="100%" ml={0} />}
+            {index < contacts.length - 1 && <YStack height={1} bg="$border1" w="100%" ml={0} />}
           </YStack>
         ))}
       </YStack>

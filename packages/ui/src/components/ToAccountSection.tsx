@@ -169,7 +169,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <YStack width={151.34} gap="$0.5">
               {/* Account Name with linked icon and EVM badge */}
               <XStack items="center" gap="$1">
-                {isLinked && <Link size={12.8} color={chainLinkIconColor} theme="outline" />}
+                {isLinked && <Link size={12.8} color="#767676" theme="outline" />}
                 <Text fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
                   {account.name || unknownAccountText}
                 </Text>
@@ -219,7 +219,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               cursor="pointer"
               opacity={isAccountIncompatible ? 0.5 : 1}
             >
-              <Edit size={24} color={editIconColor} theme="outline" />
+              <Edit size={24} color="#767676" theme="outline" />
             </XStack>
           </XStack>
         )}
@@ -234,22 +234,10 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         onClose={handleDialogClose}
       >
         <YStack gap="$5" w="100%">
-          <Text
-            fontSize="$4"
-            fontWeight="400"
-            color={primaryTextColor}
-            text="center"
-            lineHeight={20}
-          >
+          <Text fontSize="$4" fontWeight="400" color="$text" text="center" lineHeight={20}>
             {dialogDescriptionMain}
           </Text>
-          <Text
-            fontSize="$4"
-            fontWeight="400"
-            color={primaryTextColor}
-            text="center"
-            lineHeight={20}
-          >
+          <Text fontSize="$4" fontWeight="400" color="$text" text="center" lineHeight={20}>
             {dialogDescriptionSecondary}
           </Text>
         </YStack>
