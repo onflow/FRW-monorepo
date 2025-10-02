@@ -47,6 +47,7 @@ export function TokenAmountInput({
     rate: '1',
   },
   amountError,
+  headerText = 'Send Tokens',
   ...props
 }: TokenAmountInputProps): React.ReactElement {
   const internalInputRef = useRef<any>(null);
@@ -56,16 +57,10 @@ export function TokenAmountInput({
   // Theme detection using helper function
   const isCurrentlyDarkMode = isDarkMode(theme);
 
-  // Theme-aware text color
-  const textColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-
   // Theme-aware token selector colors
   const tokenSelectorBackgroundColor = isCurrentlyDarkMode
     ? theme.white10?.val || 'rgba(255, 255, 255, 0.10)'
     : 'rgba(0, 0, 0, 0.05)';
-  const tokenSelectorTextColor = isCurrentlyDarkMode ? '#FFFFFF' : '#000000';
   const chevronColor = '#767676'; // Same color as edit icon for both modes
 
   // Theme-aware converter colors
@@ -73,14 +68,6 @@ export function TokenAmountInput({
     ? theme.white10?.val || 'rgba(255, 255, 255, 0.10)'
     : 'rgba(0, 0, 0, 0.05)';
   const converterIconColor = '#767676'; // Same color as edit icon for both modes
-  const converterTextColor = isCurrentlyDarkMode
-    ? 'rgba(255, 255, 255, 0.8)'
-    : 'rgba(0, 0, 0, 0.8)';
-
-  // Theme-aware header text color
-  const headerTextColor = isCurrentlyDarkMode
-    ? theme.light80?.val || '#CCCCCC'
-    : theme.textSecondary?.val || '#666666';
 
   const displayAmount = amount || '';
   const tokenSymbol = selectedToken?.symbol || 'Token';
@@ -89,8 +76,8 @@ export function TokenAmountInput({
   return (
     <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - aligned with From Account */}
-      <Text fontSize="$2" mb="$3" ml="$1" fontWeight="400" lineHeight={16} text="left">
-        Send Tokens
+      <Text fontSize="$3" mb="$3" fontWeight="400" lineHeight={16} text="left">
+        {headerText}
       </Text>
 
       {/* Main Input Row - space-between with 11px gap */}
