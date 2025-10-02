@@ -87,6 +87,16 @@ const flowColors = {
   cardBgLight: '$bg2', // Uses the secondary background in light mode
   cardBgDark: 'rgba(255, 255, 255, 0.1)', // 10% white for dark mode
 
+  // Icon colors (high contrast)
+  iconLight: 'rgba(0, 0, 0, 0.8)', // 80% black for light mode
+  iconDark: 'rgba(255, 255, 255, 0.8)', // 80% white for dark mode
+
+  // Avatar fallback colors (when no emoji info)
+  avatarBgLight: 'rgba(0, 0, 0, 0.9)', // 90% black for light mode
+  avatarBgDark: 'rgba(255, 255, 255, 0.25)', // 25% white for dark mode
+  avatarTextLight: 'rgba(255, 255, 255, 0.9)', // 90% white text on dark bg
+  avatarTextDark: 'rgba(0, 0, 0, 0.9)', // 90% black text on light bg
+
   // Shadow colors for light mode
   shadowLight: 'rgba(0, 0, 0, 0.1)',
   shadowLightHover: 'rgba(0, 0, 0, 0.15)',
@@ -365,6 +375,11 @@ const themesBuilder = createThemeBuilder()
       // Separator and card background tokens
       separator: flowColors.separatorLight, // $separator - will be overridden per theme
       cardBg: flowColors.surfaceLight2, // $cardBg - will be overridden per theme
+
+      // Icon and avatar tokens
+      icon: flowColors.iconLight, // $icon - will be overridden per theme
+      avatarBg: flowColors.avatarBgLight, // $avatarBg - will be overridden per theme
+      avatarText: flowColors.avatarTextLight, // $avatarText - will be overridden per theme
     },
   })
   // Add specific themes that use the templates and palettes
@@ -383,6 +398,10 @@ const themesBuilder = createThemeBuilder()
       // Light mode separator and card background
       separator: flowColors.separatorLight,
       cardBg: flowColors.surfaceLight2,
+      // Light mode icon and avatar
+      icon: flowColors.iconLight,
+      avatarBg: flowColors.avatarBgLight,
+      avatarText: flowColors.avatarTextLight,
     },
     dark: {
       template: 'base',
@@ -398,6 +417,10 @@ const themesBuilder = createThemeBuilder()
       // Dark mode separator and card background
       separator: flowColors.separatorDark,
       cardBg: flowColors.cardBgDark,
+      // Dark mode icon and avatar
+      icon: flowColors.iconDark,
+      avatarBg: flowColors.avatarBgDark,
+      avatarText: flowColors.avatarTextDark,
       // Override dark-specific shadow colors
       shadowColor: flowColors.shadowDark,
       shadowColorHover: flowColors.shadowDarkHover,

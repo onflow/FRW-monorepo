@@ -2,7 +2,6 @@ import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack } from 'tamagui';
 
-
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
 import { RefreshView } from './RefreshView';
@@ -71,7 +70,6 @@ function ProfileItem({
   isLast = false,
   isMobile = false,
 }: ProfileItemProps): React.ReactElement {
-
   const handleAccountPress = (account: any) => {
     onAccountPress?.(account);
   };
@@ -100,7 +98,7 @@ function ProfileItem({
       {/* Profile Header */}
       <YStack gap="$3" bg="$bgDrawer">
         <YStack py="$2" items="center">
-          <YStack height={1} bg="$border1" width="100%" />
+          <YStack height={1} bg="$separator" width="100%" />
         </YStack>
         <XStack items="center" gap="$3">
           <Avatar

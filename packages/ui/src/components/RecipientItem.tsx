@@ -95,8 +95,8 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={emojiInfo?.color || '$dark25'}
-              textColor={emojiInfo?.color ? undefined : '$text'}
+              bgColor={emojiInfo?.color || '$avatarBg'}
+              textColor={emojiInfo?.color ? undefined : '$avatarText'}
               size={avatarSize}
             />
           </YStack>
@@ -129,7 +129,7 @@ export function RecipientItem({
         {/* Content */}
         <YStack flex={1} gap={2} width={151.34} ml={16}>
           <XStack items="center" gap={4}>
-            {(isLinked || isEVM) && <Link size={12.8} color="$textSecondary" theme="outline" />}
+            {(isLinked || isEVM) && <Link size={12.8} color="$icon" theme="outline" />}
             <Text
               fontSize={14}
               fontWeight="600"
@@ -203,7 +203,7 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <UserRoundPlus size={24} color="$textSecondary" theme="outline" />
+              <UserRoundPlus size={24} color="$icon" theme="outline" />
             </Card>
           )}
           {showCopyButton && onCopy && (
@@ -221,7 +221,7 @@ export function RecipientItem({
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-              icon={<Copy size={24} color={copiedFeedback ? '$primary' : '$textSecondary'} />}
+              icon={<Copy size={24} color={copiedFeedback ? '$primary' : '$icon'} />}
             ></Button>
           )}
           {copiedFeedback && (

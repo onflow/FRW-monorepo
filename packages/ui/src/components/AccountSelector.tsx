@@ -1,7 +1,7 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
-import { XStack, YStack, Sheet, ScrollView, getTokens } from 'tamagui';
+import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -42,7 +42,6 @@ export function AccountSelector({
   onEditClick,
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
-  const tokens = getTokens();
 
   const handleAccountSelect = (account: WalletAccount) => {
     onAccountSelect(account);
@@ -67,7 +66,7 @@ export function AccountSelector({
         </Text>
 
         {/* Account Container */}
-        <XStack pb={"$2"} pl={5} pr={0} justify="space-between" items="center">
+        <XStack pb={'$2'} pl={5} pr={0} justify="space-between" items="center">
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
             {/* Account Avatar with parent emoji overlay */}
@@ -110,7 +109,7 @@ export function AccountSelector({
               <XStack items="center" gap={4}>
                 {/* Link icon for linked accounts */}
                 {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
-                  <Link size={12.8} color="$textSecondary" theme="outline" />
+                  <Link size={12.8} color="$icon" theme="outline" />
                 )}
                 <Text
                   color="$text"
@@ -178,7 +177,7 @@ export function AccountSelector({
               onPress={handleEditClick}
               cursor="pointer"
             >
-              <Edit size={24} color="$textSecondary" theme="outline" />
+              <Edit size={24} color="$icon" theme="outline" />
             </XStack>
           )}
         </XStack>
@@ -212,7 +211,7 @@ export function AccountSelector({
               </Text>
 
               <XStack onPress={() => setOpen(false)} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
-                <Close size={15} color="$textSecondary" theme="outline" />
+                <Close size={15} color="$icon" theme="outline" />
               </XStack>
             </XStack>
 
@@ -280,7 +279,7 @@ export function AccountSelector({
                           <XStack items="center" gap={4}>
                             {/* Link icon for linked accounts */}
                             {(account.type === 'child' || account.parentEmoji) && (
-                              <Link size={12.8} color="$textSecondary" theme="outline" />
+                              <Link size={12.8} color="$icon" theme="outline" />
                             )}
                             <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
                               {account.name || 'Unnamed Account'}
