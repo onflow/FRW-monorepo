@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Svg, { type SvgProps, Circle, Path } from 'react-native-svg';
 const UserRoundPlus = ({
-  color = 'currentColor',
+  color = '#000',
   size = 24,
   width,
   height,
