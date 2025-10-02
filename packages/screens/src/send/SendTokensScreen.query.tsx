@@ -25,7 +25,6 @@ import {
   Text,
   Separator,
   XStack,
-  View,
   useTheme,
   // NFT-related components
   MultipleNFTsPreview,
@@ -505,10 +504,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
   // Helper function to handle press outside input
-  const handlePressOutside = useCallback(() => {
-    // Blur the input ref if it exists (works on all platforms)
+  const handlePressOutside = useCallback((event: any) => {
+    // Only blur if the click target is not the input or its children
     if (inputRef.current && inputRef.current.blur) {
-      inputRef.current.blur();
+      const target = event.target;
+      const inputElement = inputRef.current;
+
+      // Check if the clicked element is the input or a child of the input
+      if (target !== inputElement && !inputElement.contains(target)) {
+        inputRef.current.blur();
+      }
     }
   }, []);
 
@@ -553,18 +558,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
             {/* From Account Section */}
             {fromAccount ? (
-              <View mb={'$2'}>
-                <AccountCard
-                  isSendTokensScreen={true}
-                  account={transformAccountForCard(fromAccount)}
-                  title={t('send.fromAccount')}
-                  isLoading={isBalanceLoading}
-                />
-              </View>
+              <AccountCard
+                isSendTokensScreen={!isExtension}
+                account={transformAccountForCard(fromAccount)}
+                title={t('send.fromAccount')}
+                isLoading={isBalanceLoading}
+              />
             ) : (
               <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator mx="$0" mt="$2" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
+            <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -597,6 +600,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                   inputRef={inputRef}
                   currency={currency}
                   amountError={amountError}
+                  headerText={t('send.title')}
                 />
               </YStack>
             ) : (

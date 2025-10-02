@@ -50,7 +50,7 @@ export function AccountCard({
   if (!account) {
     return (
       <YStack width="100%" pt="$2" px="$1" pb="$6" gap="$1" {...props}>
-        <Text fontSize="$2" mb="$1" fontWeight="400" color="$textSecondary" lineHeight={16}>
+        <Text fontSize="$3" mb="$1" fontWeight="400" color="$textSecondary" lineHeight={16}>
           {title}
         </Text>
         <Text color="$error">No account data available</Text>
@@ -63,9 +63,8 @@ export function AccountCard({
       width="100%"
       // bg={backgroundColor}
       rounded="$4"
-      pt="$4"
-      px="$4"
-      pb="$6"
+      pt="$1"
+      pb={isSendTokensScreen ? '$4' : '$1'}
       gap="$1"
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
       cursor={enableModalSelection ? 'pointer' : 'default'}
@@ -73,7 +72,7 @@ export function AccountCard({
     >
       {/* Title */}
       <Text
-        fontSize="$2"
+        fontSize="$3"
         mb={isSendTokensScreen ? '$8' : '$1'}
         fontWeight="400"
         // color="$textSecondary"
@@ -83,7 +82,7 @@ export function AccountCard({
       </Text>
 
       {/* Account Container */}
-      <XStack py="$2.5" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>
+      <XStack py="$2" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>
         {/* Left side: Avatar and Account Details */}
         <XStack items="center" gap="$4" flex={1}>
           {/* Account Avatar with parent emoji overlay */}

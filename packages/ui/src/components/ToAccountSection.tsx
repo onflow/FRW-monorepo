@@ -95,7 +95,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       width="100%"
     >
       {/* Section Header */}
-      <Text fontSize="$2" fontWeight="400" lineHeight={16}>
+      <Text fontSize="$3" fontWeight="400" lineHeight={16}>
         {title}
       </Text>
 

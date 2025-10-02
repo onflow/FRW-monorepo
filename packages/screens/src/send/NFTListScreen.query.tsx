@@ -11,7 +11,6 @@ import {
   ExtensionHeader,
   Text,
   SearchBar,
-  ScrollView,
 } from '@onflow/frw-ui';
 import { getNFTId, logger } from '@onflow/frw-utils';
 import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
@@ -447,7 +446,7 @@ export function NFTListScreen(): React.ReactElement {
               width="100%"
             />
           </YStack>
-          <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+          <YStack flex={1}>
             <NFTGrid
               data={filteredNFTs}
               selectedIds={selectedIds}
@@ -473,7 +472,7 @@ export function NFTListScreen(): React.ReactElement {
               isExtension={isExtension}
               totalCount={totalCount}
             />
-          </ScrollView>
+          </YStack>
         </YStack>
 
         {/* Selection Bar */}
@@ -495,6 +494,7 @@ export function NFTListScreen(): React.ReactElement {
           })()}
           isEditing={false}
           onQuantityChange={handleQuantityChange}
+          isExtension={isExtension}
         />
       </YStack>
     </BackgroundWrapper>

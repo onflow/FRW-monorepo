@@ -29,6 +29,7 @@ export * from './foundation/Input';
 export * from './foundation/Separator';
 export * from './foundation/Skeleton';
 export * from './foundation/Text';
+export { FlatList } from 'react-native';
 
 // Export utilities
 export * from './utils/clipboard';
@@ -77,7 +78,6 @@ export * from './components/ToAccountSection';
 export * from './components/Toast';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
-export * from './components/TransactionConfirmationModal';
 export * from './components/TransactionFeeSection';
 export * from './foundation/SegmentedControl';
 
