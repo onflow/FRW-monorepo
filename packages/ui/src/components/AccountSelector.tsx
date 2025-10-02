@@ -199,7 +199,7 @@ export function AccountSelector({
 
         <Sheet.Frame
           padding="$4"
-          backgroundColor="$bg"
+          backgroundColor="$bgDrawer"
           borderTopLeftRadius={16}
           borderTopRightRadius={16}
         >
@@ -328,7 +328,7 @@ export function AccountSelector({
                       {/* Selection Indicator */}
                       {isSelected && (
                         <YStack width={24} height={24} items="center" justify="center">
-                          <CheckCircle size={24} color="$primary" theme="filled" />
+                          <CheckCircle size={24} color="#00EF8B" theme="filled" />
                         </YStack>
                       )}
                     </XStack>
