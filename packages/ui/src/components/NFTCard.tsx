@@ -31,7 +31,6 @@ export function NFTCard({
   accountColor,
 }: NFTCardProps) {
   const width = size === 'large' ? '$50' : size === 'medium' ? '100%' : '$30';
-  const imageHeight = size === 'large' ? '$50' : size === 'medium' ? '$41' : '$30';
   return (
     <YStack
       style={{ width: width }}
@@ -43,7 +42,7 @@ export function NFTCard({
     >
       {/* NFT Image */}
       <YStack
-        style={{ width: '100%', height: imageHeight }}
+        style={{ width: '100%' }}
         rounded="$4"
         overflow="hidden"
         aspectRatio={aspectRatio}
