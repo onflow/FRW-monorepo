@@ -49,8 +49,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const { t } = useTranslation();
 
   // Theme-aware styling
-  const cardBackgroundColor = '$cardBg';
-  const separatorColor = '$separator';
+  const cardBackgroundColor = '$bg2';
+  const separatorColor = '$border1';
 
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
