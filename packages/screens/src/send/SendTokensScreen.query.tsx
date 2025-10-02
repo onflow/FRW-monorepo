@@ -589,7 +589,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         />
       )}
 
-      <YStack flex={1} onPress={Keyboard.dismiss}>
+      <YStack flex={1} {...(!isExtension && { onPress: Keyboard.dismiss })}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
           <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
