@@ -665,18 +665,18 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '$primary'}
+            bg={isSendDisabled ? '#6b7280' : '$text'}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : '$primary'}
+            borderColor={isSendDisabled ? '#6b7280' : '$text'}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$black'}>
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$bg'}>
               {t('common.next')}
             </Text>
           </YStack>
