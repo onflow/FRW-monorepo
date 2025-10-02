@@ -64,7 +64,7 @@ export function AccountCard({
       // bg={backgroundColor}
       rounded="$4"
       pt="$1"
-      pb={isSendTokensScreen ? '$8' : '$1'}
+      pb={isSendTokensScreen ? '$4' : '$1'}
       gap="$1"
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
       cursor={enableModalSelection ? 'pointer' : 'default'}
