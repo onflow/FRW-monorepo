@@ -150,6 +150,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 }) => {
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
+  const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
   const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
 
@@ -179,7 +180,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
-      //
+      // Trigger HoldToSendButton error state (rising edge)
+      setErrorSignal(true);
+      setTimeout(() => setErrorSignal(false), 50);
     } finally {
       setInternalIsSending(false);
     }
@@ -231,7 +234,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={closeIconColor} />
+                  <Close size={24} color={closeIconColor} />
                 </XStack>
               </>
             ) : (
@@ -254,7 +257,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={closeIconColor} />
+                  <Close size={24} color={closeIconColor} />
                 </XStack>
               </>
             )}
@@ -470,6 +473,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               <HoldToSendButton
                 onPress={handleConfirm}
                 stopSignal={internalIsSending}
+                errorSignal={errorSignal}
                 holdToSendText={holdToSendText}
               />
             </View>

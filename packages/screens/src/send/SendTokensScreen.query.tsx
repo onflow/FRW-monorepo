@@ -638,6 +638,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
+                isSendTokensScreen={!isExtension}
                 account={transformAccountForCard(fromAccount)}
                 title={t('send.fromAccount')}
                 isLoading={isBalanceLoading}
@@ -645,7 +646,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             ) : (
               <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
+            <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -678,6 +679,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                   inputRef={inputRef}
                   currency={currency}
                   amountError={amountError}
+                  headerText={t('send.title')}
                 />
               </YStack>
             ) : (

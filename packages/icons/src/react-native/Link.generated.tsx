@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Svg, { type SvgProps, ClipPath, Defs, G, Path } from 'react-native-svg';
 const Link = ({
-  color = 'currentColor',
+  color = '#000',
   size = 24,
   width,
   height,
@@ -17,7 +17,7 @@ const Link = ({
   >
     <G clipPath="url(#link_svg__a)">
       <Path
-        stroke={color}
+        stroke="#fff"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeOpacity={0.502}
@@ -27,7 +27,7 @@ const Link = ({
     </G>
     <Defs>
       <ClipPath id="link_svg__a">
-        <Path fill={color} d="M.5.1h12.8v12.8H.5z" />
+        <Path fill="#fff" d="M.5.1h12.8v12.8H.5z" />
       </ClipPath>
     </Defs>
   </Svg>
