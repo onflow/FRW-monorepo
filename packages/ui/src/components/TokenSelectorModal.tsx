@@ -290,7 +290,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
 
       {searchable && (
         <XStack
-          bg="$light10"
+          bg="$subtleBg10"
           rounded="$4"
           px="$4"
           items="center"

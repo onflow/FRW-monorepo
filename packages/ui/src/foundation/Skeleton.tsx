@@ -15,17 +15,17 @@ export function Skeleton({
       width={width as any}
       height={height as any}
       rounded={borderRadius as any}
-      bg="$light10"
+      bg="$subtleBg10"
       animation={animated ? 'lazy' : undefined}
       animateOnly={['opacity']}
       opacity={animated ? 0.8 : 1}
       // Simple pulse animation using Tamagui's built-in animations
       {...(animated && {
         '$theme-light': {
-          bg: '$light10',
+          bg: '$subtleBg10',
         },
         '$theme-dark': {
-          bg: '$light10',
+          bg: '$subtleBg10',
         },
       })}
       {...rest}

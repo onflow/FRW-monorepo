@@ -118,7 +118,7 @@ export function TokenAmountInput({
         <XStack
           items="center"
           justify="space-between"
-          bg="$light10"
+          bg="$subtleBg10"
           rounded={39}
           minW={85}
           height={35.2}
@@ -153,7 +153,7 @@ export function TokenAmountInput({
               justify="center"
               width={25}
               height={25}
-              bg="$light10"
+              bg="$subtleBg10"
               rounded={56.818}
               p={4.545}
               mr="$1"
@@ -190,7 +190,7 @@ export function TokenAmountInput({
             </Text>
           ) : null}
           <YStack
-            bg="$light10"
+            bg="$subtleBg10"
             rounded={40}
             height="$6"
             items="center"

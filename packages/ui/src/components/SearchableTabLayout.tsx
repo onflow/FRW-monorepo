@@ -76,8 +76,8 @@ export function SearchableTabLayout({
               bg="transparent"
               borderWidth={0}
               onPress={onScanPress}
-              pressStyle={{ bg: '$light10' }}
-              hoverStyle={{ bg: '$light10' }}
+              pressStyle={{ bg: '$subtleBg10' }}
+              hoverStyle={{ bg: '$subtleBg10' }}
               disabled={!onScanPress}
             >
               <Scan size={24} color="#767676" theme="outline" />

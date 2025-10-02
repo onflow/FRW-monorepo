@@ -333,7 +333,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 selectedNFTs[0].contractType === 'ERC1155' &&
                 selectedNFTs[0].selectedQuantity && (
                   <XStack
-                    bg="$light10"
+                    bg="$subtleBg10"
                     rounded="$10"
                     items="center"
                     justify="center"
@@ -384,7 +384,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 </XStack>
 
                 <View
-                  bg="$light10"
+                  bg="$subtleBg10"
                   rounded="$10"
                   px="$2"
                   py="$1"

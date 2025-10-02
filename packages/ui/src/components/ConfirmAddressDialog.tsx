@@ -107,7 +107,7 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
                 right={0}
                 items="center"
                 justify="center"
-                bg="$light10"
+                bg="$subtleBg10"
                 rounded={16}
                 p={8}
                 pressStyle={{ opacity: 0.7 }}
@@ -138,7 +138,7 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
             <YStack
               widtheight={290}
               height={64}
-              bg="$light10"
+              bg="$subtleBg10"
               rounded={8}
               items="center"
               justify="center"
