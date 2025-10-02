@@ -553,16 +553,31 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     return null;
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
-  // Helper function to handle press outside input
-  const handlePressOutside = useCallback((event: any) => {
-    // Only blur if the click target is not the input or its children
-    if (inputRef.current && inputRef.current.blur) {
-      const target = event.target;
-      const inputElement = inputRef.current;
+  // Helper function to handle press outside input (platform-aware)
+  const handlePressOutside = useCallback((event?: any) => {
+    const platform = bridge.getPlatform();
 
-      // Check if the clicked element is the input or a child of the input
-      if (target !== inputElement && !inputElement.contains(target)) {
+    // On native platforms (iOS/Android), just blur the input if focused
+    if (platform === Platform.iOS || platform === Platform.Android) {
+      if (inputRef.current && typeof inputRef.current.blur === 'function') {
         inputRef.current.blur();
+      }
+      return;
+    }
+
+    // On web/extension, ensure we don't blur when clicking the input itself
+    if (!inputRef.current || !event?.target) return;
+    const inputElement: any = inputRef.current as any;
+    const target = event.target;
+
+    // Only blur if the click target is not the input element
+    if (
+      target !== inputElement &&
+      typeof inputElement.contains === 'function' &&
+      !inputElement.contains(target)
+    ) {
+      if (typeof inputElement.blur === 'function') {
+        inputElement.blur();
       }
     }
   }, []);
