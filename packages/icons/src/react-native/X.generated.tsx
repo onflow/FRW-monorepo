@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Svg, { type SvgProps, Path } from 'react-native-svg';
-const Close = ({
+const X = ({
   color = '#000',
   size = 24,
   width,
@@ -15,7 +15,13 @@ const Close = ({
     viewBox="0 0 24 24"
     {...props}
   >
-    <Path d="M18 6 6 18M6 6l12 12" />
+    <Path
+      d="M18 6 6 18M6 6l12 12"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </Svg>
 );
-export default Close;
+export default X;

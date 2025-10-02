@@ -11,8 +11,6 @@
       "icons": ["src/assets/icons"],
       "icons/*": ["src/assets/icons/*"],
       "@onflow/frw-ui": ["../../packages/ui/src"],
-      "@onflow/frw-icons": ["../../packages/icons/src"],
-      "@onflow/frw-icons/lucide": ["../../packages/icons/src/lucide.ts"],
       "@onflow/frw-api": ["../../packages/api/src"],
       "@onflow/frw-cadence": ["../../packages/cadence/src"],
       "@onflow/frw-context": ["../../packages/context/src"],

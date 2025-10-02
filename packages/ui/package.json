@@ -20,13 +20,13 @@
     "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-types": "workspace:^",
     "@onflow/frw-utils": "workspace:^",
-    "@tamagui/config": "1.132.20",
-    "@tamagui/core": "1.132.20",
-    "@tamagui/theme-builder": "1.132.20",
-    "@tamagui/web": "1.132.20",
+    "@tamagui/config": "^1.132.20",
+    "@tamagui/core": "^1.132.20",
+    "@tamagui/theme-builder": "^1.132.20",
+    "@tamagui/web": "^1.132.20",
     "bignumber.js": "^9.1.2",
     "lottie-web": "^5.12.2",
-    "tamagui": "1.132.20"
+    "tamagui": "^1.132.20"
   },
   "devDependencies": {
     "@babel/runtime": "^7.28.3",

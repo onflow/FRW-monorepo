@@ -1,5 +1,4 @@
-import { Copy, Link } from '@onflow/frw-icons';
-import { UserRoundPlus } from '@onflow/frw-icons/lucide';
+import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
 import React from 'react';
 import { Button, Card, XStack, YStack, Text, useThemeName } from 'tamagui';
 

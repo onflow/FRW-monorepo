@@ -15,13 +15,7 @@ const ArrowBack = ({
     viewBox="0 0 24 24"
     {...props}
   >
-    <Path
-      d="m12 19-7-7 7-7M19 12H5"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+    <Path d="m12 19-7-7 7-7M19 12H5" />
   </Svg>
 );
 export default ArrowBack;

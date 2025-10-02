@@ -5,25 +5,16 @@
   "main": "./dist/web/index.js",
   "module": "./dist/web/index.mjs",
   "react-native": "./dist/react-native/index.js",
-  "types": "./dist/index.d.mts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
+      "types": "./dist/index.d.ts",
       "react-native": {
         "import": "./dist/react-native/index.mjs",
         "require": "./dist/react-native/index.js"
       },
       "import": "./dist/web/index.mjs",
       "require": "./dist/web/index.js"
-    },
-    "./lucide": {
-      "types": "./dist/lucide.d.mts",
-      "react-native": {
-        "import": "./dist/react-native/lucide.mjs",
-        "require": "./dist/react-native/lucide.js"
-      },
-      "import": "./dist/web/lucide.mjs",
-      "require": "./dist/web/lucide.js"
     }
   },
   "files": [
@@ -55,7 +46,6 @@
   ],
   "author": "Flow Reference Wallet Team",
   "license": "MIT",
-  "sideEffects": false,
   "devDependencies": {
     "@svgr/cli": "^8.1.0",
     "@types/node": "^22.11.0",
@@ -65,15 +55,11 @@
   },
   "peerDependencies": {
     "react": "19.1.0",
-    "react-native-svg": ">=15.0.0",
-    "@tamagui/lucide-icons": "1.132.20"
+    "react-native-svg": ">=15.0.0"
   },
   "peerDependenciesMeta": {
     "react-native-svg": {
       "optional": true
-    },
-    "@tamagui/lucide-icons": {
-      "optional": false
     }
   },
   "repository": {

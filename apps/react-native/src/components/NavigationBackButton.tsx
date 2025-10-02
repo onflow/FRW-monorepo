@@ -1,4 +1,4 @@
-import { ArrowLeft } from '@onflow/frw-icons/lucide';
+import { ArrowLeft } from '@onflow/frw-icons';
 import { IconButton } from '@onflow/frw-ui';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import React from 'react';
