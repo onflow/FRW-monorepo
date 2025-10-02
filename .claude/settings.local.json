@@ -66,11 +66,7 @@
       "Bash(pnpm:*)",
       "Bash(npx react-native:*)",
       "Bash(gh label:*)",
-      "Bash(gh api:*)",
-      "Bash(for file in packages/ui/src/components/MultipleNFTsPreview.tsx packages/ui/src/components/ProfileList.tsx packages/ui/src/foundation/Button.tsx)",
-      "Bash(do echo \"Checking $file:\")",
-      "Bash(done)",
-      "Bash(cat:*)"
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
