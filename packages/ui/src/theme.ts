@@ -78,6 +78,15 @@ const flowColors = {
   grayBg1: '#373737',
 
   darkBorder1: 'rgba(41, 41, 41, 1)',
+
+  // Separator colors for dividers
+  separatorLight: 'rgba(0, 0, 0, 0.1)', // 10% black for light mode
+  separatorDark: 'rgba(255, 255, 255, 0.1)', // 10% white for dark mode
+
+  // Card background colors
+  cardBgLight: '$bg2', // Uses the secondary background in light mode
+  cardBgDark: 'rgba(255, 255, 255, 0.1)', // 10% white for dark mode
+
   // Shadow colors for light mode
   shadowLight: 'rgba(0, 0, 0, 0.1)',
   shadowLightHover: 'rgba(0, 0, 0, 0.15)',
@@ -352,6 +361,10 @@ const themesBuilder = createThemeBuilder()
       dark40: flowColors.dark40, // $dark40
       dark25: flowColors.dark25, // $dark25
       dark10: flowColors.dark10, // $dark10
+
+      // Separator and card background tokens
+      separator: flowColors.separatorLight, // $separator - will be overridden per theme
+      cardBg: flowColors.surfaceLight2, // $cardBg - will be overridden per theme
     },
   })
   // Add specific themes that use the templates and palettes
@@ -367,6 +380,9 @@ const themesBuilder = createThemeBuilder()
       primary10: flowColors.primaryLight10,
       primaryLight: flowColors.primaryLight10,
       backgroundFocus: flowColors.primaryLight10,
+      // Light mode separator and card background
+      separator: flowColors.separatorLight,
+      cardBg: flowColors.surfaceLight2,
     },
     dark: {
       template: 'base',
@@ -379,6 +395,9 @@ const themesBuilder = createThemeBuilder()
       primary10: flowColors.primaryDark10,
       primaryLight: flowColors.primaryDark10,
       backgroundFocus: flowColors.primaryDark10,
+      // Dark mode separator and card background
+      separator: flowColors.separatorDark,
+      cardBg: flowColors.cardBgDark,
       // Override dark-specific shadow colors
       shadowColor: flowColors.shadowDark,
       shadowColorHover: flowColors.shadowDarkHover,

@@ -42,7 +42,7 @@ interface TabConfig {
 export function SendToScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
-  const cardBackgroundColor = '$bg2';
+  const cardBackgroundColor = '$cardBg';
 
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },

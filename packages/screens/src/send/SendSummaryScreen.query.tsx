@@ -95,8 +95,8 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       : parseInt(selectedNFT?.amount as string) || 1;
 
   // Theme-aware styling
-  const cardBackgroundColor = '$bg2';
-  const separatorColor = '$border1';
+  const cardBackgroundColor = '$cardBg';
+  const separatorColor = '$separator';
 
   // Dynamic section title based on transfer type
   const sectionTitle = useMemo(() => {
@@ -464,11 +464,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text
-              fontSize="$4"
-              fontWeight="600"
-              color={isSendDisabled ? '$bg' : '$bg'}
-            >
+            <Text fontSize="$4" fontWeight="600" color="$bg">
               {t('common.next')}
             </Text>
           </YStack>

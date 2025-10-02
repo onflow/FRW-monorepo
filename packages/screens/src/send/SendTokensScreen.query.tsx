@@ -29,11 +29,7 @@ import {
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import {
-  logger,
-  transformAccountForCard,
-  transformAccountForDisplay,
-} from '@onflow/frw-utils';
+import { logger, transformAccountForCard, transformAccountForDisplay } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -53,8 +49,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const { t } = useTranslation();
 
   // Theme-aware styling
-  const cardBackgroundColor = '$bg2';
-  const separatorColor = '$border1';
+  const cardBackgroundColor = '$cardBg';
+  const separatorColor = '$separator';
 
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
