@@ -51,7 +51,6 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      // bg={backgroundColor}
       rounded="$4"
       pt="$1"
       pb={isSendTokensScreen ? '$4' : '$1'}

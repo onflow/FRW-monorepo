@@ -1,9 +1,5 @@
 import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import {
-  type AccountDisplayData,
-  type TokenModel,
-  type TransactionType,
-} from '@onflow/frw-types';
+import { type AccountDisplayData, type TokenModel, type TransactionType } from '@onflow/frw-types';
 import React from 'react';
 import { Sheet, Spinner, View, XStack, YStack } from 'tamagui';
 
@@ -362,7 +358,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 )}
             </YStack>
           ) : (
-            <YStack bg="$bg2" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
+            <YStack bg="$bg1" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$textSecondary" fontWeight="400">
                 {sendTokensText}
               </Text>
