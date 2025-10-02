@@ -79,24 +79,6 @@ const flowColors = {
 
   darkBorder1: 'rgba(255, 255, 255, 0.1)',
 
-  // Separator colors for dividers
-  separatorLight: 'rgba(0, 0, 0, 0.1)', // 10% black for light mode
-  separatorDark: 'rgba(255, 255, 255, 0.1)', // 10% white for dark mode
-
-  // Card background colors
-  cardBgLight: '$bg2', // Uses the secondary background in light mode
-  cardBgDark: '$light10', // 10% white for dark mode
-
-  // Icon colors (high contrast)
-  iconLight: 'rgba(0, 0, 0, 0.8)', // 80% black for light mode
-  iconDark: 'rgba(255, 255, 255, 0.8)', // 80% white for dark mode
-
-  // Avatar fallback colors (when no emoji info)
-  avatarBgLight: 'rgba(0, 0, 0, 0.9)', // 90% black for light mode
-  avatarBgDark: 'rgba(255, 255, 255, 0.25)', // 25% white for dark mode
-  avatarTextLight: 'rgba(255, 255, 255, 0.9)', // 90% white text on dark bg
-  avatarTextDark: 'rgba(0, 0, 0, 0.9)', // 90% black text on light bg
-
   // Shadow colors for light mode
   shadowLight: 'rgba(0, 0, 0, 0.1)',
   shadowLightHover: 'rgba(0, 0, 0, 0.15)',
@@ -371,15 +353,6 @@ const themesBuilder = createThemeBuilder()
       dark40: flowColors.dark40, // $dark40
       dark25: flowColors.dark25, // $dark25
       dark10: flowColors.dark10, // $dark10
-
-      // Separator and card background tokens
-      separator: 'rgba(0, 0, 0, 0.1)', // $separator - will be overridden per theme
-      cardBg: 'rgba(0, 0, 0, 0.05)', // $cardBg - will be overridden per theme
-
-      // Icon and avatar tokens
-      icon: 'rgba(0, 0, 0, 0.8)', // $icon - will be overridden per theme
-      avatarBg: 'rgba(0, 0, 0, 0.9)', // $avatarBg - will be overridden per theme
-      avatarText: 'rgba(255, 255, 255, 0.9)', // $avatarText - will be overridden per theme
     },
   })
   // Add specific themes that use the templates and palettes
@@ -395,13 +368,6 @@ const themesBuilder = createThemeBuilder()
       primary10: flowColors.primaryLight10,
       primaryLight: flowColors.primaryLight10,
       backgroundFocus: flowColors.primaryLight10,
-      // Light mode separator and card background
-      separator: '$dark10',
-      cardBg: '$bg2',
-      // Light mode icon and avatar
-      icon: '$dark80',
-      avatarBg: '$text',
-      avatarText: '$white',
     },
     dark: {
       template: 'base',
@@ -414,13 +380,6 @@ const themesBuilder = createThemeBuilder()
       primary10: flowColors.primaryDark10,
       primaryLight: flowColors.primaryDark10,
       backgroundFocus: flowColors.primaryDark10,
-      // Dark mode separator and card background
-      separator: '$light10',
-      cardBg: '$light10',
-      // Dark mode icon and avatar
-      icon: '$light80',
-      avatarBg: '$light25',
-      avatarText: '$black',
       // Override dark-specific shadow colors
       shadowColor: flowColors.shadowDark,
       shadowColorHover: flowColors.shadowDarkHover,
