@@ -32,7 +32,7 @@ export function SegmentedControl({
     <XStack
       bg="transparent"
       borderWidth={2}
-      borderColor="$border1"
+      borderColor="$separator"
       rounded={200}
       p={3}
       items="center"
@@ -48,13 +48,13 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            bg={isSelected ? '$border1' : 'transparent'}
+            bg={isSelected ? '$separator' : 'transparent'}
             rounded={20}
             height={30}
             items="center"
             justify="center"
             px={segmentPx}
-            pressStyle={{ opacity: 0.8, bg: isSelected ? '$dark25' : '$light5' }}
+            pressStyle={{ opacity: 0.8, bg: isSelected ? '$dark20' : '$light5' }}
             onPress={() => onChange(segment)}
             cursor="pointer"
           >
