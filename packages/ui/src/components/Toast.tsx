@@ -1,5 +1,6 @@
+import { ToastSuccess, ToastWarning, ToastInfo, ToastError } from '@onflow/frw-icons';
 import React, { useEffect, useState } from 'react';
-import { YStack, useTheme } from 'tamagui';
+import { XStack, YStack, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -42,28 +43,32 @@ export const Toast: React.FC<ToastProps> = ({
     switch (type) {
       case 'success':
         return {
-          bg: '$success',
+          bg: '$grayBg1',
           messageColor: '$textSecondary',
           titleColor: '$textPrimary',
+          icon: <ToastSuccess color={theme.success?.val || theme.success} />,
         };
       case 'warning':
         return {
-          bg: '$warning',
+          bg: '$grayBg1',
           messageColor: '$textSecondary',
           titleColor: '$textPrimary',
+          icon: <ToastWarning color={theme.warning?.val || theme.warning} />,
         };
       case 'info':
         return {
           bg: '$grayBg1',
           messageColor: '$textSecondary',
           titleColor: '$textPrimary',
+          icon: <ToastInfo color={theme.textPrimary?.val || theme.textPrimary} />,
         };
       case 'error':
       default:
         return {
-          bg: '$error',
+          bg: '$grayBg1',
           messageColor: '$textSecondary',
           titleColor: '$textPrimary',
+          icon: <ToastError color={theme.error?.val || theme.error} />,
         };
     }
   };
@@ -71,7 +76,7 @@ export const Toast: React.FC<ToastProps> = ({
   const styles = getToastStyles();
 
   const toastContent = (
-    <YStack
+    <XStack
       role="status"
       aria-live="off"
       aria-atomic="true"
@@ -89,8 +94,8 @@ export const Toast: React.FC<ToastProps> = ({
       enterStyle={{ opacity: 0, y: -20, scale: 0.95 }}
       exitStyle={{ opacity: 0, y: -20, scale: 0.95 }}
       style={{
-        position: 'absolute',
-        top: 20,
+        position: 'fixed',
+        bottom: 20,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 999999,
@@ -100,30 +105,34 @@ export const Toast: React.FC<ToastProps> = ({
         pointerEvents: 'auto',
         touchAction: 'none',
         userSelect: 'none',
-        alignItems: 'flex-start',
-        flexDirection: 'column',
-        padding: '7px 24px',
+        padding: '6px 24px',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
       }}
     >
-      <Text
-        color={styles.titleColor as any}
-        fontSize="$4"
-        fontWeight="500"
-        style={{ whiteSpace: 'nowrap' }}
-      >
-        {title}
-      </Text>
-      {message && (
+      <YStack>{styles.icon}</YStack>
+      <YStack style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
         <Text
-          color={styles.messageColor as any}
-          fontSize="$1"
-          fontWeight="400"
+          color={styles.titleColor as any}
+          fontSize="$4"
+          fontWeight="500"
           style={{ whiteSpace: 'nowrap' }}
         >
-          {message}
+          {title}
         </Text>
-      )}
-    </YStack>
+        {message && (
+          <Text
+            color={styles.messageColor as any}
+            fontSize="$1"
+            fontWeight="400"
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {message}
+          </Text>
+        )}
+      </YStack>
+    </XStack>
   );
 
   // For React Native, render directly

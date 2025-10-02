@@ -474,7 +474,7 @@ export const useSendStore = create<SendState>((set, get) => ({
       toast.show({
         title: 'Transaction failed',
         message: errorMessage,
-        type: 'info',
+        type: 'error',
         duration: 4000,
       });
 
