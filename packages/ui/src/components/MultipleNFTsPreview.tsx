@@ -93,11 +93,6 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
   const imageUrl = nft.image || nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
-  // Theme-aware placeholder background
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const placeholderBackground = isCurrentlyDarkMode ? '$light10' : '$gray7';
-
   return (
     <XStack items="center" gap={8} height={71}>
       {/* NFT Image */}
@@ -120,7 +115,7 @@ const ExpandedNFTItem: React.FC<ExpandedNFTItemProps> = ({
             />
           </View>
         ) : (
-          <View flex={1} bg={placeholderBackground} rounded={16} />
+          <View flex={1} bg="$bg2" rounded={16} />
         )}
       </View>
 
