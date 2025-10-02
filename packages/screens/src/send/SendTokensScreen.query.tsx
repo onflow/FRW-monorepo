@@ -9,7 +9,7 @@ import {
   storageQueries,
   storageUtils,
 } from '@onflow/frw-stores';
-import { isFlow, Platform, type TokenModel } from '@onflow/frw-types';
+import { isFlow, Platform, type TokenModel, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -22,7 +22,6 @@ import {
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
-  type TransactionFormData,
   Text,
   Separator,
   XStack,
@@ -326,12 +325,12 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     if (selectedToken) {
       // Try multiple sources for the numeric balance, in order of preference
       let numericBalance = '0';
-      
+
       // 1. Try availableBalanceToUse (most reliable for calculations)
       if (selectedToken.availableBalanceToUse) {
         numericBalance = extractNumericBalance(selectedToken.availableBalanceToUse);
       }
-      // 2. Try displayBalance 
+      // 2. Try displayBalance
       else if (selectedToken.displayBalance) {
         numericBalance = extractNumericBalance(selectedToken.displayBalance);
       }
@@ -339,7 +338,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       else if (selectedToken.balance) {
         numericBalance = extractNumericBalance(selectedToken.balance);
       }
-      
+
       // Validate that we have a valid number
       const parsedBalance = parseFloat(numericBalance);
       if (!isNaN(parsedBalance) && parsedBalance > 0) {
@@ -456,7 +455,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const isSendDisabled = useMemo(() => {
     if (transactionType === 'tokens') {
       const amountNum = new BN(amount || '0');
-      
+
       // Extract numeric value from balance string (handle cases like "123.45 FUSD")
       // Try multiple sources for the numeric balance, in order of preference
       let numericBalanceString = '0';
@@ -511,7 +510,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   ]);
 
   // Create form data for transaction confirmation
-  const formData: TransactionFormData = useMemo(
+  const formData: SendFormData = useMemo(
     () => ({
       tokenAmount: isTokenMode
         ? amount
@@ -618,7 +617,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             ) : (
               <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
+            <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -651,6 +650,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                   inputRef={inputRef}
                   currency={currency}
                   amountError={amountError}
+                  headerText={t('send.title')}
                 />
               </YStack>
             ) : (
@@ -775,7 +775,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           selectedNFTs={selectedNFTs?.map((nft) => ({
             id: nft.id || '',
             name: nft.name || '',
-            image: nft.thumbnail || '',
+            thumbnail: nft.thumbnail || '',
             collection: nft.collectionName || '',
             collectionContractName: nft.collectionContractName || '',
             description: nft.description || '',

@@ -24,7 +24,13 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { isValidEthereumAddress, isValidFlowAddress, logger, isDarkMode, retryConfigs } from '@onflow/frw-utils';
+import {
+  isValidEthereumAddress,
+  isValidFlowAddress,
+  logger,
+  isDarkMode,
+  retryConfigs,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';

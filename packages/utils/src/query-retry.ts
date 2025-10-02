@@ -19,7 +19,7 @@ function exponentialBackoffWithJitter(
   return (attemptIndex: number): number => {
     const exponentialDelay = baseDelay * 2 ** attemptIndex;
     const cappedDelay = Math.min(exponentialDelay, maxDelay);
-    
+
     // Add jitter to prevent thundering herd
     const jitter = cappedDelay * jitterFactor * Math.random();
     return cappedDelay + jitter;
@@ -77,12 +77,9 @@ export function getRetryConfig(criticality: keyof typeof retryConfigs): RetryCon
 /**
  * Custom retry function that logs retry attempts for debugging
  */
-export function createRetryFunction(
-  criticality: keyof typeof retryConfigs,
-  context?: string
-) {
+export function createRetryFunction(criticality: keyof typeof retryConfigs, context?: string) {
   const config = getRetryConfig(criticality);
-  
+
   return {
     ...config,
     onError: (error: Error, attemptIndex: number) => {
