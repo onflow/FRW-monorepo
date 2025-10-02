@@ -32,7 +32,7 @@ export function SegmentedControl({
     <XStack
       bg="transparent"
       borderWidth={2}
-      borderColor="$separator"
+      borderColor="$border1"
       rounded={200}
       p={3}
       items="center"
@@ -48,7 +48,7 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            bg={isSelected ? '$separator' : 'transparent'}
+            bg={isSelected ? '$border1' : 'transparent'}
             rounded={20}
             height={30}
             items="center"

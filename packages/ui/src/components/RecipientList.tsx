@@ -138,7 +138,7 @@ export function RecipientList({
             {section.title}
           </Text>
           {showSeparators && (
-            <YStack mt={'$2'} mb={'$2'} height={1} bg="$separator" w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           )}
         </YStack>
       )}
@@ -148,7 +148,7 @@ export function RecipientList({
         <YStack key={item.id}>
           {renderItem(item)}
           {showSeparators && (
-            <YStack mt={'$2'} mb={'$2'} height={1} bg="$separator" w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           )}
         </YStack>
       ))}

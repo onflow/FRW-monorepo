@@ -98,7 +98,7 @@ function ProfileItem({
       {/* Profile Header */}
       <YStack gap="$3" bg="$bgDrawer">
         <YStack py="$2" items="center">
-          <YStack height={1} bg="$separator" width="100%" />
+          <YStack height={1} bg="$border1" width="100%" />
         </YStack>
         <XStack items="center" gap="$3">
           <Avatar
