@@ -321,9 +321,28 @@ class ExtensionPlatformImpl implements PlatformSpec {
         };
         const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
         const isSurge = payerStatus?.surge?.active;
+
+        // Check if surge pricing is active and user has approved it
+        let surgeApproved = false;
+        if (isSurge) {
+          console.log('Surge pricing is active, checking user approval');
+          surgeApproved = await this.walletController.getSurgeApproval();
+
+          if (!surgeApproved) {
+            // Show surge modal and wait for user decision
+            console.log('Showing surge modal for user approval');
+            surgeApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
+          }
+        }
+
         // Determine payer function based on transaction name and fee coverage logic
         const withPayer = config.name && config.name.endsWith('WithPayer');
-        if (withPayer) {
+
+        if (surgeApproved) {
+          // User approved surge pricing - they will pay (proposer as payer)
+          config.payer = config.proposer;
+          config.authorizations = [config.proposer];
+        } else if (withPayer) {
           // Use bridge fee payer function - get address from payer status
           const payerAddress = payerStatus?.bridgePayer?.address;
           const payerKeyId = payerStatus?.bridgePayer?.keyIndex || 0;

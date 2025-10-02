@@ -1415,6 +1415,58 @@ export class WalletController extends BaseController {
     return userWalletService.allowFreeGas();
   };
 
+  getSurgeApproval = async (): Promise<boolean> => {
+    const approved = await getLocalData('surgeApproved');
+    return approved === true;
+  };
+
+  setSurgeApproval = async (approved: boolean): Promise<void> => {
+    if (approved) {
+      setLocalData('surgeApproved', true);
+    } else {
+      removeLocalData('surgeApproved');
+    }
+  };
+
+  showSurgeModalAndWait = async (payerStatus: any): Promise<boolean> => {
+    return new Promise((resolve) => {
+      // Send message to UI to show surge modal using the same pattern as API_RATE_LIMIT
+      console.log('WalletController: Sending API_RATE_LIMIT message to trigger surge modal');
+      chrome.runtime.sendMessage({
+        type: 'API_RATE_LIMIT',
+        data: {
+          status: 429,
+          api: 'surgePricing',
+          timestamp: Date.now(),
+          surgeData: {
+            maxFee: payerStatus?.surge?.maxFee,
+            multiplier: payerStatus?.surge?.multiplier,
+          },
+        },
+      });
+      console.log(
+        'WalletController: API_RATE_LIMIT message sent with surge data:',
+        payerStatus?.surge
+      );
+
+      // Listen for surge approval response
+      const handleSurgeResponse = (message: any) => {
+        if (message.type === 'SURGE_APPROVAL_RESPONSE') {
+          chrome.runtime.onMessage.removeListener(handleSurgeResponse);
+          resolve(message.data?.approved === true);
+        }
+      };
+
+      chrome.runtime.onMessage.addListener(handleSurgeResponse);
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        chrome.runtime.onMessage.removeListener(handleSurgeResponse);
+        resolve(false);
+      }, 30000);
+    });
+  };
+
   // New API methods using openapi service
   signAsFeePayer = async (signable): Promise<string> => {
     return await userWalletService.signAsFeePayer(signable);

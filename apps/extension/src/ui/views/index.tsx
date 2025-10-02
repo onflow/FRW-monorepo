@@ -80,26 +80,34 @@ function Main() {
 const App = ({ wallet }: { wallet: any }) => {
   const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
   const [hasResponded, setHasResponded] = useState(false);
+  const [surgeData, setSurgeData] = useState<{ maxFee?: string; multiplier?: number } | null>(null);
 
-  // Global surge modal for 429 errors
+  // Global surge modal for 429 errors and surge pricing
   useEffect(() => {
-    const handleApiRateLimit = (message: any) => {
-      console.log('API_RATE_LIMIT message received:', message);
+    const handleMessage = (message: any) => {
+      console.log('UI: Message received:', message);
+
       if (message.type === 'API_RATE_LIMIT' && message.data?.status === 429) {
-        console.log('API rate limit detected, showing global surge modal:', message.data);
+        console.log('UI: API rate limit detected, showing global surge modal:', message.data);
+        // Store surge data if available
+        if (message.data?.surgeData) {
+          setSurgeData(message.data.surgeData);
+        } else {
+          setSurgeData(null);
+        }
         setIsSurgeModalVisible(true);
         setHasResponded(false); // Reset response flag when showing modal
       } else {
-        console.log('Message is not API_RATE_LIMIT or status is not 429:', message);
+        console.log('UI: Message is not API_RATE_LIMIT:', message);
       }
     };
 
     // Add Chrome extension message listener
-    chrome.runtime.onMessage.addListener(handleApiRateLimit);
+    chrome.runtime.onMessage.addListener(handleMessage);
 
     // Cleanup message listener on unmount
     return () => {
-      chrome.runtime.onMessage.removeListener(handleApiRateLimit);
+      chrome.runtime.onMessage.removeListener(handleMessage);
     };
   }, []);
 
@@ -109,6 +117,13 @@ const App = ({ wallet }: { wallet: any }) => {
     console.log('SurgeModal onClose called');
     setIsSurgeModalVisible(false);
     setHasResponded(true);
+
+    // Set surge approval to false (user rejected)
+    chrome.runtime.sendMessage({
+      type: 'controller',
+      method: 'setSurgeApproval',
+      params: [false],
+    });
 
     // Send rejection response
     chrome.runtime.sendMessage({
@@ -126,6 +141,13 @@ const App = ({ wallet }: { wallet: any }) => {
     console.log('SurgeModal onAgree called - sending approval response');
     setIsSurgeModalVisible(false);
     setHasResponded(true);
+
+    // Set surge approval to true (user approved)
+    chrome.runtime.sendMessage({
+      type: 'controller',
+      method: 'setSurgeApproval',
+      params: [true],
+    });
 
     // Send approval response
     chrome.runtime.sendMessage({
@@ -149,6 +171,8 @@ const App = ({ wallet }: { wallet: any }) => {
               {console.log('Rendering SurgeModal with visible:', isSurgeModalVisible)}
               <SurgeModal
                 visible={isSurgeModalVisible}
+                transactionFee={surgeData?.maxFee || '- 500.00'}
+                multiplier={surgeData?.multiplier?.toString() || '4'}
                 onClose={handleSurgeModalClose}
                 onAgree={handleSurgeModalAgree}
                 isLoading={false}

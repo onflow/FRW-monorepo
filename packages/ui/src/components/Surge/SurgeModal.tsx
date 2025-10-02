@@ -31,6 +31,10 @@ export interface SurgeModalProps {
    */
   transactionFee?: string;
   /**
+   * Surge multiplier (e.g., "4" for 4x higher fees)
+   */
+  multiplier?: string;
+  /**
    * Callback when the modal is closed
    */
   onClose?: () => void;
@@ -51,6 +55,7 @@ export interface SurgeModalProps {
 export const SurgeModal: React.FC<SurgeModalProps> = ({
   visible = true,
   transactionFee = '- 500.00',
+  multiplier = '4',
   onClose,
   onAgree,
   isLoading = false,
@@ -242,7 +247,8 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
               lineHeight="$4"
             >
               Due to high network activity, transaction fees are elevated, and Flow Wallet is
-              temporarily not paying for your gas. Current network fees are 4× higher than usual.
+              temporarily not paying for your gas. Current network fees are {multiplier}× higher
+              than usual.
             </Text>
           </YStack>
 
