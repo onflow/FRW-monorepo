@@ -106,7 +106,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
               onPress={onClose}
               cursor="pointer"
             >
-              <Close size={15} color={closeIconColor} />
+              <Close size={24} color={closeIconColor} />
             </XStack>
           </>
         ) : (
@@ -129,7 +129,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
               onPress={onClose}
               cursor="pointer"
             >
-              <Close size={15} color={closeIconColor} />
+              <Close size={24} color={closeIconColor} />
             </XStack>
           </>
         )}

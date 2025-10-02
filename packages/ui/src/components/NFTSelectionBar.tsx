@@ -20,6 +20,7 @@ export interface NFTSelectionBarProps {
   // Text props for localization
   selectedCountText?: string;
   confirmText?: string;
+  isExtension?: boolean;
 }
 
 export function NFTSelectionBar({
@@ -30,6 +31,7 @@ export function NFTSelectionBar({
   onQuantityChange,
   selectedCountText,
   confirmText,
+  isExtension,
 }: NFTSelectionBarProps) {
   const theme = useTheme();
   const isCurrentlyDarkMode = isDarkMode(theme);
@@ -137,7 +139,7 @@ export function NFTSelectionBar({
 
   return (
     <YStack
-      pos="absolute"
+      pos={isExtension ? 'fixed' : 'absolute'}
       b="$0"
       l="$0"
       r="$0"

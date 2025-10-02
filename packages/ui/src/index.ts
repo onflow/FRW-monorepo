@@ -78,7 +78,6 @@ export * from './components/ToAccountSection';
 export * from './components/Toast';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
-export * from './components/TransactionConfirmationModal';
 export * from './components/TransactionFeeSection';
 export * from './foundation/SegmentedControl';
 

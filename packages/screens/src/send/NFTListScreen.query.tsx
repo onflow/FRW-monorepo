@@ -491,6 +491,7 @@ export function NFTListScreen(): React.ReactElement {
           })()}
           isEditing={false}
           onQuantityChange={handleQuantityChange}
+          isExtension={isExtension}
         />
       </YStack>
     </BackgroundWrapper>

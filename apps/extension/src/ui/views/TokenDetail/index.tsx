@@ -1,14 +1,10 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Box, Drawer, IconButton, MenuItem, Typography } from '@mui/material';
+import { ArrowBack } from '@onflow/frw-icons';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import type {
-  CoinItem,
-  CustomFungibleTokenInfo,
-  EvmCustomTokenInfo,
-} from '@/shared/types';
+import type { CoinItem, CustomFungibleTokenInfo, EvmCustomTokenInfo } from '@/shared/types';
 import { consoleError, consoleWarn, getPriceProvider } from '@/shared/utils';
 import tips from '@/ui/assets/svg/tips.svg';
 import WarningIcon from '@/ui/assets/svg/warning.svg';
@@ -130,7 +126,7 @@ const TokenDetail = () => {
     return (
       <Box sx={{ display: 'flex', mx: '-12px', position: 'relative', mb: '4px' }}>
         <IconButton onClick={() => navigate(-1)}>
-          <ArrowBackIcon sx={{ color: 'icon.navi' }} />
+          <ArrowBack sx={{ color: 'icon.navi' }} />
         </IconButton>
         <Box sx={{ flexGrow: 1 }} />
         {tokenInfo?.custom && (

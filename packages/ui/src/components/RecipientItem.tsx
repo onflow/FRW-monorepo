@@ -36,7 +36,6 @@ export interface RecipientItemProps {
 
   // Styling
   pressStyle?: object;
-  isMobile?: boolean;
 }
 
 export function RecipientItem({
@@ -61,7 +60,6 @@ export function RecipientItem({
   onAddToAddressBook,
   copiedFeedback,
   pressStyle,
-  isMobile = false,
 }: RecipientItemProps): React.JSX.Element {
   const themeName = useThemeName();
 
@@ -82,7 +80,6 @@ export function RecipientItem({
       p={0}
       minHeight={56}
       cursor="pointer"
-      mb={isMobile && '$3'}
     >
       <XStack items="center" justify="space-between" flex={1} p={0} height={56}>
         {/* Avatar/Icon Container with fixed frame matching Figma specs */}
