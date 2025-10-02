@@ -114,7 +114,7 @@ export function AccountCard({
             <XStack items="center" gap={4} minH={20}>
               {/* Link icon for linked accounts */}
               {(account.type === 'child' || account.parentEmoji) && (
-                <Link size={12.8} color={chainLinkIconColor} theme="outline" />
+                <Link size={12.8} color="#767676" theme="outline" />
               )}
               <Text color="$text" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}

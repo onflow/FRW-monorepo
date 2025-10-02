@@ -36,7 +36,7 @@ export const ERC1155QuantitySelector: React.FC<ERC1155QuantitySelectorProps> = (
 
   return (
     <XStack
-      bg="$light10"
+      bg="$subtleBg10"
       rounded="$10"
       items="center"
       justify="space-between"

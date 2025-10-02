@@ -72,7 +72,7 @@ const flowColors = {
   dark40: 'rgba(0, 0, 0, 0.4)', // 40% black
   dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
   dark10: 'rgba(0, 0, 0, 0.1)', // 10% black
-  dark5: 'rgba(0, 0, 0, 0.05)', // 10% black
+  dark5: 'rgba(0, 0, 0, 0.05)', // 5% black
 
   darkBg1: 'rgba(255, 255, 255, 0.1)',
   grayBg1: '#373737',
@@ -353,6 +353,11 @@ const themesBuilder = createThemeBuilder()
       dark40: flowColors.dark40, // $dark40
       dark25: flowColors.dark25, // $dark25
       dark10: flowColors.dark10, // $dark10
+      dark5: flowColors.dark5, // $dark5
+
+      // Theme-aware subtle backgrounds
+      subtleBg: flowColors.dark5, // Will be overridden per theme - 5% opacity background
+      subtleBg10: flowColors.dark10, // Will be overridden per theme - 10% opacity background
     },
   })
   // Add specific themes that use the templates and palettes
@@ -368,6 +373,9 @@ const themesBuilder = createThemeBuilder()
       primary10: flowColors.primaryLight10,
       primaryLight: flowColors.primaryLight10,
       backgroundFocus: flowColors.primaryLight10,
+      // Light mode subtle backgrounds (uses dark/black with low opacity)
+      subtleBg: flowColors.dark5, // rgba(0, 0, 0, 0.05) - 5% black
+      subtleBg10: flowColors.dark10, // rgba(0, 0, 0, 0.1) - 10% black
     },
     dark: {
       template: 'base',
@@ -389,6 +397,9 @@ const themesBuilder = createThemeBuilder()
       shadowHover: flowColors.shadowDarkHover, // $shadowHover
       shadowPress: flowColors.shadowDarkPress, // $shadowPress
       shadowFocus: flowColors.shadowDarkFocus, // $shadowFocus
+      // Dark mode subtle backgrounds (uses light/white with low opacity)
+      subtleBg: flowColors.light5, // rgba(255, 255, 255, 0.05) - 5% white
+      subtleBg10: flowColors.light10, // rgba(255, 255, 255, 0.1) - 10% white
     },
   });
 
