@@ -315,7 +315,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
-            <YStack bg="$bg2" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
+            <YStack bg="$bg1" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$textSecondary" fontWeight="400">
                 {sendNFTsText}
               </Text>
