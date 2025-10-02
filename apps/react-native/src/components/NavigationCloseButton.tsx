@@ -1,4 +1,4 @@
-import { X } from '@onflow/frw-icons';
+import { X } from '@onflow/frw-icons/lucide';
 import { IconButton } from '@onflow/frw-ui';
 import { useTheme } from '@react-navigation/native';
 import React from 'react';

@@ -7,6 +7,7 @@
       "@onflow/frw-cadence": ["./packages/cadence/src"],
       "@onflow/frw-context": ["./packages/context/src"],
       "@onflow/frw-icons": ["./packages/icons/src"],
+      "@onflow/frw-icons/lucide": ["./packages/icons/src/lucide.ts"],
       "@onflow/frw-screens": ["./packages/screens/src"],
       "@onflow/frw-services": ["./packages/services/src"],
       "@onflow/frw-stores": ["./packages/stores/src"],
