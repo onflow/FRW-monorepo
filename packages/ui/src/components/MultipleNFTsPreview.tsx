@@ -1,7 +1,6 @@
 import { ChevronDown, ChevronUp, Trash, Edit } from '@onflow/frw-icons';
-import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, ScrollView, Image, View, useTheme } from 'tamagui';
+import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
 
 import { type NFTSendData } from './NFTSendPreview';
 import { Text } from '../foundation/Text';
@@ -40,17 +39,12 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
   const imageUrl = nft.image || nft.thumbnail;
   const displayImage = imageUrl && !imageError;
 
-  // Theme-aware placeholder background
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const placeholderBackground = isCurrentlyDarkMode ? '$light10' : '$gray7';
-
   return (
     <View
       width={size}
       height={size}
       rounded={14.4}
-      bg="rgba(255, 255, 255, 0.05)"
+      bg="$light5"
       items="center"
       justify="center"
       overflow="hidden"
@@ -61,7 +55,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
           <Image src={imageUrl} width="100%" height="100%" onError={() => setImageError(true)} />
         </View>
       ) : (
-        <View flex={1} bg={placeholderBackground} rounded={14.4} />
+        <View flex={1} bg="$bg2" rounded={14.4} />
       )}
 
       {/* Overlay */}
@@ -69,7 +63,7 @@ const NFTThumbnail: React.FC<NFTThumbnailProps> = ({
         <>
           <View
             position="absolute"
-            bg="rgba(0, 0, 0, 0.6)"
+            bg="$dark40"
             rounded={14.4}
             style={{ top: -0.5, left: 0, right: 0, bottom: 0 }}
           />

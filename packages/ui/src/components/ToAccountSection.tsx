@@ -1,8 +1,7 @@
 import { Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
-import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, useTheme } from 'tamagui';
+import { YStack, XStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { InfoDialog } from './InfoDialog';
@@ -56,24 +55,9 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
 }) => {
   // Internal state for compatibility dialog
   const [isCompatibilityDialogVisible, setIsCompatibilityDialogVisible] = useState(false);
-  const theme = useTheme();
-
-  // Theme detection using helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
 
   // Theme-aware background color (use prop if provided, otherwise use theme-based default)
-  const dynamicBackgroundColor = backgroundColor || (isCurrentlyDarkMode ? '$light10' : '$bg2');
-
-  // Theme-aware text colors
-  const primaryTextColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const editIconColor = '#767676'; // Same color for both dark and light mode
-
-  // Chain link icon color logic
-  const chainLinkIconColor = isCurrentlyDarkMode
-    ? 'rgba(255, 255, 255, 0.8)'
-    : 'rgba(0, 0, 0, 0.8)';
+  const dynamicBackgroundColor = backgroundColor || '$bg2';
 
   // Handle learn more press - show internal dialog
   const handleLearnMorePress = () => {
