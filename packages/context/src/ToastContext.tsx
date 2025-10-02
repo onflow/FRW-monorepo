@@ -79,6 +79,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
+          title={toast.title}
           visible={toast.visible}
           message={toast.message}
           type={toast.type}

@@ -43,23 +43,27 @@ export const Toast: React.FC<ToastProps> = ({
       case 'success':
         return {
           bg: '$success',
-          borderColor: '$success',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
         };
       case 'warning':
         return {
           bg: '$warning',
-          borderColor: '$warning',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
         };
       case 'info':
         return {
-          bg: '$primary',
-          borderColor: '$primary',
+          bg: '$grayBg1',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
         };
       case 'error':
       default:
         return {
           bg: '$error',
-          borderColor: '$error',
+          messageColor: '$textSecondary',
+          titleColor: '$textPrimary',
         };
     }
   };
@@ -68,19 +72,14 @@ export const Toast: React.FC<ToastProps> = ({
 
   const toastContent = (
     <YStack
-      position="fixed"
-      top={20}
-      left="50%"
-      transform="translateX(-50%)"
-      zIndex={999999}
-      bg={styles.bg}
-      borderColor={styles.borderColor}
-      borderWidth={1}
-      borderRadius="$3"
-      px="$4"
-      py="$3"
-      maxWidth="90%"
-      minWidth={200}
+      role="status"
+      aria-live="off"
+      aria-atomic="true"
+      data-state="open"
+      data-swipe-direction="vertical"
+      data-disable-theme="true"
+      tabIndex={0}
+      bg={styles.bg as any}
       shadowColor="$shadowColor"
       shadowOffset={{ width: 0, height: 4 }}
       shadowOpacity={0.3}
@@ -89,27 +88,41 @@ export const Toast: React.FC<ToastProps> = ({
       animation="quick"
       enterStyle={{ opacity: 0, y: -20, scale: 0.95 }}
       exitStyle={{ opacity: 0, y: -20, scale: 0.95 }}
+      style={{
+        position: 'absolute',
+        top: 20,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 999999,
+        borderRadius: 34,
+        minWidth: 200,
+        margin: '2px auto',
+        pointerEvents: 'auto',
+        touchAction: 'none',
+        userSelect: 'none',
+        alignItems: 'flex-start',
+        flexDirection: 'column',
+        padding: '7px 24px',
+      }}
     >
       <Text
-        color="$text"
-        fontSize="$3"
+        color={styles.titleColor as any}
+        fontSize="$4"
         fontWeight="500"
-        numberOfLines={3}
-        style={{ textAlign: 'center' }}
+        style={{ whiteSpace: 'nowrap' }}
       >
         {title}
-        {message && (
-          <Text
-            color="$text"
-            fontSize="$2"
-            fontWeight="400"
-            numberOfLines={3}
-            style={{ textAlign: 'center' }}
-          >
-            {message}
-          </Text>
-        )}
       </Text>
+      {message && (
+        <Text
+          color={styles.messageColor as any}
+          fontSize="$1"
+          fontWeight="400"
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {message}
+        </Text>
+      )}
     </YStack>
   );
 
