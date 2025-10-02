@@ -1,5 +1,9 @@
 import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type AccountDisplayData, type TokenModel, type TransactionType } from '@onflow/frw-types';
+import {
+  type AccountDisplayData,
+  type TokenModel,
+  type TransactionType,
+} from '@onflow/frw-types';
 import React from 'react';
 import { Sheet, Spinner, View, XStack, YStack } from 'tamagui';
 
@@ -265,7 +269,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               height={150}
               imageUri={
                 transactionType !== 'tokens' && selectedNFTs && selectedNFTs.length > 0
-                  ? selectedNFTs[0].image || selectedNFTs[0].thumbnail || selectedToken?.logoURI
+                  ? selectedNFTs[0].thumbnail || selectedToken?.logoURI
                   : selectedToken?.logoURI
               }
               transactionType={transactionType}

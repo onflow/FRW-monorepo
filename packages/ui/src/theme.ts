@@ -358,6 +358,11 @@ const themesBuilder = createThemeBuilder()
       // Theme-aware subtle backgrounds
       subtleBg: flowColors.dark5, // Will be overridden per theme - 5% opacity background
       subtleBg10: flowColors.dark10, // Will be overridden per theme - 10% opacity background
+
+      // Inverse button tokens (theme-aware)
+      // Defaults align to light theme; overridden in dark theme below
+      inverseBg: flowColors.black, // $inverseBg
+      inverseText: flowColors.white, // $inverseText
     },
   })
   // Add specific themes that use the templates and palettes
@@ -400,6 +405,10 @@ const themesBuilder = createThemeBuilder()
       // Dark mode subtle backgrounds (uses light/white with low opacity)
       subtleBg: flowColors.light5, // rgba(255, 255, 255, 0.05) - 5% white
       subtleBg10: flowColors.light10, // rgba(255, 255, 255, 0.1) - 10% white
+
+      // Override inverse tokens for dark mode
+      inverseBg: flowColors.white,
+      inverseText: flowColors.black,
     },
   });
 

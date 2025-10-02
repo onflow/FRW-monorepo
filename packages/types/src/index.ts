@@ -5,6 +5,7 @@ export * from './AccountDisplay';
 export * from './Bridge';
 export * from './NFTListTypes';
 export * from './NFTModel';
+export * from './NFTTransaction';
 export * from './TokenModel';
 export * from './Wallet';
 export * from './RecentRecipient';

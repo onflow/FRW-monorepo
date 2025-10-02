@@ -61,9 +61,10 @@ export function Button({
       };
       break;
     case 'inverse':
+      // Use theme-driven inverse tokens to respect light/dark
       buttonStyles = {
-        bg: '$text',
-        color: '$bg',
+        bg: '$inverseBg',
+        color: '$inverseText',
         hoverStyle: { opacity: 0.9 },
         pressStyle: press,
       };
@@ -122,6 +123,8 @@ export function Button({
     },
   };
 
+  const textColor = (finalStyles as any)?.color as string | undefined;
+
   return (
     <TamaguiButton
       size={buttonSize}
@@ -137,17 +140,20 @@ export function Button({
     >
       {loading ? (
         <XStack items="center" gap="$2">
-          <Spinner size="small" color={(finalStyles as any)?.color || 'currentColor'} />
+          <Spinner size="small" color={textColor ?? 'currentColor'} />
           {loadingText && (
-            <Text color={(finalStyles as any)?.color || 'currentColor'}>{loadingText}</Text>
+            <Text color={textColor ?? 'currentColor'} fontWeight="600">
+              {loadingText}
+            </Text>
           )}
         </XStack>
       ) : (
         <XStack items="center" gap="$2">
-          {icon &&
-            React.cloneElement(icon, { color: (finalStyles as any)?.color || 'currentColor' })}
+          {icon && React.cloneElement(icon, { color: textColor ?? 'currentColor' })}
           {typeof children === 'string' ? (
-            <Text color={(finalStyles as any)?.color || 'currentColor'}>{children}</Text>
+            <Text color={textColor ?? 'currentColor'} fontWeight="600">
+              {children}
+            </Text>
           ) : (
             children
           )}

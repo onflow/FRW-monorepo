@@ -23,6 +23,7 @@ import {
   XStack,
   YStack,
 } from '@onflow/frw-ui';
+import { retryConfigs } from '@onflow/frw-utils';
 import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
@@ -118,9 +119,10 @@ export function SelectTokensScreen(): React.ReactElement {
     staleTime: 0, // Always fetch fresh for financial data
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    ...retryConfigs.critical, // Critical token data retry config
   });
 
-  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching
+  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching and retry logic
   const {
     data: nftCollections = [],
     isLoading: isNFTsLoading,
@@ -136,9 +138,10 @@ export function SelectTokensScreen(): React.ReactElement {
     staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    ...retryConfigs.standard, // Standard retry for NFT collections
   });
 
-  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
+  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern and retry logic
   const { data: balanceData, isLoading: isBalanceLoading } = useQuery({
     queryKey: tokenQueryKeys.balance(effectiveAddress, network),
     queryFn: () => {
@@ -150,9 +153,10 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
+    ...retryConfigs.critical, // Critical balance data retry config
   });
 
-  // 🔥 TanStack Query: Fetch batch balances for all accounts
+  // 🔥 TanStack Query: Fetch batch balances for all accounts with retry logic
   const { data: batchBalances, isLoading: isLoadingBatchBalances } = useQuery({
     queryKey: ['batchBalances', accounts.map((acc) => acc.address)],
     queryFn: () => tokenQueries.fetchBatchFlowBalances(accounts.map((acc) => acc.address)),
@@ -161,6 +165,7 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balances every minute in background
+    ...retryConfigs.critical, // Critical batch balance data retry config
   });
 
   // 🔥 TanStack Query: Fetch accessible IDs for child accounts only
