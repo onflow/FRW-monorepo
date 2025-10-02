@@ -27,6 +27,7 @@ import {
   Separator,
   XStack,
   useTheme,
+  useThemeName,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
@@ -34,7 +35,6 @@ import {
   logger,
   transformAccountForCard,
   transformAccountForDisplay,
-  isDarkMode,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
@@ -54,12 +54,13 @@ interface SendTokensScreenProps {
 export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const themeName = useThemeName();
 
   // Theme-aware background color for cards
-  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
+  const cardBackgroundColor = '$bg2';
 
   // Theme-aware send button colors - use theme tokens for better reliability
-  const isCurrentlyDarkMode = isDarkMode(theme);
+  const isCurrentlyDarkMode = themeName?.includes('dark') || false;
   const sendButtonBackgroundColor = isCurrentlyDarkMode
     ? theme.white?.val || '#FFFFFF'
     : theme.black?.val || '#000000';
@@ -69,7 +70,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
 
   // Theme-aware separator color
-  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const separatorColor = '$border1';
 
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';

@@ -1,6 +1,6 @@
 import { Scan } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, XStack, Button, useThemeName } from 'tamagui';
+import { YStack, XStack, Button } from 'tamagui';
 
 import { SearchBar } from './SearchBar';
 import { SegmentedControl } from '../foundation/SegmentedControl';
@@ -53,11 +53,6 @@ export function SearchableTabLayout({
   contentPadding = '$4',
   backgroundColor = '$background',
 }: SearchableTabLayoutProps) {
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
   return (
     <YStack flex={1}>
       {/* Search Box */}
@@ -81,11 +76,11 @@ export function SearchableTabLayout({
               bg="transparent"
               borderWidth={0}
               onPress={onScanPress}
-              pressStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
-              hoverStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
+              pressStyle={{ bg: '$light10' }}
+              hoverStyle={{ bg: '$light10' }}
               disabled={!onScanPress}
             >
-              <Scan size={24} color={iconColor} theme="outline" />
+              <Scan size={24} color="$textSecondary" theme="outline" />
             </Button>
           )}
         </XStack>

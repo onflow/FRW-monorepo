@@ -29,6 +29,7 @@ import {
   XStack,
   ERC1155QuantitySelector,
   useTheme,
+  useThemeName,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -36,7 +37,6 @@ import {
   getNFTId,
   transformAccountForCard,
   transformAccountForDisplay,
-  isDarkMode,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -98,9 +98,10 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
   // Theme-aware styling - same as SendTokensScreen
   const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
-  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const themeName = useThemeName();
+  const isCurrentlyDarkMode = themeName?.includes('dark') || false;
+  const cardBackgroundColor = '$bg2';
+  const separatorColor = '$border1';
   const sendButtonBackgroundColor = isCurrentlyDarkMode
     ? theme.white?.val || '#FFFFFF'
     : theme.black?.val || '#000000';

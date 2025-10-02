@@ -24,7 +24,6 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { isDarkMode } from '@onflow/frw-utils';
 import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
