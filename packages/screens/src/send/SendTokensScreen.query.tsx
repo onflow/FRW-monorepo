@@ -41,6 +41,7 @@ import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Keyboard } from 'react-native';
 
 import type { ScreenAssets } from '../assets/images';
 
@@ -553,35 +554,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     return null;
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
-  // Helper function to handle press outside input (platform-aware)
-  const handlePressOutside = useCallback((event?: any) => {
-    const platform = bridge.getPlatform();
-
-    // On native platforms (iOS/Android), just blur the input if focused
-    if (platform === Platform.iOS || platform === Platform.Android) {
-      if (inputRef.current && typeof inputRef.current.blur === 'function') {
-        inputRef.current.blur();
-      }
-      return;
-    }
-
-    // On web/extension, ensure we don't blur when clicking the input itself
-    if (!inputRef.current || !event?.target) return;
-    const inputElement: any = inputRef.current as any;
-    const target = event.target;
-
-    // Only blur if the click target is not the input element
-    if (
-      target !== inputElement &&
-      typeof inputElement.contains === 'function' &&
-      !inputElement.contains(target)
-    ) {
-      if (typeof inputElement.blur === 'function') {
-        inputElement.blur();
-      }
-    }
-  }, []);
-
   // Show loading state
   if (isOverallLoading) {
     return (
@@ -617,7 +589,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         />
       )}
 
-      <YStack flex={1} onPress={handlePressOutside}>
+      <YStack flex={1} onPress={Keyboard.dismiss}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
           <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
