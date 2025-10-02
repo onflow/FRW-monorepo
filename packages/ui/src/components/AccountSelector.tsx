@@ -73,7 +73,7 @@ export function AccountSelector({
         </Text>
 
         {/* Account Container */}
-        <XStack pb={"$2"} pl={5} pr={0} justify="space-between" items="center">
+        <XStack pb={'$2'} pl={5} pr={0} justify="space-between" items="center">
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
             {/* Account Avatar with parent emoji overlay */}

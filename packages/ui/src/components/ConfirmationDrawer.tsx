@@ -1,5 +1,11 @@
 import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type AccountDisplayData, type TokenModel, type TransactionType } from '@onflow/frw-types';
+import {
+  type AccountDisplayData,
+  type NFTTransactionData,
+  type TokenModel,
+  type TransactionType,
+  type SendFormData,
+} from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
 import { Sheet, Spinner, useTheme, View, XStack, YStack } from 'tamagui';
@@ -8,7 +14,6 @@ import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
 import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
-import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -23,10 +28,10 @@ export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
-  selectedNFTs?: NFTSendData[];
+  selectedNFTs?: NFTTransactionData[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
-  formData: TransactionFormData;
+  formData: SendFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
   title?: string;
@@ -288,7 +293,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               height={150}
               imageUri={
                 transactionType !== 'tokens' && selectedNFTs && selectedNFTs.length > 0
-                  ? selectedNFTs[0].image || selectedNFTs[0].thumbnail || selectedToken?.logoURI
+                  ? selectedNFTs[0].thumbnail || selectedToken?.logoURI
                   : selectedToken?.logoURI
               }
               transactionType={transactionType}

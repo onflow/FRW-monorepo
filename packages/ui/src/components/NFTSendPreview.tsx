@@ -1,29 +1,16 @@
 import { Edit } from '@onflow/frw-icons';
+import type { NFTTransactionData } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { YStack, XStack, Image, View } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
-export interface NFTSendData {
-  id: string;
-  name: string;
-  image?: string;
-  thumbnail?: string;
-  collection: string;
-  collectionContractName?: string;
-  description?: string;
-  type?: 'evm' | 'flow'; // determines if EVM badge should show
-  contractType?: string; // 'ERC721' | 'ERC1155'
-  amount?: number; // Total amount for ERC1155
-  selectedQuantity?: number; // Selected quantity for ERC1155 sending
-}
-
 export interface NFTSendPreviewProps {
-  nft: NFTSendData;
+  nft: NFTTransactionData;
   onEditPress?: () => void;
   showEditButton?: boolean;
   sectionTitle?: string;
-  imageSize?: string;
+  imageSize?: number;
   backgroundColor?: string;
   borderRadius?: any;
   contentPadding?: string;
@@ -34,7 +21,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   onEditPress,
   showEditButton = true,
   sectionTitle = 'Send NFTs',
-  imageSize = '$19',
+  imageSize = 76,
   backgroundColor = 'rgba(255, 255, 255, 0.1)',
   borderRadius = '$4',
   contentPadding = '$4',
@@ -42,7 +29,7 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
   const [imageError, setImageError] = useState(false);
 
   // Get the best available image URL
-  const imageUrl = nft.image || nft.thumbnail;
+  const imageUrl = nft.thumbnail || nft.postMedia?.image || '';
   const displayImage = imageUrl && !imageError;
 
   return (
@@ -82,13 +69,14 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
         {/* NFT Image */}
         <View width={imageSize} height={imageSize} rounded="$4" overflow="hidden" bg="$bg1">
           {displayImage ? (
-            <Image
-              src={imageUrl}
-              width={imageSize}
-              height={imageSize}
-              onError={() => setImageError(true)}
-              objectFit="cover"
-            />
+            <View width={imageSize} height={imageSize} overflow="hidden" rounded="$4">
+              <Image
+                source={{ uri: imageUrl }}
+                width="100%"
+                height="100%"
+                onError={() => setImageError(true)}
+              />
+            </View>
           ) : (
             <YStack
               flex={1}
@@ -113,11 +101,11 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-              {nft.collection}
+              {nft.collectionName || ''}
             </Text>
 
             {/* EVM Badge - Only show for EVM NFTs */}
-            {nft.type === 'evm' && (
+            {(nft.type === 'evm' || nft.evmAddress) && (
               <XStack
                 bg="$accentEVM"
                 rounded="$4"
@@ -152,9 +140,9 @@ export const NFTSendPreview: React.FC<NFTSendPreviewProps> = ({
           </Text>
 
           {/* ERC1155 Total Amount */}
-          {nft.contractType === 'ERC1155' && nft.amount && nft.amount > 0 && (
+          {nft.contractType === 'ERC1155' && nft.amount && Number(nft.amount) > 0 && (
             <Text fontSize={12} fontWeight="400" color="$color" opacity={0.6} numberOfLines={1}>
-              ({nft.amount.toLocaleString()} Tokens)
+              ({Number(nft.amount).toLocaleString()} Tokens)
             </Text>
           )}
         </YStack>

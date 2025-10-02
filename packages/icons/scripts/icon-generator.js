@@ -186,15 +186,23 @@ function generateReactNativeIcon(componentName, svgPath, outputDir) {
           // Keep stroke-opacity and fill-opacity as they're important for visual accuracy
           // Only remove general opacity which can be controlled externally
           .replace(/\s+opacity=\{[^}]+\}/g, '')
-          // Add stroke attributes to Path elements that have neither fill nor stroke
+          // Add stroke attributes to SVG shape elements that have neither fill nor stroke
           // This handles outline icons that SVGR doesn't generate with color attributes
-          .replace(/<(Path)([^>]*?)(\/?>)/g, (match, tagName, attributes, closing) => {
-            // Only add stroke attributes if the element has neither fill nor stroke
-            if (!attributes.includes('fill=') && !attributes.includes('stroke=')) {
-              return `<${tagName}${attributes} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"${closing}`;
+          .replace(
+            /<(Path|Circle|Rect|Ellipse|Line|Polyline|Polygon)([^>]*?)(\/?>)/g,
+            (match, tagName, attributes, closing) => {
+              // Only add stroke attributes if the element has neither fill nor stroke
+              if (!attributes.includes('fill=') && !attributes.includes('stroke=')) {
+                // For shapes that don't support linecap/linejoin, these are harmless but we can be selective
+                const extraCaps =
+                  tagName === 'Path' || tagName === 'Line' || tagName === 'Polyline'
+                    ? ' strokeLinecap="round" strokeLinejoin="round"'
+                    : '';
+                return `<${tagName}${attributes} stroke={color} strokeWidth="2"${extraCaps}${closing}`;
+              }
+              return match;
             }
-            return match;
-          });
+          );
       }
 
       // Write the modified content to our target file

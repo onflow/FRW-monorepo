@@ -9,7 +9,7 @@ import {
   storageQueries,
   storageUtils,
 } from '@onflow/frw-stores';
-import { isFlow, Platform } from '@onflow/frw-types';
+import { isFlow, Platform, type TokenModel, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -22,7 +22,6 @@ import {
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
-  type TransactionFormData,
   Text,
   Separator,
   XStack,
@@ -35,11 +34,14 @@ import {
   transformAccountForCard,
   transformAccountForDisplay,
   isDarkMode,
+  extractNumericBalance,
+  retryConfigs,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Keyboard } from 'react-native';
 
 import type { ScreenAssets } from '../assets/images';
 
@@ -154,7 +156,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     enabled: true,
   });
 
-  // Query for tokens with automatic caching
+  // Query for tokens with automatic caching and retry logic
   const {
     data: tokens = [],
     isLoading: isLoadingTokens,
@@ -177,6 +179,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: !!selectedAccount?.address,
+    ...retryConfigs.critical, // Critical financial data retry config
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Query for complete account information including storage and balance
@@ -185,6 +190,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     queryFn: () => storageQueries.fetchAccountInfo(selectedAccount || null),
     enabled: !!selectedAccount?.address,
     staleTime: 0, // Always fresh for financial data
+    ...retryConfigs.critical, // Critical account info retry config
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Extract and format identifier with .Vault suffix if needed
@@ -201,6 +209,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       storageQueries.checkResourceCompatibility(toAccount?.address || '', resourceIdentifier),
     enabled: !!(toAccount?.address && resourceIdentifier),
     staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
+    ...retryConfigs.minimal, // Minimal retry for compatibility checks
+    refetchOnWindowFocus: false, // Don't refetch compatibility on focus (less critical)
+    refetchOnReconnect: true,
   });
 
   // Calculate account incompatibility (invert the compatibility result)
@@ -249,7 +260,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
-    (token: unknown) => {
+    (token: TokenModel | null) => {
       setSelectedToken(token);
       setIsTokenSelectorVisible(false);
     },
@@ -312,10 +323,38 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, [isTokenMode, amount, selectedToken, currency.rate]);
 
   const handleMaxPress = useCallback(() => {
-    if (selectedToken?.balance) {
-      setAmount(selectedToken.balance.toString());
-      // Switch to token mode when MAX is pressed (disable $ mode)
-      setIsTokenMode(true);
+    if (selectedToken) {
+      // Try multiple sources for the numeric balance, in order of preference
+      let numericBalance = '0';
+
+      // 1. Try availableBalanceToUse (most reliable for calculations)
+      if (selectedToken.availableBalanceToUse) {
+        numericBalance = extractNumericBalance(selectedToken.availableBalanceToUse);
+      }
+      // 2. Try displayBalance
+      else if (selectedToken.displayBalance) {
+        numericBalance = extractNumericBalance(selectedToken.displayBalance);
+      }
+      // 3. Fall back to balance field
+      else if (selectedToken.balance) {
+        numericBalance = extractNumericBalance(selectedToken.balance);
+      }
+
+      // Validate that we have a valid number
+      const parsedBalance = parseFloat(numericBalance);
+      if (!isNaN(parsedBalance) && parsedBalance > 0) {
+        setAmount(numericBalance);
+        // Switch to token mode when MAX is pressed (disable $ mode)
+        setIsTokenMode(true);
+      } else {
+        logger.warn('[SendTokensScreen] Max button clicked but no valid balance found:', {
+          token: selectedToken.symbol,
+          availableBalanceToUse: selectedToken.availableBalanceToUse,
+          displayBalance: selectedToken.displayBalance,
+          balance: selectedToken.balance,
+          extractedBalance: numericBalance,
+        });
+      }
     }
   }, [selectedToken]);
 
@@ -417,7 +456,18 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const isSendDisabled = useMemo(() => {
     if (transactionType === 'tokens') {
       const amountNum = new BN(amount || '0');
-      const balanceNum = new BN(selectedToken?.balance?.toString() || '0');
+
+      // Extract numeric value from balance string (handle cases like "123.45 FUSD")
+      // Try multiple sources for the numeric balance, in order of preference
+      let numericBalanceString = '0';
+      if (selectedToken?.availableBalanceToUse) {
+        numericBalanceString = extractNumericBalance(selectedToken.availableBalanceToUse);
+      } else if (selectedToken?.displayBalance) {
+        numericBalanceString = extractNumericBalance(selectedToken.displayBalance);
+      } else if (selectedToken?.balance) {
+        numericBalanceString = extractNumericBalance(selectedToken.balance);
+      }
+      const balanceNum = new BN(numericBalanceString);
 
       // Convert amount to token equivalent if in USD mode
       let tokenAmount = amountNum;
@@ -461,7 +511,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   ]);
 
   // Create form data for transaction confirmation
-  const formData: TransactionFormData = useMemo(
+  const formData: SendFormData = useMemo(
     () => ({
       tokenAmount: isTokenMode
         ? amount
@@ -504,20 +554,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     return null;
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
-  // Helper function to handle press outside input
-  const handlePressOutside = useCallback((event: any) => {
-    // Only blur if the click target is not the input or its children
-    if (inputRef.current && inputRef.current.blur) {
-      const target = event.target;
-      const inputElement = inputRef.current;
-
-      // Check if the clicked element is the input or a child of the input
-      if (target !== inputElement && !inputElement.contains(target)) {
-        inputRef.current.blur();
-      }
-    }
-  }, []);
-
   // Show loading state
   if (isOverallLoading) {
     return (
@@ -553,7 +589,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         />
       )}
 
-      <YStack flex={1} onPress={handlePressOutside}>
+      <YStack flex={1} {...(!isExtension && { onPress: Keyboard.dismiss })}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
           <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
@@ -726,7 +762,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           selectedNFTs={selectedNFTs?.map((nft) => ({
             id: nft.id || '',
             name: nft.name || '',
-            image: nft.thumbnail || '',
+            thumbnail: nft.thumbnail || '',
             collection: nft.collectionName || '',
             collectionContractName: nft.collectionContractName || '',
             description: nft.description || '',

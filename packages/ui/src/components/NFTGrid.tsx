@@ -27,16 +27,17 @@ export interface NFTGridProps {
   // Loading states
   isLoading?: boolean;
   loadingProgress?: number; // 0-100 percentage
+  loadingText?: string; // i18n label for loading state
 
   // Empty states
   emptyTitle?: string;
   emptyMessage?: string;
   showClearSearch?: boolean;
-  clearSearchText?: string;
+  clearSearchText?: string; // i18n from screens
 
   // Error states
-  error?: string;
-  retryText?: string;
+  error?: string; // i18n from screens
+  retryText?: string; // i18n from screens
 
   // Actions
   onNFTSelect?: (id: string) => void;
@@ -65,12 +66,13 @@ export function NFTGrid({
   selectedIds = [],
   isLoading = false,
   loadingProgress = 0,
+  loadingText = 'Loading NFTs',
   emptyTitle,
   emptyMessage,
   showClearSearch = false,
-  clearSearchText = 'Clear Search',
+  clearSearchText,
   error,
-  retryText = 'Retry',
+  retryText,
   onNFTSelect = () => {},
   onNFTPress = () => {},
   onRetry,
@@ -131,10 +133,10 @@ export function NFTGrid({
       >
         {/* Loading text and percentage */}
         <XStack justify="space-between" items="center" width="$34">
-          <Text fontSize="$4" fontWeight="400" color="white">
-            Loading NFTs
+          <Text fontSize="$4" fontWeight="400" color="$text">
+            {loadingText}
           </Text>
-          <Text fontSize="$4" fontWeight="400" color="white">
+          <Text fontSize="$4" fontWeight="400" color="$text">
             {Math.round(progress)}%
           </Text>
         </XStack>
@@ -162,32 +164,31 @@ export function NFTGrid({
 
   // Error state
   const renderError = () => (
-    <RefreshView
-      type="error"
-      message={error || 'Failed to load NFTs'}
-      onRefresh={onRetry}
-      refreshText={retryText}
-    />
+    <RefreshView type="error" message={error} onRefresh={onRetry} refreshText={retryText} />
   );
 
   // Empty state
   const renderEmpty = () => (
     <YStack flex={1} justify="center" items="center" px="$6" py="$12">
-      <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" style={{ textAlign: 'center' }}>
-        {emptyTitle || 'No NFTs Found'}
-      </Text>
+      {emptyTitle && (
+        <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" style={{ textAlign: 'center' }}>
+          {emptyTitle}
+        </Text>
+      )}
 
-      <Text
-        fontSize="$4"
-        color="$textSecondary"
-        mb="$8"
-        style={{ textAlign: 'center' }}
-        lineHeight="$5"
-      >
-        {emptyMessage || 'No NFTs available in this collection.'}
-      </Text>
+      {emptyMessage && (
+        <Text
+          fontSize="$4"
+          color="$textSecondary"
+          mb="$8"
+          style={{ textAlign: 'center' }}
+          lineHeight="$5"
+        >
+          {emptyMessage}
+        </Text>
+      )}
 
-      {showClearSearch && onClearSearch && (
+      {showClearSearch && onClearSearch && clearSearchText && (
         <YStack mt="$4" items="center">
           <Button variant="outline" size="medium" onPress={onClearSearch}>
             {clearSearchText}
