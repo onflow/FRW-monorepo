@@ -47,6 +47,7 @@ export function TokenAmountInput({
     rate: '1',
   },
   amountError,
+  headerText = 'Send Tokens',
   ...props
 }: TokenAmountInputProps): React.ReactElement {
   const internalInputRef = useRef<any>(null);
@@ -76,7 +77,7 @@ export function TokenAmountInput({
     <YStack gap={12} p={3} pb={16} rounded={16} width="100%" {...props}>
       {/* Send Tokens Header - aligned with From Account */}
       <Text fontSize="$3" mb="$3" ml="$1" fontWeight="400" lineHeight={16} text="left">
-        Send Tokens
+        {headerText}
       </Text>
 
       {/* Main Input Row - space-between with 11px gap */}

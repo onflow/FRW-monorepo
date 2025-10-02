@@ -601,6 +601,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                   inputRef={inputRef}
                   currency={currency}
                   amountError={amountError}
+                  headerText={t('send.title')}
                 />
               </YStack>
             ) : (
