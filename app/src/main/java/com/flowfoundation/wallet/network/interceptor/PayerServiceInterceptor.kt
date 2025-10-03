@@ -116,19 +116,35 @@ class PayerServiceInterceptor : Interceptor {
 
         // Check for non-2xx status codes
         if (!response.isSuccessful) {
-            logd(TAG, "Payer service returned error: ${response.code} ${response.message}")
+            logd(TAG, "==================== PAYER SERVICE ERROR ====================")
+            logd(TAG, "URL: $url")
+            logd(TAG, "Response Code: ${response.code}")
+            logd(TAG, "Response Message: ${response.message}")
+            logd(TAG, "Headers: ${response.headers}")
 
             // Try to parse the error response body
             val errorBody = response.body?.string()
+            logd(TAG, "Raw Error Response Body: $errorBody")
+
             val errorResponse = try {
                 if (!errorBody.isNullOrBlank()) {
-                    Gson().fromJson(errorBody, PayerErrorResponse::class.java)?.copy(
+                    val parsed = Gson().fromJson(errorBody, PayerErrorResponse::class.java)
+                    logd(TAG, "Successfully parsed PayerErrorResponse:")
+                    logd(TAG, "  - status: ${parsed?.status}")
+                    logd(TAG, "  - data: ${parsed?.data}")
+                    logd(TAG, "  - message: ${parsed?.message}")
+                    logd(TAG, "  - surgeActive: ${parsed?.surgeActive}")
+                    logd(TAG, "  - surgeMultiplier: ${parsed?.surgeMultiplier}")
+                    logd(TAG, "  - estimatedFee: ${parsed?.estimatedFee}")
+
+                    parsed?.copy(
                         status = response.code
                     ) ?: PayerErrorResponse(
                         status = response.code,
                         message = response.message
                     )
                 } else {
+                    logd(TAG, "Error body is empty, creating default PayerErrorResponse")
                     PayerErrorResponse(
                         status = response.code,
                         message = response.message
@@ -136,6 +152,7 @@ class PayerServiceInterceptor : Interceptor {
                 }
             } catch (e: Exception) {
                 logd(TAG, "Failed to parse error response: ${e.message}")
+                //logd(TAG, "Parse exception: ", e)
                 PayerErrorResponse(
                     status = response.code,
                     message = response.message
@@ -144,13 +161,15 @@ class PayerServiceInterceptor : Interceptor {
 
             // Handle surge pricing scenario
             if (errorResponse.isSurgePricing()) {
-                logd(TAG, "SURGE PRICING DETECTED: ${errorResponse.getDisplayMessage()}")
+                logd(TAG, "🚨 SURGE PRICING DETECTED 🚨")
+                logd(TAG, "Display message: ${errorResponse.getDisplayMessage()}")
                 lastErrorResponse = errorResponse
 
                 // Invoke callback if set (will trigger UI alert)
                 errorCallback?.invoke(errorResponse)
             } else if (errorResponse.isServerError()) {
-                logd(TAG, "PAYER SERVICE ERROR: ${errorResponse.getDisplayMessage()}")
+                logd(TAG, "❌ PAYER SERVICE ERROR ❌")
+                logd(TAG, "Display message: ${errorResponse.getDisplayMessage()}")
                 lastErrorResponse = errorResponse
 
                 // Invoke callback for server errors as well
@@ -166,6 +185,19 @@ class PayerServiceInterceptor : Interceptor {
         // Clear any previous error on successful response
         if (response.isSuccessful) {
             clearLastError()
+
+            // Log successful response details
+            logd(TAG, "==================== PAYER SERVICE SUCCESS ====================")
+            logd(TAG, "URL: $url")
+            logd(TAG, "Response Code: ${response.code}")
+
+            // Peek at response body without consuming it (for debugging)
+            try {
+                val responseBody = response.peekBody(1024 * 1024) // Peek at 1MB max
+                logd(TAG, "Success Response Body: ${responseBody.string()}")
+            } catch (e: Exception) {
+                logd(TAG, "Could not peek response body: ${e.message}")
+            }
         }
 
         return response
