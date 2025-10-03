@@ -58,63 +58,94 @@ private data class PayerStatusCache(
 private var cachedPayerStatus: PayerStatusCache? = null
 
 /**
- * Fetch payer status from the API with caching
+ * Fetch payer status from the API with caching and retry logic
  * This is called before transactions to check surge pricing status
  */
 private suspend fun fetchPayerStatus(): PayerServiceInterceptor.PayerStatusResponse? {
     return withContext(Dispatchers.IO) {
-        try {
-            // Check cache first
-            cachedPayerStatus?.let { cache ->
-                if (cache.isValid()) {
-                    logd(TAG, "Using cached payer status (age: ${System.currentTimeMillis() - cache.timestamp}ms)")
-                    return@withContext cache.response
+        // Check cache first
+        cachedPayerStatus?.let { cache ->
+            if (cache.isValid()) {
+                logd(TAG, "Using cached payer status (age: ${System.currentTimeMillis() - cache.timestamp}ms)")
+                return@withContext cache.response
+            }
+        }
+
+        logd(TAG, "Fetching fresh payer status from /api/v1/payer/status")
+
+        // Retry configuration
+        val maxRetries = 3
+        var retryCount = 0
+        var lastException: Exception? = null
+
+        while (retryCount < maxRetries) {
+            try {
+                val client = OkHttpClient.Builder()
+                    .connectTimeout(5, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.SECONDS)
+                    .addInterceptor(PayerServiceInterceptor())
+                    .build()
+
+                // Build request for status endpoint
+                val request = Request.Builder()
+                    .url("${BASE_HOST}/api/v1/payer/status")
+                    .get()
+                    .build()
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string()
+
+                if (response.isSuccessful && !responseBody.isNullOrBlank()) {
+                    val payerStatus = Gson().fromJson(responseBody, PayerServiceInterceptor.PayerStatusResponse::class.java)
+                    logd(TAG, "Payer status fetched successfully:")
+                    logd(TAG, "  - Status: ${payerStatus.status}")
+                    logd(TAG, "  - Surge active: ${payerStatus.data?.surge?.active}")
+                    logd(TAG, "  - Surge multiplier: ${payerStatus.data?.surge?.multiplier}")
+                    logd(TAG, "  - Max fee: ${payerStatus.data?.surge?.maxFee}")
+                    logd(TAG, "  - Fee payer enabled: ${payerStatus.data?.feePayer?.enabled}")
+
+                    // Cache the response with TTL from server or default
+                    val ttlSeconds = payerStatus.data?.surge?.ttlSeconds ?: 60
+                    cachedPayerStatus = PayerStatusCache(
+                        response = payerStatus,
+                        timestamp = System.currentTimeMillis(),
+                        ttlMs = ttlSeconds * 1000
+                    )
+
+                    return@withContext payerStatus
+                } else if (response.code in 500..599) {
+                    // Server error - retry with exponential backoff
+                    logd(TAG, "Server error (${response.code}) on attempt ${retryCount + 1}, retrying...")
+                    retryCount++
+                    if (retryCount < maxRetries) {
+                        // Exponential backoff: 1s, 2s, 4s
+                        val delayMs = (1000L * (1 shl (retryCount - 1))).coerceAtMost(4000L)
+                        logd(TAG, "Waiting ${delayMs}ms before retry...")
+                        kotlinx.coroutines.delay(delayMs)
+                        continue
+                    }
+                } else {
+                    // Client error (4xx) or other - don't retry
+                    logd(TAG, "Failed to fetch payer status: ${response.code} ${response.message}")
+                    return@withContext null
+                }
+            } catch (e: Exception) {
+                lastException = e
+                retryCount++
+
+                if (retryCount < maxRetries) {
+                    logd(TAG, "Error fetching payer status (attempt $retryCount): ${e.message}, retrying...")
+                    // Exponential backoff: 1s, 2s, 4s
+                    val delayMs = (1000L * (1 shl (retryCount - 1))).coerceAtMost(4000L)
+                    kotlinx.coroutines.delay(delayMs)
+                } else {
+                    logd(TAG, "Failed to fetch payer status after $maxRetries attempts: ${e.message}")
                 }
             }
-
-            logd(TAG, "Fetching fresh payer status from /api/v1/payer/status")
-
-            val client = OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(5, TimeUnit.SECONDS)
-                .addInterceptor(PayerServiceInterceptor())
-                .build()
-
-            val request = Request.Builder()
-                .url("${BASE_HOST}/api/v1/payer/status")
-                .get()
-                .build()
-
-            val response = client.newCall(request).execute()
-            val responseBody = response.body?.string()
-
-            if (response.isSuccessful && !responseBody.isNullOrBlank()) {
-                val payerStatus = Gson().fromJson(responseBody, PayerServiceInterceptor.PayerStatusResponse::class.java)
-                logd(TAG, "Payer status fetched successfully:")
-                logd(TAG, "  - Status: ${payerStatus.status}")
-                logd(TAG, "  - Surge active: ${payerStatus.data?.surge?.active}")
-                logd(TAG, "  - Surge multiplier: ${payerStatus.data?.surge?.multiplier}")
-                logd(TAG, "  - Max fee: ${payerStatus.data?.surge?.maxFee}")
-                logd(TAG, "  - Fee payer enabled: ${payerStatus.data?.feePayer?.enabled}")
-
-                // Cache the response with TTL from server or default
-                val ttlSeconds = payerStatus.data?.surge?.ttlSeconds ?: 60
-                cachedPayerStatus = PayerStatusCache(
-                    response = payerStatus,
-                    timestamp = System.currentTimeMillis(),
-                    ttlMs = ttlSeconds * 1000
-                )
-
-                return@withContext payerStatus
-            } else {
-                logd(TAG, "Failed to fetch payer status: ${response.code} ${response.message}")
-                return@withContext null
-            }
-        } catch (e: Exception) {
-            logd(TAG, "Error fetching payer status: ${e.message}")
-            // Fail open - don't block transactions if status check fails
-            return@withContext null
         }
+
+        // Fail open - don't block transactions if status check fails
+        logd(TAG, "Payer status check failed after retries, failing open")
+        return@withContext null
     }
 }
 
@@ -241,19 +272,19 @@ suspend fun sendTransaction(
 
     try {
         logd(TAG, "sendTransaction prepare")
-        
+
         // Check if this account requires multi-signature (multi-restore account)
-        val walletAddress = transactionBuilder.walletAddress?.toAddress() 
+        val walletAddress = transactionBuilder.walletAddress?.toAddress()
             ?: throw RuntimeException("No wallet address specified")
-        
+
         val currentNetworkName = chainNetWorkString()
-        
+
         // Find local account instance (same logic as in prepare function)
         val localAccountInstance = AccountManager.list().find { acc ->
             val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress()
             accFlowAddress == walletAddress
         } ?: throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
-            
+
         val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
             ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username}")
 
@@ -261,7 +292,7 @@ suspend fun sendTransaction(
         if (cryptoProvider is MultiRestoreCryptoProvider) {
             logd(TAG, "Detected multi-restore account with ${cryptoProvider.getAllProviders().size} providers (total weight: ${cryptoProvider.getKeyWeight()})")
             logd(TAG, "Routing to multi-signature transaction flow")
-            
+
             // Use multi-signature transaction flow for multi-restore accounts
             return sendTransactionWithMultiSignature(
                 providers = cryptoProvider.getAllProviders(),
@@ -331,9 +362,9 @@ suspend fun sendTransaction(
             else -> "Unknown error: ${e.message}"
         }
         logd(TAG, "Transaction failed: $errorMessage")
-        
+
         MixpanelManager.cadenceTransactionSigned(
-            cadence = transactionBuilder.script.orEmpty(), 
+            cadence = transactionBuilder.script.orEmpty(),
             txId = "",
             authorizers = emptyList(),
             proposer = transactionBuilder.walletAddress?.toAddress().orEmpty(),
@@ -354,7 +385,7 @@ suspend fun sendTransaction(
 suspend fun sendBridgeTransaction(
     builder: TransactionBuilder.() -> Unit,
 ): String? {
-    val transactionBuilder = TransactionBuilder().apply { 
+    val transactionBuilder = TransactionBuilder().apply {
         builder(this)
         isBridgePayer(true)
     }
@@ -410,9 +441,9 @@ suspend fun sendBridgeTransaction(
             else -> "Unknown error: ${e.message}"
         }
         logd(TAG, "Bridge transaction failed: $errorMessage")
-        
+
         MixpanelManager.cadenceTransactionSigned(
-            cadence = transactionBuilder.script.orEmpty(), 
+            cadence = transactionBuilder.script.orEmpty(),
             txId = "",
             authorizers = emptyList(),
             proposer = transactionBuilder.walletAddress?.toAddress().orEmpty(),
@@ -503,9 +534,9 @@ suspend fun prepareAndSignWithMultiSignature(
 
     val proposerAddress = appBuilder.walletAddress?.toAddress()
         ?: throw IllegalArgumentException("Wallet address (proposer) is required for multi-signature.")
-    
+
     val flowAccount = FlowCadenceApi.getAccount(proposerAddress)
-    val accountKeys = flowAccount.keys?.toList() 
+    val accountKeys = flowAccount.keys?.toList()
         ?: throw InvalidKeyException("On-chain account $proposerAddress has no keys")
 
     // Find the proposal key using the first provider
@@ -513,7 +544,7 @@ suspend fun prepareAndSignWithMultiSignature(
         ?: throw IllegalArgumentException("At least one crypto provider is required for multi-signature proposal key selection.")
 
     val designatedProposalKey = findMatchingAccountKey(accountKeys, firstProviderPublicKey, proposerAddress)
-    
+
     logd(TAG, "Designated proposal key for multi-sig: index ${designatedProposalKey.index}, seqNo ${designatedProposalKey.sequenceNumber}")
 
     // Create KMM signers for all providers
@@ -555,43 +586,43 @@ private fun findMatchingAccountKey(accountKeys: List<AccountPublicKey>, publicKe
     val pubRaw = publicKey.removeHexPrefix().lowercase()
     val pubStripped = if (pubRaw.startsWith("04") && pubRaw.length == 130) pubRaw.substring(2) else pubRaw
     val pubWith04 = if (!pubRaw.startsWith("04") && pubRaw.length == 128) "04$pubRaw" else pubRaw
-    
+
     logd(TAG, "findMatchingAccountKey: Looking for key match on account $address")
     logd(TAG, "  Provider key: $publicKey -> normalized: $pubRaw")
-    
+
     val matchingKey = accountKeys.findLast { accKey ->
         val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
         val accPubStripped = if (accPubRaw.startsWith("04") && accPubRaw.length == 130) accPubRaw.substring(2) else accPubRaw
-        
+
         // Try comprehensive matching for backward compatibility
-        val isMatch = accPubRaw == pubRaw || accPubRaw == pubStripped || 
+        val isMatch = accPubRaw == pubRaw || accPubRaw == pubStripped ||
                      accPubStripped == pubRaw || accPubStripped == pubStripped ||
                      accPubRaw == pubWith04 || accKey.publicKey.removeHexPrefix().lowercase() == pubWith04
-        
+
         if (isMatch) {
             logd(TAG, "  ✓ MATCH found! Key index ${accKey.index}")
         }
-        
+
         isMatch
     }
-    
+
     if (matchingKey == null) {
         logd(TAG, "  ✗ NO MATCH found. Available keys:")
         accountKeys.forEach { key ->
             logd(TAG, "    Index ${key.index}: ${key.publicKey}")
         }
     }
-    
+
     return matchingKey ?: throw InvalidKeyException("Proposal key matching public key ($publicKey) not found on account $address")
 }
 
 private fun createKMMSigner(cryptoProvider: CryptoProvider, accountKeys: List<AccountPublicKey>, address: String): Signer {
     val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
     val onChainKey = findMatchingAccountKey(accountKeys, providerPublicKey, address)
-    
+
     val keyOnChainHashingAlgorithm = onChainKey.hashingAlgorithm
     logd(TAG, "Using KMM hashing algorithm ${keyOnChainHashingAlgorithm.name} for provider ${cryptoProvider.getPublicKey()} (key index ${onChainKey.index}) on account $address")
-    
+
     val signerInstance: Signer = cryptoProvider.getSigner(keyOnChainHashingAlgorithm)
     signerInstance.address = address.removeHexPrefix()
     signerInstance.keyIndex = onChainKey.index.toInt()
@@ -605,17 +636,17 @@ private fun createKMMSigner(cryptoProvider: CryptoProvider, accountKeys: List<Ac
 private fun isKeyMatch(providerPublicKey: String, onChainPublicKey: String): Boolean {
     val providerRaw = providerPublicKey.removeHexPrefix().lowercase()
     val onChainRaw = onChainPublicKey.removeHexPrefix().lowercase()
-    
+
     // Handle both compressed and uncompressed EC keys with comprehensive format matching
     val providerStripped = if (providerRaw.startsWith("04") && providerRaw.length == 130) providerRaw.substring(2) else providerRaw
     val onChainStripped = if (onChainRaw.startsWith("04") && onChainRaw.length == 130) onChainRaw.substring(2) else onChainRaw
     val providerWith04 = if (!providerRaw.startsWith("04") && providerRaw.length == 128) "04$providerRaw" else providerRaw
     val onChainWith04 = if (!onChainRaw.startsWith("04") && onChainRaw.length == 128) "04$onChainRaw" else onChainRaw
-    
+
     // Try all possible combinations for maximum backward compatibility
-    return onChainRaw == providerRaw || 
-           onChainRaw == providerStripped || 
-           onChainStripped == providerRaw || 
+    return onChainRaw == providerRaw ||
+           onChainRaw == providerStripped ||
+           onChainStripped == providerRaw ||
            onChainStripped == providerStripped ||
            onChainRaw == providerWith04 ||
            onChainWith04 == providerRaw ||
@@ -645,10 +676,10 @@ suspend fun Transaction.send(): Transaction {
         if (rawErrorMessage.contains(""""code": 400""") && rawErrorMessage.contains("invalid signature")) {
             throw RuntimeException("Flow Access Node rejected transaction: Invalid Signature. Raw response: $rawErrorMessage", e)
         }
-        
+
         loge(TAG, "Transaction submission status uncertain due to response parsing error. Raw error: $rawErrorMessage")
         throw RuntimeException("Failed to parse Flow Access Node response after sending transaction. The transaction may or may not have been processed. Raw error: $rawErrorMessage", e)
-        
+
     } catch (e: RuntimeException) {
         if (e.message?.contains("Invalid Flow argument: invalid transaction: invalid signature") == true) {
             logd(TAG, "Transaction rejected by Flow Access Node: Invalid Signature. Details: ${e.message}")
@@ -668,7 +699,7 @@ suspend fun Transaction.send(): Transaction {
         logd(TAG, "Transaction result parsing failed due to JSON deserialization error: $errorMessage")
         logd(TAG, "Transaction was successfully submitted (ID: $submittedTxId) but result parsing failed.")
         logd(TAG, "This is likely a Flow SDK issue with parsing complex transaction result JSON.")
-        
+
         // Return a mock sealed result since the transaction was submitted successfully
         // The user can check the transaction status on FlowScan using the transaction ID
         TransactionResult(
@@ -682,13 +713,13 @@ suspend fun Transaction.send(): Transaction {
             links = null
         )
     } catch (e: RuntimeException) {
-        if (e.message?.contains("Illegal input: Expected JsonPrimitive") == true || 
+        if (e.message?.contains("Illegal input: Expected JsonPrimitive") == true ||
             e.message?.contains("serialization") == true ||
             e.message?.contains("deserialization") == true) {
             // Handle Flow SDK JSON parsing errors
             logd(TAG, "Transaction result parsing failed due to Flow SDK JSON parsing error: ${e.message}")
             logd(TAG, "Transaction was successfully submitted (ID: $submittedTxId) but result parsing failed.")
-            
+
             // Return a mock sealed result since the transaction was submitted successfully
             TransactionResult(
                 blockId = "",
@@ -705,7 +736,7 @@ suspend fun Transaction.send(): Transaction {
             throw e
         }
     }
-    
+
     logd(TAG, "Transaction sealed. Status=${seal.status}, Execution=${seal.execution}")
 
     // Only try to fetch full transaction if seal parsing succeeded
@@ -725,7 +756,7 @@ suspend fun Transaction.send(): Transaction {
             this.copy(id = submittedTxId, result = seal)
         }
     }
-    
+
     return fullTx
 }
 
@@ -757,18 +788,18 @@ suspend fun Transaction.addLocalEnvelopeSignatures(): Transaction {
         if (!isKeyMatch(providerPublicKey, targetProposalKeyOnAccount.publicKey)) {
             throw InvalidKeyException("Current crypto provider does not match the public key of the transaction's proposal key.")
         }
-        
+
         hashingAlgorithmForSigning = targetProposalKeyOnAccount.hashingAlgorithm
         logd(TAG, "Verified current provider can sign for tx.proposalKey. Using on-chain hashing algorithm: ${hashingAlgorithmForSigning.name}")
 
     } else {
         // Payer is different from Proposer - find the provider's key on the payer account
         logd(TAG, "Payer (${this.payer}) is different from Proposer (${this.proposalKey.address}) in addLocalEnvelopeSignatures.")
-        
+
         val externalPayerAccount = FlowCadenceApi.getAccount(this.payer)
-        val externalPayerAccountKeys = externalPayerAccount.keys?.toList() 
+        val externalPayerAccountKeys = externalPayerAccount.keys?.toList()
             ?: throw InvalidKeyException("Specified payer account ${this.payer} has no keys.")
-        
+
         val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
         val currentLocalProvidersKeyOnExternalPayerAccount = externalPayerAccountKeys.findLast { accKey ->
             isKeyMatch(providerPublicKey, accKey.publicKey)
@@ -875,7 +906,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
 
     val walletAddress = builder.walletAddress?.toAddress().orEmpty()
     logd(TAG, "prepare target walletAddress (from builder.walletAddress): $walletAddress")
-    
+
     val flowAccount = FlowCadenceApi.getAccount(walletAddress)
     val currentNetworkName = chainNetWorkString()
     logd(TAG, "Current network for account lookup: $currentNetworkName. Target transaction address: $walletAddress")
@@ -888,16 +919,16 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     } ?: throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
 
     logd(TAG, "Successfully found local account ${localAccountInstance.userInfo.username} for address $walletAddress. Generating CryptoProvider.")
-    
+
     // Get crypto provider
     val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
         ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username} (address $walletAddress)")
-    
+
     // Get account keys and find matching key
     val accountKeys = flowAccount.keys?.toList() ?: throw InvalidKeyException("On-chain account $walletAddress has no keys")
     logd(TAG, "On-chain keys for $walletAddress: $accountKeys")
     logd(TAG, "Provider public key from local account ${localAccountInstance.userInfo.username} (for $walletAddress): ${cryptoProvider.getPublicKey()}")
-    
+
     val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
     logd(TAG, "Normalized provider public key: $providerPublicKey")
 
@@ -935,7 +966,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
 
     // Get the KMM Signer configured with the correct hashing algorithm
     logd(TAG, "Getting KMM Signer from CryptoProvider with hashing algorithm: $keyOnChainHashingAlgorithm")
-    
+
     val kmmSigner = cryptoProvider.getSigner(keyOnChainHashingAlgorithm).apply {
         logd(TAG, "Setting signer address to: ${flowAccount.address.removeHexPrefix()}")
         this.address = flowAccount.address.removeHexPrefix()
@@ -943,7 +974,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         this.keyIndex = currentKey.index.toInt()
         logd(TAG, "KMM Signer configured - address: $address, keyIndex: $keyIndex")
     }
-    
+
     // Use Flow KMM's TransactionBuilder with buildAndSign() method
     logd(TAG, "Building transaction using Flow KMM TransactionBuilder and buildAndSign()")
     logd(TAG, "Pre-buildAndSign transaction details:")
@@ -955,10 +986,10 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     logd(TAG, "  - Proposal key: address=${flowAccount.address.removeHexPrefix()}, keyIndex=${currentKey.index.toInt()}, seqNum=${currentKey.sequenceNumber.toLong()}")
     logd(TAG, "  - Authorizers: $authorizers")
     logd(TAG, "  - Signer: address=${kmmSigner.address}, keyIndex=${kmmSigner.keyIndex}")
-    
+
     val result = try {
         logd(TAG, "Calling KMM TransactionBuilder.buildAndSign()...")
-        
+
         TransactionBuilder(
             script = script,
             arguments = builder.arguments,
@@ -974,7 +1005,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
             withAuthorizers(authorizers)
             withSigners(listOf(kmmSigner))
         }.buildAndSign()
-        
+
     } catch (e: Exception) {
         loge(TAG, "ERROR in buildAndSign: ${e.javaClass.simpleName}: ${e.message}")
         loge(TAG, "Stack trace: ${e.stackTraceToString()}")
@@ -983,7 +1014,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         }
         throw e
     }
-    
+
     logd(TAG, "buildAndSign() completed successfully")
     logd(TAG, "Result transaction details:")
     logd(TAG, "  - ID: ${result.id}")
@@ -995,7 +1026,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     result.envelopeSignatures.forEachIndexed { index, sig ->
         logd(TAG, "  - Envelope sig $index: address=${sig.address}, keyIndex=${sig.keyIndex}, signature=${sig.signature.take(20)}...")
     }
-    
+
     return result
 }
 
@@ -1068,10 +1099,10 @@ suspend fun Transaction.submitOnly(): String {
         if (rawErrorMessage.contains(""""code": 400""") && rawErrorMessage.contains("invalid signature")) {
             throw RuntimeException("Flow Access Node rejected transaction: Invalid Signature. Raw response: $rawErrorMessage", e)
         }
-        
+
         loge(TAG, "Transaction submission status uncertain due to response parsing error. Raw error: $rawErrorMessage")
         throw RuntimeException("Failed to parse Flow Access Node response after sending transaction. The transaction may or may not have been processed. Raw error: $rawErrorMessage", e)
-        
+
     } catch (e: RuntimeException) {
         if (e.message?.contains("Invalid Flow argument: invalid transaction: invalid signature") == true) {
             logd(TAG, "Transaction rejected by Flow Access Node: Invalid Signature. Details: ${e.message}")
