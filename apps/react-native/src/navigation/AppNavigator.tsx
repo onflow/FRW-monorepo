@@ -88,12 +88,13 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   // Initialize SendTo flow if requested
   useEffect(() => {
     if (initialProps?.screen === 'send-asset') {
-      const sendToConfigJson = initialProps?.sendToConfig;
-      if (!sendToConfigJson) {
+      const sendToConfigRaw: unknown = (initialProps as any)?.sendToConfig;
+      if (!sendToConfigRaw) {
         return;
       }
       try {
-        const sendToConfig = JSON.parse(sendToConfigJson);
+        const sendToConfig =
+          typeof sendToConfigRaw === 'string' ? JSON.parse(sendToConfigRaw) : sendToConfigRaw;
         logger.debug('SendTo flow initialization started', { sendToConfig });
 
         if (sendToConfig.fromAccount) {
@@ -156,11 +157,15 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
 
         logger.debug('SendTo flow initialization completed successfully');
       } catch (error) {
-        logger.error('Failed to initialize SendTo flow', { error, sendToConfigJson });
+        logger.error('Failed to initialize SendTo flow', {
+          error,
+          sendToConfigJson: sendToConfigRaw,
+        });
       }
     }
   }, [
-    initialProps?.sendToConfig,
+    // note: effect depends on raw value which could be object or string
+    (initialProps as any)?.sendToConfig,
     setSelectedToken,
     setCurrentStep,
     setTransactionType,
