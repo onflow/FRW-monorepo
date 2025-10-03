@@ -55,7 +55,7 @@ const TokenInfoCard = ({
     if (tokenInfo) {
       // Create token data for send store
       const selectedToken: TokenModel = {
-        type: addressType(currentWallet?.address || ''),
+        type: currentWallet?.address ? addressType(currentWallet.address) : addressType(''),
         name:
           tokenInfo && 'symbol' in tokenInfo
             ? tokenInfo.name || (tokenInfo as CoinItem).coin || ''
