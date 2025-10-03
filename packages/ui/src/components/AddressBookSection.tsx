@@ -93,7 +93,7 @@ export function AddressBookList({
         data={contacts}
         keyExtractor={(item, index) => `${item.address}-${index}`}
         renderItem={({ item, index }) => (
-          <YStack>
+          <YStack px="$4">
             <RecipientItem
               {...item}
               type="contact"
@@ -143,14 +143,14 @@ export function AddressBookList({
       sections={sections as any}
       keyExtractor={(item: any, index) => `${item.address}-${index}`}
       renderSectionHeader={({ section }) => (
-        <YStack gap={4} w="$100">
+        <YStack gap={4} w="$100" px="$4">
           <Text fontSize={14} fontWeight="400" color="$textSecondary" lineHeight={16.8} w="100%">
             {(section as any).title}
           </Text>
         </YStack>
       )}
       renderItem={({ item, index, section }) => (
-        <YStack>
+        <YStack px="$4">
           <RecipientItem
             {...(item as any)}
             type="contact"

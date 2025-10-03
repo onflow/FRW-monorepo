@@ -457,16 +457,10 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     if (transactionType === 'tokens') {
       const amountNum = new BN(amount || '0');
 
-      // Extract numeric value from balance string (handle cases like "123.45 FUSD")
-      // Try multiple sources for the numeric balance, in order of preference
-      let numericBalanceString = '0';
-      if (selectedToken?.availableBalanceToUse) {
-        numericBalanceString = extractNumericBalance(selectedToken.availableBalanceToUse);
-      } else if (selectedToken?.displayBalance) {
-        numericBalanceString = extractNumericBalance(selectedToken.displayBalance);
-      } else if (selectedToken?.balance) {
-        numericBalanceString = extractNumericBalance(selectedToken.balance);
-      }
+      // Extract numeric value from token-denominated balance (prefer displayBalance)
+      const numericBalanceString = extractNumericBalance(
+        selectedToken?.displayBalance || selectedToken?.balance || '0'
+      );
       const balanceNum = new BN(numericBalanceString);
 
       // Convert amount to token equivalent if in USD mode
@@ -616,7 +610,12 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                           name: selectedToken.name,
                           logo: selectedToken.logoURI,
                           logoURI: selectedToken.logoURI,
-                          balance: selectedToken.balance?.toString(),
+                          // Use token-denominated display balance if available to avoid showing 0 on first load
+                          balance: (
+                            selectedToken.displayBalance ||
+                            selectedToken.balance ||
+                            '0'
+                          ).toString(),
                           price: selectedToken.priceInUSD
                             ? new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1))
                             : undefined,
