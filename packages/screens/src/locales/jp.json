@@ -36,7 +36,7 @@
     },
     "toAccount": "送信先アカウント",
     "searchAddress": "アドレスを検索",
-    "searchPasteAddress": "アドレスを検索/貼り付け",
+    "searchPasteAddress": "アドレスを検索 / 貼り付け",
     "selectedToken": "選択されたトークン",
     "noAccounts": {
       "title": "アカウントがありません",

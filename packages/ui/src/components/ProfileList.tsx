@@ -2,7 +2,6 @@ import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, useThemeName } from 'tamagui';
 
-
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
 import { RefreshView } from './RefreshView';

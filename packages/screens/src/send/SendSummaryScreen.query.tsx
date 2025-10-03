@@ -7,7 +7,11 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
-import { Platform } from '@onflow/frw-types';
+import {
+  Platform,
+  type NFTTransactionDisplayData,
+  type SendFormData,
+} from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -24,8 +28,6 @@ import {
   Text,
   ExtensionHeader,
   Separator,
-  type NFTSendData,
-  type TransactionFormData,
   XStack,
   ERC1155QuantitySelector,
   useTheme,
@@ -140,32 +142,38 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   }, []);
 
   // Transform NFT data for UI
-  const nftForUI: NFTSendData = useMemo(
-    () => ({
-      id: selectedNFT?.id || '',
-      name: selectedNFT?.name || t('nft.untitled'),
-      image: selectedNFT ? getNFTCover(selectedNFT) : '',
-      collection: selectedNFT?.collectionName || t('nft.unknownCollection'),
-      collectionContractName: selectedNFT?.collectionContractName,
-      description: selectedNFT?.description || '',
-      type: selectedNFT?.type,
-      contractType: selectedNFT?.contractType,
-      amount: maxQuantity,
-    }),
+  const nftForUI: NFTTransactionDisplayData = useMemo(
+    () =>
+      ({
+        ...selectedNFT,
+        id: selectedNFT?.id || '',
+        name: selectedNFT?.name || t('nft.untitled'),
+        thumbnail: selectedNFT ? getNFTCover(selectedNFT) : '',
+        collection: selectedNFT?.collectionName || t('nft.unknownCollection'),
+        collectionContractName: selectedNFT?.collectionContractName,
+        description: selectedNFT?.description || '',
+        type: selectedNFT?.type || 'flow',
+        contractType: selectedNFT?.contractType,
+        amount: maxQuantity.toString(),
+      }) as NFTTransactionDisplayData,
     [selectedNFT, maxQuantity]
   );
 
-  const nftsForUI: NFTSendData[] = useMemo(
+  const nftsForUI: NFTTransactionDisplayData[] = useMemo(
     () =>
-      selectedNFTs?.map((nft) => ({
-        id: nft.id || '',
-        name: nft.name || t('nft.untitled'),
-        image: getNFTCover(nft),
-        collection: nft.collectionName || t('nft.unknownCollection'),
-        collectionContractName: nft.collectionContractName,
-        description: nft.description || '',
-        type: nft.type,
-      })) || [],
+      selectedNFTs?.map(
+        (nft) =>
+          ({
+            ...nft,
+            id: nft.id || '',
+            name: nft.name || t('nft.untitled'),
+            thumbnail: getNFTCover(nft),
+            collection: nft.collectionName || t('nft.unknownCollection'),
+            collectionContractName: nft.collectionContractName,
+            description: nft.description || '',
+            type: nft.type || 'flow',
+          }) as NFTTransactionDisplayData
+      ) || [],
     [selectedNFTs]
   );
 
@@ -224,7 +232,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     isAccountIncompatible;
 
   // Create form data for transaction confirmation
-  const formData: TransactionFormData = {
+  const formData: SendFormData = {
     tokenAmount: isMultipleNFTs
       ? selectedNFTs.length.toString()
       : isERC1155
@@ -237,8 +245,54 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
   // Event handlers
   const handleEditNFTPress = useCallback(() => {
+    // Get current NFT data from store
+    const currentSelectedNFTs = useSendStore.getState().selectedNFTs;
+    const currentSelectedNFT = currentSelectedNFTs?.[0] || null;
+
+    if (currentSelectedNFT && fromAccount) {
+      // Instead of creating a new collection, find the existing one from the token store
+      // This ensures we have all the required properties including the path
+      const tokenStore = useTokenQueryStore.getState();
+
+      // For EVM NFTs, we might need to check both Flow and EVM addresses
+      const addressesToCheck = [fromAccount.address];
+      if (fromAccount.evmAddress) {
+        addressesToCheck.push(fromAccount.evmAddress);
+      }
+
+      let matchingCollection = null;
+
+      // Try each address until we find the collection
+      for (const address of addressesToCheck) {
+        const existingCollections = tokenStore.getNFTCollectionsForAddress(address);
+
+        if (existingCollections) {
+          // Find the collection that matches this NFT
+          matchingCollection = existingCollections.find((collection) => {
+            // Try multiple matching strategies
+            return (
+              collection.name === currentSelectedNFT.collectionName ||
+              collection.contractName === currentSelectedNFT.collectionContractName ||
+              collection.id === currentSelectedNFT.collectionContractName ||
+              collection.flowIdentifier === currentSelectedNFT.flowIdentifier ||
+              collection.evmAddress === currentSelectedNFT.evmAddress
+            );
+          });
+
+          if (matchingCollection) {
+            break; // Found it, stop searching
+          }
+        }
+      }
+
+      if (matchingCollection) {
+        const setSelectedCollection = useSendStore.getState().setSelectedCollection;
+        setSelectedCollection(matchingCollection);
+      }
+    }
+
     navigation.navigate('NFTList');
-  }, []);
+  }, [fromAccount]);
 
   const handleEditAccountPress = useCallback(() => {
     navigation.navigate('SendTo');
@@ -335,13 +389,14 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               {/* From Account Section */}
               {fromAccount && (
                 <AccountCard
+                isSendTokensScreen={!isExtension}
                   account={transformAccountForCard(fromAccount)}
                   title={t('send.fromAccount')}
                   isLoading={false}
                 />
               )}
 
-              <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
+              <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
 
               <SendSectionHeader
                 title={sectionTitle}
@@ -375,7 +430,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                     backgroundColor="transparent"
                     borderRadius={0}
                     contentPadding="$0"
-                    imageSize="$24"
+                    imageSize={76}
                   />
                 )}
               </View>
@@ -499,7 +554,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                     {
                       id: selectedNFT.id || '',
                       name: selectedNFT.name || t('nft.untitled'),
-                      image: selectedNFT.thumbnail || '',
+                      thumbnail: selectedNFT.thumbnail || '',
                       collection: selectedNFT.collectionName || t('nft.unknownCollection'),
                       collectionContractName:
                         selectedNFT.collectionContractName || selectedNFT.contractName || '',

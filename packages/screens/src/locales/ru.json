@@ -36,7 +36,7 @@
     },
     "toAccount": "На аккаунт",
     "searchAddress": "Поиск адреса",
-    "searchPasteAddress": "Поиск/ Вставить адрес",
+    "searchPasteAddress": "Поиск / Вставить адрес",
     "selectedToken": "Выбранный токен",
     "noAccounts": {
       "title": "Нет аккаунтов",
