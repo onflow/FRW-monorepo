@@ -27,13 +27,35 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Icon Section with red circle background -->
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/surge_icon_circle_bg" />
+
+                    <ImageView
+                        android:id="@+id/dialogIcon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_coin_flow"
+                        android:scaleType="fitCenter"
+                        android:tint="@android:color/white" />
+
+                </FrameLayout>
+
                 <!-- Title Section -->
                 <LinearLayout
                     android:id="@+id/titleSection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="12dp"
                     android:orientation="horizontal">
 
                   <TextView
@@ -116,7 +138,15 @@
                     android:id="@+id/surgeFeeRow2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                      android:layout_width="16dp"
+                      android:layout_height="16dp"
+                      android:layout_marginEnd="4dp"
+                      android:src="@drawable/ic_coin_flow"
+                      android:scaleType="fitCenter" />
 
                     <TextView
                       android:layout_width="0dp"
