@@ -52,7 +52,14 @@ private suspend fun executeHttp(host: String, functionName: String, data: Any? =
     }.build()
     val body = if (data == null) data else (if (data is String) data else GsonBuilder().serializeNulls().create().toJson(data))
 
-    val request = Request.Builder().url("$host$functionName")
+    // Fix double slash issue by removing trailing slash from host or leading slash from functionName
+    val url = when {
+        host.endsWith("/") && functionName.startsWith("/") -> host + functionName.substring(1)
+        host.endsWith("/") || functionName.startsWith("/") -> host + functionName
+        else -> "$host/$functionName"
+    }
+
+    val request = Request.Builder().url(url)
         .post(body.orEmpty().toRequestBody("application/json; charset=utf-8".toMediaType()))
         .build()
     val response = client.newCall(request).execute()
