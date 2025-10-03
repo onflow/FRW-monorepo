@@ -345,7 +345,16 @@ suspend fun sendTransaction(
     // For free gas transactions, we still need to add the payer's envelope signature
     if (tx.envelopeSignatures.isEmpty() && isGasFree()) {
       logd(TAG, "sendTransaction request free gas envelope")
-      tx = tx.addFreeGasEnvelope()
+      val txWithPayer = tx.addFreeGasEnvelope()
+
+      // Check if payer signature was actually added (might fail due to surge pricing)
+      if (txWithPayer.envelopeSignatures.isEmpty()) {
+        logd(TAG, "Free gas envelope not added (likely due to surge pricing), falling back to self-custody")
+        // Fall back to self-custody - update payer to be the user's address (without 0x prefix)
+        tx = tx.copy(payer = walletAddress.removeHexPrefix()).addLocalEnvelopeSignatures()
+      } else {
+        tx = txWithPayer
+      }
     } else if (tx.envelopeSignatures.isEmpty()) {
       logd(TAG, "sendTransaction sign local envelope")
       // For non-free gas, we need to add the local wallet's envelope signature
