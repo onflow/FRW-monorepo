@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.network.interceptor
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -96,7 +97,11 @@ class PayerServiceInterceptor : Interceptor {
 
         // Only intercept requests to payer endpoints
         val url = request.url.toString()
-        val isPayerRequest = url.contains("signAsPayer") ||
+
+        // Log ALL requests to see what's happening
+        logd(TAG, "Request URL: $url")
+
+        val isPayerRequest = url.contains("signAsFeePayer") ||
                             url.contains("signAsBridgeFeePayer") ||
                             url.contains("/payer/") ||
                             url.contains("/api/payer")
@@ -125,6 +130,17 @@ class PayerServiceInterceptor : Interceptor {
             // Try to parse the error response body
             val errorBody = response.body?.string()
             logd(TAG, "Raw Error Response Body: $errorBody")
+
+            // Try to parse as JSON object for better logging
+            try {
+                val jsonObject = Gson().fromJson(errorBody, com.google.gson.JsonObject::class.java)
+                logd(TAG, "Parsed JSON response:")
+                jsonObject?.entrySet()?.forEach { entry ->
+                    logd(TAG, "  - ${entry.key}: ${entry.value}")
+                }
+            } catch (e: Exception) {
+                logd(TAG, "Could not parse as JSON object: ${e.message}")
+            }
 
             val errorResponse = try {
                 if (!errorBody.isNullOrBlank()) {
@@ -190,11 +206,24 @@ class PayerServiceInterceptor : Interceptor {
             logd(TAG, "==================== PAYER SERVICE SUCCESS ====================")
             logd(TAG, "URL: $url")
             logd(TAG, "Response Code: ${response.code}")
+            logd(TAG, "Response Headers: ${response.headers}")
 
             // Peek at response body without consuming it (for debugging)
             try {
                 val responseBody = response.peekBody(1024 * 1024) // Peek at 1MB max
-                logd(TAG, "Success Response Body: ${responseBody.string()}")
+                val bodyString = responseBody.string()
+                logd(TAG, "Success Response Body: $bodyString")
+
+                // Try to parse as JSON for better logging
+                try {
+                    val jsonObject = Gson().fromJson(bodyString, com.google.gson.JsonObject::class.java)
+                    logd(TAG, "Parsed success response fields:")
+                    jsonObject?.entrySet()?.forEach { entry ->
+                        logd(TAG, "  - ${entry.key}: ${entry.value}")
+                    }
+                } catch (e: Exception) {
+                    logd(TAG, "Response is not JSON format")
+                }
             } catch (e: Exception) {
                 logd(TAG, "Could not peek response body: ${e.message}")
             }

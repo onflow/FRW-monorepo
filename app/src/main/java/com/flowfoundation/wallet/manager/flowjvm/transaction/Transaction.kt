@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_BRIDGE_PAYER
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
-import com.flowfoundation.wallet.widgets.SurgePricingAlertView
+import com.flowfoundation.wallet.widgets.SurgePricingAlertViewXML
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -54,13 +54,15 @@ private suspend fun executePayerRequestWithSurgeHandling(
     PayerServiceInterceptor.setErrorCallback { errorResponse ->
         // Get current activity context (you might need to pass this through or get from a manager)
         val currentActivity = getCurrentActivity()
+        logd(TAG, "PayerServiceInterceptor callback triggered. Current activity: ${currentActivity?.javaClass?.simpleName}")
 
         if (currentActivity != null && (errorResponse.isSurgePricing() || errorResponse.isServerError())) {
+            logd(TAG, "Showing surge pricing alert on UI thread")
             currentActivity.runOnUiThread {
-                SurgePricingAlertView.showAlert(
+                SurgePricingAlertViewXML.showSurgeAlert(
                     activity = currentActivity,
                     errorResponse = errorResponse,
-                    onDecision = { accepted ->
+                    onUserDecision = { accepted ->
                         if (accepted && errorResponse.isSurgePricing()) {
                             // User accepted surge pricing, retry the request
                             ioScope {
@@ -883,8 +885,12 @@ suspend fun Transaction.addFreeGasEnvelope(): Transaction {
     val signable = buildPayerSignable()
     logd(TAG, "Building payer signable: $signable")
 
-    // Execute with surge pricing handling
-    val response = executePayerRequestWithSurgeHandling(FUNCTION_SIGN_AS_PAYER, signable)
+    // Execute with surge pricing handling - use BASE_HOST for payer service
+    val response = executePayerRequestWithSurgeHandling(
+        FUNCTION_SIGN_AS_PAYER,
+        signable,
+        BASE_HOST
+    )
 
     if (response == null) {
         throw RuntimeException("Payer service request failed or was cancelled by user")
