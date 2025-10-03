@@ -156,6 +156,15 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
+                    <!-- Progress Indicator (spinner) -->
+                    <ProgressBar
+                        android:id="@+id/progressIndicator"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:indeterminateTint="@android:color/white"
+                        android:visibility="gone" />
+
                 </FrameLayout>
 
             </LinearLayout>

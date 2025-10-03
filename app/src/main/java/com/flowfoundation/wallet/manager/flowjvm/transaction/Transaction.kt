@@ -38,8 +38,94 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
 import org.onflow.flow.infrastructure.removeHexPrefix
 import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private const val TAG = "Transaction"
+
+// Cache for payer status with TTL
+private data class PayerStatusCache(
+    val response: PayerServiceInterceptor.PayerStatusResponse,
+    val timestamp: Long,
+    val ttlMs: Long = 60000 // Default 1 minute TTL
+) {
+    fun isValid(): Boolean = System.currentTimeMillis() - timestamp < ttlMs
+}
+
+private var cachedPayerStatus: PayerStatusCache? = null
+
+/**
+ * Fetch payer status from the API with caching
+ * This is called before transactions to check surge pricing status
+ */
+private suspend fun fetchPayerStatus(): PayerServiceInterceptor.PayerStatusResponse? {
+    return withContext(Dispatchers.IO) {
+        try {
+            // Check cache first
+            cachedPayerStatus?.let { cache ->
+                if (cache.isValid()) {
+                    logd(TAG, "Using cached payer status (age: ${System.currentTimeMillis() - cache.timestamp}ms)")
+                    return@withContext cache.response
+                }
+            }
+
+            logd(TAG, "Fetching fresh payer status from /api/v1/payer/status")
+
+            val client = OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .addInterceptor(PayerServiceInterceptor())
+                .build()
+
+            val request = Request.Builder()
+                .url("${BASE_HOST}/api/v1/payer/status")
+                .get()
+                .build()
+
+            val response = client.newCall(request).execute()
+            val responseBody = response.body?.string()
+
+            if (response.isSuccessful && !responseBody.isNullOrBlank()) {
+                val payerStatus = Gson().fromJson(responseBody, PayerServiceInterceptor.PayerStatusResponse::class.java)
+                logd(TAG, "Payer status fetched successfully:")
+                logd(TAG, "  - Status: ${payerStatus.status}")
+                logd(TAG, "  - Surge active: ${payerStatus.data?.surge?.active}")
+                logd(TAG, "  - Surge multiplier: ${payerStatus.data?.surge?.multiplier}")
+                logd(TAG, "  - Max fee: ${payerStatus.data?.surge?.maxFee}")
+                logd(TAG, "  - Fee payer enabled: ${payerStatus.data?.feePayer?.enabled}")
+
+                // Cache the response with TTL from server or default
+                val ttlSeconds = payerStatus.data?.surge?.ttlSeconds ?: 60
+                cachedPayerStatus = PayerStatusCache(
+                    response = payerStatus,
+                    timestamp = System.currentTimeMillis(),
+                    ttlMs = ttlSeconds * 1000
+                )
+
+                return@withContext payerStatus
+            } else {
+                logd(TAG, "Failed to fetch payer status: ${response.code} ${response.message}")
+                return@withContext null
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Error fetching payer status: ${e.message}")
+            // Fail open - don't block transactions if status check fails
+            return@withContext null
+        }
+    }
+}
+
+/**
+ * Check if surge pricing is currently active
+ * Returns true if surge is active, false otherwise (including on errors - fail open)
+ */
+private suspend fun isSurgePricingActive(): Boolean {
+    val status = fetchPayerStatus()
+    return status?.data?.surge?.active == true
+}
 
 /**
  * Helper function to execute payer requests with surge pricing handling
@@ -50,43 +136,75 @@ private suspend fun executePayerRequestWithSurgeHandling(
     data: Any?,
     host: String? = null
 ): String? = suspendCancellableCoroutine { continuation ->
-    // Set up callback for interceptor errors
-    PayerServiceInterceptor.setErrorCallback { errorResponse ->
-        // Get current activity context (you might need to pass this through or get from a manager)
-        val currentActivity = getCurrentActivity()
-        logd(TAG, "PayerServiceInterceptor callback triggered. Current activity: ${currentActivity?.javaClass?.simpleName}")
+    // Execute preflight and request in IO scope
+    ioScope {
+        // First, do preflight check for surge pricing
+        val payerStatus = fetchPayerStatus()
 
-        if (currentActivity != null && (errorResponse.isSurgePricing() || errorResponse.isServerError())) {
-            logd(TAG, "Showing surge pricing alert on UI thread")
-            currentActivity.runOnUiThread {
-                SurgePricingAlertViewXML.showSurgeAlert(
-                    activity = currentActivity,
-                    errorResponse = errorResponse,
-                    onUserDecision = { accepted ->
-                        if (accepted && errorResponse.isSurgePricing()) {
-                            // User accepted surge pricing, retry the request
-                            ioScope {
-                                try {
-                                    val retryResponse = executeHttpFunction(functionName, data, host)
-                                    continuation.resume(retryResponse)
-                                } catch (e: Exception) {
-                                    logd(TAG, "Retry failed after surge acceptance: ${e.message}")
-                                    continuation.resume(null)
-                                }
-                            }
-                        } else {
-                            // User cancelled or server error
-                            logd(TAG, "User cancelled transaction due to: ${errorResponse.getDisplayMessage()}")
-                            continuation.resume(null)
-                        }
-                    }
+        // Check if surge is active from the preflight check
+        if (payerStatus?.data?.surge?.active == true) {
+            logd(TAG, "Surge pricing detected from preflight check")
+            val currentActivity = getCurrentActivity()
+
+            if (currentActivity != null) {
+                // Create error response from status check
+                val errorResponse = PayerServiceInterceptor.PayerErrorResponse(
+                    status = 429,
+                    message = "Surge pricing is active",
+                    surgeInfo = payerStatus.data.surge
                 )
+
+                logd(TAG, "Showing surge pricing alert from preflight")
+
+                currentActivity.runOnUiThread {
+                    SurgePricingAlertViewXML.showSurgeAlert(
+                        activity = currentActivity,
+                        errorResponse = errorResponse,
+                        onUserDecision = { accepted ->
+                            if (accepted) {
+                                logd(TAG, "User accepted surge pricing from preflight - transaction will proceed with self-custody")
+                                SurgePricingAlertViewXML.dismissCurrentAlert()
+                                continuation.resume(null)
+                            } else {
+                                logd(TAG, "User cancelled transaction due to surge pricing")
+                                SurgePricingAlertViewXML.dismissCurrentAlert()
+                                continuation.cancel()
+                            }
+                        }
+                    )
+                }
+                return@ioScope // Exit early, let the dialog callback handle continuation
             }
         }
-    }
 
-    // Execute the initial request
-    ioScope {
+        // Set up callback for interceptor errors (in case status check missed it or status changed)
+        PayerServiceInterceptor.setErrorCallback { errorResponse ->
+            val currentActivity = getCurrentActivity()
+            logd(TAG, "PayerServiceInterceptor callback triggered. Current activity: ${currentActivity?.javaClass?.simpleName}")
+
+            if (currentActivity != null && (errorResponse.isSurgePricing() || errorResponse.isServerError())) {
+                logd(TAG, "Showing surge pricing alert from interceptor on UI thread")
+                currentActivity.runOnUiThread {
+                    SurgePricingAlertViewXML.showSurgeAlert(
+                        activity = currentActivity,
+                        errorResponse = errorResponse,
+                        onUserDecision = { accepted ->
+                            if (accepted && errorResponse.isSurgePricing()) {
+                                logd(TAG, "User accepted surge pricing - transaction will proceed with self-custody")
+                                SurgePricingAlertViewXML.dismissCurrentAlert()
+                                continuation.resume(null)
+                            } else {
+                                logd(TAG, "User cancelled transaction")
+                                SurgePricingAlertViewXML.dismissCurrentAlert()
+                                continuation.cancel()
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        // Execute the actual payer request
         try {
             val response = executeHttpFunction(functionName, data, host)
 

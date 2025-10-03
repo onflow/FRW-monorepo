@@ -272,7 +272,7 @@ class SurgePricingAlertView {
             feeRow.addView(feeLabel)
 
             val feeValue = TextView(context).apply {
-                text = errorResponse.estimatedFee ?: "- 500.00 FLOW"
+                text = "${errorResponse.getEstimatedFee()} FLOW"
                 textSize = 14f
                 setTextColor(ContextCompat.getColor(context, R.color.surge_text_primary))
                 setTypeface(typeface, Typeface.BOLD)
@@ -306,7 +306,8 @@ class SurgePricingAlertView {
 
             // Description text
             val descriptionText = TextView(context).apply {
-                text = errorResponse.getDisplayMessage()
+                val multiplier = errorResponse.getSurgeMultiplier().toInt()
+                text = "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are ${multiplier}× higher than usual."
                 textSize = 14f
                 setTextColor(ContextCompat.getColor(context, R.color.surge_warning))
                 setLineSpacing(0f, 1.2f)  // (add, mult) - 0 additional spacing, 1.2x multiplier

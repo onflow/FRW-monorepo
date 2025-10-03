@@ -23,11 +23,13 @@ class SurgePricingTestModule(reactContext: ReactApplicationContext) :
             activity.runOnUiThread {
                 val testErrorResponse = PayerServiceInterceptor.PayerErrorResponse(
                     status = 429,
-                    data = null,
+                    error = null,
                     message = "Network demand is high. Transaction fees have temporarily increased to manage network load.",
-                    surgeActive = true,
-                    surgeMultiplier = 3.0,
-                    estimatedFee = "0.003"
+                    surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                        active = true,
+                        multiplier = 3.0,
+                        maxFee = 0.003
+                    )
                 )
 
                 SurgePricingAlertViewXML.showSurgeAlert(activity, testErrorResponse) { accepted ->
@@ -57,11 +59,15 @@ class SurgePricingTestModule(reactContext: ReactApplicationContext) :
             activity.runOnUiThread {
                 val errorResponse = PayerServiceInterceptor.PayerErrorResponse(
                     status = status,
-                    data = null,
+                    error = null,
                     message = message,
-                    surgeActive = (status == 429),
-                    surgeMultiplier = multiplier,
-                    estimatedFee = fee
+                    surgeInfo = if (status == 429 && multiplier != null && fee != null) {
+                        PayerServiceInterceptor.SurgeInfo(
+                            active = true,
+                            multiplier = multiplier,
+                            maxFee = fee.toDoubleOrNull() ?: 0.001
+                        )
+                    } else null
                 )
 
                 SurgePricingAlertViewXML.showSurgeAlert(activity, errorResponse) { accepted ->

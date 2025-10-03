@@ -19,11 +19,13 @@ object TestSurgePricingTrigger {
         // Create a mock error response that simulates surge pricing
         val testErrorResponse = PayerServiceInterceptor.PayerErrorResponse(
             status = 429,  // 429 = surge pricing, 503 = service unavailable
-            data = null,
+            error = null,
             message = "Network demand is high. Transaction fees have temporarily increased.",
-            surgeActive = true,
-            surgeMultiplier = 3.0,  // 3x normal fee
-            estimatedFee = "0.003"  // 0.003 FLOW
+            surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                active = true,
+                multiplier = 3.0,  // 3x normal fee
+                maxFee = 0.003    // 0.003 FLOW
+            )
         )
 
         // Show the dialog
@@ -46,29 +48,31 @@ object TestSurgePricingTrigger {
         val errorResponse = when (scenario) {
             TestScenario.HIGH_SURGE -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 429,
-                data = null,
+                error = null,
                 message = "Extreme network congestion. Fees are 5x higher than normal.",
-                surgeActive = true,
-                surgeMultiplier = 5.0,
-                estimatedFee = "0.005"
+                surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                    active = true,
+                    multiplier = 5.0,
+                    maxFee = 0.005
+                )
             )
 
             TestScenario.MODERATE_SURGE -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 429,
-                data = null,
+                error = null,
                 message = "Moderate network activity. Fees are slightly elevated.",
-                surgeActive = true,
-                surgeMultiplier = 1.5,
-                estimatedFee = "0.0015"
+                surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                    active = true,
+                    multiplier = 1.5,
+                    maxFee = 0.0015
+                )
             )
 
             TestScenario.SERVICE_ERROR -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 503,
-                data = null,
+                error = null,
                 message = "Service temporarily unavailable. Please try again.",
-                surgeActive = false,
-                surgeMultiplier = null,
-                estimatedFee = null
+                surgeInfo = null
             )
         }
 

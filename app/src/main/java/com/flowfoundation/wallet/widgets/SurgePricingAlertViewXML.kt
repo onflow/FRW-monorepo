@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.*
 import android.widget.FrameLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
@@ -124,13 +125,11 @@ class SurgePricingAlertViewXML {
 
             // Surge fee value
             val surgeFeeValue = dialogView.findViewById<TextView>(R.id.surgeFeeValue)
-            surgeFeeValue.text = errorResponse.estimatedFee?.let {
-                "$it FLOW"
-            } ?: "0.003 FLOW"
+            surgeFeeValue.text = "${errorResponse.getEstimatedFee()} FLOW"
 
             // Description
             val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
-            val multiplier = errorResponse.surgeMultiplier?.toInt() ?: 4
+            val multiplier = errorResponse.getSurgeMultiplier().toInt()
             descriptionText.text = "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are ${multiplier}× higher than usual."
 
             // Close button (X)
@@ -158,6 +157,7 @@ class SurgePricingAlertViewXML {
             val holdButton = dialogView.findViewById<AppCompatButton>(R.id.holdButton)
             val progressBackground = dialogView.findViewById<View>(R.id.holdProgressBackground)
             val holdButtonContainer = dialogView.findViewById<FrameLayout>(R.id.holdButtonContainer)
+            val progressIndicator = dialogView.findViewById<ProgressBar>(R.id.progressIndicator)
 
             var holdStartTime = 0L
             var isHolding = false
@@ -176,8 +176,10 @@ class SurgePricingAlertViewXML {
                 }
                 progressBackground.requestLayout()
 
-                // Reset button text
+                // Reset button text and hide spinner
                 holdButton.text = holdButton.context.getString(R.string.surge_hold_to_confirm)
+                holdButton.visibility = View.VISIBLE
+                progressIndicator.visibility = View.GONE
             }
 
             holdButton.setOnTouchListener { _, event ->
@@ -200,24 +202,21 @@ class SurgePricingAlertViewXML {
                                     }
                                     progressBackground.requestLayout()
 
-                                    // Update button text with countdown
-                                    val remainingSeconds = ((HOLD_DURATION_MS - elapsed) / 1000.0).coerceAtLeast(0.0)
-                                    holdButton.text = if (remainingSeconds > 0) {
-                                        "Hold for ${String.format("%.1f", remainingSeconds)}s"
-                                    } else {
-                                        "Confirming..."
-                                    }
-
                                     if (progress < 1f) {
                                         handler.postDelayed(this, 50) // Update every 50ms
                                     } else {
-                                        // Completed holding
+                                        // Completed holding - show spinner and hide text
+                                        holdButton.text = ""
+                                        progressIndicator.visibility = View.VISIBLE
+
                                         val holdDuration = System.currentTimeMillis() - holdStartTime
                                         SurgePricingMetrics.trackHoldToConfirm(true, holdDuration)
                                         SurgePricingMetrics.trackSurgeDecision(true, errorResponse)
 
                                         userDecisionCallback?.invoke(true)
-                                        dismissCurrentAlert()
+
+                                        // Keep dialog open with spinner showing while transaction processes
+                                        // The dialog will be dismissed by the transaction completion
                                     }
                                 }
                             }
@@ -226,7 +225,7 @@ class SurgePricingAlertViewXML {
                         true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        if (isHolding) {
+                        if (isHolding && progressIndicator.visibility != View.VISIBLE) {
                             val holdDuration = System.currentTimeMillis() - holdStartTime
                             SurgePricingMetrics.trackHoldToConfirm(false, holdDuration)
                             resetButton()
@@ -259,24 +258,5 @@ class SurgePricingAlertViewXML {
          */
         @JvmStatic
         fun isAlertShowing(): Boolean = isAlertShowing
-    }
-}
-
-/**
- * Extension functions for PayerErrorResponse
- */
-fun PayerServiceInterceptor.PayerErrorResponse.isSurgePricing(): Boolean {
-    return status == 429 || status == 503
-}
-
-fun PayerServiceInterceptor.PayerErrorResponse.isServerError(): Boolean {
-    return status in 500..599
-}
-
-fun PayerServiceInterceptor.PayerErrorResponse.getDisplayMessage(): String {
-    return message ?: when (status) {
-        429 -> "Network demand is high. Transaction fees have temporarily increased to manage network load."
-        503 -> "Service is temporarily unavailable. Higher fees may apply."
-        else -> "An unexpected error occurred. Please try again."
     }
 }

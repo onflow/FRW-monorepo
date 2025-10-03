@@ -54,41 +54,98 @@ class PayerServiceInterceptor : Interceptor {
     }
 
     /**
-     * Data class representing the error response envelope from the payer service
+     * Data class representing the surge info from the payer status API
      */
-    data class PayerErrorResponse(
+    data class SurgeInfo(
+        @SerializedName("active")
+        val active: Boolean = false,
+
+        @SerializedName("multiplier")
+        val multiplier: Double? = null,
+
+        @SerializedName("expiresAt")
+        val expiresAt: Long? = null,
+
+        @SerializedName("ttlSeconds")
+        val ttlSeconds: Long? = null,
+
+        @SerializedName("sampledAt")
+        val sampledAt: Long? = null,
+
+        @SerializedName("maxFee")
+        val maxFee: Double? = null
+    )
+
+    /**
+     * Data class representing the payer info
+     */
+    data class PayerInfo(
+        @SerializedName("enabled")
+        val enabled: Boolean = false,
+
+        @SerializedName("balance")
+        val balance: String? = null
+    )
+
+    /**
+     * Data class representing the payload from payer/status endpoint
+     */
+    data class PayerStatusPayload(
+        @SerializedName("statusVersion")
+        val statusVersion: Int = 1,
+
+        @SerializedName("surge")
+        val surge: SurgeInfo? = null,
+
+        @SerializedName("feePayer")
+        val feePayer: PayerInfo? = null,
+
+        @SerializedName("network")
+        val network: String? = null
+    )
+
+    /**
+     * Data class representing the API response envelope
+     */
+    data class PayerStatusResponse(
         @SerializedName("status")
         val status: Int,
+
         @SerializedName("data")
-        val data: Any? = null,
+        val data: PayerStatusPayload? = null,
+
+        @SerializedName("message")
+        val message: String? = null
+    )
+
+    /**
+     * Data class representing the error response for surge pricing (429 responses)
+     */
+    data class PayerErrorResponse(
+        // The HTTP status code (not from JSON, set manually)
+        val status: Int,
+
+        // The actual error field from the JSON response (for 429 responses)
+        @SerializedName("error")
+        val error: String? = null,
+
+        // Standard API response fields (might not be present in all error responses)
         @SerializedName("message")
         val message: String? = null,
 
-        // Additional fields for surge pricing scenarios
-        @SerializedName("surgeActive")
-        val surgeActive: Boolean = false,
-        @SerializedName("surgeMultiplier")
-        val surgeMultiplier: Double? = null,
-        @SerializedName("estimatedFee")
-        val estimatedFee: String? = null
+        // Surge info extracted from status check or error response
+        var surgeInfo: SurgeInfo? = null
     ) {
-        fun isSurgePricing(): Boolean = status == SURGE_PRICING_CODE || surgeActive
+        fun isSurgePricing(): Boolean = status == SURGE_PRICING_CODE || surgeInfo?.active == true
 
         fun isServerError(): Boolean = status in 500..599
 
-        fun getDisplayMessage(): String {
-            return when {
-                isSurgePricing() -> {
-                    val multiplier = surgeMultiplier ?: 4.0
-                    "Due to high network activity, transaction fees are elevated (${multiplier}× higher than usual). Flow Wallet is temporarily not paying for your gas."
-                }
-                isServerError() -> {
-                    "The payer service is temporarily unavailable. Please try again later or use self-custody mode."
-                }
-                else -> {
-                    message ?: "An error occurred with the payer service (status: $status)"
-                }
-            }
+        fun getSurgeMultiplier(): Double = surgeInfo?.multiplier ?: 4.0
+
+        fun getEstimatedFee(): String {
+            return surgeInfo?.maxFee?.let {
+                String.format("%.6f", it)
+            } ?: "0.003"
         }
     }
 
@@ -144,21 +201,51 @@ class PayerServiceInterceptor : Interceptor {
 
             val errorResponse = try {
                 if (!errorBody.isNullOrBlank()) {
-                    val parsed = Gson().fromJson(errorBody, PayerErrorResponse::class.java)
-                    logd(TAG, "Successfully parsed PayerErrorResponse:")
-                    logd(TAG, "  - status: ${parsed?.status}")
-                    logd(TAG, "  - data: ${parsed?.data}")
-                    logd(TAG, "  - message: ${parsed?.message}")
-                    logd(TAG, "  - surgeActive: ${parsed?.surgeActive}")
-                    logd(TAG, "  - surgeMultiplier: ${parsed?.surgeMultiplier}")
-                    logd(TAG, "  - estimatedFee: ${parsed?.estimatedFee}")
+                    // For 429 responses, the server returns just {"error": "message"}
+                    // For other responses, it might return the standard API envelope
+                    val parsed = if (response.code == SURGE_PRICING_CODE) {
+                        // Parse the simple error response for 429
+                        val simpleError = Gson().fromJson(errorBody, PayerErrorResponse::class.java)
+                        logd(TAG, "Parsed 429 response:")
+                        logd(TAG, "  - error: ${simpleError?.error}")
 
-                    parsed?.copy(
-                        status = response.code
-                    ) ?: PayerErrorResponse(
-                        status = response.code,
-                        message = response.message
-                    )
+                        // Create error response with surge info
+                        simpleError?.copy(
+                            status = response.code,
+                            surgeInfo = SurgeInfo(
+                                active = true,
+                                multiplier = 4.0, // Default multiplier
+                                maxFee = 0.003    // Default fee
+                            )
+                        ) ?: PayerErrorResponse(
+                            status = response.code,
+                            error = errorBody,
+                            surgeInfo = SurgeInfo(active = true, multiplier = 4.0, maxFee = 0.003)
+                        )
+                    } else {
+                        // Try to parse as standard API response
+                        try {
+                            val apiResponse = Gson().fromJson(errorBody, PayerStatusResponse::class.java)
+                            logd(TAG, "Parsed standard API response:")
+                            logd(TAG, "  - status: ${apiResponse?.status}")
+                            logd(TAG, "  - message: ${apiResponse?.message}")
+
+                            PayerErrorResponse(
+                                status = response.code,
+                                message = apiResponse?.message ?: response.message,
+                                surgeInfo = apiResponse?.data?.surge
+                            )
+                        } catch (e: Exception) {
+                            // Fallback to simple error response
+                            val simpleError = Gson().fromJson(errorBody, PayerErrorResponse::class.java)
+                            simpleError?.copy(status = response.code) ?: PayerErrorResponse(
+                                status = response.code,
+                                error = errorBody
+                            )
+                        }
+                    }
+
+                    parsed
                 } else {
                     logd(TAG, "Error body is empty, creating default PayerErrorResponse")
                     PayerErrorResponse(
@@ -168,24 +255,22 @@ class PayerServiceInterceptor : Interceptor {
                 }
             } catch (e: Exception) {
                 logd(TAG, "Failed to parse error response: ${e.message}")
-                //logd(TAG, "Parse exception: ", e)
                 PayerErrorResponse(
                     status = response.code,
-                    message = response.message
+                    message = response.message,
+                    error = errorBody
                 )
             }
 
             // Handle surge pricing scenario
             if (errorResponse.isSurgePricing()) {
                 logd(TAG, "🚨 SURGE PRICING DETECTED 🚨")
-                logd(TAG, "Display message: ${errorResponse.getDisplayMessage()}")
                 lastErrorResponse = errorResponse
 
                 // Invoke callback if set (will trigger UI alert)
                 errorCallback?.invoke(errorResponse)
             } else if (errorResponse.isServerError()) {
                 logd(TAG, "❌ PAYER SERVICE ERROR ❌")
-                logd(TAG, "Display message: ${errorResponse.getDisplayMessage()}")
                 lastErrorResponse = errorResponse
 
                 // Invoke callback for server errors as well

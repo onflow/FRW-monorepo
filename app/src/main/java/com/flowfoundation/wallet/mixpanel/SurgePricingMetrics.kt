@@ -26,11 +26,11 @@ object SurgePricingMetrics {
             "timestamp" to System.currentTimeMillis()
         )
 
-        errorResponse.surgeMultiplier?.let {
+        errorResponse.surgeInfo?.multiplier?.let {
             properties["surge_multiplier"] = it
         }
 
-        errorResponse.estimatedFee?.let {
+        errorResponse.surgeInfo?.maxFee?.let {
             properties["estimated_fee"] = it
         }
 
@@ -55,11 +55,11 @@ object SurgePricingMetrics {
             "timestamp" to System.currentTimeMillis()
         )
 
-        errorResponse.surgeMultiplier?.let {
+        errorResponse.surgeInfo?.multiplier?.let {
             properties["surge_multiplier"] = it
         }
 
-        errorResponse.estimatedFee?.let {
+        errorResponse.surgeInfo?.maxFee?.let {
             properties["estimated_fee"] = it
         }
 

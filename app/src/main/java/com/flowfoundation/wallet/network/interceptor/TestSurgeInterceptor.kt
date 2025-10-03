@@ -97,11 +97,15 @@ class TestSurgeInterceptor(
         // Create mock error response
         val errorResponse = PayerServiceInterceptor.PayerErrorResponse(
             status = statusCode,
-            data = null,
+            error = null,
             message = message,
-            surgeActive = statusCode == 429,
-            surgeMultiplier = surgeMultiplier,
-            estimatedFee = surgeMultiplier?.let { "%.4f".format(0.001 * it) }
+            surgeInfo = if (statusCode == 429 && surgeMultiplier != null) {
+                PayerServiceInterceptor.SurgeInfo(
+                    active = true,
+                    multiplier = surgeMultiplier,
+                    maxFee = 0.001 * surgeMultiplier
+                )
+            } else null
         )
 
         // Show the surge alert dialog

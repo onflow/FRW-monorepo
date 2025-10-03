@@ -23,11 +23,13 @@ object TestSurgeTriggerNative {
     fun testDirectDialog(activity: Activity) {
         val errorResponse = PayerServiceInterceptor.PayerErrorResponse(
             status = 429,
-            data = null,
+            error = null,
             message = "High network demand. Transaction fees have increased 3x.",
-            surgeActive = true,
-            surgeMultiplier = 3.0,
-            estimatedFee = "0.003"
+            surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                active = true,
+                multiplier = 3.0,
+                maxFee = 0.003
+            )
         )
 
         // Use XML version for better UI control
@@ -70,56 +72,60 @@ object TestSurgeTriggerNative {
         val errorResponse = when (scenario) {
             InterceptorScenario.SURGE_LOW -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 429,
-                data = null,
+                error = null,
                 message = "Network activity is slightly elevated",
-                surgeActive = true,
-                surgeMultiplier = 1.2,
-                estimatedFee = "0.0012"
+                surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                    active = true,
+                    multiplier = 1.2,
+                    maxFee = 0.0012
+                )
             )
 
             InterceptorScenario.SURGE_MODERATE -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 429,
-                data = null,
+                error = null,
                 message = "Moderate network congestion detected",
-                surgeActive = true,
-                surgeMultiplier = 2.0,
-                estimatedFee = "0.002"
+                surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                    active = true,
+                    multiplier = 2.0,
+                    maxFee = 0.002
+                )
             )
 
             InterceptorScenario.SURGE_HIGH -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 429,
-                data = null,
+                error = null,
                 message = "High network demand! Fees are significantly elevated",
-                surgeActive = true,
-                surgeMultiplier = 5.0,
-                estimatedFee = "0.005"
+                surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                    active = true,
+                    multiplier = 5.0,
+                    maxFee = 0.005
+                )
             )
 
             InterceptorScenario.SURGE_EXTREME -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 429,
-                data = null,
+                error = null,
                 message = "EXTREME network congestion! Consider waiting",
-                surgeActive = true,
-                surgeMultiplier = 10.0,
-                estimatedFee = "0.01"
+                surgeInfo = PayerServiceInterceptor.SurgeInfo(
+                    active = true,
+                    multiplier = 10.0,
+                    maxFee = 0.01
+                )
             )
 
             InterceptorScenario.SERVICE_UNAVAILABLE -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 503,
-                data = null,
+                error = null,
                 message = "Payer service is temporarily unavailable",
-                surgeActive = false,
-                surgeMultiplier = null,
-                estimatedFee = null
+                surgeInfo = null
             )
 
             InterceptorScenario.GATEWAY_TIMEOUT -> PayerServiceInterceptor.PayerErrorResponse(
                 status = 504,
-                data = null,
+                error = null,
                 message = "Gateway timeout - service is overloaded",
-                surgeActive = false,
-                surgeMultiplier = null,
-                estimatedFee = null
+                surgeInfo = null
             )
         }
 
@@ -176,8 +182,8 @@ object TestSurgeTriggerNative {
     private fun simulateTransactionRetry(errorResponse: PayerServiceInterceptor.PayerErrorResponse) {
         logd(TAG, "=== SIMULATING TRANSACTION RETRY ===")
         logd(TAG, "Adding surge acceptance header: X-Accept-Surge = true")
-        logd(TAG, "Adding surge multiplier: X-Surge-Multiplier = ${errorResponse.surgeMultiplier}")
-        logd(TAG, "Retrying transaction with fee: ${errorResponse.estimatedFee} FLOW")
+        logd(TAG, "Adding surge multiplier: X-Surge-Multiplier = ${errorResponse.getSurgeMultiplier()}")
+        logd(TAG, "Retrying transaction with fee: ${errorResponse.getEstimatedFee()} FLOW")
 
         // Simulate network delay
         Thread.sleep(1000)
@@ -185,7 +191,7 @@ object TestSurgeTriggerNative {
         // Simulate success
         logd(TAG, "Transaction successful with surge pricing!")
         logd(TAG, "Transaction ID: tx_${System.currentTimeMillis()}")
-        logd(TAG, "Final fee paid: ${errorResponse.estimatedFee} FLOW")
+        logd(TAG, "Final fee paid: ${errorResponse.getEstimatedFee()} FLOW")
     }
 
     /**
