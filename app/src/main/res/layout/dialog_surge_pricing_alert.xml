@@ -85,15 +85,30 @@
                             android:textSize="14sp"
                             android:textStyle="normal" />
 
-                        <TextView
-                            android:id="@+id/surgeFeeValue"
-                          android:layout_marginTop="6dp"
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0.003 FLOW"
-                            android:textColor="@color/surge_text_primary"
-                            android:textSize="14sp"
-                            android:textStyle="normal" />
+                            android:layout_marginTop="6dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/surgeFeeValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.003 FLOW"
+                                android:textColor="@color/surge_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="normal" />
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginStart="4dp"
+                                android:src="@drawable/ic_coin_flow"
+                                android:scaleType="fitCenter" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
