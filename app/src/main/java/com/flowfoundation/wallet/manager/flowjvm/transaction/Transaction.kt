@@ -156,15 +156,6 @@ private suspend fun fetchPayerStatus(): PayerServiceInterceptor.PayerStatusRespo
 }
 
 /**
- * Check if surge pricing is currently active
- * Returns true if surge is active, false otherwise (including on errors - fail open)
- */
-private suspend fun isSurgePricingActive(): Boolean {
-  val status = fetchPayerStatus()
-  return status?.data?.surge?.active == true
-}
-
-/**
  * Helper function to execute payer requests with surge pricing handling
  * Shows alert dialog if surge pricing is detected and waits for user decision
  *
