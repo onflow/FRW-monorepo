@@ -389,13 +389,14 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               {/* From Account Section */}
               {fromAccount && (
                 <AccountCard
+                isSendTokensScreen={!isExtension}
                   account={transformAccountForCard(fromAccount)}
                   title={t('send.fromAccount')}
                   isLoading={false}
                 />
               )}
 
-              <Separator mx="$0" my="$0" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
+              <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
 
               <SendSectionHeader
                 title={sectionTitle}
