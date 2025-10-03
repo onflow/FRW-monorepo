@@ -134,36 +134,35 @@
                     android:id="@+id/holdButtonContainer"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_marginTop="20dp">
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/surge_button_bg">
 
-                    <!-- Progress Background -->
-                    <View
-                        android:id="@+id/holdProgressBackground"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/surge_button_progress_bg" />
+                    <!-- Circular Progress Indicator (like hold to send) -->
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/progressIndicator"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center_vertical|start"
+                        android:layout_marginStart="20dp"
+                        app:indicatorColor="@android:color/white"
+                        app:indicatorInset="4dp"
+                        app:indicatorSize="28dp"
+                        app:trackColor="#66FFFFFF"
+                        app:trackCornerRadius="4dp"
+                        app:trackThickness="4dp"
+                        android:progress="0"
+                        android:visibility="visible" />
 
-                    <!-- Button -->
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/holdButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/surge_button_bg"
-                        android:backgroundTint="@null"
+                    <!-- Button Text -->
+                    <TextView
+                        android:id="@+id/holdButtonText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:text="@string/surge_hold_to_confirm"
-                        android:textAllCaps="false"
                         android:textColor="@android:color/white"
                         android:textSize="16sp"
                         android:textStyle="bold" />
-
-                    <!-- Progress Indicator (spinner) -->
-                    <ProgressBar
-                        android:id="@+id/progressIndicator"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:indeterminateTint="@android:color/white"
-                        android:visibility="gone" />
 
                 </FrameLayout>
 

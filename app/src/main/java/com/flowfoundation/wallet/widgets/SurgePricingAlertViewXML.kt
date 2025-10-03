@@ -9,8 +9,8 @@ import android.os.Handler
 import android.os.Looper
 import android.view.*
 import android.widget.FrameLayout
-import android.widget.ProgressBar
 import android.widget.TextView
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.flowfoundation.wallet.R
@@ -154,81 +154,76 @@ class SurgePricingAlertViewXML {
             dialogView: View,
             errorResponse: PayerServiceInterceptor.PayerErrorResponse
         ) {
-            val holdButton = dialogView.findViewById<AppCompatButton>(R.id.holdButton)
-            val progressBackground = dialogView.findViewById<View>(R.id.holdProgressBackground)
             val holdButtonContainer = dialogView.findViewById<FrameLayout>(R.id.holdButtonContainer)
-            val progressIndicator = dialogView.findViewById<ProgressBar>(R.id.progressIndicator)
+            val holdButtonText = dialogView.findViewById<TextView>(R.id.holdButtonText)
+            val progressIndicator = dialogView.findViewById<com.google.android.material.progressindicator.CircularProgressIndicator>(R.id.progressIndicator)
 
-            var holdStartTime = 0L
+            var startTimeMillis = 0L
             var isHolding = false
             val handler = Handler(Looper.getMainLooper())
-            var holdRunnable: Runnable? = null
+            var progressTask: Runnable? = null
+
+            // Initially set progress to 0 and make it determinate
+            progressIndicator.isIndeterminate = false
+            progressIndicator.progress = 0
+
+            val updateProgress = {
+                if (isHolding) {
+                    val elapsedTime = System.currentTimeMillis() - startTimeMillis
+                    val progress = ((elapsedTime.toFloat() / HOLD_DURATION_MS) * 100).toInt().coerceIn(0, 100)
+
+                    progressIndicator.progress = progress
+
+                    if (progress >= 100) {
+                        // Completed holding - change to indeterminate spinner
+                        progressIndicator.isIndeterminate = true
+                        holdButtonText.text = ""
+
+                        val holdDuration = System.currentTimeMillis() - startTimeMillis
+                        SurgePricingMetrics.trackHoldToConfirm(true, holdDuration)
+                        SurgePricingMetrics.trackSurgeDecision(true, errorResponse)
+
+                        userDecisionCallback?.invoke(true)
+
+                        // Keep dialog open with spinner showing while transaction processes
+                    } else {
+                        // Continue updating progress
+                        progressTask?.let { handler.postDelayed(it, 16) } // Update every 16ms for smooth animation
+                    }
+                }
+            }
+
+            progressTask = Runnable { updateProgress() }
 
             val resetButton = {
                 isHolding = false
-                holdStartTime = 0L
-                holdRunnable?.let { handler.removeCallbacks(it) }
-                holdRunnable = null
+                startTimeMillis = 0L
+                progressTask?.let { handler.removeCallbacks(it) }
 
-                // Reset progress
-                progressBackground.layoutParams = progressBackground.layoutParams.apply {
-                    width = 0
-                }
-                progressBackground.requestLayout()
-
-                // Reset button text and hide spinner
-                holdButton.text = holdButton.context.getString(R.string.surge_hold_to_confirm)
-                holdButton.visibility = View.VISIBLE
-                progressIndicator.visibility = View.GONE
+                // Reset progress indicator
+                progressIndicator.isIndeterminate = false
+                progressIndicator.progress = 0
+                holdButtonText.text = holdButtonText.context.getString(R.string.surge_hold_to_confirm)
             }
 
-            holdButton.setOnTouchListener { _, event ->
+            holdButtonContainer.setOnTouchListener { _, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
-                        if (!isHolding) {
+                        if (!isHolding && !progressIndicator.isIndeterminate) {
                             isHolding = true
-                            holdStartTime = System.currentTimeMillis()
-
-                            // Animate progress
-                            holdRunnable = object : Runnable {
-                                override fun run() {
-                                    val elapsed = System.currentTimeMillis() - holdStartTime
-                                    val progress = (elapsed.toFloat() / HOLD_DURATION_MS).coerceIn(0f, 1f)
-
-                                    // Update progress bar width
-                                    val containerWidth = holdButtonContainer.width
-                                    progressBackground.layoutParams = progressBackground.layoutParams.apply {
-                                        width = (containerWidth * progress).toInt()
-                                    }
-                                    progressBackground.requestLayout()
-
-                                    if (progress < 1f) {
-                                        handler.postDelayed(this, 50) // Update every 50ms
-                                    } else {
-                                        // Completed holding - show spinner and hide text
-                                        holdButton.text = ""
-                                        progressIndicator.visibility = View.VISIBLE
-
-                                        val holdDuration = System.currentTimeMillis() - holdStartTime
-                                        SurgePricingMetrics.trackHoldToConfirm(true, holdDuration)
-                                        SurgePricingMetrics.trackSurgeDecision(true, errorResponse)
-
-                                        userDecisionCallback?.invoke(true)
-
-                                        // Keep dialog open with spinner showing while transaction processes
-                                        // The dialog will be dismissed by the transaction completion
-                                    }
-                                }
-                            }
-                            handler.post(holdRunnable!!)
+                            startTimeMillis = System.currentTimeMillis()
+                            handler.postDelayed(progressTask!!, 16)
+                            logd(TAG, "Hold button pressed - starting hold timer")
                         }
                         true
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        if (isHolding && progressIndicator.visibility != View.VISIBLE) {
-                            val holdDuration = System.currentTimeMillis() - holdStartTime
+                        if (isHolding && !progressIndicator.isIndeterminate) {
+                            // User released before completing
+                            val holdDuration = System.currentTimeMillis() - startTimeMillis
                             SurgePricingMetrics.trackHoldToConfirm(false, holdDuration)
                             resetButton()
+                            logd(TAG, "Hold button released early")
                         }
                         true
                     }

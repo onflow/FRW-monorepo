@@ -158,10 +158,11 @@ class PayerServiceInterceptor : Interceptor {
         // Log ALL requests to see what's happening
         logd(TAG, "Request URL: $url")
 
-        val isPayerRequest = url.contains("signAsFeePayer") ||
-                            url.contains("signAsBridgeFeePayer") ||
-                            url.contains("/payer/") ||
-                            url.contains("/api/payer")
+        val isPayerRequest = url.contains("/api/signAsFeePayer") ||
+                            url.contains("/api/signAsBridgeFeePayer") ||
+                            url.contains("/v1/payer/") ||
+                            url.contains("/api/v1/payer/") ||
+                            url.contains("/payer/")
 
         if (!isPayerRequest) {
             return chain.proceed(request)
