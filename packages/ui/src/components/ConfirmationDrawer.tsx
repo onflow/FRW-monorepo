@@ -214,6 +214,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         animation={isExtension ? 'quick' : 'lazy'}
         enterStyle={{ y: 1000 }}
         exitStyle={{ y: 1000 }}
+        overflow="scroll"
       >
         <YStack p="$4" gap="$4">
           {/* Header */}
