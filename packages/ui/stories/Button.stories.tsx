@@ -12,7 +12,7 @@ const meta = {
   argTypes: {
     variant: {
       control: { type: 'select' },
-      options: ['primary', 'secondary', 'ghost', 'outline'],
+      options: ['primary', 'secondary', 'ghost', 'outline', 'inverse'],
     },
     loading: {
       control: { type: 'boolean' },
@@ -53,6 +53,13 @@ export const Ghost: Story = {
 export const Outline: Story = {
   args: {
     variant: 'outline',
+    children: 'Button',
+  },
+};
+
+export const Inverse: Story = {
+  args: {
+    variant: 'inverse',
     children: 'Button',
   },
 };

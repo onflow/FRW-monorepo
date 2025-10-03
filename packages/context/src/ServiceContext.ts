@@ -246,6 +246,9 @@ export const toast = new Proxy({} as ToastManager, {
       if (prop === 'clear' && bridge.clearAllToasts) {
         return bridge.clearAllToasts.bind(bridge);
       }
+      if (prop === 'setToastCallback' && bridge.setToastCallback) {
+        return bridge.setToastCallback.bind(bridge);
+      }
       // Return no-op if not available
       return (): void => {};
     } catch (error) {

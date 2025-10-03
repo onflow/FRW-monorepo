@@ -47,6 +47,12 @@ export interface SkeletonProps {
   height?: number | string;
   borderRadius?: number | string;
   animated?: boolean;
+  baseBgLight?: string | `$${string}`;
+  baseBgDark?: string | `$${string}`;
+  animationType?: 'pulse' | 'none';
+  pulseDuration?: number;
+  pulseMinOpacity?: number;
+  pulseMaxOpacity?: number;
   [key: string]: any; // Allow additional props like mb, mt, etc.
 }
 
