@@ -44,7 +44,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_coin_flow"
+                        android:src="@drawable/ic_surge_alert_triangle"
                         android:scaleType="fitCenter"
                         android:tint="@android:color/white" />
 
@@ -145,7 +145,7 @@
                       android:layout_width="16dp"
                       android:layout_height="16dp"
                       android:layout_marginEnd="4dp"
-                      android:src="@drawable/ic_coin_flow"
+                      android:src="@drawable/ic_surge_active"
                       android:scaleType="fitCenter" />
 
                     <TextView
