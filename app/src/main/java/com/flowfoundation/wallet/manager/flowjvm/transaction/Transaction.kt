@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.manager.flowjvm.transaction
 
-import android.app.Activity
 import com.flow.wallet.CryptoProvider
 import com.google.gson.Gson
 import com.flowfoundation.wallet.manager.config.AppConfig
@@ -10,12 +9,7 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_BRIDGE_PAYER
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
-import com.flowfoundation.wallet.network.functions.executeHttpFunction
-import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
-import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
-import com.flowfoundation.wallet.widgets.SurgePricingAlertViewXML
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
+import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.InvalidKeyException
 import com.flowfoundation.wallet.utils.error.WalletError
@@ -32,266 +26,13 @@ import org.onflow.flow.models.*
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.app.ActivityManager
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
 import org.onflow.flow.infrastructure.removeHexPrefix
 import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 private const val TAG = "Transaction"
-
-// Cache for payer status with TTL
-private data class PayerStatusCache(
-  val response: PayerServiceInterceptor.PayerStatusResponse,
-  val timestamp: Long,
-  val ttlMs: Long = 60000 // Default 1 minute TTL
-) {
-  fun isValid(): Boolean = System.currentTimeMillis() - timestamp < ttlMs
-}
-
-private var cachedPayerStatus: PayerStatusCache? = null
-
-/**
- * Fetch payer status from the API with caching and retry logic
- * This is called before transactions to check surge pricing status
- */
-private suspend fun fetchPayerStatus(): PayerServiceInterceptor.PayerStatusResponse? {
-  return withContext(Dispatchers.IO) {
-    // Check cache first
-    cachedPayerStatus?.let { cache ->
-      if (cache.isValid()) {
-        logd(TAG, "Using cached payer status (age: ${System.currentTimeMillis() - cache.timestamp}ms)")
-        return@withContext cache.response
-      }
-    }
-
-    logd(TAG, "Fetching fresh payer status from /api/v1/payer/status")
-
-    // Retry configuration
-    val maxRetries = 3
-    var retryCount = 0
-    var lastException: Exception? = null
-
-    while (retryCount < maxRetries) {
-      try {
-        val client = OkHttpClient.Builder()
-          .connectTimeout(5, TimeUnit.SECONDS)
-          .readTimeout(5, TimeUnit.SECONDS)
-          .addInterceptor(HeaderInterceptor()) // Add authentication headers
-          .addInterceptor(PayerServiceInterceptor())
-          .build()
-
-        // Build request for status endpoint - ensure no double slash
-        val statusUrl = if (BASE_HOST.endsWith("/")) {
-          "${BASE_HOST}api/v1/payer/status"
-        } else {
-          "${BASE_HOST}/api/v1/payer/status"
-        }
-        val request = Request.Builder()
-          .url(statusUrl)
-          .get()
-          .build()
-        val response = client.newCall(request).execute()
-        val responseBody = response.body?.string()
-
-        if (response.isSuccessful && !responseBody.isNullOrBlank()) {
-          val payerStatus = Gson().fromJson(responseBody, PayerServiceInterceptor.PayerStatusResponse::class.java)
-          logd(TAG, "Payer status fetched successfully:")
-          logd(TAG, "  - Status: ${payerStatus.status}")
-          logd(TAG, "  - Surge active: ${payerStatus.data?.surge?.active}")
-          logd(TAG, "  - Surge multiplier: ${payerStatus.data?.surge?.multiplier}")
-          logd(TAG, "  - Max fee: ${payerStatus.data?.surge?.maxFee}")
-          logd(TAG, "  - Fee payer enabled: ${payerStatus.data?.feePayer?.enabled}")
-
-          // Cache the response with TTL from server or default
-          val ttlSeconds = payerStatus.data?.surge?.ttlSeconds ?: 60
-          cachedPayerStatus = PayerStatusCache(
-            response = payerStatus,
-            timestamp = System.currentTimeMillis(),
-            ttlMs = ttlSeconds * 1000
-          )
-
-          return@withContext payerStatus
-        } else if (response.code in 500..599) {
-          // Server error - retry with exponential backoff
-          logd(TAG, "Server error (${response.code}) on attempt ${retryCount + 1}, retrying...")
-          retryCount++
-          if (retryCount < maxRetries) {
-            // Exponential backoff: 1s, 2s, 4s
-            val delayMs = (1000L * (1 shl (retryCount - 1))).coerceAtMost(4000L)
-            logd(TAG, "Waiting ${delayMs}ms before retry...")
-            kotlinx.coroutines.delay(delayMs)
-            continue
-          }
-        } else {
-          // Client error (4xx) or other - don't retry
-          logd(TAG, "Failed to fetch payer status: ${response.code} ${response.message}")
-          return@withContext null
-        }
-      } catch (e: Exception) {
-        lastException = e
-        retryCount++
-
-        if (retryCount < maxRetries) {
-          logd(TAG, "Error fetching payer status (attempt $retryCount): ${e.message}, retrying...")
-          // Exponential backoff: 1s, 2s, 4s
-          val delayMs = (1000L * (1 shl (retryCount - 1))).coerceAtMost(4000L)
-          kotlinx.coroutines.delay(delayMs)
-        } else {
-          logd(TAG, "Failed to fetch payer status after $maxRetries attempts: ${e.message}")
-        }
-      }
-    }
-
-    // Fail open - don't block transactions if status check fails
-    logd(TAG, "Payer status check failed after retries, failing open")
-    return@withContext null
-  }
-}
-
-/**
- * Helper function to execute payer requests with surge pricing handling
- * Shows alert dialog if surge pricing is detected and waits for user decision
- *
- * @return Response string if successful, null if user accepts surge (proceed without payer) or cancels
- */
-private suspend fun executePayerRequestWithSurgeHandling(
-  functionName: String,
-  data: Any?,
-  host: String? = BASE_HOST
-): String? = suspendCancellableCoroutine { continuation ->
-  // Execute preflight and request in IO scope
-  ioScope {
-    // First, do preflight check for surge pricing to avoid unnecessary calls
-    val payerStatus = fetchPayerStatus()
-
-    // Check if surge is active from the preflight check
-    if (payerStatus?.data?.surge?.active == true) {
-      logd(TAG, "Surge pricing detected from preflight check")
-      val currentActivity = getCurrentActivity()
-
-      if (currentActivity != null) {
-        // Create error response from status check
-        val errorResponse = PayerServiceInterceptor.PayerErrorResponse(
-          status = 429,
-          message = "Surge pricing is active",
-          surgeInfo = payerStatus.data.surge
-        )
-
-        logd(TAG, "Showing surge pricing alert from preflight")
-
-        currentActivity.runOnUiThread {
-          SurgePricingAlertViewXML.showSurgeAlert(
-            activity = currentActivity,
-            errorResponse = errorResponse,
-            onUserDecision = { accepted ->
-              if (accepted) {
-                logd(TAG, "User accepted surge pricing - proceeding without remote payer (self-custody)")
-                // Record telemetry for accepting surge
-                MixpanelManager.track("surge_pricing_accepted", mapOf(
-                  "source" to "preflight",
-                  "multiplier" to (payerStatus.data.surge?.multiplier ?: 1.0),
-                  "max_fee" to (payerStatus.data.surge?.maxFee ?: "0")
-                ))
-                SurgePricingAlertViewXML.dismissCurrentAlert()
-                // Return null to indicate proceeding without payer
-                continuation.resume(null)
-              } else {
-                logd(TAG, "User cancelled transaction due to surge pricing")
-                // Record telemetry for declining surge
-                MixpanelManager.track("surge_pricing_declined", mapOf(
-                  "source" to "preflight",
-                  "multiplier" to (payerStatus.data.surge?.multiplier ?: 1.0),
-                  "max_fee" to (payerStatus.data.surge?.maxFee ?: "0")
-                ))
-                SurgePricingAlertViewXML.dismissCurrentAlert()
-                continuation.cancel()
-              }
-            }
-          )
-        }
-        return@ioScope // Exit early, let the dialog callback handle continuation
-      }
-    }
-
-    // Set up callback for interceptor errors (in case status check missed it or status changed)
-    PayerServiceInterceptor.setErrorCallback { errorResponse ->
-      val currentActivity = getCurrentActivity()
-      logd(TAG, "PayerServiceInterceptor callback triggered. Current activity: ${currentActivity?.javaClass?.simpleName}")
-
-      if (currentActivity != null && (errorResponse.isSurgePricing() || errorResponse.isServerError())) {
-        logd(TAG, "Showing surge pricing alert from interceptor on UI thread")
-        currentActivity.runOnUiThread {
-          SurgePricingAlertViewXML.showSurgeAlert(
-            activity = currentActivity,
-            errorResponse = errorResponse,
-            onUserDecision = { accepted ->
-              if (accepted && errorResponse.isSurgePricing()) {
-                logd(TAG, "User accepted surge pricing - proceeding without remote payer (self-custody)")
-                // Record telemetry for accepting surge
-                MixpanelManager.track("surge_pricing_accepted", mapOf(
-                  "source" to "interceptor",
-                  "status_code" to errorResponse.status,
-                  "multiplier" to (errorResponse.surgeInfo?.multiplier ?: 1.0),
-                  "max_fee" to (errorResponse.surgeInfo?.maxFee ?: "0")
-                ))
-                SurgePricingAlertViewXML.dismissCurrentAlert()
-                // Return null to indicate proceeding without payer
-                continuation.resume(null)
-              } else {
-                logd(TAG, "User cancelled transaction")
-                // Record telemetry for declining
-                MixpanelManager.track("surge_pricing_declined", mapOf(
-                  "source" to "interceptor",
-                  "status_code" to errorResponse.status,
-                  "multiplier" to (errorResponse.surgeInfo?.multiplier ?: 1.0),
-                  "max_fee" to (errorResponse.surgeInfo?.maxFee ?: "0")
-                ))
-                SurgePricingAlertViewXML.dismissCurrentAlert()
-                continuation.cancel()
-              }
-            }
-          )
-        }
-      }
-    }
-
-    // Execute the actual payer request (only if not already blocked by preflight)
-    try {
-      val response = executeHttpFunction(functionName, data, host)
-
-      // Check if we have a pending error that wasn't handled
-      val lastError = PayerServiceInterceptor.getLastErrorResponse()
-      if (lastError != null && (lastError.isSurgePricing() || lastError.isServerError())) {
-        // Wait for user decision from the alert
-        // The callback above will handle the continuation
-      } else {
-        // Success or non-surge error
-        continuation.resume(response)
-      }
-    } catch (e: Exception) {
-      logd(TAG, "Payer request failed: ${e.message}")
-      // For non-surge errors, just fail silently and proceed without payer
-      continuation.resume(null)
-    } finally {
-      // Clean up
-      PayerServiceInterceptor.setErrorCallback(null)
-    }
-  }
-}
-
-/**
- * Get current activity from the ActivityManager
- */
-private fun getCurrentActivity(): Activity? {
-  return ActivityManager.getCurrentActivity()
-}
 
 suspend fun sendTransaction(
   builder: TransactionBuilder.() -> Unit,
@@ -1075,7 +816,7 @@ suspend fun Transaction.addFreeGasEnvelope(): Transaction {
   logd(TAG, "Building payer signable: $signable")
 
   // Use surge-aware payer request handling with BASE_HOST for payer service
-  val response = executePayerRequestWithSurgeHandling(
+  val response = SurgePricingManager.executePayerRequestWithSurgeHandling(
     functionName = FUNCTION_SIGN_AS_PAYER,
     data = signable,
     host = BASE_HOST
@@ -1107,7 +848,7 @@ suspend fun Transaction.addFreeBridgeFeeEnvelope(): Transaction {
   val signable = buildBridgeFeePayerSignable()
 
   // Use surge-aware payer request handling for bridge transactions
-  val response = executePayerRequestWithSurgeHandling(
+  val response = SurgePricingManager.executePayerRequestWithSurgeHandling(
     functionName = FUNCTION_SIGN_AS_BRIDGE_PAYER,
     data = signable,
     host = BASE_HOST
