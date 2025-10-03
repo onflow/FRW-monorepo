@@ -48,7 +48,7 @@ export interface RecipientListProps {
   isMobile?: boolean;
 
   // Style
-  contentPadding?: number;
+  contentPadding?: number | string;
 }
 
 export function RecipientList({
@@ -72,7 +72,7 @@ export function RecipientList({
   itemSpacing = 8,
   sectionSpacing = 16,
   isMobile = false,
-  contentPadding = 16,
+  contentPadding = '$4',
 }: RecipientListProps) {
   const themeName = useThemeName();
 
@@ -92,12 +92,12 @@ export function RecipientList({
       {Array.from({ length: 8 }).map((_, index) => (
         <YStack key={`skeleton-${index}`} p="$3">
           <XStack items="center" gap="$3">
-            <Skeleton width="$4" height="$4" borderRadius="$10" />
+            <Skeleton width="$4" height="$4" borderRadius="$10" animationType="pulse" />
             <YStack flex={1} gap="$2">
-              <Skeleton height="$1" width="60%" />
-              <Skeleton height="$0.75" width="40%" />
+              <Skeleton height="$1" width="60%" animationType="pulse" />
+              <Skeleton height="$0.75" width="40%" animationType="pulse" />
             </YStack>
-            <Skeleton width="$1" height="$1" borderRadius="$2" />
+            <Skeleton width="$1" height="$1" borderRadius="$2" animationType="pulse" />
           </XStack>
         </YStack>
       ))}
