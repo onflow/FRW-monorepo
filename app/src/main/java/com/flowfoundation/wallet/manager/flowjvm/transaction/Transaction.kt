@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_BRIDGE_PAYER
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
+import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.widgets.SurgePricingAlertViewXML
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -82,6 +83,7 @@ private suspend fun fetchPayerStatus(): PayerServiceInterceptor.PayerStatusRespo
         val client = OkHttpClient.Builder()
           .connectTimeout(5, TimeUnit.SECONDS)
           .readTimeout(5, TimeUnit.SECONDS)
+          .addInterceptor(HeaderInterceptor()) // Add authentication headers
           .addInterceptor(PayerServiceInterceptor())
           .build()
 
