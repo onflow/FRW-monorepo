@@ -65,7 +65,10 @@ export function Button({
       buttonStyles = {
         bg: '$inverseBg',
         color: '$inverseText',
-        hoverStyle: { bg: '$bg3' },
+        hoverStyle: {
+          bg: '$bg3',
+          color: '$inverseBg',
+        },
         pressStyle: press,
       };
       break;
