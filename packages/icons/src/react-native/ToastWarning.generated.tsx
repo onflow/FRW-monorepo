@@ -1,6 +1,6 @@
 import * as React from 'react';
-import Svg, { type SvgProps, Circle, Path } from 'react-native-svg';
-const UserRoundPlus = ({
+import Svg, { type SvgProps, Path } from 'react-native-svg';
+const ToastWarning = ({
   color = '#000',
   size = 24,
   width,
@@ -16,15 +16,7 @@ const UserRoundPlus = ({
     {...props}
   >
     <Path
-      d="M2 21a8 8 0 0 1 13.292-6"
-      stroke={color}
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <Circle cx={10} cy={8} r={5} stroke={color} strokeWidth="2" />
-    <Path
-      d="M19 16v6M22 19h-6"
+      d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3M12 9v4M12 17h.01"
       stroke={color}
       strokeWidth="2"
       strokeLinecap="round"
@@ -32,4 +24,4 @@ const UserRoundPlus = ({
     />
   </Svg>
 );
-export default UserRoundPlus;
+export default ToastWarning;

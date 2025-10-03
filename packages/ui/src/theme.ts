@@ -355,6 +355,11 @@ const themesBuilder = createThemeBuilder()
       dark40: flowColors.dark40, // $dark40
       dark25: flowColors.dark25, // $dark25
       dark10: flowColors.dark10, // $dark10
+
+      // Inverse button tokens (theme-aware)
+      // Defaults align to light theme; overridden in dark theme below
+      inverseBg: flowColors.black, // $inverseBg
+      inverseText: flowColors.white, // $inverseText
     },
   })
   // Add specific themes that use the templates and palettes
@@ -391,6 +396,10 @@ const themesBuilder = createThemeBuilder()
       shadowHover: flowColors.shadowDarkHover, // $shadowHover
       shadowPress: flowColors.shadowDarkPress, // $shadowPress
       shadowFocus: flowColors.shadowDarkFocus, // $shadowFocus
+
+      // Override inverse tokens for dark mode
+      inverseBg: flowColors.white,
+      inverseText: flowColors.black,
     },
   });
 
