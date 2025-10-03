@@ -220,6 +220,8 @@ const themesBuilder = createThemeBuilder()
       flowColors.lightBorder1, // 8 - light border
       flowColors.textLight4, // 9 - light text
       flowColors.surfaceLight1, // 10 - drawer background in light mode (same as main bg)
+      flowColors.black, // 11 - inverse background
+      flowColors.white, // 12 - inverse text
     ],
     // Dark palette: dark background to light foreground
     dark: [
@@ -234,6 +236,8 @@ const themesBuilder = createThemeBuilder()
       flowColors.darkBorder1, // 8 - dark border
       flowColors.textDark4, // 9 - dark text
       flowColors.surfaceDarkDrawer, // 10 - drawer background (#121212)
+      flowColors.white, // 11 - inverse background
+      flowColors.black, // 12 - inverse text
     ],
   })
   // Add templates - these map palette indices to theme property names
@@ -353,10 +357,11 @@ const themesBuilder = createThemeBuilder()
       dark25: flowColors.dark25, // $dark25
       dark10: flowColors.dark10, // $dark10
 
-      // Inverse button tokens (theme-aware)
-      // Defaults align to light theme; overridden in dark theme below
-      inverseBg: flowColors.black, // $inverseBg
-      inverseText: flowColors.white, // $inverseText
+      // Inverse button tokens (theme-aware via palette indexes)
+      // Use text1 as bg (index 6): black in light, white in dark
+      // Use background (index 0) as text: white in light, black in dark
+      inverseBg: 11, // $inverseBg -> palette[11]
+      inverseText: 12, // $inverseText -> palette[12]
     },
   })
   // Add specific themes that use the templates and palettes
@@ -393,10 +398,6 @@ const themesBuilder = createThemeBuilder()
       shadowHover: flowColors.shadowDarkHover, // $shadowHover
       shadowPress: flowColors.shadowDarkPress, // $shadowPress
       shadowFocus: flowColors.shadowDarkFocus, // $shadowFocus
-
-      // Override inverse tokens for dark mode
-      inverseBg: flowColors.white,
-      inverseText: flowColors.black,
     },
   });
 
