@@ -350,8 +350,11 @@ suspend fun sendTransaction(
       // Check if payer signature was actually added (might fail due to surge pricing)
       if (txWithPayer.envelopeSignatures.isEmpty()) {
         logd(TAG, "Free gas envelope not added (likely due to surge pricing), falling back to self-custody")
-        // Fall back to self-custody - update payer to be the user's address (without 0x prefix)
-        tx = tx.copy(payer = walletAddress.removeHexPrefix()).addLocalEnvelopeSignatures()
+        // Fall back to self-custody - rebuild transaction with user as payer
+        // When payer = proposer = authorizer, buildAndSign() handles both signatures
+        transactionBuilder.payer = walletAddress.removeHexPrefix()
+        tx = prepare(transactionBuilder)
+        logd(TAG, "Rebuilt transaction for self-custody with payer=${tx.payer}")
       } else {
         tx = txWithPayer
       }
