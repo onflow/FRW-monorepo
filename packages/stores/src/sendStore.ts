@@ -99,7 +99,23 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     })),
 
-  setSelectedNFTs: (nfts: NFTModel[]) => set({ selectedNFTs: nfts, error: null }),
+  setSelectedNFTs: (nfts: NFTModel[]) =>
+    set((state) => {
+      // Initialize quantities for ERC1155 NFTs if not already set
+      const newQuantities = { ...state.selectedNFTQuantities };
+      nfts.forEach((nft) => {
+        if (nft.contractType === 'ERC1155' && !newQuantities[nft.id || '']) {
+          // Set default quantity of 1 for ERC1155 NFTs
+          newQuantities[nft.id || ''] = 1;
+        }
+      });
+
+      return {
+        selectedNFTs: nfts,
+        selectedNFTQuantities: newQuantities,
+        error: null,
+      };
+    }),
   setSelectedCollection: (collection: CollectionModel | null) =>
     set({ selectedCollection: collection, error: null }),
 
@@ -108,8 +124,15 @@ export const useSendStore = create<SendState>((set, get) => ({
       const exists = state.selectedNFTs.find((n) => n.id === nft.id);
       if (exists) return state;
 
+      // Initialize quantity for ERC1155 NFTs
+      const newQuantities = { ...state.selectedNFTQuantities };
+      if (nft.contractType === 'ERC1155' && nft.id && !newQuantities[nft.id]) {
+        newQuantities[nft.id] = 1;
+      }
+
       return {
         selectedNFTs: [...state.selectedNFTs, nft],
+        selectedNFTQuantities: newQuantities,
         error: null,
       };
     }),

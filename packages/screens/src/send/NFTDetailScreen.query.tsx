@@ -224,10 +224,19 @@ export function NFTDetailScreen(): React.ReactElement {
   const handleContinue = useCallback(() => {
     // Get transaction type from store
     const setTransactionType = useSendStore.getState().setTransactionType;
+    const setNFTQuantity = useSendStore.getState().setNFTQuantity;
 
     // Set transaction type based on number of selected NFTs
     if (selectedNFTs && selectedNFTs.length === 1) {
       setTransactionType('single-nft');
+      // Ensure ERC1155 NFTs have a default quantity of 1
+      const singleNFT = selectedNFTs[0];
+      if (singleNFT.contractType === 'ERC1155' && singleNFT.id) {
+        const currentQuantity = useSendStore.getState().getNFTQuantity(singleNFT.id);
+        if (!currentQuantity || currentQuantity === 0) {
+          setNFTQuantity(singleNFT.id, 1);
+        }
+      }
     } else if (selectedNFTs && selectedNFTs.length > 1) {
       setTransactionType('multiple-nfts');
     }
