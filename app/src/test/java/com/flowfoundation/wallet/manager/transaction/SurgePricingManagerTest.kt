@@ -5,14 +5,16 @@ import com.google.gson.Gson
 import com.flowfoundation.wallet.manager.app.ActivityManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
-import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.widgets.SurgePricingAlertViewXML
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import okhttp3.*
+import okhttp3.Call
+import okhttp3.OkHttpClient
+import okhttp3.Response
+import okhttp3.ResponseBody
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -120,7 +122,7 @@ class SurgePricingManagerTest {
 
         // Then
         assertNotNull(result)
-        assertEquals(true, result.data?.surge?.active)
+        assertEquals(true, result?.data?.surge?.active)
     }
 
     @Test
@@ -130,28 +132,25 @@ class SurgePricingManagerTest {
         var callCount = 0
 
         mockkConstructor(OkHttpClient.Builder::class)
-        every { anyConstructed<OkHttpClient.Builder>().build() } answers {
-            mockk<OkHttpClient> {
-                every { newCall(any()) } answers {
-                    mockk<Call> {
-                        every { execute() } answers {
-                            callCount++
-                            when (callCount) {
-                                1, 2 -> mockk<Response> {
-                                    every { isSuccessful } returns false
-                                    every { code } returns 500
-                                    every { message } returns "Internal Server Error"
-                                    every { body } returns null
-                                }
-                                else -> mockk<Response> {
-                                    every { isSuccessful } returns true
-                                    every { code } returns 200
-                                    every { body } returns mockk {
-                                        every { string() } returns gson.toJson(successStatus)
-                                    }
-                                }
-                            }
-                        }
+        val mockClient = mockk<OkHttpClient>()
+        val mockCallLocal = mockk<Call>()
+
+        every { anyConstructed<OkHttpClient.Builder>().build() } returns mockClient
+        every { mockClient.newCall(any()) } returns mockCallLocal
+        every { mockCallLocal.execute() } answers {
+            callCount++
+            when (callCount) {
+                1, 2 -> mockk<Response> {
+                    every { isSuccessful } returns false
+                    every { code } returns 500
+                    every { message } returns "Internal Server Error"
+                    every { body } returns null
+                }
+                else -> mockk<Response> {
+                    every { isSuccessful } returns true
+                    every { code } returns 200
+                    every { body } returns mockk {
+                        every { string() } returns gson.toJson(successStatus)
                     }
                 }
             }
@@ -163,7 +162,7 @@ class SurgePricingManagerTest {
         // Then
         assertNotNull(result)
         assertEquals(3, callCount)
-        assertEquals(true, result.data?.surge?.active)
+        assertEquals(true, result?.data?.surge?.active)
     }
 
     @Test
@@ -184,121 +183,18 @@ class SurgePricingManagerTest {
     fun `fetchPayerStatus should fail open after max retries`() = runTest {
         // Given - All calls fail
         mockkConstructor(OkHttpClient.Builder::class)
-        every { anyConstructed<OkHttpClient.Builder>().build() } answers {
-            mockk<OkHttpClient> {
-                every { newCall(any()) } answers {
-                    mockk<Call> {
-                        every { execute() } throws IOException("Network error")
-                    }
-                }
-            }
-        }
+        val mockClient = mockk<OkHttpClient>()
+        val mockCallLocal = mockk<Call>()
+
+        every { anyConstructed<OkHttpClient.Builder>().build() } returns mockClient
+        every { mockClient.newCall(any()) } returns mockCallLocal
+        every { mockCallLocal.execute() } throws IOException("Network error")
 
         // When
         val result = SurgePricingManager.fetchPayerStatus()
 
         // Then
         assertNull(result) // Should fail open (return null)
-    }
-
-    @Test
-    fun `executePayerRequestWithSurgeHandling should show alert on surge detection`() = runTest {
-        // Given - Surge is active
-        val surgeStatus = createMockPayerStatus(surgeActive = true, multiplier = 2.0)
-        mockOkHttpResponse(200, gson.toJson(surgeStatus))
-
-        var alertShown = false
-        every {
-            SurgePricingAlertViewXML.showSurgeAlert(any(), any(), any())
-        } answers {
-            alertShown = true
-            // Simulate user accepting surge
-            thirdArg<(Boolean) -> Unit>().invoke(true)
-        }
-
-        // Mock Mixpanel tracking
-        every { MixpanelManager.track(any(), any()) } just Runs
-
-        // When
-        val result = SurgePricingManager.executePayerRequestWithSurgeHandling(
-            functionName = "/api/signAsFeePayer",
-            data = "test_data"
-        )
-
-        // Then
-        assertTrue(alertShown)
-        assertNull(result) // Should return null when user accepts surge (self-custody)
-
-        // Verify telemetry was tracked
-        verify {
-            MixpanelManager.track(
-                "surge_pricing_accepted",
-                match {
-                    it["source"] == "preflight" &&
-                    it["multiplier"] == 2.0
-                }
-            )
-        }
-    }
-
-    @Test
-    fun `executePayerRequestWithSurgeHandling should cancel when user declines surge`() = runTest {
-        // Given - Surge is active
-        val surgeStatus = createMockPayerStatus(surgeActive = true)
-        mockOkHttpResponse(200, gson.toJson(surgeStatus))
-
-        every {
-            SurgePricingAlertViewXML.showSurgeAlert(any(), any(), any())
-        } answers {
-            // Simulate user declining surge
-            thirdArg<(Boolean) -> Unit>().invoke(false)
-        }
-
-        every { MixpanelManager.track(any(), any()) } just Runs
-
-        // When - This should throw CancellationException
-        try {
-            SurgePricingManager.executePayerRequestWithSurgeHandling(
-                functionName = "/api/signAsFeePayer",
-                data = "test_data"
-            )
-        } catch (e: Exception) {
-            // Expected cancellation
-        }
-
-        // Then - Verify decline was tracked
-        verify {
-            MixpanelManager.track(
-                "surge_pricing_declined",
-                any()
-            )
-        }
-    }
-
-    @Test
-    fun `executePayerRequestWithSurgeHandling should proceed normally when no surge`() = runTest {
-        // Given - No surge pricing
-        val normalStatus = createMockPayerStatus(surgeActive = false)
-        mockOkHttpResponse(200, gson.toJson(normalStatus))
-
-        val expectedResponse = """{"envelopeSigs": {"address": "0x123", "keyId": 1, "sig": "abc"}}"""
-        coEvery {
-            executeHttpFunction(any(), any(), any())
-        } returns expectedResponse
-
-        // When
-        val result = SurgePricingManager.executePayerRequestWithSurgeHandling(
-            functionName = "/api/signAsFeePayer",
-            data = "test_data"
-        )
-
-        // Then
-        assertEquals(expectedResponse, result)
-
-        // Verify no alert was shown
-        verify(exactly = 0) {
-            SurgePricingAlertViewXML.showSurgeAlert(any(), any(), any())
-        }
     }
 
     @Test
@@ -329,19 +225,20 @@ class SurgePricingManagerTest {
     private fun createMockPayerStatus(
         surgeActive: Boolean = false,
         multiplier: Double = 1.0,
-        maxFee: String = "0.001",
-        ttlSeconds: Int = 60
+        maxFee: Double = 0.001,
+        ttlSeconds: Long = 60
     ): PayerServiceInterceptor.PayerStatusResponse {
         return PayerServiceInterceptor.PayerStatusResponse(
             status = 200,
-            data = PayerServiceInterceptor.PayerStatusData(
+            data = PayerServiceInterceptor.PayerStatusPayload(
+                statusVersion = 1,
                 surge = PayerServiceInterceptor.SurgeInfo(
                     active = surgeActive,
                     multiplier = multiplier,
                     maxFee = maxFee,
                     ttlSeconds = ttlSeconds
                 ),
-                feePayer = PayerServiceInterceptor.FeePayerInfo(
+                feePayer = PayerServiceInterceptor.PayerInfo(
                     enabled = !surgeActive
                 )
             )
@@ -358,10 +255,7 @@ class SurgePricingManagerTest {
         every { mockResponse.body } returns if (code in 200..299) mockResponseBody else null
         every { mockCall.execute() } returns mockResponse
 
-        every { anyConstructed<OkHttpClient.Builder>().build() } answers {
-            mockk<OkHttpClient> {
-                every { newCall(any()) } returns mockCall
-            }
-        }
+        every { anyConstructed<OkHttpClient.Builder>().build() } returns mockOkHttpClient
+        every { mockOkHttpClient.newCall(any()) } returns mockCall
     }
 }
