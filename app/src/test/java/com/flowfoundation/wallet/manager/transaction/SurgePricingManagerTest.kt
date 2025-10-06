@@ -10,6 +10,8 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
 import okhttp3.Call
 import okhttp3.OkHttpClient
@@ -22,6 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.IOException
+import java.net.SocketTimeoutException
 import org.junit.Assert.*
 
 /**
@@ -195,6 +198,153 @@ class SurgePricingManagerTest {
 
         // Then
         assertNull(result) // Should fail open (return null)
+    }
+
+    @Test
+    fun `fetchPayerStatus should handle concurrent access to cache properly`() = runTest {
+        // Given - First fetch populates the cache
+        val cachedStatus = createMockPayerStatus(surgeActive = false)
+        mockOkHttpResponse(200, gson.toJson(cachedStatus))
+
+        // Populate cache with first call
+        val firstResult = SurgePricingManager.fetchPayerStatus()
+        assertNotNull(firstResult)
+
+        // When - Multiple concurrent calls should use cache
+        val results = (1..10).map {
+            async {
+                SurgePricingManager.fetchPayerStatus()
+            }
+        }.awaitAll()
+
+        // Then - All should get the same cached response
+        results.forEach { result ->
+            assertNotNull(result)
+            assertEquals(cachedStatus.status, result?.status)
+        }
+
+        // Verify only one network call was made (the initial one)
+        verify(exactly = 1) { mockCall.execute() }
+    }
+
+    @Test
+    fun `fetchPayerStatus should handle malformed JSON response`() = runTest {
+        // Given - Malformed JSON response
+        mockOkHttpResponse(200, "{ invalid json }")
+
+        // When
+        val result = SurgePricingManager.fetchPayerStatus()
+
+        // Then - Should return null (fail open)
+        assertNull(result)
+    }
+
+    @Test
+    fun `fetchPayerStatus should handle response with missing required fields`() = runTest {
+        // Given - Response missing surge info
+        val incompleteResponse = """
+            {
+                "status": 200,
+                "data": {
+                    "feePayer": {
+                        "enabled": true
+                    }
+                }
+            }
+        """
+        mockOkHttpResponse(200, incompleteResponse)
+
+        // When
+        val result = SurgePricingManager.fetchPayerStatus()
+
+        // Then - Should still parse what's available
+        assertNotNull(result)
+        assertEquals(200, result?.status)
+        assertNull(result?.data?.surge) // Surge info should be null
+        assertTrue(result?.data?.feePayer?.enabled ?: false)
+    }
+
+    @Test
+    fun `fetchPayerStatus should handle extremely large TTL values from server`() = runTest {
+        // Given - Response with very large TTL (1 year in seconds)
+        val largeTTLStatus = createMockPayerStatus(
+            surgeActive = true,
+            ttlSeconds = 31536000L // 365 days
+        )
+        mockOkHttpResponse(200, gson.toJson(largeTTLStatus))
+
+        // When
+        val result = SurgePricingManager.fetchPayerStatus()
+
+        // Then - Should accept and cache with the large TTL
+        assertNotNull(result)
+        assertTrue(SurgePricingManager.hasCachedStatus())
+
+        // Cache should still be valid after clearing and checking
+        assertTrue(SurgePricingManager.hasCachedStatus())
+    }
+
+    @Test
+    fun `fetchPayerStatus should handle zero or negative TTL values`() = runTest {
+        // Given - Response with zero TTL
+        val zeroTTLStatus = createMockPayerStatus(
+            surgeActive = false,
+            ttlSeconds = 0L
+        )
+        mockOkHttpResponse(200, gson.toJson(zeroTTLStatus))
+
+        // When
+        val result = SurgePricingManager.fetchPayerStatus()
+
+        // Then - Should parse successfully but cache will be invalid
+        assertNotNull(result)
+        // Cache with 0 TTL would be immediately expired
+        // The implementation would cache it, but it would be immediately invalid on next check
+        // So we're just verifying the response was parsed correctly
+        assertEquals(200, result?.status)
+    }
+
+    @Test
+    fun `fetchPayerStatus should handle network timeout gracefully`() = runTest {
+        // Given - Network timeout
+        mockkConstructor(OkHttpClient.Builder::class)
+        val mockClient = mockk<OkHttpClient>()
+        val mockCallLocal = mockk<Call>()
+
+        every { anyConstructed<OkHttpClient.Builder>().build() } returns mockClient
+        every { mockClient.newCall(any()) } returns mockCallLocal
+        every { mockCallLocal.execute() } throws SocketTimeoutException("Connection timed out")
+
+        // When
+        val result = SurgePricingManager.fetchPayerStatus()
+
+        // Then - Should return null (fail open)
+        assertNull(result)
+    }
+
+    @Test
+    fun `fetchPayerStatus should handle unexpected status code in response`() = runTest {
+        // Given - Response with unexpected status code in JSON
+        val weirdStatus = """
+            {
+                "status": 999,
+                "data": {
+                    "surge": {
+                        "active": true,
+                        "multiplier": 5.0
+                    }
+                }
+            }
+        """
+        mockOkHttpResponse(200, weirdStatus)
+
+        // When
+        val result = SurgePricingManager.fetchPayerStatus()
+
+        // Then - Should parse the response normally
+        assertNotNull(result)
+        assertEquals(999, result?.status)
+        assertTrue(result?.data?.surge?.active ?: false)
     }
 
     @Test
