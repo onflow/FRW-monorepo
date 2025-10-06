@@ -99,7 +99,27 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     })),
 
-  setSelectedNFTs: (nfts: NFTModel[]) => set({ selectedNFTs: nfts, error: null }),
+  setSelectedNFTs: (nfts: NFTModel[]) =>
+    set((state) => {
+      // Initialize quantities for ERC1155 NFTs
+      const newQuantities = { ...state.selectedNFTQuantities };
+      nfts.forEach((nft) => {
+        if (nft.contractType === 'ERC1155' && nft.id && !newQuantities[nft.id]) {
+          // Initialize with 1 if not already set
+          newQuantities[nft.id] = 1;
+          logger.debug('[sendStore] Initializing ERC1155 quantity:', {
+            nftId: nft.id,
+            contractType: nft.contractType,
+            nftAmount: nft.amount,
+          });
+        }
+      });
+      return {
+        selectedNFTs: nfts,
+        selectedNFTQuantities: newQuantities,
+        error: null,
+      };
+    }),
   setSelectedCollection: (collection: CollectionModel | null) =>
     set({ selectedCollection: collection, error: null }),
 
@@ -108,8 +128,20 @@ export const useSendStore = create<SendState>((set, get) => ({
       const exists = state.selectedNFTs.find((n) => n.id === nft.id);
       if (exists) return state;
 
+      // Initialize quantity for ERC1155 NFT
+      const newQuantities = { ...state.selectedNFTQuantities };
+      if (nft.contractType === 'ERC1155' && nft.id && !newQuantities[nft.id]) {
+        newQuantities[nft.id] = 1;
+        logger.debug('[sendStore] Initializing ERC1155 quantity on add:', {
+          nftId: nft.id,
+          contractType: nft.contractType,
+          nftAmount: nft.amount,
+        });
+      }
+
       return {
         selectedNFTs: [...state.selectedNFTs, nft],
+        selectedNFTQuantities: newQuantities,
         error: null,
       };
     }),
@@ -398,11 +430,22 @@ export const useSendStore = create<SendState>((set, get) => ({
       let nftAmount = '';
       if (isNFTTransaction && selectedNFTs.length > 0) {
         const firstNFT = selectedNFTs[0];
+        logger.debug('[sendStore] Processing NFT for payload:', {
+          nftId: firstNFT.id,
+          contractType: firstNFT.contractType,
+          nftAmount: firstNFT.amount,
+          selectedNFTQuantities: state.selectedNFTQuantities,
+        });
         // Check if it's an ERC1155 NFT
         if (firstNFT.contractType === 'ERC1155') {
           const nftId = firstNFT.id || '';
           const quantity = state.selectedNFTQuantities[nftId] || 1;
           nftAmount = quantity.toString();
+          logger.debug('[sendStore] ERC1155 amount set:', {
+            nftId,
+            quantity,
+            nftAmount,
+          });
         }
       }
 
