@@ -449,15 +449,34 @@ export const useSendStore = create<SendState>((set, get) => ({
         }
       }
 
+      // Get the flow identifier for the transaction
+      const nftIdentifier = isNFTTransaction ? getNFTResourceIdentifier(selectedNFTs[0]) : null;
+      const tokenIdentifier = isTokenTransaction ? getTokenResourceIdentifier(selectedToken) : null;
+      const flowIdentifier = tokenIdentifier || nftIdentifier || '';
+
+      logger.debug('[sendStore] Flow identifier calculation:', {
+        isNFTTransaction,
+        isTokenTransaction,
+        nftIdentifier,
+        tokenIdentifier,
+        flowIdentifier,
+        selectedNFT: selectedNFTs[0]
+          ? {
+              id: selectedNFTs[0].id,
+              address: selectedNFTs[0].address,
+              contractName: selectedNFTs[0].contractName,
+              flowIdentifier: selectedNFTs[0].flowIdentifier,
+              evmAddress: selectedNFTs[0].evmAddress,
+            }
+          : null,
+      });
+
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
         assetType: addressType(fromAccount.address),
         proposer: mainAccount.address,
         receiver: toAccount.address,
-        flowIdentifier:
-          getTokenResourceIdentifier(selectedToken) ||
-          getNFTResourceIdentifier(selectedNFTs[0]) ||
-          '',
+        flowIdentifier,
         sender: fromAccount.address,
         childAddrs: childAddrs,
         ids: isNFTTransaction
