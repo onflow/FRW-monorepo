@@ -7,11 +7,7 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
-import {
-  Platform,
-  type NFTTransactionDisplayData,
-  type SendFormData,
-} from '@onflow/frw-types';
+import { Platform, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -389,7 +385,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               {/* From Account Section */}
               {fromAccount && (
                 <AccountCard
-                isSendTokensScreen={!isExtension}
+                  isSendTokensScreen={!isExtension}
                   account={transformAccountForCard(fromAccount)}
                   title={t('send.fromAccount')}
                   isLoading={false}
@@ -574,6 +570,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           isExtension={isExtension}
           summaryText={t('send.summary')}
           sendNFTsText={t('send.sendNFTs')}
+          sendSNFTsText={t('send.sendSNFTs')}
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
