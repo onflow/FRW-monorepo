@@ -109,42 +109,136 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             </Text>
           </YStack>
 
-          {/* Recovery phrase grid */}
-          <YStack
+          {/* Recovery phrase grid - 3 columns x 4 rows */}
+          <View
+            w={286}
             bg="rgba(255, 255, 255, 0.1)"
             rounded={16}
-            p="$4"
-            px="$3"
+            pt={24}
+            pb={24}
+            pl={18}
+            pr={18}
             mb="$4"
+            alignSelf="center"
           >
-            <XStack flexWrap="wrap" gap="$3" justify="center">
-              {recoveryPhrase.map((word, index) => (
-                <XStack key={index} gap="$2" items="center" w={97}>
-                  <View
-                    w={32}
-                    h={32}
-                    bg="rgba(255, 255, 255, 0.1)"
-                    rounded={8}
-                    items="center"
-                    justify="center"
-                  >
+            <YStack gap={20}>
+              {/* Row 1 */}
+              <XStack gap={29}>
+                {recoveryPhrase.slice(0, 3).map((word, index) => (
+                  <XStack key={index} gap="$2" items="center" w={68}>
+                    <View
+                      w={32}
+                      h={32}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      rounded={8}
+                      items="center"
+                      justify="center"
+                    >
+                      <Text
+                        fontSize="$5"
+                        color="$text"
+                      >
+                        {index + 1}
+                      </Text>
+                    </View>
                     <Text
-                      fontSize="$5"
+                      fontSize="$4"
                       color="$text"
                     >
-                      {index + 1}
+                      {word}
                     </Text>
-                  </View>
-                  <Text
-                    fontSize="$4"
-                    color="$text"
-                  >
-                    {word}
-                  </Text>
-                </XStack>
-              ))}
-            </XStack>
-          </YStack>
+                  </XStack>
+                ))}
+              </XStack>
+
+              {/* Row 2 */}
+              <XStack gap={29}>
+                {recoveryPhrase.slice(3, 6).map((word, index) => (
+                  <XStack key={index + 3} gap="$2" items="center" w={68}>
+                    <View
+                      w={32}
+                      h={32}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      rounded={8}
+                      items="center"
+                      justify="center"
+                    >
+                      <Text
+                        fontSize="$5"
+                        color="$text"
+                      >
+                        {index + 4}
+                      </Text>
+                    </View>
+                    <Text
+                      fontSize="$4"
+                      color="$text"
+                    >
+                      {word}
+                    </Text>
+                  </XStack>
+                ))}
+              </XStack>
+
+              {/* Row 3 */}
+              <XStack gap={29}>
+                {recoveryPhrase.slice(6, 9).map((word, index) => (
+                  <XStack key={index + 6} gap="$2" items="center" w={68}>
+                    <View
+                      w={32}
+                      h={32}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      rounded={8}
+                      items="center"
+                      justify="center"
+                    >
+                      <Text
+                        fontSize="$5"
+                        color="$text"
+                      >
+                        {index + 7}
+                      </Text>
+                    </View>
+                    <Text
+                      fontSize="$4"
+                      color="$text"
+                    >
+                      {word}
+                    </Text>
+                  </XStack>
+                ))}
+              </XStack>
+
+              {/* Row 4 */}
+              <XStack gap={29}>
+                {recoveryPhrase.slice(9, 12).map((word, index) => (
+                  <XStack key={index + 9} gap="$2" items="center" w={68}>
+                    <View
+                      w={32}
+                      h={32}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      rounded={8}
+                      items="center"
+                      justify="center"
+                    >
+                      <Text
+                        fontSize="$5"
+                        color="$text"
+                      >
+                        {index + 10}
+                      </Text>
+                    </View>
+                    <Text
+                      fontSize="$4"
+                      color="$text"
+                    >
+                      {word}
+                    </Text>
+                  </XStack>
+                ))}
+              </XStack>
+            </YStack>
+          </View>
 
           {/* Copy button */}
           <XStack justify="center" mb="$4">

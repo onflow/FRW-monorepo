@@ -127,129 +127,124 @@ export function ConfirmRecoveryPhraseScreen(): React.ReactElement {
           <View w={24} /> {/* Spacer for centering */}
         </XStack>
 
-        <YStack flex={1} px="$4" pt="$4">
-          {/* Title and description */}
-          <YStack items="center" mb="$8" gap="$2">
-            <Text
-              fontSize={30}
-              fontWeight="700"
-              color="$text"
-              text="center"
-              lineHeight={36}
-            >
-              {t('onboarding.confirmRecoveryPhrase.title')}
-            </Text>
-            <Text
-              fontSize="$4"
-              color="$textSecondary"
-              text="center"
-              lineHeight={16}
-              maxW={280}
-            >
-              {t('onboarding.confirmRecoveryPhrase.description')}
-            </Text>
-          </YStack>
+        <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+          <YStack px="$4" pt="$4">
+            {/* Title and description */}
+            <YStack items="center" mb="$8" gap="$2">
+              <Text
+                fontSize={30}
+                fontWeight="700"
+                color="$text"
+                text="center"
+                lineHeight={36}
+              >
+                {t('onboarding.confirmRecoveryPhrase.title')}
+              </Text>
+              <Text
+                fontSize="$4"
+                color="$textSecondary"
+                text="center"
+                lineHeight={16}
+                maxW={280}
+              >
+                {t('onboarding.confirmRecoveryPhrase.description')}
+              </Text>
+            </YStack>
 
-          {/* Current question */}
-          <YStack gap="$3" items="center">
-            <Text
-              fontSize="$5"
-              fontWeight="600"
-              color="$text"
-              text="center"
-            >
-              {t('onboarding.confirmRecoveryPhrase.selectWord', { position: currentQuestion.position })}
-            </Text>
-
-            {/* Word options */}
-            <XStack
-              w="100%"
-              maxW={339}
-              h={57}
-              rounded={16}
-              bg="rgba(255, 255, 255, 0.1)"
-              borderWidth={1}
-              borderColor="rgba(255, 255, 255, 0.1)"
-              items="center"
-              justify="center"
-              gap="$5"
-              px="$4"
-            >
-              {currentQuestion.options.map((word) => {
-                const isSelected = selectedAnswer === word;
-                const isWrong = hasError && isSelected && word !== currentQuestion.correctAnswer;
-                const isCorrect = isSelected && word === currentQuestion.correctAnswer;
+            {/* All questions */}
+            <YStack gap="$8">
+              {questions.map((question, index) => {
+                const selectedAnswer = selectedAnswers[index];
+                const isCorrect = selectedAnswer === question.correctAnswer;
 
                 return (
-                  <Pressable
-                    key={word}
-                    onPress={() => handleSelectWord(word)}
-                  >
-                    <View
-                      px="$3"
-                      py="$2"
-                      rounded={10}
-                      bg={isSelected ? "$text" : "transparent"}
-                      borderWidth={isWrong ? 2 : 0}
-                      borderColor={isWrong ? "$error" : "transparent"}
+                  <YStack key={index} gap="$3" items="center">
+                    <Text
+                      fontSize="$5"
+                      fontWeight="600"
+                      color="$text"
+                      text="center"
                     >
-                      <Text
-                        fontSize="$4"
-                        fontWeight="500"
-                        color={isSelected ? (isWrong ? "$error" : "$primary") : "$text"}
-                        text="center"
-                      >
-                        {word}
-                      </Text>
-                    </View>
-                  </Pressable>
+                      {t('onboarding.confirmRecoveryPhrase.selectWord', { position: question.position })}
+                    </Text>
+
+                    {/* Word options */}
+                    <XStack
+                      w="100%"
+                      maxW={339}
+                      h={57}
+                      rounded={16}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      borderWidth={1}
+                      borderColor="rgba(255, 255, 255, 0.1)"
+                      items="center"
+                      justify="center"
+                      gap="$4"
+                      px="$3"
+                    >
+                      {question.options.map((word) => {
+                        const isSelected = selectedAnswer === word;
+                        const isWrong = isSelected && word !== question.correctAnswer;
+                        const isCorrectSelection = isSelected && word === question.correctAnswer;
+
+                        return (
+                          <Pressable
+                            key={word}
+                            onPress={() => handleSelectWord(index, word)}
+                          >
+                            <View
+                              px="$3"
+                              py="$2"
+                              minW={58}
+                              h={45}
+                              rounded={10}
+                              bg={
+                                isCorrectSelection
+                                  ? "$text"
+                                  : isWrong
+                                  ? "$text"
+                                  : "transparent"
+                              }
+                              items="center"
+                              justify="center"
+                            >
+                              <Text
+                                fontSize="$4"
+                                fontWeight="500"
+                                color={
+                                  isCorrectSelection
+                                    ? "$primary"
+                                    : isWrong
+                                    ? "$error"
+                                    : "$text"
+                                }
+                                text="center"
+                                lineHeight={28}
+                              >
+                                {word}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </XStack>
+                  </YStack>
                 );
               })}
-            </XStack>
-
-            {/* Error message */}
-            {hasError && (
-              <Text
-                fontSize="$3"
-                color="$error"
-                text="center"
-                mt="$2"
-              >
-                {t('onboarding.confirmRecoveryPhrase.wrongWord')}
-              </Text>
-            )}
+            </YStack>
           </YStack>
+        </ScrollView>
 
-          {/* Progress indicator */}
-          <XStack justify="center" gap="$2" mt="$8" mb="$4">
-            {questions.map((_, index) => (
-              <View
-                key={index}
-                w={8}
-                h={8}
-                rounded={999}
-                bg={index <= currentQuestionIndex ? "$primary" : "rgba(255, 255, 255, 0.2)"}
-              />
-            ))}
-          </XStack>
-
-          {/* Spacer */}
-          <YStack flex={1} />
-
-          {/* Action button */}
-          <YStack pb="$6">
-            <Button
-              variant="secondary"
-              onPress={handleNext}
-              fullWidth
-              disabled={!selectedAnswer}
-            >
-              {isLastQuestion
-                ? t('onboarding.confirmRecoveryPhrase.finish')
-                : t('onboarding.confirmRecoveryPhrase.next')
-              }
-            </Button>
-          </YStack>
+        {/* Finish button */}
+        <YStack px="$4" pb="$6">
+          <Button
+            variant="secondary"
+            onPress={handleFinish}
+            fullWidth
+            disabled={!allAnswersCorrect}
+          >
+            {t('onboarding.confirmRecoveryPhrase.finish')}
+          </Button>
         </YStack>
       </YStack>
     </GradientBackground>
