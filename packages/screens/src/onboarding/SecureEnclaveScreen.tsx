@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
-import { FlowLogo, BackArrow, CheckCircle, Close } from '@onflow/frw-icons';
+import { FlowLogo, BackArrow, CheckCircle } from '@onflow/frw-icons';
 import {
   YStack,
   XStack,
   Text,
   View,
   GradientBackground,
-  ProfileTypeCard,
   OnboardingButton,
-  FeatureItem,
   IconButton,
   InfoDialog,
   HoldToSendButton
@@ -59,7 +57,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
         <YStack flex={1} px="$4">
           {/* Advanced text */}
-          <YStack mb="$6">
+          <YStack mb="$8">
             <Text
               fontSize={30}
               fontWeight="700"
@@ -71,68 +69,116 @@ export function SecureEnclaveScreen(): React.ReactElement {
             </Text>
           </YStack>
 
-          {/* Flow logo icon */}
-          <YStack items="center" mb="$4">
-            <View w={94} h={94}>
-              <FlowLogo size={94} color="$primary" />
-            </View>
-          </YStack>
-
-          {/* Profile type card with lock icon overlay */}
-          <YStack items="center" mb="$6" pos="relative">
-            <ProfileTypeCard
-              icon={
-                <View w={100} h={100} opacity={0.05}>
-                  <FlowLogo size={100} color="$primary" />
-                </View>
-              }
-              title={t('onboarding.secureEnclave.cardTitle')}
-              description={t('onboarding.secureEnclave.cardDescription')}
-            />
-
-            {/* Lock icon overlay */}
+          {/* Flow logo with glassmorphism background */}
+          <YStack items="center" mb="$8" pos="relative">
+            {/* Background glassmorphism card */}
             <View
               pos="absolute"
+              w={168}
+              h={210}
+              bg="rgba(255, 255, 255, 0.05)"
+              rounded={27}
+              borderWidth={1}
+              borderColor="rgba(255, 255, 255, 0.5)"
+              style={{
+                backdropFilter: 'blur(100px)',
+                WebkitBackdropFilter: 'blur(100px)',
+              }}
+            />
+
+            {/* Flow logo overlay with opacity */}
+            <View
+              pos="absolute"
+              w={100}
+              h={100}
+              opacity={0.05}
               top="50%"
               left="50%"
-              w={56}
-              h={60}
               style={{
                 transform: 'translate(-50%, -50%)',
               }}
             >
-              <Text fontSize={48} text="center">🔒</Text>
+              <FlowLogo size={100} color="$primary" />
+            </View>
+
+            {/* Main Flow logo */}
+            <View w={94} h={94} zIndex={1}>
+              <FlowLogo size={94} color="$primary" />
             </View>
           </YStack>
 
-          {/* Feature items */}
-          <YStack gap="$4" px="$2" mb="$4">
-            <FeatureItem
-              icon={<CheckCircle size={16} color="$primary" />}
-              text={t('onboarding.secureEnclave.features.secureEnclave')}
-              variant="success"
-            />
-
-            <FeatureItem
-              icon={<CheckCircle size={16} color="$primary" />}
-              text={t('onboarding.secureEnclave.features.hardwareSecurity')}
-              variant="success"
-            />
-
-            <FeatureItem
-              icon={<Close size={18} color="$error" />}
-              text={t('onboarding.secureEnclave.features.noEvm')}
-              variant="warning"
-            />
+          {/* Card with profile description */}
+          <YStack items="center" mb="$6">
+            <YStack
+              w="100%"
+              maxW={320}
+              items="center"
+              gap="$2"
+            >
+              <Text
+                fontSize="$5"
+                fontWeight="600"
+                color="$text"
+                text="center"
+                mb="$2"
+              >
+                {t('onboarding.secureEnclave.cardTitle')}
+              </Text>
+              <Text
+                fontSize="$4"
+                color="$textSecondary"
+                text="center"
+                lineHeight={17}
+                px="$2"
+              >
+                {t('onboarding.secureEnclave.cardDescription')}
+              </Text>
+            </YStack>
           </YStack>
 
-          {/* Spacer to push button to bottom */}
+          {/* Feature items */}
+          <YStack gap="$4" items="center" mb="$6">
+            {/* Secure enclave */}
+            <XStack gap="$2" items="center">
+              <CheckCircle size={16} color="$primary" />
+              <Text
+                fontSize="$4"
+                color="$primary"
+              >
+                {t('onboarding.secureEnclave.features.secureEnclave')}
+              </Text>
+            </XStack>
+
+            {/* Hardware security */}
+            <XStack gap="$2" items="center">
+              <CheckCircle size={16} color="$primary" />
+              <Text
+                fontSize="$4"
+                color="$primary"
+              >
+                {t('onboarding.secureEnclave.features.hardwareSecurity')}
+              </Text>
+            </XStack>
+
+            {/* No EVM support */}
+            <XStack gap="$2" items="center">
+              <Text fontSize={16} color="$error">⛔</Text>
+              <Text
+                fontSize="$4"
+                color="$error"
+              >
+                {t('onboarding.secureEnclave.features.noEvm')}
+              </Text>
+            </XStack>
+          </YStack>
+
+          {/* Spacer */}
           <YStack flex={1} />
 
           {/* Next button */}
           <YStack pb="$6">
             <OnboardingButton
-              variant="primary"
+              variant="secondary"
               onPress={handleNext}
             >
               {t('onboarding.secureEnclave.next')}
@@ -148,7 +194,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
         onClose={() => setShowConfirmDialog(false)}
       >
         <YStack gap="$4" items="center">
-          {/* Shield icon with green background - using emoji for now */}
+          {/* Shield icon with green background */}
           <View
             w={48}
             h={48}
