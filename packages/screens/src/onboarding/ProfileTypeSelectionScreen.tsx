@@ -8,7 +8,7 @@ import {
   Text,
   View,
   GradientBackground,
-  OnboardingButton
+  Button
 } from '@onflow/frw-ui';
 
 /**
@@ -110,12 +110,13 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
         {/* Next button */}
         <YStack mb="$6">
-          <OnboardingButton
+          <Button
             variant="secondary"
             onPress={handleNext}
+            fullWidth
           >
             {t('onboarding.profileType.next')}
-          </OnboardingButton>
+          </Button>
         </YStack>
 
         {/* Secure enclave link */}

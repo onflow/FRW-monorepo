@@ -8,7 +8,7 @@ import {
   Text,
   View,
   GradientBackground,
-  OnboardingButton,
+  Button,
   IconButton,
 } from '@onflow/frw-ui';
 
@@ -221,19 +221,21 @@ export function NotificationPreferencesScreen(): React.ReactElement {
 
           {/* Action buttons */}
           <YStack pb="$6" gap="$3">
-            <OnboardingButton
+            <Button
               variant="primary"
               onPress={handleEnableNotifications}
+              fullWidth
             >
               {t('onboarding.notificationPreferences.enableButton')}
-            </OnboardingButton>
+            </Button>
 
-            <OnboardingButton
+            <Button
               variant="secondary"
               onPress={handleMaybeLater}
+              fullWidth
             >
               {t('onboarding.notificationPreferences.maybeLater')}
-            </OnboardingButton>
+            </Button>
           </YStack>
         </YStack>
       </YStack>

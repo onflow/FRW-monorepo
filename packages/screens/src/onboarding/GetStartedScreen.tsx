@@ -8,7 +8,7 @@ import {
   View,
   OnboardingBackground,
   OnboardingHeader,
-  OnboardingButton
+  Button
 } from '@onflow/frw-ui';
 
 /**
@@ -42,19 +42,21 @@ export function GetStartedScreen(): React.ReactElement {
 
         {/* Bottom buttons */}
         <YStack pb="$6" gap="$3">
-          <OnboardingButton
+          <Button
             variant="primary"
             onPress={handleCreateAccount}
+            fullWidth
           >
             {t('onboarding.getStarted.createAccount')}
-          </OnboardingButton>
+          </Button>
 
-          <OnboardingButton
+          <Button
             variant="secondary"
             onPress={handleSignIn}
+            fullWidth
           >
             {t('onboarding.getStarted.signIn')}
-          </OnboardingButton>
+          </Button>
 
           <Text
             fontSize="$3"

@@ -8,7 +8,7 @@ import {
   Text,
   View,
   GradientBackground,
-  OnboardingButton,
+  Button,
   IconButton,
   InfoDialog,
   HoldToSendButton
@@ -177,12 +177,13 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
           {/* Next button */}
           <YStack pb="$6">
-            <OnboardingButton
+            <Button
               variant="secondary"
               onPress={handleNext}
+              fullWidth
             >
               {t('onboarding.secureEnclave.next')}
-            </OnboardingButton>
+            </Button>
           </YStack>
         </YStack>
       </YStack>
