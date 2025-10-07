@@ -234,6 +234,20 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     const currentSelectedNFTs = useSendStore.getState().selectedNFTs;
     const currentSelectedNFT = currentSelectedNFTs?.[0] || null;
 
+    logger.debug('[SendSummaryScreen] Edit NFT pressed:', {
+      currentSelectedNFT: currentSelectedNFT
+        ? {
+            id: currentSelectedNFT.id,
+            collectionName: currentSelectedNFT.collectionName,
+            collectionContractName: currentSelectedNFT.collectionContractName,
+            flowIdentifier: currentSelectedNFT.flowIdentifier,
+            evmAddress: currentSelectedNFT.evmAddress,
+            address: currentSelectedNFT.address,
+          }
+        : null,
+      fromAccount: fromAccount?.address,
+    });
+
     if (currentSelectedNFT && fromAccount) {
       // Instead of creating a new collection, find the existing one from the token store
       // This ensures we have all the required properties including the path
@@ -241,8 +255,8 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
       // For EVM NFTs, we might need to check both Flow and EVM addresses
       const addressesToCheck = [fromAccount.address];
-      if (fromAccount.evmAddress) {
-        addressesToCheck.push(fromAccount.evmAddress);
+      if ((fromAccount as any).evmAddress) {
+        addressesToCheck.push((fromAccount as any).evmAddress);
       }
 
       let matchingCollection = null;
@@ -251,17 +265,33 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       for (const address of addressesToCheck) {
         const existingCollections = tokenStore.getNFTCollectionsForAddress(address);
 
+        logger.debug('[SendSummaryScreen] Searching for collection:', {
+          address,
+          collectionsFound: existingCollections?.length || 0,
+        });
+
         if (existingCollections) {
           // Find the collection that matches this NFT
           matchingCollection = existingCollections.find((collection) => {
             // Try multiple matching strategies
-            return (
+            const matches =
               collection.name === currentSelectedNFT.collectionName ||
               collection.contractName === currentSelectedNFT.collectionContractName ||
               collection.id === currentSelectedNFT.collectionContractName ||
               collection.flowIdentifier === currentSelectedNFT.flowIdentifier ||
-              collection.evmAddress === currentSelectedNFT.evmAddress
-            );
+              collection.evmAddress === currentSelectedNFT.evmAddress ||
+              // Additional matching for Android native NFTs
+              collection.address === currentSelectedNFT.address ||
+              collection.address === currentSelectedNFT.contractAddress;
+
+            if (matches) {
+              logger.debug('[SendSummaryScreen] Found matching collection:', {
+                collectionName: collection.name,
+                collectionId: collection.id,
+              });
+            }
+
+            return matches;
           });
 
           if (matchingCollection) {
@@ -273,6 +303,22 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       if (matchingCollection) {
         const setSelectedCollection = useSendStore.getState().setSelectedCollection;
         setSelectedCollection(matchingCollection);
+      } else {
+        // Fallback: Create a minimal collection object if not found
+        logger.warn('[SendSummaryScreen] No matching collection found, creating fallback');
+        const fallbackCollection = {
+          id: currentSelectedNFT.collectionContractName || currentSelectedNFT.contractName || '',
+          name: currentSelectedNFT.collectionName || 'Unknown Collection',
+          contractName:
+            currentSelectedNFT.collectionContractName || currentSelectedNFT.contractName || '',
+          address: currentSelectedNFT.contractAddress || currentSelectedNFT.address || '',
+          evmAddress: currentSelectedNFT.evmAddress,
+          flowIdentifier: currentSelectedNFT.flowIdentifier,
+          path: null,
+          nfts: [],
+        };
+        const setSelectedCollection = useSendStore.getState().setSelectedCollection;
+        setSelectedCollection(fallbackCollection as any);
       }
     }
 
@@ -374,7 +420,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               {/* From Account Section */}
               {fromAccount && (
                 <AccountCard
-                isSendTokensScreen={!isExtension}
+                  isSendTokensScreen={!isExtension}
                   account={transformAccountForCard(fromAccount)}
                   title={t('send.fromAccount')}
                   isLoading={false}
@@ -556,6 +602,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           isExtension={isExtension}
           summaryText={t('send.summary')}
           sendNFTsText={t('send.sendNFTs')}
+          sendSNFTsText={t('send.sendSNFTs')}
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
