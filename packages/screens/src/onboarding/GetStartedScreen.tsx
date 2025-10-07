@@ -1,15 +1,8 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
 import { FlowLogo } from '@onflow/frw-icons';
-import {
-  YStack,
-  Text,
-  View,
-  OnboardingBackground,
-  OnboardingHeader,
-  Button
-} from '@onflow/frw-ui';
+import { YStack, Text, OnboardingBackground, OnboardingHeader, Button } from '@onflow/frw-ui';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * GetStartedScreen - First screen of the FTE onboarding flow
@@ -42,29 +35,15 @@ export function GetStartedScreen(): React.ReactElement {
 
         {/* Bottom buttons */}
         <YStack pb="$6" gap="$3">
-          <Button
-            variant="primary"
-            onPress={handleCreateAccount}
-            fullWidth
-          >
+          <Button variant="primary" onPress={handleCreateAccount} fullWidth>
             {t('onboarding.getStarted.createAccount')}
           </Button>
 
-          <Button
-            variant="secondary"
-            onPress={handleSignIn}
-            fullWidth
-          >
+          <Button variant="secondary" onPress={handleSignIn} fullWidth>
             {t('onboarding.getStarted.signIn')}
           </Button>
 
-          <Text
-            fontSize="$3"
-            color="$textSecondary"
-            text="center"
-            lineHeight={17}
-            mt="$2"
-          >
+          <Text fontSize="$3" color="$textSecondary" text="center" lineHeight={17} mt="$2">
             {t('onboarding.getStarted.termsAndPrivacy')}
           </Text>
         </YStack>

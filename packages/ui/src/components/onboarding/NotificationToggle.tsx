@@ -1,5 +1,6 @@
 import React from 'react';
 import { XStack, View, Pressable } from 'tamagui';
+
 import { Text } from '../../foundation/Text';
 
 interface NotificationToggleProps {
@@ -45,20 +46,11 @@ export function NotificationToggle({
         )}
 
         <View flex={1}>
-          <Text
-            fontSize="$4"
-            fontWeight="600"
-            color="$text"
-            mb={description ? "$1" : 0}
-          >
+          <Text fontSize="$4" fontWeight="600" color="$text" mb={description ? '$1' : 0}>
             {label}
           </Text>
           {description && (
-            <Text
-              fontSize="$2"
-              color="$textSecondary"
-              lineHeight={16}
-            >
+            <Text fontSize="$2" color="$textSecondary" lineHeight={16}>
               {description}
             </Text>
           )}

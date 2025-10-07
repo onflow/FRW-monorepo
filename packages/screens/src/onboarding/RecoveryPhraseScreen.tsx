@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
 import { BackArrow, Copy } from '@onflow/frw-icons';
 import {
@@ -13,6 +11,8 @@ import {
   Pressable,
   copyToClipboard,
 } from '@onflow/frw-ui';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * RecoveryPhraseScreen - Screen displaying the 12-word recovery phrase
@@ -24,9 +24,18 @@ export function RecoveryPhraseScreen(): React.ReactElement {
 
   // Mock recovery phrase - in production this would be generated
   const recoveryPhrase = [
-    'Trust', 'Ascot', 'Fanny', 'Craft',
-    'Fit', 'Lo-fi', 'Juice', 'Funny',
-    'Next', 'Big', 'Migas', 'Carry'
+    'Trust',
+    'Ascot',
+    'Fanny',
+    'Craft',
+    'Fit',
+    'Lo-fi',
+    'Juice',
+    'Funny',
+    'Next',
+    'Big',
+    'Migas',
+    'Carry',
   ];
 
   const handleBack = () => {
@@ -47,7 +56,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   const handleNext = () => {
     // Navigate to confirm recovery phrase with the recovery phrase
     navigation.navigate('ConfirmRecoveryPhraseScreen', {
-      recoveryPhrase: recoveryPhrase
+      recoveryPhrase: recoveryPhrase,
     });
   };
 
@@ -77,11 +86,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             variant="ghost"
           />
           <YStack flex={1} items="center">
-            <Text
-              fontSize="$5"
-              fontWeight="600"
-              color="$text"
-            >
+            <Text fontSize="$5" fontWeight="600" color="$text">
               {t('onboarding.recoveryPhrase.navTitle')}
             </Text>
           </YStack>
@@ -91,22 +96,10 @@ export function RecoveryPhraseScreen(): React.ReactElement {
         <YStack flex={1} px="$4" pt="$4">
           {/* Title and description */}
           <YStack items="center" mb="$6" gap="$2">
-            <Text
-              fontSize={30}
-              fontWeight="700"
-              color="$text"
-              text="center"
-              lineHeight={36}
-            >
+            <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
               {t('onboarding.recoveryPhrase.title')}
             </Text>
-            <Text
-              fontSize="$4"
-              color="$textSecondary"
-              text="center"
-              lineHeight={16}
-              maxW={280}
-            >
+            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
               {t('onboarding.recoveryPhrase.description')}
             </Text>
           </YStack>
@@ -136,17 +129,11 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                       items="center"
                       justify="center"
                     >
-                      <Text
-                        fontSize="$5"
-                        color="$text"
-                      >
+                      <Text fontSize="$5" color="$text">
                         {index + 1}
                       </Text>
                     </View>
-                    <Text
-                      fontSize="$4"
-                      color="$text"
-                    >
+                    <Text fontSize="$4" color="$text">
                       {word}
                     </Text>
                   </XStack>
@@ -165,17 +152,11 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                       items="center"
                       justify="center"
                     >
-                      <Text
-                        fontSize="$5"
-                        color="$text"
-                      >
+                      <Text fontSize="$5" color="$text">
                         {index + 4}
                       </Text>
                     </View>
-                    <Text
-                      fontSize="$4"
-                      color="$text"
-                    >
+                    <Text fontSize="$4" color="$text">
                       {word}
                     </Text>
                   </XStack>
@@ -194,17 +175,11 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                       items="center"
                       justify="center"
                     >
-                      <Text
-                        fontSize="$5"
-                        color="$text"
-                      >
+                      <Text fontSize="$5" color="$text">
                         {index + 7}
                       </Text>
                     </View>
-                    <Text
-                      fontSize="$4"
-                      color="$text"
-                    >
+                    <Text fontSize="$4" color="$text">
                       {word}
                     </Text>
                   </XStack>
@@ -223,17 +198,11 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                       items="center"
                       justify="center"
                     >
-                      <Text
-                        fontSize="$5"
-                        color="$text"
-                      >
+                      <Text fontSize="$5" color="$text">
                         {index + 10}
                       </Text>
                     </View>
-                    <Text
-                      fontSize="$4"
-                      color="$text"
-                    >
+                    <Text fontSize="$4" color="$text">
                       {word}
                     </Text>
                   </XStack>
@@ -247,11 +216,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             <Pressable onPress={handleCopy}>
               <XStack gap="$3" items="center">
                 <Copy size={24} color="$primary" />
-                <Text
-                  fontSize="$4"
-                  fontWeight="600"
-                  color="$primary"
-                >
+                <Text fontSize="$4" fontWeight="600" color="$primary">
                   {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
                 </Text>
               </XStack>
@@ -267,27 +232,14 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             borderColor="rgba(255, 255, 255, 0.15)"
             mb="$6"
           >
-            <View
-              w={24}
-              h={24}
-              items="center"
-              justify="center"
-            >
+            <View w={24} h={24} items="center" justify="center">
               <Text fontSize={20}>⚠️</Text>
             </View>
             <YStack flex={1} gap="$1">
-              <Text
-                fontSize="$4"
-                fontWeight="600"
-                color="$text"
-              >
+              <Text fontSize="$4" fontWeight="600" color="$text">
                 {t('onboarding.recoveryPhrase.warning.title')}
               </Text>
-              <Text
-                fontSize="$4"
-                color="$textSecondary"
-                lineHeight={17}
-              >
+              <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
                 {t('onboarding.recoveryPhrase.warning.description')}
               </Text>
             </YStack>
@@ -298,11 +250,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
 
           {/* Next button */}
           <YStack pb="$6">
-            <Button
-              variant="secondary"
-              onPress={handleNext}
-              fullWidth
-            >
+            <Button variant="secondary" onPress={handleNext} fullWidth>
               {t('onboarding.recoveryPhrase.next')}
             </Button>
           </YStack>

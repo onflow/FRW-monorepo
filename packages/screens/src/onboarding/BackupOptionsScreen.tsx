@@ -1,5 +1,3 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
 import { BackArrow, InfoIcon } from '@onflow/frw-icons';
 import {
@@ -11,6 +9,8 @@ import {
   IconButton,
   BackupOptionCard,
 } from '@onflow/frw-ui';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * BackupOptionsScreen - Screen for selecting backup method
@@ -49,11 +49,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             variant="ghost"
           />
 
-          <Text
-            fontSize="$5"
-            fontWeight="600"
-            color="$text"
-          >
+          <Text fontSize="$5" fontWeight="600" color="$text">
             {t('onboarding.backupOptions.navTitle')}
           </Text>
 
@@ -67,11 +63,7 @@ export function BackupOptionsScreen(): React.ReactElement {
         <YStack flex={1} px="$4">
           {/* Description */}
           <YStack mb="$6" mt="$4">
-            <Text
-              fontSize="$4"
-              color="$textSecondary"
-              lineHeight={20}
-            >
+            <Text fontSize="$4" color="$textSecondary" lineHeight={20}>
               {t('onboarding.backupOptions.subtitle')}
             </Text>
           </YStack>
@@ -98,15 +90,7 @@ export function BackupOptionsScreen(): React.ReactElement {
                       WebkitBackdropFilter: 'blur(57px)',
                     }}
                   />
-                  <View
-                    pos="absolute"
-                    left={24}
-                    bottom={0}
-                    w={3}
-                    h={3}
-                    rounded={999}
-                    bg="white"
-                  />
+                  <View pos="absolute" left={24} bottom={0} w={3} h={3} rounded={999} bg="white" />
                 </>
               }
               title={t('onboarding.backupOptions.deviceBackup.title')}

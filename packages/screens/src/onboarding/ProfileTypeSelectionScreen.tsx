@@ -1,15 +1,8 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
 import { FlowLogo } from '@onflow/frw-icons';
-import {
-  YStack,
-  XStack,
-  Text,
-  View,
-  GradientBackground,
-  Button
-} from '@onflow/frw-ui';
+import { YStack, XStack, Text, View, GradientBackground, Button } from '@onflow/frw-ui';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * ProfileTypeSelectionScreen - Second screen in onboarding flow
@@ -33,13 +26,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
       <YStack flex={1} px="$4">
         {/* Title */}
         <YStack mt="$8" mb="$8">
-          <Text
-            fontSize={30}
-            fontWeight="700"
-            color="$text"
-            text="center"
-            lineHeight={36}
-          >
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
             {t('onboarding.profileType.welcomeTitle')}
           </Text>
         </YStack>
@@ -85,21 +72,10 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
         {/* Recovery phrase description */}
         <YStack items="center" mb="$8">
           <YStack maxW={307} items="center" gap="$2">
-            <Text
-              fontSize="$5"
-              fontWeight="600"
-              color="$text"
-              text="center"
-              mb="$2"
-            >
+            <Text fontSize="$5" fontWeight="600" color="$text" text="center" mb="$2">
               {t('onboarding.profileType.recoveryPhrase.title')}
             </Text>
-            <Text
-              fontSize="$4"
-              color="$textSecondary"
-              text="center"
-              lineHeight={17}
-            >
+            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17}>
               {t('onboarding.profileType.recoveryPhrase.description')}
             </Text>
           </YStack>
@@ -110,11 +86,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
         {/* Next button */}
         <YStack mb="$6">
-          <Button
-            variant="secondary"
-            onPress={handleNext}
-            fullWidth
-          >
+          <Button variant="secondary" onPress={handleNext} fullWidth>
             {t('onboarding.profileType.next')}
           </Button>
         </YStack>

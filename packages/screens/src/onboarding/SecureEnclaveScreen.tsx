@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
 import { FlowLogo, BackArrow, CheckCircle } from '@onflow/frw-icons';
 import {
@@ -11,8 +9,10 @@ import {
   Button,
   IconButton,
   InfoDialog,
-  HoldToSendButton
+  HoldToSendButton,
 } from '@onflow/frw-ui';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * SecureEnclaveScreen - Advanced profile type screen showing Secure Enclave features
@@ -58,13 +58,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
         <YStack flex={1} px="$4">
           {/* Advanced text */}
           <YStack mb="$8">
-            <Text
-              fontSize={30}
-              fontWeight="700"
-              color="$text"
-              text="center"
-              lineHeight={36}
-            >
+            <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
               {t('onboarding.secureEnclave.title')}
             </Text>
           </YStack>
@@ -109,28 +103,11 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
           {/* Card with profile description */}
           <YStack items="center" mb="$6">
-            <YStack
-              w="100%"
-              maxW={320}
-              items="center"
-              gap="$2"
-            >
-              <Text
-                fontSize="$5"
-                fontWeight="600"
-                color="$text"
-                text="center"
-                mb="$2"
-              >
+            <YStack w="100%" maxW={320} items="center" gap="$2">
+              <Text fontSize="$5" fontWeight="600" color="$text" text="center" mb="$2">
                 {t('onboarding.secureEnclave.cardTitle')}
               </Text>
-              <Text
-                fontSize="$4"
-                color="$textSecondary"
-                text="center"
-                lineHeight={17}
-                px="$2"
-              >
+              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17} px="$2">
                 {t('onboarding.secureEnclave.cardDescription')}
               </Text>
             </YStack>
@@ -141,10 +118,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
             {/* Secure enclave */}
             <XStack gap="$2" items="center">
               <CheckCircle size={16} color="$primary" />
-              <Text
-                fontSize="$4"
-                color="$primary"
-              >
+              <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.secureEnclave')}
               </Text>
             </XStack>
@@ -152,21 +126,17 @@ export function SecureEnclaveScreen(): React.ReactElement {
             {/* Hardware security */}
             <XStack gap="$2" items="center">
               <CheckCircle size={16} color="$primary" />
-              <Text
-                fontSize="$4"
-                color="$primary"
-              >
+              <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.hardwareSecurity')}
               </Text>
             </XStack>
 
             {/* No EVM support */}
             <XStack gap="$2" items="center">
-              <Text fontSize={16} color="$error">⛔</Text>
-              <Text
-                fontSize="$4"
-                color="$error"
-              >
+              <Text fontSize={16} color="$error">
+                ⛔
+              </Text>
+              <Text fontSize="$4" color="$error">
                 {t('onboarding.secureEnclave.features.noEvm')}
               </Text>
             </XStack>
@@ -177,11 +147,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
           {/* Next button */}
           <YStack pb="$6">
-            <Button
-              variant="secondary"
-              onPress={handleNext}
-              fullWidth
-            >
+            <Button variant="secondary" onPress={handleNext} fullWidth>
               {t('onboarding.secureEnclave.next')}
             </Button>
           </YStack>
@@ -196,24 +162,12 @@ export function SecureEnclaveScreen(): React.ReactElement {
       >
         <YStack gap="$4" items="center">
           {/* Shield icon with green background */}
-          <View
-            w={48}
-            h={48}
-            bg="$primary"
-            rounded={999}
-            items="center"
-            justify="center"
-          >
+          <View w={48} h={48} bg="$primary" rounded={999} items="center" justify="center">
             <Text fontSize={24}>🛡️</Text>
           </View>
 
           {/* Dialog description text */}
-          <Text
-            fontSize="$3"
-            color="$text"
-            text="center"
-            lineHeight={20}
-          >
+          <Text fontSize="$3" color="$text" text="center" lineHeight={20}>
             {t('onboarding.secureEnclave.dialog.description')}
           </Text>
 
@@ -229,15 +183,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
       {/* Creating Account Loading State */}
       {isCreatingAccount && (
-        <View
-          pos="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bg="$background"
-          zIndex={2000}
-        >
+        <View pos="absolute" top={0} left={0} right={0} bottom={0} bg="$background" zIndex={2000}>
           <YStack flex={1} items="center" justify="center">
             {/* Green glow effect */}
             <View
@@ -285,14 +231,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
                 />
 
                 {/* Flow logo */}
-                <View
-                  pos="absolute"
-                  top={7}
-                  left={71}
-                  w={124}
-                  h={124}
-                  zIndex={1}
-                >
+                <View pos="absolute" top={7} left={71} w={124} h={124} zIndex={1}>
                   <FlowLogo size={124} color="$primary" />
                 </View>
 
@@ -367,11 +306,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
               </View>
 
               {/* Status text */}
-              <Text
-                fontSize="$4"
-                fontWeight="600"
-                color="$primary"
-              >
+              <Text fontSize="$4" fontWeight="600" color="$primary">
                 {t('onboarding.secureEnclave.creating.configuring')}
               </Text>
             </YStack>

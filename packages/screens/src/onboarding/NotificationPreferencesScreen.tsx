@@ -1,16 +1,8 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
 import { BackArrow } from '@onflow/frw-icons';
-import {
-  YStack,
-  XStack,
-  Text,
-  View,
-  GradientBackground,
-  Button,
-  IconButton,
-} from '@onflow/frw-ui';
+import { YStack, XStack, Text, View, GradientBackground, Button, IconButton } from '@onflow/frw-ui';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * NotificationPreferencesScreen - Screen for enabling push notifications
@@ -60,13 +52,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
               {t('onboarding.notificationPreferences.title')}
             </Text>
 
-            <Text
-              fontSize="$4"
-              color="$textSecondary"
-              text="center"
-              lineHeight={20}
-              px="$2"
-            >
+            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={20} px="$2">
               {t('onboarding.notificationPreferences.subtitle')}
             </Text>
           </YStack>
@@ -95,19 +81,13 @@ export function NotificationPreferencesScreen(): React.ReactElement {
                 bg="$background"
                 rounded={32}
                 style={{
-                  background: 'linear-gradient(180deg, rgba(16, 190, 114, 1) 6%, rgba(0, 12, 7, 1) 82%)',
+                  background:
+                    'linear-gradient(180deg, rgba(16, 190, 114, 1) 6%, rgba(0, 12, 7, 1) 82%)',
                 }}
               />
 
               {/* Notification previews */}
-              <YStack
-                pos="absolute"
-                top={80}
-                left={20}
-                right={20}
-                gap="$2"
-                zIndex={1}
-              >
+              <YStack pos="absolute" top={80} left={20} right={20} gap="$2" zIndex={1}>
                 {/* First notification */}
                 <View
                   bg="rgba(255, 255, 255, 0.1)"
@@ -119,14 +99,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
                   }}
                 >
                   <XStack gap="$2" items="center">
-                    <View
-                      w={20}
-                      h={20}
-                      bg="$primary"
-                      rounded={5}
-                      items="center"
-                      justify="center"
-                    >
+                    <View w={20} h={20} bg="$primary" rounded={5} items="center" justify="center">
                       <Text fontSize={12}>💚</Text>
                     </View>
                     <YStack flex={1}>
@@ -154,14 +127,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
                   }}
                 >
                   <XStack gap="$2" items="center">
-                    <View
-                      w={20}
-                      h={20}
-                      bg="$primary"
-                      rounded={5}
-                      items="center"
-                      justify="center"
-                    >
+                    <View w={20} h={20} bg="$primary" rounded={5} items="center" justify="center">
                       <Text fontSize={12}>💚</Text>
                     </View>
                     <YStack flex={1}>
@@ -189,14 +155,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
                   }}
                 >
                   <XStack gap="$3" items="center">
-                    <View
-                      w={30}
-                      h={30}
-                      bg="$primary"
-                      rounded={8}
-                      items="center"
-                      justify="center"
-                    >
+                    <View w={30} h={30} bg="$primary" rounded={8} items="center" justify="center">
                       <Text fontSize={16}>💚</Text>
                     </View>
                     <YStack flex={1}>
@@ -221,19 +180,11 @@ export function NotificationPreferencesScreen(): React.ReactElement {
 
           {/* Action buttons */}
           <YStack pb="$6" gap="$3">
-            <Button
-              variant="primary"
-              onPress={handleEnableNotifications}
-              fullWidth
-            >
+            <Button variant="primary" onPress={handleEnableNotifications} fullWidth>
               {t('onboarding.notificationPreferences.enableButton')}
             </Button>
 
-            <Button
-              variant="secondary"
-              onPress={handleMaybeLater}
-              fullWidth
-            >
+            <Button variant="secondary" onPress={handleMaybeLater} fullWidth>
               {t('onboarding.notificationPreferences.maybeLater')}
             </Button>
           </YStack>

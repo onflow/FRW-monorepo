@@ -1,5 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { navigation } from '@onflow/frw-context';
 import { BackArrow, FlowLogo } from '@onflow/frw-icons';
 import {
@@ -13,6 +11,8 @@ import {
   Pressable,
   ScrollView,
 } from '@onflow/frw-ui';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Questions to ask - positions in the phrase to verify
 const VERIFICATION_POSITIONS = [4, 8, 12];
@@ -35,16 +35,27 @@ interface ConfirmRecoveryPhraseScreenProps {
  * ConfirmRecoveryPhraseScreen - Screen to verify the user has written down their recovery phrase
  * Shows multiple choice questions for specific word positions in the recovery phrase
  */
-export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
+export function ConfirmRecoveryPhraseScreen({
+  route,
+}: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
   // Get recovery phrase from navigation params or use default for demo
   const recoveryPhrase = route?.params?.recoveryPhrase || [
-    'Trust', 'Ascot', 'Fanny', 'Craft',
-    'Fit', 'Lo-fi', 'Juice', 'Funny',
-    'Next', 'Big', 'Migas', 'Carry'
+    'Trust',
+    'Ascot',
+    'Fanny',
+    'Craft',
+    'Fit',
+    'Lo-fi',
+    'Juice',
+    'Funny',
+    'Next',
+    'Big',
+    'Migas',
+    'Carry',
   ];
 
   // Generate verification questions based on actual recovery phrase
@@ -52,7 +63,7 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
     // Generate random options that include the correct answer
     const generateOptions = (correctAnswer: string, allWords: string[]): string[] => {
       const options = new Set<string>([correctAnswer]);
-      const otherWords = allWords.filter(w => w !== correctAnswer);
+      const otherWords = allWords.filter((w) => w !== correctAnswer);
 
       // Add 3 more random words
       while (options.size < 4 && otherWords.length > 0) {
@@ -65,7 +76,7 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
       return Array.from(options).sort(() => Math.random() - 0.5);
     };
 
-    return VERIFICATION_POSITIONS.map(position => ({
+    return VERIFICATION_POSITIONS.map((position) => ({
       position,
       options: generateOptions(recoveryPhrase[position - 1], recoveryPhrase),
       correctAnswer: recoveryPhrase[position - 1],
@@ -135,11 +146,7 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
             variant="ghost"
           />
           <YStack flex={1} items="center">
-            <Text
-              fontSize="$5"
-              fontWeight="600"
-              color="$text"
-            >
+            <Text fontSize="$5" fontWeight="600" color="$text">
               {t('onboarding.confirmRecoveryPhrase.navTitle')}
             </Text>
           </YStack>
@@ -150,22 +157,10 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
           <YStack px="$4" pt="$4">
             {/* Title and description */}
             <YStack items="center" mb="$8" gap="$2">
-              <Text
-                fontSize={30}
-                fontWeight="700"
-                color="$text"
-                text="center"
-                lineHeight={36}
-              >
+              <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
                 {t('onboarding.confirmRecoveryPhrase.title')}
               </Text>
-              <Text
-                fontSize="$4"
-                color="$textSecondary"
-                text="center"
-                lineHeight={16}
-                maxW={280}
-              >
+              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
                 {t('onboarding.confirmRecoveryPhrase.description')}
               </Text>
             </YStack>
@@ -178,13 +173,10 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
 
                 return (
                   <YStack key={index} gap="$3" items="center">
-                    <Text
-                      fontSize="$5"
-                      fontWeight="600"
-                      color="$text"
-                      text="center"
-                    >
-                      {t('onboarding.confirmRecoveryPhrase.selectWord', { position: question.position })}
+                    <Text fontSize="$5" fontWeight="600" color="$text" text="center">
+                      {t('onboarding.confirmRecoveryPhrase.selectWord', {
+                        position: question.position,
+                      })}
                     </Text>
 
                     {/* Word options */}
@@ -207,23 +199,14 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
                         const isCorrectSelection = isSelected && word === question.correctAnswer;
 
                         return (
-                          <Pressable
-                            key={word}
-                            onPress={() => handleSelectWord(index, word)}
-                          >
+                          <Pressable key={word} onPress={() => handleSelectWord(index, word)}>
                             <View
                               px="$3"
                               py="$2"
                               minW={58}
                               h={45}
                               rounded={10}
-                              bg={
-                                isCorrectSelection
-                                  ? "$text"
-                                  : isWrong
-                                  ? "$text"
-                                  : "transparent"
-                              }
+                              bg={isCorrectSelection ? '$text' : isWrong ? '$text' : 'transparent'}
                               items="center"
                               justify="center"
                             >
@@ -231,11 +214,7 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
                                 fontSize="$4"
                                 fontWeight="500"
                                 color={
-                                  isCorrectSelection
-                                    ? "$primary"
-                                    : isWrong
-                                    ? "$error"
-                                    : "$text"
+                                  isCorrectSelection ? '$primary' : isWrong ? '$error' : '$text'
                                 }
                                 text="center"
                                 lineHeight={28}
@@ -269,15 +248,7 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
 
       {/* Creating Account Loading State */}
       {isCreatingAccount && (
-        <View
-          pos="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bg="$background"
-          zIndex={2000}
-        >
+        <View pos="absolute" top={0} left={0} right={0} bottom={0} bg="$background" zIndex={2000}>
           <YStack flex={1} items="center" justify="center">
             {/* Green glow effect */}
             <View
@@ -325,14 +296,7 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
                 />
 
                 {/* Flow logo */}
-                <View
-                  pos="absolute"
-                  top={7}
-                  left={71}
-                  w={124}
-                  h={124}
-                  zIndex={1}
-                >
+                <View pos="absolute" top={7} left={71} w={124} h={124} zIndex={1}>
                   <FlowLogo size={124} color="$primary" />
                 </View>
 
@@ -407,11 +371,7 @@ export function ConfirmRecoveryPhraseScreen({ route }: ConfirmRecoveryPhraseScre
               </View>
 
               {/* Status text */}
-              <Text
-                fontSize="$4"
-                fontWeight="600"
-                color="$primary"
-              >
+              <Text fontSize="$4" fontWeight="600" color="$primary">
                 {t('onboarding.secureEnclave.creating.configuring')}
               </Text>
             </YStack>
