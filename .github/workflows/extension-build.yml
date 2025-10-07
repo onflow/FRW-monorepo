@@ -23,7 +23,7 @@ jobs:
     steps:
       - id: set_env
         run: |
-          ENV_NAME="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || contains(github.ref_name, 'release') && 'production' || startsWith(github.ref_name, 'release/') && 'production' || 'development' }}"
+          ENV_NAME="${{ github.ref_type == 'tag' && 'production' || github.ref_name == 'master' && 'production' || contains(github.ref_name, 'release') && 'production' || startsWith(github.ref_name, 'release/') && 'production' ||  startsWith(github.ref_name, 'dev') && 'development' || 'production' }}"
           IS_BETA="false"
           BETA_VERSION=""
           if [[ "${{ github.ref_type }}" == "tag" && "${{ github.ref_name }}" == *"beta"* ]]; then
