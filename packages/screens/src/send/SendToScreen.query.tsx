@@ -578,7 +578,7 @@ export function SendToScreen(): React.ReactElement {
   const emptyState = getEmptyStateForTab();
 
   return (
-    <BackgroundWrapper backgroundColor="$bgDrawer">
+    <BackgroundWrapper backgroundColor="$bgDrawer" px={'$0' as any} pb={'$0' as any}>
       {isExtension && (
         <ExtensionHeader
           title={t('send.sendTo.title', 'Send To')}
@@ -598,17 +598,20 @@ export function SendToScreen(): React.ReactElement {
         activeTab={getTitleByType(activeTab)}
         onTabChange={handleTabChange}
         backgroundColor="$bgDrawer"
+        headerPaddingHorizontal={'$4'}
       >
         {activeTab === 'accounts' ? (
-          <ProfileList
-            profiles={profilesData}
-            onAccountPress={handleRecipientPress}
-            isLoading={isLoading}
-            emptyTitle={emptyState.title}
-            emptyMessage={emptyState.message}
-            loadingText={t('messages.loadingProfiles')}
-            isMobile={!isExtension}
-          />
+          <YStack px="$4">
+            <ProfileList
+              profiles={profilesData}
+              onAccountPress={handleRecipientPress}
+              isLoading={isLoading}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              loadingText={t('messages.loadingProfiles')}
+              isMobile={!isExtension}
+            />
+          </YStack>
         ) : activeTab === 'contacts' ? (
           isLoading ? (
             <RecipientList
@@ -618,7 +621,6 @@ export function SendToScreen(): React.ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
-              contentPadding={0}
             />
           ) : contactsData.length === 0 ? (
             <RecipientList
@@ -628,7 +630,6 @@ export function SendToScreen(): React.ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
-              contentPadding={0}
             />
           ) : (
             <AddressBookList
@@ -656,7 +657,6 @@ export function SendToScreen(): React.ReactElement {
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
             onItemAddToAddressBook={handleRecipientAddToAddressBook}
-            contentPadding={0}
           />
         )}
       </SearchableTabLayout>
