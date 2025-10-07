@@ -32,6 +32,10 @@ export interface SearchableTabLayoutProps {
   tabSpacing?: number;
   contentPadding?: number | string;
   backgroundColor?: string;
+  // Make content area full-bleed (cancel page horizontal padding)
+  contentFullBleed?: boolean;
+  // Horizontal padding for header/search/tabs area
+  headerPaddingHorizontal?: number | string;
 }
 
 export function SearchableTabLayout({
@@ -52,6 +56,8 @@ export function SearchableTabLayout({
   tabSpacing = 16,
   contentPadding = '$4',
   backgroundColor = '$background',
+  contentFullBleed = false,
+  headerPaddingHorizontal = '$4',
 }: SearchableTabLayoutProps) {
   const themeName = useThemeName();
 
@@ -61,7 +67,7 @@ export function SearchableTabLayout({
   return (
     <YStack flex={1}>
       {/* Search Box */}
-      <YStack mb={searchSpacing}>
+      <YStack mb={searchSpacing} px={headerPaddingHorizontal as any}>
         <XStack gap={17} items="center">
           <YStack flex={1}>
             <SearchBar
@@ -93,7 +99,7 @@ export function SearchableTabLayout({
 
       {/* Tabs */}
       {tabSegments.length > 0 ? (
-        <YStack mb={tabSpacing}>
+        <YStack mb={tabSpacing} px={headerPaddingHorizontal as any}>
           <SegmentedControl
             segments={tabSegments}
             value={activeTab}
@@ -106,7 +112,9 @@ export function SearchableTabLayout({
       )}
 
       {/* Content */}
-      <YStack flex={1}>{children}</YStack>
+      <YStack flex={1} mx={contentFullBleed ? ('$-4' as any) : 0}>
+        {children}
+      </YStack>
     </YStack>
   );
 }
