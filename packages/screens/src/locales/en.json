@@ -240,6 +240,17 @@
         "title": "Create a recovery phrase backup",
         "description": "Create a 12 word recovery phrase"
       }
+    },
+    "recoveryPhrase": {
+      "navTitle": "Multi chain account",
+      "title": "Recovery phrase",
+      "description": "Write down these words in the right order and store them somewhere safe.",
+      "copy": "Copy",
+      "next": "Next",
+      "warning": {
+        "title": "Do not share your secret phrase!",
+        "description": "If someone has your secret phrase,\nThey will have full control of your wallet."
+      }
     }
   }
 }

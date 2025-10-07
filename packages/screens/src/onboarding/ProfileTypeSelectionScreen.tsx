@@ -20,7 +20,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
   const handleNext = () => {
     // Navigate to recovery phrase setup
-    navigation.navigate('RecoveryPhrase');
+    navigation.navigate('RecoveryPhraseScreen');
   };
 
   const handleSecureEnclave = () => {
