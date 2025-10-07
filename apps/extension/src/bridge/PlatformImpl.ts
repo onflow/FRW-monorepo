@@ -325,12 +325,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
         // Check if surge pricing is active and user has approved it
         let surgeApproved = false;
         if (isSurge) {
-          console.log('Surge pricing is active, checking user approval');
           surgeApproved = await this.walletController.getSurgeApproval();
 
           if (!surgeApproved) {
             // Show surge modal and wait for user decision
-            console.log('Showing surge modal for user approval');
             surgeApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
           }
         }
@@ -455,6 +453,12 @@ class ExtensionPlatformImpl implements PlatformSpec {
     });
   }
 
+  // Export function to get surge data from UI
+  async getSurgeData(network: string): Promise<any> {
+    const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+    return payerStatus?.surge;
+  }
+
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
       return;
@@ -564,6 +568,12 @@ export const initializePlatform = (): ExtensionPlatformImpl => {
     (globalThis as any).__FLOW_WALLET_BRIDGE__ = platformInstance;
   }
   return platformInstance;
+};
+
+// Export function to get surge data from UI
+export const getSurgeData = async (network: string): Promise<any> => {
+  const platform = getPlatform();
+  return await platform.getSurgeData(network);
 };
 
 export default ExtensionPlatformImpl;

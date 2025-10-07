@@ -1431,7 +1431,6 @@ export class WalletController extends BaseController {
   showSurgeModalAndWait = async (payerStatus: any): Promise<boolean> => {
     return new Promise((resolve) => {
       // Send message to UI to show surge modal using the same pattern as API_RATE_LIMIT
-      console.log('WalletController: Sending API_RATE_LIMIT message to trigger surge modal');
       chrome.runtime.sendMessage({
         type: 'API_RATE_LIMIT',
         data: {
@@ -1444,10 +1443,6 @@ export class WalletController extends BaseController {
           },
         },
       });
-      console.log(
-        'WalletController: API_RATE_LIMIT message sent with surge data:',
-        payerStatus?.surge
-      );
 
       // Listen for surge approval response
       const handleSurgeResponse = (message: any) => {

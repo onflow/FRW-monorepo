@@ -1,9 +1,12 @@
 import { Box, Stack } from '@mui/material';
 import * as fcl from '@onflow/fcl';
+import { SurgeModal } from '@onflow/frw-ui';
 import dedent from 'dedent';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { getSurgeData } from '@/bridge/PlatformImpl';
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant/domain-constants';
 import { type UserInfoResponse } from '@/shared/types';
 import {
   LLConnectLoading,
@@ -45,6 +48,11 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
   const [accountArgs, setAccountArgs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lilicoEnabled, setLilicoEnabled] = useState(true);
+  const [isApproving, setIsApproving] = useState(false);
+
+  // Surge modal state
+  const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
+  const [surgeData, setSurgeData] = useState<{ maxFee?: string; multiplier?: number } | null>(null);
   const [auditor, setAuditor] = useState<any>(null);
   const [image, setImage] = useState<string>('');
   const [accountTitle, setAccountTitle] = useState<string>('');
@@ -148,23 +156,29 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
       return;
     }
 
+    setIsApproving(true);
     setApproval(true);
-    const signedMessage = await wallet.signMessage(signable.message);
-    if (opener) {
-      sendSignature(signable, signedMessage);
-      const value = await sessionStorage.getItem('pendingRefBlockId');
-      // consoleLog('pendingRefBlockId ->', value);
-      if (value !== null) {
-        return;
-      }
-      sessionStorage.setItem('pendingRefBlockId', signable.voucher.refBlock);
 
-      if (lilicoEnabled) {
-        chrome.tabs.sendMessage(opener, { type: 'FCL:VIEW:READY' });
-      } else {
-        setApproval(true);
-        resolveApproval();
+    try {
+      const signedMessage = await wallet.signMessage(signable.message);
+      if (opener) {
+        sendSignature(signable, signedMessage);
+        const value = await sessionStorage.getItem('pendingRefBlockId');
+        // consoleLog('pendingRefBlockId ->', value);
+        if (value !== null) {
+          return;
+        }
+        sessionStorage.setItem('pendingRefBlockId', signable.voucher.refBlock);
+        if (lilicoEnabled) {
+          chrome.tabs.sendMessage(opener, { type: 'FCL:VIEW:READY' });
+        } else {
+          setApproval(true);
+          resolveApproval();
+        }
       }
+    } catch (error) {
+      setIsApproving(false);
+      throw error;
     }
   };
 
@@ -187,6 +201,13 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     [opener]
   );
 
+  // Surge modal handlers
+  const handleSurgeModalClose = useCallback(() => {
+    setIsSurgeModalVisible(false);
+    setSurgeData(null);
+    handleCancel();
+  }, [handleCancel]);
+
   const signPayer = useCallback(
     async (signable) => {
       setIsLoading(true);
@@ -201,19 +222,67 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
       }
 
       try {
-        const signedMessage = await wallet.signPayer(signable);
+        const signedMessage = await wallet.signAsFeePayer(signable);
         sendSignature(signable, signedMessage);
         setApproval(true);
 
         resolveApproval();
         setIsLoading(false);
       } catch (err) {
-        setIsLoading(false);
-        handleCancel();
+        // Extract error message properly
+        let errorMessage = '';
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (err && typeof err === 'object' && err.message) {
+          errorMessage = err.message;
+        } else {
+          errorMessage = String(err);
+        }
+
+        // Check if this is a 429 rate limit error
+        const isSurgeError =
+          errorMessage.includes(HTTP_STATUS_TOO_MANY_REQUESTS.toString()) ||
+          errorMessage.includes('Too Many Requests') ||
+          errorMessage.includes('Many Requests for surge') ||
+          errorMessage.includes(
+            'communicates temporary pressure and supports standard client backoff via Retry-After'
+          );
+
+        if (isSurgeError) {
+          // Fetch real surge data
+          try {
+            const surgeData = await getSurgeData(currentNetwork);
+            setSurgeData({
+              maxFee: surgeData?.maxFee || '0.002501',
+              multiplier: surgeData?.multiplier || 1.0,
+            });
+          } catch (error) {
+            setSurgeData({
+              maxFee: '0.002501',
+              multiplier: 1.0,
+            });
+          }
+
+          setIsSurgeModalVisible(true);
+          setIsLoading(false);
+        } else {
+          setIsLoading(false);
+          handleCancel();
+        }
       }
     },
     [wallet, sendSignature, resolveApproval, handleCancel, setIsLoading]
   );
+
+  const handleSurgeModalAgree = useCallback(async () => {
+    setIsSurgeModalVisible(false);
+    setSurgeData(null);
+
+    // Retry the signPayer process
+    if (signable) {
+      signPayer(signable);
+    }
+  }, [signable, signPayer]);
 
   const loadPayer = useCallback(async () => {
     const isEnabled = await wallet.allowLilicoPay();
@@ -374,12 +443,23 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
                   fullWidth
                   type="submit"
                   onClick={sendAuthzToFCL}
+                  disabled={isApproving}
                 />
               </Stack>
             </Box>
           )}
         </>
       )}
+
+      {/* Surge Modal */}
+      <SurgeModal
+        visible={isSurgeModalVisible}
+        transactionFee={surgeData?.maxFee || '0.002501'}
+        multiplier={surgeData?.multiplier?.toString() || '1.0'}
+        onClose={handleSurgeModalClose}
+        onAgree={handleSurgeModalAgree}
+        isLoading={false}
+      />
     </>
   );
 };

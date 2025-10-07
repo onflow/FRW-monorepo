@@ -2,6 +2,7 @@ import { Box, Stack } from '@mui/material';
 import * as fcl from '@onflow/fcl';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { MAINNET_CHAIN_ID } from '@/shared/constant';
 import { consoleError } from '@/shared/utils';
 import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
@@ -79,10 +80,15 @@ const EthConfirm = ({ params }: ConnectProps) => {
 
   const handleAllow = async () => {
     await checkCoa();
-    // resolveApproval({
-    //   defaultChain: MAINNET_CHAIN_ID,
-    //   signPermission: 'MAINNET_AND_TESTNET',
-    // });
+    const dontCloseWindow = params.method === 'eth_sendTransaction';
+
+    resolveApproval(
+      {
+        defaultChain: MAINNET_CHAIN_ID,
+        signPermission: 'MAINNET_AND_TESTNET',
+      },
+      dontCloseWindow
+    ); // Keep window open during transaction
   };
 
   const loadPayer = useCallback(async () => {
@@ -102,8 +108,8 @@ const EthConfirm = ({ params }: ConnectProps) => {
         event.type.includes('TransactionExecuted')
       );
       if (transactionExecutedEvent) return;
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      consoleError('Error checking COA:', error);
     }
   };
 

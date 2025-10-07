@@ -12,6 +12,7 @@ import '@tamagui/font-inter/css/400.css';
 import '@tamagui/font-inter/css/700.css';
 
 import { PlatformProvider } from '@/bridge/PlatformContext';
+import { getSurgeData } from '@/bridge/PlatformImpl';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
@@ -84,21 +85,31 @@ const App = ({ wallet }: { wallet: any }) => {
 
   // Global surge modal for 429 errors and surge pricing
   useEffect(() => {
-    const handleMessage = (message: any) => {
-      console.log('UI: Message received:', message);
-
+    const handleMessage = async (message: any) => {
       if (message.type === 'API_RATE_LIMIT' && message.data?.status === 429) {
         console.log('UI: API rate limit detected, showing global surge modal:', message.data);
         // Store surge data if available
         if (message.data?.surgeData) {
           setSurgeData(message.data.surgeData);
         } else {
-          setSurgeData(null);
+          // Fetch surge data using the exported function
+          try {
+            const surgeData = await getSurgeData('mainnet');
+            setSurgeData(surgeData);
+          } catch (error) {
+            console.log('Error fetching surge data:', error);
+            setSurgeData(null);
+          }
         }
         setIsSurgeModalVisible(true);
         setHasResponded(false); // Reset response flag when showing modal
-      } else {
-        console.log('UI: Message is not API_RATE_LIMIT:', message);
+      } else if (message.type === 'CLOSE_APPROVAL_POPUP') {
+        // Close the approval popup window
+        if (window.close) {
+          window.close();
+        } else {
+          chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
+        }
       }
     };
 
@@ -168,7 +179,6 @@ const App = ({ wallet }: { wallet: any }) => {
                 <Main />
               </WalletProvider>
 
-              {console.log('Rendering SurgeModal with visible:', isSurgeModalVisible)}
               <SurgeModal
                 visible={isSurgeModalVisible}
                 transactionFee={surgeData?.maxFee || '- 500.00'}
