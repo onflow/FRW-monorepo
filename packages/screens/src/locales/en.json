@@ -196,7 +196,7 @@
         "title": "Secured by a Recovery Phrase",
         "description": "A recovery phrase is a series of words generated that will secure your wallet."
       },
-      "secureEnclave": "Secure Enclave Profile",
+      "secureEnclaveProfile": "Secure Enclave Profile",
       "next": "Next"
     },
     "secureEnclave": {
