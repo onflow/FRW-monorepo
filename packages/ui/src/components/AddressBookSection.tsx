@@ -1,7 +1,6 @@
 import React from 'react';
 import { FlatList, SectionList } from 'react-native';
-import { Text, YStack, useThemeName } from 'tamagui';
-
+import { Text, YStack } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 
