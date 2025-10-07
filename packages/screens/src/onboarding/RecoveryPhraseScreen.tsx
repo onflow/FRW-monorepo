@@ -45,8 +45,10 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   };
 
   const handleNext = () => {
-    // Navigate to confirm recovery phrase
-    navigation.navigate('ConfirmRecoveryPhraseScreen');
+    // Navigate to confirm recovery phrase with the recovery phrase
+    navigation.navigate('ConfirmRecoveryPhraseScreen', {
+      recoveryPhrase: recoveryPhrase
+    });
   };
 
   return (
