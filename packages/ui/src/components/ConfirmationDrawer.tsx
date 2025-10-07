@@ -41,6 +41,7 @@ export interface ConfirmationDrawerProps {
   summaryText?: string;
   sendTokensText?: string;
   sendNFTsText?: string;
+  sendSNFTsText?: string; // For semi-fungible NFTs (ERC1155)
   sendingText?: string;
   confirmSendText?: string;
   holdToSendText?: string;
@@ -146,6 +147,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   summaryText = 'Summary',
   sendTokensText = 'Send Tokens',
   sendNFTsText = 'Send NFTs',
+  sendSNFTsText = 'Send sNFTs', // Default for semi-fungible NFTs
   sendingText = 'Sending...',
   confirmSendText = 'Confirm send',
   holdToSendText = 'Hold to send',
@@ -155,6 +157,27 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const [internalIsSending, setInternalIsSending] = React.useState(false);
   const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
+
+  // Determine if we're sending ERC1155 NFTs (semi-fungible)
+  const isERC1155 = React.useMemo(() => {
+    return selectedNFTs?.length === 1 && selectedNFTs[0].contractType === 'ERC1155';
+  }, [selectedNFTs]);
+
+  // Determine if we're sending multiple NFTs
+  const isMultipleNFTs = React.useMemo(() => {
+    return selectedNFTs ? selectedNFTs.length > 1 : false;
+  }, [selectedNFTs]);
+
+  // Dynamic section title based on transfer type
+  const nftSectionTitle = React.useMemo(() => {
+    if (isMultipleNFTs) {
+      return sendNFTsText;
+    } else if (isERC1155) {
+      return sendSNFTsText;
+    } else {
+      return sendNFTsText;
+    }
+  }, [isMultipleNFTs, isERC1155, sendNFTsText, sendSNFTsText]);
 
   // Theme-aware button colors using helper function
   const isCurrentlyDarkMode = isDarkMode(theme);
@@ -346,7 +369,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {transactionType !== 'tokens' && selectedNFTs ? (
             <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$textSecondary" fontWeight="400">
-                {sendNFTsText}
+                {nftSectionTitle}
               </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
