@@ -6,6 +6,9 @@ export * from './send/NFTDetailScreen.query';
 export { SendTokensScreen } from './send/SendTokensScreen.query';
 export { SendSummaryScreen } from './send/SendSummaryScreen.query';
 
+// Export onboarding screens
+export * from './onboarding';
+
 // Export providers
 export * from './providers/QueryProvider';
 

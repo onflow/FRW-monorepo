@@ -180,5 +180,35 @@
         "descriptionSecondary": "If an application is on EVM or Cadence, only compatible accounts will be available to connect."
       }
     }
+  },
+  "onboarding": {
+    "flowWallet": "Flow wallet",
+    "getStarted": {
+      "title": "Get started with Flow Wallet",
+      "subtitle": "Welcome to Flow Wallet\nCreate an account to get started.",
+      "createAccount": "Create a new account",
+      "signIn": "I already have an account",
+      "termsAndPrivacy": "By using Flow Wallet you agree to the terms of service and privacy policy"
+    },
+    "profileType": {
+      "welcomeTitle": "Welcome to\nFlow Wallet",
+      "recoveryPhrase": {
+        "title": "Secured by a Recovery Phrase",
+        "description": "A recovery phrase is a series of words generated that will secure your wallet."
+      },
+      "secureEnclave": "Secure Enclave Profile",
+      "next": "Next"
+    },
+    "secureEnclave": {
+      "title": "Advanced",
+      "cardTitle": "Secure Profile",
+      "cardDescription": "Using device keys with hardware-grade security, Flow Wallet in secure mode is an ultra-secure hardware wallet you can trust. Only available for Cadence accounts on Flow.",
+      "features": {
+        "secureEnclave": "Secure enclave",
+        "hardwareSecurity": "Hardware grade security",
+        "noEvm": "No EVM Support"
+      },
+      "next": "Next"
+    }
   }
 }
