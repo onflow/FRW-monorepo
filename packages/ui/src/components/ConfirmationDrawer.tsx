@@ -1,13 +1,18 @@
 import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type AccountDisplayData, type TokenModel, type TransactionType } from '@onflow/frw-types';
+import {
+  type AccountDisplayData,
+  type TokenModel,
+  type TransactionType,
+  type NFTTransactionData,
+} from '@onflow/frw-types';
+import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
-import { Sheet, Spinner, View, XStack, YStack } from 'tamagui';
+import { Sheet, Spinner, View, XStack, YStack, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
 import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
-import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -22,7 +27,7 @@ export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
-  selectedNFTs?: NFTSendData[];
+  selectedNFTs?: NFTTransactionData[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
   formData: TransactionFormData;
@@ -147,6 +152,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   holdToSendText = 'Hold to send',
   unknownAccountText = 'Unknown',
 }) => {
+  const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
   const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);

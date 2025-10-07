@@ -424,7 +424,6 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                   account={transformAccountForCard(fromAccount)}
                   title={t('send.fromAccount')}
                   isLoading={false}
-                  isSendTokensScreen={!isExtension}
                 />
               )}
 
