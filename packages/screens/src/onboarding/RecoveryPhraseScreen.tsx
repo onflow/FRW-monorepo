@@ -11,6 +11,7 @@ import {
   Button,
   IconButton,
   Pressable,
+  copyToClipboard,
 } from '@onflow/frw-ui';
 
 /**
@@ -32,17 +33,20 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     navigation.goBack();
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     // Copy recovery phrase to clipboard
     const phraseText = recoveryPhrase.join(' ');
-    // TODO: Implement clipboard copy
-    setCopiedToClipboard(true);
-    setTimeout(() => setCopiedToClipboard(false), 2000);
+    const success = await copyToClipboard(phraseText);
+
+    if (success) {
+      setCopiedToClipboard(true);
+      setTimeout(() => setCopiedToClipboard(false), 2000);
+    }
   };
 
   const handleNext = () => {
-    // Navigate to backup options
-    navigation.navigate('BackupOptionsScreen');
+    // Navigate to confirm recovery phrase
+    navigation.navigate('ConfirmRecoveryPhraseScreen');
   };
 
   return (

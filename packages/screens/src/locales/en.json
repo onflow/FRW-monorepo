@@ -251,6 +251,15 @@
         "title": "Do not share your secret phrase!",
         "description": "If someone has your secret phrase,\nThey will have full control of your wallet."
       }
+    },
+    "confirmRecoveryPhrase": {
+      "navTitle": "Multi chain account",
+      "title": "Confirm phrase",
+      "description": "Please select the word one by one referring to its order.",
+      "selectWord": "Select the word at #{{position}}",
+      "wrongWord": "Wrong word selected. Please try again.",
+      "next": "Next",
+      "finish": "Finish"
     }
   }
 }
