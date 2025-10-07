@@ -93,36 +93,54 @@ const flowColors = {
 };
 
 // Centralized palette pairs by index to avoid per-theme overrides.
-// Each index is used by templates; keeping indices stable ensures theme tokens map consistently.
-const PALETTE_INDEX_ORDER = [
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-] as const;
-
-const palettePairs: Record<(typeof PALETTE_INDEX_ORDER)[number], { light: string; dark: string }> =
-  {
-    0: { light: flowColors.surfaceLight1, dark: flowColors.surfaceDark1 }, // 0 - main background
-    1: { light: flowColors.surfaceLight2, dark: flowColors.surfaceDark2 }, // 1 - background (hover/secondary)
-    2: { light: flowColors.surfaceLight3, dark: flowColors.surfaceDark4 }, // 2 - background (press/tertiary)
-    3: { light: flowColors.surfaceLight4, dark: flowColors.surfaceDark3 }, // 3 - background (quaternary/inverted)
-    4: { light: flowColors.textLight3, dark: flowColors.textDark3 }, // 4 - text (tertiary)
-    5: { light: flowColors.textLight2, dark: flowColors.textDark2 }, // 5 - text (secondary)
-    6: { light: flowColors.textLight1, dark: flowColors.textDark1 }, // 6 - text (primary)
-    7: { light: flowColors.lightBg1, dark: flowColors.darkBg1 }, // 7 - alt background
-    8: { light: flowColors.lightBorder1, dark: flowColors.darkBorder1 }, // 8 - border
-    9: { light: flowColors.textLight4, dark: flowColors.textDark4 }, // 9 - text (quaternary)
-    10: { light: flowColors.surfaceLight1, dark: flowColors.surfaceDarkDrawer }, // 10 - drawer background
-    11: { light: flowColors.black, dark: flowColors.white }, // 11 - inverse background
-    12: { light: flowColors.white, dark: flowColors.black }, // 12 - inverse text
-    13: { light: flowColors.dark5, dark: flowColors.light5 }, // 13 - subtle background (5%)
-    14: { light: flowColors.dark10, dark: flowColors.light10 }, // 14 - subtle background (10%)
-    15: { light: flowColors.primaryLight, dark: flowColors.primaryDark }, // 15 - primary
-    16: { light: flowColors.primaryLight20, dark: flowColors.primaryDark20 }, // 16 - primary 20%
-    17: { light: flowColors.primaryLight10, dark: flowColors.primaryDark10 }, // 17 - primary 10% / primaryLight
-    18: { light: flowColors.shadowLight, dark: flowColors.shadowDark }, // 18 - shadow
-    19: { light: flowColors.shadowLightHover, dark: flowColors.shadowDarkHover }, // 19 - shadow (hover)
-    20: { light: flowColors.shadowLightPress, dark: flowColors.shadowDarkPress }, // 20 - shadow (press)
-    21: { light: flowColors.shadowLightFocus, dark: flowColors.shadowDarkFocus }, // 21 - shadow (focus)
-  };
+// Array index corresponds to the template index mapping below. Keep order stable.
+type PalettePair = { light: string; dark: string };
+const palettePairs: PalettePair[] = [
+  // 0 - main background
+  { light: flowColors.surfaceLight1, dark: flowColors.surfaceDark1 },
+  // 1 - background (hover/secondary)
+  { light: flowColors.surfaceLight2, dark: flowColors.surfaceDark2 },
+  // 2 - background (press/tertiary)
+  { light: flowColors.surfaceLight3, dark: flowColors.surfaceDark4 },
+  // 3 - background (quaternary/inverted)
+  { light: flowColors.surfaceLight4, dark: flowColors.surfaceDark3 },
+  // 4 - text (tertiary)
+  { light: flowColors.textLight3, dark: flowColors.textDark3 },
+  // 5 - text (secondary)
+  { light: flowColors.textLight2, dark: flowColors.textDark2 },
+  // 6 - text (primary)
+  { light: flowColors.textLight1, dark: flowColors.textDark1 },
+  // 7 - alt background
+  { light: flowColors.lightBg1, dark: flowColors.darkBg1 },
+  // 8 - border
+  { light: flowColors.lightBorder1, dark: flowColors.darkBorder1 },
+  // 9 - text (quaternary)
+  { light: flowColors.textLight4, dark: flowColors.textDark4 },
+  // 10 - drawer background
+  { light: flowColors.surfaceLight1, dark: flowColors.surfaceDarkDrawer },
+  // 11 - inverse background
+  { light: flowColors.black, dark: flowColors.white },
+  // 12 - inverse text
+  { light: flowColors.white, dark: flowColors.black },
+  // 13 - subtle background (5%)
+  { light: flowColors.dark5, dark: flowColors.light5 },
+  // 14 - subtle background (10%)
+  { light: flowColors.dark10, dark: flowColors.light10 },
+  // 15 - primary
+  { light: flowColors.primaryLight, dark: flowColors.primaryDark },
+  // 16 - primary 20%
+  { light: flowColors.primaryLight20, dark: flowColors.primaryDark20 },
+  // 17 - primary 10% / primaryLight
+  { light: flowColors.primaryLight10, dark: flowColors.primaryDark10 },
+  // 18 - shadow
+  { light: flowColors.shadowLight, dark: flowColors.shadowDark },
+  // 19 - shadow (hover)
+  { light: flowColors.shadowLightHover, dark: flowColors.shadowDarkHover },
+  // 20 - shadow (press)
+  { light: flowColors.shadowLightPress, dark: flowColors.shadowDarkPress },
+  // 21 - shadow (focus)
+  { light: flowColors.shadowLightFocus, dark: flowColors.shadowDarkFocus },
+];
 
 // Size system
 export const size = {
@@ -241,9 +259,9 @@ const themesBuilder = createThemeBuilder()
   // Add palettes - these define the color gradients from background to foreground
   .addPalettes({
     // Light palette from centralized pairs
-    light: PALETTE_INDEX_ORDER.map((i) => palettePairs[i].light),
+    light: palettePairs.map((p) => p.light),
     // Dark palette from centralized pairs
-    dark: PALETTE_INDEX_ORDER.map((i) => palettePairs[i].dark),
+    dark: palettePairs.map((p) => p.dark),
   })
   // Add templates - these map palette indices to theme property names
   .addTemplates({
