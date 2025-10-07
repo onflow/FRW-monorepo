@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing } from 'react-native';
-import { View, useThemeName } from 'tamagui';
+import { View } from 'tamagui';
 
 import type { SkeletonProps } from '../types';
 
@@ -17,8 +17,6 @@ export function Skeleton({
   pulseMaxOpacity = 1,
   ...rest
 }: SkeletonProps): React.ReactElement {
-  const themeName = useThemeName();
-  const isDark = !!themeName?.includes('dark');
   const pulseAnim = useRef(new Animated.Value(pulseMinOpacity)).current;
 
   useEffect(() => {
@@ -44,7 +42,8 @@ export function Skeleton({
     loop.start();
     return () => loop.stop();
   }, [animated, animationType, pulseAnim, pulseDuration, pulseMinOpacity, pulseMaxOpacity]);
-  const baseBg = isDark ? baseBgDark || ('$light10' as any) : baseBgLight || ('$dark10' as any);
+  // Prefer a theme-aware token; allow explicit override if provided
+  const baseBg = (baseBgLight ?? baseBgDark ?? ('$subtleBg10' as any)) as any;
 
   if (animated && animationType === 'pulse') {
     return (
@@ -66,19 +65,10 @@ export function Skeleton({
       width={width as any}
       height={height as any}
       rounded={borderRadius as any}
-      bg="$subtleBg10"
+      bg={baseBg}
       animation={animated ? 'lazy' : undefined}
       animateOnly={['opacity']}
       opacity={animated ? 0.8 : 1}
-      // Simple pulse animation using Tamagui's built-in animations
-      {...(animated && {
-        '$theme-light': {
-          bg: '$subtleBg10',
-        },
-        '$theme-dark': {
-          bg: '$subtleBg10',
-        },
-      })}
       overflow="hidden"
       {...rest}
     />
