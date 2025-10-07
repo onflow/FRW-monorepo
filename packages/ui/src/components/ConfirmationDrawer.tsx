@@ -5,8 +5,9 @@ import {
   type TransactionType,
   type NFTTransactionData,
 } from '@onflow/frw-types';
+import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
-import { Sheet, Spinner, View, XStack, YStack } from 'tamagui';
+import { Sheet, Spinner, View, XStack, YStack, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
@@ -151,6 +152,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   holdToSendText = 'Hold to send',
   unknownAccountText = 'Unknown',
 }) => {
+  const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
   const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
