@@ -1396,6 +1396,9 @@ export interface SurgeInfoV1 {
 
   /** timestamp */
   sampledAt?: number;
+
+  /** max fee with surge factor */
+  maxFee?: number;
 }
 
 /** PayerStatusPayloadV1 */

@@ -138,7 +138,6 @@ export function NFTGrid({
   // React Native lazy loading - automatically load more when approaching the end
   useEffect(() => {
     if (!enableVirtualization || isExtension) return;
-
     // In React Native, automatically load more items when we're showing close to all visible items
     const remainingItems = data.length - visibleItemCount;
     const shouldLoadMore = remainingItems > 0 && remainingItems <= loadMoreThreshold;

@@ -316,22 +316,6 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     );
   }
 
-  // Early return if essential data is missing
-  if (!selectedNFT) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" textAlign="center">
-            No NFT selected. Please go back and select an NFT to send.
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       <YStack flex={1}>
