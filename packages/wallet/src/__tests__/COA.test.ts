@@ -4,9 +4,9 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { FlowVM } from '../../types/account';
-import { FlowChainID } from '../../types/key';
-import { COA } from '../COA';
+import { COA } from '../Account/COA';
+import { FlowVM } from '../types/account';
+import { FlowChainID } from '../types/key';
 
 // Mock data based on user's example
 const MOCK_COA_ADDRESS = '0x0000000000000000000000020c260f03355ff69d';

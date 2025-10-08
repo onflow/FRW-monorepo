@@ -4,14 +4,14 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { EVMAccount } from '../Account/EVMAccount';
+import { type FlowAccount } from '../Account/FlowAccount';
 import {
   FlowChainID as FlowChainIDEnum,
   type KeyProtocol,
   SignatureAlgorithm,
   HashAlgorithm,
-} from '../../types/key';
-import { EVMAccount } from '../EVMAccount';
-import { type FlowAccount } from '../FlowAccount';
+} from '../types/key';
 
 // Mock data based on user's example
 const MOCK_EVM_ADDRESS = '0xF376A6849184571fEEdD246a1Ba2D331cfe56c8c';
