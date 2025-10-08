@@ -149,7 +149,6 @@ android {
 
     buildTypes {
         debug {
-            versionName verNameDev
             minifyEnabled false
             multiDexEnabled true
             debuggable true
@@ -164,7 +163,6 @@ android {
         }
 
         releaseDebug {
-            versionName verNameInternal
             minifyEnabled false
             multiDexEnabled true
             debuggable true
@@ -176,7 +174,6 @@ android {
         }
 
         dev {
-            versionName verNameDev
             minifyEnabled true
             shrinkResources true
             multiDexEnabled false
@@ -203,7 +200,6 @@ android {
         }
 
         release {
-            versionName verNameRelease
             minifyEnabled true
             shrinkResources true
             multiDexEnabled false
@@ -287,6 +283,25 @@ android {
         checkAllWarnings true
         abortOnError true // stop the build if errors found
         warningsAsErrors false // do not treat warnings as errors
+    }
+}
+
+// Set versionName per buildType using Variant API (AGP 7/8)
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def num = (vName ?: "0.0.0").replaceAll('^[a-zA-Z]', '')
+        def bt = variant.hasProperty('buildType') ? variant.buildType : variant.name
+        def prefix = 'd'
+        if (bt == 'release') {
+            prefix = 'r'
+        } else if (bt == 'releaseDebug') {
+            prefix = 'i'
+        } else if (bt == 'dev' || bt == 'debug') {
+            prefix = 'd'
+        }
+        variant.outputs.each { output ->
+            output.versionName.set(prefix + num)
+        }
     }
 }
 
