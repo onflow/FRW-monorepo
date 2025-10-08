@@ -53,17 +53,16 @@ else
   echo "Standard tag format detected: $TAG_NAME"
 fi
 
-# Resolve previous tag: prefer manual from_tag when provided
+# Resolve previous tag (flat if-elif-else for clarity)
 if [[ -n "$INPUT_FROM_TAG" ]]; then
   PREVIOUS_TAG="$INPUT_FROM_TAG"
+elif [[ -n "$TAG_PREFIX" ]]; then
+  echo "Looking for previous tag with prefix: ${TAG_PREFIX}-*"
+  PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || true)
 else
-  if [[ -n "$TAG_PREFIX" ]]; then
-    echo "Looking for previous tag with prefix: ${TAG_PREFIX}-*"
-    PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || true)
-  else
-    PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || true)
-  fi
+  PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || true)
 fi
+
 
 if [[ -z "${PREVIOUS_TAG:-}" ]]; then
   echo "No previous tag found, analyzing all commits since repository start"
@@ -113,9 +112,32 @@ while IFS='|' read -r commit_hash commit_subject commit_body author_name commit_
     fi
     echo
   } >> "$COMMIT_INFO_FILE"
+
+  # Try to extract a PR number from subject/body (matches patterns like "(#123)" or "#123")
+  PR_NUM=$(printf '%s\n%s\n' "$commit_subject" "$commit_body" | grep -Eo '#[0-9]+' | head -n 1 | tr -d '#' || true)
+  if [[ -n "${PR_NUM:-}" ]]; then
+    # Accumulate entries for a later PR list (dedup by PR later)
+    echo "$PR_NUM|$commit_subject|$author_name" >> pr_entries.txt
+  fi
 done <<< "$COMMITS"
 
 echo "Total commits to analyze: $COMMIT_COUNT"
+
+# Build a PR list section with PR number and author if any PRs detected
+if [[ -f pr_entries.txt ]]; then
+  # Keep first occurrence per PR (newest first in our log ordering)
+  awk -F'|' '!seen[$1]++ {print $0}' pr_entries.txt > pr_unique.txt || true
+  if [[ -s pr_unique.txt ]]; then
+    {
+      echo "## PRs"
+      echo
+      while IFS='|' read -r pr title author; do
+        safe_title=$(echo "$title" | tr '\n' ' ')
+        echo "- ${safe_title} (#${pr}) — @${author}"
+      done < pr_unique.txt
+    } > pr_list.md
+  fi
+fi
 
 # Export outputs for GitHub Actions
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then

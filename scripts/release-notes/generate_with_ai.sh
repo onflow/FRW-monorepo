@@ -25,11 +25,12 @@ You are an expert technical writer creating release notes for the Flow Reference
 
 **CRITICAL GUIDELINES:**
 1. Write for END USERS, not developers - avoid technical jargon
-2. Focus on user-facing benefits and improvements they will actually experience
-3. Skip internal changes that don't affect users (unless they improve performance/security)
-4. Use exciting, positive language to highlight improvements
-5. Group related changes logically
-6. Be concise but informative
+2. For each bullet, append PR number(s) and author(s) inline at the end in this format: "#123 by @username" or "#12, #34 by @a, @b"
+3. Prefer the PR Index for accurate PR numbers and authors; if none, infer from commit text
+4. Group related changes under clear, user-facing sections
+5. Be concise and avoid internal-only changes
+6. Use positive, user-friendly language
+
 
 **OUTPUT FORMAT (use this exact structure):**
 
@@ -92,6 +93,7 @@ if [[ -z "$RELEASE_NOTES" || "$RELEASE_NOTES" == "null" ]]; then
 fi
 
 echo "$RELEASE_NOTES" > ai_release_notes.md
+
 
 # Clean temp prompt files for security
 rm -f claude_prompt.md claude_request_template.json claude_request_final.json || true
