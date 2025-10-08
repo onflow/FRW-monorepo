@@ -13,8 +13,6 @@ import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
 import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
-import { PriceBreakdown } from './Surge/PriceBreakdown';
-import { SurgeFeeConfirmationSection } from './Surge/SurgeFeeConfirmationSection';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
 
@@ -463,12 +461,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             </YStack>
           )}
 
-          <SurgeFeeConfirmationSection
-            transactionFee={formData.transactionFee || '- 5.00'}
-            surgeMultiplier={formData.surgeMultiplier || 1}
-            onPriceBreakdownPress={() => setIsPriceBreakdownOpen(true)}
-          />
-
           {/* Confirm Button */}
           {isExtension ? (
             <YStack
@@ -507,17 +499,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           )}
         </YStack>
       </Sheet.Frame>
-
-      {/* Price Breakdown Modal */}
-      <PriceBreakdown
-        isOpen={isPriceBreakdownOpen}
-        onClose={() => setIsPriceBreakdownOpen(false)}
-        transactionFee={formData.transactionFee || '- 5.00'}
-        surgeRate={`${Number(formData.surgeMultiplier || 1)
-          .toFixed(2)
-          .replace(/\.?0+$/, '')}X standard rate`}
-        finalFee={formData.transactionFee || '- 5.00'}
-      />
     </Sheet>
   );
 };
