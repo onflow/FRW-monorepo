@@ -22,11 +22,11 @@ awk '
     orig=$0
     l=$0
     open=gsub(/\[/, "", l)
-    close=gsub(/\]/, "", l)
+    close=gsub(/[]]/, "", l)
     if (close > open) {
       # Remove trailing ] while unmatched
-      while (close > open && match(orig, /\]$/)) {
-        sub(/\]$/, "", orig)
+      while (close > open && match(orig, /[]]$/)) {
+        sub(/[]]$/, "", orig)
         close--
       }
     }

@@ -49,10 +49,12 @@ jobs:
         run: |
           bash scripts/release-notes/generate_with_ai.sh
           # Sanitize
-          bash scripts/release-notes/sanitize_notes.sh ai_release_notes.md || true
+          bash scripts/release-notes/sanitize_notes.sh ai_release_notes.md
 
-          echo "✅ AI-generated release notes:"
-          echo "$RELEASE_NOTES"
+          echo "✅ AI-generated release notes (sanitized):"
+          echo "-----"
+          cat ai_release_notes.md || true
+          echo "-----"
 
           # Clean up temporary files for security
           rm -f claude_prompt.md claude_request_template.json claude_request_final.json commit_info.md

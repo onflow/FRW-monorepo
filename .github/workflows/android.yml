@@ -2,11 +2,12 @@ name: Android Build & Release
 
 on:
   workflow_call:
+  push:
+    tags:
+      - "release/android-*"
   schedule:
-    # Sydney standard time (AEST, UTC+10): 10:30 -> 00:30 UTC; 16:00 -> 06:00 UTC
     - cron: "30 0 * 4-9 *"
     - cron: "0 6 * 4-9 *"
-    # Sydney daylight time (AEDT, UTC+11): 10:30 -> 23:30 UTC; 16:00 -> 05:00 UTC
     - cron: "30 23 * 1,2,3,10,11,12 *"
     - cron: "0 5 * 1,2,3,10,11,12 *"
   workflow_dispatch:
@@ -20,7 +21,6 @@ on:
           - debug
           - dev
           - release
-
 jobs:
   determine-env:
     runs-on: ubuntu-latest
@@ -291,9 +291,16 @@ jobs:
             TYPE="release"
           fi
           if [[ "${{ github.event_name }}" == "push" ]]; then
-            if [[ "${{ github.ref }}" == refs/tags/release/rn-* || "${{ github.ref }}" == refs/heads/release/* ]]; then
-              TYPE="dev"
-            fi
+            case "${{ github.ref }}" in
+              refs/tags/release/android-*)
+                TYPE="release" ;;
+              refs/tags/release/mob-*)
+                TYPE="release" ;;
+              refs/tags/release/rn-*)
+                TYPE="release" ;;
+              refs/heads/release/*)
+                TYPE="dev" ;;
+            esac
           fi
           if [[ -n "${{ inputs.buildType }}" ]]; then TYPE="${{ inputs.buildType }}"; fi
           echo "buildType=$TYPE" >> $GITHUB_OUTPUT
@@ -319,6 +326,35 @@ jobs:
             sed -i.bak "s/^vCode=.*/vCode=$NEXT/" gradle.properties && rm -f gradle.properties.bak
           else
             echo "vCode=$NEXT" >> gradle.properties
+          fi
+
+      - name: Normalize versionName (prefix by build type)
+        shell: bash
+        working-directory: ${{ env.ANDROID_DIR }}
+        run: |
+          set -euo pipefail
+          DESIRED_PREFIX="i"
+          if [ "${{ steps.meta.outputs.buildType }}" = "release" ]; then
+            DESIRED_PREFIX="r"
+          fi
+          if [ ! -f gradle.properties ]; then
+            echo "::warning::gradle.properties missing; cannot set vName"
+          else
+            CUR=$(grep -E '^vName=' gradle.properties | sed -E 's/^vName=//')
+            if [ -z "${CUR:-}" ]; then
+              echo "::warning::vName not set; defaulting to ${DESIRED_PREFIX}0.0.0"
+              echo "vName=${DESIRED_PREFIX}0.0.0" >> gradle.properties
+            else
+              NUM=$(echo "$CUR" | sed -E 's/^[a-zA-Z]?//')
+              if [ -z "$NUM" ]; then NUM="0.0.0"; fi
+              NEW="${DESIRED_PREFIX}${NUM}"
+              if [ "$CUR" != "$NEW" ]; then
+                echo "[Android CI] Updating vName: $CUR -> $NEW"
+                sed -i.bak "s/^vName=.*/vName=${NEW}/" gradle.properties && rm -f gradle.properties.bak
+              else
+                echo "[Android CI] vName already ${NEW}"
+              fi
+            fi
           fi
 
       - name: Signing diagnostics
