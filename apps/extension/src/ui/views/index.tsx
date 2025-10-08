@@ -141,6 +141,7 @@ const App = ({ wallet }: { wallet: any }) => {
       type: 'SURGE_APPROVAL_RESPONSE',
       data: { approved: false },
     });
+    setHasResponded(false);
   };
 
   const handleSurgeModalAgree = () => {
@@ -165,6 +166,7 @@ const App = ({ wallet }: { wallet: any }) => {
       type: 'SURGE_APPROVAL_RESPONSE',
       data: { approved: true },
     });
+    setHasResponded(false);
     console.log('Surge approval response sent');
   };
 

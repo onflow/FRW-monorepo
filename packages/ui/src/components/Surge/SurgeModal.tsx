@@ -1,8 +1,9 @@
 import { AlertTriangle, FlowLogo, SurgeIcon, Close } from '@onflow/frw-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { YStack, XStack, Button } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
+import { HoldToSendButton } from '../HoldToSendButton';
 
 /**
  * SurgeModal component for displaying surge pricing warnings and confirmation
@@ -61,9 +62,6 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
   isLoading = false,
   className,
 }) => {
-  const [isHolding, setIsHolding] = useState(false);
-  const [holdProgress, setHoldProgress] = useState(0);
-
   // Handle escape key press and body scroll prevention
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -83,45 +81,6 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
       document.body.style.overflow = 'unset';
     };
   }, [visible, onClose]);
-
-  // Handle hold button progress
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (isHolding && !isLoading) {
-      interval = setInterval(() => {
-        setHoldProgress((prev) => {
-          if (prev >= 100) {
-            if (onAgree) {
-              onAgree();
-            }
-            return 0;
-          }
-          return prev + 2; // Adjust speed as needed
-        });
-      }, 50);
-    } else {
-      setHoldProgress(0);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [isHolding, isLoading, onAgree]);
-
-  const handleMouseDown = () => {
-    setIsHolding(true);
-  };
-
-  const handleMouseUp = () => {
-    setIsHolding(false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHolding(false);
-  };
 
   if (!visible) {
     return null;
@@ -254,69 +213,16 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
 
           {/* Hold to Agree Button */}
           <YStack width="100%" style={{ maxWidth: 303 }}>
-            <Button
-              height={52}
-              bg="$error"
-              borderWidth={2}
-              borderColor="transparent"
-              rounded="$4"
-              pressStyle={{
-                bg: '$error', // Keep the same red background when pressed
-                borderColor: 'transparent',
-                opacity: 0.9,
+            <HoldToSendButton
+              onPress={async () => {
+                if (onAgree) {
+                  onAgree();
+                }
               }}
-              onPressIn={handleMouseDown}
-              onPressOut={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
-              disabled={isLoading}
-              style={{
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <XStack items="center" gap="$3" justify="center">
-                {/* Loading circle */}
-                {isHolding && (
-                  <YStack
-                    width={20}
-                    height={20}
-                    items="center"
-                    justify="center"
-                    style={{
-                      position: 'relative',
-                    }}
-                  >
-                    {/* Progress circle - white border that grows */}
-                    <svg
-                      width="20"
-                      height="20"
-                      style={{
-                        position: 'absolute',
-                        transform: 'rotate(-90deg)', // Start from top
-                      }}
-                    >
-                      <circle
-                        cx="10"
-                        cy="10"
-                        r="7.5" // 10 - 2.5 (half border width)
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2.5"
-                        strokeDasharray={`${2 * Math.PI * 7.5}`}
-                        strokeDashoffset={`${2 * Math.PI * 7.5 * (1 - holdProgress / 100)}`}
-                        style={{
-                          transition: 'stroke-dashoffset 0.1s ease-out',
-                        }}
-                      />
-                    </svg>
-                  </YStack>
-                )}
-
-                <Text fontSize={16} fontWeight="600" color="$white">
-                  Hold to agree to surge pricing
-                </Text>
-              </XStack>
-            </Button>
+              holdToSendText="Hold to agree to surge pricing"
+              holdDuration={1500}
+              stopSignal={isLoading}
+            />
           </YStack>
         </YStack>
       </YStack>
