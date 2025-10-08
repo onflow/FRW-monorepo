@@ -138,7 +138,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
           onPress={onClose}
           cursor="pointer"
           chromeless
-          icon={<Close size={12} color="white" />}
+          icon={<Close size={28} color="white" />}
         />
 
         {/* Content Frame */}
