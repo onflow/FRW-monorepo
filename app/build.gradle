@@ -68,6 +68,16 @@ def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackPro
 def codePushKeyStaging = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_STAGING") ?: "staging-placeholder"
 def codePushKeyProduction = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_PRODUCTION") ?: "production-placeholder"
 
+// Normalize versionName prefixes per buildType
+// - debug/dev -> dX.Y.Z (development)
+// - releaseDebug -> iX.Y.Z (internal QA)
+// - release -> rX.Y.Z (production)
+def vNameRaw = vName
+def vNum = (vNameRaw ?: "0.0.0").replaceAll("^[a-zA-Z]", "")
+def verNameDev = "d${vNum}"
+def verNameInternal = "i${vNum}"
+def verNameRelease = "r${vNum}"
+
 android {
     compileSdk 35
 
@@ -139,6 +149,7 @@ android {
 
     buildTypes {
         debug {
+            versionName verNameDev
             minifyEnabled false
             multiDexEnabled true
             debuggable true
@@ -153,6 +164,7 @@ android {
         }
 
         releaseDebug {
+            versionName verNameInternal
             minifyEnabled false
             multiDexEnabled true
             debuggable true
@@ -164,6 +176,7 @@ android {
         }
 
         dev {
+            versionName verNameDev
             minifyEnabled true
             shrinkResources true
             multiDexEnabled false
@@ -190,6 +203,7 @@ android {
         }
 
         release {
+            versionName verNameRelease
             minifyEnabled true
             shrinkResources true
             multiDexEnabled false
