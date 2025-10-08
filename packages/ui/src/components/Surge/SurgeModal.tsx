@@ -149,7 +149,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
     >
       <YStack
         width={343}
-        bg="$bg5"
+        bg="$surfaceDark5"
         rounded="$4"
         p="$4"
         gap="$4"
@@ -258,11 +258,12 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
               height={52}
               bg="$error"
               borderWidth={2}
-              borderColor={isHolding ? '$error' : 'transparent'}
+              borderColor="transparent"
               rounded="$4"
               pressStyle={{
-                opacity: 0.8,
-                borderColor: isHolding ? '$error' : 'transparent',
+                bg: '$error', // Keep the same red background when pressed
+                borderColor: 'transparent',
+                opacity: 0.9,
               }}
               onPressIn={handleMouseDown}
               onPressOut={handleMouseUp}
@@ -273,22 +274,44 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
                 overflow: 'hidden',
               }}
             >
-              {/* Progress bar overlay */}
-              {isHolding && (
-                <YStack
-                  height="100%"
-                  bg="rgba(255, 255, 255, 0.2)"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: `${holdProgress}%`,
-                    transition: 'width 0.1s ease-out',
-                  }}
-                />
-              )}
+              <XStack items="center" gap="$3" justify="center">
+                {/* Loading circle */}
+                {isHolding && (
+                  <YStack
+                    width={20}
+                    height={20}
+                    items="center"
+                    justify="center"
+                    style={{
+                      position: 'relative',
+                    }}
+                  >
+                    {/* Progress circle - white border that grows */}
+                    <svg
+                      width="20"
+                      height="20"
+                      style={{
+                        position: 'absolute',
+                        transform: 'rotate(-90deg)', // Start from top
+                      }}
+                    >
+                      <circle
+                        cx="10"
+                        cy="10"
+                        r="7.5" // 10 - 2.5 (half border width)
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2.5"
+                        strokeDasharray={`${2 * Math.PI * 7.5}`}
+                        strokeDashoffset={`${2 * Math.PI * 7.5 * (1 - holdProgress / 100)}`}
+                        style={{
+                          transition: 'stroke-dashoffset 0.1s ease-out',
+                        }}
+                      />
+                    </svg>
+                  </YStack>
+                )}
 
-              <XStack items="center" gap="$2">
                 <Text fontSize={16} fontWeight="600" color="$white">
                   Hold to agree to surge pricing
                 </Text>

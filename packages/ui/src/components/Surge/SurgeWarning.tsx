@@ -87,7 +87,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
   const warningBackgroundColor = theme.warning?.val || '#FDB022';
   const dynamicTitleColor = titleColor || theme.white?.val || '#FFFFFF';
   const dynamicTextColor = textColor || theme.white?.val || '#FFFFFF';
-  const modalBackgroundColor = backgroundColor || theme.bg5?.val || '#2A2A2A';
+  const modalBackgroundColor = backgroundColor || theme.surfaceDark5?.val || '#2A2A2A';
 
   // Get colors based on variant (keeping original structure but using theme values)
   const getVariantColors = () => {

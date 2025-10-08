@@ -158,7 +158,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const [internalIsSending, setInternalIsSending] = React.useState(false);
   const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
-  const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = useState(false);
+  const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = React.useState(false);
 
   // Determine if we're sending ERC1155 NFTs (semi-fungible)
   const isERC1155 = React.useMemo(() => {

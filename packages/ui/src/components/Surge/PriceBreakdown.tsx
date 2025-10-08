@@ -27,7 +27,7 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
   const closeIconColor = theme.white?.val || '#FFFFFF';
   const activityIconColor = theme.black?.val || '#000000';
   const warningBackgroundColor = theme.warning?.val || '#FDB022';
-  const modalBackgroundColor = theme.bg5?.val || '#2A2A2A';
+  const modalBackgroundColor = theme.surfaceDark5?.val || '#2A2A2A';
 
   if (!isOpen) return null;
 
