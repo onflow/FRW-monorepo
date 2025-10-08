@@ -40,7 +40,6 @@ jobs:
           if [ "$TYPE" = "dev" ]; then ENV_NAME="development"; fi
           echo "env_name=$ENV_NAME" >> $GITHUB_OUTPUT
           echo "Environment name: $ENV_NAME"
-
   android:
     runs-on: ubuntu-latest
     needs: determine-env
@@ -74,7 +73,7 @@ jobs:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref != "" && github.ref || github.event.ref }}
           fetch-depth: 0
           submodules: recursive
 
@@ -284,24 +283,25 @@ jobs:
         id: meta
         shell: bash
         run: |
-          # Decide buildType: PRs -> debug; Release tags/branches -> dev (if secrets present) else debug
+          # Decide buildType: PRs -> debug; Tag-based releases -> release
           INPUT="${{ github.event_name }}:${{ github.ref }}:${{ inputs.buildType }}"
           TYPE="release"
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             TYPE="release"
           fi
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            case "${{ github.ref }}" in
-              refs/tags/release/android-*)
-                TYPE="release" ;;
-              refs/tags/release/mob-*)
-                TYPE="release" ;;
-              refs/tags/release/rn-*)
-                TYPE="release" ;;
-              refs/heads/release/*)
-                TYPE="dev" ;;
-            esac
-          fi
+          # Compute REF from push/create
+          REF="${{ github.ref }}"
+          if [ -z "$REF" ]; then REF="${{ github.event.ref }}"; fi
+          case "$REF" in
+            refs/tags/release/android-*|release/android-*)
+              TYPE="release" ;;
+            refs/tags/release/mob-*|release/mob-*)
+              TYPE="release" ;;
+            refs/tags/release/rn-*|release/rn-*)
+              TYPE="release" ;;
+            refs/heads/release/*)
+              TYPE="release" ;;
+          esac
           if [[ -n "${{ inputs.buildType }}" ]]; then TYPE="${{ inputs.buildType }}"; fi
           echo "buildType=$TYPE" >> $GITHUB_OUTPUT
           echo "Resolved build type: $TYPE"
