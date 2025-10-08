@@ -3,6 +3,12 @@ name: AI-Powered Release Notes Generation
 on:
   release:
     types: [published, created]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to (re)generate notes for (e.g. release/ext-3.0.0)"
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -22,182 +28,28 @@ jobs:
 
       - name: Collect Commit Information
         id: collect-commits
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          # Get the tag name from the release
-          TAG_NAME="${{ github.event.release.tag_name }}"
-          echo "Processing release: $TAG_NAME"
-
-          # Extract the tag prefix for monorepo (e.g., "release/rn" from "release/rn-0.0.2")
-          TAG_PREFIX=""
-          if [[ "$TAG_NAME" =~ ^(.*)-([0-9]+\.[0-9]+\.[0-9]+.*) ]]; then
-            TAG_PREFIX="${BASH_REMATCH[1]}"
-            TAG_VERSION="${BASH_REMATCH[2]}"
-            echo "Detected monorepo tag - Prefix: $TAG_PREFIX, Version: $TAG_VERSION"
-          else
-            echo "Standard tag format detected: $TAG_NAME"
-          fi
-
-          # Find previous tag with same prefix for monorepo
-          if [ -n "$TAG_PREFIX" ]; then
-            # For monorepo, find the previous tag with the same prefix
-            PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || echo "")
-            echo "Looking for previous tag with prefix: ${TAG_PREFIX}-*"
-          else
-            # Standard tag handling
-            PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || echo "")
-          fi
-
-          if [ -z "$PREVIOUS_TAG" ]; then
-            echo "No previous tag found, analyzing all commits since repository start"
-            COMMIT_RANGE=""
-            COMMITS=$(git log --pretty=format:'%H|%s|%b|%an|%ad' --date=short --no-merges)
-          else
-            echo "Previous tag: $PREVIOUS_TAG"
-            COMMIT_RANGE="$PREVIOUS_TAG..$TAG_NAME"
-            COMMITS=$(git log --pretty=format:'%H|%s|%b|%an|%ad' --date=short --no-merges "$COMMIT_RANGE")
-          fi
-
-          # Format commit information for Claude
-          COMMIT_INFO_FILE="commit_info.md"
-          echo "# Flow Reference Wallet Release Analysis" > "$COMMIT_INFO_FILE"
-          echo "" >> "$COMMIT_INFO_FILE"
-          echo "## Repository Context" >> "$COMMIT_INFO_FILE"
-          echo "This is the Flow Reference Wallet (FRW), a production-ready Flow blockchain wallet built with MVVM architecture in a TypeScript monorepo. It supports both React Native mobile apps and browser extensions, allowing users to interact with the Flow blockchain, manage their digital assets, and use dApps." >> "$COMMIT_INFO_FILE"
-          echo "" >> "$COMMIT_INFO_FILE"
-          echo "## Target Audience" >> "$COMMIT_INFO_FILE"
-          echo "The release notes are for end users of the Flow Reference Wallet - both mobile app users and browser extension users. They want to know what new features, improvements, and fixes they can expect in this release." >> "$COMMIT_INFO_FILE"
-          echo "" >> "$COMMIT_INFO_FILE"
-
-          if [ -n "$PREVIOUS_TAG" ]; then
-            echo "## Release Range: $PREVIOUS_TAG → $TAG_NAME" >> "$COMMIT_INFO_FILE"
-          else
-            echo "## Release: $TAG_NAME" >> "$COMMIT_INFO_FILE"
-          fi
-
-          echo "" >> "$COMMIT_INFO_FILE"
-          echo "## Commits to Analyze:" >> "$COMMIT_INFO_FILE"
-          echo "" >> "$COMMIT_INFO_FILE"
-
-          COMMIT_COUNT=0
-          while IFS='|' read -r commit_hash commit_subject commit_body author_name commit_date; do
-            # Skip empty lines
-            [ -z "$commit_hash" ] && continue
-            
-            COMMIT_COUNT=$((COMMIT_COUNT + 1))
-            echo "### Commit $COMMIT_COUNT: ${commit_hash:0:8}" >> "$COMMIT_INFO_FILE"
-            echo "- **Author:** $author_name" >> "$COMMIT_INFO_FILE"
-            echo "- **Date:** $commit_date" >> "$COMMIT_INFO_FILE"
-            echo "- **Title:** $commit_subject" >> "$COMMIT_INFO_FILE"
-            if [ -n "$commit_body" ] && [ "$commit_body" != "$commit_subject" ] && [ "$commit_body" != "" ]; then
-              echo "- **Description:**" >> "$COMMIT_INFO_FILE"
-              echo '```' >> "$COMMIT_INFO_FILE"
-              echo "$commit_body" >> "$COMMIT_INFO_FILE"
-              echo '```' >> "$COMMIT_INFO_FILE"
-            fi
-            echo "" >> "$COMMIT_INFO_FILE"
-          done <<< "$COMMITS"
-
-          echo "Total commits to analyze: $COMMIT_COUNT"
-
-          # Set outputs
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
-          echo "COMMIT_COUNT=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+          bash scripts/release-notes/collect_commits.sh
 
       - name: Generate Release Notes with Claude AI
         id: generate-notes
+        env:
+          PREVIOUS_TAG: ${{ steps.collect-commits.outputs.PREVIOUS_TAG }}
+          TAG_NAME: ${{ steps.collect-commits.outputs.TAG_NAME }}
+          COMMIT_COUNT: ${{ steps.collect-commits.outputs.COMMIT_COUNT }}
+          REPOSITORY: ${{ github.repository }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Get variables from previous step
-          COMMIT_COUNT="${{ steps.collect-commits.outputs.COMMIT_COUNT }}"
-          PREVIOUS_TAG="${{ steps.collect-commits.outputs.PREVIOUS_TAG }}"
-
-          # Create a comprehensive prompt for Claude
-          echo "You are an expert technical writer creating release notes for the Flow Reference Wallet (FRW), a blockchain wallet application. Your task is to transform technical commit messages into engaging, user-friendly release notes that end users will understand and appreciate." > claude_prompt.md
-          echo "" >> claude_prompt.md
-          echo "**CRITICAL GUIDELINES:**" >> claude_prompt.md
-          echo "1. Write for END USERS, not developers - avoid technical jargon" >> claude_prompt.md
-          echo "2. Focus on user-facing benefits and improvements they will actually experience" >> claude_prompt.md
-          echo "3. Skip internal changes that don't affect users (unless they improve performance/security)" >> claude_prompt.md
-          echo "4. Use exciting, positive language to highlight improvements" >> claude_prompt.md
-          echo "5. Group related changes logically" >> claude_prompt.md
-          echo "6. Be concise but informative" >> claude_prompt.md
-          echo "" >> claude_prompt.md
-          echo "**OUTPUT FORMAT (use this exact structure):**" >> claude_prompt.md
-          echo "" >> claude_prompt.md
-          echo "## 🆕 What's New" >> claude_prompt.md
-          echo "[List major new features and capabilities users will discover]" >> claude_prompt.md
-          echo "" >> claude_prompt.md
-          echo "## 🔧 Improvements" >> claude_prompt.md
-          echo "[Performance boosts, UI enhancements, better user experience]" >> claude_prompt.md
-          echo "" >> claude_prompt.md
-          echo "## 🐛 Bug Fixes" >> claude_prompt.md
-          echo "[Issues resolved that users might have experienced]" >> claude_prompt.md
-          echo "" >> claude_prompt.md
-          echo "## 🔐 Security & Performance" >> claude_prompt.md
-          echo "[Security improvements and performance optimizations]" >> claude_prompt.md
-          echo "" >> claude_prompt.md
-          echo "**Important:**" >> claude_prompt.md
-          echo "- Only include sections that have actual content" >> claude_prompt.md
-          echo "- If a section would be empty, omit it entirely" >> claude_prompt.md
-          echo "- End with: \"---\\nThank you for using Flow Reference Wallet! 🚀\"" >> claude_prompt.md
-          echo "- Focus on what users will see and feel, not what developers changed" >> claude_prompt.md
-
-          # Add the commit information to the prompt
-          cat commit_info.md >> claude_prompt.md
-
-          echo "" >> claude_prompt.md
-          echo "Now, please analyze these commits and create engaging, user-focused release notes that highlight what users will experience and benefit from." >> claude_prompt.md
-
-          # Create JSON payload file for security (without content first)
-          cat > claude_request_template.json << 'JSON_EOF'
-          {
-            "model": "claude-3-5-sonnet-20241022",
-            "max_tokens": 8000,
-            "messages": [
-              {
-                "role": "user", 
-                "content": null
-              }
-            ]
-          }
-          JSON_EOF
-
-          # Safely inject the prompt content into JSON using file operations
-          # This avoids command substitution issues with large or special content
-          jq --rawfile content claude_prompt.md '.messages[0].content = $content' claude_request_template.json > claude_request_final.json
-
-          # Use curl with file input and environment variable for maximum security
-          ANTHROPIC_API_KEY="${{ secrets.ANTHROPIC_API_KEY }}"
-          RESPONSE=$(curl -s -X POST https://api.anthropic.com/v1/messages \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
-            -H "anthropic-version: 2023-06-01" \
-            -d @claude_request_final.json)
-
-          # Extract the content from Claude's response
-          RELEASE_NOTES=$(echo "$RESPONSE" | jq -r '.content[0].text' 2>/dev/null || echo "")
-
-          # Check if we got a valid response
-          if [ -z "$RELEASE_NOTES" ] || [ "$RELEASE_NOTES" = "null" ]; then
-            echo "Failed to get response from Claude API. Response was:"
-            echo "$RESPONSE"
-            
-            # Fallback: Create basic release notes
-            if [ -n "$PREVIOUS_TAG" ]; then
-              CHANGELOG_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${{ steps.collect-commits.outputs.TAG_NAME }}"
-            else
-              CHANGELOG_LINK="**Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ steps.collect-commits.outputs.TAG_NAME }}"
-            fi
-            RELEASE_NOTES="## What's Changed"$'\n\n'"This release includes ${COMMIT_COUNT} improvements and updates to the Flow Reference Wallet."$'\n\n'"${CHANGELOG_LINK}"$'\n\n'"---"$'\n'"Thank you for using Flow Reference Wallet! 🚀"
-          fi
-
-          # Save the generated release notes
-          echo "$RELEASE_NOTES" > ai_release_notes.md
-
-          # Set output for next step
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
-          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          bash scripts/release-notes/generate_with_ai.sh
+          # Sanitize
+          bash scripts/release-notes/sanitize_notes.sh ai_release_notes.md || true
 
           echo "✅ AI-generated release notes:"
           echo "$RELEASE_NOTES"
@@ -207,24 +59,13 @@ jobs:
 
       - name: Update Release with AI-Generated Notes
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          TAG_NAME: ${{ steps.collect-commits.outputs.TAG_NAME }}
+          REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ github.event.release.id }}
         run: |
-          RELEASE_ID="${{ github.event.release.id }}"
-          RELEASE_NOTES="${{ steps.generate-notes.outputs.RELEASE_NOTES }}"
-
-          # Escape quotes for JSON
-          ESCAPED_NOTES=$(echo "$RELEASE_NOTES" | jq -Rs .)
-
-          # Update release via GitHub API
-          curl -L \
-            -X PATCH \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID" \
-            -d "{\"body\":$ESCAPED_NOTES}"
-
-          echo "✅ Release notes updated successfully with AI-generated content!"
+          bash scripts/release-notes/update_release_body.sh
 
       - name: Add Success Comment
         if: github.event.release.discussion_url
