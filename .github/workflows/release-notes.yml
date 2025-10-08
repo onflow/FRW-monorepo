@@ -2,12 +2,16 @@ name: AI-Powered Release Notes Generation
 
 on:
   release:
-    types: [published, created]
+    types: [published]
   workflow_dispatch:
     inputs:
-      tag_name:
-        description: "Release tag to (re)generate notes for (e.g. release/ext-3.0.0)"
-        required: false
+      from_tag:
+        description: "Start tag (older) for range, e.g. release/ext-3.0.0"
+        required: true
+        type: string
+      to_tag:
+        description: "End tag (newer) for range, e.g. release/ext-3.1.0"
+        required: true
         type: string
 
 permissions:
@@ -15,6 +19,10 @@ permissions:
   pull-requests: read
   issues: read
   id-token: write
+
+concurrency:
+  group: release-notes-${{ github.event_name }}-${{ github.event.release.tag_name || inputs.to_tag || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   generate-release-notes:
@@ -30,11 +38,13 @@ jobs:
         id: collect-commits
         env:
           EVENT_NAME: ${{ github.event_name }}
-          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+          INPUT_TAG_NAME: ""
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
+          INPUT_FROM_TAG: ${{ inputs.from_tag }}
+          INPUT_TO_TAG: ${{ inputs.to_tag }}
         run: |
           bash scripts/release-notes/collect_commits.sh
 
@@ -45,6 +55,8 @@ jobs:
           TAG_NAME: ${{ steps.collect-commits.outputs.TAG_NAME }}
           COMMIT_COUNT: ${{ steps.collect-commits.outputs.COMMIT_COUNT }}
           REPOSITORY: ${{ github.repository }}
+          INPUT_FROM_TAG: ${{ inputs.from_tag }}
+          INPUT_TO_TAG: ${{ inputs.to_tag }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           bash scripts/release-notes/generate_with_ai.sh
@@ -64,6 +76,8 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           TAG_NAME: ${{ steps.collect-commits.outputs.TAG_NAME }}
           REPOSITORY: ${{ github.repository }}
+          INPUT_FROM_TAG: ${{ inputs.from_tag }}
+          INPUT_TO_TAG: ${{ inputs.to_tag }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_ID: ${{ github.event.release.id }}
         run: |
