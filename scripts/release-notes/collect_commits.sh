@@ -99,11 +99,16 @@ COMMIT_COUNT=0
 while IFS='|' read -r commit_hash commit_subject commit_body author_name commit_date; do
   [[ -z "$commit_hash" ]] && continue
   COMMIT_COUNT=$((COMMIT_COUNT + 1))
+  # Clean conventional prefixes/scopes and ticket IDs from title for user-facing text
+  clean_subject=$(echo "$commit_subject" \
+    | sed -E "s/^(feat|fix|chore|refactor|style|docs|test|perf|build|ci|revert)(\([^)]+\))?(!)?:\s*//I" \
+    | sed -E "s/^\[?[A-Za-z]+-[0-9]+\](:|-)?\s*//" \
+    | sed -E "s/[[:space:]]+$//")
   {
     echo "### Commit $COMMIT_COUNT: ${commit_hash:0:8}"
     echo "- Author: $author_name"
     echo "- Date: $commit_date"
-    echo "- Title: $commit_subject"
+    echo "- Title: $clean_subject"
     if [[ -n "$commit_body" && "$commit_body" != "$commit_subject" ]]; then
       echo "- Description:"
       echo '```'
@@ -117,7 +122,7 @@ while IFS='|' read -r commit_hash commit_subject commit_body author_name commit_
   PR_NUM=$(printf '%s\n%s\n' "$commit_subject" "$commit_body" | grep -Eo '#[0-9]+' | head -n 1 | tr -d '#' || true)
   if [[ -n "${PR_NUM:-}" ]]; then
     # Accumulate entries for a later PR list (dedup by PR later)
-    echo "$PR_NUM|$commit_subject|$author_name" >> pr_entries.txt
+    echo "$PR_NUM|$clean_subject|$author_name" >> pr_entries.txt
   fi
 done <<< "$COMMITS"
 
