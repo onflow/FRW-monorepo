@@ -7,22 +7,28 @@ set -euo pipefail
 #
 # Inputs via env vars:
 #   EVENT_NAME           - github.event_name
-#   INPUT_TAG_NAME       - inputs.tag_name (when workflow_dispatch)
+#   INPUT_TAG_NAME       - inputs.tag_name (legacy, when workflow_dispatch)
+#   INPUT_FROM_TAG       - inputs.from_tag (when workflow_dispatch)
+#   INPUT_TO_TAG         - inputs.to_tag (when workflow_dispatch)
 #   RELEASE_TAG_NAME     - github.event.release.tag_name (for release event)
 #   REPOSITORY           - github.repository (used for links in fallback)
 #   GITHUB_OUTPUT        - (provided by Actions) file path for outputs
 
 EVENT_NAME=${EVENT_NAME:-}
 INPUT_TAG_NAME=${INPUT_TAG_NAME:-}
+INPUT_FROM_TAG=${INPUT_FROM_TAG:-}
+INPUT_TO_TAG=${INPUT_TO_TAG:-}
 RELEASE_TAG_NAME=${RELEASE_TAG_NAME:-}
 GITHUB_REF=${GITHUB_REF:-}
 GITHUB_REF_NAME=${GITHUB_REF_NAME:-}
 REPOSITORY=${REPOSITORY:-}
 
-# Determine TAG_NAME (priority: explicit input > release event tag > current ref tag)
+# Determine TAG_NAME (priority: tag_name > to_tag > release event tag > current ref tag)
 TAG_NAME=""
 if [[ -n "$INPUT_TAG_NAME" ]]; then
   TAG_NAME="$INPUT_TAG_NAME"
+elif [[ -n "$INPUT_TO_TAG" ]]; then
+  TAG_NAME="$INPUT_TO_TAG"
 elif [[ -n "$RELEASE_TAG_NAME" ]]; then
   TAG_NAME="$RELEASE_TAG_NAME"
 elif [[ "$GITHUB_REF" == refs/tags/* || -n "$GITHUB_REF_NAME" && "$GITHUB_REF" == refs/tags/* ]]; then
@@ -47,12 +53,16 @@ else
   echo "Standard tag format detected: $TAG_NAME"
 fi
 
-# Find previous tag
-if [[ -n "$TAG_PREFIX" ]]; then
-  PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || true)
-  echo "Looking for previous tag with prefix: ${TAG_PREFIX}-*"
+# Resolve previous tag: prefer manual from_tag when provided
+if [[ -n "$INPUT_FROM_TAG" ]]; then
+  PREVIOUS_TAG="$INPUT_FROM_TAG"
 else
-  PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || true)
+  if [[ -n "$TAG_PREFIX" ]]; then
+    echo "Looking for previous tag with prefix: ${TAG_PREFIX}-*"
+    PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || true)
+  else
+    PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || true)
+  fi
 fi
 
 if [[ -z "${PREVIOUS_TAG:-}" ]]; then
