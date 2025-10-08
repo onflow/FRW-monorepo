@@ -1,4 +1,4 @@
-import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { ScrollView, XStack, YStack } from 'tamagui';
 
@@ -7,12 +7,25 @@ import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 import type { Account, AccountCardProps } from '../types';
 import { AddressText } from './AddressText';
-import { Badge } from './Badge';
+
+// Helper function to format balance with max 5 decimal places
+function formatBalance(balance?: string): string {
+  if (!balance) return '0';
+
+  const num = parseFloat(balance);
+  if (isNaN(num)) return balance;
+
+  // If the number has more than 5 decimal places, round to 5
+  // Otherwise, show the number as is (without trailing zeros)
+  const rounded = Math.round(num * 100000) / 100000;
+  return rounded.toString();
+}
 
 export function AccountCard({
   account,
   title,
   isLoading = false,
+  isSendTokensScreen = false,
   // Modal-style selection props
   accounts,
   onAccountSelect,
@@ -23,65 +36,108 @@ export function AccountCard({
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Early return if no account data
+  if (!account) {
+    return (
+      <YStack width="100%" pt="$2" px="$1" pb="$6" gap="$1" {...props}>
+        <Text fontSize="$3" mb="$1" fontWeight="400" color="$textSecondary" lineHeight={16}>
+          {title}
+        </Text>
+        <Text color="$error">No account data available</Text>
+      </YStack>
+    );
+  }
+
   const content = (
     <YStack
       width="100%"
-      pt="$2"
-      px="$1"
-      pb="$6"
-      gap="$3"
-      pressStyle={{
-        bg: '$light25',
-      }}
+      rounded="$4"
+      pt="$1"
+      pb={isSendTokensScreen ? '$4' : '$1'}
+      gap="$1"
       onPress={enableModalSelection ? () => setModalOpen(true) : undefined}
       cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
     >
       {/* Title */}
       <Text
-        fontSize="$2"
-        mb="$3"
+        fontSize="$3"
+        mb={isSendTokensScreen ? '$8' : '$1'}
         fontWeight="400"
-        color="$light80"
+        // color="$textSecondary"
         lineHeight={16}
-        textAlign="left"
       >
         {title}
       </Text>
 
       {/* Account Container */}
-      <XStack py="$2.5" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>
+      <XStack py="$2" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>
         {/* Left side: Avatar and Account Details */}
         <XStack items="center" gap="$4" flex={1}>
-          {/* Account Avatar */}
-          <Avatar
-            src={account.avatar}
-            fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || '?'}
-            bgColor={account.emojiInfo?.color}
-            size={36}
-            borderColor="$primary"
-            borderWidth={1}
-          />
+          {/* Account Avatar with parent emoji overlay */}
+          <XStack position="relative" width={36} height={36}>
+            <Avatar
+              src={account.avatar}
+              fallback={account.emojiInfo?.emoji || account.name?.charAt(0) || '?'}
+              bgColor={account.emojiInfo?.color}
+              size={36}
+              borderColor="$primary"
+              borderWidth={1}
+            />
+            {/* Parent emoji overlay bubble for linked accounts */}
+            {account.parentEmoji && (
+              <YStack
+                position="absolute"
+                l={-6}
+                t={-6}
+                width={18}
+                height={18}
+                rounded={9}
+                bg={account.parentEmoji.color || '$bg2'}
+                borderWidth={2}
+                borderColor="$bg2"
+                items="center"
+                justify="center"
+                overflow="hidden"
+              >
+                <Text fontSize={8} fontWeight="600" lineHeight={12}>
+                  {account.parentEmoji.emoji}
+                </Text>
+              </YStack>
+            )}
+          </XStack>
 
           {/* Account Details */}
           <YStack flex={1} gap="$0.5">
-            {/* Account Name with linked chain emoji */}
-            <XStack items="center" gap="$1" minH={20}>
-              <Text
-                color="$white"
-                fontSize="$3"
-                fontWeight="600"
-                lineHeight={17}
-                numberOfLines={1}
-                flex={1}
-              >
+            {/* Account Name with link icon and EVM badge */}
+            <XStack items="center" gap={4} minH={20}>
+              {/* Link icon for linked accounts */}
+              {(account.type === 'child' || account.parentEmoji) && (
+                <Link size={12.8} color="#767676" theme="outline" />
+              )}
+              <Text color="$text" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}
               </Text>
-              {/* Linked chain emoji */}
-              {account.parentEmoji && (
-                <Text fontSize="$3" lineHeight={17}>
-                  {account.parentEmoji.emoji}
-                </Text>
+              {/* EVM Badge - inline with name */}
+              {account.type === 'evm' && (
+                <XStack
+                  bg="$accentEVM"
+                  rounded="$4"
+                  px={4}
+                  items="center"
+                  justify="center"
+                  height={16}
+                >
+                  <Text
+                    fontSize={8}
+                    fontWeight="400"
+                    color="#FFFFFF"
+                    lineHeight={9.7}
+                    letterSpacing={0.128}
+                  >
+                    EVM
+                  </Text>
+                </XStack>
               )}
             </XStack>
 
@@ -96,15 +152,8 @@ export function AccountCard({
               w="100%"
             />
 
-            {/* EVM Badge and Balance Row */}
+            {/* Balance Row */}
             <XStack items="center" gap="$2" minH={17}>
-              {/* EVM Badge */}
-              {account.type === 'evm' && (
-                <Badge variant="evm" size="small">
-                  EVM
-                </Badge>
-              )}
-
               {/* Balance */}
               {isLoading ? (
                 <Skeleton width="$12" height="$3" borderRadius="$2" />
@@ -117,7 +166,7 @@ export function AccountCard({
                   numberOfLines={1}
                   flex={1}
                 >
-                  {account.balance} | {account.nfts}
+                  {formatBalance(account.balance)} FLOW
                 </Text>
               ) : null}
             </XStack>
@@ -216,35 +265,76 @@ export function AccountCard({
                             cursor="pointer"
                           >
                             <XStack items="center" gap={8}>
-                              {/* Account Avatar */}
-                              <Avatar
-                                src={acc.avatar}
-                                fallback={acc.emojiInfo?.emoji || acc.name?.charAt(0) || '?'}
-                                bgColor={acc.emojiInfo?.color}
-                                size={53.44}
-                                borderColor={isSelected ? '$primary' : undefined}
-                                borderWidth={isSelected ? 1 : undefined}
-                              />
+                              {/* Account Avatar with parent emoji overlay */}
+                              <XStack position="relative" width={53.44} height={53.44}>
+                                <Avatar
+                                  src={acc.avatar}
+                                  fallback={acc.emojiInfo?.emoji || acc.name?.charAt(0) || '?'}
+                                  bgColor={acc.emojiInfo?.color}
+                                  size={53.44}
+                                  borderColor={isSelected ? '$primary' : undefined}
+                                  borderWidth={isSelected ? 1 : undefined}
+                                />
+                                {/* Parent emoji overlay bubble for linked accounts */}
+                                {acc.parentEmoji && (
+                                  <YStack
+                                    position="absolute"
+                                    l={-6}
+                                    t={-6}
+                                    width={18}
+                                    height={18}
+                                    rounded={9}
+                                    bg={acc.parentEmoji.color || '$bg2'}
+                                    borderWidth={2}
+                                    borderColor="$bg2"
+                                    items="center"
+                                    justify="center"
+                                    overflow="hidden"
+                                  >
+                                    <Text fontSize={8} fontWeight="600" lineHeight={12}>
+                                      {acc.parentEmoji.emoji}
+                                    </Text>
+                                  </YStack>
+                                )}
+                              </XStack>
 
                               {/* Account Details */}
                               <YStack gap={2} flex={1} justify="center">
-                                {/* Account Name with linked chain emoji */}
+                                {/* Account Name with link icon and EVM badge */}
                                 <XStack items="center" gap={4}>
+                                  {/* Link icon for linked accounts */}
+                                  {(acc.type === 'child' || acc.parentEmoji) && (
+                                    <Link size={12.8} color={chainLinkIconColor} theme="outline" />
+                                  )}
                                   <Text
                                     fontSize={14}
                                     fontWeight="600"
                                     color="rgba(255, 255, 255, 0.8)"
                                     numberOfLines={1}
                                     ellipsizeMode="tail"
-                                    flex={1}
                                   >
                                     {acc.name || 'Unnamed Account'}
                                   </Text>
-                                  {/* Linked chain emoji */}
-                                  {acc.parentEmoji && (
-                                    <Text fontSize={14} color="rgba(255, 255, 255, 0.8)">
-                                      {acc.parentEmoji.emoji}
-                                    </Text>
+                                  {/* EVM Badge - inline with name */}
+                                  {acc.type === 'evm' && (
+                                    <XStack
+                                      bg="$accentEVM"
+                                      rounded="$4"
+                                      px={4}
+                                      items="center"
+                                      justify="center"
+                                      height={16}
+                                    >
+                                      <Text
+                                        fontSize={8}
+                                        fontWeight="400"
+                                        color="#FFFFFF"
+                                        lineHeight={9.7}
+                                        letterSpacing={0.128}
+                                      >
+                                        EVM
+                                      </Text>
+                                    </XStack>
                                   )}
                                 </XStack>
 
@@ -257,22 +347,13 @@ export function AccountCard({
                                   fontWeight="400"
                                   color="rgba(255, 255, 255, 0.8)"
                                 />
-
-                                {/* EVM Badge */}
-                                {acc.type === 'evm' && (
-                                  <XStack items="center">
-                                    <Badge variant="evm" size="small">
-                                      EVM
-                                    </Badge>
-                                  </XStack>
-                                )}
                               </YStack>
                             </XStack>
 
                             {/* Selection Indicator */}
                             {isSelected && (
                               <YStack width={24} height={24} items="center" justify="center">
-                                <CheckCircle size={24} color="#41CC5D" theme="filled" />
+                                <CheckCircle size={24} color="$success" theme="filled" />
                               </YStack>
                             )}
                           </XStack>

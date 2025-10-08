@@ -4,9 +4,9 @@ import type { NFTModel } from './NFTModel';
 import type { TokenModel } from './TokenModel';
 
 export type { NFTModel } from './NFTModel';
+export type { FlowPath } from './TokenModel';
 export type { TokenModel } from './TokenModel';
 export type { WalletType } from './Wallet';
-export type { FlowPath } from './TokenModel';
 
 export interface EmojiInfo {
   emoji: string;
@@ -54,6 +54,17 @@ export interface WalletAccountsResponse {
   accounts: WalletAccount[];
 }
 
+export interface WalletProfile {
+  name: string;
+  avatar: string;
+  uid: string;
+  accounts: WalletAccount[];
+}
+
+export interface WalletProfilesResponse {
+  profiles: WalletProfile[];
+}
+
 export interface AddressBookResponse {
   contacts: AddressBookContact[];
 }
@@ -72,7 +83,7 @@ export interface SendToConfig {
  */
 export interface InitialProps {
   screen: 'send-asset' | 'token-detail';
-  sendToConfig?: SendToConfig;
+  sendToConfig?: string;
 }
 
 export interface EnvironmentVariables {

@@ -91,6 +91,7 @@ const Header = ({ _loading = false }) => {
         // await usewallet.clearWallet();
         await usewallet.switchProfile(profileId);
         // await usewallet.switchNetwork(switchingTo);
+        navigate('/dashboard');
       } catch (error) {
         consoleError('Error during account switch:', error);
         //if cannot login directly with current password switch to unlock page

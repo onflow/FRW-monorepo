@@ -17,8 +17,8 @@ export function SegmentedControl({
   // Size configurations
   const sizeConfig = {
     small: { height: 32, px: 12, fontSize: 14 },
-    medium: { height: 40, px: 16, fontSize: 16 },
-    large: { height: 48, px: 20, fontSize: 18 },
+    medium: { height: 40, px: 16, fontSize: '$4' },
+    large: { height: 48, px: 20, fontSize: '$4.5' },
   };
 
   const { px, fontSize } = sizeConfig[size];
@@ -32,11 +32,12 @@ export function SegmentedControl({
     <XStack
       bg="transparent"
       borderWidth={2}
-      borderColor="#292929"
+      borderColor="$border1"
       rounded={200}
       p={3}
       items="center"
       height={40}
+      width={containerWidth}
       alignSelf="flex-start"
       {...props}
     >
@@ -47,13 +48,13 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            bg={isSelected ? '$darkBg1' : 'transparent'}
+            bg={isSelected ? '$border1' : 'transparent'}
             rounded={20}
             height={30}
             items="center"
             justify="center"
             px={segmentPx}
-            pressStyle={{ opacity: 0.8, bg: isSelected ? '#242424' : 'rgba(255, 255, 255, 0.1)' }}
+            pressStyle={{ opacity: 0.8, bg: isSelected ? '$dark20' : '$light5' }}
             onPress={() => onChange(segment)}
             cursor="pointer"
           >

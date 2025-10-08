@@ -4,7 +4,6 @@ import { YStack, ScrollView } from 'tamagui';
 import { NFTInfoSection } from './NFTInfoSection';
 import { NFTPropertiesGrid, type NFTProperty } from './NFTPropertiesGrid';
 import { SelectableNFTImage } from './SelectableNFTImage';
-import { BackgroundWrapper } from '../layout/BackgroundWrapper';
 
 export interface NFTDetailData {
   id?: string;
@@ -17,6 +16,8 @@ export interface NFTDetailData {
   collectionContractName?: string;
   properties?: NFTProperty[];
   type?: 'evm' | 'flow'; // determines if EVM badge should show
+  contractType?: string; // 'ERC721' | 'ERC1155'
+  amount?: number; // Available quantity for ERC1155
 }
 
 export interface NFTDetailViewProps {
@@ -35,7 +36,7 @@ export interface NFTDetailViewProps {
   };
   showOwner?: boolean;
   backgroundColor?: string;
-  contentPadding?: number;
+  contentPadding?: number | string;
 }
 
 export function NFTDetailView({
@@ -46,7 +47,7 @@ export function NFTDetailView({
   owner,
   showOwner = false,
   backgroundColor = '$bgDrawer',
-  contentPadding = 14,
+  contentPadding = '$1',
 }: NFTDetailViewProps) {
   // Generate properties from NFT data
   const generateProperties = (): NFTProperty[] => {
@@ -79,47 +80,44 @@ export function NFTDetailView({
   const allProperties = generateProperties();
 
   return (
-    <BackgroundWrapper backgroundColor={backgroundColor}>
-      <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-        <YStack px={contentPadding} pb={20}>
-          {/* NFT Image */}
-          <YStack mb={23}>
-            <SelectableNFTImage
-              src={nft.image}
-              selected={selected}
-              selectable={selectable}
-              onImagePress={selectable ? onToggleSelection : undefined}
-              borderRadius={16}
-              showAccountAvatar={!!owner}
-              accountEmoji={owner?.emojiInfo?.emoji}
-              accountAvatar={owner?.avatar}
-            />
-          </YStack>
-
-          {/* NFT Info */}
-          <YStack mb={20}>
-            <NFTInfoSection
-              name={nft.name}
-              collection={nft.collection}
-              description={nft.description}
-              owner={owner}
-              showOwner={showOwner}
-              spacing={18}
-            />
-          </YStack>
-
-          {/* Properties */}
-          {allProperties.length > 0 && (
-            <NFTPropertiesGrid
-              properties={allProperties}
-              title="Properties"
-              columns={2}
-              gap={9}
-              titleSpacing={13}
-            />
-          )}
+    <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+      <YStack pb={20}>
+        {/* NFT Image */}
+        <YStack mb={23}>
+          <SelectableNFTImage
+            src={nft.image}
+            selected={selected}
+            selectable={selectable}
+            onImagePress={selectable ? onToggleSelection : undefined}
+            borderRadius={16}
+            contractType={nft.contractType}
+            amount={nft.amount}
+          />
         </YStack>
-      </ScrollView>
-    </BackgroundWrapper>
+
+        {/* NFT Info */}
+        <YStack mb={20}>
+          <NFTInfoSection
+            name={nft.name}
+            collection={nft.collection}
+            description={nft.description}
+            owner={owner}
+            showOwner={showOwner}
+            spacing={18}
+          />
+        </YStack>
+
+        {/* Properties */}
+        {allProperties.length > 0 && (
+          <NFTPropertiesGrid
+            properties={allProperties}
+            title="Properties"
+            columns={2}
+            gap={9}
+            titleSpacing={13}
+          />
+        )}
+      </YStack>
+    </ScrollView>
   );
 }

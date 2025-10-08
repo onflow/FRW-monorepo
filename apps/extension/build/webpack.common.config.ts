@@ -190,11 +190,17 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         'process.env.release': JSON.stringify(version),
       }),
     ],
+    externals: {
+      '@react-native-clipboard/clipboard': 'undefined',
+    },
     resolve: {
       alias: {
+        // Map RN imports to RN Web on extension
+        'react-native': 'react-native-web',
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
+        '@onflow/frw-api': path.resolve(__dirname, '../../../packages/api/src/index.ts'),
         '@onflow/frw-cadence': path.resolve(__dirname, '../../../packages/cadence/src/index.ts'),
         '@onflow/frw-ui': path.resolve(__dirname, '../../../packages/ui/src/index.ts'),
         '@onflow/frw-screens': path.resolve(__dirname, '../../../packages/screens/src/index.ts'),
@@ -207,6 +213,13 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         '@onflow/frw-icons': path.resolve(__dirname, '../../../packages/icons/src/web.ts'),
       },
       plugins: [],
+      // Ensure resolution can find deps from extension and monorepo root
+      modules: [
+        'node_modules',
+        path.resolve(__dirname, '../node_modules'),
+        path.resolve(__dirname, '../../node_modules'),
+        path.resolve(__dirname, '../../../node_modules'),
+      ],
       fallback: {
         // Removes polyfills that were interfering with native fetch
         http: false,
@@ -219,8 +232,10 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         events: 'events',
         fs: false,
         'fs/promises': false,
+        '@react-native-clipboard/clipboard': false,
       },
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      // Add web-specific extensions so relative imports like './Foo' resolve to './Foo.web.tsx' first
+      extensions: ['.web.tsx', '.web.ts', '.js', '.jsx', '.ts', '.tsx'],
     },
     stats: 'minimal',
   };

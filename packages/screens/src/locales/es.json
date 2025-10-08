@@ -4,6 +4,8 @@
     "sendTo": "Enviar a",
     "sending": "Enviando",
     "selectTokens": "Seleccionar Tokens",
+    "sendTokens": "Enviar Tokens",
+    "nftDetails": "Detalles NFT",
     "colorDemo": "Demo de Colores"
   },
   "common": {
@@ -16,20 +18,25 @@
     "previous": "Anterior",
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Éxito"
+    "success": "Éxito",
+    "Search": "Buscar"
   },
   "tabs": {
     "tokens": "Tokens",
     "nfts": "NFTs"
   },
   "send": {
+    "tokens": "Tokens",
+    "nfts": "NFTs",
     "myAccounts": "Mis Cuentas",
     "recent": "Reciente",
     "addressBook": "Libreta de Direcciones",
     "sendTo": {
       "title": "Enviar a"
     },
+    "toAccount": "A Cuenta",
     "searchAddress": "Buscar dirección o contacto...",
+    "searchPasteAddress": "Buscar / Pegar dirección",
     "selectedToken": "Token Seleccionado",
     "noAccounts": {
       "title": "Sin Cuentas",
@@ -43,6 +50,10 @@
       "title": "Sin Contactos",
       "message": "Tu libreta de direcciones está vacía."
     },
+    "noSearchResults": {
+      "title": "Sin Resultados",
+      "message": "Ninguna cuenta o contacto coincide con tu búsqueda"
+    },
     "noRecipients": "No se encontraron destinatarios",
     "selectToken": "Seleccionar Token",
     "selectRecipient": "Seleccionar Destinatario",
@@ -55,6 +66,7 @@
     "insufficient": "Saldo Insuficiente",
     "recipient": "Destinatario",
     "from": "De",
+    "fromAccount": "De Cuenta",
     "to": "Para",
     "amount": "Cantidad",
     "asset": "Activo",
@@ -77,12 +89,28 @@
     "description": "Descripción",
     "creator": "Creador",
     "title": "Enviar",
-    "inaccessible": "Inaccesible"
+    "inaccessible": "Inaccesible",
+    "confirmAddress": "Confirmar dirección",
+    "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino.",
+    "sendSNFTs": "Enviar S/NFTs",
+    "sendNFTs": "Enviar NFTs",
+    "change": "Cambiar",
+    "noNFTSelected": "No se seleccionó NFT. Por favor regresa y selecciona un NFT para enviar.",
+    "summary": "Resumen",
+    "sendTokens": "Enviar Tokens",
+    "confirmSend": "Confirmar envío",
+    "holdToSend": "Mantener para enviar",
+    "unknownAccount": "Cuenta Desconocida"
   },
   "messages": {
     "loading": "Cargando...",
     "noTokensWithBalance": "No hay tokens con saldo",
-    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT"
+    "noNFTCollectionsForAccount": "No se encontraron colecciones NFT",
+    "loadingProfiles": "Cargando perfiles...",
+    "noProfiles": "Sin Perfiles",
+    "noProfilesFound": "No se encontraron perfiles",
+    "failedToLoadRecipients": "Error al cargar destinatarios",
+    "copied": "¡Copiado!"
   },
   "buttons": {
     "retry": "Reintentar",
@@ -102,16 +130,52 @@
     "timeout": "Tiempo de espera agotado",
     "unknown": "Ocurrió un error desconocido",
     "failedToLoadTokens": "Error al cargar tokens",
-    "failedToLoadNFTs": "Error al cargar NFTs"
+    "failedToLoadNFTs": "Error al cargar NFTs",
+    "transactionPayloadError": "Error al crear la carga de la transacción",
+    "transactionExecutionError": "Error en la ejecución de la transacción"
   },
   "nft": {
+    "untitled": "Sin título",
+    "unknownCollection": "Colección desconocida",
+    "noNFTsSelected": "No se seleccionaron NFTs",
     "noSearchResults": "Sin Resultados de Búsqueda",
     "noNFTsMatchSearch": "Ningún NFT coincide con '{{search}}'",
     "noNFTsFound": "No se Encontraron NFTs",
     "collectionEmpty": "Esta colección no contiene ningún NFT",
+    "noCollectionSelected": "No se seleccionó colección. Por favor regresa y selecciona una colección de NFT.",
+    "noAccountSelected": "No hay dirección de cuenta disponible. Por favor selecciona una cuenta.",
+    "maxSelectionReached": "Se pueden seleccionar máximo 9 NFTs",
+    "nftNotFound": "NFT no encontrado para ID:",
+    "selectedCount": "{{count}} NFT Seleccionado",
+    "selectedCount_plural": "{{count}} NFTs Seleccionados",
+    "confirmSelection": "Confirmar {{count}} NFT",
+    "confirmSelection_plural": "Confirmar {{count}} NFTs",
+    "itemCount": "{{count}} elemento",
+    "itemCount_plural": "{{count}} elementos",
     "notFound": {
       "title": "NFT No Encontrado",
       "message": "El NFT solicitado no se pudo encontrar o cargar"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "Advertencia de Almacenamiento",
+      "balance": "Su cuenta está por debajo del saldo mínimo de FLOW requerido para el uso de almacenamiento, lo que puede causar que fallen las transacciones posteriores.",
+      "storage": "Esta acción puede fallar porque puede reducir la cantidad de FLOW en su cuenta por debajo de lo requerido para cubrir el uso de almacenamiento.",
+      "storageAfterAction": "El saldo de la cuenta caerá por debajo del FLOW mínimo requerido para el almacenamiento después de esta transacción, causando que falle."
+    }
+  },
+  "account": {
+    "compatibility": {
+      "incompatible": "Cuenta Incompatible",
+      "learnMore": "Saber más",
+      "unknown": "Cuenta Desconocida",
+      "dialog": {
+        "title": "Compatibilidad de Cuenta",
+        "button": "Entendido",
+        "descriptionMain": "Flow Wallet administra sus cuentas EVM y Cadence en Flow. Las cuentas EVM son compatibles con aplicaciones EVM, y las cuentas Cadence son compatibles con aplicaciones Cadence.",
+        "descriptionSecondary": "Si una aplicación está en EVM o Cadence, solo las cuentas compatibles estarán disponibles para conectar."
+      }
     }
   }
 }

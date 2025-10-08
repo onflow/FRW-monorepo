@@ -24,21 +24,23 @@ export function SearchBar({
     onClear?.();
   };
 
+  const iconColor = '#767676';
+
   return (
     <XStack
       width={width}
       height={44}
-      bg="$light10"
+      bg="$bg2"
       borderRadius={16}
       px={16}
       items="center"
       gap={8}
       focusStyle={{
-        bg: '$light25',
+        bg: '$bg3',
       }}
     >
       {/* Search Icon */}
-      <Search size={20} color="rgba(255, 255, 255, 0.4)" theme="outline" />
+      <Search size={20} color={iconColor} theme="outline" />
 
       {/* Input Field */}
       <Input
@@ -47,21 +49,21 @@ export function SearchBar({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="rgba(255, 255, 255, 0.4)"
+        placeholderTextColor="$textSecondary"
         autoCapitalize="none"
         autoCorrect={false}
-        color="rgba(255, 255, 255, 0.4)"
+        color="$text"
         fontSize={16}
         fontWeight={400}
         fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
-        lineHeight={24}
+        lineHeight={20}
         textAlignVertical="center"
         disabled={disabled}
         bg="transparent"
         borderWidth={0}
         focusStyle={{
           outlineWidth: 0,
-          color: '$white',
+          color: '$text',
         }}
       />
 
@@ -84,7 +86,7 @@ export function SearchBar({
             opacity: disabled ? 0.3 : 0.8,
           }}
         >
-          <Close size={12} color="rgba(255, 255, 255, 0.4)" theme="outline" />
+          <Close size={12} color={iconColor} theme="outline" />
         </Stack>
       )}
     </XStack>

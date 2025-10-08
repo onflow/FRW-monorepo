@@ -15,7 +15,7 @@ import {
 
 // Query Keys Factory - Using optimized domain structure
 export const accessibleAssetQueryKeys = {
-  all: [FlatQueryDomain.ACCESSIBLE_ASSETS] as const, // Uses FINANCIAL domain
+  all: [FlatQueryDomain['ACCESSIBLE_ASSETS']] as const, // Uses FINANCIAL domain
   accounts: () => [...accessibleAssetQueryKeys.all, 'accounts'] as const,
   account: (parentAddress: string, childAddress: string, network: string = 'mainnet') =>
     [...accessibleAssetQueryKeys.accounts(), parentAddress, childAddress, network] as const,

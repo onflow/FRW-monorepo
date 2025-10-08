@@ -1,10 +1,10 @@
-import { bridge, cadence } from '@onflow/frw-context';
+import { bridge, cadence, toast } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
+  type CollectionModel,
   type NFTModel,
   type TokenModel,
   addressType,
-  type CollectionModel,
 } from '@onflow/frw-types';
 import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
@@ -46,6 +46,8 @@ export const useSendStore = create<SendState>((set, get) => ({
   transactionType: 'tokens',
   formData: defaultFormData,
   selectedNFTs: [],
+  currentNFT: null,
+  selectedNFTQuantities: {},
   selectedCollection: null,
   currentStep: 'select-tokens',
   isLoading: false,
@@ -66,6 +68,8 @@ export const useSendStore = create<SendState>((set, get) => ({
   setFromAccount: (account: WalletAccount | null) => set({ fromAccount: account, error: null }),
 
   setToAccount: (account: WalletAccount | null) => set({ toAccount: account, error: null }),
+
+  setCurrentNFT: (nft: NFTModel | null) => set({ currentNFT: nft, error: null }),
 
   setTransactionType: (type: TransactionType) =>
     set((state) => {
@@ -95,7 +99,27 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     })),
 
-  setSelectedNFTs: (nfts: NFTModel[]) => set({ selectedNFTs: nfts, error: null }),
+  setSelectedNFTs: (nfts: NFTModel[]) =>
+    set((state) => {
+      // Initialize quantities for ERC1155 NFTs
+      const newQuantities = { ...state.selectedNFTQuantities };
+      nfts.forEach((nft) => {
+        if (nft.contractType === 'ERC1155' && nft.id && !newQuantities[nft.id]) {
+          // Initialize with 1 if not already set
+          newQuantities[nft.id] = 1;
+          logger.debug('[sendStore] Initializing ERC1155 quantity:', {
+            nftId: nft.id,
+            contractType: nft.contractType,
+            nftAmount: nft.amount,
+          });
+        }
+      });
+      return {
+        selectedNFTs: nfts,
+        selectedNFTQuantities: newQuantities,
+        error: null,
+      };
+    }),
   setSelectedCollection: (collection: CollectionModel | null) =>
     set({ selectedCollection: collection, error: null }),
 
@@ -104,17 +128,47 @@ export const useSendStore = create<SendState>((set, get) => ({
       const exists = state.selectedNFTs.find((n) => n.id === nft.id);
       if (exists) return state;
 
+      // Initialize quantity for ERC1155 NFT
+      const newQuantities = { ...state.selectedNFTQuantities };
+      if (nft.contractType === 'ERC1155' && nft.id && !newQuantities[nft.id]) {
+        newQuantities[nft.id] = 1;
+        logger.debug('[sendStore] Initializing ERC1155 quantity on add:', {
+          nftId: nft.id,
+          contractType: nft.contractType,
+          nftAmount: nft.amount,
+        });
+      }
+
       return {
         selectedNFTs: [...state.selectedNFTs, nft],
+        selectedNFTQuantities: newQuantities,
         error: null,
       };
     }),
 
   removeSelectedNFT: (nftId: string) =>
+    set((state) => {
+      const newQuantities = { ...state.selectedNFTQuantities };
+      delete newQuantities[nftId];
+      return {
+        selectedNFTs: state.selectedNFTs.filter((n) => n.id !== nftId),
+        selectedNFTQuantities: newQuantities,
+        error: null,
+      };
+    }),
+
+  setNFTQuantity: (nftId: string, quantity: number) =>
     set((state) => ({
-      selectedNFTs: state.selectedNFTs.filter((n) => n.id !== nftId),
-      error: null,
+      selectedNFTQuantities: {
+        ...state.selectedNFTQuantities,
+        [nftId]: quantity,
+      },
     })),
+
+  getNFTQuantity: (nftId: string) => {
+    const state = get();
+    return state.selectedNFTQuantities[nftId] || 1;
+  },
 
   setCurrentStep: (step: SendState['currentStep']) => set({ currentStep: step, error: null }),
 
@@ -296,6 +350,7 @@ export const useSendStore = create<SendState>((set, get) => ({
       transactionType: 'tokens',
       formData: defaultFormData,
       selectedNFTs: [],
+      selectedNFTQuantities: {},
       currentStep: 'select-tokens',
       isLoading: false,
       error: null,
@@ -311,6 +366,7 @@ export const useSendStore = create<SendState>((set, get) => ({
     set({
       selectedToken: null,
       selectedNFTs: [],
+      selectedNFTQuantities: {},
       formData: defaultFormData,
       transactionType: 'tokens',
       currentStep: 'select-tokens',
@@ -370,15 +426,57 @@ export const useSendStore = create<SendState>((set, get) => ({
         ? selectedToken?.evmAddress || ''
         : selectedNFTs[0]?.evmAddress || '';
 
+      // For ERC1155 NFTs, we need to include the amount/quantity
+      let nftAmount = '';
+      if (isNFTTransaction && selectedNFTs.length > 0) {
+        const firstNFT = selectedNFTs[0];
+        logger.debug('[sendStore] Processing NFT for payload:', {
+          nftId: firstNFT.id,
+          contractType: firstNFT.contractType,
+          nftAmount: firstNFT.amount,
+          selectedNFTQuantities: state.selectedNFTQuantities,
+        });
+        // Check if it's an ERC1155 NFT
+        if (firstNFT.contractType === 'ERC1155') {
+          const nftId = firstNFT.id || '';
+          const quantity = state.selectedNFTQuantities[nftId] || 1;
+          nftAmount = quantity.toString();
+          logger.debug('[sendStore] ERC1155 amount set:', {
+            nftId,
+            quantity,
+            nftAmount,
+          });
+        }
+      }
+
+      // Get the flow identifier for the transaction
+      const nftIdentifier = isNFTTransaction ? getNFTResourceIdentifier(selectedNFTs[0]) : null;
+      const tokenIdentifier = isTokenTransaction ? getTokenResourceIdentifier(selectedToken) : null;
+      const flowIdentifier = tokenIdentifier || nftIdentifier || '';
+
+      logger.debug('[sendStore] Flow identifier calculation:', {
+        isNFTTransaction,
+        isTokenTransaction,
+        nftIdentifier,
+        tokenIdentifier,
+        flowIdentifier,
+        selectedNFT: selectedNFTs[0]
+          ? {
+              id: selectedNFTs[0].id,
+              address: selectedNFTs[0].address,
+              contractName: selectedNFTs[0].contractName,
+              flowIdentifier: selectedNFTs[0].flowIdentifier,
+              evmAddress: selectedNFTs[0].evmAddress,
+            }
+          : null,
+      });
+
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
         assetType: addressType(fromAccount.address),
         proposer: mainAccount.address,
         receiver: toAccount.address,
-        flowIdentifier:
-          getTokenResourceIdentifier(selectedToken) ||
-          getNFTResourceIdentifier(selectedNFTs[0]) ||
-          '',
+        flowIdentifier,
         sender: fromAccount.address,
         childAddrs: childAddrs,
         ids: isNFTTransaction
@@ -388,7 +486,7 @@ export const useSendStore = create<SendState>((set, get) => ({
               )
               .filter((id) => typeof id === 'number' && !isNaN(id)) as number[])
           : [],
-        amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : '',
+        amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : nftAmount,
         decimal: selectedToken?.decimal || 8,
         coaAddr: coaAddr,
         tokenContractAddr: contractAddress,
@@ -435,6 +533,12 @@ export const useSendStore = create<SendState>((set, get) => ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       logger.error('[SendStore] Transaction error:', error);
+      toast.show({
+        title: 'Transaction failed',
+        message: errorMessage,
+        type: 'error',
+        duration: 4000,
+      });
 
       set({
         isLoading: false,

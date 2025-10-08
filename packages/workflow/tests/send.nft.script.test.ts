@@ -333,7 +333,7 @@ describe('Test NFT send strategies', () => {
       };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow(
-        'invalid send transaction payload'
+        'flowIdentifier of transaction payload is missing'
       );
     });
 

@@ -1,4 +1,4 @@
-import { SendSingleNFTScreen, SendMultipleNFTsScreen } from '@onflow/frw-screens';
+import { SendSummaryScreen } from '@onflow/frw-screens';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Route, Routes } from 'react-router';
 
@@ -14,6 +14,7 @@ import LinkedCollection from './Linked/LinkedCollection';
 import LinkedNftDetail from './Linked/LinkedNftDetail';
 import ManageToken from './ManageToken';
 import CollectionDetail from './NFT/CollectionDetail';
+import Detail from './NFT/Detail';
 import AddList from './NFT/NFTList/AddList';
 import SendToAddress from './NFT/SendNFT/SendToAddress';
 import EvmCollectionDetail from './NftEvm/CollectionDetail';
@@ -185,7 +186,7 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="nested/nftlistscreen/:address"
+              path="nested/nftlistscreen/:address?"
               element={
                 <PrivateRoute>
                   <NFTListScreenView />
@@ -201,18 +202,10 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="nested/send-single-nft"
+              path="nested/sendsummary"
               element={
                 <PrivateRoute>
-                  <SendSingleNFTScreen />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="nested/send-multiple-nfts"
-              element={
-                <PrivateRoute>
-                  <SendMultipleNFTsScreen />
+                  <SendSummaryScreen />
                 </PrivateRoute>
               }
             />
@@ -233,10 +226,18 @@ const InnerRoute = () => {
               }
             />
             <Route
-              path="nested/nftdetail/:id"
+              path="nested/nftdetailscreenview"
               element={
                 <PrivateRoute>
                   <NFTDetailScreenView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="nested/nftdetail/:id"
+              element={
+                <PrivateRoute>
+                  <Detail />
                 </PrivateRoute>
               }
             />

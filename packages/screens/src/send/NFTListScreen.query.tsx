@@ -10,13 +10,15 @@ import {
   YStack,
   ExtensionHeader,
   Text,
+  SearchBar,
 } from '@onflow/frw-ui';
-import { getNFTId } from '@onflow/frw-utils';
+import { getNFTId, logger } from '@onflow/frw-utils';
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useQueryClient } from '../providers/QueryProvider';
+// import { useQueryClient } from '../providers/QueryProvider'; // Currently unused
 
 /**
  * Query-integrated version of NFTListScreen following the established pattern
@@ -26,9 +28,10 @@ export function NFTListScreen(): React.ReactElement {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [nftQuantities, setNftQuantities] = useState<{ [key: string]: number }>({});
 
   // Get shared QueryClient to ensure it matches the one in stores
-  const _queryClient = useQueryClient();
+  // const _queryClient = useQueryClient(); // Currently unused, kept for future use
 
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
@@ -36,18 +39,59 @@ export function NFTListScreen(): React.ReactElement {
   // Get data from store using selectors (following SendToScreen pattern)
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const selectedCollection = useSendStore((state) => state.selectedCollection);
+  const selectedNFTs = useSendStore((state) => state.selectedNFTs);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
   const setTransactionType = useSendStore((state) => state.setTransactionType);
+  const setNFTQuantity = useSendStore((state) => state.setNFTQuantity);
+  const setCurrentNFT = useSendStore((state) => state.setCurrentNFT);
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
-  const currentAddress = fromAccount?.address;
 
+  // Get effective address with debugAddress logic (same as SelectTokensScreen)
+  const currentAddress = useMemo(() => {
+    const debugAddress = bridge.getDebugAddress();
+    const accountAddress = fromAccount?.address || '';
+
+    logger.debug('NFTListScreen currentAddress calculated:', {
+      debugAddress,
+      accountAddress,
+      willUse: debugAddress ? debugAddress : accountAddress,
+    });
+
+    if (debugAddress) {
+      if (validateEvmAddress(debugAddress) || validateFlowAddress(debugAddress)) {
+        return debugAddress.trim();
+      }
+    }
+    return accountAddress;
+  }, [fromAccount?.address]);
+
+  // Get the total count from the collection info
+  const totalCount = activeCollection?.count || 0;
   // Update current step when screen loads (following SendToScreen pattern)
   useEffect(() => {
     setCurrentStep('select-tokens');
   }, [setCurrentStep]);
+
+  // Initialize selectedIds from store's selectedNFTs when component mounts or when selectedNFTs changes
+  useEffect(() => {
+    if (selectedNFTs && selectedNFTs.length > 0) {
+      const nftIds = selectedNFTs.map((nft) => getNFTId(nft));
+      setSelectedIds(nftIds);
+
+      // Set transaction type based on selection count
+      if (nftIds.length === 1) {
+        setTransactionType('single-nft');
+      } else if (nftIds.length > 1) {
+        setTransactionType('multiple-nfts');
+      }
+    } else {
+      // Clear local selection if store has no selected NFTs
+      setSelectedIds([]);
+    }
+  }, [selectedNFTs, setTransactionType]); // Update when selectedNFTs changes
 
   const collectionName = activeCollection?.name || 'NFT Collection';
 
@@ -68,25 +112,49 @@ export function NFTListScreen(): React.ReactElement {
   // Query is enabled only when we have valid data
   const isQueryEnabled = !!currentAddress && !!activeCollection;
 
-  // 🔥 TanStack Query: Fetch NFTs from collection with intelligent caching
+  // Track real loading progress
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const setLoadingProgressRef = useRef(setLoadingProgress);
+  setLoadingProgressRef.current = setLoadingProgress;
+
+  // Custom query function with progress tracking
+  const fetchNFTsWithProgress = useCallback(async () => {
+    if (!activeCollection) return [];
+
+    return tokenQueries.fetchAllNFTsFromCollection(
+      currentAddress!,
+      activeCollection,
+      network,
+      activeCollection.count,
+      (progress) => {
+        setLoadingProgressRef.current(progress);
+      }
+    );
+  }, [activeCollection, network, totalCount]);
+
+  // 🔥 TanStack Query: Fetch ALL NFTs from collection with concurrent batching
   const {
     data: nfts = [],
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: queryKey || [],
-    queryFn: () => {
-      // Safe to use non-null assertion due to early returns
-      return tokenQueries.fetchNFTCollection(currentAddress!, activeCollection!, network);
-    },
+    queryKey: queryKey ? [...queryKey, 'all'] : [],
+    queryFn: fetchNFTsWithProgress,
     enabled: isQueryEnabled,
-    staleTime: 5 * 60 * 1000, // NFT items can be cached for 5 minutes
+    staleTime: 10 * 60 * 1000, // All NFTs can be cached longer (10 minutes)
     refetchOnWindowFocus: false, // Keep disabled for now
     refetchOnReconnect: false, // Keep disabled for now
     retry: 1, // Only retry once to avoid infinite loops
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
+
+  // Reset progress when loading starts
+  useEffect(() => {
+    if (isLoading) {
+      setLoadingProgress(0);
+    }
+  }, [isLoading]);
 
   // Convert NFTModel to NFTData for UI components
   const convertToNFTData = useCallback(
@@ -97,6 +165,7 @@ export function NFTListScreen(): React.ReactElement {
       thumbnail: nft.thumbnail || '',
       collection: nft.collectionName || collectionName,
       amount: nft.amount,
+      contractType: nft.contractType, // Preserve ERC1155/ERC721 type
     }),
     [collectionName]
   );
@@ -104,26 +173,23 @@ export function NFTListScreen(): React.ReactElement {
   // Memoize the NFT data conversion to prevent unnecessary recalculations
   const nftData: NFTData[] = useMemo(() => {
     if (!nfts || !Array.isArray(nfts)) {
-      console.log('Converting NFT data: No NFTs available or invalid data');
       return [];
     }
-    console.log('Converting NFT data:', nfts.length, 'NFTs');
     return nfts.map(convertToNFTData);
   }, [nfts, convertToNFTData]);
 
   // Memoize filtered NFTs to prevent unnecessary recalculations
   const filteredNFTs = useMemo(() => {
     if (!Array.isArray(nftData)) {
-      console.log('Filtered NFTs: nftData is not an array, returning empty array');
       return [];
     }
     const filtered = nftData.filter(
       (nft) =>
         !searchQuery ||
         nft.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (nft.collection && nft.collection.toLowerCase().includes(searchQuery.toLowerCase()))
+        (nft.collection && nft.collection.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        nft.id.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log('Filtered NFTs:', filtered.length, 'from', nftData.length);
     return filtered;
   }, [nftData, searchQuery]);
 
@@ -151,16 +217,67 @@ export function NFTListScreen(): React.ReactElement {
     }
   }, [selectedNFTsToStore, setSelectedNFTs]);
 
-  // Handle NFT selection
+  // Handle NFT selection with ERC1155 constraints
   const handleNFTSelect = useCallback(
     (nftId: string) => {
       setSelectedIds((prev) => {
         const isSelected = prev.includes(nftId);
-        const newSelectedIds = isSelected
-          ? prev.filter((id) => id !== nftId)
-          : prev.length >= 9
-            ? prev // Don't add more than 9
-            : [...prev, nftId];
+
+        // Find the NFT being selected
+        const selectedNFT = nfts.find((nft) => getNFTId(nft) === nftId);
+        const isERC1155 = selectedNFT?.contractType === 'ERC1155';
+
+        // Check if any currently selected NFTs are ERC1155
+        const currentlySelectedNFTs = nfts.filter((nft) => prev.includes(getNFTId(nft)));
+        const hasERC1155Selected = currentlySelectedNFTs.some(
+          (nft) => nft.contractType === 'ERC1155'
+        );
+
+        // Deselection logic - always allow deselection
+        if (isSelected) {
+          const newSelectedIds = prev.filter((id) => id !== nftId);
+
+          // Set transaction type based on selection count
+          if (newSelectedIds.length === 1) {
+            setTransactionType('single-nft');
+          } else if (newSelectedIds.length > 1) {
+            setTransactionType('multiple-nfts');
+          }
+
+          return newSelectedIds;
+        }
+
+        // Selection logic with ERC1155 constraints
+
+        // If selecting ERC1155, clear all other selections (only allow single ERC1155)
+        if (isERC1155) {
+          logger.info('[NFTListScreen] ERC1155 NFT selected - clearing other selections', {
+            nftId,
+            nftName: selectedNFT?.name,
+            previousSelections: prev.length,
+          });
+          setTransactionType('single-nft');
+          return [nftId];
+        }
+
+        // If ERC1155 is already selected, don't allow selecting other NFTs
+        if (hasERC1155Selected) {
+          logger.warn('[NFTListScreen] Cannot select other NFTs when ERC1155 is selected', {
+            attemptedNftId: nftId,
+            existingERC1155Count: currentlySelectedNFTs.filter(
+              (nft) => nft.contractType === 'ERC1155'
+            ).length,
+          });
+          return prev;
+        }
+
+        // Regular NFT selection logic (non-ERC1155)
+        if (prev.length >= 9) {
+          logger.warn(t('nft.maxSelectionReached'));
+          return prev;
+        }
+
+        const newSelectedIds = [...prev, nftId];
 
         // Set transaction type based on selection count
         if (newSelectedIds.length === 1) {
@@ -169,23 +286,20 @@ export function NFTListScreen(): React.ReactElement {
           setTransactionType('multiple-nfts');
         }
 
-        if (prev.length >= 9 && !isSelected) {
-          console.warn('Maximum 9 NFTs can be selected');
-        }
-
         return newSelectedIds;
       });
     },
-    [setTransactionType]
+    [setTransactionType, nfts]
   );
 
   const handleNFTDetail = useCallback(
     (nftId: string) => {
       const foundNFT = (nfts || []).find((n) => getNFTId(n) === nftId);
       if (foundNFT) {
+        setCurrentNFT(foundNFT);
         navigation.navigate('NFTDetail', { nft: foundNFT });
       } else {
-        console.warn('NFT not found for ID:', nftId);
+        logger.warn(t('nft.nftNotFound'), nftId);
       }
     },
     [nfts]
@@ -199,13 +313,36 @@ export function NFTListScreen(): React.ReactElement {
     });
   }, []);
 
+  // Handle quantity change for ERC1155 NFTs
+  const handleQuantityChange = useCallback(
+    (nftId: string, quantity: number) => {
+      logger.info('[NFTListScreen] ERC1155 quantity changed', { nftId, quantity });
+      setNftQuantities((prev) => ({ ...prev, [nftId]: quantity }));
+      setNFTQuantity(nftId, quantity); // Store in the send store
+    },
+    [setNFTQuantity]
+  );
+
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
     const selectedNFTs = (nfts || []).filter((nft) => selectedIds.includes(getNFTId(nft)));
+
+    // For ERC1155 NFTs, ensure quantity is set in the store
+    if (selectedNFTs.length === 1 && selectedNFTs[0].contractType === 'ERC1155') {
+      const nftId = getNFTId(selectedNFTs[0]);
+      const quantity = nftQuantities[nftId] || 1;
+      setNFTQuantity(nftId, quantity);
+      logger.info('[NFTListScreen] Setting ERC1155 quantity in store', {
+        nftId,
+        quantity,
+        nftName: selectedNFTs[0].name,
+      });
+    }
+
     setSelectedNFTs(selectedNFTs);
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
-  }, [selectedIds, nfts, setSelectedNFTs, setCurrentStep]);
+  }, [selectedIds, nfts, setSelectedNFTs, setCurrentStep, nftQuantities, setNFTQuantity]);
 
   // Refresh function - TanStack Query makes this super simple!
   const refreshNFTs = useCallback(() => {
@@ -218,6 +355,17 @@ export function NFTListScreen(): React.ReactElement {
     [filteredNFTs, selectedIds]
   );
 
+  // Calculate loading progress
+  const finalLoadingProgress = useMemo(() => {
+    if (!isLoading) {
+      // When not loading, show 100% if we have data, 0% if no data
+      return nfts?.length > 0 ? 100 : 0;
+    }
+
+    if (totalCount === 0) return 0;
+    return loadingProgress;
+  }, [isLoading, totalCount, nfts?.length, loadingProgress]);
+
   // Early return if essential data is missing from store
   if (!activeCollection) {
     return (
@@ -227,7 +375,7 @@ export function NFTListScreen(): React.ReactElement {
             {t('nft.noNFTsFound')}
           </Text>
           <Text fontSize="$4" color="$textSecondary">
-            No collection selected. Please go back and select an NFT collection.
+            {t('nft.noCollectionSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -242,7 +390,7 @@ export function NFTListScreen(): React.ReactElement {
             {t('errors.unknown')}
           </Text>
           <Text fontSize="$4" color="$textSecondary">
-            No account address available. Please select an account.
+            {t('nft.noAccountSelected')}
           </Text>
         </YStack>
       </BackgroundWrapper>
@@ -277,7 +425,7 @@ export function NFTListScreen(): React.ReactElement {
           />
         )}
         {activeCollection && (
-          <YStack px="$4" pt="$2">
+          <YStack>
             <CollectionHeader
               name={collectionName}
               image={activeCollection.logoURI || activeCollection.logo}
@@ -289,25 +437,42 @@ export function NFTListScreen(): React.ReactElement {
         )}
 
         {/* Search and Content */}
-        <YStack flex={1} px="$4">
-          <NFTGrid
-            data={filteredNFTs}
-            selectedIds={selectedIds}
-            isLoading={isLoading}
-            error={error?.message || undefined}
-            emptyTitle={emptyState.title}
-            emptyMessage={emptyState.message}
-            onNFTSelect={handleNFTSelect}
-            onNFTPress={handleNFTDetail}
-            onRetry={refreshNFTs}
-            retryText={t('buttons.retry')}
-            clearSearchText={t('buttons.clearSearch')}
-            onClearSearch={() => setSearchQuery('')}
-            showClearSearch={!!searchQuery}
-            accountEmoji={fromAccount?.emojiInfo?.emoji}
-            accountAvatar={fromAccount?.avatar}
-            accountName={fromAccount?.name}
-          />
+        <YStack flex={1}>
+          <YStack pb={24}>
+            <SearchBar
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder={t('common.Search')}
+              width="100%"
+            />
+          </YStack>
+          <YStack flex={1}>
+            <NFTGrid
+              data={filteredNFTs}
+              selectedIds={selectedIds}
+              isLoading={isLoading}
+              loadingProgress={finalLoadingProgress}
+              error={error?.message || undefined}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              onNFTSelect={handleNFTSelect}
+              onNFTPress={handleNFTDetail}
+              onRetry={refreshNFTs}
+              retryText={t('buttons.retry')}
+              clearSearchText={t('buttons.clearSearch')}
+              onClearSearch={() => setSearchQuery('')}
+              showClearSearch={!!searchQuery}
+              accountEmoji={fromAccount?.emojiInfo?.emoji}
+              accountAvatar={fromAccount?.avatar}
+              accountName={fromAccount?.name}
+              accountColor={fromAccount?.emojiInfo?.color}
+              enableVirtualization={true}
+              itemsPerBatch={20}
+              loadMoreThreshold={200}
+              isExtension={isExtension}
+              totalCount={totalCount}
+            />
+          </YStack>
         </YStack>
 
         {/* Selection Bar */}
@@ -317,7 +482,19 @@ export function NFTListScreen(): React.ReactElement {
           onNFTPress={handleNFTDetail}
           onContinue={handleContinue}
           continueText={t('buttons.continue')}
+          selectedCountText={t('nft.selectedCount', { count: selectedNFTsForBar.length })}
+          confirmText={(() => {
+            const totalQuantity = selectedNFTsForBar.reduce((total, nft) => {
+              if (nft.contractType === 'ERC1155') {
+                return total + (nftQuantities[nft.id] || 1);
+              }
+              return total + 1;
+            }, 0);
+            return t('nft.confirmSelection', { count: totalQuantity });
+          })()}
           isEditing={false}
+          onQuantityChange={handleQuantityChange}
+          isExtension={isExtension}
         />
       </YStack>
     </BackgroundWrapper>

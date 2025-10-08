@@ -44,9 +44,26 @@ export const validateTokenPayload = (payload: SendPayload): void => {
  * @throws Error if no NFT IDs are provided
  */
 export const validateNftPayload = (payload: SendPayload): void => {
-  if (payload.flowIdentifier && !isNFTIdentifier(payload.flowIdentifier)) {
+  // Only validate Flow NFT identifiers for Flow assets
+  // EVM NFTs might not have a flowIdentifier or it might be empty
+  if (
+    payload.assetType === 'flow' &&
+    payload.flowIdentifier &&
+    !isNFTIdentifier(payload.flowIdentifier)
+  ) {
     throw new Error('invalid send nft identifier');
   }
+
+  // For EVM NFTs being sent (not bridged), flowIdentifier is optional
+  // Only validate if present and sender is from Flow
+  if (payload.assetType === 'evm' && payload.flowIdentifier && payload.flowIdentifier !== '') {
+    // If sending from EVM and flowIdentifier is present, it should be valid for bridging
+    if (!validateFlowAddress(payload.receiver) && !isNFTIdentifier(payload.flowIdentifier)) {
+      // Not bridging (receiver is EVM), but flowIdentifier is present and invalid
+      // This is okay for EVM to EVM transfers
+    }
+  }
+
   if (payload.ids.length === 0) {
     throw new Error('invalid send nft transaction payload');
   }
@@ -68,8 +85,17 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
   }
 
   // Validate all required fields are present
-  if (!proposer || !receiver || !flowIdentifier || !sender || !type || !assetType) {
+  if (!proposer || !receiver || !sender || !type || !assetType) {
     throw new Error('invalid send transaction payload');
+  }
+
+  // for EVM to Flow, verify flowIdentifier
+  if (assetType === 'evm' && validateFlowAddress(receiver) && !flowIdentifier) {
+    throw new Error('flowIdentifier of transaction payload is missing when bridge');
+  }
+
+  if (assetType === 'flow' && !flowIdentifier) {
+    throw new Error('flowIdentifier of transaction payload is missing');
   }
 
   // Validate asset-specific requirements

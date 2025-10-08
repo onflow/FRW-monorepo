@@ -42,11 +42,9 @@ class ExtensionNavigation implements Navigation {
         const tokenId = params?.tokenId || 'flow';
         path = `/dashboard/token/${tokenId}/send`;
       } else if (screen === 'SendTokens' && params) {
-        // Get token ID from params, or try to extract from current URL, or fallback to 'flow'
         let tokenId = params.tokenId;
 
         if (!tokenId && this.locationRef?.current) {
-          // Try to extract token ID from current URL path
           const currentPath = this.locationRef.current.pathname;
           const tokenMatch = currentPath.match(/\/token\/([^/]+)\//);
           if (tokenMatch) {
@@ -71,10 +69,8 @@ class ExtensionNavigation implements Navigation {
         } else {
           path = `/dashboard/token/${tokenId}/send`;
         }
-      } else if (screen === 'SendSingleNFT' && params?.address && params?.recipient) {
-        path = `/dashboard/nested/send-single-nft`;
-      } else if (screen === 'SendMultipleNFTs' && params?.address && params?.recipient) {
-        path = `/dashboard/nested/send-multiple-nfts`;
+      } else if (screen === 'SendSummary' && params?.address && params?.recipient) {
+        path = `/dashboard/nested/sendsummary`;
       } else if (screen === 'NFTView' && params?.id) {
         path = `/dashboard/nested/nftdtailscreen/${params.id}`;
       } else if (screen === 'NFTList' && params?.collection && params?.address) {
@@ -177,7 +173,7 @@ class ExtensionNavigation implements Navigation {
       SendSingleNFT: '/dashboard/nft/send',
       SendMultipleNFTs: '/dashboard/nft/send',
       SendNftEvm: '/dashboard/nftevm/send',
-      NFTDetail: '/dashboard/nested/nftdetail',
+      NFTDetail: '/dashboard/nested/nftdetailscreenview',
       NFTList: '/dashboard/nested/nftlistscreen',
       NFTView: '/dashboard/nested/nftdetailscreen',
       TransactionComplete: '/dashboard', // Navigate to dashboard for transaction complete
@@ -196,7 +192,7 @@ class ExtensionNavigation implements Navigation {
       '/dashboard/select-tokens': 'SelectTokens',
       '/dashboard/nft/send': 'SendSingleNFT',
       '/dashboard/nftevm/send': 'SendNftEvm',
-      '/dashboard/nested/nftdetail': 'NFTDetail',
+      '/dashboard/nested/nftdetailscreenview': 'NFTDetail',
       '/dashboard/nested/nftlistscreen': 'NFTList',
       '/dashboard/nested/nftdetailscreen': 'NFTView',
     };

@@ -4,6 +4,7 @@ import type {
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  WalletProfilesResponse,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -21,10 +22,12 @@ export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 export interface PlatformSpec {
   // Basic platform methods
   getSelectedAddress(): string | null;
+  getDebugAddress(): string | null;
   getNetwork(): string;
   getJWT(): Promise<string>;
   getVersion(): string;
   getBuildNumber(): string;
+  getLanguage(): string;
 
   getCurrency(): Currency;
   getPlatform(): Platform;
@@ -47,6 +50,7 @@ export interface PlatformSpec {
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;
+  getWalletProfiles(): Promise<WalletProfilesResponse>;
   getSelectedAccount(): Promise<WalletAccount>;
 
   // Transaction monitoring and post-transaction actions
@@ -69,4 +73,15 @@ export interface PlatformSpec {
   // UI interaction methods
   scanQRCode(): Promise<string>;
   closeRN(id?: string | null): void;
+
+  // Toast/Notification methods
+  showToast?(
+    title: string,
+    message?: string,
+    type?: 'success' | 'error' | 'warning' | 'info',
+    duration?: number
+  ): void;
+  hideToast?(id: string): void;
+  clearAllToasts?(): void;
+  setToastCallback?(callback: (toast: any) => void): void;
 }

@@ -2,6 +2,21 @@ import { type TokenModel, formatCurrencyStringForDisplay } from '@onflow/frw-typ
 
 import { stripHexPrefix } from './utils';
 
+// Utility function to extract numeric value from token balance strings
+export function extractNumericBalance(balance?: string | number): string {
+  if (!balance) return '0';
+
+  // Convert to string and extract only numeric characters and decimal points
+  const balanceString = balance.toString();
+  const numericBalance = balanceString.replace(/[^0-9.]/g, '');
+
+  // Validate that we have a valid number
+  const parsed = parseFloat(numericBalance);
+  if (isNaN(parsed)) return '0';
+
+  return numericBalance;
+}
+
 // Utility functions for TokenModel
 export function getDisplayBalanceInFLOW(token: TokenModel): string {
   if (

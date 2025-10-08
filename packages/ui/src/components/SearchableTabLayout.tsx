@@ -4,7 +4,6 @@ import { YStack, XStack, Button } from 'tamagui';
 
 import { SearchBar } from './SearchBar';
 import { SegmentedControl } from '../foundation/SegmentedControl';
-import { BackgroundWrapper } from '../layout/BackgroundWrapper';
 
 export interface SearchableTabLayoutProps {
   // Header
@@ -31,8 +30,12 @@ export interface SearchableTabLayoutProps {
   headerSpacing?: number;
   searchSpacing?: number;
   tabSpacing?: number;
-  contentPadding?: number;
+  contentPadding?: number | string;
   backgroundColor?: string;
+  // Make content area full-bleed (cancel page horizontal padding)
+  contentFullBleed?: boolean;
+  // Horizontal padding for header/search/tabs area
+  headerPaddingHorizontal?: number | string;
 }
 
 export function SearchableTabLayout({
@@ -51,60 +54,62 @@ export function SearchableTabLayout({
   headerSpacing = 16,
   searchSpacing = 16,
   tabSpacing = 16,
-  contentPadding = 16,
+  contentPadding = '$4',
   backgroundColor = '$background',
+  contentFullBleed = false,
+  headerPaddingHorizontal = '$4',
 }: SearchableTabLayoutProps) {
   return (
-    <BackgroundWrapper backgroundColor={backgroundColor}>
-      <YStack flex={1} px={contentPadding} pt="$2">
-        {/* Search Box */}
-        <YStack mb={searchSpacing}>
-          <XStack gap={17} items="center">
-            <YStack flex={1}>
-              <SearchBar
-                value={searchValue}
-                onChangeText={onSearchChange}
-                placeholder={searchPlaceholder}
-                width="100%"
-              />
-            </YStack>
-
-            {/* Scan Button */}
-            {showScanButton && (
-              <Button
-                w={44}
-                h={44}
-                circular
-                bg="transparent"
-                borderWidth={0}
-                onPress={onScanPress}
-                pressStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
-                hoverStyle={{ bg: 'rgba(255, 255, 255, 0.1)' }}
-                disabled={!onScanPress}
-              >
-                <Scan size={24} color="#FFFFFF" theme="outline" />
-              </Button>
-            )}
-          </XStack>
-        </YStack>
-
-        {/* Tabs */}
-        {tabSegments.length > 0 ? (
-          <YStack mb={tabSpacing}>
-            <SegmentedControl
-              segments={tabSegments}
-              value={activeTab}
-              onChange={onTabChange}
-              fullWidth={fullWidthTabs}
+    <YStack flex={1}>
+      {/* Search Box */}
+      <YStack mb={searchSpacing} px={headerPaddingHorizontal as any}>
+        <XStack gap={17} items="center">
+          <YStack flex={1}>
+            <SearchBar
+              value={searchValue}
+              onChangeText={onSearchChange}
+              placeholder={searchPlaceholder}
+              width="100%"
             />
           </YStack>
-        ) : (
-          ''
-        )}
 
-        {/* Content */}
-        <YStack flex={1}>{children}</YStack>
+          {/* Scan Button */}
+          {showScanButton && (
+            <Button
+              w={44}
+              h={44}
+              circular
+              bg="transparent"
+              borderWidth={0}
+              onPress={onScanPress}
+              pressStyle={{ bg: '$subtleBg10' }}
+              hoverStyle={{ bg: '$subtleBg10' }}
+              disabled={!onScanPress}
+            >
+              <Scan size={24} color="#767676" theme="outline" />
+            </Button>
+          )}
+        </XStack>
       </YStack>
-    </BackgroundWrapper>
+
+      {/* Tabs */}
+      {tabSegments.length > 0 ? (
+        <YStack mb={tabSpacing} px={headerPaddingHorizontal as any}>
+          <SegmentedControl
+            segments={tabSegments}
+            value={activeTab}
+            onChange={onTabChange}
+            fullWidth={fullWidthTabs}
+          />
+        </YStack>
+      ) : (
+        ''
+      )}
+
+      {/* Content */}
+      <YStack flex={1} mx={contentFullBleed ? ('$-4' as any) : 0}>
+        {children}
+      </YStack>
+    </YStack>
   );
 }

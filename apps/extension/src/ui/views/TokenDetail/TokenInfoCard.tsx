@@ -1,5 +1,6 @@
 import { Box, ButtonBase, Skeleton, Typography } from '@mui/material';
-import { bridge } from '@onflow/frw-context';
+import { useSendStore } from '@onflow/frw-stores';
+import { type TokenModel, addressType } from '@onflow/frw-types';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -22,6 +23,7 @@ import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 const TokenInfoCard = ({
   tokenInfo,
@@ -36,7 +38,11 @@ const TokenInfoCard = ({
 }) => {
   const navigate = useNavigate();
   const { coins } = useCoins();
+  const { currentWallet } = useProfiles();
   const currency = useCurrency();
+  const setSelectedToken = useSendStore((state) => state.setSelectedToken);
+  const setTransactionType = useSendStore((state) => state.setTransactionType);
+  const setCurrentStep = useSendStore((state) => state.setCurrentStep);
 
   const extendedTokenInfo: ExtendedTokenInfo | undefined = useMemo(
     () => coins?.find((coin) => coin.id.toLowerCase() === tokenId.toLowerCase()),
@@ -47,44 +53,33 @@ const TokenInfoCard = ({
 
   const toSend = () => {
     if (tokenInfo) {
-      // Create token data to store in cache
-      const tokenData = {
-        selectedToken: {
-          symbol:
-            tokenInfo && 'symbol' in tokenInfo
-              ? tokenInfo.symbol
-              : (tokenInfo as EvmCustomTokenInfo).unit || '',
-          name:
-            tokenInfo && 'symbol' in tokenInfo
-              ? tokenInfo.name || (tokenInfo as CoinItem).coin || ''
-              : (tokenInfo as EvmCustomTokenInfo).coin || '',
-          address: tokenInfo.address || '',
-          type: tokenInfo && 'symbol' in tokenInfo ? 'flow' : 'evm',
-          balance:
-            tokenInfo && 'symbol' in tokenInfo ? (tokenInfo as CoinItem).balance || '0' : '0',
-          contractName: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.contractName || '' : '',
-          contractAddress: tokenInfo.address || '',
-          flowIdentifier: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.flowIdentifier || '' : '',
-          isVerified:
-            tokenInfo && 'symbol' in tokenInfo
-              ? (tokenInfo as CoinItem).isVerified || false
-              : false,
-          logoURI:
-            tokenInfo && 'symbol' in tokenInfo
-              ? tokenInfo.logoURI || (tokenInfo as CoinItem).icon || ''
-              : '',
-          decimals: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.decimals || 8 : 18,
-        },
-        transactionType: 'tokens',
-        currentStep: 'send-to',
+      // Create token data for send store
+      const selectedToken: TokenModel = {
+        type: currentWallet?.address ? addressType(currentWallet.address) : addressType(''),
+        name:
+          tokenInfo && 'symbol' in tokenInfo
+            ? tokenInfo.name || (tokenInfo as CoinItem).coin || ''
+            : (tokenInfo as EvmCustomTokenInfo).coin || '',
+        symbol:
+          tokenInfo && 'symbol' in tokenInfo
+            ? tokenInfo.symbol
+            : (tokenInfo as EvmCustomTokenInfo).unit || '',
+        balance: tokenInfo && 'symbol' in tokenInfo ? (tokenInfo as CoinItem).balance || '0' : '0',
+        contractAddress: tokenInfo.address || '',
+        contractName: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.contractName || '' : '',
+        identifier: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.flowIdentifier || '' : '',
+        isVerified:
+          tokenInfo && 'symbol' in tokenInfo ? (tokenInfo as CoinItem).isVerified || false : false,
+        logoURI:
+          tokenInfo && 'symbol' in tokenInfo
+            ? tokenInfo.logoURI || (tokenInfo as CoinItem).icon || ''
+            : '',
+        decimal: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.decimals || 8 : 18,
       };
-
-      // Store token data in bridge cache for SendToScreenView to retrieve
-      try {
-        bridge.cache().set('sendFlowData', tokenData);
-      } catch (error) {
-        console.error('TokenInfoCard - Failed to store in bridge cache:', error);
-      }
+      // Set token data in send store
+      setSelectedToken(selectedToken);
+      setTransactionType('tokens');
+      setCurrentStep('send-to');
 
       // Navigate to send screen
       if (tokenInfo && 'symbol' in tokenInfo) {

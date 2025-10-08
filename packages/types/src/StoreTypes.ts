@@ -50,11 +50,6 @@ export interface Notification {
   timestamp: number;
   read: boolean;
 }
-export interface EmojiInfo {
-  name: string;
-  emoji: string;
-  color: string;
-}
 
 export type TransactionType = 'tokens' | 'single-nft' | 'multiple-nfts';
 

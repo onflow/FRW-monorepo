@@ -81,4 +81,4 @@ export function createCadenceService(bridge: CadenceBridge): CadenceService {
 }
 
 // Re-export types and services from generated file
-export { CadenceService, addresses } from './cadence.generated';
+export { CadenceService, addresses, type Result } from './cadence.generated';

@@ -5,79 +5,64 @@ import {
   useWalletStore,
   walletSelectors,
   useAddressBookStore,
+  storageQueryKeys,
+  storageQueries,
+  storageUtils,
 } from '@onflow/frw-stores';
-import { type WalletAccount } from '@onflow/frw-types';
+import { isFlow, Platform, type TokenModel, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
   TokenAmountInput,
-  TokenSelectorModal,
-  TransactionConfirmationModal,
   ConfirmationDrawer,
   AccountCard,
   ToAccountSection,
-  TransactionFeeSection,
   SendArrowDivider,
   StorageWarning,
   ExtensionHeader,
-  type TransactionFormData,
-  type AccountDisplayData,
+  TransactionFeeSection,
+  TokenSelectorModal,
   Text,
   Separator,
   XStack,
-  Button,
   // NFT-related components
   MultipleNFTsPreview,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
+import {
+  logger,
+  transformAccountForCard,
+  transformAccountForDisplay,
+  extractNumericBalance,
+  retryConfigs,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import BN from 'bignumber.js';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Keyboard } from 'react-native';
 
-/**
- * Transform WalletAccount to AccountDisplayData for UI components
- */
-const transformAccountForDisplay = (account: WalletAccount | null): AccountDisplayData | null => {
-  if (!account) return null;
+import type { ScreenAssets } from '../assets/images';
 
-  return {
-    name: account.name,
-    address: account.address,
-    avatarSrc: account.avatar,
-    avatarFallback: account.emojiInfo?.emoji || account.name?.charAt(0) || 'A',
-    avatarBgColor: account.emojiInfo?.color,
-    parentEmoji: account.parentEmoji,
-    type: account.type,
-  };
-};
-
-/**
- * Transform WalletAccount to UI Account type for AccountCard
- */
-const transformAccountForCard = (account: WalletAccount | null, balance?: string): any | null => {
-  if (!account) return null;
-
-  return {
-    name: account.name,
-    address: account.address,
-    avatar: account.avatar,
-    balance: balance || '0 FLOW',
-    nfts: '12 NFTs', // TODO: Replace with real NFT count when available
-    emojiInfo: account.emojiInfo,
-    parentEmoji: account.parentEmoji,
-    type: account.type,
-  };
-};
+interface SendTokensScreenProps {
+  assets?: ScreenAssets;
+}
 
 /**
  * Query-integrated version of SendTokensScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export const SendTokensScreen = (props) => {
+export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.ReactElement => {
   const { t } = useTranslation();
+
+  // Theme-aware styling
+  const cardBackgroundColor = '$bg1';
+  const separatorColor = '$border1';
+
   // Check if we're running in extension platform
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
+  const currency = bridge.getCurrency();
+  const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
 
   // Get send store
   const {
@@ -88,11 +73,10 @@ export const SendTokensScreen = (props) => {
     selectedNFTs,
     selectedToken,
     fromAccount,
-    setFromAccount,
     toAccount,
     updateFormData,
     executeTransaction,
-    isLoading: storeLoading,
+    isLoading,
     setCurrentStep,
   } = useSendStore();
 
@@ -110,6 +94,34 @@ export const SendTokensScreen = (props) => {
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
 
+  // Reset amount and error when selected token changes
+  useEffect(() => {
+    setAmount('');
+    setAmountError('');
+  }, [selectedToken]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async () => {
+      try {
+        // Check if the platform supports free gas
+        const platform = bridge.getPlatform();
+        if (platform === 'extension' || platform === 'android' || platform === 'ios') {
+          // For now, default to true since the method might not be available yet
+          setIsFreeGasEnabled(true);
+        } else {
+          setIsFreeGasEnabled(true);
+        }
+      } catch (error) {
+        logger.error('Failed to check free gas status:', error);
+        // Default to enabled if we can't determine the status
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
+
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
     if (accounts.length === 0 && !isLoadingWallet) {
@@ -123,13 +135,13 @@ export const SendTokensScreen = (props) => {
     isLoading: isLoadingAccount,
     error: accountError,
   } = useQuery({
-    queryKey: ['selectedAccount'],
+    queryKey: ['selectedAccount', bridge.getSelectedAddress()],
     queryFn: () => bridge.getSelectedAccount(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: true,
   });
 
-  // Query for tokens with automatic caching
+  // Query for tokens with automatic caching and retry logic
   const {
     data: tokens = [],
     isLoading: isLoadingTokens,
@@ -152,45 +164,55 @@ export const SendTokensScreen = (props) => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: !!selectedAccount?.address,
+    ...retryConfigs.critical, // Critical financial data retry config
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
-  // Set fromAccount when selectedAccount is loaded
-  useEffect(() => {
-    if (selectedAccount && !fromAccount) {
-      setFromAccount({
-        id: selectedAccount.address,
-        address: selectedAccount.address,
-        name: selectedAccount.name,
-        avatar: selectedAccount.avatar,
-        emojiInfo: selectedAccount.emojiInfo,
-        parentEmoji: selectedAccount.parentEmoji,
-        parentAddress: selectedAccount.parentAddress,
-        isActive: true,
-        type: selectedAccount.type,
-      });
-    }
-  }, [selectedAccount, fromAccount, setFromAccount]);
+  // Query for complete account information including storage and balance
+  const { data: accountInfo } = useQuery({
+    queryKey: storageQueryKeys.accountInfo(selectedAccount || null),
+    queryFn: () => storageQueries.fetchAccountInfo(selectedAccount || null),
+    enabled: !!selectedAccount?.address,
+    staleTime: 0, // Always fresh for financial data
+    ...retryConfigs.critical, // Critical account info retry config
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
+
+  // Extract and format identifier with .Vault suffix if needed
+  const resourceIdentifier = useMemo(() => {
+    if (!selectedToken?.identifier) return '';
+    const identifier = selectedToken.identifier;
+    return identifier.includes('.Vault') ? identifier : `${identifier}.Vault`;
+  }, [selectedToken?.identifier]);
+
+  // Query for resource compatibility check (tokens only)
+  const { data: isResourceCompatible = true } = useQuery({
+    queryKey: storageQueryKeys.resourceCheck(toAccount?.address || '', resourceIdentifier),
+    queryFn: () =>
+      storageQueries.checkResourceCompatibility(toAccount?.address || '', resourceIdentifier),
+    enabled: !!(toAccount?.address && resourceIdentifier),
+    staleTime: 5 * 60 * 1000, // 5 minutes cache for resource compatibility
+    ...retryConfigs.minimal, // Minimal retry for compatibility checks
+    refetchOnWindowFocus: false, // Don't refetch compatibility on focus (less critical)
+    refetchOnReconnect: true,
+  });
+
+  // Calculate account incompatibility (invert the compatibility result)
+  const isAccountIncompatible = !isResourceCompatible;
 
   // Theme-aware styling to match Figma design
   const backgroundColor = '$bgDrawer'; // Main background (surfaceDarkDrawer in dark mode)
-  const cardBackgroundColor = '$light10'; // rgba(255, 255, 255, 0.1) from theme
-  const contentPadding = 16;
+  const contentPadding = '$4';
   const usdFee = '$0.02';
-  const isAccountIncompatible = false;
   const isBalanceLoading = false;
-  const showStorageWarning = true;
-  const storageWarningMessage =
-    'Account balance will fall below the minimum FLOW required for storage after this transaction.';
   const showEditButtons = true;
-  const isFeesFree = false;
 
   // Internal callback handlers
   const onEditAccountPress = () => {
     // Navigate back to SendTo screen to select a different recipient
     navigation.goBack();
-  };
-  const onLearnMorePress = () => {
-    // Handle learn more press internally
   };
 
   // Internal state - no more props for data
@@ -199,28 +221,125 @@ export const SendTokensScreen = (props) => {
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const [amountError, setAmountError] = useState<string>('');
+  const inputRef = useRef<any>(null);
 
+  // Calculate storage warning state based on real validation logic
+  const validationResult = useMemo(() => {
+    if (!accountInfo) return { canProceed: true, showWarning: false, warningType: null };
+
+    const transactionAmount = parseFloat(amount) || 0;
+    const isFlowTransaction = selectedToken ? isFlow(selectedToken) : false;
+
+    if (isFlowTransaction) {
+      return storageUtils.validateFlowTokenTransaction(accountInfo, transactionAmount);
+    } else {
+      return storageUtils.validateOtherTransaction(accountInfo);
+    }
+  }, [accountInfo, amount, selectedToken]);
+
+  const showStorageWarning = validationResult.showWarning;
+  const storageWarningMessage = t(
+    storageUtils.getStorageWarningMessageKey(validationResult.warningType)
+  );
 
   // Handler functions - now internal to the screen
   const handleTokenSelect = useCallback(
-    (token: any) => {
+    (token: TokenModel | null) => {
       setSelectedToken(token);
       setIsTokenSelectorVisible(false);
     },
     [setSelectedToken]
   );
 
-  const handleAmountChange = useCallback((newAmount: string) => {
-    setAmount(newAmount);
-  }, []);
+  const handleAmountChange = useCallback(
+    (newAmount: string) => {
+      // Remove any non-numeric characters except decimal point
+      const sanitized = newAmount.replace(/[^0-9.]/g, '');
+
+      // Prevent multiple decimal points
+      const parts = sanitized.split('.');
+      if (parts.length > 2) {
+        return; // Don't update if there are multiple decimal points
+      }
+
+      // Limit decimal places based on mode
+      if (parts.length === 2) {
+        if (isTokenMode && parts[1].length > (selectedToken?.decimal || 8)) {
+          return; // Max 8 decimal places for tokens
+        } else if (!isTokenMode && parts[1].length > 2) {
+          return; // Max 2 decimal places for USD
+        }
+      }
+
+      // Prevent leading zeros (except for decimal numbers like 0.123)
+      if (sanitized.length > 1 && sanitized[0] === '0' && sanitized[1] !== '.') {
+        setAmount(sanitized.substring(1));
+        return;
+      }
+
+      // Allow user to type any amount - validation will show error if exceeds balance
+      setAmount(sanitized);
+    },
+    [selectedToken, isTokenMode, currency.rate]
+  );
 
   const handleToggleInputMode = useCallback(() => {
+    // Convert the amount when switching modes
+    if (selectedToken?.priceInUSD) {
+      const price = new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1));
+      const currentAmount = new BN(amount || '0');
+
+      if (!price.isNaN() && !currentAmount.isNaN() && price.gt(0)) {
+        if (isTokenMode) {
+          // Converting from token to USD
+          const usdAmount = currentAmount.times(price);
+          setAmount(usdAmount.toFixed(2));
+        } else {
+          // Converting from USD to token
+          const tokenAmount = currentAmount.div(price);
+          // Keep up to 8 decimal places for token amount
+          setAmount(tokenAmount.toFixed(selectedToken.decimal || 8));
+        }
+      }
+    }
+
     setIsTokenMode((prev) => !prev);
-  }, []);
+  }, [isTokenMode, amount, selectedToken, currency.rate]);
 
   const handleMaxPress = useCallback(() => {
-    if (selectedToken?.balance) {
-      setAmount(selectedToken.balance.toString());
+    if (selectedToken) {
+      // Try multiple sources for the numeric balance, in order of preference
+      let numericBalance = '0';
+
+      // 1. Try availableBalanceToUse (most reliable for calculations)
+      if (selectedToken.availableBalanceToUse) {
+        numericBalance = extractNumericBalance(selectedToken.availableBalanceToUse);
+      }
+      // 2. Try displayBalance
+      else if (selectedToken.displayBalance) {
+        numericBalance = extractNumericBalance(selectedToken.displayBalance);
+      }
+      // 3. Fall back to balance field
+      else if (selectedToken.balance) {
+        numericBalance = extractNumericBalance(selectedToken.balance);
+      }
+
+      // Validate that we have a valid number
+      const parsedBalance = parseFloat(numericBalance);
+      if (!isNaN(parsedBalance) && parsedBalance > 0) {
+        setAmount(numericBalance);
+        // Switch to token mode when MAX is pressed (disable $ mode)
+        setIsTokenMode(true);
+      } else {
+        logger.warn('[SendTokensScreen] Max button clicked but no valid balance found:', {
+          token: selectedToken.symbol,
+          availableBalanceToUse: selectedToken.availableBalanceToUse,
+          displayBalance: selectedToken.displayBalance,
+          balance: selectedToken.balance,
+          extractedBalance: numericBalance,
+        });
+      }
     }
   }, [selectedToken]);
 
@@ -234,10 +353,6 @@ export const SendTokensScreen = (props) => {
 
   const handleTokenSelectorClose = useCallback(() => {
     setIsTokenSelectorVisible(false);
-  }, []);
-
-  const handleConfirmationOpen = useCallback(() => {
-    setIsConfirmationVisible(true);
   }, []);
 
   const handleConfirmationClose = useCallback(() => {
@@ -257,23 +372,26 @@ export const SendTokensScreen = (props) => {
   );
 
   const handleTransactionConfirm = useCallback(async () => {
-    if (transactionType === 'tokens') {
-      if (!selectedToken || !fromAccount || !toAccount || !amount) {
-        throw new Error('Missing transaction data');
-      }
-
-      setSelectedToken(selectedToken);
-      setSelectedNFTs([]);
-      setTransactionType('tokens');
-      updateFormData({ tokenAmount: amount });
-    } else {
-      if (!selectedNFTs.length || !fromAccount || !toAccount) {
-        throw new Error('Missing NFT transaction data');
-      }
-      setSelectedToken(null);
-      setSelectedNFTs(selectedNFTs);
-      setTransactionType(transactionType);
+    if (!selectedToken || !fromAccount || !toAccount || !amount) {
+      throw new Error('Missing transaction data');
     }
+
+    setSelectedToken(selectedToken);
+    setSelectedNFTs([]);
+    setTransactionType('tokens');
+    const inputAmount = new BN(amount || '0');
+    let tokenAmount: string;
+    const decimals = selectedToken.decimal || 8;
+    if (!isTokenMode) {
+      // Converting from USD to token
+      const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
+      tokenAmount = inputAmount.div(price).toFixed(decimals);
+    } else {
+      // Already in token mode
+      tokenAmount = inputAmount.toFixed(decimals);
+    }
+
+    updateFormData({ tokenAmount: tokenAmount });
 
     const result = await executeTransaction();
 
@@ -295,6 +413,12 @@ export const SendTokensScreen = (props) => {
       } catch (error) {
         logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
       }
+
+      // Close the React Native view after successful transaction
+      const platform = bridge.getPlatform();
+      if (platform === Platform.iOS || platform === Platform.Android) {
+        bridge.closeRN();
+      }
     }
 
     return result;
@@ -313,23 +437,74 @@ export const SendTokensScreen = (props) => {
     addressBookStore,
   ]);
 
-  // Calculate if send button should be disabled
+  // Calculate if send button should be disabled and set amount error
   const isSendDisabled = useMemo(() => {
     if (transactionType === 'tokens') {
-      return !selectedToken || !fromAccount || !toAccount || parseFloat(amount || '0') <= 0;
+      const amountNum = new BN(amount || '0');
+
+      // Extract numeric value from token-denominated balance (prefer displayBalance)
+      const numericBalanceString = extractNumericBalance(
+        selectedToken?.displayBalance || selectedToken?.balance || '0'
+      );
+      const balanceNum = new BN(numericBalanceString);
+
+      // Convert amount to token equivalent if in USD mode
+      let tokenAmount = amountNum;
+      if (!isTokenMode && selectedToken?.priceInUSD) {
+        const price = new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1));
+        if (!price.isNaN() && price.gt(0)) {
+          tokenAmount = amountNum.div(price);
+        }
+      }
+
+      if (tokenAmount.gt(balanceNum)) {
+        setAmountError(t('send.insufficient'));
+      } else {
+        setAmountError('');
+      }
+
+      return (
+        !selectedToken ||
+        !fromAccount ||
+        !toAccount ||
+        amountNum.lte(0) ||
+        tokenAmount.gt(balanceNum) ||
+        showStorageWarning ||
+        isAccountIncompatible
+      );
     } else {
+      setAmountError(''); // Clear error for non-token transactions
       return !selectedNFTs.length || !fromAccount || !toAccount;
     }
-  }, [transactionType, selectedToken, selectedNFTs, fromAccount, toAccount, amount]);
+  }, [
+    transactionType,
+    selectedToken,
+    selectedNFTs,
+    fromAccount,
+    toAccount,
+    amount,
+    isTokenMode,
+    showStorageWarning,
+    isAccountIncompatible,
+    t,
+  ]);
 
   // Create form data for transaction confirmation
-  const formData: TransactionFormData = useMemo(
+  const formData: SendFormData = useMemo(
     () => ({
-      tokenAmount: transactionType === 'tokens' ? amount : selectedNFTs.length.toString(),
+      tokenAmount: isTokenMode
+        ? amount
+        : selectedToken?.priceInUSD
+          ? new BN(amount || '0')
+              .div(new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1)))
+              .toFixed(2)
+          : amount,
       fiatAmount:
-        transactionType === 'tokens' && selectedToken?.priceInUSD
-          ? (parseFloat(amount || '0') * parseFloat(selectedToken.priceInUSD)).toFixed(2)
-          : '0.00',
+        isTokenMode && selectedToken?.priceInUSD
+          ? new BN(amount || '0')
+              .times(new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1)))
+              .toFixed(2)
+          : amount,
       isTokenMode,
       transactionFee: transactionFee,
     }),
@@ -340,12 +515,13 @@ export const SendTokensScreen = (props) => {
       selectedNFTs.length,
       isTokenMode,
       transactionFee,
+      currency.rate,
     ]
   );
 
   // Calculate overall loading state - only show loading screen for critical data
   // Don't block on wallet store loading if we already have accounts
-  const isLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
+  const isOverallLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
 
   // Calculate error state
   const error = useMemo(() => {
@@ -358,12 +534,12 @@ export const SendTokensScreen = (props) => {
   }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
 
   // Show loading state
-  if (isLoading) {
+  if (isOverallLoading) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
-          <Text>Loading wallet data...</Text>
+          <Text>{t('messages.loading')}</Text>
         </YStack>
       </BackgroundWrapper>
     );
@@ -373,7 +549,7 @@ export const SendTokensScreen = (props) => {
   if (error) {
     return (
       <BackgroundWrapper backgroundColor={backgroundColor}>
-        {isExtension && <ExtensionHeader title="Send to" help={true} />}
+        {isExtension && <ExtensionHeader title={t('send.sendTo.title')} help={true} />}
         <YStack flex={1} items="center" justify="center" p="$4">
           <Text color="$error">{error}</Text>
         </YStack>
@@ -385,28 +561,29 @@ export const SendTokensScreen = (props) => {
     <BackgroundWrapper backgroundColor={backgroundColor}>
       {isExtension && (
         <ExtensionHeader
-          title={t('send.sendTokens.title', 'Sending')}
+          title={t('send.title')}
           help={true}
           onGoBack={() => navigation.goBack()}
           onNavigate={(link: string) => navigation.navigate(link)}
         />
       )}
 
-      <YStack flex={1} p={contentPadding}>
+      <YStack flex={1} {...(!isExtension && { onPress: Keyboard.dismiss })}>
         {/* Scrollable Content */}
         <YStack flex={1} gap="$3">
-          <YStack bg={cardBackgroundColor} rounded="$4" p="$3" gap="$3">
+          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
             {/* From Account Section */}
             {fromAccount ? (
               <AccountCard
-                account={transformAccountForCard(fromAccount, selectedAccount?.balance)}
-                title="From Account"
+                isSendTokensScreen={!isExtension}
+                account={transformAccountForCard(fromAccount)}
+                title={t('send.fromAccount')}
                 isLoading={isBalanceLoading}
               />
             ) : (
-              <Text>No account data available</Text>
+              <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator mx="$0" my="$0" borderColor="rgba(255, 255, 255, 0.1)" borderWidth={0.5} />
+            <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
             {transactionType === 'tokens' ? (
               /* Token Amount Input Section */
               <YStack gap="$4">
@@ -418,9 +595,14 @@ export const SendTokensScreen = (props) => {
                           name: selectedToken.name,
                           logo: selectedToken.logoURI,
                           logoURI: selectedToken.logoURI,
-                          balance: selectedToken.balance?.toString(),
+                          // Use token-denominated display balance if available to avoid showing 0 on first load
+                          balance: (
+                            selectedToken.displayBalance ||
+                            selectedToken.balance ||
+                            '0'
+                          ).toString(),
                           price: selectedToken.priceInUSD
-                            ? parseFloat(selectedToken.priceInUSD)
+                            ? new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1))
                             : undefined,
                           isVerified: selectedToken.isVerified,
                         }
@@ -436,6 +618,10 @@ export const SendTokensScreen = (props) => {
                   showBalance={true}
                   showConverter={true}
                   disabled={false}
+                  inputRef={inputRef}
+                  currency={currency}
+                  amountError={amountError}
+                  headerText={t('send.title')}
                 />
               </YStack>
             ) : (
@@ -463,8 +649,8 @@ export const SendTokensScreen = (props) => {
           </YStack>
 
           {/* Arrow Down Indicator */}
-          <XStack position="relative" height={0}>
-            <XStack width="100%" position="absolute" t={-30} justify="center">
+          <XStack position="relative" height={0} mt="$1">
+            <XStack width="100%" position="absolute" t={-40} justify="center" z={10}>
               <SendArrowDivider variant="arrow" size={48} />
             </XStack>
           </XStack>
@@ -476,9 +662,16 @@ export const SendTokensScreen = (props) => {
               fromAccount={fromAccount || undefined}
               isAccountIncompatible={isAccountIncompatible}
               onEditPress={onEditAccountPress}
-              onLearnMorePress={onLearnMorePress}
               showEditButton={showEditButtons}
               title={t('send.toAccount')}
+              isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+              incompatibleAccountText={t('account.compatibility.incompatible')}
+              learnMoreText={t('account.compatibility.learnMore')}
+              unknownAccountText={t('account.compatibility.unknown')}
+              dialogTitle={t('account.compatibility.dialog.title')}
+              dialogButtonText={t('account.compatibility.dialog.button')}
+              dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+              dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
             />
           )}
 
@@ -487,9 +680,9 @@ export const SendTokensScreen = (props) => {
             <TransactionFeeSection
               flowFee={transactionFee}
               usdFee={usdFee}
-              isFree={isFeesFree}
+              isFree={isFreeGasEnabled}
               showCovered={true}
-              title="Transaction Fee"
+              title={t('send.transactionFee')}
               backgroundColor="transparent"
               borderRadius={16}
               contentPadding={0}
@@ -499,7 +692,7 @@ export const SendTokensScreen = (props) => {
               <StorageWarning
                 message={storageWarningMessage}
                 showIcon={true}
-                title="Storage warning"
+                title={t('storage.warning.title')}
                 visible={true}
               />
             )}
@@ -507,33 +700,25 @@ export const SendTokensScreen = (props) => {
         </YStack>
 
         {/* Send Button - Anchored to bottom */}
-        <YStack pt="$4">
-          <Button
-            fullWidth={true}
-            size="large"
-            disabled={isSendDisabled}
-            onPress={handleSendPress}
-            style={{
-              height: 52,
-              backgroundColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              color: isSendDisabled ? '#999' : '#000000',
-              borderColor: isSendDisabled ? '#6b7280' : '#FFFFFF',
-              borderWidth: 1,
-              borderRadius: 16,
-              paddingHorizontal: 20,
-              paddingVertical: 16,
-              shadowColor: 'rgba(16, 24, 40, 0.05)',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: isSendDisabled ? 0 : 1,
-              shadowRadius: 2,
-              elevation: isSendDisabled ? 0 : 1,
-              opacity: isSendDisabled ? 0.7 : 1,
-            }}
+        <YStack pt="$4" mb={'$10'}>
+          <YStack
+            width="100%"
+            height={52}
+            bg={isSendDisabled ? '#6b7280' : '$text'}
+            rounded={16}
+            items="center"
+            justify="center"
+            borderWidth={1}
+            borderColor={isSendDisabled ? '#6b7280' : '$text'}
+            opacity={isSendDisabled ? 0.7 : 1}
+            pressStyle={{ opacity: 0.9 }}
+            onPress={isSendDisabled ? undefined : handleSendPress}
+            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '#999' : '#000000'}>
-              Next
+            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$bg'}>
+              {t('common.next')}
             </Text>
-          </Button>
+          </YStack>
         </YStack>
 
         {/* Token Selector Modal */}
@@ -544,49 +729,38 @@ export const SendTokensScreen = (props) => {
           onTokenSelect={handleTokenSelect}
           onClose={handleTokenSelectorClose}
           platform="mobile"
-          title="Tokens"
+          title={t('tabs.tokens')}
+          currency={currency}
+          isExtension={isExtension}
         />
 
-        {/* Transaction Confirmation Modal/Drawer - Platform specific */}
-        {isExtension ? (
-          <TransactionConfirmationModal
-            visible={isConfirmationVisible}
-            transactionType={transactionType}
-            selectedToken={selectedToken}
-            selectedNFTs={selectedNFTs?.map((nft) => ({
-              id: nft.id || '',
-              name: nft.name || '',
-              image: nft.thumbnail || '',
-              collection: nft.collectionName || '',
-              collectionContractName: nft.collectionContractName || '',
-              description: nft.description || '',
-            }))}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        ) : (
-          <ConfirmationDrawer
-            visible={isConfirmationVisible}
-            transactionType={transactionType}
-            selectedToken={selectedToken}
-            selectedNFTs={selectedNFTs?.map((nft) => ({
-              id: nft.id || '',
-              name: nft.name || '',
-              image: nft.thumbnail || '',
-              collection: nft.collectionName || '',
-              collectionContractName: nft.collectionContractName || '',
-              description: nft.description || '',
-            }))}
-            fromAccount={transformAccountForDisplay(fromAccount)}
-            toAccount={transformAccountForDisplay(toAccount)}
-            formData={formData}
-            onConfirm={handleTransactionConfirm}
-            onClose={handleConfirmationClose}
-          />
-        )}
+        <ConfirmationDrawer
+          visible={isConfirmationVisible}
+          transactionType={transactionType}
+          selectedToken={selectedToken}
+          sendStaticImage={assets?.sendStaticImage}
+          selectedNFTs={selectedNFTs?.map((nft) => ({
+            id: nft.id || '',
+            name: nft.name || '',
+            thumbnail: nft.thumbnail || '',
+            collection: nft.collectionName || '',
+            collectionContractName: nft.collectionContractName || '',
+            description: nft.description || '',
+          }))}
+          fromAccount={transformAccountForDisplay(fromAccount)}
+          toAccount={toAccount ? transformAccountForDisplay(toAccount) : null}
+          formData={formData}
+          onConfirm={handleTransactionConfirm}
+          onClose={handleConfirmationClose}
+          isExtension={isExtension}
+          summaryText={t('send.summary')}
+          sendTokensText={t('send.sendTokens')}
+          sendNFTsText={t('send.sendNFTs')}
+          sendingText={t('send.sending')}
+          confirmSendText={t('send.confirmSend')}
+          holdToSendText={t('send.holdToSend')}
+          unknownAccountText={t('send.unknownAccount')}
+        />
       </YStack>
     </BackgroundWrapper>
   );

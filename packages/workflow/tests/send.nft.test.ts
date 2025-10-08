@@ -9,8 +9,8 @@ import { authz, bridgeAuthorization } from './utils/authz';
 dotenv.config();
 
 const mainAccount = accounts.main;
-const child1Account = accounts.child1;
-const child2Account = accounts.child2;
+// const child1Account = accounts.child1;
+// const child2Account = accounts.child2;
 
 const cadenceService = new CadenceService();
 

@@ -1,7 +1,9 @@
 import { ChevronUp, ChevronDown, Trash } from '@onflow/frw-icons';
+import { logger } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Text, Image } from 'tamagui';
 
+import { ERC1155QuantitySelector } from './ERC1155QuantitySelector';
 import type { NFTData } from './NFTGrid';
 import { Button } from '../foundation/Button';
 
@@ -13,6 +15,12 @@ export interface NFTSelectionBarProps {
   continueText?: string;
   isEditing?: boolean;
   maxHeight?: string;
+  selectedQuantity?: number;
+  onQuantityChange?: (nftId: string, quantity: number) => void;
+  // Text props for localization
+  selectedCountText?: string;
+  confirmText?: string;
+  isExtension?: boolean;
 }
 
 export function NFTSelectionBar({
@@ -20,18 +28,13 @@ export function NFTSelectionBar({
   onRemoveNFT,
   onContinue,
   onNFTPress = (id: string) => {},
-  continueText = 'Continue',
-  isEditing = false,
-  maxHeight = '$20',
+  onQuantityChange,
+  selectedCountText,
+  confirmText,
+  isExtension,
 }: NFTSelectionBarProps) {
   const [isExpanded, setIsExpanded] = useState(true); // Start expanded so trash icons are visible
-
-  console.log('🔍 NFTSelectionBar render:', {
-    selectedNFTsCount: selectedNFTs.length,
-    hasOnRemoveNFT: !!onRemoveNFT,
-    isExpanded,
-    selectedNFTs: selectedNFTs.map((nft) => ({ id: nft.id, name: nft.name })),
-  });
+  const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
   if (selectedNFTs.length === 0) {
     console.log('🔍 NFTSelectionBar: No selected NFTs, returning null');
@@ -43,71 +46,99 @@ export function NFTSelectionBar({
     setIsExpanded(!isExpanded);
   };
 
+  // Calculate total quantity including ERC1155 quantities
+  const getTotalQuantity = () => {
+    return selectedNFTs.reduce((total, nft) => {
+      if (nft.contractType === 'ERC1155') {
+        return total + (quantities[nft.id] || 1);
+      }
+      return total + 1;
+    }, 0);
+  };
+
   const renderNFTItem = (nft: NFTData) => {
-    console.log('🔍 renderNFTItem called for:', {
-      id: nft.id,
-      name: nft.name,
-      hasOnRemoveNFT: !!onRemoveNFT,
-    });
+    const isERC1155 = nft.contractType === 'ERC1155';
+    const nftQuantity = quantities[nft.id] || 1;
 
     return (
-      <XStack key={nft.id} items="center" justify="space-between" gap="$2">
-        <XStack items="center" gap="$2" onPress={() => onNFTPress(nft.id)} cursor="pointer">
-          {/* NFT Image */}
-          <YStack borderRadius="$4" overflow="hidden" width="$13" height="$13" bg="$background4">
-            <Image
-              src={nft.thumbnail || nft.image}
-              width="100%"
-              height="100%"
-              resizeMode="cover"
-              fallback={
-                <YStack flex={1} items="center" justify="center" bg="$bg1">
-                  <Text fontSize="$2" color="$textTertiary">
-                    NFT
-                  </Text>
-                </YStack>
-              }
-            />
-          </YStack>
+      <YStack key={nft.id} gap="$2" width="100%">
+        <XStack items="center" justify="space-between" gap="$2" width="100%">
+          <XStack
+            items="center"
+            gap="$2"
+            onPress={() => onNFTPress(nft.id)}
+            cursor="pointer"
+            flex={1}
+          >
+            {/* NFT Image */}
+            <YStack
+              rounded="$4"
+              overflow="hidden"
+              minW="$13"
+              minH="$13"
+              w="$13"
+              h="$13"
+              bg="$background4"
+              flexShrink={0}
+            >
+              <Image src={nft.thumbnail || nft.image} width="$13" height="$13" objectFit="cover" />
+            </YStack>
 
-          {/* NFT Info */}
-          <YStack gap="$1.5" flex={1} justify="center">
-            <Text fontSize="$4" fontWeight="600" color="$text2" numberOfLines={1}>
-              {nft.name}
-            </Text>
-
-            {nft.collection && (
-              <Text fontSize="$4" fontWeight="400" color="$text2" numberOfLines={1}>
-                {nft.collection}
+            {/* NFT Info */}
+            <YStack gap="$1.5" flex={1} justify="center">
+              <Text fontSize="$4" fontWeight="600" color="$text2" numberOfLines={1}>
+                {nft.name}
               </Text>
-            )}
-          </YStack>
+
+              {nft.collection && (
+                <Text fontSize="$4" fontWeight="400" color="$text2" numberOfLines={1}>
+                  {nft.collection}
+                </Text>
+              )}
+            </YStack>
+          </XStack>
+
+          {/* Remove Button */}
+          {onRemoveNFT && (
+            <XStack
+              minWidth={32}
+              minHeight={32}
+              items="center"
+              justify="center"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={() => {
+                logger.debug('🗑️ Trash icon clicked for NFT:', nft.id);
+                onRemoveNFT(nft.id);
+              }}
+              cursor="pointer"
+            >
+              <Trash size={24} color="#767676" theme="outline" />
+            </XStack>
+          )}
         </XStack>
 
-        {/* Remove Button */}
-        {onRemoveNFT && (
-          <XStack
-            width={24}
-            height={24}
-            items="center"
-            justify="center"
-            pressStyle={{ opacity: 0.7 }}
-            onPress={() => onRemoveNFT(nft.id)}
-            cursor="pointer"
-          >
-            <Trash size={24} color="rgba(255, 255, 255, 0.8)" theme="outline" />
-          </XStack>
+        {/* ERC1155 Quantity Selector */}
+        {isERC1155 && nft.amount && (
+          <ERC1155QuantitySelector
+            quantity={nftQuantity}
+            maxQuantity={Number(nft.amount)}
+            onQuantityChange={(newQuantity) => {
+              setQuantities((prev) => ({ ...prev, [nft.id]: newQuantity }));
+              onQuantityChange?.(nft.id, newQuantity);
+            }}
+            disabled={false}
+          />
         )}
-      </XStack>
+      </YStack>
     );
   };
 
   return (
     <YStack
-      pos="absolute"
-      bottom={0}
-      left={0}
-      right={0}
+      pos={isExtension ? 'fixed' : 'absolute'}
+      b="$0"
+      l="$0"
+      r="$0"
       width="100%"
       bg="$bg2"
       borderTopLeftRadius="$4"
@@ -117,22 +148,23 @@ export function NFTSelectionBar({
       shadowOpacity={0.1}
       shadowRadius="$2"
       elevation={8}
+      zIndex={10}
       pt="$3"
       px="$4"
       pb="$5"
-      maxH="50vh"
+      maxH="75vh"
     >
       <YStack gap="$4" flex={1}>
         {/* Header */}
         <XStack items="center" justify="space-between" pt="$2.5" position="relative">
-          <Text fontSize="$3.5" fontWeight="400" color="$text">
-            {selectedNFTs.length} Selected NFT{selectedNFTs.length === 1 ? '' : 's'}
+          <Text fontSize="$4" fontWeight="400" color="$text">
+            {selectedCountText}
           </Text>
 
           <XStack
-            position="absolute"
-            right={0}
-            top="$2.5"
+            pos="absolute"
+            r="$0"
+            t="$2.5"
             width="$6"
             height="$6"
             items="center"
@@ -142,17 +174,17 @@ export function NFTSelectionBar({
             pressStyle={{ opacity: 0.7 }}
           >
             {isExpanded ? (
-              <ChevronDown size={20} color="#FFFFFF" theme="outline" />
+              <ChevronDown size={20} color="#767676" theme="outline" />
             ) : (
-              <ChevronUp size={20} color="#FFFFFF" theme="outline" />
+              <ChevronUp size={20} color="#767676" theme="outline" />
             )}
           </XStack>
         </XStack>
 
         {/* Expandable Content */}
         {isExpanded && (
-          <YStack maxH="$20" bg="$backgroundStrong" borderRadius="$4" gap="$0.5" flex={1}>
-            <ScrollView showsVerticalScrollIndicator={true} style={{ maxHeight: '40vh' }} p="$2">
+          <YStack maxH="65vh" bg="$backgroundStrong" rounded="$4" gap="$0.5" flex={1}>
+            <ScrollView showsVerticalScrollIndicator={true} style={{ maxHeight: '65vh' }} p="$2">
               <YStack gap="$2">
                 {selectedNFTs.map((nft, index) => (
                   <React.Fragment key={nft.id}>
@@ -171,23 +203,15 @@ export function NFTSelectionBar({
 
         {/* Action Button - Always visible at bottom */}
         {onContinue && (
-          <YStack shrink={0} pt="$2">
-            <Button
-              variant="secondary"
-              size="large"
-              fullWidth
-              disabled={selectedNFTs.length === 0}
-              onPress={onContinue}
-              backgroundColor="$white"
-              borderWidth={0}
-              borderRadius="$4"
-              pressStyle={{ opacity: 0.8, scale: 0.98 }}
-            >
-              <Text fontSize="$5" fontWeight="600" color="$black">
-                Confirm {selectedNFTs.length} NFT{selectedNFTs.length === 1 ? '' : 's'}
-              </Text>
-            </Button>
-          </YStack>
+          <Button
+            fullWidth
+            size="large"
+            variant="inverse"
+            onPress={onContinue}
+            disabled={selectedNFTs.length === 0}
+          >
+            {confirmText}
+          </Button>
         )}
       </YStack>
     </YStack>

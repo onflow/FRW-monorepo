@@ -1,6 +1,6 @@
 {
   "name": "frw-extension",
-  "version": "2.9.3",
+  "version": "3.0.0",
   "description": "Digital wallet created for everyone.",
   "type": "module",
   "scripts": {
@@ -50,7 +50,9 @@
     "@onflow/fcl": "^1.19.0",
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-context": "workspace:*",
+    "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-screens": "workspace:*",
+    "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-wallet": "workspace:^",
@@ -93,6 +95,7 @@
     "koa-compose": "^4.1.0",
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
+    "lottie-react-native": "^7.3.4",
     "lru-cache": "^11.1.0",
     "nanoid": "^3.3.11",
     "process": "^0.11.10",
@@ -101,6 +104,7 @@
     "raw-loader": "^4.0.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-native-web": "^0.21.1",
     "react-highlight": "^0.15.0",
     "react-hook-form": "^7.60.0",
     "react-infinite-scroll-component": "^6.1.0",

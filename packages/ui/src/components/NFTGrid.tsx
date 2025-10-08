@@ -1,8 +1,10 @@
 import React from 'react';
-import { XStack, YStack, Text, Button } from 'tamagui';
+import { FlatList } from 'react-native';
+import { XStack, YStack, Text } from 'tamagui';
 
 import { NFTCard } from './NFTCard';
 import { RefreshView } from './RefreshView';
+import { Button } from '../foundation/Button';
 import { Skeleton } from '../foundation/Skeleton';
 
 export interface NFTData {
@@ -12,25 +14,30 @@ export interface NFTData {
   thumbnail?: string;
   collection?: string;
   amount?: string | number;
+  contractType?: string; // 'ERC721' | 'ERC1155'
 }
 
 export interface NFTGridProps {
+  isExtension?: boolean;
+  totalCount?: number;
   // Data
   data: NFTData[];
   selectedIds?: string[];
 
   // Loading states
   isLoading?: boolean;
+  loadingProgress?: number; // 0-100 percentage
+  loadingText?: string; // i18n label for loading state
 
   // Empty states
   emptyTitle?: string;
   emptyMessage?: string;
   showClearSearch?: boolean;
-  clearSearchText?: string;
+  clearSearchText?: string; // i18n from screens
 
   // Error states
-  error?: string;
-  retryText?: string;
+  error?: string; // i18n from screens
+  retryText?: string; // i18n from screens
 
   // Actions
   onNFTSelect?: (id: string) => void;
@@ -42,22 +49,30 @@ export interface NFTGridProps {
   accountEmoji?: string;
   accountAvatar?: string;
   accountName?: string;
+  accountColor?: string;
 
   // Layout
   gap?: string;
   aspectRatio?: number;
+
+  // Virtualization options (kept for API compatibility; handled by FlatList)
+  enableVirtualization?: boolean;
+  itemsPerBatch?: number;
+  loadMoreThreshold?: number;
 }
 
 export function NFTGrid({
   data,
   selectedIds = [],
   isLoading = false,
+  loadingProgress = 0,
+  loadingText = 'Loading NFTs',
   emptyTitle,
   emptyMessage,
   showClearSearch = false,
-  clearSearchText = 'Clear Search',
+  clearSearchText,
   error,
-  retryText = 'Retry',
+  retryText,
   onNFTSelect = () => {},
   onNFTPress = () => {},
   onRetry,
@@ -65,8 +80,14 @@ export function NFTGrid({
   accountEmoji,
   accountAvatar,
   accountName,
+  accountColor,
   gap = '$3',
   aspectRatio = 1,
+  enableVirtualization = true,
+  itemsPerBatch = 20,
+  loadMoreThreshold = 10,
+  isExtension = false,
+  totalCount = 51,
 }: NFTGridProps) {
   const columns = 2;
 
@@ -94,53 +115,96 @@ export function NFTGrid({
     return <YStack gap="$4">{skeletonRows}</YStack>;
   };
 
+  // Loading state with progress bar - based on Figma design
+  const renderLoading = () => {
+    const progress = Math.min(Math.max(loadingProgress, 0), 100);
+    const progressWidth = `${progress}%`;
+
+    return (
+      <YStack
+        flex={1}
+        justify="center"
+        items="center"
+        gap="$2.5"
+        px="$0"
+        py="$0"
+        mt="$-20"
+        width="100%"
+      >
+        {/* Loading text and percentage */}
+        <XStack justify="space-between" items="center" width="$34">
+          <Text fontSize="$4" fontWeight="400" color="$text">
+            {loadingText}
+          </Text>
+          <Text fontSize="$4" fontWeight="400" color="$text">
+            {Math.round(progress)}%
+          </Text>
+        </XStack>
+
+        {/* Progress bar */}
+        <YStack
+          height="$2"
+          width="$46"
+          position="relative"
+          bg="$grayBg1"
+          overflow="hidden"
+          style={{ borderRadius: 10 }}
+        >
+          {/* Progress fill */}
+          <YStack
+            height="100%"
+            style={{ width: progressWidth, borderRadius: 10, left: 0, top: 0 }}
+            bg="#00ef8b"
+            position="absolute"
+          />
+        </YStack>
+      </YStack>
+    );
+  };
+
   // Error state
   const renderError = () => (
-    <RefreshView
-      type="error"
-      message={error || 'Failed to load NFTs'}
-      onRefresh={onRetry}
-      refreshText={retryText}
-    />
+    <RefreshView type="error" message={error} onRefresh={onRetry} refreshText={retryText} />
   );
 
   // Empty state
   const renderEmpty = () => (
     <YStack flex={1} justify="center" items="center" px="$6" py="$12">
-      <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
-        {emptyTitle || 'No NFTs Found'}
-      </Text>
+      {emptyTitle && (
+        <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" style={{ textAlign: 'center' }}>
+          {emptyTitle}
+        </Text>
+      )}
 
-      <Text
-        fontSize="$4"
-        color="$textSecondary"
-        mb="$8"
-        textAlign="center"
-        maxWidth="$24"
-        lineHeight="$5"
-      >
-        {emptyMessage || 'No NFTs available in this collection.'}
-      </Text>
-
-      {showClearSearch && onClearSearch && (
-        <Button
-          variant="outlined"
-          onPress={onClearSearch}
-          bg="$bg2"
-          borderColor="$borderColor"
-          color="$color"
-          px="$4"
-          py="$3"
+      {emptyMessage && (
+        <Text
+          fontSize="$4"
+          color="$textSecondary"
+          mb="$8"
+          style={{ textAlign: 'center' }}
+          lineHeight="$5"
         >
-          {clearSearchText}
-        </Button>
+          {emptyMessage}
+        </Text>
+      )}
+
+      {showClearSearch && onClearSearch && clearSearchText && (
+        <YStack mt="$4" items="center">
+          <Button variant="outline" size="medium" onPress={onClearSearch}>
+            {clearSearchText}
+          </Button>
+        </YStack>
       )}
     </YStack>
   );
 
   // Show loading skeleton
   if (isLoading) {
-    return renderSkeleton();
+    if (totalCount > 50) {
+      return renderLoading();
+    } else {
+      return renderSkeleton();
+    }
   }
 
   // Show error state
@@ -153,34 +217,43 @@ export function NFTGrid({
     return renderEmpty();
   }
 
-  // Group NFTs into rows
-  const rows: NFTData[][] = [];
-  for (let i = 0; i < data.length; i += columns) {
-    rows.push(data.slice(i, i + columns));
-  }
-
   // Main grid content
   return (
-    <YStack gap="$4">
-      {rows.map((row, rowIndex) => (
-        <XStack key={`row-${rowIndex}`} gap="$4" justify="flex-start" width="100%">
-          {row.map((nft) => (
-            <YStack key={nft.id} width="50%" flex={0}>
-              <NFTCard
-                nft={nft}
-                size="medium"
-                selected={selectedIds.includes(nft.id)}
-                onPress={() => onNFTPress(nft.id)}
-                onSelect={() => onNFTSelect(nft.id)}
-                aspectRatio={aspectRatio}
-                accountEmoji={accountEmoji}
-                accountAvatar={accountAvatar}
-                accountName={accountName}
-              />
-            </YStack>
-          ))}
-        </XStack>
-      ))}
+    <YStack flex={1}>
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        numColumns={columns}
+        showsVerticalScrollIndicator={false}
+        // Let FlatList handle virtualization; tune reasonable defaults
+        initialNumToRender={itemsPerBatch}
+        maxToRenderPerBatch={Math.max(10, itemsPerBatch)}
+        windowSize={5}
+        removeClippedSubviews
+        contentContainerStyle={{ paddingBottom: 16 }}
+        renderItem={({ item, index }) => (
+          <YStack
+            width="50%"
+            flex={0}
+            mb="$4"
+            pr={index % columns === 0 ? '$2' : 0}
+            pl={index % columns === 1 ? '$2' : 0}
+          >
+            <NFTCard
+              nft={item}
+              size="medium"
+              selected={selectedIds.includes(item.id)}
+              onPress={() => onNFTPress(item.id)}
+              onSelect={() => onNFTSelect(item.id)}
+              aspectRatio={aspectRatio}
+              accountEmoji={accountEmoji}
+              accountAvatar={accountAvatar}
+              accountName={accountName}
+              accountColor={accountColor}
+            />
+          </YStack>
+        )}
+      />
     </YStack>
   );
 }

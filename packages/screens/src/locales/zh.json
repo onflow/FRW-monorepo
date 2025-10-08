@@ -4,6 +4,8 @@
     "sendTo": "发送至",
     "sending": "发送中",
     "selectTokens": "选择代币",
+    "sendTokens": "发送代币",
+    "nftDetails": "NFT详情",
     "colorDemo": "颜色演示"
   },
   "common": {
@@ -16,20 +18,25 @@
     "previous": "上一步",
     "loading": "加载中...",
     "error": "错误",
-    "success": "成功"
+    "success": "成功",
+    "Search": "搜索"
   },
   "tabs": {
     "tokens": "代币",
     "nfts": "NFT"
   },
   "send": {
+    "tokens": "代币",
+    "nfts": "NFT",
     "myAccounts": "我的账户",
     "recent": "最近",
     "addressBook": "地址簿",
     "sendTo": {
       "title": "发送至"
     },
+    "toAccount": "至账户",
     "searchAddress": "搜索地址或联系人...",
+    "searchPasteAddress": "搜索 / 粘贴地址",
     "selectedToken": "已选代币",
     "noAccounts": {
       "title": "无账户",
@@ -43,6 +50,10 @@
       "title": "无联系人",
       "message": "您的地址簿为空。"
     },
+    "noSearchResults": {
+      "title": "无结果",
+      "message": "没有账户或联系人匹配您的搜索"
+    },
     "noRecipients": "未找到收件人",
     "selectToken": "选择代币",
     "selectRecipient": "选择收件人",
@@ -55,6 +66,7 @@
     "insufficient": "余额不足",
     "recipient": "收件人",
     "from": "从",
+    "fromAccount": "从账户",
     "to": "至",
     "amount": "金额",
     "asset": "资产",
@@ -77,12 +89,28 @@
     "description": "描述",
     "creator": "创建者",
     "title": "发送",
-    "inaccessible": "不可访问"
+    "inaccessible": "不可访问",
+    "confirmAddress": "确认地址",
+    "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。",
+    "sendSNFTs": "发送S/NFT",
+    "sendNFTs": "发送NFT",
+    "change": "更改",
+    "noNFTSelected": "未选择NFT。请返回并选择要发送的NFT。",
+    "summary": "摘要",
+    "sendTokens": "发送代币",
+    "confirmSend": "确认发送",
+    "holdToSend": "长按发送",
+    "unknownAccount": "未知账户"
   },
   "messages": {
     "loading": "加载中...",
     "noTokensWithBalance": "无余额代币",
-    "noNFTCollectionsForAccount": "未找到NFT收藏"
+    "noNFTCollectionsForAccount": "未找到NFT收藏",
+    "loadingProfiles": "加载配置文件中...",
+    "noProfiles": "无配置文件",
+    "noProfilesFound": "未找到配置文件",
+    "failedToLoadRecipients": "无法加载收件人",
+    "copied": "已复制！"
   },
   "buttons": {
     "retry": "重试",
@@ -102,16 +130,49 @@
     "timeout": "请求超时",
     "unknown": "发生未知错误",
     "failedToLoadTokens": "加载代币失败",
-    "failedToLoadNFTs": "加载NFT失败"
+    "failedToLoadNFTs": "加载NFT失败",
+    "transactionPayloadError": "创建交易载荷失败",
+    "transactionExecutionError": "交易执行失败"
   },
   "nft": {
+    "untitled": "无标题",
+    "unknownCollection": "未知收藏",
+    "noNFTsSelected": "未选择NFT",
     "noSearchResults": "无搜索结果",
     "noNFTsMatchSearch": "没有NFT与'{{search}}'匹配",
     "noNFTsFound": "未找到NFT",
     "collectionEmpty": "此收藏不包含任何NFT",
+    "noCollectionSelected": "未选择收藏。请返回并选择一个NFT收藏。",
+    "noAccountSelected": "无可用账户地址。请选择一个账户。",
+    "maxSelectionReached": "最多可选择9个NFT",
+    "nftNotFound": "未找到NFT ID:",
+    "selectedCount": "已选择 {{count}} 个NFT",
+    "confirmSelection": "确认 {{count}} 个NFT",
+    "itemCount": "{{count}}项",
     "notFound": {
       "title": "未找到NFT",
       "message": "无法找到或加载请求的NFT"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "存储警告",
+      "balance": "您的账户FLOW余额低于存储使用所需的最低要求，这可能会导致后续交易失败。",
+      "storage": "此操作可能会失败，因为它可能会将您账户中的FLOW数量减少到低于覆盖其存储使用所需的数量。",
+      "storageAfterAction": "此次交易后，账户余额将低于存储所需的最低FLOW数量，会导致此次交易失败。"
+    }
+  },
+  "account": {
+    "compatibility": {
+      "incompatible": "不兼容账户",
+      "learnMore": "了解更多",
+      "unknown": "未知账户",
+      "dialog": {
+        "title": "账户兼容性",
+        "button": "确定",
+        "descriptionMain": "Flow 钱包管理您在 Flow 上的 EVM 和 Cadence 账户。EVM 账户与 EVM 应用兼容，Cadence 账户与 Cadence 应用兼容。",
+        "descriptionSecondary": "如果应用是基于 EVM 或 Cadence，只有兼容的账户可用于连接。"
+      }
     }
   }
 }

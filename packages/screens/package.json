@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
+    "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",
@@ -17,6 +18,7 @@
     "translate:force": "node scripts/translate-i18n.js --force"
   },
   "dependencies": {
+    "@onflow/frw-api": "workspace:*",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
@@ -24,6 +26,7 @@
     "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "@tanstack/react-query": "^5.85.6",
+    "bignumber.js": "^9.1.2",
     "i18next": "^24.1.0",
     "react": "^19.1.0",
     "react-i18next": "^15.6.1"
@@ -39,7 +42,8 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "react": ">=18.0.0",
+    "react-native": "*"
   },
   "files": [
     "dist"

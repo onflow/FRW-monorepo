@@ -378,7 +378,7 @@ describe('Test send strategies', () => {
       const payload = {
         type: 'token',
         assetType: 'flow',
-        proposer: mainAccount.address, // Empty proposer
+        proposer: mainAccount.address,
         receiver: mainAccount.address,
         flowIdentifier: '',
         sender: mainAccount.address,
@@ -391,7 +391,7 @@ describe('Test send strategies', () => {
       };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow(
-        'invalid send transaction payload'
+        'flowIdentifier of transaction payload is missing'
       );
     });
 

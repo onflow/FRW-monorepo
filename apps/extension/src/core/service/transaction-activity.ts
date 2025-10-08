@@ -117,7 +117,7 @@ class TransactionActivity {
     const timeNow = new Date().getTime();
     const pendingList = this.store.pendingItem[network][address];
     if (pendingList.length > 0) {
-      const filteredList = pendingList.filter((item) => item.time + 120_000 > timeNow);
+      const filteredList = pendingList.filter((item) => item.time + 60_000 > timeNow);
       this.store.pendingItem[network][address] = structuredClone(filteredList);
     }
   };

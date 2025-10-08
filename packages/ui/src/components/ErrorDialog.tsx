@@ -119,7 +119,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
                 fontSize={18}
                 fontWeight="700"
                 lineHeight="1.78em"
-                letterSpacing="-1.7%"
+                letterSpacing={-0.306}
                 textAlign="center"
                 color={textColors.title}
               >
@@ -131,7 +131,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
                 right={0}
                 items="center"
                 justify="center"
-                bg="$light10"
+                bg="$subtleBg10"
                 rounded={16}
                 p={8}
                 pressStyle={{ opacity: 0.7 }}
@@ -150,7 +150,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
               fontSize={14}
               fontWeight="300"
               lineHeight="1.43em"
-              letterSpacing="-0.6%"
+              letterSpacing={-0.084}
               textAlign="center"
               color={textColors.message}
             >
@@ -177,7 +177,7 @@ export const ErrorDialog: React.FC<ErrorDialogProps> = ({
                 fontSize={14}
                 fontWeight="700"
                 lineHeight="1.43em"
-                letterSpacing="-1%"
+                letterSpacing={-0.14}
                 textAlign="center"
                 color="rgba(0, 0, 0, 0.9)"
               >

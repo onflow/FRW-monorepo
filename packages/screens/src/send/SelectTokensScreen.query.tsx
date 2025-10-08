@@ -1,4 +1,4 @@
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, navigation, logger } from '@onflow/frw-context';
 import {
   useSendStore,
   tokenQueryKeys,
@@ -13,7 +13,6 @@ import { type CollectionModel, type TokenModel, type WalletAccount } from '@onfl
 import {
   AccountSelector,
   BackgroundWrapper,
-  Divider,
   ExtensionHeader,
   NFTCollectionRow,
   RefreshView,
@@ -24,6 +23,8 @@ import {
   XStack,
   YStack,
 } from '@onflow/frw-ui';
+import { retryConfigs } from '@onflow/frw-utils';
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,26 +58,50 @@ export function SelectTokensScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
 
   // Get current address and network
+  const selectedAddress = bridge.getSelectedAddress();
   const [currentAccount, setCurrentAccount] = React.useState<WalletAccount | null>(null);
   const network = bridge.getNetwork() || 'mainnet';
   // Load current account on mount
-  React.useEffect(() => {
-    const loadCurrentAccount = async () => {
-      try {
-        const account = await bridge.getSelectedAccount();
-        setCurrentAccount(account);
-        setFromAccount(account);
-      } catch (error) {
-        console.error('Failed to load current account:', error);
-      }
-    };
-    loadCurrentAccount();
+  const loadCurrentAccount = React.useCallback(async () => {
+    try {
+      const account = await bridge.getSelectedAccount();
+      setCurrentAccount(account);
+      setFromAccount(account);
+    } catch (error) {
+      logger.error('Failed to load current account:', error);
+    }
   }, []);
+
+  // Update current account when selected address changes
+  React.useEffect(() => {
+    if (selectedAddress) {
+      loadCurrentAccount();
+    }
+  }, [selectedAddress, loadCurrentAccount]);
 
   // Get wallet accounts for modal selection
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
   const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
   const isLoadingWallet = useWalletStore((state) => state.isLoading);
+
+  // Get effective address with proper reactive updates
+  const effectiveAddress = React.useMemo(() => {
+    const debugAddress = bridge.getDebugAddress();
+    const currentAddress = currentAccount?.address || '';
+
+    logger.debug('SelectTokensScreen effectiveAddress calculated:', {
+      debugAddress,
+      currentAddress,
+      willUse: debugAddress ? debugAddress : currentAddress,
+    });
+
+    if (debugAddress) {
+      if (validateEvmAddress(debugAddress) || validateFlowAddress(debugAddress)) {
+        return debugAddress.trim();
+      }
+    }
+    return currentAddress;
+  }, [currentAccount?.address]);
 
   // 🔥 TanStack Query: Fetch tokens with automatic caching, retry, and background refresh
   const {
@@ -85,51 +110,53 @@ export function SelectTokensScreen(): React.ReactElement {
     error: tokensError,
     refetch: refetchTokens,
   } = useQuery({
-    queryKey: tokenQueryKeys.tokens(currentAccount?.address || '', network),
-    queryFn: () => tokenQueries.fetchTokens(currentAccount?.address || '', network),
-    enabled: !!currentAccount?.address && tab === 'Tokens',
+    queryKey: tokenQueryKeys.tokens(effectiveAddress, network),
+    queryFn: () => {
+      logger.debug('SelectTokensScreen fetching tokens for address:', effectiveAddress);
+      return tokenQueries.fetchTokens(effectiveAddress, network);
+    },
+    enabled: !!effectiveAddress && tab === 'Tokens',
     staleTime: 0, // Always fetch fresh for financial data
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    ...retryConfigs.critical, // Critical token data retry config
   });
 
-  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching
+  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching and retry logic
   const {
     data: nftCollections = [],
     isLoading: isNFTsLoading,
     error: nftsError,
     refetch: refetchNFTs,
   } = useQuery({
-    queryKey: tokenQueryKeys.nfts(currentAccount?.address || '', network),
-    queryFn: () => tokenQueries.fetchNFTCollections(currentAccount?.address || '', network),
-    enabled: !!currentAccount?.address && tab === 'NFTs',
+    queryKey: tokenQueryKeys.nfts(effectiveAddress, network),
+    queryFn: () => {
+      logger.debug('SelectTokensScreen fetching NFTs for address:', effectiveAddress);
+      return tokenQueries.fetchNFTCollections(effectiveAddress, network);
+    },
+    enabled: !!effectiveAddress && tab === 'NFTs',
     staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    ...retryConfigs.standard, // Standard retry for NFT collections
   });
 
-  // Log current account for debugging
-  React.useEffect(() => {
-    console.log('SelectTokensScreen - Current account:', {
-      currentAccount: currentAccount
-        ? { address: currentAccount.address, name: currentAccount.name }
-        : null,
-      allAccounts: accounts.map((acc) => ({ address: acc.address, name: acc.name })),
-    });
-  }, [currentAccount, accounts]);
-
-  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
+  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern and retry logic
   const { data: balanceData, isLoading: isBalanceLoading } = useQuery({
-    queryKey: tokenQueryKeys.balance(currentAccount?.address || '', network),
-    queryFn: () => tokenQueries.fetchBalance(currentAccount?.address || '', undefined, network),
-    enabled: !!currentAccount?.address,
+    queryKey: tokenQueryKeys.balance(effectiveAddress, network),
+    queryFn: () => {
+      logger.debug('SelectTokensScreen fetching balance for address:', effectiveAddress);
+      return tokenQueries.fetchBalance(effectiveAddress, undefined, network);
+    },
+    enabled: !!effectiveAddress,
     staleTime: 30 * 1000, // Use cached balance for 30 seconds
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
+    ...retryConfigs.critical, // Critical balance data retry config
   });
 
-  // 🔥 TanStack Query: Fetch batch balances for all accounts
+  // 🔥 TanStack Query: Fetch batch balances for all accounts with retry logic
   const { data: batchBalances, isLoading: isLoadingBatchBalances } = useQuery({
     queryKey: ['batchBalances', accounts.map((acc) => acc.address)],
     queryFn: () => tokenQueries.fetchBatchFlowBalances(accounts.map((acc) => acc.address)),
@@ -138,6 +165,7 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balances every minute in background
+    ...retryConfigs.critical, // Critical batch balance data retry config
   });
 
   // 🔥 TanStack Query: Fetch accessible IDs for child accounts only
@@ -204,18 +232,20 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Handle NFT press
   const handleNFTPress = (collection: CollectionModel): void => {
-    // Find the current account to set in store
-    const account = accounts.find(
-      (acc: WalletAccount) => acc.address?.toLowerCase() === currentAccount?.address?.toLowerCase()
-    );
-
     // Set store data for NFTListScreen
     setSelectedCollection(collection);
-    if (account) {
-      setFromAccount(account);
+    if (currentAccount) {
+      setFromAccount(currentAccount);
+    } else {
+      const account = accounts.find(
+        (acc: WalletAccount) => acc.address?.toLowerCase() === selectedAddress?.toLowerCase()
+      );
+      if (account) {
+        setFromAccount(account);
+      }
     }
     setTransactionType('multiple-nfts');
-    navigation.navigate('NFTList', { collection, address: currentAccount?.address || '' });
+    navigation.navigate('NFTList', { collection, address: effectiveAddress });
   };
 
   // Handle account selection from modal
@@ -265,27 +295,33 @@ export function SelectTokensScreen(): React.ReactElement {
 
   // Convert wallet accounts to AccountCard format with dynamic balances
   const accountsForModal = React.useMemo(() => {
-    return accounts;
-  }, [accounts]);
+    return accounts.map((account) => ({
+      ...account,
+      balance: balanceLookup.get(account.address) || account.balance || '0 FLOW',
+    }));
+  }, [accounts, balanceLookup]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
-      <YStack flex={1} px="$4" pt="$2">
+      {isExtension && (
+        <ExtensionHeader
+          title={t('send.title')}
+          help={false}
+          onGoBack={() => navigation.goBack()}
+          onNavigate={(link: string) => navigation.navigate(link)}
+        />
+      )}
+      <YStack flex={1}>
         {/* Header */}
-        {isExtension && (
-          <ExtensionHeader
-            title={t('send.title')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
 
         {/* Account Selector - Show balance from React Query */}
-        {!isExtension && balanceData && currentAccount && (
-          <YStack bg="$light10" rounded="$4" p={16} gap={12}>
+        {!isExtension && currentAccount && (
+          <YStack bg="$bg1" rounded="$4" p={16} gap={12}>
             <AccountSelector
-              currentAccount={currentAccount}
+              currentAccount={{
+                ...currentAccount,
+                balance: balanceData?.balance || currentAccount.balance || '0 FLOW',
+              }}
               accounts={accountsForModal}
               onAccountSelect={handleAccountSelect}
               title={t('send.fromAccount')}
@@ -354,7 +390,9 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < tokensWithBalance.length - 1 && <Divider />}
+                      {idx < tokensWithBalance.length - 1 && (
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
+                      )}
                     </React.Fragment>
                   ))}
                 </YStack>
@@ -411,7 +449,9 @@ export function SelectTokensScreen(): React.ReactElement {
                         )}
                         inaccessibleText={t('send.inaccessible')}
                       />
-                      {idx < nftCollections.length - 1 && <Divider />}
+                      {idx < nftCollections.length - 1 && (
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
+                      )}
                     </React.Fragment>
                   ))}
                 </YStack>

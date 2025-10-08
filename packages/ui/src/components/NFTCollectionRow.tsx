@@ -24,13 +24,14 @@ export function NFTCollectionRow({
       <XStack
         items="center"
         gap="$4.5"
-        py="$4.5"
+        py="$2"
         px="$0"
         width="100%"
         height={80}
         justify="space-between"
         {...(onPress && {
           pressStyle: { opacity: 0.7 },
+          hoverStyle: { opacity: 0.7 },
           onPress: onPress,
           cursor: 'pointer',
         })}
@@ -58,7 +59,7 @@ export function NFTCollectionRow({
           </YStack>
         </XStack>
         {/* Chevron Icon */}
-        <ChevronRight size={24} color="rgba(255, 255, 255, 0.5)" />
+        <ChevronRight size={24} color="#767676" theme="outline" />
       </XStack>
     </YStack>
   );

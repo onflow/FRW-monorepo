@@ -23,15 +23,14 @@ export function NFTPropertyTag({
 
   return (
     <XStack
-      alignItems="center"
-      justifyContent="center"
+      items="center"
+      justify="flex-start"
       gap="$1"
       bg={backgroundColor || '$bg2'}
-      borderRadius={100}
+      rounded={100}
       px={paddingX}
       py={paddingY}
-      maxWidth="100%"
-      overflow="hidden"
+      alignSelf="flex-start"
       backdropFilter="blur(10px)"
     >
       <Text
@@ -43,14 +42,7 @@ export function NFTPropertyTag({
       >
         {label}:
       </Text>
-      <Text
-        fontSize="$4"
-        fontWeight="500"
-        color={textColor || '$color'}
-        numberOfLines={1}
-        flex={1}
-        overflow="hidden"
-      >
+      <Text fontSize="$4" fontWeight="500" color={textColor || '$color'} numberOfLines={1}>
         {value}
       </Text>
     </XStack>

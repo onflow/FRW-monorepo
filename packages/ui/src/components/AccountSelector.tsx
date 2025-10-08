@@ -1,4 +1,4 @@
-import { CheckCircle, Close, Edit } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
@@ -59,32 +59,88 @@ export function AccountSelector({
   return (
     <>
       {/* Current Account Display */}
-      <YStack height={120} gap={12}>
+      <YStack width="100%" gap={12}>
         {/* Title */}
-        <Text fontSize={12} fontWeight="400" color="$light80" lineHeight={16}>
+        <Text fontSize="$3" fontWeight="400" color="$textSecondary" lineHeight={16}>
           {title}
         </Text>
 
         {/* Account Container */}
-        <XStack py={10} pl={5} pr={0} justify="space-between" items="center">
+        <XStack pb={'$2'} pl={5} pr={0} justify="space-between" items="center">
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
-            {/* Account Avatar */}
-            <Avatar
-              src={currentAccount.avatar}
-              fallback={currentAccount.emojiInfo?.emoji || currentAccount.name?.charAt(0) || '?'}
-              bgColor={currentAccount.emojiInfo?.color}
-              size={36}
-              borderColor="$primary"
-              borderWidth={1}
-            />
+            {/* Account Avatar with parent emoji overlay */}
+            <XStack position="relative" width={36} height={36}>
+              <Avatar
+                src={currentAccount.avatar}
+                fallback={currentAccount.emojiInfo?.emoji || currentAccount.name?.charAt(0) || '?'}
+                bgColor={currentAccount.emojiInfo?.color}
+                textColor={currentAccount.emojiInfo?.color ? undefined : '$text'}
+                size={36}
+                borderColor="$primary"
+                borderWidth={1}
+              />
+              {/* Parent emoji overlay bubble for linked accounts */}
+              {currentAccount.parentEmoji && (
+                <YStack
+                  position="absolute"
+                  left={-6}
+                  top={-6}
+                  width={18}
+                  height={18}
+                  rounded={9}
+                  bg={(currentAccount.parentEmoji.color as any) || '$bg2'}
+                  borderWidth={2}
+                  borderColor="$bg2"
+                  items="center"
+                  justify="center"
+                  overflow="hidden"
+                >
+                  <Text fontSize={8} fontWeight="600" lineHeight={12}>
+                    {currentAccount.parentEmoji.emoji}
+                  </Text>
+                </YStack>
+              )}
+            </XStack>
 
             {/* Account Details */}
             <YStack flex={1} gap={2}>
-              {/* Account Name */}
-              <Text color="$white" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
-                {currentAccount.name || 'Unnamed Account'}
-              </Text>
+              {/* Account Name with link icon and EVM Badge */}
+              <XStack items="center" gap={4}>
+                {/* Link icon for linked accounts */}
+                {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
+                  <Link size={12.8} color="#767676" theme="outline" />
+                )}
+                <Text
+                  color="$text"
+                  fontSize={14}
+                  fontWeight="600"
+                  lineHeight={17}
+                  numberOfLines={1}
+                >
+                  {currentAccount.name || 'Unnamed Account'}
+                </Text>
+                {currentAccount.type === 'evm' && (
+                  <XStack
+                    bg="$accentEVM"
+                    rounded="$4"
+                    px={4}
+                    items="center"
+                    justify="center"
+                    height={16}
+                  >
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="$white"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EVM
+                    </Text>
+                  </XStack>
+                )}
+              </XStack>
 
               {/* Account Address */}
               <AddressText
@@ -143,19 +199,19 @@ export function AccountSelector({
 
         <Sheet.Frame
           padding="$4"
-          backgroundColor="$bg2"
+          backgroundColor="$bgDrawer"
           borderTopLeftRadius={16}
           borderTopRightRadius={16}
         >
           <YStack gap={16}>
             {/* Header */}
             <XStack items="center" justify="space-between" pt={10}>
-              <Text fontSize={14} fontWeight="400" color="$white">
+              <Text fontSize={14} fontWeight="400" color="$text">
                 Select Account
               </Text>
 
               <XStack onPress={() => setOpen(false)} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
-                <Close size={15} color="rgba(255, 255, 255, 0.8)" theme="outline" />
+                <Close size={15} color="#767676" theme="outline" />
               </XStack>
             </XStack>
 
@@ -177,31 +233,78 @@ export function AccountSelector({
                       onPress={() => handleAccountSelect(account)}
                       cursor="pointer"
                       borderRadius={8}
-                      backgroundColor={isSelected ? 'rgba(255, 255, 255, 0.05)' : 'transparent'}
+                      backgroundColor={isSelected ? '$bg2' : 'transparent'}
                     >
                       <XStack items="center" gap={16} flex={1}>
-                        {/* Account Avatar */}
-                        <Avatar
-                          src={account.avatar}
-                          fallback={
-                            account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
-                          }
-                          bgColor={account.emojiInfo?.color}
-                          size={40}
-                          borderColor={isSelected ? '$primary' : undefined}
-                          borderWidth={isSelected ? 1 : undefined}
-                        />
+                        {/* Account Avatar with parent emoji overlay */}
+                        <XStack position="relative" width={40} height={40}>
+                          <Avatar
+                            src={account.avatar}
+                            fallback={
+                              account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
+                            }
+                            bgColor={account.emojiInfo?.color}
+                            textColor={account.emojiInfo?.color ? undefined : '$text'}
+                            size={40}
+                            borderColor={isSelected ? '$primary' : undefined}
+                            borderWidth={isSelected ? 1 : undefined}
+                          />
+                          {/* Parent emoji overlay bubble for linked accounts */}
+                          {account.parentEmoji && (
+                            <YStack
+                              position="absolute"
+                              style={{
+                                left: -6,
+                                top: -6,
+                              }}
+                              width={18}
+                              height={18}
+                              rounded={9}
+                              bg={(account.parentEmoji.color as any) || '$bg2'}
+                              borderWidth={2}
+                              borderColor="$bg2"
+                              items="center"
+                              justify="center"
+                              overflow="hidden"
+                            >
+                              <Text fontSize={8} fontWeight="600" lineHeight={12}>
+                                {account.parentEmoji.emoji}
+                              </Text>
+                            </YStack>
+                          )}
+                        </XStack>
 
                         {/* Account Details */}
                         <YStack gap={2} flex={1} justify="center">
-                          <Text
-                            fontSize={14}
-                            fontWeight="600"
-                            color="rgba(255, 255, 255, 0.9)"
-                            numberOfLines={1}
-                          >
-                            {account.name || 'Unnamed Account'}
-                          </Text>
+                          <XStack items="center" gap={4}>
+                            {/* Link icon for linked accounts */}
+                            {(account.type === 'child' || account.parentEmoji) && (
+                              <Link size={12.8} color="#767676" theme="outline" />
+                            )}
+                            <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
+                              {account.name || 'Unnamed Account'}
+                            </Text>
+                            {account.type === 'evm' && (
+                              <XStack
+                                bg="$accentEVM"
+                                rounded="$4"
+                                px={4}
+                                items="center"
+                                justify="center"
+                                height={16}
+                              >
+                                <Text
+                                  fontSize={8}
+                                  fontWeight="400"
+                                  color="$white"
+                                  lineHeight={9.7}
+                                  letterSpacing={0.128}
+                                >
+                                  EVM
+                                </Text>
+                              </XStack>
+                            )}
+                          </XStack>
                           <AddressText
                             address={account.address}
                             truncate={true}
@@ -209,12 +312,12 @@ export function AccountSelector({
                             endLength={4}
                             fontSize={12}
                             fontWeight="400"
-                            color="rgba(255, 255, 255, 0.6)"
+                            color="$textSecondary"
                           />
                           <Text
                             fontSize={12}
                             fontWeight="400"
-                            color="rgba(255, 255, 255, 0.6)"
+                            color="$textSecondary"
                             numberOfLines={1}
                           >
                             {formatBalance(account.balance || '0')}

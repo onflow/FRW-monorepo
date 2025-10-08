@@ -1,0 +1,178 @@
+{
+  "navigation": {
+    "send": "送信",
+    "sendTo": "送信先",
+    "sending": "送信中",
+    "selectTokens": "トークンを選択",
+    "sendTokens": "トークンを送信",
+    "nftDetails": "NFT詳細",
+    "colorDemo": "カラーデモ"
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "back": "戻る",
+    "close": "閉じる",
+    "done": "完了",
+    "next": "次へ",
+    "previous": "前へ",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "Search": "検索"
+  },
+  "tabs": {
+    "tokens": "トークン",
+    "nfts": "NFT"
+  },
+  "send": {
+    "tokens": "トークン",
+    "nfts": "NFT",
+    "myAccounts": "マイアカウント",
+    "recent": "最近",
+    "addressBook": "アドレス帳",
+    "sendTo": {
+      "title": "送信先"
+    },
+    "toAccount": "送信先アカウント",
+    "searchAddress": "アドレスを検索",
+    "searchPasteAddress": "アドレスを検索 / 貼り付け",
+    "selectedToken": "選択されたトークン",
+    "noAccounts": {
+      "title": "アカウントがありません",
+      "message": "まだアカウントがありません。"
+    },
+    "noRecent": {
+      "title": "最近の受信者がいません",
+      "message": "最近送信した相手がいません。"
+    },
+    "noContacts": {
+      "title": "連絡先がありません",
+      "message": "アドレス帳が空です。"
+    },
+    "noSearchResults": {
+      "title": "結果がありません",
+      "message": "検索に一致するアカウントや連絡先がありません"
+    },
+    "noRecipients": "受信者が見つかりません",
+    "selectToken": "トークンを選択",
+    "selectRecipient": "受信者を選択",
+    "enterAmount": "金額を入力",
+    "reviewTransaction": "取引を確認",
+    "transactionFee": "取引手数料",
+    "total": "合計",
+    "balance": "残高",
+    "available": "利用可能",
+    "insufficient": "残高不足",
+    "recipient": "受信者",
+    "from": "送信者",
+    "fromAccount": "送信元アカウント",
+    "to": "送信先",
+    "amount": "金額",
+    "asset": "アセット",
+    "confirm": "取引を確認",
+    "sending": "送信中...",
+    "sent": "取引が送信されました",
+    "failed": "取引が失敗しました",
+    "searchRecipients": "受信者を検索...",
+    "recentRecipients": "最近の受信者",
+    "contactsList": "連絡先",
+    "enterAddress": "Flowアドレスを入力",
+    "invalidAddress": "無効なアドレス",
+    "sameAddress": "同じアドレスには送信できません",
+    "selectNFTs": "NFTを選択",
+    "selectedNFTs": "選択されたNFT",
+    "nftDetails": "NFT詳細",
+    "collectionName": "コレクション",
+    "tokenId": "トークンID",
+    "properties": "プロパティ",
+    "description": "説明",
+    "creator": "作成者",
+    "title": "送信",
+    "inaccessible": "アクセス不可",
+    "confirmAddress": "アドレスを確認",
+    "firstTimeSendMessage": "このアドレスへの送信は初回の可能性があります。送信先アドレスを確認してください。",
+    "sendSNFTs": "S/NFTを送信",
+    "sendNFTs": "NFTを送信",
+    "change": "変更",
+    "noNFTSelected": "NFTが選択されていません。戻って送信するNFTを選択してください。",
+    "summary": "概要",
+    "sendTokens": "トークンを送信",
+    "confirmSend": "送信を確認",
+    "holdToSend": "長押しで送信",
+    "unknownAccount": "不明なアカウント"
+  },
+  "messages": {
+    "loading": "読み込み中...",
+    "noTokensWithBalance": "残高のあるトークンがありません",
+    "noNFTCollectionsForAccount": "NFTコレクションが見つかりません",
+    "loadingProfiles": "プロファイル読み込み中...",
+    "noProfiles": "プロファイルがありません",
+    "noProfilesFound": "プロファイルが見つかりません",
+    "failedToLoadRecipients": "受信者の読み込みに失敗しました",
+    "copied": "コピーしました！"
+  },
+  "buttons": {
+    "retry": "再試行",
+    "refresh": "更新",
+    "continue": "続行",
+    "clearSearch": "検索をクリア"
+  },
+  "errors": {
+    "networkError": "ネットワークエラーが発生しました",
+    "invalidInput": "無効な入力",
+    "transactionFailed": "取引が失敗しました",
+    "insufficientFunds": "残高不足",
+    "addressNotFound": "アドレスが見つかりません",
+    "nftNotFound": "NFTが見つかりません",
+    "tokenNotSupported": "サポートされていないトークン",
+    "unauthorized": "認証されていません",
+    "timeout": "リクエストがタイムアウトしました",
+    "unknown": "不明なエラーが発生しました",
+    "failedToLoadTokens": "トークンの読み込みに失敗しました",
+    "failedToLoadNFTs": "NFTの読み込みに失敗しました",
+    "transactionPayloadError": "トランザクションペイロードの作成に失敗しました",
+    "transactionExecutionError": "トランザクションの実行に失敗しました"
+  },
+  "nft": {
+    "untitled": "無題",
+    "unknownCollection": "不明なコレクション",
+    "noNFTsSelected": "NFTが選択されていません",
+    "noSearchResults": "検索結果がありません",
+    "noNFTsMatchSearch": "'{{search}}'に一致するNFTがありません",
+    "noNFTsFound": "NFTが見つかりません",
+    "collectionEmpty": "このコレクションにはNFTが含まれていません",
+    "noCollectionSelected": "コレクションが選択されていません。戻ってNFTコレクションを選択してください。",
+    "noAccountSelected": "利用可能なアカウントアドレスがありません。アカウントを選択してください。",
+    "maxSelectionReached": "最大9個のNFTを選択できます",
+    "nftNotFound": "NFT IDが見つかりません:",
+    "selectedCount": "{{count}} 個のNFTを選択中",
+    "confirmSelection": "{{count}} 個のNFTを確認",
+    "itemCount": "{{count}}個のアイテム",
+    "notFound": {
+      "title": "NFTが見つかりません",
+      "message": "要求されたNFTが見つからないか、読み込めませんでした"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "ストレージ警告",
+      "balance": "アカウントのFLOW残高がストレージ使用に必要な最小要件を下回っており、後続の取引が失敗する可能性があります。",
+      "storage": "このアクションは、アカウント内のFLOW量をストレージ使用をカバーするために必要な量を下回る可能性があるため、失敗する可能性があります。",
+      "storageAfterAction": "この取引後、アカウント残高はストレージに必要な最小FLOW量を下回り、この取引が失敗します。"
+    }
+  },
+  "account": {
+    "compatibility": {
+      "incompatible": "互換性のないアカウント",
+      "learnMore": "詳細を見る",
+      "unknown": "不明なアカウント",
+      "dialog": {
+        "title": "アカウント互換性",
+        "button": "了解",
+        "descriptionMain": "Flowウォレットは、Flow上のEVMアカウントとCadenceアカウントを管理します。EVMアカウントはEVMアプリと互換性があり、CadenceアカウントはCadenceアプリと互換性があります。",
+        "descriptionSecondary": "アプリケーションがEVMまたはCadenceベースの場合、互換性のあるアカウントのみが接続に利用できます。"
+      }
+    }
+  }
+}

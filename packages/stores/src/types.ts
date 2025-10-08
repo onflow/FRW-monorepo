@@ -95,8 +95,9 @@ export interface SendState {
   transactionType: TransactionType;
   formData: SendFormData;
   selectedNFTs: NFTModel[];
+  selectedNFTQuantities: Record<string, number>; // ERC1155 quantities keyed by NFT ID
   selectedCollection: CollectionModel | null;
-
+  currentNFT: NFTModel | null; // current nft for NFT detail screen
   // Balance management
   balances: {
     coa: Record<string, BalanceData>; // keyed by flowAddress
@@ -107,13 +108,20 @@ export interface SendState {
   accessibleAssetStores: Record<string, AccessibleAssetStore>;
 
   // Flow state
-  currentStep: 'select-tokens' | 'send-to' | 'send-tokens' | 'send-nft' | 'confirmation';
+  currentStep:
+    | 'select-tokens'
+    | 'send-to'
+    | 'send-tokens'
+    | 'send-nft'
+    | 'confirmation'
+    | 'nft-detail';
   isLoading: boolean;
   error: string | null;
 
   // Actions
   setSelectedToken: (token: TokenModel | null) => void;
   setSelectedCollection: (collection: CollectionModel | null) => void;
+  setCurrentNFT: (nft: NFTModel | null) => void;
   setFromAccount: (account: WalletAccount | null) => void;
   setToAccount: (account: WalletAccount | null) => void;
   setTransactionType: (type: TransactionType) => void;
@@ -121,6 +129,8 @@ export interface SendState {
   setSelectedNFTs: (nfts: NFTModel[]) => void;
   addSelectedNFT: (nft: NFTModel) => void;
   removeSelectedNFT: (nftId: string) => void;
+  setNFTQuantity: (nftId: string, quantity: number) => void;
+  getNFTQuantity: (nftId: string) => number;
   setCurrentStep: (step: SendState['currentStep']) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;

@@ -4,6 +4,8 @@
     "sendTo": "Send To",
     "sending": "Sending",
     "selectTokens": "Select Tokens",
+    "sendTokens": "Send Tokens",
+    "nftDetails": "NFT Details",
     "colorDemo": "Color Demo"
   },
   "common": {
@@ -16,7 +18,8 @@
     "previous": "Previous",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "Search": "Search"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -32,7 +35,11 @@
       "title": "Send To"
     },
     "toAccount": "To Account",
+    "errors": {
+      "amountExceedsBalance": "Amount exceeds available balance"
+    },
     "searchAddress": "Search address",
+    "searchPasteAddress": "Search / Paste address",
     "selectedToken": "Selected Token",
     "noAccounts": {
       "title": "No Accounts",
@@ -45,6 +52,10 @@
     "noContacts": {
       "title": "No Contacts",
       "message": "Your address book is empty."
+    },
+    "noSearchResults": {
+      "title": "No Results",
+      "message": "No accounts or contacts match your search"
     },
     "noRecipients": "No recipients found",
     "selectToken": "Select Token",
@@ -81,12 +92,28 @@
     "description": "Description",
     "creator": "Creator",
     "title": "Send",
-    "inaccessible": "Inaccessible"
+    "inaccessible": "Inaccessible",
+    "confirmAddress": "Confirm address",
+    "firstTimeSendMessage": "We noticed this may be your first time sending to this address. Please confirm the destination address.",
+    "sendSNFTs": "Send S/NFTs",
+    "sendNFTs": "Send NFTs",
+    "change": "Change",
+    "noNFTSelected": "No NFT selected. Please go back and select an NFT to send.",
+    "summary": "Summary",
+    "sendTokens": "Send Tokens",
+    "confirmSend": "Confirm send",
+    "holdToSend": "Hold to send",
+    "unknownAccount": "Unknown Account"
   },
   "messages": {
     "loading": "Loading...",
     "noTokensWithBalance": "No tokens with balance",
-    "noNFTCollectionsForAccount": "No NFT collections found"
+    "noNFTCollectionsForAccount": "No NFT collections found",
+    "loadingProfiles": "Loading profiles...",
+    "noProfiles": "No Profiles",
+    "noProfilesFound": "No profiles found",
+    "failedToLoadRecipients": "Failed to load recipients",
+    "copied": "Copied!"
   },
   "buttons": {
     "retry": "Retry",
@@ -106,16 +133,52 @@
     "timeout": "Request timed out",
     "unknown": "An unknown error occurred",
     "failedToLoadTokens": "Failed to load tokens",
-    "failedToLoadNFTs": "Failed to load NFTs"
+    "failedToLoadNFTs": "Failed to load NFTs",
+    "transactionPayloadError": "Failed to create transaction payload",
+    "transactionExecutionError": "Transaction execution failed"
   },
   "nft": {
+    "untitled": "Untitled",
+    "unknownCollection": "Unknown Collection",
+    "noNFTsSelected": "No NFTs selected",
     "noSearchResults": "No Search Results",
     "noNFTsMatchSearch": "No NFTs match '{{search}}'",
     "noNFTsFound": "No NFTs Found",
     "collectionEmpty": "This collection doesn't contain any NFTs",
+    "noCollectionSelected": "No collection selected. Please go back and select an NFT collection.",
+    "noAccountSelected": "No account address available. Please select an account.",
+    "maxSelectionReached": "Maximum 9 NFTs can be selected",
+    "nftNotFound": "NFT not found for ID:",
+    "selectedCount": "{{count}} Selected NFT",
+    "selectedCount_plural": "{{count}} Selected NFTs",
+    "confirmSelection": "Confirm {{count}} NFT",
+    "confirmSelection_plural": "Confirm {{count}} NFTs",
+    "itemCount": "{{count}} item",
+    "itemCount_plural": "{{count}} items",
     "notFound": {
       "title": "NFT Not Found",
       "message": "The requested NFT could not be found or loaded"
+    }
+  },
+  "storage": {
+    "warning": {
+      "title": "Storage Warning",
+      "balance": "Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.",
+      "storage": "This action may fail because it may reduce the amount of FLOW in your account below what is required to cover its storage usage.",
+      "storageAfterAction": "Account balance will fall below the minimum FLOW required for storage after this transaction, causing this transaction to fail."
+    }
+  },
+  "account": {
+    "compatibility": {
+      "incompatible": "Incompatible Account",
+      "learnMore": "Learn more",
+      "unknown": "Unknown Account",
+      "dialog": {
+        "title": "Account Compatibility",
+        "button": "Okay",
+        "descriptionMain": "Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are compatible with EVM apps, and Cadence accounts are compatible with Cadence apps.",
+        "descriptionSecondary": "If an application is on EVM or Cadence, only compatible accounts will be available to connect."
+      }
     }
   }
 }

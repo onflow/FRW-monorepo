@@ -1,5 +1,5 @@
 import { cadence as cadenceService, context, type PlatformSpec } from '@onflow/frw-context';
-import type { WalletAccountsResponse } from '@onflow/frw-types';
+import type { WalletAccountsResponse, WalletProfilesResponse } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
 /**
@@ -88,13 +88,25 @@ class FlowService {
   }
 
   /**
-   * Get the EVM balance directly using EVM address
-   * @param evmAddress - The EVM address (hex string with 0x prefix)
-   * @returns Promise<number> - Balance in FLOW tokens
+   * Get wallet accounts for the current profile
+   * @returns Promise<WalletAccountsResponse> - All accounts for the current profile
    */
   async getWalletAccounts(): Promise<WalletAccountsResponse> {
-    // The CadenceService handles both Flow and EVM addresses, so we can use the same method
     return this.bridge.getWalletAccounts();
+  }
+
+  /**
+   * Get all wallet profiles with their associated accounts
+   * @returns Promise<WalletProfilesResponse> - All profiles with their accounts
+   */
+  async getWalletProfiles(): Promise<WalletProfilesResponse> {
+    // Check if the bridge has the getWalletProfiles method
+    if ('getWalletProfiles' in this.bridge && typeof this.bridge.getWalletProfiles === 'function') {
+      return this.bridge.getWalletProfiles();
+    }
+
+    // If not available, throw an error to trigger fallback
+    throw new Error('getWalletProfiles not implemented on this platform');
   }
 
   /**

@@ -1,9 +1,10 @@
-import { type PlatformSpec, type Storage, type Cache, type Navigation } from '@onflow/frw-context';
+import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   Currency,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
+  WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { Platform } from '@onflow/frw-types';
 import { isTransactionId } from '@onflow/frw-utils';
@@ -11,7 +12,7 @@ import { isTransactionId } from '@onflow/frw-utils';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 
-import { storage, cache } from '../storage';
+import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
@@ -88,6 +89,10 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getSelectedAddress();
   }
 
+  getDebugAddress(): string | null {
+    return NativeFRWBridge.getDebugAddress();
+  }
+
   getNetwork(): string {
     return NativeFRWBridge.getNetwork();
   }
@@ -106,6 +111,24 @@ class PlatformImpl implements PlatformSpec {
 
   getBuildNumber(): string {
     return NativeFRWBridge.getBuildNumber();
+  }
+
+  getLanguage(): string {
+    try {
+      // Get language from native bridge
+      const language = NativeFRWBridge.getLanguage();
+
+      // Validate the language is supported
+      const supportedLanguages = ['en', 'es', 'zh', 'ru', 'jp'];
+      return supportedLanguages.includes(language) ? language : 'en';
+    } catch (error) {
+      this.log(
+        'warn',
+        '[PlatformImpl] Failed to get language from native bridge, falling back to en:',
+        error
+      );
+      return 'en';
+    }
   }
 
   getCurrency(): Currency {
@@ -167,6 +190,10 @@ class PlatformImpl implements PlatformSpec {
     NativeFRWBridge.closeRN(null);
   }
 
+  getWalletProfiles(): Promise<WalletProfilesResponse> {
+    return NativeFRWBridge.getWalletProfiles();
+  }
+
   configureCadenceService(cadenceService: any): void {
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
@@ -220,6 +247,36 @@ class PlatformImpl implements PlatformSpec {
   navigation(): Navigation {
     // Return the navigation implementation - will be set up separately
     return reactNativeNavigation;
+  }
+
+  // Toast Manager implementation
+  showToast(
+    title: string,
+    message?: string,
+    type: 'success' | 'error' | 'warning' | 'info' = 'info',
+    duration: number = 4000
+  ): void {
+    try {
+      NativeFRWBridge.showToast(title, message, type, duration);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to show native toast via bridge:', error);
+    }
+  }
+
+  hideToast(id: string): void {
+    try {
+      NativeFRWBridge.hideToast(id);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to hide toast via bridge:', error);
+    }
+  }
+
+  clearAllToasts(): void {
+    try {
+      NativeFRWBridge.clearAllToasts();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to clear toasts via bridge:', error);
+    }
   }
 }
 

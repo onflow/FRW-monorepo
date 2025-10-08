@@ -6,4 +6,4 @@
 [submodule "apps/react-native/android"]
 	path = apps/react-native/android
 	url = https://github.com/onflow/FRW-Android.git
-	branch = develop
+	branch = dev

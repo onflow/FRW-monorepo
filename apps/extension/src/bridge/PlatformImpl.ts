@@ -1,10 +1,12 @@
-import { type PlatformSpec, type Storage, type Cache } from '@onflow/frw-context';
+import { type Cache, type PlatformSpec, type Storage } from '@onflow/frw-context';
+import { useSendStore, useTokenQueryStore } from '@onflow/frw-stores';
 import {
   Platform,
+  type Currency,
   type RecentContactsResponse,
   type WalletAccount,
   type WalletAccountsResponse,
-  type Currency,
+  type WalletProfilesResponse,
 } from '@onflow/frw-types';
 
 import { ExtensionCache } from './ExtensionCache';
@@ -45,7 +47,25 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   getBuildNumber(): string {
-    return chrome.runtime.getManifest().version_name || this.getVersion();
+    return process.env.CI_BUILD_ID || process.env.BUILD_NUMBER || 'local';
+  }
+
+  getLanguage(): string {
+    try {
+      // Get language from Chrome API
+      const languageCode = chrome.i18n.getUILanguage().split('-')[0].toLowerCase();
+
+      // Validate against supported languages
+      const supportedLanguages = ['en', 'es', 'zh', 'ru', 'jp'];
+      return supportedLanguages.includes(languageCode) ? languageCode : 'en';
+    } catch (error) {
+      this.log(
+        'warn',
+        '[PlatformImpl] Failed to get Chrome UI language, falling back to en:',
+        error
+      );
+      return 'en';
+    }
   }
 
   getCurrency(): Currency {
@@ -72,6 +92,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.currentAddress;
   }
 
+  getDebugAddress(): string | null {
+    return this.walletController?.getDebugAddress?.() || null;
+  }
+
   getNetwork(): string {
     return this.currentNetwork;
   }
@@ -79,21 +103,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
   async getJWT(): Promise<string> {
     try {
       if (!this.walletController) {
-        this.log('warn', 'Cannot get JWT - wallet controller not initialized');
         throw new Error('Wallet controller not initialized');
       }
 
       if (!this.walletController.getJWT) {
-        this.log('warn', 'getJWT method not available on wallet controller');
         throw new Error('getJWT method not available on wallet controller');
       }
-
-      this.log('debug', 'Extension getJWT called via wallet controller');
 
       const jwt = await this.walletController.getJWT();
       return jwt;
     } catch (error) {
-      this.log('error', 'Failed to get JWT token:', error);
       throw new Error('Failed to get JWT token: ' + (error as Error).message);
     }
   }
@@ -136,6 +155,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
       throw new Error('getWalletAccounts method not available on wallet controller');
     }
     return await this.walletController.getWalletAccounts();
+  }
+
+  async getWalletProfiles(): Promise<WalletProfilesResponse> {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
+    if (!this.walletController.getWalletProfiles) {
+      throw new Error('getWalletProfiles method not available on wallet controller');
+    }
+    return await this.walletController.getWalletProfiles();
   }
 
   async getSelectedAccount(): Promise<WalletAccount> {
@@ -378,13 +407,22 @@ class ExtensionPlatformImpl implements PlatformSpec {
             if (this.walletController && this.walletController.listenTransaction) {
               this.walletController.listenTransaction(txId);
             }
-
             // Navigate to transaction complete
             const navigation = this.navigation();
             if (navigation && navigation.navigate) {
               navigation.navigate('TransactionComplete', {
                 txId: txId,
               });
+            }
+            const tokenStore = useTokenQueryStore.getState();
+            const selectedAccount = await this.getSelectedAccount();
+            const selectedCollection = useSendStore.getState().selectedCollection;
+            if (selectedCollection && selectedAccount) {
+              tokenStore.invalidateNFTCollection(
+                selectedAccount.address,
+                selectedCollection,
+                network
+              );
             }
           } catch (error) {
             this.log('error', 'Failed to execute post-transaction actions:', error);
@@ -462,6 +500,31 @@ class ExtensionPlatformImpl implements PlatformSpec {
       chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
     }
   }
+
+  // Toast/Notification methods
+  showToast(
+    title: string,
+    message?: string,
+    type: 'success' | 'error' | 'warning' | 'info' = 'info',
+    duration = 4000
+  ): void {
+    // Call the registered callback if available
+    if ((this as any).toastCallback) {
+      (this as any).toastCallback({ title, message, type, duration });
+    }
+  }
+
+  setToastCallback(
+    callback: (toast: {
+      title: string;
+      message: string;
+      type?: 'success' | 'error' | 'warning' | 'info';
+      duration?: number;
+    }) => void
+  ): void {
+    // Store the callback for the platform to use
+    (this as any).toastCallback = callback;
+  }
 }
 
 let platformInstance: ExtensionPlatformImpl | null = null;
@@ -476,6 +539,8 @@ export const getPlatform = (): ExtensionPlatformImpl => {
 export const initializePlatform = (): ExtensionPlatformImpl => {
   if (!platformInstance) {
     platformInstance = new ExtensionPlatformImpl();
+    // Make platform available globally for ToastContext
+    (globalThis as any).__FLOW_WALLET_BRIDGE__ = platformInstance;
   }
   return platformInstance;
 };

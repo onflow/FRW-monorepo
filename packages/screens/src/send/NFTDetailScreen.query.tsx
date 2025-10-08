@@ -13,7 +13,7 @@ import {
 } from '@onflow/frw-ui';
 import { getNFTCover, getNFTId } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useQueryClient } from '../providers/QueryProvider';
@@ -35,11 +35,9 @@ export function NFTDetailScreen(): React.ReactElement {
   const fromAccount = useSendStore(sendSelectors.fromAccount);
   const selectedCollection = useSendStore((state) => state.selectedCollection);
   const selectedNFTs = useSendStore((state) => state.selectedNFTs);
+  const currentViewNFT = useSendStore((state) => state.currentNFT);
   const setSelectedNFTs = useSendStore((state) => state.setSelectedNFTs);
   const setCurrentStep = useSendStore((state) => state.setCurrentStep);
-
-  // Local state for individual NFT selection
-  const [selectedNFTId, setSelectedNFTId] = useState<string | null>(null);
 
   // Use store data only - store is the single source of truth
   const activeCollection = selectedCollection;
@@ -50,45 +48,32 @@ export function NFTDetailScreen(): React.ReactElement {
     setCurrentStep('nft-detail');
   }, [setCurrentStep]);
 
-  // Early return if essential data is missing from store
-  if (!activeCollection || !currentAddress) {
-    return (
-      <BackgroundWrapper backgroundColor="$bgDrawer">
-        <YStack flex={1} items="center" justify="center" px="$6">
-          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
-            {t('nft.notFound.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" textAlign="center">
-            {t('nft.notFound.message')}
-          </Text>
-        </YStack>
-      </BackgroundWrapper>
-    );
-  }
-
   // Memoize the query key to prevent unnecessary re-renders
   const queryKey = useMemo(() => {
-    const key = tokenQueryKeys.nftCollection(currentAddress, activeCollection, network);
+    if (!activeCollection || !currentAddress) return null;
+    const key = tokenQueryKeys.nftCollectionAll(currentAddress, activeCollection, network);
     return key;
-  }, [
-    activeCollection?.id,
-    activeCollection?.contractName,
-    activeCollection?.name,
-    currentAddress,
-    network,
-  ]);
+  }, [activeCollection, currentAddress, network]);
 
-  // 🔥 TanStack Query: Fetch NFTs from collection to get the detailed NFT data
+  // 🔥 TanStack Query: Fetch ALL NFTs from collection to get all available NFTs
   const {
     data: collectionNFTs = [],
     isLoading,
     error,
-  } = useQuery({
-    queryKey,
-    queryFn: () => {
-      return tokenQueries.fetchNFTCollection(currentAddress, activeCollection, network);
+  } = useQuery<NFTModel[]>({
+    queryKey: queryKey || [],
+    queryFn: ({ signal }) => {
+      if (!currentAddress || !activeCollection) return Promise.resolve([]);
+      return tokenQueries.fetchAllNFTsFromCollection(
+        currentAddress,
+        activeCollection,
+        network,
+        activeCollection.count,
+        undefined,
+        signal
+      );
     },
-    enabled: true,
+    enabled: !!queryKey,
     staleTime: 5 * 60 * 1000, // NFT items can be cached for 5 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -98,6 +83,9 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Get the current NFT to display - either from selectedNFTs or first NFT in collection
   const currentNFT = useMemo(() => {
+    if (currentViewNFT) {
+      return currentViewNFT;
+    }
     if (selectedNFTs && selectedNFTs.length > 0) {
       return selectedNFTs[0]; // Show first selected NFT
     }
@@ -112,10 +100,10 @@ export function NFTDetailScreen(): React.ReactElement {
     (nftModel: NFTModel): NFTDetailData => {
       // Extract additional properties that might contain traits/attributes
       const additionalProperties: { label: string; value: string }[] = [];
-      
+
       // Check if NFT has traits/attributes in metadata
       const nftAsAny = nftModel as any;
-      
+
       // Common trait/attribute fields from NFT metadata
       if (nftAsAny.traits || nftAsAny.attributes) {
         const traits = nftAsAny.traits || nftAsAny.attributes;
@@ -124,13 +112,13 @@ export function NFTDetailScreen(): React.ReactElement {
             if (trait && typeof trait === 'object' && trait.trait_type && trait.value) {
               additionalProperties.push({
                 label: trait.trait_type,
-                value: trait.value.toString()
+                value: trait.value.toString(),
               });
             }
           });
         }
       }
-      
+
       // Check for properties in postMedia or other nested objects
       if (nftAsAny.postMedia?.traits || nftAsAny.postMedia?.attributes) {
         const mediaTraits = nftAsAny.postMedia.traits || nftAsAny.postMedia.attributes;
@@ -139,36 +127,38 @@ export function NFTDetailScreen(): React.ReactElement {
             if (trait && typeof trait === 'object' && trait.trait_type && trait.value) {
               additionalProperties.push({
                 label: trait.trait_type,
-                value: trait.value.toString()
+                value: trait.value.toString(),
               });
             }
           });
         }
       }
-      
+
       // Check for other common metadata fields that might contain properties
-      ['rarity', 'edition', 'series', 'creator', 'royalty'].forEach(field => {
+      ['rarity', 'edition', 'series', 'creator', 'royalty'].forEach((field) => {
         if (nftAsAny[field] && typeof nftAsAny[field] === 'string') {
           additionalProperties.push({
             label: field.charAt(0).toUpperCase() + field.slice(1),
-            value: nftAsAny[field]
+            value: nftAsAny[field],
           });
         }
       });
 
       return {
         id: nftModel.id,
-        name: nftModel.name || 'Untitled NFT',
+        name: nftModel.name || 'Untitled',
         image: getNFTCover(nftModel),
-        collection: nftModel.collectionName || activeCollection.name,
+        collection: nftModel.collectionName || activeCollection?.name || 'Unknown',
         description: nftModel.description,
         contractName: nftModel.contractName,
         contractAddress: nftModel.contractAddress,
         collectionContractName: nftModel.collectionContractName,
         properties: additionalProperties.length > 0 ? additionalProperties : undefined,
+        contractType: nftModel.contractType, // Preserve ERC1155/ERC721 type
+        amount: nftModel.amount, // Include amount for ERC1155
       };
     },
-    [activeCollection.name]
+    [activeCollection?.name]
   );
 
   // Convert NFTModel to NFTData for selection bar
@@ -177,10 +167,11 @@ export function NFTDetailScreen(): React.ReactElement {
       id: getNFTId(nftModel),
       name: nftModel.name || 'Untitled',
       image: getNFTCover(nftModel),
-      collection: nftModel.collectionName || activeCollection.name,
+      collection: nftModel.collectionName || activeCollection?.name || 'Unknown',
       amount: nftModel.amount,
+      contractType: nftModel.contractType, // Preserve ERC1155/ERC721 type
     }),
-    [activeCollection.name]
+    [activeCollection?.name]
   );
 
   // Memoize the NFT detail data conversion
@@ -231,14 +222,37 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
-    console.log('Continue with selected NFTs:', selectedNFTs?.length);
+    // Get transaction type and setNFTQuantity from store
+    const { setTransactionType, setNFTQuantity } = useSendStore.getState();
+
+    // Initialize quantities for ERC1155 NFTs
+    if (selectedNFTs) {
+      selectedNFTs.forEach((nft) => {
+        if (nft.contractType === 'ERC1155' && nft.id) {
+          // Set default quantity to 1 if it's an ERC1155
+          setNFTQuantity(nft.id, 1);
+          logger.debug('[NFTDetailScreen] Initialized ERC1155 quantity:', {
+            nftId: nft.id,
+            contractType: nft.contractType,
+            amount: nft.amount,
+          });
+        }
+      });
+    }
+
+    // Set transaction type based on number of selected NFTs
+    if (selectedNFTs && selectedNFTs.length === 1) {
+      setTransactionType('single-nft');
+    } else if (selectedNFTs && selectedNFTs.length > 1) {
+      setTransactionType('multiple-nfts');
+    }
+
     setCurrentStep('send-to');
     navigation.navigate('SendTo');
   }, [selectedNFTs, setCurrentStep]);
 
   // Handle NFT press in selection bar (navigate to different NFT detail)
   const handleNFTPress = useCallback((nftId: string) => {
-    console.log('🔍 Viewing different NFT:', nftId);
     // For now, just log - could implement NFT switching in future
   }, []);
 
@@ -253,10 +267,27 @@ export function NFTDetailScreen(): React.ReactElement {
     if (!fromAccount) return undefined;
     return {
       name: fromAccount.name,
-      avatar: fromAccount.avatar || fromAccount.emojiInfo?.emoji,
+      avatar: fromAccount.avatar,
       address: fromAccount.address,
+      emojiInfo: fromAccount.emojiInfo,
     };
   }, [fromAccount]);
+
+  // Early return if essential data is missing from store
+  if (!activeCollection || !currentAddress) {
+    return (
+      <BackgroundWrapper backgroundColor="$bgDrawer">
+        <YStack flex={1} items="center" justify="center" px="$6">
+          <Text fontSize="$6" fontWeight="600" color="$color" mb="$3" textAlign="center">
+            {t('nft.notFound.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" textAlign="center">
+            {t('nft.notFound.message')}
+          </Text>
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
 
   // Loading state
   if (isLoading) {
@@ -271,8 +302,8 @@ export function NFTDetailScreen(): React.ReactElement {
     );
   }
 
-  // Error state
-  if (error) {
+  // Error state - but ignore abort errors
+  if (error && !error.message?.includes('aborted')) {
     return (
       <BackgroundWrapper backgroundColor="$bgDrawer">
         <YStack flex={1} items="center" justify="center" px="$6">
@@ -334,6 +365,8 @@ export function NFTDetailScreen(): React.ReactElement {
             onNFTPress={handleNFTPress}
             onContinue={handleContinue}
             continueText={t('buttons.continue')}
+            selectedCountText={t('nft.selectedCount', { count: selectedNFTsForBar.length })}
+            confirmText={t('nft.confirmSelection', { count: selectedNFTsForBar.length })}
             isEditing={false}
           />
         )}

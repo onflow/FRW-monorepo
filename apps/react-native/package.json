@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@onflow/frw-context": "workspace:*",
+    "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-screens": "workspace:^",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
@@ -31,6 +32,7 @@
     "@onflow/frw-utils": "workspace:*",
     "@outblock/react-native-code-push": "^1.2.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native/gradle-plugin": "^0.79.2",
     "@react-navigation/elements": "^2.5.2",
     "@react-navigation/native": "^7.0.12",
@@ -39,17 +41,16 @@
     "immer": "^10.1.1",
     "instabug-reactnative": "^15.0.1",
     "ios": "^0.0.1",
-    "lottie-react-native": "^7.3.2",
+    "lottie-react-native": "^7.3.4",
     "react": "workspace:*",
     "react-i18next": "^15.6.1",
     "react-native": "workspace:*",
     "react-native-gesture-handler": "^2.27.2",
     "react-native-get-random-values": "^1.11.0",
-    "react-native-reanimated": "^4.0.1",
+    "react-native-reanimated": "^3.8.1",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "^4.14.1",
-    "react-native-svg": "^15.12.1",
-    "react-native-worklets": "^0.4.1"
+    "react-native-svg": "^15.12.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

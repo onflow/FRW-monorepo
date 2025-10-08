@@ -1,7 +1,8 @@
 import { Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { YStack } from 'tamagui';
+import { Platform, Modal } from 'react-native';
+import { YStack, Stack, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -28,6 +29,8 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
   buttonText,
   onButtonClick,
 }) => {
+  const theme = useTheme();
+
   // Handle escape key press and body scroll prevention
   useEffect(() => {
     // Only run in browser environment
@@ -57,15 +60,19 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
 
   if (!visible) return null;
 
+  const isWeb = Platform.OS === 'web';
+
   const dialogContent = (
-    <YStack
-      position="fixed"
+    <Stack
+      pos={isWeb ? 'fixed' : 'absolute'}
       top={0}
       left={0}
       right={0}
       bottom={0}
-      bg="rgba(0, 0, 0, 0.5)"
-      zIndex={1000}
+      bg="$dark40"
+      z={1000}
+      items="center"
+      justify="center"
       pressStyle={{ opacity: 1 }}
       onPress={onClose}
       aria-modal="true"
@@ -75,75 +82,74 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
       <YStack
         w={339}
         minW={300}
-        maxW="90vw"
-        h={326}
-        minH={300}
-        maxH="90vh"
-        bg="#28282A"
+        maxW="90%"
+        minH={200}
+        maxH="90%"
+        bg="$bg2"
         rounded={16}
-        shadowColor="rgba(0, 0, 0, 0.25)"
+        shadowColor="$shadow"
         shadowOffset={{ width: 0, height: 5 }}
         shadowOpacity={0.25}
         shadowRadius={12}
         elevation={8}
         pressStyle={{ opacity: 1 }}
         onPress={(e) => e.stopPropagation()}
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-        }}
       >
-        {/* Close button */}
-        <YStack
-          position="absolute"
-          top={19.56}
-          right={18}
-          w={24}
-          h={24}
-          items="center"
-          justify="center"
-          bg="rgba(0, 0, 0, 0.03)"
-          rounded={12}
-          pressStyle={{ opacity: 0.7 }}
-          onPress={onClose}
-          cursor="pointer"
-          aria-label="Close dialog"
-        >
-          <Close size={10} color="#FFFFFF" />
-        </YStack>
-
-        {/* Content area */}
-        <YStack p={20} pt={60} flex={1} gap={16}>
+        {/* Header with title and close button aligned */}
+        <YStack pos="relative" pt={20} px={20} pb={title ? 16 : 20}>
           {title && (
-            <Text
-              id="info-dialog-title"
-              fontSize={16}
-              fontWeight="600"
-              color="$white"
-              textAlign="center"
+            <YStack
+              w="100%"
+              items="center"
+              px={44} // Left and right padding equal to close button width + spacing (24 + 20 = 44)
             >
-              {title}
-            </Text>
+              <Text id="info-dialog-title" fontSize="$4" fontWeight="600" color="$text" ta="center">
+                {title}
+              </Text>
+            </YStack>
           )}
 
+          {/* Close button - aligned with title baseline */}
+          <YStack
+            pos="absolute"
+            top={20}
+            right={20}
+            w={24}
+            h={24}
+            items="center"
+            justify="center"
+            bg="$dark5"
+            rounded={12}
+            pressStyle={{ opacity: 0.7 }}
+            onPress={onClose}
+            cursor="pointer"
+            aria-label="Close dialog"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Close size={10} color={theme.white.val} style={{ alignSelf: 'center' }} />
+          </YStack>
+        </YStack>
+
+        {/* Content area - grows with content */}
+        <YStack px="$5" pb="$5" gap="$4">
           {/* Content */}
-          <YStack flex={1} justify="flex-start" alignItems="center" textAlign="center">
+          <YStack w="100%" items="center" px="$2.5">
             {children}
           </YStack>
 
           {/* Bottom button */}
           {buttonText && (
             <YStack
-              alignSelf="stretch"
-              height={44}
+              self="stretch"
+              h="$11"
               bg="$white"
-              rounded={12}
+              rounded="$3"
               items="center"
               justify="center"
-              px={16}
-              py={12}
+              px="$4"
+              py="$3"
               pressStyle={{ opacity: 0.8 }}
               onPress={onButtonClick}
               cursor="pointer"
@@ -151,10 +157,10 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
               <Text
                 fontSize={14}
                 fontWeight="700"
-                lineHeight="1.43em"
-                letterSpacing="-1%"
-                textAlign="center"
-                color="rgba(0, 0, 0, 0.9)"
+                lineHeight={20}
+                letterSpacing={0}
+                ta="center"
+                color="$dark80"
               >
                 {buttonText}
               </Text>
@@ -162,14 +168,24 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
           )}
         </YStack>
       </YStack>
-    </YStack>
+    </Stack>
   );
 
   // Use portal to render at document body level (only in browser)
-  if (typeof document !== 'undefined') {
+  if (typeof document !== 'undefined' && Platform.OS === 'web') {
     return createPortal(dialogContent, document.body);
   }
 
-  // Fallback for non-browser environments (React Native, SSR)
-  return dialogContent;
+  // For React Native, use Modal component for proper overlay
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent={true}
+    >
+      {dialogContent}
+    </Modal>
+  );
 };

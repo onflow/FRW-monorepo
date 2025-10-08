@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, YStack, XStack, Text, Separator } from 'tamagui';
+import { ScrollView, YStack, XStack, Text } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 import { RefreshView } from './RefreshView';
@@ -30,11 +30,13 @@ export interface RecipientListProps {
   // Error states
   error?: string;
   retryButtonText?: string;
+  errorDefaultMessage?: string;
 
   // Callbacks
   onItemPress?: (item: RecipientData) => void;
   onItemEdit?: (item: RecipientData) => void;
   onItemCopy?: (item: RecipientData) => void;
+  onItemAddToAddressBook?: (item: RecipientData) => void;
   onRefresh?: () => void;
   onRetry?: () => void;
 
@@ -43,9 +45,10 @@ export interface RecipientListProps {
   showSectionHeaders?: boolean;
   itemSpacing?: number;
   sectionSpacing?: number;
+  isMobile?: boolean;
 
   // Style
-  contentPadding?: number;
+  contentPadding?: number | string;
 }
 
 export function RecipientList({
@@ -57,16 +60,19 @@ export function RecipientList({
   emptyMessage,
   error,
   retryButtonText = 'Retry',
+  errorDefaultMessage = 'Failed to load recipients',
   onItemPress,
   onItemEdit,
   onItemCopy,
+  onItemAddToAddressBook,
   onRefresh,
   onRetry,
   showSeparators = true,
   showSectionHeaders = true,
   itemSpacing = 8,
   sectionSpacing = 16,
-  contentPadding = 16,
+  isMobile = false,
+  contentPadding = '$4',
 }: RecipientListProps) {
   // Normalize data - either use sections or create a single section from data
   const normalizedSections = sections || (data ? [{ data }] : []);
@@ -80,12 +86,12 @@ export function RecipientList({
       {Array.from({ length: 8 }).map((_, index) => (
         <YStack key={`skeleton-${index}`} p="$3">
           <XStack items="center" gap="$3">
-            <Skeleton width="$4" height="$4" borderRadius="$10" />
+            <Skeleton width="$4" height="$4" borderRadius="$10" animationType="pulse" />
             <YStack flex={1} gap="$2">
-              <Skeleton height="$1" width="60%" />
-              <Skeleton height="$0.75" width="40%" />
+              <Skeleton height="$1" width="60%" animationType="pulse" />
+              <Skeleton height="$0.75" width="40%" animationType="pulse" />
             </YStack>
-            <Skeleton width="$1" height="$1" borderRadius="$2" />
+            <Skeleton width="$1" height="$1" borderRadius="$2" animationType="pulse" />
           </XStack>
         </YStack>
       ))}
@@ -93,15 +99,13 @@ export function RecipientList({
   );
 
   // Empty state
-  const renderEmpty = () => (
-    <RefreshView type="empty" title={emptyTitle} message={emptyMessage || 'No recipients found'} />
-  );
+  const renderEmpty = () => <RefreshView type="empty" title={emptyTitle} message={emptyMessage} />;
 
   // Error state
   const renderError = () => (
     <RefreshView
       type="error"
-      message={error || 'Failed to load recipients'}
+      message={error || errorDefaultMessage}
       onRefresh={onRetry}
       refreshText={retryButtonText}
     />
@@ -115,6 +119,8 @@ export function RecipientList({
       onPress={() => onItemPress?.(item)}
       onEdit={() => onItemEdit?.(item)}
       onCopy={() => onItemCopy?.(item)}
+      onAddToAddressBook={() => onItemAddToAddressBook?.(item)}
+      isMobile={isMobile}
     />
   );
 
@@ -131,7 +137,9 @@ export function RecipientList({
           <Text fontSize="$3" fontWeight="600" color="$textSecondary" mb="$1">
             {section.title}
           </Text>
-          {showSeparators && <Separator borderColor="rgba(255, 255, 255, 0.1)" />}
+          {showSeparators && (
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
+          )}
         </YStack>
       )}
 
@@ -139,14 +147,8 @@ export function RecipientList({
       {section.data.map((item, itemIndex) => (
         <YStack key={item.id}>
           {renderItem(item)}
-          {showSeparators && itemIndex < section.data.length - 1 && (
-            <Separator
-              my={6.5}
-              mx={0}
-              width={336}
-              borderColor="rgba(255, 255, 255, 0.1)"
-              borderWidth={1}
-            />
+          {showSeparators && (
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           )}
         </YStack>
       ))}

@@ -1,6 +1,6 @@
 import { FlowLogo } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack, XStack, useTheme } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -28,9 +28,15 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
   backgroundColor,
   borderRadius,
   contentPadding,
-  titleColor = '#FFFFFF',
-  feeColor = '#FFFFFF',
+  titleColor,
+  feeColor,
 }) => {
+  const theme = useTheme();
+
+  // Use theme-aware colors if not provided
+  const dynamicTitleColor = titleColor || theme.color?.val || '#000000';
+  const dynamicFeeColor = feeColor || theme.color?.val || '#000000';
+
   const containerProps = backgroundColor
     ? {
         bg: backgroundColor,
@@ -44,13 +50,7 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
       {/* Main fee row */}
       <XStack justify="space-between" items="center">
         {/* Left side - Title */}
-        <Text
-          fontSize="$3"
-          fontWeight="400"
-          color={titleColor}
-          lineHeight={20}
-          letterSpacing="-0.6%"
-        >
+        <Text fontSize="$3" fontWeight="400" color={dynamicTitleColor} lineHeight={20}>
           {title}
         </Text>
 
@@ -62,24 +62,15 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               <Text
                 fontSize="$4"
                 fontWeight="400"
-                color={feeColor}
+                color={dynamicFeeColor}
                 lineHeight={20}
-                letterSpacing="-0.6%"
                 textDecorationLine="line-through"
                 opacity={0.6}
               >
                 {flowFee}
               </Text>
-              <Text
-                fontSize="$4"
-                fontWeight="400"
-                color={feeColor}
-                lineHeight={20}
-                letterSpacing="-0.6%"
-                textDecorationLine="line-through"
-                opacity={0.6}
-              >
-                {usdFee}
+              <Text fontSize="$4" fontWeight="400" color={dynamicFeeColor} lineHeight={20}>
+                {'0.00'}
               </Text>
               <FlowLogo size={18} theme="multicolor" style={{ opacity: 0.6 }} />
             </XStack>
@@ -89,19 +80,13 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
               <Text
                 fontSize="$4"
                 fontWeight="400"
-                color="rgba(255, 255, 255, 0.6)"
+                color={dynamicFeeColor}
+                opacity={0.6}
                 lineHeight={20}
-                letterSpacing="-0.6%"
               >
                 {flowFee}
               </Text>
-              <Text
-                fontSize="$4"
-                fontWeight="400"
-                color={feeColor}
-                lineHeight={20}
-                letterSpacing="-0.6%"
-              >
+              <Text fontSize="$4" fontWeight="400" color={dynamicFeeColor} lineHeight={20}>
                 {usdFee}
               </Text>
               <FlowLogo size={18} theme="multicolor" />
@@ -116,9 +101,9 @@ export const TransactionFeeSection: React.FC<TransactionFeeSectionProps> = ({
           <Text
             fontSize="$2"
             fontWeight="400"
-            color="rgba(255, 255, 255, 0.4)"
+            color={dynamicFeeColor}
+            opacity={0.4}
             lineHeight={17}
-            letterSpacing="-0.6%"
             text="right"
           >
             {coveredMessage}
