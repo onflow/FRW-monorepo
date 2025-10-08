@@ -222,6 +222,11 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
               holdToSendText="Hold to agree to surge pricing"
               holdDuration={1500}
               stopSignal={isLoading}
+              styles={{
+                backgroundColor: '$error',
+                color: '$white',
+                stroke: '$white',
+              }}
             />
           </YStack>
         </YStack>
