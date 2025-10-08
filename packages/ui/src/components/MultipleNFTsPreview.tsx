@@ -3,11 +3,10 @@ import type { NFTTransactionData } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { YStack, XStack, ScrollView, Image, View } from 'tamagui';
 
-import { type NFTSendData } from './NFTSendPreview';
 import { Text } from '../foundation/Text';
 
 export interface MultipleNFTsPreviewProps {
-  nfts: NFTSendData[];
+  nfts: NFTTransactionData[];
   onRemoveNFT?: (nftId: string) => void;
   onEditPress?: () => void;
   showEditButton?: boolean;
