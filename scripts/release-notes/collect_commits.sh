@@ -23,12 +23,12 @@ GITHUB_REF=${GITHUB_REF:-}
 GITHUB_REF_NAME=${GITHUB_REF_NAME:-}
 REPOSITORY=${REPOSITORY:-}
 
-# Determine TAG_NAME (priority: explicit input > release event tag > current ref tag)
+# Determine TAG_NAME (priority: tag_name > to_tag > release event tag > current ref tag)
 TAG_NAME=""
-if [[ -n "$INPUT_TO_TAG" ]]; then
-  TAG_NAME="$INPUT_TO_TAG"
-elif [[ -n "$INPUT_TAG_NAME" ]]; then
+if [[ -n "$INPUT_TAG_NAME" ]]; then
   TAG_NAME="$INPUT_TAG_NAME"
+elif [[ -n "$INPUT_TO_TAG" ]]; then
+  TAG_NAME="$INPUT_TO_TAG"
 elif [[ -n "$RELEASE_TAG_NAME" ]]; then
   TAG_NAME="$RELEASE_TAG_NAME"
 elif [[ "$GITHUB_REF" == refs/tags/* || -n "$GITHUB_REF_NAME" && "$GITHUB_REF" == refs/tags/* ]]; then
@@ -63,8 +63,6 @@ else
   else
     PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || true)
   fi
-fi
-
 fi
 
 if [[ -z "${PREVIOUS_TAG:-}" ]]; then
