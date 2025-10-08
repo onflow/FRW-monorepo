@@ -22,9 +22,8 @@ import {
   TokenCard,
   XStack,
   YStack,
-  useTheme,
 } from '@onflow/frw-ui';
-import { isDarkMode } from '@onflow/frw-utils';
+import { retryConfigs } from '@onflow/frw-utils';
 import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
@@ -120,9 +119,10 @@ export function SelectTokensScreen(): React.ReactElement {
     staleTime: 0, // Always fetch fresh for financial data
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    ...retryConfigs.critical, // Critical token data retry config
   });
 
-  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching
+  // 🔥 TanStack Query: Fetch NFT collections with intelligent caching and retry logic
   const {
     data: nftCollections = [],
     isLoading: isNFTsLoading,
@@ -138,9 +138,10 @@ export function SelectTokensScreen(): React.ReactElement {
     staleTime: 5 * 60 * 1000, // NFTs can be cached for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    ...retryConfigs.standard, // Standard retry for NFT collections
   });
 
-  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
+  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern and retry logic
   const { data: balanceData, isLoading: isBalanceLoading } = useQuery({
     queryKey: tokenQueryKeys.balance(effectiveAddress, network),
     queryFn: () => {
@@ -152,9 +153,10 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
+    ...retryConfigs.critical, // Critical balance data retry config
   });
 
-  // 🔥 TanStack Query: Fetch batch balances for all accounts
+  // 🔥 TanStack Query: Fetch batch balances for all accounts with retry logic
   const { data: batchBalances, isLoading: isLoadingBatchBalances } = useQuery({
     queryKey: ['batchBalances', accounts.map((acc) => acc.address)],
     queryFn: () => tokenQueries.fetchBatchFlowBalances(accounts.map((acc) => acc.address)),
@@ -163,6 +165,7 @@ export function SelectTokensScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balances every minute in background
+    ...retryConfigs.critical, // Critical batch balance data retry config
   });
 
   // 🔥 TanStack Query: Fetch accessible IDs for child accounts only
@@ -298,11 +301,6 @@ export function SelectTokensScreen(): React.ReactElement {
     }));
   }, [accounts, balanceLookup]);
 
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const dividerColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
-
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       {isExtension && (
@@ -318,7 +316,7 @@ export function SelectTokensScreen(): React.ReactElement {
 
         {/* Account Selector - Show balance from React Query */}
         {!isExtension && currentAccount && (
-          <YStack bg={cardBackgroundColor} rounded="$4" p={16} gap={12}>
+          <YStack bg="$bg1" rounded="$4" p={16} gap={12}>
             <AccountSelector
               currentAccount={{
                 ...currentAccount,
@@ -393,7 +391,7 @@ export function SelectTokensScreen(): React.ReactElement {
                         inaccessibleText={t('send.inaccessible')}
                       />
                       {idx < tokensWithBalance.length - 1 && (
-                        <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
                       )}
                     </React.Fragment>
                   ))}
@@ -452,7 +450,7 @@ export function SelectTokensScreen(): React.ReactElement {
                         inaccessibleText={t('send.inaccessible')}
                       />
                       {idx < nftCollections.length - 1 && (
-                        <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+                        <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
                       )}
                     </React.Fragment>
                   ))}

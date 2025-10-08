@@ -1,11 +1,12 @@
 import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, useThemeName } from 'tamagui';
+import { YStack, XStack } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
 import { RefreshView } from './RefreshView';
 import { Avatar } from '../foundation/Avatar';
+import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 
 export interface ProfileListProps {
@@ -28,11 +29,35 @@ export function ProfileList({
   isMobile = false,
 }: ProfileListProps): React.ReactElement {
   if (isLoading) {
+    // Skeleton loading for profiles list
     return (
-      <YStack items="center" justifyContent="center" py="$4">
-        <Text color="$text" fontSize="$3">
-          {loadingText}
-        </Text>
+      <YStack gap="$3" p={0}>
+        {Array.from({ length: 2 }).map((_, idx) => (
+          <YStack key={`profile-skel-${idx}`} gap="$3">
+            {/* Profile header skeleton */}
+            <YStack gap="$3">
+              <XStack items="center" gap="$3">
+                <Skeleton width="$7" height="$7" borderRadius="$1" animationType="pulse" />
+                <YStack flex={1} gap="$2">
+                  <Skeleton height="$4.5" width="40%" borderRadius="$1" animationType="pulse" />
+                </YStack>
+              </XStack>
+            </YStack>
+            {/* Account rows skeleton */}
+            <YStack gap="$3">
+              {Array.from({ length: 2 }).map((__, j) => (
+                <XStack key={`acct-skel-${idx}-${j}`} items="center" gap="$3">
+                  <Skeleton width="$10" height="$10" borderRadius="$10" animationType="pulse" />
+                  <YStack flex={1} gap="$2">
+                    <Skeleton height="$3.5" width="60%" borderRadius="$1" animationType="pulse" />
+                    <Skeleton height="$3" width="30%" borderRadius="$1" animationType="pulse" />
+                  </YStack>
+                  <Skeleton width="$5" height="$5" borderRadius="$1" animationType="pulse" />
+                </XStack>
+              ))}
+            </YStack>
+          </YStack>
+        ))}
       </YStack>
     );
   }
@@ -70,12 +95,6 @@ function ProfileItem({
   isLast = false,
   isMobile = false,
 }: ProfileItemProps): React.ReactElement {
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
   const handleAccountPress = (account: any) => {
     onAccountPress?.(account);
   };
@@ -104,7 +123,7 @@ function ProfileItem({
       {/* Profile Header */}
       <YStack gap="$3" bg="$bgDrawer">
         <YStack py="$2" items="center">
-          <YStack height={1} bg={dividerColor} width="100%" />
+          <YStack height={1} bg="$border1" width="100%" />
         </YStack>
         <XStack items="center" gap="$3">
           <Avatar
@@ -131,14 +150,10 @@ function ProfileItem({
       </YStack>
 
       {/* Accounts List */}
-      <YStack gap="$0">
+      <YStack gap="$3">
         {accountsData.map((account, index) => (
           <React.Fragment key={account.id}>
-            <RecipientItem
-              {...account}
-              onPress={() => handleAccountPress(account)}
-              isMobile={isMobile}
-            />
+            <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
           </React.Fragment>
         ))}
       </YStack>

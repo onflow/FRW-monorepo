@@ -1,8 +1,7 @@
-import { Close } from '@onflow/frw-icons';
+import { X } from '@onflow/frw-icons';
 import { IconButton } from '@onflow/frw-ui';
 import { useTheme } from '@react-navigation/native';
 import React from 'react';
-import { Platform } from 'react-native';
 
 import { platform } from '@/bridge/PlatformImpl';
 
@@ -16,13 +15,12 @@ export const NavigationCloseButton: React.FC = () => {
 
   return (
     <IconButton
-      icon={<Close color={theme.colors.text} size={15} />}
+      icon={<X color={theme.colors.text} size={24} width={24} height={24} />}
       variant="ghost"
-      size="small"
+      size="medium"
       onPress={handleClose}
-      style={{
-        marginRight: Platform.OS === 'android' ? 16 : 0,
-      }}
+      mr="$-2" // Move right to reduce padding
+      pr="$2" // Add some internal padding
     />
   );
 };

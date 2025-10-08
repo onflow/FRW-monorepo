@@ -222,8 +222,23 @@ export function NFTDetailScreen(): React.ReactElement {
 
   // Handle continue action - navigate to SendTo screen
   const handleContinue = useCallback(() => {
-    // Get transaction type from store
-    const setTransactionType = useSendStore.getState().setTransactionType;
+    // Get transaction type and setNFTQuantity from store
+    const { setTransactionType, setNFTQuantity } = useSendStore.getState();
+
+    // Initialize quantities for ERC1155 NFTs
+    if (selectedNFTs) {
+      selectedNFTs.forEach((nft) => {
+        if (nft.contractType === 'ERC1155' && nft.id) {
+          // Set default quantity to 1 if it's an ERC1155
+          setNFTQuantity(nft.id, 1);
+          logger.debug('[NFTDetailScreen] Initialized ERC1155 quantity:', {
+            nftId: nft.id,
+            contractType: nft.contractType,
+            amount: nft.amount,
+          });
+        }
+      });
+    }
 
     // Set transaction type based on number of selected NFTs
     if (selectedNFTs && selectedNFTs.length === 1) {
@@ -350,6 +365,8 @@ export function NFTDetailScreen(): React.ReactElement {
             onNFTPress={handleNFTPress}
             onContinue={handleContinue}
             continueText={t('buttons.continue')}
+            selectedCountText={t('nft.selectedCount', { count: selectedNFTsForBar.length })}
+            confirmText={t('nft.confirmSelection', { count: selectedNFTsForBar.length })}
             isEditing={false}
           />
         )}

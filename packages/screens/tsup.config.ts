@@ -7,7 +7,8 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  external: ['react', 'react-i18next', 'i18next'],
+  external: ['react', 'react-i18next', 'i18next', 'react-native', 'react-native-web'],
   treeshake: true,
   minify: false,
+  // Keep RN/RN-web external so bundlers (RN app or web) resolve them
 });

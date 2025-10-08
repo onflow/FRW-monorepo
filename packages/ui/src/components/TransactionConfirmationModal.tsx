@@ -1,29 +1,27 @@
 import { ChevronDown, WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
+import {
+  type TransactionType,
+  type TokenModel,
+  type AccountDisplayData,
+  type NFTTransactionData,
+  type SendFormData,
+} from '@onflow/frw-types';
 import React from 'react';
 import { YStack, XStack, View } from 'tamagui';
 
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
-import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
-
-export interface TransactionFormData {
-  tokenAmount: string;
-  fiatAmount: string;
-  isTokenMode: boolean;
-  transactionFee?: string;
-}
 
 export interface TransactionConfirmationModalProps {
   visible: boolean;
   transactionType: TransactionType;
   selectedToken?: TokenModel | null;
-  selectedNFTs?: NFTSendData[];
+  selectedNFTs?: NFTTransactionData[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
-  formData: TransactionFormData;
+  formData: SendFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
   title?: string;

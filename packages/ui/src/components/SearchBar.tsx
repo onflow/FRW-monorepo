@@ -1,6 +1,6 @@
 import { Search, Close } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, Input, Stack, useThemeName } from 'tamagui';
+import { XStack, Input, Stack } from 'tamagui';
 
 export interface SearchBarProps {
   value: string;
@@ -19,16 +19,12 @@ export function SearchBar({
   width = '100%',
   disabled = false,
 }: SearchBarProps): React.ReactElement {
-  const themeName = useThemeName();
-
   const handleClear = () => {
     onChangeText('');
     onClear?.();
   };
 
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+  const iconColor = '#767676';
 
   return (
     <XStack

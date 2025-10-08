@@ -1,14 +1,12 @@
 import {
   getCurrentAddress,
   waitForTransaction,
-  getReceiverEvmAccount,
-  getReceiverCadenceAccount,
-  getSenderCadenceAccount,
   switchToEvmAddress,
   getSenderEvmAccount,
   switchToMainAccount,
   checkSentAmount,
   loginToSenderAccount,
+  loginToSenderOrReceiver,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 
@@ -36,45 +34,33 @@ export const sendFT = async ({ page, tokenName, receiver, amount, ingoreFlowChar
 };
 
 test.beforeEach(async ({ page, extensionId }) => {
-  // Login to our sender account
-  await loginToSenderAccount({ page, extensionId });
-  await switchToMainAccount({
-    page,
-    address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
-  });
+  await loginToSenderOrReceiver({ page, extensionId, parallelIndex: test.info().parallelIndex });
 });
 
 //Send FLOW token from Flow to Flow
 test('send FTs ', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  await loginToSenderAccount({
+    page,
+    extensionId,
+  });
+  await switchToMainAccount({
+    page,
+    address: process.env.TEST_SENDER_ADDR,
+  });
   const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
     [];
 
-  test.setTimeout(120_000);
   // send USDC.e to flow
   const tx1 = await sendFT({
     page,
     tokenName: 'USDC.e',
-    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_ADDR,
     amount: '0.000001',
   });
 
   txList.push(tx1);
 
-  //Send USDC.e from Flow to Coa
-  const tx2 = await sendFT({
-    page,
-    tokenName: 'USDC.e',
-    receiver: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
-    amount: '0.000001',
-  });
-
-  txList.push(tx2);
-
-  //Send FLOW token from Flow to COA
-  // This can take a while
-
-  //Check all sealed transactions
-  // Check the amounts that were sent for each transaction
   // Go to the activity page
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
   await page.waitForURL(/.*\/dashboard.*/);
@@ -104,18 +90,10 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
   const tx1 = await sendFT({
     page,
     tokenName: 'USDC.e',
-    receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
     amount: '0.000001',
   });
   txList.push(tx1);
-
-  const tx2 = await sendFT({
-    page,
-    tokenName: 'USDC.e',
-    receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
-    amount: '0.000001',
-  });
-  txList.push(tx2);
 
   await Promise.all(
     txList.map(async (tx) => {

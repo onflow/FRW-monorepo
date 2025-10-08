@@ -36,7 +36,7 @@
     },
     "toAccount": "A Cuenta",
     "searchAddress": "Buscar dirección o contacto...",
-    "searchPasteAddress": "Buscar/ Pegar dirección",
+    "searchPasteAddress": "Buscar / Pegar dirección",
     "selectedToken": "Token Seleccionado",
     "noAccounts": {
       "title": "Sin Cuentas",
@@ -142,6 +142,16 @@
     "noNFTsMatchSearch": "Ningún NFT coincide con '{{search}}'",
     "noNFTsFound": "No se Encontraron NFTs",
     "collectionEmpty": "Esta colección no contiene ningún NFT",
+    "noCollectionSelected": "No se seleccionó colección. Por favor regresa y selecciona una colección de NFT.",
+    "noAccountSelected": "No hay dirección de cuenta disponible. Por favor selecciona una cuenta.",
+    "maxSelectionReached": "Se pueden seleccionar máximo 9 NFTs",
+    "nftNotFound": "NFT no encontrado para ID:",
+    "selectedCount": "{{count}} NFT Seleccionado",
+    "selectedCount_plural": "{{count}} NFTs Seleccionados",
+    "confirmSelection": "Confirmar {{count}} NFT",
+    "confirmSelection_plural": "Confirmar {{count}} NFTs",
+    "itemCount": "{{count}} elemento",
+    "itemCount_plural": "{{count}} elementos",
     "notFound": {
       "title": "NFT No Encontrado",
       "message": "El NFT solicitado no se pudo encontrar o cargar"

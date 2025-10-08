@@ -1,7 +1,7 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
-import { XStack, YStack, Sheet, ScrollView, useThemeName } from 'tamagui';
+import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -42,13 +42,6 @@ export function AccountSelector({
   onEditClick,
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const iconColor = isDarkMode ? '#767676' : 'rgba(0, 0, 0, 0.8)';
-  const editIconColor = isDarkMode ? '#767676' : 'rgba(0, 0, 0, 0.8)';
-  const avatarTextColor = isDarkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
 
   const handleAccountSelect = (account: WalletAccount) => {
     onAccountSelect(account);
@@ -66,14 +59,14 @@ export function AccountSelector({
   return (
     <>
       {/* Current Account Display */}
-      <YStack height={120} gap={12}>
+      <YStack width="100%" gap={12}>
         {/* Title */}
-        <Text fontSize={12} fontWeight="400" color="$textSecondary" lineHeight={16}>
+        <Text fontSize="$3" fontWeight="400" color="$textSecondary" lineHeight={16}>
           {title}
         </Text>
 
         {/* Account Container */}
-        <XStack py={10} pl={5} pr={0} justify="space-between" items="center">
+        <XStack pb={'$2'} pl={5} pr={0} justify="space-between" items="center">
           {/* Left side: Avatar and Account Details */}
           <XStack items="center" gap={16} flex={1}>
             {/* Account Avatar with parent emoji overlay */}
@@ -82,7 +75,7 @@ export function AccountSelector({
                 src={currentAccount.avatar}
                 fallback={currentAccount.emojiInfo?.emoji || currentAccount.name?.charAt(0) || '?'}
                 bgColor={currentAccount.emojiInfo?.color}
-                textColor={currentAccount.emojiInfo?.color ? undefined : avatarTextColor}
+                textColor={currentAccount.emojiInfo?.color ? undefined : '$text'}
                 size={36}
                 borderColor="$primary"
                 borderWidth={1}
@@ -116,7 +109,7 @@ export function AccountSelector({
               <XStack items="center" gap={4}>
                 {/* Link icon for linked accounts */}
                 {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
-                  <Link size={12.8} color={iconColor} theme="outline" />
+                  <Link size={12.8} color="#767676" theme="outline" />
                 )}
                 <Text
                   color="$text"
@@ -184,7 +177,7 @@ export function AccountSelector({
               onPress={handleEditClick}
               cursor="pointer"
             >
-              <Edit size={24} color={editIconColor} theme="outline" />
+              <Edit size={24} color="#767676" theme="outline" />
             </XStack>
           )}
         </XStack>
@@ -206,7 +199,7 @@ export function AccountSelector({
 
         <Sheet.Frame
           padding="$4"
-          backgroundColor="$bg"
+          backgroundColor="$bgDrawer"
           borderTopLeftRadius={16}
           borderTopRightRadius={16}
         >
@@ -218,7 +211,7 @@ export function AccountSelector({
               </Text>
 
               <XStack onPress={() => setOpen(false)} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
-                <Close size={15} color={iconColor} theme="outline" />
+                <Close size={15} color="#767676" theme="outline" />
               </XStack>
             </XStack>
 
@@ -251,7 +244,7 @@ export function AccountSelector({
                               account.emojiInfo?.emoji || account.name?.charAt(0).toUpperCase()
                             }
                             bgColor={account.emojiInfo?.color}
-                            textColor={account.emojiInfo?.color ? undefined : avatarTextColor}
+                            textColor={account.emojiInfo?.color ? undefined : '$text'}
                             size={40}
                             borderColor={isSelected ? '$primary' : undefined}
                             borderWidth={isSelected ? 1 : undefined}
@@ -286,7 +279,7 @@ export function AccountSelector({
                           <XStack items="center" gap={4}>
                             {/* Link icon for linked accounts */}
                             {(account.type === 'child' || account.parentEmoji) && (
-                              <Link size={12.8} color={iconColor} theme="outline" />
+                              <Link size={12.8} color="#767676" theme="outline" />
                             )}
                             <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
                               {account.name || 'Unnamed Account'}

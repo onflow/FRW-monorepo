@@ -1,10 +1,11 @@
 import { ChevronUp, ChevronDown, Trash } from '@onflow/frw-icons';
-import { isDarkMode } from '@onflow/frw-utils';
+import { logger } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, ScrollView, Text, Image, useTheme } from 'tamagui';
+import { YStack, XStack, ScrollView, Text, Image } from 'tamagui';
 
 import { ERC1155QuantitySelector } from './ERC1155QuantitySelector';
 import type { NFTData } from './NFTGrid';
+import { Button } from '../foundation/Button';
 
 export interface NFTSelectionBarProps {
   selectedNFTs: NFTData[];
@@ -19,6 +20,7 @@ export interface NFTSelectionBarProps {
   // Text props for localization
   selectedCountText?: string;
   confirmText?: string;
+  isExtension?: boolean;
 }
 
 export function NFTSelectionBar({
@@ -29,9 +31,8 @@ export function NFTSelectionBar({
   onQuantityChange,
   selectedCountText,
   confirmText,
+  isExtension,
 }: NFTSelectionBarProps) {
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
   const [isExpanded, setIsExpanded] = useState(true); // Start expanded so trash icons are visible
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
@@ -43,6 +44,16 @@ export function NFTSelectionBar({
   const handleToggleExpanded = () => {
     console.log('🔄 Toggling selection bar expanded:', !isExpanded);
     setIsExpanded(!isExpanded);
+  };
+
+  // Calculate total quantity including ERC1155 quantities
+  const getTotalQuantity = () => {
+    return selectedNFTs.reduce((total, nft) => {
+      if (nft.contractType === 'ERC1155') {
+        return total + (quantities[nft.id] || 1);
+      }
+      return total + 1;
+    }, 0);
   };
 
   const renderNFTItem = (nft: NFTData) => {
@@ -94,11 +105,9 @@ export function NFTSelectionBar({
               minHeight={32}
               items="center"
               justify="center"
-              bg="$red"
-              borderRadius="$2"
               pressStyle={{ opacity: 0.7 }}
               onPress={() => {
-                console.log('🗑️ Trash icon clicked for NFT:', nft.id);
+                logger.debug('🗑️ Trash icon clicked for NFT:', nft.id);
                 onRemoveNFT(nft.id);
               }}
               cursor="pointer"
@@ -126,7 +135,7 @@ export function NFTSelectionBar({
 
   return (
     <YStack
-      pos="absolute"
+      pos={isExtension ? 'fixed' : 'absolute'}
       b="$0"
       l="$0"
       r="$0"
@@ -149,8 +158,7 @@ export function NFTSelectionBar({
         {/* Header */}
         <XStack items="center" justify="space-between" pt="$2.5" position="relative">
           <Text fontSize="$4" fontWeight="400" color="$text">
-            {selectedCountText ||
-              `${selectedNFTs.length} Selected NFT${selectedNFTs.length === 1 ? '' : 's'}`}
+            {selectedCountText}
           </Text>
 
           <XStack
@@ -195,26 +203,16 @@ export function NFTSelectionBar({
 
         {/* Action Button - Always visible at bottom */}
         {onContinue && (
-          <YStack
+          <Button
             data-testid={'confirm'}
-            shrink={0}
-            bg={isCurrentlyDarkMode ? '#FFFFFF' : '#000000'}
-            rounded="$4"
-            height={56}
-            items="center"
-            justify="center"
-            disabled={selectedNFTs.length === 0}
+            fullWidth
+            size="large"
+            variant="inverse"
             onPress={onContinue}
+            disabled={selectedNFTs.length === 0}
           >
-            <Text
-              fontSize="$5"
-              fontWeight="600"
-              color={isCurrentlyDarkMode ? '#000000' : '#FFFFFF'}
-            >
-              {confirmText ||
-                `Confirm ${selectedNFTs.length} NFT${selectedNFTs.length === 1 ? '' : 's'}`}
-            </Text>
-          </YStack>
+            {confirmText}
+          </Button>
         )}
       </YStack>
     </YStack>

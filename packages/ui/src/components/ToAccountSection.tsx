@@ -1,8 +1,7 @@
 import { Edit, Link } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
-import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { YStack, XStack, useTheme } from 'tamagui';
+import { YStack, XStack } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { InfoDialog } from './InfoDialog';
@@ -56,24 +55,9 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
 }) => {
   // Internal state for compatibility dialog
   const [isCompatibilityDialogVisible, setIsCompatibilityDialogVisible] = useState(false);
-  const theme = useTheme();
-
-  // Theme detection using helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
 
   // Theme-aware background color (use prop if provided, otherwise use theme-based default)
-  const dynamicBackgroundColor = backgroundColor || (isCurrentlyDarkMode ? '$light10' : '$bg2');
-
-  // Theme-aware text colors
-  const primaryTextColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const editIconColor = '#767676'; // Same color for both dark and light mode
-
-  // Chain link icon color logic
-  const chainLinkIconColor = isCurrentlyDarkMode
-    ? 'rgba(255, 255, 255, 0.8)'
-    : 'rgba(0, 0, 0, 0.8)';
+  const dynamicBackgroundColor = backgroundColor || '$bg1';
 
   // Handle learn more press - show internal dialog
   const handleLearnMorePress = () => {
@@ -95,7 +79,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
       width="100%"
     >
       {/* Section Header */}
-      <Text fontSize="$2" fontWeight="400" lineHeight={16}>
+      <Text fontSize="$3" fontWeight="400" lineHeight={16}>
         {title}
       </Text>
 
@@ -185,7 +169,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
             <YStack width={151.34} gap="$0.5">
               {/* Account Name with linked icon and EVM badge */}
               <XStack items="center" gap="$1">
-                {isLinked && <Link size={12.8} color={chainLinkIconColor} theme="outline" />}
+                {isLinked && <Link size={12.8} color="#767676" theme="outline" />}
                 <Text fontSize="$3" fontWeight="600" lineHeight={17} numberOfLines={1}>
                   {account.name || unknownAccountText}
                 </Text>
@@ -235,7 +219,7 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
               cursor="pointer"
               opacity={isAccountIncompatible ? 0.5 : 1}
             >
-              <Edit size={24} color={editIconColor} theme="outline" />
+              <Edit size={24} color="#767676" theme="outline" />
             </XStack>
           </XStack>
         )}
@@ -250,22 +234,10 @@ export const ToAccountSection: React.FC<ToAccountSectionProps> = ({
         onClose={handleDialogClose}
       >
         <YStack gap="$5" w="100%">
-          <Text
-            fontSize="$4"
-            fontWeight="400"
-            color={primaryTextColor}
-            text="center"
-            lineHeight={20}
-          >
+          <Text fontSize="$4" fontWeight="400" color="$text" text="center" lineHeight={20}>
             {dialogDescriptionMain}
           </Text>
-          <Text
-            fontSize="$4"
-            fontWeight="400"
-            color={primaryTextColor}
-            text="center"
-            lineHeight={20}
-          >
+          <Text fontSize="$4" fontWeight="400" color="$text" text="center" lineHeight={20}>
             {dialogDescriptionSecondary}
           </Text>
         </YStack>

@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "build:watch": "tsup --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",
     "storybook": "storybook dev -p 6006",
@@ -17,11 +18,14 @@
   },
   "dependencies": {
     "@onflow/frw-icons": "workspace:*",
+    "@onflow/frw-types": "workspace:^",
+    "@onflow/frw-utils": "workspace:^",
     "@tamagui/config": "^1.132.20",
     "@tamagui/core": "^1.132.20",
     "@tamagui/theme-builder": "^1.132.20",
     "@tamagui/web": "^1.132.20",
     "bignumber.js": "^9.1.2",
+    "lottie-web": "^5.12.2",
     "tamagui": "^1.132.20"
   },
   "devDependencies": {
@@ -36,7 +40,7 @@
     "eslint-plugin-storybook": "9.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native-web": "^0.21.0",
+    "react-native-web": "^0.21.1",
     "rimraf": "^5.0.1",
     "storybook": "^9.1.1",
     "tsup": "^8.0.0",
@@ -45,14 +49,26 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
+    "lottie-react-native": "^6.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-native-svg": ">=15.0.0",
+    "react-native-web": ">=0.21.0"
   },
   "peerDependenciesMeta": {
+    "react-native-web": {
+      "optional": true
+    },
     "react-native": {
       "optional": true
     },
+    "react-native-svg": {
+      "optional": true
+    },
     "@tamagui/animations-react-native": {
+      "optional": true
+    },
+    "lottie-react-native": {
       "optional": true
     }
   },
@@ -63,6 +79,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }

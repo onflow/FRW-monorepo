@@ -36,7 +36,7 @@
     },
     "toAccount": "送信先アカウント",
     "searchAddress": "アドレスを検索",
-    "searchPasteAddress": "アドレスを検索/貼り付け",
+    "searchPasteAddress": "アドレスを検索 / 貼り付け",
     "selectedToken": "選択されたトークン",
     "noAccounts": {
       "title": "アカウントがありません",
@@ -142,6 +142,13 @@
     "noNFTsMatchSearch": "'{{search}}'に一致するNFTがありません",
     "noNFTsFound": "NFTが見つかりません",
     "collectionEmpty": "このコレクションにはNFTが含まれていません",
+    "noCollectionSelected": "コレクションが選択されていません。戻ってNFTコレクションを選択してください。",
+    "noAccountSelected": "利用可能なアカウントアドレスがありません。アカウントを選択してください。",
+    "maxSelectionReached": "最大9個のNFTを選択できます",
+    "nftNotFound": "NFT IDが見つかりません:",
+    "selectedCount": "{{count}} 個のNFTを選択中",
+    "confirmSelection": "{{count}} 個のNFTを確認",
+    "itemCount": "{{count}}個のアイテム",
     "notFound": {
       "title": "NFTが見つかりません",
       "message": "要求されたNFTが見つからないか、読み込めませんでした"

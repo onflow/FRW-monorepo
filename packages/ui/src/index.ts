@@ -12,23 +12,24 @@ export {
   Spinner,
   Stack,
   TamaguiProvider,
+  useTheme,
   View,
   XStack,
   YStack,
-  useTheme,
 } from 'tamagui';
 
 // Export our custom UI foundation components
 // These are enhanced versions with custom variants and better design system integration
 export * from './foundation/Avatar';
 export * from './foundation/Button';
-export * from './foundation/IconButton';
 export * from './foundation/Card';
 export * from './foundation/Divider';
+export * from './foundation/IconButton';
 export * from './foundation/Input';
 export * from './foundation/Separator';
 export * from './foundation/Skeleton';
 export * from './foundation/Text';
+export { FlatList } from 'react-native';
 
 // Export utilities
 export * from './utils/clipboard';
@@ -36,8 +37,6 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
-// Assets and types
-export type { ScreenAssets } from './assets/images';
 
 export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';
@@ -45,9 +44,12 @@ export * from './components/AddressText';
 export * from './components/Badge';
 export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
+export * from './components/ConfirmationAnimation';
 export * from './components/ConfirmationDrawer';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
+export * from './components/ExtensionHeader';
 export * from './components/InfoDialog';
 export * from './components/MultipleNFTsPreview';
 export * from './components/NFTCard';
@@ -73,16 +75,10 @@ export * from './components/SendSectionHeader';
 export * from './components/StorageWarning';
 export * from './components/Tag';
 export * from './components/ToAccountSection';
+export * from './components/Toast';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
-export * from './components/TransactionConfirmationModal';
 export * from './components/TransactionFeeSection';
-export * from './components/ToAccountSection';
-export * from './components/StorageWarning';
-export * from './components/ErrorDialog';
-export * from './components/ConfirmAddressDialog';
-export * from './components/ExtensionHeader';
-export * from './components/Toast';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';

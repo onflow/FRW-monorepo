@@ -1,12 +1,9 @@
 import {
   getCurrentAddress,
   waitForTransaction,
-  loginToSenderOrReceiver,
-  getReceiverEvmAccount,
-  getReceiverCadenceAccount,
   checkSentAmount,
   switchToMainAccount,
-  getSenderCadenceAccount,
+  loginToSenderAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 export const sendTokenFlow = async ({
@@ -74,7 +71,7 @@ export const moveTokenFlowHomepage = async ({
 
 test.beforeEach(async ({ page, extensionId }) => {
   // Login to our sender account
-  await loginToSenderOrReceiver({ page, extensionId, parallelIndex: test.info().parallelIndex });
+  await loginToSenderAccount({ page, extensionId });
 });
 
 const txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharge: boolean }[] = [];
@@ -82,15 +79,17 @@ const txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharg
 //Send FLOW token from Flow to Flow
 test('send Cadence transactions', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
+  await loginToSenderAccount({ page, extensionId });
+
   await switchToMainAccount({
     page,
-    address: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    address: process.env.TEST_SENDER_ADDR,
   });
   // This can take a while
   const tx1 = await sendTokenFlow({
     page,
     tokenname: 'flow',
-    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_ADDR,
     amount: '0.00123456',
   });
   txList.push(tx1);
@@ -99,7 +98,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   const tx2 = await sendTokenFlow({
     page,
     tokenname: 'stFlow',
-    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_ADDR,
     amount: '0.00123456',
   });
   txList.push(tx2);
@@ -109,7 +108,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   const tx3 = await sendTokenFlow({
     page,
     tokenname: 'flow',
-    receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
     amount: '0.00123456',
   });
   txList.push(tx3);
@@ -118,7 +117,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   const tx4 = await sendTokenFlow({
     page,
     tokenname: 'usdc.e',
-    receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
     ingoreFlowCharge: true,
     amount: '0.00123456',
   });

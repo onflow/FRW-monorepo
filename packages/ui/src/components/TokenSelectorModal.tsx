@@ -1,6 +1,5 @@
 import { Search, Close, VerifiedToken } from '@onflow/frw-icons';
 import { formatCurrencyStringForDisplay, type TokenModel } from '@onflow/frw-types';
-import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState, useMemo } from 'react';
 import {
   YStack,
@@ -10,7 +9,6 @@ import {
   Sheet,
   useMedia,
   Stack,
-  useTheme,
   View,
   Separator,
 } from 'tamagui';
@@ -51,15 +49,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const media = useMedia();
-  const theme = useTheme();
   const isMobile = media.xs || media.sm;
-
-  // Theme-aware close icon color - same logic as ConfirmationDrawer
-  const closeIconColor = theme.color?.val || '#000000';
-
-  // Theme-aware search icon color - using isDarkMode helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const searchIconColor = isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 
   // Alternative detection: check if we're on React Native
   const isReactNative = typeof window === 'undefined' || !window.document;
@@ -106,7 +96,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
               onPress={onClose}
               cursor="pointer"
             >
-              <Close size={15} color={closeIconColor} />
+              <Close size={24} color="#767676" />
             </XStack>
           </>
         ) : (
@@ -129,7 +119,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
               onPress={onClose}
               cursor="pointer"
             >
-              <Close size={15} color={closeIconColor} />
+              <Close size={24} color="#767676" />
             </XStack>
           </>
         )}
@@ -147,7 +137,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
           height={44}
           shrink={0}
         >
-          <Search size={20} color={searchIconColor} theme="outline" />
+          <Search size={20} color="#767676" theme="outline" />
           <Input
             flex={1}
             value={searchQuery}
@@ -300,7 +290,7 @@ export const TokenSelectorModal: React.FC<TokenSelectorModalProps> = ({
 
       {searchable && (
         <XStack
-          bg="$light10"
+          bg="$subtleBg10"
           rounded="$4"
           px="$4"
           items="center"

@@ -1,11 +1,12 @@
-import { WalletCard, Close, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
-import { type TransactionType, type TokenModel, type AccountDisplayData } from '@onflow/frw-types';
+import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
+import { type AccountDisplayData, type TokenModel, type TransactionType } from '@onflow/frw-types';
 import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
-import { Image as RNImage } from 'react-native';
-import { YStack, XStack, View, Sheet, useTheme, Spinner } from 'tamagui';
+import { Sheet, Spinner, View, XStack, YStack, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { ConfirmationAnimation } from './ConfirmationAnimation';
+import { HoldToSendButton } from './HoldToSendButton';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { type NFTSendData } from './NFTSendPreview';
 import { Avatar } from '../foundation/Avatar';
@@ -35,11 +36,11 @@ export interface ConfirmationDrawerProps {
   summaryText?: string;
   sendTokensText?: string;
   sendNFTsText?: string;
+  sendSNFTsText?: string; // For semi-fungible NFTs (ERC1155)
   sendingText?: string;
   confirmSendText?: string;
   holdToSendText?: string;
   unknownAccountText?: string;
-  sendStaticImage?: any;
 }
 
 interface LoadingIndicatorProps {
@@ -141,15 +142,37 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   summaryText = 'Summary',
   sendTokensText = 'Send Tokens',
   sendNFTsText = 'Send NFTs',
+  sendSNFTsText = 'Send sNFTs', // Default for semi-fungible NFTs
   sendingText = 'Sending...',
   confirmSendText = 'Confirm send',
   holdToSendText = 'Hold to send',
   unknownAccountText = 'Unknown',
-  sendStaticImage,
 }) => {
   const theme = useTheme();
   const [internalIsSending, setInternalIsSending] = React.useState(false);
+  const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
+
+  // Determine if we're sending ERC1155 NFTs (semi-fungible)
+  const isERC1155 = React.useMemo(() => {
+    return selectedNFTs?.length === 1 && selectedNFTs[0].contractType === 'ERC1155';
+  }, [selectedNFTs]);
+
+  // Determine if we're sending multiple NFTs
+  const isMultipleNFTs = React.useMemo(() => {
+    return selectedNFTs ? selectedNFTs.length > 1 : false;
+  }, [selectedNFTs]);
+
+  // Dynamic section title based on transfer type
+  const nftSectionTitle = React.useMemo(() => {
+    if (isMultipleNFTs) {
+      return sendNFTsText;
+    } else if (isERC1155) {
+      return sendSNFTsText;
+    } else {
+      return sendNFTsText;
+    }
+  }, [isMultipleNFTs, isERC1155, sendNFTsText, sendSNFTsText]);
 
   // Theme-aware button colors using helper function
   const isCurrentlyDarkMode = isDarkMode(theme);
@@ -177,7 +200,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       setInternalIsSending(true);
       await onConfirm?.();
     } catch (error) {
-      //
+      // Trigger HoldToSendButton error state (rising edge)
+      setErrorSignal(true);
+      setTimeout(() => setErrorSignal(false), 50);
     } finally {
       setInternalIsSending(false);
     }
@@ -207,6 +232,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         animation={isExtension ? 'quick' : 'lazy'}
         enterStyle={{ y: 1000 }}
         exitStyle={{ y: 1000 }}
+        overflow="scroll"
       >
         <YStack p="$4" gap="$4">
           {/* Header */}
@@ -228,7 +254,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={closeIconColor} />
+                  <Close size={24} color="#767676" />
                 </XStack>
               </>
             ) : (
@@ -251,23 +277,48 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={15} color={closeIconColor} />
+                  <Close size={24} color="#767676" />
                 </XStack>
               </>
             )}
           </XStack>
 
-          {/* Transaction Visual - Simple Static Image */}
-          <View height={120} width="100%" items="center" justify="center" my="$2">
-            {!isExtension && sendStaticImage ? (
-              <RNImage
-                source={sendStaticImage}
-                style={{ width: 114.62, height: 129.195 }}
-                resizeMode="contain"
-              />
-            ) : (
-              <WalletCard size={120} />
-            )}
+          {/* Transaction Visual - Enhanced Lottie Animation */}
+          <View
+            height={120}
+            width="100%"
+            items="center"
+            justify="center"
+            my="$2"
+            position="relative"
+          >
+            {/* Background Gradient - Centered on Animation */}
+            <View
+              position="absolute"
+              t={0}
+              l={0}
+              r={0}
+              b={0}
+              items="center"
+              justify="center"
+              opacity={0.15}
+              style={{ zIndex: -1 }}
+            >
+              <ConfirmDialogBg width={600} height={600} color="url(#confirm-dialog-bg_svg__a)" />
+            </View>
+
+            <ConfirmationAnimation
+              width={400}
+              height={150}
+              imageUri={
+                transactionType !== 'tokens' && selectedNFTs && selectedNFTs.length > 0
+                  ? selectedNFTs[0].thumbnail || selectedToken?.logoURI
+                  : selectedToken?.logoURI
+              }
+              transactionType={transactionType}
+              autoPlay
+              loop
+            />
           </View>
 
           {/* Accounts Row */}
@@ -311,9 +362,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
-            <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
+            <YStack bg="$bg1" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$textSecondary" fontWeight="400">
-                {sendNFTsText}
+                {nftSectionTitle}
               </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
@@ -329,7 +380,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 selectedNFTs[0].contractType === 'ERC1155' &&
                 selectedNFTs[0].selectedQuantity && (
                   <XStack
-                    bg="$light10"
+                    bg="$subtleBg10"
                     rounded="$10"
                     items="center"
                     justify="center"
@@ -354,7 +405,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 )}
             </YStack>
           ) : (
-            <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
+            <YStack bg="$bg1" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$textSecondary" fontWeight="400">
                 {sendTokensText}
               </Text>
@@ -380,7 +431,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 </XStack>
 
                 <View
-                  bg={badgeBackgroundColor}
+                  bg="$subtleBg10"
                   rounded="$10"
                   px="$2"
                   py="$1"
@@ -406,40 +457,42 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           )}
 
           {/* Confirm Button */}
-          <YStack
-            mb={'$10'}
-            bg={buttonBackgroundColor}
-            rounded="$4"
-            height={56}
-            items="center"
-            justify="center"
-            pressStyle={{ opacity: 0.9 }}
-            onLongPress={internalIsSending ? undefined : handleConfirm}
-            onPressIn={internalIsSending ? undefined : () => setIsLongPressing(true)}
-            onPressOut={() => setIsLongPressing(false)}
-            cursor={internalIsSending ? 'not-allowed' : 'pointer'}
-            data-testid="confirm"
-          >
-            {internalIsSending ? (
-              <XStack items="center" gap="$2">
-                <Spinner size="small" color={buttonTextColor} />
-                <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                  {sendingText}
+          {isExtension ? (
+            <YStack
+              mb={'$10'}
+              bg="$text"
+              rounded="$4"
+              height={56}
+              items="center"
+              justify="center"
+              pressStyle={{ opacity: 0.9 }}
+              onPress={internalIsSending ? undefined : handleConfirm}
+              cursor={internalIsSending ? 'not-allowed' : 'pointer'}
+              data-testid="confirm"
+            >
+              {internalIsSending ? (
+                <XStack items="center" gap="$2">
+                  <Spinner size="small" color="$bg" />
+                  <Text fontSize="$5" fontWeight="600" color="$bg">
+                    {sendingText}
+                  </Text>
+                </XStack>
+              ) : (
+                <Text fontSize="$5" fontWeight="600" color="$bg">
+                  {confirmSendText}
                 </Text>
-              </XStack>
-            ) : isLongPressing && !isExtension ? (
-              <XStack items="center" gap="$2">
-                <Spinner size="small" color={buttonTextColor} />
-                <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                  {holdToSendText}
-                </Text>
-              </XStack>
-            ) : (
-              <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
-                {isExtension ? confirmSendText : holdToSendText}
-              </Text>
-            )}
-          </YStack>
+              )}
+            </YStack>
+          ) : (
+            <View mb={'$10'}>
+              <HoldToSendButton
+                onPress={handleConfirm}
+                stopSignal={internalIsSending}
+                errorSignal={errorSignal}
+                holdToSendText={holdToSendText}
+              />
+            </View>
+          )}
         </YStack>
       </Sheet.Frame>
     </Sheet>

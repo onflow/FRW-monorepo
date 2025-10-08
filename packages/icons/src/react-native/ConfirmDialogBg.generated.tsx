@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Svg, { type SvgProps, Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 const ConfirmDialogBg = ({
-  color = 'currentColor',
+  color = '#000',
   size = 24,
   width,
   height,
@@ -15,7 +15,13 @@ const ConfirmDialogBg = ({
     viewBox="0 0 376 729"
     {...props}
   >
-    <Circle cx={187.696} cy={364.089} r={364.044} fill={color} />
+    <Circle
+      cx={187.696}
+      cy={364.089}
+      r={364.044}
+      fill="url(#confirm-dialog-bg_svg__a)"
+      opacity={0.1}
+    />
     <Defs>
       <RadialGradient
         id="confirm-dialog-bg_svg__a"
