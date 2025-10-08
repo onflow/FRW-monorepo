@@ -27,8 +27,12 @@ import type { SendPayload } from './types';
  * @param cadenceService - CadenceService instance for executing transactions
  * @returns Transaction result
  */
-export const SendTransaction = async (payload: SendPayload, cadenceService: any) => {
+export const SendTransaction = async (
+  payload: SendPayload,
+  cadenceService: any,
+  callback: any = () => {}
+) => {
   logger.debug('SendTransaction payload', payload);
-  const context = createTransferContext(cadenceService);
+  const context = createTransferContext(cadenceService, callback);
   return await context.execute(payload);
 };

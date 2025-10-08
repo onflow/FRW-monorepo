@@ -1,10 +1,6 @@
 import { useMemo } from 'react';
 
-import {
-  HASH_ALGO_NUM_DEFAULT,
-  SIGN_ALGO_NUM_DEFAULT,
-  MAINNET_CHAIN_ID,
-} from '@/shared/constant';
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT, MAINNET_CHAIN_ID } from '@/shared/constant';
 import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { getActiveAccountTypeForAddress } from '@/shared/utils';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -110,8 +106,20 @@ export const useProfiles = () => {
 
   // The current wallet is the wallet that the user is currently using
   const currentWallet = useMemo(() => {
+    console.log(
+      'currentWallet =====>',
+      activeAccountType,
+      evmAccount,
+      childAccounts,
+      parentWallet,
+      activeAccounts?.currentAddress
+    );
     switch (activeAccountType) {
       case 'evm':
+        // evmAccount ?? INITIAL_WALLET;
+        if (parentWallet.eoaAccount?.address === activeAccounts?.currentAddress) {
+          return parentWallet.eoaAccount;
+        }
         return evmAccount ?? INITIAL_WALLET;
       case 'child':
         return (

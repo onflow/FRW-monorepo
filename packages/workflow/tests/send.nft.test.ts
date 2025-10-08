@@ -5,7 +5,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
 import { authz, bridgeAuthorization } from './utils/authz';
-// import { SendTransaction } from '../src'
 
 dotenv.config();
 
@@ -313,6 +312,48 @@ describe('Test NFT send strategies', () => {
   //   };
 
   //   const txid = await SendTransaction(payload, cadenceService);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test EvmToFlowNftWithEoaBridgeStrategy - Bridge NFT from EVM to Flow with EOA', async () => {
+  //   const payload = {
+  //     type: 'nft',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: mainAccount.address,
+  //     flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+  //     sender: mainAccount.eoaAddr,
+  //     amount: '0',
+  //     childAddrs: [],
+  //     ids: [75866303338937],
+  //     decimal: 0,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x2B7CfE0f24c18690a4E34a154e313859B7c6e342',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   console.log(txid)
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test EoaToChildNftStrategy - Bridge NFT from EOA to Child', async () => {
+  //   const payload = {
+  //     type: 'nft',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: '0x1693baa419804143',
+  //     flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+  //     sender: mainAccount.eoaAddr,
+  //     amount: '0',
+  //     childAddrs: ['0x1693baa419804143'],
+  //     ids: [225399885718549],
+  //     decimal: 0,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x2B7CfE0f24c18690a4E34a154e313859B7c6e342',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   console.log(txid);
   //   expect(txid.length).toBe(64);
   // });
 });

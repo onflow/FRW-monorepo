@@ -75,6 +75,29 @@ const AccountHierarchy = ({
         />
       )}
 
+      {account?.eoaAccount &&
+        account?.eoaAccount.address &&
+        isValidEthereumAddress(account?.eoaAccount.address) && (
+          <AccountCard
+            network={network}
+            key={account?.eoaAccount.address}
+            account={account?.eoaAccount}
+            parentAccount={account}
+            active={activeAccount?.address === account?.eoaAccount.address}
+            onClick={
+              onAccountClick ? () => onAccountClick(account?.eoaAccount, account) : undefined
+            }
+            onClickSecondary={
+              onAccountClickSecondary
+                ? () => onAccountClickSecondary(account?.eoaAccount, account)
+                : undefined
+            }
+            secondaryIcon={secondaryIcon}
+            showLink={true}
+            showCard={false}
+          />
+        )}
+
       {/* Child accounts */}
       {childAccounts &&
         childAccounts.map((linkedAccount) => (
@@ -126,6 +149,8 @@ export const AccountListing = ({
   itemSx,
   ignoreHidden = false,
 }: AccountListingProps) => {
+  console.log('accountList', accountList);
+
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
   // Check if the EVM account is not valid

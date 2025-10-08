@@ -79,6 +79,7 @@ import openapiService, { getScripts } from './openapi';
 import preferenceService from './preference';
 import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
+import walletManager from './wallet-manager';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import { fetchAccountsByPublicKey } from '../utils/key-indexer';
@@ -118,6 +119,7 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
+  uid: '',
 };
 
 // Create an instance of the CadenceService
@@ -432,6 +434,8 @@ class UserWallet {
       throw new Error('Network is not set');
     }
 
+    console.log('setActiveAccounts', pubkey, network, newActiveAccounts);
+
     // Save the data in storage
     await setLocalData<ActiveAccountsStore>(activeAccountsKey(network, pubkey), newActiveAccounts);
   };
@@ -579,7 +583,47 @@ class UserWallet {
     const network = this.getNetwork();
     const pubkey = this.getCurrentPubkey();
 
-    return getMainAccountsWithPubKey(network, pubkey);
+    console.log('getMainAccounts', network, pubkey);
+
+    // Get original Flow main accounts
+    const originalMainAccounts = await getMainAccountsWithPubKey(network, pubkey);
+
+    // Try to get EOA account info and add it to main accounts
+    try {
+      let eoaAccountInfo: WalletAccount | undefined;
+
+      // Try to get EOA account info (this won't require password if cached)
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+
+      if (eoaInfo) {
+        eoaAccountInfo = {
+          address: eoaInfo.address,
+          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+          id: 99, // Special ID for EOA
+          name: 'EVM Account (EOA)',
+          icon: '🔷',
+          color: '#627EEA', // EVM blue
+          balance: eoaInfo.balance || '0',
+        };
+      }
+
+      // Add EOA info to main accounts
+      const enhancedMainAccounts: MainAccount[] = originalMainAccounts.map((account) => ({
+        ...account,
+        eoaAccount: eoaAccountInfo,
+      }));
+
+      console.log('enhancedMainAccounts', enhancedMainAccounts);
+
+      return enhancedMainAccounts;
+    } catch (error) {
+      console.error('Failed to enhance main accounts with EOA:', error);
+      // Return original accounts if EOA enhancement fails
+      return originalMainAccounts.map((account) => ({
+        ...account,
+        eoaAccount: undefined,
+      }));
+    }
   };
 
   // Get the main account wallet for the current public key
@@ -1573,6 +1617,7 @@ const loadMainAccountsWithPubKey = async (
   network: string,
   pubKey: string
 ): Promise<MainAccount[]> => {
+  console.log('loadMainAccountsWithPubKey', network, pubKey);
   // Get the accounts for the current public key
   const accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
 
@@ -1628,6 +1673,9 @@ const loadMainAccountsWithPubKey = async (
     mainAccounts.map((mainAccount) => mainAccount.address)
   );
 
+  // Try to get EOA account info (this won't require password if cached)
+  const eoaInfo = await walletManager.getEOAAccountInfo();
+
   const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
     const accountDetail = accountDetailMap[mainAccount.address];
     const evmAccount = accountDetail.COAs?.length
@@ -1644,9 +1692,20 @@ const loadMainAccountsWithPubKey = async (
       }
     }
 
+    const eoaAccountInfo = {
+      address: eoaInfo?.address,
+      chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+      id: 99, // Special ID for EOA
+      name: 'EVM Account (EOA)',
+      icon: '🔷',
+      color: '#627EEA', // EVM blue
+      balance: eoaInfo?.balance || '0',
+    };
+
     return {
       ...mainAccount,
       evmAccount,
+      eoaAccount: eoaAccountInfo,
       childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
     };
   });
@@ -1657,6 +1716,8 @@ const loadMainAccountsWithPubKey = async (
     mainAccountsWithDetail,
     mainAccountsWithDetail.length > 0 ? 60_000 : 1_000
   );
+
+  console.log('loadMainAccountsWithPubKey', mainAccountsWithDetail);
 
   return mainAccountsWithDetail;
 };
