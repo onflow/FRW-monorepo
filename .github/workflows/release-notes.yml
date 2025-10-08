@@ -57,6 +57,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           INPUT_FROM_TAG: ${{ inputs.from_tag }}
           INPUT_TO_TAG: ${{ inputs.to_tag }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           bash scripts/release-notes/generate_with_ai.sh

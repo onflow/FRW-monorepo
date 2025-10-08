@@ -5,6 +5,7 @@ set -euo pipefail
 # Requires commit_info.md to be present in current directory.
 # Inputs via env vars:
 #   PREVIOUS_TAG, TAG_NAME, COMMIT_COUNT, REPOSITORY
+#   GITHUB_TOKEN (secret for GitHub API)
 #   ANTHROPIC_API_KEY (secret)
 # Output: writes ai_release_notes.md, sets RELEASE_NOTES in GITHUB_OUTPUT (optional)
 
@@ -12,12 +13,35 @@ PREVIOUS_TAG=${PREVIOUS_TAG:-}
 TAG_NAME=${TAG_NAME:-}
 COMMIT_COUNT=${COMMIT_COUNT:-}
 REPOSITORY=${REPOSITORY:-}
+GITHUB_TOKEN=${GITHUB_TOKEN:-}
 
 if [[ ! -f commit_info.md ]]; then
   echo "::error::commit_info.md not found; run collect_commits.sh first." >&2
   exit 1
 fi
 
+
+# Build PR Index with GitHub handles if pr_entries.txt exists
+if [[ -f pr_entries.txt ]]; then
+  mapfile -t PRS < <(cut -d'|' -f1 pr_entries.txt | sort -n | uniq)
+  : > pr_index.md
+  for pr in "${PRS[@]}"; do
+    [ -z "$pr" ] && continue
+    if [[ -n "$GITHUB_TOKEN" && -n "$REPOSITORY" ]]; then
+      DATA=$(curl -s -L         -H "Accept: application/vnd.github+json"         -H "Authorization: Bearer $GITHUB_TOKEN"         -H "X-GitHub-Api-Version: 2022-11-28"         "https://api.github.com/repos/${REPOSITORY}/pulls/${pr}" || true)
+      LOGIN=$(echo "$DATA" | jq -r '.user.login // empty' 2>/dev/null || echo "")
+      TITLE=$(echo "$DATA" | jq -r '.title // empty' 2>/dev/null || echo "")
+      if [[ -n "$LOGIN" ]]; then
+        echo "- #${pr} by @${LOGIN}" >> pr_index.md
+      else
+        # Fallback without handle
+        echo "- #${pr}" >> pr_index.md
+      fi
+    else
+      echo "- #${pr}" >> pr_index.md
+    fi
+  done
+fi
 echo "Preparing prompt for AI generation..."
 
 cat > claude_prompt.md << 'PROMPT_EOF'
