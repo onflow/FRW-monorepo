@@ -348,7 +348,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="NotificationPreferences"
               component={NotificationPreferencesScreen}
               options={{
-                headerTitle: t('onboarding.notificationPreferences.title'),
+                headerTitle: t('onboarding.notificationPreferences.headerTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
               }}
             />
             <Stack.Screen

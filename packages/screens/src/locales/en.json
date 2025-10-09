@@ -220,6 +220,7 @@
       }
     },
     "notificationPreferences": {
+      "headerTitle": "Notifications",
       "title": "Get push notifications",
       "subtitle": "Get notified when your transfers, swaps and approvals complete.",
       "enableButton": "Turn on push notifications",
