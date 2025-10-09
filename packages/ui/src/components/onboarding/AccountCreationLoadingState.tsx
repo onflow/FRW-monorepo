@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { YStack, Text, View } from 'tamagui';
 
 interface AccountCreationLoadingStateProps {
   visible: boolean;
   title?: string;
   statusText?: string;
+  onComplete?: () => void;
+  duration?: number;
 }
 
 /**
@@ -15,7 +17,20 @@ export function AccountCreationLoadingState({
   visible,
   title = 'Creating\nyour account',
   statusText = 'Configuring account',
+  onComplete,
+  duration = 3000,
 }: AccountCreationLoadingStateProps): React.ReactElement | null {
+  // Handle completion after duration
+  useEffect(() => {
+    if (visible && onComplete) {
+      const timer = setTimeout(() => {
+        onComplete();
+      }, duration);
+
+      return () => clearTimeout(timer);
+    }
+  }, [visible, onComplete, duration]);
+
   if (!visible) return null;
 
   return (
@@ -38,71 +53,6 @@ export function AccountCreationLoadingState({
         <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36} mb="$8">
           {title}
         </Text>
-
-        {/* Flow logo with glassmorphism cards */}
-        <YStack items="center" mb="$12">
-          <View pos="relative" w={232} h={248}>
-            {/* Background glassmorphism card */}
-            <View
-              pos="absolute"
-              top={57}
-              left={11}
-              w={158}
-              h={191}
-              bg="rgba(255, 255, 255, 0.05)"
-              borderWidth={0.8}
-              borderColor="rgba(255, 255, 255, 0.5)"
-              rounded={22}
-              style={{
-                backdropFilter: 'blur(80px)',
-                WebkitBackdropFilter: 'blur(80px)',
-              }}
-            />
-
-            {/* Flow logo placeholder */}
-            <View pos="absolute" top={7} left={71} w={124} h={124} zIndex={1}>
-              <View w={124} h={124} bg="$primary" rounded={999} items="center" justify="center">
-                <Text fontSize={48} color="$background">
-                  F
-                </Text>
-              </View>
-            </View>
-
-            {/* Front glassmorphism card */}
-            <View
-              pos="absolute"
-              top={72}
-              left={20}
-              w={212}
-              h={176}
-              bg="rgba(255, 255, 255, 0.05)"
-              borderWidth={0.8}
-              borderColor="rgba(255, 255, 255, 0.5)"
-              rounded={22}
-              style={{
-                backdropFilter: 'blur(80px)',
-                WebkitBackdropFilter: 'blur(80px)',
-              }}
-            />
-
-            {/* Small accent card */}
-            <View
-              pos="absolute"
-              top={122}
-              left={177}
-              w={41}
-              h={35}
-              bg="rgba(255, 255, 255, 0.05)"
-              borderWidth={0.8}
-              borderColor="rgba(255, 255, 255, 0.5)"
-              rounded={999}
-              style={{
-                backdropFilter: 'blur(22px)',
-                WebkitBackdropFilter: 'blur(22px)',
-              }}
-            />
-          </View>
-        </YStack>
 
         {/* Progress section */}
         <YStack w="90%" maxW={339} items="center" gap="$3">

@@ -240,6 +240,8 @@ export function SecureEnclaveScreen(): React.ReactElement {
         visible={createAccountMutation.isPending}
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
+        onComplete={() => navigation.navigate('NotificationPreferences')}
+        duration={3000}
       />
     </>
   );

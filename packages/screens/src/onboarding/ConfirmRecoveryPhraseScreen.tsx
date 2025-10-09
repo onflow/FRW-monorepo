@@ -10,7 +10,7 @@ import {
   ScrollView,
   AccountCreationLoadingState,
 } from '@onflow/frw-ui';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Questions to ask - positions in the phrase to verify
@@ -57,8 +57,8 @@ export function ConfirmRecoveryPhraseScreen({
     'Carry',
   ];
 
-  // Generate verification questions based on actual recovery phrase
-  const generateQuestions = (): VerificationQuestion[] => {
+  // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration
+  const questions = useMemo((): VerificationQuestion[] => {
     // Generate random options that include the correct answer
     const generateOptions = (correctAnswer: string, allWords: string[]): string[] => {
       const options = new Set<string>([correctAnswer]);
@@ -80,9 +80,7 @@ export function ConfirmRecoveryPhraseScreen({
       options: generateOptions(recoveryPhrase[position - 1], recoveryPhrase),
       correctAnswer: recoveryPhrase[position - 1],
     }));
-  };
-
-  const questions = generateQuestions();
+  }, [recoveryPhrase]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -105,12 +103,7 @@ export function ConfirmRecoveryPhraseScreen({
       // Show creating account animation
       setIsCreatingAccount(true);
 
-      // Simulate account creation delay
-      setTimeout(() => {
-        setIsCreatingAccount(false);
-        // Navigate to notification preferences after account creation
-        navigation.navigate('NotificationPreferencesScreen');
-      }, 3000);
+      // Account creation loading state will handle navigation via onComplete callback
     }
   };
 
@@ -163,57 +156,61 @@ export function ConfirmRecoveryPhraseScreen({
                       })}
                     </Text>
 
-                    {/* Word options */}
-                    <XStack
-                      w="100%"
-                      maxW={339}
-                      h={57}
+                    {/* Word options container - Single horizontal row as per Figma */}
+                    <View
+                      width="100%"
+                      maxWidth={339}
+                      height={57}
                       rounded={16}
                       bg="rgba(255, 255, 255, 0.1)"
                       borderWidth={1}
                       borderColor="rgba(255, 255, 255, 0.1)"
-                      items="center"
-                      justify="center"
-                      gap="$4"
-                      px="$3"
+                      paddingHorizontal={12}
+                      alignItems="center"
+                      justifyContent="center"
                     >
-                      {question.options.map((word) => {
-                        const isSelected = selectedAnswer === word;
-                        const isWrong = isSelected && word !== question.correctAnswer;
-                        const isCorrectSelection = isSelected && word === question.correctAnswer;
+                      <XStack gap={8} width="100%" justify="space-between">
+                        {question.options.map((word) => {
+                          const isSelected = selectedAnswer === word;
+                          const isWrong = isSelected && word !== question.correctAnswer;
+                          const isCorrectSelection = isSelected && word === question.correctAnswer;
 
-                        return (
-                          <Button
-                            key={word}
-                            variant="ghost"
-                            onPress={() => handleSelectWord(index, word)}
-                          >
-                            <View
-                              px="$3"
-                              py="$2"
-                              minW={58}
-                              h={45}
-                              rounded={10}
-                              bg={isCorrectSelection ? '$text' : isWrong ? '$text' : 'transparent'}
-                              items="center"
-                              justify="center"
+                          return (
+                            <Button
+                              key={word}
+                              variant="ghost"
+                              onPress={() => handleSelectWord(index, word)}
+                              padding={0}
+                              flex={1}
                             >
-                              <Text
-                                fontSize="$4"
-                                fontWeight="500"
-                                color={
-                                  isCorrectSelection ? '$primary' : isWrong ? '$error' : '$text'
+                              <View
+                                width="100%"
+                                minWidth={58}
+                                height={45}
+                                rounded={10}
+                                bg={
+                                  isCorrectSelection ? '$text' : isWrong ? '$text' : 'transparent'
                                 }
-                                text="center"
-                                lineHeight={28}
+                                alignItems="center"
+                                justifyContent="center"
                               >
-                                {word}
-                              </Text>
-                            </View>
-                          </Button>
-                        );
-                      })}
-                    </XStack>
+                                <Text
+                                  fontSize={16}
+                                  fontWeight="500"
+                                  color={
+                                    isCorrectSelection ? '$primary' : isWrong ? '$error' : '$text'
+                                  }
+                                  textAlign="center"
+                                  lineHeight={28}
+                                >
+                                  {word}
+                                </Text>
+                              </View>
+                            </Button>
+                          );
+                        })}
+                      </XStack>
+                    </View>
                   </YStack>
                 );
               })}
@@ -249,6 +246,8 @@ export function ConfirmRecoveryPhraseScreen({
         visible={isCreatingAccount}
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
+        onComplete={() => navigation.navigate('NotificationPreferences')}
+        duration={3000}
       />
     </GradientBackground>
   );
