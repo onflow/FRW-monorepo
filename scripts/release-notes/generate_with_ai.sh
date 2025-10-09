@@ -5,6 +5,7 @@ set -euo pipefail
 # Requires commit_info.md to be present in current directory.
 # Inputs via env vars:
 #   PREVIOUS_TAG, TAG_NAME, COMMIT_COUNT, REPOSITORY
+#   GITHUB_TOKEN (secret for GitHub API)
 #   ANTHROPIC_API_KEY (secret)
 # Output: writes ai_release_notes.md, sets RELEASE_NOTES in GITHUB_OUTPUT (optional)
 
@@ -12,12 +13,35 @@ PREVIOUS_TAG=${PREVIOUS_TAG:-}
 TAG_NAME=${TAG_NAME:-}
 COMMIT_COUNT=${COMMIT_COUNT:-}
 REPOSITORY=${REPOSITORY:-}
+GITHUB_TOKEN=${GITHUB_TOKEN:-}
 
 if [[ ! -f commit_info.md ]]; then
   echo "::error::commit_info.md not found; run collect_commits.sh first." >&2
   exit 1
 fi
 
+
+# Build PR Index with GitHub handles if pr_entries.txt exists
+if [[ -f pr_entries.txt ]]; then
+  mapfile -t PRS < <(cut -d'|' -f1 pr_entries.txt | sort -n | uniq)
+  : > pr_index.md
+  for pr in "${PRS[@]}"; do
+    [ -z "$pr" ] && continue
+    if [[ -n "$GITHUB_TOKEN" && -n "$REPOSITORY" ]]; then
+      DATA=$(curl -s -L         -H "Accept: application/vnd.github+json"         -H "Authorization: Bearer $GITHUB_TOKEN"         -H "X-GitHub-Api-Version: 2022-11-28"         "https://api.github.com/repos/${REPOSITORY}/pulls/${pr}" || true)
+      LOGIN=$(echo "$DATA" | jq -r '.user.login // empty' 2>/dev/null || echo "")
+      TITLE=$(echo "$DATA" | jq -r '.title // empty' 2>/dev/null || echo "")
+      if [[ -n "$LOGIN" ]]; then
+        echo "- #${pr} by @${LOGIN}" >> pr_index.md
+      else
+        # Fallback without handle
+        echo "- #${pr}" >> pr_index.md
+      fi
+    else
+      echo "- #${pr}" >> pr_index.md
+    fi
+  done
+fi
 echo "Preparing prompt for AI generation..."
 
 cat > claude_prompt.md << 'PROMPT_EOF'
@@ -25,11 +49,12 @@ You are an expert technical writer creating release notes for the Flow Reference
 
 **CRITICAL GUIDELINES:**
 1. Write for END USERS, not developers - avoid technical jargon
-2. Focus on user-facing benefits and improvements they will actually experience
-3. Skip internal changes that don't affect users (unless they improve performance/security)
-4. Use exciting, positive language to highlight improvements
-5. Group related changes logically
-6. Be concise but informative
+2. For each bullet, append PR number(s) and author(s) inline at the end in this format: "#123 by @username" or "#12, #34 by @a, @b"
+3. Prefer the PR Index for accurate PR numbers and authors; if none, infer from commit text
+4. Group related changes under clear, user-facing sections
+5. Be concise and avoid internal-only changes
+6. Use positive, user-friendly language
+
 
 **OUTPUT FORMAT (use this exact structure):**
 
@@ -92,6 +117,7 @@ if [[ -z "$RELEASE_NOTES" || "$RELEASE_NOTES" == "null" ]]; then
 fi
 
 echo "$RELEASE_NOTES" > ai_release_notes.md
+
 
 # Clean temp prompt files for security
 rm -f claude_prompt.md claude_request_template.json claude_request_final.json || true
