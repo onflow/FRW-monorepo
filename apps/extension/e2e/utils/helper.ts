@@ -83,7 +83,7 @@ export const loginToExtensionAccount = async ({ page, extensionId, addr, passwor
     await expect(page.getByTestId('Profiles', { exact: true })).toBeVisible();
     // Switch to the correct account. Note doest not handle more than 3 accounts loaded
     await page.getByTestId(`profile-item-nickname-${nickname}`).click();
-    await expect(page.getByRole('progressbar').getByRole('img')).not.toBeVisible();
+    await expect(page.getByTestId('progressbar').getByRole('img')).not.toBeVisible();
     // get address
     flowAddr = await getCurrentAddress(page);
     if (flowAddr !== addr && isValidEthereumAddress(flowAddr)) {
