@@ -5,6 +5,14 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  // Onboarding screens
+  GetStartedScreen,
+  ProfileTypeSelectionScreen,
+  RecoveryPhraseScreen,
+  ConfirmRecoveryPhraseScreen,
+  SecureEnclaveScreen,
+  NotificationPreferencesScreen,
+  BackupOptionsScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -53,6 +61,14 @@ export type RootStackParamList = {
     token?: Record<string, unknown>;
     selectedNFTs?: Record<string, unknown>[];
   };
+  // Onboarding screens
+  GetStarted: undefined;
+  ProfileTypeSelection: undefined;
+  RecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: { recoveryPhrase?: string[] };
+  SecureEnclave: undefined;
+  NotificationPreferences: undefined;
+  BackupOptions: undefined;
 };
 
 interface AppNavigatorProps {
@@ -274,6 +290,68 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={SendSummaryScreen}
               options={{
                 headerTitle: t('navigation.sending'),
+              }}
+            />
+          </Stack.Group>
+
+          {/* Onboarding Screens Group */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '', // Ensure no back title text
+              headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
+            }}
+          >
+            <Stack.Screen
+              name="GetStarted"
+              component={GetStartedScreen}
+              options={{
+                headerShown: false, // First screen doesn't need header
+              }}
+            />
+            <Stack.Screen
+              name="ProfileTypeSelection"
+              component={ProfileTypeSelectionScreen}
+              options={{
+                headerTitle: t('onboarding.profileType.welcomeTitle'),
+              }}
+            />
+            <Stack.Screen
+              name="RecoveryPhrase"
+              component={RecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.recoveryPhrase.navTitle'),
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmRecoveryPhrase"
+              component={ConfirmRecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
+              }}
+            />
+            <Stack.Screen
+              name="SecureEnclave"
+              component={SecureEnclaveScreen}
+              options={{
+                headerTitle: t('onboarding.secureEnclave.title'),
+              }}
+            />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+              options={{
+                headerTitle: t('onboarding.notificationPreferences.title'),
+              }}
+            />
+            <Stack.Screen
+              name="BackupOptions"
+              component={BackupOptionsScreen}
+              options={{
+                headerTitle: t('onboarding.backupOptions.navTitle'),
               }}
             />
           </Stack.Group>

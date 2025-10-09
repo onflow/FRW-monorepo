@@ -1,6 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { BackArrow } from '@onflow/frw-icons';
-import { YStack, XStack, Text, View, GradientBackground, Button, IconButton } from '@onflow/frw-ui';
+import { YStack, XStack, Text, View, GradientBackground, Button } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -29,15 +28,6 @@ export function NotificationPreferencesScreen(): React.ReactElement {
   return (
     <GradientBackground>
       <YStack flex={1}>
-        {/* Header with back button */}
-        <XStack px="$4" pt="$6" pb="$2">
-          <IconButton
-            icon={<BackArrow size={24} color="$text" />}
-            onPress={handleBack}
-            variant="ghost"
-          />
-        </XStack>
-
         <YStack flex={1} px="$4">
           {/* Title and description */}
           <YStack mb="$6">

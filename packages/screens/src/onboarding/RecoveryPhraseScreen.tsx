@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { BackArrow, Copy } from '@onflow/frw-icons';
+// import { Copy } from '@onflow/frw-icons'; // Temporarily disabled
 import {
   YStack,
   XStack,
@@ -7,7 +7,6 @@ import {
   View,
   GradientBackground,
   Button,
-  IconButton,
   Pressable,
   copyToClipboard,
 } from '@onflow/frw-ui';
@@ -77,21 +76,6 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             filter: 'blur(400px)',
           }}
         />
-
-        {/* Header with back button */}
-        <XStack px="$4" pt="$6" pb="$2" items="center">
-          <IconButton
-            icon={<BackArrow size={24} color="$text" />}
-            onPress={handleBack}
-            variant="ghost"
-          />
-          <YStack flex={1} items="center">
-            <Text fontSize="$5" fontWeight="600" color="$text">
-              {t('onboarding.recoveryPhrase.navTitle')}
-            </Text>
-          </YStack>
-          <View w={24} /> {/* Spacer for centering */}
-        </XStack>
 
         <YStack flex={1} px="$4" pt="$4">
           {/* Title and description */}
@@ -215,7 +199,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           <XStack justify="center" mb="$4">
             <Pressable onPress={handleCopy}>
               <XStack gap="$3" items="center">
-                <Copy size={24} color="$primary" />
+                {/* <Copy size={24} color="$primary" /> */} {/* Temporarily disabled */}
                 <Text fontSize="$4" fontWeight="600" color="$primary">
                   {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
                 </Text>

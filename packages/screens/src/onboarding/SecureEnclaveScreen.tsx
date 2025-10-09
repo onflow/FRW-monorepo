@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { FlowLogo, BackArrow, CheckCircle } from '@onflow/frw-icons';
+// import { FlowLogo, CheckCircle } from '@onflow/frw-icons'; // Temporarily disabled
 import {
   YStack,
   XStack,
@@ -7,7 +7,6 @@ import {
   View,
   GradientBackground,
   Button,
-  IconButton,
   InfoDialog,
   HoldToSendButton,
 } from '@onflow/frw-ui';
@@ -44,17 +43,8 @@ export function SecureEnclaveScreen(): React.ReactElement {
   };
 
   return (
-    <GradientBackground>
-      <YStack flex={1}>
-        {/* Header with back button */}
-        <XStack px="$4" pt="$6" pb="$2">
-          <IconButton
-            icon={<BackArrow size={24} color="$text" />}
-            onPress={handleBack}
-            variant="ghost"
-          />
-        </XStack>
-
+    <>
+      <GradientBackground>
         <YStack flex={1} px="$4">
           {/* Advanced text */}
           <YStack mb="$8">
@@ -92,12 +82,12 @@ export function SecureEnclaveScreen(): React.ReactElement {
                 transform: 'translate(-50%, -50%)',
               }}
             >
-              <FlowLogo size={100} color="$primary" />
+              {/* <FlowLogo size={100} color="$primary" /> */} {/* Temporarily disabled */}
             </View>
 
             {/* Main Flow logo */}
             <View w={94} h={94} zIndex={1}>
-              <FlowLogo size={94} color="$primary" />
+              {/* <FlowLogo size={94} color="$primary" /> */} {/* Temporarily disabled */}
             </View>
           </YStack>
 
@@ -117,7 +107,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
           <YStack gap="$4" items="center" mb="$6">
             {/* Secure enclave */}
             <XStack gap="$2" items="center">
-              <CheckCircle size={16} color="$primary" />
+              {/* <CheckCircle size={16} color="$primary" /> */} {/* Temporarily disabled */}
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.secureEnclave')}
               </Text>
@@ -125,7 +115,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* Hardware security */}
             <XStack gap="$2" items="center">
-              <CheckCircle size={16} color="$primary" />
+              {/* <CheckCircle size={16} color="$primary" /> */} {/* Temporarily disabled */}
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.hardwareSecurity')}
               </Text>
@@ -152,7 +142,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
             </Button>
           </YStack>
         </YStack>
-      </YStack>
+      </GradientBackground>
 
       {/* Confirmation Dialog */}
       <InfoDialog
@@ -232,7 +222,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
                 {/* Flow logo */}
                 <View pos="absolute" top={7} left={71} w={124} h={124} zIndex={1}>
-                  <FlowLogo size={124} color="$primary" />
+                  {/* <FlowLogo size={124} color="$primary" /> */} {/* Temporarily disabled */}
                 </View>
 
                 {/* Front glassmorphism card */}
@@ -313,6 +303,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
           </YStack>
         </View>
       )}
-    </GradientBackground>
+    </>
   );
 }

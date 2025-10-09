@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { FlowLogo } from '@onflow/frw-icons';
+// import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
 import { YStack, XStack, Text, View, GradientBackground, Button } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -60,12 +60,12 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
               transform: 'translate(-50%, -50%)',
             }}
           >
-            <FlowLogo size={100} color="$primary" />
+            {/* <FlowLogo size={100} color="$primary" /> */} {/* Temporarily disabled */}
           </View>
 
           {/* Main Flow logo */}
           <View w={94} h={94} zIndex={1}>
-            <FlowLogo size={94} color="$primary" />
+            {/* <FlowLogo size={94} color="$primary" /> */} {/* Temporarily disabled */}
           </View>
         </YStack>
 

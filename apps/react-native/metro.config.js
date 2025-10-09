@@ -44,6 +44,8 @@ const config = {
         'node_modules/.pnpm/zustand@5.0.8_@types+react@19.1.10_immer@10.1.1_react@19.0.0_use-sync-external-store@1.5.0_react@19.0.0_/node_modules/zustand'
       ),
       immer: path.resolve(monorepoRoot, 'node_modules/.pnpm/immer@10.1.1/node_modules/immer'),
+      // Force React Native to use the correct icons entry point
+      '@onflow/frw-icons': path.resolve(monorepoRoot, 'packages/icons/dist/react-native/index.js'),
     },
   },
   transformer: {

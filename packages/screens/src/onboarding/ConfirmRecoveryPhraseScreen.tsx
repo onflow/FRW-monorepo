@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { BackArrow, FlowLogo } from '@onflow/frw-icons';
+// import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
 import {
   YStack,
   XStack,
@@ -7,7 +7,6 @@ import {
   View,
   GradientBackground,
   Button,
-  IconButton,
   Pressable,
   ScrollView,
 } from '@onflow/frw-ui';
@@ -137,21 +136,6 @@ export function ConfirmRecoveryPhraseScreen({
             filter: 'blur(400px)',
           }}
         />
-
-        {/* Header with back button */}
-        <XStack px="$4" pt="$6" pb="$2" items="center">
-          <IconButton
-            icon={<BackArrow size={24} color="$text" />}
-            onPress={handleBack}
-            variant="ghost"
-          />
-          <YStack flex={1} items="center">
-            <Text fontSize="$5" fontWeight="600" color="$text">
-              {t('onboarding.confirmRecoveryPhrase.navTitle')}
-            </Text>
-          </YStack>
-          <View w={24} /> {/* Spacer for centering */}
-        </XStack>
 
         <ScrollView flex={1} showsVerticalScrollIndicator={false}>
           <YStack px="$4" pt="$4">
@@ -297,7 +281,7 @@ export function ConfirmRecoveryPhraseScreen({
 
                 {/* Flow logo */}
                 <View pos="absolute" top={7} left={71} w={124} h={124} zIndex={1}>
-                  <FlowLogo size={124} color="$primary" />
+                  {/* <FlowLogo size={124} color="$primary" /> */} {/* Temporarily disabled */}
                 </View>
 
                 {/* Front glassmorphism card */}

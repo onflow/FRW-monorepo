@@ -1,14 +1,6 @@
 import { navigation } from '@onflow/frw-context';
-import { BackArrow, InfoIcon } from '@onflow/frw-icons';
-import {
-  YStack,
-  XStack,
-  Text,
-  View,
-  GradientBackground,
-  IconButton,
-  BackupOptionCard,
-} from '@onflow/frw-ui';
+// import { InfoIcon } from '@onflow/frw-icons'; // Temporarily disabled
+import { YStack, XStack, Text, View, GradientBackground, BackupOptionCard } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -41,25 +33,6 @@ export function BackupOptionsScreen(): React.ReactElement {
   return (
     <GradientBackground>
       <YStack flex={1}>
-        {/* Header with title and info button */}
-        <XStack px="$4" pt="$6" pb="$2" items="center" justify="space-between">
-          <IconButton
-            icon={<BackArrow size={24} color="$text" />}
-            onPress={handleBack}
-            variant="ghost"
-          />
-
-          <Text fontSize="$5" fontWeight="600" color="$text">
-            {t('onboarding.backupOptions.navTitle')}
-          </Text>
-
-          <IconButton
-            icon={<InfoIcon size={24} color="$text" />}
-            onPress={() => {}}
-            variant="ghost"
-          />
-        </XStack>
-
         <YStack flex={1} px="$4">
           {/* Description */}
           <YStack mb="$6" mt="$4">
