@@ -135,7 +135,7 @@ export function ConfirmRecoveryPhraseScreen({
 
                 return (
                   <YStack key={index} gap="$3" items="center">
-                    <Text fontSize="$5" fontWeight="600" color="$text" text="center">
+                    <Text fontSize="$5" fontWeight="700" color="$text" text="center">
                       {t('onboarding.confirmRecoveryPhrase.selectWord', {
                         position: question.position,
                       })}
@@ -219,7 +219,7 @@ export function ConfirmRecoveryPhraseScreen({
             onPress={!allAnswersCorrect ? undefined : handleFinish}
             cursor={!allAnswersCorrect ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color={!allAnswersCorrect ? '$white' : '$bg'}>
+            <Text fontSize="$4" fontWeight="700" color={!allAnswersCorrect ? '$white' : '$bg'}>
               {t('onboarding.confirmRecoveryPhrase.finish')}
             </Text>
           </YStack>

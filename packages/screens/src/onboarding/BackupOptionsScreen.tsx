@@ -46,21 +46,29 @@ export function BackupOptionsScreen(): React.ReactElement {
               iconBackground={
                 <>
                   <View
-                    pos="absolute"
+                    position="absolute"
                     left={0}
                     top={0}
-                    w={44}
-                    h={56}
-                    rounded={6}
+                    width={44}
+                    height={56}
+                    borderRadius={6}
                     borderWidth={1}
                     borderColor="rgba(255, 255, 255, 0.5)"
-                    bg="rgba(255, 255, 255, 0.05)"
+                    background="rgba(255, 255, 255, 0.05)"
                     style={{
                       backdropFilter: 'blur(57px)',
                       WebkitBackdropFilter: 'blur(57px)',
                     }}
                   />
-                  <View pos="absolute" left={24} bottom={0} w={3} h={3} rounded={999} bg="white" />
+                  <View
+                    position="absolute"
+                    left={24}
+                    bottom={0}
+                    width={3}
+                    height={3}
+                    borderRadius={999}
+                    background="white"
+                  />
                 </>
               }
               title={t('onboarding.backupOptions.deviceBackup.title')}
@@ -75,30 +83,30 @@ export function BackupOptionsScreen(): React.ReactElement {
               iconBackground={
                 <>
                   <View
-                    pos="absolute"
+                    position="absolute"
                     left={0}
                     top={14}
-                    w={59}
-                    h={34}
-                    rounded={6}
+                    width={59}
+                    height={34}
+                    borderRadius={6}
                     borderWidth={1}
                     borderColor="rgba(255, 255, 255, 0.5)"
-                    bg="rgba(255, 255, 255, 0.05)"
+                    background="rgba(255, 255, 255, 0.05)"
                     style={{
                       backdropFilter: 'blur(57px)',
                       WebkitBackdropFilter: 'blur(57px)',
                     }}
                   />
                   <View
-                    pos="absolute"
+                    position="absolute"
                     left={0}
                     top={0}
-                    w={59}
-                    h={34}
-                    rounded={6}
+                    width={59}
+                    height={34}
+                    borderRadius={6}
                     borderWidth={1}
                     borderColor="rgba(255, 255, 255, 0.5)"
-                    bg="rgba(255, 255, 255, 0.05)"
+                    background="rgba(255, 255, 255, 0.05)"
                     style={{
                       backdropFilter: 'blur(57px)',
                       WebkitBackdropFilter: 'blur(57px)',
@@ -117,24 +125,44 @@ export function BackupOptionsScreen(): React.ReactElement {
               icon={<Text fontSize={14}>📝</Text>}
               iconBackground={
                 <View
-                  pos="absolute"
+                  position="absolute"
                   left={1}
                   top={7}
-                  bg="rgba(255, 255, 255, 0.05)"
+                  background="rgba(255, 255, 255, 0.05)"
                   borderWidth={1}
                   borderColor="rgba(255, 255, 255, 0.5)"
-                  rounded={6}
-                  p="$1.5"
+                  borderRadius={6}
+                  padding={6}
                   style={{
                     backdropFilter: 'blur(83px)',
                     WebkitBackdropFilter: 'blur(83px)',
                   }}
                 >
                   <XStack gap={4}>
-                    <View w={6} h={6} rounded={999} bg="rgba(255, 255, 255, 0.5)" />
-                    <View w={6} h={6} rounded={999} bg="rgba(255, 255, 255, 0.5)" />
-                    <View w={6} h={6} rounded={999} bg="rgba(255, 255, 255, 0.5)" />
-                    <View w={6} h={6} rounded={999} bg="rgba(255, 255, 255, 0.5)" />
+                    <View
+                      width={6}
+                      height={6}
+                      borderRadius={999}
+                      background="rgba(255, 255, 255, 0.5)"
+                    />
+                    <View
+                      width={6}
+                      height={6}
+                      borderRadius={999}
+                      background="rgba(255, 255, 255, 0.5)"
+                    />
+                    <View
+                      width={6}
+                      height={6}
+                      borderRadius={999}
+                      background="rgba(255, 255, 255, 0.5)"
+                    />
+                    <View
+                      width={6}
+                      height={6}
+                      borderRadius={999}
+                      background="rgba(255, 255, 255, 0.5)"
+                    />
                   </XStack>
                 </View>
               }

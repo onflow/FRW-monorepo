@@ -138,7 +138,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
             onPress={handleNext}
             cursor="pointer"
           >
-            <Text fontSize="$4" fontWeight="600" color="$bg">
+            <Text fontSize="$4" fontWeight="700" color="$bg">
               {t('onboarding.profileType.next')}
             </Text>
           </YStack>

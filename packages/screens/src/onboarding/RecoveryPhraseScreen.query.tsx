@@ -1,14 +1,6 @@
-import { navigation } from '@onflow/frw-context';
-import { Copy } from '@onflow/frw-icons';
-import {
-  YStack,
-  XStack,
-  Text,
-  View,
-  GradientBackground,
-  Button,
-  copyToClipboard,
-} from '@onflow/frw-ui';
+import { bridge, navigation } from '@onflow/frw-context';
+import { Copy, Warning } from '@onflow/frw-icons';
+import { YStack, XStack, Text, View, GradientBackground, Button } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -98,13 +90,25 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     // Track analytics
     trackingMutation.mutate('copy');
 
-    // Copy recovery phrase to clipboard
-    const phraseText = recoveryPhrase.join(' ');
-    const success = await copyToClipboard(phraseText);
+    try {
+      // Copy recovery phrase to clipboard
+      const phraseText = recoveryPhrase.join(' ');
+      const platform = bridge.getPlatform();
 
-    if (success) {
+      // Use RN clipboard via global injected helper when not web/extension
+      if (platform !== 'extension' && typeof window === 'undefined') {
+        const rnClipboard = (globalThis as any).clipboard;
+        if (rnClipboard?.setString) {
+          rnClipboard.setString(phraseText);
+        }
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(phraseText);
+      }
+
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy recovery phrase:', error);
     }
   };
 
@@ -146,12 +150,12 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       <YStack flex={1} px="$4" pt="$4">
         {/* Title and description */}
         <YStack items="center" mb="$6" gap="$2">
-        <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
-          {t('onboarding.recoveryPhrase.title')}
-        </Text>
-        <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
-          {t('onboarding.recoveryPhrase.description')}
-        </Text>
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+            {t('onboarding.recoveryPhrase.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
+            {t('onboarding.recoveryPhrase.description')}
+          </Text>
         </YStack>
 
         {/* Recovery phrase grid - 2 columns x 6 rows */}
@@ -174,12 +178,12 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                 {recoveryPhrase[rowIndex * 2] && (
                   <XStack gap={8} items="center" flex={1}>
                     <View
-                      w={32}
-                      h={32}
-                      bg="rgba(255, 255, 255, 0.1)"
-                      rounded={8}
-                      items="center"
-                      justify="center"
+                      width={32}
+                      height={32}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      borderRadius={8}
+                      alignItems="center"
+                      justifyContent="center"
                     >
                       <Text fontSize={20} color="$text">
                         {rowIndex * 2 + 1}
@@ -195,12 +199,12 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                 {recoveryPhrase[rowIndex * 2 + 1] && (
                   <XStack gap={8} items="center" flex={1}>
                     <View
-                      w={32}
-                      h={32}
-                      bg="rgba(255, 255, 255, 0.1)"
-                      rounded={8}
-                      items="center"
-                      justify="center"
+                      width={32}
+                      height={32}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      borderRadius={8}
+                      alignItems="center"
+                      justifyContent="center"
                     >
                       <Text fontSize={20} color="$text">
                         {rowIndex * 2 + 2}
@@ -221,7 +225,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           <Button variant="ghost" onPress={handleCopy}>
             <XStack gap={12} items="center">
               <Copy size={24} color="#00EF8B" />
-              <Text fontSize={16} fontWeight="600" color="$primary">
+              <Text fontSize={16} fontWeight="700" color="$primary">
                 {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
               </Text>
             </XStack>
@@ -237,11 +241,11 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           borderColor="rgba(255, 255, 255, 0.15)"
           mb={24}
         >
-          <View w={24} h={24} items="center" justify="center">
-            <Text fontSize={20}>⚠️</Text>
+          <View width={24} height={24} alignItems="center" justifyContent="center">
+            <Warning size={24} color="rgba(255, 255, 255, 0.5)" />
           </View>
           <YStack flex={1} gap={4}>
-            <Text fontSize={16} fontWeight="600" color="$text">
+            <Text fontSize={16} fontWeight="700" color="$text">
               {t('onboarding.recoveryPhrase.warning.title')}
             </Text>
             <Text fontSize={16} color="$textSecondary" lineHeight={17}>
@@ -256,19 +260,19 @@ export function RecoveryPhraseScreen(): React.ReactElement {
         {/* Next button - matching other screens style */}
         <YStack pb={24}>
           <YStack
-            w="100%"
-            h={52}
-            bg="$text"
-            rounded={16}
-            items="center"
-            justify="center"
+            width="100%"
+            height={52}
+            backgroundColor="$text"
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
             borderWidth={1}
             borderColor="$text"
             pressStyle={{ opacity: 0.9 }}
             onPress={handleNext}
             cursor="pointer"
           >
-            <Text fontSize={16} fontWeight="600" color="$bg">
+            <Text fontSize={16} fontWeight="700" color="$bg">
               {t('onboarding.recoveryPhrase.next')}
             </Text>
           </YStack>

@@ -34,4 +34,5 @@ export { default as Trash } from './Trash.generated';
 export { default as UserRoundPlus } from './UserRoundPlus.generated';
 export { default as VerifiedToken } from './VerifiedToken.generated';
 export { default as WalletCard } from './WalletCard.generated';
+export { default as Warning } from './Warning.generated';
 export { default as X } from './X.generated';

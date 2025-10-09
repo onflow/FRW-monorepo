@@ -120,7 +120,7 @@ export function GetStartedScreen(): React.ReactElement {
             onPress={handleCreateAccount}
             cursor="pointer"
           >
-            <Text fontSize="$4" fontWeight="600" color="$bg">
+            <Text fontSize="$4" fontWeight="700" color="$bg">
               {t('onboarding.getStarted.createAccount')}
             </Text>
           </YStack>
@@ -139,7 +139,7 @@ export function GetStartedScreen(): React.ReactElement {
             onPress={handleSignIn}
             cursor="pointer"
           >
-            <Text fontSize="$4" fontWeight="600" color="$text">
+            <Text fontSize="$4" fontWeight="700" color="$text">
               {t('onboarding.getStarted.signIn')}
             </Text>
           </YStack>
