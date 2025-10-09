@@ -141,7 +141,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
         {/* Secure enclave link */}
         <XStack justify="center" pb="$8">
-          <Text fontSize="$4" color="$textSecondary" onPress={handleSecureEnclave}>
+          <Text fontSize="$4" fontWeight="600" color="$text" onPress={handleSecureEnclave}>
             {t('onboarding.profileType.secureEnclaveProfile')}
           </Text>
         </XStack>
