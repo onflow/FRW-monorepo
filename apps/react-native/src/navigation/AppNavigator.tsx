@@ -324,6 +324,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={RecoveryPhraseScreen}
               options={{
                 headerTitle: t('onboarding.recoveryPhrase.navTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
               }}
             />
             <Stack.Screen

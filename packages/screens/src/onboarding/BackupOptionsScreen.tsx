@@ -17,17 +17,14 @@ export function BackupOptionsScreen(): React.ReactElement {
 
   const handleDeviceBackup = () => {
     // Navigate to device backup setup
-    navigation.navigate('DeviceBackupSetup');
   };
 
   const handleCloudBackup = () => {
     // Navigate to cloud backup setup
-    navigation.navigate('CloudBackupSetup');
   };
 
   const handleRecoveryPhrase = () => {
     // Navigate to recovery phrase setup
-    navigation.navigate('RecoveryPhraseScreen');
   };
 
   return (
