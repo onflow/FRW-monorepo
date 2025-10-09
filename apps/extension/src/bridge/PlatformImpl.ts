@@ -9,6 +9,8 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
+
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
 import { ExtensionStorage } from './ExtensionStorage';
@@ -322,32 +324,19 @@ class ExtensionPlatformImpl implements PlatformSpec {
         const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
         const isSurge = payerStatus?.surge?.active;
 
-        // Check if surge pricing is active and user has approved it
-        let surgeApproved = false;
-        if (isSurge) {
-          surgeApproved = await this.walletController.getSurgeApproval();
+        const bridgePayer = payerStatus?.bridgePayer?.address;
+        const bridgePayerKey = payerStatus?.bridgePayer?.keyIndex || 0;
+        const payerAddress = payerStatus?.feePayer?.address;
+        const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
 
-          if (!surgeApproved) {
-            // Show surge modal and wait for user decision
-            surgeApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
-          }
-        }
-
-        // Determine payer function based on transaction name and fee coverage logic
         const withPayer = config.name && config.name.endsWith('WithPayer');
 
-        if (surgeApproved) {
-          // User approved surge pricing - they will pay (proposer as payer)
-          config.payer = config.proposer;
-          config.authorizations = [config.proposer];
-        } else if (withPayer) {
+        if (withPayer) {
           // Use bridge fee payer function - get address from payer status
-          const payerAddress = payerStatus?.bridgePayer?.address;
-          const payerKeyId = payerStatus?.bridgePayer?.keyIndex || 0;
 
-          config.payer = async (account: any) => {
-            const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
-            const KEY_ID = Number(payerKeyId) || 0;
+          const BridgeAuthorizationFunction = async (account: any) => {
+            const ADDRESS = bridgePayer?.startsWith('0x') ? bridgePayer : `0x${bridgePayer}`;
+            const KEY_ID = Number(bridgePayerKey) || 0;
 
             return {
               ...account,
@@ -364,50 +353,76 @@ class ExtensionPlatformImpl implements PlatformSpec {
               },
             };
           };
-          config.authorizations = [config.proposer, config.payer];
+          config.authorizations = [config.proposer, BridgeAuthorizationFunction];
+        } else {
+          config.authorizations = [config.proposer];
+        }
+
+        if (isSurge) {
+          const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
+          if (userApproved) {
+            config.payer = config.proposer;
+          } else {
+            // User rejected - stop the transaction
+            throw new Error('Transaction cancelled by user due to surge pricing');
+          }
         } else {
           // Check if free gas is allowed
           const allowed = await this.walletController.allowLilicoPay();
-
           if (allowed) {
-            // Use regular payer function - get address from payer status
-            const payerAddress = payerStatus?.feePayer?.address;
-            const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
+            try {
+              const PayerAuthorizationFunction = async (account: any) => {
+                const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
+                const KEY_ID = Number(payerKeyId) || 0;
 
-            config.payer = async (account: any) => {
-              const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
-              const KEY_ID = Number(payerKeyId) || 0;
-
-              return {
-                ...account,
-                tempId: `${ADDRESS}-${KEY_ID}`,
-                addr: ADDRESS.replace('0x', ''),
-                keyId: KEY_ID,
-                signingFunction: async (signable: any) => {
-                  return {
-                    addr: ADDRESS,
-                    keyId: KEY_ID,
-                    signature: await this.walletController.signAsFeePayer(signable),
-                  };
-                },
+                return {
+                  ...account,
+                  tempId: `${ADDRESS}-${KEY_ID}`,
+                  addr: ADDRESS.replace('0x', ''),
+                  keyId: KEY_ID,
+                  signingFunction: async (signable: any) => {
+                    return {
+                      addr: ADDRESS,
+                      keyId: KEY_ID,
+                      signature: await this.walletController.signAsFeePayer(signable),
+                    };
+                  },
+                };
               };
-            };
+              config.payer = PayerAuthorizationFunction;
+            } catch (error) {
+              const isSurgeError =
+                error instanceof Error &&
+                (error.message.includes(HTTP_STATUS_TOO_MANY_REQUESTS.toString()) ||
+                  error.message.includes('Too Many Requests') ||
+                  error.message.includes('Many Requests for surge') ||
+                  error.message.includes(
+                    'communicates temporary pressure and supports standard client backoff via Retry-After'
+                  ));
+              if (isSurgeError) {
+                // Show surge modal and wait for user approval
+                const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
+
+                if (userApproved) {
+                  config.payer = config.proposer;
+                } else {
+                  // User rejected - stop the transaction
+                  throw new Error('Transaction cancelled by user due to surge pricing');
+                }
+              }
+            }
           } else {
-            // Use proposer as payer (user pays)
             config.payer = config.proposer;
           }
-
-          // Set authorizations array with just proposer
-          config.authorizations = [config.proposer];
         }
       }
+      console.log('config.authorizations', config.authorizations, 'config: ', config);
       return config;
     });
 
     // Configure response interceptor for transaction monitoring
     cadenceService.useResponseInterceptor(async (config: any, response: any) => {
       let txId: string | null = null;
-      this.walletController.setSurgeApproval(false);
       if (config.type === 'transaction') {
         // Handle bypassed extension transactions
         if (response && response.__EXTENSION_SUCCESS__) {

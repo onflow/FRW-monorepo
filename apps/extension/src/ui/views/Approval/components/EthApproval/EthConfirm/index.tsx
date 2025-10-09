@@ -193,7 +193,7 @@ const EthConfirm = ({ params }: ConnectProps) => {
       </Box>
       <Box
         sx={{
-          padding: '18px 18px 0 18px',
+          padding: '0 18px',
         }}
       >
         <SurgeFeeSection

@@ -1416,19 +1416,6 @@ export class WalletController extends BaseController {
     return userWalletService.allowFreeGas();
   };
 
-  getSurgeApproval = async (): Promise<boolean> => {
-    const approved = await getLocalData('surgeApproved');
-    return approved === true;
-  };
-
-  setSurgeApproval = async (approved: boolean): Promise<void> => {
-    if (approved) {
-      setLocalData('surgeApproved', true);
-    } else {
-      removeLocalData('surgeApproved');
-    }
-  };
-
   showSurgeModalAndWait = async (payerStatus: any): Promise<boolean> => {
     return new Promise((resolve) => {
       // Send message to UI to show surge modal using the same pattern as API_RATE_LIMIT

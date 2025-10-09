@@ -129,13 +129,6 @@ const App = ({ wallet }: { wallet: any }) => {
     setIsSurgeModalVisible(false);
     setHasResponded(true);
 
-    // Set surge approval to false (user rejected)
-    chrome.runtime.sendMessage({
-      type: 'controller',
-      method: 'setSurgeApproval',
-      params: [false],
-    });
-
     // Send rejection response
     chrome.runtime.sendMessage({
       type: 'SURGE_APPROVAL_RESPONSE',
@@ -153,13 +146,6 @@ const App = ({ wallet }: { wallet: any }) => {
     console.log('SurgeModal onAgree called - sending approval response');
     setIsSurgeModalVisible(false);
     setHasResponded(true);
-
-    // Set surge approval to true (user approved)
-    chrome.runtime.sendMessage({
-      type: 'controller',
-      method: 'setSurgeApproval',
-      params: [true],
-    });
 
     // Send approval response
     chrome.runtime.sendMessage({
