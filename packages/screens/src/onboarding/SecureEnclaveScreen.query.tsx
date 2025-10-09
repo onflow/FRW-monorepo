@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { ShieldOff, SecureEnclave, HardwareGradeSecurity } from '@onflow/frw-icons';
+import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
 import {
   YStack,
   XStack,
@@ -48,6 +48,7 @@ const trackSecureEnclaveSelection = async (action: 'confirm' | 'cancel') => {
 export function SecureEnclaveScreen(): React.ReactElement {
   const { t } = useTranslation();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showLoadingState, setShowLoadingState] = useState(false);
 
   // Query for secure enclave configuration
   const {
@@ -66,8 +67,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
     mutationFn: createSecureEnclaveAccount,
     onSuccess: (data) => {
       console.log('Account created successfully:', data);
-      // Navigate to notification preferences after account creation
-      navigation.navigate('NotificationPreferences');
+      // Navigation will be handled by AccountCreationLoadingState's onComplete
     },
     onError: (error) => {
       console.error('Failed to create account:', error);
@@ -94,8 +94,14 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
+    setShowLoadingState(true);
     // Trigger account creation mutation
     createAccountMutation.mutate();
+  };
+
+  const handleLoadingComplete = () => {
+    setShowLoadingState(false);
+    navigation.navigate('NotificationPreferences');
   };
 
   const handleBack = () => {
@@ -143,7 +149,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
           </YStack>
 
           {/* Card with profile description */}
-          <YStack items="center" mb="$6">
+          <YStack items="center" mb="$8">
             <YStack w="100%" maxW={320} items="center" gap="$2">
               <Text fontSize="$5" fontWeight="700" color="$text" text="center" mb="$2">
                 {t('onboarding.secureEnclave.cardTitle')}
@@ -155,7 +161,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
           </YStack>
 
           {/* Feature items */}
-          <YStack gap="$4" items="center" mb="$6">
+          <YStack gap="$2" items="center" mb="$6">
             {/* Secure enclave */}
             <XStack gap="$2" items="center">
               <SecureEnclave size={16} color="#00EF8B" />
@@ -211,12 +217,12 @@ export function SecureEnclaveScreen(): React.ReactElement {
       <InfoDialog visible={showConfirmDialog} onClose={() => setShowConfirmDialog(false)}>
         <YStack gap="$4" items="center">
           {/* Shield icon with green background */}
-          <View w={48} h={48} bg="$primary" rounded={999} items="center" justify="center">
-            <Text fontSize={24}>🛡️</Text>
+          <View w={57} h={57} bg="$primary" rounded={999} items="center" justify="center">
+            <Shield size={24} color="#000000" />
           </View>
 
           {/* Dialog title */}
-          <Text fontSize="$5" fontWeight="600" color="$text" text="center">
+          <Text fontSize="$5" fontWeight="700" color="$text" text="center">
             {t('onboarding.secureEnclave.dialog.title')}
           </Text>
 
@@ -235,10 +241,10 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
       {/* Creating Account Loading State */}
       <AccountCreationLoadingState
-        visible={createAccountMutation.isPending}
+        visible={showLoadingState}
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
-        onComplete={() => navigation.navigate('NotificationPreferences')}
+        onComplete={handleLoadingComplete}
         duration={3000}
       />
     </>

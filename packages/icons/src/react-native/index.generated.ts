@@ -22,6 +22,7 @@ export { default as Scan } from './Scan.generated';
 export { default as Search } from './Search.generated';
 export { default as SecureEnclave } from './SecureEnclave.generated';
 export { default as SendConfirmation } from './SendConfirmation.generated';
+export { default as Shield } from './Shield.generated';
 export { default as ShieldOff } from './ShieldOff.generated';
 export { default as SwitchVertical } from './SwitchVertical.generated';
 export { default as TealCircleBlur } from './TealCircleBlur.generated';

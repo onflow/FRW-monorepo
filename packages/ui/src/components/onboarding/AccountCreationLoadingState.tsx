@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { YStack, Text, View } from 'tamagui';
 
+import sendConfirmationAnimation from '../../assets/animations/send-confirmation-noblur.json';
+import LottieView from '../LottieView';
+
 interface AccountCreationLoadingStateProps {
   visible: boolean;
   title?: string;
@@ -36,23 +39,24 @@ export function AccountCreationLoadingState({
   return (
     <View pos="absolute" top={0} left={0} right={0} bottom={0} bg="$background" zIndex={2000}>
       <YStack flex={1} items="center" justify="center">
-        {/* Green glow effect */}
-        <View
-          pos="absolute"
-          w={467}
-          h={467}
-          rounded={999}
-          bg="$primary"
-          opacity={0.25}
-          style={{
-            filter: 'blur(400px)',
-          }}
-        />
-
         {/* Title */}
         <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36} mb="$8">
           {title}
         </Text>
+
+        {/* Animation */}
+        <View width={200} height={200} alignItems="center" justifyContent="center" mb="$6">
+          <LottieView
+            source={sendConfirmationAnimation}
+            autoPlay={true}
+            loop={true}
+            style={{
+              width: 200,
+              height: 200,
+            }}
+            resizeMode="contain"
+          />
+        </View>
 
         {/* Progress section */}
         <YStack w="90%" maxW={339} items="center" gap="$3">
