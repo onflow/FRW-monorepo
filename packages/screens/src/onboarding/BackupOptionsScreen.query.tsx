@@ -1,7 +1,7 @@
 import { navigation } from '@onflow/frw-context';
 // import { InfoIcon } from '@onflow/frw-icons'; // Temporarily disabled
 // import { BackupOptionCard } from '@onflow/frw-ui'; // Temporarily disabled
-import { YStack, Text, GradientBackground } from '@onflow/frw-ui';
+import { YStack, XStack, Text, GradientBackground } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -74,9 +74,6 @@ export function BackupOptionsScreen(): React.ReactElement {
       <YStack flex={1} px="$4" pt="$4">
         {/* Title */}
         <YStack items="center" mb="$6" gap="$2">
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
-            {t('onboarding.backupOptions.navTitle')}
-          </Text>
           <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={20} maxW={320}>
             {t('onboarding.backupOptions.subtitle')}
           </Text>
@@ -95,7 +92,17 @@ export function BackupOptionsScreen(): React.ReactElement {
             onPress={handleDeviceBackup}
             cursor="pointer"
           >
-            <Text fontSize="$4" color="$textSecondary" lineHeight={17} mt={8}>
+            <XStack justify="space-between" items="center" mb={8}>
+              <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
+                {t('onboarding.backupOptions.deviceBackup.title')}
+              </Text>
+              <YStack px={8} py={4} bg="rgba(0, 239, 139, 0.15)" rounded={54}>
+                <Text fontSize={12} fontWeight="400" color="$primary">
+                  Recommended
+                </Text>
+              </YStack>
+            </XStack>
+            <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
               {t('onboarding.backupOptions.deviceBackup.description')}
             </Text>
           </YStack>
@@ -111,10 +118,17 @@ export function BackupOptionsScreen(): React.ReactElement {
             onPress={handleCloudBackup}
             cursor="pointer"
           >
-            <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
-              {t('onboarding.backupOptions.cloudBackup.title')}
-            </Text>
-            <Text fontSize="$4" color="$textSecondary" lineHeight={17} mt={8}>
+            <XStack justify="space-between" items="center" mb={8}>
+              <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
+                {t('onboarding.backupOptions.cloudBackup.title')}
+              </Text>
+              <YStack px={8} py={4} bg="rgba(0, 239, 139, 0.15)" rounded={54}>
+                <Text fontSize={12} fontWeight="400" color="$primary">
+                  Recommended
+                </Text>
+              </YStack>
+            </XStack>
+            <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
               {t('onboarding.backupOptions.cloudBackup.description')}
             </Text>
           </YStack>
@@ -130,10 +144,10 @@ export function BackupOptionsScreen(): React.ReactElement {
             onPress={handleRecoveryPhrase}
             cursor="pointer"
           >
-            <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
+            <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29} mb={8}>
               {t('onboarding.backupOptions.recoveryPhrase.title')}
             </Text>
-            <Text fontSize="$4" color="$textSecondary" lineHeight={17} mt={8}>
+            <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
               {t('onboarding.backupOptions.recoveryPhrase.description')}
             </Text>
           </YStack>
