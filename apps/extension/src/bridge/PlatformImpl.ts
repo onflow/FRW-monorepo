@@ -407,7 +407,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
     // Configure response interceptor for transaction monitoring
     cadenceService.useResponseInterceptor(async (config: any, response: any) => {
       let txId: string | null = null;
-
+      this.walletController.setSurgeApproval(false);
       if (config.type === 'transaction') {
         // Handle bypassed extension transactions
         if (response && response.__EXTENSION_SUCCESS__) {

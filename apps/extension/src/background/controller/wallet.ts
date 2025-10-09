@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import type { AccountKey, Account as FclAccount } from '@onflow/fcl';
+import { type PayerStatusPayloadV1 } from '@onflow/frw-api';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
@@ -1469,6 +1470,10 @@ export class WalletController extends BaseController {
 
   signAsBridgeFeePayer = async (signable): Promise<string> => {
     return await userWalletService.signAsBridgeFeePayer(signable);
+  };
+
+  getPayerStatus = async (): Promise<PayerStatusPayloadV1> => {
+    return await openapiService.getPayerStatus();
   };
 
   signProposer = async (signable): Promise<string> => {

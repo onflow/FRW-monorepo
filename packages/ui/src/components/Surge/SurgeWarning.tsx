@@ -166,12 +166,17 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
       aria-labelledby="surge-warning-title"
       aria-describedby="surge-warning-message"
       style={{
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100vw',
+        height: '100vh',
       }}
     >
       <YStack
@@ -194,8 +199,9 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
           pos="absolute"
           top={16}
           right={16}
-          w={24}
-          h={24}
+          w={28}
+          h={28}
+          zIndex={999999}
           items="center"
           justify="center"
           bg="$dark5"
@@ -208,7 +214,7 @@ export const SurgeWarning: React.FC<SurgeWarningProps> = ({
           alignItems="center"
           justifyContent="center"
         >
-          <Close size={10} color={closeIconColor} />
+          <Close size={28} color={closeIconColor} />
         </YStack>
 
         {/* Content Frame */}

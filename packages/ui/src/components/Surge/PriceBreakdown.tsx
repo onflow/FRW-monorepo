@@ -81,7 +81,7 @@ export const PriceBreakdown: React.FC<PriceBreakdownProps> = ({
           cursor="pointer"
           aria-label="Close dialog"
         >
-          <Close size={10} color={closeIconColor} />
+          <Close size={28} color={closeIconColor} />
         </YStack>
 
         {/* Content Frame */}

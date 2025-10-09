@@ -1,12 +1,15 @@
 import { Box, Stack } from '@mui/material';
 import * as fcl from '@onflow/fcl';
+import { SurgeFeeSection, SurgeWarning } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { getSurgeData } from '@/bridge/PlatformImpl';
 import { MAINNET_CHAIN_ID } from '@/shared/constant';
 import { consoleError } from '@/shared/utils';
 import { LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
 import { useApproval } from '@/ui/hooks/use-approval';
 import { useWallet } from '@/ui/hooks/use-wallet';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 
 import { DefaultBlock } from './DefaultBlock';
 import { TransactionBlock } from './TransactionBlock';
@@ -17,6 +20,7 @@ interface ConnectProps {
 const EthConfirm = ({ params }: ConnectProps) => {
   const [, resolveApproval, rejectApproval] = useApproval();
   const usewallet = useWallet();
+  const { network: currentNetwork } = useNetwork();
   const [requestParams, setParams] = useState<any>({
     method: '',
     data: [],
@@ -28,6 +32,14 @@ const EthConfirm = ({ params }: ConnectProps) => {
   const [lilicoEnabled, setLilicoEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [decodedCall, setDecodedCall] = useState<DecodedCall | null>(null);
+
+  const [surgeData, setSurgeData] = useState<{
+    maxFee?: string;
+    multiplier?: number;
+    active?: boolean;
+  } | null>(null);
+  const [isSurgeDataLoading, setIsSurgeDataLoading] = useState(false);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
 
   interface DecodedParam {
     name?: string;
@@ -52,6 +64,28 @@ const EthConfirm = ({ params }: ConnectProps) => {
     decodedData: DecodedData;
     status?: number;
   }
+
+  const loadSurgeData = useCallback(async () => {
+    if (isSurgeDataLoading) return;
+
+    setIsSurgeDataLoading(true);
+    try {
+      const surgeData = await getSurgeData(currentNetwork);
+      setSurgeData({
+        maxFee: surgeData?.maxFee || '0.002501',
+        multiplier: surgeData?.multiplier || 1.0,
+        active: surgeData?.active || false,
+      });
+    } catch (error) {
+      setSurgeData({
+        maxFee: '0.002501',
+        multiplier: 1.0,
+        active: false,
+      });
+    } finally {
+      setIsSurgeDataLoading(false);
+    }
+  }, [currentNetwork]);
 
   const extractData = useCallback(
     async (obj) => {
@@ -116,9 +150,10 @@ const EthConfirm = ({ params }: ConnectProps) => {
   useEffect(() => {
     if (params) {
       loadPayer();
+      loadSurgeData();
       extractData(params);
     }
-  }, [loadPayer, extractData, params]);
+  }, [loadPayer, extractData, params, loadSurgeData]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -158,6 +193,18 @@ const EthConfirm = ({ params }: ConnectProps) => {
       </Box>
       <Box
         sx={{
+          padding: '18px 18px 0 18px',
+        }}
+      >
+        <SurgeFeeSection
+          transactionFee={surgeData?.maxFee || '0.002501'}
+          showWarning={isSurgeWarningVisible}
+          surgeMultiplier={surgeData?.multiplier || 1.0}
+          isSurgePricingActive={surgeData?.active || false}
+        />
+      </Box>
+      <Box
+        sx={{
           position: 'sticky',
           bottom: 0,
           padding: '18px',
@@ -181,6 +228,28 @@ const EthConfirm = ({ params }: ConnectProps) => {
           )}
         </Stack>
       </Box>
+      <SurgeWarning
+        message={
+          surgeData?.active && surgeData?.multiplier
+            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${Number(
+                surgeData?.multiplier
+              )
+                .toFixed(2)
+                .replace(
+                  /\.?0+$/,
+                  ''
+                )}× higher than usual and your free allowance will not cover the fee for this transaction.`
+            : 'Transaction fee information'
+        }
+        title="Surge pricing"
+        variant="warning"
+        visible={isSurgeWarningVisible}
+        onClose={() => setIsSurgeWarningVisible(false)}
+        onButtonPress={() => {
+          setIsSurgeWarningVisible(false);
+        }}
+        surgeMultiplier={surgeData?.multiplier || 1.0}
+      />
     </Box>
   );
 };

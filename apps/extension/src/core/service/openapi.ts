@@ -1029,6 +1029,17 @@ export class OpenApiService {
     return data;
   };
 
+  getPayerStatus = async () => {
+    const data = await this.sendRequest(
+      'GET',
+      '/api/v1/payer/status',
+      {},
+      {},
+      this.store.webNextUrl
+    );
+    return data;
+  };
+
   getProposer = async () => {
     const baseURL = this.store.functionsUrl;
     // 'http://localhost:5001/lilico-dev/us-central1'
