@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import { YStack, Text, View } from 'tamagui';
 
-import sendConfirmationAnimation from '../../assets/animations/send-confirmation-noblur.json';
-import LottieView from '../LottieView';
 
 interface AccountCreationLoadingStateProps {
   visible: boolean;
@@ -45,7 +43,7 @@ export function AccountCreationLoadingState({
         </Text>
 
         {/* Animation */}
-        <View width={200} height={200} alignItems="center" justifyContent="center" mb="$6">
+        {/* <View width={200} height={200} alignItems="center" justifyContent="center" mb="$6">
           <LottieView
             source={sendConfirmationAnimation}
             autoPlay={true}
@@ -56,6 +54,11 @@ export function AccountCreationLoadingState({
             }}
             resizeMode="contain"
           />
+        </View> */}
+
+        {/* Temporary placeholder */}
+        <View width={200} height={200} alignItems="center" justifyContent="center" mb="$6">
+          <Text fontSize={80}>✨</Text>
         </View>
 
         {/* Progress section */}
@@ -93,7 +96,7 @@ export function AccountCreationLoadingState({
           </View>
 
           {/* Status text */}
-          <Text fontSize="$4" fontWeight="600" color="$primary">
+          <Text fontSize="$4" fontWeight="700" color="$primary">
             {statusText}
           </Text>
         </YStack>

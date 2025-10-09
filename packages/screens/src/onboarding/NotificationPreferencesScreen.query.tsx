@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { YStack, Text, GradientBackground } from '@onflow/frw-ui';
+import { YStack, Text, GradientBackground, Image } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -130,63 +130,64 @@ export function NotificationPreferencesScreen(): React.ReactElement {
 
   return (
     <GradientBackground>
-      <YStack flex={1}>
-        <YStack flex={1} px="$4">
-          {/* Title and description */}
-          <YStack mb="$6">
-            <Text
-              fontSize={30}
-              fontWeight="700"
-              color="$text"
-              text="center"
-              lineHeight={36}
-              mb="$3"
-            >
-              {t('onboarding.notificationPreferences.title')}
-            </Text>
+      <YStack flex={1} px="$4" justify="space-between">
+        {/* Title and description */}
+        <YStack mt="$6" mb="$6">
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36} mb="$3">
+            {t('onboarding.notificationPreferences.title')}
+          </Text>
 
-            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={20} px="$2">
-              {t('onboarding.notificationPreferences.subtitle')}
+          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={20} px="$2">
+            {t('onboarding.notificationPreferences.subtitle')}
+          </Text>
+        </YStack>
+
+        {/* Notification Preview Image - centered */}
+        <YStack flex={1} alignItems="center" justifyContent="center">
+          <Image
+            src={require('../assets/push-notifications.png')}
+            width={300}
+            height={200}
+            resizeMode="contain"
+          />
+        </YStack>
+
+        {/* Action buttons - matching SecureEnclaveScreen style */}
+        <YStack pb="$6" gap="$3">
+          {/* Turn on notifications button - Primary style */}
+          <YStack
+            width="100%"
+            height={52}
+            bg="$text"
+            rounded={16}
+            items="center"
+            justify="center"
+            borderWidth={1}
+            borderColor="$text1"
+            pressStyle={{ opacity: 0.9 }}
+            onPress={handleEnableNotifications}
+            cursor="pointer"
+          >
+            <Text fontSize="$4" fontWeight="700" color="$bg">
+              {t('onboarding.notificationPreferences.enableButton')}
             </Text>
           </YStack>
 
-          {/* Action buttons - matching SecureEnclaveScreen style */}
-          <YStack pb="$6" gap="$3">
-            {/* Turn on notifications button - Primary style */}
-            <YStack
-              width="100%"
-              height={52}
-              bg="$text"
-              rounded={16}
-              items="center"
-              justify="center"
-              borderWidth={1}
-              borderColor="$text1"
-              pressStyle={{ opacity: 0.9 }}
-              onPress={handleEnableNotifications}
-              cursor="pointer"
-            >
-              <Text fontSize="$4" fontWeight="600" color="$bg">
-                {t('onboarding.notificationPreferences.enableButton')}
-              </Text>
-            </YStack>
-
-            {/* Maybe later button - No border style */}
-            <YStack
-              width="100%"
-              height={52}
-              bg="transparent"
-              rounded={16}
-              items="center"
-              justify="center"
-              pressStyle={{ opacity: 0.9 }}
-              onPress={handleMaybeLater}
-              cursor="pointer"
-            >
-              <Text fontSize="$4" fontWeight="600" color="$text">
-                {t('onboarding.notificationPreferences.maybeLater')}
-              </Text>
-            </YStack>
+          {/* Maybe later button - No border style */}
+          <YStack
+            width="100%"
+            height={52}
+            bg="transparent"
+            rounded={16}
+            items="center"
+            justify="center"
+            pressStyle={{ opacity: 0.9 }}
+            onPress={handleMaybeLater}
+            cursor="pointer"
+          >
+            <Text fontSize="$4" fontWeight="700" color="$text">
+              {t('onboarding.notificationPreferences.maybeLater')}
+            </Text>
           </YStack>
         </YStack>
       </YStack>

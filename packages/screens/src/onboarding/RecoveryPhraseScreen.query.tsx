@@ -1,4 +1,5 @@
 import { navigation } from '@onflow/frw-context';
+import { Copy } from '@onflow/frw-icons';
 import {
   YStack,
   XStack,
@@ -59,7 +60,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     queryKey: ['onboarding', 'recovery-phrase'],
     queryFn: generateRecoveryPhrase,
     staleTime: Infinity, // Recovery phrase should not refetch
-    cacheTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes (formerly cacheTime)
   });
 
   // Mutation for tracking analytics
@@ -145,12 +146,12 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       <YStack flex={1} px="$4" pt="$4">
         {/* Title and description */}
         <YStack items="center" mb="$6" gap="$2">
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
-            {t('onboarding.recoveryPhrase.title')}
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxWidth={280}>
-            {t('onboarding.recoveryPhrase.description')}
-          </Text>
+        <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+          {t('onboarding.recoveryPhrase.title')}
+        </Text>
+        <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
+          {t('onboarding.recoveryPhrase.description')}
+        </Text>
         </YStack>
 
         {/* Recovery phrase grid - 2 columns x 6 rows */}
@@ -168,17 +169,17 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           <YStack gap={20}>
             {/* Generate 6 rows with 2 columns each */}
             {Array.from({ length: 6 }, (_, rowIndex) => (
-              <XStack key={rowIndex} gap={40} justifyContent="space-between">
+              <XStack key={rowIndex} gap={40} justify="space-between">
                 {/* Left column */}
                 {recoveryPhrase[rowIndex * 2] && (
-                  <XStack gap={8} alignItems="center" flex={1}>
+                  <XStack gap={8} items="center" flex={1}>
                     <View
-                      width={32}
-                      height={32}
-                      backgroundColor="rgba(255, 255, 255, 0.1)"
-                      borderRadius={8}
-                      alignItems="center"
-                      justifyContent="center"
+                      w={32}
+                      h={32}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      rounded={8}
+                      items="center"
+                      justify="center"
                     >
                       <Text fontSize={20} color="$text">
                         {rowIndex * 2 + 1}
@@ -192,14 +193,14 @@ export function RecoveryPhraseScreen(): React.ReactElement {
 
                 {/* Right column */}
                 {recoveryPhrase[rowIndex * 2 + 1] && (
-                  <XStack gap={8} alignItems="center" flex={1}>
+                  <XStack gap={8} items="center" flex={1}>
                     <View
-                      width={32}
-                      height={32}
-                      backgroundColor="rgba(255, 255, 255, 0.1)"
-                      borderRadius={8}
-                      alignItems="center"
-                      justifyContent="center"
+                      w={32}
+                      h={32}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      rounded={8}
+                      items="center"
+                      justify="center"
                     >
                       <Text fontSize={20} color="$text">
                         {rowIndex * 2 + 2}
@@ -216,9 +217,9 @@ export function RecoveryPhraseScreen(): React.ReactElement {
         </View>
 
         {/* Copy button */}
-        <XStack justifyContent="center" marginBottom={16}>
+        <XStack justify="center" mb={16}>
           <Button variant="ghost" onPress={handleCopy}>
-            <XStack gap={12} alignItems="center">
+            <XStack gap={12} items="center">
               <Copy size={24} color="#00EF8B" />
               <Text fontSize={16} fontWeight="600" color="$primary">
                 {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
@@ -230,13 +231,13 @@ export function RecoveryPhraseScreen(): React.ReactElement {
         {/* Warning card */}
         <XStack
           gap={12}
-          padding={16}
-          borderRadius={16}
+          p={16}
+          rounded={16}
           borderWidth={1}
           borderColor="rgba(255, 255, 255, 0.15)"
-          marginBottom={24}
+          mb={24}
         >
-          <View width={24} height={24} alignItems="center" justifyContent="center">
+          <View w={24} h={24} items="center" justify="center">
             <Text fontSize={20}>⚠️</Text>
           </View>
           <YStack flex={1} gap={4}>
@@ -253,14 +254,14 @@ export function RecoveryPhraseScreen(): React.ReactElement {
         <YStack flex={1} />
 
         {/* Next button - matching other screens style */}
-        <YStack paddingBottom={24}>
+        <YStack pb={24}>
           <YStack
-            width="100%"
-            height={52}
-            backgroundColor="$text"
-            borderRadius={16}
-            alignItems="center"
-            justifyContent="center"
+            w="100%"
+            h={52}
+            bg="$text"
+            rounded={16}
+            items="center"
+            justify="center"
             borderWidth={1}
             borderColor="$text"
             pressStyle={{ opacity: 0.9 }}
