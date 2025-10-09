@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-// import { Copy } from '@onflow/frw-icons'; // Temporarily disabled
+import { Copy } from '@onflow/frw-icons';
 import {
   YStack,
   XStack,
@@ -236,6 +236,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           <XStack justify="center" mb="$4">
             <Button variant="ghost" onPress={handleCopy}>
               <XStack gap="$3" items="center">
+                <Copy size={24} color="#00EF8B" />
                 <Text fontSize="$4" fontWeight="600" color="$primary">
                   {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
                 </Text>
