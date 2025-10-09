@@ -556,7 +556,7 @@ export const waitForTransaction = async ({
   if (!txId) {
     throw new Error('Transaction ID is not found');
   }
-  const progressBar = page.getByRole('progressbar');
+  const progressBar = page.getByTestId('progressbar');
   await expect(progressBar).toBeVisible();
   // Get the pending item with the cadence txId that was put in the url and status is pending
 
