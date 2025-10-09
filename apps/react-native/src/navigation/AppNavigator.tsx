@@ -337,7 +337,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="SecureEnclave"
               component={SecureEnclaveScreen}
               options={{
-                headerTitle: t('onboarding.secureEnclave.title'),
+                headerTitle: '', // No title text
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
               }}
             />
             <Stack.Screen

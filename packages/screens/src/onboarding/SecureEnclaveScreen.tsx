@@ -6,7 +6,6 @@ import {
   Text,
   View,
   GradientBackground,
-  Button,
   InfoDialog,
   HoldToSendButton,
 } from '@onflow/frw-ui';
@@ -26,16 +25,16 @@ export function SecureEnclaveScreen(): React.ReactElement {
     setShowConfirmDialog(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setShowConfirmDialog(false);
     setIsCreatingAccount(true);
 
     // Simulate account creation delay
-    setTimeout(() => {
-      setIsCreatingAccount(false);
-      // Navigate to notification preferences after account creation
-      navigation.navigate('NotificationPreferencesScreen');
-    }, 3000);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    setIsCreatingAccount(false);
+    // Navigate to notification preferences after account creation
+    navigation.navigate('NotificationPreferencesScreen');
   };
 
   const handleBack = () => {
@@ -54,42 +53,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
           </YStack>
 
           {/* Flow logo with glassmorphism background */}
-          <YStack items="center" mb="$8" pos="relative">
-            {/* Background glassmorphism card */}
-            <View
-              pos="absolute"
-              w={168}
-              h={210}
-              bg="rgba(255, 255, 255, 0.05)"
-              rounded={27}
-              borderWidth={1}
-              borderColor="rgba(255, 255, 255, 0.5)"
-              style={{
-                backdropFilter: 'blur(100px)',
-                WebkitBackdropFilter: 'blur(100px)',
-              }}
-            />
-
-            {/* Flow logo overlay with opacity */}
-            <View
-              pos="absolute"
-              w={100}
-              h={100}
-              opacity={0.05}
-              top="50%"
-              left="50%"
-              style={{
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              {/* <FlowLogo size={100} color="$primary" /> */} {/* Temporarily disabled */}
-            </View>
-
-            {/* Main Flow logo */}
-            <View w={94} h={94} zIndex={1}>
-              {/* <FlowLogo size={94} color="$primary" /> */} {/* Temporarily disabled */}
-            </View>
-          </YStack>
 
           {/* Card with profile description */}
           <YStack items="center" mb="$6">
@@ -107,7 +70,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
           <YStack gap="$4" items="center" mb="$6">
             {/* Secure enclave */}
             <XStack gap="$2" items="center">
-              {/* <CheckCircle size={16} color="$primary" /> */} {/* Temporarily disabled */}
+              <Text fontSize={16} color="$primary">
+                ✅
+              </Text>
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.secureEnclave')}
               </Text>
@@ -115,7 +80,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* Hardware security */}
             <XStack gap="$2" items="center">
-              {/* <CheckCircle size={16} color="$primary" /> */} {/* Temporarily disabled */}
+              <Text fontSize={16} color="$primary">
+                ✅
+              </Text>
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.hardwareSecurity')}
               </Text>
@@ -135,38 +102,51 @@ export function SecureEnclaveScreen(): React.ReactElement {
           {/* Spacer */}
           <YStack flex={1} />
 
-          {/* Next button */}
+          {/* Next button - matching ProfileTypeSelectionScreen style */}
           <YStack pb="$6">
-            <Button variant="secondary" onPress={handleNext} fullWidth>
-              {t('onboarding.secureEnclave.next')}
-            </Button>
+            <YStack
+              width="100%"
+              height={52}
+              bg="transparent"
+              rounded={16}
+              items="center"
+              justify="center"
+              borderWidth={1}
+              borderColor="$text1"
+              pressStyle={{ opacity: 0.9 }}
+              onPress={handleNext}
+              cursor="pointer"
+            >
+              <Text fontSize="$4" fontWeight="600" color="$bg">
+                {t('onboarding.secureEnclave.next')}
+              </Text>
+            </YStack>
           </YStack>
         </YStack>
       </GradientBackground>
 
       {/* Confirmation Dialog */}
-      <InfoDialog
-        visible={showConfirmDialog}
-        title={t('onboarding.secureEnclave.dialog.title')}
-        onClose={() => setShowConfirmDialog(false)}
-      >
+      <InfoDialog visible={showConfirmDialog} onClose={() => setShowConfirmDialog(false)}>
         <YStack gap="$4" items="center">
           {/* Shield icon with green background */}
           <View w={48} h={48} bg="$primary" rounded={999} items="center" justify="center">
             <Text fontSize={24}>🛡️</Text>
           </View>
 
+          {/* Dialog title */}
+          <Text fontSize="$5" fontWeight="600" color="$text" text="center">
+            {t('onboarding.secureEnclave.dialog.title')}
+          </Text>
+
           {/* Dialog description text */}
           <Text fontSize="$3" color="$text" text="center" lineHeight={20}>
             {t('onboarding.secureEnclave.dialog.description')}
           </Text>
 
-          {/* Hold to confirm button */}
+          {/* Hold to confirm button - using same component as ConfirmationDrawer */}
           <HoldToSendButton
-            onComplete={handleConfirm}
-            disabled={false}
-            text={t('onboarding.secureEnclave.dialog.holdToConfirm')}
-            fullWidth
+            onPress={handleConfirm}
+            holdToSendText={t('onboarding.secureEnclave.dialog.holdToConfirm')}
           />
         </YStack>
       </InfoDialog>
@@ -199,67 +179,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
             >
               {t('onboarding.secureEnclave.creating.title')}
             </Text>
-
-            {/* Flow logo with glassmorphism cards */}
-            <YStack items="center" mb="$12">
-              <View pos="relative" w={232} h={248}>
-                {/* Background glassmorphism card */}
-                <View
-                  pos="absolute"
-                  top={57}
-                  left={11}
-                  w={158}
-                  h={191}
-                  bg="rgba(255, 255, 255, 0.05)"
-                  borderWidth={0.8}
-                  borderColor="rgba(255, 255, 255, 0.5)"
-                  rounded={22}
-                  style={{
-                    backdropFilter: 'blur(80px)',
-                    WebkitBackdropFilter: 'blur(80px)',
-                  }}
-                />
-
-                {/* Flow logo */}
-                <View pos="absolute" top={7} left={71} w={124} h={124} zIndex={1}>
-                  {/* <FlowLogo size={124} color="$primary" /> */} {/* Temporarily disabled */}
-                </View>
-
-                {/* Front glassmorphism card */}
-                <View
-                  pos="absolute"
-                  top={72}
-                  left={20}
-                  w={212}
-                  h={176}
-                  bg="rgba(255, 255, 255, 0.05)"
-                  borderWidth={0.8}
-                  borderColor="rgba(255, 255, 255, 0.5)"
-                  rounded={22}
-                  style={{
-                    backdropFilter: 'blur(80px)',
-                    WebkitBackdropFilter: 'blur(80px)',
-                  }}
-                />
-
-                {/* Small accent card */}
-                <View
-                  pos="absolute"
-                  top={122}
-                  left={177}
-                  w={41}
-                  h={35}
-                  bg="rgba(255, 255, 255, 0.05)"
-                  borderWidth={0.8}
-                  borderColor="rgba(255, 255, 255, 0.5)"
-                  rounded={999}
-                  style={{
-                    backdropFilter: 'blur(22px)',
-                    WebkitBackdropFilter: 'blur(22px)',
-                  }}
-                />
-              </View>
-            </YStack>
 
             {/* Progress section */}
             <YStack w="90%" maxW={339} items="center" gap="$3">

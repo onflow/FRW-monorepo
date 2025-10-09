@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { YStack, XStack, Text, GradientBackground } from '@onflow/frw-ui';
+import { YStack, XStack, Text, GradientBackground, Button } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -133,7 +133,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
             onPress={handleNext}
             cursor="pointer"
           >
-            <Text fontSize="$4" fontWeight="600" color="$text">
+            <Text fontSize="$4" fontWeight="600" color="$bg">
               {t('onboarding.profileType.next')}
             </Text>
           </YStack>
@@ -141,9 +141,11 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
         {/* Secure enclave link */}
         <XStack justify="center" pb="$8">
-          <Text fontSize="$4" fontWeight="600" color="$text" onPress={handleSecureEnclave}>
-            {t('onboarding.profileType.secureEnclaveProfile')}
-          </Text>
+          <Button variant="ghost" onPress={handleSecureEnclave}>
+            <Text fontSize="$4" fontWeight="600" color="$text">
+              {t('onboarding.profileType.secureEnclaveProfile')}
+            </Text>
+          </Button>
         </XStack>
       </YStack>
     </GradientBackground>
