@@ -4,7 +4,7 @@ import {
   type Storage,
   type StorageKeyMap,
 } from '@onflow/frw-context';
-import type { WalletAccount, RecentRecipient } from '@onflow/frw-types';
+import type { WalletAccount, RecentRecipient, FRWError, ErrorCode } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
 const MAX_RECENT_RECIPIENTS = 10;
@@ -33,8 +33,10 @@ export class RecentRecipientsService {
         try {
           bridgeToUse = getServiceContext().bridge;
         } catch {
-          throw new Error(
-            'RecentRecipientsService requires bridge parameter or initialized ServiceContext'
+          throw new FRWError(
+            ErrorCode.BRIDGE_NOT_FOUND,
+            'RecentRecipientsService requires bridge parameter or initialized ServiceContext',
+            { bridge }
           );
         }
       }
@@ -44,8 +46,10 @@ export class RecentRecipientsService {
         try {
           storageToUse = getServiceContext().storage;
         } catch {
-          throw new Error(
-            'RecentRecipientsService requires storage parameter or initialized ServiceContext'
+          throw new FRWError(
+            ErrorCode.RECENT_RECIPIENTS_STORAGE_NOT_FOUND,
+            'RecentRecipientsService requires storage parameter or initialized ServiceContext',
+            { storage }
           );
         }
       }
@@ -79,8 +83,12 @@ export class RecentRecipientsService {
         isActive: false,
       }));
     } catch (_error) {
-      logger.error('Catch block error', _error);
-      return [];
+      logger.error('Error fetching all recent recipients', _error);
+      throw new FRWError(
+        ErrorCode.RECENT_RECIPIENTS_FETCH_FAILED,
+        'Failed to fetch all recent recipients',
+        {}
+      );
     }
   }
 
@@ -95,8 +103,12 @@ export class RecentRecipientsService {
       const recipientsArray = Array.isArray(recents) ? recents : [];
       return recipientsArray.sort((a, b) => b.lastUsed - a.lastUsed);
     } catch (_error) {
-      logger.error('Catch block error', _error);
-      return [];
+      logger.error('Error fetching local recent recipients', _error);
+      throw new FRWError(
+        ErrorCode.RECENT_RECIPIENTS_LOCAL_FETCH_FAILED,
+        'Failed to fetch local recent recipients',
+        {}
+      );
     }
   }
 
@@ -117,8 +129,12 @@ export class RecentRecipientsService {
         source: 'server' as const,
       }));
     } catch (_error) {
-      logger.error('Catch block error', _error);
-      return [];
+      logger.error('Error fetching server recent recipients', _error);
+      throw new FRWError(
+        ErrorCode.RECENT_RECIPIENTS_SERVER_FETCH_FAILED,
+        'Failed to fetch server recent recipients',
+        {}
+      );
     }
   }
 
@@ -155,7 +171,10 @@ export class RecentRecipientsService {
 
       logger.debug('Added recent recipient', { name: recipient.name, address: recipient.address });
     } catch (_error) {
-      logger.error('Catch block error', _error);
+      logger.error('Error adding recent recipient', _error);
+      throw new FRWError(ErrorCode.RECENT_RECIPIENTS_ADD_FAILED, 'Failed to add recent recipient', {
+        recipient,
+      });
     }
   }
 
@@ -167,7 +186,12 @@ export class RecentRecipientsService {
       await this.storage.delete('recentRecipients');
       logger.debug('Cleared local recent recipients');
     } catch (_error) {
-      logger.error('Catch block error', _error);
+      logger.error('Error clearing local recent recipients', _error);
+      throw new FRWError(
+        ErrorCode.RECENT_RECIPIENTS_CLEAR_FAILED,
+        'Failed to clear local recent recipients',
+        {}
+      );
     }
   }
 

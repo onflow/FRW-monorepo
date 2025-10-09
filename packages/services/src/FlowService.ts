@@ -1,5 +1,10 @@
 import { cadence as cadenceService, context, type PlatformSpec } from '@onflow/frw-context';
-import type { WalletAccountsResponse, WalletProfilesResponse } from '@onflow/frw-types';
+import type {
+  WalletAccountsResponse,
+  WalletProfilesResponse,
+  FRWError,
+  ErrorCode,
+} from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
 /**
@@ -25,7 +30,11 @@ class FlowService {
         try {
           bridgeToUse = context.bridge;
         } catch {
-          throw new Error('FlowService requires bridge parameter or initialized ServiceContext');
+          throw new FRWError(
+            ErrorCode.BRIDGE_NOT_FOUND,
+            'FlowService requires bridge parameter or initialized ServiceContext',
+            { bridge }
+          );
         }
       }
 
@@ -45,7 +54,11 @@ class FlowService {
         }
       } catch {
         logger.error('FlowService: ServiceContext not initialized properly');
-        throw new Error('FlowService requires initialized ServiceContext');
+        throw new FRWError(
+          ErrorCode.FLOW_SERVICE_NOT_INITIALIZED,
+          'FlowService requires initialized ServiceContext',
+          {}
+        );
       }
     }
   }
@@ -67,12 +80,16 @@ class FlowService {
         return parseFloat(balance.toString());
       } else {
         // If no balance found, it might be an invalid address or no COA exists
-        throw new Error('No balance found for address');
+        throw new FRWError(ErrorCode.FLOW_BALANCE_NOT_FOUND, 'No balance found for address', {
+          address,
+        });
       }
     } catch (_error) {
       logger.error('Error fetching balance via CadenceService', _error);
-      throw new Error(
-        `Failed to fetch balance: ${_error instanceof Error ? _error.message : 'Unknown error'}`
+      throw new FRWError(
+        ErrorCode.FLOW_BALANCE_FETCH_FAILED,
+        `Failed to fetch balance: ${_error instanceof Error ? _error.message : 'Unknown error'}`,
+        { address }
       );
     }
   }
@@ -104,9 +121,13 @@ class FlowService {
     if ('getWalletProfiles' in this.bridge && typeof this.bridge.getWalletProfiles === 'function') {
       return this.bridge.getWalletProfiles();
     }
-    
+
     // If not available, throw an error to trigger fallback
-    throw new Error('getWalletProfiles not implemented on this platform');
+    throw new FRWError(
+      ErrorCode.FLOW_METHOD_NOT_IMPLEMENTED,
+      'getWalletProfiles not implemented on this platform',
+      {}
+    );
   }
 
   /**

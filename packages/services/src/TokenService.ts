@@ -9,6 +9,8 @@ import {
   mapERC20TokenToTokenModel,
   WalletType,
   type TokenModel,
+  FRWError,
+  ErrorCode,
 } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
@@ -39,7 +41,11 @@ class FlowTokenProvider implements TokenProvider {
       return res?.data;
     } catch (error) {
       logger.error('[FlowTokenProvider] Failed to fetch token data:', error);
-      return undefined;
+      throw new FRWError(ErrorCode.TOKEN_FLOW_FETCH_FAILED, 'Failed to fetch Flow token data', {
+        address,
+        network,
+        currency,
+      });
     }
   }
 
@@ -79,7 +85,11 @@ class ERC20TokenProvider implements TokenProvider {
       return res?.data ?? [];
     } catch (error) {
       logger.error('[ERC20TokenProvider] Failed to fetch token data:', error);
-      return [];
+      throw new FRWError(ErrorCode.TOKEN_ERC20_FETCH_FAILED, 'Failed to fetch ERC20 token data', {
+        address,
+        network,
+        currency,
+      });
     }
   }
 
@@ -139,7 +149,15 @@ export class TokenService {
       return this.tokenProvider.processData(data);
     } catch (error) {
       logger.error('[TokenService] Failed to get token info:', error);
-      return [];
+      // If it's already an FRWError, re-throw it directly
+      if (error instanceof FRWError) {
+        throw error;
+      }
+      throw new FRWError(ErrorCode.TOKEN_INFO_FETCH_FAILED, 'Failed to get token info', {
+        address,
+        network,
+        currency,
+      });
     }
   }
 }
