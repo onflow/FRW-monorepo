@@ -128,7 +128,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Close size={10} color="rgba(255, 255, 255, 0.8)" style={{ alignSelf: 'center' }} />
+            <Close size={24} color="rgba(255, 255, 255, 0.8)" style={{ alignSelf: 'center' }} />
           </YStack>
         </YStack>
 

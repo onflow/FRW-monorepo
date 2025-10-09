@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { YStack, XStack, Text, GradientBackground, Button } from '@onflow/frw-ui';
+import { YStack, XStack, Text, GradientBackground, Button, ShieldAnimation } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -97,19 +97,24 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
     <GradientBackground>
       <YStack flex={1} px="$4">
         {/* Title */}
-        <YStack mt="$8" mb="$8">
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+        <YStack mt={68} mb="$6">
+          <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
             {t('onboarding.profileType.welcomeTitle')}
           </Text>
         </YStack>
 
+        {/* Shield Animation */}
+        <YStack alignItems="center" mb="$8">
+          <ShieldAnimation width={300} height={375} autoPlay={true} loop={true} />
+        </YStack>
+
         {/* Recovery phrase description */}
-        <YStack items="center" mb="$8">
-          <YStack maxW={307} items="center" gap="$2">
-            <Text fontSize="$5" fontWeight="600" color="$text" text="center" mb="$2">
+        <YStack alignItems="center" mb="$8">
+          <YStack maxWidth={307} px="$4" alignItems="center" gap="$2">
+            <Text fontSize="$5" fontWeight="700" color="$text" textAlign="center" mb="$2">
               {t('onboarding.profileType.recoveryPhrase.title')}
             </Text>
-            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17}>
+            <Text fontSize="$4" color="$textSecondary" textAlign="center" lineHeight={17}>
               {t('onboarding.profileType.recoveryPhrase.description')}
             </Text>
           </YStack>
@@ -119,14 +124,14 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
         <YStack flex={1} />
 
         {/* Next button - matching GetStartedScreen style */}
-        <YStack mb="$6">
+        <YStack mb="$3">
           <YStack
             width="100%"
             height={52}
-            bg="$text"
-            rounded={16}
-            items="center"
-            justify="center"
+            backgroundColor="$text"
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
             borderWidth={1}
             borderColor="$text1"
             pressStyle={{ opacity: 0.9 }}
@@ -140,9 +145,9 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
         </YStack>
 
         {/* Secure enclave link */}
-        <XStack justify="center" pb="$8">
+        <XStack justifyContent="center" pb="$8">
           <Button variant="ghost" onPress={handleSecureEnclave}>
-            <Text fontSize="$4" fontWeight="600" color="$text">
+            <Text fontSize="$4" fontWeight="600" color="$textSecondary">
               {t('onboarding.profileType.secureEnclaveProfile')}
             </Text>
           </Button>

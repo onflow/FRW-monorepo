@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { ShieldOff, SecureEnclave, HardwareGradeSecurity } from '@onflow/frw-icons';
+// import { FlowLogo, CheckCircle } from '@onflow/frw-icons'; // Temporarily disabled
 import {
   YStack,
   XStack,
@@ -8,144 +8,56 @@ import {
   GradientBackground,
   InfoDialog,
   HoldToSendButton,
-  AccountCreationLoadingState,
-  ShieldAnimation,
 } from '@onflow/frw-ui';
-import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
  * SecureEnclaveScreen - Advanced profile type screen showing Secure Enclave features
  * Displays the benefits and limitations of using device hardware security
- * Uses TanStack Query for future backend integration
  */
-
-// Future API functions (placeholder for now)
-const fetchSecureEnclaveConfig = async () => {
-  // TODO: Replace with actual API call
-  return {
-    isAvailable: true,
-    features: ['secureEnclave', 'hardwareSecurity'],
-    limitations: ['noEvm'],
-    estimatedCreationTime: 3000,
-  };
-};
-
-const createSecureEnclaveAccount = async () => {
-  // TODO: Replace with actual account creation API call
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  console.log('Secure Enclave account created');
-  return { success: true, accountId: 'secure_account_123' };
-};
-
-const trackSecureEnclaveSelection = async (action: 'confirm' | 'cancel') => {
-  // TODO: Replace with actual analytics API call
-  console.log('Tracking secure enclave action:', action);
-  return { success: true };
-};
-
 export function SecureEnclaveScreen(): React.ReactElement {
   const { t } = useTranslation();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-
-  // Query for secure enclave configuration
-  const {
-    data: secureEnclaveConfig,
-    isLoading: isLoadingConfig,
-    error: configError,
-  } = useQuery({
-    queryKey: ['onboarding', 'secure-enclave-config'],
-    queryFn: fetchSecureEnclaveConfig,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
-  });
-
-  // Mutation for account creation
-  const createAccountMutation = useMutation({
-    mutationFn: createSecureEnclaveAccount,
-    onSuccess: (data) => {
-      console.log('Account created successfully:', data);
-      // Navigate to notification preferences after account creation
-      navigation.navigate('NotificationPreferences');
-    },
-    onError: (error) => {
-      console.error('Failed to create account:', error);
-      // Handle error - could show error dialog
-    },
-  });
-
-  // Mutation for tracking analytics
-  const trackingMutation = useMutation({
-    mutationFn: trackSecureEnclaveSelection,
-    onSuccess: (data, variables) => {
-      console.log('Successfully tracked secure enclave action:', variables);
-    },
-    onError: (error, variables) => {
-      console.error('Failed to track secure enclave action:', variables, error);
-    },
-  });
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
   const handleNext = () => {
-    // Track analytics
-    trackingMutation.mutate('confirm');
     setShowConfirmDialog(true);
   };
 
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
-    // Trigger account creation mutation
-    createAccountMutation.mutate();
+    setIsCreatingAccount(true);
+
+    // Simulate account creation delay
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    setIsCreatingAccount(false);
+    // Navigate to notification preferences after account creation
+    navigation.navigate('NotificationPreferencesScreen');
   };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  // Show loading state while fetching config
-  if (isLoadingConfig) {
-    return (
-      <GradientBackground>
-        <YStack flex={1} items="center" justify="center">
-          <Text>Loading...</Text>
-        </YStack>
-      </GradientBackground>
-    );
-  }
-
-  // Show error state if config fetch fails
-  if (configError) {
-    return (
-      <GradientBackground>
-        <YStack flex={1} items="center" justify="center" px="$4">
-          <Text color="$red10" text="center">
-            Failed to load secure enclave configuration. Please try again.
-          </Text>
-        </YStack>
-      </GradientBackground>
-    );
-  }
-
   return (
     <>
       <GradientBackground>
         <YStack flex={1} px="$4">
           {/* Advanced text */}
-          <YStack mb="$6">
-            <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+          <YStack mb="$8">
+            <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
               {t('onboarding.secureEnclave.title')}
             </Text>
           </YStack>
 
-          {/* Shield Animation */}
-          <YStack alignItems="center" mb="$8">
-            <ShieldAnimation width={300} height={375} autoPlay={true} loop={true} />
-          </YStack>
+          {/* Flow logo with glassmorphism background */}
 
           {/* Card with profile description */}
           <YStack items="center" mb="$6">
             <YStack w="100%" maxW={320} items="center" gap="$2">
-              <Text fontSize="$5" fontWeight="700" color="$text" text="center" mb="$2">
+              <Text fontSize="$5" fontWeight="600" color="$text" text="center" mb="$2">
                 {t('onboarding.secureEnclave.cardTitle')}
               </Text>
               <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17} px="$2">
@@ -158,7 +70,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
           <YStack gap="$4" items="center" mb="$6">
             {/* Secure enclave */}
             <XStack gap="$2" items="center">
-              <SecureEnclave size={16} color="#00EF8B" />
+              <Text fontSize={16} color="$primary">
+                ✅
+              </Text>
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.secureEnclave')}
               </Text>
@@ -166,7 +80,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* Hardware security */}
             <XStack gap="$2" items="center">
-              <HardwareGradeSecurity size={16} color="#00EF8B" />
+              <Text fontSize={16} color="$primary">
+                ✅
+              </Text>
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.hardwareSecurity')}
               </Text>
@@ -174,7 +90,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* No EVM support */}
             <XStack gap="$2" items="center">
-              <ShieldOff size={16} color="#EF4444" />
+              <Text fontSize={16} color="$error">
+                ⛔
+              </Text>
               <Text fontSize="$4" color="$error">
                 {t('onboarding.secureEnclave.features.noEvm')}
               </Text>
@@ -234,13 +152,76 @@ export function SecureEnclaveScreen(): React.ReactElement {
       </InfoDialog>
 
       {/* Creating Account Loading State */}
-      <AccountCreationLoadingState
-        visible={createAccountMutation.isPending}
-        title={t('onboarding.secureEnclave.creating.title')}
-        statusText={t('onboarding.secureEnclave.creating.configuring')}
-        onComplete={() => navigation.navigate('NotificationPreferences')}
-        duration={3000}
-      />
+      {isCreatingAccount && (
+        <View pos="absolute" top={0} left={0} right={0} bottom={0} bg="$background" zIndex={2000}>
+          <YStack flex={1} items="center" justify="center">
+            {/* Green glow effect */}
+            <View
+              pos="absolute"
+              w={467}
+              h={467}
+              rounded={999}
+              bg="$primary"
+              opacity={0.25}
+              style={{
+                filter: 'blur(400px)',
+              }}
+            />
+
+            {/* Title */}
+            <Text
+              fontSize={30}
+              fontWeight="700"
+              color="$text"
+              text="center"
+              lineHeight={36}
+              mb="$8"
+            >
+              {t('onboarding.secureEnclave.creating.title')}
+            </Text>
+
+            {/* Progress section */}
+            <YStack w="90%" maxW={339} items="center" gap="$3">
+              {/* Progress bar container */}
+              <View w="100%" h={52} bg="transparent" rounded="$4" overflow="hidden">
+                {/* Background line */}
+                <View
+                  pos="absolute"
+                  top="50%"
+                  left={32}
+                  right={32}
+                  h={10}
+                  bg="rgba(255, 255, 255, 0.15)"
+                  rounded={5}
+                  style={{
+                    transform: 'translateY(-50%)',
+                  }}
+                />
+
+                {/* Animated progress line */}
+                <View
+                  pos="absolute"
+                  top="50%"
+                  left={32}
+                  w="60%"
+                  h={10}
+                  rounded={5}
+                  style={{
+                    background: 'linear-gradient(90deg, #16FF99 60%, #B5FFDF 100%)',
+                    transform: 'translateY(-50%)',
+                    animation: 'progressAnimation 2s ease-in-out infinite',
+                  }}
+                />
+              </View>
+
+              {/* Status text */}
+              <Text fontSize="$4" fontWeight="600" color="$primary">
+                {t('onboarding.secureEnclave.creating.configuring')}
+              </Text>
+            </YStack>
+          </YStack>
+        </View>
+      )}
     </>
   );
 }

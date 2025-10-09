@@ -142,151 +142,134 @@ export function RecoveryPhraseScreen(): React.ReactElement {
 
   return (
     <GradientBackground>
-      <YStack flex={1}>
-        {/* Green glow effect */}
-        <View
-          pos="absolute"
-          top={131}
-          left={-41}
-          w={467}
-          h={467}
-          rounded={999}
-          bg="$primary"
-          opacity={0.25}
-          style={{
-            filter: 'blur(400px)',
-          }}
-        />
+      <YStack flex={1} px="$4" pt="$4">
+        {/* Title and description */}
+        <YStack items="center" mb="$6" gap="$2">
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+            {t('onboarding.recoveryPhrase.title')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxWidth={280}>
+            {t('onboarding.recoveryPhrase.description')}
+          </Text>
+        </YStack>
 
-        <YStack flex={1} px="$4" pt="$4">
-          {/* Title and description */}
-          <YStack items="center" mb="$6" gap="$2">
-            <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
-              {t('onboarding.recoveryPhrase.title')}
+        {/* Recovery phrase grid - 2 columns x 6 rows */}
+        <View
+          width={320}
+          backgroundColor="rgba(255, 255, 255, 0.1)"
+          borderRadius={16}
+          paddingTop={24}
+          paddingBottom={24}
+          paddingLeft={18}
+          paddingRight={18}
+          marginBottom={16}
+          alignSelf="center"
+        >
+          <YStack gap={20}>
+            {/* Generate 6 rows with 2 columns each */}
+            {Array.from({ length: 6 }, (_, rowIndex) => (
+              <XStack key={rowIndex} gap={40} justifyContent="space-between">
+                {/* Left column */}
+                {recoveryPhrase[rowIndex * 2] && (
+                  <XStack gap={8} alignItems="center" flex={1}>
+                    <View
+                      width={32}
+                      height={32}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      borderRadius={8}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Text fontSize={20} color="$text">
+                        {rowIndex * 2 + 1}
+                      </Text>
+                    </View>
+                    <Text fontSize={16} color="$text">
+                      {recoveryPhrase[rowIndex * 2]}
+                    </Text>
+                  </XStack>
+                )}
+
+                {/* Right column */}
+                {recoveryPhrase[rowIndex * 2 + 1] && (
+                  <XStack gap={8} alignItems="center" flex={1}>
+                    <View
+                      width={32}
+                      height={32}
+                      backgroundColor="rgba(255, 255, 255, 0.1)"
+                      borderRadius={8}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Text fontSize={20} color="$text">
+                        {rowIndex * 2 + 2}
+                      </Text>
+                    </View>
+                    <Text fontSize={16} color="$text">
+                      {recoveryPhrase[rowIndex * 2 + 1]}
+                    </Text>
+                  </XStack>
+                )}
+              </XStack>
+            ))}
+          </YStack>
+        </View>
+
+        {/* Copy button */}
+        <XStack justifyContent="center" marginBottom={16}>
+          <Button variant="ghost" onPress={handleCopy}>
+            <XStack gap={12} alignItems="center">
+              <Copy size={24} color="#00EF8B" />
+              <Text fontSize={16} fontWeight="600" color="$primary">
+                {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
+              </Text>
+            </XStack>
+          </Button>
+        </XStack>
+
+        {/* Warning card */}
+        <XStack
+          gap={12}
+          padding={16}
+          borderRadius={16}
+          borderWidth={1}
+          borderColor="rgba(255, 255, 255, 0.15)"
+          marginBottom={24}
+        >
+          <View width={24} height={24} alignItems="center" justifyContent="center">
+            <Text fontSize={20}>⚠️</Text>
+          </View>
+          <YStack flex={1} gap={4}>
+            <Text fontSize={16} fontWeight="600" color="$text">
+              {t('onboarding.recoveryPhrase.warning.title')}
             </Text>
-            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
-              {t('onboarding.recoveryPhrase.description')}
+            <Text fontSize={16} color="$textSecondary" lineHeight={17}>
+              {t('onboarding.recoveryPhrase.warning.description')}
             </Text>
           </YStack>
+        </XStack>
 
-          {/* Recovery phrase grid - 2 columns x 6 rows */}
-          <View
-            w={320}
-            bg="rgba(255, 255, 255, 0.1)"
-            rounded={16}
-            pt={24}
-            pb={24}
-            pl={18}
-            pr={18}
-            mb="$4"
-            alignSelf="center"
-          >
-            <YStack gap={20}>
-              {/* Generate 6 rows with 2 columns each */}
-              {Array.from({ length: 6 }, (_, rowIndex) => (
-                <XStack key={rowIndex} gap={40} justify="space-between">
-                  {/* Left column */}
-                  {recoveryPhrase[rowIndex * 2] && (
-                    <XStack gap="$2" items="center" flex={1}>
-                      <View
-                        w={32}
-                        h={32}
-                        bg="rgba(255, 255, 255, 0.1)"
-                        rounded={8}
-                        items="center"
-                        justify="center"
-                      >
-                        <Text fontSize="$5" color="$text">
-                          {rowIndex * 2 + 1}
-                        </Text>
-                      </View>
-                      <Text fontSize="$4" color="$text">
-                        {recoveryPhrase[rowIndex * 2]}
-                      </Text>
-                    </XStack>
-                  )}
+        {/* Spacer */}
+        <YStack flex={1} />
 
-                  {/* Right column */}
-                  {recoveryPhrase[rowIndex * 2 + 1] && (
-                    <XStack gap="$2" items="center" flex={1}>
-                      <View
-                        w={32}
-                        h={32}
-                        bg="rgba(255, 255, 255, 0.1)"
-                        rounded={8}
-                        items="center"
-                        justify="center"
-                      >
-                        <Text fontSize="$5" color="$text">
-                          {rowIndex * 2 + 2}
-                        </Text>
-                      </View>
-                      <Text fontSize="$4" color="$text">
-                        {recoveryPhrase[rowIndex * 2 + 1]}
-                      </Text>
-                    </XStack>
-                  )}
-                </XStack>
-              ))}
-            </YStack>
-          </View>
-
-          {/* Copy button */}
-          <XStack justify="center" mb="$4">
-            <Button variant="ghost" onPress={handleCopy}>
-              <XStack gap="$3" items="center">
-                {/* <Copy size={24} color="#00EF8B" /> */}
-                <Text fontSize="$4" fontWeight="600" color="$primary">
-                  {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
-                </Text>
-              </XStack>
-            </Button>
-          </XStack>
-
-          {/* Warning card */}
-          <XStack
-            gap="$3"
-            p="$4"
-            rounded={16}
+        {/* Next button - matching other screens style */}
+        <YStack paddingBottom={24}>
+          <YStack
+            width="100%"
+            height={52}
+            backgroundColor="$text"
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
             borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.15)"
-            mb="$6"
+            borderColor="$text"
+            pressStyle={{ opacity: 0.9 }}
+            onPress={handleNext}
+            cursor="pointer"
           >
-            <View w={24} h={24} items="center" justify="center">
-              <Text fontSize={20}>⚠️</Text>
-            </View>
-            <YStack flex={1} gap="$1">
-              <Text fontSize="$4" fontWeight="600" color="$text">
-                {t('onboarding.recoveryPhrase.warning.title')}
-              </Text>
-              <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
-                {t('onboarding.recoveryPhrase.warning.description')}
-              </Text>
-            </YStack>
-          </XStack>
-
-          {/* Spacer */}
-          <YStack flex={1} />
-
-          {/* Next button - matching other screens style */}
-          <YStack pb="$6">
-            <YStack
-              width="100%"
-              height={52}
-              bg="$text"
-              rounded={16}
-              items="center"
-              justify="center"
-              borderWidth={1}
-              borderColor="$text"
-              pressStyle={{ opacity: 0.9 }}
-              onPress={handleNext}
-              cursor="pointer"
-            >
-              <Text fontSize="$4" fontWeight="600" color="$bg">
-                {t('onboarding.recoveryPhrase.next')}
-              </Text>
-            </YStack>
+            <Text fontSize={16} fontWeight="600" color="$bg">
+              {t('onboarding.recoveryPhrase.next')}
+            </Text>
           </YStack>
         </YStack>
       </YStack>

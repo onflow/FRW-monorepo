@@ -115,21 +115,6 @@ export function ConfirmRecoveryPhraseScreen({
   return (
     <GradientBackground>
       <YStack flex={1}>
-        {/* Green glow effect */}
-        <View
-          pos="absolute"
-          top={131}
-          left={-41}
-          w={467}
-          h={467}
-          rounded={999}
-          bg="$primary"
-          opacity={0.25}
-          style={{
-            filter: 'blur(400px)',
-          }}
-        />
-
         <ScrollView flex={1} showsVerticalScrollIndicator={false}>
           <YStack px="$4" pt="$4">
             {/* Title and description */}

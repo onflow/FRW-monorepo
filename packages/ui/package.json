@@ -20,6 +20,7 @@
     "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-types": "workspace:^",
     "@onflow/frw-utils": "workspace:^",
+    "@react-native-community/blur": "^4.4.1",
     "@tamagui/config": "^1.132.20",
     "@tamagui/core": "^1.132.20",
     "@tamagui/theme-builder": "^1.132.20",

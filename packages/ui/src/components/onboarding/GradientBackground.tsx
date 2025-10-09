@@ -1,6 +1,6 @@
+import { GreenCircleBlur, TealCircleBlur } from '@onflow/frw-icons';
 import React from 'react';
-import { View, YStack } from 'tamagui';
-import type { ViewProps } from 'tamagui';
+import { YStack, type ViewProps } from 'tamagui';
 
 interface GradientBackgroundProps extends ViewProps {
   children: React.ReactNode;
@@ -12,36 +12,18 @@ export function GradientBackground({
 }: GradientBackgroundProps): React.ReactElement {
   return (
     <YStack flex={1} bg="$background" overflow="hidden" {...props}>
-      {/* Green ellipse blur */}
-      <View
-        pos="absolute"
-        w={306}
-        h={306}
-        rounded={999}
-        bg="rgba(53, 233, 126, 0.4)"
-        top={124}
-        left={-95}
-        style={{
-          filter: 'blur(200px)',
-        }}
-      />
+      {/* Green circle with blur from SVG */}
+      <YStack pos="absolute" t={124} l={-95} w={376} h={603}>
+        <GreenCircleBlur width={376} height={603} />
+      </YStack>
 
-      {/* Teal ellipse blur */}
-      <View
-        pos="absolute"
-        w={306}
-        h={306}
-        rounded={999}
-        bg="rgba(19, 158, 141, 0.4)"
-        top={228}
-        left={191}
-        style={{
-          filter: 'blur(200px)',
-        }}
-      />
+      {/* Teal circle with blur from SVG */}
+      <YStack pos="absolute" t={228} l={191} w={376} h={603}>
+        <TealCircleBlur width={376} height={603} />
+      </YStack>
 
       {/* Main content */}
-      <YStack flex={1} zIndex={1}>
+      <YStack flex={1} zi={1}>
         {children}
       </YStack>
     </YStack>
