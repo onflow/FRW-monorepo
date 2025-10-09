@@ -4,4 +4,4 @@ export { SecureEnclaveScreen } from './SecureEnclaveScreen.query';
 export { NotificationPreferencesScreen } from './NotificationPreferencesScreen.query';
 export { BackupOptionsScreen } from './BackupOptionsScreen';
 export { RecoveryPhraseScreen } from './RecoveryPhraseScreen.query';
-export { ConfirmRecoveryPhraseScreen } from './ConfirmRecoveryPhraseScreen';
+export { ConfirmRecoveryPhraseScreen } from './ConfirmRecoveryPhraseScreen.query';

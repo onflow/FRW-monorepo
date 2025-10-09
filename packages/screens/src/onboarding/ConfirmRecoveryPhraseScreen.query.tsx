@@ -10,6 +10,7 @@ import {
   ScrollView,
   AccountCreationLoadingState,
 } from '@onflow/frw-ui';
+import { useMutation } from '@tanstack/react-query';
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,9 +31,23 @@ interface ConfirmRecoveryPhraseScreenProps {
   };
 }
 
+// Future API functions (placeholder for now)
+const createWalletAccount = async (data: { recoveryPhrase: string[] }) => {
+  // TODO: Replace with actual wallet creation API call
+  console.log('Creating wallet account with recovery phrase');
+  return { accountId: 'account_123', success: true };
+};
+
+const trackVerificationAction = async (action: 'answer' | 'complete' | 'failure') => {
+  // TODO: Replace with actual analytics API call
+  console.log('Tracking verification action:', action);
+  return { success: true };
+};
+
 /**
  * ConfirmRecoveryPhraseScreen - Screen to verify the user has written down their recovery phrase
  * Shows multiple choice questions for specific word positions in the recovery phrase
+ * Uses TanStack Query for future backend integration
  */
 export function ConfirmRecoveryPhraseScreen({
   route,
@@ -56,6 +71,29 @@ export function ConfirmRecoveryPhraseScreen({
     'Migas',
     'Carry',
   ];
+
+  // Mutation for creating wallet account
+  const createAccountMutation = useMutation({
+    mutationFn: createWalletAccount,
+    onSuccess: (data) => {
+      console.log('Successfully created wallet account:', data.accountId);
+    },
+    onError: (error) => {
+      console.error('Failed to create wallet account:', error);
+      setIsCreatingAccount(false);
+    },
+  });
+
+  // Mutation for tracking analytics
+  const trackingMutation = useMutation({
+    mutationFn: trackVerificationAction,
+    onSuccess: (data, variables) => {
+      console.log('Successfully tracked verification action:', variables);
+    },
+    onError: (error, variables) => {
+      console.error('Failed to track verification action:', variables, error);
+    },
+  });
 
   // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration
   const questions = useMemo((): VerificationQuestion[] => {
@@ -87,6 +125,9 @@ export function ConfirmRecoveryPhraseScreen({
   };
 
   const handleSelectWord = (questionIndex: number, word: string) => {
+    // Track answer selection
+    trackingMutation.mutate('answer');
+
     setSelectedAnswers({
       ...selectedAnswers,
       [questionIndex]: word,
@@ -100,10 +141,19 @@ export function ConfirmRecoveryPhraseScreen({
     });
 
     if (allCorrect) {
+      // Track successful completion
+      trackingMutation.mutate('complete');
+
       // Show creating account animation
       setIsCreatingAccount(true);
 
+      // Trigger account creation mutation
+      createAccountMutation.mutate({ recoveryPhrase });
+
       // Account creation loading state will handle navigation via onComplete callback
+    } else {
+      // Track failure
+      trackingMutation.mutate('failure');
     }
   };
 
