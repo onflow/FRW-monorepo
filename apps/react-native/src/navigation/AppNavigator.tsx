@@ -316,7 +316,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="ProfileTypeSelection"
               component={ProfileTypeSelectionScreen}
               options={{
-                headerTitle: t('onboarding.profileType.welcomeTitle'),
+                headerShown: false, // No header for profile type selection
               }}
             />
             <Stack.Screen
