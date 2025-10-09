@@ -368,6 +368,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={BackupOptionsScreen}
               options={{
                 headerTitle: t('onboarding.backupOptions.navTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
               }}
             />
           </Stack.Group>

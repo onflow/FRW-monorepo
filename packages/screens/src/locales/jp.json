@@ -174,5 +174,87 @@
         "descriptionSecondary": "アプリケーションがEVMまたはCadenceベースの場合、互換性のあるアカウントのみが接続に利用できます。"
       }
     }
+  },
+  "onboarding": {
+    "flowWallet": "Flow ウォレット",
+    "getStarted": {
+      "title": "Flow ウォレットを始める",
+      "subtitle": "Flow ウォレットへようこそ\nアカウントを作成して始めましょう。",
+      "createAccount": "新しいアカウントを作成",
+      "signIn": "既にアカウントをお持ちです",
+      "termsAndPrivacy": "Flow ウォレットを使用することで、利用規約とプライバシーポリシーに同意したものとみなされます"
+    },
+    "profileType": {
+      "welcomeTitle": "ようこそ\nFlow ウォレット",
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズで保護",
+        "description": "リカバリーフレーズは、ウォレットを保護するために生成された一連の単語です。"
+      },
+      "secureEnclaveProfile": "セキュアエンクレーブプロファイル",
+      "next": "次へ"
+    },
+    "secureEnclave": {
+      "title": "高度な設定",
+      "cardTitle": "セキュアプロファイル",
+      "cardDescription": "ハードウェアグレードのセキュリティを備えたデバイスキーを使用し、セキュアモードのFlow ウォレットは信頼できる超セキュアなハードウェアウォレットです。Flow上のCadenceアカウントのみで利用可能です。",
+      "features": {
+        "secureEnclave": "セキュアエンクレーブ",
+        "hardwareSecurity": "ハードウェアグレードのセキュリティ",
+        "noEvm": "EVMサポートなし"
+      },
+      "next": "次へ",
+      "dialog": {
+        "title": "上級ユーザーですか?",
+        "description": "セキュアプロファイルを作成してもよろしいですか?これにより特定の機能へのアクセスが制限され、Flow上のEVMアカウントにアクセスできなくなります。",
+        "holdToConfirm": "長押しして確認"
+      },
+      "creating": {
+        "title": "アカウントを\n作成中",
+        "configuring": "アカウントを設定中"
+      }
+    },
+    "notificationPreferences": {
+      "headerTitle": "通知",
+      "title": "プッシュ通知を受け取る",
+      "subtitle": "転送、スワップ、承認が完了したときに通知を受け取ります。",
+      "enableButton": "プッシュ通知をオンにする",
+      "maybeLater": "後で"
+    },
+    "backupOptions": {
+      "navTitle": "バックアップ",
+      "subtitle": "アカウント作成を完了するために、アカウントのバックアップ方法を選択してください。これは後で設定で変更できます。",
+      "deviceBackup": {
+        "title": "デバイスバックアップを作成",
+        "description": "デバイスをバックアップウォレットとして使用し、デジタル資産を保護します"
+      },
+      "cloudBackup": {
+        "title": "クラウドバックアップを作成",
+        "description": "Google DriveやiCloudなどの信頼できるプロバイダーでクラウドバックアップを作成します"
+      },
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズバックアップを作成",
+        "description": "12単語のリカバリーフレーズを作成します"
+      }
+    },
+    "recoveryPhrase": {
+      "navTitle": "マルチチェーンアカウント",
+      "title": "リカバリーフレーズ",
+      "description": "これらの単語を正しい順序で書き留め、安全な場所に保管してください。",
+      "copy": "コピー",
+      "next": "次へ",
+      "warning": {
+        "title": "秘密のフレーズを共有しないでください!",
+        "description": "誰かがあなたの秘密のフレーズを手に入れると、\nあなたのウォレットを完全に制御できるようになります。"
+      }
+    },
+    "confirmRecoveryPhrase": {
+      "navTitle": "マルチチェーンアカウント",
+      "title": "フレーズを確認",
+      "description": "順序を参照して、単語を1つずつ選択してください。",
+      "selectWord": "#{{position}} の単語を選択",
+      "wrongWord": "間違った単語が選択されました。もう一度お試しください。",
+      "next": "次へ",
+      "finish": "完了"
+    }
   }
 }
