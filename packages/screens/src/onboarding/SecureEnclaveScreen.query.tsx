@@ -8,6 +8,7 @@ import {
   GradientBackground,
   InfoDialog,
   HoldToSendButton,
+  AccountCreationLoadingState,
 } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
@@ -235,76 +236,11 @@ export function SecureEnclaveScreen(): React.ReactElement {
       </InfoDialog>
 
       {/* Creating Account Loading State */}
-      {createAccountMutation.isPending && (
-        <View pos="absolute" top={0} left={0} right={0} bottom={0} bg="$background" zIndex={2000}>
-          <YStack flex={1} items="center" justify="center">
-            {/* Green glow effect */}
-            <View
-              pos="absolute"
-              w={467}
-              h={467}
-              rounded={999}
-              bg="$primary"
-              opacity={0.25}
-              style={{
-                filter: 'blur(400px)',
-              }}
-            />
-
-            {/* Title */}
-            <Text
-              fontSize={30}
-              fontWeight="700"
-              color="$text"
-              text="center"
-              lineHeight={36}
-              mb="$8"
-            >
-              {t('onboarding.secureEnclave.creating.title')}
-            </Text>
-
-            {/* Progress section */}
-            <YStack w="90%" maxW={339} items="center" gap="$3">
-              {/* Progress bar container */}
-              <View w="100%" h={52} bg="transparent" rounded="$4" overflow="hidden">
-                {/* Background line */}
-                <View
-                  pos="absolute"
-                  top="50%"
-                  left={32}
-                  right={32}
-                  h={10}
-                  bg="rgba(255, 255, 255, 0.15)"
-                  rounded={5}
-                  style={{
-                    transform: 'translateY(-50%)',
-                  }}
-                />
-
-                {/* Animated progress line */}
-                <View
-                  pos="absolute"
-                  top="50%"
-                  left={32}
-                  w="60%"
-                  h={10}
-                  rounded={5}
-                  style={{
-                    background: 'linear-gradient(90deg, #16FF99 60%, #B5FFDF 100%)',
-                    transform: 'translateY(-50%)',
-                    animation: 'progressAnimation 2s ease-in-out infinite',
-                  }}
-                />
-              </View>
-
-              {/* Status text */}
-              <Text fontSize="$4" fontWeight="600" color="$primary">
-                {t('onboarding.secureEnclave.creating.configuring')}
-              </Text>
-            </YStack>
-          </YStack>
-        </View>
-      )}
+      <AccountCreationLoadingState
+        visible={createAccountMutation.isPending}
+        title={t('onboarding.secureEnclave.creating.title')}
+        statusText={t('onboarding.secureEnclave.creating.configuring')}
+      />
     </>
   );
 }
