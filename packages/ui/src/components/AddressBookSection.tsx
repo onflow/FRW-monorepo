@@ -157,7 +157,7 @@ export function AddressBookList({
           />
           {/* Divider between items */}
           {index < (section as any).data.length - 1 && (
-            <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           )}
         </YStack>
       )}

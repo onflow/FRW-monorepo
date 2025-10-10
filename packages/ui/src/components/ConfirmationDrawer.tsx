@@ -5,7 +5,6 @@ import {
   type TransactionType,
   type NFTTransactionData,
 } from '@onflow/frw-types';
-import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
 import { Sheet, Spinner, View, XStack, YStack, useTheme } from 'tamagui';
 
@@ -177,27 +176,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       return sendNFTsText;
     }
   }, [isMultipleNFTs, isERC1155, sendNFTsText, sendSNFTsText]);
-
-  // Theme-aware button colors using helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
-
-  const buttonBackgroundColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const buttonTextColor = isCurrentlyDarkMode
-    ? theme.black?.val || '#000000'
-    : theme.white?.val || '#FFFFFF';
-
-  // Theme-aware close icon color - use theme's color value directly
-  const closeIconColor = theme.color?.val || '#000000';
-
-  // Theme-aware card background color - same as SendTokensScreen
-  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
-
-  // Theme-aware background colors for badges
-  const badgeBackgroundColor =
-    theme.white10?.val ||
-    (isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
 
   const handleConfirm = async () => {
     try {
