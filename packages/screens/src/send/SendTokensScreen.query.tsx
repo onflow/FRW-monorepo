@@ -469,7 +469,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         !toAccount ||
         amountNum.lte(0) ||
         tokenAmount.gt(balanceNum) ||
-        showStorageWarning ||
         isAccountIncompatible
       );
     } else {
@@ -484,7 +483,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     toAccount,
     amount,
     isTokenMode,
-    showStorageWarning,
     isAccountIncompatible,
     t,
   ]);
