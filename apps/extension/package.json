@@ -39,7 +39,6 @@
     "build:zip": "pnpm build && node scripts/build-zip.js"
   },
   "dependencies": {
-    "@coinbase/cbpay-js": "^1.10.0",
     "@debank/common": "^0.3.60",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",

@@ -277,21 +277,22 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         if (existingCollections) {
           // Find the collection that matches this NFT
           matchingCollection = existingCollections.find((collection) => {
-            // Try multiple matching strategies
-            const matches =
-              collection.name === currentSelectedNFT.collectionName ||
-              collection.contractName === currentSelectedNFT.collectionContractName ||
-              collection.id === currentSelectedNFT.collectionContractName ||
-              collection.flowIdentifier === currentSelectedNFT.flowIdentifier ||
-              collection.evmAddress === currentSelectedNFT.evmAddress ||
-              // Additional matching for Android native NFTs
-              collection.address === currentSelectedNFT.address ||
-              collection.address === currentSelectedNFT.contractAddress;
+            let matches = false;
+
+            // Flow collection use flowIdentifier
+            if (collection.type === 'flow') {
+              matches = collection.flowIdentifier === currentSelectedNFT.flowIdentifier;
+            }
+            // EVM collection use evmAddress
+            else if (collection.type === 'evm') {
+              matches = collection.evmAddress === currentSelectedNFT.evmAddress;
+            }
 
             if (matches) {
               logger.debug('[SendSummaryScreen] Found matching collection:', {
                 collectionName: collection.name,
                 collectionId: collection.id,
+                collectionType: collection.type,
               });
             }
 
