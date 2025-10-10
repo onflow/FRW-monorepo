@@ -416,7 +416,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
           }
         }
       }
-      console.log('config.authorizations', config.authorizations, 'config: ', config);
       return config;
     });
 
