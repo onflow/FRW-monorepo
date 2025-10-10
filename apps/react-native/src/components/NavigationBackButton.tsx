@@ -17,8 +17,9 @@ export const NavigationBackButton: React.FC = () => {
       variant="ghost"
       size="medium"
       onPress={() => navigation.goBack()}
-      ml="$-2" // Move left to reduce padding
-      pl="$2" // Add some internal padding
+      mt="$-1" // Move top to reduce padding
+      // ml="$-2" // Move left to reduce padding
+      // pl="$2" // Add some internal padding
     />
   );
 };

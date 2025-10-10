@@ -19,8 +19,9 @@ export const NavigationCloseButton: React.FC = () => {
       variant="ghost"
       size="medium"
       onPress={handleClose}
-      mr="$-2" // Move right to reduce padding
-      pr="$2" // Add some internal padding
+      mt="$-1" // Move top to reduce padding
+      // mr="$-2" // Move right to reduce padding
+      // pr="$2" // Add some internal padding
     />
   );
 };
