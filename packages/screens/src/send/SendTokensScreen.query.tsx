@@ -468,8 +468,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         !fromAccount ||
         !toAccount ||
         amountNum.lte(0) ||
-        tokenAmount.gt(balanceNum) ||
-        isAccountIncompatible
+        tokenAmount.gt(balanceNum)
       );
     } else {
       setAmountError(''); // Clear error for non-token transactions
@@ -483,7 +482,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     toAccount,
     amount,
     isTokenMode,
-    isAccountIncompatible,
     t,
   ]);
 
