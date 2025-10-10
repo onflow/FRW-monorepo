@@ -344,7 +344,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
               addr: ADDRESS.replace('0x', ''),
               keyId: KEY_ID,
               signingFunction: async (signable: any) => {
-                const signature = await this.walletController.signAsBridgeFeePayer(signable);
+                const signature = await this.walletController.signAsBridgePayer(signable);
                 return {
                   addr: ADDRESS,
                   keyId: KEY_ID,

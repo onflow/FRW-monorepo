@@ -1050,6 +1050,20 @@ class UserWallet {
     return signature;
   };
 
+  signAsBridgePayer = async (signable): Promise<string> => {
+    const tx = signable.voucher;
+    const message = signable.message;
+    const envelope = await openapiService.signAsBridgePayer(tx, message);
+
+    // Check if envelope has an error property
+    if (envelope && envelope.error) {
+      throw new Error(envelope.error);
+    }
+
+    const signature = envelope.authorizerSigs.sig;
+    return signature;
+  };
+
   signProposer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
@@ -1151,7 +1165,7 @@ class UserWallet {
       signingFunction: async (signable) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signAsBridgeFeePayer(signable);
+        const signature = await this.signAsBridgePayer(signable);
         return {
           addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
           keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string

@@ -1459,6 +1459,10 @@ export class WalletController extends BaseController {
     return await userWalletService.signAsBridgeFeePayer(signable);
   };
 
+  signAsBridgePayer = async (signable): Promise<string> => {
+    return await userWalletService.signAsBridgePayer(signable);
+  };
+
   getPayerStatus = async (): Promise<PayerStatusPayloadV1> => {
     return await openapiService.getPayerStatus();
   };

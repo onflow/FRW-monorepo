@@ -980,6 +980,21 @@ export class OpenApiService {
     return data;
   };
 
+  signAsBridgePayer = async (transaction, message: string) => {
+    const messages = {
+      payload: message,
+    };
+    const data = await this.sendRequest(
+      'POST',
+      '/api/signAsBridgePayer',
+      {},
+      { transaction, message: messages },
+      this.store.webNextUrl
+    );
+    // (config.method, config.path, {}, { transaction, message: messages });
+    return data;
+  };
+
   signProposer = async (transaction, message: string) => {
     const messages = {
       envelope_message: message,
