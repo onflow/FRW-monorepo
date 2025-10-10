@@ -1,6 +1,6 @@
 import type { WalletProfile } from '@onflow/frw-types';
 import React from 'react';
-import { YStack, XStack, useThemeName } from 'tamagui';
+import { YStack, XStack } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
 import { type RecipientData } from './RecipientList';
@@ -95,12 +95,6 @@ function ProfileItem({
   isLast = false,
   isMobile = false,
 }: ProfileItemProps): React.ReactElement {
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
   const handleAccountPress = (account: any) => {
     onAccountPress?.(account);
   };
@@ -129,7 +123,7 @@ function ProfileItem({
       {/* Profile Header */}
       <YStack gap="$3" bg="$bgDrawer">
         <YStack py="$2" items="center">
-          <YStack height={1} bg={dividerColor} width="100%" />
+          <YStack height={1} bg="$border1" width="100%" />
         </YStack>
         <XStack items="center" gap="$3">
           <Avatar

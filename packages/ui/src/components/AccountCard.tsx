@@ -1,7 +1,6 @@
 import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
-import { isDarkMode } from '@onflow/frw-utils';
 import React, { useState } from 'react';
-import { ScrollView, XStack, YStack, useTheme } from 'tamagui';
+import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
@@ -36,15 +35,6 @@ export function AccountCard({
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
-  const theme = useTheme();
-
-  // Theme-aware background color using helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
-
-  // Chain link icon color logic
-  const chainLinkIconColor = isCurrentlyDarkMode
-    ? 'rgba(255, 255, 255, 0.8)'
-    : 'rgba(0, 0, 0, 0.8)';
 
   // Early return if no account data
   if (!account) {
@@ -61,7 +51,6 @@ export function AccountCard({
   const content = (
     <YStack
       width="100%"
-      // bg={backgroundColor}
       rounded="$4"
       pt="$1"
       pb={isSendTokensScreen ? '$4' : '$1'}
@@ -124,7 +113,7 @@ export function AccountCard({
             <XStack items="center" gap={4} minH={20}>
               {/* Link icon for linked accounts */}
               {(account.type === 'child' || account.parentEmoji) && (
-                <Link size={12.8} color={chainLinkIconColor} theme="outline" />
+                <Link size={12.8} color="#767676" theme="outline" />
               )}
               <Text color="$text" fontSize={14} fontWeight="600" lineHeight={17} numberOfLines={1}>
                 {account.name || 'Unnamed Account'}

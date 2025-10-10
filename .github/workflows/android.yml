@@ -2,11 +2,12 @@ name: Android Build & Release
 
 on:
   workflow_call:
+  push:
+    tags:
+      - "release/android-*"
   schedule:
-    # Sydney standard time (AEST, UTC+10): 10:30 -> 00:30 UTC; 16:00 -> 06:00 UTC
     - cron: "30 0 * 4-9 *"
     - cron: "0 6 * 4-9 *"
-    # Sydney daylight time (AEDT, UTC+11): 10:30 -> 23:30 UTC; 16:00 -> 05:00 UTC
     - cron: "30 23 * 1,2,3,10,11,12 *"
     - cron: "0 5 * 1,2,3,10,11,12 *"
   workflow_dispatch:
@@ -20,7 +21,6 @@ on:
           - debug
           - dev
           - release
-
 jobs:
   determine-env:
     runs-on: ubuntu-latest
@@ -40,7 +40,6 @@ jobs:
           if [ "$TYPE" = "dev" ]; then ENV_NAME="development"; fi
           echo "env_name=$ENV_NAME" >> $GITHUB_OUTPUT
           echo "Environment name: $ENV_NAME"
-
   android:
     runs-on: ubuntu-latest
     needs: determine-env
@@ -74,7 +73,7 @@ jobs:
       - name: Checkout (with submodules)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref != '' && github.ref || github.event.ref }}
           fetch-depth: 0
           submodules: recursive
 
@@ -284,17 +283,25 @@ jobs:
         id: meta
         shell: bash
         run: |
-          # Decide buildType: PRs -> debug; Release tags/branches -> dev (if secrets present) else debug
+          # Decide buildType: PRs -> debug; Tag-based releases -> release
           INPUT="${{ github.event_name }}:${{ github.ref }}:${{ inputs.buildType }}"
           TYPE="release"
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             TYPE="release"
           fi
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            if [[ "${{ github.ref }}" == refs/tags/release/rn-* || "${{ github.ref }}" == refs/heads/release/* ]]; then
-              TYPE="dev"
-            fi
-          fi
+          # Compute REF from push/create
+          REF="${{ github.ref }}"
+          if [ -z "$REF" ]; then REF="${{ github.event.ref }}"; fi
+          case "$REF" in
+            refs/tags/release/android-*|release/android-*)
+              TYPE="release" ;;
+            refs/tags/release/mob-*|release/mob-*)
+              TYPE="release" ;;
+            refs/tags/release/rn-*|release/rn-*)
+              TYPE="release" ;;
+            refs/heads/release/*)
+              TYPE="dev" ;;
+          esac
           if [[ -n "${{ inputs.buildType }}" ]]; then TYPE="${{ inputs.buildType }}"; fi
           echo "buildType=$TYPE" >> $GITHUB_OUTPUT
           echo "Resolved build type: $TYPE"
@@ -546,6 +553,71 @@ jobs:
           path: |
             apps/react-native/android/app/build/outputs/bundle/**/**/*.aab
           if-no-files-found: warn
+
+      - name: Attach APK/AAB to GitHub Release (release only)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release/') && steps.meta.outputs.buildType == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          TAG_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "[Android CI] Attaching assets to release: $TAG_NAME"
+
+          # URL-encode tag for API path
+          TAG_ENC=$(jq -rn --arg x "$TAG_NAME" '$x|@uri')
+
+          # Find or create release by tag
+          API="https://api.github.com/repos/${REPOSITORY}"
+          REL_ID=$(curl -s -L             -H "Accept: application/vnd.github+json"             -H "Authorization: Bearer $GITHUB_TOKEN"             -H "X-GitHub-Api-Version: 2022-11-28"             "$API/releases/tags/$TAG_ENC" | jq -r '.id // empty')
+
+          if [ -z "$REL_ID" ]; then
+            echo "[Android CI] Release not found for tag $TAG_NAME; creating it now."
+            BODY=$(jq -n --arg tag "$TAG_NAME" '{tag_name:$tag, name:$tag, draft:false, prerelease:false}')
+            REL_ID=$(curl -s -L -X POST               -H "Accept: application/vnd.github+json"               -H "Authorization: Bearer $GITHUB_TOKEN"               -H "X-GitHub-Api-Version: 2022-11-28"               "$API/releases" -d "$BODY" | jq -r '.id // empty')
+            if [ -z "$REL_ID" ]; then
+              echo "::error::Failed to create GitHub Release for tag $TAG_NAME"; exit 1
+            fi
+          fi
+
+          echo "[Android CI] Using release id: $REL_ID"
+
+          # Collect candidate files
+          mapfile -t FILES < <(find apps/react-native/android/app/build/outputs -type f \( -name '*.apk' -o -name '*.aab' \) | sort)
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "::warning::No APK/AAB files found to attach."; exit 0
+          fi
+
+          # Fetch existing assets to handle collisions
+          EXISTING=$(curl -s -L             -H "Accept: application/vnd.github+json"             -H "Authorization: Bearer $GITHUB_TOKEN"             -H "X-GitHub-Api-Version: 2022-11-28"             "$API/releases/$REL_ID/assets")
+
+          for f in "${FILES[@]}"; do
+            name=$(basename "$f")
+            echo "[Android CI] Uploading asset: $name"
+
+            # Delete existing asset with same name (if any)
+            ASSET_ID=$(echo "$EXISTING" | jq -r --arg n "$name" '.[] | select(.name==$n) | .id' 2>/dev/null || true)
+            if [ -n "${ASSET_ID:-}" ]; then
+              echo "[Android CI] Removing existing asset with same name: $name (id=$ASSET_ID)"
+              curl -s -L -X DELETE                 -H "Accept: application/vnd.github+json"                 -H "Authorization: Bearer $GITHUB_TOKEN"                 -H "X-GitHub-Api-Version: 2022-11-28"                 "$API/releases/assets/$ASSET_ID" >/dev/null || true
+            fi
+
+            # Pick content-type
+            ctype="application/octet-stream"
+            case "$name" in
+              *.apk) ctype="application/vnd.android.package-archive" ;;
+              *.aab) ctype="application/octet-stream" ;;
+            esac
+
+            # Upload
+            UPLOAD_URL="https://uploads.github.com/repos/${REPOSITORY}/releases/${REL_ID}/assets?name=${name}"
+            HTTP=$(curl -s -L -o /tmp/upload.json -w "%{http_code}" -X POST               -H "Authorization: Bearer $GITHUB_TOKEN"               -H "Content-Type: $ctype"               --data-binary @"$f" "$UPLOAD_URL")
+            if [ "$HTTP" != "201" ]; then
+              echo "::error::Failed to upload $name (HTTP $HTTP)"; cat /tmp/upload.json || true; exit 1
+            fi
+            echo "[Android CI] Uploaded: $name"
+          done
 
       - name: Firebase App Distribution (dev)
         if: steps.meta.outputs.buildType == 'dev'

@@ -22,13 +22,11 @@ import {
   InfoDialog,
   Text,
   YStack,
-  useTheme,
 } from '@onflow/frw-ui';
 import {
   isValidEthereumAddress,
   isValidFlowAddress,
   logger,
-  isDarkMode,
   retryConfigs,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
@@ -49,9 +47,7 @@ interface TabConfig {
 export function SendToScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
+  const cardBackgroundColor = '$cardBg';
 
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },

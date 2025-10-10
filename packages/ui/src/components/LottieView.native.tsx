@@ -1,6 +1,7 @@
-// eslint-disable-next-line import/no-unresolved  
+// eslint-disable-next-line import/no-unresolved
 import RNAnimatedLottieView, { type AnimationObject } from 'lottie-react-native';
 import React from 'react';
+import { Platform } from 'react-native';
 
 // Re-export a compatible LottieView component for native platforms
 export type LottieSource = AnimationObject | { uri: string } | number;
@@ -34,9 +35,14 @@ const LottieView = React.forwardRef<RNAnimatedLottieView, LottieViewProps>(
     },
     ref
   ) => {
+    const animationRef = React.useRef<RNAnimatedLottieView>(null);
+
+    // Expose ref to parent and set up images folder for Android
+    React.useImperativeHandle(ref, () => animationRef.current!, []);
+
     return (
       <RNAnimatedLottieView
-        ref={ref}
+        ref={animationRef}
         source={source}
         autoPlay={autoPlay}
         loop={loop}
@@ -46,7 +52,17 @@ const LottieView = React.forwardRef<RNAnimatedLottieView, LottieViewProps>(
         cacheComposition={cacheComposition}
         speed={speed}
         onAnimationFailure={onAnimationFailure as any}
-        onAnimationLoaded={onAnimationLoaded}
+        onAnimationLoaded={() => {
+          // Set images folder to prevent IllegalStateException on Android only
+          if (
+            Platform.OS === 'android' &&
+            animationRef.current &&
+            typeof animationRef.current.setImagesFolder === 'function'
+          ) {
+            animationRef.current.setImagesFolder('');
+          }
+          onAnimationLoaded?.();
+        }}
       />
     );
   }

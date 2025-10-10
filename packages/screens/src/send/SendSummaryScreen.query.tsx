@@ -7,11 +7,7 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
-import {
-  Platform,
-  type NFTTransactionDisplayData,
-  type SendFormData,
-} from '@onflow/frw-types';
+import { Platform, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -30,7 +26,6 @@ import {
   Separator,
   XStack,
   ERC1155QuantitySelector,
-  useTheme,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -38,7 +33,6 @@ import {
   getNFTId,
   transformAccountForCard,
   transformAccountForDisplay,
-  isDarkMode,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -98,18 +92,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       ? selectedNFT.amount
       : parseInt(selectedNFT?.amount as string) || 1;
 
-  // Theme-aware styling - same as SendTokensScreen
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const cardBackgroundColor = isDarkMode(theme) ? '$light10' : '$bg2';
-  const separatorColor = isDarkMode(theme) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-  const sendButtonBackgroundColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const sendButtonTextColor = isCurrentlyDarkMode
-    ? theme.black?.val || '#000000'
-    : theme.white?.val || '#FFFFFF';
-  const disabledButtonTextColor = theme.color?.val || (isCurrentlyDarkMode ? '#999999' : '#FFFFFF');
+  // Theme-aware styling
+  const cardBackgroundColor = '$bg1';
+  const separatorColor = '$border1';
 
   // Dynamic section title based on transfer type
   const sectionTitle = useMemo(() => {
@@ -249,6 +234,20 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     const currentSelectedNFTs = useSendStore.getState().selectedNFTs;
     const currentSelectedNFT = currentSelectedNFTs?.[0] || null;
 
+    logger.debug('[SendSummaryScreen] Edit NFT pressed:', {
+      currentSelectedNFT: currentSelectedNFT
+        ? {
+            id: currentSelectedNFT.id,
+            collectionName: currentSelectedNFT.collectionName,
+            collectionContractName: currentSelectedNFT.collectionContractName,
+            flowIdentifier: currentSelectedNFT.flowIdentifier,
+            evmAddress: currentSelectedNFT.evmAddress,
+            address: currentSelectedNFT.address,
+          }
+        : null,
+      fromAccount: fromAccount?.address,
+    });
+
     if (currentSelectedNFT && fromAccount) {
       // Instead of creating a new collection, find the existing one from the token store
       // This ensures we have all the required properties including the path
@@ -256,8 +255,8 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
       // For EVM NFTs, we might need to check both Flow and EVM addresses
       const addressesToCheck = [fromAccount.address];
-      if (fromAccount.evmAddress) {
-        addressesToCheck.push(fromAccount.evmAddress);
+      if ((fromAccount as any).evmAddress) {
+        addressesToCheck.push((fromAccount as any).evmAddress);
       }
 
       let matchingCollection = null;
@@ -266,17 +265,34 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       for (const address of addressesToCheck) {
         const existingCollections = tokenStore.getNFTCollectionsForAddress(address);
 
+        logger.debug('[SendSummaryScreen] Searching for collection:', {
+          address,
+          collectionsFound: existingCollections?.length || 0,
+        });
+
         if (existingCollections) {
           // Find the collection that matches this NFT
           matchingCollection = existingCollections.find((collection) => {
-            // Try multiple matching strategies
-            return (
-              collection.name === currentSelectedNFT.collectionName ||
-              collection.contractName === currentSelectedNFT.collectionContractName ||
-              collection.id === currentSelectedNFT.collectionContractName ||
-              collection.flowIdentifier === currentSelectedNFT.flowIdentifier ||
-              collection.evmAddress === currentSelectedNFT.evmAddress
-            );
+            let matches = false;
+
+            // Flow collection use flowIdentifier
+            if (collection.type === 'flow') {
+              matches = collection.flowIdentifier === currentSelectedNFT.flowIdentifier;
+            }
+            // EVM collection use evmAddress
+            else if (collection.type === 'evm') {
+              matches = collection.evmAddress === currentSelectedNFT.evmAddress;
+            }
+
+            if (matches) {
+              logger.debug('[SendSummaryScreen] Found matching collection:', {
+                collectionName: collection.name,
+                collectionId: collection.id,
+                collectionType: collection.type,
+              });
+            }
+
+            return matches;
           });
 
           if (matchingCollection) {
@@ -288,6 +304,22 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       if (matchingCollection) {
         const setSelectedCollection = useSendStore.getState().setSelectedCollection;
         setSelectedCollection(matchingCollection);
+      } else {
+        // Fallback: Create a minimal collection object if not found
+        logger.warn('[SendSummaryScreen] No matching collection found, creating fallback');
+        const fallbackCollection = {
+          id: currentSelectedNFT.collectionContractName || currentSelectedNFT.contractName || '',
+          name: currentSelectedNFT.collectionName || 'Unknown Collection',
+          contractName:
+            currentSelectedNFT.collectionContractName || currentSelectedNFT.contractName || '',
+          address: currentSelectedNFT.contractAddress || currentSelectedNFT.address || '',
+          evmAddress: currentSelectedNFT.evmAddress,
+          flowIdentifier: currentSelectedNFT.flowIdentifier,
+          path: null,
+          nfts: [],
+        };
+        const setSelectedCollection = useSendStore.getState().setSelectedCollection;
+        setSelectedCollection(fallbackCollection as any);
       }
     }
 
@@ -389,7 +421,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
               {/* From Account Section */}
               {fromAccount && (
                 <AccountCard
-                isSendTokensScreen={!isExtension}
+                  isSendTokensScreen={!isExtension}
                   account={transformAccountForCard(fromAccount)}
                   title={t('send.fromAccount')}
                   isLoading={false}
@@ -519,22 +551,18 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
+            bg={isSendDisabled ? '$textMuted' : '$text'}
             rounded={16}
             items="center"
             justify="center"
             borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : (sendButtonBackgroundColor as any)}
+            borderColor={isSendDisabled ? '$textMuted' : '$text'}
             opacity={isSendDisabled ? 0.7 : 1}
             pressStyle={{ opacity: 0.9 }}
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text
-              fontSize="$4"
-              fontWeight="600"
-              color={isSendDisabled ? disabledButtonTextColor : (sendButtonTextColor as any)}
-            >
+            <Text fontSize="$4" fontWeight="600" color="$bg">
               {t('common.next')}
             </Text>
           </YStack>
@@ -574,6 +602,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           isExtension={isExtension}
           summaryText={t('send.summary')}
           sendNFTsText={t('send.sendNFTs')}
+          sendSNFTsText={t('send.sendSNFTs')}
           sendingText={t('send.sending')}
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}

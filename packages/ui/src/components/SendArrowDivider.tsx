@@ -17,7 +17,6 @@ export interface SendArrowDividerProps {
 
 export const SendArrowDivider: React.FC<SendArrowDividerProps> = ({
   size = 44,
-  backgroundColor,
   iconColor,
   variant = 'arrow',
   text = '↓',

@@ -1,14 +1,12 @@
 import { Close, ConfirmDialogBg, FlowLogo, VerifiedToken } from '@onflow/frw-icons';
 import {
   type AccountDisplayData,
-  type NFTTransactionData,
   type TokenModel,
   type TransactionType,
-  type SendFormData,
+  type NFTTransactionData,
 } from '@onflow/frw-types';
-import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
-import { Sheet, Spinner, useTheme, View, XStack, YStack } from 'tamagui';
+import { Sheet, Spinner, View, XStack, YStack, useTheme } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
@@ -31,7 +29,7 @@ export interface ConfirmationDrawerProps {
   selectedNFTs?: NFTTransactionData[];
   fromAccount?: AccountDisplayData | null;
   toAccount?: AccountDisplayData | null;
-  formData: SendFormData;
+  formData: TransactionFormData;
   onConfirm?: () => Promise<void>;
   onClose: () => void;
   title?: string;
@@ -41,6 +39,7 @@ export interface ConfirmationDrawerProps {
   summaryText?: string;
   sendTokensText?: string;
   sendNFTsText?: string;
+  sendSNFTsText?: string; // For semi-fungible NFTs (ERC1155)
   sendingText?: string;
   confirmSendText?: string;
   holdToSendText?: string;
@@ -146,6 +145,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   summaryText = 'Summary',
   sendTokensText = 'Send Tokens',
   sendNFTsText = 'Send NFTs',
+  sendSNFTsText = 'Send sNFTs', // Default for semi-fungible NFTs
   sendingText = 'Sending...',
   confirmSendText = 'Confirm send',
   holdToSendText = 'Hold to send',
@@ -156,26 +156,26 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
 
-  // Theme-aware button colors using helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
+  // Determine if we're sending ERC1155 NFTs (semi-fungible)
+  const isERC1155 = React.useMemo(() => {
+    return selectedNFTs?.length === 1 && selectedNFTs[0].contractType === 'ERC1155';
+  }, [selectedNFTs]);
 
-  const buttonBackgroundColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const buttonTextColor = isCurrentlyDarkMode
-    ? theme.black?.val || '#000000'
-    : theme.white?.val || '#FFFFFF';
+  // Determine if we're sending multiple NFTs
+  const isMultipleNFTs = React.useMemo(() => {
+    return selectedNFTs ? selectedNFTs.length > 1 : false;
+  }, [selectedNFTs]);
 
-  // Theme-aware close icon color - use theme's color value directly
-  const closeIconColor = theme.color?.val || '#000000';
-
-  // Theme-aware card background color - same as SendTokensScreen
-  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
-
-  // Theme-aware background colors for badges
-  const badgeBackgroundColor =
-    theme.white10?.val ||
-    (isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
+  // Dynamic section title based on transfer type
+  const nftSectionTitle = React.useMemo(() => {
+    if (isMultipleNFTs) {
+      return sendNFTsText;
+    } else if (isERC1155) {
+      return sendSNFTsText;
+    } else {
+      return sendNFTsText;
+    }
+  }, [isMultipleNFTs, isERC1155, sendNFTsText, sendSNFTsText]);
 
   const handleConfirm = async () => {
     try {
@@ -236,7 +236,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={24} color={closeIconColor} />
+                  <Close size={24} color="#767676" />
                 </XStack>
               </>
             ) : (
@@ -259,7 +259,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                   onPress={onClose}
                   cursor="pointer"
                 >
-                  <Close size={24} color={closeIconColor} />
+                  <Close size={24} color="#767676" />
                 </XStack>
               </>
             )}
@@ -344,9 +344,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
           {/* Transaction Details Card */}
           {transactionType !== 'tokens' && selectedNFTs ? (
-            <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
+            <YStack bg="$bg1" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$textSecondary" fontWeight="400">
-                {sendNFTsText}
+                {nftSectionTitle}
               </Text>
               <MultipleNFTsPreview
                 nfts={selectedNFTs}
@@ -362,7 +362,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 selectedNFTs[0].contractType === 'ERC1155' &&
                 selectedNFTs[0].selectedQuantity && (
                   <XStack
-                    bg="$light10"
+                    bg="$subtleBg10"
                     rounded="$10"
                     items="center"
                     justify="center"
@@ -387,7 +387,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 )}
             </YStack>
           ) : (
-            <YStack bg={cardBackgroundColor} rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
+            <YStack bg="$bg1" rounded="$4" p="$4" gap="$3" width="100%" minH={132}>
               <Text fontSize="$2" color="$textSecondary" fontWeight="400">
                 {sendTokensText}
               </Text>
@@ -413,7 +413,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 </XStack>
 
                 <View
-                  bg={badgeBackgroundColor}
+                  bg="$subtleBg10"
                   rounded="$10"
                   px="$2"
                   py="$1"
@@ -442,7 +442,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           {isExtension ? (
             <YStack
               mb={'$10'}
-              bg={buttonBackgroundColor}
+              bg="$text"
               rounded="$4"
               height={56}
               items="center"
@@ -453,13 +453,13 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
             >
               {internalIsSending ? (
                 <XStack items="center" gap="$2">
-                  <Spinner size="small" color={buttonTextColor} />
-                  <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
+                  <Spinner size="small" color="$bg" />
+                  <Text fontSize="$5" fontWeight="600" color="$bg">
                     {sendingText}
                   </Text>
                 </XStack>
               ) : (
-                <Text fontSize="$5" fontWeight="600" color={buttonTextColor}>
+                <Text fontSize="$5" fontWeight="600" color="$bg">
                   {confirmSendText}
                 </Text>
               )}

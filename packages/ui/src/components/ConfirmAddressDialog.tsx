@@ -18,10 +18,10 @@ export interface ConfirmAddressDialogProps {
 
 export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
   visible,
-  title = 'Confirm address',
-  message = 'We noticed this may be your first time sending to this address. Please confirm the destination address.',
+  title = 'Confirm Address',
+  message = 'Please make sure the address is correct. Funds sent to the wrong address cannot be recovered.',
   address,
-  buttonText = 'Confirm address',
+  buttonText = 'Confirm',
   onClose,
   onConfirm,
 }) => {
@@ -97,7 +97,7 @@ export const ConfirmAddressDialog: React.FC<ConfirmAddressDialogProps> = ({
           <YStack
             width="100%"
             minH={64}
-            bg="$bg3"
+            bg="$subtleBg10"
             rounded={8}
             items="center"
             justify="center"

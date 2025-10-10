@@ -1,6 +1,6 @@
 /**
  * NFT transaction-related type definitions
- * 
+ *
  * These types extend the base NFTModel for transaction-specific use cases
  * like sending NFTs with quantities (ERC1155) or selection states.
  */

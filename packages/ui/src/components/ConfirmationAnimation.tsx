@@ -1,4 +1,6 @@
+import { logger } from '@onflow/frw-utils';
 import React, { useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
 import { View } from 'tamagui';
 
 import LottieView from './LottieView';
@@ -116,6 +118,25 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
     onAnimationReady?.(isAnimationReady);
   }, [isAnimationReady, onAnimationReady]);
 
+  // Cleanup animation when component unmounts to prevent IllegalStateException on Android
+  useEffect(() => {
+    return () => {
+      if (Platform.OS === 'android' && animationRef.current) {
+        try {
+          // Pause and reset animation before unmounting
+          if (typeof animationRef.current.pause === 'function') {
+            animationRef.current.pause();
+          }
+          if (typeof animationRef.current.reset === 'function') {
+            animationRef.current.reset();
+          }
+        } catch (error) {
+          logger.warn('[ConfirmationAnimation] Error during cleanup:', error);
+        }
+      }
+    };
+  }, []);
+
   if (!isAnimationReady || !currentAnimationSource) {
     // Show empty space while preparing to avoid flash
     return <View width={width} height={height} items="center" justify="center" opacity={0} />;
@@ -150,6 +171,14 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
         }}
         onAnimationLoaded={() => {
           console.log('[ConfirmationAnimation] Animation loaded successfully');
+          // Set images folder for Android Lottie to prevent IllegalStateException
+          if (
+            Platform.OS === 'android' &&
+            animationRef.current &&
+            typeof animationRef.current.setImagesFolder === 'function'
+          ) {
+            animationRef.current.setImagesFolder('');
+          }
         }}
       />
     </View>
