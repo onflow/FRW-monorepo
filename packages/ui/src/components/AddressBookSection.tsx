@@ -3,6 +3,7 @@ import { FlatList, SectionList } from 'react-native';
 import { Text, YStack } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
+import { space } from '../theme';
 
 export interface AddressBookSectionProps {
   letter: string;
@@ -76,31 +77,31 @@ export function AddressBookList({
   copiedText = 'Copied!',
   isMobile = false,
 }: AddressBookListProps): React.JSX.Element {
+  const horizontalPadding = space.$4;
+
   if (!groupByLetter) {
     return (
       <FlatList
         data={contacts}
         keyExtractor={(item, index) => `${item.address}-${index}`}
-        renderItem={({ item, index }) => (
-          <YStack px="$4">
-            <RecipientItem
-              {...item}
-              type="contact"
-              showCopyButton={true}
-              isMobile={isMobile}
-              copiedFeedback={
-                copiedId
-                  ? copiedId === (item as any).id
-                    ? copiedText
-                    : undefined
-                  : copiedAddress === `${item.name}::${item.address}`
-                    ? copiedText
-                    : undefined
-              }
-            />
-            {index < contacts.length - 1 && <YStack height={1} bg="$border1" w="100%" ml={0} />}
-          </YStack>
+        contentContainerStyle={{ paddingHorizontal: horizontalPadding }}
+        renderItem={({ item }) => (
+          <RecipientItem
+            {...item}
+            type="contact"
+            showCopyButton={true}
+            copiedFeedback={
+              copiedId
+                ? copiedId === (item as any).id
+                  ? copiedText
+                  : undefined
+                : copiedAddress === `${item.name}::${item.address}`
+                  ? copiedText
+                  : undefined
+            }
+          />
         )}
+        ItemSeparatorComponent={() => <YStack height={1} bg="$border1" width="100%" />}
       />
     );
   }
@@ -157,7 +158,7 @@ export function AddressBookList({
           />
           {/* Divider between items */}
           {index < (section as any).data.length - 1 && (
-            <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           )}
         </YStack>
       )}

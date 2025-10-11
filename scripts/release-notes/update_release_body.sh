@@ -49,14 +49,20 @@ fi
 RELEASE_NOTES=$(cat ai_release_notes.md)
 ESCAPED_NOTES=$(echo "$RELEASE_NOTES" | jq -Rs .)
 
-curl -s -L \
+HTTP_CODE=$(curl -s -L \
+  -o /tmp/gh_patch.json -w "%{http_code}" \
   -X PATCH \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer $GITHUB_TOKEN" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   "https://api.github.com/repos/${REPOSITORY}/releases/$RELEASE_ID" \
-  -d "{\"body\":$ESCAPED_NOTES}" >/dev/null
+  -d "{\"body\":$ESCAPED_NOTES}")
 
-echo "✅ Release notes updated successfully with AI-generated content!"
+if [ "$HTTP_CODE" != "200" ]; then
+  echo "::error::Failed to update release (HTTP $HTTP_CODE)"
+  if [ -f /tmp/gh_patch.json ]; then cat /tmp/gh_patch.json; fi
+  exit 1
+fi
+
+echo "✅ Updated release $RELEASE_ID for $TAG_NAME"
 exit 0
-
