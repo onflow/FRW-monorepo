@@ -21,6 +21,24 @@ class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
 
+  // Optional platform-specific logging callback using native bridge
+  logCallback?: (
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    ...args: unknown[]
+  ) => void = (level, message, ...args) => {
+    // Use native bridge for additional logging
+    try {
+      // Convert all args to strings for native bridge compatibility
+      const stringArgs = args.map(arg =>
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      );
+      NativeFRWBridge.logToNative(level, message, stringArgs);
+    } catch (error) {
+      // Silently fail - don't use console here to avoid recursion
+    }
+  };
+
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
       return;
