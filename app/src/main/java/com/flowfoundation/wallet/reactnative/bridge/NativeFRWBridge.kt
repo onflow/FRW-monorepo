@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.reactnative.bridge
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableMap
@@ -43,6 +44,7 @@ import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.logToInstabug
 import java.util.Locale
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
@@ -732,6 +734,21 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             // For now, this is mainly for API compatibility
         } catch (e: Exception) {
             android.util.Log.e(TAG, "clearAllToasts() error: ${e.message}")
+        }
+    }
+
+    override fun logToNative(level: String, message: String, args: ReadableArray) {
+        try {
+            // Convert ReadableArray to String array
+            val stringArgs = Array(args.size()) { i -> 
+                args.getString(i) ?: ""
+            }
+            
+            // Delegate to the centralized Instabug logging system in Log.kt
+            logToInstabug(level, message, *stringArgs)
+        } catch (e: Exception) {
+            // Fallback with just the message if args conversion fails
+            logToInstabug(level, message)
         }
     }
 

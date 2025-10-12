@@ -99,3 +99,34 @@ private fun print(tag: String, msg: String, level: Int) {
 }
 
 private fun printLog() = BuildConfig.DEBUG || isDev()
+
+/**
+ * Native logging method for React Native bridge callback
+ * Directly reports to Instabug for reliable logging
+ */
+fun logToInstabug(level: String, message: String, vararg args: String) {
+    try {
+        // Combine message with args
+        val fullMessage = if (args.isNotEmpty()) {
+            "$message ${args.joinToString(" ")}"
+        } else {
+            message
+        }
+
+        // Add FRW-Native prefix to the message for identification
+        val taggedMessage = "[FRW-Native] $fullMessage"
+
+        // Directly report to Instabug based on level
+        when (level.lowercase()) {
+            "debug" -> InstabugLog.d(taggedMessage)
+            "info" -> InstabugLog.i(taggedMessage)
+            "warn" -> InstabugLog.w(taggedMessage)
+            "error" -> InstabugLog.e(taggedMessage)
+            else -> InstabugLog.i(taggedMessage)
+        }
+
+    } catch (e: Exception) {
+        // Fallback to direct Instabug error report to avoid recursion
+        InstabugLog.e("[FRW-Native] Error in logToNative: ${e.message}")
+    }
+}
