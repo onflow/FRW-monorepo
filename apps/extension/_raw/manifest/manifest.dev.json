@@ -34,6 +34,7 @@
     {
       "js": ["content-script.js", "script.js"],
       "matches": ["file://*/*", "http://*/*", "https://*/*"],
+      "exclude_matches": ["https://docs.google.com/*"],
       "all_frames": false
     }
   ],
