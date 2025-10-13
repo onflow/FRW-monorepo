@@ -698,6 +698,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4" mb={'$10'}>
           <YStack
+            data-testid="next"
             width="100%"
             height={52}
             bg={isSendDisabled ? '#6b7280' : '$text'}

@@ -47,7 +47,7 @@ export function NFTCollectionRow({
 
           {/* Collection Info */}
           <YStack flex={1} gap="$1">
-            <Text color="$color" fontWeight="600" fontSize="$5">
+            <Text data-testid={collection.name} color="$color" fontWeight="600" fontSize="$5">
               {collection.name}
             </Text>
             <Text color="$textSecondary" fontSize="$4">

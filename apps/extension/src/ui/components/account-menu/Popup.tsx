@@ -64,6 +64,7 @@ const Popup = (props: TransferConfirmationProps) => {
             component="div"
             display="inline"
             color="text"
+            data-testid="Profiles"
             sx={{ fontSize: '18px', textAlign: 'center', lineHeight: '24px', fontWeight: '700' }}
           >
             {chrome.i18n.getMessage('Profiles')}
