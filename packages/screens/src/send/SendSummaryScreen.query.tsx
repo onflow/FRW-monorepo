@@ -562,7 +562,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color="$bg">
+            <Text data-testid="next" fontSize="$4" fontWeight="600" color="$bg">
               {t('common.next')}
             </Text>
           </YStack>

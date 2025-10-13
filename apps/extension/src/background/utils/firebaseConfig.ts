@@ -12,5 +12,28 @@ export function getFirbaseConfig(): FirebaseOptions {
     measurementId: process.env.FB_MEASUREMENT_ID,
   };
 
+  // Debug logging to help identify API key issues
+  if (firebaseConfig.apiKey) {
+    // Mask the API key for security but show enough to debug
+    const key = firebaseConfig.apiKey;
+    const masked =
+      key.length > 10
+        ? `${key.substring(0, 10)}...${key.substring(key.length - 4)} (length: ${key.length})`
+        : 'Key too short';
+    console.log('[Firebase Config] API Key:', masked);
+    console.log('[Firebase Config] Project ID:', firebaseConfig.projectId || 'NOT SET');
+    console.log('[Firebase Config] Auth Domain:', firebaseConfig.authDomain || 'NOT SET');
+  } else {
+    console.error('[Firebase Config] ❌ API Key is missing or undefined!');
+    console.error('[Firebase Config] Build env:', process.env.BUILD_ENV);
+
+    // Check if we have a placeholder value
+    if (firebaseConfig.apiKey === 'PLACEHOLDER_VALUE') {
+      console.error(
+        '[Firebase Config] API Key is set to PLACEHOLDER_VALUE - environment variables not loaded correctly'
+      );
+    }
+  }
+
   return firebaseConfig;
 }

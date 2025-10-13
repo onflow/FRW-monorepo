@@ -25,8 +25,6 @@ import {
   Text,
   Separator,
   XStack,
-  // NFT-related components
-  MultipleNFTsPreview,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -70,7 +68,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     setSelectedNFTs,
     setTransactionType,
     transactionType,
-    selectedNFTs,
     selectedToken,
     fromAccount,
     toAccount,
@@ -359,18 +356,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     setIsConfirmationVisible(false);
   }, []);
 
-  const handleNFTRemove = useCallback(
-    (nftId: string) => {
-      const oldSelectedNFTs = selectedNFTs;
-      // Only remove if there's more than 1 NFT selected
-      if (oldSelectedNFTs.length > 1) {
-        const newSelectedNFTs = oldSelectedNFTs.filter((nft) => nft.id !== nftId);
-        setSelectedNFTs(newSelectedNFTs);
-      }
-    },
-    [selectedNFTs, setSelectedNFTs]
-  );
-
   const handleTransactionConfirm = useCallback(async () => {
     if (!selectedToken || !fromAccount || !toAccount || !amount) {
       throw new Error('Missing transaction data');
@@ -425,7 +410,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, [
     transactionType,
     selectedToken,
-    selectedNFTs,
     fromAccount,
     toAccount,
     amount,
@@ -472,18 +456,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       );
     } else {
       setAmountError(''); // Clear error for non-token transactions
-      return !selectedNFTs.length || !fromAccount || !toAccount;
+      return !fromAccount || !toAccount;
     }
-  }, [
-    transactionType,
-    selectedToken,
-    selectedNFTs,
-    fromAccount,
-    toAccount,
-    amount,
-    isTokenMode,
-    t,
-  ]);
+  }, [transactionType, selectedToken, fromAccount, toAccount, amount, isTokenMode, t]);
 
   // Create form data for transaction confirmation
   const formData: SendFormData = useMemo(
@@ -504,15 +479,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       isTokenMode,
       transactionFee: transactionFee,
     }),
-    [
-      transactionType,
-      amount,
-      selectedToken?.priceInUSD,
-      selectedNFTs.length,
-      isTokenMode,
-      transactionFee,
-      currency.rate,
-    ]
+    [transactionType, amount, selectedToken?.priceInUSD, isTokenMode, transactionFee, currency.rate]
   );
 
   // Calculate overall loading state - only show loading screen for critical data
@@ -580,68 +547,46 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               <Text>{t('errors.addressNotFound')}</Text>
             )}
             <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
-            {transactionType === 'tokens' ? (
-              /* Token Amount Input Section */
-              <YStack gap="$4">
-                <TokenAmountInput
-                  selectedToken={
-                    selectedToken
-                      ? {
-                          symbol: selectedToken.symbol,
-                          name: selectedToken.name,
-                          logo: selectedToken.logoURI,
-                          logoURI: selectedToken.logoURI,
-                          // Use token-denominated display balance if available to avoid showing 0 on first load
-                          balance: (
-                            selectedToken.displayBalance ||
-                            selectedToken.balance ||
-                            '0'
-                          ).toString(),
-                          price: selectedToken.priceInUSD
-                            ? new BN(selectedToken.priceInUSD).times(new BN(currency.rate || 1))
-                            : undefined,
-                          isVerified: selectedToken.isVerified,
-                        }
-                      : undefined
-                  }
-                  amount={amount}
-                  onAmountChange={handleAmountChange}
-                  isTokenMode={isTokenMode}
-                  onToggleInputMode={handleToggleInputMode}
-                  onTokenSelectorPress={handleTokenSelectorOpen}
-                  onMaxPress={handleMaxPress}
-                  placeholder="0.00"
-                  showBalance={true}
-                  showConverter={true}
-                  disabled={false}
-                  inputRef={inputRef}
-                  currency={currency}
-                  amountError={amountError}
-                  headerText={t('send.title')}
-                />
-              </YStack>
-            ) : (
-              /* NFTs Section */
-              selectedNFTs &&
-              selectedNFTs.length > 0 && (
-                <YStack bg={cardBackgroundColor} rounded="$4" pt={16} px={16} pb={24} gap={12}>
-                  {/* NFTs Preview */}
-                  <MultipleNFTsPreview
-                    nfts={selectedNFTs.map((nft) => ({
-                      id: nft.id || '',
-                      name: nft.name || '',
-                      image: nft.thumbnail || '',
-                      collection: nft.collectionName || '',
-                      collectionContractName: nft.collectionContractName || '',
-                      description: nft.description || '',
-                    }))}
-                    onRemoveNFT={handleNFTRemove}
-                    maxVisibleThumbnails={3}
-                    expandable={true}
-                  />
-                </YStack>
-              )
-            )}
+            <YStack gap="$4">
+              <TokenAmountInput
+                selectedToken={
+                  selectedToken
+                    ? {
+                        type: selectedToken.type,
+                        symbol: selectedToken.symbol,
+                        name: selectedToken.name,
+                        logoURI: selectedToken.logoURI,
+                        // Use token-denominated display balance if available to avoid showing 0 on first load
+                        balance: (
+                          selectedToken.displayBalance ||
+                          selectedToken.balance ||
+                          '0'
+                        ).toString(),
+                        priceInUSD: selectedToken.priceInUSD
+                          ? new BN(selectedToken.priceInUSD)
+                              .times(new BN(currency.rate || 1))
+                              .toString()
+                          : undefined,
+                        isVerified: selectedToken.isVerified,
+                      }
+                    : undefined
+                }
+                amount={amount}
+                onAmountChange={handleAmountChange}
+                isTokenMode={isTokenMode}
+                onToggleInputMode={handleToggleInputMode}
+                onTokenSelectorPress={handleTokenSelectorOpen}
+                onMaxPress={handleMaxPress}
+                placeholder="0.00"
+                showBalance={true}
+                showConverter={true}
+                disabled={false}
+                inputRef={inputRef}
+                currency={currency}
+                amountError={amountError}
+                headerText={t('send.title')}
+              />
+            </YStack>
           </YStack>
 
           {/* Arrow Down Indicator */}
@@ -698,6 +643,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         {/* Send Button - Anchored to bottom */}
         <YStack pt="$4" mb={'$10'}>
           <YStack
+            data-testid="next"
             width="100%"
             height={52}
             bg={isSendDisabled ? '#6b7280' : '$text'}
@@ -735,14 +681,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           transactionType={transactionType}
           selectedToken={selectedToken}
           sendStaticImage={assets?.sendStaticImage}
-          selectedNFTs={selectedNFTs?.map((nft) => ({
-            id: nft.id || '',
-            name: nft.name || '',
-            thumbnail: nft.thumbnail || '',
-            collection: nft.collectionName || '',
-            collectionContractName: nft.collectionContractName || '',
-            description: nft.description || '',
-          }))}
           fromAccount={transformAccountForDisplay(fromAccount)}
           toAccount={toAccount ? transformAccountForDisplay(toAccount) : null}
           formData={formData}
