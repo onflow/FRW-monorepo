@@ -73,14 +73,9 @@ object SurgePricingManager {
             .addInterceptor(PayerServiceInterceptor())
             .build()
 
-          // Build request for status endpoint - ensure no double slash
-          val statusUrl = if (BASE_HOST.endsWith("/")) {
-            "${BASE_HOST}api/v1/payer/status"
-          } else {
-            "${BASE_HOST}/api/v1/payer/status"
-          }
+          // Build request for status endpoint
           val request = Request.Builder()
-            .url(statusUrl)
+            .url("${BASE_HOST}/api/v1/payer/status")
             .get()
             .build()
           val response = client.newCall(request).execute()
