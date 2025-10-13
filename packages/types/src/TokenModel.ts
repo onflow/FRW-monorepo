@@ -76,7 +76,7 @@ export function mapCadenceTokenDataWithCurrencyToTokenModel(
     priceInCurrency: token.priceInCurrency,
     balanceInCurrency: token.balanceInCurrency,
     displayBalance: token.displayBalance,
-    availableBalanceToUse: token.symbol === 'FLOW' ? storage : token.balanceInCurrency,
+    availableBalanceToUse: token.symbol === 'FLOW' ? storage : token.displayBalance,
     change: '',
     decimal: 8,
     evmAddress: token.evmAddress,
