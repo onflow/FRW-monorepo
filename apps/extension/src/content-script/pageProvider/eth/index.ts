@@ -346,7 +346,7 @@ declare global {
   interface Window {
     ethereum: EthereumProvider;
     web3: any;
-    flowwallet: EthereumProvider;
+    frw: EthereumProvider;
     flowWalletRouter: {
       flowProvider: EthereumProvider;
       lastInjectedProvider?: EthereumProvider;
@@ -476,7 +476,7 @@ const shouldRouteToFlowWallet = (method: string, connectedToFlowWallet: boolean)
 const initOperaProvider = () => {
   window.ethereum = flowProvider;
   flowProvider._isReady = true;
-  window.flowwallet = flowProvider;
+  window.frw = flowProvider;
   patchProvider(flowProvider);
   flowProvider.on('frw:chainChanged', switchChainNotice);
 };
@@ -498,7 +498,7 @@ const initProvider = async () => {
   if (canDefine) {
     try {
       Object.defineProperties(window, {
-        flowwallet: {
+        frw: {
           value: flowProvider,
           configurable: false,
           writable: false,
@@ -595,7 +595,7 @@ const initProvider = async () => {
             providers: [flowProvider, ...(window.ethereum ? [window.ethereum] : [])],
             setDefaultProvider(frwAsDefault: boolean) {
               if (frwAsDefault) {
-                window.flowWalletRouter.currentProvider = window.flowwallet;
+                window.flowWalletRouter.currentProvider = window.frw;
               } else {
                 const nonDefaultProvider =
                   window.flowWalletRouter.lastInjectedProvider ?? window.ethereum;
@@ -621,12 +621,12 @@ const initProvider = async () => {
       await requestHasOtherProvider();
       consoleError(e);
       window.ethereum = flowProvider;
-      window.flowwallet = flowProvider;
+      window.frw = flowProvider;
     }
   } else {
     try {
       window.ethereum = flowProvider;
-      window.flowwallet = flowProvider;
+      window.frw = flowProvider;
     } catch (e) {
       consoleError(e);
     }
@@ -656,7 +656,7 @@ const initializeWallet = async () => {
       initOperaProvider();
     } else {
       window.ethereum = flowProvider;
-      window.flowwallet = flowProvider;
+      window.frw = flowProvider;
     }
   }
 };
