@@ -210,6 +210,16 @@ export function SendToScreen(): React.ReactElement {
       .filter((contact) => filterBySearchQuery(contact.name, contact.address));
   }, [allContacts, isLoadingContacts, contactsError, filterBySearchQuery]);
 
+  const contactsErrorMessage = useMemo(() => {
+    if (!contactsError) {
+      return undefined;
+    }
+    if (contactsError instanceof Error) {
+      return contactsError.message;
+    }
+    return String(contactsError);
+  }, [contactsError]);
+
   // Create a set of existing addresses for quick lookup
   const existingAddresses = useMemo(() => {
     return new Set(allContacts.map((contact: any) => contact.address?.toLowerCase()));
@@ -601,19 +611,28 @@ export function SendToScreen(): React.ReactElement {
         headerPaddingHorizontal={'$4'}
       >
         {activeTab === 'accounts' ? (
-          <YStack px="$4">
-            <ProfileList
-              profiles={profilesData}
-              onAccountPress={handleRecipientPress}
-              isLoading={isLoading}
+          <ProfileList
+            profiles={profilesData}
+            onAccountPress={handleRecipientPress}
+            isLoading={isLoading}
+            emptyTitle={emptyState.title}
+            emptyMessage={emptyState.message}
+            loadingText={t('messages.loadingProfiles')}
+            isMobile={!isExtension}
+          />
+        ) : activeTab === 'contacts' ? (
+          contactsErrorMessage ? (
+            <RecipientList
+              data={[]}
+              isLoading={false}
               emptyTitle={emptyState.title}
               emptyMessage={emptyState.message}
-              loadingText={t('messages.loadingProfiles')}
-              isMobile={!isExtension}
+              error={contactsErrorMessage}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
+              onRetry={refetchContacts}
             />
-          </YStack>
-        ) : activeTab === 'contacts' ? (
-          isLoading ? (
+          ) : isLoadingContacts ? (
             <RecipientList
               data={[]}
               isLoading={true}
@@ -643,6 +662,7 @@ export function SendToScreen(): React.ReactElement {
               copiedAddress={copiedAddress}
               copiedId={copiedId}
               copiedText={t('messages.copied')}
+              isMobile={!isExtension}
             />
           )
         ) : (
