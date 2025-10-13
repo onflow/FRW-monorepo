@@ -4,6 +4,8 @@ import android.app.Activity
 import com.google.gson.Gson
 import com.flowfoundation.wallet.manager.app.ActivityManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.EVENT_SURGE_PRICING_ACCEPTED
+import com.flowfoundation.wallet.mixpanel.EVENT_SURGE_PRICING_DECLINED
 import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
@@ -178,7 +180,7 @@ object SurgePricingManager {
                 if (accepted) {
                   logd(TAG, "User accepted surge pricing - proceeding without remote payer (self-custody)")
                   // Record telemetry for accepting surge
-                  MixpanelManager.track("surge_pricing_accepted", mapOf(
+                  MixpanelManager.track(EVENT_SURGE_PRICING_ACCEPTED, mapOf(
                     "source" to "preflight",
                     "multiplier" to (payerStatus.data.surge?.multiplier ?: 1.0),
                     "max_fee" to (payerStatus.data.surge?.maxFee ?: "0")
@@ -189,7 +191,7 @@ object SurgePricingManager {
                 } else {
                   logd(TAG, "User cancelled transaction due to surge pricing")
                   // Record telemetry for declining surge
-                  MixpanelManager.track("surge_pricing_declined", mapOf(
+                  MixpanelManager.track(EVENT_SURGE_PRICING_DECLINED, mapOf(
                     "source" to "preflight",
                     "multiplier" to (payerStatus.data.surge?.multiplier ?: 1.0),
                     "max_fee" to (payerStatus.data.surge?.maxFee ?: "0")
@@ -219,7 +221,7 @@ object SurgePricingManager {
                 if (accepted && errorResponse.isSurgePricing()) {
                   logd(TAG, "User accepted surge pricing - proceeding without remote payer (self-custody)")
                   // Record telemetry for accepting surge
-                  MixpanelManager.track("surge_pricing_accepted", mapOf(
+                  MixpanelManager.track(EVENT_SURGE_PRICING_ACCEPTED, mapOf(
                     "source" to "interceptor",
                     "status_code" to errorResponse.status,
                     "multiplier" to (errorResponse.surgeInfo?.multiplier ?: 1.0),
@@ -231,7 +233,7 @@ object SurgePricingManager {
                 } else {
                   logd(TAG, "User cancelled transaction")
                   // Record telemetry for declining
-                  MixpanelManager.track("surge_pricing_declined", mapOf(
+                  MixpanelManager.track(EVENT_SURGE_PRICING_DECLINED, mapOf(
                     "source" to "interceptor",
                     "status_code" to errorResponse.status,
                     "multiplier" to (errorResponse.surgeInfo?.multiplier ?: 1.0),
