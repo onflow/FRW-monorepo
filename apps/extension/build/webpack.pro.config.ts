@@ -25,6 +25,10 @@ const config: webpack.Configuration = {
     }),
     new Dotenv({
       path: '.env.pro',
+      safe: false, // Don't check against .env.example
+      systemvars: true, // Load system environment variables as well
+      silent: false, // Log warnings/errors
+      defaults: false, // Don't load .env.defaults
     }),
   ],
   resolve: {

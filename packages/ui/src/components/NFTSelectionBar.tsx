@@ -204,6 +204,7 @@ export function NFTSelectionBar({
         {/* Action Button - Always visible at bottom */}
         {onContinue && (
           <Button
+            data-testid={'confirm'}
             fullWidth
             size="large"
             variant="inverse"

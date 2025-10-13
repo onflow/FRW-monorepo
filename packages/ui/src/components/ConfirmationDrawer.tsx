@@ -451,6 +451,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               pressStyle={{ opacity: 0.9 }}
               onPress={internalIsSending ? undefined : handleConfirm}
               cursor={internalIsSending ? 'not-allowed' : 'pointer'}
+              data-testid="confirm"
             >
               {internalIsSending ? (
                 <XStack items="center" gap="$2">

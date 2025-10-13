@@ -42,12 +42,7 @@ export function NFTPropertyTag({
       >
         {label}:
       </Text>
-      <Text
-        fontSize="$4"
-        fontWeight="500"
-        color={textColor || '$color'}
-        numberOfLines={1}
-      >
+      <Text fontSize="$4" fontWeight="500" color={textColor || '$color'} numberOfLines={1}>
         {value}
       </Text>
     </XStack>

@@ -217,6 +217,8 @@ export function NFTGrid({
     return renderEmpty();
   }
 
+  let idx = -1;
+
   // Main grid content
   return (
     <YStack flex={1}>
@@ -231,28 +233,32 @@ export function NFTGrid({
         windowSize={5}
         removeClippedSubviews
         contentContainerStyle={{ paddingBottom: 16 }}
-        renderItem={({ item, index }) => (
-          <YStack
-            width="50%"
-            flex={0}
-            mb="$4"
-            pr={index % columns === 0 ? '$2' : 0}
-            pl={index % columns === 1 ? '$2' : 0}
-          >
-            <NFTCard
-              nft={item}
-              size="medium"
-              selected={selectedIds.includes(item.id)}
-              onPress={() => onNFTPress(item.id)}
-              onSelect={() => onNFTSelect(item.id)}
-              aspectRatio={aspectRatio}
-              accountEmoji={accountEmoji}
-              accountAvatar={accountAvatar}
-              accountName={accountName}
-              accountColor={accountColor}
-            />
-          </YStack>
-        )}
+        renderItem={({ item, index }) => {
+          idx = idx + 1;
+          return (
+            <YStack
+              width="50%"
+              flex={0}
+              mb="$4"
+              pr={index % columns === 0 ? '$2' : 0}
+              pl={index % columns === 1 ? '$2' : 0}
+            >
+              <NFTCard
+                idx={idx}
+                nft={item}
+                size="medium"
+                selected={selectedIds.includes(item.id)}
+                onPress={() => onNFTPress(item.id)}
+                onSelect={() => onNFTSelect(item.id)}
+                aspectRatio={aspectRatio}
+                accountEmoji={accountEmoji}
+                accountAvatar={accountAvatar}
+                accountName={accountName}
+                accountColor={accountColor}
+              />
+            </YStack>
+          );
+        }}
       />
     </YStack>
   );
