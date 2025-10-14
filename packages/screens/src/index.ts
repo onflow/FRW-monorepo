@@ -9,6 +9,9 @@ export { SendSummaryScreen } from './send/SendSummaryScreen.query';
 // Export onboarding screens
 export * from './onboarding';
 
+// Export backup/recovery screens
+export * from './backup';
+
 // Export providers
 export * from './providers/QueryProvider';
 
