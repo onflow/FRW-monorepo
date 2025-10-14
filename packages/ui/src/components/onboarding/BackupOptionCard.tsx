@@ -49,12 +49,10 @@ export function BackupOptionCard({
           {/* Background shapes */}
           {iconBackground}
 
-          {/* Icon circle */}
+          {/* Icon */}
           <View
-            width={37}
-            height={37}
-            bg="$primary"
-            rounded={999}
+            width={56}
+            height={56}
             items="center"
             justify="center"
             style={{
