@@ -5,7 +5,7 @@ import {
   XStack,
   Text,
   View,
-  GradientBackground,
+  OnboardingBackground,
   Button,
   ScrollView,
   AccountCreationLoadingState,
@@ -163,7 +163,7 @@ export function ConfirmRecoveryPhraseScreen({
   });
 
   return (
-    <GradientBackground>
+    <OnboardingBackground>
       <YStack flex={1}>
         <ScrollView flex={1} showsVerticalScrollIndicator={false}>
           <YStack px="$4" pt="$4">
@@ -284,6 +284,8 @@ export function ConfirmRecoveryPhraseScreen({
         onComplete={() => navigation.navigate('NotificationPreferences')}
         duration={3000}
       />
-    </GradientBackground>
+    </OnboardingBackground>
   );
 }
+
+

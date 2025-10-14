@@ -1,6 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { Copy, Warning } from '@onflow/frw-icons';
-import { YStack, XStack, Text, View, GradientBackground, Button } from '@onflow/frw-ui';
+import { YStack, XStack, Text, View, OnboardingBackground, Button } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -124,29 +124,29 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   // Show loading state while generating phrase
   // if (isLoadingPhrase) {
   //   return (
-  //     <GradientBackground>
+  //     <OnboardingBackground>
   //       <YStack flex={1} items="center" justify="center">
   //         <Text>Generating recovery phrase...</Text>
   //       </YStack>
-  //     </GradientBackground>
+  //     </OnboardingBackground>
   //   );
   // }
 
   // Show error state if phrase generation fails
   // if (phraseError) {
   //   return (
-  //     <GradientBackground>
+  //     <OnboardingBackground>
   //       <YStack flex={1} items="center" justify="center" px="$4">
   //         <Text color="$red10" text="center">
   //           Failed to generate recovery phrase. Please try again.
   //         </Text>
   //       </YStack>
-  //     </GradientBackground>
+  //     </OnboardingBackground>
   //   );
   // }
 
   return (
-    <GradientBackground>
+    <OnboardingBackground>
       <YStack flex={1} px="$4" pt="$4">
         {/* Title and description */}
         <YStack items="center" mb="$6" gap="$2">
@@ -278,6 +278,6 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           </YStack>
         </YStack>
       </YStack>
-    </GradientBackground>
+    </OnboardingBackground>
   );
 }

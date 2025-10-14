@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { View, useTheme, Text } from 'tamagui';
 
 import LottieView from './LottieView';
-import shieldAnimationDark from '../assets/animations/shield-with-lock-dark.json';
-import shieldAnimationLight from '../assets/animations/shield-with-lock-light.json';
+import shieldAnimationDark from '../assets/animations/shield-with-lock-dark-2.json';
+import shieldAnimationLight from '../assets/animations/shield-with-lock-light-2.json';
 import { injectImageWithFallbacks } from '../utils/lottie-image-injection';
 
 interface ShieldAnimationProps {

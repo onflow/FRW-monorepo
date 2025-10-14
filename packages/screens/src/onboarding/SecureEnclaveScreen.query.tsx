@@ -5,7 +5,7 @@ import {
   XStack,
   Text,
   View,
-  GradientBackground,
+  OnboardingBackground,
   InfoDialog,
   HoldToSendButton,
   AccountCreationLoadingState,
@@ -111,30 +111,30 @@ export function SecureEnclaveScreen(): React.ReactElement {
   // Show loading state while fetching config
   if (isLoadingConfig) {
     return (
-      <GradientBackground>
+      <OnboardingBackground>
         <YStack flex={1} items="center" justify="center">
           <Text>Loading...</Text>
         </YStack>
-      </GradientBackground>
+      </OnboardingBackground>
     );
   }
 
   // Show error state if config fetch fails
   if (configError) {
     return (
-      <GradientBackground>
+      <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4">
           <Text color="$red10" text="center">
             Failed to load secure enclave configuration. Please try again.
           </Text>
         </YStack>
-      </GradientBackground>
+      </OnboardingBackground>
     );
   }
 
   return (
     <>
-      <GradientBackground>
+      <OnboardingBackground>
         <YStack flex={1} px="$4">
           {/* Advanced text */}
           <YStack mb="$6">
@@ -211,7 +211,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
             </YStack>
           </YStack>
         </YStack>
-      </GradientBackground>
+      </OnboardingBackground>
 
       {/* Confirmation Dialog */}
       <InfoDialog visible={showConfirmDialog} onClose={() => setShowConfirmDialog(false)}>

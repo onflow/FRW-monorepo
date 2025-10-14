@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { YStack, Text, GradientBackground, Image } from '@onflow/frw-ui';
+import { YStack, Text, OnboardingBackground, NotificationPreviewImage } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -107,29 +107,29 @@ export function NotificationPreferencesScreen(): React.ReactElement {
   // Show loading state while fetching config
   if (isLoadingConfig) {
     return (
-      <GradientBackground>
+      <OnboardingBackground>
         <YStack flex={1} items="center" justify="center">
           <Text>Loading...</Text>
         </YStack>
-      </GradientBackground>
+      </OnboardingBackground>
     );
   }
 
   // Show error state if config fetch fails
   if (configError) {
     return (
-      <GradientBackground>
+      <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4">
           <Text color="$red10" text="center">
             Failed to load notification configuration. Please try again.
           </Text>
         </YStack>
-      </GradientBackground>
+      </OnboardingBackground>
     );
   }
 
   return (
-    <GradientBackground>
+    <OnboardingBackground>
       <YStack flex={1} px="$4" justify="space-between">
         {/* Title and description */}
         <YStack mt="$6" mb="$6">
@@ -143,13 +143,8 @@ export function NotificationPreferencesScreen(): React.ReactElement {
         </YStack>
 
         {/* Notification Preview Image - centered */}
-        <YStack flex={1} alignItems="center" justifyContent="center">
-          <Image
-            src={require('../assets/push-notifications.png')}
-            width={300}
-            height={200}
-            resizeMode="contain"
-          />
+        <YStack flex={1} items="center" justify="center">
+          <NotificationPreviewImage width={300} height={200} />
         </YStack>
 
         {/* Action buttons - matching SecureEnclaveScreen style */}
@@ -191,6 +186,6 @@ export function NotificationPreferencesScreen(): React.ReactElement {
           </YStack>
         </YStack>
       </YStack>
-    </GradientBackground>
+    </OnboardingBackground>
   );
 }

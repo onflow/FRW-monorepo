@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { YStack, XStack, Text, GradientBackground, Button, ShieldAnimation } from '@onflow/frw-ui';
+import { YStack, XStack, Text, OnboardingBackground, Button, ShieldAnimation } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -72,29 +72,29 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
   // Show loading state while fetching config
   if (isLoadingConfig) {
     return (
-      <GradientBackground>
+      <OnboardingBackground>
         <YStack flex={1} items="center" justify="center">
           <Text>Loading...</Text>
         </YStack>
-      </GradientBackground>
+      </OnboardingBackground>
     );
   }
 
   // Show error state if config fetch fails
   if (configError) {
     return (
-      <GradientBackground>
+      <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4">
           <Text color="$red10" text="center">
             Failed to load profile configuration. Please try again.
           </Text>
         </YStack>
-      </GradientBackground>
+      </OnboardingBackground>
     );
   }
 
   return (
-    <GradientBackground>
+    <OnboardingBackground>
       <YStack flex={1} px="$4">
         {/* Title */}
         <YStack mt={68} mb="$6">
@@ -153,6 +153,6 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
           </Button>
         </XStack>
       </YStack>
-    </GradientBackground>
+    </OnboardingBackground>
   );
 }

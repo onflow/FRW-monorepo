@@ -1,6 +1,13 @@
-import React, { useEffect } from 'react';
-import { YStack, Text, View } from 'tamagui';
+import { isDarkMode } from '@onflow/frw-utils';
+import React, { useEffect, useState } from 'react';
+import { YStack, Text, View, useTheme } from 'tamagui';
 
+import LottieView from '../LottieView';
+import { OnboardingBackground } from './OnboardingBackground';
+import creatingAccountDark from '../../assets/animations/creating-account-dark.json';
+import creatingAccountLight from '../../assets/animations/creating-account-light.json';
+import loadingBarDark from '../../assets/animations/loading-bar-dark.json';
+import loadingBarLight from '../../assets/animations/loading-bar-light.json';
 
 interface AccountCreationLoadingStateProps {
   visible: boolean;
@@ -12,7 +19,8 @@ interface AccountCreationLoadingStateProps {
 
 /**
  * AccountCreationLoadingState - Shared loading state for account creation
- * Shows a beautiful glassmorphism design with animated progress bar
+ * Shows a beautiful animation with theme-based Lottie animations
+ * Automatically switches between light and dark animations based on theme
  */
 export function AccountCreationLoadingState({
   visible,
@@ -21,6 +29,34 @@ export function AccountCreationLoadingState({
   onComplete,
   duration = 3000,
 }: AccountCreationLoadingStateProps): React.ReactElement | null {
+  const theme = useTheme();
+  const isCurrentlyDarkMode = isDarkMode(theme);
+  const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(null);
+  const [currentLoadingBarSource, setCurrentLoadingBarSource] = useState<any>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  // Handle theme-based animation switching
+  useEffect(() => {
+    const prepareAnimation = async () => {
+      try {
+        setIsReady(false);
+
+        // Select the right animations based on theme
+        const baseAnimation = isCurrentlyDarkMode ? creatingAccountDark : creatingAccountLight;
+        const loadingBarAnimation = isCurrentlyDarkMode ? loadingBarDark : loadingBarLight;
+
+        setCurrentAnimationSource(baseAnimation);
+        setCurrentLoadingBarSource(loadingBarAnimation);
+        setIsReady(true);
+      } catch (error) {
+        console.error('[AccountCreationLoadingState] Failed to prepare animation:', error);
+        setIsReady(true);
+      }
+    };
+
+    prepareAnimation();
+  }, [isCurrentlyDarkMode]);
+
   // Handle completion after duration
   useEffect(() => {
     if (visible && onComplete) {
@@ -35,72 +71,78 @@ export function AccountCreationLoadingState({
   if (!visible) return null;
 
   return (
-    <View pos="absolute" top={0} left={0} right={0} bottom={0} bg="$background" zIndex={2000}>
-      <YStack flex={1} items="center" justify="center">
-        {/* Title */}
-        <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36} mb="$8">
-          {title}
-        </Text>
-
-        {/* Animation */}
-        {/* <View width={200} height={200} alignItems="center" justifyContent="center" mb="$6">
-          <LottieView
-            source={sendConfirmationAnimation}
-            autoPlay={true}
-            loop={true}
-            style={{
-              width: 200,
-              height: 200,
-            }}
-            resizeMode="contain"
-          />
-        </View> */}
-
-        {/* Temporary placeholder */}
-        <View width={200} height={200} alignItems="center" justifyContent="center" mb="$6">
-          <Text fontSize={80}>✨</Text>
-        </View>
-
-        {/* Progress section */}
-        <YStack w="90%" maxW={339} items="center" gap="$3">
-          {/* Progress bar container */}
-          <View w="100%" h={52} bg="transparent" rounded="$4" overflow="hidden">
-            {/* Background line */}
-            <View
-              pos="absolute"
-              top="50%"
-              left={32}
-              right={32}
-              h={10}
-              bg="rgba(255, 255, 255, 0.15)"
-              rounded={5}
-              style={{
-                transform: 'translateY(-50%)',
-              }}
-            />
-
-            {/* Animated progress line */}
-            <View
-              pos="absolute"
-              top="50%"
-              left={32}
-              w="60%"
-              h={10}
-              rounded={5}
-              style={{
-                background: 'linear-gradient(90deg, #16FF99 60%, #B5FFDF 100%)',
-                transform: 'translateY(-50%)',
-                animation: 'progressAnimation 2s ease-in-out infinite',
-              }}
-            />
-          </View>
-
-          {/* Status text */}
-          <Text fontSize="$4" fontWeight="700" color="$primary">
-            {statusText}
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 2000,
+      }}
+    >
+      <OnboardingBackground showDecorations={false}>
+        <YStack flex={1} items="center" justify="center">
+          {/* Title */}
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36} mb="$8">
+            {title}
           </Text>
+
+          {/* Animation - matching Figma design: 232.25 x 248.55 */}
+          {isReady && currentAnimationSource ? (
+            <YStack width={232} height={249} items="center" justify="center" mb="$6">
+              <LottieView
+                source={currentAnimationSource}
+                autoPlay={true}
+                loop={true}
+                style={{
+                  width: 232,
+                  height: 249,
+                }}
+                resizeMode="contain"
+                onAnimationFailure={(error) => {
+                  console.error('[AccountCreationLoadingState] Animation failed:', error);
+                }}
+              />
+            </YStack>
+          ) : (
+            <YStack width={232} height={249} items="center" justify="center" mb="$6">
+              <Text fontSize={80}>✨</Text>
+            </YStack>
+          )}
+
+          {/* Progress section - matching Figma design width: 339px */}
+          <YStack width={339} items="center" gap="$3">
+            {/* Status text */}
+            <Text fontSize="$4" fontWeight="700" color="$primary">
+              {statusText}
+            </Text>
+
+            {/* Loading bar animation */}
+            {isReady && currentLoadingBarSource ? (
+              <YStack width="100%" height={52} items="center" justify="center">
+                <LottieView
+                  source={currentLoadingBarSource}
+                  autoPlay={true}
+                  loop={true}
+                  style={{
+                    width: 339,
+                    height: 52,
+                  }}
+                  resizeMode="cover"
+                  onAnimationFailure={(error) => {
+                    console.error('[AccountCreationLoadingState] Loading bar animation failed:', error);
+                  }}
+                />
+              </YStack>
+            ) : (
+              <View width="100%" height={52} items="center" justify="center">
+                <Text fontSize={24}>⏳</Text>
+              </View>
+            )}
+          </YStack>
         </YStack>
-      </YStack>
+      </OnboardingBackground>
     </View>
   );
 }
