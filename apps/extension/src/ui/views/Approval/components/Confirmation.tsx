@@ -1,9 +1,11 @@
 import { Box, Stack } from '@mui/material';
 import * as fcl from '@onflow/fcl';
+import { SurgeModal, SurgeFeeSection, SurgeWarning } from '@onflow/frw-ui';
 import dedent from 'dedent';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { getSurgeData } from '@/bridge/PlatformImpl';
 import { type UserInfoResponse } from '@/shared/types';
 import {
   LLConnectLoading,
@@ -45,6 +47,17 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
   const [accountArgs, setAccountArgs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lilicoEnabled, setLilicoEnabled] = useState(true);
+  const [isApproving, setIsApproving] = useState(false);
+
+  // Surge modal state
+  const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
+  const [surgeData, setSurgeData] = useState<{
+    maxFee?: string;
+    multiplier?: number;
+    active?: boolean;
+  } | null>(null);
+  const [isSurgeDataLoading, setIsSurgeDataLoading] = useState(false);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
   const [auditor, setAuditor] = useState<any>(null);
   const [image, setImage] = useState<string>('');
   const [accountTitle, setAccountTitle] = useState<string>('');
@@ -80,6 +93,32 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     keyId: number;
     sig: string | null;
   }
+
+  const loadSurgeData = useCallback(async () => {
+    if (isSurgeDataLoading) return;
+
+    setIsSurgeDataLoading(true);
+    try {
+      const surgeData = await getSurgeData(currentNetwork);
+      setSurgeData({
+        maxFee: surgeData?.maxFee || '0.002501',
+        multiplier: surgeData?.multiplier || 1.0,
+        active: surgeData?.active || false,
+      });
+    } catch (error) {
+      setSurgeData({
+        maxFee: '0.002501',
+        multiplier: 1.0,
+        active: false,
+      });
+    } finally {
+      setIsSurgeDataLoading(false);
+    }
+  }, [currentNetwork]);
+
+  const showSurgeModal = useCallback(() => {
+    setIsSurgeModalVisible(true);
+  }, []);
 
   const getUserInfo = useCallback(async () => {
     const userResult = await wallet.getUserInfo(false);
@@ -147,24 +186,36 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     if (!signable) {
       return;
     }
-
+    console.log('signable', signable);
+    setIsApproving(true);
     setApproval(true);
-    const signedMessage = await wallet.signMessage(signable.message);
-    if (opener) {
-      sendSignature(signable, signedMessage);
-      const value = await sessionStorage.getItem('pendingRefBlockId');
-      // consoleLog('pendingRefBlockId ->', value);
-      if (value !== null) {
-        return;
-      }
-      sessionStorage.setItem('pendingRefBlockId', signable.voucher.refBlock);
 
-      if (lilicoEnabled) {
-        chrome.tabs.sendMessage(opener, { type: 'FCL:VIEW:READY' });
-      } else {
-        setApproval(true);
-        resolveApproval();
+    // Use the already loaded surge data
+    const isSurge = surgeData?.active || false;
+    if (isSurge && signable.roles.payer === true) {
+      showSurgeModal();
+      return;
+    }
+    try {
+      const signedMessage = await wallet.signMessage(signable.message);
+      if (opener) {
+        sendSignature(signable, signedMessage);
+        const value = await sessionStorage.getItem('pendingRefBlockId');
+        // consoleLog('pendingRefBlockId ->', value);
+        if (value !== null) {
+          return;
+        }
+        sessionStorage.setItem('pendingRefBlockId', signable.voucher.refBlock);
+        if (lilicoEnabled) {
+          chrome.tabs.sendMessage(opener, { type: 'FCL:VIEW:READY' });
+        } else {
+          setApproval(true);
+          resolveApproval();
+        }
       }
+    } catch (error) {
+      setIsApproving(false);
+      throw error;
     }
   };
 
@@ -201,19 +252,59 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
       }
 
       try {
-        const signedMessage = await wallet.signPayer(signable);
+        const signedMessage = await wallet.signAsFeePayer(signable);
         sendSignature(signable, signedMessage);
         setApproval(true);
 
         resolveApproval();
         setIsLoading(false);
       } catch (err) {
+        // Extract error message properly
+        let errorMessage = '';
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (err && typeof err === 'object' && err.message) {
+          errorMessage = err.message;
+        } else {
+          errorMessage = String(err);
+        }
         setIsLoading(false);
         handleCancel();
       }
     },
     [wallet, sendSignature, resolveApproval, handleCancel, setIsLoading]
   );
+
+  // Surge modal handlers
+  const handleSurgeModalClose = useCallback(() => {
+    setIsSurgeModalVisible(false);
+    handleCancel();
+  }, [handleCancel]);
+
+  const handleSurgeModalAgree = useCallback(async () => {
+    setIsSurgeModalVisible(false);
+
+    // Retry the signPayer process
+    if (signable) {
+      try {
+        const signedMessage = await wallet.signMessage(signable.message);
+        if (opener) {
+          sendSignature(signable, signedMessage);
+          const value = await sessionStorage.getItem('pendingRefBlockId');
+          // consoleLog('pendingRefBlockId ->', value);
+          if (value !== null) {
+            return;
+          }
+          sessionStorage.setItem('pendingRefBlockId', signable.voucher.refBlock);
+          setApproval(true);
+          resolveApproval();
+        }
+      } catch (error) {
+        setIsApproving(false);
+        throw error;
+      }
+    }
+  }, [signable, signPayer]);
 
   const loadPayer = useCallback(async () => {
     const isEnabled = await wallet.allowLilicoPay();
@@ -231,6 +322,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
   useEffect(() => {
     loadPayer();
     checkNetwork();
+    loadSurgeData();
 
     return () => {
       sessionStorage.removeItem('pendingRefBlockId');
@@ -238,7 +330,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
       // @ts-ignore: Optional chaining for chrome.storage.session - may not exist in all contexts
       chrome.storage.session?.remove('pendingRefBlockId');
     };
-  }, [loadPayer, checkNetwork]);
+  }, [loadPayer, checkNetwork, loadSurgeData]);
 
   useEffect(() => {
     if (lilicoEnabled && signable && signable.message && approval) {
@@ -363,6 +455,13 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
                 />
               )}
               <Box sx={{ flexGrow: 1 }} />
+              <SurgeFeeSection
+                transactionFee={surgeData?.maxFee || '0.002501'}
+                showWarning={isSurgeWarningVisible}
+                surgeMultiplier={surgeData?.multiplier || 1.0}
+                isSurgePricingActive={surgeData?.active || false}
+              />
+              <Box sx={{ paddingBottom: '10px' }} />
               <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
                 <LLSecondaryButton
                   label={chrome.i18n.getMessage('Cancel')}
@@ -374,12 +473,53 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
                   fullWidth
                   type="submit"
                   onClick={sendAuthzToFCL}
+                  disabled={isApproving}
                 />
               </Stack>
             </Box>
           )}
         </>
       )}
+
+      {/* Surge Modal */}
+      <SurgeWarning
+        message={
+          surgeData?.active && surgeData?.multiplier
+            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${Number(
+                surgeData?.multiplier
+              )
+                .toFixed(2)
+                .replace(
+                  /\.?0+$/,
+                  ''
+                )}× higher than usual and your free allowance will not cover the fee for this transaction.`
+            : 'Transaction fee information'
+        }
+        title="Surge pricing"
+        variant="warning"
+        visible={isSurgeWarningVisible}
+        onClose={() => setIsSurgeWarningVisible(false)}
+        onButtonPress={() => {
+          setIsSurgeWarningVisible(false);
+        }}
+        surgeMultiplier={surgeData?.multiplier || 1.0}
+      />
+      <SurgeModal
+        visible={isSurgeModalVisible}
+        transactionFee={surgeData?.maxFee || '0.002501'}
+        multiplier={surgeData?.multiplier?.toString() || '1.0'}
+        onClose={handleSurgeModalClose}
+        onAgree={handleSurgeModalAgree}
+        isLoading={false}
+        title={chrome.i18n.getMessage('Surge__Modal__Title')}
+        transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
+        surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
+        description={chrome.i18n.getMessage(
+          'Surge__Modal__Description',
+          Number(surgeData?.multiplier || 4).toFixed(2)
+        )}
+        holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
+      />
     </>
   );
 };

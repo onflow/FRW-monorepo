@@ -1581,5 +1581,20 @@
   },
   "legal_text": {
     "message": "By using Flow Wallet you agree to our <termslink>Terms of Service</termslink> and <privacylink>Privacy Policy</privacylink>"
+  },
+  "Surge__Modal__Title": {
+    "message": "Are you really sure that you want to continue with surge pricing?"
+  },
+  "Surge__Modal__Transaction__Fee": {
+    "message": "Your transaction fee"
+  },
+  "Surge__Modal__Surge__Active": {
+    "message": "Surge price active"
+  },
+  "Surge__Modal__Description": {
+    "message": "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are $MULTIPLIER$× higher than usual."
+  },
+  "Surge__Modal__Hold__To__Agree": {
+    "message": "Hold to agree to surge pricing"
   }
 }

@@ -1,5 +1,7 @@
 import { Alert, Box, Divider, List, Snackbar, Typography } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
+import { SurgeIcon } from '@onflow/frw-icons';
+import { fetchPayerStatusWithCache } from '@onflow/frw-stores';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 
@@ -16,7 +18,7 @@ import { useMainAccount } from '@/ui/hooks/use-account-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
-import { COLOR_WHITE_ALPHA_40_FFFFFF66, COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
+import { COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
 
 import EditAccount from './EditAccount';
 
@@ -49,6 +51,7 @@ const AccountDetail = () => {
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [emoji, setEmoji] = useState<Emoji | null>(null);
+  const [payerStatus, setPayerStatus] = useState<any>(null);
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
 
   // Use the new preference hook for hidden address status
@@ -113,16 +116,27 @@ const AccountDetail = () => {
     await setIsKeyphrase(keyrings);
   }, [wallet]);
 
+  const loadPayerStatus = useCallback(async () => {
+    try {
+      const status = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+      console.log('status', status);
+      setPayerStatus(status);
+    } catch (error) {
+      consoleError('Failed to load payer status:', error);
+    }
+  }, [network]);
+
   useEffect(() => {
     try {
       loadGasKillSwitch();
       loadGasMode();
       loadStorageInfo();
       checkKeyphrase();
+      loadPayerStatus();
     } catch (error) {
       consoleError(error);
     }
-  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo]);
+  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, loadPayerStatus]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -247,14 +261,42 @@ const AccountDetail = () => {
                 }}
                 disabled={!gasKillSwitch}
               />
-              <Box sx={{ padding: '4px 8px' }}>
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '12px', color: COLOR_WHITE_ALPHA_40_FFFFFF66 }}
-                >
-                  * Allow Flow Wallet to pay the gas fee for all my transactions
-                </Typography>
-              </Box>
+              {payerStatus?.surge?.active && (
+                <Box sx={{ padding: '18px', borderRadius: '16px', backgroundColor: '#FDB02226' }}>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        color: '#FDB022',
+                      }}
+                    >
+                      <SurgeIcon size={24} />
+                    </Box>
+                    <Box flex={1}>
+                      <Typography sx={{ fontSize: '14px', fontWeight: '600', color: '#FDB022' }}>
+                        Surge price active
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Description */}
+                  <Typography
+                    id="surge-modal-description"
+                    fontSize={14}
+                    fontWeight="400"
+                    color="#FDB022"
+                    sx={{ lineHeight: '20px' }}
+                  >
+                    Due to high network activity, transaction fees are elevated, and Flow Wallet is
+                    temporarily not paying for your gas. Current network fees are{' '}
+                    {Number(payerStatus?.surge?.multiplier).toFixed(2)}x higher than usual.
+                  </Typography>
+                </Box>
+              )}
               {!!storageInfo /* TODO: remove this after the storage usage card is implemented */ && (
                 <Box
                   sx={{
