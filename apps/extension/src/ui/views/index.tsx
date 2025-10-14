@@ -125,7 +125,6 @@ const App = ({ wallet }: { wallet: any }) => {
   const handleSurgeModalClose = () => {
     if (hasResponded) return; // Prevent multiple responses
 
-    console.log('SurgeModal onClose called');
     setIsSurgeModalVisible(false);
     setHasResponded(true);
 
@@ -139,11 +138,9 @@ const App = ({ wallet }: { wallet: any }) => {
 
   const handleSurgeModalAgree = () => {
     if (hasResponded) {
-      console.log('SurgeModal onAgree called but already responded, ignoring');
       return; // Prevent multiple responses
     }
 
-    console.log('SurgeModal onAgree called - sending approval response');
     setIsSurgeModalVisible(false);
     setHasResponded(true);
 
@@ -153,7 +150,6 @@ const App = ({ wallet }: { wallet: any }) => {
       data: { approved: true },
     });
     setHasResponded(false);
-    console.log('Surge approval response sent');
   };
 
   return (
@@ -171,6 +167,14 @@ const App = ({ wallet }: { wallet: any }) => {
                 visible={isSurgeModalVisible}
                 transactionFee={surgeData?.maxFee || '- 500.00'}
                 multiplier={surgeData?.multiplier?.toString() || '4'}
+                title={chrome.i18n.getMessage('Surge__Modal__Title')}
+                transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
+                surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
+                description={chrome.i18n.getMessage(
+                  'Surge__Modal__Description',
+                  Number(surgeData?.multiplier || 4).toFixed(2)
+                )}
+                holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
                 onClose={handleSurgeModalClose}
                 onAgree={handleSurgeModalAgree}
                 isLoading={false}

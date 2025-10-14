@@ -299,61 +299,14 @@ class ExtensionPlatformImpl implements PlatformSpec {
         config.limit = 9999;
 
         // Create proposer authorization function using parent address from hooks
-        config.proposer = async (account: any) => {
-          const selectedAccount = await this.getSelectedAccount();
-          const address = selectedAccount.parentAddress;
-          const keyId = await this.getSignKeyIndex();
-          const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
-
-          const KEY_ID = Number(keyId) || 0;
-
-          return {
-            ...account,
-            tempId: `${ADDRESS}-${KEY_ID}`,
-            addr: ADDRESS.replace('0x', ''),
-            keyId: KEY_ID,
-            signingFunction: async (signable: { message: string }) => {
-              return {
-                addr: ADDRESS,
-                keyId: KEY_ID,
-                signature: await this.sign(signable.message),
-              };
-            },
-          };
-        };
+        config.proposer = this.createProposerFunction();
         const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
         const isSurge = payerStatus?.surge?.active;
-
-        const bridgePayer = payerStatus?.bridgePayer?.address;
-        const bridgePayerKey = payerStatus?.bridgePayer?.keyIndex || 0;
-        const payerAddress = payerStatus?.feePayer?.address;
-        const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
-
         const withPayer = config.name && config.name.endsWith('WithPayer');
         config.authorizations = [config.proposer];
         if (withPayer) {
           // Use bridge fee payer function - get address from payer status
-
-          const BridgeAuthorizationFunction = async (account: any) => {
-            const ADDRESS = bridgePayer?.startsWith('0x') ? bridgePayer : `0x${bridgePayer}`;
-            const KEY_ID = Number(bridgePayerKey) || 0;
-
-            return {
-              ...account,
-              tempId: `${ADDRESS}-${KEY_ID}`,
-              addr: ADDRESS.replace('0x', ''),
-              keyId: KEY_ID,
-              signingFunction: async (signable: any) => {
-                const signature = await this.walletController.signAsBridgePayer(signable);
-                return {
-                  addr: ADDRESS,
-                  keyId: KEY_ID,
-                  signature: signature,
-                };
-              },
-            };
-          };
-          config.authorizations.append(BridgeAuthorizationFunction);
+          config.authorizations.push(this.createBridgeAuthorizationFunction());
         }
 
         if (isSurge) {
@@ -369,25 +322,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
           const allowed = await this.walletController.allowLilicoPay();
           if (allowed) {
             try {
-              const PayerAuthorizationFunction = async (account: any) => {
-                const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
-                const KEY_ID = Number(payerKeyId) || 0;
-
-                return {
-                  ...account,
-                  tempId: `${ADDRESS}-${KEY_ID}`,
-                  addr: ADDRESS.replace('0x', ''),
-                  keyId: KEY_ID,
-                  signingFunction: async (signable: any) => {
-                    return {
-                      addr: ADDRESS,
-                      keyId: KEY_ID,
-                      signature: await this.walletController.signAsFeePayer(signable),
-                    };
-                  },
-                };
-              };
-              config.payer = PayerAuthorizationFunction;
+              config.payer = this.createPayerAuthorizationFunction();
             } catch (error) {
               const isSurgeError =
                 error instanceof Error &&
@@ -463,6 +398,90 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
       return { config, response };
     });
+  }
+
+  // Factory method to create proposer authorization function
+  createProposerFunction() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return async (account: any) => {
+      const selectedAccount = await self.getSelectedAccount();
+      const address = selectedAccount.parentAddress;
+      const keyId = await self.getSignKeyIndex();
+      const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
+
+      const KEY_ID = Number(keyId) || 0;
+
+      return {
+        ...account,
+        tempId: `${ADDRESS}-${KEY_ID}`,
+        addr: ADDRESS.replace('0x', ''),
+        keyId: KEY_ID,
+        signingFunction: async (signable: { message: string }) => {
+          return {
+            addr: ADDRESS,
+            keyId: KEY_ID,
+            signature: await self.sign(signable.message),
+          };
+        },
+      };
+    };
+  }
+
+  // Factory method to create bridge authorization function
+  createBridgeAuthorizationFunction() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return async (account: any) => {
+      const network = self.getNetwork();
+      const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+      const bridgePayer = payerStatus?.bridgePayer?.address;
+      const bridgePayerKey = payerStatus?.bridgePayer?.keyIndex || 0;
+      const ADDRESS = bridgePayer?.startsWith('0x') ? bridgePayer : `0x${bridgePayer}`;
+      const KEY_ID = Number(bridgePayerKey) || 0;
+
+      return {
+        ...account,
+        tempId: `${ADDRESS}-${KEY_ID}`,
+        addr: ADDRESS.replace('0x', ''),
+        keyId: KEY_ID,
+        signingFunction: async (signable: any) => {
+          const signature = await self.walletController.signAsBridgePayer(signable);
+          return {
+            addr: ADDRESS,
+            keyId: KEY_ID,
+            signature: signature,
+          };
+        },
+      };
+    };
+  }
+  // Factory method to create payer authorization function
+  createPayerAuthorizationFunction() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return async (account: any) => {
+      const network = self.getNetwork();
+      const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+      const payerAddress = payerStatus?.feePayer?.address;
+      const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
+      const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
+      const KEY_ID = Number(payerKeyId) || 0;
+
+      return {
+        ...account,
+        tempId: `${ADDRESS}-${KEY_ID}`,
+        addr: ADDRESS.replace('0x', ''),
+        keyId: KEY_ID,
+        signingFunction: async (signable: any) => {
+          return {
+            addr: ADDRESS,
+            keyId: KEY_ID,
+            signature: await self.walletController.signAsFeePayer(signable),
+          };
+        },
+      };
+    };
   }
 
   // Export function to get surge data from UI

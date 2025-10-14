@@ -511,6 +511,14 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
         onClose={handleSurgeModalClose}
         onAgree={handleSurgeModalAgree}
         isLoading={false}
+        title={chrome.i18n.getMessage('Surge__Modal__Title')}
+        transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
+        surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
+        description={chrome.i18n.getMessage(
+          'Surge__Modal__Description',
+          Number(surgeData?.multiplier || 4).toFixed(2)
+        )}
+        holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
       />
     </>
   );

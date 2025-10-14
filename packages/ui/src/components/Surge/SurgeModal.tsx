@@ -13,6 +13,12 @@ import { HoldToSendButton } from '../HoldToSendButton';
  * <SurgeModal
  *   visible={showSurgeModal}
  *   transactionFee="- 500.00"
+ *   multiplier="4"
+ *   title={t('surge.modal.title')}
+ *   transactionFeeLabel={t('surge.modal.transactionFee')}
+ *   surgeActiveText={t('surge.modal.surgeActive')}
+ *   description={t('surge.modal.description')}
+ *   holdToAgreeText={t('surge.modal.holdToAgree')}
  *   onClose={() => setShowSurgeModal(false)}
  *   onAgree={() => {
  *     // Handle user agreement to surge pricing
@@ -51,6 +57,26 @@ export interface SurgeModalProps {
    * Additional CSS classes for the container
    */
   className?: string;
+  /**
+   * Modal title text
+   */
+  title?: string;
+  /**
+   * Transaction fee label text
+   */
+  transactionFeeLabel?: string;
+  /**
+   * Surge active status text
+   */
+  surgeActiveText?: string;
+  /**
+   * Description text with {{multiplier}} placeholder
+   */
+  description?: string;
+  /**
+   * Hold to agree button text
+   */
+  holdToAgreeText?: string;
 }
 
 export const SurgeModal: React.FC<SurgeModalProps> = ({
@@ -61,6 +87,11 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
   onAgree,
   isLoading = false,
   className,
+  title = 'Are you really sure that you want to continue with surge pricing?',
+  transactionFeeLabel = 'Your transaction fee',
+  surgeActiveText = 'Surge price active',
+  description = 'Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are {{multiplier}}× higher than usual.',
+  holdToAgreeText = 'Hold to agree to surge pricing',
 }) => {
   // Handle escape key press and body scroll prevention
   useEffect(() => {
@@ -123,23 +154,23 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
         data-node-id="9619:26612"
       >
         {/* Close Button */}
-        <Button
-          position="absolute"
-          top="$4"
-          right="$4"
-          zIndex={1}
-          items="center"
-          justify="center"
-          width="$6"
-          height="$6"
-          borderRadius="$10"
-          padding={0}
-          pressStyle={{ opacity: 0.7 }}
-          onPress={onClose}
-          cursor="pointer"
-          chromeless
-          icon={<Close size={28} color="white" />}
-        />
+        <YStack
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 1,
+          }}
+        >
+          <Button
+            width="$6"
+            height="$6"
+            pressStyle={{ opacity: 0.7 }}
+            onPress={onClose}
+            chromeless
+            icon={<Close size={28} color="white" />}
+          />
+        </YStack>
 
         {/* Content Frame */}
         <YStack items="center" gap="$4" style={{ alignSelf: 'stretch' }}>
@@ -157,7 +188,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
             lineHeight="$5"
             style={{ textAlign: 'center', maxWidth: 303 }}
           >
-            Are you really sure that you want to continue with surge pricing?
+            {title}
           </Text>
 
           {/* Divider Line */}
@@ -175,7 +206,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
             {/* Transaction Fee Row */}
             <XStack justify="space-between" items="center" width="100%">
               <Text fontSize={14} fontWeight="400" color="$white">
-                Your transaction fee
+                {transactionFeeLabel}
               </Text>
               <XStack items="center" gap="$1">
                 <Text fontSize={14} fontWeight="500" color="$white">
@@ -192,7 +223,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
               </YStack>
               <YStack flex={1}>
                 <Text fontSize={14} fontWeight="600" color="$warning">
-                  Surge price active
+                  {surgeActiveText}
                 </Text>
               </YStack>
             </XStack>
@@ -205,9 +236,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
               color="$warning"
               lineHeight="$4"
             >
-              Due to high network activity, transaction fees are elevated, and Flow Wallet is
-              temporarily not paying for your gas. Current network fees are{' '}
-              {Number(multiplier).toFixed(2)}× higher than usual.
+              {description.replace('{{multiplier}}', Number(multiplier).toFixed(2))}
             </Text>
           </YStack>
 
@@ -219,7 +248,7 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
                   onAgree();
                 }
               }}
-              holdToSendText="Hold to agree to surge pricing"
+              holdToSendText={holdToAgreeText}
               holdDuration={1500}
               stopSignal={isLoading}
               styles={{

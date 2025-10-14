@@ -177,6 +177,13 @@
   },
   "surge": {
     "title": "网络拥堵价格激活",
-    "message": "由于网络活动频繁，交易费用已提高。当前网络费用比平时高 4 倍。"
+    "message": "由于网络活动频繁，交易费用已提高。当前网络费用比平时高 4 倍。",
+    "modal": {
+      "title": "您确定要继续使用激增定价吗？",
+      "transactionFee": "您的交易费用",
+      "surgeActive": "激增价格激活",
+      "description": "由于网络活动频繁，交易费用已提高，Flow Wallet 暂时不为您支付 gas 费用。当前网络费用比平时高 {{multiplier}} 倍。",
+      "holdToAgree": "按住同意激增定价"
+    }
   }
 }
