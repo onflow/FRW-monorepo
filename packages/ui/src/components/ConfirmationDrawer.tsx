@@ -185,6 +185,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       // Trigger HoldToSendButton error state (rising edge)
       setErrorSignal(true);
       setTimeout(() => setErrorSignal(false), 50);
+      throw error;
     } finally {
       setInternalIsSending(false);
     }

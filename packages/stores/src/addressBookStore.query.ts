@@ -114,7 +114,7 @@ export const addressBookQueries = {
       }
 
       throw new Error(`Contact ${id} not found`);
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[AddressBookQuery] Error fetching contact:', error);
       throw error;
     }
@@ -132,7 +132,7 @@ export const addressBookQueries = {
       });
 
       return favorites;
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[AddressBookQuery] Error fetching favorites:', error);
       throw error;
     }

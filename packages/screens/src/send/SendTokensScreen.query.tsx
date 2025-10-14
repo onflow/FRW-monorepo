@@ -357,57 +357,65 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, []);
 
   const handleTransactionConfirm = useCallback(async () => {
-    if (!selectedToken || !fromAccount || !toAccount || !amount) {
-      throw new Error('Missing transaction data');
-    }
-
-    setSelectedToken(selectedToken);
-    setSelectedNFTs([]);
-    setTransactionType('tokens');
-    const inputAmount = new BN(amount || '0');
-    let tokenAmount: string;
-    const decimals = selectedToken.decimal || 8;
-    if (!isTokenMode) {
-      // Converting from USD to token
-      const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
-      tokenAmount = inputAmount.div(price).toFixed(decimals);
-    } else {
-      // Already in token mode
-      tokenAmount = inputAmount.toFixed(decimals);
-    }
-
-    updateFormData({ tokenAmount: tokenAmount });
-
-    const result = await executeTransaction();
-
-    // Set the recipient as a recent contact after successful transaction
-    if (result && toAccount) {
-      try {
-        // Convert WalletAccount to Contact format
-        const recentContact = {
-          id: toAccount.id || toAccount.address,
-          name: toAccount.name,
-          address: toAccount.address,
-          avatar: toAccount.avatar || '',
-          isFavorite: false,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-
-        await addressBookStore.setRecentContact(recentContact);
-      } catch (error: FRWError) {
-        logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
-        bridge.showToast!(t('common.error'), error.message);
+    try {
+      if (!selectedToken || !fromAccount || !toAccount || !amount) {
+        throw new Error('Missing transaction data');
       }
 
-      // Close the React Native view after successful transaction
-      const platform = bridge.getPlatform();
-      if (platform === Platform.iOS || platform === Platform.Android) {
-        bridge.closeRN();
+      setSelectedToken(selectedToken);
+      setSelectedNFTs([]);
+      setTransactionType('tokens');
+      const inputAmount = new BN(amount || '0');
+      let tokenAmount: string;
+      const decimals = selectedToken.decimal || 8;
+      if (!isTokenMode) {
+        // Converting from USD to token
+        const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
+        tokenAmount = inputAmount.div(price).toFixed(decimals);
+      } else {
+        // Already in token mode
+        tokenAmount = inputAmount.toFixed(decimals);
       }
-    }
 
-    return result;
+      updateFormData({ tokenAmount: tokenAmount });
+
+      const result = await executeTransaction();
+
+      // Set the recipient as a recent contact after successful transaction
+      if (result && toAccount) {
+        try {
+          // Convert WalletAccount to Contact format
+          const recentContact = {
+            id: toAccount.id || toAccount.address,
+            name: toAccount.name,
+            address: toAccount.address,
+            avatar: toAccount.avatar || '',
+            isFavorite: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+
+          await addressBookStore.setRecentContact(recentContact);
+        } catch (error: any) {
+          logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+        }
+
+        // Close the React Native view after successful transaction
+        const platform = bridge.getPlatform();
+        if (platform === Platform.iOS || platform === Platform.Android) {
+          bridge.closeRN();
+        }
+      }
+
+      return result;
+    } catch (error: FRWError) {
+      logger.error('[SendTokensScreen] Transaction failed:', error);
+      bridge.showToast!(
+        t('common.error'),
+        error.code ? t(`errors.${error.code}`) : error.message,
+        'error'
+      );
+    }
   }, [
     transactionType,
     selectedToken,
