@@ -5,3 +5,4 @@ export { OtherImportMethodsScreen } from './OtherImportMethodsScreen.query';
 export { EnterSeedPhraseScreen } from './EnterSeedPhraseScreen.query';
 export { ConfirmImportProfileScreen } from './ConfirmImportProfileScreen.query';
 export { VerifyPasswordScreen } from './VerifyPasswordScreen.query';
+export { DeviceBackupScanScreen } from './DeviceBackupScanScreen.query';

@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { navigation, logger } from '@onflow/frw-context';
 import { CheckCircleFill } from '@onflow/frw-icons';
 import { YStack, XStack, Text, GradientBackground, ScrollView } from '@onflow/frw-ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -138,7 +138,7 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
       navigation.navigate('VerifyPassword');
     },
     onError: (error) => {
-      console.error('Failed to import profile:', error);
+      logger.error('Failed to import profile:', error);
     },
   });
 

@@ -1,3 +1,4 @@
+import { navigation, logger } from '@onflow/frw-context';
 import { PlusCircle } from '@onflow/frw-icons';
 import { YStack, Text, GradientBackground, XStack } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
@@ -28,12 +29,11 @@ export function EnterSeedPhraseScreen(): React.ReactElement {
     mutationFn: ({ seedPhrase, address }: { seedPhrase: string; address?: string }) =>
       validateAndImportSeedPhrase(seedPhrase, address),
     onSuccess: () => {
-      // TODO: Navigate to success screen or wallet
-      // navigation.navigate('ImportSuccess');
+      // Navigate to verify password screen
+      navigation.navigate('VerifyPassword');
     },
     onError: (error) => {
-      // TODO: Show error message
-      console.error('Failed to import seed phrase:', error);
+      logger.error('Failed to import seed phrase:', error);
     },
   });
 

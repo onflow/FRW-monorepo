@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { navigation, logger } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
 import { YStack, Text, GradientBackground, BackupOptionCard } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
@@ -17,7 +17,7 @@ const checkBackupAvailability = async () => {
 
 const trackBackupSelection = async (backupType: 'device' | 'cloud' | 'recovery-phrase') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking backup selection:', backupType);
+  logger.debug('Tracking backup selection:', backupType);
   return { success: true };
 };
 
@@ -33,10 +33,10 @@ export function BackupOptionsScreen(): React.ReactElement {
   const trackingMutation = useMutation({
     mutationFn: trackBackupSelection,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked backup selection:', variables);
+      logger.debug('Successfully tracked backup selection:', variables);
     },
     onError: (error, variables) => {
-      console.error('Failed to track backup selection:', variables, error);
+      logger.error('Failed to track backup selection:', variables, error);
     },
   });
 

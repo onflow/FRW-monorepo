@@ -27,8 +27,8 @@ export function ImportProfileScreen(): React.ReactElement {
 
   const handleDeviceBackup = () => {
     trackingMutation.mutate('device');
-    // TODO: Navigate to device import flow
-    // navigation.navigate('DeviceImport');
+    // Navigate to device backup scan screen
+    navigation.navigate('DeviceBackupScan');
   };
 
   const handleCloudBackup = () => {

@@ -340,6 +340,11 @@
       "fieldLabel": "Verify your password*",
       "placeholder": "Password",
       "confirm": "Confirm"
+    },
+    "deviceBackup": {
+      "instructions": "Open your Flow Wallet on Mobile App and Scan the QR Code to Sync your Wallet.",
+      "scanWithApp": "Scan QR Code with Mobile App",
+      "syncSuccess": "Device synced successfully!"
     }
   }
 }
