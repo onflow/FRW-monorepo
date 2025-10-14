@@ -343,9 +343,13 @@ class UserWallet {
     if (!network || !pubkey) {
       throw new Error('Network or pubkey is not valid');
     }
+
+    // Get current user ID
+    const userId = await getCurrentProfileId();
+
     const activeAccounts: ActiveAccountsStore | undefined = await getActiveAccountsData(
       network,
-      pubkey
+      userId
     );
     const validatedActiveAccounts = await this.validateActiveAccountStore(
       network,
@@ -356,7 +360,7 @@ class UserWallet {
       const mainAccounts = await this.getMainAccounts();
       if (mainAccounts.length === 0) {
         // If the parent address is null, we need to reset to the first parent account
-        await removeLocalData(activeAccountsKey(network, pubkey));
+        await removeLocalData(activeAccountsKey(network, userId));
         return {
           parentAddress: null,
           currentAddress: null,
@@ -370,7 +374,7 @@ class UserWallet {
     ) {
       // Only update the active accounts if they have changed and the addresses are not null
       await setLocalData<ActiveAccountsStore>(
-        activeAccountsKey(network, pubkey),
+        activeAccountsKey(network, userId),
         validatedActiveAccounts
       );
     }
@@ -435,10 +439,13 @@ class UserWallet {
       throw new Error('Network is not set');
     }
 
+    // Get current user ID
+    const userId = await getCurrentProfileId();
+
     console.log('setActiveAccounts', pubkey, network, newActiveAccounts);
 
     // Save the data in storage
-    await setLocalData<ActiveAccountsStore>(activeAccountsKey(network, pubkey), newActiveAccounts);
+    await setLocalData<ActiveAccountsStore>(activeAccountsKey(network, userId), newActiveAccounts);
   };
   /**
    * Set the current account - the actively selected account

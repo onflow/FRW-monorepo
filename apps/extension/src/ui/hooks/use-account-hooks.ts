@@ -88,7 +88,7 @@ export const useActiveAccounts = (
   const currentId = useCurrentId();
   const mainAccounts = useMainAccounts(network, currentId);
   const activeAccounts = useUserData<ActiveAccountsStore>(
-    network && publicKey ? activeAccountsKey(network, publicKey) : null
+    network && currentId ? activeAccountsKey(network, currentId) : null
   );
   if (!activeAccounts) {
     // Special case of where main accounts is loaded but we don't have active accounts
