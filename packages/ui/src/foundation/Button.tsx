@@ -2,7 +2,7 @@ import React from 'react';
 import { Spinner, Button as TamaguiButton, Text, XStack } from 'tamagui';
 
 interface UIButtonProps {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'destructive' | 'success';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'destructive' | 'success' | 'inverse';
   size?: 'small' | 'medium' | 'large';
   loading?: boolean;
   loadingText?: string;
@@ -26,6 +26,14 @@ export function Button({
   ...props
 }: UIButtonProps): React.ReactElement {
   let buttonSize, buttonStyles;
+  const press = { opacity: 0.8, scale: 0.98 } as const;
+  const baseReset = {
+    borderWidth: 0,
+    borderColor: 'transparent' as const,
+    outlineWidth: 0,
+    outlineColor: 'transparent' as const,
+    focusStyle: { outlineWidth: 0, outlineColor: 'transparent', borderColor: 'transparent' },
+  };
 
   // Map size
   switch (size) {
@@ -48,10 +56,17 @@ export function Button({
       buttonStyles = {
         bg: '$bg2',
         color: '$text',
-        borderColor: '$border',
-        borderWidth: 1,
         hoverStyle: { bg: '$bg3' },
-        pressStyle: { bg: '$bg4' },
+        pressStyle: press,
+      };
+      break;
+    case 'inverse':
+      // Use theme-driven inverse tokens to respect light/dark
+      buttonStyles = {
+        bg: '$inverseBg',
+        color: '$inverseText',
+        hoverStyle: { opacity: 0.9, bg: '$inverseBg' },
+        pressStyle: press,
       };
       break;
     case 'destructive':
@@ -59,7 +74,7 @@ export function Button({
         bg: '$error',
         color: '$white',
         hoverStyle: { opacity: 0.9 },
-        pressStyle: { opacity: 0.8 },
+        pressStyle: press,
       };
       break;
     case 'success':
@@ -67,7 +82,7 @@ export function Button({
         bg: '$success',
         color: '$white',
         hoverStyle: { opacity: 0.9 },
-        pressStyle: { opacity: 0.8 },
+        pressStyle: press,
       };
       break;
     case 'outline':
@@ -77,11 +92,7 @@ export function Button({
         borderColor: '$border',
         borderWidth: 1,
         hoverStyle: { bg: '$bg1' },
-        pressStyle: {
-          bg: '$bg2',
-          borderColor: '$border',
-          color: '$text',
-        },
+        pressStyle: press,
       };
       break;
     case 'ghost':
@@ -89,7 +100,7 @@ export function Button({
         bg: 'transparent',
         color: '$text',
         hoverStyle: { bg: '$bg1' },
-        pressStyle: { bg: '$bg2' },
+        pressStyle: press,
       };
       break;
     default:
@@ -97,9 +108,22 @@ export function Button({
         bg: '$primary',
         color: '$black',
         hoverStyle: { opacity: 0.9 },
-        pressStyle: { opacity: 0.8 },
+        pressStyle: press,
       };
   }
+
+  // Ensure press background matches normal background to avoid color flicker
+  const finalStyles: any = {
+    ...buttonStyles,
+    pressStyle: {
+      ...(buttonStyles as any)?.pressStyle,
+      ...press,
+      // keep background consistent on press
+      bg: (buttonStyles as any)?.bg,
+    },
+  };
+
+  const textColor = (finalStyles as any)?.color as string | undefined;
 
   return (
     <TamaguiButton
@@ -108,18 +132,31 @@ export function Button({
       opacity={disabled && !loading ? 0.5 : 1}
       width={fullWidth ? '100%' : undefined}
       onPress={onPress}
-      {...buttonStyles}
+      animation="quick"
+      animateOnly={['transform', 'opacity']}
+      {...baseReset}
+      {...finalStyles}
       {...props}
     >
       {loading ? (
         <XStack items="center" gap="$2">
-          <Spinner size="small" color="currentColor" />
-          {loadingText && <Text>{loadingText}</Text>}
+          <Spinner size="small" color={textColor ?? 'currentColor'} />
+          {loadingText && (
+            <Text color={textColor ?? 'currentColor'} fontWeight="600">
+              {loadingText}
+            </Text>
+          )}
         </XStack>
       ) : (
         <XStack items="center" gap="$2">
-          {icon && React.cloneElement(icon, { color: 'currentColor' })}
-          {typeof children === 'string' ? <Text>{children}</Text> : children}
+          {icon && React.cloneElement(icon, { color: textColor ?? 'currentColor' })}
+          {typeof children === 'string' ? (
+            <Text color={textColor ?? 'currentColor'} fontWeight="600">
+              {children}
+            </Text>
+          ) : (
+            children
+          )}
         </XStack>
       )}
     </TamaguiButton>

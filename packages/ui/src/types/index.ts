@@ -1,6 +1,9 @@
-import type { TokenModel, WalletAccount, Currency } from '@onflow/frw-types';
+import type { TokenModel, WalletAccount, Currency, NFTModel } from '@onflow/frw-types';
 import type { ComponentProps } from 'react';
 import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiText } from 'tamagui';
+
+// Re-export from frw-types
+export type { NFTModel };
 
 // Base component props
 export type ButtonProps = ComponentProps<typeof TamaguiButton>;
@@ -44,6 +47,12 @@ export interface SkeletonProps {
   height?: number | string;
   borderRadius?: number | string;
   animated?: boolean;
+  baseBgLight?: string | `$${string}`;
+  baseBgDark?: string | `$${string}`;
+  animationType?: 'pulse' | 'none';
+  pulseDuration?: number;
+  pulseMinOpacity?: number;
+  pulseMaxOpacity?: number;
   [key: string]: any; // Allow additional props like mb, mt, etc.
 }
 
@@ -95,26 +104,8 @@ export interface NFTCoverProps {
   fallbackIcon?: string;
 }
 
-export interface NFTModel {
-  id?: string;
-  name?: string;
-  image?: string;
-  thumbnail?: string;
-  amount?: string | number;
-}
-
-export interface Token {
-  symbol?: string;
-  name?: string;
-  logo?: string;
-  logoURI?: string;
-  balance?: string;
-  price?: number;
-  isVerified?: boolean;
-}
-
 export interface TokenAmountInputProps {
-  selectedToken?: Token;
+  selectedToken?: TokenModel;
   amount?: string;
   onAmountChange?: (amount: string) => void;
   isTokenMode?: boolean;
@@ -128,6 +119,7 @@ export interface TokenAmountInputProps {
   inputRef?: React.RefObject<any>;
   currency?: Currency;
   amountError?: string;
+  headerText?: string;
 }
 
 export interface AddressTextProps extends Omit<TextProps, 'children'> {

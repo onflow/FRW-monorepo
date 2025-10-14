@@ -99,9 +99,6 @@ importers:
 
   apps/extension:
     dependencies:
-      '@coinbase/cbpay-js':
-        specifier: ^1.10.0
-        version: 1.10.0(regenerator-runtime@0.13.11)
       '@debank/common':
         specifier: ^0.3.60
         version: 0.3.60
@@ -135,6 +132,9 @@ importers:
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../../packages/context
+      '@onflow/frw-icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@onflow/frw-screens':
         specifier: workspace:*
         version: link:../../packages/screens
@@ -300,6 +300,9 @@ importers:
       react-infinite-scroll-component:
         specifier: ^6.1.0
         version: 6.1.0(react@19.0.0)
+      react-native-web:
+        specifier: ^0.21.1
+        version: 0.21.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react-qrcode-logo:
         specifier: ^3.0.0
         version: 3.0.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1036,6 +1039,12 @@ importers:
       '@onflow/frw-icons':
         specifier: workspace:*
         version: link:../icons
+      '@onflow/frw-types':
+        specifier: workspace:^
+        version: link:../types
+      '@onflow/frw-utils':
+        specifier: workspace:^
+        version: link:../utils
       '@tamagui/config':
         specifier: ^1.132.20
         version: 1.132.24(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@3.19.1(@babel/core@7.28.4)(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
@@ -1092,7 +1101,7 @@ importers:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
       react-native-web:
-        specifier: ^0.21.0
+        specifier: ^0.21.1
         version: 0.21.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       rimraf:
         specifier: ^5.0.1
@@ -1922,15 +1931,6 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
-
-  '@coinbase/cbpay-js@1.10.0':
-    resolution: {integrity: sha512-jQ4rqJFNbsCMZ74ATucAUv2IpkbPFXsY+6AVBvFVNKmG4rEgc10Fa87pw/idm6Tlrs7EERQRXEs21DvJpMzi8A==}
-    engines: {node: '>= 14'}
-    peerDependencies:
-      regenerator-runtime: ^0.13.9
-    peerDependenciesMeta:
-      regenerator-runtime:
-        optional: true
 
   '@commitlint/cli@19.8.1':
     resolution: {integrity: sha512-LXUdNIkspyxrlV6VDHWBmCZRtkEVRpBKxi2Gtw3J54cGWhLCTouVD/Q6ZSaSvd2YaDObWK8mDjrz3TIKtaQMAA==}
@@ -12810,10 +12810,6 @@ snapshots:
       '@babel/helper-validator-identifier': 7.27.1
 
   '@bcoe/v8-coverage@1.0.2': {}
-
-  '@coinbase/cbpay-js@1.10.0(regenerator-runtime@0.13.11)':
-    optionalDependencies:
-      regenerator-runtime: 0.13.11
 
   '@commitlint/cli@19.8.1(@types/node@22.18.5)(typescript@5.7.2)':
     dependencies:

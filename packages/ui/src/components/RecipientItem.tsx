@@ -1,6 +1,6 @@
 import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
 import React from 'react';
-import { Button, Card, XStack, YStack, Text, useThemeName } from 'tamagui';
+import { Button, Card, XStack, YStack, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
@@ -61,11 +61,6 @@ export function RecipientItem({
   copiedFeedback,
   pressStyle,
 }: RecipientItemProps): React.JSX.Element {
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const iconColor = isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
   return (
     <Card
       bg="transparent"
@@ -100,17 +95,8 @@ export function RecipientItem({
                 name?.charAt(0)?.toUpperCase() ||
                 type.charAt(0).toUpperCase()
               }
-              bgColor={
-                emojiInfo?.color ||
-                (isDarkMode ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.9)')
-              }
-              textColor={
-                emojiInfo?.color
-                  ? undefined
-                  : isDarkMode
-                    ? 'rgba(0, 0, 0, 0.9)'
-                    : 'rgba(255, 255, 255, 0.9)'
-              }
+              bgColor={emojiInfo?.color || '$bg2'}
+              textColor={emojiInfo?.color ? undefined : '$text'}
               size={avatarSize}
             />
           </YStack>
@@ -143,7 +129,7 @@ export function RecipientItem({
         {/* Content */}
         <YStack flex={1} gap={2} width={151.34} ml={16}>
           <XStack items="center" gap={4}>
-            {(isLinked || isEVM) && <Link size={12.8} color={iconColor} theme="outline" />}
+            {(isLinked || isEVM) && <Link size={12.8} color="#767676" theme="outline" />}
             <Text
               fontSize={14}
               fontWeight="600"
@@ -217,14 +203,13 @@ export function RecipientItem({
               items="center"
               justify="center"
             >
-              <UserRoundPlus size={24} color={iconColor} theme="outline" />
+              <UserRoundPlus size={24} color="#767676" theme="outline" />
             </Card>
           )}
           {showCopyButton && onCopy && (
             <Button
               width="$6"
               height="$6"
-              opacity={copiedFeedback ? 1 : 0.5}
               onPress={(e: React.BaseSyntheticEvent) => {
                 e.stopPropagation();
                 onCopy();
@@ -235,7 +220,7 @@ export function RecipientItem({
               pressStyle={{ opacity: 0.3 }}
               items="center"
               justify="center"
-              icon={<Copy size={24} color={copiedFeedback ? '$primary' : iconColor} />}
+              icon={<Copy size={24} color={copiedFeedback ? '#00EF8B' : '#767676'} />}
             ></Button>
           )}
           {copiedFeedback && (
@@ -251,7 +236,7 @@ export function RecipientItem({
               enterStyle={{ opacity: 0, scale: 0.9, y: 5 }}
               exitStyle={{ opacity: 0, scale: 0.9, y: 5 }}
             >
-              <Text fontSize={12} fontWeight="600" color="#000000">
+              <Text fontSize={12} fontWeight="600" color="$black">
                 {copiedFeedback}
               </Text>
             </YStack>

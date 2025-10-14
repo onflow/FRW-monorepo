@@ -29,6 +29,7 @@ export * from './foundation/Input';
 export * from './foundation/Separator';
 export * from './foundation/Skeleton';
 export * from './foundation/Text';
+export { FlatList } from 'react-native';
 
 // Export utilities
 export * from './utils/clipboard';

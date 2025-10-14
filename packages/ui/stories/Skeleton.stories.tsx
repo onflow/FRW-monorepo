@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
+import { Theme } from 'tamagui';
 
 import { Text, XStack, YStack } from '../src';
 import { Skeleton } from '../src/foundation/Skeleton';
@@ -40,6 +41,21 @@ const meta = {
     animated: {
       control: 'boolean',
     },
+    baseBgLight: { control: 'color' },
+    baseBgDark: { control: 'color' },
+    animationType: {
+      control: { type: 'radio' },
+      options: ['pulse', 'none'],
+    },
+    pulseDuration: {
+      control: { type: 'range', min: 600, max: 2400, step: 100 },
+    },
+    pulseMinOpacity: {
+      control: { type: 'range', min: 0.3, max: 0.95, step: 0.05 },
+    },
+    pulseMaxOpacity: {
+      control: { type: 'range', min: 0.5, max: 1, step: 0.05 },
+    },
   },
 } satisfies Meta<typeof Skeleton>;
 
@@ -52,6 +68,7 @@ export const Default: Story = {
     height: 20,
     borderRadius: 4,
     animated: true,
+    animationType: 'pulse',
   },
 };
 
@@ -70,6 +87,7 @@ export const Rectangle: Story = {
     height: 100,
     borderRadius: 8,
     animated: true,
+    animationType: 'pulse',
   },
 };
 
@@ -79,6 +97,7 @@ export const Static: Story = {
     height: 20,
     borderRadius: 4,
     animated: false,
+    animationType: 'none',
   },
 };
 
@@ -146,6 +165,82 @@ export const Sizes: Story = {
       <YStack gap="$2">
         <Text variant="caption">Extra Large (48px height)</Text>
         <Skeleton width="100%" height={48} borderRadius={8} animated={true} />
+      </YStack>
+    </YStack>
+  ),
+};
+
+export const LightAndDarkModes: Story = {
+  render: (): React.ReactElement => (
+    <YStack gap="$6" width={360}>
+      <YStack gap="$3">
+        <Text variant="caption">Light Mode</Text>
+        <Theme name="light">
+          <YStack p="$4" gap="$3" bg="$background" rounded="$4">
+            <XStack gap="$3" items="center">
+              <Skeleton
+                width="$10"
+                height="$10"
+                borderRadius="$10"
+                animated
+                animationType="pulse"
+              />
+              <YStack flex={1} gap="$2">
+                <Skeleton width="70%" height="$3.5" animated animationType="pulse" />
+                <Skeleton width="50%" height="$3" animated animationType="pulse" />
+              </YStack>
+            </XStack>
+            <Skeleton width="100%" height={100} borderRadius="$2" animated animationType="pulse" />
+          </YStack>
+        </Theme>
+      </YStack>
+
+      <YStack gap="$3">
+        <Text variant="caption">Dark Mode</Text>
+        <Theme name="dark">
+          <YStack p="$4" gap="$3" bg="$background" rounded="$4">
+            <XStack gap="$3" items="center">
+              <Skeleton
+                width="$10"
+                height="$10"
+                borderRadius="$10"
+                animated
+                animationType="pulse"
+              />
+              <YStack flex={1} gap="$2">
+                <Skeleton width="70%" height="$3.5" animated animationType="pulse" />
+                <Skeleton width="50%" height="$3" animated animationType="pulse" />
+              </YStack>
+            </XStack>
+            <Skeleton width="100%" height={100} borderRadius="$2" animated animationType="pulse" />
+          </YStack>
+        </Theme>
+      </YStack>
+    </YStack>
+  ),
+};
+
+export const PulseShowcase: Story = {
+  args: {
+    width: 220,
+    height: 16,
+    animated: true,
+    animationType: 'pulse',
+    pulseDuration: 1000,
+    pulseMinOpacity: 0.55,
+    pulseMaxOpacity: 0.95,
+  },
+  render: (args): React.ReactElement => (
+    <YStack gap="$4" width={320}>
+      <YStack gap="$2">
+        <Text variant="caption">Pulse lines</Text>
+        <Skeleton {...args} width="100%" />
+        <Skeleton {...args} width="80%" />
+      </YStack>
+      <YStack gap="$2">
+        <Text variant="caption">Pulse blocks</Text>
+        <Skeleton {...args} width="100%" height={24} borderRadius="$2" />
+        <Skeleton {...args} width="60%" height={24} borderRadius="$2" />
       </YStack>
     </YStack>
   ),

@@ -1,9 +1,9 @@
+import type { NFTTransactionData } from '@onflow/frw-types';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useState } from 'react';
 import { YStack } from 'tamagui';
 
 import { MultipleNFTsPreview } from '../src/components/MultipleNFTsPreview';
-import type { NFTSendData } from '../src/components/NFTSendPreview';
 
 const meta: Meta<typeof MultipleNFTsPreview> = {
   title: 'Components/MultipleNFTsPreview',
@@ -39,15 +39,19 @@ export default meta;
 type Story = StoryObj<typeof MultipleNFTsPreview>;
 
 // Mock NFT data
-const createMockNFTs = (count: number): NFTSendData[] =>
+type NFTWithExtras = NFTTransactionData & { collection?: string };
+
+const createMockNFTs = (count: number): NFTWithExtras[] =>
   Array.from({ length: count }, (_, index) => ({
     id: `nft-${index + 1}`,
     name: `NFT #${index + 1}`,
-    image: `https://via.placeholder.com/400x400/${
+    thumbnail: `https://via.placeholder.com/400x400/${
       ['6366F1', 'F59E0B', '10B981', '8B5CF6', 'EF4444', '06B6D4'][index % 6]
     }/FFFFFF?text=NFT+${index + 1}`,
     collection: `Collection ${Math.floor(index / 3) + 1}`,
+    collectionName: `Collection ${Math.floor(index / 3) + 1}`,
     description: `Description for NFT #${index + 1}`,
+    type: 'flow' as const,
   }));
 
 const twoNFTs = createMockNFTs(2);
@@ -57,13 +61,15 @@ const _tenNFTs = createMockNFTs(10);
 const twentyNFTs = createMockNFTs(20);
 
 // Mock NFT data with missing images for fallback testing
-const createMockNFTsWithoutImages = (count: number): NFTSendData[] =>
+const createMockNFTsWithoutImages = (count: number): NFTWithExtras[] =>
   Array.from({ length: count }, (_, index) => ({
     id: `nft-${index + 1}`,
     name: `NFT #${index + 1}`,
-    // No image property to test fallback
+    // No thumbnail property to test fallback
     collection: `Collection ${Math.floor(index / 3) + 1}`,
+    collectionName: `Collection ${Math.floor(index / 3) + 1}`,
     description: `Description for NFT #${index + 1}`,
+    type: 'flow' as const,
   }));
 
 const nftsWithoutImages = createMockNFTsWithoutImages(3);

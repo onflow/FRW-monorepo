@@ -1,5 +1,5 @@
 import React from 'react';
-import { XStack, Stack, Text, useThemeName } from 'tamagui';
+import { XStack, Stack, Text } from 'tamagui';
 
 import type { SegmentedControlProps } from '../types';
 
@@ -13,16 +13,6 @@ export function SegmentedControl({
   ...props
 }: SegmentedControlProps): React.ReactElement {
   const selectedIndex = segments.indexOf(value);
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-
-  // Dynamic colors for proper theming
-  const borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-  const selectedBgColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-  const pressSelectedBg = isDarkMode ? '#242424' : 'rgba(0, 0, 0, 0.2)';
-  const pressUnselectedBg = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
 
   // Size configurations
   const sizeConfig = {
@@ -42,7 +32,7 @@ export function SegmentedControl({
     <XStack
       bg="transparent"
       borderWidth={2}
-      borderColor={borderColor}
+      borderColor="$border1"
       rounded={200}
       p={3}
       items="center"
@@ -58,17 +48,18 @@ export function SegmentedControl({
           <Stack
             key={segment}
             flex={fullWidth ? 1 : undefined}
-            bg={isSelected ? selectedBgColor : 'transparent'}
+            bg={isSelected ? '$border1' : 'transparent'}
             rounded={20}
             height={30}
             items="center"
             justify="center"
             px={segmentPx}
-            pressStyle={{ opacity: 0.8, bg: isSelected ? pressSelectedBg : pressUnselectedBg }}
+            pressStyle={{ opacity: 0.8, bg: isSelected ? '$dark20' : '$light5' }}
             onPress={() => onChange(segment)}
             cursor="pointer"
           >
             <Text
+              data-testid={segment}
               fontSize={fontSize}
               fontWeight={600}
               opacity={isSelected ? 0.8 : 1}

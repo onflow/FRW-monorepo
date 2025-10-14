@@ -6,7 +6,7 @@ import {
   TransactionConfirmationModal,
   type TokenModel,
   type WalletAccount,
-  type TransactionFormData,
+  type SendFormData,
 } from '../src/components/TransactionConfirmationModal';
 
 const meta: Meta<typeof TransactionConfirmationModal> = {
@@ -64,7 +64,7 @@ const mockToken: TokenModel = {
   isVerified: true,
 };
 
-const mockFormData: TransactionFormData = {
+const mockFormData: SendFormData = {
   tokenAmount: '100.0',
   fiatAmount: '75.00',
   isTokenMode: true,

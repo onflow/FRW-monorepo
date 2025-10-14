@@ -19,6 +19,15 @@ const mode = args[0];
 
 dotenv.config({ path: `.env.${mode}` });
 
+// Debug: Log Firebase API key (masked) to verify it's loaded
+const fbApiKey = process.env.FB_API_KEY;
+if (fbApiKey) {
+  const masked = `${fbApiKey.substring(0, 10)}...${fbApiKey.substring(fbApiKey.length - 4)}`;
+  console.log(`✅ Firebase API Key loaded: ${masked} (length: ${fbApiKey.length})`);
+} else {
+  console.warn('⚠️ Firebase API Key not found in environment');
+}
+
 const IS_BETA = process.env.IS_BETA === 'true';
 const OAUTH2_SCOPES = process.env.OAUTH2_SCOPES || '';
 
@@ -85,7 +94,25 @@ async function prepare() {
   }
 
   if (mode === 'dev') {
-    manifest.key = process.env.MANIFEST_KEY;
+    // MANIFEST_KEY is required for dev builds to ensure consistent extension ID
+    if (!process.env.MANIFEST_KEY) {
+      if (process.env.CI) {
+        // In CI, fail the build if MANIFEST_KEY is missing
+        throw new Error(
+          '❌ MANIFEST_KEY is required for dev builds in CI. Please ensure the MANIFEST_KEY secret is set in GitHub.'
+        );
+      } else {
+        // In local development, warn but continue (developers should have .env.dev)
+        console.warn(
+          '⚠️ MANIFEST_KEY not found in environment. Extension ID will be random. ' +
+          'Please ensure MANIFEST_KEY is set in your .env.dev file for consistent extension ID.'
+        );
+        // Don't set a key - let Chrome generate a random ID for local dev
+      }
+    } else {
+      manifest.key = process.env.MANIFEST_KEY;
+    }
+    
     manifest.name = 'Flow Wallet Dev';
     try {
       const devToolsScript = await fetchDevTools();

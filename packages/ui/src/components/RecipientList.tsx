@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, YStack, XStack, Text, useThemeName } from 'tamagui';
+import { ScrollView, YStack, XStack, Text } from 'tamagui';
 
 import { RecipientItem, type RecipientItemProps } from './RecipientItem';
 import { RefreshView } from './RefreshView';
@@ -48,7 +48,7 @@ export interface RecipientListProps {
   isMobile?: boolean;
 
   // Style
-  contentPadding?: number;
+  contentPadding?: number | string;
 }
 
 export function RecipientList({
@@ -72,14 +72,8 @@ export function RecipientList({
   itemSpacing = 8,
   sectionSpacing = 16,
   isMobile = false,
-  contentPadding = 16,
+  contentPadding = '$4',
 }: RecipientListProps) {
-  const themeName = useThemeName();
-
-  // Use Tamagui's built-in theme detection
-  const isDarkMode = themeName?.includes('dark') || false;
-  const dividerColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
   // Normalize data - either use sections or create a single section from data
   const normalizedSections = sections || (data ? [{ data }] : []);
 
@@ -92,12 +86,12 @@ export function RecipientList({
       {Array.from({ length: 8 }).map((_, index) => (
         <YStack key={`skeleton-${index}`} p="$3">
           <XStack items="center" gap="$3">
-            <Skeleton width="$4" height="$4" borderRadius="$10" />
+            <Skeleton width="$4" height="$4" borderRadius="$10" animationType="pulse" />
             <YStack flex={1} gap="$2">
-              <Skeleton height="$1" width="60%" />
-              <Skeleton height="$0.75" width="40%" />
+              <Skeleton height="$1" width="60%" animationType="pulse" />
+              <Skeleton height="$0.75" width="40%" animationType="pulse" />
             </YStack>
-            <Skeleton width="$1" height="$1" borderRadius="$2" />
+            <Skeleton width="$1" height="$1" borderRadius="$2" animationType="pulse" />
           </XStack>
         </YStack>
       ))}
@@ -144,7 +138,7 @@ export function RecipientList({
             {section.title}
           </Text>
           {showSeparators && (
-            <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           )}
         </YStack>
       )}
@@ -154,7 +148,7 @@ export function RecipientList({
         <YStack key={item.id}>
           {renderItem(item)}
           {showSeparators && (
-            <YStack mt={'$2'} mb={'$2'} height={1} bg={dividerColor} w="100%" ml={0} />
+            <YStack mt={'$2'} mb={'$2'} height={1} bg="$border1" w="100%" ml={0} />
           )}
         </YStack>
       ))}

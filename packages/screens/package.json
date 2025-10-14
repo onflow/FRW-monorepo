@@ -8,6 +8,7 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
+    "build:watch": "tsup --watch",
     "dev": "tsup --watch",
     "clean": "rimraf dist",
     "lint": "eslint .",
@@ -41,7 +42,8 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "react": ">=18.0.0",
+    "react-native": "*"
   },
   "files": [
     "dist"

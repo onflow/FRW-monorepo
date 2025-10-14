@@ -11,7 +11,6 @@ import {
   ExtensionHeader,
   Text,
   SearchBar,
-  ScrollView,
 } from '@onflow/frw-ui';
 import { getNFTId, logger } from '@onflow/frw-utils';
 import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
@@ -76,7 +75,7 @@ export function NFTListScreen(): React.ReactElement {
     setCurrentStep('select-tokens');
   }, [setCurrentStep]);
 
-  // Initialize selectedIds from store's selectedNFTs when component mounts
+  // Initialize selectedIds from store's selectedNFTs when component mounts or when selectedNFTs changes
   useEffect(() => {
     if (selectedNFTs && selectedNFTs.length > 0) {
       const nftIds = selectedNFTs.map((nft) => getNFTId(nft));
@@ -88,8 +87,11 @@ export function NFTListScreen(): React.ReactElement {
       } else if (nftIds.length > 1) {
         setTransactionType('multiple-nfts');
       }
+    } else {
+      // Clear local selection if store has no selected NFTs
+      setSelectedIds([]);
     }
-  }, []); // Only run on mount
+  }, [selectedNFTs, setTransactionType]); // Update when selectedNFTs changes
 
   const collectionName = activeCollection?.name || 'NFT Collection';
 
@@ -444,7 +446,7 @@ export function NFTListScreen(): React.ReactElement {
               width="100%"
             />
           </YStack>
-          <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+          <YStack flex={1}>
             <NFTGrid
               data={filteredNFTs}
               selectedIds={selectedIds}
@@ -470,7 +472,7 @@ export function NFTListScreen(): React.ReactElement {
               isExtension={isExtension}
               totalCount={totalCount}
             />
-          </ScrollView>
+          </YStack>
         </YStack>
 
         {/* Selection Bar */}
@@ -492,6 +494,7 @@ export function NFTListScreen(): React.ReactElement {
           })()}
           isEditing={false}
           onQuantityChange={handleQuantityChange}
+          isExtension={isExtension}
         />
       </YStack>
     </BackgroundWrapper>

@@ -22,9 +22,13 @@ import {
   InfoDialog,
   Text,
   YStack,
-  useTheme,
 } from '@onflow/frw-ui';
-import { isValidEthereumAddress, isValidFlowAddress, logger, isDarkMode } from '@onflow/frw-utils';
+import {
+  isValidEthereumAddress,
+  isValidFlowAddress,
+  logger,
+  retryConfigs,
+} from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -43,9 +47,7 @@ interface TabConfig {
 export function SendToScreen(): React.ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
-  const theme = useTheme();
-  const isCurrentlyDarkMode = isDarkMode(theme);
-  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
+  const cardBackgroundColor = '$cardBg';
 
   const TABS: TabConfig[] = [
     { type: 'accounts', title: t('send.myAccounts') },
@@ -132,9 +134,10 @@ export function SendToScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh every minute
+    ...retryConfigs.critical, // Critical batch balance data retry config
   });
 
-  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern
+  // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern and retry logic
   const { data: balanceData } = useQuery({
     queryKey: tokenQueryKeys.balance(fromAddress, network),
     queryFn: () => tokenQueries.fetchBalance(fromAddress, undefined, network),
@@ -143,6 +146,7 @@ export function SendToScreen(): React.ReactElement {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60 * 1000, // Refresh balance every minute in background
+    ...retryConfigs.critical, // Critical balance data retry config
   });
   // Convert batch balances and NFT counts to the expected format
   const accountBalances = useMemo(() => {
@@ -205,6 +209,16 @@ export function SendToScreen(): React.ReactElement {
       }))
       .filter((contact) => filterBySearchQuery(contact.name, contact.address));
   }, [allContacts, isLoadingContacts, contactsError, filterBySearchQuery]);
+
+  const contactsErrorMessage = useMemo(() => {
+    if (!contactsError) {
+      return undefined;
+    }
+    if (contactsError instanceof Error) {
+      return contactsError.message;
+    }
+    return String(contactsError);
+  }, [contactsError]);
 
   // Create a set of existing addresses for quick lookup
   const existingAddresses = useMemo(() => {
@@ -574,7 +588,7 @@ export function SendToScreen(): React.ReactElement {
   const emptyState = getEmptyStateForTab();
 
   return (
-    <BackgroundWrapper backgroundColor="$bgDrawer">
+    <BackgroundWrapper backgroundColor="$bgDrawer" px={'$0' as any} pb={'$0' as any}>
       {isExtension && (
         <ExtensionHeader
           title={t('send.sendTo.title', 'Send To')}
@@ -594,6 +608,7 @@ export function SendToScreen(): React.ReactElement {
         activeTab={getTitleByType(activeTab)}
         onTabChange={handleTabChange}
         backgroundColor="$bgDrawer"
+        headerPaddingHorizontal={'$4'}
       >
         {activeTab === 'accounts' ? (
           <ProfileList
@@ -606,7 +621,18 @@ export function SendToScreen(): React.ReactElement {
             isMobile={!isExtension}
           />
         ) : activeTab === 'contacts' ? (
-          isLoading ? (
+          contactsErrorMessage ? (
+            <RecipientList
+              data={[]}
+              isLoading={false}
+              emptyTitle={emptyState.title}
+              emptyMessage={emptyState.message}
+              error={contactsErrorMessage}
+              retryButtonText={t('buttons.retry')}
+              errorDefaultMessage={t('messages.failedToLoadRecipients')}
+              onRetry={refetchContacts}
+            />
+          ) : isLoadingContacts ? (
             <RecipientList
               data={[]}
               isLoading={true}
@@ -614,7 +640,6 @@ export function SendToScreen(): React.ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
-              contentPadding={0}
             />
           ) : contactsData.length === 0 ? (
             <RecipientList
@@ -624,7 +649,6 @@ export function SendToScreen(): React.ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
-              contentPadding={0}
             />
           ) : (
             <AddressBookList
@@ -638,6 +662,7 @@ export function SendToScreen(): React.ReactElement {
               copiedAddress={copiedAddress}
               copiedId={copiedId}
               copiedText={t('messages.copied')}
+              isMobile={!isExtension}
             />
           )
         ) : (
@@ -652,7 +677,6 @@ export function SendToScreen(): React.ReactElement {
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
             onItemAddToAddressBook={handleRecipientAddToAddressBook}
-            contentPadding={0}
           />
         )}
       </SearchableTabLayout>

@@ -1,7 +1,7 @@
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import { IconButton, Typography, Tooltip } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { ArrowBack } from '@onflow/frw-icons';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -35,7 +35,7 @@ export const LLHeader = (props: LLHeaderProps) => {
     >
       <Grid size={1}>
         <IconButton onClick={handleGoBack}>
-          <ArrowBackIcon sx={{ color: 'icon.navi' }} />
+          <ArrowBack sx={{ color: 'icon.navi' }} />
         </IconButton>
       </Grid>
       <Grid size={10}>

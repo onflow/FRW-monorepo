@@ -113,15 +113,15 @@ export const AccountAvatar = ({
   return (
     <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', marginLeft: '8px' }}>
       {spinning && (
-        <CircularProgress
-          size={'44px'}
-          sx={{
-            position: 'absolute',
-            left: '-4px',
-            color: networkColor(network),
-            zIndex: 0,
-          }}
-        />
+        <Box data-testid="progressbar" sx={{ position: 'absolute', left: '-4px', top: '-4px' }}>
+          <CircularProgress
+            size={'44px'}
+            sx={{
+              color: networkColor(network),
+              zIndex: 0,
+            }}
+          />
+        </Box>
       )}
       {onClick && (
         <IconButton onClick={onClick} sx={sxProps}>
