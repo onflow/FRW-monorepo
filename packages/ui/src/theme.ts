@@ -255,56 +255,6 @@ export const radius = {
   12: 48,
 };
 
-// Centralized palette pairs by index to avoid per-theme overrides.
-// Array index corresponds to the template index mapping below. Keep order stable.
-type PalettePair = { light: string; dark: string };
-const palettePairs: PalettePair[] = [
-  // 0 - main background
-  { light: flowColors.surfaceLight1, dark: flowColors.surfaceDark1 },
-  // 1 - background (hover/secondary)
-  { light: flowColors.surfaceLight2, dark: flowColors.surfaceDark2 },
-  // 2 - background (press/tertiary)
-  { light: flowColors.surfaceLight3, dark: flowColors.surfaceDark4 },
-  // 3 - background (quaternary/inverted)
-  { light: flowColors.surfaceLight4, dark: flowColors.surfaceDark3 },
-  // 4 - text (tertiary)
-  { light: flowColors.textLight3, dark: flowColors.textDark3 },
-  // 5 - text (secondary)
-  { light: flowColors.textLight2, dark: flowColors.textDark2 },
-  // 6 - text (primary)
-  { light: flowColors.textLight1, dark: flowColors.textDark1 },
-  // 7 - alt background
-  { light: flowColors.lightBg1, dark: flowColors.darkBg1 },
-  // 8 - border
-  { light: flowColors.lightBorder1, dark: flowColors.darkBorder1 },
-  // 9 - text (quaternary)
-  { light: flowColors.textLight4, dark: flowColors.textDark4 },
-  // 10 - drawer background
-  { light: flowColors.surfaceLight1, dark: flowColors.surfaceDarkDrawer },
-  // 11 - inverse background
-  { light: flowColors.black, dark: flowColors.white },
-  // 12 - inverse text
-  { light: flowColors.white, dark: flowColors.black },
-  // 13 - subtle background (5%)
-  { light: flowColors.dark5, dark: flowColors.light5 },
-  // 14 - subtle background (10%)
-  { light: flowColors.dark10, dark: flowColors.light10 },
-  // 15 - primary
-  { light: flowColors.primaryLight, dark: flowColors.primaryDark },
-  // 16 - primary 20%
-  { light: flowColors.primaryLight20, dark: flowColors.primaryDark20 },
-  // 17 - primary 10% / primaryLight
-  { light: flowColors.primaryLight10, dark: flowColors.primaryDark10 },
-  // 18 - shadow
-  { light: flowColors.shadowLight, dark: flowColors.shadowDark },
-  // 19 - shadow (hover)
-  { light: flowColors.shadowLightHover, dark: flowColors.shadowDarkHover },
-  // 20 - shadow (press)
-  { light: flowColors.shadowLightPress, dark: flowColors.shadowDarkPress },
-  // 21 - shadow (focus)
-  { light: flowColors.shadowLightFocus, dark: flowColors.shadowDarkFocus },
-];
-
 // Create themes using createThemeBuilder
 const themesBuilder = createThemeBuilder()
   // Add palettes - these define the color gradients from background to foreground
