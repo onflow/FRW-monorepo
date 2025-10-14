@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import type { Account as FclAccount } from '@onflow/fcl';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
 
@@ -51,7 +51,7 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
   generateRandomId,
 } from '../utils';
-import { returnCurrentProfileId } from '../utils/current-id';
+import { getCurrentProfileId, returnCurrentProfileId } from '../utils/current-id';
 import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
 import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
@@ -692,7 +692,8 @@ export class AccountManagement {
       // Update the specific account in the main accounts cache
       try {
         const network = await userWalletService.getNetwork();
-        const accountsCacheKey = mainAccountsKey(network, currentPubKey);
+        const userId = await getCurrentProfileId();
+        const accountsCacheKey = mainAccountsKey(network, userId);
         const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKey);
 
         if (existingMainAccounts && Array.isArray(existingMainAccounts)) {

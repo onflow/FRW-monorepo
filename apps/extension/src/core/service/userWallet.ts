@@ -81,6 +81,7 @@ import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
 import walletManager from './wallet-manager';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
+import { getCurrentProfileId } from '../utils/current-id';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import { fetchAccountsByPublicKey } from '../utils/key-indexer';
 import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
@@ -1486,12 +1487,12 @@ export const loadMainAccountStorageBalance = async (
 };
 
 /**
- * Setup the main accounts for a given public key after registration is complete
+ * Setup the main accounts for a given user after registration is complete
  * Store in the data cache
  * @param network - The network to load the accounts for
  * @param pubKey - The public key to load the accounts for
  * @param account - The account structure getting from fcl after registration is complete
- * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ * @returns The main accounts for the given user or null if not found. Does not throw an error.
  */
 const setupNewAccount = async (
   network: string,
@@ -1502,6 +1503,10 @@ const setupNewAccount = async (
   if (indexOfKey === -1) {
     throw new Error('Key not found');
   }
+
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   // Setup new account after registration is complete
   const mainAccounts: MainAccount[] = [
     {
@@ -1523,7 +1528,7 @@ const setupNewAccount = async (
 
   // Save the main accounts to the cache
   setCachedData(
-    mainAccountsKey(network, pubKey),
+    mainAccountsKey(network, userId),
     mainAccounts,
     mainAccounts.length > 0 ? 60_000 : 1_000
   );
@@ -1544,7 +1549,11 @@ const getMainAccountsWithPubKey = async (
   if (!network || !pubkey) {
     throw new Error('Network or pubkey is not set');
   }
-  const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, pubkey));
+
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
+  const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, userId));
   if (!mainAccounts) {
     return loadMainAccountsWithPubKey(network, pubkey);
   }
@@ -1607,22 +1616,26 @@ const fetchUserMetadata = async (
 };
 
 /**
- * Load the main accounts for a given public key
+ * Load the main accounts for a given user
  * Store in the data cache
  * @param network - The network to load the accounts for
  * @param pubKey - The public key to load the accounts for
- * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ * @returns The main accounts for the given user or null if not found. Does not throw an error.
  */
 const loadMainAccountsWithPubKey = async (
   network: string,
   pubKey: string
 ): Promise<MainAccount[]> => {
   console.log('loadMainAccountsWithPubKey', network, pubKey);
+
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   // Get the accounts for the current public key
   const accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
 
-  // Get the placeholder accounts for the current public key
-  const placeholderAccounts = await getPlaceholderAccounts(network, pubKey);
+  // Get the placeholder accounts for the current user
+  const placeholderAccounts = await getPlaceholderAccounts(network, userId);
 
   const filteredPlaceholderAccounts = placeholderAccounts.filter((placeholderAccount) => {
     // Filter out placeholder accounts that are indexed
@@ -1632,7 +1645,7 @@ const loadMainAccountsWithPubKey = async (
   if (filteredPlaceholderAccounts.length < placeholderAccounts.length) {
     // Remove the placeholder accounts that are indexed
     await setCachedData(
-      placeholderAccountsKey(network, pubKey),
+      placeholderAccountsKey(network, userId),
       filteredPlaceholderAccounts,
       360_000
     );
@@ -1692,15 +1705,17 @@ const loadMainAccountsWithPubKey = async (
       }
     }
 
-    const eoaAccountInfo = {
-      address: eoaInfo?.address,
-      chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-      id: 99, // Special ID for EOA
-      name: 'EVM Account (EOA)',
-      icon: '🔷',
-      color: '#627EEA', // EVM blue
-      balance: eoaInfo?.balance || '0',
-    };
+    const eoaAccountInfo = eoaInfo?.address
+      ? {
+          address: eoaInfo.address,
+          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+          id: 99, // Special ID for EOA
+          name: 'EVM Account (EOA)',
+          icon: '🔷',
+          color: '#627EEA', // EVM blue
+          balance: eoaInfo.balance || '0',
+        }
+      : undefined;
 
     return {
       ...mainAccount,
@@ -1712,7 +1727,7 @@ const loadMainAccountsWithPubKey = async (
 
   // Save the merged accounts to the cache
   setCachedData(
-    mainAccountsKey(network, pubKey),
+    mainAccountsKey(network, userId),
     mainAccountsWithDetail,
     mainAccountsWithDetail.length > 0 ? 60_000 : 1_000
   );
@@ -1837,9 +1852,12 @@ export const addPendingAccountCreationTransaction = async (
   txId: string,
   replaceRandomTxId?: string
 ): Promise<void> => {
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   const existingPending =
     (await getValidData<PendingTransaction[]>(
-      pendingAccountCreationTransactionsKey(network, pubkey)
+      pendingAccountCreationTransactionsKey(network, userId)
     )) || [];
 
   // Remove any existing pending transaction with the same txId
@@ -1850,7 +1868,7 @@ export const addPendingAccountCreationTransaction = async (
   filtered.push(txId);
 
   // Set it to 3 minutes. That should be enough time to get the address created and indexed
-  await setCachedData(pendingAccountCreationTransactionsKey(network, pubkey), filtered, 360_000);
+  await setCachedData(pendingAccountCreationTransactionsKey(network, userId), filtered, 360_000);
 };
 
 /**
@@ -1864,13 +1882,16 @@ export const removePendingAccountCreationTransaction = async (
   pubkey: string,
   txId: string
 ): Promise<void> => {
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   const existingPending =
     (await getValidData<PendingTransaction[]>(
-      pendingAccountCreationTransactionsKey(network, pubkey)
+      pendingAccountCreationTransactionsKey(network, userId)
     )) || [];
 
   const filtered = existingPending.filter((pendingTxId) => pendingTxId !== txId);
-  await setCachedData(pendingAccountCreationTransactionsKey(network, pubkey), filtered, 360_000);
+  await setCachedData(pendingAccountCreationTransactionsKey(network, userId), filtered, 360_000);
 };
 
 /**
@@ -1881,9 +1902,9 @@ export const removePendingAccountCreationTransaction = async (
  */
 const getPlaceholderAccounts = async (
   network: string,
-  pubkey: string
+  userId: string
 ): Promise<PublicKeyAccount[]> => {
-  return (await getValidData<PublicKeyAccount[]>(placeholderAccountsKey(network, pubkey))) || [];
+  return (await getValidData<PublicKeyAccount[]>(placeholderAccountsKey(network, userId))) || [];
 };
 
 /**
@@ -1928,13 +1949,16 @@ export const addPlaceholderPublicKeyAccount = async (
   txId: string,
   account: PublicKeyAccount
 ) => {
-  const placeholderAccounts = await getPlaceholderAccounts(network, pubkey);
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
+  const placeholderAccounts = await getPlaceholderAccounts(network, userId);
 
   // Update the pending accounts
   placeholderAccounts.push(account);
 
   // Set to 3 minutes. That should be enough time to get the account indexed
-  await setCachedData(placeholderAccountsKey(network, pubkey), placeholderAccounts, 360_000);
+  await setCachedData(placeholderAccountsKey(network, userId), placeholderAccounts, 360_000);
 
   await loadMainAccountsWithPubKey(network, pubkey);
 
@@ -1944,11 +1968,15 @@ export const addPlaceholderPublicKeyAccount = async (
 };
 
 const clearPlaceholderAccounts = async (network: string, pubkey: string) => {
-  await clearCachedData(placeholderAccountsKey(network, pubkey));
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+  await clearCachedData(placeholderAccountsKey(network, userId));
 };
 
 const clearPendingAccountCreationTransactions = async (network: string, pubkey: string) => {
-  await clearCachedData(pendingAccountCreationTransactionsKey(network, pubkey));
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+  await clearCachedData(pendingAccountCreationTransactionsKey(network, userId));
 };
 
 const initAccountLoaders = () => {

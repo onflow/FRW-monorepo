@@ -25,6 +25,7 @@ import { analyticsService } from './analytics';
 import { getScripts } from './openapi';
 import userWalletService from './userWallet';
 import { replaceNftCollectionKeywords, replaceNftKeywords } from '../utils';
+import { getCurrentProfileId } from '../utils/current-id';
 import { encodeEvmContractCallDataForNft } from '../utils/encodeEvmContractCallData';
 
 export class TransactionService {
@@ -1428,7 +1429,8 @@ export class TransactionService {
       await fcl.tx(txID).onceSealed();
 
       // Refresh the EVM address
-      triggerRefresh(mainAccountsKey(network, pubKey));
+      const userId = await getCurrentProfileId();
+      triggerRefresh(mainAccountsKey(network, userId));
 
       // Track with success
       await this.trackCoaCreation(txID);
