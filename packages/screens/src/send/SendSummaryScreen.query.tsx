@@ -7,7 +7,11 @@ import {
   storageUtils,
   useTokenQueryStore,
 } from '@onflow/frw-stores';
-import { Platform, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
+import {
+  Platform,
+  type NFTTransactionDisplayData,
+  type SendFormData,
+} from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -380,8 +384,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         const currentAddress = fromAccount.address;
         tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
       }
-    } catch (error) {
+    } catch (error: FRWError) {
       logger.error('[SendSummaryScreen] Transaction failed:', error);
+      bridge.showToast!(t('common.error'), error.message);
     }
   }, [executeTransaction, selectedCollection, fromAccount]);
 

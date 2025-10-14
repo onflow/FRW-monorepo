@@ -4,7 +4,7 @@ import {
   type Storage,
   type StorageKeyMap,
 } from '@onflow/frw-context';
-import type { WalletAccount, RecentRecipient, FRWError, ErrorCode } from '@onflow/frw-types';
+import { type WalletAccount, type RecentRecipient, FRWError, ErrorCode } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
 const MAX_RECENT_RECIPIENTS = 10;

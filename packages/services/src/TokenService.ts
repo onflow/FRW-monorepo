@@ -45,6 +45,7 @@ class FlowTokenProvider implements TokenProvider {
         address,
         network,
         currency,
+        error,
       });
     }
   }
@@ -89,6 +90,7 @@ class ERC20TokenProvider implements TokenProvider {
         address,
         network,
         currency,
+        error,
       });
     }
   }
@@ -123,7 +125,7 @@ export class TokenService {
     } else {
       try {
         this.bridge = getServiceContext().bridge;
-      } catch {
+      } catch (error) {
         logger.warn('[TokenService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }
@@ -157,6 +159,7 @@ export class TokenService {
         address,
         network,
         currency,
+        error,
       });
     }
   }

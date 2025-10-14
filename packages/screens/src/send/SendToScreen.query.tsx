@@ -378,9 +378,10 @@ export function SendToScreen(): React.ReactElement {
             emoji: recipient.emojiInfo?.emoji,
             avatar: recipient.avatar,
           });
-        } catch (error) {
+        } catch (error: FRWError) {
           console.warn('Failed to add recent recipient:', error);
           // Don't block navigation if this fails
+          bridge.showToast!(error.message);
         }
       }
 
@@ -486,11 +487,12 @@ export function SendToScreen(): React.ReactElement {
       if (scannedText) {
         handleSearchChange(scannedText);
       }
-    } catch (error: any) {
+    } catch (error: FRWError) {
       // Don't show alert for cancelled scans
       if (error.code !== 'SCAN_CANCELLED') {
         alert(`${t('common.error')}: ${t('errors.networkError')}`);
       }
+      bridge.showToast!(t('common.error'), error.message);
     }
   }, [handleSearchChange, t]);
 
@@ -520,8 +522,9 @@ export function SendToScreen(): React.ReactElement {
         setCopiedAddress(null);
         setCopiedId(null);
       }, 1000);
-    } catch (error) {
+    } catch (error: FRWError) {
       logger.error('Failed to copy address:', error);
+      bridge.showToast!(t('common.error'), error.message);
     }
   }, []);
 
@@ -542,8 +545,9 @@ export function SendToScreen(): React.ReactElement {
 
         // Refresh the address book data
         refetchContacts();
-      } catch (error) {
+      } catch (error: FRWError) {
         logger.error('Failed to add to address book:', error);
+        bridge.showToast!(t('common.error'), error.message);
       }
     },
     [refetchContacts, isAddressInAddressBook]

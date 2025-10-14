@@ -410,8 +410,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         };
 
         await addressBookStore.setRecentContact(recentContact);
-      } catch (error) {
+      } catch (error: FRWError) {
         logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+        bridge.showToast!(t('common.error'), error.message);
       }
 
       // Close the React Native view after successful transaction

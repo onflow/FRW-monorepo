@@ -1,7 +1,7 @@
 import { cadence as cadenceService, context, type PlatformSpec } from '@onflow/frw-context';
-import type {
-  WalletAccountsResponse,
-  WalletProfilesResponse,
+import {
+  type WalletAccountsResponse,
+  type WalletProfilesResponse,
   FRWError,
   ErrorCode,
 } from '@onflow/frw-types';
@@ -29,11 +29,11 @@ class FlowService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = context.bridge;
-        } catch {
+        } catch (error) {
           throw new FRWError(
             ErrorCode.BRIDGE_NOT_FOUND,
             'FlowService requires bridge parameter or initialized ServiceContext',
-            { bridge }
+            { bridge, error }
           );
         }
       }
@@ -52,12 +52,12 @@ class FlowService {
         if (cadenceService) {
           this.initialized = true;
         }
-      } catch {
+      } catch (error) {
         logger.error('FlowService: ServiceContext not initialized properly');
         throw new FRWError(
           ErrorCode.FLOW_SERVICE_NOT_INITIALIZED,
           'FlowService requires initialized ServiceContext',
-          {}
+          { error }
         );
       }
     }
@@ -89,7 +89,7 @@ class FlowService {
       throw new FRWError(
         ErrorCode.FLOW_BALANCE_FETCH_FAILED,
         `Failed to fetch balance: ${_error instanceof Error ? _error.message : 'Unknown error'}`,
-        { address }
+        { address, error: _error }
       );
     }
   }
@@ -126,7 +126,7 @@ class FlowService {
     throw new FRWError(
       ErrorCode.FLOW_METHOD_NOT_IMPLEMENTED,
       'getWalletProfiles not implemented on this platform',
-      {}
+      { bridge: typeof this.bridge.getWalletProfiles }
     );
   }
 

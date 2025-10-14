@@ -44,7 +44,7 @@ class FlowNFTProvider implements NFTProvider {
       throw new FRWError(
         ErrorCode.NFT_COLLECTIONS_FETCH_FAILED,
         'Failed to fetch Flow NFT collections',
-        { address }
+        { address, error: _error }
       );
     }
   }
@@ -164,7 +164,7 @@ class EvmNFTProvider implements NFTProvider {
       throw new FRWError(
         ErrorCode.NFT_COLLECTIONS_FETCH_FAILED,
         'Failed to fetch EVM NFT collections',
-        { address }
+        { address, error: _error }
       );
     }
   }
@@ -276,6 +276,7 @@ class EvmNFTProvider implements NFTProvider {
         collectionId: collection.id,
         offset,
         limit,
+        error: _error,
       });
     }
   }
@@ -295,7 +296,7 @@ export class NFTService {
     } else {
       try {
         this.bridge = getServiceContext().bridge;
-      } catch {
+      } catch (error) {
         logger.warn('[NFTService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }
@@ -372,6 +373,7 @@ export class NFTService {
       });
       throw new FRWError(ErrorCode.NFT_COLLECTIONS_FETCH_FAILED, 'Error in getNFTCollections', {
         address,
+        error: _error,
       });
     }
   }
@@ -458,6 +460,7 @@ export class NFTService {
         collectionId: collection?.id,
         offset,
         limit,
+        error: _error,
       });
     }
   }
