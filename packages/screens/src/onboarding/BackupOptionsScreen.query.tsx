@@ -82,7 +82,7 @@ export function BackupOptionsScreen(): React.ReactElement {
         <YStack gap={12} flex={1}>
           {/* Device Backup Option */}
           <BackupOptionCard
-            icon={<DeviceBackup size={20} color="#000000" />}
+            icon={<RecoveryPhraseBackup size={70} color="#000000" />}
             iconBackground={<></>}
             title={t('onboarding.backupOptions.deviceBackup.title')}
             description={t('onboarding.backupOptions.deviceBackup.description')}
@@ -92,7 +92,7 @@ export function BackupOptionsScreen(): React.ReactElement {
 
           {/* Cloud Backup Option */}
           <BackupOptionCard
-            icon={<CloudBackup size={20} color="#000000" />}
+            icon={<CloudBackup size={90} color="#000000" />}
             iconBackground={<></>}
             title={t('onboarding.backupOptions.cloudBackup.title')}
             description={t('onboarding.backupOptions.cloudBackup.description')}
@@ -102,7 +102,7 @@ export function BackupOptionsScreen(): React.ReactElement {
 
           {/* Recovery Phrase Option */}
           <BackupOptionCard
-            icon={<RecoveryPhraseBackup size={20} color="#000000" />}
+            icon={<DeviceBackup size={90} color="#000000" />}
             iconBackground={<></>}
             title={t('onboarding.backupOptions.recoveryPhrase.title')}
             description={t('onboarding.backupOptions.recoveryPhrase.description')}

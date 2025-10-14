@@ -42,6 +42,7 @@ const trackRecoveryPhraseAction = async (action: 'copy' | 'next' | 'view') => {
 export function RecoveryPhraseScreen(): React.ReactElement {
   const { t } = useTranslation();
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+  const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
 
   // Query for generating recovery phrase
   const {
