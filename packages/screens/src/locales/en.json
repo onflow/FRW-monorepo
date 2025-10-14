@@ -262,5 +262,73 @@
       "next": "Next",
       "finish": "Finish"
     }
+  },
+  "backup": {
+    "import": {
+      "title": "Import profile",
+      "subtitle": "Import your profile using a backup.",
+      "deviceBackup": {
+        "title": "From Device Backup",
+        "description": "Mobile or extension devices"
+      },
+      "cloudBackup": {
+        "title": "From Cloud Backup",
+        "description": "Google Drive, iCloud or DropBox."
+      },
+      "recoveryPhrase": {
+        "title": "From Recovery Phrase",
+        "description": "12 word recovery phrase."
+      },
+      "otherMethod": {
+        "title": "From another method"
+      }
+    },
+    "restore": {
+      "title": "Restore Wallet",
+      "subtitle": "Select how you'd like to restore your wallet."
+    },
+    "enterRecoveryPhrase": {
+      "title": "Enter Recovery Phrase",
+      "subtitle": "Enter your 12-word recovery phrase to restore your wallet.",
+      "placeholder": "Enter word {{position}}",
+      "paste": "Paste",
+      "next": "Next",
+      "invalidPhrase": "Invalid recovery phrase. Please check and try again."
+    },
+    "cloudBackup": {
+      "title": "From cloud backup",
+      "subtitle": "Please select your cloud provider",
+      "googleDrive": "Google Drive",
+      "icloud": "iCloud",
+      "dropbox": "Dropbox"
+    },
+    "otherMethods": {
+      "title": "From recovery phrase",
+      "seedPhrase": {
+        "title": "Seed phrase",
+        "description": "Support 12 words seed phrase"
+      },
+      "keystore": {
+        "title": "Key store",
+        "description": "Import keystore file (Blocto Backup)"
+      },
+      "privateKey": {
+        "title": "Private key",
+        "description": "Import with raw hex key"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "description": "Mobile or extension devices"
+      }
+    },
+    "seedPhrase": {
+      "recoveryPhraseLabel": "Recovery phrase*",
+      "recoveryPhrasePlaceholder": "12 words split with spaces",
+      "addressLabel": "Address",
+      "addressPlaceholder": "Flow address (optional)",
+      "advanced": "Advanced",
+      "confirm": "Confirm",
+      "importError": "Failed to import seed phrase. Please check your phrase and try again."
+    }
   }
 }

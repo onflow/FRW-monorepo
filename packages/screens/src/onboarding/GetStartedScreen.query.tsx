@@ -64,8 +64,8 @@ export function GetStartedScreen(): React.ReactElement {
     // Track analytics
     trackingMutation.mutate('sign_in');
 
-    // TODO: Navigate to sign in flow
-    navigation.navigate('SignIn');
+    // Navigate to import profile flow
+    navigation.navigate('ImportProfile');
   };
 
   // Show loading state while fetching config

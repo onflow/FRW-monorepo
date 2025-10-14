@@ -7,3 +7,4 @@ export { FeatureItem } from './FeatureItem';
 export { NotificationToggle } from './NotificationToggle';
 export { BackupOptionCard } from './BackupOptionCard';
 export { NotificationPreviewImage } from './NotificationPreviewImage';
+export { InfoCard } from './InfoCard';
