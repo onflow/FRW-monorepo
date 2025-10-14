@@ -1100,6 +1100,9 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      react-native-svg:
+        specifier: ^15.13.0
+        version: 15.13.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
       react-native-web:
         specifier: ^0.21.1
         version: 0.21.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -14858,7 +14861,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 

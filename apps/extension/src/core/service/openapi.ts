@@ -948,38 +948,6 @@ export class OpenApiService {
     return response;
   };
 
-  signPayer = async (transaction, message: string) => {
-    const messages = {
-      envelope_message: message,
-    };
-    const baseURL = this.store.functionsUrl;
-    // 'http://localhost:5001/lilico-dev/us-central1'
-    const data = await this.sendRequest(
-      'POST',
-      '/signAsPayer',
-      {},
-      { transaction, message: messages },
-      baseURL
-    );
-    // (config.method, config.path, {}, { transaction, message: messages });
-    return data;
-  };
-
-  signBridgeFeePayer = async (transaction, message: string) => {
-    const messages = {
-      envelope_message: message,
-    };
-    const data = await this.sendRequest(
-      'POST',
-      '/api/signAsBridgeFeePayer',
-      {},
-      { transaction, message: messages },
-      this.store.webNextUrl
-    );
-    // (config.method, config.path, {}, { transaction, message: messages });
-    return data;
-  };
-
   signAsFeePayer = async (transaction, message: string) => {
     const messages = {
       envelope_message: message,
@@ -1012,6 +980,21 @@ export class OpenApiService {
     return data;
   };
 
+  signAsBridgePayer = async (transaction, message: string) => {
+    const messages = {
+      payload: message,
+    };
+    const data = await this.sendRequest(
+      'POST',
+      '/api/signAsBridgePayer',
+      {},
+      { transaction, message: messages },
+      this.store.webNextUrl
+    );
+    // (config.method, config.path, {}, { transaction, message: messages });
+    return data;
+  };
+
   signProposer = async (transaction, message: string) => {
     const messages = {
       envelope_message: message,
@@ -1026,6 +1009,17 @@ export class OpenApiService {
       baseURL
     );
     // (config.method, config.path, {}, { transaction, message: messages });
+    return data;
+  };
+
+  getPayerStatus = async () => {
+    const data = await this.sendRequest(
+      'GET',
+      '/api/v1/payer/status',
+      {},
+      {},
+      this.store.webNextUrl
+    );
     return data;
   };
 

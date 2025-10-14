@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import type { AccountKey, Account as FclAccount } from '@onflow/fcl';
+import { type PayerStatusPayloadV1 } from '@onflow/frw-api';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
@@ -1415,12 +1416,38 @@ export class WalletController extends BaseController {
     return userWalletService.allowFreeGas();
   };
 
-  signPayer = async (signable): Promise<string> => {
-    return await userWalletService.signPayer(signable);
-  };
+  showSurgeModalAndWait = async (payerStatus: any): Promise<boolean> => {
+    return new Promise((resolve) => {
+      // Send message to UI to show surge modal using the same pattern as API_RATE_LIMIT
+      chrome.runtime.sendMessage({
+        type: 'API_RATE_LIMIT',
+        data: {
+          status: 429,
+          api: 'surgePricing',
+          timestamp: Date.now(),
+          surgeData: {
+            maxFee: payerStatus?.surge?.maxFee,
+            multiplier: payerStatus?.surge?.multiplier,
+          },
+        },
+      });
 
-  signBridgeFeePayer = async (signable): Promise<string> => {
-    return await userWalletService.signBridgeFeePayer(signable);
+      // Listen for surge approval response
+      const handleSurgeResponse = (message: any) => {
+        if (message.type === 'SURGE_APPROVAL_RESPONSE') {
+          chrome.runtime.onMessage.removeListener(handleSurgeResponse);
+          resolve(message.data?.approved === true);
+        }
+      };
+
+      chrome.runtime.onMessage.addListener(handleSurgeResponse);
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        chrome.runtime.onMessage.removeListener(handleSurgeResponse);
+        resolve(false);
+      }, 30000);
+    });
   };
 
   // New API methods using openapi service
@@ -1430,6 +1457,14 @@ export class WalletController extends BaseController {
 
   signAsBridgeFeePayer = async (signable): Promise<string> => {
     return await userWalletService.signAsBridgeFeePayer(signable);
+  };
+
+  signAsBridgePayer = async (signable): Promise<string> => {
+    return await userWalletService.signAsBridgePayer(signable);
+  };
+
+  getPayerStatus = async (): Promise<PayerStatusPayloadV1> => {
+    return await openapiService.getPayerStatus();
   };
 
   signProposer = async (signable): Promise<string> => {

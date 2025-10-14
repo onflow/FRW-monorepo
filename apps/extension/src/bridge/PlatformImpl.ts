@@ -9,6 +9,8 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
+
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
 import { ExtensionStorage } from './ExtensionStorage';
@@ -297,91 +299,54 @@ class ExtensionPlatformImpl implements PlatformSpec {
         config.limit = 9999;
 
         // Create proposer authorization function using parent address from hooks
-        config.proposer = async (account: any) => {
-          const selectedAccount = await this.getSelectedAccount();
-          const address = selectedAccount.parentAddress;
-          const keyId = await this.getSignKeyIndex();
-          const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
-
-          const KEY_ID = Number(keyId) || 0;
-
-          return {
-            ...account,
-            tempId: `${ADDRESS}-${KEY_ID}`,
-            addr: ADDRESS.replace('0x', ''),
-            keyId: KEY_ID,
-            signingFunction: async (signable: { message: string }) => {
-              return {
-                addr: ADDRESS,
-                keyId: KEY_ID,
-                signature: await this.sign(signable.message),
-              };
-            },
-          };
-        };
+        config.proposer = this.createProposerFunction();
         const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
         const isSurge = payerStatus?.surge?.active;
-        // Determine payer function based on transaction name and fee coverage logic
         const withPayer = config.name && config.name.endsWith('WithPayer');
+        config.authorizations = [config.proposer];
         if (withPayer) {
           // Use bridge fee payer function - get address from payer status
-          const payerAddress = payerStatus?.bridgePayer?.address;
-          const payerKeyId = payerStatus?.bridgePayer?.keyIndex || 0;
+          config.authorizations.push(this.createBridgeAuthorizationFunction());
+        }
 
-          config.payer = async (account: any) => {
-            const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
-            const KEY_ID = Number(payerKeyId) || 0;
-
-            return {
-              ...account,
-              tempId: `${ADDRESS}-${KEY_ID}`,
-              addr: ADDRESS.replace('0x', ''),
-              keyId: KEY_ID,
-              signingFunction: async (signable: any) => {
-                const signature = await this.walletController.signAsBridgeFeePayer(signable);
-                return {
-                  addr: ADDRESS,
-                  keyId: KEY_ID,
-                  signature: signature,
-                };
-              },
-            };
-          };
-          config.authorizations = [config.proposer, config.payer];
+        if (isSurge) {
+          const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
+          if (userApproved) {
+            config.payer = config.proposer;
+          } else {
+            // User rejected - stop the transaction
+            throw new Error('Transaction cancelled by user due to surge pricing');
+          }
         } else {
           // Check if free gas is allowed
           const allowed = await this.walletController.allowLilicoPay();
-
           if (allowed) {
-            // Use regular payer function - get address from payer status
-            const payerAddress = payerStatus?.feePayer?.address;
-            const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
+            try {
+              config.payer = this.createPayerAuthorizationFunction();
+            } catch (error) {
+              const isSurgeError =
+                error instanceof Error &&
+                (error.message.includes(HTTP_STATUS_TOO_MANY_REQUESTS.toString()) ||
+                  error.message.includes('Too Many Requests') ||
+                  error.message.includes('Many Requests for surge') ||
+                  error.message.includes(
+                    'communicates temporary pressure and supports standard client backoff via Retry-After'
+                  ));
+              if (isSurgeError) {
+                // Show surge modal and wait for user approval
+                const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
 
-            config.payer = async (account: any) => {
-              const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
-              const KEY_ID = Number(payerKeyId) || 0;
-
-              return {
-                ...account,
-                tempId: `${ADDRESS}-${KEY_ID}`,
-                addr: ADDRESS.replace('0x', ''),
-                keyId: KEY_ID,
-                signingFunction: async (signable: any) => {
-                  return {
-                    addr: ADDRESS,
-                    keyId: KEY_ID,
-                    signature: await this.walletController.signAsFeePayer(signable),
-                  };
-                },
-              };
-            };
+                if (userApproved) {
+                  config.payer = config.proposer;
+                } else {
+                  // User rejected - stop the transaction
+                  throw new Error('Transaction cancelled by user due to surge pricing');
+                }
+              }
+            }
           } else {
-            // Use proposer as payer (user pays)
             config.payer = config.proposer;
           }
-
-          // Set authorizations array with just proposer
-          config.authorizations = [config.proposer];
         }
       }
       return config;
@@ -390,7 +355,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     // Configure response interceptor for transaction monitoring
     cadenceService.useResponseInterceptor(async (config: any, response: any) => {
       let txId: string | null = null;
-
       if (config.type === 'transaction') {
         // Handle bypassed extension transactions
         if (response && response.__EXTENSION_SUCCESS__) {
@@ -434,6 +398,96 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
       return { config, response };
     });
+  }
+
+  // Factory method to create proposer authorization function
+  createProposerFunction() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return async (account: any) => {
+      const selectedAccount = await self.getSelectedAccount();
+      const address = selectedAccount.parentAddress;
+      const keyId = await self.getSignKeyIndex();
+      const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
+
+      const KEY_ID = Number(keyId) || 0;
+
+      return {
+        ...account,
+        tempId: `${ADDRESS}-${KEY_ID}`,
+        addr: ADDRESS.replace('0x', ''),
+        keyId: KEY_ID,
+        signingFunction: async (signable: { message: string }) => {
+          return {
+            addr: ADDRESS,
+            keyId: KEY_ID,
+            signature: await self.sign(signable.message),
+          };
+        },
+      };
+    };
+  }
+
+  // Factory method to create bridge authorization function
+  createBridgeAuthorizationFunction() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return async (account: any) => {
+      const network = self.getNetwork();
+      const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+      const bridgePayer = payerStatus?.bridgePayer?.address;
+      const bridgePayerKey = payerStatus?.bridgePayer?.keyIndex || 0;
+      const ADDRESS = bridgePayer?.startsWith('0x') ? bridgePayer : `0x${bridgePayer}`;
+      const KEY_ID = Number(bridgePayerKey) || 0;
+
+      return {
+        ...account,
+        tempId: `${ADDRESS}-${KEY_ID}`,
+        addr: ADDRESS.replace('0x', ''),
+        keyId: KEY_ID,
+        signingFunction: async (signable: any) => {
+          const signature = await self.walletController.signAsBridgePayer(signable);
+          return {
+            addr: ADDRESS,
+            keyId: KEY_ID,
+            signature: signature,
+          };
+        },
+      };
+    };
+  }
+  // Factory method to create payer authorization function
+  createPayerAuthorizationFunction() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+    return async (account: any) => {
+      const network = self.getNetwork();
+      const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+      const payerAddress = payerStatus?.feePayer?.address;
+      const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
+      const ADDRESS = payerAddress?.startsWith('0x') ? payerAddress : `0x${payerAddress}`;
+      const KEY_ID = Number(payerKeyId) || 0;
+
+      return {
+        ...account,
+        tempId: `${ADDRESS}-${KEY_ID}`,
+        addr: ADDRESS.replace('0x', ''),
+        keyId: KEY_ID,
+        signingFunction: async (signable: any) => {
+          return {
+            addr: ADDRESS,
+            keyId: KEY_ID,
+            signature: await self.walletController.signAsFeePayer(signable),
+          };
+        },
+      };
+    };
+  }
+
+  // Export function to get surge data from UI
+  async getSurgeData(network: string): Promise<any> {
+    const payerStatus = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
+    return payerStatus?.surge;
   }
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
@@ -545,6 +599,12 @@ export const initializePlatform = (): ExtensionPlatformImpl => {
     (globalThis as any).__FLOW_WALLET_BRIDGE__ = platformInstance;
   }
   return platformInstance;
+};
+
+// Export function to get surge data from UI
+export const getSurgeData = async (network: string): Promise<any> => {
+  const platform = getPlatform();
+  return await platform.getSurgeData(network);
 };
 
 export default ExtensionPlatformImpl;

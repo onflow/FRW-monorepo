@@ -11,6 +11,11 @@ interface HoldToSendButtonProps {
   holdToSendText: string;
   errorSignal?: boolean;
   errorDisplayDurationMs?: number;
+  styles?: {
+    backgroundColor?: string;
+    color?: string;
+    stroke?: string;
+  };
 }
 
 export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
@@ -21,6 +26,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   holdToSendText,
   errorSignal = false,
   errorDisplayDurationMs = 1200,
+  styles,
 }) => {
   const theme = useTheme();
 
@@ -47,10 +53,24 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
   const CIRCLE_RADIUS = 8;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
+  // Helper function to resolve theme tokens
+  const resolveColor = (color: string | undefined, fallback: string) => {
+    if (!color) return fallback;
+    if (color.startsWith('$')) {
+      // Resolve theme token
+      const token = color.substring(1);
+      return theme[token as keyof typeof theme]?.val ?? fallback;
+    }
+    return color;
+  };
+
   // Theme-driven colors (inverse button): use $text as background and $bg as text
-  const buttonBackgroundColor = theme.text?.val ?? '#000000';
-  const buttonTextColor = theme.bg?.val ?? '#FFFFFF';
-  const progressBackgroundColor = theme.textSecondary?.val ?? '#767676';
+  const buttonBackgroundColor = resolveColor(styles?.backgroundColor, theme.text?.val ?? '#000000');
+  const buttonTextColor = resolveColor(styles?.color, theme.bg?.val ?? '#FFFFFF');
+  const progressBackgroundColor = resolveColor(
+    styles?.stroke,
+    theme.textSecondary?.val ?? '#767676'
+  );
   const errorColor = theme.error?.val ?? '#FF3B30';
 
   const stopAll = useCallback(() => {
@@ -251,7 +271,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                   cx="12"
                   cy="12"
                   r={CIRCLE_RADIUS}
-                  stroke={progressBackgroundColor}
+                  stroke={buttonBackgroundColor}
                   strokeWidth={3}
                   fill="none"
                 />
@@ -273,7 +293,7 @@ export const HoldToSendButton: React.FC<HoldToSendButtonProps> = ({
                 width={20}
                 height={20}
                 borderWidth={3}
-                borderColor={progressBackgroundColor}
+                borderColor={buttonBackgroundColor}
                 rounded="$10"
               />
             )}

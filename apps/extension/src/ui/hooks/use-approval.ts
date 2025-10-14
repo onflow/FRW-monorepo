@@ -31,7 +31,7 @@ export const useApproval = () => {
       const approval = await getApproval();
 
       if (approval) {
-        stableUsewallet.resolveApproval(data, forceReject);
+        stableUsewallet.resolveApproval(data, forceReject, stay);
       }
       if (stay) {
         return;
