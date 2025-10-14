@@ -76,7 +76,7 @@ const TransferList = () => {
                   prefix={!isContractCall ? (isReceive ? '+' : '-') : ''}
                 />
               ) : (
-                <div data-testid={`collection-${props.token}`}>{props.token}</div>
+                <Typography data-testid={`collection-${props.token}`}>{props.token}</Typography>
               )}
             </Typography>
           ) : (
