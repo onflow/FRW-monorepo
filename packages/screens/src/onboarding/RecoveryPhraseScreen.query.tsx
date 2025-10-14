@@ -1,5 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { Copy, Warning } from '@onflow/frw-icons';
+import { Copy, Warning, RevealPhrase } from '@onflow/frw-icons';
 import { YStack, XStack, Text, View, OnboardingBackground, Button } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
@@ -113,6 +113,13 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     }
   };
 
+  const handleRevealPhrase = () => {
+    // Track analytics
+    trackingMutation.mutate('view');
+
+    setIsPhraseRevealed(true);
+  };
+
   const handleNext = () => {
     // Track analytics
     trackingMutation.mutate('next');
@@ -160,16 +167,16 @@ export function RecoveryPhraseScreen(): React.ReactElement {
         </YStack>
 
         {/* Recovery phrase grid - 2 columns x 6 rows */}
-        <View
+        <YStack
           width={320}
-          backgroundColor="rgba(255, 255, 255, 0.1)"
-          borderRadius={16}
-          paddingTop={24}
-          paddingBottom={24}
-          paddingLeft={18}
-          paddingRight={18}
-          marginBottom={16}
-          alignSelf="center"
+          bg="rgba(255, 255, 255, 0.1)"
+          rounded={16}
+          pt={24}
+          pb={24}
+          px={18}
+          mb={16}
+          self="center"
+          position="relative"
         >
           <YStack gap={20}>
             {/* Generate 6 rows with 2 columns each */}
@@ -219,7 +226,46 @@ export function RecoveryPhraseScreen(): React.ReactElement {
               </XStack>
             ))}
           </YStack>
-        </View>
+
+          {/* Click to reveal overlay */}
+          {!isPhraseRevealed && (
+            <YStack
+              position="absolute"
+              bg="rgba(0, 0, 0, 0.9)"
+              rounded={16}
+              items="center"
+              justify="center"
+              cursor="pointer"
+              onPress={handleRevealPhrase}
+              style={{
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backdropFilter: 'blur(20px)',
+              }}
+            >
+              <YStack items="center" gap={12}>
+                <View
+                  width={42}
+                  height={40}
+                  backgroundColor="rgba(255, 255, 255, 0.1)"
+                  borderRadius={8}
+                  alignItems="center"
+                  justifyContent="center"
+                  style={{
+                    backdropFilter: 'blur(12px)',
+                  }}
+                >
+                  <RevealPhrase size={20} color="rgba(255, 255, 255, 0.5)" />
+                </View>
+                <Text fontSize={16} fontWeight="500" color="$text" text="center">
+                  Click to reveal phrase
+                </Text>
+              </YStack>
+            </YStack>
+          )}
+        </YStack>
 
         {/* Copy button */}
         <XStack justify="center" mb={16}>

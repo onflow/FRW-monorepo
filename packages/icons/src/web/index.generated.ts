@@ -21,6 +21,7 @@ export { default as Lock } from './Lock.generated';
 export { default as Minus } from './Minus.generated';
 export { default as Plus } from './Plus.generated';
 export { default as RecoveryPhraseBackup } from './RecoveryPhraseBackup.generated';
+export { default as RevealPhrase } from './RevealPhrase.generated';
 export { default as Scan } from './Scan.generated';
 export { default as Search } from './Search.generated';
 export { default as SecureEnclave } from './SecureEnclave.generated';
