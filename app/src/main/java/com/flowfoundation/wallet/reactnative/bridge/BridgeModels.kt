@@ -131,7 +131,7 @@ class RNBridge {
         @SerializedName("screen")
         val screen: ScreenType,
         @SerializedName("sendToConfig")
-        val sendToConfig: SendToConfig?
+        val sendToConfig: String?
     )
 
     data class EnvironmentVariables(
