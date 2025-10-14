@@ -1,7 +1,6 @@
 import { navigation } from '@onflow/frw-context';
-// import { InfoIcon } from '@onflow/frw-icons'; // Temporarily disabled
-// import { BackupOptionCard } from '@onflow/frw-ui'; // Temporarily disabled
-import { YStack, XStack, Text, GradientBackground } from '@onflow/frw-ui';
+import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
+import { YStack, Text, GradientBackground, BackupOptionCard } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -82,75 +81,34 @@ export function BackupOptionsScreen(): React.ReactElement {
         {/* Backup options */}
         <YStack gap={12} flex={1}>
           {/* Device Backup Option */}
-          <YStack
-            p={16}
-            bg="rgba(255, 255, 255, 0.1)"
-            rounded={16}
-            borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.1)"
-            pressStyle={{ opacity: 0.8 }}
+          <BackupOptionCard
+            icon={<DeviceBackup size={20} color="#000000" />}
+            iconBackground={<></>}
+            title={t('onboarding.backupOptions.deviceBackup.title')}
+            description={t('onboarding.backupOptions.deviceBackup.description')}
+            recommended={true}
             onPress={handleDeviceBackup}
-            cursor="pointer"
-          >
-            <XStack justify="space-between" items="center" mb={8}>
-              <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
-                {t('onboarding.backupOptions.deviceBackup.title')}
-              </Text>
-              <YStack px={8} py={4} bg="rgba(0, 239, 139, 0.15)" rounded={54}>
-                <Text fontSize={12} fontWeight="400" color="$primary">
-                  Recommended
-                </Text>
-              </YStack>
-            </XStack>
-            <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
-              {t('onboarding.backupOptions.deviceBackup.description')}
-            </Text>
-          </YStack>
+          />
 
           {/* Cloud Backup Option */}
-          <YStack
-            p={16}
-            bg="rgba(255, 255, 255, 0.1)"
-            rounded={16}
-            borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.1)"
-            pressStyle={{ opacity: 0.8 }}
+          <BackupOptionCard
+            icon={<CloudBackup size={20} color="#000000" />}
+            iconBackground={<></>}
+            title={t('onboarding.backupOptions.cloudBackup.title')}
+            description={t('onboarding.backupOptions.cloudBackup.description')}
+            recommended={true}
             onPress={handleCloudBackup}
-            cursor="pointer"
-          >
-            <XStack justify="space-between" items="center" mb={8}>
-              <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
-                {t('onboarding.backupOptions.cloudBackup.title')}
-              </Text>
-              <YStack px={8} py={4} bg="rgba(0, 239, 139, 0.15)" rounded={54}>
-                <Text fontSize={12} fontWeight="400" color="$primary">
-                  Recommended
-                </Text>
-              </YStack>
-            </XStack>
-            <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
-              {t('onboarding.backupOptions.cloudBackup.description')}
-            </Text>
-          </YStack>
+          />
 
           {/* Recovery Phrase Option */}
-          <YStack
-            p={16}
-            bg="rgba(255, 255, 255, 0.1)"
-            rounded={16}
-            borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.1)"
-            pressStyle={{ opacity: 0.8 }}
+          <BackupOptionCard
+            icon={<RecoveryPhraseBackup size={20} color="#000000" />}
+            iconBackground={<></>}
+            title={t('onboarding.backupOptions.recoveryPhrase.title')}
+            description={t('onboarding.backupOptions.recoveryPhrase.description')}
+            recommended={false}
             onPress={handleRecoveryPhrase}
-            cursor="pointer"
-          >
-            <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29} mb={8}>
-              {t('onboarding.backupOptions.recoveryPhrase.title')}
-            </Text>
-            <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
-              {t('onboarding.backupOptions.recoveryPhrase.description')}
-            </Text>
-          </YStack>
+          />
         </YStack>
       </YStack>
     </GradientBackground>

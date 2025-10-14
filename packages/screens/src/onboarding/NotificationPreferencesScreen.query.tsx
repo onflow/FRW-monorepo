@@ -144,7 +144,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
 
         {/* Notification Preview Image - centered */}
         <YStack flex={1} items="center" justify="center">
-          <NotificationPreviewImage width={300} height={200} />
+          <NotificationPreviewImage width={375} height={492} />
         </YStack>
 
         {/* Action buttons - matching SecureEnclaveScreen style */}
