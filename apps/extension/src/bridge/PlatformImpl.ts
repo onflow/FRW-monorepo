@@ -330,7 +330,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
         const payerKeyId = payerStatus?.feePayer?.keyIndex || 0;
 
         const withPayer = config.name && config.name.endsWith('WithPayer');
-
+        config.authorizations = [config.proposer];
         if (withPayer) {
           // Use bridge fee payer function - get address from payer status
 
@@ -353,9 +353,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
               },
             };
           };
-          config.authorizations = [config.proposer, BridgeAuthorizationFunction];
-        } else {
-          config.authorizations = [config.proposer];
+          config.authorizations.append(BridgeAuthorizationFunction);
         }
 
         if (isSurge) {

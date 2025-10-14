@@ -206,8 +206,8 @@ export const SurgeModal: React.FC<SurgeModalProps> = ({
               lineHeight="$4"
             >
               Due to high network activity, transaction fees are elevated, and Flow Wallet is
-              temporarily not paying for your gas. Current network fees are {multiplier}× higher
-              than usual.
+              temporarily not paying for your gas. Current network fees are{' '}
+              {Number(multiplier).toFixed(2)}× higher than usual.
             </Text>
           </YStack>
 
