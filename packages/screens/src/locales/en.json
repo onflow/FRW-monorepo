@@ -329,6 +329,17 @@
       "advanced": "Advanced",
       "confirm": "Confirm",
       "importError": "Failed to import seed phrase. Please check your phrase and try again."
+    },
+    "confirmImportProfile": {
+      "title": "Confirm importing profile",
+      "subtitle": "Select a profile to import"
+    },
+    "verifyPassword": {
+      "title": "Verify your password",
+      "subtitle": "Confirm access using your password.",
+      "fieldLabel": "Verify your password*",
+      "placeholder": "Password",
+      "confirm": "Confirm"
     }
   }
 }

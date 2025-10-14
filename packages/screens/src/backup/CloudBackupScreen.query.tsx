@@ -1,4 +1,5 @@
-import { YStack, Text, GradientBackground } from '@onflow/frw-ui';
+import { navigation, logger } from '@onflow/frw-context';
+import { YStack, XStack, Text, GradientBackground } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,12 +27,12 @@ export function CloudBackupScreen(): React.ReactElement {
   const restoreMutation = useMutation({
     mutationFn: restoreFromCloudProvider,
     onSuccess: (data, variables) => {
-      // TODO: Navigate to success screen or next step
-      // navigation.navigate('RestoreSuccess');
+      // Navigate to confirm import profile screen
+      navigation.navigate('ConfirmImportProfile');
     },
     onError: (error, variables) => {
       // TODO: Show error message
-      console.error('Failed to restore from cloud provider:', variables, error);
+      logger.error('Failed to restore from cloud provider:', variables, error);
     },
   });
 
@@ -75,10 +76,9 @@ export function CloudBackupScreen(): React.ReactElement {
         {/* Cloud Provider Options */}
         <YStack justify="center" gap="$2" width={339}>
           {/* Google Drive */}
-          <YStack
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
+          <XStack
+            justify="space-between"
+            items="center"
             gap="$3"
             px="$4.5"
             width={339}
@@ -93,22 +93,21 @@ export function CloudBackupScreen(): React.ReactElement {
             animation="quick"
             cursor="pointer"
           >
-            <YStack flexDirection="row" alignItems="center" gap="$2.5" width={158}>
+            <XStack items="center" gap="$2.5" width={158}>
               {/* TODO: Add Google Drive logo */}
               <YStack width={44.13} height={40} />
               <Text fontSize="$4" fontWeight="600" color="$text" letterSpacing="-0.6%">
                 {t('backup.cloudBackup.googleDrive')}
               </Text>
-            </YStack>
+            </XStack>
             {/* Chevron - TODO: Add ChevronRight icon */}
             <YStack width={24} height={24} />
-          </YStack>
+          </XStack>
 
           {/* iCloud */}
-          <YStack
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
+          <XStack
+            justify="space-between"
+            items="center"
             gap="$3"
             px="$4.5"
             width={339}
@@ -123,22 +122,21 @@ export function CloudBackupScreen(): React.ReactElement {
             animation="quick"
             cursor="pointer"
           >
-            <YStack flexDirection="row" alignItems="center" gap="$2.5" width={158}>
+            <XStack items="center" gap="$2.5" width={158}>
               {/* TODO: Add iCloud logo */}
               <YStack width={40} height={26.67} />
               <Text fontSize="$4" fontWeight="600" color="$text" letterSpacing="-0.6%">
                 {t('backup.cloudBackup.icloud')}
               </Text>
-            </YStack>
+            </XStack>
             {/* Chevron - TODO: Add ChevronRight icon */}
             <YStack width={24} height={24} />
-          </YStack>
+          </XStack>
 
           {/* Dropbox */}
-          <YStack
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
+          <XStack
+            justify="space-between"
+            items="center"
             gap="$3"
             px="$4.5"
             width={339}
@@ -154,16 +152,16 @@ export function CloudBackupScreen(): React.ReactElement {
             cursor="pointer"
             disabled={restoreMutation.isPending}
           >
-            <YStack flexDirection="row" alignItems="center" gap="$2.5" width={158}>
+            <XStack items="center" gap="$2.5" width={158}>
               {/* TODO: Add Dropbox logo */}
               <YStack width={40} height={38} />
               <Text fontSize="$4" fontWeight="600" color="$text" letterSpacing="-0.6%">
                 {t('backup.cloudBackup.dropbox')}
               </Text>
-            </YStack>
+            </XStack>
             {/* Chevron - TODO: Add ChevronRight icon */}
             <YStack width={24} height={24} />
-          </YStack>
+          </XStack>
         </YStack>
 
         {/* Loading state */}
