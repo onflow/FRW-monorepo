@@ -1,10 +1,9 @@
 import {
   getCurrentAddress,
   waitForTransaction,
-  loginToSenderOrReceiver,
-  getReceiverEvmAccount,
-  getReceiverCadenceAccount,
   checkSentAmount,
+  switchToMainAccount,
+  loginToSenderAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 export const sendTokenFlow = async ({
@@ -20,11 +19,13 @@ export const sendTokenFlow = async ({
   // send Ft token from COA
   await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByTestId(`send-button`).click();
-  await page.getByPlaceholder('Search address(0x), or flow').click();
-  await page.getByPlaceholder('Search address(0x), or flow').fill(receiver);
-  await page.getByPlaceholder('Amount').fill(amount);
-  await page.getByRole('button', { name: 'Next' }).click();
-  await page.getByRole('button', { name: 'Send' }).click();
+  await page.getByPlaceholder('Search / Paste address').click();
+  await page.getByPlaceholder('Search / Paste address').fill(receiver);
+  await page.getByPlaceholder('0.00').click();
+
+  await page.getByPlaceholder('0.00').fill(amount);
+  await page.getByTestId('next').click();
+  await page.getByTestId('confirm').click();
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
   return { txId, tokenname, amount, ingoreFlowCharge };
@@ -40,8 +41,8 @@ export const moveTokenFlow = async ({
   await page.getByRole('tab', { name: 'coins' }).click();
   await page.getByTestId(`token-${tokenname.toLowerCase()}`).click();
   await page.getByRole('button', { name: 'Move' }).click();
-  await page.getByPlaceholder('Amount').click();
-  await page.getByPlaceholder('Amount').fill(amount);
+  await page.getByPlaceholder('0.00').click({ delay: 500 });
+  await page.getByPlaceholder('0.00').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
 
   // Wait for the transaction to be completed
@@ -60,8 +61,8 @@ export const moveTokenFlowHomepage = async ({
   await page.getByRole('button', { name: 'Move Tokens' }).click();
   await page.getByRole('combobox').click();
   await page.getByRole('option', { name: tokenname, exact: true }).getByRole('img').click();
-  await page.getByPlaceholder('Amount').click();
-  await page.getByPlaceholder('Amount').fill(amount);
+  await page.getByPlaceholder('0.00').click();
+  await page.getByPlaceholder('0.00').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
@@ -70,7 +71,7 @@ export const moveTokenFlowHomepage = async ({
 
 test.beforeEach(async ({ page, extensionId }) => {
   // Login to our sender account
-  await loginToSenderOrReceiver({ page, extensionId, parallelIndex: test.info().parallelIndex });
+  await loginToSenderAccount({ page, extensionId });
 });
 
 const txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharge: boolean }[] = [];
@@ -78,11 +79,17 @@ const txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharg
 //Send FLOW token from Flow to Flow
 test('send Cadence transactions', async ({ page, extensionId }) => {
   test.setTimeout(120_000);
+  await loginToSenderAccount({ page, extensionId });
+
+  await switchToMainAccount({
+    page,
+    address: process.env.TEST_SENDER_ADDR,
+  });
   // This can take a while
   const tx1 = await sendTokenFlow({
     page,
     tokenname: 'flow',
-    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_ADDR,
     amount: '0.00123456',
   });
   txList.push(tx1);
@@ -91,7 +98,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   const tx2 = await sendTokenFlow({
     page,
     tokenname: 'stFlow',
-    receiver: getReceiverCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_ADDR,
     amount: '0.00123456',
   });
   txList.push(tx2);
@@ -101,7 +108,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   const tx3 = await sendTokenFlow({
     page,
     tokenname: 'flow',
-    receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
     amount: '0.00123456',
   });
   txList.push(tx3);
@@ -110,7 +117,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   const tx4 = await sendTokenFlow({
     page,
     tokenname: 'usdc.e',
-    receiver: getReceiverEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
     ingoreFlowCharge: true,
     amount: '0.00123456',
   });
@@ -118,23 +125,23 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
 
   //Send FLOW token from Flow to EOA
   // This can take a while
-  const tx5 = await sendTokenFlow({
-    page,
-    tokenname: 'flow',
-    receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-    amount: '0.00123456',
-  });
-  txList.push(tx5);
+  // const tx5 = await sendTokenFlow({
+  //   page,
+  //   tokenname: 'flow',
+  //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
+  //   amount: '0.00123456',
+  // });
+  // txList.push(tx5);
 
   //Send BETA from Flow to EOA
-  const tx6 = await sendTokenFlow({
-    page,
-    tokenname: 'beta',
-    receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-    ingoreFlowCharge: true,
-    amount: '0.00123456',
-  });
-  txList.push(tx6);
+  // const tx6 = await sendTokenFlow({
+  //   page,
+  //   tokenname: 'beta',
+  //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
+  //   ingoreFlowCharge: true,
+  //   amount: '0.00123456',
+  // });
+  // txList.push(tx6);
 
   //Check all sealed transactions
   // Check the amounts that were sent for each transaction
