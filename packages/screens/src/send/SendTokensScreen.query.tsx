@@ -416,6 +416,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         'error'
       );
     }
+    return null;
   }, [
     transactionType,
     selectedToken,
