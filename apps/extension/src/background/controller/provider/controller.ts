@@ -13,8 +13,8 @@ import {
   permissionService,
   sessionService,
   signTextHistoryService,
-  userWalletService,
 } from '@/core/service';
+import walletManager from '@/core/service/wallet-manager';
 import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import {
@@ -83,7 +83,16 @@ async function getSigningDetailsForCurrentWallet() {
   // Find any account with public key information
   const accounts = await getAccountsByPublicKeyTuple(privateKeyTuple, network);
 
-  const addressHex = await Wallet.getParentAddress();
+  // Get EOA address from walletManager instead of Wallet.getParentAddress()
+  const eoaInfo = await walletManager.getEOAAccountInfo();
+  if (!eoaInfo || !eoaInfo.address) {
+    throw new Error('EOA address not found from walletManager');
+  }
+
+  // Convert EOA address to Flow address format for matching
+  // Note: This assumes the EOA address corresponds to a Flow account
+  // You may need to adjust this logic based on your specific requirements
+  const addressHex = eoaInfo.address;
   const matchingAccount = accounts.find((account) => account.address === addressHex);
 
   if (!matchingAccount) {
@@ -233,24 +242,18 @@ class ProviderController extends BaseController {
       permissionService.addConnectedSite(origin, name, icon, defaultChain);
     }
 
-    const currentWallet = await Wallet.getParentAddress();
     let evmAddress: string;
-
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
     try {
-      // Attempt to query the EVM address
+      // Get EOA address from walletManager
+      const eoaInfo = await walletManager.getEOAAccountInfo();
 
-      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
-
-      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
-        throw new Error('Invalid EVM address');
+      if (!eoaInfo || !eoaInfo.address || !isValidEthereumAddress(eoaInfo.address)) {
+        throw new Error('Invalid EOA address from walletManager');
       }
-      evmAddress = evmAccount.address;
+      evmAddress = eoaInfo.address;
     } catch (error) {
       // If an error occurs, request approval
-      consoleError('ethRequestAccounts - Error querying EVM address:', error);
+      consoleError('ethRequestAccounts - Error getting EOA address from walletManager:', error);
 
       await notificationService.requestApproval(
         {
@@ -259,12 +262,13 @@ class ProviderController extends BaseController {
         },
         { height: 599 }
       );
-      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
 
-      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
-        throw new Error('Invalid EVM address');
+      // Try again after approval
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+      if (!eoaInfo || !eoaInfo.address || !isValidEthereumAddress(eoaInfo.address)) {
+        throw new Error('Invalid EOA address from walletManager');
       }
-      evmAddress = evmAccount.address;
+      evmAddress = eoaInfo.address;
     }
 
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];
@@ -338,25 +342,14 @@ class ProviderController extends BaseController {
       return [];
     }
 
-    let currentWallet;
-    try {
-      // Attempt to query the currentNetwork address
-      currentWallet = await Wallet.getParentAddress();
-    } catch (error) {
-      // If an error occurs, request approval
-      consoleError('Error querying EVM address:', error);
-
-      return;
-    }
-
     let evmAccount: string | undefined;
     try {
-      // Attempt to query the EVM address
-      const evmAccountObj = await userWalletService.getEvmAccountOfParent(currentWallet);
-      evmAccount = evmAccountObj?.address;
+      // Get EOA address from walletManager
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+      evmAccount = eoaInfo?.address;
     } catch (error) {
-      // If an error occurs, request approval
-      consoleError('Error querying EVM address:', error);
+      // If an error occurs, log it but continue
+      consoleError('Error getting EOA address from walletManager:', error);
     }
 
     const account = evmAccount ? [evmAccount.toLowerCase()] : [];
@@ -487,11 +480,11 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+    if (!eoaInfo || !eoaInfo.address) {
+      throw new Error('EOA address not found from walletManager');
     }
-    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
+    const evmaddress = { address: eoaInfo.address };
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;
@@ -559,11 +552,11 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+    if (!eoaInfo || !eoaInfo.address) {
+      throw new Error('EOA address not found from walletManager');
     }
-    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
+    const evmaddress = { address: eoaInfo.address };
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;

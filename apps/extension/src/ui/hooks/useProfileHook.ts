@@ -141,6 +141,8 @@ export const useProfiles = () => {
     activeAccountType === 'child' ||
     (activeAccountType === 'main' && (!!evmAccount || !!childAccounts?.length));
 
+  const eoaAccount = parentWallet.eoaAccount;
+
   return {
     currentWallet,
     mainAddress,
@@ -165,5 +167,6 @@ export const useProfiles = () => {
     payer,
     network,
     pendingAccountTransactions,
+    eoaAccount,
   };
 };

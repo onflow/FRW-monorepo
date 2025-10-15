@@ -1,5 +1,4 @@
 import { Box, Stack } from '@mui/material';
-import * as fcl from '@onflow/fcl';
 import { SurgeFeeSection, SurgeWarning } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -113,7 +112,6 @@ const EthConfirm = ({ params }: ConnectProps) => {
   };
 
   const handleAllow = async () => {
-    await checkCoa();
     const dontCloseWindow = params.method === 'eth_sendTransaction';
 
     resolveApproval(
@@ -129,23 +127,6 @@ const EthConfirm = ({ params }: ConnectProps) => {
     const isEnabled = await usewallet.allowLilicoPay();
     setLilicoEnabled(isEnabled);
   }, [usewallet]);
-
-  const checkCoa = async () => {
-    setLoading(true);
-    try {
-      const isEnabled = await usewallet.checkCoaLink();
-      if (isEnabled) return;
-
-      const result = await usewallet.coaLink();
-      const res = await fcl.tx(result).onceSealed();
-      const transactionExecutedEvent = res.events.find((event) =>
-        event.type.includes('TransactionExecuted')
-      );
-      if (transactionExecutedEvent) return;
-    } catch (error) {
-      consoleError('Error checking COA:', error);
-    }
-  };
 
   useEffect(() => {
     if (params) {
