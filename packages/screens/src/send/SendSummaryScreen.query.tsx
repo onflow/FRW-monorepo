@@ -167,10 +167,11 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   );
 
   // Query for complete account information
+  // Only fetch for main accounts as child accounts don't need storage validation
   const { data: accountInfo } = useQuery({
     queryKey: storageQueryKeys.accountInfo(fromAccount || null),
     queryFn: () => storageQueries.fetchAccountInfo(fromAccount || null),
-    enabled: !!fromAccount?.address,
+    enabled: !!fromAccount?.address && fromAccount?.type === 'main',
     staleTime: 0,
   });
 
@@ -198,17 +199,19 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   const isFeesFree = false;
 
   // Calculate storage warning state
+  // Only validate for main accounts as child accounts don't have storage limitations
   const validationResult = useMemo(() => {
-    if (!accountInfo) {
+    // Skip validation for non-main accounts (child accounts don't need storage validation)
+    if (!fromAccount || fromAccount.type !== 'main' || !accountInfo) {
       return { canProceed: true, showWarning: false, warningType: null };
     }
     return storageUtils.validateOtherTransaction(accountInfo, isFeesFree);
-  }, [accountInfo, isFeesFree]);
+  }, [fromAccount, accountInfo, isFeesFree]);
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = useMemo(() => {
     return t(storageUtils.getStorageWarningMessageKey(validationResult.warningType));
-  }, [validationResult.warningType, accountInfo, t]);
+  }, [validationResult.warningType, t]);
 
   // Calculate if send button should be disabled
   const isSendDisabled =
