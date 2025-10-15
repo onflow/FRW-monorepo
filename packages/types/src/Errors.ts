@@ -1,39 +1,42 @@
 // packages/types/src/errors.ts
 export enum ErrorCode {
-  BRIDGE_NOT_FOUND = 'bridgeNotFound',
-  TRANSACTION_ERROR = 'transactionError',
+  // Bridge errors (BRIDGE-XX)
+  BRIDGE_NOT_FOUND = 'BRIDGE-01',
 
-  // Child account errors
-  ACCESSIBLE_ASSET_FETCH_FAILED = 'accessibleAssetFetchFailed',
-  ACCOUNT_INFO_FETCH_FAILED = 'accountInfoFetchFailed',
+  // Transaction errors (TXN-XX)
+  TRANSACTION_ERROR = 'TXN-01',
 
-  // AddressBook errors
-  ADDRESSBOOK_FETCH_FAILED = 'addressbookFetchFailed',
+  // Account errors (ACCOUNT-XX)
+  ACCESSIBLE_ASSET_FETCH_FAILED = 'ACCOUNT-01',
+  ACCOUNT_INFO_FETCH_FAILED = 'ACCOUNT-02',
 
-  // FlowService errors
-  FLOW_SERVICE_NOT_INITIALIZED = 'flowServiceNotInitialized',
-  FLOW_BALANCE_NOT_FOUND = 'flowBalanceNotFound',
-  FLOW_BALANCE_FETCH_FAILED = 'flowBalanceFetchFailed',
-  FLOW_METHOD_NOT_IMPLEMENTED = 'flowMethodNotImplemented',
+  // AddressBook errors (ADDR-XX)
+  ADDRESSBOOK_FETCH_FAILED = 'ADDR-01',
 
-  // NFTService errors
-  NFT_COLLECTION_PATH_NOT_FOUND = 'nftCollectionPathNotFound',
-  NFT_COLLECTIONS_FETCH_FAILED = 'nftCollectionsFetchFailed',
-  NFT_FETCH_FAILED = 'nftFetchFailed',
-  NFT_INVALID_PARAMETERS = 'nftInvalidParameters',
+  // Flow service errors (FLOW-XX)
+  FLOW_SERVICE_NOT_INITIALIZED = 'FLOW-01',
+  FLOW_BALANCE_NOT_FOUND = 'FLOW-02',
+  FLOW_BALANCE_FETCH_FAILED = 'FLOW-03',
+  FLOW_METHOD_NOT_IMPLEMENTED = 'FLOW-04',
 
-  // RecentRecipientsService errors
-  RECENT_RECIPIENTS_STORAGE_NOT_FOUND = 'recentRecipientsStorageNotFound',
-  RECENT_RECIPIENTS_FETCH_FAILED = 'recentRecipientsFetchFailed',
-  RECENT_RECIPIENTS_LOCAL_FETCH_FAILED = 'recentRecipientsLocalFetchFailed',
-  RECENT_RECIPIENTS_SERVER_FETCH_FAILED = 'recentRecipientsServerFetchFailed',
-  RECENT_RECIPIENTS_ADD_FAILED = 'recentRecipientsAddFailed',
-  RECENT_RECIPIENTS_CLEAR_FAILED = 'recentRecipientsClearFailed',
+  // NFT service errors (NFT-XX)
+  NFT_COLLECTION_PATH_NOT_FOUND = 'NFT-01',
+  NFT_COLLECTIONS_FETCH_FAILED = 'NFT-02',
+  NFT_FETCH_FAILED = 'NFT-03',
+  NFT_INVALID_PARAMETERS = 'NFT-04',
 
-  // TokenService errors
-  TOKEN_FLOW_FETCH_FAILED = 'tokenFlowFetchFailed',
-  TOKEN_ERC20_FETCH_FAILED = 'tokenErc20FetchFailed',
-  TOKEN_INFO_FETCH_FAILED = 'tokenInfoFetchFailed',
+  // Recent recipients service errors (RECIP-XX)
+  RECENT_RECIPIENTS_STORAGE_NOT_FOUND = 'RECIP-01',
+  RECENT_RECIPIENTS_FETCH_FAILED = 'RECIP-02',
+  RECENT_RECIPIENTS_LOCAL_FETCH_FAILED = 'RECIP-03',
+  RECENT_RECIPIENTS_SERVER_FETCH_FAILED = 'RECIP-04',
+  RECENT_RECIPIENTS_ADD_FAILED = 'RECIP-05',
+  RECENT_RECIPIENTS_CLEAR_FAILED = 'RECIP-06',
+
+  // Token service errors (TOKEN-XX)
+  TOKEN_FLOW_FETCH_FAILED = 'TOKEN-01',
+  TOKEN_ERC20_FETCH_FAILED = 'TOKEN-02',
+  TOKEN_INFO_FETCH_FAILED = 'TOKEN-03',
 
   // add more error codes here
 }

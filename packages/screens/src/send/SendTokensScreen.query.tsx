@@ -32,6 +32,7 @@ import {
   transformAccountForDisplay,
   extractNumericBalance,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
@@ -410,11 +411,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       return result;
     } catch (error: any) {
       logger.error('[SendTokensScreen] Transaction failed:', error);
-      bridge.showToast!(
-        t('common.error'),
-        error.code ? t(`errors.${error.code}`) : error.message,
-        'error'
-      );
+      showError(error);
     }
     return null;
   }, [

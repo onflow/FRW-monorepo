@@ -28,6 +28,7 @@ import {
   isValidFlowAddress,
   logger,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
@@ -381,11 +382,7 @@ export function SendToScreen(): React.ReactElement {
         } catch (error: any) {
           console.warn('Failed to add recent recipient:', error);
           // Don't block navigation if this fails
-          bridge.showToast!(
-            t('common.error'),
-            error.code ? t(`errors.${error.code}`) : error.message,
-            'error'
-          );
+          showError(error, t);
         }
       }
 
@@ -496,11 +493,7 @@ export function SendToScreen(): React.ReactElement {
       if (error.code !== 'SCAN_CANCELLED') {
         alert(`${t('common.error')}: ${t('errors.networkError')}`);
       }
-      bridge.showToast!(
-        t('common.error'),
-        error.code ? t(`errors.${error.code}`) : error.message,
-        'error'
-      );
+      showError(error, t);
     }
   }, [handleSearchChange, t]);
 
@@ -532,7 +525,7 @@ export function SendToScreen(): React.ReactElement {
       }, 1000);
     } catch (error: any) {
       logger.error('Failed to copy address:', error);
-      bridge.showToast!(t('common.error'), error.message, 'error');
+      showError(error, t);
     }
   }, []);
 
@@ -555,7 +548,7 @@ export function SendToScreen(): React.ReactElement {
         refetchContacts();
       } catch (error: any) {
         logger.error('Failed to add to address book:', error);
-        bridge.showToast!(t('common.error'), error.message, 'error');
+        showError(error, t);
       }
     },
     [refetchContacts, isAddressInAddressBook]
