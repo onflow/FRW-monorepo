@@ -378,7 +378,7 @@ export function SendToScreen(): React.ReactElement {
             emoji: recipient.emojiInfo?.emoji,
             avatar: recipient.avatar,
           });
-        } catch (error: FRWError) {
+        } catch (error: any) {
           console.warn('Failed to add recent recipient:', error);
           // Don't block navigation if this fails
           bridge.showToast!(
@@ -491,7 +491,7 @@ export function SendToScreen(): React.ReactElement {
       if (scannedText) {
         handleSearchChange(scannedText);
       }
-    } catch (error: FRWError) {
+    } catch (error: any) {
       // Don't show alert for cancelled scans
       if (error.code !== 'SCAN_CANCELLED') {
         alert(`${t('common.error')}: ${t('errors.networkError')}`);

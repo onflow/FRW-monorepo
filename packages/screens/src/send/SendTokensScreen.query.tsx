@@ -408,7 +408,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       }
 
       return result;
-    } catch (error: FRWError) {
+    } catch (error: any) {
       logger.error('[SendTokensScreen] Transaction failed:', error);
       bridge.showToast!(
         t('common.error'),
