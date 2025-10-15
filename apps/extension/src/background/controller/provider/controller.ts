@@ -24,7 +24,6 @@ import {
   consoleError,
 } from '@/shared/utils';
 
-
 import notificationService from '../notification';
 
 interface Web3WalletPermission {
@@ -308,14 +307,30 @@ class ProviderController extends BaseController {
     const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
     const gasBigInt = BigInt(cleanHex);
 
-    let result = await Wallet.dapSendEvmTX(to, gasBigInt, value, dataValue);
-    if (!result) {
-      throw new Error('Transaction hash is null or undefined');
+    try {
+      let result = await Wallet.dapSendEvmTX(to, gasBigInt, value, dataValue);
+      if (!result) {
+        throw new Error('Transaction hash is null or undefined');
+      }
+      if (!result.startsWith('0x')) {
+        result = '0x' + result;
+      }
+
+      // Send message to close approval popup after successful transaction
+      chrome.runtime.sendMessage({
+        type: 'CLOSE_APPROVAL_POPUP',
+        data: { success: true, result },
+      });
+
+      return result;
+    } catch (error) {
+      // Send message to close approval popup even if transaction fails
+      chrome.runtime.sendMessage({
+        type: 'CLOSE_APPROVAL_POPUP',
+        data: { success: false, error: error.message },
+      });
+      throw error;
     }
-    if (!result.startsWith('0x')) {
-      result = '0x' + result;
-    }
-    return result;
   };
 
   ethAccounts = async ({ session: { origin } }) => {

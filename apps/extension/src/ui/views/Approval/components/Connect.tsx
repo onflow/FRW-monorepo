@@ -65,6 +65,9 @@ const Connect = ({ params: { /*icon, origin,*/ tabId } }: ConnectProps) => {
     setIsLoading(true);
     setApproval(true);
     const address = await wallet.getCurrentAddress();
+    if (!address) {
+      return;
+    }
     const payer = await wallet.getPayerAddressAndKeyId();
     const isEnabled = await wallet.allowLilicoPay();
     const network = await wallet.getNetwork();

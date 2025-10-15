@@ -1572,5 +1572,26 @@
   },
   "legal_text": {
     "message": "Flowウォレットを使用することで、<termslink>利用規約</termslink>と<privacylink>プライバシーポリシー</privacylink>に同意します"
+  },
+  "Surge__Modal__Title": {
+    "message": "サージ価格で続行してもよろしいですか？"
+  },
+  "Surge__Modal__Transaction__Fee": {
+    "message": "あなたの取引手数料"
+  },
+  "Surge__Modal__Surge__Active": {
+    "message": "サージ価格が有効"
+  },
+  "Surge__Modal__Description": {
+    "message": "ネットワーク活動が活発なため、取引手数料が上昇しており、Flow Walletは一時的にガス代を支払いません。現在のネットワーク手数料は通常の$1倍です。",
+    "placeholders": {
+      "multiplier": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "Surge__Modal__Hold__To__Agree": {
+    "message": "サージ価格に同意するために長押し"
   }
 }

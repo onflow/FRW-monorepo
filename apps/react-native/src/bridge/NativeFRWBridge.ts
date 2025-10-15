@@ -72,6 +72,12 @@ export interface Spec extends TurboModule {
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
+  // Native logging method for additional platform-specific logging
+  logToNative(
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    args: ReadonlyArray<string>
+  ): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

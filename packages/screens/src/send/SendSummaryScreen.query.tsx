@@ -17,6 +17,7 @@ import {
   SendArrowDivider,
   ConfirmationDrawer,
   TransactionFeeSection,
+  SurgeFeeSection,
   ToAccountSection,
   AccountCard,
   SendSectionHeader,
@@ -51,11 +52,14 @@ interface SendSummaryScreenProps {
 export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
-  //const toast = useToast();
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
+
+  // Mock surge pricing data - this would come from API in real implementation
+  const isSurgePricingActive = true; // You can set this based on network conditions
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -522,16 +526,27 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
             {/* Transaction Fee and Storage Warning Section */}
             <YStack gap="$3" mt={-16}>
-              <TransactionFeeSection
-                flowFee={transactionFee}
-                usdFee={usdFee}
-                isFree={isFreeGasEnabled}
-                showCovered={true}
-                title={t('send.transactionFee')}
-                backgroundColor="transparent"
-                borderRadius={16}
-                contentPadding={0}
-              />
+              {!isSurgePricingActive ? (
+                <TransactionFeeSection
+                  flowFee={transactionFee}
+                  usdFee={usdFee}
+                  isFree={isFreeGasEnabled}
+                  showCovered={true}
+                  title={t('send.transactionFee')}
+                  backgroundColor="transparent"
+                  borderRadius={16}
+                  contentPadding={0}
+                />
+              ) : (
+                <YStack mt="$-4">
+                  <SurgeFeeSection
+                    transactionFee="- 5.00"
+                    freeAllowance="1.1357"
+                    showWarning={isSurgeWarningVisible}
+                    onSurgeInfoPress={() => setIsSurgeWarningVisible(true)}
+                  />
+                </YStack>
+              )}
 
               {/* Storage Warning */}
               {showStorageWarning && (

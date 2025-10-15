@@ -80,6 +80,7 @@ import preferenceService from './preference';
 import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
 import walletManager from './wallet-manager';
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '../../shared/constant/domain-constants';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { getCurrentProfileId } from '../utils/current-id';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
@@ -763,6 +764,35 @@ class UserWallet {
     return 'unknown_script';
   };
 
+  // Helper function to wait for surge approval
+  private waitForSurgeApproval = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const handleMessage = (message: any) => {
+        if (message.type === 'SURGE_APPROVAL_RESPONSE') {
+          chrome.runtime.onMessage.removeListener(handleMessage);
+          resolve(message.data?.approved || false);
+        }
+      };
+      chrome.runtime.onMessage.addListener(handleMessage);
+    });
+  };
+
+  // Helper function to show surge modal and wait for user response
+  private showSurgeModalAndWait = async (): Promise<boolean> => {
+    // Send message to UI to show surge modal
+    chrome.runtime.sendMessage({
+      type: 'API_RATE_LIMIT',
+      data: {
+        status: HTTP_STATUS_TOO_MANY_REQUESTS,
+        api: 'sendTransaction',
+        timestamp: Date.now(),
+      },
+    });
+
+    // Wait for user response
+    return await this.waitForSurgeApproval();
+  };
+
   sendTransaction = async (
     cadence: string,
     args: unknown[],
@@ -771,11 +801,14 @@ class UserWallet {
     const scriptName = this.extractScriptName(cadence);
     try {
       const allowed = await this.allowFreeGas();
+      const bridgeAuth = this.bridgeFeePayerAuthFunction;
+      const payerAuth = this.payerAuthFunction;
       const payerFunction = shouldCoverFee
-        ? this.bridgeFeePayerAuthFunction
+        ? bridgeAuth
         : allowed
-          ? this.payerAuthFunction
+          ? payerAuth
           : this.authorizationFunction;
+
       const txID = await fcl.mutate({
         cadence: cadence,
         args: () => args,
@@ -791,6 +824,37 @@ class UserWallet {
 
       return txID;
     } catch (error) {
+      // Check if this is a 429 rate limit error from either payer function
+      const isSurgeError =
+        error instanceof Error &&
+        (error.message.includes(HTTP_STATUS_TOO_MANY_REQUESTS.toString()) ||
+          error.message.includes('Too Many Requests') ||
+          error.message.includes('Many Requests for surge') ||
+          error.message.includes(
+            'communicates temporary pressure and supports standard client backoff via Retry-After'
+          ));
+
+      if (isSurgeError) {
+        // Show surge modal and wait for user approval
+        const userApproved = await this.showSurgeModalAndWait();
+
+        if (userApproved) {
+          // User approved - retry with bridge fee payer
+          const txID = await fcl.mutate({
+            cadence: cadence,
+            args: () => args,
+            proposer: this.authorizationFunction as any,
+            authorizations: [this.authorizationFunction as any],
+            payer: this.authorizationFunction as any,
+            limit: 9999,
+          });
+          return txID;
+        } else {
+          // User rejected - stop the transaction
+          throw new Error('Transaction cancelled by user due to surge pricing');
+        }
+      }
+
       analyticsService.track('script_error', {
         script_id: scriptName,
         error: getErrorMessage(error),
@@ -1010,19 +1074,45 @@ class UserWallet {
     };
   };
 
-  signBridgeFeePayer = async (signable): Promise<string> => {
+  signAsFeePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
-    const envelope = await openapiService.signBridgeFeePayer(tx, message);
+    const envelope = await openapiService.signAsFeePayer(tx, message);
+
+    // Check if envelope has an error property
+    if (envelope && envelope.error) {
+      throw new Error(envelope.error);
+    }
+
     const signature = envelope.envelopeSigs.sig;
     return signature;
   };
 
-  signPayer = async (signable): Promise<string> => {
+  signAsBridgeFeePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
-    const envelope = await openapiService.signPayer(tx, message);
+    const envelope = await openapiService.signAsBridgeFeePayer(tx, message);
+
+    // Check if envelope has an error property
+    if (envelope && envelope.error) {
+      throw new Error(envelope.error);
+    }
+
     const signature = envelope.envelopeSigs.sig;
+    return signature;
+  };
+
+  signAsBridgePayer = async (signable): Promise<string> => {
+    const tx = signable.voucher;
+    const message = signable.message;
+    const envelope = await openapiService.signAsBridgePayer(tx, message);
+
+    // Check if envelope has an error property
+    if (envelope && envelope.error) {
+      throw new Error(envelope.error);
+    }
+
+    const signature = envelope.authorizerSigs.sig;
     return signature;
   };
 
@@ -1088,7 +1178,7 @@ class UserWallet {
       signingFunction: async (signable) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signPayer(signable);
+        const signature = await this.signAsFeePayer(signable);
         return {
           addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
           keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string
@@ -1127,7 +1217,7 @@ class UserWallet {
       signingFunction: async (signable) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signBridgeFeePayer(signable);
+        const signature = await this.signAsBridgePayer(signable);
         return {
           addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
           keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string
