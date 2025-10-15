@@ -3,7 +3,7 @@ import { FRWError } from '@onflow/frw-types';
 
 export const showError = (error: any, t: any) => {
   if (error instanceof FRWError) {
-    bridge.showToast!(
+    bridge.showToast?.(
       t ? t('common.error') : 'Error',
       error.code && t ? t(`errors.${error.code}`) : error.message,
       'error'
