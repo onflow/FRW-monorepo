@@ -1,6 +1,13 @@
 import { navigation } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
-import { YStack, Text, GradientBackground, BackupOptionCard } from '@onflow/frw-ui';
+import {
+  YStack,
+  Text,
+  GradientBackground,
+  BackupOptionCard,
+  cardBackground,
+  View,
+} from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -82,31 +89,46 @@ export function BackupOptionsScreen(): React.ReactElement {
         <YStack gap={12} flex={1}>
           {/* Device Backup Option */}
           <BackupOptionCard
-            icon={<RecoveryPhraseBackup size={70} color="#000000" />}
+            icon={
+              <View ml={-5}>
+                <RecoveryPhraseBackup size={70} color="#000000" />
+              </View>
+            }
             iconBackground={<></>}
             title={t('onboarding.backupOptions.deviceBackup.title')}
             description={t('onboarding.backupOptions.deviceBackup.description')}
             recommended={true}
+            backgroundImage={cardBackground}
             onPress={handleDeviceBackup}
           />
 
           {/* Cloud Backup Option */}
           <BackupOptionCard
-            icon={<CloudBackup size={90} color="#000000" />}
+            icon={
+              <View ml={20}>
+                <CloudBackup size={110} color="#000000" />
+              </View>
+            }
             iconBackground={<></>}
             title={t('onboarding.backupOptions.cloudBackup.title')}
             description={t('onboarding.backupOptions.cloudBackup.description')}
             recommended={true}
+            backgroundImage={cardBackground}
             onPress={handleCloudBackup}
           />
 
           {/* Recovery Phrase Option */}
           <BackupOptionCard
-            icon={<DeviceBackup size={90} color="#000000" />}
+            icon={
+              <View ml={20}>
+                <DeviceBackup size={110} color="#000000" />
+              </View>
+            }
             iconBackground={<></>}
             title={t('onboarding.backupOptions.recoveryPhrase.title')}
             description={t('onboarding.backupOptions.recoveryPhrase.description')}
             recommended={false}
+            backgroundImage={cardBackground}
             onPress={handleRecoveryPhrase}
           />
         </YStack>
