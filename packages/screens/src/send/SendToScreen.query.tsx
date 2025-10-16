@@ -99,9 +99,6 @@ export function SendToScreen(): React.ReactElement {
     }
   }, [isLoadingProfiles, loadProfilesFromBridge, profileError]);
 
-  // Debug: Log profiles when they change
-  useEffect(() => {}, [allProfiles]);
-
   // Query for recent contacts with automatic caching
   const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
     queryKey: addressBookQueryKeys.recent(),
@@ -619,6 +616,7 @@ export function SendToScreen(): React.ReactElement {
             emptyMessage={emptyState.message}
             loadingText={t('messages.loadingProfiles')}
             isMobile={!isExtension}
+            currentAccount={fromAccount ?? undefined}
           />
         ) : activeTab === 'contacts' ? (
           contactsErrorMessage ? (
