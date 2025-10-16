@@ -129,18 +129,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     }
   }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
 
-  // Query for selected account with automatic caching
-  const {
-    data: selectedAccount,
-    isLoading: isLoadingAccount,
-    error: accountError,
-  } = useQuery({
-    queryKey: ['selectedAccount', bridge.getSelectedAddress()],
-    queryFn: () => bridge.getSelectedAccount(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: true,
-  });
-
   // Query for payer status with automatic caching
   const {
     data: payerStatus = null,
@@ -161,33 +149,34 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     isLoading: isLoadingTokens,
     error: tokensError,
   } = useQuery({
-    queryKey: ['tokens', selectedAccount?.address, network],
+    queryKey: ['tokens', fromAccount?.address, network],
     queryFn: async () => {
-      if (!selectedAccount?.address) return [];
+      if (!fromAccount?.address) return [];
 
       // Check if we already have cached data first
-      const cachedTokens = getTokensForAddress(selectedAccount.address, network);
+      const cachedTokens = getTokensForAddress(fromAccount.address, network);
 
       if (!cachedTokens || cachedTokens.length === 0) {
-        await fetchTokens(selectedAccount.address, network, false);
+        await fetchTokens(fromAccount.address, network, false);
       }
 
       // Get tokens from cache (either existing or newly fetched)
-      const coinsData = getTokensForAddress(selectedAccount.address, network);
+      const coinsData = getTokensForAddress(fromAccount.address, network);
       return coinsData || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: !!selectedAccount?.address,
+    enabled: !!fromAccount?.address,
     ...retryConfigs.critical, // Critical financial data retry config
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
   // Query for complete account information including storage and balance
+  // Only fetch for main accounts as child accounts don't need storage validation
   const { data: accountInfo } = useQuery({
-    queryKey: storageQueryKeys.accountInfo(selectedAccount || null),
-    queryFn: () => storageQueries.fetchAccountInfo(selectedAccount || null),
-    enabled: !!selectedAccount?.address,
+    queryKey: storageQueryKeys.accountInfo(fromAccount || null),
+    queryFn: () => storageQueries.fetchAccountInfo(fromAccount || null),
+    enabled: !!fromAccount?.address && fromAccount?.type === 'main',
     staleTime: 0, // Always fresh for financial data
     ...retryConfigs.critical, // Critical account info retry config
     refetchOnWindowFocus: true,
@@ -292,8 +281,12 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const inputRef = useRef<any>(null);
 
   // Calculate storage warning state based on real validation logic
+  // Only validate for main accounts as child accounts don't have storage limitations
   const validationResult = useMemo(() => {
-    if (!accountInfo) return { canProceed: true, showWarning: false, warningType: null };
+    // Skip validation for non-main accounts (child accounts don't need storage validation)
+    if (!fromAccount || fromAccount.type !== 'main' || !accountInfo) {
+      return { canProceed: true, showWarning: false, warningType: null };
+    }
 
     const transactionAmount = parseFloat(amount) || 0;
     const isFlowTransaction = selectedToken ? isFlow(selectedToken) : false;
@@ -303,7 +296,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     } else {
       return storageUtils.validateOtherTransaction(accountInfo);
     }
-  }, [accountInfo, amount, selectedToken]);
+  }, [fromAccount, accountInfo, amount, selectedToken]);
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = t(
@@ -555,17 +548,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Calculate overall loading state - only show loading screen for critical data
   // Don't block on wallet store loading if we already have accounts
-  const isOverallLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
+  const isOverallLoading = isLoadingWallet && accounts.length === 0;
 
   // Calculate error state
   const error = useMemo(() => {
-    if (accountError) return 'Failed to load account data. Please try refreshing.';
     if (tokensError) return 'Failed to load tokens. Please try refreshing.';
-    if (tokens.length === 0 && !isLoadingTokens && selectedAccount) {
+    if (tokens.length === 0 && !isLoadingTokens && fromAccount) {
       return 'No tokens available. Please ensure your wallet has tokens to send.';
     }
     return null;
-  }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
+  }, [tokensError, tokens.length, isLoadingTokens, fromAccount]);
 
   // Show loading state
   if (isOverallLoading) {
