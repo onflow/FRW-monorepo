@@ -1,20 +1,20 @@
 import React from 'react';
-import { View, YStack, Image } from 'tamagui';
-import type { ViewProps } from 'tamagui';
+import { YStack, Image, type ViewProps } from 'tamagui';
 
-// Import the background image
-const backgroundImage = require('../../assets/images/onboarding/full_bg.png');
+import { fullBackground as defaultBackgroundImage } from '../../assets/images';
 
 interface OnboardingBackgroundProps extends ViewProps {
   children: React.ReactNode;
   showDecorations?: boolean;
   useBackgroundImage?: boolean;
+  backgroundImage?: any; // Custom background image (optional, defaults to full_bg.png)
 }
 
 export function OnboardingBackground({
   children,
   showDecorations = true,
   useBackgroundImage = true,
+  backgroundImage = defaultBackgroundImage,
   ...props
 }: OnboardingBackgroundProps): React.ReactElement {
   return (
@@ -36,7 +36,7 @@ export function OnboardingBackground({
           }}
         />
       )}
-    
+
       {/* Main content */}
       <YStack flex={1} style={{ zIndex: 2 }}>
         {children}

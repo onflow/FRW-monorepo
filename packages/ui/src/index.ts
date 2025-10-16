@@ -104,3 +104,6 @@ export * from './layout/BackgroundWrapper';
 
 // Export types
 export * from './types';
+
+// Export assets
+export * from './assets/images';

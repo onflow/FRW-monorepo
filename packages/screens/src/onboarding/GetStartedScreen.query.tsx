@@ -1,5 +1,11 @@
 import { navigation } from '@onflow/frw-context';
-import { YStack, Text, OnboardingBackground, OnboardingHeader } from '@onflow/frw-ui';
+import {
+  YStack,
+  Text,
+  OnboardingBackground,
+  OnboardingHeader,
+  getStartedBackground,
+} from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -71,7 +77,7 @@ export function GetStartedScreen(): React.ReactElement {
   // Show loading state while fetching config
   if (isLoadingConfig) {
     return (
-      <OnboardingBackground>
+      <OnboardingBackground backgroundImage={getStartedBackground}>
         <YStack flex={1} items="center" justify="center">
           <Text>Loading...</Text>
         </YStack>
@@ -82,7 +88,7 @@ export function GetStartedScreen(): React.ReactElement {
   // Show error state if config fetch fails
   if (configError) {
     return (
-      <OnboardingBackground>
+      <OnboardingBackground backgroundImage={getStartedBackground}>
         <YStack flex={1} items="center" justify="center" px="$4">
           <Text color="$red10" text="center">
             Failed to load onboarding configuration. Please try again.
@@ -93,7 +99,7 @@ export function GetStartedScreen(): React.ReactElement {
   }
 
   return (
-    <OnboardingBackground>
+    <OnboardingBackground backgroundImage={getStartedBackground}>
       <YStack flex={1} px="$4">
         {/* Main content centered */}
         <YStack flex={1} justify="center" items="center" gap="$4">
