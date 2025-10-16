@@ -14,8 +14,19 @@ import { useMutation } from '@tanstack/react-query';
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-// Questions to ask - positions in the phrase to verify
-const VERIFICATION_POSITIONS = [4, 8, 12];
+// Helper function to generate 3 random unique positions from 1-12
+const generateRandomPositions = (): number[] => {
+  const positions = Array.from({ length: 12 }, (_, i) => i + 1);
+  const selected: number[] = [];
+
+  for (let i = 0; i < 3; i++) {
+    const randomIndex = Math.floor(Math.random() * positions.length);
+    selected.push(positions[randomIndex]);
+    positions.splice(randomIndex, 1);
+  }
+
+  return selected.sort((a, b) => a - b); // Sort for better UX
+};
 
 interface VerificationQuestion {
   position: number;
@@ -97,6 +108,9 @@ export function ConfirmRecoveryPhraseScreen({
 
   // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration
   const questions = useMemo((): VerificationQuestion[] => {
+    // Generate random positions for this verification session
+    const verificationPositions = generateRandomPositions();
+
     // Generate random options that include the correct answer
     const generateOptions = (correctAnswer: string, allWords: string[]): string[] => {
       const options = new Set<string>([correctAnswer]);
@@ -113,7 +127,7 @@ export function ConfirmRecoveryPhraseScreen({
       return Array.from(options).sort(() => Math.random() - 0.5);
     };
 
-    return VERIFICATION_POSITIONS.map((position) => ({
+    return verificationPositions.map((position: number) => ({
       position,
       options: generateOptions(recoveryPhrase[position - 1], recoveryPhrase),
       correctAnswer: recoveryPhrase[position - 1],
@@ -235,7 +249,7 @@ export function ConfirmRecoveryPhraseScreen({
                                   color={
                                     isCorrectSelection ? '$primary' : isWrong ? '$error' : '$text'
                                   }
-                                  textAlign="center"
+                                  text="center"
                                   lineHeight={28}
                                 >
                                   {word}
@@ -287,5 +301,3 @@ export function ConfirmRecoveryPhraseScreen({
     </OnboardingBackground>
   );
 }
-
-
