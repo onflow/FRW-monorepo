@@ -1,4 +1,4 @@
-import type { WalletProfile } from '@onflow/frw-types';
+import type { WalletAccount, WalletProfile } from '@onflow/frw-types';
 import React from 'react';
 import { FlatList } from 'react-native';
 import { YStack, XStack } from 'tamagui';
@@ -20,6 +20,7 @@ export interface ProfileListProps {
   loadingText?: string;
   isMobile?: boolean;
   contentPaddingHorizontal?: number;
+  currentAccount?: WalletAccount;
 }
 
 export function ProfileList({
@@ -31,8 +32,27 @@ export function ProfileList({
   loadingText = 'Loading profiles...',
   isMobile = false,
   contentPaddingHorizontal,
+  currentAccount,
 }: ProfileListProps): React.ReactElement {
   const listHorizontalPadding = contentPaddingHorizontal ?? space.$4;
+
+  // Sort profiles to show the one containing currentAccount first
+  const sortedProfiles = React.useMemo(() => {
+    if (!currentAccount || !profiles) return profiles;
+
+    return [...profiles].sort((a, b) => {
+      const aContainsCurrent = a.accounts.some(
+        (account) => account.address === currentAccount.address
+      );
+      const bContainsCurrent = b.accounts.some(
+        (account) => account.address === currentAccount.address
+      );
+
+      if (aContainsCurrent && !bContainsCurrent) return -1;
+      if (!aContainsCurrent && bContainsCurrent) return 1;
+      return 0;
+    });
+  }, [profiles, currentAccount]);
 
   if (isLoading) {
     // Skeleton loading for profiles list
@@ -74,7 +94,7 @@ export function ProfileList({
 
   return (
     <FlatList
-      data={profiles}
+      data={sortedProfiles}
       keyExtractor={(profile) => profile.uid}
       contentContainerStyle={{ paddingHorizontal: listHorizontalPadding }}
       renderItem={({ item }) => (
