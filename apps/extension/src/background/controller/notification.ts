@@ -79,7 +79,7 @@ class NotificationService extends Events {
 
   getApproval = () => this.approval?.data;
 
-  resolveApproval = (data?: any, forceReject = false) => {
+  resolveApproval = (data?: any, forceReject = false, keepWindowOpen = false) => {
     if (forceReject) {
       this.approval?.reject(new EthereumProviderError(4001, 'User Cancel'));
     } else {
@@ -88,6 +88,11 @@ class NotificationService extends Events {
     // Handle the case where the approval is not unlocked
     this.approval = null;
     this.emit('resolve', data);
+
+    // Only clear/close the window if keepWindowOpen is false
+    if (!keepWindowOpen) {
+      this.clear();
+    }
   };
 
   rejectApproval = async (err?: string) => {
@@ -106,7 +111,7 @@ class NotificationService extends Events {
       throw ethErrors.provider.userRejectedRequest('requested too fast');
     }
     this.lastRequestTime = now;
-
+    const approvalStauts = this.approval;
     if (this.approval) {
       throw ethErrors.provider.userRejectedRequest('please request after current approval resolve');
     }

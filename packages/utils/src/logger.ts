@@ -2,6 +2,12 @@
 export interface BridgeLogger {
   log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
   isDebug(): boolean;
+  // Optional additional logging callback for platform-specific implementations
+  logCallback?: (
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    ...args: unknown[]
+  ) => void;
 }
 
 export class Logger {
@@ -18,19 +24,39 @@ export class Logger {
   }
 
   debug(message: string, ...args: unknown[]): void {
-    this.bridge.log('debug', this.formatMessage(message), ...args);
+    const formattedMessage = this.formatMessage(message);
+    this.bridge.log('debug', formattedMessage, ...args);
+    // Call optional additional logging callback if available
+    if (this.bridge.logCallback) {
+      this.bridge.logCallback('debug', formattedMessage, ...args);
+    }
   }
 
   info(message: string, ...args: unknown[]): void {
-    this.bridge.log('info', this.formatMessage(message), ...args);
+    const formattedMessage = this.formatMessage(message);
+    this.bridge.log('info', formattedMessage, ...args);
+    // Call optional additional logging callback if available
+    if (this.bridge.logCallback) {
+      this.bridge.logCallback('info', formattedMessage, ...args);
+    }
   }
 
   warn(message: string, ...args: unknown[]): void {
-    this.bridge.log('warn', this.formatMessage(message), ...args);
+    const formattedMessage = this.formatMessage(message);
+    this.bridge.log('warn', formattedMessage, ...args);
+    // Call optional additional logging callback if available
+    if (this.bridge.logCallback) {
+      this.bridge.logCallback('warn', formattedMessage, ...args);
+    }
   }
 
   error(message: string, ...args: unknown[]): void {
-    this.bridge.log('error', this.formatMessage(message), ...args);
+    const formattedMessage = this.formatMessage(message);
+    this.bridge.log('error', formattedMessage, ...args);
+    // Call optional additional logging callback if available
+    if (this.bridge.logCallback) {
+      this.bridge.logCallback('error', formattedMessage, ...args);
+    }
   }
 
   get isDebug(): boolean {

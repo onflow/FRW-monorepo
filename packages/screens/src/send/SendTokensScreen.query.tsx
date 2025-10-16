@@ -8,6 +8,8 @@ import {
   storageQueryKeys,
   storageQueries,
   storageUtils,
+  payerStatusQueryKeys,
+  payerStatusQueries,
 } from '@onflow/frw-stores';
 import { isFlow, Platform, type TokenModel, type SendFormData } from '@onflow/frw-types';
 import {
@@ -19,6 +21,7 @@ import {
   ToAccountSection,
   SendArrowDivider,
   StorageWarning,
+  SurgeWarning,
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
@@ -138,6 +141,20 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     enabled: true,
   });
 
+  // Query for payer status with automatic caching
+  const {
+    data: payerStatus = null,
+    isLoading: isLoadingPayerStatus,
+    error: payerStatusError,
+  } = useQuery({
+    queryKey: payerStatusQueryKeys.payerStatus(network as 'mainnet' | 'testnet'),
+    queryFn: () => payerStatusQueries.fetchPayerStatus(network as 'mainnet' | 'testnet'),
+    staleTime: 0, // Always fresh for financial data
+    enabled: true,
+    retry: 3,
+    retryDelay: 1000,
+  });
+
   // Query for tokens with automatic caching and retry logic
   const {
     data: tokens = [],
@@ -217,7 +234,60 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const [isTokenMode, setIsTokenMode] = useState<boolean>(true);
   const [isTokenSelectorVisible, setIsTokenSelectorVisible] = useState(false);
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
-  const [transactionFee, setTransactionFee] = useState<string>('~0.001 FLOW');
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
+  // Dynamic surge pricing state based on API response - with defensive defaults
+  const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
+  const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
+
+  // Calculate transaction fee from API's maxFee field or fallback to default
+  const transactionFee = useMemo(() => {
+    if (payerStatus?.surge?.maxFee) {
+      // maxFee is provided by the API with surge factor already applied
+      const fee = payerStatus.surge.maxFee;
+
+      // Format the fee with appropriate precision
+      if (fee < 0.01) {
+        return `~${fee.toFixed(4)} FLOW`;
+      } else if (fee < 0.1) {
+        return `~${fee.toFixed(3)} FLOW`;
+      } else {
+        return `~${fee.toFixed(2)} FLOW`;
+      }
+    }
+
+    // Fallback to default fee if maxFee is not available
+    return '~0.001 FLOW';
+  }, [payerStatus?.surge?.maxFee]);
+
+  // Log payer status API response for debugging
+  React.useEffect(() => {
+    if (payerStatus && typeof payerStatus === 'object') {
+      logger.info('Payer Status API Response:', {
+        surge: payerStatus?.surge || null,
+        feePayer: payerStatus?.feePayer || null,
+        bridgePayer: payerStatus?.bridgePayer || null,
+        updatedAt: payerStatus?.updatedAt || null,
+        reason: payerStatus?.reason || null,
+        isSurgePricingActive,
+        surgeMultiplier,
+        maxFee: payerStatus?.surge?.maxFee || null,
+        calculatedTransactionFee: transactionFee,
+      });
+    }
+    if (isLoadingPayerStatus) {
+      logger.info('Loading payer status...');
+    }
+    if (payerStatusError) {
+      logger.error('Payer status error:', payerStatusError);
+    }
+  }, [
+    payerStatus,
+    isLoadingPayerStatus,
+    payerStatusError,
+    isSurgePricingActive,
+    surgeMultiplier,
+    transactionFee,
+  ]);
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
 
@@ -478,6 +548,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           : amount,
       isTokenMode,
       transactionFee: transactionFee,
+      surgeMultiplier: isSurgePricingActive ? surgeMultiplier : undefined,
     }),
     [transactionType, amount, selectedToken?.priceInUSD, isTokenMode, transactionFee, currency.rate]
   );
@@ -618,16 +689,19 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
           {/* Transaction Fee and Storage Warning Section */}
           <YStack gap="$3">
-            <TransactionFeeSection
-              flowFee={transactionFee}
-              usdFee={usdFee}
-              isFree={isFreeGasEnabled}
-              showCovered={true}
-              title={t('send.transactionFee')}
-              backgroundColor="transparent"
-              borderRadius={16}
-              contentPadding={0}
-            />
+            {/* Only show normal transaction fee when surge pricing is NOT active */}
+            {!isSurgePricingActive && (
+              <TransactionFeeSection
+                flowFee={transactionFee}
+                usdFee={usdFee}
+                isFree={isFreeGasEnabled}
+                showCovered={true}
+                title={t('send.transactionFee')}
+                backgroundColor="transparent"
+                borderRadius={16}
+                contentPadding={0}
+              />
+            )}
 
             {showStorageWarning && (
               <StorageWarning
@@ -696,6 +770,29 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           unknownAccountText={t('send.unknownAccount')}
         />
       </YStack>
+      {/* SurgeWarning Modal */}
+      <SurgeWarning
+        message={
+          isSurgePricingActive && surgeMultiplier
+            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${Number(
+                surgeMultiplier
+              )
+                .toFixed(2)
+                .replace(
+                  /\.?0+$/,
+                  ''
+                )}× higher than usual and your free allowance will not cover the fee for this transaction.`
+            : t('surge.message')
+        }
+        title={t('surge.title')}
+        variant="warning"
+        visible={isSurgeWarningVisible}
+        onClose={() => setIsSurgeWarningVisible(false)}
+        onButtonPress={() => {
+          setIsSurgeWarningVisible(false);
+        }}
+        surgeMultiplier={surgeMultiplier}
+      />
     </BackgroundWrapper>
   );
 };
