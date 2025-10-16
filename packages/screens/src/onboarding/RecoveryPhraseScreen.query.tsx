@@ -178,72 +178,64 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           self="center"
           position="relative"
         >
-          <YStack gap={20}>
-            {/* Generate 6 rows with 2 columns each */}
-            {Array.from({ length: 6 }, (_, rowIndex) => (
-              <XStack key={rowIndex} gap={40} justify="space-between">
-                {/* Left column */}
-                {recoveryPhrase[rowIndex * 2] && (
-                  <XStack gap={8} items="center" flex={1}>
-                    <View
-                      width={32}
-                      height={32}
-                      backgroundColor="rgba(255, 255, 255, 0.1)"
-                      borderRadius={8}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Text fontSize={20} color="$text">
-                        {rowIndex * 2 + 1}
+          {/* Only render words when phrase is revealed */}
+          {isPhraseRevealed ? (
+            <YStack gap={20}>
+              {/* Generate 6 rows with 2 columns each */}
+              {Array.from({ length: 6 }, (_, rowIndex) => (
+                <XStack key={rowIndex} gap={40} justify="space-between">
+                  {/* Left column */}
+                  {recoveryPhrase[rowIndex * 2] && (
+                    <XStack gap={8} items="center" flex={1}>
+                      <View
+                        width={32}
+                        height={32}
+                        bg="rgba(255, 255, 255, 0.1)"
+                        rounded={8}
+                        items="center"
+                        justify="center"
+                      >
+                        <Text fontSize={20} color="$text">
+                          {rowIndex * 2 + 1}
+                        </Text>
+                      </View>
+                      <Text fontSize={16} color="$text">
+                        {recoveryPhrase[rowIndex * 2]}
                       </Text>
-                    </View>
-                    <Text fontSize={16} color="$text">
-                      {recoveryPhrase[rowIndex * 2]}
-                    </Text>
-                  </XStack>
-                )}
+                    </XStack>
+                  )}
 
-                {/* Right column */}
-                {recoveryPhrase[rowIndex * 2 + 1] && (
-                  <XStack gap={8} items="center" flex={1}>
-                    <View
-                      width={32}
-                      height={32}
-                      backgroundColor="rgba(255, 255, 255, 0.1)"
-                      borderRadius={8}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Text fontSize={20} color="$text">
-                        {rowIndex * 2 + 2}
+                  {/* Right column */}
+                  {recoveryPhrase[rowIndex * 2 + 1] && (
+                    <XStack gap={8} items="center" flex={1}>
+                      <View
+                        width={32}
+                        height={32}
+                        bg="rgba(255, 255, 255, 0.1)"
+                        rounded={8}
+                        items="center"
+                        justify="center"
+                      >
+                        <Text fontSize={20} color="$text">
+                          {rowIndex * 2 + 2}
+                        </Text>
+                      </View>
+                      <Text fontSize={16} color="$text">
+                        {recoveryPhrase[rowIndex * 2 + 1]}
                       </Text>
-                    </View>
-                    <Text fontSize={16} color="$text">
-                      {recoveryPhrase[rowIndex * 2 + 1]}
-                    </Text>
-                  </XStack>
-                )}
-              </XStack>
-            ))}
-          </YStack>
-
-          {/* Click to reveal overlay */}
-          {!isPhraseRevealed && (
+                    </XStack>
+                  )}
+                </XStack>
+              ))}
+            </YStack>
+          ) : (
+            /* Click to reveal overlay - shown when phrase is not revealed */
             <YStack
-              position="absolute"
-              bg="rgba(0, 0, 0, 0.9)"
-              rounded={16}
+              height={340}
               items="center"
               justify="center"
               cursor="pointer"
               onPress={handleRevealPhrase}
-              style={{
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backdropFilter: 'blur(20px)',
-              }}
             >
               <YStack items="center" gap={12}>
                 <View
