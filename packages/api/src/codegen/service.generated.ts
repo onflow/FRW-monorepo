@@ -175,7 +175,7 @@ export class PayerService {
   /**
    * Sign as bridge auth payer
    */
-  static signAsBridgePayer(options: IRequestOptions = {}): Promise<any | null> {
+  static signAsBridgePayer(options: IRequestOptions = {}): Promise<ApiResponse> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsBridgePayer';
 
@@ -187,7 +187,7 @@ export class PayerService {
   /**
    * Sign as fee payer
    */
-  static signAsFeePayer(options: IRequestOptions = {}): Promise<any | null> {
+  static signAsFeePayer(options: IRequestOptions = {}): Promise<ApiResponse> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsFeePayer';
 
@@ -199,7 +199,7 @@ export class PayerService {
   /**
    * Get payer status
    */
-  static status(options: IRequestOptions = {}): Promise<any | null> {
+  static status(options: IRequestOptions = {}): Promise<PayerStatusApiResponseV1> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v1/payer/status';
 
