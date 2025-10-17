@@ -1560,10 +1560,8 @@
             "$ref": "#/components/schemas/PayerMsg"
           },
           "network": {
-            "type": "string",
-            "enum": ["mainnet", "testnet"],
-            "description": "The Flow network to use for signing",
-            "example": "mainnet"
+            "schema": null,
+            "$ref": "#/components/schemas/Network"
           }
         },
         "required": ["message"]
@@ -1584,10 +1582,8 @@
             "$ref": "#/components/schemas/PayloadMsg"
           },
           "network": {
-            "type": "string",
-            "enum": ["mainnet", "testnet", "sandboxnet"],
-            "description": "The Flow network to use for signing",
-            "example": "mainnet"
+            "schema": null,
+            "$ref": "#/components/schemas/Network"
           }
         },
         "required": ["message"]
@@ -1758,7 +1754,7 @@
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": ["mainnet", "testnet", "sandboxnet"],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The Flow network to use for signing",
@@ -1900,7 +1896,7 @@
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": ["mainnet", "testnet", "sandboxnet"],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The Flow network to use for signing",

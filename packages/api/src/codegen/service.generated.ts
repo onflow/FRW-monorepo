@@ -1523,8 +1523,8 @@ export interface PayerSignParams {
   /**  */
   message: PayerMsg;
 
-  /** The Flow network to use for signing */
-  network?: EnumPayerSignParamsNetwork;
+  /**  */
+  network?: Network;
 }
 
 /** PayloadMsg */
@@ -1538,8 +1538,8 @@ export interface AuthSignParams {
   /**  */
   message: PayloadMsg;
 
-  /** The Flow network to use for signing */
-  network?: EnumAuthSignParamsNetwork;
+  /**  */
+  network?: Network;
 }
 
 export enum Network {
@@ -1548,12 +1548,3 @@ export enum Network {
 }
 type IPayerStatusPayloadV1StatusVersion = 1;
 type IPayerStatusApiResponseV1Status = 200 | 429 | 500 | 503;
-export enum EnumPayerSignParamsNetwork {
-  'mainnet' = 'mainnet',
-  'testnet' = 'testnet'
-}
-export enum EnumAuthSignParamsNetwork {
-  'mainnet' = 'mainnet',
-  'testnet' = 'testnet',
-  'sandboxnet' = 'sandboxnet'
-}
