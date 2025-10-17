@@ -1528,42 +1528,14 @@
         },
         "required": ["address", "keyId", "sig"]
       },
-      "FeePayerSignaturePayload": {
+      "SignaturePayload": {
         "type": "object",
         "properties": {
           "status": {
             "type": "integer"
           },
           "data": {
-            "type": "object",
-            "properties": {
-              "envelopeSigs": {
-                "$ref": "#/components/schemas/SignedData"
-              }
-            },
-            "required": ["envelopeSigs"]
-          },
-          "message": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": ["status", "data"]
-      },
-      "AuthSignaturePayload": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "integer"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "authorizerSigs": {
-                "$ref": "#/components/schemas/SignedData"
-              }
-            },
-            "required": ["authorizerSigs"]
+            "$ref": "#/components/schemas/SignedData"
           },
           "message": {
             "type": "string",
@@ -1949,7 +1921,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthSignaturePayload"
+                  "$ref": "#/components/schemas/SignaturePayload"
                 }
               }
             }
@@ -2021,7 +1993,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FeePayerSignaturePayload"
+                  "$ref": "#/components/schemas/SignaturePayload"
                 }
               }
             }
