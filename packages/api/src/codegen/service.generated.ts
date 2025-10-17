@@ -156,9 +156,9 @@ export class MetadataService {
   }
 }
 
-export class PayerService {
+export class DeprecatedService {
   /**
-   * Sign as bridge fee payer
+   * Sign as bridge fee payer (Deprecated)
    */
   static signAsBridgeFeePayer(options: IRequestOptions = {}): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -169,10 +169,25 @@ export class PayerService {
       axios(configs, resolve, reject);
     });
   }
+}
+
+export class PayerService {
+  /**
+   * Sign as bridge auth payer
+   */
+  static signAsBridgePayer(options: IRequestOptions = {}): Promise<any | null> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/signAsBridgePayer';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
   /**
    * Sign as fee payer
    */
-  static signAsFeePayer(options: IRequestOptions = {}): Promise<any> {
+  static signAsFeePayer(options: IRequestOptions = {}): Promise<any | null> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsFeePayer';
 
@@ -184,7 +199,7 @@ export class PayerService {
   /**
    * Get payer status
    */
-  static status(options: IRequestOptions = {}): Promise<PayerStatusPayloadV1> {
+  static status(options: IRequestOptions = {}): Promise<any | null> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v1/payer/status';
 
@@ -1433,6 +1448,7 @@ export interface PayerStatusApiResponseV1 {
   /** Optional message for API response */
   message?: string;
 }
+
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'
