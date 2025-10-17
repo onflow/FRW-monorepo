@@ -1,6 +1,12 @@
 import { NftService, FlowEvmNftService } from '@onflow/frw-api';
 import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
-import { WalletType, type CollectionModel, type NFTModel } from '@onflow/frw-types';
+import {
+  WalletType,
+  type CollectionModel,
+  type NFTModel,
+  FRWError,
+  ErrorCode,
+} from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
 interface NFTCollectionResult {
@@ -34,8 +40,12 @@ class FlowNFTProvider implements NFTProvider {
         })) ?? []
       );
     } catch (_error) {
-      logger.error('Unused error parameter', _error);
-      return [];
+      logger.error('Error fetching Flow NFT collections', _error);
+      throw new FRWError(
+        ErrorCode.NFT_COLLECTIONS_FETCH_FAILED,
+        'Failed to fetch Flow NFT collections',
+        { address, error: _error }
+      );
     }
   }
 
@@ -47,7 +57,10 @@ class FlowNFTProvider implements NFTProvider {
   ): Promise<NFTCollectionResult> {
     const path = collection.path?.storage_path.split('/').pop();
     if (!path) {
-      throw new Error('Collection path not found');
+      throw new FRWError(ErrorCode.NFT_COLLECTION_PATH_NOT_FOUND, 'Collection path not found', {
+        address,
+        collection: collection.path,
+      });
     }
     const res = await NftService.collectionList({
       address,
@@ -148,7 +161,11 @@ class EvmNFTProvider implements NFTProvider {
         provider: 'EvmNFTProvider',
         method: 'getCollections',
       });
-      return [];
+      throw new FRWError(
+        ErrorCode.NFT_COLLECTIONS_FETCH_FAILED,
+        'Failed to fetch EVM NFT collections',
+        { address, error: _error }
+      );
     }
   }
 
@@ -254,7 +271,13 @@ class EvmNFTProvider implements NFTProvider {
         provider: 'EvmNFTProvider',
         method: 'getNFTs',
       });
-      return { nfts: [] };
+      throw new FRWError(ErrorCode.NFT_FETCH_FAILED, 'Failed to fetch EVM NFTs', {
+        address,
+        collectionId: collection.id,
+        offset,
+        limit,
+        error: _error,
+      });
     }
   }
 }
@@ -273,7 +296,7 @@ export class NFTService {
     } else {
       try {
         this.bridge = getServiceContext().bridge;
-      } catch {
+      } catch (error) {
         logger.warn('[NFTService] ServiceContext not initialized, bridge will be null');
         this.bridge = undefined;
       }
@@ -307,7 +330,11 @@ export class NFTService {
           providerType,
           timestamp: new Date().toISOString(),
         });
-        return [];
+        throw new FRWError(
+          ErrorCode.NFT_INVALID_PARAMETERS,
+          'No address provided for NFT collections',
+          { address }
+        );
       }
 
       const collections = await this.nftProvider.getCollections(address);
@@ -324,6 +351,11 @@ export class NFTService {
       return collections;
     } catch (_error) {
       const duration = Date.now() - startTime;
+      // If it's already an FRWError, re-throw it directly
+      if (_error instanceof FRWError) {
+        throw _error;
+      }
+
       logger.error('[NFTService] Error in getNFTCollections', {
         address,
         providerType,
@@ -339,7 +371,10 @@ export class NFTService {
         timestamp: new Date().toISOString(),
         method: 'getNFTCollections',
       });
-      return [];
+      throw new FRWError(ErrorCode.NFT_COLLECTIONS_FETCH_FAILED, 'Error in getNFTCollections', {
+        address,
+        error: _error,
+      });
     }
   }
 
@@ -371,7 +406,10 @@ export class NFTService {
           providerType,
           timestamp: new Date().toISOString(),
         });
-        return { nfts: [] };
+        throw new FRWError(ErrorCode.NFT_INVALID_PARAMETERS, 'Invalid parameters for getNFTs', {
+          address,
+          collection: collection?.id,
+        });
       }
 
       const result = await this.nftProvider.getNFTs(address, collection, offset, limit);
@@ -393,6 +431,11 @@ export class NFTService {
       return result;
     } catch (_error) {
       const duration = Date.now() - startTime;
+      // If it's already an FRWError, re-throw it directly
+      if (_error instanceof FRWError) {
+        throw _error;
+      }
+
       logger.error('[NFTService] Error in getNFTs', {
         address,
         providerType,
@@ -412,7 +455,13 @@ export class NFTService {
         timestamp: new Date().toISOString(),
         method: 'getNFTs',
       });
-      return { nfts: [] };
+      throw new FRWError(ErrorCode.NFT_FETCH_FAILED, 'Error in getNFTs', {
+        address,
+        collectionId: collection?.id,
+        offset,
+        limit,
+        error: _error,
+      });
     }
   }
 }

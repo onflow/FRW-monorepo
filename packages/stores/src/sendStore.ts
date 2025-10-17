@@ -5,6 +5,8 @@ import {
   type NFTModel,
   type TokenModel,
   addressType,
+  FRWError,
+  ErrorCode,
 } from '@onflow/frw-types';
 import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
@@ -545,7 +547,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         error: errorMessage,
       });
 
-      throw error;
+      throw new FRWError(ErrorCode.TRANSACTION_ERROR, errorMessage);
     }
   },
 

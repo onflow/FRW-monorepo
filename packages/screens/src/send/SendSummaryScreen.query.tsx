@@ -34,6 +34,7 @@ import {
   getNFTId,
   transformAccountForCard,
   transformAccountForDisplay,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -387,8 +388,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         const currentAddress = fromAccount.address;
         tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('[SendSummaryScreen] Transaction failed:', error);
+      showError(error, t);
     }
   }, [executeTransaction, selectedCollection, fromAccount]);
 

@@ -28,6 +28,7 @@ import {
   isValidFlowAddress,
   logger,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
@@ -375,9 +376,10 @@ export function SendToScreen(): React.ReactElement {
             emoji: recipient.emojiInfo?.emoji,
             avatar: recipient.avatar,
           });
-        } catch (error) {
+        } catch (error: any) {
           console.warn('Failed to add recent recipient:', error);
           // Don't block navigation if this fails
+          showError(error, t);
         }
       }
 
@@ -488,6 +490,7 @@ export function SendToScreen(): React.ReactElement {
       if (error.code !== 'SCAN_CANCELLED') {
         alert(`${t('common.error')}: ${t('errors.networkError')}`);
       }
+      showError(error, t);
     }
   }, [handleSearchChange, t]);
 
@@ -517,8 +520,9 @@ export function SendToScreen(): React.ReactElement {
         setCopiedAddress(null);
         setCopiedId(null);
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Failed to copy address:', error);
+      showError(error, t);
     }
   }, []);
 
@@ -539,8 +543,9 @@ export function SendToScreen(): React.ReactElement {
 
         // Refresh the address book data
         refetchContacts();
-      } catch (error) {
+      } catch (error: any) {
         logger.error('Failed to add to address book:', error);
+        showError(error, t);
       }
     },
     [refetchContacts, isAddressInAddressBook]

@@ -1,6 +1,6 @@
 import { type Result } from '@onflow/frw-cadence';
 import { cadence } from '@onflow/frw-context';
-import { FlatQueryDomain, type WalletAccount } from '@onflow/frw-types';
+import { FlatQueryDomain, type WalletAccount, FRWError, ErrorCode } from '@onflow/frw-types';
 import { logger, isValidFlowAddress } from '@onflow/frw-utils';
 
 /**
@@ -90,7 +90,9 @@ export const storageQueries = {
         error: error instanceof Error ? error.message : String(error),
         selectedAccount: selectedAccount?.address,
       });
-      throw error;
+      throw new FRWError(ErrorCode.ACCOUNT_INFO_FETCH_FAILED, 'Failed to fetch account info', {
+        error,
+      });
     }
   },
 

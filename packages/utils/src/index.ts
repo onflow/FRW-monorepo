@@ -42,6 +42,8 @@ export {
   getTokenIdentifier,
 } from './token';
 
+export { showError } from './errors';
+
 // SVG to PNG utilities
 export { convertedSVGURL } from './svgtopng';
 
