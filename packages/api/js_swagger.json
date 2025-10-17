@@ -802,6 +802,27 @@
           "balanceInCurrency"
         ]
       },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrencyEVMTokenData"
+            }
+          },
+          "status": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message, typically used for errors.",
+            "example": "Invalid EVM address format"
+          }
+        },
+        "required": ["data", "status"]
+      },
       "ERC20Token": {
         "type": "object",
         "properties": {
@@ -3132,7 +3153,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Response",
+                  "$ref": "#/components/schemas/TokenResponse",
                   "type": "object",
                   "properties": {
                     "data": {

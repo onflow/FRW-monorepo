@@ -476,7 +476,7 @@ export class UserFtTokensService {
       currency?: string;
     } = {} as any,
     options: IRequestOptions = {}
-  ): Promise<Response> {
+  ): Promise<TokenResponse> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v4/evm/tokens/ft/{address}';
       url = url.replace('{address}', params['address'] + '');
@@ -1051,6 +1051,18 @@ export interface CurrencyEVMTokenData {
 
   /** The value of the balance in the requested currency (if different from USD). */
   balanceInCurrency: string;
+}
+
+/** TokenResponse */
+export interface TokenResponse {
+  /**  */
+  data: CurrencyEVMTokenData[];
+
+  /**  */
+  status: number;
+
+  /** Optional message, typically used for errors. */
+  message?: string;
 }
 
 /** ERC20Token */
