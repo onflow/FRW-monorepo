@@ -156,9 +156,9 @@ export class MetadataService {
   }
 }
 
-export class PayerService {
+export class DeprecatedService {
   /**
-   * Sign as bridge fee payer
+   * Sign as bridge fee payer (Deprecated)
    */
   static signAsBridgeFeePayer(options: IRequestOptions = {}): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -169,14 +169,49 @@ export class PayerService {
       axios(configs, resolve, reject);
     });
   }
+}
+
+export class PayerService {
+  /**
+   * Sign as bridge auth payer
+   */
+  static signAsBridgePayer(
+    params: {
+      /** requestBody */
+      body?: AuthSignParams;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<AuthSignaturePayload> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/signAsBridgePayer';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = params.body;
+
+      configs.data = data;
+
+      axios(configs, resolve, reject);
+    });
+  }
   /**
    * Sign as fee payer
    */
-  static signAsFeePayer(options: IRequestOptions = {}): Promise<any> {
+  static signAsFeePayer(
+    params: {
+      /** requestBody */
+      body?: PayerSignParams;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<FeePayerSignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsFeePayer';
 
       const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = params.body;
+
+      configs.data = data;
 
       axios(configs, resolve, reject);
     });
@@ -184,11 +219,18 @@ export class PayerService {
   /**
    * Get payer status
    */
-  static status(options: IRequestOptions = {}): Promise<PayerStatusApiResponseV1> {
+  static status(
+    params: {
+      /** The Flow network to query */
+      network?: string;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<PayerStatusApiResponseV1> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v1/payer/status';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+      configs.params = { network: params['network'] };
 
       axios(configs, resolve, reject);
     });
@@ -924,12 +966,12 @@ export interface TransferListErrorResponse {
 /** Response */
 export interface Response {
   /** Response data payload */
-  data: CurrencyEVMTokenData[];
+  data?: object;
 
   /** HTTP status code */
-  status: number;
+  status?: number;
 
-  /** Optional message, typically used for errors. */
+  /** Optional response message */
   message?: string;
 }
 
@@ -1434,9 +1476,72 @@ export interface PayerStatusApiResponseV1 {
   message?: string;
 }
 
+/** SignedData */
+export interface SignedData {
+  /** The fee payer address */
+  address: string;
+
+  /** The key index used for signing */
+  keyId: number;
+
+  /** The transaction signature */
+  sig: string;
+}
+
+/** FeePayerSignaturePayload */
+export interface FeePayerSignaturePayload {
+  /**  */
+  status: number;
+
+  /**  */
+  data: object;
+
+  /**  */
+  message?: string;
+}
+
+/** AuthSignaturePayload */
+export interface AuthSignaturePayload {
+  /**  */
+  status: number;
+
+  /**  */
+  data: object;
+
+  /**  */
+  message?: string;
+}
+
+/** PayerSignParams */
+export interface PayerSignParams {
+  /**  */
+  message: object;
+
+  /** The Flow network to use for signing */
+  network?: EnumPayerSignParamsNetwork;
+}
+
+/** AuthSignParams */
+export interface AuthSignParams {
+  /**  */
+  message: object;
+
+  /** The Flow network to use for signing */
+  network?: EnumAuthSignParamsNetwork;
+}
+
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'
 }
 type IPayerStatusPayloadV1StatusVersion = 1;
 type IPayerStatusApiResponseV1Status = 200 | 429 | 500 | 503;
+export enum EnumPayerSignParamsNetwork {
+  'mainnet' = 'mainnet',
+  'testnet' = 'testnet'
+}
+export enum EnumAuthSignParamsNetwork {
+  'mainnet' = 'mainnet',
+  'testnet' = 'testnet',
+  'sandboxnet' = 'sandboxnet'
+}
