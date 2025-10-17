@@ -186,6 +186,7 @@ const EthConfirm = ({ params }: ConnectProps) => {
             logo={requestParams.icon || ''}
             lilicoEnabled={lilicoEnabled}
             decodedCall={decodedCall}
+            surgeData={surgeData}
           />
         )}
 
