@@ -175,11 +175,21 @@ export class PayerService {
   /**
    * Sign as bridge auth payer
    */
-  static signAsBridgePayer(options: IRequestOptions = {}): Promise<AuthSignaturePayload> {
+  static signAsBridgePayer(
+    params: {
+      /** requestBody */
+      body?: AuthSignParams;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<AuthSignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsBridgePayer';
 
       const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = params.body;
+
+      configs.data = data;
 
       axios(configs, resolve, reject);
     });
@@ -187,11 +197,21 @@ export class PayerService {
   /**
    * Sign as fee payer
    */
-  static signAsFeePayer(options: IRequestOptions = {}): Promise<FeePayerSignaturePayload> {
+  static signAsFeePayer(
+    params: {
+      /** requestBody */
+      body?: PayerSignParams;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<FeePayerSignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsFeePayer';
 
       const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = params.body;
+
+      configs.data = data;
 
       axios(configs, resolve, reject);
     });
@@ -199,11 +219,18 @@ export class PayerService {
   /**
    * Get payer status
    */
-  static status(options: IRequestOptions = {}): Promise<PayerStatusApiResponseV1> {
+  static status(
+    params: {
+      /** The Flow network to query */
+      network?: string;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<PayerStatusApiResponseV1> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v1/payer/status';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+      configs.params = { network: params['network'] };
 
       axios(configs, resolve, reject);
     });
@@ -449,7 +476,7 @@ export class UserFtTokensService {
       currency?: string;
     } = {} as any,
     options: IRequestOptions = {}
-  ): Promise<Response> {
+  ): Promise<TokenResponse> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v4/evm/tokens/ft/{address}';
       url = url.replace('{address}', params['address'] + '');
@@ -939,12 +966,12 @@ export interface TransferListErrorResponse {
 /** Response */
 export interface Response {
   /** Response data payload */
-  data: CurrencyEVMTokenData[];
+  data?: object;
 
   /** HTTP status code */
-  status: number;
+  status?: number;
 
-  /** Optional message, typically used for errors. */
+  /** Optional response message */
   message?: string;
 }
 
@@ -1024,6 +1051,18 @@ export interface CurrencyEVMTokenData {
 
   /** The value of the balance in the requested currency (if different from USD). */
   balanceInCurrency: string;
+}
+
+/** TokenResponse */
+export interface TokenResponse {
+  /**  */
+  data: CurrencyEVMTokenData[];
+
+  /**  */
+  status: number;
+
+  /** Optional message, typically used for errors. */
+  message?: string;
 }
 
 /** ERC20Token */
@@ -1485,9 +1524,36 @@ export interface AuthSignaturePayload {
   message?: string;
 }
 
+/** PayerSignParams */
+export interface PayerSignParams {
+  /**  */
+  message: object;
+
+  /** The Flow network to use for signing */
+  network?: EnumPayerSignParamsNetwork;
+}
+
+/** AuthSignParams */
+export interface AuthSignParams {
+  /**  */
+  message: object;
+
+  /** The Flow network to use for signing */
+  network?: EnumAuthSignParamsNetwork;
+}
+
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'
 }
 type IPayerStatusPayloadV1StatusVersion = 1;
 type IPayerStatusApiResponseV1Status = 200 | 429 | 500 | 503;
+export enum EnumPayerSignParamsNetwork {
+  'mainnet' = 'mainnet',
+  'testnet' = 'testnet'
+}
+export enum EnumAuthSignParamsNetwork {
+  'mainnet' = 'mainnet',
+  'testnet' = 'testnet',
+  'sandboxnet' = 'sandboxnet'
+}
