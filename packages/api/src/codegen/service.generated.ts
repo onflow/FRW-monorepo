@@ -1512,19 +1512,31 @@ export interface SignaturePayload {
   message?: string;
 }
 
+/** PayerMsg */
+export interface PayerMsg {
+  /**  */
+  envelope_message: string;
+}
+
 /** PayerSignParams */
 export interface PayerSignParams {
   /**  */
-  message: object;
+  message: PayerMsg;
 
   /** The Flow network to use for signing */
   network?: EnumPayerSignParamsNetwork;
 }
 
+/** PayloadMsg */
+export interface PayloadMsg {
+  /**  */
+  payload: string;
+}
+
 /** AuthSignParams */
 export interface AuthSignParams {
   /**  */
-  message: object;
+  message: PayloadMsg;
 
   /** The Flow network to use for signing */
   network?: EnumAuthSignParamsNetwork;

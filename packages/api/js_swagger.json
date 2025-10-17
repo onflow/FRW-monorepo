@@ -1544,19 +1544,20 @@
         },
         "required": ["status", "data"]
       },
+      "PayerMsg": {
+        "type": "object",
+        "properties": {
+          "envelope_message": {
+            "type": "string"
+          }
+        },
+        "required": ["envelope_message"]
+      },
       "PayerSignParams": {
         "type": "object",
         "properties": {
           "message": {
-            "type": "object",
-            "properties": {
-              "envelope_message": {
-                "type": "string",
-                "description": "The encoded transaction message to sign",
-                "example": "464c4f572d56302e302d7472616e73616374696f6e0000000000000000000000..."
-              }
-            },
-            "required": ["envelope_message"]
+            "$ref": "#/components/schemas/PayerMsg"
           },
           "network": {
             "type": "string",
@@ -1567,19 +1568,20 @@
         },
         "required": ["message"]
       },
+      "PayloadMsg": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "string"
+          }
+        },
+        "required": ["payload"]
+      },
       "AuthSignParams": {
         "type": "object",
         "properties": {
           "message": {
-            "type": "object",
-            "properties": {
-              "payload": {
-                "type": "string",
-                "description": "The encoded transaction message to sign",
-                "example": "464c4f572d56302e302d7472616e73616374696f6e0000000000000000000000..."
-              }
-            },
-            "required": ["payload"]
+            "$ref": "#/components/schemas/PayloadMsg"
           },
           "network": {
             "type": "string",
