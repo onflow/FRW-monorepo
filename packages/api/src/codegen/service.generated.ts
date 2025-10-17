@@ -175,7 +175,7 @@ export class PayerService {
   /**
    * Sign as bridge auth payer
    */
-  static signAsBridgePayer(options: IRequestOptions = {}): Promise<ApiResponse> {
+  static signAsBridgePayer(options: IRequestOptions = {}): Promise<AuthSignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsBridgePayer';
 
@@ -187,7 +187,7 @@ export class PayerService {
   /**
    * Sign as fee payer
    */
-  static signAsFeePayer(options: IRequestOptions = {}): Promise<ApiResponse> {
+  static signAsFeePayer(options: IRequestOptions = {}): Promise<FeePayerSignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsFeePayer';
 
@@ -1446,6 +1446,42 @@ export interface PayerStatusApiResponseV1 {
   data: PayerStatusPayloadV1;
 
   /** Optional message for API response */
+  message?: string;
+}
+
+/** SignedData */
+export interface SignedData {
+  /** The fee payer address */
+  address: string;
+
+  /** The key index used for signing */
+  keyId: number;
+
+  /** The transaction signature */
+  sig: string;
+}
+
+/** FeePayerSignaturePayload */
+export interface FeePayerSignaturePayload {
+  /**  */
+  status: number;
+
+  /**  */
+  data: object;
+
+  /**  */
+  message?: string;
+}
+
+/** AuthSignaturePayload */
+export interface AuthSignaturePayload {
+  /**  */
+  status: number;
+
+  /**  */
+  data: object;
+
+  /**  */
   message?: string;
 }
 

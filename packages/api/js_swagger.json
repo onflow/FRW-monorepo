@@ -1490,6 +1490,77 @@
           }
         },
         "required": ["status", "data"]
+      },
+      "SignedData": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The fee payer address",
+            "example": "0x1234567890abcdef"
+          },
+          "keyId": {
+            "type": "number",
+            "description": "The key index used for signing",
+            "example": 0
+          },
+          "sig": {
+            "type": "string",
+            "description": "The transaction signature",
+            "example": "a1b2c3d4e5f6..."
+          }
+        },
+        "required": ["address", "keyId", "sig"]
+      },
+      "FeePayerSignaturePayload": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "envelopeSigs": {
+                "type": "object",
+                "schema": {
+                  "$ref": "#/components/schemas/SignedData"
+                }
+              }
+            },
+            "required": ["envelopeSigs"]
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["status", "data"]
+      },
+      "AuthSignaturePayload": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "authorizerSigs": {
+                "type": "object",
+                "schema": {
+                  "$ref": "#/components/schemas/SignedData"
+                }
+              }
+            },
+            "required": ["authorizerSigs"]
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["status", "data"]
       }
     }
   },
@@ -1836,7 +1907,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
+                  "$ref": "#/components/schemas/AuthSignaturePayload"
                 }
               }
             }
@@ -1922,7 +1993,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponse"
+                  "$ref": "#/components/schemas/FeePayerSignaturePayload"
                 }
               }
             }
