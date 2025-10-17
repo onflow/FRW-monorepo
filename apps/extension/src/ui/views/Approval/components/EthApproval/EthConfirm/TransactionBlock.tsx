@@ -13,7 +13,7 @@ const convertToFlow = (value) => {
   return Number(HexToDecimalConverter(value)) / 1_000_000_000_000_000_000;
 };
 
-export const TransactionBlock = ({ title, data, logo, lilicoEnabled, decodedCall }) => {
+export const TransactionBlock = ({ title, data, logo, lilicoEnabled, decodedCall, surgeData }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <Box sx={{ display: 'flex', gap: '18px', marginBottom: '0px' }}>
@@ -27,41 +27,42 @@ export const TransactionBlock = ({ title, data, logo, lilicoEnabled, decodedCall
           </Typography>
         </Stack>
       </Box>
-      <Divider />
-      <Box
-        sx={{
-          borderRadius: '12px',
-          overflow: 'hidden',
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box>
-          <Typography
-            sx={{
-              fontWeight: '500',
-              fontSize: '12px',
-              fontFamily: 'Inter',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-            }}
-          >
-            <CardMedia
-              component="img"
-              image={transactionFeeIcon}
-              sx={{ width: '20px', height: '20px' }}
-            />
-            {chrome.i18n.getMessage('Transaction__Fee')}
-          </Typography>
-        </Box>
+      {surgeData?.active && <Divider />}
+      {surgeData?.active && (
         <Box
           sx={{
+            borderRadius: '12px',
             overflow: 'hidden',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
           }}
         >
-          {lilicoEnabled ? (
+          <Box>
+            <Typography
+              sx={{
+                fontWeight: '500',
+                fontSize: '12px',
+                fontFamily: 'Inter',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <CardMedia
+                component="img"
+                image={transactionFeeIcon}
+                sx={{ width: '20px', height: '20px' }}
+              />
+              {chrome.i18n.getMessage('Transaction__Fee')}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              overflow: 'hidden',
+            }}
+          >
+            lilicoEnabled ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
@@ -92,7 +93,7 @@ export const TransactionBlock = ({ title, data, logo, lilicoEnabled, decodedCall
                 Covered by Flow Wallet
               </Typography>
             </Box>
-          ) : (
+            ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
@@ -107,9 +108,10 @@ export const TransactionBlock = ({ title, data, logo, lilicoEnabled, decodedCall
                 <IconFlow size={16} />
               </Box>
             </Box>
-          )}
+            )
+          </Box>
         </Box>
-      </Box>
+      )}
       <Divider />
       <Box>
         {data && data.length > 0 && data[0].to && (
