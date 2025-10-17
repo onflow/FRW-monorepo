@@ -1522,10 +1522,7 @@
             "type": "object",
             "properties": {
               "envelopeSigs": {
-                "type": "object",
-                "schema": {
-                  "$ref": "#/components/schemas/SignedData"
-                }
+                "$ref": "#/components/schemas/SignedData"
               }
             },
             "required": ["envelopeSigs"]
@@ -1547,10 +1544,7 @@
             "type": "object",
             "properties": {
               "authorizerSigs": {
-                "type": "object",
-                "schema": {
-                  "$ref": "#/components/schemas/SignedData"
-                }
+                "$ref": "#/components/schemas/SignedData"
               }
             },
             "required": ["authorizerSigs"]
