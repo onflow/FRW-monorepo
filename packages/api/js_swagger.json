@@ -1547,11 +1547,11 @@
       "PayerMsg": {
         "type": "object",
         "properties": {
-          "envelope_message": {
+          "envelopeMessage": {
             "type": "string"
           }
         },
-        "required": ["envelope_message"]
+        "required": ["envelopeMessage"]
       },
       "PayerSignParams": {
         "type": "object",

@@ -1515,7 +1515,7 @@ export interface SignaturePayload {
 /** PayerMsg */
 export interface PayerMsg {
   /**  */
-  envelope_message: string;
+  envelopeMessage: string;
 }
 
 /** PayerSignParams */
