@@ -27,8 +27,8 @@ export const TransactionBlock = ({ title, data, logo, lilicoEnabled, decodedCall
           </Typography>
         </Stack>
       </Box>
-      {surgeData?.active && <Divider />}
-      {surgeData?.active && (
+      {!surgeData?.active && <Divider />}
+      {!surgeData?.active && (
         <Box
           sx={{
             borderRadius: '12px',
@@ -62,53 +62,53 @@ export const TransactionBlock = ({ title, data, logo, lilicoEnabled, decodedCall
               overflow: 'hidden',
             }}
           >
-            lilicoEnabled ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {lilicoEnabled ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography
+                    sx={{
+                      fontSize: '14px',
+                      fontFamily: 'Inter',
+                      mr: '8px',
+                      color: '#FFFFFF66',
+                      textDecoration: 'line-through',
+                    }}
+                  >
+                    0.001
+                  </Typography>
+                  <Typography sx={{ fontSize: '14px', fontFamily: 'Inter', mr: '8px' }}>
+                    0.00
+                  </Typography>
+                  <IconFlow size={16} />
+                </Box>
                 <Typography
                   sx={{
-                    fontSize: '14px',
+                    fontWeight: '400',
+                    fontSize: '10px',
                     fontFamily: 'Inter',
-                    mr: '8px',
                     color: '#FFFFFF66',
-                    textDecoration: 'line-through',
+                    textAlign: 'right',
                   }}
                 >
-                  0.001
+                  Covered by Flow Wallet
                 </Typography>
-                <Typography sx={{ fontSize: '14px', fontFamily: 'Inter', mr: '8px' }}>
-                  0.00
-                </Typography>
-                <IconFlow size={16} />
               </Box>
-              <Typography
-                sx={{
-                  fontWeight: '400',
-                  fontSize: '10px',
-                  fontFamily: 'Inter',
-                  color: '#FFFFFF66',
-                  textAlign: 'right',
-                }}
-              >
-                Covered by Flow Wallet
-              </Typography>
-            </Box>
             ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography
-                  sx={{
-                    fontSize: '14px',
-                    fontFamily: 'Inter',
-                    mr: '8px',
-                  }}
-                >
-                  ~ 0.001
-                </Typography>
-                <IconFlow size={16} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography
+                    sx={{
+                      fontSize: '14px',
+                      fontFamily: 'Inter',
+                      mr: '8px',
+                    }}
+                  >
+                    ~ 0.001
+                  </Typography>
+                  <IconFlow size={16} />
+                </Box>
               </Box>
-            </Box>
-            )
+            )}
           </Box>
         </Box>
       )}
