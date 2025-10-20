@@ -246,8 +246,6 @@ class PlatformImpl implements PlatformSpec {
 
         if (config.name.endsWith('WithPayer')) {
           config.authorizations = [config.proposer, bridgeAuthorization];
-          // If the transaction is a bridge with payer transaction, use the bridge authorization as the payer
-          config.payer = bridgeAuthorization;
         }
       }
       return config;
