@@ -1,4 +1,4 @@
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
 import { YStack, Text, OnboardingBackground, NotificationPreviewImage } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
@@ -39,7 +39,10 @@ const requestNotificationPermission = async (enable: boolean): Promise<{ granted
 
       return { granted: isGranted };
     } catch (error) {
-      console.error('Failed to request notification permission:', error);
+      logger.error(
+        '[NotificationPreferencesScreen] Failed to request notification permission:',
+        error
+      );
       return { granted: false };
     }
   }
@@ -55,7 +58,7 @@ const requestNotificationPermission = async (enable: boolean): Promise<{ granted
 
 const trackNotificationChoice = async (choice: 'enable' | 'skip') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking notification choice:', choice);
+  logger.debug('[NotificationPreferencesScreen] Tracking notification choice:', choice);
   return { success: true };
 };
 
@@ -78,12 +81,15 @@ export function NotificationPreferencesScreen(): React.ReactElement {
   const notificationMutation = useMutation({
     mutationFn: requestNotificationPermission,
     onSuccess: (data, variables) => {
-      console.log('Notification permission result:', data);
+      logger.info('[NotificationPreferencesScreen] Notification permission result:', data);
       // Navigate to backup options regardless of permission result
       navigation.navigate('BackupOptions');
     },
     onError: (error, variables) => {
-      console.error('Failed to request notification permission:', error);
+      logger.error(
+        '[NotificationPreferencesScreen] Failed to request notification permission:',
+        error
+      );
       // Still navigate to backup options on error
       navigation.navigate('BackupOptions');
     },
@@ -93,10 +99,17 @@ export function NotificationPreferencesScreen(): React.ReactElement {
   const trackingMutation = useMutation({
     mutationFn: trackNotificationChoice,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked notification choice:', variables);
+      logger.debug(
+        '[NotificationPreferencesScreen] Successfully tracked notification choice:',
+        variables
+      );
     },
     onError: (error, variables) => {
-      console.error('Failed to track notification choice:', variables, error);
+      logger.error(
+        '[NotificationPreferencesScreen] Failed to track notification choice:',
+        variables,
+        error
+      );
     },
   });
 

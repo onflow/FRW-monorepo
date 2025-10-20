@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { logger, navigation } from '@onflow/frw-context';
 import {
   YStack,
   Text,
@@ -28,7 +28,7 @@ const fetchOnboardingConfig = async () => {
 
 const trackOnboardingStart = async (action: 'create_account' | 'sign_in') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking onboarding action:', action);
+  logger.debug('[GetStartedScreen] Tracking onboarding action:', action);
   return { success: true };
 };
 
@@ -44,17 +44,17 @@ export function GetStartedScreen(): React.ReactElement {
     queryKey: ['onboarding', 'config'],
     queryFn: fetchOnboardingConfig,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
 
   // Mutation for tracking analytics
   const trackingMutation = useMutation({
     mutationFn: trackOnboardingStart,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked:', variables);
+      logger.debug('[GetStartedScreen] Successfully tracked:', variables);
     },
     onError: (error, variables) => {
-      console.error('Failed to track:', variables, error);
+      logger.error('[GetStartedScreen] Failed to track:', variables, error);
     },
   });
 

@@ -1,4 +1,4 @@
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
 import { Copy, Warning, RevealPhrase } from '@onflow/frw-icons';
 import { YStack, XStack, Text, View, OnboardingBackground, Button } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -60,7 +60,7 @@ const createAccountAndGetPhrase = async (): Promise<{
 
 const trackRecoveryPhraseAction = async (action: 'copy' | 'next' | 'view') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking recovery phrase action:', action);
+  logger.debug('Tracking recovery phrase action:', action);
   return { success: true };
 };
 
@@ -86,10 +86,10 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   const trackingMutation = useMutation({
     mutationFn: trackRecoveryPhraseAction,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked recovery phrase action:', variables);
+      logger.debug('Successfully tracked recovery phrase action:', variables);
     },
     onError: (error, variables) => {
-      console.error('Failed to track recovery phrase action:', variables, error);
+      logger.error('Failed to track recovery phrase action:', variables, error);
     },
   });
 
@@ -122,7 +122,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
     } catch (error) {
-      console.error('Failed to copy recovery phrase:', error);
+      logger.error('Failed to copy recovery phrase:', error);
     }
   };
 

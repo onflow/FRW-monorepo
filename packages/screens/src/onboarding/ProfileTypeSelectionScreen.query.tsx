@@ -1,5 +1,12 @@
-import { navigation } from '@onflow/frw-context';
-import { YStack, XStack, Text, OnboardingBackground, Button, ShieldAnimation } from '@onflow/frw-ui';
+import { logger, navigation } from '@onflow/frw-context';
+import {
+  YStack,
+  XStack,
+  Text,
+  OnboardingBackground,
+  Button,
+  ShieldAnimation,
+} from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +30,7 @@ const fetchProfileTypeConfig = async () => {
 
 const trackProfileTypeSelection = async (profileType: 'recovery_phrase' | 'secure_enclave') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking profile type selection:', profileType);
+  logger.debug('[ProfileTypeSelectionScreen] Tracking profile type selection:', profileType);
   return { success: true };
 };
 
@@ -39,17 +46,24 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
     queryKey: ['onboarding', 'profile-type-config'],
     queryFn: fetchProfileTypeConfig,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
 
   // Mutation for tracking analytics
   const trackingMutation = useMutation({
     mutationFn: trackProfileTypeSelection,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked profile type selection:', variables);
+      logger.debug(
+        '[ProfileTypeSelectionScreen] Successfully tracked profile type selection:',
+        variables
+      );
     },
     onError: (error, variables) => {
-      console.error('Failed to track profile type selection:', variables, error);
+      logger.error(
+        '[ProfileTypeSelectionScreen] Failed to track profile type selection:',
+        variables,
+        error
+      );
     },
   });
 

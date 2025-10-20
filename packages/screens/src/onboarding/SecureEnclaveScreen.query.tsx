@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { logger, navigation } from '@onflow/frw-context';
 import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
 import {
   YStack,
@@ -35,13 +35,13 @@ const fetchSecureEnclaveConfig = async () => {
 const createSecureEnclaveAccount = async () => {
   // TODO: Replace with actual account creation API call
   await new Promise((resolve) => setTimeout(resolve, 3000));
-  console.log('Secure Enclave account created');
+  logger.info('[SecureEnclaveScreen] Secure Enclave account created');
   return { success: true, accountId: 'secure_account_123' };
 };
 
 const trackSecureEnclaveSelection = async (action: 'confirm' | 'cancel') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking secure enclave action:', action);
+  logger.debug('[SecureEnclaveScreen] Tracking secure enclave action:', action);
   return { success: true };
 };
 
@@ -59,18 +59,18 @@ export function SecureEnclaveScreen(): React.ReactElement {
     queryKey: ['onboarding', 'secure-enclave-config'],
     queryFn: fetchSecureEnclaveConfig,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
 
   // Mutation for account creation
   const createAccountMutation = useMutation({
     mutationFn: createSecureEnclaveAccount,
     onSuccess: (data) => {
-      console.log('Account created successfully:', data);
+      logger.info('[SecureEnclaveScreen] Account created successfully:', data);
       // Navigation will be handled by AccountCreationLoadingState's onComplete
     },
     onError: (error) => {
-      console.error('Failed to create account:', error);
+      logger.error('[SecureEnclaveScreen] Failed to create account:', error);
       // Handle error - could show error dialog
     },
   });
@@ -79,10 +79,14 @@ export function SecureEnclaveScreen(): React.ReactElement {
   const trackingMutation = useMutation({
     mutationFn: trackSecureEnclaveSelection,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked secure enclave action:', variables);
+      logger.debug('[SecureEnclaveScreen] Successfully tracked secure enclave action:', variables);
     },
     onError: (error, variables) => {
-      console.error('Failed to track secure enclave action:', variables, error);
+      logger.error(
+        '[SecureEnclaveScreen] Failed to track secure enclave action:',
+        variables,
+        error
+      );
     },
   });
 

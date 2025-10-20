@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { logger, navigation } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
 import {
   YStack,
@@ -25,7 +25,7 @@ const checkBackupAvailability = async () => {
 
 const trackBackupSelection = async (backupType: 'device' | 'cloud' | 'recovery-phrase') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking backup selection:', backupType);
+  logger.debug('[BackupOptionsScreen] Tracking backup selection:', backupType);
   return { success: true };
 };
 
@@ -43,10 +43,10 @@ export function BackupOptionsScreen(): React.ReactElement {
   const trackingMutation = useMutation({
     mutationFn: trackBackupSelection,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked backup selection:', variables);
+      logger.debug('[BackupOptionsScreen] Successfully tracked backup selection:', variables);
     },
     onError: (error, variables) => {
-      console.error('Failed to track backup selection:', variables, error);
+      logger.error('[BackupOptionsScreen] Failed to track backup selection:', variables, error);
     },
   });
 
@@ -84,7 +84,7 @@ export function BackupOptionsScreen(): React.ReactElement {
 
     // TODO: Implement device backup (local encrypted storage)
     // For now, skip to home
-    console.log('Device backup - TODO: implement local encrypted backup');
+    logger.info('[BackupOptionsScreen] Device backup - TODO: implement local encrypted backup');
     navigation.navigate('Home');
   };
 
@@ -94,7 +94,9 @@ export function BackupOptionsScreen(): React.ReactElement {
 
     // TODO: Implement cloud backup (Google Drive/iCloud)
     // For now, skip to home
-    console.log('Cloud backup - TODO: implement Google Drive/iCloud integration');
+    logger.info(
+      '[BackupOptionsScreen] Cloud backup - TODO: implement Google Drive/iCloud integration'
+    );
     navigation.navigate('Home');
   };
 
@@ -104,7 +106,7 @@ export function BackupOptionsScreen(): React.ReactElement {
 
     // TODO: Show existing recovery phrase in read-only mode
     // User already created one during onboarding
-    console.log('Recovery phrase - TODO: show existing phrase (view only)');
+    logger.info('[BackupOptionsScreen] Recovery phrase - TODO: show existing phrase (view only)');
     navigation.navigate('Home');
   };
 

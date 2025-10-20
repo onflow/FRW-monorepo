@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { logger, navigation } from '@onflow/frw-context';
 // import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
 import {
   YStack,
@@ -45,7 +45,7 @@ interface ConfirmRecoveryPhraseScreenProps {
 
 const trackVerificationAction = async (action: 'answer' | 'complete' | 'failure') => {
   // TODO: Replace with actual analytics API call
-  console.log('Tracking verification action:', action);
+  logger.debug('[ConfirmRecoveryPhraseScreen] Tracking verification action:', action);
   return { success: true };
 };
 
@@ -69,10 +69,17 @@ export function ConfirmRecoveryPhraseScreen({
   const trackingMutation = useMutation({
     mutationFn: trackVerificationAction,
     onSuccess: (data, variables) => {
-      console.log('Successfully tracked verification action:', variables);
+      logger.debug(
+        '[ConfirmRecoveryPhraseScreen] Successfully tracked verification action:',
+        variables
+      );
     },
     onError: (error, variables) => {
-      console.error('Failed to track verification action:', variables, error);
+      logger.error(
+        '[ConfirmRecoveryPhraseScreen] Failed to track verification action:',
+        variables,
+        error
+      );
     },
   });
 
@@ -130,7 +137,10 @@ export function ConfirmRecoveryPhraseScreen({
 
       // Account already created in RecoveryPhraseScreen
       // Navigate directly to notification preferences
-      console.log('Recovery phrase verified! Account address:', address);
+      logger.info(
+        '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Account address:',
+        address
+      );
 
       // Navigate to notification preferences (final onboarding step)
       navigation.navigate('NotificationPreferences');
