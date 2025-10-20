@@ -950,7 +950,7 @@ export class OpenApiService {
 
   signAsFeePayer = async (transaction, message: string) => {
     const messages = {
-      envelope_message: message,
+      envelopeMessage: message,
     };
     // 'http://localhost:5001/lilico-dev/us-central1'
     const data = await this.sendRequest(
@@ -981,7 +981,7 @@ export class OpenApiService {
 
   signProposer = async (transaction, message: string) => {
     const messages = {
-      envelope_message: message,
+      envelopeMessage: message,
     };
     const baseURL = this.store.functionsUrl;
     // 'http://localhost:5001/lilico-dev/us-central1'
