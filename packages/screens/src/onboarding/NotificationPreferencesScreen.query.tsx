@@ -1,4 +1,4 @@
-import { navigation } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import { YStack, Text, OnboardingBackground, NotificationPreviewImage } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React from 'react';
@@ -7,33 +7,49 @@ import { useTranslation } from 'react-i18next';
 /**
  * NotificationPreferencesScreen - Screen for enabling push notifications
  * Shows a preview of notifications and allows users to enable them
- * Uses TanStack Query for future backend integration
+ * Uses native bridge for permission request
  */
 
-// Future API functions (placeholder for now)
-const fetchNotificationConfig = async () => {
-  // TODO: Replace with actual API call
+// Check if notifications are supported
+const fetchNotificationConfig = async (): Promise<{
+  isSupported: boolean;
+  permissionStatus: string;
+}> => {
+  // All platforms support notifications
   return {
     isSupported: true,
     permissionStatus: 'not_determined',
-    previewNotifications: [
-      {
-        type: 'transfer',
-        title: 'Transfer Complete',
-        description: 'Your FLOW transfer was successful',
-      },
-      { type: 'swap', title: 'Swap Complete', description: 'Your token swap was successful' },
-    ],
   };
 };
 
-const requestNotificationPermission = async (enable: boolean) => {
-  // TODO: Replace with actual notification permission API call
-  console.log('Requesting notification permission:', enable);
-  if (enable) {
-    // Simulate requesting OS permission
-    return { granted: true, token: 'notification_token_123' };
+// Request notification permission via bridge
+const requestNotificationPermission = async (enable: boolean): Promise<{ granted: boolean }> => {
+  if (!enable) {
+    return { granted: false };
   }
+
+  // Use bridge.requestNotificationPermission() if available (React Native)
+  if (bridge.requestNotificationPermission && bridge.checkNotificationPermission) {
+    try {
+      // Request permission (launches native UI on Android 13+)
+      await bridge.requestNotificationPermission();
+
+      // Check if it was actually granted
+      const isGranted = await bridge.checkNotificationPermission();
+
+      return { granted: isGranted };
+    } catch (error) {
+      console.error('Failed to request notification permission:', error);
+      return { granted: false };
+    }
+  }
+
+  // Fallback for web/extension
+  if (typeof Notification !== 'undefined' && Notification.requestPermission) {
+    const permission = await Notification.requestPermission();
+    return { granted: permission === 'granted' };
+  }
+
   return { granted: false };
 };
 
@@ -55,7 +71,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
     queryKey: ['onboarding', 'notification-config'],
     queryFn: fetchNotificationConfig,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
 
   // Mutation for requesting notification permission
@@ -120,7 +136,7 @@ export function NotificationPreferencesScreen(): React.ReactElement {
     return (
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4">
-          <Text color="$red10" text="center">
+          <Text color="$textSecondary" text="center">
             Failed to load notification configuration. Please try again.
           </Text>
         </YStack>

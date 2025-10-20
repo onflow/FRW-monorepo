@@ -278,6 +278,57 @@ class PlatformImpl implements PlatformSpec {
       this.log('error', '[PlatformImpl] Failed to clear toasts via bridge:', error);
     }
   }
+
+  // Onboarding methods
+  async createAccount(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    error: string | null;
+  }> {
+    try {
+      return await NativeFRWBridge.createAccount();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to create account via bridge:', error);
+      return {
+        success: false,
+        address: null,
+        username: null,
+        mnemonic: null,
+        phrase: null,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // Notification permission methods
+  async requestNotificationPermission(): Promise<boolean> {
+    try {
+      return await NativeFRWBridge.requestNotificationPermission();
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to request notification permission via bridge:',
+        error
+      );
+      return false;
+    }
+  }
+
+  async checkNotificationPermission(): Promise<boolean> {
+    try {
+      return await NativeFRWBridge.checkNotificationPermission();
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to check notification permission via bridge:',
+        error
+      );
+      return false;
+    }
+  }
 }
 
 export const platform = new PlatformImpl();

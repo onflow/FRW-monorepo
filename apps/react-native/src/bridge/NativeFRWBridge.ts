@@ -72,6 +72,27 @@ export interface Spec extends TurboModule {
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
+  // Recovery phrase generation
+  generateRecoveryPhrase(): Promise<RecoveryPhraseResponse>;
+  // Account creation (username auto-generated on native side)
+  createAccount(): Promise<CreateAccountResponse>;
+  // Notification permissions
+  requestNotificationPermission(): Promise<boolean>;
+  checkNotificationPermission(): Promise<boolean>;
+}
+
+export interface RecoveryPhraseResponse {
+  phrase: string[];
+  mnemonic: string;
+}
+
+export interface CreateAccountResponse {
+  success: boolean;
+  address: string | null;
+  username: string | null;
+  mnemonic: string | null;
+  phrase: string[] | null;
+  error: string | null;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

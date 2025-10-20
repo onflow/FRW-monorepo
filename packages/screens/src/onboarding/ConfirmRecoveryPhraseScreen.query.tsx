@@ -8,7 +8,6 @@ import {
   OnboardingBackground,
   Button,
   ScrollView,
-  AccountCreationLoadingState,
 } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React, { useState, useMemo } from 'react';
@@ -38,16 +37,11 @@ interface ConfirmRecoveryPhraseScreenProps {
   route?: {
     params?: {
       recoveryPhrase?: string[];
+      address?: string | null;
+      username?: string | null;
     };
   };
 }
-
-// Future API functions (placeholder for now)
-const createWalletAccount = async (data: { recoveryPhrase: string[] }) => {
-  // TODO: Replace with actual wallet creation API call
-  console.log('Creating wallet account with recovery phrase');
-  return { accountId: 'account_123', success: true };
-};
 
 const trackVerificationAction = async (action: 'answer' | 'complete' | 'failure') => {
   // TODO: Replace with actual analytics API call
@@ -65,35 +59,11 @@ export function ConfirmRecoveryPhraseScreen({
 }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
-  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
-  // Get recovery phrase from navigation params or use default for demo
-  const recoveryPhrase = route?.params?.recoveryPhrase || [
-    'Trust',
-    'Ascot',
-    'Fanny',
-    'Craft',
-    'Fit',
-    'Lo-fi',
-    'Juice',
-    'Funny',
-    'Next',
-    'Big',
-    'Migas',
-    'Carry',
-  ];
-
-  // Mutation for creating wallet account
-  const createAccountMutation = useMutation({
-    mutationFn: createWalletAccount,
-    onSuccess: (data) => {
-      console.log('Successfully created wallet account:', data.accountId);
-    },
-    onError: (error) => {
-      console.error('Failed to create wallet account:', error);
-      setIsCreatingAccount(false);
-    },
-  });
+  // Get data from navigation params (account already created in RecoveryPhraseScreen)
+  const recoveryPhrase = route?.params?.recoveryPhrase || [];
+  const address = route?.params?.address;
+  const username = route?.params?.username;
 
   // Mutation for tracking analytics
   const trackingMutation = useMutation({
@@ -158,13 +128,12 @@ export function ConfirmRecoveryPhraseScreen({
       // Track successful completion
       trackingMutation.mutate('complete');
 
-      // Show creating account animation
-      setIsCreatingAccount(true);
+      // Account already created in RecoveryPhraseScreen
+      // Navigate directly to notification preferences
+      console.log('Recovery phrase verified! Account address:', address);
 
-      // Trigger account creation mutation
-      createAccountMutation.mutate({ recoveryPhrase });
-
-      // Account creation loading state will handle navigation via onComplete callback
+      // Navigate to notification preferences (final onboarding step)
+      navigation.navigate('NotificationPreferences');
     } else {
       // Track failure
       trackingMutation.mutate('failure');
@@ -289,15 +258,6 @@ export function ConfirmRecoveryPhraseScreen({
           </YStack>
         </YStack>
       </YStack>
-
-      {/* Creating Account Loading State */}
-      <AccountCreationLoadingState
-        visible={isCreatingAccount}
-        title={t('onboarding.secureEnclave.creating.title')}
-        statusText={t('onboarding.secureEnclave.creating.configuring')}
-        onComplete={() => navigation.navigate('NotificationPreferences')}
-        duration={3000}
-      />
     </OnboardingBackground>
   );
 }

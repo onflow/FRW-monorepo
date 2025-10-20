@@ -366,13 +366,27 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             <Stack.Screen
               name="BackupOptions"
               component={BackupOptionsScreen}
-              options={{
+              options={({ navigation: screenNavigation }) => ({
                 headerTitle: t('onboarding.backupOptions.navTitle'),
                 headerRight: () => null, // No close button
                 headerStyle: {
                   backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
                 },
-              }}
+                headerLeft: () => (
+                  <NavigationBackButton
+                    onPress={() => {
+                      // Trigger warning dialog in screen
+                      const handler = (globalThis as any).__backupOptionsBackHandler;
+                      if (handler && !handler()) {
+                        // Handler returned false, prevent navigation
+                        return;
+                      }
+                      // Otherwise navigate back normally
+                      screenNavigation.goBack();
+                    }}
+                  />
+                ),
+              })}
             />
           </Stack.Group>
         </Stack.Navigator>

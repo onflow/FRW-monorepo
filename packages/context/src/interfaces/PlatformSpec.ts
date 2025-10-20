@@ -84,4 +84,18 @@ export interface PlatformSpec {
   hideToast?(id: string): void;
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
+
+  // Onboarding methods
+  createAccount?(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    error: string | null;
+  }>;
+
+  // Notification permission methods
+  requestNotificationPermission?(): Promise<boolean>;
+  checkNotificationPermission?(): Promise<boolean>;
 }

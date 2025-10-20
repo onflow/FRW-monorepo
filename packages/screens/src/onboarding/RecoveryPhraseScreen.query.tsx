@@ -4,33 +4,57 @@ import { YStack, XStack, Text, View, OnboardingBackground, Button } from '@onflo
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ActivityIndicator } from 'react-native';
 
 /**
- * RecoveryPhraseScreen - Screen displaying the 12-word recovery phrase
+ * RecoveryPhraseScreen - Creates account and displays the generated recovery phrase
+ * Calls createAccount() which generates the mnemonic and creates the blockchain account
  * Shows the recovery phrase that users must write down and store safely
- * Uses TanStack Query for future backend integration
  */
 
-// Future API functions (placeholder for now)
-const generateRecoveryPhrase = async () => {
-  // TODO: Replace with actual wallet creation API call
+// Create account and get the generated recovery phrase
+const createAccountAndGetPhrase = async (): Promise<{
+  phrase: string[];
+  mnemonic: string;
+  address: string | null;
+  username: string | null;
+}> => {
+  // Use bridge.createAccount() if available (React Native)
+  if (bridge.createAccount) {
+    const result = await bridge.createAccount();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to create account');
+    }
+
+    return {
+      phrase: result.phrase || [],
+      mnemonic: result.mnemonic || '',
+      address: result.address,
+      username: result.username,
+    };
+  }
+
+  // Fallback for web/extension (placeholder)
   return {
     phrase: [
-      'Trust',
-      'Ascot',
-      'Fanny',
-      'Craft',
-      'Fit',
-      'Lo-fi',
-      'Lemon',
-      'Denim',
-      'Vibe',
-      'Chill',
-      'Mood',
-      'Flow',
+      'trust',
+      'wallet',
+      'example',
+      'phrase',
+      'generate',
+      'secure',
+      'backup',
+      'restore',
+      'account',
+      'protect',
+      'private',
+      'key',
     ],
-    walletId: 'wallet_123',
-    entropy: 'entropy_data_123',
+    mnemonic:
+      'trust wallet example phrase generate secure backup restore account protect private key',
+    address: '0x1234567890abcdef',
+    username: 'user_demo',
   };
 };
 
@@ -39,21 +63,23 @@ const trackRecoveryPhraseAction = async (action: 'copy' | 'next' | 'view') => {
   console.log('Tracking recovery phrase action:', action);
   return { success: true };
 };
+
 export function RecoveryPhraseScreen(): React.ReactElement {
   const { t } = useTranslation();
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
 
-  // Query for generating recovery phrase
+  // Create account and get recovery phrase
   const {
-    data: recoveryData,
-    isLoading: isLoadingPhrase,
-    error: phraseError,
+    data: accountData,
+    isLoading: isCreatingAccount,
+    error: accountError,
   } = useQuery({
-    queryKey: ['onboarding', 'recovery-phrase'],
-    queryFn: generateRecoveryPhrase,
-    staleTime: Infinity, // Recovery phrase should not refetch
-    gcTime: 30 * 60 * 1000, // 30 minutes (formerly cacheTime)
+    queryKey: ['onboarding', 'create-account'],
+    queryFn: createAccountAndGetPhrase,
+    staleTime: Infinity, // Don't refetch - account creation should happen once
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    retry: false, // Don't retry on error
   });
 
   // Mutation for tracking analytics
@@ -67,21 +93,8 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     },
   });
 
-  // Use static phrase for now to ensure it displays
-  const recoveryPhrase = [
-    'Trust',
-    'Ascot',
-    'Fanny',
-    'Craft',
-    'Fit',
-    'Lo-fi',
-    'Juice',
-    'Funny',
-    'Next',
-    'Big',
-    'Migas',
-    'Carry',
-  ];
+  // Use generated phrase from account creation
+  const recoveryPhrase = accountData?.phrase || [];
 
   const handleBack = () => {
     navigation.goBack();
@@ -124,34 +137,53 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     // Track analytics
     trackingMutation.mutate('next');
 
-    // Navigate to confirm recovery phrase screen
-    navigation.navigate('ConfirmRecoveryPhrase', { recoveryPhrase });
+    // Navigate to confirm recovery phrase screen with account data
+    navigation.navigate('ConfirmRecoveryPhrase', {
+      recoveryPhrase,
+      address: accountData?.address,
+      username: accountData?.username,
+    });
   };
 
-  // TODO: Re-enable loading/error states when using real API
-  // Show loading state while generating phrase
-  // if (isLoadingPhrase) {
-  //   return (
-  //     <OnboardingBackground>
-  //       <YStack flex={1} items="center" justify="center">
-  //         <Text>Generating recovery phrase...</Text>
-  //       </YStack>
-  //     </OnboardingBackground>
-  //   );
-  // }
+  // Show loading state while creating account
+  if (isCreatingAccount) {
+    return (
+      <OnboardingBackground>
+        <YStack flex={1} items="center" justify="center" gap="$4">
+          <ActivityIndicator size="large" color="#00EF8B" />
+          <Text fontSize={24} fontWeight="700" color="$text">
+            {t('onboarding.creatingAccount')}
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center" px="$6">
+            {t('onboarding.generatingRecoveryPhrase')}
+          </Text>
+        </YStack>
+      </OnboardingBackground>
+    );
+  }
 
-  // Show error state if phrase generation fails
-  // if (phraseError) {
-  //   return (
-  //     <OnboardingBackground>
-  //       <YStack flex={1} items="center" justify="center" px="$4">
-  //         <Text color="$red10" text="center">
-  //           Failed to generate recovery phrase. Please try again.
-  //         </Text>
-  //       </YStack>
-  //     </OnboardingBackground>
-  //   );
-  // }
+  // Show error state if account creation fails
+  if (accountError) {
+    return (
+      <OnboardingBackground>
+        <YStack flex={1} items="center" justify="center" px="$4" gap="$4">
+          <Text color="$error" text="center" fontSize={20} fontWeight="700">
+            {t('onboarding.accountCreationFailed')}
+          </Text>
+          <Text color="$textSecondary" text="center" fontSize="$4">
+            {accountError instanceof Error ? accountError.message : 'An unknown error occurred'}
+          </Text>
+          <Button onPress={() => navigation.goBack()}>
+            <XStack gap="$2" items="center" px="$4" py="$2">
+              <Text fontSize="$4" fontWeight="600">
+                {t('common.goBack')}
+              </Text>
+            </XStack>
+          </Button>
+        </YStack>
+      </OnboardingBackground>
+    );
+  }
 
   return (
     <OnboardingBackground>
@@ -241,13 +273,10 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                 <View
                   width={42}
                   height={40}
-                  backgroundColor="rgba(255, 255, 255, 0.1)"
-                  borderRadius={8}
-                  alignItems="center"
-                  justifyContent="center"
-                  style={{
-                    backdropFilter: 'blur(12px)',
-                  }}
+                  bg="rgba(255, 255, 255, 0.1)"
+                  rounded={8}
+                  items="center"
+                  justify="center"
                 >
                   <RevealPhrase size={20} color="rgba(255, 255, 255, 0.5)" />
                 </View>
@@ -280,7 +309,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           borderColor="rgba(255, 255, 255, 0.15)"
           mb={24}
         >
-          <View width={24} height={24} alignItems="center" justifyContent="center">
+          <View width={24} height={24} items="center" justify="center">
             <Warning size={24} color="rgba(255, 255, 255, 0.5)" />
           </View>
           <YStack flex={1} gap={4}>
@@ -301,10 +330,10 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           <YStack
             width="100%"
             height={52}
-            backgroundColor="$text"
-            borderRadius={16}
-            alignItems="center"
-            justifyContent="center"
+            bg="$text"
+            rounded={16}
+            items="center"
+            justify="center"
             borderWidth={1}
             borderColor="$text"
             pressStyle={{ opacity: 0.9 }}
