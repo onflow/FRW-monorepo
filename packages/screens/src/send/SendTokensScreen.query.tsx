@@ -21,13 +21,13 @@ import {
   ToAccountSection,
   SendArrowDivider,
   StorageWarning,
-  SurgeWarning,
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
   Text,
   Separator,
   XStack,
+  SurgeFeeConfirmationSection,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -99,28 +99,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     setAmount('');
     setAmountError('');
   }, [selectedToken]);
-
-  // Check free gas status
-  useEffect(() => {
-    const checkFreeGasStatus = async () => {
-      try {
-        // Check if the platform supports free gas
-        const platform = bridge.getPlatform();
-        if (platform === 'extension' || platform === 'android' || platform === 'ios') {
-          // For now, default to true since the method might not be available yet
-          setIsFreeGasEnabled(true);
-        } else {
-          setIsFreeGasEnabled(true);
-        }
-      } catch (error) {
-        logger.error('Failed to check free gas status:', error);
-        // Default to enabled if we can't determine the status
-        setIsFreeGasEnabled(true);
-      }
-    };
-
-    checkFreeGasStatus();
-  }, []);
 
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
@@ -228,55 +206,23 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
   const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
 
-  // Calculate transaction fee from API's maxFee field or fallback to default
-  const transactionFee = useMemo(() => {
-    if (payerStatus?.surge?.maxFee) {
-      // maxFee is provided by the API with surge factor already applied
-      const fee = payerStatus.surge.maxFee;
-
-      // Format the fee with appropriate precision
-      if (fee < 0.01) {
-        return `~${fee.toFixed(4)} FLOW`;
-      } else if (fee < 0.1) {
-        return `~${fee.toFixed(3)} FLOW`;
-      } else {
-        return `~${fee.toFixed(2)} FLOW`;
-      }
+  const formattedSurgeMultiplier = useMemo(() => {
+    const multiplier = Number(surgeMultiplier || 1);
+    if (Number.isNaN(multiplier)) {
+      return '1';
     }
+    return multiplier.toFixed(2).replace(/\.?0+$/, '');
+  }, [surgeMultiplier]);
 
-    // Fallback to default fee if maxFee is not available
-    return '~0.001 FLOW';
+  // Calculate transaction fee from API's maxFee or use default
+  const transactionFee = useMemo(() => {
+    const fee = payerStatus?.surge?.maxFee;
+    if (!fee) return '~0.001 FLOW';
+
+    const precision = fee < 0.01 ? 4 : fee < 0.1 ? 3 : 2;
+    return `~${fee.toFixed(precision)} FLOW`;
   }, [payerStatus?.surge?.maxFee]);
 
-  // Log payer status API response for debugging
-  React.useEffect(() => {
-    if (payerStatus && typeof payerStatus === 'object') {
-      logger.info('Payer Status API Response:', {
-        surge: payerStatus?.surge || null,
-        feePayer: payerStatus?.feePayer || null,
-        bridgePayer: payerStatus?.bridgePayer || null,
-        updatedAt: payerStatus?.updatedAt || null,
-        reason: payerStatus?.reason || null,
-        isSurgePricingActive,
-        surgeMultiplier,
-        maxFee: payerStatus?.surge?.maxFee || null,
-        calculatedTransactionFee: transactionFee,
-      });
-    }
-    if (isLoadingPayerStatus) {
-      logger.info('Loading payer status...');
-    }
-    if (payerStatusError) {
-      logger.error('Payer status error:', payerStatusError);
-    }
-  }, [
-    payerStatus,
-    isLoadingPayerStatus,
-    payerStatusError,
-    isSurgePricingActive,
-    surgeMultiplier,
-    transactionFee,
-  ]);
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
 
@@ -695,6 +641,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               />
             )}
 
+            {isSurgePricingActive && (
+              <SurgeFeeConfirmationSection
+                transactionFee={transactionFee}
+                surgeMultiplier={surgeMultiplier}
+                transactionFeeLabel={t('surge.modal.transactionFee')}
+                surgeTitle={t('surge.modal.surgeActive')}
+                description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
+              />
+            )}
+
             {showStorageWarning && (
               <StorageWarning
                 message={storageWarningMessage}
@@ -712,7 +668,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             data-testid="next"
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '$text'}
+            bg={isSendDisabled ? '#6b7280' : isSurgePricingActive ? '$warning' : '$text'}
             rounded={16}
             items="center"
             justify="center"
@@ -762,29 +718,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           unknownAccountText={t('send.unknownAccount')}
         />
       </YStack>
-      {/* SurgeWarning Modal */}
-      <SurgeWarning
-        message={
-          isSurgePricingActive && surgeMultiplier
-            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${Number(
-                surgeMultiplier
-              )
-                .toFixed(2)
-                .replace(
-                  /\.?0+$/,
-                  ''
-                )}× higher than usual and your free allowance will not cover the fee for this transaction.`
-            : t('surge.message')
-        }
-        title={t('surge.title')}
-        variant="warning"
-        visible={isSurgeWarningVisible}
-        onClose={() => setIsSurgeWarningVisible(false)}
-        onButtonPress={() => {
-          setIsSurgeWarningVisible(false);
-        }}
-        surgeMultiplier={surgeMultiplier}
-      />
     </BackgroundWrapper>
   );
 };
