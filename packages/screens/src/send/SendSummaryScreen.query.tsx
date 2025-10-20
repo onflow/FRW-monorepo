@@ -603,7 +603,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '$textMuted' : '$text'}
+            bg={isSendDisabled ? '#6b7280' : isSurgePricingActive ? '$warning' : '$text'}
             rounded={16}
             items="center"
             justify="center"
