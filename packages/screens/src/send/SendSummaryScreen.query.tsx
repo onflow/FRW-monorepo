@@ -6,6 +6,8 @@ import {
   storageQueries,
   storageUtils,
   useTokenQueryStore,
+  payerStatusQueryKeys,
+  payerStatusQueries,
 } from '@onflow/frw-stores';
 import { Platform, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
 import {
@@ -17,7 +19,7 @@ import {
   SendArrowDivider,
   ConfirmationDrawer,
   TransactionFeeSection,
-  SurgeFeeSection,
+  SurgeFeeConfirmationSection,
   ToAccountSection,
   AccountCard,
   SendSectionHeader,
@@ -34,6 +36,7 @@ import {
   getNFTId,
   transformAccountForCard,
   transformAccountForDisplay,
+  retryConfigs,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -52,14 +55,12 @@ interface SendSummaryScreenProps {
 export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
+  const network = bridge.getNetwork() || 'mainnet';
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
   const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
-
-  // Mock surge pricing data - this would come from API in real implementation
-  const isSurgePricingActive = true; // You can set this based on network conditions
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -193,8 +194,40 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
   const isAccountIncompatible = !isResourceCompatible;
 
-  // Mock transaction fee data
-  const transactionFee = '0.001 FLOW';
+  const {
+    data: payerStatus = null,
+    isLoading: isLoadingPayerStatus,
+    error: payerStatusError,
+  } = useQuery({
+    queryKey: payerStatusQueryKeys.payerStatus(network as 'mainnet' | 'testnet'),
+    queryFn: () => payerStatusQueries.fetchPayerStatus(network as 'mainnet' | 'testnet'),
+    staleTime: 0,
+    enabled: true,
+    retry: retryConfigs.critical.retry,
+    retryDelay: retryConfigs.critical.retryDelay,
+  });
+
+  const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
+  const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
+
+  const formattedSurgeMultiplier = useMemo(() => {
+    const multiplier = Number(surgeMultiplier || 1);
+    if (Number.isNaN(multiplier)) {
+      return '1';
+    }
+    return multiplier.toFixed(2).replace(/\.?0+$/, '');
+  }, [surgeMultiplier]);
+
+  // Calculate transaction fee from API's maxFee field or fallback to default
+  // Calculate transaction fee from API's maxFee or use default
+  const transactionFee = useMemo(() => {
+    const fee = payerStatus?.surge?.maxFee;
+    if (!fee) return '~0.001 FLOW';
+
+    const precision = fee < 0.01 ? 4 : fee < 0.1 ? 3 : 2;
+    return `~${fee.toFixed(precision)} FLOW`;
+  }, [payerStatus?.surge?.maxFee]);
+
   const usdFee = '$0.02';
   const isFeesFree = false;
 
@@ -541,14 +574,15 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
                   contentPadding={0}
                 />
               ) : (
-                <YStack mt="$-4">
-                  <SurgeFeeSection
-                    transactionFee="- 5.00"
-                    freeAllowance="1.1357"
-                    showWarning={isSurgeWarningVisible}
-                    onSurgeInfoPress={() => setIsSurgeWarningVisible(true)}
-                  />
-                </YStack>
+                <SurgeFeeConfirmationSection
+                  transactionFee={transactionFee}
+                  surgeMultiplier={surgeMultiplier}
+                  transactionFeeLabel={t('surge.modal.transactionFee')}
+                  surgeTitle={t('surge.modal.surgeActive')}
+                  description={t('surge.modal.description', {
+                    multiplier: formattedSurgeMultiplier,
+                  })}
+                />
               )}
 
               {/* Storage Warning */}
@@ -569,7 +603,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '$textMuted' : '$text'}
+            bg={isSendDisabled ? '#6b7280' : isSurgePricingActive ? '$warning' : '$text'}
             rounded={16}
             items="center"
             justify="center"

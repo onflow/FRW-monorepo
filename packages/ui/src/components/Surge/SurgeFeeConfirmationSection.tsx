@@ -1,37 +1,39 @@
-import { FlowLogo, SurgeIcon, InfoIcon } from '@onflow/frw-icons';
+import { FlowLogo, SurgeIcon } from '@onflow/frw-icons';
 import React from 'react';
-import { YStack, XStack, Button, useTheme } from 'tamagui';
+import { YStack, XStack, useTheme } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
 
 export interface SurgeFeeConfirmationSectionProps {
   transactionFee?: string;
   className?: string;
-  onSurgeInfoPress?: () => void;
   surgeMultiplier?: number;
-  onPriceBreakdownPress?: () => void;
+  transactionFeeLabel?: string;
+  surgeTitle?: string;
+  description?: string;
 }
 
 export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionProps> = ({
   transactionFee = '- 5.00',
   className,
-  onSurgeInfoPress,
   surgeMultiplier = 1,
-  onPriceBreakdownPress,
+  transactionFeeLabel = 'Your transaction fee',
+  surgeTitle = 'Surge price active',
+  description,
 }) => {
   const theme = useTheme();
 
   // Theme-aware colors
   const warningIconColor = theme.warning?.val || '#FDB022';
+  const formattedMultiplier = Number(surgeMultiplier)
+    .toFixed(2)
+    .replace(/\.?0+$/, '');
+  const warningMessage =
+    description ??
+    `Due to high network activity, transaction fees are elevated. Current network fees are ${formattedMultiplier}× higher than usual and your free allowance will not cover the fee for this transaction.`;
+
   return (
-    <YStack
-      bg="rgba(253, 176, 34, 0.15)"
-      rounded="$4"
-      p="$4.5"
-      gap="$2.5"
-      className={className}
-      width="100%"
-    >
+    <YStack bg="$warning10" rounded="$4" p="$4.5" gap="$2.5" className={className} width="100%">
       {/* Transaction Fee Section */}
       <XStack justify="space-between" items="stretch" gap="$2" width="100%">
         {/* Fee Info */}
@@ -44,7 +46,7 @@ export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionPr
               lineHeight={18}
               letterSpacing={-0.084}
             >
-              Your transaction fee
+              {transactionFeeLabel}
             </Text>
             <XStack items="center" gap="$1.5">
               <Text
@@ -77,40 +79,15 @@ export const SurgeFeeConfirmationSection: React.FC<SurgeFeeConfirmationSectionPr
               lineHeight={17}
               letterSpacing={-0.084}
             >
-              Surge price active
+              {surgeTitle}
             </Text>
-            <XStack items="center" gap="$0.5">
-              <Text
-                fontSize={14}
-                fontWeight="400"
-                color="rgba(255, 255, 255, 0.4)"
-                lineHeight={20}
-                letterSpacing={-0.084}
-                width={124}
-                style={{ textAlign: 'right' }}
-              >
-                Price breakdown
-              </Text>
-              <Button
-                bg="transparent"
-                borderWidth={0}
-                p={0}
-                onPress={onSurgeInfoPress || onPriceBreakdownPress}
-                icon={<InfoIcon size={15} color="rgba(255, 255, 255, 0.7)" />}
-                chromeless
-              />
-            </XStack>
           </XStack>
         </YStack>
       </XStack>
 
       {/* Descriptive Warning Message */}
       <Text fontSize={14} fontWeight="400" color="$warning" lineHeight={17} letterSpacing={-0.084}>
-        Due to high network activity, transaction fees are elevated. Current network fees are{' '}
-        {Number(surgeMultiplier)
-          .toFixed(2)
-          .replace(/\.?0+$/, '')}
-        × higher than usual and your free allowance will not cover the fee for this transaction.
+        {warningMessage}
       </Text>
     </YStack>
   );

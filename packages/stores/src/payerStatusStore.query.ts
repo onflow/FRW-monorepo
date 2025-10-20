@@ -57,32 +57,20 @@ export const payerStatusQueries = {
     try {
       logger.info('Fetching payer status', { network });
 
-      const response = await PayerService.status({
+      const { data: response } = await PayerService.status({
         network,
       });
 
       logger.info('Raw API response', { response, type: typeof response });
 
-      // Handle wrapped response structure { status: 200, data: {...} }
-      let payerStatusData;
-      if (response && typeof response === 'object') {
-        if ('data' in response && response.data) {
-          payerStatusData = response.data;
-        } else {
-          payerStatusData = response;
-        }
-      } else {
-        payerStatusData = response;
-      }
-
-      if (!payerStatusData) {
-        logger.error('Invalid payer status response format', { response, payerStatusData });
+      if (!response) {
+        logger.error('Invalid payer status response format', { response });
         throw new Error('Invalid payer status response format');
       }
 
-      logger.info('Extracted payer status data', { payerStatusData });
+      logger.info('Extracted payer status data', { response });
 
-      return payerStatusData;
+      return response;
     } catch (error) {
       logger.error('Failed to fetch payer status', {
         error: error instanceof Error ? error.message : String(error),
