@@ -1463,10 +1463,6 @@ export class WalletController extends BaseController {
     return await openapiService.getPayerStatus();
   };
 
-  signProposer = async (signable): Promise<string> => {
-    return await userWalletService.signProposer(signable);
-  };
-
   getAuthorizationFunction = async () => {
     return userWalletService.authorizationFunction.bind(userWalletService);
   };
