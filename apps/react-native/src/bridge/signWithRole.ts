@@ -23,21 +23,26 @@ export const proposer = async (account: any) => {
 };
 
 export const payer = async (account: any) => {
-  // TODO: get payer address and key id from config
-  let ADDRESS = '0x319e67f2ef9d937f'; // Fixed payer address
-  const KEY_ID = 0;
   const network = platform.getNetwork() as Network;
-  if (network === 'testnet') {
-    ADDRESS = '0xcb1cf3196916f9e2';
+  const { data: payerStatus } = await PayerService.status({
+    network: network,
+  });
+
+  // If the payer is surge active, use the proposer as the payer
+  if (payerStatus.surge.active) {
+    return proposer(account);
   }
+
+  const ADDRESS = payerStatus.feePayer.address;
+  const KEY_ID = payerStatus.feePayer.keyIndex;
 
   return {
     ...account,
     tempId: `${ADDRESS}-${KEY_ID}`,
-    addr: ADDRESS.replace('0x', ''),
+    addr: ADDRESS?.replace('0x', ''),
     keyId: Number(KEY_ID),
     signingFunction: async (signable: any) => {
-      const response = await PayerService.signAsFeePayer({
+      const { data: response } = await PayerService.signAsFeePayer({
         body: {
           message: {
             envelopeMessage: signable.message,
@@ -46,9 +51,9 @@ export const payer = async (account: any) => {
         },
       });
       return {
-        addr: response.data.address,
-        keyId: Number(response.data.keyId),
-        signature: response.data.sig,
+        addr: response.address,
+        keyId: Number(response.keyId),
+        signature: response.sig,
       };
     },
   };
