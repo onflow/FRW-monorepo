@@ -1027,26 +1027,12 @@ class UserWallet {
     const message = signable.message;
     const envelope = await openapiService.signAsFeePayer(tx, message);
 
-    // Check if envelope has an error property
-    if (envelope && envelope.error) {
-      throw new Error(envelope.error);
+    // Check if envelope has an error status
+    if (envelope && envelope.status === 429) {
+      throw new Error(envelope.message);
     }
 
-    const signature = envelope.envelopeSigs.sig;
-    return signature;
-  };
-
-  signAsBridgeFeePayer = async (signable): Promise<string> => {
-    const tx = signable.voucher;
-    const message = signable.message;
-    const envelope = await openapiService.signAsBridgeFeePayer(tx, message);
-
-    // Check if envelope has an error property
-    if (envelope && envelope.error) {
-      throw new Error(envelope.error);
-    }
-
-    const signature = envelope.envelopeSigs.sig;
+    const signature = envelope.data.sig;
     return signature;
   };
 
@@ -1055,12 +1041,12 @@ class UserWallet {
     const message = signable.message;
     const envelope = await openapiService.signAsBridgePayer(tx, message);
 
-    // Check if envelope has an error property
-    if (envelope && envelope.error) {
-      throw new Error(envelope.error);
+    // Check if envelope has an error status
+    if (envelope && envelope.status === 429) {
+      throw new Error(envelope.message);
     }
 
-    const signature = envelope.authorizerSigs.sig;
+    const signature = envelope.data.sig;
     return signature;
   };
 
