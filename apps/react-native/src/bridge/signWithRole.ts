@@ -33,13 +33,13 @@ export const payer = async (account: any) => {
     return proposer(account);
   }
 
-  const ADDRESS = payerStatus.feePayer.address;
-  const KEY_ID = payerStatus.feePayer.keyIndex;
+  const ADDRESS = payerStatus.feePayer.address ?? '0x319e67f2ef9d937f';
+  const KEY_ID = payerStatus.feePayer.keyIndex ?? 0;
 
   return {
     ...account,
     tempId: `${ADDRESS}-${KEY_ID}`,
-    addr: ADDRESS?.replace('0x', ''),
+    addr: ADDRESS.replace('0x', ''),
     keyId: Number(KEY_ID),
     signingFunction: async (signable: any) => {
       const { data: response } = await PayerService.signAsFeePayer({
@@ -74,7 +74,7 @@ export const bridgeAuthorization = async (account: any) => {
     addr: ADDRESS.replace('0x', ''),
     keyId: Number(KEY_ID),
     signingFunction: async (signable: any) => {
-      const response = await PayerService.signAsBridgePayer({
+      const { data: response } = await PayerService.signAsBridgePayer({
         body: {
           message: {
             payload: signable.message,
@@ -83,9 +83,9 @@ export const bridgeAuthorization = async (account: any) => {
         },
       });
       return {
-        addr: response.data.address,
-        keyId: Number(response.data.keyId),
-        signature: response.data.sig,
+        addr: response.address,
+        keyId: Number(response.keyId),
+        signature: response.sig,
       };
     },
   };
