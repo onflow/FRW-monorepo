@@ -1646,7 +1646,7 @@ transaction(nftIdentifier: String, id: UInt256, recipient: Address) {
             let collectionCap = signer.capabilities.storage.issue<&{NonFungibleToken.Collection}>(collectionData.storagePath)
             signer.capabilities.publish(collectionCap, at: collectionData.publicPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
+        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.CollectionPublic}>(collectionData.publicPath)
             ?? panic("Could not borrow Receiver from recipient's public capability path")
 
         /* --- Configure a ScopedFTProvider --- */
