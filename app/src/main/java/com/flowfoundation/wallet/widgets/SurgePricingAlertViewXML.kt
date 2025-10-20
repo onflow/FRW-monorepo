@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.widgets
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -14,8 +15,10 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
-import com.flowfoundation.wallet.mixpanel.SurgePricingMetrics
+import com.flowfoundation.wallet.network.model.PayerErrorResponse
+import com.flowfoundation.wallet.network.model.SurgeInfo
 import com.flowfoundation.wallet.utils.logd
 
 /**
@@ -51,7 +54,8 @@ class SurgePricingAlertViewXML {
         @JvmStatic
         fun showSurgeAlert(
             activity: Activity,
-            errorResponse: PayerServiceInterceptor.PayerErrorResponse,
+            errorResponse: PayerErrorResponse,
+            surgeInfo: SurgeInfo? = null,
             onUserDecision: (accepted: Boolean) -> Unit
         ) {
             if (isAlertShowing) {
@@ -72,7 +76,7 @@ class SurgePricingAlertViewXML {
                     isAlertShowing = true
 
                     // Track that the alert was shown
-                    SurgePricingMetrics.trackSurgeAlertShown(errorResponse)
+                    MixpanelManager.surgePricingAlertShown()
 
                     // Create the dialog
                     val dialog = Dialog(activity, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen)
@@ -82,7 +86,7 @@ class SurgePricingAlertViewXML {
                     val dialogView = inflater.inflate(R.layout.dialog_surge_pricing_alert, null)
 
                     // Setup the views
-                    setupDialogViews(dialogView, errorResponse, activity)
+                    setupDialogViews(dialogView, surgeInfo, activity)
 
                     // Setup the dialog
                     dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -116,7 +120,7 @@ class SurgePricingAlertViewXML {
          */
         private fun setupDialogViews(
             dialogView: View,
-            errorResponse: PayerServiceInterceptor.PayerErrorResponse,
+            surgeInfo: SurgeInfo?,
             context: Context
         ) {
             // Title (now centered)
@@ -125,18 +129,18 @@ class SurgePricingAlertViewXML {
 
             // Surge fee value
             val surgeFeeValue = dialogView.findViewById<TextView>(R.id.surgeFeeValue)
-            surgeFeeValue.text = "${errorResponse.getEstimatedFee()} FLOW"
+            val estimatedFee = surgeInfo?.maxFee?.let { String.format("%.6f", it) } ?: "0.003"
+            surgeFeeValue.text = "$estimatedFee FLOW"
 
             // Description
             val descriptionText = dialogView.findViewById<TextView>(R.id.descriptionText)
-            val multiplier = errorResponse.getSurgeMultiplier().toInt()
+            val multiplier = surgeInfo?.getMultiplierAsDouble()?.toInt() ?: 4
             descriptionText.text = "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are ${multiplier}× higher than usual."
 
             // Close button (X)
             val closeButton = dialogView.findViewById<TextView>(R.id.closeButton)
             closeButton.setOnClickListener {
                 logd(TAG, "User cancelled surge pricing via close button")
-                SurgePricingMetrics.trackSurgeDecision(false, errorResponse)
                 userDecisionCallback?.invoke(false)
                 dismissCurrentAlert()
             }
@@ -144,15 +148,16 @@ class SurgePricingAlertViewXML {
             // Cancel button removed - user can use X button to cancel
 
             // Hold to confirm button
-            setupHoldToConfirmButton(dialogView, errorResponse)
+            setupHoldToConfirmButton(dialogView, surgeInfo)
         }
 
         /**
          * Setup the hold-to-confirm button with progress animation
          */
+        @SuppressLint("ClickableViewAccessibility")
         private fun setupHoldToConfirmButton(
             dialogView: View,
-            errorResponse: PayerServiceInterceptor.PayerErrorResponse
+            surgeInfo: SurgeInfo?
         ) {
             val holdButtonContainer = dialogView.findViewById<FrameLayout>(R.id.holdButtonContainer)
             val holdButtonText = dialogView.findViewById<TextView>(R.id.holdButtonText)
@@ -178,11 +183,6 @@ class SurgePricingAlertViewXML {
                         // Completed holding - change to indeterminate spinner
                         progressIndicator.isIndeterminate = true
                         holdButtonText.text = ""
-
-                        val holdDuration = System.currentTimeMillis() - startTimeMillis
-                        SurgePricingMetrics.trackHoldToConfirm(true, holdDuration)
-                        SurgePricingMetrics.trackSurgeDecision(true, errorResponse)
-
                         userDecisionCallback?.invoke(true)
 
                         // Keep dialog open with spinner showing while transaction processes
@@ -220,8 +220,6 @@ class SurgePricingAlertViewXML {
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                         if (isHolding && !progressIndicator.isIndeterminate) {
                             // User released before completing
-                            val holdDuration = System.currentTimeMillis() - startTimeMillis
-                            SurgePricingMetrics.trackHoldToConfirm(false, holdDuration)
                             resetButton()
                             logd(TAG, "Hold button released early")
                         }

@@ -24,7 +24,6 @@ fun retrofit(
 ): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(network = network))
-        addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
         addInterceptor(InstabugOkhttpInterceptor())
 
         callTimeout(20, TimeUnit.SECONDS)
@@ -75,7 +74,6 @@ fun cadenceScriptApi(): Retrofit {
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(ignoreAuthorization))
-        addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
         addInterceptor(InstabugOkhttpInterceptor())
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
