@@ -23,6 +23,7 @@
     "bundle:android:sourcemap": "react-native bundle --platform android --entry-file index.js --dev false --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output ./android-sourcemap.json"
   },
   "dependencies": {
+    "@onflow/frw-api": "workspace:^",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-screens": "workspace:^",
