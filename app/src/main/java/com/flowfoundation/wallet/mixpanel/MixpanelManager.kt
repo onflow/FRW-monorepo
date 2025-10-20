@@ -250,16 +250,16 @@ object MixpanelManager {
         trackEvent(EVENT_ACCOUNT_RECOVERED, properties)
     }
 
-    fun holdToConfirm(
-        completed: Boolean,
-        holdDurationMs: Long
-    ) {
-        val properties = JSONObject().apply {
-            put("completed", completed)
-            put("hold_duration_ms", holdDurationMs)
-            put("timestamp", System.currentTimeMillis())
-        }
-        trackEvent(EVENT_SURGE_HOLD_TO_CONFIRM, properties)
+    fun surgePricingAlertShown() {
+        trackEvent(EVENT_SURGE_PRICING_ALERT_SHOWN)
+    }
+
+    fun surgePricingAccepted() {
+        trackEvent(EVENT_SURGE_PRICING_ACCEPTED)
+    }
+
+    fun surgePricingDeclined() {
+        trackEvent(EVENT_SURGE_PRICING_DECLINED)
     }
 
     private fun trackMultiBackupEvent(eventName: String, provider: MixpanelBackupProvider?) {

@@ -9,7 +9,11 @@ import com.flowfoundation.wallet.mixpanel.EVENT_SURGE_PRICING_DECLINED
 import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
+import com.flowfoundation.wallet.network.model.PayerStatusResponse
+import com.flowfoundation.wallet.network.model.PayerInfo
+import com.flowfoundation.wallet.network.model.BridgePayerInfo
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
+import com.flowfoundation.wallet.network.model.PayerErrorResponse
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.widgets.SurgePricingAlertViewXML
@@ -35,7 +39,7 @@ object SurgePricingManager {
 
   // Cache for payer status with TTL
   private data class PayerStatusCache(
-    val response: PayerServiceInterceptor.PayerStatusResponse,
+    val response: PayerStatusResponse,
     val timestamp: Long,
     val ttlMs: Long = DEFAULT_TTL_MS
   ) {
@@ -48,7 +52,7 @@ object SurgePricingManager {
    * Fetch payer status from the API with caching and retry logic
    * This is called before transactions to check surge pricing status
    */
-  suspend fun fetchPayerStatus(): PayerServiceInterceptor.PayerStatusResponse? {
+  suspend fun fetchPayerStatus(): PayerStatusResponse? {
     return withContext(Dispatchers.IO) {
       // Check cache first
       cachedPayerStatus?.let { cache ->
@@ -82,13 +86,12 @@ object SurgePricingManager {
           val responseBody = response.body?.string()
 
           if (response.isSuccessful && !responseBody.isNullOrBlank()) {
-            val payerStatus = Gson().fromJson(responseBody, PayerServiceInterceptor.PayerStatusResponse::class.java)
+            val payerStatus = Gson().fromJson(responseBody, PayerStatusResponse::class.java)
             logd(TAG, "Payer status fetched successfully:")
             logd(TAG, "  - Status: ${payerStatus.status}")
             logd(TAG, "  - Surge active: ${payerStatus.data?.surge?.active}")
             logd(TAG, "  - Surge multiplier: ${payerStatus.data?.surge?.multiplier}")
             logd(TAG, "  - Max fee: ${payerStatus.data?.surge?.maxFee}")
-            logd(TAG, "  - Fee payer enabled: ${payerStatus.data?.feePayer?.enabled}")
 
             // Cache the response with TTL from server or default
             val ttlSeconds = payerStatus.data?.surge?.ttlSeconds ?: 60
@@ -140,129 +143,76 @@ object SurgePricingManager {
    * Helper function to execute payer requests with surge pricing handling
    * Shows alert dialog if surge pricing is detected and waits for user decision
    *
-   * @return Response string if successful, null if user accepts surge (proceed without payer) or cancels
+   * @return Response string if successful, null if user cancels or accepts surge pricing (proceed without payer)
    */
   suspend fun executePayerRequestWithSurgeHandling(
     functionName: String,
     data: Any?,
     host: String? = BASE_HOST
   ): String? = suspendCancellableCoroutine { continuation ->
-    // Execute preflight and request in IO scope
     ioScope {
-      // First, do preflight check for surge pricing to avoid unnecessary calls
-      val payerStatus = fetchPayerStatus()
-
-      // Check if surge is active from the preflight check
-      if (payerStatus?.data?.surge?.active == true) {
-        logd(TAG, "Surge pricing detected from preflight check")
-        val currentActivity = getCurrentActivity()
-
-        if (currentActivity != null) {
-          // Create error response from status check
-          val errorResponse = PayerServiceInterceptor.PayerErrorResponse(
-            status = 429,
-            message = "Surge pricing is active",
-            surgeInfo = payerStatus.data.surge
-          )
-
-          logd(TAG, "Showing surge pricing alert from preflight")
-
-          currentActivity.runOnUiThread {
-            SurgePricingAlertViewXML.showSurgeAlert(
-              activity = currentActivity,
-              errorResponse = errorResponse,
-              onUserDecision = { accepted ->
-                if (accepted) {
-                  logd(TAG, "User accepted surge pricing - proceeding without remote payer (self-custody)")
-                  // Record telemetry for accepting surge
-                  MixpanelManager.track(EVENT_SURGE_PRICING_ACCEPTED, mapOf(
-                    "source" to "preflight",
-                    "multiplier" to (payerStatus.data.surge?.multiplier ?: 1.0),
-                    "max_fee" to (payerStatus.data.surge?.maxFee ?: "0")
-                  ))
-                  SurgePricingAlertViewXML.dismissCurrentAlert()
-                  // Return null to indicate proceeding without payer
-                  continuation.resume(null)
-                } else {
-                  logd(TAG, "User cancelled transaction due to surge pricing")
-                  // Record telemetry for declining surge
-                  MixpanelManager.track(EVENT_SURGE_PRICING_DECLINED, mapOf(
-                    "source" to "preflight",
-                    "multiplier" to (payerStatus.data.surge?.multiplier ?: 1.0),
-                    "max_fee" to (payerStatus.data.surge?.maxFee ?: "0")
-                  ))
-                  SurgePricingAlertViewXML.dismissCurrentAlert()
-                  continuation.cancel()
-                }
-              }
-            )
-          }
-          return@ioScope // Exit early, let the dialog callback handle continuation
-        }
-      }
-
-      // Set up callback for interceptor errors (in case status check missed it or status changed)
-      PayerServiceInterceptor.setErrorCallback { errorResponse ->
-        val currentActivity = getCurrentActivity()
-        logd(TAG, "PayerServiceInterceptor callback triggered. Current activity: ${currentActivity?.javaClass?.simpleName}")
-
-        if (currentActivity != null && (errorResponse.isSurgePricing() || errorResponse.isServerError())) {
-          logd(TAG, "Showing surge pricing alert from interceptor on UI thread")
-          currentActivity.runOnUiThread {
-            SurgePricingAlertViewXML.showSurgeAlert(
-              activity = currentActivity,
-              errorResponse = errorResponse,
-              onUserDecision = { accepted ->
-                if (accepted && errorResponse.isSurgePricing()) {
-                  logd(TAG, "User accepted surge pricing - proceeding without remote payer (self-custody)")
-                  // Record telemetry for accepting surge
-                  MixpanelManager.track(EVENT_SURGE_PRICING_ACCEPTED, mapOf(
-                    "source" to "interceptor",
-                    "status_code" to errorResponse.status,
-                    "multiplier" to (errorResponse.surgeInfo?.multiplier ?: 1.0),
-                    "max_fee" to (errorResponse.surgeInfo?.maxFee ?: "0")
-                  ))
-                  SurgePricingAlertViewXML.dismissCurrentAlert()
-                  // Return null to indicate proceeding without payer
-                  continuation.resume(null)
-                } else {
-                  logd(TAG, "User cancelled transaction")
-                  // Record telemetry for declining
-                  MixpanelManager.track(EVENT_SURGE_PRICING_DECLINED, mapOf(
-                    "source" to "interceptor",
-                    "status_code" to errorResponse.status,
-                    "multiplier" to (errorResponse.surgeInfo?.multiplier ?: 1.0),
-                    "max_fee" to (errorResponse.surgeInfo?.maxFee ?: "0")
-                  ))
-                  SurgePricingAlertViewXML.dismissCurrentAlert()
-                  continuation.cancel()
-                }
-              }
-            )
-          }
-        }
-      }
-
-      // Execute the actual payer request (only if not already blocked by preflight)
       try {
+        // Execute the HTTP request directly
         val response = executeHttpFunction(functionName, data, host)
 
-        // Check if we have a pending error that wasn't handled
-        val lastError = PayerServiceInterceptor.getLastErrorResponse()
-        if (lastError != null && (lastError.isSurgePricing() || lastError.isServerError())) {
-          // Wait for user decision from the alert
-          // The callback above will handle the continuation
-        } else {
-          // Success or non-surge error
+        if (response != null) {
+          // Success - return the response
           continuation.resume(response)
+        } else {
+          // Response is null, this could be due to HTTP error (like 429)
+          // Check if there's a last error from the interceptor
+          val lastError = PayerServiceInterceptor.getLastErrorResponse()
+
+          if (lastError != null && lastError.isSurgePricing()) {
+            // Handle 429 surge pricing response
+            logd(TAG, "Detected 429 surge pricing response")
+            val currentActivity = getCurrentActivity()
+
+            if (currentActivity != null) {
+              logd(TAG, "Showing surge pricing alert for 429 response")
+
+              // Get surge info from cached payer status
+              val surgeInfo = cachedPayerStatus?.response?.data?.surge
+              logd(TAG, "Using cached surge info: active=${surgeInfo?.active}, multiplier=${surgeInfo?.multiplier}, maxFee=${surgeInfo?.maxFee}")
+
+              currentActivity.runOnUiThread {
+                SurgePricingAlertViewXML.showSurgeAlert(
+                  activity = currentActivity,
+                  errorResponse = lastError,
+                  surgeInfo = surgeInfo,
+                  onUserDecision = { accepted ->
+                    if (accepted) {
+                      logd(TAG, "User accepted surge pricing - will use user as payer")
+                      // Record telemetry for accepting surge
+                      MixpanelManager.surgePricingAccepted()
+                      SurgePricingAlertViewXML.dismissCurrentAlert()
+                      // Return null to indicate proceeding without payer
+                      continuation.resume(null)
+                    } else {
+                      logd(TAG, "User cancelled transaction due to surge pricing")
+                      // Record telemetry for declining surge
+                      MixpanelManager.surgePricingDeclined()
+                      SurgePricingAlertViewXML.dismissCurrentAlert()
+                      // Cancel the continuation to interrupt the transaction
+                      continuation.cancel()
+                    }
+                  }
+                )
+              }
+            } else {
+              // No activity available, can't show dialog - proceed without payer
+              logd(TAG, "No activity available for surge pricing dialog, proceeding without payer")
+              continuation.resume(null)
+            }
+          } else {
+            // Other error (network, server error, etc.) - proceed without payer
+            logd(TAG, "HTTP request failed (non-surge), proceeding without payer")
+            continuation.resume(null)
+          }
         }
       } catch (e: Exception) {
-        logd(TAG, "Payer request failed: ${e.message}")
-        // For non-surge errors, just fail silently and proceed without payer
+        logd(TAG, "Exception during payer request: ${e.message}, proceeding without payer")
         continuation.resume(null)
-      } finally {
-        // Clean up
-        PayerServiceInterceptor.setErrorCallback(null)
       }
     }
   }
@@ -272,6 +222,55 @@ object SurgePricingManager {
    */
   private fun getCurrentActivity(): Activity? {
     return ActivityManager.getCurrentActivity()
+  }
+
+  /**
+   * Show surge pricing alert dialog with continuation control
+   * This version uses suspendCancellableCoroutine to allow continuation control
+   * for interrupting or continuing the flow based on user decision
+   *
+   * @return true if user accepted, throws CancellationException if user declined
+   */
+  suspend fun showSurgePricingAlertWithContinuation(): Boolean = suspendCancellableCoroutine { continuation ->
+    val currentActivity = getCurrentActivity()
+
+    if (currentActivity == null) {
+      logd(TAG, "No activity available for surge pricing dialog")
+      // If no activity, we can't show dialog, so we continue without user input
+      continuation.resume(false)
+      return@suspendCancellableCoroutine
+    }
+
+    logd(TAG, "Showing surge pricing alert")
+
+    // Get surge info from cached payer status
+    val surgeInfo = cachedPayerStatus?.response?.data?.surge
+    logd(TAG, "Using cached surge info: active=${surgeInfo?.active}, multiplier=${surgeInfo?.multiplier}, maxFee=${surgeInfo?.maxFee}")
+
+    // Create a simple error response for the alert (status doesn't matter much here)
+    val errorResponse = PayerErrorResponse(status = 429)
+
+    currentActivity.runOnUiThread {
+      SurgePricingAlertViewXML.showSurgeAlert(
+        activity = currentActivity,
+        errorResponse = errorResponse,
+        surgeInfo = surgeInfo,
+        onUserDecision = { accepted ->
+          if (accepted) {
+            logd(TAG, "User accepted surge pricing - proceeding")
+            MixpanelManager.surgePricingAccepted()
+            SurgePricingAlertViewXML.dismissCurrentAlert()
+            continuation.resume(true)
+          } else {
+            logd(TAG, "User declined surge pricing - cancelling")
+            MixpanelManager.surgePricingDeclined()
+            SurgePricingAlertViewXML.dismissCurrentAlert()
+            // Cancel the continuation to interrupt the flow
+            continuation.cancel()
+          }
+        }
+      )
+    }
   }
 
   /**
@@ -287,5 +286,77 @@ object SurgePricingManager {
    */
   fun hasCachedStatus(): Boolean {
     return cachedPayerStatus?.isValid() == true
+  }
+
+  /**
+   * Get fee payer info if available and conditions allow
+   * Returns null if user should pay (surge active or payer unavailable)
+   * Returns PayerInfo if we should use fee payer service
+   */
+  suspend fun getFeePayer(): PayerInfo? {
+    val payerStatus = fetchPayerStatus()
+    val surge = payerStatus?.data?.surge
+    val feePayer = payerStatus?.data?.feePayer
+
+    // If any data is missing, user pays
+    val surgeActive = surge?.active
+    val payerAvailable = feePayer?.available
+
+    if (surgeActive == null || payerAvailable == null) {
+      logd(TAG, "getFeePayer() - Missing data (surge active: $surgeActive, payer available: $payerAvailable), user pays")
+      return null
+    }
+
+    if (surgeActive) {
+      // When surge is active, user pays
+      logd(TAG, "getFeePayer() - Surge active, user pays")
+      return null
+    }
+
+    // When surge is not active, check if payer is available
+    val userPay = !payerAvailable
+    return if (userPay) {
+      logd(TAG, "getFeePayer() - Payer not available, user pays")
+      null
+    } else {
+      logd(TAG, "getFeePayer() - Using fee payer service: ${feePayer.address}")
+      feePayer
+    }
+  }
+
+  /**
+   * Get bridge payer info if available and conditions allow
+   * Returns null if user should pay (surge active or payer unavailable)
+   * Returns BridgePayerInfo if we should use bridge payer service
+   */
+  suspend fun getBridgePayer(): BridgePayerInfo? {
+    val payerStatus = fetchPayerStatus()
+    val surge = payerStatus?.data?.surge
+    val bridgePayer = payerStatus?.data?.bridgePayer
+
+    // If any data is missing, user pays
+    val surgeActive = surge?.active
+    val payerAvailable = bridgePayer?.available
+
+    if (surgeActive == null || payerAvailable == null) {
+      logd(TAG, "getBridgePayer() - Missing data (surge active: $surgeActive, payer available: $payerAvailable), user pays")
+      return null
+    }
+
+    if (surgeActive) {
+      // When surge is active, user pays
+      logd(TAG, "getBridgePayer() - Surge active, user pays")
+      return null
+    }
+
+    // When surge is not active, check if payer is available
+    val userPay = !payerAvailable
+    return if (userPay) {
+      logd(TAG, "getBridgePayer() - Payer not available, user pays")
+      null
+    } else {
+      logd(TAG, "getBridgePayer() - Using bridge payer service: ${bridgePayer.address}")
+      bridgePayer
+    }
   }
 }

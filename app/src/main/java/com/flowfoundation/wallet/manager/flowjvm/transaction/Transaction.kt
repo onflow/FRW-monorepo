@@ -31,6 +31,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
 import org.onflow.flow.infrastructure.removeHexPrefix
 import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
+import com.flowfoundation.wallet.network.functions.executeHttpFunction
 
 private const val TAG = "Transaction"
 
@@ -602,7 +603,7 @@ suspend fun Transaction.addLocalEnvelopeSignatures(): Transaction {
   return this.addEnvelopeSignature(signingAddress.removeHexPrefix(), keyIndexForSigning, kmmSigner)
 }
 
-suspend fun Transaction.buildPayerSignable(): PayerSignable? {
+suspend fun Transaction.buildPayerSignable(): FeePayerSignRequest? {
   val payerAccount = FlowCadenceApi.getAccount(payer)
   payerAccount.keys ?: return null
 
@@ -629,15 +630,15 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable? {
     }
   )
 
-  return PayerSignable(
-    transaction = formattedTx,
-    message = PayerSignable.Message(
-      formattedTx.envelopeMessage().toHexString()
-    )
+  return FeePayerSignRequest(
+    message = FeePayerSignRequest.FeePayerMessage(
+      envelopeMessage = formattedTx.envelopeMessage().toHexString()
+    ),
+    network = chainNetWorkString()
   )
 }
 
-suspend fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
+suspend fun Transaction.buildBridgeFeePayerSignable(): BridgePayerSignRequest? {
   val payerAccount = FlowCadenceApi.getAccount(payer)
   payerAccount.keys ?: return null
 
@@ -664,11 +665,11 @@ suspend fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
     }
   )
 
-  return PayerSignable(
-    transaction = formattedTx,
-    message = PayerSignable.Message(
-      formattedTx.envelopeMessage().toHexString()
-    )
+  return BridgePayerSignRequest(
+    message = BridgePayerSignRequest.BridgePayerMessage(
+      payload = formattedTx.payloadMessage().toHexString()
+    ),
+    network = chainNetWorkString()
   )
 }
 
@@ -721,7 +722,20 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
   logd(TAG, "Using KMM hashing algorithm ${keyOnChainHashingAlgorithm.name} for key ${currentKey.index} on account $walletAddress")
 
   // Determine payer and authorizers
-  val payer = builder.payer?.removeHexPrefix() ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else builder.walletAddress?.removeHexPrefix()).orEmpty()
+  val payer = builder.payer?.removeHexPrefix() ?: run {
+    if (builder.isBridgePayer) {
+      val bridgePayer = SurgePricingManager.getBridgePayer()
+      bridgePayer?.address() ?: builder.walletAddress?.removeHexPrefix().orEmpty()
+    } else {
+      if (isGasFree()) {
+        // Check if fee payer service should be used based on surge pricing
+        val feePayer = SurgePricingManager.getFeePayer()
+        feePayer?.address() ?: builder.walletAddress?.removeHexPrefix().orEmpty()
+      } else {
+        builder.walletAddress?.removeHexPrefix().orEmpty()
+      }
+    }
+  }
   val authorizers = determineAuthorizers(builder, flowAccount.address, payer)
 
   // Get reference block ID
@@ -822,16 +836,16 @@ suspend fun Transaction.addFreeGasEnvelope(): Transaction {
     host = BASE_HOST
   )
 
-  // If response is null, it means user cancelled due to surge pricing
+  // If response is null, it means user cancelled due to surge pricing or other error
   if (response == null) {
-    logd(TAG, "Payer envelope signature request cancelled (likely due to surge pricing)")
-    // Return transaction without payer signature - it will fall back to self-custody
+    logd(TAG, "Payer envelope signature request cancelled or failed, transaction will use user as payer")
+    // Return transaction without payer signature - caller will handle rebuilding with user as payer
     return this
   }
 
   logd(TAG, "Received envelope signature response: $response")
 
-  val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
+  val sign = Gson().fromJson(response, SignPayerResponse::class.java).data
   logd(TAG, "Parsed envelope signature: $sign")
 
   val newEnvelopeSignature = TransactionSignature(
@@ -845,33 +859,18 @@ suspend fun Transaction.addFreeGasEnvelope(): Transaction {
 }
 
 suspend fun Transaction.addFreeBridgeFeeEnvelope(): Transaction {
-  val signable = buildBridgeFeePayerSignable()
+    val response = executeHttpFunction(FUNCTION_SIGN_AS_BRIDGE_PAYER, buildBridgeFeePayerSignable(), BASE_HOST)
+    logd(TAG, "response:$response")
 
-  // Use surge-aware payer request handling for bridge transactions
-  val response = SurgePricingManager.executePayerRequestWithSurgeHandling(
-    functionName = FUNCTION_SIGN_AS_BRIDGE_PAYER,
-    data = signable,
-    host = BASE_HOST
-  )
+  val sign = Gson().fromJson(response, SignPayerResponse::class.java).data
 
-  // If response is null, it means user cancelled due to surge pricing
-  if (response == null) {
-    logd(TAG, "Bridge payer envelope signature request cancelled (likely due to surge pricing)")
-    // Return transaction without payer signature - it will fall back to self-custody
-    return this
-  }
-
-  logd(TAG, "response:$response")
-
-  val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
-
-  val newEnvelopeSignature = TransactionSignature(
+  val newPayloadSignature = TransactionSignature(
     address = sign.address,
     keyIndex = sign.keyId,
     signature = sign.sig
   )
 
-  return copy(envelopeSignatures = envelopeSignatures + newEnvelopeSignature)
+  return copy(payloadSignatures = payloadSignatures + newPayloadSignature)
 }
 
 @OptIn(ExperimentalSerializationApi::class)
