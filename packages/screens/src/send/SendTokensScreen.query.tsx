@@ -214,56 +214,15 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     return multiplier.toFixed(2).replace(/\.?0+$/, '');
   }, [surgeMultiplier]);
 
-  // Calculate transaction fee from API's maxFee field or fallback to default
+  // Calculate transaction fee from API's maxFee or use default
   const transactionFee = useMemo(() => {
-    if (payerStatus?.surge?.maxFee) {
-      // maxFee is provided by the API with surge factor already applied
-      const fee = payerStatus.surge.maxFee;
+    const fee = payerStatus?.surge?.maxFee;
+    if (!fee) return '~0.001 FLOW';
 
-      // Format the fee with appropriate precision
-      if (fee < 0.01) {
-        return `~${fee.toFixed(4)} FLOW`;
-      } else if (fee < 0.1) {
-        return `~${fee.toFixed(3)} FLOW`;
-      } else {
-        return `~${fee.toFixed(2)} FLOW`;
-      }
-    }
-
-    // Fallback to default fee if maxFee is not available
-    return '~0.001 FLOW';
+    const precision = fee < 0.01 ? 4 : fee < 0.1 ? 3 : 2;
+    return `~${fee.toFixed(precision)} FLOW`;
   }, [payerStatus?.surge?.maxFee]);
 
-  // Log payer status API response for debugging
-  React.useEffect(() => {
-    if (payerStatus && typeof payerStatus === 'object') {
-      logger.info('Payer Status API Response:', {
-        surge: payerStatus?.surge || null,
-        feePayer: payerStatus?.feePayer || null,
-        bridgePayer: payerStatus?.bridgePayer || null,
-        updatedAt: payerStatus?.updatedAt || null,
-        reason: payerStatus?.reason || null,
-        isSurgePricingActive,
-        surgeMultiplier,
-        maxFee: payerStatus?.surge?.maxFee || null,
-        calculatedTransactionFee: transactionFee,
-      });
-    }
-    if (isLoadingPayerStatus) {
-      logger.info('Loading payer status...');
-    }
-    if (payerStatusError) {
-      logger.error('Payer status error:', payerStatusError);
-    }
-    setIsSurgeWarningVisible(Boolean(payerStatus?.surge?.active));
-  }, [
-    payerStatus,
-    isLoadingPayerStatus,
-    payerStatusError,
-    isSurgePricingActive,
-    surgeMultiplier,
-    transactionFee,
-  ]);
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
 
