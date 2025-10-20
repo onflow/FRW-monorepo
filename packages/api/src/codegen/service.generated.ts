@@ -156,9 +156,9 @@ export class MetadataService {
   }
 }
 
-export class PayerService {
+export class DeprecatedService {
   /**
-   * Sign as bridge fee payer
+   * Sign as bridge fee payer (Deprecated)
    */
   static signAsBridgeFeePayer(options: IRequestOptions = {}): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -169,14 +169,49 @@ export class PayerService {
       axios(configs, resolve, reject);
     });
   }
+}
+
+export class PayerService {
+  /**
+   * Sign as bridge auth payer
+   */
+  static signAsBridgePayer(
+    params: {
+      /** requestBody */
+      body?: AuthSignParams;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<SignaturePayload> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/signAsBridgePayer';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = params.body;
+
+      configs.data = data;
+
+      axios(configs, resolve, reject);
+    });
+  }
   /**
    * Sign as fee payer
    */
-  static signAsFeePayer(options: IRequestOptions = {}): Promise<any> {
+  static signAsFeePayer(
+    params: {
+      /** requestBody */
+      body?: PayerSignParams;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<SignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsFeePayer';
 
       const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = params.body;
+
+      configs.data = data;
 
       axios(configs, resolve, reject);
     });
@@ -184,11 +219,18 @@ export class PayerService {
   /**
    * Get payer status
    */
-  static status(options: IRequestOptions = {}): Promise<PayerStatusPayloadV1> {
+  static status(
+    params: {
+      /** The Flow network to query */
+      network?: string;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<PayerStatusApiResponseV1> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v1/payer/status';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+      configs.params = { network: params['network'] };
 
       axios(configs, resolve, reject);
     });
@@ -434,7 +476,7 @@ export class UserFtTokensService {
       currency?: string;
     } = {} as any,
     options: IRequestOptions = {}
-  ): Promise<Response> {
+  ): Promise<TokenResponse> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/v4/evm/tokens/ft/{address}';
       url = url.replace('{address}', params['address'] + '');
@@ -924,12 +966,12 @@ export interface TransferListErrorResponse {
 /** Response */
 export interface Response {
   /** Response data payload */
-  data: CurrencyEVMTokenData[];
+  data?: object;
 
   /** HTTP status code */
-  status: number;
+  status?: number;
 
-  /** Optional message, typically used for errors. */
+  /** Optional response message */
   message?: string;
 }
 
@@ -1009,6 +1051,18 @@ export interface CurrencyEVMTokenData {
 
   /** The value of the balance in the requested currency (if different from USD). */
   balanceInCurrency: string;
+}
+
+/** TokenResponse */
+export interface TokenResponse {
+  /**  */
+  data: CurrencyEVMTokenData[];
+
+  /**  */
+  status: number;
+
+  /** Optional message, typically used for errors. */
+  message?: string;
 }
 
 /** ERC20Token */
@@ -1433,6 +1487,61 @@ export interface PayerStatusApiResponseV1 {
   /** Optional message for API response */
   message?: string;
 }
+
+/** SignedData */
+export interface SignedData {
+  /** The fee payer address */
+  address: string;
+
+  /** The key index used for signing */
+  keyId: number;
+
+  /** The transaction signature */
+  sig: string;
+}
+
+/** SignaturePayload */
+export interface SignaturePayload {
+  /**  */
+  status: number;
+
+  /**  */
+  data: SignedData;
+
+  /**  */
+  message?: string;
+}
+
+/** PayerMsg */
+export interface PayerMsg {
+  /**  */
+  envelopeMessage: string;
+}
+
+/** PayerSignParams */
+export interface PayerSignParams {
+  /**  */
+  message: PayerMsg;
+
+  /**  */
+  network?: Network;
+}
+
+/** PayloadMsg */
+export interface PayloadMsg {
+  /**  */
+  payload: string;
+}
+
+/** AuthSignParams */
+export interface AuthSignParams {
+  /**  */
+  message: PayloadMsg;
+
+  /**  */
+  network?: Network;
+}
+
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'

@@ -58,9 +58,7 @@ export const payerStatusQueries = {
       logger.info('Fetching payer status', { network });
 
       const response = await PayerService.status({
-        headers: {
-          network,
-        },
+        network,
       });
 
       logger.info('Raw API response', { response, type: typeof response });
