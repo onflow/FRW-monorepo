@@ -979,23 +979,6 @@ export class OpenApiService {
     return data;
   };
 
-  signProposer = async (transaction, message: string) => {
-    const messages = {
-      envelopeMessage: message,
-    };
-    const baseURL = this.store.functionsUrl;
-    // 'http://localhost:5001/lilico-dev/us-central1'
-    const data = await this.sendRequest(
-      'POST',
-      '/signAsProposer',
-      {},
-      { transaction, message: messages },
-      baseURL
-    );
-    // (config.method, config.path, {}, { transaction, message: messages });
-    return data;
-  };
-
   getPayerStatus = async () => {
     const data = await this.sendRequest(
       'GET',
