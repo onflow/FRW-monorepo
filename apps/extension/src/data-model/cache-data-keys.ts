@@ -98,7 +98,7 @@ export const registerStatusKey = (pubKey: string) => `register-status-${pubKey}`
 export const registerStatusRefreshRegex = refreshKey(registerStatusKey);
 export type RegisterStatusStore = boolean;
 
-export const userMetadataKey = (pubKey: string) => `user-metadata-${pubKey}`;
+export const userMetadataKey = (userId: string) => `user-metadata-${userId}`;
 export const userMetadataRefreshRegex = refreshKey(userMetadataKey);
 export type UserMetadataStore = Record<string, { background: string; icon: string; name: string }>;
 /*

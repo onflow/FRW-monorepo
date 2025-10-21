@@ -672,8 +672,8 @@ export class AccountManagement {
 
     // Update the metadata cache after successful update
     try {
-      const currentPubKey = userWalletService.getCurrentPubkey();
-      const cacheKey = userMetadataKey(currentPubKey);
+      const userId = await getCurrentProfileId();
+      const cacheKey = userMetadataKey(userId);
 
       // Get existing metadata from cache
       const existingMetadata = (await getValidData<UserMetadataStore>(cacheKey)) || {};

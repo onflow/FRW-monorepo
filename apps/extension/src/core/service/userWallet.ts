@@ -1618,23 +1618,23 @@ const metadataRequestCache = new Map<
 
 /**
  * Fetch user metadata from cache or API
- * @param pubKey - The public key to fetch metadata for
+ * @param userId - The user ID to fetch metadata for
  * @returns Promise<Record<string, { background: string; icon: string; name: string }>>
  */
 const fetchUserMetadata = async (
-  pubKey: string
+  userId: string
 ): Promise<Record<string, { background: string; icon: string; name: string }>> => {
   let customMetadata: Record<string, { background: string; icon: string; name: string }> = {};
 
   try {
     // Try to get from cache first
-    const cachedMetadata = await getCachedData<UserMetadataStore>(userMetadataKey(pubKey));
+    const cachedMetadata = await getCachedData<UserMetadataStore>(userMetadataKey(userId));
 
     if (cachedMetadata) {
       customMetadata = cachedMetadata as UserMetadataStore;
     } else {
-      // Check if there's already a request in progress for this pubKey
-      const cacheKey = userMetadataKey(pubKey);
+      // Check if there's already a request in progress for this userId
+      const cacheKey = userMetadataKey(userId);
       if (metadataRequestCache.has(cacheKey)) {
         customMetadata = await metadataRequestCache.get(cacheKey)!;
       } else {
@@ -1649,7 +1649,7 @@ const fetchUserMetadata = async (
           }
 
           // Cache the result
-          await setCachedData(userMetadataKey(pubKey), result, 300_000);
+          await setCachedData(userMetadataKey(userId), result, 300_000);
           return result;
         })();
 
@@ -1704,7 +1704,7 @@ const loadMainAccountsWithPubKey = async (
   const mainPublicKeyAccounts: PublicKeyAccount[] = [...accounts, ...filteredPlaceholderAccounts];
 
   // Fetch custom metadata from cache or API
-  const customMetadata = await fetchUserMetadata(pubKey);
+  const customMetadata = await fetchUserMetadata(userId);
 
   // Transform the address array into MainAccount objects
   const mainAccounts: MainAccount[] = mainPublicKeyAccounts.map(
