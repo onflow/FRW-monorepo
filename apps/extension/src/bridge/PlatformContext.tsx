@@ -321,7 +321,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           const profileVaultEntry = keyringState?.vault?.find(
             (entry: any) => entry.id === profileId
           );
-          const profilePublicKey = profileVaultEntry?.publicKey;
+          const profilePublicKey = profileVaultEntry?.id;
 
           if (!profilePublicKey) {
             logger.warn(`No public key found for profile ${profileId}`);
