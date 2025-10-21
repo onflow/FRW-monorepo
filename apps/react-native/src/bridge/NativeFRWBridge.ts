@@ -85,6 +85,10 @@ export interface Spec extends TurboModule {
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
   // Logging
   logToNative(level: string, message: string, args: string[]): void;
+  // Backup activities
+  launchMultiBackup(): void;
+  launchDeviceBackup(): void;
+  launchSeedPhraseBackup(): void;
 }
 
 export interface RecoveryPhraseResponse {

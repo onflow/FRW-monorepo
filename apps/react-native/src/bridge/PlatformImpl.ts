@@ -367,6 +367,31 @@ class PlatformImpl implements PlatformSpec {
       this.log('error', '[PlatformImpl] Failed to set screen security level via bridge:', error);
     }
   }
+
+  // Backup activity launchers
+  launchMultiBackup(): void {
+    try {
+      NativeFRWBridge.launchMultiBackup();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch multi-backup via bridge:', error);
+    }
+  }
+
+  launchDeviceBackup(): void {
+    try {
+      NativeFRWBridge.launchDeviceBackup();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch device backup via bridge:', error);
+    }
+  }
+
+  launchSeedPhraseBackup(): void {
+    try {
+      NativeFRWBridge.launchSeedPhraseBackup();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch seed phrase backup via bridge:', error);
+    }
+  }
 }
 
 export const platform = new PlatformImpl();

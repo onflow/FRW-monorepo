@@ -114,4 +114,9 @@ export interface PlatformSpec {
 
   // Screen security methods
   setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
+
+  // Backup activity launchers
+  launchMultiBackup?(): void;
+  launchDeviceBackup?(): void;
+  launchSeedPhraseBackup?(): void;
 }

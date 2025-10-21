@@ -1,4 +1,4 @@
-import { logger, navigation } from '@onflow/frw-context';
+import { bridge, logger } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
 import {
   YStack,
@@ -12,16 +12,6 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-
-// Future API functions (placeholder for now)
-const checkBackupAvailability = async () => {
-  // TODO: Replace with actual API call to check device/cloud backup availability
-  return {
-    deviceBackupAvailable: true,
-    cloudBackupAvailable: true,
-    recoveryPhraseAvailable: true,
-  };
-};
 
 const trackBackupSelection = async (backupType: 'device' | 'cloud' | 'recovery-phrase') => {
   // TODO: Replace with actual analytics API call
@@ -69,8 +59,8 @@ export function BackupOptionsScreen(): React.ReactElement {
     // User confirmed they want to skip additional backups
     setShowWarningDialog(false);
 
-    // Navigate to Home
-    navigation.navigate('Home');
+    // Close React Native and return to native Android app
+    bridge.closeRN();
   };
 
   const handleCancelSkip = () => {
@@ -82,32 +72,48 @@ export function BackupOptionsScreen(): React.ReactElement {
     // Track selection
     trackingMutation.mutate('device');
 
-    // TODO: Implement device backup (local encrypted storage)
-    // For now, skip to home
-    logger.info('[BackupOptionsScreen] Device backup - TODO: implement local encrypted backup');
-    navigation.navigate('Home');
+    // Launch native device backup activity (QR code sync between devices)
+    if (bridge.launchDeviceBackup) {
+      logger.info('[BackupOptionsScreen] Launching native device backup flow');
+      bridge.launchDeviceBackup();
+      // Close RN and return to native app - native activity will handle the backup flow
+      bridge.closeRN();
+    } else {
+      logger.warn('[BackupOptionsScreen] launchDeviceBackup not available - closing RN');
+      bridge.closeRN();
+    }
   };
 
   const handleCloudBackup = () => {
     // Track selection
     trackingMutation.mutate('cloud');
 
-    // TODO: Implement cloud backup (Google Drive/iCloud)
-    // For now, skip to home
-    logger.info(
-      '[BackupOptionsScreen] Cloud backup - TODO: implement Google Drive/iCloud integration'
-    );
-    navigation.navigate('Home');
+    // Launch native multi-backup activity (Google Drive, Passkey, Recovery Phrase)
+    if (bridge.launchMultiBackup) {
+      logger.info('[BackupOptionsScreen] Launching native multi-backup flow');
+      bridge.launchMultiBackup();
+      // Close RN and return to native app - native activity will handle the backup flow
+      bridge.closeRN();
+    } else {
+      logger.warn('[BackupOptionsScreen] launchMultiBackup not available - closing RN');
+      bridge.closeRN();
+    }
   };
 
   const handleRecoveryPhrase = () => {
     // Track selection
     trackingMutation.mutate('recovery-phrase');
 
-    // TODO: Show existing recovery phrase in read-only mode
-    // User already created one during onboarding
-    logger.info('[BackupOptionsScreen] Recovery phrase - TODO: show existing phrase (view only)');
-    navigation.navigate('Home');
+    // Launch native seed phrase backup activity (View/create recovery phrase)
+    if (bridge.launchSeedPhraseBackup) {
+      logger.info('[BackupOptionsScreen] Launching native seed phrase backup flow');
+      bridge.launchSeedPhraseBackup();
+      // Close RN and return to native app - native activity will handle the backup flow
+      bridge.closeRN();
+    } else {
+      logger.warn('[BackupOptionsScreen] launchSeedPhraseBackup not available - closing RN');
+      bridge.closeRN();
+    }
   };
 
   return (
