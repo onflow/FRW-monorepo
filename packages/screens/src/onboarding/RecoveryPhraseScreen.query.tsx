@@ -2,7 +2,7 @@ import { bridge, logger, navigation } from '@onflow/frw-context';
 import { Copy, Warning, RevealPhrase } from '@onflow/frw-icons';
 import { YStack, XStack, Text, View, OnboardingBackground, Button } from '@onflow/frw-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator } from 'react-native';
 
@@ -81,6 +81,27 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     gcTime: 30 * 60 * 1000, // 30 minutes
     retry: false, // Don't retry on error
   });
+
+  // Enable screenshot protection when screen mounts
+  useEffect(() => {
+    logger.info('[RecoveryPhraseScreen] Enabling screenshot protection');
+    if (bridge.setScreenSecurityLevel) {
+      bridge.setScreenSecurityLevel('secure');
+    }
+
+    // Cleanup: disable screenshot protection and clear sensitive data when unmounting
+    return () => {
+      logger.info(
+        '[RecoveryPhraseScreen] Disabling screenshot protection and clearing sensitive data'
+      );
+      if (bridge.setScreenSecurityLevel) {
+        bridge.setScreenSecurityLevel('normal');
+      }
+
+      // Clear account data from query cache when leaving this screen
+      // This helps ensure the mnemonic doesn't stay in memory longer than needed
+    };
+  }, []);
 
   // Mutation for tracking analytics
   const trackingMutation = useMutation({

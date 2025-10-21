@@ -98,4 +98,7 @@ export interface PlatformSpec {
   // Notification permission methods
   requestNotificationPermission?(): Promise<boolean>;
   checkNotificationPermission?(): Promise<boolean>;
+
+  // Screen security methods
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
 }

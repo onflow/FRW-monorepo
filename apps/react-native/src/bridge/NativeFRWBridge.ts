@@ -79,6 +79,8 @@ export interface Spec extends TurboModule {
   // Notification permissions
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
+  // Screen security
+  setScreenSecurityLevel(level: 'normal' | 'secure'): void;
 }
 
 export interface RecoveryPhraseResponse {

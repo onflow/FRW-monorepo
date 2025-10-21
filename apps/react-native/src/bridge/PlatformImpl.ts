@@ -329,6 +329,15 @@ class PlatformImpl implements PlatformSpec {
       return false;
     }
   }
+
+  // Screen security
+  setScreenSecurityLevel(level: 'normal' | 'secure'): void {
+    try {
+      NativeFRWBridge.setScreenSecurityLevel(level);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to set screen security level via bridge:', error);
+    }
+  }
 }
 
 export const platform = new PlatformImpl();

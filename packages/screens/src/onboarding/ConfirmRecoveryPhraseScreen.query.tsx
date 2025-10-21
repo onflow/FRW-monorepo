@@ -1,4 +1,4 @@
-import { logger, navigation } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
 // import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
 import {
   YStack,
@@ -10,7 +10,7 @@ import {
   ScrollView,
 } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Helper function to generate 3 random unique positions from 1-12
@@ -64,6 +64,22 @@ export function ConfirmRecoveryPhraseScreen({
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
   const address = route?.params?.address;
   const username = route?.params?.username;
+
+  // Enable screenshot protection when screen mounts (showing recovery phrase words)
+  useEffect(() => {
+    logger.info('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
+    if (bridge.setScreenSecurityLevel) {
+      bridge.setScreenSecurityLevel('secure');
+    }
+
+    // Cleanup: disable screenshot protection when unmounting
+    return () => {
+      logger.info('[ConfirmRecoveryPhraseScreen] Disabling screenshot protection');
+      if (bridge.setScreenSecurityLevel) {
+        bridge.setScreenSecurityLevel('normal');
+      }
+    };
+  }, []);
 
   // Mutation for tracking analytics
   const trackingMutation = useMutation({
