@@ -83,6 +83,8 @@ export interface Spec extends TurboModule {
   checkNotificationPermission(): Promise<boolean>;
   // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
+  // Logging
+  logToNative(level: string, message: string, args: string[]): void;
 }
 
 export interface RecoveryPhraseResponse {
