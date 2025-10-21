@@ -12,20 +12,26 @@ import { ActivityIndicator } from 'react-native';
  * Shows the recovery phrase that users must write down and store safely
  */
 
-// Create account and get the generated recovery phrase
+// Create EOA account and get the generated recovery phrase
+// EOA = Externally Owned Account (pure mnemonic-based, no server)
 const createAccountAndGetPhrase = async (): Promise<{
   phrase: string[];
   mnemonic: string;
   address: string | null;
   username: string | null;
 }> => {
-  // Use bridge.createAccount() if available (React Native)
-  if (bridge.createAccount) {
-    const result = await bridge.createAccount();
+  // Use bridge.createEOAAccount() if available (React Native)
+  if (bridge.createEOAAccount) {
+    const result = await bridge.createEOAAccount();
 
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create account');
+      throw new Error(result.error || 'Failed to create EOA account');
     }
+
+    logger.info('[RecoveryPhraseScreen] EOA account created successfully:', {
+      address: result.address,
+      accountType: result.accountType,
+    });
 
     return {
       phrase: result.phrase || [],
@@ -36,6 +42,9 @@ const createAccountAndGetPhrase = async (): Promise<{
   }
 
   // Fallback for web/extension (placeholder)
+  logger.warn(
+    '[RecoveryPhraseScreen] Using fallback EOA placeholder - createEOAAccount not available'
+  );
   return {
     phrase: [
       'trust',

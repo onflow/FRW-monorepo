@@ -279,25 +279,54 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  // Onboarding methods
-  async createAccount(): Promise<{
+  // Onboarding methods - Account creation
+  // EOA: Pure mnemonic-based account (no server)
+  async createEOAAccount(): Promise<{
     success: boolean;
     address: string | null;
     username: string | null;
     mnemonic: string | null;
     phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
     error: string | null;
   }> {
     try {
-      return await NativeFRWBridge.createAccount();
+      return await NativeFRWBridge.createEOAAccount();
     } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to create account via bridge:', error);
+      this.log('error', '[PlatformImpl] Failed to create EOA account via bridge:', error);
       return {
         success: false,
         address: null,
         username: null,
         mnemonic: null,
         phrase: null,
+        accountType: 'eoa',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // COA: Hybrid account with server (Secure Enclave)
+  async createCOAAccount(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
+    error: string | null;
+  }> {
+    try {
+      return await NativeFRWBridge.createCOAAccount();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to create COA account via bridge:', error);
+      return {
+        success: false,
+        address: null,
+        username: null,
+        mnemonic: null,
+        phrase: null,
+        accountType: 'coa',
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }

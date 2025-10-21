@@ -85,13 +85,26 @@ export interface PlatformSpec {
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
 
-  // Onboarding methods
-  createAccount?(): Promise<{
+  // Onboarding methods - Account creation
+  // EOA: Externally Owned Account (pure mnemonic-based, no server)
+  createEOAAccount?(): Promise<{
     success: boolean;
     address: string | null;
     username: string | null;
     mnemonic: string | null;
     phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
+    error: string | null;
+  }>;
+
+  // COA: Cadence Owned Account (hybrid with server - Secure Enclave)
+  createCOAAccount?(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
     error: string | null;
   }>;
 

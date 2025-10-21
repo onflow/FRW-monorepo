@@ -74,8 +74,10 @@ export interface Spec extends TurboModule {
   clearAllToasts(): void;
   // Recovery phrase generation
   generateRecoveryPhrase(): Promise<RecoveryPhraseResponse>;
-  // Account creation (username auto-generated on native side)
-  createAccount(): Promise<CreateAccountResponse>;
+  // EOA account creation (pure mnemonic-based, no server)
+  createEOAAccount(): Promise<CreateAccountResponse>;
+  // COA account creation (hybrid with server - Secure Enclave)
+  createCOAAccount(): Promise<CreateAccountResponse>;
   // Notification permissions
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
@@ -94,6 +96,7 @@ export interface CreateAccountResponse {
   username: string | null;
   mnemonic: string | null;
   phrase: string[] | null;
+  accountType: 'eoa' | 'coa' | null;
   error: string | null;
 }
 
