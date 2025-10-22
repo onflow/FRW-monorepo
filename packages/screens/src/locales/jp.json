@@ -132,7 +132,22 @@
     "failedToLoadTokens": "トークンの読み込みに失敗しました",
     "failedToLoadNFTs": "NFTの読み込みに失敗しました",
     "transactionPayloadError": "トランザクションペイロードの作成に失敗しました",
-    "transactionExecutionError": "トランザクションの実行に失敗しました"
+    "transactionExecutionError": "トランザクションの実行に失敗しました",
+    "generic": {
+      "title": "エラーが発生しました",
+      "message": "予期しないエラーが発生しました。もう一度お試しください。",
+      "button": "再試行"
+    },
+    "network": {
+      "title": "接続の問題",
+      "message": "ネットワークに接続できません。接続を確認してもう一度お試しください。",
+      "button": "再試行"
+    },
+    "critical": {
+      "title": "重大なエラー",
+      "message": "重大なエラーが発生しました。アプリを再起動してください。",
+      "button": "アプリを再起動"
+    }
   },
   "nft": {
     "untitled": "無題",

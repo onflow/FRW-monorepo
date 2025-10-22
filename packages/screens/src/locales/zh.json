@@ -132,7 +132,22 @@
     "failedToLoadTokens": "加载代币失败",
     "failedToLoadNFTs": "加载NFT失败",
     "transactionPayloadError": "创建交易载荷失败",
-    "transactionExecutionError": "交易执行失败"
+    "transactionExecutionError": "交易执行失败",
+    "generic": {
+      "title": "出现问题",
+      "message": "遇到了意外错误。请重试。",
+      "button": "重试"
+    },
+    "network": {
+      "title": "连接问题",
+      "message": "无法连接到网络。请检查您的连接后重试。",
+      "button": "重试"
+    },
+    "critical": {
+      "title": "严重错误",
+      "message": "发生了严重错误。请重新启动应用程序。",
+      "button": "重启应用"
+    }
   },
   "nft": {
     "untitled": "无标题",

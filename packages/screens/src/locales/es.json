@@ -132,7 +132,22 @@
     "failedToLoadTokens": "Error al cargar tokens",
     "failedToLoadNFTs": "Error al cargar NFTs",
     "transactionPayloadError": "Error al crear la carga de la transacción",
-    "transactionExecutionError": "Error en la ejecución de la transacción"
+    "transactionExecutionError": "Error en la ejecución de la transacción",
+    "generic": {
+      "title": "Algo salió mal",
+      "message": "Encontramos un error inesperado. Por favor, inténtalo de nuevo.",
+      "button": "Intentar de nuevo"
+    },
+    "network": {
+      "title": "Problema de conexión",
+      "message": "No se puede conectar a la red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      "button": "Reintentar"
+    },
+    "critical": {
+      "title": "Error crítico",
+      "message": "Ocurrió un error crítico. Por favor, reinicia la aplicación.",
+      "button": "Reiniciar aplicación"
+    }
   },
   "nft": {
     "untitled": "Sin título",
