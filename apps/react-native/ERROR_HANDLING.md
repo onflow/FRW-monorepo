@@ -193,9 +193,39 @@ try {
 
 ## Testing
 
-### Testing Error Boundaries
+### Automated Test Suite
 
-To test error boundaries in development:
+**Location**: `src/components/__tests__/ErrorHandlingTest.tsx`
+
+A comprehensive test component is available for manual testing of all error handling scenarios:
+
+```tsx
+import { ErrorHandlingTest } from '../components/__tests__/ErrorHandlingTest';
+
+// Render in any screen for testing
+<ErrorHandlingTest />;
+```
+
+The test suite provides buttons to trigger:
+
+1. **Rendering Error** (Generic Fallback) - Throws error during component render
+2. **Global JS Exception** (Console Only) - Triggers global exception handler
+3. **Unhandled Promise Rejection** (Console Only) - Creates unhandled promise rejection
+4. **Network Error** (Network Fallback) - Simulates network connection failure
+5. **Critical Error** (Critical Fallback) - Triggers critical error requiring restart
+
+**Expected Behavior:**
+
+- Buttons 1, 4, 5: Show error fallback UI with retry button
+- Buttons 2, 3: Log error to console and Instabug (no UI change)
+- All errors: Logged via `platform.log()` with full context
+- All errors: Reported to Instabug if available
+
+**⚠️ Important**: Remove or comment out this component before production deployment.
+
+### Manual Testing
+
+#### Testing Error Boundaries
 
 ```tsx
 // Create a component that throws
@@ -207,7 +237,7 @@ const ErrorComponent = () => {
 // It will be caught by FRWErrorBoundary
 ```
 
-### Testing Global Exception Handler
+#### Testing Global Exception Handler
 
 ```typescript
 // Throw uncaught error
@@ -216,12 +246,25 @@ setTimeout(() => {
 }, 100);
 ```
 
-### Testing Promise Rejections
+#### Testing Promise Rejections
 
 ```typescript
 // Create unhandled rejection
 Promise.reject(new Error('Test promise rejection'));
 ```
+
+### Verification Checklist
+
+When testing error handling, verify:
+
+- ✅ Error fallback UI appears (not blank white screen)
+- ✅ Retry button works and resets error state
+- ✅ Error details visible in `__DEV__` mode only
+- ✅ Error logged to console with full context
+- ✅ Error reported to Instabug (if initialized)
+- ✅ App doesn't completely crash
+- ✅ User can recover without restarting app (except critical errors)
+- ✅ Appropriate fallback shown (Generic/Network/Critical)
 
 ## Benefits
 
