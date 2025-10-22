@@ -4,30 +4,30 @@
 
 export enum WalletErrorCode {
   // Initialization
-  InitializationFailed = 'INIT_FAILED',
+  InitializationFailed = 'INIT-01',
 
   // Key / Mnemonic
-  MnemonicInvalid = 'MNEMONIC_INVALID',
-  KeyNotInitialized = 'KEY_NOT_INITIALIZED',
-  UnsupportedSignatureAlgorithm = 'UNSUPPORTED_SIGNATURE_ALGORITHM',
-  PrivateKeyUnavailable = 'PRIVATE_KEY_UNAVAILABLE',
-  DerivationFailed = 'DERIVATION_FAILED',
-  InvalidDerivationIndex = 'INVALID_DERIVATION_INDEX',
-  UnsupportedHashAlgorithm = 'UNSUPPORTED_HASH_ALGORITHM',
+  MnemonicInvalid = 'KEY-01',
+  KeyNotInitialized = 'KEY-02',
+  UnsupportedSignatureAlgorithm = 'KEY-03',
+  PrivateKeyUnavailable = 'KEY-04',
+  DerivationFailed = 'KEY-05',
+  InvalidDerivationIndex = 'KEY-06',
+  UnsupportedHashAlgorithm = 'KEY-07',
 
   // Signing / Encoding
-  SigningFailed = 'SIGNING_FAILED',
-  InvalidDigestLength = 'INVALID_DIGEST_LENGTH',
-  InvalidNumericValue = 'INVALID_NUMERIC_VALUE',
+  SigningFailed = 'SIGN-01',
+  InvalidDigestLength = 'SIGN-02',
+  InvalidNumericValue = 'SIGN-03',
 
   // EVM
-  EthereumCapabilityMissing = 'ETH_CAPABILITY_MISSING',
-  EthereumRpcRequestFailed = 'ETH_RPC_REQUEST_FAILED',
-  EthereumRpcError = 'ETH_RPC_ERROR',
+  EthereumCapabilityMissing = 'ETH-01',
+  EthereumRpcRequestFailed = 'ETH-02',
+  EthereumRpcError = 'ETH-03',
 
   // Account / Network
-  AccountDiscoveryFailed = 'ACCOUNT_DISCOVERY_FAILED',
-  UnsupportedNetwork = 'UNSUPPORTED_NETWORK',
+  AccountDiscoveryFailed = 'NET-01',
+  UnsupportedNetwork = 'NET-02',
 }
 
 const walletErrorMessages: Record<WalletErrorCode, string> = {
