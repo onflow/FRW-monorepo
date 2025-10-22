@@ -7,7 +7,7 @@ import { TW } from '@trustwallet/wallet-core';
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 
-type HexLike = string | number | bigint | Uint8Array;
+export type HexLike = string | number | bigint | Uint8Array;
 
 export interface EthAccessListEntry {
   address: string;
@@ -85,12 +85,10 @@ export class EthSigner {
     });
 
     if (isEip1559Tx) {
-      const eipParams = params as EthEIP1559Transaction;
-      input.maxFeePerGas = this.hexLikeToBytes(eipParams.maxFeePerGas);
-      input.maxInclusionFeePerGas = this.hexLikeToBytes(eipParams.maxPriorityFeePerGas);
+      input.maxFeePerGas = this.hexLikeToBytes(params.maxFeePerGas);
+      input.maxInclusionFeePerGas = this.hexLikeToBytes(params.maxPriorityFeePerGas);
     } else {
-      const legacyParams = params as EthLegacyTransaction;
-      input.gasPrice = this.hexLikeToBytes(legacyParams.gasPrice);
+      input.gasPrice = this.hexLikeToBytes((params as EthLegacyTransaction).gasPrice);
     }
 
     if (params.accessList?.length) {

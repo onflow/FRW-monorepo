@@ -5,6 +5,13 @@
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
+  EthSigner,
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthSignedMessage,
+  type HexLike,
+} from '../services/eth-signer';
+import {
   KeyType,
   type KeyProtocol,
   type EthereumKeyProtocol,
@@ -289,6 +296,45 @@ export class PrivateKey
     }
 
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(this.privateKeyData, digest);
+  }
+
+  /**
+   * Sign an Ethereum transaction.
+   */
+  async ethSignTransaction(
+    transaction: EthUnsignedTransaction,
+    index: number = 0
+  ): Promise<EthSignedTransaction> {
+    if (index !== 0) {
+      throw new Error('Raw private key does not support multiple derivation indexes');
+    }
+
+    return await EthSigner.signTransaction(transaction, this.privateKeyData);
+  }
+
+  /**
+   * Sign an Ethereum personal message (EIP-191).
+   */
+  async ethSignPersonalMessage(message: HexLike, index: number = 0): Promise<EthSignedMessage> {
+    if (index !== 0) {
+      throw new Error('Raw private key does not support multiple derivation indexes');
+    }
+
+    return await EthSigner.signPersonalMessage(this.privateKeyData, message);
+  }
+
+  /**
+   * Sign EIP-712 typed data.
+   */
+  async ethSignTypedData(
+    typedData: Record<string, unknown>,
+    index: number = 0
+  ): Promise<EthSignedMessage> {
+    if (index !== 0) {
+      throw new Error('Raw private key does not support multiple derivation indexes');
+    }
+
+    return await EthSigner.signTypedData(this.privateKeyData, typedData);
   }
 
   // Private helper methods for cryptographic operations

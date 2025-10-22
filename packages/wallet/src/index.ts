@@ -44,6 +44,7 @@ export {
   type EthEIP1559Transaction,
   type EthAccessListEntry,
   type EthSignedMessage,
+  type HexLike,
 } from './services/eth-signer';
 
 // Core storage implementations (platform-specific ones should be implemented by apps)

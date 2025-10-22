@@ -1,7 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
+import { PrivateKey } from '../keys/private-key';
 import { EthSigner } from '../services/eth-signer';
+import { MemoryStorage } from '../storage/memory-storage';
+import { SignatureAlgorithm } from '../types/key';
 
 describe('EthSigner', () => {
   let privateKeyLegacy: Uint8Array;
@@ -100,6 +103,38 @@ describe('EthSigner', () => {
     expect(digest).toBe('0xbe609aee343fb3c4b28e1df9e632fca64fcfaede20f02e86244efddf30957bd2');
     expect(signature).toBe(
       '0x4355c47d63924e8a72e509b65029052eb6c299d53a04e167c5775fd466751c9d07299936d304c153f6443dfa05f40ff007d72911b6f72307f996231605b9156201'
+    );
+  });
+
+  it('signs via PrivateKey implementing EthereumKeyProtocol', async () => {
+    const storage = new MemoryStorage();
+    const messageKey = new PrivateKey(
+      storage,
+      privateKeyMessage.slice(),
+      SignatureAlgorithm.ECDSA_secp256k1
+    );
+
+    const signedMessage = await messageKey.ethSignPersonalMessage('Some data');
+    expect(signedMessage.signature).toBe(
+      '0x58156c371347613642e94b66abc4ced8e36011fb3233f5372371aa5ad321671b1a10c0b88f47ce543fd4c455761f5fbf8f61d050f57dcba986640011da794a9000'
+    );
+
+    const txKey = new PrivateKey(
+      storage,
+      privateKeyLegacy.slice(),
+      SignatureAlgorithm.ECDSA_secp256k1
+    );
+
+    const signedTx = await txKey.ethSignTransaction({
+      chainId: 0x01,
+      nonce: 0x09,
+      gasPrice: '0x04a817c800',
+      gasLimit: '0x5208',
+      to: '0x3535353535353535353535353535353535353535',
+      value: '0x0de0b6b3a7640000',
+    });
+    expect(signedTx.rawTransaction).toBe(
+      '0xf86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83'
     );
   });
 });
