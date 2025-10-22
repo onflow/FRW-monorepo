@@ -15,7 +15,8 @@ describe('EthSigner', () => {
     privateKeyMessage = await WalletCoreProvider.hexToBytes(
       '0x1fcb84974220eb76e619d7208e1446ae9c0f755e97fb220a8f61c7dc03a0dfce'
     );
-    privateKeyTypedData = core.Hash.keccak256(Buffer.from('cow'));
+    const core = await WalletCoreProvider.getCore();
+    privateKeyTypedData = new Uint8Array(core.Hash.keccak256(new TextEncoder().encode('cow')));
   });
 
   it('signs legacy transactions matching wallet core vector', async () => {

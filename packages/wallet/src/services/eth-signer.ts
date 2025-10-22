@@ -66,7 +66,7 @@ export class EthSigner {
   ): Promise<EthSignedTransaction> {
     const core = await WalletCoreProvider.getCore();
     const { SigningInput, SigningOutput, Transaction } = TW.Ethereum.Proto;
-    const isEip1559 = 'maxFeePerGas' in params;
+    const isEip1559Tx = isEip1559Transaction(params);
 
     const transaction = Transaction.create(
       this.createTransactionPayload(params.value ?? 0n, params.data)
@@ -79,16 +79,18 @@ export class EthSigner {
       toAddress: params.to,
       privateKey: privateKeyBytes,
       transaction,
-      txMode: isEip1559
+      txMode: isEip1559Tx
         ? TW.Ethereum.Proto.TransactionMode.Enveloped
         : TW.Ethereum.Proto.TransactionMode.Legacy,
     });
 
-    if (isEip1559) {
-      input.maxFeePerGas = this.hexLikeToBytes(params.maxFeePerGas);
-      input.maxInclusionFeePerGas = this.hexLikeToBytes(params.maxPriorityFeePerGas);
+    if (isEip1559Tx) {
+      const eipParams = params as EthEIP1559Transaction;
+      input.maxFeePerGas = this.hexLikeToBytes(eipParams.maxFeePerGas);
+      input.maxInclusionFeePerGas = this.hexLikeToBytes(eipParams.maxPriorityFeePerGas);
     } else {
-      input.gasPrice = this.hexLikeToBytes(params.gasPrice);
+      const legacyParams = params as EthLegacyTransaction;
+      input.gasPrice = this.hexLikeToBytes(legacyParams.gasPrice);
     }
 
     if (params.accessList?.length) {
@@ -249,4 +251,8 @@ export class EthSigner {
     result.set(b, a.length);
     return result;
   }
+}
+
+function isEip1559Transaction(tx: EthUnsignedTransaction): tx is EthEIP1559Transaction {
+  return (tx as EthEIP1559Transaction).maxFeePerGas !== undefined;
 }
