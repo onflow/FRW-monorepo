@@ -1,10 +1,14 @@
+import {
+  EthSigner,
+  BIP44_PATHS,
+  type EthLegacyTransaction,
+} from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
-import { intToHex, isHexString } from 'ethereumjs-util';
+import { intToHex } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import RLP from 'rlp';
 import Web3 from 'web3';
-import { stringToHex } from 'web3-utils';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';
@@ -13,16 +17,26 @@ import {
   permissionService,
   sessionService,
   signTextHistoryService,
+  userWalletService,
 } from '@/core/service';
 import walletManager from '@/core/service/wallet-manager';
-import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
-import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
+import {
+  getAccountsByPublicKeyTuple,
+  signWithKey,
+  seedWithPathAndPhrase2PublicPrivateKey,
+} from '@/core/utils';
+import {
+  EVM_ENDPOINT,
+  MAINNET_CHAIN_ID,
+  TESTNET_CHAIN_ID,
+} from '@/shared/constant';
 import {
   tupleToPrivateKey,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   consoleError,
 } from '@/shared/utils';
+// Import EthSigner directly from the services
 
 import notificationService from '../notification';
 
@@ -73,6 +87,59 @@ function createAndEncodeCOAOwnershipProof(
 }
 
 /**
+ * Converts a hex private key string to Uint8Array format for eth-signer
+ * @param privateKeyHex - The private key as a hex string
+ * @returns The private key as Uint8Array
+ */
+function privateKeyToUint8Array(privateKeyHex: string): Uint8Array {
+  // Remove 0x prefix if present
+  const cleanHex = privateKeyHex.replace(/^0x/i, '');
+  // Convert to Uint8Array
+  return Uint8Array.from(Buffer.from(cleanHex, 'hex'));
+}
+
+/**
+ * Derives Ethereum address from private key
+ * @param privateKeyHex - The private key as a hex string
+ * @returns The Ethereum address
+ */
+function deriveEthereumAddress(privateKeyHex: string): string {
+  const { privateToAddress } = require('ethereumjs-util');
+  const cleanHex = privateKeyHex.replace(/^0x/i, '');
+  const privateKeyBuffer = Buffer.from(cleanHex, 'hex');
+  const addressBuffer = privateToAddress(privateKeyBuffer);
+  return '0x' + addressBuffer.toString('hex');
+}
+
+/**
+ * Gets the Ethereum private key using EVM BIP44 path
+ * @returns The Ethereum private key as hex string
+ */
+async function getEthereumPrivateKey(): Promise<string> {
+  // Get the mnemonic from the keyring
+  const mnemonic = await keyringService.getMnemonicFromKeyring();
+  if (!mnemonic) {
+    throw new Error('Mnemonic not found in keyring');
+  }
+
+  // Derive the private key using EVM BIP44 path
+  const evmPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+    mnemonic,
+    BIP44_PATHS.EVM, // EVM BIP44 path
+    '' // no passphrase
+  );
+
+  // Extract the secp256k1 private key (Ethereum)
+  const ethereumPrivateKey = evmPrivateKeyTuple.SECP256K1.pk;
+
+  if (!ethereumPrivateKey) {
+    throw new Error('Ethereum private key not found in EVM derivation');
+  }
+
+  return ethereumPrivateKey;
+}
+
+/**
  * Gets the matching account and signing information for the current wallet
  * @returns Object containing account details and signing information
  */
@@ -92,9 +159,12 @@ async function getSigningDetailsForCurrentWallet() {
   // Convert EOA address to Flow address format for matching
   // Note: This assumes the EOA address corresponds to a Flow account
   // You may need to adjust this logic based on your specific requirements
-  const addressHex = eoaInfo.address;
+  const parentAccount = await userWalletService.getParentAccount();
+  if (!parentAccount) {
+    throw new Error('Parent account not found');
+  }
+  const addressHex = parentAccount.address;
   const matchingAccount = accounts.find((account) => account.address === addressHex);
-
   if (!matchingAccount) {
     throw new Error('Current wallet not found in accounts');
   }
@@ -154,50 +224,16 @@ async function createSignatureProof(dataToSign: string) {
   return '0x' + toHexString(encodedProof);
 }
 
-async function signMessage(msgParams, opts = {}) {
-  const web3 = new Web3();
-  const textData = msgParams.data;
-  const hashedData = web3.eth.accounts.hashMessage(textData);
+async function signTypeData(typedData: Record<string, unknown>) {
+  // Get the Ethereum private key using EVM BIP44 path
+  const ethereumPrivateKey = await getEthereumPrivateKey();
+  const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
 
-  return createSignatureProof(hashedData);
+  // Use eth-signer to sign the typed data
+  const { signature, digest } = await EthSigner.signTypedData(privateKeyBytes, typedData);
+
+  return signature;
 }
-
-async function signTypeData(msgParams, opts = {}) {
-  const hashedData = Buffer.from(msgParams).toString('hex');
-
-  return createSignatureProof(hashedData);
-}
-
-const SignTypedDataVersion = {
-  V1: 'V1',
-  V3: 'V3',
-  V4: 'V4',
-} as const;
-
-export const TypedDataUtils = {
-  eip712Hash(message: any, version: string): Buffer {
-    const types = { ...message.types };
-    delete types.EIP712Domain;
-
-    const primaryType = message.primaryType || 'OrderComponents';
-
-    const encoder = new ethers.TypedDataEncoder({
-      [primaryType]: types[primaryType],
-      ...types,
-    });
-
-    const domainSeparator = ethers.TypedDataEncoder.hashDomain(message.domain);
-    const hashStruct = encoder.hash(message.message);
-
-    const encodedData = ethers.concat([
-      Buffer.from('1901', 'hex'),
-      Buffer.from(domainSeparator.slice(2), 'hex'),
-      Buffer.from(hashStruct.slice(2), 'hex'),
-    ]);
-
-    return Buffer.from(ethers.keccak256(encodedData).slice(2), 'hex');
-  },
-};
 
 class ProviderController extends BaseController {
   ethRpc = async (data): Promise<any> => {
@@ -308,17 +344,39 @@ class ProviderController extends BaseController {
     const value = transactionParams.value || '0x0';
     const dataValue = transactionParams.data || '0x';
     const gas = transactionParams.gas || '0x1C9C380';
-    const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
-    const gasBigInt = BigInt(cleanHex);
+    const gasPrice = transactionParams.gasPrice || '0x0';
 
+    // Get the current nonce from the network
+    const nonce = await this.getTransactionCount(from);
+    console.log('nonce', nonce);
     try {
-      let result = await Wallet.dapSendEvmTX(to, gasBigInt, value, dataValue);
-      if (!result) {
-        throw new Error('Transaction hash is null or undefined');
-      }
-      if (!result.startsWith('0x')) {
-        result = '0x' + result;
-      }
+      // Get the Ethereum private key using EVM BIP44 path
+      const ethereumPrivateKey = await getEthereumPrivateKey();
+      const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+
+      // Get the current chain ID
+      const network = await Wallet.getNetwork();
+      const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
+
+      // Create the transaction object
+      const transaction: EthLegacyTransaction = {
+        chainId: chainId,
+        nonce: parseInt(nonce, 16), // Convert hex string to number
+        gasLimit: gas,
+        gasPrice: gasPrice,
+        to: to,
+        value: value,
+        data: dataValue,
+      };
+
+      console.log('Transaction object:', transaction);
+      console.log('Nonce type:', typeof nonce, 'Nonce value:', nonce);
+
+      // Sign the transaction using EthSigner
+      const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
+
+      // Send the raw transaction to the network
+      const result = await this.sendRawTransaction(signedTransaction.rawTransaction);
 
       // Send message to close approval popup after successful transaction
       chrome.runtime.sendMessage({
@@ -336,6 +394,78 @@ class ProviderController extends BaseController {
       throw error;
     }
   };
+
+  /**
+   * Get the current transaction count (nonce) for an address
+   */
+  private async getTransactionCount(address: string): Promise<string> {
+    const network = await Wallet.getNetwork();
+    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+    const web3Instance = new Web3(provider);
+
+    return new Promise((resolve, reject) => {
+      if (!web3Instance.currentProvider) {
+        reject(new Error('Provider is undefined'));
+        return;
+      }
+
+      web3Instance.currentProvider.send(
+        {
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionCount',
+          params: [address, 'latest'],
+          id: Date.now(),
+        },
+        (error, response) => {
+          if (error) {
+            reject(error);
+          } else if (response && 'error' in response && response.error) {
+            reject(new Error(response.error.message || 'Failed to get transaction count'));
+          } else if (response && 'result' in response) {
+            resolve(response.result as string);
+          } else {
+            reject(new Error('Invalid response from provider'));
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Send a raw signed transaction to the Ethereum network
+   */
+  private async sendRawTransaction(rawTransaction: string): Promise<string> {
+    const network = await Wallet.getNetwork();
+    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+    const web3Instance = new Web3(provider);
+
+    return new Promise((resolve, reject) => {
+      if (!web3Instance.currentProvider) {
+        reject(new Error('Provider is undefined'));
+        return;
+      }
+
+      web3Instance.currentProvider.send(
+        {
+          jsonrpc: '2.0',
+          method: 'eth_sendRawTransaction',
+          params: [rawTransaction],
+          id: Date.now(),
+        },
+        (error, response) => {
+          if (error) {
+            reject(error);
+          } else if (response && 'error' in response && response.error) {
+            reject(new Error(response.error.message || 'Transaction failed'));
+          } else if (response && 'result' in response) {
+            resolve(response.result as string);
+          } else {
+            reject(new Error('Invalid response from provider'));
+          }
+        }
+      );
+    });
+  }
 
   ethAccounts = async ({ session: { origin } }) => {
     if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
@@ -442,19 +572,41 @@ class ProviderController extends BaseController {
     }
   };
 
-  // Should not be in controller
   personalSign = async ({ data, approvalRes, session }) => {
     if (!data.params) return;
     const [string, from] = data.params;
-    const hex = isHexString(string) ? string : stringToHex(string);
-    const result = await signMessage({ data: hex, from }, approvalRes?.extra);
-    signTextHistoryService.createHistory({
-      address: from,
-      text: string,
-      origin: session.origin,
-      type: 'personalSign',
-    });
-    return result;
+
+    try {
+      // Get the Ethereum private key using secp256k1 algorithm
+      const ethereumPrivateKey = await getEthereumPrivateKey();
+      const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+
+      // Derive the Ethereum address from the private key
+      const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);
+
+      // Validate that the requested address matches the derived address
+      if (from.toLowerCase() !== ethereumAddress.toLowerCase()) {
+        throw new Error('Address mismatch');
+      }
+
+      // Use eth-signer to sign the personal message
+      const { signature, digest } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
+
+      // Create history entry using the derived Ethereum address
+      signTextHistoryService.createHistory({
+        address: ethereumAddress,
+        text: string,
+        origin: session.origin,
+        type: 'personalSign',
+      });
+
+      // Return the signature and the address it was signed with
+      // This helps dApps understand which address the signature is valid for
+      return signature;
+    } catch (error) {
+      consoleError('Error in personalSign:', error);
+      throw error;
+    }
   };
 
   ethChainId = async ({ session }) => {
@@ -521,14 +673,8 @@ class ProviderController extends BaseController {
       throw new Error('Provided address does not match the current address');
     }
 
-    const signTypeMethod =
-      request.data.method === 'eth_signTypedData_v3'
-        ? SignTypedDataVersion.V3
-        : SignTypedDataVersion.V4;
-
-    const hash = TypedDataUtils.eip712Hash(message, signTypeMethod);
-
-    const result = await signTypeData(hash);
+    // Get the Ethereum private key and sign the typed data
+    const result = await signTypeData(message);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
@@ -594,9 +740,7 @@ class ProviderController extends BaseController {
       throw new Error('Provided address does not match the current address');
     }
 
-    const hash = TypedDataUtils.eip712Hash(message, SignTypedDataVersion.V4);
-
-    const result = await signTypeData(hash);
+    const result = await signTypeData(message);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
