@@ -630,7 +630,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
             // Get EVM address if available
             try {
-                val evmAddress = EVMWalletManager.getEVMAddress()
+                val evmAddress = if (isSelectedWalletAddress(mainAddress)) {
+                    EVMWalletManager.getEVMAddress()
+                } else {
+                    account.evmAddressData?.evmAddressMap?.get(mainAddress)
+                }
                 if (!evmAddress.isNullOrEmpty()) {
                     val evmEmojiInfo = createEmojiInfo(evmAddress)
                     val evmAccount = RNBridge.WalletAccount(

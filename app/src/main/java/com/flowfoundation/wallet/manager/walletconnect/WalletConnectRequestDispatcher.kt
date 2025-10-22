@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
-import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
@@ -345,7 +344,7 @@ private suspend fun WCRequest.respondAuthn() {
                             if (session?.metaData?.redirect.isNullOrEmpty()) {
                                 logd(TAG, "No redirect URL found in session metadata")
                             } else {
-                                logd(TAG, "Found redirect URL in session metadata: ${session?.metaData?.redirect}")
+                                logd(TAG, "Found redirect URL in session metadata: ${session.metaData?.redirect}")
                             }
                         } catch (e: Exception) {
                             loge(TAG, "Error during authn response cleanup: ${e.message}")
@@ -392,7 +391,17 @@ private suspend fun WCRequest.respondAuthz() {
 
     // Clean address for Flow-KMM (remove "0x" prefix)
     val cleanAddress = address.removePrefix("0x")
-
+    try {
+        if (isGasFree()) {
+            val payerInfo = SurgePricingManager.getFeePayer()
+            if (payerInfo == null) {
+                SurgePricingManager.showSurgePricingAlertWithContinuation()
+            }
+        }
+    } catch (_: Exception) {
+        reject()
+        return
+    }
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
