@@ -78,6 +78,10 @@ export interface PlatformSpec {
     ...args: unknown[]
   ) => void;
 
+  // Error reporting methods - for checking Instabug availability
+  isInstabugInitialized?(): boolean;
+  setInstabugInitialized?(initialized: boolean): void;
+
   // UI interaction methods
   scanQRCode(): Promise<string>;
   closeRN(id?: string | null): void;

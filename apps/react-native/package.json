@@ -46,6 +46,7 @@
     "react": "workspace:*",
     "react-i18next": "^15.6.1",
     "react-native": "workspace:*",
+    "react-native-error-boundary": "^3.0.0",
     "react-native-gesture-handler": "^2.27.2",
     "react-native-get-random-values": "^1.11.0",
     "react-native-reanimated": "^3.8.1",
