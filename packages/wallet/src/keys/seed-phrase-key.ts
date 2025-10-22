@@ -7,6 +7,13 @@ import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
+  EthSigner,
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthSignedMessage,
+  type HexLike,
+} from '../services/eth-signer';
+import {
   KeyType,
   type KeyProtocol,
   type EthereumKeyProtocol,
@@ -330,6 +337,36 @@ export class SeedPhraseKey
   async ethSign(digest: Uint8Array, index: number = 0): Promise<Uint8Array> {
     const privateKeyBytes = await this.ethPrivateKey(index);
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(privateKeyBytes, digest);
+  }
+
+  /**
+   * Sign an Ethereum transaction and return encoded payload.
+   */
+  async ethSignTransaction(
+    transaction: EthUnsignedTransaction,
+    index: number = 0
+  ): Promise<EthSignedTransaction> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await EthSigner.signTransaction(transaction, privateKeyBytes);
+  }
+
+  /**
+   * Sign an Ethereum personal message (EIP-191).
+   */
+  async ethSignPersonalMessage(message: HexLike, index: number = 0): Promise<EthSignedMessage> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await EthSigner.signPersonalMessage(privateKeyBytes, message);
+  }
+
+  /**
+   * Sign EIP-712 typed data.
+   */
+  async ethSignTypedData(
+    typedData: Record<string, unknown>,
+    index: number = 0
+  ): Promise<EthSignedMessage> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await EthSigner.signTypedData(privateKeyBytes, typedData);
   }
 
   /**

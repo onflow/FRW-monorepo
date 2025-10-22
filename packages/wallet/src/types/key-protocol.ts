@@ -5,6 +5,12 @@
 
 import { type KeyType, type SignatureAlgorithm, type HashAlgorithm } from './key';
 import { type StorageProtocol } from './storage';
+import {
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthSignedMessage,
+  type HexLike,
+} from '../services/eth-signer';
 
 /**
  * Key protocol interface - exact match to iOS Flow Wallet Kit KeyProtocol.swift
@@ -100,6 +106,24 @@ export interface EthereumKeyProtocol {
    * Sign a 32-byte digest using Ethereum secp256k1 scheme and return [r|s|v].
    */
   ethSign(digest: Uint8Array, index?: number): Promise<Uint8Array>;
+
+  /**
+   * Sign an Ethereum transaction and return encoded payload with signature.
+   */
+  ethSignTransaction(
+    transaction: EthUnsignedTransaction,
+    index?: number
+  ): Promise<EthSignedTransaction>;
+
+  /**
+   * Sign an Ethereum personal message / EIP-191 payload.
+   */
+  ethSignPersonalMessage(message: HexLike, index?: number): Promise<EthSignedMessage>;
+
+  /**
+   * Sign an EIP-712 typed data payload.
+   */
+  ethSignTypedData(typedData: Record<string, unknown>, index?: number): Promise<EthSignedMessage>;
 }
 
 /**
