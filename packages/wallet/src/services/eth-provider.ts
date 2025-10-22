@@ -6,6 +6,7 @@
  * - Trust Wallet Core WASM Ethereum tests
  */
 
+import { WalletError, WalletErrorCode } from '../types/errors';
 import type { EVMNetworkConfig } from '../types/key';
 
 type FetchFn = (
@@ -55,14 +56,19 @@ interface JsonRpcResponse<T> {
   error?: JsonRpcError;
 }
 
-export class EthRpcError extends Error {
-  readonly code: number;
+export class EthRpcError extends WalletError {
+  readonly rpcCode: number;
   readonly data?: unknown;
 
-  constructor(code: number, message: string, data?: unknown) {
-    super(message);
+  constructor(rpcCode: number, message: string, data?: unknown) {
+    super(WalletErrorCode.EthereumRpcError, message, {
+      details: {
+        rpcCode,
+        data,
+      },
+    });
     this.name = 'EthRpcError';
-    this.code = code;
+    this.rpcCode = rpcCode;
     this.data = data;
   }
 }
@@ -78,7 +84,7 @@ export class EthProvider {
   constructor(rpc: string | EVMNetworkConfig, fetchFn?: FetchFn) {
     const rpcUrl = typeof rpc === 'string' ? rpc : rpc.rpcEndpoint;
     if (!rpcUrl) {
-      throw new Error('Ethereum RPC endpoint is required');
+      throw WalletError.UnsupportedNetwork({ details: { rpc } });
     }
 
     this.rpcUrl = rpcUrl;
@@ -87,7 +93,9 @@ export class EthProvider {
       (typeof fetch === 'function'
         ? (input, init) => fetch(String(input), init)
         : () => {
-            throw new Error('Global fetch is not available');
+            throw WalletError.EthereumRpcRequestFailed({
+              message: 'Global fetch is not available in this environment',
+            });
           });
   }
 
@@ -197,7 +205,13 @@ export class EthProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`Ethereum RPC request failed with status ${response.status}`);
+      throw WalletError.EthereumRpcRequestFailed({
+        details: {
+          status: response.status,
+          method,
+          rpcUrl: this.rpcUrl,
+        },
+      });
     }
 
     const data: JsonRpcResponse<T> = await response.json();
@@ -260,19 +274,21 @@ export class EthProvider {
     }
     if (typeof value === 'number') {
       if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
-        throw new Error(`Invalid numeric value for hex conversion: ${value}`);
+        throw WalletError.InvalidNumericValue({ details: { value } });
       }
       return `0x${BigInt(value).toString(16)}`;
     }
     if (value < 0n) {
-      throw new Error(`Invalid bigint value for hex conversion: ${value.toString()}`);
+      throw WalletError.InvalidNumericValue({
+        details: { value: value.toString() },
+      });
     }
     return `0x${value.toString(16)}`;
   }
 
   private hexToBigInt(value: string): bigint {
     if (!value || typeof value !== 'string') {
-      throw new Error('Invalid hex string');
+      throw WalletError.InvalidNumericValue({ details: { value } });
     }
     return BigInt(value);
   }
