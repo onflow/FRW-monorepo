@@ -29,6 +29,23 @@ export { PrivateKey } from './keys/private-key';
 // Wallet Core integration
 export { WalletCoreProvider } from './crypto/wallet-core-provider';
 
+// Ethereum services
+export {
+  EthProvider,
+  EthRpcError,
+  type EthCallRequest,
+  type EthBlockTag,
+} from './services/eth-provider';
+export {
+  EthSigner,
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthLegacyTransaction,
+  type EthEIP1559Transaction,
+  type EthAccessListEntry,
+  type EthSignedMessage,
+} from './services/eth-signer';
+
 // Core storage implementations (platform-specific ones should be implemented by apps)
 export { MemoryStorage } from './storage';
 

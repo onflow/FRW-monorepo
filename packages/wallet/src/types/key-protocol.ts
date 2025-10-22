@@ -76,6 +76,33 @@ export interface KeyProtocol<TKey = any, TSecret = any, TAdvance = any> {
 }
 
 /**
+ * Ethereum key protocol interface - matches FlowWalletKit/Sources/Keys/EthereumKeyProtocol.swift
+ * Provides EVM-compatible key derivation and signing capabilities
+ */
+export interface EthereumKeyProtocol {
+  /**
+   * Derive the EIP-55 checksummed address for the given derivation index.
+   * Defaults to the first account index (0).
+   */
+  ethAddress(index?: number): Promise<string>;
+
+  /**
+   * Return the uncompressed secp256k1 public key (65 bytes, 0x04-prefixed).
+   */
+  ethPublicKey(index?: number): Promise<Uint8Array>;
+
+  /**
+   * Return the raw 32-byte secp256k1 private key for the derivation index.
+   */
+  ethPrivateKey(index?: number): Promise<Uint8Array>;
+
+  /**
+   * Sign a 32-byte digest using Ethereum secp256k1 scheme and return [r|s|v].
+   */
+  ethSign(digest: Uint8Array, index?: number): Promise<Uint8Array>;
+}
+
+/**
  * Key data structure for SeedPhrase keys
  */
 export interface KeyData {
