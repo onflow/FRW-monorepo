@@ -1,6 +1,8 @@
 import { screensI18n } from '@onflow/frw-screens';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+
+import { SafeText } from './SafeText';
 
 interface CriticalErrorFallbackProps {
   error: Error;
@@ -21,28 +23,28 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Critical Error Icon - larger for severity */}
-        <Text style={styles.icon}>🚨</Text>
+        <SafeText style={styles.icon}>🚨</SafeText>
 
         {/* Error Title - red color for critical severity */}
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{screensI18n.t('errors.critical.title')}</Text>
+          <SafeText style={styles.title}>{screensI18n.t('errors.critical.title')}</SafeText>
         </View>
 
         {/* Error Message - matches RefreshView message styling */}
-        <Text style={styles.message}>{screensI18n.t('errors.critical.message')}</Text>
+        <SafeText style={styles.message}>{screensI18n.t('errors.critical.message')}</SafeText>
 
         {/* Error Details (only in development) - additional context */}
         {__DEV__ && (
           <ScrollView style={styles.errorDetailsContainer}>
-            <Text style={styles.errorMessage}>{error.message}</Text>
-            {error.stack && <Text style={styles.errorStack}>{error.stack}</Text>}
+            <SafeText style={styles.errorMessage}>{error.message}</SafeText>
+            {error.stack && <SafeText style={styles.errorStack}>{error.stack}</SafeText>}
           </ScrollView>
         )}
 
         {/* Restart Button - destructive variant for critical action */}
         <TouchableOpacity style={styles.button} onPress={resetError} activeOpacity={0.8}>
           <View style={styles.buttonTextWrapper}>
-            <Text style={styles.buttonText}>{screensI18n.t('errors.critical.button')}</Text>
+            <SafeText style={styles.buttonText}>{screensI18n.t('errors.critical.button')}</SafeText>
           </View>
         </TouchableOpacity>
       </View>
@@ -72,26 +74,21 @@ const styles = StyleSheet.create({
     minHeight: 44, // Explicit height container for title (larger font)
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
+    minWidth: '100%',
     marginBottom: 8,
   },
   title: {
-    fontSize: 20, // $6 token - slightly larger for critical errors
-    fontWeight: 'bold',
-    color: '#ff6b6b', // Keep red for critical severity
+    fontSize: 20,
+    color: '#ff6b6b',
     textAlign: 'center',
-    lineHeight: 34, // Generous line height for Android
-    includeFontPadding: false, // Android: prevent text clipping
-    paddingVertical: 4, // Extra padding to prevent clipping
-    textAlignVertical: 'center', // Android-specific vertical alignment
+    minWidth: '100%',
   },
   message: {
-    fontSize: 16, // $4 token
-    color: '#B3B3B3', // $textSecondary
+    fontSize: 16,
+    color: '#B3B3B3',
     textAlign: 'center',
     marginBottom: 24,
-    lineHeight: 22,
-    includeFontPadding: false, // Android: prevent text clipping
+    minWidth: '100%',
   },
   errorDetailsContainer: {
     maxHeight: 200,
@@ -106,13 +103,11 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     color: '#ff6b6b',
     marginBottom: 8,
-    includeFontPadding: false, // Android: prevent text clipping
   },
   errorStack: {
     fontSize: 12,
     fontFamily: 'monospace',
     color: '#999999',
-    includeFontPadding: false, // Android: prevent text clipping
   },
   button: {
     // Matches Button destructive variant from @onflow/frw-ui
@@ -120,7 +115,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 18, // Increased for Android text clipping
     borderRadius: 8,
-    minWidth: 150, // Increased minimum width for Android
+    width: 150, // Increased minimum width for Android
     minHeight: 52, // Increased minimum height for Android
     alignItems: 'center',
     justifyContent: 'center', // Center text vertically
@@ -131,11 +126,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#FFFFFF', // $text
-    fontWeight: '600',
+    color: '#FFFFFF',
     fontSize: 16,
-    lineHeight: 24, // Increased line height for Android
-    includeFontPadding: false, // Android: prevent text clipping
-    textAlignVertical: 'center', // Android-specific vertical alignment
+    minWidth: '100%',
   },
 });

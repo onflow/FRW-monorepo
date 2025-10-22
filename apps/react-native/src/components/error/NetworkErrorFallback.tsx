@@ -1,6 +1,8 @@
 import { screensI18n } from '@onflow/frw-screens';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+
+import { SafeText } from './SafeText';
 
 interface NetworkErrorFallbackProps {
   error: Error;
@@ -21,23 +23,23 @@ export const NetworkErrorFallback: React.FC<NetworkErrorFallbackProps> = ({
     <View style={styles.container}>
       <View style={styles.content}>
         {/* Network Error Icon - centered like RefreshView */}
-        <Text style={styles.icon}>📡</Text>
+        <SafeText style={styles.icon}>📡</SafeText>
 
         {/* Error Title - matches RefreshView title styling */}
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{screensI18n.t('errors.network.title')}</Text>
+          <SafeText style={styles.title}>{screensI18n.t('errors.network.title')}</SafeText>
         </View>
 
         {/* Error Message - matches RefreshView message styling */}
-        <Text style={styles.message}>{screensI18n.t('errors.network.message')}</Text>
+        <SafeText style={styles.message}>{screensI18n.t('errors.network.message')}</SafeText>
 
         {/* Error Details (only in development) - additional context */}
-        {__DEV__ && <Text style={styles.errorDetails}>{error.message}</Text>}
+        {__DEV__ && <SafeText style={styles.errorDetails}>{error.message}</SafeText>}
 
         {/* Retry Button - matches RefreshView button (secondary variant) */}
         <TouchableOpacity style={styles.button} onPress={resetError} activeOpacity={0.8}>
           <View style={styles.buttonTextWrapper}>
-            <Text style={styles.buttonText}>{screensI18n.t('errors.network.button')}</Text>
+            <SafeText style={styles.buttonText}>{screensI18n.t('errors.network.button')}</SafeText>
           </View>
         </TouchableOpacity>
       </View>
@@ -71,22 +73,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 18, // $5 token
-    fontWeight: '600',
-    color: '#B3B3B3', // $textSecondary for error
+    fontSize: 18,
+    color: '#B3B3B3',
     textAlign: 'center',
-    lineHeight: 32, // Generous line height for Android
-    includeFontPadding: false, // Android: prevent text clipping
-    paddingVertical: 4, // Extra padding to prevent clipping
-    textAlignVertical: 'center', // Android-specific vertical alignment
+    minWidth: '100%',
   },
   message: {
-    fontSize: 16, // $4 token
-    color: '#B3B3B3', // $textSecondary
+    fontSize: 16,
+    color: '#B3B3B3',
     textAlign: 'center',
     marginBottom: 24,
-    lineHeight: 22,
-    includeFontPadding: false, // Android: prevent text clipping
+    minWidth: '100%',
   },
   errorDetails: {
     fontSize: 14,
@@ -95,7 +92,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     paddingHorizontal: 16,
-    includeFontPadding: false, // Android: prevent text clipping
   },
   button: {
     // Matches Button secondary variant from @onflow/frw-ui
@@ -103,7 +99,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 18, // Increased for Android text clipping
     borderRadius: 8,
-    minWidth: 150, // Increased minimum width for Android
+    width: 100, // Increased minimum width for Android
     minHeight: 52, // Increased minimum height for Android
     alignItems: 'center',
     justifyContent: 'center', // Center text vertically
@@ -114,11 +110,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#FFFFFF', // $text
-    fontWeight: '600',
+    color: '#FFFFFF',
     fontSize: 16,
-    lineHeight: 24, // Increased line height for Android
-    includeFontPadding: false, // Android: prevent text clipping
-    textAlignVertical: 'center', // Android-specific vertical alignment
+    minWidth: '100%',
   },
 });
