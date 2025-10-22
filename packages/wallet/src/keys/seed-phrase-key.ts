@@ -9,6 +9,7 @@ import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
   KeyType,
   type KeyProtocol,
+  type EthereumKeyProtocol,
   type StorageProtocol,
   type KeyData,
   SignatureAlgorithm,
@@ -20,7 +21,9 @@ import {
  * SeedPhrase-based key implementation using Trust Wallet Core
  * Matches iOS FlowWalletKit/Sources/Keys/SeedPhraseKey.swift
  */
-export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyData> {
+export class SeedPhraseKey
+  implements KeyProtocol<SeedPhraseKey, KeyData, KeyData>, EthereumKeyProtocol
+{
   readonly keyType = KeyType.SeedPhrase;
   storage: StorageProtocol;
 
@@ -283,6 +286,50 @@ export class SeedPhraseKey implements KeyProtocol<SeedPhraseKey, KeyData, KeyDat
         privateKey.delete();
       }
     }
+  }
+
+  /**
+   * Derive Ethereum address for the given index using WalletCore.
+   */
+  async ethAddress(index: number = 0): Promise<string> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await WalletCoreProvider.deriveEVMAddressFromPrivateKey(privateKeyBytes);
+  }
+
+  /**
+   * Return uncompressed secp256k1 public key for Ethereum (65 bytes, 0x04-prefixed).
+   */
+  async ethPublicKey(index: number = 0): Promise<Uint8Array> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await WalletCoreProvider.deriveEVMPublicKeyFromPrivateKey(privateKeyBytes, false);
+  }
+
+  /**
+   * Return raw 32-byte secp256k1 private key for Ethereum derivation index.
+   */
+  async ethPrivateKey(index: number = 0): Promise<Uint8Array> {
+    if (!this.hdWallet) {
+      throw new Error('HD wallet not initialized');
+    }
+
+    const privateKey = await WalletCoreProvider.getEVMPrivateKey(this.hdWallet, index);
+
+    try {
+      const keyData = privateKey.data();
+      return new Uint8Array(keyData);
+    } finally {
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
+    }
+  }
+
+  /**
+   * Sign a 32-byte digest using secp256k1 and return [r|s|v] signature bytes.
+   */
+  async ethSign(digest: Uint8Array, index: number = 0): Promise<Uint8Array> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await WalletCoreProvider.signEvmDigestWithPrivateKey(privateKeyBytes, digest);
   }
 
   /**
