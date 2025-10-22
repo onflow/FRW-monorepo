@@ -15,6 +15,7 @@ import { KeyIndexerService, type PublicKeyAccount } from '../services/key-indexe
 import { MemoryStorage } from '../storage/memory-storage';
 import { type FlowAccount, type EVMAccount } from '../types/account';
 import { Chain } from '../types/chain';
+import { WalletError } from '../types/errors';
 import {
   type EthereumKeyProtocol,
   type KeyProtocol,
@@ -501,7 +502,7 @@ export class Wallet {
   ): Promise<EthSignedTransaction> {
     const key = this.getEthereumKey();
     if (!key) {
-      throw new Error('Wallet does not have an Ethereum-capable signing key');
+      throw WalletError.EthereumCapabilityMissing();
     }
     return await key.ethSignTransaction(transaction, index);
   }
@@ -512,7 +513,7 @@ export class Wallet {
   async ethSignPersonalMessage(message: HexLike, index: number = 0): Promise<EthSignedMessage> {
     const key = this.getEthereumKey();
     if (!key) {
-      throw new Error('Wallet does not have an Ethereum-capable signing key');
+      throw WalletError.EthereumCapabilityMissing();
     }
     return await key.ethSignPersonalMessage(message, index);
   }
@@ -526,7 +527,7 @@ export class Wallet {
   ): Promise<EthSignedMessage> {
     const key = this.getEthereumKey();
     if (!key) {
-      throw new Error('Wallet does not have an Ethereum-capable signing key');
+      throw WalletError.EthereumCapabilityMissing();
     }
     return await key.ethSignTypedData(typedData, index);
   }
@@ -537,7 +538,7 @@ export class Wallet {
   async ethSendRawTransaction(rawTransaction: string, network?: EVMNetworkConfig): Promise<string> {
     const targetNetwork = network ?? this.getEVMNetworks()[0];
     if (!targetNetwork) {
-      throw new Error('No EVM network configured for this wallet');
+      throw WalletError.UnsupportedNetwork();
     }
     const provider = new EthProvider(targetNetwork);
     return await provider.sendRawTransaction(rawTransaction);
