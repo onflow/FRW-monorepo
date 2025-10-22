@@ -52,6 +52,23 @@ export class WalletCoreProvider {
   }
 
   /**
+   * Get initialized Wallet Core instance.
+   */
+  static async getCore(): Promise<WalletCore> {
+    return await this.ensureInitialized();
+  }
+
+  /**
+   * Build standard Ethereum BIP44 path for the provided address index.
+   */
+  private static getEvmDerivationPath(index: number): string {
+    if (!Number.isInteger(index) || index < 0) {
+      throw new Error(`Invalid Ethereum derivation index: ${index}`);
+    }
+    return `m/44'/60'/0'/0/${index}`;
+  }
+
+  /**
    * Create HD wallet with mnemonic (based on HDWallet.test.ts)
    */
   static async createHDWallet(
@@ -145,6 +162,40 @@ export class WalletCoreProvider {
   static async getEVMPrivateKeyBySignatureAlgorithm(wallet: HDWallet): Promise<PrivateKey> {
     const core = await this.ensureInitialized();
     return wallet.getKeyForCoin(core.CoinType.ethereum);
+  }
+
+  /**
+   * Get Ethereum private key for a specific derivation index using BIP44 path.
+   */
+  static async getEVMPrivateKey(wallet: HDWallet, index: number = 0): Promise<PrivateKey> {
+    const core = await this.ensureInitialized();
+    const derivationPath = this.getEvmDerivationPath(index);
+    return wallet.getKeyByCurve(core.Curve.secp256k1, derivationPath);
+  }
+
+  /**
+   * Derive Ethereum address for a specific derivation index directly from HD wallet.
+   */
+  static async deriveEVMAddressFromWallet(wallet: HDWallet, index: number = 0): Promise<string> {
+    const privateKey = await this.getEVMPrivateKey(wallet, index);
+
+    try {
+      const core = await this.ensureInitialized();
+      const publicKey = privateKey.getPublicKeySecp256k1(false);
+      const anyAddress = core.AnyAddress.createWithPublicKey(publicKey, core.CoinType.ethereum);
+
+      try {
+        return anyAddress.description();
+      } finally {
+        if (anyAddress && typeof anyAddress.delete === 'function') {
+          anyAddress.delete();
+        }
+      }
+    } finally {
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
+    }
   }
 
   /**
@@ -393,13 +444,75 @@ export class WalletCoreProvider {
       // Derive Ethereum address from public key
       const address = core.AnyAddress.createWithPublicKey(publicKey, core.CoinType.ethereum);
 
-      // Clean up
-      publicKey.delete();
-      privateKey.delete();
-
-      return address.description();
+      try {
+        return address.description();
+      } finally {
+        if (address && typeof address.delete === 'function') {
+          address.delete();
+        }
+        if (publicKey && typeof publicKey.delete === 'function') {
+          publicKey.delete();
+        }
+        if (privateKey && typeof privateKey.delete === 'function') {
+          privateKey.delete();
+        }
+      }
     } catch (error) {
       throw new Error(`Failed to derive EVM address from private key: ${error}`);
+    }
+  }
+
+  /**
+   * Derive secp256k1 public key (compressed or uncompressed) from raw private key bytes.
+   */
+  static async deriveEVMPublicKeyFromPrivateKey(
+    privateKeyBytes: Uint8Array,
+    compressed: boolean = false
+  ): Promise<Uint8Array> {
+    const privateKey = await this.createPrivateKeyFromBytes(privateKeyBytes);
+
+    try {
+      const publicKey = privateKey.getPublicKeySecp256k1(compressed);
+
+      try {
+        const keyData =
+          !compressed && publicKey.uncompressed
+            ? publicKey.uncompressed().data()
+            : publicKey.data();
+        return new Uint8Array(keyData);
+      } finally {
+        if (publicKey && typeof publicKey.delete === 'function') {
+          publicKey.delete();
+        }
+      }
+    } finally {
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
+    }
+  }
+
+  /**
+   * Sign a 32-byte digest with a secp256k1 private key (returns [r|s|v]).
+   */
+  static async signEvmDigestWithPrivateKey(
+    privateKeyBytes: Uint8Array,
+    digest: Uint8Array
+  ): Promise<Uint8Array> {
+    if (digest.length !== 32) {
+      throw new Error('Ethereum digest must be exactly 32 bytes');
+    }
+
+    const core = await this.ensureInitialized();
+    const privateKey = await this.createPrivateKeyFromBytes(privateKeyBytes);
+
+    try {
+      const signature = privateKey.sign(digest, core.Curve.secp256k1);
+      return new Uint8Array(signature);
+    } finally {
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
     }
   }
 }

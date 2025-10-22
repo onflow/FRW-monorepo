@@ -7,6 +7,7 @@ import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
   KeyType,
   type KeyProtocol,
+  type EthereumKeyProtocol,
   type StorageProtocol,
   SignatureAlgorithm,
   HashAlgorithm,
@@ -16,7 +17,9 @@ import {
  * Raw private key implementation using Trust Wallet Core
  * Matches iOS FlowWalletKit/Sources/Keys/PrivateKey.swift
  */
-export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Array> {
+export class PrivateKey
+  implements KeyProtocol<PrivateKey, Uint8Array, Uint8Array>, EthereumKeyProtocol
+{
   readonly keyType = KeyType.PrivateKey;
   storage: StorageProtocol;
 
@@ -242,6 +245,50 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
    */
   async allKeys(): Promise<string[]> {
     return await this.storage.findKey('privatekey:');
+  }
+
+  /**
+   * Derive Ethereum address from raw private key (only index 0 supported).
+   */
+  async ethAddress(index: number = 0): Promise<string> {
+    if (index !== 0) {
+      throw new Error('Raw private key does not support multiple derivation indexes');
+    }
+
+    return await WalletCoreProvider.deriveEVMAddressFromPrivateKey(this.privateKeyData);
+  }
+
+  /**
+   * Return uncompressed secp256k1 public key (65 bytes, 0x04-prefixed).
+   */
+  async ethPublicKey(index: number = 0): Promise<Uint8Array> {
+    if (index !== 0) {
+      throw new Error('Raw private key does not support multiple derivation indexes');
+    }
+
+    return await WalletCoreProvider.deriveEVMPublicKeyFromPrivateKey(this.privateKeyData, false);
+  }
+
+  /**
+   * Return raw 32-byte secp256k1 private key.
+   */
+  async ethPrivateKey(index: number = 0): Promise<Uint8Array> {
+    if (index !== 0) {
+      throw new Error('Raw private key does not support multiple derivation indexes');
+    }
+
+    return new Uint8Array(this.privateKeyData);
+  }
+
+  /**
+   * Sign 32-byte digest and return Ethereum [r|s|v] signature.
+   */
+  async ethSign(digest: Uint8Array, index: number = 0): Promise<Uint8Array> {
+    if (index !== 0) {
+      throw new Error('Raw private key does not support multiple derivation indexes');
+    }
+
+    return await WalletCoreProvider.signEvmDigestWithPrivateKey(this.privateKeyData, digest);
   }
 
   // Private helper methods for cryptographic operations

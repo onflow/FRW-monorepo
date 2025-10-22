@@ -21,13 +21,13 @@ import {
   ToAccountSection,
   SendArrowDivider,
   StorageWarning,
-  SurgeWarning,
   ExtensionHeader,
   TransactionFeeSection,
   TokenSelectorModal,
   Text,
   Separator,
   XStack,
+  SurgeFeeConfirmationSection,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -100,46 +100,12 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     setAmountError('');
   }, [selectedToken]);
 
-  // Check free gas status
-  useEffect(() => {
-    const checkFreeGasStatus = async () => {
-      try {
-        // Check if the platform supports free gas
-        const platform = bridge.getPlatform();
-        if (platform === 'extension' || platform === 'android' || platform === 'ios') {
-          // For now, default to true since the method might not be available yet
-          setIsFreeGasEnabled(true);
-        } else {
-          setIsFreeGasEnabled(true);
-        }
-      } catch (error) {
-        logger.error('Failed to check free gas status:', error);
-        // Default to enabled if we can't determine the status
-        setIsFreeGasEnabled(true);
-      }
-    };
-
-    checkFreeGasStatus();
-  }, []);
-
   // Initialize wallet accounts on mount (only if not already loaded)
   useEffect(() => {
     if (accounts.length === 0 && !isLoadingWallet) {
       loadAccountsFromBridge();
     }
   }, [loadAccountsFromBridge, accounts.length, isLoadingWallet]);
-
-  // Query for selected account with automatic caching
-  const {
-    data: selectedAccount,
-    isLoading: isLoadingAccount,
-    error: accountError,
-  } = useQuery({
-    queryKey: ['selectedAccount', bridge.getSelectedAddress()],
-    queryFn: () => bridge.getSelectedAccount(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: true,
-  });
 
   // Query for payer status with automatic caching
   const {
@@ -161,33 +127,34 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     isLoading: isLoadingTokens,
     error: tokensError,
   } = useQuery({
-    queryKey: ['tokens', selectedAccount?.address, network],
+    queryKey: ['tokens', fromAccount?.address, network],
     queryFn: async () => {
-      if (!selectedAccount?.address) return [];
+      if (!fromAccount?.address) return [];
 
       // Check if we already have cached data first
-      const cachedTokens = getTokensForAddress(selectedAccount.address, network);
+      const cachedTokens = getTokensForAddress(fromAccount.address, network);
 
       if (!cachedTokens || cachedTokens.length === 0) {
-        await fetchTokens(selectedAccount.address, network, false);
+        await fetchTokens(fromAccount.address, network, false);
       }
 
       // Get tokens from cache (either existing or newly fetched)
-      const coinsData = getTokensForAddress(selectedAccount.address, network);
+      const coinsData = getTokensForAddress(fromAccount.address, network);
       return coinsData || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: !!selectedAccount?.address,
+    enabled: !!fromAccount?.address,
     ...retryConfigs.critical, // Critical financial data retry config
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
   // Query for complete account information including storage and balance
+  // Only fetch for main accounts as child accounts don't need storage validation
   const { data: accountInfo } = useQuery({
-    queryKey: storageQueryKeys.accountInfo(selectedAccount || null),
-    queryFn: () => storageQueries.fetchAccountInfo(selectedAccount || null),
-    enabled: !!selectedAccount?.address,
+    queryKey: storageQueryKeys.accountInfo(fromAccount || null),
+    queryFn: () => storageQueries.fetchAccountInfo(fromAccount || null),
+    enabled: !!fromAccount?.address && fromAccount?.type === 'main',
     staleTime: 0, // Always fresh for financial data
     ...retryConfigs.critical, // Critical account info retry config
     refetchOnWindowFocus: true,
@@ -239,61 +206,33 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
   const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
 
-  // Calculate transaction fee from API's maxFee field or fallback to default
-  const transactionFee = useMemo(() => {
-    if (payerStatus?.surge?.maxFee) {
-      // maxFee is provided by the API with surge factor already applied
-      const fee = payerStatus.surge.maxFee;
-
-      // Format the fee with appropriate precision
-      if (fee < 0.01) {
-        return `~${fee.toFixed(4)} FLOW`;
-      } else if (fee < 0.1) {
-        return `~${fee.toFixed(3)} FLOW`;
-      } else {
-        return `~${fee.toFixed(2)} FLOW`;
-      }
+  const formattedSurgeMultiplier = useMemo(() => {
+    const multiplier = Number(surgeMultiplier || 1);
+    if (Number.isNaN(multiplier)) {
+      return '1';
     }
+    return multiplier.toFixed(2).replace(/\.?0+$/, '');
+  }, [surgeMultiplier]);
 
-    // Fallback to default fee if maxFee is not available
-    return '~0.001 FLOW';
+  // Calculate transaction fee from API's maxFee or use default
+  const transactionFee = useMemo(() => {
+    const fee = payerStatus?.surge?.maxFee;
+    if (!fee) return '~0.001 FLOW';
+
+    const precision = fee < 0.01 ? 4 : fee < 0.1 ? 3 : 2;
+    return `~${fee.toFixed(precision)} FLOW`;
   }, [payerStatus?.surge?.maxFee]);
 
-  // Log payer status API response for debugging
-  React.useEffect(() => {
-    if (payerStatus && typeof payerStatus === 'object') {
-      logger.info('Payer Status API Response:', {
-        surge: payerStatus?.surge || null,
-        feePayer: payerStatus?.feePayer || null,
-        bridgePayer: payerStatus?.bridgePayer || null,
-        updatedAt: payerStatus?.updatedAt || null,
-        reason: payerStatus?.reason || null,
-        isSurgePricingActive,
-        surgeMultiplier,
-        maxFee: payerStatus?.surge?.maxFee || null,
-        calculatedTransactionFee: transactionFee,
-      });
-    }
-    if (isLoadingPayerStatus) {
-      logger.info('Loading payer status...');
-    }
-    if (payerStatusError) {
-      logger.error('Payer status error:', payerStatusError);
-    }
-  }, [
-    payerStatus,
-    isLoadingPayerStatus,
-    payerStatusError,
-    isSurgePricingActive,
-    surgeMultiplier,
-    transactionFee,
-  ]);
   const [amountError, setAmountError] = useState<string>('');
   const inputRef = useRef<any>(null);
 
   // Calculate storage warning state based on real validation logic
+  // Only validate for main accounts as child accounts don't have storage limitations
   const validationResult = useMemo(() => {
-    if (!accountInfo) return { canProceed: true, showWarning: false, warningType: null };
+    // Skip validation for non-main accounts (child accounts don't need storage validation)
+    if (!fromAccount || fromAccount.type !== 'main' || !accountInfo) {
+      return { canProceed: true, showWarning: false, warningType: null };
+    }
 
     const transactionAmount = parseFloat(amount) || 0;
     const isFlowTransaction = selectedToken ? isFlow(selectedToken) : false;
@@ -303,7 +242,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     } else {
       return storageUtils.validateOtherTransaction(accountInfo);
     }
-  }, [accountInfo, amount, selectedToken]);
+  }, [fromAccount, accountInfo, amount, selectedToken]);
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = t(
@@ -555,17 +494,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
   // Calculate overall loading state - only show loading screen for critical data
   // Don't block on wallet store loading if we already have accounts
-  const isOverallLoading = isLoadingAccount || (isLoadingWallet && accounts.length === 0);
+  const isOverallLoading = isLoadingWallet && accounts.length === 0;
 
   // Calculate error state
   const error = useMemo(() => {
-    if (accountError) return 'Failed to load account data. Please try refreshing.';
     if (tokensError) return 'Failed to load tokens. Please try refreshing.';
-    if (tokens.length === 0 && !isLoadingTokens && selectedAccount) {
+    if (tokens.length === 0 && !isLoadingTokens && fromAccount) {
       return 'No tokens available. Please ensure your wallet has tokens to send.';
     }
     return null;
-  }, [accountError, tokensError, tokens.length, isLoadingTokens, selectedAccount]);
+  }, [tokensError, tokens.length, isLoadingTokens, fromAccount]);
 
   // Show loading state
   if (isOverallLoading) {
@@ -703,6 +641,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
               />
             )}
 
+            {isSurgePricingActive && (
+              <SurgeFeeConfirmationSection
+                transactionFee={transactionFee}
+                surgeMultiplier={surgeMultiplier}
+                transactionFeeLabel={t('surge.modal.transactionFee')}
+                surgeTitle={t('surge.modal.surgeActive')}
+                description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
+              />
+            )}
+
             {showStorageWarning && (
               <StorageWarning
                 message={storageWarningMessage}
@@ -720,7 +668,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
             data-testid="next"
             width="100%"
             height={52}
-            bg={isSendDisabled ? '#6b7280' : '$text'}
+            bg={isSendDisabled ? '#6b7280' : isSurgePricingActive ? '$warning' : '$text'}
             rounded={16}
             items="center"
             justify="center"
@@ -770,29 +718,6 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           unknownAccountText={t('send.unknownAccount')}
         />
       </YStack>
-      {/* SurgeWarning Modal */}
-      <SurgeWarning
-        message={
-          isSurgePricingActive && surgeMultiplier
-            ? `Due to high network activity, transaction fees are elevated. Current network fees are ${Number(
-                surgeMultiplier
-              )
-                .toFixed(2)
-                .replace(
-                  /\.?0+$/,
-                  ''
-                )}× higher than usual and your free allowance will not cover the fee for this transaction.`
-            : t('surge.message')
-        }
-        title={t('surge.title')}
-        variant="warning"
-        visible={isSurgeWarningVisible}
-        onClose={() => setIsSurgeWarningVisible(false)}
-        onButtonPress={() => {
-          setIsSurgeWarningVisible(false);
-        }}
-        surgeMultiplier={surgeMultiplier}
-      />
     </BackgroundWrapper>
   );
 };
