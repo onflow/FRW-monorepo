@@ -2,7 +2,6 @@ import { logger } from '@onflow/frw-context';
 import {
   NFTDetailScreen,
   NFTListScreen,
-  SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
 } from '@onflow/frw-screens';
@@ -25,6 +24,7 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
+import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest';
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
 
@@ -238,9 +238,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           >
             <Stack.Screen
               name="SelectTokens"
-              component={SelectTokensScreen}
+              component={ErrorHandlingTest}
               options={{
-                headerTitle: t('navigation.send'),
+                headerTitle: 'Error Test',
               }}
             />
             <Stack.Screen

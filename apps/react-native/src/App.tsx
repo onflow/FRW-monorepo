@@ -4,8 +4,12 @@ import { useWalletStore } from '@onflow/frw-stores';
 import { TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
-import { ErrorUtils, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
+import type { ErrorUtils } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+// Declare global object for React Native environment
+declare const global: any;
 
 import 'react-native-get-random-values';
 import { version } from '../package.json';
@@ -46,40 +50,21 @@ const App = (props: AppProps) => {
       }
     });
 
-    // Unhandled Promise Rejection handler using React Native's tracking API
-    // This is available in React Native without additional dependencies
-    const tracking = require('promise/setimmediate/rejection-tracking');
-    if (tracking && typeof tracking.enable === 'function') {
-      tracking.enable({
-        allRejections: true,
-        onUnhandled: (id: string, error: Error) => {
-          handleUnhandledRejection(error, Promise.resolve());
-        },
-        onHandled: (id: string) => {
-          platform.log('info', '[App] Promise rejection handled:', id);
-        },
+    // Unhandled Promise Rejection handler for React Native
+    // Use global unhandled rejection handler (standard approach for React Native)
+    if (typeof (global as any).addEventListener === 'function') {
+      (global as any).addEventListener('unhandledrejection', (event: any) => {
+        const error =
+          event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+        handleUnhandledRejection(error, event.promise || Promise.resolve());
+        event.preventDefault();
       });
     } else {
-      // Fallback: Set up a global unhandled rejection handler
-      if (
-        typeof (global as unknown as { HermesInternal?: unknown }).HermesInternal !== 'undefined'
-      ) {
-        // Running on Hermes engine - use alternative approach
-        platform.log(
-          'debug',
-          '[App] Running on Hermes - using alternative promise rejection tracking'
-        );
-      }
-
-      // Add event listener for unhandled rejections (standard approach)
-      if (typeof global.addEventListener === 'function') {
-        global.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
-          const error =
-            event.reason instanceof Error ? event.reason : new Error(String(event.reason));
-          handleUnhandledRejection(error, event.promise || Promise.resolve());
-          event.preventDefault();
-        });
-      }
+      // Fallback for environments without addEventListener
+      platform.log(
+        'warn',
+        '[App] Unable to set up unhandled rejection handler - addEventListener not available'
+      );
     }
 
     platform.log('debug', '[App] Global error handlers initialized');

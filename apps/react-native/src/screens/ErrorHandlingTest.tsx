@@ -1,5 +1,6 @@
-import { Button, Text, YStack } from '@onflow/frw-ui';
+import { Text, YStack } from '@onflow/frw-ui';
 import React, { useState } from 'react';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 
 /**
  * Test component to demonstrate error handling functionality
@@ -11,11 +12,17 @@ import React, { useState } from 'react';
  * // In your render: <ErrorHandlingTest />
  */
 export const ErrorHandlingTest: React.FC = () => {
-  const [shouldThrowRenderError, setShouldThrowRenderError] = useState(false);
+  const [errorType, setErrorType] = useState<'none' | 'generic' | 'network' | 'critical'>('none');
 
-  // Test 1: Rendering Error (caught by Error Boundary)
-  if (shouldThrowRenderError) {
+  // Throw during render based on state
+  if (errorType === 'generic') {
     throw new Error('Test rendering error - This should be caught by ErrorBoundary');
+  }
+  if (errorType === 'network') {
+    throw new Error('Network request failed: ECONNRESET - Connection timeout');
+  }
+  if (errorType === 'critical') {
+    throw new Error('Invariant Violation: Bridge initialization failed');
   }
 
   // Test 2: Global JS Exception (caught by global handler)
@@ -30,17 +37,6 @@ export const ErrorHandlingTest: React.FC = () => {
     Promise.reject(new Error('Test unhandled promise rejection - This should be caught'));
   };
 
-  // Test 4: Network Error (should show NetworkErrorFallback)
-  const triggerNetworkError = () => {
-    setShouldThrowRenderError(true);
-    throw new Error('Network request failed: ECONNRESET - Connection timeout');
-  };
-
-  // Test 5: Critical Error (should show CriticalErrorFallback)
-  const triggerCriticalError = () => {
-    throw new Error('Invariant Violation: Bridge initialization failed');
-  };
-
   return (
     <YStack flex={1} padding="$4" gap="$4" backgroundColor="$background">
       <Text fontSize="$7" fontWeight="bold" color="$color" marginBottom="$4">
@@ -52,43 +48,54 @@ export const ErrorHandlingTest: React.FC = () => {
       </Text>
 
       {/* Test 1: Rendering Error */}
-      <Button
-        onPress={() => setShouldThrowRenderError(true)}
-        backgroundColor="$orange10"
-        padding="$3"
+      <TouchableOpacity
+        onPress={() => setErrorType('generic')}
+        style={[styles.button, { backgroundColor: '#fb923c' }]}
       >
-        <Text color="white" fontWeight="600">
+        <Text color="#ffffff" fontWeight="600">
           1. Trigger Rendering Error (Generic Fallback)
         </Text>
-      </Button>
+      </TouchableOpacity>
 
       {/* Test 2: Global JS Exception */}
-      <Button onPress={triggerGlobalError} backgroundColor="$red10" padding="$3">
-        <Text color="white" fontWeight="600">
+      <TouchableOpacity
+        onPress={triggerGlobalError}
+        style={[styles.button, { backgroundColor: '#ef4444' }]}
+      >
+        <Text color="#ffffff" fontWeight="600">
           2. Trigger Global JS Exception (Console Only)
         </Text>
-      </Button>
+      </TouchableOpacity>
 
       {/* Test 3: Unhandled Promise Rejection */}
-      <Button onPress={triggerPromiseRejection} backgroundColor="$purple10" padding="$3">
-        <Text color="white" fontWeight="600">
+      <TouchableOpacity
+        onPress={triggerPromiseRejection}
+        style={[styles.button, { backgroundColor: '#a855f7' }]}
+      >
+        <Text color="#ffffff" fontWeight="600">
           3. Trigger Unhandled Promise Rejection (Console Only)
         </Text>
-      </Button>
+      </TouchableOpacity>
 
       {/* Test 4: Network Error */}
-      <Button onPress={triggerNetworkError} backgroundColor="$blue10" padding="$3">
-        <Text color="white" fontWeight="600">
+      <TouchableOpacity
+        onPress={() => setErrorType('network')}
+        style={[styles.button, { backgroundColor: '#3b82f6' }]}
+      >
+        <Text color="#ffffff" fontWeight="600">
           4. Trigger Network Error (Network Fallback)
         </Text>
-      </Button>
+      </TouchableOpacity>
 
       {/* Test 5: Critical Error */}
-      <Button onPress={triggerCriticalError} backgroundColor="$red11" padding="$3">
-        <Text color="white" fontWeight="600">
+      <TouchableOpacity
+        onPress={() => setErrorType('critical')}
+        style={[styles.button, { backgroundColor: '#dc2626' }]}
+      >
+        <Text color="#ffffff" fontWeight="600">
           5. Trigger Critical Error (Critical Fallback)
         </Text>
-      </Button>
+      </TouchableOpacity>
 
       <YStack marginTop="$4" padding="$3" backgroundColor="$gray3" borderRadius="$3">
         <Text fontSize="$3" color="$gray11" fontWeight="600" marginBottom="$2">
@@ -120,3 +127,12 @@ export const ErrorHandlingTest: React.FC = () => {
     </YStack>
   );
 };
+
+const styles = StyleSheet.create({
+  button: {
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+});
