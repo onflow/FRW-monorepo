@@ -2741,7 +2741,7 @@ import StorageRent from 0xStorageRent
 transaction(vaultIdentifier: String, amount: UInt256, recipient: Address) {
 
     let vaultType: Type
-    let receiver: &{FungibleToken.Receiver}
+    let receiver: &{FungibleToken.Vault}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Bridge) &EVM.CadenceOwnedAccount
 
@@ -2785,7 +2785,7 @@ transaction(vaultIdentifier: String, amount: UInt256, recipient: Address) {
             signer.capabilities.publish(receiverCap, at: vaultData.receiverPath)
             signer.capabilities.publish(metadataCap, at: vaultData.metadataPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{FungibleToken.Receiver}>(vaultData.receiverPath)
+        self.receiver = getAccount(recipient).capabilities.borrow<&{FungibleToken.Vault}>(vaultData.receiverPath)
             ?? panic("Could not borrow Vault from recipient's account")
 
         /* --- Configure a ScopedFTProvider --- */
