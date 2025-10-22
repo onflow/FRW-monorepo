@@ -65,10 +65,6 @@ transaction(nftIdentifier: String, id: UInt256, recipient: Address) {
         }
         self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Collection}>(collectionData.publicPath) ?? panic("Could not borrow Receiver from recipient's public capability path")
        
-        // self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.CollectionPublic}>(collectionData.publicPath)
-        //     ?? getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
-        //     ?? panic("Could not borrow Receiver from recipient's public capability path")
-
         /* --- Configure a ScopedFTProvider --- */
         //
         // Calculate the bridge fee - bridging from EVM consumes no storage, so flat fee
