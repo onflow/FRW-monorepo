@@ -39,17 +39,15 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
       config={tamaguiConfig}
       defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
     >
-      <YStack flex={1} backgroundColor="$inverseBg">
+      <YStack flex={1} backgroundColor="$background">
         {/* Header with close button */}
         <XStack
-          justifyContent="space-between"
-          alignItems="center"
-          paddingTop="$12"
-          paddingBottom="$2.5"
-          paddingHorizontal="$4.5"
-          backgroundColor="$inverseBg"
+          justifyContent="flex-end"
+          alignItems="flex-start"
+          paddingTop="$6"
+          paddingRight="$1"
+          backgroundColor="$background"
         >
-          <YStack width="$11" />
           <IconButton
             icon={<X color="#FFFFFF" size={24} />}
             variant="ghost"
@@ -66,7 +64,7 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
           paddingHorizontal="$4"
           paddingBottom="$4"
         >
-          <YStack flex={1} justifyContent="center" alignItems="center" width="304" gap="$3">
+          <YStack justifyContent="center" alignItems="center" width="304" gap="$3" marginTop="$20">
             {/* Error Icon - Red circle with warning octagon */}
             <YStack
               width="$16"
@@ -81,7 +79,7 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
             </YStack>
 
             {/* Error Title */}
-            <Text fontSize={16} fontWeight="600" color="$inverseText" textAlign="center">
+            <Text fontSize={16} fontWeight="600" color="$color" textAlign="center">
               {screensI18n.t('errors.critical.title')}
             </Text>
 
@@ -93,7 +91,7 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
             {/* Error Details - always shown */}
             <YStack
               width="100%"
-              maxHeight="300"
+              height="$40"
               backgroundColor="$bg2"
               borderRadius="$4"
               overflow="hidden"
@@ -115,19 +113,9 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
           </YStack>
 
           {/* Restart Button - Bottom anchored, red for critical */}
-          <YStack width="100%">
-            <Button
-              height="$12"
-              backgroundColor="$error"
-              borderRadius="$4"
-              onPress={resetError}
-              pressStyle={{ opacity: 0.9 }}
-            >
-              <Text fontSize={16} fontWeight="600" color="#FFFFFF">
-                {screensI18n.t('errors.critical.button')}
-              </Text>
-            </Button>
-          </YStack>
+          <Button variant="destructive" size="large" onPress={resetError} fullWidth>
+            {screensI18n.t('errors.critical.button')}
+          </Button>
         </YStack>
       </YStack>
     </TamaguiProvider>
