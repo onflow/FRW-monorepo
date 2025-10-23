@@ -24,7 +24,7 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest';
+import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest'; // For testing error handling
 
 import { SendToScreen } from '../screens/SendToScreenWrapper';
 
@@ -238,9 +238,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           >
             <Stack.Screen
               name="SelectTokens"
-              component={ErrorHandlingTest}
+              // component={SelectTokensScreen}
+              component={ErrorHandlingTest} // Uncomment for testing error handling
               options={{
-                headerTitle: 'Error Test',
+                // headerTitle: t('navigation.selectTokens'),
+                headerTitle: 'Error Test', // Use with ErrorHandlingTest
               }}
             />
             <Stack.Screen

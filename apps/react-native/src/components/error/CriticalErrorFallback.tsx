@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
+    fontWeight: 'bold',
     color: '#ff6b6b',
     textAlign: 'center',
     minWidth: '100%',
@@ -127,6 +128,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
+    fontWeight: '600',
     fontSize: 16,
     minWidth: '100%',
   },

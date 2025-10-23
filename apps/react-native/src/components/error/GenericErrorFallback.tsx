@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
+    fontWeight: '600',
     color: '#B3B3B3',
     textAlign: 'center',
     minWidth: '100%',
@@ -128,8 +129,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#FFFFFF',
+    fontWeight: '600',
     fontSize: 16,
     minWidth: '100%',
-    // lineHeight removed - can cause Android clipping issues
   },
 });
