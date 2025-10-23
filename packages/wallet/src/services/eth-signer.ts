@@ -6,8 +6,9 @@
 import { TW } from '@trustwallet/wallet-core';
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
+import { WalletError } from '../types/errors';
 
-type HexLike = string | number | bigint | Uint8Array;
+export type HexLike = string | number | bigint | Uint8Array;
 
 export interface EthAccessListEntry {
   address: string;
@@ -85,12 +86,10 @@ export class EthSigner {
     });
 
     if (isEip1559Tx) {
-      const eipParams = params as EthEIP1559Transaction;
-      input.maxFeePerGas = this.hexLikeToBytes(eipParams.maxFeePerGas);
-      input.maxInclusionFeePerGas = this.hexLikeToBytes(eipParams.maxPriorityFeePerGas);
+      input.maxFeePerGas = this.hexLikeToBytes(params.maxFeePerGas);
+      input.maxInclusionFeePerGas = this.hexLikeToBytes(params.maxPriorityFeePerGas);
     } else {
-      const legacyParams = params as EthLegacyTransaction;
-      input.gasPrice = this.hexLikeToBytes(legacyParams.gasPrice);
+      input.gasPrice = this.hexLikeToBytes((params as EthLegacyTransaction).gasPrice);
     }
 
     if (params.accessList?.length) {
@@ -107,7 +106,13 @@ export class EthSigner {
     const output = SigningOutput.decode(outputBytes);
 
     if (typeof output.error === 'number' && output.error !== 0) {
-      throw new Error(output.errorMessage || 'Ethereum transaction signing failed');
+      throw WalletError.SigningFailed({
+        details: {
+          method: 'eth_signTransaction',
+          message: output.errorMessage,
+          walletCoreErrorCode: output.error,
+        },
+      });
     }
 
     const rawHex = core.HexCoding.encode(output.encoded);
@@ -203,9 +208,16 @@ export class EthSigner {
       }
       return this.hexLikeToBytes(BigInt(value));
     }
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+        throw WalletError.InvalidNumericValue({ details: { value } });
+      }
+    }
     const bigintValue = typeof value === 'number' ? BigInt(value) : value;
     if (bigintValue < 0n) {
-      throw new Error(`Cannot encode negative value ${bigintValue.toString()}`);
+      throw WalletError.InvalidNumericValue({
+        details: { value: bigintValue.toString() },
+      });
     }
     let hex = bigintValue.toString(16);
     if (hex.length === 0) {

@@ -9,6 +9,8 @@ import {
   type PrivateKey,
   type PublicKey,
 } from '@trustwallet/wallet-core/dist/src/wallet-core';
+
+import { WalletError } from '../types/errors';
 /**
  * Wallet Core provider with Flow blockchain extensions
  */
@@ -32,12 +34,12 @@ export class WalletCoreProvider {
       this.core = await initWasm();
 
       if (!this.core) {
-        throw new Error('Failed to initialize Wallet Core');
+        throw WalletError.InitializationFailed();
       }
 
       this.initialized = true;
     } catch (error) {
-      throw new Error(`Wallet Core initialization failed: ${error}`);
+      throw WalletError.InitializationFailed({ cause: error });
     }
   }
 
@@ -63,7 +65,7 @@ export class WalletCoreProvider {
    */
   private static getEvmDerivationPath(index: number): string {
     if (!Number.isInteger(index) || index < 0) {
-      throw new Error(`Invalid Ethereum derivation index: ${index}`);
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
     }
     return `m/44'/60'/0'/0/${index}`;
   }
@@ -87,7 +89,7 @@ export class WalletCoreProvider {
     // Validate mnemonic (based on Mnemonic.test.ts)
     if (!core.Mnemonic.isValid(mnemonic)) {
       wallet.delete();
-      throw new Error('Generated invalid mnemonic');
+      throw WalletError.MnemonicInvalid();
     }
 
     return { wallet, mnemonic };
@@ -101,7 +103,7 @@ export class WalletCoreProvider {
 
     // Validate mnemonic first
     if (!core.Mnemonic.isValid(mnemonic)) {
-      throw new Error('Invalid mnemonic phrase');
+      throw WalletError.MnemonicInvalid();
     }
 
     // Create wallet from mnemonic (based on HDWallet.test.ts)
@@ -152,7 +154,9 @@ export class WalletCoreProvider {
         // Use getKeyByCurve with Curve.secp256k1 for Flow secp256k1 (matches iOS implementation)
         return wallet.getKeyByCurve(core.Curve.secp256k1, derivationPath);
       default:
-        throw new Error(`Unsupported signature algorithm: ${signatureAlgorithm}`);
+        throw WalletError.UnsupportedSignatureAlgorithm({
+          details: { signatureAlgorithm },
+        });
     }
   }
 
@@ -228,7 +232,9 @@ export class WalletCoreProvider {
           publicKey = privateKey.getPublicKeySecp256k1(false); // false = uncompressed
           break;
         default:
-          throw new Error(`Unsupported Flow signature algorithm: ${signatureAlgorithm}`);
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm },
+          });
       }
 
       // Get uncompressed format and convert to hex
@@ -381,7 +387,9 @@ export class WalletCoreProvider {
           curve = core.Curve.secp256k1;
           break;
         default:
-          throw new Error(`Unsupported signature algorithm: ${signatureAlgorithm}`);
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm },
+          });
       }
 
       // Sign the hashed data with the specified curve
@@ -425,7 +433,10 @@ export class WalletCoreProvider {
       // This handles all the cryptographic operations internally
       return wallet.getAddressForCoin(core.CoinType.ethereum);
     } catch (error) {
-      throw new Error(`Failed to derive EVM address: ${error}`);
+      throw WalletError.DerivationFailed({
+        cause: error,
+        details: { method: 'deriveEVMAddress' },
+      });
     }
   }
 
@@ -458,7 +469,10 @@ export class WalletCoreProvider {
         }
       }
     } catch (error) {
-      throw new Error(`Failed to derive EVM address from private key: ${error}`);
+      throw WalletError.DerivationFailed({
+        cause: error,
+        details: { method: 'deriveEVMAddressFromPrivateKey' },
+      });
     }
   }
 
@@ -500,7 +514,9 @@ export class WalletCoreProvider {
     digest: Uint8Array
   ): Promise<Uint8Array> {
     if (digest.length !== 32) {
-      throw new Error('Ethereum digest must be exactly 32 bytes');
+      throw WalletError.InvalidDigestLength({
+        details: { expected: 32, received: digest.length },
+      });
     }
 
     const core = await this.ensureInitialized();

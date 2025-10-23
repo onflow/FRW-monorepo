@@ -40,34 +40,58 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
   const [isAnimationReady, setIsAnimationReady] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
 
-  // Prepare animation with placeholder-first strategy
+  // Prepare animation with placeholder-first strategy and enhanced error handling
   useEffect(() => {
     const prepareAnimation = async () => {
       try {
-        console.log('[ConfirmationAnimation] 🚀 Preparing animation with imageUri:', imageUri);
+        logger.debug('[ConfirmationAnimation] 🚀 Preparing animation with imageUri:', imageUri);
         setIsAnimationReady(false);
 
         // Validate animation data
         if (!sendConfirmationAnimation || typeof sendConfirmationAnimation !== 'object') {
-          console.warn('[ConfirmationAnimation] ❌ Invalid animation data');
+          logger.warn('[ConfirmationAnimation] ❌ Invalid animation data');
           setIsAnimationReady(true);
           return;
         }
 
         // Step 1: Always start with placeholder (Flow logo) for immediate display
-        console.log('[ConfirmationAnimation] 📍 Step 1: Showing placeholder animation immediately');
+        logger.debug(
+          '[ConfirmationAnimation] 📍 Step 1: Showing placeholder animation immediately'
+        );
         const placeholderResult = await injectImageWithFallbacks(
           sendConfirmationAnimation,
           'image_0', // Standard Lottie image layer ID
           '' // Empty string will trigger base64 placeholder
         );
 
-        setCurrentAnimationSource(placeholderResult.animationData);
-        setIsAnimationReady(true);
+        if (placeholderResult.success && placeholderResult.animationData) {
+          setCurrentAnimationSource(placeholderResult.animationData);
+          setIsAnimationReady(true);
+        } else {
+          logger.warn(
+            '[ConfirmationAnimation] ⚠️ Placeholder injection failed, using original animation'
+          );
+          setCurrentAnimationSource(sendConfirmationAnimation);
+          setIsAnimationReady(true);
+        }
 
         // Step 2: If we have a real image URI, replace it dynamically
         if (imageUri && !imageLoadError) {
-          console.log('[ConfirmationAnimation] 📍 Step 2: Loading actual token image:', imageUri);
+          logger.debug('[ConfirmationAnimation] 📍 Step 2: Loading actual token image:', imageUri);
+
+          // Check if it's an SVG on Android to skip early and avoid crashes
+          const isSVGOnAndroid =
+            Platform.OS === 'android' &&
+            (imageUri.includes('data:image/svg+xml') ||
+              imageUri.toLowerCase().includes('.svg') ||
+              imageUri.includes('<svg'));
+
+          if (isSVGOnAndroid) {
+            logger.info(
+              '[ConfirmationAnimation] 🛡️ Skipping SVG on Android to prevent crash, keeping placeholder'
+            );
+            return;
+          }
 
           // Delay slightly to ensure placeholder is visible first
           setTimeout(async () => {
@@ -78,30 +102,33 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
                 imageUri
               );
 
-              console.log('[ConfirmationAnimation] 🎯 Image injection result:', {
+              logger.debug('[ConfirmationAnimation] 🎯 Image injection result:', {
                 success: realImageResult.success,
                 method: realImageResult.method,
               });
 
-              if (realImageResult.success) {
-                console.log(
+              if (realImageResult.success && realImageResult.animationData) {
+                logger.debug(
                   '[ConfirmationAnimation] ✅ Replacing placeholder with real token image'
                 );
                 setCurrentAnimationSource(realImageResult.animationData);
               } else {
-                console.log('[ConfirmationAnimation] ⚠️ Real image failed, keeping placeholder');
+                logger.debug('[ConfirmationAnimation] ⚠️ Real image failed, keeping placeholder');
               }
             } catch (error) {
-              console.error('[ConfirmationAnimation] 💥 Real image injection failed:', error);
+              logger.error('[ConfirmationAnimation] 💥 Real image injection failed:', error);
+              setImageLoadError(true);
             }
           }, 100); // Small delay to ensure placeholder shows first
         } else {
-          console.log('[ConfirmationAnimation] 📍 No imageUri provided, keeping placeholder');
+          logger.debug('[ConfirmationAnimation] 📍 No imageUri provided, keeping placeholder');
         }
       } catch (error) {
-        console.error('[ConfirmationAnimation] 💥 Animation preparation failed:', error);
+        logger.error('[ConfirmationAnimation] 💥 Animation preparation failed:', error);
+        // Fallback to original animation without any injection
         setCurrentAnimationSource(sendConfirmationAnimation);
         setIsAnimationReady(true);
+        setImageLoadError(true);
       }
     };
 
@@ -166,18 +193,37 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
         cacheComposition={true}
         speed={1.0}
         onAnimationFailure={(error) => {
-          console.warn('[ConfirmationAnimation] Animation failed:', error);
+          logger.warn('[ConfirmationAnimation] Animation failed:', error);
           setImageLoadError(true);
+
+          // Additional safety: Reset to placeholder animation on failure
+          if (Platform.OS === 'android') {
+            logger.warn(
+              '[ConfirmationAnimation] Resetting to safe placeholder animation after failure'
+            );
+            setTimeout(() => {
+              setCurrentAnimationSource(sendConfirmationAnimation);
+            }, 50);
+          }
         }}
         onAnimationLoaded={() => {
-          console.log('[ConfirmationAnimation] Animation loaded successfully');
-          // Set images folder for Android Lottie to prevent IllegalStateException
-          if (
-            Platform.OS === 'android' &&
-            animationRef.current &&
-            typeof animationRef.current.setImagesFolder === 'function'
-          ) {
-            animationRef.current.setImagesFolder('');
+          logger.debug('[ConfirmationAnimation] Animation loaded successfully');
+
+          // Android-specific optimizations to prevent crashes
+          if (Platform.OS === 'android' && animationRef.current) {
+            try {
+              // Set images folder for Android Lottie to prevent IllegalStateException
+              if (typeof animationRef.current.setImagesFolder === 'function') {
+                animationRef.current.setImagesFolder('');
+              }
+
+              // Additional Android safety measures
+              if (typeof animationRef.current.enableMergePathsForKitKatAndAbove === 'function') {
+                animationRef.current.enableMergePathsForKitKatAndAbove(false);
+              }
+            } catch (setupError) {
+              logger.warn('[ConfirmationAnimation] Android setup optimization failed:', setupError);
+            }
           }
         }}
       />

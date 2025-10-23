@@ -7,6 +7,14 @@ import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
+  EthSigner,
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthSignedMessage,
+  type HexLike,
+} from '../services/eth-signer';
+import { WalletError } from '../types/errors';
+import {
   KeyType,
   type KeyProtocol,
   type EthereumKeyProtocol,
@@ -75,7 +83,7 @@ export class SeedPhraseKey
     // Validate the provided mnemonic
     const isValid = await WalletCoreProvider.validateMnemonic(advance.mnemonic);
     if (!isValid) {
-      throw new Error('Invalid mnemonic phrase');
+      throw WalletError.MnemonicInvalid();
     }
 
     const wallet = await WalletCoreProvider.restoreHDWallet(advance.mnemonic, advance.passphrase);
@@ -111,7 +119,7 @@ export class SeedPhraseKey
     // Get encrypted data from storage
     const encryptedData = await storage.get(id);
     if (!encryptedData) {
-      throw new Error(`Key with ID ${id} not found`);
+      throw WalletError.PrivateKeyUnavailable({ details: { id } });
     }
 
     // Decrypt the key data using password
@@ -165,7 +173,7 @@ export class SeedPhraseKey
     derivationPath: string | undefined = undefined
   ): Promise<Uint8Array | null> {
     if (!this.hdWallet) {
-      throw new Error('HD wallet not initialized');
+      throw WalletError.KeyNotInitialized();
     }
 
     try {
@@ -199,7 +207,7 @@ export class SeedPhraseKey
     derivationPath: string | undefined = undefined
   ): Promise<Uint8Array | null> {
     if (!this.hdWallet) {
-      throw new Error('HD wallet not initialized');
+      throw WalletError.KeyNotInitialized();
     }
 
     try {
@@ -235,7 +243,7 @@ export class SeedPhraseKey
     hashAlgo: HashAlgorithm
   ): Promise<Uint8Array> {
     if (!this.hdWallet) {
-      throw new Error('HD wallet not initialized');
+      throw WalletError.KeyNotInitialized();
     }
 
     // First hash the data according to the specified algorithm
@@ -248,7 +256,9 @@ export class SeedPhraseKey
         hashedData = await WalletCoreProvider.hashSHA3(data);
         break;
       default:
-        throw new Error(`Unsupported hash algorithm: ${hashAlgo}`);
+        throw WalletError.UnsupportedHashAlgorithm({
+          details: { hashAlgorithm: hashAlgo },
+        });
     }
 
     // Get private key by curve and sign (matches iOS implementation)
@@ -271,7 +281,9 @@ export class SeedPhraseKey
           curve = core.Curve.secp256k1;
           break;
         default:
-          throw new Error(`Unsupported signature algorithm: ${signAlgo}`);
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm: signAlgo },
+          });
       }
 
       // Sign with the private key and curve (matches iOS pk.sign(digest: hashed, curve: curve))
@@ -309,7 +321,7 @@ export class SeedPhraseKey
    */
   async ethPrivateKey(index: number = 0): Promise<Uint8Array> {
     if (!this.hdWallet) {
-      throw new Error('HD wallet not initialized');
+      throw WalletError.KeyNotInitialized();
     }
 
     const privateKey = await WalletCoreProvider.getEVMPrivateKey(this.hdWallet, index);
@@ -333,6 +345,36 @@ export class SeedPhraseKey
   }
 
   /**
+   * Sign an Ethereum transaction and return encoded payload.
+   */
+  async ethSignTransaction(
+    transaction: EthUnsignedTransaction,
+    index: number = 0
+  ): Promise<EthSignedTransaction> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await EthSigner.signTransaction(transaction, privateKeyBytes);
+  }
+
+  /**
+   * Sign an Ethereum personal message (EIP-191).
+   */
+  async ethSignPersonalMessage(message: HexLike, index: number = 0): Promise<EthSignedMessage> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await EthSigner.signPersonalMessage(privateKeyBytes, message);
+  }
+
+  /**
+   * Sign EIP-712 typed data.
+   */
+  async ethSignTypedData(
+    typedData: Record<string, unknown>,
+    index: number = 0
+  ): Promise<EthSignedMessage> {
+    const privateKeyBytes = await this.ethPrivateKey(index);
+    return await EthSigner.signTypedData(privateKeyBytes, typedData);
+  }
+
+  /**
    * Validate a signature against a message
    */
   async isValidSignature(
@@ -348,9 +390,9 @@ export class SeedPhraseKey
 
     // Implementation would verify signature using appropriate cryptographic library
     // This requires additional crypto libraries for signature verification
-    throw new Error(
-      'Signature validation not implemented - requires crypto signature verification'
-    );
+    throw WalletError.SigningFailed({
+      message: 'Signature validation not implemented - requires crypto signature verification',
+    });
   }
 
   /**

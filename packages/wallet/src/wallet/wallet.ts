@@ -4,11 +4,20 @@
 
 import { WalletTypeUtils } from './utils';
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
+import { EthProvider } from '../services/eth-provider';
+import {
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthSignedMessage,
+  type HexLike,
+} from '../services/eth-signer';
 import { KeyIndexerService, type PublicKeyAccount } from '../services/key-indexer';
 import { MemoryStorage } from '../storage/memory-storage';
 import { type FlowAccount, type EVMAccount } from '../types/account';
 import { Chain } from '../types/chain';
+import { WalletError } from '../types/errors';
 import {
+  type EthereumKeyProtocol,
   type KeyProtocol,
   type StorageProtocol,
   type SecurityCheckDelegate,
@@ -158,6 +167,18 @@ export class Wallet {
    */
   get key(): KeyProtocol | null {
     return WalletTypeUtils.getKey(this.type);
+  }
+
+  private getEthereumKey(): EthereumKeyProtocol | null {
+    const key = this.key;
+    if (!key) {
+      return null;
+    }
+    const candidate = key as unknown as Partial<EthereumKeyProtocol>;
+    if (typeof candidate.ethAddress === 'function') {
+      return candidate as EthereumKeyProtocol;
+    }
+    return null;
   }
 
   /**
@@ -470,6 +491,57 @@ export class Wallet {
       console.warn(`Failed to derive EVM address for network ${evmNetwork.name}:`, error);
       return null;
     }
+  }
+
+  /**
+   * Sign an Ethereum transaction using the wallet's key material.
+   */
+  async ethSignTransaction(
+    transaction: EthUnsignedTransaction,
+    index: number = 0
+  ): Promise<EthSignedTransaction> {
+    const key = this.getEthereumKey();
+    if (!key) {
+      throw WalletError.EthereumCapabilityMissing();
+    }
+    return await key.ethSignTransaction(transaction, index);
+  }
+
+  /**
+   * Sign an Ethereum personal message (EIP-191).
+   */
+  async ethSignPersonalMessage(message: HexLike, index: number = 0): Promise<EthSignedMessage> {
+    const key = this.getEthereumKey();
+    if (!key) {
+      throw WalletError.EthereumCapabilityMissing();
+    }
+    return await key.ethSignPersonalMessage(message, index);
+  }
+
+  /**
+   * Sign an EIP-712 typed data payload.
+   */
+  async ethSignTypedData(
+    typedData: Record<string, unknown>,
+    index: number = 0
+  ): Promise<EthSignedMessage> {
+    const key = this.getEthereumKey();
+    if (!key) {
+      throw WalletError.EthereumCapabilityMissing();
+    }
+    return await key.ethSignTypedData(typedData, index);
+  }
+
+  /**
+   * Broadcast a raw signed Ethereum transaction to an EVM network.
+   */
+  async ethSendRawTransaction(rawTransaction: string, network?: EVMNetworkConfig): Promise<string> {
+    const targetNetwork = network ?? this.getEVMNetworks()[0];
+    if (!targetNetwork) {
+      throw WalletError.UnsupportedNetwork();
+    }
+    const provider = new EthProvider(targetNetwork);
+    return await provider.sendRawTransaction(rawTransaction);
   }
 
   /**
