@@ -17,9 +17,34 @@ import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
 
+const CONSOLE_STYLES: Record<'debug' | 'info' | 'warn' | 'error', string> = {
+  debug: 'background:#16FF99;color:#ffffff;padding:0 4px;border-radius:2px;',
+  info: 'background:#2563eb;color:#f8fafc;padding:0 4px;border-radius:2px;',
+  warn: 'background:#d97706;color:#fff7ed;padding:0 4px;border-radius:2px;',
+  error: 'background:#dc2626;color:#fef2f2;padding:0 4px;border-radius:2px;',
+};
+
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
+
+  // Optional platform-specific logging callback using native bridge
+  logCallback?: (
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    ...args: unknown[]
+  ) => void = (level, message, ...args) => {
+    // Use native bridge for additional logging
+    try {
+      // Convert all args to strings for native bridge compatibility
+      const stringArgs = args.map(arg =>
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      );
+      NativeFRWBridge.logToNative(level, message, stringArgs);
+    } catch (error) {
+      // Silently fail - don't use console here to avoid recursion
+    }
+  };
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -28,24 +53,26 @@ class PlatformImpl implements PlatformSpec {
 
     const prefix = `[FRW-${level.toUpperCase()}]`;
     const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
+    const formattedPrefix = `%c${prefix}`;
+    const styleArgs = [CONSOLE_STYLES[level]];
 
     // Console logging for development - always use console directly
     switch (level) {
       case 'debug':
         // eslint-disable-next-line no-console
-        console.log(prefix, message, ...args);
+        console.log(formattedPrefix, ...styleArgs, message, ...args);
         break;
       case 'info':
         // eslint-disable-next-line no-console
-        console.info(prefix, message, ...args);
+        console.info(formattedPrefix, ...styleArgs, message, ...args);
         break;
       case 'warn':
         // eslint-disable-next-line no-console
-        console.warn(prefix, message, ...args);
+        console.warn(formattedPrefix, ...styleArgs, message, ...args);
         break;
       case 'error':
         // eslint-disable-next-line no-console
-        console.error(prefix, message, ...args);
+        console.error(formattedPrefix, ...styleArgs, message, ...args);
         break;
     }
 
@@ -228,8 +255,6 @@ class PlatformImpl implements PlatformSpec {
 
         if (config.name.endsWith('WithPayer')) {
           config.authorizations = [config.proposer, bridgeAuthorization];
-          // If the transaction is a bridge with payer transaction, use the bridge authorization as the payer
-          config.payer = bridgeAuthorization;
         }
       }
       return config;

@@ -7,22 +7,29 @@ set -euo pipefail
 #
 # Inputs via env vars:
 #   EVENT_NAME           - github.event_name
-#   INPUT_TAG_NAME       - inputs.tag_name (when workflow_dispatch)
+#   INPUT_TAG_NAME       - inputs.tag_name (legacy, when workflow_dispatch)
+#   INPUT_FROM_TAG       - inputs.from_tag (when workflow_dispatch)
+#   INPUT_TO_TAG         - inputs.to_tag (when workflow_dispatch)
 #   RELEASE_TAG_NAME     - github.event.release.tag_name (for release event)
 #   REPOSITORY           - github.repository (used for links in fallback)
 #   GITHUB_OUTPUT        - (provided by Actions) file path for outputs
 
 EVENT_NAME=${EVENT_NAME:-}
 INPUT_TAG_NAME=${INPUT_TAG_NAME:-}
+INPUT_FROM_TAG=${INPUT_FROM_TAG:-}
+INPUT_TO_TAG=${INPUT_TO_TAG:-}
 RELEASE_TAG_NAME=${RELEASE_TAG_NAME:-}
 GITHUB_REF=${GITHUB_REF:-}
 GITHUB_REF_NAME=${GITHUB_REF_NAME:-}
 REPOSITORY=${REPOSITORY:-}
+GITHUB_TOKEN=${GITHUB_TOKEN:-}
 
-# Determine TAG_NAME (priority: explicit input > release event tag > current ref tag)
+# Determine TAG_NAME (priority: tag_name > to_tag > release event tag > current ref tag)
 TAG_NAME=""
 if [[ -n "$INPUT_TAG_NAME" ]]; then
   TAG_NAME="$INPUT_TAG_NAME"
+elif [[ -n "$INPUT_TO_TAG" ]]; then
+  TAG_NAME="$INPUT_TO_TAG"
 elif [[ -n "$RELEASE_TAG_NAME" ]]; then
   TAG_NAME="$RELEASE_TAG_NAME"
 elif [[ "$GITHUB_REF" == refs/tags/* || -n "$GITHUB_REF_NAME" && "$GITHUB_REF" == refs/tags/* ]]; then
@@ -47,13 +54,16 @@ else
   echo "Standard tag format detected: $TAG_NAME"
 fi
 
-# Find previous tag
-if [[ -n "$TAG_PREFIX" ]]; then
-  PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || true)
+# Resolve previous tag (flat if-elif-else for clarity)
+if [[ -n "$INPUT_FROM_TAG" ]]; then
+  PREVIOUS_TAG="$INPUT_FROM_TAG"
+elif [[ -n "$TAG_PREFIX" ]]; then
   echo "Looking for previous tag with prefix: ${TAG_PREFIX}-*"
+  PREVIOUS_TAG=$(git tag --list "${TAG_PREFIX}-*" --sort=-version:refname | grep -v "^${TAG_NAME}$" | head -n 1 || true)
 else
   PREVIOUS_TAG=$(git describe --tags --abbrev=0 "$TAG_NAME^" 2>/dev/null || true)
 fi
+
 
 if [[ -z "${PREVIOUS_TAG:-}" ]]; then
   echo "No previous tag found, analyzing all commits since repository start"
@@ -90,11 +100,16 @@ COMMIT_COUNT=0
 while IFS='|' read -r commit_hash commit_subject commit_body author_name commit_date; do
   [[ -z "$commit_hash" ]] && continue
   COMMIT_COUNT=$((COMMIT_COUNT + 1))
+  # Clean conventional prefixes/scopes and ticket IDs from title for user-facing text
+  clean_subject=$(echo "$commit_subject" \
+    | sed -E "s/^(feat|fix|chore|refactor|style|docs|test|perf|build|ci|revert)(\([^)]+\))?(!)?:\s*//I" \
+    | sed -E "s/^\[?[A-Za-z]+-[0-9]+\](:|-)?\s*//" \
+    | sed -E "s/[[:space:]]+$//")
   {
     echo "### Commit $COMMIT_COUNT: ${commit_hash:0:8}"
     echo "- Author: $author_name"
     echo "- Date: $commit_date"
-    echo "- Title: $commit_subject"
+    echo "- Title: $clean_subject"
     if [[ -n "$commit_body" && "$commit_body" != "$commit_subject" ]]; then
       echo "- Description:"
       echo '```'
@@ -103,9 +118,64 @@ while IFS='|' read -r commit_hash commit_subject commit_body author_name commit_
     fi
     echo
   } >> "$COMMIT_INFO_FILE"
+  # Prefer GitHub API to map commit -> PR for accurate PR number and author handle
+  if [[ -n "$GITHUB_TOKEN" && -n "$REPOSITORY" ]]; then
+    API_DATA=$(curl -s -L \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer $GITHUB_TOKEN" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      "https://api.github.com/repos/${REPOSITORY}/commits/${commit_hash}/pulls" || true)
+    echo "$API_DATA" | jq -r '.[] | "\(.number)|\(.title)|\(.user.login)"' 2>/dev/null >> pr_entries_api.txt || true
+  else
+    PR_LIST=$(printf '%s\n%s\n' "$commit_subject" "$commit_body" | grep -Eo "#[0-9]+" | tr -d "#" | sort -n | uniq | tr "\n" " ")
+    if [[ -n "${PR_LIST:-}" ]]; then
+      for pr in $PR_LIST; do
+        echo "$pr|$clean_subject|$author_name" >> pr_entries.txt
+      done
+    fi
+  fi
+
+  # Try to extract a PR number from subject/body (matches patterns like "(#123)" or "#123")
+  PR_NUM=$(printf '%s\n%s\n' "$commit_subject" "$commit_body" | grep -Eo '#[0-9]+' | head -n 1 | tr -d '#' || true)
+  if [[ -n "${PR_NUM:-}" ]]; then
+    # Accumulate entries for a later PR list (dedup by PR later)
+    echo "$PR_NUM|$clean_subject|$author_name" >> pr_entries.txt
+  fi
 done <<< "$COMMITS"
 
 echo "Total commits to analyze: $COMMIT_COUNT"
+
+# Build PR Index (with GitHub handles if available)
+if [[ -f pr_entries_api.txt ]]; then
+  awk -F'|' '!seen[$1]++ {print $0}' pr_entries_api.txt > pr_unique_api.txt || true
+  if [[ -s pr_unique_api.txt ]]; then
+    : > pr_index.md
+    while IFS='|' read -r pr title login; do
+      safe_title=$(echo "$title" | tr '\n' ' ')
+      if [[ -n "$login" ]]; then
+        echo "- ${safe_title} (#${pr}) — @${login}" >> pr_index.md
+      else
+        echo "- ${safe_title} (#${pr})" >> pr_index.md
+      fi
+    done < pr_unique_api.txt
+  fi
+fi
+
+# Fallback PR list (no handles) if API not used
+if [[ ! -s pr_index.md && -f pr_entries.txt ]]; then
+  # Keep first occurrence per PR (newest first in our log ordering)
+  awk -F'|' '!seen[$1]++ {print $0}' pr_entries.txt > pr_unique.txt || true
+  if [[ -s pr_unique.txt ]]; then
+    {
+      echo "## PRs"
+      echo
+      while IFS='|' read -r pr title author; do
+        safe_title=$(echo "$title" | tr '\n' ' ')
+        echo "- ${safe_title} (#${pr}) — @${author}"
+      done < pr_unique.txt
+    } > pr_list.md
+  fi
+fi
 
 # Export outputs for GitHub Actions
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then

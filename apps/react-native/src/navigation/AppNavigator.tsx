@@ -112,6 +112,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           const tokenInfo = createTokenModelFromConfig(sendToConfig.selectedToken);
           setSelectedToken(tokenInfo);
           setCurrentStep('send-to');
+          setTransactionType('tokens');
+          setSelectedNFTs([]);
           logger.debug('SelectedToken set and step updated to send-to', { tokenInfo });
         }
 

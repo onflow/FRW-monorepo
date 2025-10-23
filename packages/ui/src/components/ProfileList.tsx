@@ -1,5 +1,6 @@
-import type { WalletProfile } from '@onflow/frw-types';
+import type { WalletAccount, WalletProfile } from '@onflow/frw-types';
 import React from 'react';
+import { FlatList } from 'react-native';
 import { YStack, XStack } from 'tamagui';
 
 import { RecipientItem } from './RecipientItem';
@@ -8,6 +9,7 @@ import { RefreshView } from './RefreshView';
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
+import { space } from '../theme';
 
 export interface ProfileListProps {
   profiles: WalletProfile[];
@@ -17,6 +19,8 @@ export interface ProfileListProps {
   emptyMessage?: string;
   loadingText?: string;
   isMobile?: boolean;
+  contentPaddingHorizontal?: number;
+  currentAccount?: WalletAccount;
 }
 
 export function ProfileList({
@@ -27,7 +31,29 @@ export function ProfileList({
   emptyMessage = 'No profiles found',
   loadingText = 'Loading profiles...',
   isMobile = false,
+  contentPaddingHorizontal,
+  currentAccount,
 }: ProfileListProps): React.ReactElement {
+  const listHorizontalPadding = contentPaddingHorizontal ?? space.$4;
+
+  // Sort profiles to show the one containing currentAccount first
+  const sortedProfiles = React.useMemo(() => {
+    if (!currentAccount || !profiles) return profiles;
+
+    return [...profiles].sort((a, b) => {
+      const aContainsCurrent = a.accounts.some(
+        (account) => account.address === currentAccount.address
+      );
+      const bContainsCurrent = b.accounts.some(
+        (account) => account.address === currentAccount.address
+      );
+
+      if (aContainsCurrent && !bContainsCurrent) return -1;
+      if (!aContainsCurrent && bContainsCurrent) return 1;
+      return 0;
+    });
+  }, [profiles, currentAccount]);
+
   if (isLoading) {
     // Skeleton loading for profiles list
     return (
@@ -67,32 +93,27 @@ export function ProfileList({
   }
 
   return (
-    <YStack gap="$3">
-      {profiles.map((profile, index) => (
-        <React.Fragment key={profile.uid}>
-          <ProfileItem
-            profile={profile}
-            onAccountPress={onAccountPress}
-            isLast={index === profiles.length - 1}
-            isMobile={isMobile}
-          />
-        </React.Fragment>
-      ))}
-    </YStack>
+    <FlatList
+      data={sortedProfiles}
+      keyExtractor={(profile) => profile.uid}
+      contentContainerStyle={{ paddingHorizontal: listHorizontalPadding }}
+      renderItem={({ item }) => (
+        <ProfileItem profile={item} onAccountPress={onAccountPress} isMobile={isMobile} />
+      )}
+      ItemSeparatorComponent={() => <YStack height="$3" />}
+    />
   );
 }
 
 interface ProfileItemProps {
   profile: WalletProfile;
   onAccountPress?: (recipient: any) => void;
-  isLast?: boolean;
   isMobile?: boolean;
 }
 
 function ProfileItem({
   profile,
   onAccountPress,
-  isLast = false,
   isMobile = false,
 }: ProfileItemProps): React.ReactElement {
   const handleAccountPress = (account: any) => {

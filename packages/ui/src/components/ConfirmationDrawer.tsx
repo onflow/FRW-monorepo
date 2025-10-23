@@ -5,7 +5,6 @@ import {
   type TransactionType,
   type NFTTransactionData,
 } from '@onflow/frw-types';
-import { isDarkMode } from '@onflow/frw-utils';
 import React from 'react';
 import { Sheet, Spinner, View, XStack, YStack, useTheme } from 'tamagui';
 
@@ -21,8 +20,8 @@ export interface TransactionFormData {
   fiatAmount: string;
   isTokenMode: boolean;
   transactionFee?: string;
+  surgeMultiplier?: number;
 }
-
 export interface ConfirmationDrawerProps {
   visible: boolean;
   transactionType: TransactionType;
@@ -156,6 +155,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   const [internalIsSending, setInternalIsSending] = React.useState(false);
   const [errorSignal, setErrorSignal] = React.useState(false);
   const [isLongPressing, setIsLongPressing] = React.useState(false);
+  const [isPriceBreakdownOpen, setIsPriceBreakdownOpen] = React.useState(false);
 
   // Determine if we're sending ERC1155 NFTs (semi-fungible)
   const isERC1155 = React.useMemo(() => {
@@ -177,27 +177,6 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
       return sendNFTsText;
     }
   }, [isMultipleNFTs, isERC1155, sendNFTsText, sendSNFTsText]);
-
-  // Theme-aware button colors using helper function
-  const isCurrentlyDarkMode = isDarkMode(theme);
-
-  const buttonBackgroundColor = isCurrentlyDarkMode
-    ? theme.white?.val || '#FFFFFF'
-    : theme.black?.val || '#000000';
-  const buttonTextColor = isCurrentlyDarkMode
-    ? theme.black?.val || '#000000'
-    : theme.white?.val || '#FFFFFF';
-
-  // Theme-aware close icon color - use theme's color value directly
-  const closeIconColor = theme.color?.val || '#000000';
-
-  // Theme-aware card background color - same as SendTokensScreen
-  const cardBackgroundColor = isCurrentlyDarkMode ? '$light10' : '$bg2';
-
-  // Theme-aware background colors for badges
-  const badgeBackgroundColor =
-    theme.white10?.val ||
-    (isCurrentlyDarkMode ? 'rgba(255, 255, 255, 0.10)' : 'rgba(0, 0, 0, 0.05)');
 
   const handleConfirm = async () => {
     try {
@@ -472,6 +451,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               pressStyle={{ opacity: 0.9 }}
               onPress={internalIsSending ? undefined : handleConfirm}
               cursor={internalIsSending ? 'not-allowed' : 'pointer'}
+              data-testid="confirm"
             >
               {internalIsSending ? (
                 <XStack items="center" gap="$2">

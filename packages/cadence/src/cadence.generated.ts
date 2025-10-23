@@ -465,7 +465,7 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 ///
 transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier: String, ids: [UInt256], recipient: Address) {
     let nftType: Type
-    let receiver: &{NonFungibleToken.Receiver}
+    let receiver: &{NonFungibleToken.Collection}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount
     let viewResolver: &{ViewResolver}
@@ -512,7 +512,7 @@ transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier
             let collectionCap = signer.capabilities.storage.issue<&{NonFungibleToken.Collection}>(collectionData.storagePath)
             signer.capabilities.publish(collectionCap, at: collectionData.publicPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
+        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Collection}>(collectionData.publicPath)
             ?? panic("Could not borrow Receiver from recipient's public capability path")
 
         /* --- Configure a ScopedFTProvider --- */
@@ -3013,7 +3013,7 @@ import StorageRent from 0xStorageRent
 transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, vaultIdentifier: String, amount: UInt256, recipient: Address) {
 
     let vaultType: Type
-    let receiver: &{FungibleToken.Receiver}
+    let receiver: &{FungibleToken.Vault}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Bridge) &EVM.CadenceOwnedAccount
 
@@ -3064,7 +3064,7 @@ transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, vaultIdentifi
             signer.capabilities.publish(receiverCap, at: vaultData.receiverPath)
             signer.capabilities.publish(metadataCap, at: vaultData.metadataPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{FungibleToken.Receiver}>(vaultData.receiverPath)
+        self.receiver = getAccount(recipient).capabilities.borrow<&{FungibleToken.Vault}>(vaultData.receiverPath)
             ?? panic("Could not borrow Vault from recipient's account")
 
         /* --- Configure a ScopedFTProvider --- */

@@ -4,6 +4,7 @@ import { YStack, XStack, Text, Image, View } from 'tamagui';
 import type { NFTData } from './NFTGrid';
 
 export interface NFTCardProps {
+  idx: number;
   nft: NFTData;
   selected?: boolean;
   onPress?: () => void;
@@ -18,6 +19,7 @@ export interface NFTCardProps {
 }
 
 export function NFTCard({
+  idx,
   nft,
   selected = false,
   onPress,
@@ -93,6 +95,7 @@ export function NFTCard({
           }}
           pressStyle={{ opacity: 0.8 }}
           cursor="pointer"
+          data-testid={idx}
         >
           <CheckCircle size={24} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
         </YStack>

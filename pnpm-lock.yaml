@@ -99,9 +99,6 @@ importers:
 
   apps/extension:
     dependencies:
-      '@coinbase/cbpay-js':
-        specifier: ^1.10.0
-        version: 1.10.0(regenerator-runtime@0.13.11)
       '@debank/common':
         specifier: ^0.3.60
         version: 0.3.60
@@ -126,6 +123,9 @@ importers:
       '@onflow/fcl':
         specifier: ^1.19.0
         version: 1.20.2(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.0.0)(tsx@4.20.6)(typescript@5.7.2)(yaml@2.8.1)(zod@3.25.76)
+      '@onflow/frw-api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@onflow/frw-cadence':
         specifier: workspace:*
         version: link:../../packages/cadence
@@ -583,6 +583,9 @@ importers:
 
   apps/react-native:
     dependencies:
+      '@onflow/frw-api':
+        specifier: workspace:^
+        version: link:../../packages/api
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../../packages/context
@@ -1103,6 +1106,9 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      react-native-svg:
+        specifier: ^15.13.0
+        version: 15.13.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       react-native-web:
         specifier: ^0.21.1
         version: 0.21.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1940,15 +1946,6 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
-
-  '@coinbase/cbpay-js@1.10.0':
-    resolution: {integrity: sha512-jQ4rqJFNbsCMZ74ATucAUv2IpkbPFXsY+6AVBvFVNKmG4rEgc10Fa87pw/idm6Tlrs7EERQRXEs21DvJpMzi8A==}
-    engines: {node: '>= 14'}
-    peerDependencies:
-      regenerator-runtime: ^0.13.9
-    peerDependenciesMeta:
-      regenerator-runtime:
-        optional: true
 
   '@commitlint/cli@19.8.1':
     resolution: {integrity: sha512-LXUdNIkspyxrlV6VDHWBmCZRtkEVRpBKxi2Gtw3J54cGWhLCTouVD/Q6ZSaSvd2YaDObWK8mDjrz3TIKtaQMAA==}
@@ -9749,7 +9746,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qr-code-styling@1.9.2:
@@ -12838,10 +12834,6 @@ snapshots:
       '@babel/helper-validator-identifier': 7.27.1
 
   '@bcoe/v8-coverage@1.0.2': {}
-
-  '@coinbase/cbpay-js@1.10.0(regenerator-runtime@0.13.11)':
-    optionalDependencies:
-      regenerator-runtime: 0.13.11
 
   '@commitlint/cli@19.8.1(@types/node@22.18.8)(typescript@5.7.2)':
     dependencies:
