@@ -91,7 +91,7 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
             {/* Error Details - always shown */}
             <YStack
               width="100%"
-              height="$40"
+              height="$49"
               backgroundColor="$bg2"
               borderRadius="$4"
               overflow="hidden"

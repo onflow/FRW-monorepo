@@ -22,7 +22,6 @@ interface GenericErrorFallbackProps {
 
 /**
  * Generic error fallback component for React error boundaries
- * Matches Figma design: https://www.figma.com/design/ELsn1EA0ptswW1f21PZqWp/Flow-Wallet?node-id=11169-4556
  */
 export const GenericErrorFallback: React.FC<GenericErrorFallbackProps> = ({
   error,
@@ -91,7 +90,7 @@ export const GenericErrorFallback: React.FC<GenericErrorFallbackProps> = ({
             {/* Error Details - always shown */}
             <YStack
               width="100%"
-              height="$40"
+              height="$49"
               backgroundColor="$bg2"
               borderRadius="$4"
               overflow="hidden"
