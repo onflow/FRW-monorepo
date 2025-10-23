@@ -1,0 +1,125 @@
+import { bridge } from '@onflow/frw-context';
+import { X, WifiOff } from '@onflow/frw-icons';
+import {
+  tamaguiConfig,
+  IconButton,
+  TamaguiProvider,
+  YStack,
+  XStack,
+  Button,
+  Text,
+} from '@onflow/frw-ui';
+import React from 'react';
+import { useColorScheme } from 'react-native';
+
+import screensI18n from '../lib/i18n';
+
+interface NetworkErrorFallbackProps {
+  error: Error;
+  resetError: () => void;
+}
+
+/**
+ * Network error fallback component for connection-related errors
+ * Matches GenericErrorFallback design with wifi-off icon
+ */
+export const NetworkErrorFallback: React.FC<NetworkErrorFallbackProps> = ({
+  error,
+  resetError,
+}) => {
+  const colorScheme = useColorScheme();
+
+  const handleClose = () => {
+    bridge.closeRN();
+  };
+
+  return (
+    <TamaguiProvider
+      config={tamaguiConfig}
+      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+    >
+      <YStack flex={1} backgroundColor="$inverseBg">
+        {/* Header with close button */}
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          paddingTop="$12"
+          paddingBottom="$2.5"
+          paddingHorizontal="$4.5"
+          backgroundColor="$inverseBg"
+        >
+          <YStack width="$11" />
+          <IconButton
+            icon={<X color="#FFFFFF" size={24} />}
+            variant="ghost"
+            size="medium"
+            onPress={handleClose}
+          />
+        </XStack>
+
+        {/* Main content - centered */}
+        <YStack
+          flex={1}
+          justifyContent="space-between"
+          alignItems="center"
+          paddingHorizontal="$4"
+          paddingBottom="$4"
+        >
+          <YStack flex={1} justifyContent="center" alignItems="center" width="304" gap="$3">
+            {/* Error Icon - Red circle with wifi-off icon */}
+            <YStack
+              width="$16"
+              height="$16"
+              borderRadius="1000"
+              backgroundColor="$error"
+              alignItems="center"
+              justifyContent="center"
+              marginBottom="$2"
+            >
+              <WifiOff size={32} color="#FFFFFF" />
+            </YStack>
+
+            {/* Error Title */}
+            <Text fontSize={16} fontWeight="600" color="$inverseText" textAlign="center">
+              {screensI18n.t('errors.network.title')}
+            </Text>
+
+            {/* Error Message */}
+            <Text fontSize={14} color="$textSecondary" textAlign="center">
+              {screensI18n.t('errors.network.message')}
+            </Text>
+
+            {/* Error Details (only in development) */}
+            {__DEV__ && (
+              <Text
+                fontSize={12}
+                fontFamily="monospace"
+                color="$error"
+                textAlign="center"
+                marginTop="$4"
+                paddingHorizontal="$4"
+              >
+                {error.message}
+              </Text>
+            )}
+          </YStack>
+
+          {/* Retry Button - Bottom anchored */}
+          <YStack width="100%">
+            <Button
+              height="$12"
+              backgroundColor="$bg1"
+              borderRadius="$4"
+              onPress={resetError}
+              pressStyle={{ opacity: 0.9 }}
+            >
+              <Text fontSize={16} fontWeight="600" color="$text">
+                {screensI18n.t('errors.network.button')}
+              </Text>
+            </Button>
+          </YStack>
+        </YStack>
+      </YStack>
+    </TamaguiProvider>
+  );
+};

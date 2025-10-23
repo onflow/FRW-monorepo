@@ -1,10 +1,12 @@
+import {
+  CriticalErrorFallback,
+  GenericErrorFallback,
+  NetworkErrorFallback,
+} from '@onflow/frw-screens';
 import React from 'react';
 import ErrorBoundary from 'react-native-error-boundary';
 
 import { ErrorType, classifyError, handleReactError } from '../utils/errorHandling';
-import { CriticalErrorFallback } from './error/CriticalErrorFallback';
-import { GenericErrorFallback } from './error/GenericErrorFallback';
-import { NetworkErrorFallback } from './error/NetworkErrorFallback';
 
 interface FRWErrorBoundaryProps {
   children: React.ReactNode;

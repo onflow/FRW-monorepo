@@ -1,13 +1,17 @@
 # Error Handling Implementation
 
-This document describes the comprehensive error handling implementation for the FRW React Native app.
+This document describes the comprehensive error handling implementation for the
+FRW React Native app.
 
 ## Overview
 
-The FRW React Native app implements a modern, multi-layered error handling strategy using:
+The FRW React Native app implements a modern, multi-layered error handling
+strategy using:
 
-1. **React Error Boundaries** (`react-native-error-boundary`) - For React component errors
-2. **Global Exception Handler** (React Native's `ErrorUtils`) - For JavaScript exceptions
+1. **React Error Boundaries** (`react-native-error-boundary`) - For React
+   component errors
+2. **Global Exception Handler** (React Native's `ErrorUtils`) - For JavaScript
+   exceptions
 3. **Unhandled Promise Rejection Tracking** - For async errors
 
 ## Architecture
@@ -16,7 +20,8 @@ The FRW React Native app implements a modern, multi-layered error handling strat
 
 **Location**: `src/components/ErrorBoundary.tsx`
 
-The `FRWErrorBoundary` component wraps the entire application and catches rendering errors in React components. It provides:
+The `FRWErrorBoundary` component wraps the entire application and catches
+rendering errors in React components. It provides:
 
 - **Automatic error classification** based on error type
 - **Custom fallback UI** appropriate for each error type
@@ -36,7 +41,8 @@ The `FRWErrorBoundary` component wraps the entire application and catches render
 
 **Location**: `src/App.tsx` - `setupGlobalErrorHandlers()`
 
-Uses React Native's built-in `ErrorUtils` to catch all uncaught JavaScript errors:
+Uses React Native's built-in `ErrorUtils` to catch all uncaught JavaScript
+errors:
 
 ```typescript
 ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
@@ -51,8 +57,7 @@ ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
 
 Tracks unhandled promise rejections using:
 
-1. React Native's promise rejection tracking (if available)
-2. Fallback to global `unhandledrejection` event listener
+1. Global `unhandledrejection` event listener (standard React Native approach)
 
 ## Error Handling Utilities
 
@@ -60,7 +65,8 @@ Tracks unhandled promise rejections using:
 
 ### Error Classification
 
-The `classifyError()` function categorizes errors based on their message and stack trace:
+The `classifyError()` function categorizes errors based on their message and
+stack trace:
 
 - **Network Errors**: Connection failures, fetch errors, timeouts
 - **Critical Errors**: Invariant violations, bridge errors, undefined references
@@ -103,12 +109,14 @@ Errors are reported through multiple channels:
 - Used for general rendering and unknown errors
 - Displays error message and stack trace (in `__DEV__` mode)
 - Provides "Try Again" button to reset error boundary
+- **Localized**: Supports English, Spanish, Chinese, Russian, and Japanese
 
 ### NetworkErrorFallback
 
 - Specialized for network-related errors
 - Provides helpful messaging about connection issues
 - "Retry Connection" button to attempt recovery
+- **Localized**: Supports English, Spanish, Chinese, Russian, and Japanese
 
 ### CriticalErrorFallback
 
@@ -167,7 +175,10 @@ The entire app is wrapped with `FRWErrorBoundary` in `App.tsx`:
 Use the utility functions for manual error logging:
 
 ```typescript
-import { logErrorWithContext, reportErrorToInstabug } from './utils/errorHandling';
+import {
+  logErrorWithContext,
+  reportErrorToInstabug,
+} from './utils/errorHandling';
 
 try {
   // risky operation
@@ -195,12 +206,13 @@ try {
 
 ### Automated Test Suite
 
-**Location**: `src/components/__tests__/ErrorHandlingTest.tsx`
+**Location**: `src/screens/ErrorHandlingTest.tsx`
 
-A comprehensive test component is available for manual testing of all error handling scenarios:
+A comprehensive test component is available for manual testing of all error
+handling scenarios:
 
 ```tsx
-import { ErrorHandlingTest } from '../components/__tests__/ErrorHandlingTest';
+import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest';
 
 // Render in any screen for testing
 <ErrorHandlingTest />;
@@ -210,9 +222,11 @@ The test suite provides buttons to trigger:
 
 1. **Rendering Error** (Generic Fallback) - Throws error during component render
 2. **Global JS Exception** (Console Only) - Triggers global exception handler
-3. **Unhandled Promise Rejection** (Console Only) - Creates unhandled promise rejection
+3. **Unhandled Promise Rejection** (Console Only) - Creates unhandled promise
+   rejection
 4. **Network Error** (Network Fallback) - Simulates network connection failure
-5. **Critical Error** (Critical Fallback) - Triggers critical error requiring restart
+5. **Critical Error** (Critical Fallback) - Triggers critical error requiring
+   restart
 
 **Expected Behavior:**
 
@@ -221,7 +235,8 @@ The test suite provides buttons to trigger:
 - All errors: Logged via `platform.log()` with full context
 - All errors: Reported to Instabug if available
 
-**⚠️ Important**: Remove or comment out this component before production deployment.
+**⚠️ Important**: Remove or comment out this component before production
+deployment.
 
 ### Manual Testing
 
@@ -268,8 +283,10 @@ When testing error handling, verify:
 
 ## Benefits
 
-1. **Improved UX**: Graceful error handling with recovery options instead of crashes
+1. **Improved UX**: Graceful error handling with recovery options instead of
+   crashes
 2. **Better Debugging**: Comprehensive error reporting with stack traces
 3. **Production Stability**: Prevent blank white screens and app crashes
 4. **User Guidance**: Clear error messages and retry mechanisms
-5. **Modern Approach**: Uses current best practices for React Native error handling
+5. **Modern Approach**: Uses current best practices for React Native error
+   handling
