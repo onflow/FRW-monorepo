@@ -47,6 +47,9 @@ export {
   type HexLike,
 } from './services/eth-signer';
 
+// Error types
+export { WalletError, WalletErrorCode, isWalletError } from './types/errors';
+
 // Core storage implementations (platform-specific ones should be implemented by apps)
 export { MemoryStorage } from './storage';
 
