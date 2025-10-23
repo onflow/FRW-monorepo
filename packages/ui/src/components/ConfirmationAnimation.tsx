@@ -207,23 +207,14 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
           }
         }}
         onAnimationLoaded={() => {
-          logger.debug('[ConfirmationAnimation] Animation loaded successfully');
-
-          // Android-specific optimizations to prevent crashes
-          if (Platform.OS === 'android' && animationRef.current) {
-            try {
-              // Set images folder for Android Lottie to prevent IllegalStateException
-              if (typeof animationRef.current.setImagesFolder === 'function') {
-                animationRef.current.setImagesFolder('');
-              }
-
-              // Additional Android safety measures
-              if (typeof animationRef.current.enableMergePathsForKitKatAndAbove === 'function') {
-                animationRef.current.enableMergePathsForKitKatAndAbove(false);
-              }
-            } catch (setupError) {
-              logger.warn('[ConfirmationAnimation] Android setup optimization failed:', setupError);
-            }
+          console.log('[ConfirmationAnimation] Animation loaded successfully');
+          // Android-specific: Set images folder to prevent IllegalStateException
+          if (
+            Platform.OS === 'android' &&
+            animationRef.current &&
+            typeof animationRef.current.setImagesFolder === 'function'
+          ) {
+            animationRef.current.setImagesFolder('');
           }
         }}
       />
