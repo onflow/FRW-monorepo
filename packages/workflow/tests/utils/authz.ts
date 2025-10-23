@@ -120,12 +120,12 @@ const getPayerSignature = async (endPoint: string, signable: any) => {
     body: JSON.stringify({
       transaction: signable.voucher,
       message: {
-        envelope_message: signable.message,
+        envelopeMessage: signable.message,
       },
     }),
   });
-  const { data } = (await response.json()) as { data: { envelopeSigs: { sig: string } } };
-  const signature = data.envelopeSigs.sig;
+  const { data } = (await response.json()) as { data: { sig: string } };
+  const signature = data.sig;
   return signature;
 };
 
@@ -143,8 +143,8 @@ const getAuthSignature = async (endPoint: string, signable: any) => {
       },
     }),
   });
-  const { data } = (await response.json()) as { data: { authorizerSigs: { sig: string } } };
-  const signature = data.authorizerSigs.sig;
+  const { data } = (await response.json()) as { data: { sig: string } };
+  const signature = data.sig;
   return signature;
 };
 
