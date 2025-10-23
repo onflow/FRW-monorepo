@@ -71,7 +71,7 @@ export const GenericErrorFallback: React.FC<GenericErrorFallbackProps> = ({
             <YStack
               width="$16"
               height="$16"
-              borderRadius="1000"
+              borderRadius="$16"
               backgroundColor="$error"
               alignItems="center"
               justifyContent="center"
@@ -90,30 +90,28 @@ export const GenericErrorFallback: React.FC<GenericErrorFallbackProps> = ({
               {screensI18n.t('errors.generic.message')}
             </Text>
 
-            {/* Error Details (only in development) */}
-            {__DEV__ && (
-              <YStack
-                width="100%"
-                height="337"
-                backgroundColor="$bg2"
-                borderRadius="$4"
-                overflow="hidden"
-                marginTop="$4"
-              >
-                <ScrollView height="300">
-                  <YStack padding="$4">
-                    <Text fontSize={12} fontFamily="monospace" color="$error" marginBottom="$2">
-                      {error.message}
+            {/* Error Details - always shown */}
+            <YStack
+              width="100%"
+              maxHeight="300"
+              backgroundColor="$bg2"
+              borderRadius="$4"
+              overflow="hidden"
+              marginTop="$4"
+            >
+              <ScrollView>
+                <YStack padding="$4">
+                  <Text fontSize={12} fontFamily="monospace" color="$error" marginBottom="$2">
+                    {error.message}
+                  </Text>
+                  {error.stack && (
+                    <Text fontSize={12} fontFamily="monospace" color="$textSecondary">
+                      {error.stack}
                     </Text>
-                    {error.stack && (
-                      <Text fontSize={12} fontFamily="monospace" color="$textSecondary">
-                        {error.stack}
-                      </Text>
-                    )}
-                  </YStack>
-                </ScrollView>
-              </YStack>
-            )}
+                  )}
+                </YStack>
+              </ScrollView>
+            </YStack>
           </YStack>
 
           {/* Retry Button - Bottom anchored */}

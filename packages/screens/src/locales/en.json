@@ -139,7 +139,7 @@
     "generic": {
       "title": "Something went wrong",
       "message": "We encountered an unexpected error. Please try again.",
-      "button": "Try Again"
+      "button": "Retry"
     },
     "network": {
       "title": "Connection Error",
@@ -149,7 +149,7 @@
     "critical": {
       "title": "Critical Error",
       "message": "A critical error occurred. Please restart the app.",
-      "button": "Restart App"
+      "button": "Restart"
     }
   },
   "nft": {
