@@ -22,6 +22,7 @@ import {
   InfoDialog,
   Text,
   YStack,
+  AddContactDialog,
 } from '@onflow/frw-ui';
 import {
   isValidEthereumAddress,
@@ -66,6 +67,25 @@ export function SendToScreen(): React.ReactElement {
   // First time send modal state
   const [showFirstTimeSendDialog, setShowFirstTimeSendDialog] = useState(false);
   const [pendingRecipient, setPendingRecipient] = useState<RecipientData | null>(null);
+  const [showAddContactDialog, setShowAddContactDialog] = useState(false);
+  const [pendingAddressBookRecipient, setPendingAddressBookRecipient] =
+    useState<RecipientData | null>(null);
+  const [isAddingToAddressBook, setIsAddingToAddressBook] = useState(false);
+  const [contactNameInput, setContactNameInput] = useState('');
+
+  const pendingRecipientInitial = useMemo(() => {
+    if (!pendingAddressBookRecipient) {
+      return '?';
+    }
+
+    const nameInitial = pendingAddressBookRecipient.name?.trim()?.[0];
+    if (nameInitial) {
+      return nameInitial.toUpperCase();
+    }
+
+    const address = pendingAddressBookRecipient.address?.replace(/^0x/, '');
+    return address?.[0]?.toUpperCase() ?? '?';
+  }, [pendingAddressBookRecipient]);
 
   // Get selected token from send store
   const transactionType = useSendStore((state) => state.transactionType);
@@ -523,28 +543,53 @@ export function SendToScreen(): React.ReactElement {
   }, []);
 
   const handleRecipientAddToAddressBook = useCallback(
-    async (recipient: RecipientData) => {
-      // Check if address already exists in address book
+    (recipient: RecipientData) => {
       if (isAddressInAddressBook(recipient.address)) {
         return;
       }
 
-      try {
-        await AddressbookService.external({
-          contactName: recipient.name,
-          address: recipient.address,
-          domain: '', // Empty domain for external contacts
-          domainType: 0, // 0 for external contacts
-        });
-
-        // Refresh the address book data
-        refetchContacts();
-      } catch (error) {
-        logger.error('Failed to add to address book:', error);
-      }
+      setPendingAddressBookRecipient(recipient);
+      setShowAddContactDialog(true);
+      setContactNameInput(recipient.name || '');
     },
-    [refetchContacts, isAddressInAddressBook]
+    [isAddressInAddressBook]
   );
+
+  const handleAddToAddressBookCancel = useCallback(() => {
+    setShowAddContactDialog(false);
+    setPendingAddressBookRecipient(null);
+    setIsAddingToAddressBook(false);
+    setContactNameInput('');
+  }, []);
+
+  const handleAddToAddressBookConfirm = useCallback(async () => {
+    if (!pendingAddressBookRecipient || isAddingToAddressBook) {
+      return;
+    }
+
+    try {
+      setIsAddingToAddressBook(true);
+      const trimmedName = contactNameInput.trim();
+      const contactName =
+        trimmedName || pendingAddressBookRecipient.name || pendingAddressBookRecipient.address;
+
+      await AddressbookService.external({
+        contactName,
+        address: pendingAddressBookRecipient.address,
+        domain: '',
+        domainType: 0,
+      });
+
+      await refetchContacts();
+    } catch (error) {
+      logger.error('Failed to add to address book:', error);
+    } finally {
+      setIsAddingToAddressBook(false);
+      setShowAddContactDialog(false);
+      setPendingAddressBookRecipient(null);
+      setContactNameInput('');
+    }
+  }, [pendingAddressBookRecipient, isAddingToAddressBook, contactNameInput, refetchContacts]);
 
   const getEmptyStateForTab = () => {
     // If there's a search query, show search-specific empty states
@@ -678,6 +723,21 @@ export function SendToScreen(): React.ReactElement {
           />
         )}
       </SearchableTabLayout>
+
+      <AddContactDialog
+        visible={showAddContactDialog}
+        address={pendingAddressBookRecipient?.address || ''}
+        initial={pendingRecipientInitial}
+        contactName={contactNameInput}
+        isSubmitting={isAddingToAddressBook}
+        onContactNameChange={setContactNameInput}
+        onConfirm={handleAddToAddressBookConfirm}
+        onClose={handleAddToAddressBookCancel}
+        title={t('send.newContactTitle')}
+        nameLabel={t('send.contactNameLabel')}
+        namePlaceholder={t('send.contactNamePlaceholder')}
+        confirmLabel={t('send.addToAddressBookButton')}
+      />
 
       {/* First Time Send Confirmation Dialog */}
       <InfoDialog
