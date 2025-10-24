@@ -28,6 +28,7 @@ import {
   Separator,
   XStack,
   SurgeFeeConfirmationSection,
+  SurgeModal,
 } from '@onflow/frw-ui';
 import {
   logger,
@@ -350,6 +351,22 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, [selectedToken]);
 
   const handleSendPress = useCallback(() => {
+    Keyboard.dismiss();
+
+    if (isSurgePricingActive) {
+      setIsSurgeWarningVisible(true);
+      return;
+    }
+
+    setIsConfirmationVisible(true);
+  }, [isSurgePricingActive]);
+
+  const handleSurgeModalClose = useCallback(() => {
+    setIsSurgeWarningVisible(false);
+  }, []);
+
+  const handleSurgeModalAgree = useCallback(() => {
+    setIsSurgeWarningVisible(false);
     setIsConfirmationVisible(true);
   }, []);
 
@@ -489,7 +506,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       transactionFee: transactionFee,
       surgeMultiplier: isSurgePricingActive ? surgeMultiplier : undefined,
     }),
-    [transactionType, amount, selectedToken?.priceInUSD, isTokenMode, transactionFee, currency.rate]
+    [
+      transactionType,
+      amount,
+      selectedToken?.priceInUSD,
+      isTokenMode,
+      transactionFee,
+      currency.rate,
+      isSurgePricingActive,
+      surgeMultiplier,
+    ]
   );
 
   // Calculate overall loading state - only show loading screen for critical data
@@ -716,6 +742,20 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
           unknownAccountText={t('send.unknownAccount')}
+        />
+
+        <SurgeModal
+          visible={isSurgeWarningVisible}
+          transactionFee={transactionFee}
+          multiplier={formattedSurgeMultiplier}
+          title={t('surge.modal.title')}
+          transactionFeeLabel={t('surge.modal.transactionFee')}
+          surgeActiveText={t('surge.modal.surgeActive')}
+          description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
+          holdToAgreeText={t('surge.modal.holdToAgree')}
+          onClose={handleSurgeModalClose}
+          onAgree={handleSurgeModalAgree}
+          isLoading={isLoading}
         />
       </YStack>
     </BackgroundWrapper>

@@ -1,7 +1,7 @@
 import { ServiceContext } from '@onflow/frw-context';
 import { QueryProvider, initializeI18n } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
-import { TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
+import { PortalProvider, TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
@@ -89,17 +89,19 @@ const App = (props: AppProps) => {
   const colorScheme = useColorScheme();
 
   return (
-    <TamaguiProvider
-      config={tamaguiConfig}
-      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
-    >
-      <QueryProvider>
-        <QueryDebugger />
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <AppNavigator {...props} />
-        </GestureHandlerRootView>
-      </QueryProvider>
-    </TamaguiProvider>
+    <PortalProvider shouldAddRootHost>
+      <TamaguiProvider
+        config={tamaguiConfig}
+        defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+      >
+        <QueryProvider>
+          <QueryDebugger />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <AppNavigator {...props} />
+          </GestureHandlerRootView>
+        </QueryProvider>
+      </TamaguiProvider>
+    </PortalProvider>
   );
 };
 
