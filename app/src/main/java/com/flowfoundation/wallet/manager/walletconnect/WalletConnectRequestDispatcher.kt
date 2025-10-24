@@ -391,17 +391,6 @@ private suspend fun WCRequest.respondAuthz() {
 
     // Clean address for Flow-KMM (remove "0x" prefix)
     val cleanAddress = address.removePrefix("0x")
-    try {
-        if (isGasFree()) {
-            val payerInfo = SurgePricingManager.getFeePayer()
-            if (payerInfo == null) {
-                SurgePricingManager.showSurgePricingAlertWithContinuation()
-            }
-        }
-    } catch (_: Exception) {
-        reject()
-        return
-    }
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -424,9 +413,21 @@ private suspend fun WCRequest.respondAuthz() {
             ioScope {
                 val signature = cryptoProvider.signData(message.hexToBytes())
                 val keyId = FlowAddress(cleanAddress).currentKeyId(cryptoProvider.getPublicKey())
-
-                if (isApprove) approve(fclAuthzResponse(cleanAddress, signature, keyId)) else reject()
                 uiScope { FclAuthzDialog.dismiss() }
+                if (isApprove) {
+                    try {
+                        if (isGasFree()) {
+                          val payerInfo = SurgePricingManager.getFeePayer()
+                          if (payerInfo == null) {
+                            SurgePricingManager.showSurgePricingAlertWithContinuation()
+                          }
+                      }
+                    } catch (_: Exception) {
+                        reject()
+                        return@ioScope
+                    }
+                    approve(fclAuthzResponse(cleanAddress, signature, keyId))
+                } else reject()
             }
         }
     }

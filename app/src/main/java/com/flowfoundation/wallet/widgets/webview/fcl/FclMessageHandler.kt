@@ -256,32 +256,29 @@ class FclMessageHandler(
             finishService()
             return
         }
-        ioScope {
-            try {
-                if (isGasFree()) {
-                    val payerInfo = SurgePricingManager.getFeePayer()
-                    if (payerInfo == null) {
-                        SurgePricingManager.showSurgePricingAlertWithContinuation()
+        FclAuthzDialog.show(
+            activity.supportFragmentManager,
+            data,
+        )
+        FclAuthzDialog.observe { approve ->
+            if (approve) {
+                FclAuthzDialog.dismiss()
+                ioScope {
+                    try {
+                        if (isGasFree()) {
+                            val payerInfo = SurgePricingManager.getFeePayer()
+                            if (payerInfo == null) {
+                                SurgePricingManager.showSurgePricingAlertWithContinuation()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        return@ioScope
                     }
-                }
-            } catch (e: Exception) {
-                finishService()
-                return@ioScope
-            }
-            uiScope {
-                FclAuthzDialog.show(
-                  activity.supportFragmentManager,
-                  data,
-                )
-                FclAuthzDialog.observe { approve ->
-                    if (approve) {
-                        uiScope { authzTransaction = fcl.toAuthzTransaction(webView) }
-                        FclAuthzDialog.dismiss()
-                        webView.postAuthzPayloadSignResponse(fcl)
-                    }
-                    finishService()
+                    uiScope { authzTransaction = fcl.toAuthzTransaction(webView) }
+                    webView.postAuthzPayloadSignResponse(fcl)
                 }
             }
+            finishService()
         }
     }
 
