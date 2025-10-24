@@ -7,6 +7,9 @@ export {
   isValidEthereumAddress,
 } from './address';
 
+// JWT utilities
+export { decodeJwtPayload, extractUidFromJwt } from './jwt';
+
 // NFT utilities
 export {
   getNFTCover,
