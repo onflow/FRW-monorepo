@@ -114,7 +114,9 @@
     "noProfiles": "Sin Perfiles",
     "noProfilesFound": "No se encontraron perfiles",
     "failedToLoadRecipients": "Error al cargar destinatarios",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "addressBookAdded": "Añadido a la libreta de direcciones",
+    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones"
   },
   "buttons": {
     "retry": "Reintentar",

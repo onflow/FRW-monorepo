@@ -114,7 +114,9 @@
     "noProfiles": "Нет профилей",
     "noProfilesFound": "Профили не найдены",
     "failedToLoadRecipients": "Не удалось загрузить получателей",
-    "copied": "Скопировано!"
+    "copied": "Скопировано!",
+    "addressBookAdded": "Добавлено в адресную книгу",
+    "failedToAddToAddressBook": "Не удалось добавить в адресную книгу"
   },
   "buttons": {
     "retry": "Повторить",

@@ -1,9 +1,10 @@
-import { Close } from '@onflow/frw-icons';
-import React from 'react';
-import { Dialog, YStack, XStack, Text } from 'tamagui';
+import { X } from '@onflow/frw-icons';
+import React, { useEffect, useRef } from 'react';
+import { Dialog, YStack, XStack, Text, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Button } from '../foundation/Button';
+import { IconButton } from '../foundation/IconButton';
 import { Input } from '../foundation/Input';
 
 export interface AddContactDialogProps {
@@ -35,6 +36,22 @@ export function AddContactDialog({
   namePlaceholder = 'Enter a name',
   confirmLabel = 'Add to address book',
 }: AddContactDialogProps): React.ReactElement | null {
+  const inputRef = useRef<any>(null);
+  const theme = useTheme();
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      inputRef.current?.focus?.();
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [visible]);
+
   return (
     <Dialog modal open={visible} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
@@ -56,11 +73,11 @@ export function AddContactDialog({
         />
         <Dialog.Content
           key="content"
-          width={343}
-          bg="$surfaceDark5"
+          width="80%"
+          bg="$bg1"
           rounded="$4"
           p="$5"
-          gap="$5"
+          gap="$2"
           shadowColor="$shadow"
           shadowOffset={{ width: 0, height: 5 }}
           shadowOpacity={0.25}
@@ -78,29 +95,31 @@ export function AddContactDialog({
           enterStyle={{ x: 0, y: 20, opacity: 0 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
         >
-          <YStack gap="$4" position="relative">
-            <YStack position="absolute" top={-8} right={-8}>
-              <Button
+          <YStack gap="$3" position="relative">
+            <XStack items="center" justify="space-between">
+              <Text fontSize="$6" fontWeight="700" color="$text" flex={1} shrink={1} minWidth={0}>
+                {title}
+              </Text>
+              <IconButton
                 variant="ghost"
                 size="small"
                 onPress={onClose}
                 disabled={isSubmitting}
-                icon={<Close size={20} />}
+                icon={<X size={24} color="$text" />}
+                pressStyle={{ opacity: 0.5, transform: [{ scale: 0.9 }] }}
               />
-            </YStack>
+            </XStack>
 
-            <Text fontSize={20} fontWeight="700" color="$white" textAlign="center">
-              {title}
-            </Text>
-
-            <XStack bg="$surfaceDark5" rounded="$3" px="$4" py="$3" items="center" gap="$3">
+            <XStack bg="$bg1" rounded="$3" px="$4" py="$3" items="center" gap="$3">
               <Avatar size={40} fallback={initial} bgColor="$surfaceDark4" textColor="$white" />
               <Text
                 fontSize={14}
                 fontWeight="500"
-                color="$white"
+                color="$text"
+                flex={1}
                 numberOfLines={1}
                 ellipsizeMode="middle"
+                shrink={1}
               >
                 {address}
               </Text>
@@ -111,10 +130,13 @@ export function AddContactDialog({
               value={contactName}
               onChangeText={onContactNameChange}
               placeholder={namePlaceholder}
+              ref={inputRef}
+              autoFocus
             />
 
             <Button
               variant="inverse"
+              size="large"
               fullWidth={true}
               loading={isSubmitting}
               disabled={isSubmitting}

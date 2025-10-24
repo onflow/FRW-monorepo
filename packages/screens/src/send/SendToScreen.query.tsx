@@ -1,5 +1,5 @@
 import { AddressbookService } from '@onflow/frw-api';
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, navigation, toast } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
   useSendStore,
@@ -544,10 +544,7 @@ export function SendToScreen(): React.ReactElement {
 
   const handleRecipientAddToAddressBook = useCallback(
     (recipient: RecipientData) => {
-      if (isAddressInAddressBook(recipient.address)) {
-        return;
-      }
-
+      logger.debug('[SendToScreen] Adding recipient to address book:', recipient);
       setPendingAddressBookRecipient(recipient);
       setShowAddContactDialog(true);
       setContactNameInput(recipient.name || '');
@@ -581,8 +578,16 @@ export function SendToScreen(): React.ReactElement {
       });
 
       await refetchContacts();
+      toast.show({
+        title: t('messages.addressBookAdded'),
+        type: 'success',
+      });
     } catch (error) {
       logger.error('Failed to add to address book:', error);
+      toast.show({
+        title: t('messages.failedToAddToAddressBook'),
+        type: 'error',
+      });
     } finally {
       setIsAddingToAddressBook(false);
       setShowAddContactDialog(false);
@@ -590,6 +595,21 @@ export function SendToScreen(): React.ReactElement {
       setContactNameInput('');
     }
   }, [pendingAddressBookRecipient, isAddingToAddressBook, contactNameInput, refetchContacts]);
+
+  const shouldShowAddToAddressBook = useCallback(
+    (recipient: RecipientData) => {
+      if (!recipient?.address) {
+        return false;
+      }
+
+      if (recipient.type === 'contact') {
+        return false;
+      }
+
+      return !isAddressInAddressBook(recipient.address);
+    },
+    [isAddressInAddressBook]
+  );
 
   const getEmptyStateForTab = () => {
     // If there's a search query, show search-specific empty states
@@ -674,6 +694,7 @@ export function SendToScreen(): React.ReactElement {
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
               onRetry={refetchContacts}
+              shouldShowAddToAddressBook={shouldShowAddToAddressBook}
             />
           ) : isLoadingContacts ? (
             <RecipientList
@@ -683,6 +704,7 @@ export function SendToScreen(): React.ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
+              shouldShowAddToAddressBook={shouldShowAddToAddressBook}
             />
           ) : contactsData.length === 0 ? (
             <RecipientList
@@ -692,6 +714,7 @@ export function SendToScreen(): React.ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
+              shouldShowAddToAddressBook={shouldShowAddToAddressBook}
             />
           ) : (
             <AddressBookList
@@ -720,6 +743,7 @@ export function SendToScreen(): React.ReactElement {
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
             onItemAddToAddressBook={handleRecipientAddToAddressBook}
+            shouldShowAddToAddressBook={shouldShowAddToAddressBook}
           />
         )}
       </SearchableTabLayout>

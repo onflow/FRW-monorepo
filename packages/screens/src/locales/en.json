@@ -117,7 +117,9 @@
     "noProfiles": "No Profiles",
     "noProfilesFound": "No profiles found",
     "failedToLoadRecipients": "Failed to load recipients",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "addressBookAdded": "Added to address book",
+    "failedToAddToAddressBook": "Failed to add to address book"
   },
   "buttons": {
     "retry": "Retry",

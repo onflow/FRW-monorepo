@@ -114,7 +114,9 @@
     "noProfiles": "无配置文件",
     "noProfilesFound": "未找到配置文件",
     "failedToLoadRecipients": "无法加载收件人",
-    "copied": "已复制！"
+    "copied": "已复制！",
+    "addressBookAdded": "已添加到地址簿",
+    "failedToAddToAddressBook": "添加到地址簿失败"
   },
   "buttons": {
     "retry": "重试",
