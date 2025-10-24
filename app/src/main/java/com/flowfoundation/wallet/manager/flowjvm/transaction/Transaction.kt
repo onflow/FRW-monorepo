@@ -725,9 +725,9 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
 
   // Determine payer and authorizers
   val payer = builder.payer?.removeHexPrefix() ?: run {
-    if (builder.isBridgePayer) {
+    val address = if (builder.isBridgePayer) {
       val bridgePayer = SurgePricingManager.getBridgePayer()
-      bridgePayer?.address() ?: builder.walletAddress?.removeHexPrefix().orEmpty()
+      bridgePayer?.address() ?: builder.walletAddress
     } else {
       if (isGasFree()) {
         // Check if fee payer service should be used based on surge pricing
@@ -736,12 +736,13 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
           feePayer.address()
         } else {
           SurgePricingManager.showSurgePricingAlertWithContinuation()
-          builder.walletAddress?.removeHexPrefix().orEmpty()
+          builder.walletAddress
         }
       } else {
-        builder.walletAddress?.removeHexPrefix().orEmpty()
+        builder.walletAddress
       }
     }
+    address?.removeHexPrefix().orEmpty()
   }
   val authorizers = determineAuthorizers(builder, flowAccount.address, payer)
 
