@@ -30,7 +30,7 @@ import {
   retryConfigs,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export type RecipientTabType = 'accounts' | 'recent' | 'contacts';
@@ -44,7 +44,7 @@ interface TabConfig {
  * Query-integrated version of SendToScreen following the established pattern
  * Uses TanStack Query for data fetching and caching
  */
-export function SendToScreen(): React.ReactElement {
+export function SendToScreen(): ReactElement {
   const isExtension = bridge.getPlatform() === 'extension';
   const { t } = useTranslation();
   const cardBackgroundColor = '$cardBg';
@@ -90,7 +90,6 @@ export function SendToScreen(): React.ReactElement {
   const bridgeAddress = bridge.getSelectedAddress() || '';
   const fromAddress = fromAccount?.address || bridgeAddress;
   const network = bridge.getNetwork() || 'mainnet';
-
   useEffect(() => {
     // Only load if we haven't loaded yet and we're not currently loading
     if (!profilesLoadedRef.current && !isLoadingProfiles && !profileError) {
@@ -99,23 +98,51 @@ export function SendToScreen(): React.ReactElement {
     }
   }, [isLoadingProfiles, loadProfilesFromBridge, profileError]);
 
+  const {
+    data: userUid,
+    isLoading: isResolvingUid,
+    error: uidError,
+  } = useQuery({
+    queryKey: addressBookQueryKeys.currentUserUid(),
+    queryFn: () => addressBookStore.fetchCurrentUserUid(),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+  });
+
+  const isUidResolved = !isResolvingUid && !uidError;
+  const scopedUid = userUid ?? null;
+  const scopedStaleTime = userUid ? 5 * 60 * 1000 : 0;
+  const scopedGcTime = userUid ? undefined : 0;
+
+  const handleContactsRefresh = useCallback(() => {
+    void refetchContacts();
+  }, [refetchContacts]);
+
   // Query for recent contacts with automatic caching
   const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
-    queryKey: addressBookQueryKeys.recent(),
+    queryKey: addressBookQueryKeys.recent(scopedUid),
     queryFn: () => addressBookStore.fetchRecent(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: scopedStaleTime,
+    gcTime: scopedGcTime,
+    enabled: isUidResolved,
   });
 
   // Query for all contacts with automatic caching
   const {
     data: allContacts = [],
     isLoading: isLoadingContacts,
+    isFetching: isFetchingContacts,
     error: contactsError,
     refetch: refetchContacts,
   } = useQuery({
-    queryKey: addressBookQueryKeys.contacts(),
+    queryKey: addressBookQueryKeys.contacts(scopedUid),
     queryFn: () => addressBookStore.fetchContacts(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: scopedStaleTime,
+    gcTime: scopedGcTime,
+    enabled: isUidResolved,
   });
 
   // Query for account balances using batch API - use profile accounts
@@ -661,6 +688,8 @@ export function SendToScreen(): React.ReactElement {
               copiedId={copiedId}
               copiedText={t('messages.copied')}
               isMobile={!isExtension}
+              refreshing={isFetchingContacts && !isLoadingContacts}
+              onRefresh={handleContactsRefresh}
             />
           )
         ) : (

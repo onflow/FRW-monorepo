@@ -7,7 +7,7 @@ import type {
   WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { Platform } from '@onflow/frw-types';
-import { isTransactionId } from '@onflow/frw-utils';
+import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
@@ -130,6 +130,20 @@ class PlatformImpl implements PlatformSpec {
 
   getSelectedAccount(): Promise<WalletAccount> {
     return NativeFRWBridge.getSelectedAccount();
+  }
+
+  async getCurrentUserUid(): Promise<string | null> {
+    try {
+      if (typeof NativeFRWBridge.getCurrentUserUid === 'function') {
+        return (await NativeFRWBridge.getCurrentUserUid()) ?? null;
+      }
+
+      const token = await this.getJWT();
+      return extractUidFromJwt(token) ?? null;
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to resolve current user uid', error);
+      return null;
+    }
   }
 
   getVersion(): string {
