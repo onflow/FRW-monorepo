@@ -16,6 +16,7 @@ export {
   View,
   XStack,
   YStack,
+  PortalProvider,
 } from 'tamagui';
 
 // Export our custom UI foundation components

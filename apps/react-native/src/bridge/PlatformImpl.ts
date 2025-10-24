@@ -18,7 +18,7 @@ import { reactNativeNavigation } from './ReactNativeNavigation';
 import { bridgeAuthorization, payer, proposer } from './signWithRole';
 
 const CONSOLE_STYLES: Record<'debug' | 'info' | 'warn' | 'error', string> = {
-  debug: 'background:#16FF99;color:#ffffff;padding:0 4px;border-radius:2px;',
+  debug: 'background:#16FF99;color:#000000;padding:0 4px;border-radius:2px;',
   info: 'background:#2563eb;color:#f8fafc;padding:0 4px;border-radius:2px;',
   warn: 'background:#d97706;color:#fff7ed;padding:0 4px;border-radius:2px;',
   error: 'background:#dc2626;color:#fef2f2;padding:0 4px;border-radius:2px;',
