@@ -117,6 +117,10 @@ export function SendToScreen(): ReactElement {
   const scopedStaleTime = userUid ? 5 * 60 * 1000 : 0;
   const scopedGcTime = userUid ? undefined : 0;
 
+  const handleContactsRefresh = useCallback(() => {
+    void refetchContacts();
+  }, [refetchContacts]);
+
   // Query for recent contacts with automatic caching
   const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
     queryKey: addressBookQueryKeys.recent(scopedUid),
@@ -130,6 +134,7 @@ export function SendToScreen(): ReactElement {
   const {
     data: allContacts = [],
     isLoading: isLoadingContacts,
+    isFetching: isFetchingContacts,
     error: contactsError,
     refetch: refetchContacts,
   } = useQuery({
@@ -683,6 +688,8 @@ export function SendToScreen(): ReactElement {
               copiedId={copiedId}
               copiedText={t('messages.copied')}
               isMobile={!isExtension}
+              refreshing={isFetchingContacts && !isLoadingContacts}
+              onRefresh={handleContactsRefresh}
             />
           )
         ) : (

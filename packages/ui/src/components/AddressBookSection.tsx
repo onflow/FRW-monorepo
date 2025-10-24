@@ -67,6 +67,8 @@ export interface AddressBookListProps {
   copiedId?: string | null;
   copiedText?: string;
   isMobile?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
 export function AddressBookList({
@@ -76,6 +78,8 @@ export function AddressBookList({
   copiedId,
   copiedText = 'Copied!',
   isMobile = false,
+  refreshing = false,
+  onRefresh,
 }: AddressBookListProps): React.JSX.Element {
   const horizontalPadding = space.$4;
 
@@ -85,6 +89,8 @@ export function AddressBookList({
         data={contacts}
         keyExtractor={(item, index) => `${item.address}-${index}`}
         contentContainerStyle={{ paddingHorizontal: horizontalPadding }}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <RecipientItem
             {...item}
@@ -139,6 +145,8 @@ export function AddressBookList({
           </Text>
         </YStack>
       )}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
       renderItem={({ item, index, section }) => (
         <YStack px="$4">
           <RecipientItem
