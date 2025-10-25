@@ -1,5 +1,5 @@
 import { AddressbookService } from '@onflow/frw-api';
-import { bridge, navigation } from '@onflow/frw-context';
+import { bridge, navigation, toast } from '@onflow/frw-context';
 import { RecentRecipientsService } from '@onflow/frw-services';
 import {
   useSendStore,
@@ -22,6 +22,7 @@ import {
   InfoDialog,
   Text,
   YStack,
+  AddContactDialog,
 } from '@onflow/frw-ui';
 import {
   isValidEthereumAddress,
@@ -66,6 +67,25 @@ export function SendToScreen(): ReactElement {
   // First time send modal state
   const [showFirstTimeSendDialog, setShowFirstTimeSendDialog] = useState(false);
   const [pendingRecipient, setPendingRecipient] = useState<RecipientData | null>(null);
+  const [showAddContactDialog, setShowAddContactDialog] = useState(false);
+  const [pendingAddressBookRecipient, setPendingAddressBookRecipient] =
+    useState<RecipientData | null>(null);
+  const [isAddingToAddressBook, setIsAddingToAddressBook] = useState(false);
+  const [contactNameInput, setContactNameInput] = useState('');
+
+  const pendingRecipientInitial = useMemo(() => {
+    if (!pendingAddressBookRecipient) {
+      return '?';
+    }
+
+    const nameInitial = pendingAddressBookRecipient.name?.trim()?.[0];
+    if (nameInitial) {
+      return nameInitial.toUpperCase();
+    }
+
+    const address = pendingAddressBookRecipient.address?.replace(/^0x/, '');
+    return address?.[0]?.toUpperCase() ?? '?';
+  }, [pendingAddressBookRecipient]);
 
   // Get selected token from send store
   const transactionType = useSendStore((state) => state.transactionType);
@@ -550,27 +570,72 @@ export function SendToScreen(): ReactElement {
   }, []);
 
   const handleRecipientAddToAddressBook = useCallback(
-    async (recipient: RecipientData) => {
-      // Check if address already exists in address book
-      if (isAddressInAddressBook(recipient.address)) {
-        return;
-      }
-
-      try {
-        await AddressbookService.external({
-          contactName: recipient.name,
-          address: recipient.address,
-          domain: '', // Empty domain for external contacts
-          domainType: 0, // 0 for external contacts
-        });
-
-        // Refresh the address book data
-        refetchContacts();
-      } catch (error) {
-        logger.error('Failed to add to address book:', error);
-      }
+    (recipient: RecipientData) => {
+      logger.debug('[SendToScreen] Adding recipient to address book:', recipient);
+      setPendingAddressBookRecipient(recipient);
+      setShowAddContactDialog(true);
+      setContactNameInput(recipient.name || '');
     },
-    [refetchContacts, isAddressInAddressBook]
+    [isAddressInAddressBook]
+  );
+
+  const handleAddToAddressBookCancel = useCallback(() => {
+    setShowAddContactDialog(false);
+    setPendingAddressBookRecipient(null);
+    setIsAddingToAddressBook(false);
+    setContactNameInput('');
+  }, []);
+
+  const handleAddToAddressBookConfirm = useCallback(async () => {
+    if (!pendingAddressBookRecipient || isAddingToAddressBook) {
+      return;
+    }
+
+    try {
+      setIsAddingToAddressBook(true);
+      const trimmedName = contactNameInput.trim();
+      const contactName =
+        trimmedName || pendingAddressBookRecipient.name || pendingAddressBookRecipient.address;
+
+      await AddressbookService.external({
+        contactName,
+        address: pendingAddressBookRecipient.address,
+        domain: '',
+        domainType: 0,
+      });
+
+      await refetchContacts();
+      toast.show({
+        title: t('messages.addressBookAdded'),
+        type: 'success',
+      });
+    } catch (error) {
+      logger.error('Failed to add to address book:', error);
+      toast.show({
+        title: t('messages.failedToAddToAddressBook'),
+        type: 'error',
+      });
+    } finally {
+      setIsAddingToAddressBook(false);
+      setShowAddContactDialog(false);
+      setPendingAddressBookRecipient(null);
+      setContactNameInput('');
+    }
+  }, [pendingAddressBookRecipient, isAddingToAddressBook, contactNameInput, refetchContacts]);
+
+  const shouldShowAddToAddressBook = useCallback(
+    (recipient: RecipientData) => {
+      if (!recipient?.address) {
+        return false;
+      }
+
+      if (recipient.type === 'contact') {
+        return false;
+      }
+
+      return !isAddressInAddressBook(recipient.address);
+    },
+    [isAddressInAddressBook]
   );
 
   const getEmptyStateForTab = () => {
@@ -656,6 +721,7 @@ export function SendToScreen(): ReactElement {
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
               onRetry={refetchContacts}
+              shouldShowAddToAddressBook={shouldShowAddToAddressBook}
             />
           ) : isLoadingContacts ? (
             <RecipientList
@@ -665,6 +731,7 @@ export function SendToScreen(): ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
+              shouldShowAddToAddressBook={shouldShowAddToAddressBook}
             />
           ) : contactsData.length === 0 ? (
             <RecipientList
@@ -674,6 +741,7 @@ export function SendToScreen(): ReactElement {
               emptyMessage={emptyState.message}
               retryButtonText={t('buttons.retry')}
               errorDefaultMessage={t('messages.failedToLoadRecipients')}
+              shouldShowAddToAddressBook={shouldShowAddToAddressBook}
             />
           ) : (
             <AddressBookList
@@ -704,9 +772,25 @@ export function SendToScreen(): ReactElement {
             onItemEdit={handleRecipientEdit}
             onItemCopy={handleRecipientCopy}
             onItemAddToAddressBook={handleRecipientAddToAddressBook}
+            shouldShowAddToAddressBook={shouldShowAddToAddressBook}
           />
         )}
       </SearchableTabLayout>
+
+      <AddContactDialog
+        visible={showAddContactDialog}
+        address={pendingAddressBookRecipient?.address || ''}
+        initial={pendingRecipientInitial}
+        contactName={contactNameInput}
+        isSubmitting={isAddingToAddressBook}
+        onContactNameChange={setContactNameInput}
+        onConfirm={handleAddToAddressBookConfirm}
+        onClose={handleAddToAddressBookCancel}
+        title={t('send.newContactTitle')}
+        nameLabel={t('send.contactNameLabel')}
+        namePlaceholder={t('send.contactNamePlaceholder')}
+        confirmLabel={t('send.addToAddressBookButton')}
+      />
 
       {/* First Time Send Confirmation Dialog */}
       <InfoDialog

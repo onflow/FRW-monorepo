@@ -17,7 +17,7 @@ export const NavigationBackButton: React.FC = () => {
       variant="ghost"
       size="medium"
       onPress={() => navigation.goBack()}
-      mt="$-1" // Move top to reduce padding for iOS26
+      ml={10}
     />
   );
 };
