@@ -20,6 +20,7 @@ import {
   ConfirmationDrawer,
   TransactionFeeSection,
   SurgeFeeConfirmationSection,
+  SurgeModal,
   ToAccountSection,
   AccountCard,
   SendSectionHeader,
@@ -397,8 +398,30 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     } else {
       logger.info('[SendSummaryScreen] Sending single NFT');
     }
+    if (isSurgePricingActive) {
+      setIsSurgeWarningVisible(true);
+      return;
+    }
+
     setIsConfirmationVisible(true);
-  }, [isERC1155, selectedQuantity, maxQuantity, selectedNFT, isMultipleNFTs, selectedNFTs]);
+  }, [
+    isERC1155,
+    selectedQuantity,
+    maxQuantity,
+    selectedNFT,
+    isMultipleNFTs,
+    selectedNFTs,
+    isSurgePricingActive,
+  ]);
+
+  const handleSurgeModalClose = useCallback(() => {
+    setIsSurgeWarningVisible(false);
+  }, []);
+
+  const handleSurgeModalAgree = useCallback(() => {
+    setIsSurgeWarningVisible(false);
+    setIsConfirmationVisible(true);
+  }, []);
 
   const handleConfirmationClose = useCallback(() => {
     setIsConfirmationVisible(false);
@@ -659,6 +682,20 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
           unknownAccountText={t('send.unknownAccount')}
+        />
+
+        <SurgeModal
+          visible={isSurgeWarningVisible}
+          transactionFee={transactionFee}
+          multiplier={formattedSurgeMultiplier}
+          title={t('surge.modal.title')}
+          transactionFeeLabel={t('surge.modal.transactionFee')}
+          surgeActiveText={t('surge.modal.surgeActive')}
+          description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
+          holdToAgreeText={t('surge.modal.holdToAgree')}
+          onClose={handleSurgeModalClose}
+          onAgree={handleSurgeModalAgree}
+          isLoading={isLoading}
         />
       </YStack>
     </BackgroundWrapper>

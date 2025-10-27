@@ -34,15 +34,8 @@ function isSVGContent(url: string): boolean {
  */
 async function imageUrlToBase64(url: string): Promise<string | null> {
   try {
-    // Android Lottie doesn't support SVG images, skip conversion
-    if (Platform.OS === 'android' && isSVGContent(url)) {
-      console.warn(
-        '[LottieInjection] Skipping SVG conversion on Android, using placeholder instead'
-      );
-      return null;
-    }
-
-    const response = await fetch(convertedSVGURL(url));
+    const convertedUrl = convertedSVGURL(url);
+    const response = await fetch(convertedUrl);
     if (!response.ok) {
       console.warn('[LottieInjection] Failed to fetch image:', response.status);
       return null;
@@ -50,15 +43,31 @@ async function imageUrlToBase64(url: string): Promise<string | null> {
 
     const blob = await response.blob();
 
-    // Additional check for SVG content type
-    if (Platform.OS === 'android' && blob.type.includes('svg')) {
-      console.warn('[LottieInjection] Detected SVG content type on Android, using placeholder');
+    // Android-specific: Validate that we got a valid image format to prevent bitmap crashes
+    if (Platform.OS === 'android' && blob.type && !blob.type.startsWith('image/')) {
+      console.warn('[LottieInjection] Android: Invalid image format received:', blob.type);
       return null;
     }
 
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Android-specific: Additional validation for bitmap compatibility
+        if (
+          Platform.OS === 'android' &&
+          result &&
+          !result.match(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/)
+        ) {
+          console.warn(
+            '[LottieInjection] Android: Invalid base64 image format:',
+            result.substring(0, 50)
+          );
+          resolve(null);
+          return;
+        }
+        resolve(result);
+      };
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(blob);
     });
@@ -269,7 +278,8 @@ export async function injectImageWithFallbacks(
   }
 
   // Strategy 2: Try direct URL injection (works better on web/extension)
-  if (Platform.OS !== 'android' || !isSVGContent(imageUrl)) {
+  // Android-specific: Skip URL injection to prevent bitmap crashes
+  if (Platform.OS !== 'android') {
     try {
       const injectedData = injectImageIntoLottie(animationData, targetImageId, imageUrl);
       console.log('[LottieInjection] ✅ Successfully injected via URL');

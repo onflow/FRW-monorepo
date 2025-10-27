@@ -16,6 +16,7 @@ export {
   View,
   XStack,
   YStack,
+  PortalProvider,
 } from 'tamagui';
 
 // Export our custom UI foundation components
@@ -37,6 +38,7 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
+export * from './components/AddContactDialog';
 
 export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';

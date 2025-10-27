@@ -92,6 +92,10 @@
     "inaccessible": "不可访问",
     "confirmAddress": "确认地址",
     "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。",
+    "newContactTitle": "新建联系人",
+    "contactNameLabel": "联系人姓名",
+    "contactNamePlaceholder": "请输入姓名",
+    "addToAddressBookButton": "添加到地址簿",
     "sendSNFTs": "发送S/NFT",
     "sendNFTs": "发送NFT",
     "change": "更改",
@@ -110,7 +114,9 @@
     "noProfiles": "无配置文件",
     "noProfilesFound": "未找到配置文件",
     "failedToLoadRecipients": "无法加载收件人",
-    "copied": "已复制！"
+    "copied": "已复制！",
+    "addressBookAdded": "已添加到地址簿",
+    "failedToAddToAddressBook": "添加到地址簿失败"
   },
   "buttons": {
     "retry": "重试",
