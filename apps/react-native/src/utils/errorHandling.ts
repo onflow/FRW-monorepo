@@ -154,28 +154,46 @@ export function handleUnhandledRejection(reason: unknown, promise: Promise<unkno
  * This allows users to report bugs directly from error screens
  */
 export function showBugReportUI(error?: Error): void {
+  platform.log('debug', '[Error Handler] showBugReportUI called', { hasError: !!error });
+
   try {
     // Check if Instabug is initialized via platform
-    if (platform.isInstabugInitialized?.()) {
+    const isInitialized = platform.isInstabugInitialized?.();
+    platform.log('debug', '[Error Handler] Instabug initialized:', isInitialized);
+
+    if (isInitialized) {
       // Dynamically import Instabug to avoid circular dependencies
       const Instabug = require('instabug-reactnative').default;
       const BugReporting = require('instabug-reactnative').BugReporting;
 
+      platform.log('debug', '[Error Handler] Instabug modules loaded', {
+        hasInstabug: !!Instabug,
+        hasBugReporting: !!BugReporting,
+        hasBugReportingShow: !!(BugReporting && typeof BugReporting.show === 'function'),
+        hasInstabugShow: !!(Instabug && typeof Instabug.show === 'function'),
+      });
+
       if (error) {
         // Report the error first
+        platform.log('debug', '[Error Handler] Reporting error to Instabug');
         reportErrorToInstabug(error);
       }
 
       // Show the bug reporting UI
       if (BugReporting && typeof BugReporting.show === 'function') {
-        BugReporting.show();
+        platform.log('debug', '[Error Handler] Calling BugReporting.show() with ReportType.bug');
+        const ReportType = require('instabug-reactnative').ReportType;
+        BugReporting.show(ReportType.bug, []);
       } else if (Instabug && typeof Instabug.show === 'function') {
+        platform.log('debug', '[Error Handler] Calling Instabug.show()');
         Instabug.show();
+      } else {
+        platform.log('warn', '[Error Handler] No show() method found on Instabug or BugReporting');
       }
     } else {
       platform.log('warn', '[Error Handler] Instabug not initialized, cannot show bug report UI');
     }
   } catch (instabugError) {
-    platform.log('warn', '[Error Handler] Failed to show bug report UI:', instabugError);
+    platform.log('error', '[Error Handler] Failed to show bug report UI:', instabugError);
   }
 }
