@@ -5,6 +5,7 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  SendToScreen,
   ReceiveScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
@@ -26,8 +27,6 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-
-import { SendToScreen } from '../screens/SendToScreenWrapper';
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };

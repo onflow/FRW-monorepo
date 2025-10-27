@@ -4,7 +4,7 @@ import { useWalletStore } from '@onflow/frw-stores';
 import { PortalProvider, TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { Clipboard, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import 'react-native-get-random-values';
@@ -12,6 +12,13 @@ import { version } from '../package.json';
 import { platform } from './bridge/PlatformImpl';
 import { QueryDebugger } from './components/QueryDebugger';
 import AppNavigator from './navigation/AppNavigator';
+
+// Set up global clipboard for React Native (used by screens that need clipboard access)
+(globalThis as any).clipboard = {
+  setString: (text: string) => {
+    Clipboard.setString(text);
+  },
+};
 
 interface AppProps {
   address?: string;
