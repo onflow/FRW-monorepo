@@ -66,12 +66,18 @@ export interface Spec extends TurboModule {
   // Toast methods
   showToast(
     title: string,
-    message?: string,
+    message?: string | null,
     type?: 'success' | 'error' | 'warning' | 'info',
-    duration?: number
+    duration?: number | null
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
+  // Native logging method for additional platform-specific logging
+  logToNative(
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    args: ReadonlyArray<string>
+  ): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

@@ -6,6 +6,8 @@ import {
   storageQueries,
   storageUtils,
   useTokenQueryStore,
+  payerStatusQueryKeys,
+  payerStatusQueries,
 } from '@onflow/frw-stores';
 import { Platform, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
 import {
@@ -17,6 +19,8 @@ import {
   SendArrowDivider,
   ConfirmationDrawer,
   TransactionFeeSection,
+  SurgeFeeConfirmationSection,
+  SurgeModal,
   ToAccountSection,
   AccountCard,
   SendSectionHeader,
@@ -33,6 +37,7 @@ import {
   getNFTId,
   transformAccountForCard,
   transformAccountForDisplay,
+  retryConfigs,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -51,11 +56,12 @@ interface SendSummaryScreenProps {
 export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
-  //const toast = useToast();
+  const network = bridge.getNetwork() || 'mainnet';
 
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
+  const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
 
   // Get data from send store using selectors
   const selectedNFTs = useSendStore(sendSelectors.selectedNFTs);
@@ -163,10 +169,11 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   );
 
   // Query for complete account information
+  // Only fetch for main accounts as child accounts don't need storage validation
   const { data: accountInfo } = useQuery({
     queryKey: storageQueryKeys.accountInfo(fromAccount || null),
     queryFn: () => storageQueries.fetchAccountInfo(fromAccount || null),
-    enabled: !!fromAccount?.address,
+    enabled: !!fromAccount?.address && fromAccount?.type === 'main',
     staleTime: 0,
   });
 
@@ -188,23 +195,57 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
   const isAccountIncompatible = !isResourceCompatible;
 
-  // Mock transaction fee data
-  const transactionFee = '0.001 FLOW';
+  const {
+    data: payerStatus = null,
+    isLoading: isLoadingPayerStatus,
+    error: payerStatusError,
+  } = useQuery({
+    queryKey: payerStatusQueryKeys.payerStatus(network as 'mainnet' | 'testnet'),
+    queryFn: () => payerStatusQueries.fetchPayerStatus(network as 'mainnet' | 'testnet'),
+    staleTime: 0,
+    enabled: true,
+    retry: retryConfigs.critical.retry,
+    retryDelay: retryConfigs.critical.retryDelay,
+  });
+
+  const isSurgePricingActive = Boolean(payerStatus?.surge?.active);
+  const surgeMultiplier = payerStatus?.surge?.multiplier || 1;
+
+  const formattedSurgeMultiplier = useMemo(() => {
+    const multiplier = Number(surgeMultiplier || 1);
+    if (Number.isNaN(multiplier)) {
+      return '1';
+    }
+    return multiplier.toFixed(2).replace(/\.?0+$/, '');
+  }, [surgeMultiplier]);
+
+  // Calculate transaction fee from API's maxFee field or fallback to default
+  // Calculate transaction fee from API's maxFee or use default
+  const transactionFee = useMemo(() => {
+    const fee = payerStatus?.surge?.maxFee;
+    if (!fee) return '~0.001 FLOW';
+
+    const precision = fee < 0.01 ? 4 : fee < 0.1 ? 3 : 2;
+    return `~${fee.toFixed(precision)} FLOW`;
+  }, [payerStatus?.surge?.maxFee]);
+
   const usdFee = '$0.02';
   const isFeesFree = false;
 
   // Calculate storage warning state
+  // Only validate for main accounts as child accounts don't have storage limitations
   const validationResult = useMemo(() => {
-    if (!accountInfo) {
+    // Skip validation for non-main accounts (child accounts don't need storage validation)
+    if (!fromAccount || fromAccount.type !== 'main' || !accountInfo) {
       return { canProceed: true, showWarning: false, warningType: null };
     }
     return storageUtils.validateOtherTransaction(accountInfo, isFeesFree);
-  }, [accountInfo, isFeesFree]);
+  }, [fromAccount, accountInfo, isFeesFree]);
 
   const showStorageWarning = validationResult.showWarning;
   const storageWarningMessage = useMemo(() => {
     return t(storageUtils.getStorageWarningMessageKey(validationResult.warningType));
-  }, [validationResult.warningType, accountInfo, t]);
+  }, [validationResult.warningType, t]);
 
   // Calculate if send button should be disabled
   const isSendDisabled =
@@ -273,21 +314,22 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         if (existingCollections) {
           // Find the collection that matches this NFT
           matchingCollection = existingCollections.find((collection) => {
-            // Try multiple matching strategies
-            const matches =
-              collection.name === currentSelectedNFT.collectionName ||
-              collection.contractName === currentSelectedNFT.collectionContractName ||
-              collection.id === currentSelectedNFT.collectionContractName ||
-              collection.flowIdentifier === currentSelectedNFT.flowIdentifier ||
-              collection.evmAddress === currentSelectedNFT.evmAddress ||
-              // Additional matching for Android native NFTs
-              collection.address === currentSelectedNFT.address ||
-              collection.address === currentSelectedNFT.contractAddress;
+            let matches = false;
+
+            // Flow collection use flowIdentifier
+            if (collection.type === 'flow') {
+              matches = collection.flowIdentifier === currentSelectedNFT.flowIdentifier;
+            }
+            // EVM collection use evmAddress
+            else if (collection.type === 'evm') {
+              matches = collection.evmAddress === currentSelectedNFT.evmAddress;
+            }
 
             if (matches) {
               logger.debug('[SendSummaryScreen] Found matching collection:', {
                 collectionName: collection.name,
                 collectionId: collection.id,
+                collectionType: collection.type,
               });
             }
 
@@ -356,8 +398,30 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     } else {
       logger.info('[SendSummaryScreen] Sending single NFT');
     }
+    if (isSurgePricingActive) {
+      setIsSurgeWarningVisible(true);
+      return;
+    }
+
     setIsConfirmationVisible(true);
-  }, [isERC1155, selectedQuantity, maxQuantity, selectedNFT, isMultipleNFTs, selectedNFTs]);
+  }, [
+    isERC1155,
+    selectedQuantity,
+    maxQuantity,
+    selectedNFT,
+    isMultipleNFTs,
+    selectedNFTs,
+    isSurgePricingActive,
+  ]);
+
+  const handleSurgeModalClose = useCallback(() => {
+    setIsSurgeWarningVisible(false);
+  }, []);
+
+  const handleSurgeModalAgree = useCallback(() => {
+    setIsSurgeWarningVisible(false);
+    setIsConfirmationVisible(true);
+  }, []);
 
   const handleConfirmationClose = useCallback(() => {
     setIsConfirmationVisible(false);
@@ -521,16 +585,28 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
             {/* Transaction Fee and Storage Warning Section */}
             <YStack gap="$3" mt={-16}>
-              <TransactionFeeSection
-                flowFee={transactionFee}
-                usdFee={usdFee}
-                isFree={isFreeGasEnabled}
-                showCovered={true}
-                title={t('send.transactionFee')}
-                backgroundColor="transparent"
-                borderRadius={16}
-                contentPadding={0}
-              />
+              {!isSurgePricingActive ? (
+                <TransactionFeeSection
+                  flowFee={transactionFee}
+                  usdFee={usdFee}
+                  isFree={isFreeGasEnabled}
+                  showCovered={true}
+                  title={t('send.transactionFee')}
+                  backgroundColor="transparent"
+                  borderRadius={16}
+                  contentPadding={0}
+                />
+              ) : (
+                <SurgeFeeConfirmationSection
+                  transactionFee={transactionFee}
+                  surgeMultiplier={surgeMultiplier}
+                  transactionFeeLabel={t('surge.modal.transactionFee')}
+                  surgeTitle={t('surge.modal.surgeActive')}
+                  description={t('surge.modal.description', {
+                    multiplier: formattedSurgeMultiplier,
+                  })}
+                />
+              )}
 
               {/* Storage Warning */}
               {showStorageWarning && (
@@ -550,7 +626,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           <YStack
             width="100%"
             height={52}
-            bg={isSendDisabled ? '$textMuted' : '$text'}
+            bg={isSendDisabled ? '#6b7280' : isSurgePricingActive ? '$warning' : '$text'}
             rounded={16}
             items="center"
             justify="center"
@@ -561,7 +637,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
             onPress={isSendDisabled ? undefined : handleSendPress}
             cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
           >
-            <Text fontSize="$4" fontWeight="600" color="$bg">
+            <Text data-testid="next" fontSize="$4" fontWeight="600" color="$bg">
               {t('common.next')}
             </Text>
           </YStack>
@@ -606,6 +682,20 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
           confirmSendText={t('send.confirmSend')}
           holdToSendText={t('send.holdToSend')}
           unknownAccountText={t('send.unknownAccount')}
+        />
+
+        <SurgeModal
+          visible={isSurgeWarningVisible}
+          transactionFee={transactionFee}
+          multiplier={formattedSurgeMultiplier}
+          title={t('surge.modal.title')}
+          transactionFeeLabel={t('surge.modal.transactionFee')}
+          surgeActiveText={t('surge.modal.surgeActive')}
+          description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
+          holdToAgreeText={t('surge.modal.holdToAgree')}
+          onClose={handleSurgeModalClose}
+          onAgree={handleSurgeModalAgree}
+          isLoading={isLoading}
         />
       </YStack>
     </BackgroundWrapper>

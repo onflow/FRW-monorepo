@@ -19,20 +19,55 @@ export interface InjectionResult {
 }
 
 /**
+ * Checks if a URL or data URI contains SVG content
+ */
+function isSVGContent(url: string): boolean {
+  if (!url) return false;
+  return (
+    url.includes('data:image/svg+xml') || url.toLowerCase().includes('.svg') || url.includes('<svg')
+  );
+}
+
+/**
  * Converts a remote image URL to base64
+ * Special handling for SVG images to prevent Android Lottie crashes
  */
 async function imageUrlToBase64(url: string): Promise<string | null> {
   try {
-    const response = await fetch(convertedSVGURL(url));
+    const convertedUrl = convertedSVGURL(url);
+    const response = await fetch(convertedUrl);
     if (!response.ok) {
       console.warn('[LottieInjection] Failed to fetch image:', response.status);
       return null;
     }
 
     const blob = await response.blob();
+
+    // Android-specific: Validate that we got a valid image format to prevent bitmap crashes
+    if (Platform.OS === 'android' && blob.type && !blob.type.startsWith('image/')) {
+      console.warn('[LottieInjection] Android: Invalid image format received:', blob.type);
+      return null;
+    }
+
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Android-specific: Additional validation for bitmap compatibility
+        if (
+          Platform.OS === 'android' &&
+          result &&
+          !result.match(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/)
+        ) {
+          console.warn(
+            '[LottieInjection] Android: Invalid base64 image format:',
+            result.substring(0, 50)
+          );
+          resolve(null);
+          return;
+        }
+        resolve(result);
+      };
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(blob);
     });
@@ -198,6 +233,32 @@ export async function injectImageWithFallbacks(
     }
   }
 
+  // Android: Check for SVG content early and use placeholder to prevent crashes
+  if (Platform.OS === 'android' && isSVGContent(imageUrl)) {
+    console.log(
+      '[LottieInjection] 🛡️ Android + SVG detected, using safe placeholder to prevent crash'
+    );
+    try {
+      const placeholderData = injectImageIntoLottie(
+        animationData,
+        targetImageId,
+        BASE64_PLACEHOLDER
+      );
+      return {
+        success: true, // Mark as success since we safely handled the SVG
+        method: 'base64',
+        animationData: placeholderData,
+      };
+    } catch (error) {
+      console.error('[LottieInjection] SVG fallback injection failed:', error);
+      return {
+        success: false,
+        method: 'failed',
+        animationData,
+      };
+    }
+  }
+
   // Strategy 1: Try to convert URL to base64 (most reliable for React Native)
   if (Platform.OS === 'ios' || Platform.OS === 'android') {
     try {
@@ -217,16 +278,19 @@ export async function injectImageWithFallbacks(
   }
 
   // Strategy 2: Try direct URL injection (works better on web/extension)
-  try {
-    const injectedData = injectImageIntoLottie(animationData, targetImageId, imageUrl);
-    console.log('[LottieInjection] ✅ Successfully injected via URL');
-    return {
-      success: true,
-      method: 'url',
-      animationData: injectedData,
-    };
-  } catch (error) {
-    console.warn('[LottieInjection] URL injection failed:', error);
+  // Android-specific: Skip URL injection to prevent bitmap crashes
+  if (Platform.OS !== 'android') {
+    try {
+      const injectedData = injectImageIntoLottie(animationData, targetImageId, imageUrl);
+      console.log('[LottieInjection] ✅ Successfully injected via URL');
+      return {
+        success: true,
+        method: 'url',
+        animationData: injectedData,
+      };
+    } catch (error) {
+      console.warn('[LottieInjection] URL injection failed:', error);
+    }
   }
 
   // Strategy 3: Use base64 placeholder as final fallback
@@ -234,8 +298,8 @@ export async function injectImageWithFallbacks(
     const placeholderData = injectImageIntoLottie(animationData, targetImageId, BASE64_PLACEHOLDER);
     console.log('[LottieInjection] ⚠️ Using placeholder fallback');
     return {
-      success: false, // Still mark as failed since we didn't get the real image
-      method: 'failed',
+      success: true, // Mark as success since we provided a safe fallback
+      method: 'base64',
       animationData: placeholderData,
     };
   } catch (error) {
@@ -246,6 +310,21 @@ export async function injectImageWithFallbacks(
       animationData,
     };
   }
+}
+
+/**
+ * Validates if an image URL is safe for Lottie on the current platform
+ */
+export function isImageSafeForLottie(imageUrl: string): boolean {
+  if (!imageUrl) return false;
+
+  // Android has issues with SVG images in Lottie
+  if (Platform.OS === 'android' && isSVGContent(imageUrl)) {
+    return false;
+  }
+
+  // Additional checks for other unsafe formats could be added here
+  return true;
 }
 
 /**

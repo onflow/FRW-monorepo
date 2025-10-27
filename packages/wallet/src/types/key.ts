@@ -5,7 +5,12 @@
 import { Chain } from './chain';
 
 // Re-export from separate files for convenience
-export { type KeyProtocol, type KeyData, type SecurityCheckDelegate } from './key-protocol';
+export {
+  type KeyProtocol,
+  type EthereumKeyProtocol,
+  type KeyData,
+  type SecurityCheckDelegate,
+} from './key-protocol';
 export { type StorageProtocol } from './storage';
 
 /**

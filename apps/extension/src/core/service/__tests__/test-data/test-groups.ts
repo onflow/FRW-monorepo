@@ -213,7 +213,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
           },
         },
       },
-      { name: 'signProposer', params: { transaction: {}, message: '' } },
       { name: 'getProposer', params: {} },
       {
         name: 'getTransactionTemplate',

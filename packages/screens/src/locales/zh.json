@@ -92,6 +92,10 @@
     "inaccessible": "不可访问",
     "confirmAddress": "确认地址",
     "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。",
+    "newContactTitle": "新建联系人",
+    "contactNameLabel": "联系人姓名",
+    "contactNamePlaceholder": "请输入姓名",
+    "addToAddressBookButton": "添加到地址簿",
     "sendSNFTs": "发送S/NFT",
     "sendNFTs": "发送NFT",
     "change": "更改",
@@ -110,7 +114,9 @@
     "noProfiles": "无配置文件",
     "noProfilesFound": "未找到配置文件",
     "failedToLoadRecipients": "无法加载收件人",
-    "copied": "已复制！"
+    "copied": "已复制！",
+    "addressBookAdded": "已添加到地址簿",
+    "failedToAddToAddressBook": "添加到地址簿失败"
   },
   "buttons": {
     "retry": "重试",
@@ -173,6 +179,17 @@
         "descriptionMain": "Flow 钱包管理您在 Flow 上的 EVM 和 Cadence 账户。EVM 账户与 EVM 应用兼容，Cadence 账户与 Cadence 应用兼容。",
         "descriptionSecondary": "如果应用是基于 EVM 或 Cadence，只有兼容的账户可用于连接。"
       }
+    }
+  },
+  "surge": {
+    "title": "网络拥堵价格激活",
+    "message": "由于网络活动频繁，交易费用已提高。当前网络费用比平时高 4 倍。",
+    "modal": {
+      "title": "您确定要继续使用激增定价吗？",
+      "transactionFee": "您的交易费用",
+      "surgeActive": "激增价格激活",
+      "description": "由于网络活动频繁，交易费用已提高，Flow Wallet 暂时不为您支付 gas 费用。当前网络费用比平时高 {{multiplier}} 倍。",
+      "holdToAgree": "按住同意激增定价"
     }
   }
 }
