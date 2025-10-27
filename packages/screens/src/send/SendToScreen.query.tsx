@@ -134,20 +134,21 @@ export function SendToScreen(): ReactElement {
 
   const isUidResolved = !isResolvingUid && !uidError;
   const scopedUid = userUid ?? null;
-  const scopedStaleTime = userUid ? 5 * 60 * 1000 : 0;
-  const scopedGcTime = userUid ? undefined : 0;
-
-  const handleContactsRefresh = useCallback(() => {
-    void refetchContacts();
-  }, [refetchContacts]);
 
   // Query for recent contacts with automatic caching
-  const { data: recentContacts = [], isLoading: isLoadingRecent } = useQuery({
+  const {
+    data: recentContacts = [],
+    isLoading: isLoadingRecent,
+    refetch: refetchRecentContacts,
+  } = useQuery({
     queryKey: addressBookQueryKeys.recent(scopedUid),
     queryFn: () => addressBookStore.fetchRecent(),
-    staleTime: scopedStaleTime,
-    gcTime: scopedGcTime,
+    staleTime: 0,
+    gcTime: 0,
     enabled: isUidResolved,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
   });
 
   // Query for all contacts with automatic caching
@@ -160,10 +161,17 @@ export function SendToScreen(): ReactElement {
   } = useQuery({
     queryKey: addressBookQueryKeys.contacts(scopedUid),
     queryFn: () => addressBookStore.fetchContacts(),
-    staleTime: scopedStaleTime,
-    gcTime: scopedGcTime,
+    staleTime: 0,
+    gcTime: 0,
     enabled: isUidResolved,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
   });
+
+  const handleContactsRefresh = useCallback(() => {
+    void Promise.all([refetchContacts(), refetchRecentContacts()]);
+  }, [refetchContacts, refetchRecentContacts]);
 
   // Query for account balances using batch API - use profile accounts
   const profileAccountAddresses = useMemo(() => {
