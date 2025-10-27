@@ -18,6 +18,7 @@ import screensI18n from '../lib/i18n';
 interface GenericErrorFallbackProps {
   error: Error;
   resetError: () => void;
+  onReportBug?: (error: Error) => void;
 }
 
 /**
@@ -26,6 +27,7 @@ interface GenericErrorFallbackProps {
 export const GenericErrorFallback: React.FC<GenericErrorFallbackProps> = ({
   error,
   resetError,
+  onReportBug,
 }) => {
   const colorScheme = useColorScheme();
 
@@ -111,10 +113,17 @@ export const GenericErrorFallback: React.FC<GenericErrorFallbackProps> = ({
             </YStack>
           </YStack>
 
-          {/* Retry Button - Bottom anchored */}
-          <Button variant="inverse" size="large" onPress={resetError} fullWidth>
-            {screensI18n.t('errors.generic.button')}
-          </Button>
+          {/* Action Buttons - Bottom anchored */}
+          <YStack width="100%" gap="$3">
+            <Button variant="inverse" size="large" onPress={resetError} fullWidth>
+              {screensI18n.t('errors.generic.button')}
+            </Button>
+            {onReportBug && (
+              <Button variant="secondary" size="large" onPress={() => onReportBug(error)} fullWidth>
+                {screensI18n.t('errors.generic.reportBug')}
+              </Button>
+            )}
+          </YStack>
         </YStack>
       </YStack>
     </TamaguiProvider>

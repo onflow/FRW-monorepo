@@ -145,17 +145,20 @@
     "generic": {
       "title": "Something went wrong",
       "message": "We encountered an unexpected error. Please try again.",
-      "button": "Retry"
+      "button": "Retry",
+      "reportBug": "Report Bug"
     },
     "network": {
       "title": "Connection Error",
       "message": "Unable to connect to the network. Please check your connection and try again.",
-      "button": "Retry"
+      "button": "Retry",
+      "reportBug": "Report Bug"
     },
     "critical": {
       "title": "Critical Error",
       "message": "A critical error occurred. Please restart the app.",
-      "button": "Restart"
+      "button": "Restart",
+      "reportBug": "Report Bug"
     }
   },
   "nft": {

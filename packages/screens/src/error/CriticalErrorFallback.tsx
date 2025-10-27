@@ -18,6 +18,7 @@ import screensI18n from '../lib/i18n';
 interface CriticalErrorFallbackProps {
   error: Error;
   resetError: () => void;
+  onReportBug?: (error: Error) => void;
 }
 
 /**
@@ -27,6 +28,7 @@ interface CriticalErrorFallbackProps {
 export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
   error,
   resetError,
+  onReportBug,
 }) => {
   const colorScheme = useColorScheme();
 
@@ -112,10 +114,17 @@ export const CriticalErrorFallback: React.FC<CriticalErrorFallbackProps> = ({
             </YStack>
           </YStack>
 
-          {/* Restart Button - Bottom anchored, red for critical */}
-          <Button variant="destructive" size="large" onPress={resetError} fullWidth>
-            {screensI18n.t('errors.critical.button')}
-          </Button>
+          {/* Action Buttons - Bottom anchored */}
+          <YStack width="100%" gap="$3">
+            <Button variant="destructive" size="large" onPress={resetError} fullWidth>
+              {screensI18n.t('errors.critical.button')}
+            </Button>
+            {onReportBug && (
+              <Button variant="secondary" size="large" onPress={() => onReportBug(error)} fullWidth>
+                {screensI18n.t('errors.critical.reportBug')}
+              </Button>
+            )}
+          </YStack>
         </YStack>
       </YStack>
     </TamaguiProvider>

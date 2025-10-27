@@ -148,3 +148,34 @@ export function handleUnhandledRejection(reason: unknown, promise: Promise<unkno
   // Report to Instabug if available
   reportErrorToInstabug(error);
 }
+
+/**
+ * Manually trigger bug report UI
+ * This allows users to report bugs directly from error screens
+ */
+export function showBugReportUI(error?: Error): void {
+  try {
+    // Check if Instabug is initialized via platform
+    if (platform.isInstabugInitialized?.()) {
+      // Dynamically import Instabug to avoid circular dependencies
+      const Instabug = require('instabug-reactnative').default;
+      const BugReporting = require('instabug-reactnative').BugReporting;
+
+      if (error) {
+        // Report the error first
+        reportErrorToInstabug(error);
+      }
+
+      // Show the bug reporting UI
+      if (BugReporting && typeof BugReporting.show === 'function') {
+        BugReporting.show();
+      } else if (Instabug && typeof Instabug.show === 'function') {
+        Instabug.show();
+      }
+    } else {
+      platform.log('warn', '[Error Handler] Instabug not initialized, cannot show bug report UI');
+    }
+  } catch (instabugError) {
+    platform.log('warn', '[Error Handler] Failed to show bug report UI:', instabugError);
+  }
+}

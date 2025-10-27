@@ -6,7 +6,12 @@ import {
 import React from 'react';
 import ErrorBoundary from 'react-native-error-boundary';
 
-import { ErrorType, classifyError, handleReactError } from '../utils/errorHandling';
+import {
+  ErrorType,
+  classifyError,
+  handleReactError,
+  showBugReportUI,
+} from '../utils/errorHandling';
 
 interface FRWErrorBoundaryProps {
   children: React.ReactNode;
@@ -25,13 +30,31 @@ export const FRWErrorBoundary: React.FC<FRWErrorBoundaryProps> = ({ children }) 
 
     switch (errorType) {
       case ErrorType.NETWORK:
-        return <NetworkErrorFallback error={error} resetError={resetError} />;
+        return (
+          <NetworkErrorFallback
+            error={error}
+            resetError={resetError}
+            onReportBug={showBugReportUI}
+          />
+        );
       case ErrorType.CRITICAL:
-        return <CriticalErrorFallback error={error} resetError={resetError} />;
+        return (
+          <CriticalErrorFallback
+            error={error}
+            resetError={resetError}
+            onReportBug={showBugReportUI}
+          />
+        );
       case ErrorType.RENDERING:
       case ErrorType.UNKNOWN:
       default:
-        return <GenericErrorFallback error={error} resetError={resetError} />;
+        return (
+          <GenericErrorFallback
+            error={error}
+            resetError={resetError}
+            onReportBug={showBugReportUI}
+          />
+        );
     }
   };
 

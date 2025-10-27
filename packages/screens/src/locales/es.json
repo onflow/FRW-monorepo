@@ -142,17 +142,20 @@
     "generic": {
       "title": "Algo salió mal",
       "message": "Encontramos un error inesperado. Por favor, inténtalo de nuevo.",
-      "button": "Intentar de nuevo"
+      "button": "Intentar de nuevo",
+      "reportBug": "Reportar Error"
     },
     "network": {
       "title": "Problema de conexión",
       "message": "No se puede conectar a la red. Por favor, verifica tu conexión e inténtalo de nuevo.",
-      "button": "Reintentar"
+      "button": "Reintentar",
+      "reportBug": "Reportar Error"
     },
     "critical": {
       "title": "Error crítico",
       "message": "Ocurrió un error crítico. Por favor, reinicia la aplicación.",
-      "button": "Reiniciar aplicación"
+      "button": "Reiniciar aplicación",
+      "reportBug": "Reportar Error"
     }
   },
   "nft": {

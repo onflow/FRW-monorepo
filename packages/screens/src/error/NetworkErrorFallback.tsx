@@ -18,6 +18,7 @@ import screensI18n from '../lib/i18n';
 interface NetworkErrorFallbackProps {
   error: Error;
   resetError: () => void;
+  onReportBug?: (error: Error) => void;
 }
 
 /**
@@ -27,6 +28,7 @@ interface NetworkErrorFallbackProps {
 export const NetworkErrorFallback: React.FC<NetworkErrorFallbackProps> = ({
   error,
   resetError,
+  onReportBug,
 }) => {
   const colorScheme = useColorScheme();
 
@@ -107,10 +109,17 @@ export const NetworkErrorFallback: React.FC<NetworkErrorFallbackProps> = ({
             </YStack>
           </YStack>
 
-          {/* Retry Button - Bottom anchored */}
-          <Button variant="inverse" size="large" onPress={resetError} fullWidth>
-            {screensI18n.t('errors.network.button')}
-          </Button>
+          {/* Action Buttons - Bottom anchored */}
+          <YStack width="100%" gap="$3">
+            <Button variant="inverse" size="large" onPress={resetError} fullWidth>
+              {screensI18n.t('errors.network.button')}
+            </Button>
+            {onReportBug && (
+              <Button variant="secondary" size="large" onPress={() => onReportBug(error)} fullWidth>
+                {screensI18n.t('errors.network.reportBug')}
+              </Button>
+            )}
+          </YStack>
         </YStack>
       </YStack>
     </TamaguiProvider>
