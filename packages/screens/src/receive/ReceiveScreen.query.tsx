@@ -12,13 +12,13 @@ import {
   Text,
   YStack,
   Button,
-  Image,
   AccountCard,
 } from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
+import QRCodeStyled from 'react-native-qrcode-styled';
 
 /**
  * Receive Assets Screen - displays QR code for receiving assets
@@ -28,9 +28,8 @@ export function ReceiveScreen(): ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Store hooks
-  const { selectedAccount, setSelectedAccount, qrCodeDataUrl, isGeneratingQR, error } =
-    useReceiveStore();
+  // Store hooks - QR code now generated client-side with QRCodeStyled
+  const { selectedAccount, setSelectedAccount } = useReceiveStore();
 
   // Profile hooks
   const allProfiles = useAllProfiles();
@@ -70,13 +69,6 @@ export function ReceiveScreen(): ReactElement {
       setSelectedAccount(currentAccount);
     }
   }, [currentAccount, selectedAccount, setSelectedAccount]);
-
-  // Generate QR code when selected account changes
-  useEffect(() => {
-    if (selectedAccount?.address) {
-      useReceiveStore.getState().generateQRCode(selectedAccount.address);
-    }
-  }, [selectedAccount?.address]);
 
   // Fetch balance for selected account
   const { data: balanceData } = useQuery({
@@ -145,14 +137,19 @@ export function ReceiveScreen(): ReactElement {
   );
 
   // Handle share QR code
+  // TODO: Re-implement sharing with styled QR code
+  // Option 1: Use react-native-view-shot to capture QR component
+  // Option 2: Generate base64 QR via bridge as fallback
   const handleShareQRCode = useCallback(async () => {
-    if (!selectedAccount?.address || !qrCodeDataUrl) {
-      logger.warn('Cannot share QR code: missing address or QR data');
+    if (!selectedAccount?.address) {
+      logger.warn('Cannot share QR code: missing address');
       return;
     }
 
     try {
-      await bridge.shareQRCode(selectedAccount.address, qrCodeDataUrl);
+      // For now, generate simple QR code via bridge for sharing
+      const qrDataUrl = await bridge.generateQRCode(selectedAccount.address);
+      await bridge.shareQRCode(selectedAccount.address, qrDataUrl);
       logger.debug('QR code shared successfully');
     } catch (error) {
       logger.error('Failed to share QR code:', error);
@@ -161,7 +158,7 @@ export function ReceiveScreen(): ReactElement {
         type: 'error',
       });
     }
-  }, [selectedAccount, qrCodeDataUrl, t]);
+  }, [selectedAccount, t]);
 
   // Render account card
   const renderAccountCard = () => {
@@ -187,35 +184,9 @@ export function ReceiveScreen(): ReactElement {
     );
   };
 
-  // Render QR code section
+  // Render QR code section with styled QR code
   const renderQRCode = () => {
-    if (isGeneratingQR) {
-      return (
-        <YStack items="center" justify="center" width={283} height={283}>
-          <Text color="$textSecondary">{t('receive.generatingQR')}</Text>
-        </YStack>
-      );
-    }
-
-    if (error) {
-      return (
-        <YStack items="center" justify="center" width={283} height={283} gap="$3">
-          <Text color="$error">{error}</Text>
-          <Button
-            size="$3"
-            onPress={() => {
-              if (selectedAccount?.address) {
-                useReceiveStore.getState().generateQRCode(selectedAccount.address);
-              }
-            }}
-          >
-            {t('common.retry')}
-          </Button>
-        </YStack>
-      );
-    }
-
-    if (!qrCodeDataUrl) {
+    if (!selectedAccount?.address) {
       return (
         <YStack items="center" justify="center" width={283} height={283}>
           <Text color="$textSecondary">{t('receive.noQRCode')}</Text>
@@ -225,12 +196,31 @@ export function ReceiveScreen(): ReactElement {
 
     return (
       <YStack items="center" justify="center" width={283} height={283}>
-        <Image
-          source={{ uri: qrCodeDataUrl }}
-          width={283}
-          height={283}
-          borderRadius={16}
-          resizeMode="contain"
+        <QRCodeStyled
+          data={selectedAccount.address}
+          style={{
+            backgroundColor: 'transparent',
+            borderRadius: 16,
+          }}
+          padding={20}
+          pieceSize={8}
+          pieceBorderRadius={4}
+          isPiecesGlued
+          color={isEVM ? '#627EEA' : '#00EF8B'} // EVM blue or Flow green
+          logo={{
+            href: require('../assets/flow-logo.webp'),
+            padding: 4,
+            scale: 0.22,
+          }}
+          outerEyesOptions={{
+            borderRadius: [20, 20, 0, 20],
+            color: '#000000',
+          }}
+          innerEyesOptions={{
+            borderRadius: 10,
+            color: isEVM ? '#627EEA' : '#00EF8B',
+          }}
+          errorCorrectionLevel="H"
         />
       </YStack>
     );
@@ -280,7 +270,7 @@ export function ReceiveScreen(): ReactElement {
           borderWidth={1}
           rounded="$4"
           onPress={handleShareQRCode}
-          disabled={!qrCodeDataUrl || isGeneratingQR}
+          disabled={!selectedAccount?.address}
         >
           <Text fontSize="$4" fontWeight="600" color="$text">
             {t('receive.shareQRCode', 'Share QR Code')}

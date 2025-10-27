@@ -794,7 +794,7 @@ importers:
         version: 7.28.4
       '@onflow/fcl':
         specifier: ^1.13.1
-        version: 1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)(zod@3.25.76)
+        version: 1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
@@ -921,6 +921,12 @@ importers:
       react-i18next:
         specifier: ^15.6.1
         version: 15.7.3(i18next@24.2.3(typescript@5.7.2))(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)(typescript@5.7.2)
+      react-native-qrcode-styled:
+        specifier: ^0.4.0
+        version: 0.4.0(react-native-svg@15.14.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
+      react-native-svg:
+        specifier: ^15.14.0
+        version: 15.14.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
     devDependencies:
       '@babel/runtime':
         specifier: ^7.28.3
@@ -1157,7 +1163,7 @@ importers:
         version: 7.28.4
       '@onflow/fcl':
         specifier: ^1.12.4
-        version: 1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)(zod@3.25.76)
+        version: 1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context
@@ -1191,7 +1197,7 @@ importers:
         version: 5.8.0
       '@onflow/fcl':
         specifier: ^1.13.1
-        version: 1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)(zod@3.25.76)
+        version: 1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)
       '@onflow/frw-cadence':
         specifier: workspace:*
         version: link:../cadence
@@ -7412,6 +7418,9 @@ packages:
   fast-safe-stringify@2.1.1:
     resolution: {integrity: sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA==}
 
+  fast-text-encoding@1.0.6:
+    resolution: {integrity: sha512-VhXlQgj9ioXCqGstD37E/HBeqEGV/qOD/kmbVG8h5xKBYvM1L3lR1Zn4555cQ8GkYbJa8aJSipLPndE1k6zK2w==}
+
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
@@ -9847,6 +9856,11 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
+  qrcode@1.5.4:
+    resolution: {integrity: sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+
   qs@6.13.0:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
     engines: {node: '>=0.6'}
@@ -9931,6 +9945,9 @@ packages:
     peerDependencies:
       react: 19.0.0
 
+  react-fast-compare@3.2.2:
+    resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
+
   react-freeze@1.0.4:
     resolution: {integrity: sha512-r4F0Sec0BLxWicc7HEyo2x3/2icUTrRmDjaaRyzzn+7aDyFZliszMDOgLVwSnQnYENOlL1o569Ze2HZefk8clA==}
     engines: {node: '>=10'}
@@ -10007,6 +10024,14 @@ packages:
       react: 19.0.0
       react-native: 0.79.2
 
+  react-native-qrcode-styled@0.4.0:
+    resolution: {integrity: sha512-j5C5LFOr9KdAqm1snQX8UQH9RFRSH4FY1/7Ts/UvtR/5A9rmb61ZzIIW5d0RteY1D+DWVfnXDMhLmTJXXRgKpg==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      react: 19.0.0
+      react-native: 0.79.2
+      react-native-svg: '*'
+
   react-native-reanimated@3.19.1:
     resolution: {integrity: sha512-ILL0FSNzSVIg6WuawrsMBvNxk2yJFiTUcahimXDAeNiE/09eagVUlHhYWXAAmH0umvAOafBaGjO7YfBhUrf5ZQ==}
     peerDependencies:
@@ -10028,6 +10053,12 @@ packages:
 
   react-native-svg@15.13.0:
     resolution: {integrity: sha512-/YPK+PAAXg4T0x2d2vYPvqqAhOYid2bRKxUVT7STIyd1p2JxWmsGQkfZxXCkEFN7TwLfIyVlT5RimT91Pj/qXw==}
+    peerDependencies:
+      react: 19.0.0
+      react-native: 0.79.2
+
+  react-native-svg@15.14.0:
+    resolution: {integrity: sha512-B3gYc7WztcOT4N54AtUutbe0Nuqqh/nkresY0fAXzUHYLsWuIu/yGiCCD3DKfAs6GLv5LFtWTu7N333Q+e3bkg==}
     peerDependencies:
       react: 19.0.0
       react-native: 0.79.2
@@ -14394,6 +14425,100 @@ snapshots:
       - google-protobuf
       - utf-8-validate
 
+  '@onflow/fcl-wc@6.0.6(@onflow/fcl-core@1.21.1)(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@onflow/config': 1.6.1
+      '@onflow/fcl-core': 1.21.1
+      '@onflow/util-invariant': 1.2.5
+      '@onflow/util-logger': 1.3.4
+      '@walletconnect/modal': 2.7.0(@types/react@19.1.13)(react@19.0.0)
+      '@walletconnect/types': 2.21.8
+      '@walletconnect/universal-provider': 2.21.8(typescript@5.7.2)(zod@3.25.76)
+      '@walletconnect/utils': 2.21.8(typescript@5.7.2)(zod@3.25.76)
+      postcss-cli: 11.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)
+      preact: 10.27.2
+      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2))
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@onflow/util-config'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@types/react'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/functions'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - ioredis
+      - jiti
+      - postcss
+      - react
+      - ts-node
+      - tsx
+      - typescript
+      - uploadthing
+      - utf-8-validate
+      - zod
+
+  '@onflow/fcl-wc@6.0.6(@onflow/fcl-core@1.21.1)(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@onflow/config': 1.6.1
+      '@onflow/fcl-core': 1.21.1
+      '@onflow/util-invariant': 1.2.5
+      '@onflow/util-logger': 1.3.4
+      '@walletconnect/modal': 2.7.0(@types/react@19.1.13)(react@19.0.0)
+      '@walletconnect/types': 2.21.8
+      '@walletconnect/universal-provider': 2.21.8(typescript@5.7.2)(zod@3.25.76)
+      '@walletconnect/utils': 2.21.8(typescript@5.7.2)(zod@3.25.76)
+      postcss-cli: 11.0.1(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.5)
+      preact: 10.27.2
+      tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@onflow/util-config'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@types/react'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/functions'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - ioredis
+      - jiti
+      - postcss
+      - react
+      - ts-node
+      - tsx
+      - typescript
+      - uploadthing
+      - utf-8-validate
+      - zod
+
   '@onflow/fcl-wc@6.0.6(@onflow/fcl-core@1.21.1)(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)(zod@3.25.76)':
     dependencies:
       '@babel/runtime': 7.28.4
@@ -14430,6 +14555,120 @@ snapshots:
       - bufferutil
       - db0
       - encoding
+      - ioredis
+      - jiti
+      - postcss
+      - react
+      - ts-node
+      - tsx
+      - typescript
+      - uploadthing
+      - utf-8-validate
+      - zod
+
+  '@onflow/fcl@1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@onflow/config': 1.6.1
+      '@onflow/fcl-core': 1.21.1
+      '@onflow/fcl-wc': 6.0.6(@onflow/fcl-core@1.21.1)(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)
+      '@onflow/interaction': 0.0.11
+      '@onflow/rlp': 1.2.4
+      '@onflow/sdk': 1.10.1
+      '@onflow/types': 1.4.2
+      '@onflow/util-actor': 1.3.5
+      '@onflow/util-address': 1.2.4
+      '@onflow/util-invariant': 1.2.5
+      '@onflow/util-logger': 1.3.4
+      '@onflow/util-rpc': 0.0.3
+      '@onflow/util-semver': 1.0.4
+      '@onflow/util-template': 1.2.4
+      '@onflow/util-uid': 1.2.4
+      '@walletconnect/types': 2.21.8
+      abort-controller: 3.0.0
+      cross-fetch: 4.1.0
+      events: 3.3.0
+      sha3: 2.1.4
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@onflow/util-config'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@types/react'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/functions'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - google-protobuf
+      - ioredis
+      - jiti
+      - postcss
+      - react
+      - ts-node
+      - tsx
+      - typescript
+      - uploadthing
+      - utf-8-validate
+      - zod
+
+  '@onflow/fcl@1.20.1(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@onflow/config': 1.6.1
+      '@onflow/fcl-core': 1.21.1
+      '@onflow/fcl-wc': 6.0.6(@onflow/fcl-core@1.21.1)(@types/react@19.1.13)(jiti@2.5.1)(postcss@8.5.6)(react@19.0.0)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2))(tsx@4.20.5)(typescript@5.7.2)
+      '@onflow/interaction': 0.0.11
+      '@onflow/rlp': 1.2.4
+      '@onflow/sdk': 1.10.1
+      '@onflow/types': 1.4.2
+      '@onflow/util-actor': 1.3.5
+      '@onflow/util-address': 1.2.4
+      '@onflow/util-invariant': 1.2.5
+      '@onflow/util-logger': 1.3.4
+      '@onflow/util-rpc': 0.0.3
+      '@onflow/util-semver': 1.0.4
+      '@onflow/util-template': 1.2.4
+      '@onflow/util-uid': 1.2.4
+      '@walletconnect/types': 2.21.8
+      abort-controller: 3.0.0
+      cross-fetch: 4.1.0
+      events: 3.3.0
+      sha3: 2.1.4
+    transitivePeerDependencies:
+      - '@azure/app-configuration'
+      - '@azure/cosmos'
+      - '@azure/data-tables'
+      - '@azure/identity'
+      - '@azure/keyvault-secrets'
+      - '@azure/storage-blob'
+      - '@capacitor/preferences'
+      - '@deno/kv'
+      - '@netlify/blobs'
+      - '@onflow/util-config'
+      - '@planetscale/database'
+      - '@react-native-async-storage/async-storage'
+      - '@types/react'
+      - '@upstash/redis'
+      - '@vercel/blob'
+      - '@vercel/functions'
+      - '@vercel/kv'
+      - aws4fetch
+      - bufferutil
+      - db0
+      - encoding
+      - google-protobuf
       - ioredis
       - jiti
       - postcss
@@ -20552,6 +20791,8 @@ snapshots:
 
   fast-safe-stringify@2.1.1: {}
 
+  fast-text-encoding@1.0.6: {}
+
   fast-uri@3.1.0: {}
 
   fast-xml-parser@4.5.3:
@@ -23034,6 +23275,14 @@ snapshots:
       camelcase-css: 2.0.1
       postcss: 8.5.6
 
+  postcss-load-config@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2)):
+    dependencies:
+      lilconfig: 3.1.3
+      yaml: 2.8.1
+    optionalDependencies:
+      postcss: 8.5.6
+      ts-node: 10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2)
+
   postcss-load-config@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2)):
     dependencies:
       lilconfig: 3.1.3
@@ -23255,6 +23504,12 @@ snapshots:
       pngjs: 5.0.0
       yargs: 15.4.1
 
+  qrcode@1.5.4:
+    dependencies:
+      dijkstrajs: 1.0.3
+      pngjs: 5.0.0
+      yargs: 15.4.1
+
   qs@6.13.0:
     dependencies:
       side-channel: 1.1.0
@@ -23377,6 +23632,8 @@ snapshots:
       react: 19.0.0
       scheduler: 0.25.0
 
+  react-fast-compare@3.2.2: {}
+
   react-freeze@1.0.4(react@19.0.0):
     dependencies:
       react: 19.0.0
@@ -23440,6 +23697,15 @@ snapshots:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
 
+  react-native-qrcode-styled@0.4.0(react-native-svg@15.14.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      fast-text-encoding: 1.0.6
+      qrcode: 1.5.4
+      react: 19.0.0
+      react-fast-compare: 3.2.2
+      react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
+      react-native-svg: 15.14.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
+
   react-native-reanimated@3.19.1(@babel/core@7.28.4)(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
     dependencies:
       '@babel/core': 7.28.4
@@ -23474,6 +23740,14 @@ snapshots:
       warn-once: 0.1.1
 
   react-native-svg@15.13.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      css-select: 5.2.2
+      css-tree: 1.1.3
+      react: 19.0.0
+      react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
+      warn-once: 0.1.1
+
+  react-native-svg@15.14.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
     dependencies:
       css-select: 5.2.2
       css-tree: 1.1.3
@@ -24623,6 +24897,33 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
+  tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2)):
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.6.0
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.3
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.7
+      lilconfig: 3.1.3
+      micromatch: 4.0.8
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.1.1
+      postcss: 8.5.6
+      postcss-import: 15.1.0(postcss@8.5.6)
+      postcss-js: 4.1.0(postcss@8.5.6)
+      postcss-load-config: 4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2))
+      postcss-nested: 6.2.0(postcss@8.5.6)
+      postcss-selector-parser: 6.1.2
+      resolve: 1.22.10
+      sucrase: 3.35.0
+    transitivePeerDependencies:
+      - ts-node
+
   tailwindcss@3.4.17(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2)):
     dependencies:
       '@alloc/quick-lru': 5.2.0
@@ -24854,6 +25155,27 @@ snapshots:
       source-map: 0.7.6
       typescript: 5.7.2
       webpack: 5.101.3(@swc/core@1.13.5)(webpack-cli@4.10.0)
+
+  ts-node@10.9.2(@swc/core@1.13.5)(@types/node@20.19.16)(typescript@5.7.2):
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.11
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 20.19.16
+      acorn: 8.15.0
+      acorn-walk: 8.3.4
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.7.2
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    optionalDependencies:
+      '@swc/core': 1.13.5
+    optional: true
 
   ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.5)(typescript@5.7.2):
     dependencies:
