@@ -57,7 +57,7 @@ export function ProfileList({
   if (isLoading) {
     // Skeleton loading for profiles list
     return (
-      <YStack gap="$3" p={0}>
+      <YStack gap="$3" p="$4">
         {Array.from({ length: 2 }).map((_, idx) => (
           <YStack key={`profile-skel-${idx}`} gap="$3">
             {/* Profile header skeleton */}

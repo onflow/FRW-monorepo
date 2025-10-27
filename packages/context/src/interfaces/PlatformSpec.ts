@@ -52,6 +52,7 @@ export interface PlatformSpec {
   getWalletAccounts(): Promise<WalletAccountsResponse>;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
   getSelectedAccount(): Promise<WalletAccount>;
+  getCurrentUserUid?(): Promise<string | null>;
 
   // Transaction monitoring and post-transaction actions
   listenTransaction?(

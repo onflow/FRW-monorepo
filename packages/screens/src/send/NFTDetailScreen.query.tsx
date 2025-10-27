@@ -1,4 +1,4 @@
-import { navigation, bridge } from '@onflow/frw-context';
+import { navigation, bridge, logger } from '@onflow/frw-context';
 import { useSendStore, sendSelectors, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
 import { type NFTModel } from '@onflow/frw-types';
 import {

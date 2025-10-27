@@ -2,7 +2,7 @@ import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ToastProvider } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
-import { extensionTamaguiConfig, SurgeModal } from '@onflow/frw-ui';
+import { extensionTamaguiConfig, PortalProvider, SurgeModal } from '@onflow/frw-ui';
 import React, { useEffect, useState } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
@@ -155,34 +155,36 @@ const App = ({ wallet }: { wallet: any }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
-        <ToastProvider>
-          <QueryProvider>
-            <div className="t_dark" style={{ minHeight: '100vh' }}>
-              <WalletProvider wallet={wallet}>
-                <Main />
-              </WalletProvider>
+      <PortalProvider shouldAddRootHost>
+        <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
+          <ToastProvider>
+            <QueryProvider>
+              <div className="t_dark" style={{ minHeight: '100vh' }}>
+                <WalletProvider wallet={wallet}>
+                  <Main />
+                </WalletProvider>
 
-              <SurgeModal
-                visible={isSurgeModalVisible}
-                transactionFee={surgeData?.maxFee || '- 500.00'}
-                multiplier={surgeData?.multiplier?.toString() || '4'}
-                title={chrome.i18n.getMessage('Surge__Modal__Title')}
-                transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
-                surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
-                description={chrome.i18n.getMessage(
-                  'Surge__Modal__Description',
-                  Number(surgeData?.multiplier || 4).toFixed(2)
-                )}
-                holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
-                onClose={handleSurgeModalClose}
-                onAgree={handleSurgeModalAgree}
-                isLoading={false}
-              />
-            </div>
-          </QueryProvider>
-        </ToastProvider>
-      </TamaguiProvider>
+                <SurgeModal
+                  visible={isSurgeModalVisible}
+                  transactionFee={surgeData?.maxFee || '- 500.00'}
+                  multiplier={surgeData?.multiplier?.toString() || '4'}
+                  title={chrome.i18n.getMessage('Surge__Modal__Title')}
+                  transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
+                  surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
+                  description={chrome.i18n.getMessage(
+                    'Surge__Modal__Description',
+                    Number(surgeData?.multiplier || 4).toFixed(2)
+                  )}
+                  holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
+                  onClose={handleSurgeModalClose}
+                  onAgree={handleSurgeModalAgree}
+                  isLoading={false}
+                />
+              </div>
+            </QueryProvider>
+          </ToastProvider>
+        </TamaguiProvider>
+      </PortalProvider>
     </ThemeProvider>
   );
 };

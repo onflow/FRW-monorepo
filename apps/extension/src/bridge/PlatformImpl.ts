@@ -8,6 +8,7 @@ import {
   type WalletAccountsResponse,
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
+import { extractUidFromJwt } from '@onflow/frw-utils';
 
 import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
 
@@ -183,6 +184,20 @@ class ExtensionPlatformImpl implements PlatformSpec {
       throw new Error('getSelectedAccount method not available on wallet controller');
     }
     return await this.walletController.getSelectedAccount();
+  }
+
+  async getCurrentUserUid(): Promise<string | null> {
+    try {
+      if (this.walletController?.getCurrentUserUid) {
+        return (await this.walletController.getCurrentUserUid()) ?? null;
+      }
+
+      const token = await this.getJWT();
+      return extractUidFromJwt(token) ?? null;
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to resolve current user uid', error);
+      return null;
+    }
   }
 
   async getAddressBookContacts(): Promise<any[]> {

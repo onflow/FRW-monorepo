@@ -92,6 +92,10 @@
     "inaccessible": "アクセス不可",
     "confirmAddress": "アドレスを確認",
     "firstTimeSendMessage": "このアドレスへの送信は初回の可能性があります。送信先アドレスを確認してください。",
+    "newContactTitle": "新しい連絡先",
+    "contactNameLabel": "連絡先名",
+    "contactNamePlaceholder": "名前を入力",
+    "addToAddressBookButton": "アドレス帳に追加",
     "sendSNFTs": "S/NFTを送信",
     "sendNFTs": "NFTを送信",
     "change": "変更",
@@ -110,7 +114,9 @@
     "noProfiles": "プロファイルがありません",
     "noProfilesFound": "プロファイルが見つかりません",
     "failedToLoadRecipients": "受信者の読み込みに失敗しました",
-    "copied": "コピーしました！"
+    "copied": "コピーしました！",
+    "addressBookAdded": "アドレス帳に追加しました",
+    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました"
   },
   "buttons": {
     "retry": "再試行",

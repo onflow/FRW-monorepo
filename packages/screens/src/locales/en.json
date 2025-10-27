@@ -95,6 +95,10 @@
     "inaccessible": "Inaccessible",
     "confirmAddress": "Confirm address",
     "firstTimeSendMessage": "We noticed this may be your first time sending to this address. Please confirm the destination address.",
+    "newContactTitle": "New contact",
+    "contactNameLabel": "Contact name",
+    "contactNamePlaceholder": "Enter a name",
+    "addToAddressBookButton": "Add to address book",
     "sendSNFTs": "Send S/NFTs",
     "sendNFTs": "Send NFTs",
     "change": "Change",
@@ -113,7 +117,9 @@
     "noProfiles": "No Profiles",
     "noProfilesFound": "No profiles found",
     "failedToLoadRecipients": "Failed to load recipients",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "addressBookAdded": "Added to address book",
+    "failedToAddToAddressBook": "Failed to add to address book"
   },
   "buttons": {
     "retry": "Retry",
