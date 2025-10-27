@@ -42,6 +42,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
 import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
+import com.flowfoundation.wallet.network.BASE_HOST
 import org.onflow.flow.models.FlowAddress
 
 private val TAG = FclMessageHandler::class.java.simpleName
@@ -345,7 +346,7 @@ class FclMessageHandler(
             FUNCTION_SIGN_AS_PAYER, FeePayerSignRequest(
                 message = FeePayerSignRequest.FeePayerMessage(envelopeMessage = fcl.body.message),
                 network = chainNetWorkString()
-            )
+            ), BASE_HOST
         )
 
         safeRun {
