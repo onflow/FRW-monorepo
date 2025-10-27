@@ -31,6 +31,7 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.manager.walletconnect.model.WatchAsset
 import com.flowfoundation.wallet.manager.walletconnect.model.walletConnectWalletInfoResponse
+import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -569,7 +570,7 @@ private suspend fun WCRequest.respondSignPayer() {
         FUNCTION_SIGN_AS_PAYER, FeePayerSignRequest(
             message = FeePayerSignRequest.FeePayerMessage(envelopeMessage = message),
             network = chainNetWorkString()
-        )
+        ), BASE_HOST
     )
 
     safeRun {
