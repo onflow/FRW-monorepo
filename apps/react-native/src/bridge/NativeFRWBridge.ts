@@ -50,6 +50,9 @@ export interface Spec extends TurboModule {
   getSignKeyIndex(): number;
   // QR code scanning method
   scanQRCode(): Promise<string>;
+  // QR code generation methods
+  generateQRCode(data: string): Promise<string>;
+  shareQRCode(address: string, qrCodeDataUrl: string): Promise<void>;
   // Close react native method
   closeRN(id?: string | null): void;
   // Free gas settings method

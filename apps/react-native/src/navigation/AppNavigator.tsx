@@ -5,6 +5,7 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  ReceiveScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -46,6 +47,7 @@ export type RootStackParamList = {
   SendTo: undefined;
   SendTokens: undefined;
   SendSummary: undefined;
+  Receive: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -276,6 +278,13 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={SendSummaryScreen}
               options={{
                 headerTitle: t('navigation.sending'),
+              }}
+            />
+            <Stack.Screen
+              name="Receive"
+              component={ReceiveScreen}
+              options={{
+                headerTitle: t('navigation.receive'),
               }}
             />
           </Stack.Group>
