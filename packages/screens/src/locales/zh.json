@@ -116,7 +116,18 @@
     "failedToLoadRecipients": "无法加载收件人",
     "copied": "已复制！",
     "addressBookAdded": "已添加到地址簿",
-    "failedToAddToAddressBook": "添加到地址簿失败"
+    "failedToAddToAddressBook": "添加到地址簿失败",
+    "addressCopied": "地址已复制到剪贴板",
+    "failedToCopy": "无法复制地址",
+    "failedToShare": "无法分享二维码"
+  },
+  "receive": {
+    "title": "接收资产",
+    "scanToReceive": "扫描接收",
+    "shareQRCode": "分享二维码",
+    "generatingQR": "生成二维码中...",
+    "noQRCode": "二维码不可用",
+    "evmWarning": "请确保仅在Flow EVM网络上向此地址发送资产。发送到其他网络上此地址的资产将会丢失。"
   },
   "buttons": {
     "retry": "重试",

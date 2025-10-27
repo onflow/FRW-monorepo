@@ -116,7 +116,18 @@
     "failedToLoadRecipients": "Error al cargar destinatarios",
     "copied": "¡Copiado!",
     "addressBookAdded": "Añadido a la libreta de direcciones",
-    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones"
+    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones",
+    "addressCopied": "Dirección copiada al portapapeles",
+    "failedToCopy": "Error al copiar la dirección",
+    "failedToShare": "Error al compartir el código QR"
+  },
+  "receive": {
+    "title": "Recibir Activos",
+    "scanToReceive": "Escanear para recibir",
+    "shareQRCode": "Compartir Código QR",
+    "generatingQR": "Generando código QR...",
+    "noQRCode": "No hay código QR disponible",
+    "evmWarning": "Asegúrese de enviar activos solo a esta dirección en la red Flow EVM. Los activos enviados a esta dirección en otras redes se perderán."
   },
   "buttons": {
     "retry": "Reintentar",
