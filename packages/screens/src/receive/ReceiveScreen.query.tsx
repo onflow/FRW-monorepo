@@ -175,7 +175,6 @@ export function ReceiveScreen(): ReactElement {
     return (
       <AccountCard
         account={accountForCard}
-        title={t('receive.yourAccount', 'Your Account')}
         showCopyButton={true}
         onCopyAddress={handleCopyAddress}
         showEditButton={false}

@@ -128,7 +128,6 @@
   },
   "receive": {
     "title": "Receive Assets",
-    "yourAccount": "Your Account",
     "scanToReceive": "Scan to receive",
     "shareQRCode": "Share QR Code",
     "generatingQR": "Generating QR code...",

@@ -61,16 +61,18 @@ export function AccountCard({
       cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
     >
-      {/* Title */}
-      <Text
-        fontSize="$3"
-        mb={isSendTokensScreen ? '$8' : '$1'}
-        fontWeight="400"
-        // color="$textSecondary"
-        lineHeight={16}
-      >
-        {title}
-      </Text>
+      {/* Title - only shown if provided */}
+      {title && (
+        <Text
+          fontSize="$3"
+          mb={isSendTokensScreen ? '$8' : '$1'}
+          fontWeight="400"
+          // color="$textSecondary"
+          lineHeight={16}
+        >
+          {title}
+        </Text>
+      )}
 
       {/* Account Container */}
       <XStack py="$2" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>

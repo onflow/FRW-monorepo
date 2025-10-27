@@ -87,7 +87,7 @@ export interface NFTCollectionRowProps {
 
 export interface AccountCardProps {
   account: WalletAccount;
-  title: string;
+  title?: string; // Optional - if not provided, title is hidden
   isLoading?: boolean;
   // Modal-style selection props
   accounts?: WalletAccount[];
