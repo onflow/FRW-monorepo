@@ -133,8 +133,7 @@
     "shareQRCode": "Share QR Code",
     "generatingQR": "Generating QR code...",
     "noQRCode": "No QR code available",
-    "evmWarning": "Please ensure you only send assets to this address on the Flow EVM network. Assets sent to this address on other networks will be lost.",
-    "flowWarning": "Please ensure you only send assets to this address on the Flow network. Assets sent to this address on other networks will be lost."
+    "evmWarning": "Please ensure you only send assets to this address on the Flow EVM network. Assets sent to this address on other networks will be lost."
   },
   "buttons": {
     "retry": "Retry",

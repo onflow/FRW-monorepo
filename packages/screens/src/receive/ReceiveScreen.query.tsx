@@ -71,6 +71,13 @@ export function ReceiveScreen(): ReactElement {
     }
   }, [currentAccount, selectedAccount, setSelectedAccount]);
 
+  // Generate QR code when selected account changes
+  useEffect(() => {
+    if (selectedAccount?.address) {
+      useReceiveStore.getState().generateQRCode(selectedAccount.address);
+    }
+  }, [selectedAccount?.address]);
+
   // Fetch balance for selected account
   const { data: balanceData } = useQuery({
     queryKey: tokenQueryKeys.balance(selectedAccount?.address || '', network),
@@ -102,6 +109,40 @@ export function ReceiveScreen(): ReactElement {
     // This should open the same UI as the "From Account" selector in send workflow
     logger.debug('Edit account clicked - should open account selector');
   }, []);
+
+  // Handle copy address - using same pattern as SendToScreen
+  const handleCopyAddress = useCallback(
+    async (address: string) => {
+      try {
+        // Check platform and use appropriate clipboard method (same as SendToScreen)
+        const platform = bridge.getPlatform();
+
+        // Use RN clipboard via global injected helper when not web/extension
+        if (platform !== 'extension' && typeof window === 'undefined') {
+          const rnClipboard = (globalThis as any).clipboard;
+          if (rnClipboard?.setString) {
+            rnClipboard.setString(address);
+          }
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(address);
+        }
+
+        // Show success toast
+        toast.show({
+          title: t('messages.addressCopied'),
+          type: 'success',
+        });
+        logger.debug('Address copied to clipboard:', address);
+      } catch (error) {
+        logger.error('Failed to copy address:', error);
+        toast.show({
+          title: t('messages.failedToCopy'),
+          type: 'error',
+        });
+      }
+    },
+    [t]
+  );
 
   // Handle share QR code
   const handleShareQRCode = useCallback(async () => {
@@ -138,7 +179,9 @@ export function ReceiveScreen(): ReactElement {
       <AccountCard
         account={accountForCard}
         title={t('receive.yourAccount', 'Your Account')}
-        showEditButton={true}
+        showCopyButton={true}
+        onCopyAddress={handleCopyAddress}
+        showEditButton={false}
         enableModalSelection={false}
       />
     );
@@ -218,20 +261,14 @@ export function ReceiveScreen(): ReactElement {
           {/* QR Code */}
           {renderQRCode()}
 
-          {/* Warning Text */}
-          <YStack width={269} items="center">
-            <Text fontSize="$3" fontWeight="400" lineHeight={16.8} color="$textSecondary">
-              {isEVM
-                ? t(
-                    'receive.evmWarning',
-                    'Please ensure you only send assets to this address on the Flow EVM network. Assets sent to this address on other networks will be lost.'
-                  )
-                : t(
-                    'receive.flowWarning',
-                    'Please ensure you only send assets to this address on the Flow network. Assets sent to this address on other networks will be lost.'
-                  )}
-            </Text>
-          </YStack>
+          {/* Warning Text - Only for EVM addresses */}
+          {isEVM && (
+            <YStack width={269} items="center">
+              <Text fontSize="$3" fontWeight="400" lineHeight={16.8} color="$textSecondary">
+                {t('receive.evmWarning')}
+              </Text>
+            </YStack>
+          )}
         </YStack>
 
         {/* Share Button */}

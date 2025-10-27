@@ -1,4 +1,4 @@
-import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
+import { CheckCircle, Close, Copy, Edit, Link } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { ScrollView, XStack, YStack } from 'tamagui';
 
@@ -32,6 +32,8 @@ export function AccountCard({
   modalTitle = 'Select Account',
   enableModalSelection = false,
   showEditButton = false,
+  showCopyButton = false,
+  onCopyAddress,
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
@@ -173,12 +175,31 @@ export function AccountCard({
           </YStack>
         </XStack>
 
-        {/* Edit Icon */}
-        {showEditButton && (
-          <XStack width={24} height={24} items="center" justify="center">
-            <Edit size={24} color="#767676" theme="outline" />
-          </XStack>
-        )}
+        {/* Action Icons */}
+        <XStack gap="$2" items="center">
+          {/* Copy Icon */}
+          {showCopyButton && (
+            <XStack
+              width={24}
+              height={24}
+              items="center"
+              justify="center"
+              onPress={() => onCopyAddress?.(account.address)}
+              cursor="pointer"
+              opacity={0.7}
+              hoverStyle={{ opacity: 1 }}
+            >
+              <Copy size={24} color="#FFFFFF" theme="outline" />
+            </XStack>
+          )}
+
+          {/* Edit Icon */}
+          {showEditButton && (
+            <XStack width={24} height={24} items="center" justify="center" cursor="pointer">
+              <Edit size={24} color="#767676" theme="outline" />
+            </XStack>
+          )}
+        </XStack>
       </XStack>
     </YStack>
   );

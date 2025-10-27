@@ -95,6 +95,8 @@ export interface AccountCardProps {
   modalTitle?: string;
   enableModalSelection?: boolean;
   showEditButton?: boolean;
+  showCopyButton?: boolean;
+  onCopyAddress?: (address: string) => void;
 }
 
 export interface NFTCoverProps {
