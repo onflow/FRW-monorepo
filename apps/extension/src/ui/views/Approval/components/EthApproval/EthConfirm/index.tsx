@@ -199,7 +199,7 @@ const EthConfirm = ({ params }: ConnectProps) => {
       >
         <SurgeFeeSection
           transactionFee={surgeData?.maxFee || '0.002501'}
-          showWarning={isSurgeWarningVisible}
+          showWarning={requestParams.method === 'personal_sign' ? false : isSurgeWarningVisible}
           surgeMultiplier={surgeData?.multiplier || 1.0}
           isSurgePricingActive={surgeData?.active || false}
         />
@@ -244,7 +244,7 @@ const EthConfirm = ({ params }: ConnectProps) => {
         }
         title="Surge pricing"
         variant="warning"
-        visible={isSurgeWarningVisible}
+        visible={requestParams.method === 'personal_sign' ? false : isSurgeWarningVisible}
         onClose={() => setIsSurgeWarningVisible(false)}
         onButtonPress={() => {
           setIsSurgeWarningVisible(false);
