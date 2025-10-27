@@ -652,6 +652,99 @@ class ProviderController extends BaseController {
     const result = await this.signTypeData(request);
     return result;
   };
+
+  // eth_coinbase - Returns the current account address
+  ethCoinbase = async ({ session: { origin } }) => {
+    if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
+      return null;
+    }
+
+    try {
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+      if (!eoaInfo || !eoaInfo.address) {
+        return null;
+      }
+      return ensureEvmAddressPrefix(eoaInfo.address);
+    } catch (error) {
+      consoleError('Error getting EOA address for eth_coinbase:', error);
+      return null;
+    }
+  };
+
+  // net_version - Returns the network version
+  netVersion = async () => {
+    try {
+      const network = await Wallet.getNetwork();
+      return network === 'mainnet' ? MAINNET_CHAIN_ID : TESTNET_CHAIN_ID;
+    } catch (error) {
+      consoleError('Error getting network version:', error);
+      return MAINNET_CHAIN_ID; // Default to mainnet version
+    }
+  };
+
+  // eth_sign - Signs arbitrary data (different from personal_sign)
+  ethSign = async ({ data, approvalRes, session }) => {
+    if (!data.params) return;
+    const [address, message] = data.params;
+
+    try {
+      // Get the Ethereum private key using secp256k1 algorithm
+      const ethereumPrivateKey = await getEthereumPrivateKey();
+      const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+
+      // Derive the Ethereum address from the private key
+      const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);
+
+      // Validate that the requested address matches the derived address
+      if (address.toLowerCase() !== ethereumAddress.toLowerCase()) {
+        throw new Error('Address mismatch');
+      }
+
+      // eth_sign signs the raw message hash (32 bytes), not prefixed like personal_sign
+      // Convert message to bytes and hash it
+      const messageBytes =
+        typeof message === 'string'
+          ? message.startsWith('0x')
+            ? Buffer.from(message.slice(2), 'hex')
+            : Buffer.from(message, 'utf8')
+          : Buffer.from(message);
+
+      // Hash the message using keccak256
+      const messageHash = ethers.keccak256(messageBytes);
+
+      // Sign the hash using eth-signer
+      const { signature } = await EthSigner.signPersonalMessage(privateKeyBytes, messageHash);
+
+      // Create history entry
+      signTextHistoryService.createHistory({
+        address: ethereumAddress,
+        text: message,
+        origin: session.origin,
+        type: 'ethSign',
+      });
+
+      return signature;
+    } catch (error) {
+      consoleError('Error in ethSign:', error);
+      throw error;
+    }
+  };
+
+  // personal_ecRecover - Recovers the address from a signature
+  personalEcRecover = async ({ data }) => {
+    if (!data.params) return;
+    const [message, signature] = data.params;
+
+    try {
+      // Use ethers to recover the address from the signature
+      // ethers.utils.recoverAddress handles the personal message prefix automatically
+      const recoveredAddress = ethers.verifyMessage(message, signature);
+      return recoveredAddress;
+    } catch (error) {
+      consoleError('Error in personal_ecRecover:', error);
+      throw error;
+    }
+  };
 }
 
 export default new ProviderController();
