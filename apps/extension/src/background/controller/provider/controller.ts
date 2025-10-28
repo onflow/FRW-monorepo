@@ -1,12 +1,16 @@
+import { ServiceContext } from '@onflow/frw-context';
 import { EthSigner, BIP44_PATHS, type EthLegacyTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
+import * as ethUtil from 'ethereumjs-util';
 import { intToHex } from 'ethereumjs-util';
 import { ethers } from 'ethers';
+import { encode } from 'rlp';
 import Web3 from 'web3';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';
+import { initializePlatform } from '@/bridge/PlatformImpl';
 import {
   keyringService,
   permissionService,
@@ -17,7 +21,6 @@ import walletManager from '@/core/service/wallet-manager';
 import { seedWithPathAndPhrase2PublicPrivateKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import { ensureEvmAddressPrefix, isValidEthereumAddress, consoleError } from '@/shared/utils';
-// Import EthSigner directly from the services
 
 import notificationService from '../notification';
 
@@ -94,6 +97,20 @@ async function signTypeData(typedData: Record<string, unknown>) {
 }
 
 class ProviderController extends BaseController {
+  // Method to initialize ServiceContext for SendTransaction workflow
+  private async initializeServiceContext() {
+    if (!ServiceContext.isInitialized()) {
+      // Import the platform implementation dynamically to avoid circular dependencies
+      const platform = initializePlatform();
+
+      // Ensure wallet controller is set on the platform
+      platform.setWalletController(Wallet);
+
+      // Initialize ServiceContext with the platform
+      ServiceContext.initialize(platform);
+    }
+  }
+
   ethRpc = async (data): Promise<any> => {
     const network = await Wallet.getNetwork(); // Get the current network
     const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
@@ -204,33 +221,81 @@ class ProviderController extends BaseController {
     const gas = transactionParams.gas || '0x1C9C380';
     const gasPrice = transactionParams.gasPrice || '0x0';
 
-    // Get the current nonce from the network
-    const nonce = await this.getTransactionCount(from);
     try {
-      // Get the Ethereum private key using EVM BIP44 path
-      const ethereumPrivateKey = await getEthereumPrivateKey();
-      const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
-
-      // Get the current chain ID
+      // Get the current network and EOA account info
       const network = await Wallet.getNetwork();
-      const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
+      const eoaInfo = await walletManager.getEOAAccountInfo();
 
-      // Create the transaction object
-      const transaction: EthLegacyTransaction = {
-        chainId: chainId,
-        nonce: parseInt(nonce, 16),
-        gasLimit: gas,
-        gasPrice: gasPrice,
+      const parentAddress = await Wallet.getParentAddress();
+      const coaAddress = await Wallet.getEvmAddress();
+      if (!parentAddress) {
+        throw new Error('Parent address not found');
+      }
+
+      if (!eoaInfo || !eoaInfo.address) {
+        throw new Error('EOA account not found');
+      }
+
+      if (!coaAddress) {
+        throw new Error('EVM account not found');
+      }
+
+      // Verify the transaction is from the correct EOA account
+      if (from.toLowerCase() !== eoaInfo.address.toLowerCase()) {
+        throw new Error('Transaction from address does not match EOA account');
+      }
+
+      // Initialize ServiceContext if not already initialized
+      await this.initializeServiceContext();
+
+      // Get the cadence service from ServiceContext
+      const cadenceService = ServiceContext.current().cadence;
+
+      const callback = async (trxData: any) => {
+        // Get the current nonce from the network
+        const nonce = await this.getTransactionCount(trxData.from);
+
+        // Get the Ethereum private key using EVM BIP44 path
+        const ethereumPrivateKey = await getEthereumPrivateKey();
+        const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+
+        // Get the current chain ID
+        const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
+
+        // Create the transaction object
+        const transaction: EthLegacyTransaction = {
+          chainId: chainId,
+          nonce: parseInt(nonce, 16),
+          gasLimit: trxData.gasLimit || gas,
+          gasPrice: gasPrice,
+          to: trxData.to,
+          value: trxData.value || '0x0',
+          data: trxData.data || '0x',
+        };
+
+        // Sign the transaction using EthSigner
+        const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
+
+        return signedTransaction;
+      };
+
+      // Create transaction data for EVM call
+      const trxData = {
+        from: from,
         to: to,
         value: value,
         data: dataValue,
+        gasLimit: gas,
       };
 
-      // Sign the transaction using EthSigner
-      const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
+      // Get the signed transaction from callback
+      const signedTransaction = await callback(trxData);
 
-      // Send the raw transaction to the network
-      const result = await this.sendRawTransaction(signedTransaction.rawTransaction);
+      // Convert hex string to byte array for eoaCallContract
+      const rlpEncodedTransaction = this.convertHexToByteArray(signedTransaction.rawTransaction);
+
+      // Call eoaCallContract with the encoded transaction
+      const result = await cadenceService.eoaCallContract(rlpEncodedTransaction, eoaInfo.address);
 
       // Send message to close approval popup after successful transaction
       chrome.runtime.sendMessage({
@@ -238,7 +303,44 @@ class ProviderController extends BaseController {
         data: { success: true, result },
       });
 
-      return result;
+      const addressNonce = await Wallet.getNonce(eoaInfo.address.replace('0x', ''));
+      await Wallet.dapSendEvmTX(to, gas, value, dataValue, eoaInfo.address);
+      const keccak256 = (data: Buffer) => {
+        return ethUtil.keccak256(data);
+      };
+      const transactionValue = value === '0x' ? BigInt(0) : BigInt(value);
+      const directCallTxType = 255;
+      const contractCallSubType = 5;
+      const noceNumber = Number(addressNonce);
+      const dataBuffer = Buffer.from(dataValue.slice(2), 'hex');
+      const dataArray = Uint8Array.from(dataBuffer);
+      const gasLimit = gas || 30000000;
+      let toAddress: string;
+      if (to.startsWith('0x')) {
+        toAddress = to.substring(2);
+      } else {
+        toAddress = to;
+      }
+      const transaction = [
+        noceNumber, // nonce
+        0, // Fixed value
+        gasLimit, // Gas Limit
+        Buffer.from(toAddress, 'hex'), // To Address
+        transactionValue, // Value
+        Buffer.from(dataArray), // Call Data
+        directCallTxType, // Fixed value
+        BigInt(eoaInfo.address.startsWith('0x') ? eoaInfo.address : '0x' + eoaInfo.address),
+        contractCallSubType, // SubType
+      ];
+      const encodedData = encode(transaction);
+      const hash = keccak256(Buffer.from(encodedData));
+      const hashHexString = Buffer.from(hash).toString('hex');
+      console.log('transaction: hash: ', transaction, hashHexString);
+      if (hashHexString) {
+        return hashHexString;
+      } else {
+        return null;
+      }
     } catch (error) {
       chrome.runtime.sendMessage({
         type: 'CLOSE_APPROVAL_POPUP',
@@ -247,6 +349,23 @@ class ProviderController extends BaseController {
       throw error;
     }
   };
+
+  /**
+   * Convert hex string to byte array for eoaCallContract
+   * @param hexString - Hex string to convert
+   * @returns Array of bytes
+   */
+  private convertHexToByteArray(hexString: string): number[] {
+    if (hexString.startsWith('0x')) {
+      hexString = hexString.slice(2);
+    }
+    const dataArray = new Uint8Array(hexString.length / 2);
+    for (let i = 0; i < hexString.length; i += 2) {
+      dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+    }
+    const regularArray = Array.from(dataArray);
+    return regularArray;
+  }
 
   /**
    * Get the current transaction count (nonce) for an address

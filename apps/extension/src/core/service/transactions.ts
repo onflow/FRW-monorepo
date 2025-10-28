@@ -425,7 +425,13 @@ export class TransactionService {
     return result;
   }
 
-  async dapSendEvmTX(to: string, gas: bigint, value: string, data: string): Promise<string | null> {
+  async dapSendEvmTX(
+    to: string,
+    gas: bigint,
+    value: string,
+    data: string,
+    from: string
+  ): Promise<string | null> {
     if (to.startsWith('0x')) {
       to = to.substring(2);
     }
@@ -466,14 +472,14 @@ export class TransactionService {
     // Convert hex to BigInt directly to avoid potential number overflow
     const transactionValue = value === '0x' ? BigInt(0) : BigInt(value);
 
-    await userWalletService.sendTransaction(script, [
-      fcl.arg(to, fcl.t.String),
-      fcl.arg(transactionValue.toString(), fcl.t.UInt256),
-      fcl.arg(regularArray, fcl.t.Array(fcl.t.UInt8)),
-      fcl.arg(gasLimit.toString(), fcl.t.UInt64),
-    ]);
+    // await userWalletService.sendTransaction(script, [
+    //   fcl.arg(to, fcl.t.String),
+    //   fcl.arg(transactionValue.toString(), fcl.t.UInt256),
+    //   fcl.arg(regularArray, fcl.t.Array(fcl.t.UInt8)),
+    //   fcl.arg(gasLimit.toString(), fcl.t.UInt64),
+    // ]);
 
-    const evmAddress = await userWalletService.getCurrentEvmAddress();
+    const evmAddress = from;
     if (!evmAddress) {
       throw new Error('EVM address not found');
     }
@@ -504,8 +510,6 @@ export class TransactionService {
       return ethUtil.keccak256(data);
     };
 
-    // [nonce, gasPrice, gasLimit, to.addressData, value, data, v, r, s]
-
     const directCallTxType = 255;
     const contractCallSubType = 5;
     const noceNumber = Number(addressNonce);
@@ -524,6 +528,7 @@ export class TransactionService {
     const encodedData = encode(transaction);
     const hash = keccak256(Buffer.from(encodedData));
     const hashHexString = Buffer.from(hash).toString('hex');
+    console.log('transaction: dapSendEvmTX: ', transaction, hashHexString);
     if (hashHexString) {
       return hashHexString;
     } else {

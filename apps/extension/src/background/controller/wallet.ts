@@ -850,6 +850,14 @@ export class WalletController extends BaseController {
     return wallet;
   };
 
+  getSelectedAccount = async (): Promise<WalletAccount> => {
+    const wallet = await this.returnParentWallet();
+    if (!wallet) {
+      throw new Error('No wallet selected or wallet is locked');
+    }
+    return wallet;
+  };
+
   getEvmWallet = async (): Promise<WalletAccount | null> => {
     const wallet = await userWalletService.getEvmAccount();
 
@@ -942,8 +950,8 @@ export class WalletController extends BaseController {
     transactionService.bridgeToFlow(flowIdentifier, amount, tokenResult);
   sendEvmTransaction = async (to: string, gas: string | number, value: string, data: string) =>
     transactionService.sendEvmTransaction(to, gas, value, data);
-  dapSendEvmTX = async (to: string, gas: bigint, value: string, data: string) =>
-    transactionService.dapSendEvmTX(to, gas, value, data);
+  dapSendEvmTX = async (to: string, gas: bigint, value: string, data: string, from: string) =>
+    transactionService.dapSendEvmTX(to, gas, value, data, from);
   getNonce = async (hexEncodedAddress: string): Promise<string> =>
     transactionService.getNonce(hexEncodedAddress);
   unlinkChildAccount = async (address: string): Promise<string> =>

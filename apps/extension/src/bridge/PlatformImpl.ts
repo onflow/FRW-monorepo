@@ -421,11 +421,21 @@ class ExtensionPlatformImpl implements PlatformSpec {
     const self = this;
     return async (account: any) => {
       const selectedAccount = await self.getSelectedAccount();
-      const address = selectedAccount.parentAddress;
+      // Use parentAddress if available (for child accounts), otherwise use address (for main accounts)
+      const address = selectedAccount.parentAddress || selectedAccount.address;
       const keyId = await self.getSignKeyIndex();
       const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
 
       const KEY_ID = Number(keyId) || 0;
+
+      // Debug: Log the address being used for authorization
+      console.log('Proposer function - selected account:', {
+        accountType: selectedAccount.type,
+        address: selectedAccount.address,
+        parentAddress: selectedAccount.parentAddress,
+        finalAddress: ADDRESS,
+        keyId: KEY_ID,
+      });
 
       return {
         ...account,
