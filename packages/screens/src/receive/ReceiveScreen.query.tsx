@@ -249,6 +249,8 @@ export function ReceiveScreen(): ReactElement {
               title=""
               showEditButton={allAccounts.length > 1}
               actionIcon="chevron"
+              showCopyButton={true}
+              onCopyAddress={handleCopyAddress}
             />
           </YStack>
         )}
@@ -256,7 +258,7 @@ export function ReceiveScreen(): ReactElement {
         {/* QR Code Section */}
         <YStack bg="$bg1" rounded="$4" p="$4" items="center" gap="$5" width="100%">
           {/* Title */}
-          <Text fontSize={16} fontWeight="400" color="$text" lineHeight={19}>
+          <Text fontSize={16} fontWeight="700" color="$text" lineHeight={19}>
             {t('receive.scanToReceive', 'Scan to receive')}
           </Text>
 
@@ -265,8 +267,15 @@ export function ReceiveScreen(): ReactElement {
 
           {/* Warning Text - Only for EVM addresses */}
           {isEVM && (
-            <YStack width={269} items="center">
-              <Text fontSize="$3" fontWeight="400" lineHeight={16.8} color="$textSecondary">
+            <YStack width="100%" px="$4">
+              <Text
+                width="100%"
+                fontSize="$3"
+                fontWeight="400"
+                lineHeight={16.8}
+                color="$textSecondary"
+                ta="center"
+              >
                 {t('receive.evmWarning')}
               </Text>
             </YStack>
@@ -274,7 +283,7 @@ export function ReceiveScreen(): ReactElement {
         </YStack>
 
         {/* Share QR Code Button */}
-        <YStack pt="$4" mb={'$10'}>
+        <YStack pt="$4" mb={'$10'} width="100%">
           <YStack
             width="100%"
             height={52}

@@ -1,4 +1,4 @@
-import { CheckCircle, Close, Edit, Link, ChevronRight } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit, Link, ChevronRight, Copy } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
@@ -32,6 +32,8 @@ export interface AccountSelectorProps {
   showEditButton?: boolean;
   onEditClick?: () => void;
   actionIcon?: 'edit' | 'chevron'; // Icon to show when showEditButton is true
+  showCopyButton?: boolean;
+  onCopyAddress?: (address: string) => void;
 }
 
 export function AccountSelector({
@@ -42,6 +44,8 @@ export function AccountSelector({
   showEditButton = false,
   onEditClick,
   actionIcon = 'edit',
+  showCopyButton = false,
+  onCopyAddress,
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
 
@@ -170,24 +174,44 @@ export function AccountSelector({
             </YStack>
           </XStack>
 
-          {/* Action Icon */}
-          {showEditButton && (
-            <XStack
-              width={24}
-              height={24}
-              items="center"
-              justify="center"
-              pressStyle={{ opacity: 0.7 }}
-              onPress={handleEditClick}
-              cursor="pointer"
-            >
-              {actionIcon === 'chevron' ? (
-                <ChevronRight size={24} color="#767676" theme="outline" />
-              ) : (
-                <Edit size={24} color="#767676" theme="outline" />
-              )}
-            </XStack>
-          )}
+          {/* Action Icons */}
+          <XStack gap="$2" items="center">
+            {/* Copy Icon */}
+            {showCopyButton && (
+              <XStack
+                width={24}
+                height={24}
+                items="center"
+                justify="center"
+                onPress={() => onCopyAddress?.(currentAccount.address)}
+                cursor="pointer"
+                opacity={0.7}
+                hoverStyle={{ opacity: 1 }}
+                mr="$2"
+              >
+                <Copy size={24} color="#FFFFFF" theme="outline" />
+              </XStack>
+            )}
+
+            {/* Edit/Chevron Icon */}
+            {showEditButton && (
+              <XStack
+                width={24}
+                height={24}
+                items="center"
+                justify="center"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={handleEditClick}
+                cursor="pointer"
+              >
+                {actionIcon === 'chevron' ? (
+                  <ChevronRight size={24} color="#767676" theme="outline" />
+                ) : (
+                  <Edit size={24} color="#767676" theme="outline" />
+                )}
+              </XStack>
+            )}
+          </XStack>
         </XStack>
       </YStack>
 
