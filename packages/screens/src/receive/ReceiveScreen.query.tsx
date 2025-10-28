@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCodeStyled from 'react-native-qrcode-styled';
+import { captureRef } from 'react-native-view-shot';
 
 /**
  * Receive Assets Screen - displays QR code for receiving assets
@@ -30,6 +31,7 @@ export function ReceiveScreen(): ReactElement {
   const isLoadingProfiles = useProfileStore((state) => state.isLoading);
   const profileError = useProfileStore((state) => state.error);
   const profilesLoadedRef = useRef(false);
+  const qrCodeRef = useRef(null);
 
   // Initialize profiles on mount
   useEffect(() => {
@@ -155,10 +157,7 @@ export function ReceiveScreen(): ReactElement {
     [t]
   );
 
-  // Handle share QR code
-  // TODO: Re-implement sharing with styled QR code
-  // Option 1: Use react-native-view-shot to capture QR component
-  // Option 2: Generate base64 QR via bridge as fallback
+  // Handle share QR code - capture the styled QR view and share it
   const handleShareQRCode = useCallback(async () => {
     if (!selectedAccount?.address) {
       logger.warn('Cannot share QR code: missing address');
@@ -166,9 +165,25 @@ export function ReceiveScreen(): ReactElement {
     }
 
     try {
-      // For now, generate simple QR code via bridge for sharing
-      const qrDataUrl = await bridge.generateQRCode(selectedAccount.address);
-      await bridge.shareQRCode(selectedAccount.address, qrDataUrl);
+      // Capture the QR code view as a base64 image
+      if (!qrCodeRef.current) {
+        logger.error('QR code ref not available');
+        toast.show({
+          title: t('messages.failedToShare'),
+          type: 'error',
+        });
+        return;
+      }
+
+      logger.debug('Capturing QR code view...');
+      const uri = await captureRef(qrCodeRef, {
+        format: 'png',
+        quality: 1.0,
+        result: 'data-uri', // Returns base64 data URL
+      });
+
+      logger.debug('QR code captured, sharing...');
+      await bridge.shareQRCode(selectedAccount.address, uri);
       logger.debug('QR code shared successfully');
     } catch (error) {
       logger.error('Failed to share QR code:', error);
@@ -193,12 +208,23 @@ export function ReceiveScreen(): ReactElement {
     }
 
     return (
-      <YStack items="center" justify="center" width={283} height={283}>
+      <YStack
+        ref={qrCodeRef}
+        items="center"
+        justify="center"
+        width={283}
+        height={283}
+        bg="$white"
+        rounded={16}
+        mb="$4"
+      >
         <QRCodeStyled
           data={selectedAccount.address}
           style={{
             backgroundColor: 'transparent',
             borderRadius: 16,
+            width: 283,
+            height: 283,
           }}
           padding={20}
           pieceSize={8}
@@ -283,7 +309,7 @@ export function ReceiveScreen(): ReactElement {
         </YStack>
 
         {/* Share QR Code Button */}
-        <YStack pt="$4" mb={'$10'} width="100%">
+        <YStack pt="$2" mb={'$10'} width="100%">
           <YStack
             width="100%"
             height={52}
