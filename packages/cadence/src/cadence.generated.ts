@@ -465,7 +465,7 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 ///
 transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier: String, ids: [UInt256], recipient: Address) {
     let nftType: Type
-    let receiver: &{NonFungibleToken.Receiver}
+    let receiver: &{NonFungibleToken.Collection}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount
     let viewResolver: &{ViewResolver}
@@ -512,7 +512,7 @@ transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier
             let collectionCap = signer.capabilities.storage.issue<&{NonFungibleToken.Collection}>(collectionData.storagePath)
             signer.capabilities.publish(collectionCap, at: collectionData.publicPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
+        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Collection}>(collectionData.publicPath)
             ?? panic("Could not borrow Receiver from recipient's public capability path")
 
         /* --- Configure a ScopedFTProvider --- */
@@ -3012,7 +3012,7 @@ import StorageRent from 0xStorageRent
 transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, vaultIdentifier: String, amount: UInt256, recipient: Address) {
 
     let vaultType: Type
-    let receiver: &{FungibleToken.Receiver}
+    let receiver: &{FungibleToken.Vault}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Bridge) &EVM.CadenceOwnedAccount
 
@@ -3063,7 +3063,7 @@ transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, vaultIdentifi
             signer.capabilities.publish(receiverCap, at: vaultData.receiverPath)
             signer.capabilities.publish(metadataCap, at: vaultData.metadataPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{FungibleToken.Receiver}>(vaultData.receiverPath)
+        self.receiver = getAccount(recipient).capabilities.borrow<&{FungibleToken.Vault}>(vaultData.receiverPath)
             ?? panic("Could not borrow Vault from recipient's account")
 
         /* --- Configure a ScopedFTProvider --- */
@@ -3853,6 +3853,45 @@ transaction(amount: UFix64) {
       type: "transaction",
       args: (arg: any, t: any) => [
         arg(amount, t.UFix64),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
+  public async eoaCallContract(rlpEncodedTransaction: number[], coinbaseAddr: string) {
+    const code = `
+import FungibleToken from 0xFungibleToken
+import FlowToken from 0xFlowToken
+import EVM from 0xEVM
+
+transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String) {
+
+    prepare(signer: auth(Storage, EVM.Withdraw) &Account) {
+        let coinbase = EVM.addressFromString(coinbaseAddr)
+
+        let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
+        assert(
+            runResult.status == EVM.Status.successful,
+            message: "evm tx was not executed successfully."
+        )
+    }
+    
+    execute {
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "eoaCallContract",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(rlpEncodedTransaction, t.Array(t.UInt8)),
+        arg(coinbaseAddr, t.String),
       ],
       limit: 9999,
     };

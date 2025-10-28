@@ -356,7 +356,7 @@ describe('Test send strategies', () => {
   //   expect(txid.length).toBe(64);
   // });
 
-  // it('Test EoaToChildNftStrategy - Bridge NFT from EOA to Child', async () => {
+  // it('Test EoaToChildFtStrategy - Bridge FT from EOA to Child', async () => {
   //   const payload = {
   //     type: 'token',
   //     assetType: 'evm',
