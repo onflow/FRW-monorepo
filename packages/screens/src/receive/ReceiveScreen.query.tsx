@@ -235,30 +235,26 @@ export function ReceiveScreen(): ReactElement {
       <View
         ref={qrCodeRef}
         style={{
-          width: 323,
-          height: 323,
+          width: 283,
+          height: 283,
           backgroundColor: '#FFFFFF',
           borderRadius: 16,
           marginBottom: 16,
           overflow: 'hidden',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <QRCodeStyled
           data={selectedAccount.address}
           style={{
-            width: 323,
-            height: 323,
+            width: 283,
+            height: 283,
           }}
-          padding={20}
-          pieceSize={8}
+          padding={12}
           pieceBorderRadius={4}
           isPiecesGlued
           color={isEVM ? '#627EEA' : '#00EF8B'} // EVM blue or Flow green
-          logo={{
-            href: require('../assets/flow-logo.webp'),
-            padding: 4,
-            scale: 0.22,
-          }}
           outerEyesOptions={{
             borderRadius: [20, 20, 0, 20],
             color: '#000000',
@@ -267,7 +263,6 @@ export function ReceiveScreen(): ReactElement {
             borderRadius: 10,
             color: isEVM ? '#627EEA' : '#00EF8B',
           }}
-          errorCorrectionLevel="H"
         />
       </View>
     );
