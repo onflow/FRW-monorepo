@@ -6,7 +6,8 @@
     "selectTokens": "Seleccionar Tokens",
     "sendTokens": "Enviar Tokens",
     "nftDetails": "Detalles NFT",
-    "colorDemo": "Demo de Colores"
+    "colorDemo": "Demo de Colores",
+    "receive": "Recibir Activos"
   },
   "common": {
     "cancel": "Cancelar",
@@ -123,6 +124,7 @@
   },
   "receive": {
     "title": "Recibir Activos",
+    "receiveAccount": "Recibir en la Cuenta",
     "scanToReceive": "Escanear para recibir",
     "shareQRCode": "Compartir Código QR",
     "generatingQR": "Generando código QR...",

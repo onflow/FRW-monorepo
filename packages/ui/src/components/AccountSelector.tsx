@@ -1,4 +1,4 @@
-import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit, Link, ChevronRight } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
@@ -31,6 +31,7 @@ export interface AccountSelectorProps {
   title?: string;
   showEditButton?: boolean;
   onEditClick?: () => void;
+  actionIcon?: 'edit' | 'chevron'; // Icon to show when showEditButton is true
 }
 
 export function AccountSelector({
@@ -40,6 +41,7 @@ export function AccountSelector({
   title = 'From Account',
   showEditButton = false,
   onEditClick,
+  actionIcon = 'edit',
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
 
@@ -59,11 +61,13 @@ export function AccountSelector({
   return (
     <>
       {/* Current Account Display */}
-      <YStack width="100%" gap={12}>
-        {/* Title */}
-        <Text fontSize="$3" fontWeight="400" color="$textSecondary" lineHeight={16}>
-          {title}
-        </Text>
+      <YStack width="100%" gap={title ? 12 : 0}>
+        {/* Title - only render if not empty */}
+        {title && (
+          <Text fontSize="$3" fontWeight="400" color="$textSecondary" lineHeight={16}>
+            {title}
+          </Text>
+        )}
 
         {/* Account Container */}
         <XStack pb={'$2'} pl={5} pr={0} justify="space-between" items="center">
@@ -166,7 +170,7 @@ export function AccountSelector({
             </YStack>
           </XStack>
 
-          {/* Edit Icon */}
+          {/* Action Icon */}
           {showEditButton && (
             <XStack
               width={24}
@@ -177,7 +181,11 @@ export function AccountSelector({
               onPress={handleEditClick}
               cursor="pointer"
             >
-              <Edit size={24} color="#767676" theme="outline" />
+              {actionIcon === 'chevron' ? (
+                <ChevronRight size={24} color="#767676" theme="outline" />
+              ) : (
+                <Edit size={24} color="#767676" theme="outline" />
+              )}
             </XStack>
           )}
         </XStack>

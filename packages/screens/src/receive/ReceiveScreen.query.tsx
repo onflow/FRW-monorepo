@@ -6,14 +6,7 @@ import {
   tokenQueries,
   tokenQueryKeys,
 } from '@onflow/frw-stores';
-import {
-  BackgroundWrapper,
-  ExtensionHeader,
-  Text,
-  YStack,
-  Button,
-  AccountCard,
-} from '@onflow/frw-ui';
+import { BackgroundWrapper, ExtensionHeader, Text, YStack, AccountSelector } from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, type ReactElement } from 'react';
@@ -50,6 +43,11 @@ export function ReceiveScreen(): ReactElement {
   const bridgeAddress = bridge.getSelectedAddress() || '';
   const network = bridge.getNetwork() || 'mainnet';
 
+  // Get all accounts from profiles (similar to SelectTokensScreen)
+  const allAccounts = useMemo(() => {
+    return allProfiles.flatMap((profile) => profile.accounts);
+  }, [allProfiles]);
+
   // Find the currently selected account from profiles
   const currentAccount = useMemo(() => {
     for (const profile of allProfiles) {
@@ -65,10 +63,18 @@ export function ReceiveScreen(): ReactElement {
 
   // Set the current account when it changes
   useEffect(() => {
-    if (currentAccount && !selectedAccount) {
+    if (currentAccount) {
+      logger.debug('Setting selected account:', currentAccount);
       setSelectedAccount(currentAccount);
+    } else {
+      logger.warn(
+        'No current account found. Bridge address:',
+        bridgeAddress,
+        'Profiles loaded:',
+        allProfiles.length
+      );
     }
-  }, [currentAccount, selectedAccount, setSelectedAccount]);
+  }, [currentAccount, setSelectedAccount, bridgeAddress, allProfiles.length]);
 
   // Fetch balance for selected account
   const { data: balanceData } = useQuery({
@@ -95,12 +101,25 @@ export function ReceiveScreen(): ReactElement {
     return selectedAccount?.type === 'evm';
   }, [selectedAccount]);
 
-  // Navigate to account selector (same as Send flow)
-  const handleEditAccount = useCallback(() => {
-    // TODO: Navigate to account selector or show account picker modal
-    // This should open the same UI as the "From Account" selector in send workflow
-    logger.debug('Edit account clicked - should open account selector');
-  }, []);
+  // Prepare accounts with balance for AccountSelector
+  const accountsForSelector = useMemo(() => {
+    return allAccounts.map((account) => ({
+      ...account,
+      balance:
+        account.address === selectedAccount?.address ? balanceDisplay : account.balance || '0 FLOW',
+    }));
+  }, [allAccounts, selectedAccount?.address, balanceDisplay]);
+
+  // Handle account selection
+  const handleAccountSelect = useCallback(
+    (account: any) => {
+      logger.debug('Account selected:', account);
+      setSelectedAccount(account);
+      // Note: Bridge account selection is managed by the bridge itself
+      // The selected account will be updated through the selectedAccount state
+    },
+    [setSelectedAccount]
+  );
 
   // Handle copy address - using same pattern as SendToScreen
   const handleCopyAddress = useCallback(
@@ -160,28 +179,8 @@ export function ReceiveScreen(): ReactElement {
     }
   }, [selectedAccount, t]);
 
-  // Render account card
-  const renderAccountCard = () => {
-    if (!selectedAccount) {
-      return null;
-    }
-
-    // Transform to Account type expected by AccountCard
-    const accountForCard = {
-      ...selectedAccount,
-      balance: balanceDisplay,
-    };
-
-    return (
-      <AccountCard
-        account={accountForCard}
-        showCopyButton={true}
-        onCopyAddress={handleCopyAddress}
-        showEditButton={false}
-        enableModalSelection={false}
-      />
-    );
-  };
+  // Note: AccountSelector doesn't have built-in copy button like AccountCard
+  // User can still copy from the QR code section
 
   // Render QR code section with styled QR code
   const renderQRCode = () => {
@@ -237,13 +236,27 @@ export function ReceiveScreen(): ReactElement {
       )}
 
       <YStack flex={1} items="center" gap="$4" pt="$6" px="$4">
-        {/* Account Card */}
-        {renderAccountCard()}
+        {/* Account Selector - Show balance from React Query */}
+        {!isExtension && selectedAccount && (
+          <YStack bg="$bg1" rounded="$4" p={16} gap={12} width="100%">
+            <AccountSelector
+              currentAccount={{
+                ...selectedAccount,
+                balance: balanceDisplay,
+              }}
+              accounts={accountsForSelector}
+              onAccountSelect={handleAccountSelect}
+              title=""
+              showEditButton={allAccounts.length > 1}
+              actionIcon="chevron"
+            />
+          </YStack>
+        )}
 
         {/* QR Code Section */}
-        <YStack bg="$bg2" rounded="$4" p="$4" items="center" gap="$5" width="100%">
+        <YStack bg="$bg1" rounded="$4" p="$4" items="center" gap="$5" width="100%">
           {/* Title */}
-          <Text fontSize="$4" fontWeight="600" color="$text">
+          <Text fontSize={16} fontWeight="400" color="$text" lineHeight={19}>
             {t('receive.scanToReceive', 'Scan to receive')}
           </Text>
 
@@ -260,21 +273,31 @@ export function ReceiveScreen(): ReactElement {
           )}
         </YStack>
 
-        {/* Share Button */}
-        <Button
-          size="$5"
-          width="100%"
-          bg="transparent"
-          borderColor="$borderColor"
-          borderWidth={1}
-          rounded="$4"
-          onPress={handleShareQRCode}
-          disabled={!selectedAccount?.address}
-        >
-          <Text fontSize="$4" fontWeight="600" color="$text">
-            {t('receive.shareQRCode', 'Share QR Code')}
-          </Text>
-        </Button>
+        {/* Share QR Code Button */}
+        <YStack pt="$4" mb={'$10'}>
+          <YStack
+            width="100%"
+            height={52}
+            bg={!selectedAccount?.address ? '#6b7280' : '$text'}
+            rounded={16}
+            items="center"
+            justify="center"
+            borderWidth={1}
+            borderColor={!selectedAccount?.address ? '#6b7280' : '$text'}
+            opacity={!selectedAccount?.address ? 0.7 : 1}
+            pressStyle={{ opacity: 0.9 }}
+            onPress={!selectedAccount?.address ? undefined : handleShareQRCode}
+            cursor={!selectedAccount?.address ? 'not-allowed' : 'pointer'}
+          >
+            <Text
+              fontSize="$4"
+              fontWeight="600"
+              color={!selectedAccount?.address ? '$white' : '$bg'}
+            >
+              {t('receive.shareQRCode', 'Share QR Code')}
+            </Text>
+          </YStack>
+        </YStack>
       </YStack>
     </BackgroundWrapper>
   );

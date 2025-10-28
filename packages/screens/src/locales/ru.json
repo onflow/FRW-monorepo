@@ -6,7 +6,8 @@
     "selectTokens": "Выбрать токены",
     "sendTokens": "Отправить токены",
     "nftDetails": "Детали NFT",
-    "colorDemo": "Демо цветов"
+    "colorDemo": "Демо цветов",
+    "receive": "Получить активы"
   },
   "common": {
     "cancel": "Отмена",
@@ -123,6 +124,7 @@
   },
   "receive": {
     "title": "Получить активы",
+    "receiveAccount": "Получить на счет",
     "scanToReceive": "Сканировать для получения",
     "shareQRCode": "Поделиться QR-кодом",
     "generatingQR": "Генерация QR-кода...",

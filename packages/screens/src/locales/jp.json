@@ -6,7 +6,8 @@
     "selectTokens": "トークンを選択",
     "sendTokens": "トークンを送信",
     "nftDetails": "NFT詳細",
-    "colorDemo": "カラーデモ"
+    "colorDemo": "カラーデモ",
+    "receive": "資産を受け取る"
   },
   "common": {
     "cancel": "キャンセル",
@@ -123,6 +124,7 @@
   },
   "receive": {
     "title": "資産を受け取る",
+    "receiveAccount": "受け取るアカウント",
     "scanToReceive": "スキャンして受け取る",
     "shareQRCode": "QRコードを共有",
     "generatingQR": "QRコード生成中...",
