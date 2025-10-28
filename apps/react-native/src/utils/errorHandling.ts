@@ -87,7 +87,6 @@ export function getErrorContext(error: Error): Record<string, unknown> {
 export function logErrorWithContext(error: Error, additionalInfo?: Record<string, unknown>): void {
   const context = getErrorContext(error);
   const fullContext = additionalInfo ? { ...context, ...additionalInfo } : context;
-
   platform.log('error', '[Error Handler]', error.message, fullContext);
 }
 
@@ -96,16 +95,23 @@ export function logErrorWithContext(error: Error, additionalInfo?: Record<string
  */
 export function reportErrorToInstabug(error: Error): void {
   try {
-    // Check if Instabug is initialized via platform
-    if (platform.isInstabugInitialized?.()) {
-      // Dynamically import Instabug to avoid circular dependencies
-      const Instabug = require('instabug-reactnative').default;
-      if (Instabug && typeof Instabug.reportError === 'function') {
-        Instabug.reportError(error);
-      }
+    if (!platform.isInstabugInitialized?.()) {
+      return;
+    }
+
+    const { CrashReporting, NonFatalErrorLevel } = require('instabug-reactnative');
+    if (CrashReporting?.reportError) {
+      const errorType = classifyError(error);
+      const level =
+        errorType === ErrorType.CRITICAL
+          ? NonFatalErrorLevel.critical
+          : errorType === ErrorType.NETWORK
+            ? NonFatalErrorLevel.warning
+            : NonFatalErrorLevel.error;
+
+      CrashReporting.reportError(error, { level });
     }
   } catch (instabugError) {
-    // Silently fail - don't log to avoid potential recursion
     platform.log('warn', '[Error Handler] Failed to report to Instabug:', instabugError);
   }
 }
@@ -114,10 +120,7 @@ export function reportErrorToInstabug(error: Error): void {
  * Global error handler for React Error Boundaries
  */
 export function handleReactError(error: Error, stackTrace: string): void {
-  // Log with full context
   logErrorWithContext(error, { stackTrace, source: 'react-error-boundary' });
-
-  // Report to Instabug if available
   reportErrorToInstabug(error);
 }
 
@@ -125,10 +128,7 @@ export function handleReactError(error: Error, stackTrace: string): void {
  * Global error handler for JavaScript exceptions
  */
 export function handleGlobalError(error: Error, isFatal: boolean): void {
-  // Log with full context
   logErrorWithContext(error, { isFatal, source: 'global-js-exception' });
-
-  // Report to Instabug if available
   reportErrorToInstabug(error);
 }
 
@@ -136,64 +136,40 @@ export function handleGlobalError(error: Error, isFatal: boolean): void {
  * Handler for unhandled promise rejections
  */
 export function handleUnhandledRejection(reason: unknown, promise: Promise<unknown>): void {
-  // Convert reason to Error if it's not already
   const error = reason instanceof Error ? reason : new Error(String(reason));
-
-  // Log with full context
   logErrorWithContext(error, {
     source: 'unhandled-promise-rejection',
     promise: promise.toString(),
   });
-
-  // Report to Instabug if available
   reportErrorToInstabug(error);
 }
 
 /**
  * Manually trigger bug report UI
- * This allows users to report bugs directly from error screens
+ * Note: Instabug UI may not appear in debug mode with remote debugging enabled
  */
 export function showBugReportUI(error?: Error): void {
-  platform.log('debug', '[Error Handler] showBugReportUI called', { hasError: !!error });
-
   try {
-    // Check if Instabug is initialized via platform
-    const isInitialized = platform.isInstabugInitialized?.();
-    platform.log('debug', '[Error Handler] Instabug initialized:', isInitialized);
-
-    if (isInitialized) {
-      // Dynamically import Instabug to avoid circular dependencies
-      const Instabug = require('instabug-reactnative').default;
-      const BugReporting = require('instabug-reactnative').BugReporting;
-
-      platform.log('debug', '[Error Handler] Instabug modules loaded', {
-        hasInstabug: !!Instabug,
-        hasBugReporting: !!BugReporting,
-        hasBugReportingShow: !!(BugReporting && typeof BugReporting.show === 'function'),
-        hasInstabugShow: !!(Instabug && typeof Instabug.show === 'function'),
-      });
-
-      if (error) {
-        // Report the error first
-        platform.log('debug', '[Error Handler] Reporting error to Instabug');
-        reportErrorToInstabug(error);
-      }
-
-      // Show the bug reporting UI
-      if (BugReporting && typeof BugReporting.show === 'function') {
-        platform.log('debug', '[Error Handler] Calling BugReporting.show() with ReportType.bug');
-        const ReportType = require('instabug-reactnative').ReportType;
-        BugReporting.show(ReportType.bug, []);
-      } else if (Instabug && typeof Instabug.show === 'function') {
-        platform.log('debug', '[Error Handler] Calling Instabug.show()');
-        Instabug.show();
-      } else {
-        platform.log('warn', '[Error Handler] No show() method found on Instabug or BugReporting');
-      }
-    } else {
-      platform.log('warn', '[Error Handler] Instabug not initialized, cannot show bug report UI');
+    if (!platform.isInstabugInitialized?.()) {
+      platform.log('warn', '[Error Handler] Instabug not initialized');
+      return;
     }
-  } catch (instabugError) {
-    platform.log('error', '[Error Handler] Failed to show bug report UI:', instabugError);
+
+    const { BugReporting, ReportType } = require('instabug-reactnative');
+    if (!BugReporting?.show) {
+      platform.log('warn', '[Error Handler] BugReporting.show not available');
+      return;
+    }
+
+    // Report error first if provided
+    if (error) {
+      reportErrorToInstabug(error);
+    }
+
+    // Show bug report UI
+    // Note: In debug mode with remote debugging, UI may not appear (Instabug limitation)
+    BugReporting.show(ReportType.bug, []);
+  } catch (err) {
+    platform.log('error', '[Error Handler] Failed to show bug report UI:', err);
   }
 }
