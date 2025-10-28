@@ -3864,6 +3864,45 @@ transaction(amount: UFix64) {
   }
 
 
+  public async eoaCallContract(rlpEncodedTransaction: number[], coinbaseAddr: string) {
+    const code = `
+import FungibleToken from 0xFungibleToken
+import FlowToken from 0xFlowToken
+import EVM from 0xEVM
+
+transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String) {
+
+    prepare(signer: auth(Storage, EVM.Withdraw) &Account) {
+        let coinbase = EVM.addressFromString(coinbaseAddr)
+
+        let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
+        assert(
+            runResult.status == EVM.Status.successful,
+            message: "evm tx was not executed successfully."
+        )
+    }
+    
+    execute {
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "eoaCallContract",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(rlpEncodedTransaction, t.Array(t.UInt8)),
+        arg(coinbaseAddr, t.String),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
   public async eoaToCoaToFlow(rlpEncodedTransaction: number[], coinbaseAddr: string, amount: string, address: string) {
     const code = `
 import FungibleToken from 0xFungibleToken

@@ -18,7 +18,7 @@ const accounts = {
     address: process.env.TEST_MAIN_EOA_ACCOUNT_ADDRESS || '',
     pub: process.env.TEST_MAIN_EOA_ACCOUNT_PUBKEY,
     evmAddr: process.env.TEST_MAIN_EOA_ACCOUNT_COA,
-    eoaAddr: process.env.TEST_MAIN_EOA_ACCOUNT_EOA,
+    eoaAddr: process.env.TEST_MAIN_EOA_ACCOUNT_EOA || '',
     key: {
       type: 'hex',
       index: 0,

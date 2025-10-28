@@ -173,8 +173,9 @@ export function test2Authz() {
 export const evmTrxCallback = async (props: any) => {
   const evmProvider = new ethers.JsonRpcProvider('https://mainnet.evm.nodes.onflow.org');
 
-  const mnemonic = process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC || '';
-  const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+  // const mnemonic = process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC || '';
+  // const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
+  const wallet = new ethers.Wallet(process.env.TEST_MAIN_EOA_ACCOUNT_PK!);
   wallet.connect(evmProvider);
   const { trxData } = props;
   // add nonce

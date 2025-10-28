@@ -5,7 +5,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 // import { getTrx } from '../src/utils';
 // import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
-import { authz, payerAuthorization, bridgeAuthorizationOnly } from './utils/authz';
+import { authz, bridgeAuthorizationOnly } from './utils/authz';
+// import { convertHexToByteArray } from '../src/send/utils';
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ describe('Test NFT send strategies', () => {
     configureFCL('mainnet');
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        config.payer = payerAuthorization;
+        config.payer = authz;
         config.proposer = authz;
         config.authorizations = config.name.includes('WithPayer')
           ? [authz, bridgeAuthorizationOnly]
@@ -336,6 +337,16 @@ describe('Test NFT send strategies', () => {
   //   };
 
   //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   console.log(txid);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test EoaToChildNftStrategy - Bridge NFT from EOA to Child', async () => {
+  //   const trxData = await evmTrxCallback({
+  //     trxData: { from: '0x41aD2bc63A2059f9b623533d87fe99887D794847', to: mainAccount.eoaAddr, value: '0', data: '0x', gasLimit: 30_000_000 },
+  //   });
+  //   const rlpEncodedTransaction = convertHexToByteArray(trxData);
+  //   const txid = await cadenceService.eoaCallContract(rlpEncodedTransaction, mainAccount.eoaAddr);
   //   console.log(txid);
   //   expect(txid.length).toBe(64);
   // });
