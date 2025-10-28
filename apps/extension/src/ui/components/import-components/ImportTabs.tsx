@@ -45,6 +45,7 @@ const ImportTabs = ({
   setPath,
   phrase,
   setPhrase,
+  onRegisterNewProfile,
 }: {
   setMnemonic: (mnemonic: string) => void;
   setPk: (pk: string) => void;
@@ -58,6 +59,7 @@ const ImportTabs = ({
   setPath: (path: string) => void;
   phrase: string;
   setPhrase: (phrase: string) => void;
+  onRegisterNewProfile?: () => void;
 }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isSignLoading, setSignLoading] = useState(false);
@@ -199,15 +201,25 @@ const ImportTabs = ({
       </TabPanel>
       {!addressFound && (
         <ErrorModel
-          isOpen={setAddressFound}
+          isOpen={!addressFound}
           onOpenChange={setAddressFound}
           errorName={chrome.i18n.getMessage('No_Account_found')}
-          errorMessage={chrome.i18n.getMessage('We_cant_find')}
+          errorMessage={chrome.i18n.getMessage('Create_New_Profile_Description')}
+          customAction={onRegisterNewProfile ? true : undefined}
+          customActionText={chrome.i18n.getMessage('Register_New_Profile')}
+          onCustomAction={
+            onRegisterNewProfile
+              ? () => {
+                  setAddressFound(true);
+                  onRegisterNewProfile();
+                }
+              : undefined
+          }
         />
       )}
       {!newKey && (
         <ErrorModel
-          isOpen={setKeyNew}
+          isOpen={!newKey}
           onOpenChange={setKeyNew}
           errorName={chrome.i18n.getMessage('Publickey_already_exist')}
           errorMessage={chrome.i18n.getMessage('Please_import_or_register_a_new_key')}

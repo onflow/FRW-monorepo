@@ -3,12 +3,7 @@ import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import {
-  INITIAL_REGISTER_STATE,
-  registerReducer,
-  type RegisterState,
-  STEPS,
-} from '@/reducers';
+import { INITIAL_REGISTER_STATE, registerReducer, type RegisterState, STEPS } from '@/reducers';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
@@ -42,6 +37,15 @@ const Register = () => {
 
     checkWalletStatus();
   }, [usewallet]);
+
+  // Handle mnemonic from import flow
+  useEffect(() => {
+    if (location.state?.isFromImport && location.state?.mnemonic) {
+      dispatch({ type: 'SET_MNEMONIC' as any, payload: location.state.mnemonic });
+      // Skip the recovery phrase steps and go directly to username
+      dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.USERNAME });
+    }
+  }, [location.state]);
 
   const submitPassword = useCallback(
     async (newPassword: string) => {

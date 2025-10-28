@@ -18,6 +18,12 @@
   "Send": {
     "message": "Send"
   },
+  "Register_New_Profile": {
+    "message": "Register New Profile"
+  },
+  "Create_New_Profile_Description": {
+    "message": "Would you like to use this seed phrase to create a new profile on Flow?"
+  },
   "Swap": {
     "message": "Swap"
   },

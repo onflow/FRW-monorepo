@@ -124,6 +124,18 @@ const ImportProfile = () => {
     dispatch({ type: 'SET_GOOGLE_IMPORT', payload: { show: true, accounts } });
   };
 
+  const handleRegisterNewProfile = () => {
+    // Navigate to the register flow with the current mnemonic
+    navigate('/welcome/register', {
+      state: {
+        mnemonic: mnemonic,
+        path: path,
+        phrase: phrase,
+        isFromImport: true,
+      },
+    });
+  };
+
   if (showGoogleImport) {
     return (
       <Google
@@ -180,6 +192,7 @@ const ImportProfile = () => {
           setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}
           phrase={phrase}
           setPhrase={(p) => dispatch({ type: 'SET_PASSPHRASE', payload: p })}
+          onRegisterNewProfile={handleRegisterNewProfile}
         />
       )}
 

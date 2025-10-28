@@ -15,6 +15,12 @@
     "message": "ЭТО РАСШИРЕНИЕ ДЛЯ БЕТА-ТЕСТИРОВАНИЯ. ИСПОЛЬЗУЙТЕ НА СВОЙ СТРАХ.",
     "description": "Application Descrtipion"
   },
+  "Register_New_Profile": {
+    "message": "Зарегистрировать новый профиль"
+  },
+  "Create_New_Profile_Description": {
+    "message": "Хотите использовать эту фразу для создания нового профиля в Flow?"
+  },
   "Send": {
     "message": "Отправить"
   },
