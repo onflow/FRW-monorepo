@@ -11,6 +11,7 @@ import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
+import { View, Text as RNText, Share, Platform } from 'react-native';
 import QRCodeStyled from 'react-native-qrcode-styled';
 import { captureRef } from 'react-native-view-shot';
 
@@ -165,7 +166,7 @@ export function ReceiveScreen(): ReactElement {
     }
 
     try {
-      // Capture the QR code view as a base64 image
+      // Capture the QR code view as a file URI
       if (!qrCodeRef.current) {
         logger.error('QR code ref not available');
         toast.show({
@@ -176,14 +177,37 @@ export function ReceiveScreen(): ReactElement {
       }
 
       logger.debug('Capturing QR code view...');
-      const uri = await captureRef(qrCodeRef, {
-        format: 'png',
-        quality: 1.0,
-        result: 'data-uri', // Returns base64 data URL
-      });
 
-      logger.debug('QR code captured, sharing...');
-      await bridge.shareQRCode(selectedAccount.address, uri);
+      // Check if bridge method exists and is callable
+      const hasBridgeMethod = typeof bridge.shareQRCode === 'function';
+
+      if (hasBridgeMethod) {
+        // Use bridge method with base64
+        const base64 = await captureRef(qrCodeRef, {
+          format: 'png',
+          quality: 1.0,
+          result: 'base64',
+        });
+
+        const dataUrl = `data:image/png;base64,${base64}`;
+        logger.debug('Using bridge shareQRCode method');
+        await bridge.shareQRCode(selectedAccount.address, dataUrl);
+      } else {
+        // Fallback: use React Native Share API with tmpfile
+        logger.debug('Using Share API fallback');
+        const fileUri = await captureRef(qrCodeRef, {
+          format: 'png',
+          quality: 1.0,
+          result: 'tmpfile',
+        });
+
+        await Share.share({
+          title: 'Flow Wallet QR Code',
+          message: `My Flow wallet address:\n${selectedAccount.address}`,
+          url: Platform.OS === 'ios' ? `file://${fileUri}` : `file://${fileUri}`,
+        });
+      }
+
       logger.debug('QR code shared successfully');
     } catch (error) {
       logger.error('Failed to share QR code:', error);
@@ -201,30 +225,29 @@ export function ReceiveScreen(): ReactElement {
   const renderQRCode = () => {
     if (!selectedAccount?.address) {
       return (
-        <YStack items="center" justify="center" width={283} height={283}>
+        <YStack items="center" justify="center" width={323} height={323}>
           <Text color="$textSecondary">{t('receive.noQRCode')}</Text>
         </YStack>
       );
     }
 
     return (
-      <YStack
+      <View
         ref={qrCodeRef}
-        items="center"
-        justify="center"
-        width={283}
-        height={283}
-        bg="$white"
-        rounded={16}
-        mb="$4"
+        style={{
+          width: 323,
+          height: 323,
+          backgroundColor: '#FFFFFF',
+          borderRadius: 16,
+          marginBottom: 16,
+          overflow: 'hidden',
+        }}
       >
         <QRCodeStyled
           data={selectedAccount.address}
           style={{
-            backgroundColor: 'transparent',
-            borderRadius: 16,
-            width: 283,
-            height: 283,
+            width: 323,
+            height: 323,
           }}
           padding={20}
           pieceSize={8}
@@ -246,7 +269,7 @@ export function ReceiveScreen(): ReactElement {
           }}
           errorCorrectionLevel="H"
         />
-      </YStack>
+      </View>
     );
   };
 
@@ -293,17 +316,19 @@ export function ReceiveScreen(): ReactElement {
 
           {/* Warning Text - Only for EVM addresses */}
           {isEVM && (
-            <YStack width="100%" px="$4">
-              <Text
-                width="100%"
-                fontSize="$3"
-                fontWeight="400"
-                lineHeight={16.8}
-                color="$textSecondary"
-                ta="center"
+            <YStack width="100%" px="$4" mt={-8}>
+              <RNText
+                style={{
+                  width: '100%',
+                  fontSize: 12,
+                  fontWeight: '400',
+                  lineHeight: 16.8,
+                  color: '#8F8F8F',
+                  textAlign: 'center',
+                }}
               >
                 {t('receive.evmWarning')}
-              </Text>
+              </RNText>
             </YStack>
           )}
         </YStack>
@@ -326,7 +351,7 @@ export function ReceiveScreen(): ReactElement {
           >
             <Text
               fontSize="$4"
-              fontWeight="600"
+              fontWeight="700"
               color={!selectedAccount?.address ? '$white' : '$bg'}
             >
               {t('receive.shareQRCode', 'Share QR Code')}
