@@ -5,8 +5,17 @@
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
+  EthSigner,
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthSignedMessage,
+  type HexLike,
+} from '../services/eth-signer';
+import { WalletError } from '../types/errors';
+import {
   KeyType,
   type KeyProtocol,
+  type EthereumKeyProtocol,
   type StorageProtocol,
   SignatureAlgorithm,
   HashAlgorithm,
@@ -16,7 +25,9 @@ import {
  * Raw private key implementation using Trust Wallet Core
  * Matches iOS FlowWalletKit/Sources/Keys/PrivateKey.swift
  */
-export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Array> {
+export class PrivateKey
+  implements KeyProtocol<PrivateKey, Uint8Array, Uint8Array>, EthereumKeyProtocol
+{
   readonly keyType = KeyType.PrivateKey;
   storage: StorageProtocol;
 
@@ -60,7 +71,9 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
 
     // Validate key length
     if (advance.length !== 32) {
-      throw new Error('Private key must be 32 bytes');
+      throw WalletError.PrivateKeyUnavailable({
+        details: { expectedLength: 32, receivedLength: advance.length },
+      });
     }
 
     return new PrivateKey(storage, advance, SignatureAlgorithm.ECDSA_P256);
@@ -88,7 +101,7 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
     // Get encrypted data from storage
     const encryptedData = await storage.get(id);
     if (!encryptedData) {
-      throw new Error(`Key with ID ${id} not found`);
+      throw WalletError.PrivateKeyUnavailable({ details: { id } });
     }
 
     // Decrypt the key data using password
@@ -146,7 +159,9 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
           return this.deriveSecp256k1PublicKey(this.privateKeyData);
 
         default:
-          throw new Error(`Unsupported signature algorithm: ${signAlgo}`);
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm: signAlgo },
+          });
       }
     } catch (error) {
       console.error('Failed to derive public key:', error);
@@ -178,7 +193,12 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
   ): Promise<Uint8Array> {
     // Verify we can sign with the requested algorithm
     if (signAlgo !== this.signatureAlgorithm) {
-      throw new Error(`Cannot sign with ${signAlgo}, key is ${this.signatureAlgorithm}`);
+      throw WalletError.UnsupportedSignatureAlgorithm({
+        details: {
+          requested: signAlgo,
+          available: this.signatureAlgorithm,
+        },
+      });
     }
 
     // First hash the data according to the specified algorithm
@@ -191,7 +211,9 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
         hashedData = await WalletCoreProvider.hashSHA3(data);
         break;
       default:
-        throw new Error(`Unsupported hash algorithm: ${hashAlgo}`);
+        throw WalletError.UnsupportedHashAlgorithm({
+          details: { hashAlgorithm: hashAlgo },
+        });
     }
 
     // Sign the hashed data with the private key
@@ -203,7 +225,9 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
         return this.signWithSecp256k1(hashedData);
 
       default:
-        throw new Error(`Unsupported signature algorithm: ${signAlgo}`);
+        throw WalletError.UnsupportedSignatureAlgorithm({
+          details: { signatureAlgorithm: signAlgo },
+        });
     }
   }
 
@@ -222,9 +246,9 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
     }
 
     // Implementation would verify signature using appropriate cryptographic library
-    throw new Error(
-      'Signature validation not implemented - requires crypto signature verification'
-    );
+    throw WalletError.SigningFailed({
+      message: 'Signature validation not implemented - requires crypto signature verification',
+    });
   }
 
   /**
@@ -242,6 +266,89 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
    */
   async allKeys(): Promise<string[]> {
     return await this.storage.findKey('privatekey:');
+  }
+
+  /**
+   * Derive Ethereum address from raw private key (only index 0 supported).
+   */
+  async ethAddress(index: number = 0): Promise<string> {
+    if (index !== 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+
+    return await WalletCoreProvider.deriveEVMAddressFromPrivateKey(this.privateKeyData);
+  }
+
+  /**
+   * Return uncompressed secp256k1 public key (65 bytes, 0x04-prefixed).
+   */
+  async ethPublicKey(index: number = 0): Promise<Uint8Array> {
+    if (index !== 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+
+    return await WalletCoreProvider.deriveEVMPublicKeyFromPrivateKey(this.privateKeyData, false);
+  }
+
+  /**
+   * Return raw 32-byte secp256k1 private key.
+   */
+  async ethPrivateKey(index: number = 0): Promise<Uint8Array> {
+    if (index !== 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+
+    return new Uint8Array(this.privateKeyData);
+  }
+
+  /**
+   * Sign 32-byte digest and return Ethereum [r|s|v] signature.
+   */
+  async ethSign(digest: Uint8Array, index: number = 0): Promise<Uint8Array> {
+    if (index !== 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+
+    return await WalletCoreProvider.signEvmDigestWithPrivateKey(this.privateKeyData, digest);
+  }
+
+  /**
+   * Sign an Ethereum transaction.
+   */
+  async ethSignTransaction(
+    transaction: EthUnsignedTransaction,
+    index: number = 0
+  ): Promise<EthSignedTransaction> {
+    if (index !== 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+
+    return await EthSigner.signTransaction(transaction, this.privateKeyData);
+  }
+
+  /**
+   * Sign an Ethereum personal message (EIP-191).
+   */
+  async ethSignPersonalMessage(message: HexLike, index: number = 0): Promise<EthSignedMessage> {
+    if (index !== 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+
+    return await EthSigner.signPersonalMessage(this.privateKeyData, message);
+  }
+
+  /**
+   * Sign EIP-712 typed data.
+   */
+  async ethSignTypedData(
+    typedData: Record<string, unknown>,
+    index: number = 0
+  ): Promise<EthSignedMessage> {
+    if (index !== 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+
+    return await EthSigner.signTypedData(this.privateKeyData, typedData);
   }
 
   // Private helper methods for cryptographic operations
@@ -275,7 +382,10 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
         }
       }
     } catch (error) {
-      throw new Error(`P-256 public key derivation failed: ${error}`);
+      throw WalletError.DerivationFailed({
+        cause: error,
+        details: { curve: 'P256' },
+      });
     }
   }
 
@@ -308,7 +418,10 @@ export class PrivateKey implements KeyProtocol<PrivateKey, Uint8Array, Uint8Arra
         }
       }
     } catch (error) {
-      throw new Error(`secp256k1 public key derivation failed: ${error}`);
+      throw WalletError.DerivationFailed({
+        cause: error,
+        details: { curve: 'secp256k1' },
+      });
     }
   }
 

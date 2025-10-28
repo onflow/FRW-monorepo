@@ -66,9 +66,9 @@ export interface Spec extends TurboModule {
   // Toast methods
   showToast(
     title: string,
-    message?: string,
+    message?: string | null,
     type?: 'success' | 'error' | 'warning' | 'info',
-    duration?: number
+    duration?: number | null
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;

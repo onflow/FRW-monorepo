@@ -103,15 +103,16 @@ describe('Test NFT send strategies', () => {
   //     type: 'nft',
   //     assetType: 'evm',
   //     proposer: mainAccount.address,
-  //     receiver: mainAccount.address,
-  //     flowIdentifier: 'A.2d4c3caffbeab845.FLOAT.NFT',
+  //     // receiver: mainAccount.address,
+  //     receiver: "0x32a6af84f2f54476",
+  //     flowIdentifier: 'A.0b2a3299cc857e29.TopShot.NFT',
   //     sender: mainAccount.evmAddr,
   //     amount: '0',
   //     childAddrs: [],
-  //     ids: [75866303338937],
+  //     ids: [279275955504919],
   //     decimal: 0,
   //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '0x2B7CfE0f24c18690a4E34a154e313859B7c6e342',
+  //     tokenContractAddr: '0x50ab3a827ad268e9d5a24d340108fad5c25dad5f',
   //   };
 
   //   const txid = await SendTransaction(payload, cadenceService);
