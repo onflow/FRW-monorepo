@@ -2,10 +2,8 @@ import { ServiceContext } from '@onflow/frw-context';
 import { EthSigner, BIP44_PATHS, type EthLegacyTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
-import * as ethUtil from 'ethereumjs-util';
 import { intToHex } from 'ethereumjs-util';
 import { ethers } from 'ethers';
-import { encode } from 'rlp';
 import Web3 from 'web3';
 
 import BaseController from '@/background/controller/base';
@@ -303,44 +301,7 @@ class ProviderController extends BaseController {
         data: { success: true, result },
       });
 
-      const addressNonce = await Wallet.getNonce(eoaInfo.address.replace('0x', ''));
-      await Wallet.dapSendEvmTX(to, gas, value, dataValue, eoaInfo.address);
-      const keccak256 = (data: Buffer) => {
-        return ethUtil.keccak256(data);
-      };
-      const transactionValue = value === '0x' ? BigInt(0) : BigInt(value);
-      const directCallTxType = 255;
-      const contractCallSubType = 5;
-      const noceNumber = Number(addressNonce);
-      const dataBuffer = Buffer.from(dataValue.slice(2), 'hex');
-      const dataArray = Uint8Array.from(dataBuffer);
-      const gasLimit = gas || 30000000;
-      let toAddress: string;
-      if (to.startsWith('0x')) {
-        toAddress = to.substring(2);
-      } else {
-        toAddress = to;
-      }
-      const transaction = [
-        noceNumber, // nonce
-        0, // Fixed value
-        gasLimit, // Gas Limit
-        Buffer.from(toAddress, 'hex'), // To Address
-        transactionValue, // Value
-        Buffer.from(dataArray), // Call Data
-        directCallTxType, // Fixed value
-        BigInt(eoaInfo.address.startsWith('0x') ? eoaInfo.address : '0x' + eoaInfo.address),
-        contractCallSubType, // SubType
-      ];
-      const encodedData = encode(transaction);
-      const hash = keccak256(Buffer.from(encodedData));
-      const hashHexString = Buffer.from(hash).toString('hex');
-      console.log('transaction: hash: ', transaction, hashHexString);
-      if (hashHexString) {
-        return hashHexString;
-      } else {
-        return null;
-      }
+      return result;
     } catch (error) {
       chrome.runtime.sendMessage({
         type: 'CLOSE_APPROVAL_POPUP',

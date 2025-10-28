@@ -425,13 +425,7 @@ export class TransactionService {
     return result;
   }
 
-  async dapSendEvmTX(
-    to: string,
-    gas: bigint,
-    value: string,
-    data: string,
-    from: string
-  ): Promise<string | null> {
+  async dapSendEvmTX(to: string, gas: bigint, value: string, data: string): Promise<string | null> {
     if (to.startsWith('0x')) {
       to = to.substring(2);
     }
@@ -479,7 +473,7 @@ export class TransactionService {
     //   fcl.arg(gasLimit.toString(), fcl.t.UInt64),
     // ]);
 
-    const evmAddress = from;
+    const evmAddress = await userWalletService.getCurrentEvmAddress();
     if (!evmAddress) {
       throw new Error('EVM address not found');
     }

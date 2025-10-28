@@ -950,8 +950,8 @@ export class WalletController extends BaseController {
     transactionService.bridgeToFlow(flowIdentifier, amount, tokenResult);
   sendEvmTransaction = async (to: string, gas: string | number, value: string, data: string) =>
     transactionService.sendEvmTransaction(to, gas, value, data);
-  dapSendEvmTX = async (to: string, gas: bigint, value: string, data: string, from: string) =>
-    transactionService.dapSendEvmTX(to, gas, value, data, from);
+  dapSendEvmTX = async (to: string, gas: bigint, value: string, data: string) =>
+    transactionService.dapSendEvmTX(to, gas, value, data);
   getNonce = async (hexEncodedAddress: string): Promise<string> =>
     transactionService.getNonce(hexEncodedAddress);
   unlinkChildAccount = async (address: string): Promise<string> =>
