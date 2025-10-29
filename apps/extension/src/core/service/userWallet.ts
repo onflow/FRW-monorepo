@@ -407,8 +407,8 @@ class UserWallet {
 
   getActiveAccounts = async (): Promise<ActiveAccountsStore> => {
     const network = this.getNetwork();
-    const pubkey = this.getCurrentPubkey();
-    return this.getActiveAccountsWithPubKey(network, pubkey);
+    const profileId = await getCurrentProfileId();
+    return this.getActiveAccountsWithPubKey(network, profileId);
   };
 
   // Get the main account address for the current public key

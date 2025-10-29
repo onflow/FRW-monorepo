@@ -100,10 +100,8 @@ class ProviderController extends BaseController {
     if (!ServiceContext.isInitialized()) {
       // Import the platform implementation dynamically to avoid circular dependencies
       const platform = initializePlatform();
-
       // Ensure wallet controller is set on the platform
       platform.setWalletController(Wallet);
-
       // Initialize ServiceContext with the platform
       ServiceContext.initialize(platform);
     }
@@ -301,7 +299,8 @@ class ProviderController extends BaseController {
         data: { success: true, result },
       });
 
-      return result;
+      const txHash = signedTransaction.transactionHash;
+      return txHash;
     } catch (error) {
       chrome.runtime.sendMessage({
         type: 'CLOSE_APPROVAL_POPUP',
