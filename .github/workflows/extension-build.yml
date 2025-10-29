@@ -1,11 +1,6 @@
 name: Extension Build
 
 on:
-  push:
-    paths:
-      - "apps/extension/**"
-      - ".github/workflows/extension-build.yml"
-      - "packages/**"
   pull_request:
     paths:
       - "apps/extension/**"
