@@ -5,8 +5,8 @@
 import { type CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { COA } from '../account/COA';
-import { FlowAccount } from '../account/FlowAccount';
+import { COA } from '../account/coa';
+import { FlowAccount } from '../account/flowAccount';
 import {
   type FlowAccountData,
   FlowChainID as FlowChainIDEnum,

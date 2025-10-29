@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { COA } from '../Account/COA';
+import { COA } from '../account/coa';
 import { FlowVM } from '../types/account';
 import { FlowChainID } from '../types/key';
 
