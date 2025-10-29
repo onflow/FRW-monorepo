@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { PrivateKey } from '../keys/private-key';
 import { MemoryStorage } from '../storage/memory-storage';
-import { NETWORKS, SignatureAlgorithm } from '../types/key';
+import { NETWORKS } from '../types/key';
 import { WalletFactory } from '../wallet';
 
 describe('Wallet EOA address derivation', () => {
@@ -13,7 +13,7 @@ describe('Wallet EOA address derivation', () => {
 
     const storage = new MemoryStorage();
     const privateKeyBytes = await WalletCoreProvider.hexToBytes(samplePrivateKeyHex);
-    const key = new PrivateKey(storage, privateKeyBytes, SignatureAlgorithm.ECDSA_secp256k1);
+    const key = new PrivateKey(storage, privateKeyBytes);
     const wallet = WalletFactory.createKeyWallet(
       key,
       new Set([NETWORKS.FLOW_EVM_MAINNET]),

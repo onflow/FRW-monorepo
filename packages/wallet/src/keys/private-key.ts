@@ -38,7 +38,7 @@ export class PrivateKey
   constructor(
     storage: StorageProtocol,
     privateKeyData: Uint8Array,
-    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256
+    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_secp256k1
   ) {
     this.storage = storage;
     this.privateKeyData = privateKeyData;
@@ -66,7 +66,11 @@ export class PrivateKey
   /**
    * Create PrivateKey with specific key data
    */
-  static async createAdvanced(advance: Uint8Array, storage: StorageProtocol): Promise<PrivateKey> {
+  static async createAdvanced(
+    advance: Uint8Array,
+    storage: StorageProtocol,
+    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256
+  ): Promise<PrivateKey> {
     await WalletCoreProvider.initialize();
 
     // Validate key length
@@ -76,7 +80,7 @@ export class PrivateKey
       });
     }
 
-    return new PrivateKey(storage, advance, SignatureAlgorithm.ECDSA_P256);
+    return new PrivateKey(storage, advance, signatureAlgorithm);
   }
 
   /**
@@ -118,8 +122,12 @@ export class PrivateKey
   /**
    * Restore PrivateKey from secret (raw bytes)
    */
-  static async restore(secret: Uint8Array, storage: StorageProtocol): Promise<PrivateKey> {
-    return await this.createAdvanced(secret, storage);
+  static async restore(
+    secret: Uint8Array,
+    storage: StorageProtocol,
+    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256
+  ): Promise<PrivateKey> {
+    return await this.createAdvanced(secret, storage, signatureAlgorithm);
   }
 
   // Instance methods (matches iOS KeyProtocol)
