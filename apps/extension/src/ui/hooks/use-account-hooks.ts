@@ -102,7 +102,6 @@ export const useActiveAccounts = (
       };
     }
   }
-  console.log('useActiveAccounts =====>', activeAccounts);
   return activeAccounts;
 };
 

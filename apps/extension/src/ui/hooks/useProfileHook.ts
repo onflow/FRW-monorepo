@@ -103,14 +103,6 @@ export const useProfiles = () => {
 
   // The current wallet is the wallet that the user is currently using
   const currentWallet = useMemo(() => {
-    console.log(
-      'currentWallet =====>',
-      activeAccountType,
-      evmAccount,
-      childAccounts,
-      parentWallet,
-      activeAccounts?.currentAddress
-    );
     switch (activeAccountType) {
       case 'evm':
         // evmAccount ?? INITIAL_WALLET;
