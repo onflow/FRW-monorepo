@@ -7,6 +7,11 @@ export { SendTokensScreen } from './send/SendTokensScreen.query';
 export { SendSummaryScreen } from './send/SendSummaryScreen.query';
 export { ReceiveScreen } from './receive/ReceiveScreen.query';
 
+// Export error fallback components
+export { GenericErrorFallback } from './error/GenericErrorFallback';
+export { NetworkErrorFallback } from './error/NetworkErrorFallback';
+export { CriticalErrorFallback } from './error/CriticalErrorFallback';
+
 // Export providers
 export * from './providers/QueryProvider';
 

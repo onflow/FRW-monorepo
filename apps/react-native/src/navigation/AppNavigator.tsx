@@ -27,6 +27,7 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
+// import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest'; // For testing error handling
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
@@ -240,8 +241,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             <Stack.Screen
               name="SelectTokens"
               component={SelectTokensScreen}
+              // component={ErrorHandlingTest} // Uncomment for testing error handling
               options={{
-                headerTitle: t('navigation.send'),
+                headerTitle: t('navigation.selectTokens'),
+                // headerTitle: 'Error Test', // Use with ErrorHandlingTest
               }}
             />
             <Stack.Screen

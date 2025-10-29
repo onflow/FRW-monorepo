@@ -151,7 +151,25 @@
     "failedToLoadTokens": "Не удалось загрузить токены",
     "failedToLoadNFTs": "Не удалось загрузить NFT",
     "transactionPayloadError": "Не удалось создать нагрузку транзакции",
-    "transactionExecutionError": "Ошибка выполнения транзакции"
+    "transactionExecutionError": "Ошибка выполнения транзакции",
+    "generic": {
+      "title": "Что-то пошло не так",
+      "message": "Произошла непредвиденная ошибка. Пожалуйста, попробуйте снова.",
+      "button": "Попробовать снова",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "Проблема с подключением",
+      "message": "Не удается подключиться к сети. Пожалуйста, проверьте ваше соединение и попробуйте снова.",
+      "button": "Повторить",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "Критическая ошибка",
+      "message": "Произошла критическая ошибка. Пожалуйста, перезапустите приложение.",
+      "button": "Перезапустить приложение",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "Без названия",

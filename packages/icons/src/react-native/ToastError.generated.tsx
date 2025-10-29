@@ -15,7 +15,7 @@ const ToastError = ({
     viewBox="0 0 24 24"
     {...props}
   >
-    <Circle cx={12} cy={12} r={10} />
+    <Circle cx={12} cy={12} r={10} stroke={color} strokeWidth="2" />
     <Path
       d="m15 9-6 6M9 9l6 6"
       stroke={color}
