@@ -176,27 +176,22 @@ export class SeedPhraseKey
       throw WalletError.KeyNotInitialized();
     }
 
-    try {
-      // Use the Flow-specific method that supports both P-256 and secp256k1
-      const publicKeyHex = await WalletCoreProvider.getFlowPublicKeyBySignatureAlgorithm(
-        this.hdWallet,
-        signAlgo,
-        derivationPath || this.derivationPath
-      );
+    // Use the Flow-specific method that supports both P-256 and secp256k1
+    const publicKeyHex = await WalletCoreProvider.getFlowPublicKeyBySignatureAlgorithm(
+      this.hdWallet,
+      signAlgo,
+      derivationPath || this.derivationPath
+    );
 
-      // Convert hex to bytes and remove '04' prefix if present (matches iOS format() method)
-      const publicKeyBytes = await WalletCoreProvider.hexToBytes(publicKeyHex);
+    // Convert hex to bytes and remove '04' prefix if present (matches iOS format() method)
+    const publicKeyBytes = await WalletCoreProvider.hexToBytes(publicKeyHex);
 
-      // Remove '04' prefix if present (uncompressed key format indicator)
-      if (publicKeyBytes.length > 64 && publicKeyBytes[0] === 0x04) {
-        return publicKeyBytes.slice(1);
-      }
-
-      return publicKeyBytes;
-    } catch (error) {
-      console.error('Failed to get public key:', error);
-      return null;
+    // Remove '04' prefix if present (uncompressed key format indicator)
+    if (publicKeyBytes.length > 64 && publicKeyBytes[0] === 0x04) {
+      return publicKeyBytes.slice(1);
     }
+
+    return publicKeyBytes;
   }
 
   /**
@@ -210,27 +205,22 @@ export class SeedPhraseKey
       throw WalletError.KeyNotInitialized();
     }
 
-    try {
-      // Get private key by signature algorithm for Flow (matches iOS implementation)
-      const privateKey = await WalletCoreProvider.getFlowPrivateKeyBySignatureAlgorithm(
-        this.hdWallet,
-        signAlgo,
-        derivationPath || this.derivationPath
-      );
+    // Get private key by signature algorithm for Flow (matches iOS implementation)
+    const privateKey = await WalletCoreProvider.getFlowPrivateKeyBySignatureAlgorithm(
+      this.hdWallet,
+      signAlgo,
+      derivationPath || this.derivationPath
+    );
 
-      try {
-        // Get private key data
-        const privateKeyData = privateKey.data();
-        return new Uint8Array(privateKeyData);
-      } finally {
-        // Secure cleanup (matches iOS defer pattern)
-        if (privateKey && typeof privateKey.delete === 'function') {
-          privateKey.delete();
-        }
+    try {
+      // Get private key data
+      const privateKeyData = privateKey.data();
+      return new Uint8Array(privateKeyData);
+    } finally {
+      // Secure cleanup (matches iOS defer pattern)
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
       }
-    } catch (error) {
-      console.error('Failed to get private key:', error);
-      return null;
     }
   }
 
