@@ -141,7 +141,25 @@
     "failedToLoadTokens": "Failed to load tokens",
     "failedToLoadNFTs": "Failed to load NFTs",
     "transactionPayloadError": "Failed to create transaction payload",
-    "transactionExecutionError": "Transaction execution failed"
+    "transactionExecutionError": "Transaction execution failed",
+    "generic": {
+      "title": "Something went wrong",
+      "message": "We encountered an unexpected error. Please try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "network": {
+      "title": "Connection Error",
+      "message": "Unable to connect to the network. Please check your connection and try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "critical": {
+      "title": "Critical Error",
+      "message": "A critical error occurred. Please restart the app.",
+      "button": "Restart",
+      "reportBug": "Report Bug"
+    }
   },
   "nft": {
     "untitled": "Untitled",
