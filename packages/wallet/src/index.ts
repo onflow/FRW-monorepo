@@ -46,6 +46,14 @@ export {
   type EthSignedMessage,
   type HexLike,
 } from './services/eth-signer';
+export {
+  computeEthTransactionHash,
+  computeLegacyEthTransactionHash,
+  encodeLegacyEthTransaction,
+  buildLegacySigningOutput,
+  type EthLegacyRpcTransaction,
+  type NumericLike,
+} from './services/eth-transaction-hash';
 
 // Error types
 export { WalletError, WalletErrorCode, isWalletError } from './types/errors';

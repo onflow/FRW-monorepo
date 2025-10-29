@@ -185,6 +185,50 @@ const restoredWallet = await Wallet.restoreFromBackup(
 );
 ```
 
+### Ethereum Transaction Utilities
+
+The wallet SDK exposes helpers for computing Ethereum transaction hashes
+directly through Wallet Core without reimplementing RLP encoding.
+
+```typescript
+import {
+  computeEthTransactionHash,
+  computeLegacyEthTransactionHash,
+  encodeLegacyEthTransaction,
+  buildLegacySigningOutput,
+} from '@onflow/frw-wallet';
+
+// 1. Hash a fully encoded transaction (hex or Uint8Array)
+const hash = await computeEthTransactionHash(
+  '0xf8aa808509c7652400830130b9...' // raw RLP hex
+);
+
+// 2. Work with RPC-style legacy transactions (nonce/gas/v/r/s)
+const legacyTx = {
+  nonce: 21786698,
+  gasPrice: '1', // decimal or hex string
+  gas: '23300',
+  to: '0xF376A6849184571fEEdD246a1Ba2D331cfe56c8c',
+  value: '92827600000000',
+  input: '0x',
+  v: '255',
+  r: '0x30000000000000000',
+  s: '0x3',
+  type: 'legacy',
+  typeHex: '0x0',
+} as const;
+
+const { rawTransaction, transactionHash } =
+  await computeLegacyEthTransactionHash(legacyTx);
+
+// rawTransaction === '0xf38401...0003'
+// transactionHash === '0xa2de55...428c3'
+
+// 3. Build a SigningOutput compatible with AnySigner workflows
+const signingOutput = await buildLegacySigningOutput(legacyTx);
+// signingOutput.encoded, .r, .s, .v can be reused anywhere Wallet Core expects a SigningOutput
+```
+
 ## Testing
 
 ```bash
