@@ -9,21 +9,21 @@ import {
 import { BackgroundWrapper, ExtensionHeader, Text, YStack, AccountSelector } from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
+import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useMemo, useRef, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text as RNText } from 'react-native';
-import QRCodeStyled from 'react-native-qrcode-styled';
 
 /**
  * Receive Assets Screen - displays QR code for receiving assets
  * Following MVVM pattern with TanStack Query integration
- * Web version - without react-native-view-shot
+ * Web version - uses qrcode.react for web-compatible QR code generation
  */
 export function ReceiveScreen(): ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Store hooks - QR code now generated client-side with QRCodeStyled
+  // Store hooks - QR code generated client-side with qrcode.react
   const { selectedAccount, setSelectedAccount } = useReceiveStore();
 
   // Profile hooks
@@ -169,7 +169,7 @@ export function ReceiveScreen(): ReactElement {
   // Note: AccountSelector doesn't have built-in copy button like AccountCard
   // User can still copy from the QR code section
 
-  // Render QR code section with styled QR code
+  // Render QR code section with web-compatible QR code
   const renderQRCode = () => {
     if (!selectedAccount?.address) {
       return (
@@ -193,23 +193,15 @@ export function ReceiveScreen(): ReactElement {
           justifyContent: 'center',
         }}
       >
-        <QRCodeStyled
-          data={selectedAccount.address}
+        <QRCodeSVG
+          value={selectedAccount.address}
+          size={323}
+          level="H"
+          fgColor={isEVM ? '#627EEA' : '#00EF8B'} // EVM blue or Flow green
+          bgColor="#FFFFFF"
           style={{
-            width: 323,
-            height: 323,
-          }}
-          padding={0}
-          pieceBorderRadius={4}
-          isPiecesGlued
-          color={isEVM ? '#627EEA' : '#00EF8B'} // EVM blue or Flow green
-          outerEyesOptions={{
-            borderRadius: [20, 20, 0, 20],
-            color: '#000000',
-          }}
-          innerEyesOptions={{
-            borderRadius: 10,
-            color: isEVM ? '#627EEA' : '#00EF8B',
+            width: '100%',
+            height: '100%',
           }}
         />
       </View>
