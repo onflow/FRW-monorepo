@@ -78,6 +78,10 @@ const SeedPhraseImport = ({
           placeholder={chrome.i18n.getMessage('Import_12_or_24_words')}
           required
           sx={{ marginBottom: '16px' }}
+          onChange={(e) => {
+            const seed = e.target.value.trim().split(/\s+/g).join(' ');
+            setMnemonic(seed);
+          }}
         />
         <TextareaAutosize
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}

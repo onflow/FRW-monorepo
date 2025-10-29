@@ -170,6 +170,17 @@ export class WalletController extends BaseController {
   registerNewProfile = async (username: string, password: string, mnemonic: string) => {
     return await accountManagementService.registerNewProfile(username, password, mnemonic);
   };
+
+  /**
+   * Create a new wallet profile using a private key.
+   * This creates a new Flow account and registers it with the backend.
+   * @param username the username for the new profile
+   * @param password the password for the new profile
+   * @param pk the private key to use for the new account
+   */
+  registerNewProfileUsingPrivateKey = async (username: string, password: string, pk: string) => {
+    return await accountManagementService.registerNewProfileUsingPrivateKey(username, password, pk);
+  };
   /**
    * Remove a profile and its associated keys
    * If it's the last profile, it behaves like a wallet reset
