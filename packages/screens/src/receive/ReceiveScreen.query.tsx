@@ -235,8 +235,9 @@ export function ReceiveScreen(): ReactElement {
       <View
         ref={qrCodeRef}
         style={{
-          width: 283,
-          height: 283,
+          // width: 323,
+          // height: 323,
+          padding: 12,
           backgroundColor: '#FFFFFF',
           borderRadius: 16,
           marginBottom: 16,
@@ -248,10 +249,10 @@ export function ReceiveScreen(): ReactElement {
         <QRCodeStyled
           data={selectedAccount.address}
           style={{
-            width: 283,
-            height: 283,
+            width: 323,
+            height: 323,
           }}
-          padding={12}
+          padding={0}
           pieceBorderRadius={4}
           isPiecesGlued
           color={isEVM ? '#627EEA' : '#00EF8B'} // EVM blue or Flow green
@@ -300,7 +301,7 @@ export function ReceiveScreen(): ReactElement {
         )}
 
         {/* QR Code Section */}
-        <YStack bg="$bg1" rounded="$4" p="$4" items="center" gap="$5" width="100%">
+        <YStack bg="$bg1" rounded="$4" pt="$4" pb="$4" px="$2" items="center" gap="$5" width="100%">
           {/* Title */}
           <Text fontSize={16} fontWeight="700" color="$text" lineHeight={19}>
             {t('receive.scanToReceive', 'Scan to receive')}
