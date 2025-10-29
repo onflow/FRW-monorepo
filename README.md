@@ -7,6 +7,7 @@
 [![React Native](https://img.shields.io/badge/React%20Native-0.80-green)](https://reactnative.dev/)
 [![pnpm](https://img.shields.io/badge/pnpm-10.14-orange)](https://pnpm.io/)
 [![Flow](https://img.shields.io/badge/Flow-Blockchain-purple)](https://flow.com/)
+[![Extension E2E](https://img.shields.io/github/actions/workflow/status/onflow/frw/extension-e2e.yml?label=extension%20e2e)](https://github.com/onflow/frw/actions/workflows/extension-e2e.yml)
 
 ## 📁 Project Structure
 
