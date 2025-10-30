@@ -15,7 +15,7 @@ const ToastInfo = ({
     viewBox="0 0 24 24"
     {...props}
   >
-    <Circle cx={12} cy={12} r={10} />
+    <Circle cx={12} cy={12} r={10} stroke={color} strokeWidth="2" />
     <Path
       d="M12 16v-4M12 8h.01"
       stroke={color}

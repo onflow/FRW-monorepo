@@ -4,7 +4,6 @@ import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { PrivateKey } from '../keys/private-key';
 import { EthSigner } from '../services/eth-signer';
 import { MemoryStorage } from '../storage/memory-storage';
-import { SignatureAlgorithm } from '../types/key';
 
 describe('EthSigner', () => {
   let privateKeyLegacy: Uint8Array;
@@ -108,22 +107,14 @@ describe('EthSigner', () => {
 
   it('signs via PrivateKey implementing EthereumKeyProtocol', async () => {
     const storage = new MemoryStorage();
-    const messageKey = new PrivateKey(
-      storage,
-      privateKeyMessage.slice(),
-      SignatureAlgorithm.ECDSA_secp256k1
-    );
+    const messageKey = new PrivateKey(storage, privateKeyMessage.slice());
 
     const signedMessage = await messageKey.ethSignPersonalMessage('Some data');
     expect(signedMessage.signature).toBe(
       '0x58156c371347613642e94b66abc4ced8e36011fb3233f5372371aa5ad321671b1a10c0b88f47ce543fd4c455761f5fbf8f61d050f57dcba986640011da794a9000'
     );
 
-    const txKey = new PrivateKey(
-      storage,
-      privateKeyLegacy.slice(),
-      SignatureAlgorithm.ECDSA_secp256k1
-    );
+    const txKey = new PrivateKey(storage, privateKeyLegacy.slice());
 
     const signedTx = await txKey.ethSignTransaction({
       chainId: 0x01,
