@@ -234,7 +234,7 @@ export class EoaToFlowCoaWithdrawalStrategy implements TransferStrategy {
       state: 'EVM_TRX_BUILDING',
       trxData: {
         from: payload.sender,
-        to: payload.tokenContractAddr,
+        to: payload.coaAddr,
         data: '0x',
         gasLimit: GAS_LIMITS.EVM_DEFAULT,
         value: valueBig.toString(),
