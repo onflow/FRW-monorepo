@@ -142,7 +142,10 @@ export const AccountListing = ({
     const eoaAccounts = new Map();
     accountList.forEach((account) => {
       if (account?.eoaAccount?.address && isValidEthereumAddress(account.eoaAccount.address)) {
-        eoaAccounts.set(account.eoaAccount.address, account.eoaAccount);
+        eoaAccounts.set(account.eoaAccount.address, {
+          eoaAccount: account.eoaAccount,
+          parentAccount: account,
+        });
       }
     });
 
@@ -223,7 +226,7 @@ export const AccountListing = ({
       {/* EOA Accounts - Show unique EOA accounts at the top */}
       {uniqueEoaAccounts.length > 0 && (
         <>
-          {uniqueEoaAccounts.map((eoaAccount, idx) => (
+          {uniqueEoaAccounts.map(({ eoaAccount, parentAccount }, idx) => (
             <Box
               key={eoaAccount.address}
               sx={{
@@ -233,10 +236,15 @@ export const AccountListing = ({
               <AccountCard
                 network={network}
                 account={eoaAccount}
+                parentAccount={parentAccount}
                 active={activeAccount?.address === eoaAccount.address}
-                onClick={onAccountClick ? () => onAccountClick(eoaAccount) : undefined}
+                onClick={
+                  onAccountClick ? () => onAccountClick(eoaAccount, parentAccount) : undefined
+                }
                 onClickSecondary={
-                  onAccountClickSecondary ? () => onAccountClickSecondary(eoaAccount) : undefined
+                  onAccountClickSecondary
+                    ? () => onAccountClickSecondary(eoaAccount, parentAccount)
+                    : undefined
                 }
                 secondaryIcon={secondaryIcon}
                 showCard={false}
