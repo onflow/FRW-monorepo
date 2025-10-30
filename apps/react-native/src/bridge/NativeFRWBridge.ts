@@ -48,9 +48,8 @@ export interface Spec extends TurboModule {
   // Wallet accounts method
   getWalletAccounts(): Promise<WalletAccountsResponse>;
   getSignKeyIndex(): number;
-  // QR code methods
+  // QR code scanning method
   scanQRCode(): Promise<string>;
-  shareQRCode(address: string, qrCodeDataUrl: string): Promise<void>;
   // Close react native method
   closeRN(id?: string | null): void;
   // Free gas settings method

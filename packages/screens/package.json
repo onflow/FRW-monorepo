@@ -33,6 +33,7 @@
     "react": "^19.1.0",
     "react-i18next": "^15.6.1",
     "react-native-qrcode-styled": "^0.4.0",
+    "react-native-share": "^12.2.0",
     "react-native-view-shot": "^4.0.3"
   },
   "devDependencies": {

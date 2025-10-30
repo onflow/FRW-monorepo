@@ -667,6 +667,9 @@ importers:
       react-native-screens:
         specifier: ^4.14.1
         version: 4.16.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
+      react-native-share:
+        specifier: ^12.2.0
+        version: 12.2.0
       react-native-svg:
         specifier: ^15.12.1
         version: 15.13.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
@@ -936,6 +939,9 @@ importers:
       react-native-qrcode-styled:
         specifier: ^0.4.0
         version: 0.4.0(react-native-svg@15.13.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
+      react-native-share:
+        specifier: ^12.2.0
+        version: 12.2.0
       react-native-view-shot:
         specifier: ^4.0.3
         version: 4.0.3(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
@@ -10116,6 +10122,10 @@ packages:
       react: 19.0.0
       react-native: 0.79.2
 
+  react-native-share@12.2.0:
+    resolution: {integrity: sha512-f6MB9BsKa9xVvu0DKbxq5jw4IyYHqQeqUlCNkD8eAFoJx6SD31ObPAn7SQ6NG9AOuhCy6aYuSJYJvx25DaoMZQ==}
+    engines: {node: '>=16'}
+
   react-native-svg@15.13.0:
     resolution: {integrity: sha512-/YPK+PAAXg4T0x2d2vYPvqqAhOYid2bRKxUVT7STIyd1p2JxWmsGQkfZxXCkEFN7TwLfIyVlT5RimT91Pj/qXw==}
     peerDependencies:
@@ -15354,7 +15364,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
@@ -23864,6 +23876,8 @@ snapshots:
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0)
       react-native-is-edge-to-edge: 1.2.1(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0)
       warn-once: 0.1.1
+
+  react-native-share@12.2.0: {}
 
   react-native-svg@15.13.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.1.13)(react@19.0.0))(react@19.0.0):
     dependencies:

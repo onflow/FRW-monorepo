@@ -13,8 +13,9 @@ import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, Text as RNText, Share, Platform } from 'react-native';
+import { View, Text as RNText, Platform } from 'react-native';
 import QRCodeStyled from 'react-native-qrcode-styled';
+import RNShare from 'react-native-share';
 import { captureRef } from 'react-native-view-shot';
 
 /**
@@ -161,7 +162,7 @@ export function ReceiveScreen(): ReactElement {
     [t]
   );
 
-  // Handle share QR code - capture the styled QR view and share it
+  // Handle share QR code - capture the styled QR view and share it using react-native-share
   const handleShareQRCode = useCallback(async () => {
     if (!selectedAccount?.address) {
       logger.warn('Cannot share QR code: missing address');
@@ -181,38 +182,35 @@ export function ReceiveScreen(): ReactElement {
 
       logger.debug('Capturing QR code view...');
 
-      // Check if bridge method exists and is callable
-      const hasBridgeMethod = typeof bridge.shareQRCode === 'function';
+      // Capture QR code as temporary file
+      const fileUri = await captureRef(qrCodeRef, {
+        format: 'png',
+        quality: 1.0,
+        result: 'tmpfile',
+      });
 
-      if (hasBridgeMethod) {
-        // Use bridge method with base64
-        const base64 = await captureRef(qrCodeRef, {
-          format: 'png',
-          quality: 1.0,
-          result: 'base64',
-        });
+      // Use react-native-share for both iOS and Android
+      const shareOptions = {
+        title: 'Flow Wallet QR Code',
+        message: `My Flow wallet address:\n${selectedAccount.address}`,
+        url: Platform.OS === 'ios' ? `file://${fileUri}` : `file://${fileUri}`,
+        type: 'image/png',
+      };
 
-        const dataUrl = `data:image/png;base64,${base64}`;
-        logger.debug('Using bridge shareQRCode method');
-        await bridge.shareQRCode(selectedAccount.address, dataUrl);
-      } else {
-        // Fallback: use React Native Share API with tmpfile
-        logger.debug('Using Share API fallback');
-        const fileUri = await captureRef(qrCodeRef, {
-          format: 'png',
-          quality: 1.0,
-          result: 'tmpfile',
-        });
-
-        await Share.share({
-          title: 'Flow Wallet QR Code',
-          message: `My Flow wallet address:\n${selectedAccount.address}`,
-          url: Platform.OS === 'ios' ? `file://${fileUri}` : `file://${fileUri}`,
-        });
-      }
+      logger.debug('Sharing QR code with react-native-share:', shareOptions);
+      await RNShare.open(shareOptions);
 
       logger.debug('QR code shared successfully');
     } catch (error) {
+      // User cancelled sharing - not an error
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMessage = (error as { message: string }).message;
+        if (errorMessage?.includes('User did not share') || errorMessage?.includes('cancelled')) {
+          logger.debug('User cancelled share');
+          return;
+        }
+      }
+
       logger.error('Failed to share QR code:', error);
       toast.show({
         title: t('messages.failedToShare'),
