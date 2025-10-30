@@ -667,6 +667,7 @@ export class AccountManagement {
    * Update account metadata (emoji, name, background color) via openapi API
    */
   async updateAccountMetadata(address: string, icon: string, name: string, background: string) {
+    console.log('updateAccountMetadata', address, icon, name, background);
     const result = await openapiService.updateAccountMetadata(address, icon, name, background);
 
     // Update the metadata cache after successful update
@@ -702,6 +703,21 @@ export class AccountManagement {
                 name: name,
                 icon: icon,
                 color: background,
+              };
+            }
+            if (
+              account.eoaAccount &&
+              isValidEthereumAddress(address) &&
+              account.eoaAccount.address === address
+            ) {
+              return {
+                ...account,
+                eoaAccount: {
+                  ...account.eoaAccount,
+                  name: name,
+                  icon: icon,
+                  color: background,
+                },
               };
             }
             //Update evmAccount if the address is a valid EVM address

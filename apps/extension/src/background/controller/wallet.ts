@@ -26,6 +26,7 @@ import {
   accountManagementService,
   authenticationService,
 } from '@/core/service';
+import walletManager from '@/core/service/wallet-manager';
 import { retryOperation } from '@/core/utils';
 import {
   getValidData,
@@ -293,6 +294,10 @@ export class WalletController extends BaseController {
     await keyringService.unlock(password);
     // Login with the current keyring
     await userWalletService.loginWithKeyring();
+    // Initialize wallet manager with current uid
+    walletManager.init().catch((error) => {
+      console.error('Failed to initialize wallet manager:', error);
+    });
     sessionService.broadcastEvent('unlock');
 
     // Refresh the wallet data
@@ -783,6 +788,7 @@ export class WalletController extends BaseController {
    */
 
   setActiveAccount = async (address: string, parentAddress: string) => {
+    console.log('setActiveAccount', address, parentAddress);
     if (!isValidFlowAddress(parentAddress)) {
       throw new Error('Invalid parent address');
     }
