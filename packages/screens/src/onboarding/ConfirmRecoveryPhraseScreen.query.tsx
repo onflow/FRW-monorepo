@@ -37,8 +37,7 @@ interface ConfirmRecoveryPhraseScreenProps {
   route?: {
     params?: {
       recoveryPhrase?: string[];
-      address?: string | null;
-      username?: string | null;
+      mnemonic?: string;
     };
   };
 }
@@ -60,10 +59,9 @@ export function ConfirmRecoveryPhraseScreen({
   const { t } = useTranslation();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
 
-  // Get data from navigation params (account already created in RecoveryPhraseScreen)
+  // Get data from navigation params
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
-  const address = route?.params?.address;
-  const username = route?.params?.username;
+  const mnemonic = route?.params?.mnemonic || '';
 
   // Enable screenshot protection when screen mounts (showing recovery phrase words)
   useEffect(() => {
@@ -141,7 +139,7 @@ export function ConfirmRecoveryPhraseScreen({
     });
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     // Check if all questions are answered correctly
     const allCorrect = questions.every((question, index) => {
       return selectedAnswers[index] === question.correctAnswer;
@@ -151,12 +149,21 @@ export function ConfirmRecoveryPhraseScreen({
       // Track successful completion
       trackingMutation.mutate('complete');
 
-      // Account already created in RecoveryPhraseScreen
-      // Navigate directly to notification preferences
-      logger.info(
-        '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Account address:',
-        address
-      );
+      // User verified the phrase - now save it securely and create account
+      logger.info('[ConfirmRecoveryPhraseScreen] Recovery phrase verified!');
+
+      // TODO: Save mnemonic securely using bridge
+      // The mnemonic should be:
+      // 1. Stored in secure storage (Android Keystore / iOS Keychain)
+      // 2. Used to derive Flow account address
+      // 3. Account registered with backend if needed (for COA features)
+      //
+      // For now, navigate to notification preferences
+      // Actual account creation implementation pending based on:
+      // - Whether this is pure EOA (no server) or COA-hybrid
+      // - Backend API integration requirements
+      logger.warn('[ConfirmRecoveryPhraseScreen] Mnemonic verified but not yet persisted');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Mnemonic length:', mnemonic.split(' ').length);
 
       // Navigate to notification preferences (final onboarding step)
       navigation.navigate('NotificationPreferences');

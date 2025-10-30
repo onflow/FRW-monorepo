@@ -1,70 +1,44 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { Copy, Warning, RevealPhrase } from '@onflow/frw-icons';
 import { YStack, XStack, Text, View, OnboardingBackground, Button } from '@onflow/frw-ui';
+import { generateBip39Mnemonic } from '@onflow/frw-wallet';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator } from 'react-native';
 
 /**
- * RecoveryPhraseScreen - Creates account and displays the generated recovery phrase
- * Calls createAccount() which generates the mnemonic and creates the blockchain account
- * Shows the recovery phrase that users must write down and store safely
+ * RecoveryPhraseScreen - Generates and displays recovery phrase
+ * Uses @onflow/frw-wallet's BIP39 implementation to generate mnemonic
+ * Phrase is stored temporarily until user verifies it
  */
 
-// Create EOA account and get the generated recovery phrase
-// EOA = Externally Owned Account (pure mnemonic-based, no server)
-const createAccountAndGetPhrase = async (): Promise<{
+// Generate BIP39 mnemonic using @onflow/frw-wallet
+// This generates the seed phrase but does NOT create an account yet
+// Account will be derived from seed phrase later (EOA = calculated, not created)
+const generateRecoveryPhrase = async (): Promise<{
   phrase: string[];
   mnemonic: string;
-  address: string | null;
-  username: string | null;
 }> => {
-  // Use bridge.createEOAAccount() if available (React Native)
-  if (bridge.createEOAAccount) {
-    const result = await bridge.createEOAAccount();
+  try {
+    // Generate 12-word mnemonic (128-bit entropy) using Trust Wallet Core
+    const mnemonic = await generateBip39Mnemonic({ strength: 128 });
+    const phrase = mnemonic.trim().split(/\s+/);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to create EOA account');
+    logger.info('[RecoveryPhraseScreen] Generated BIP39 mnemonic with', phrase.length, 'words');
+
+    if (phrase.length !== 12) {
+      throw new Error(`Expected 12 words, got ${phrase.length}`);
     }
 
-    logger.info('[RecoveryPhraseScreen] EOA account created successfully:', {
-      address: result.address,
-      accountType: result.accountType,
-    });
-
     return {
-      phrase: result.phrase || [],
-      mnemonic: result.mnemonic || '',
-      address: result.address,
-      username: result.username,
+      phrase,
+      mnemonic,
     };
+  } catch (error) {
+    logger.error('[RecoveryPhraseScreen] Failed to generate mnemonic:', error);
+    throw new Error('Failed to generate recovery phrase: ' + (error as Error).message);
   }
-
-  // Fallback for web/extension (placeholder)
-  logger.warn(
-    '[RecoveryPhraseScreen] Using fallback EOA placeholder - createEOAAccount not available'
-  );
-  return {
-    phrase: [
-      'trust',
-      'wallet',
-      'example',
-      'phrase',
-      'generate',
-      'secure',
-      'backup',
-      'restore',
-      'account',
-      'protect',
-      'private',
-      'key',
-    ],
-    mnemonic:
-      'trust wallet example phrase generate secure backup restore account protect private key',
-    address: '0x1234567890abcdef',
-    username: 'user_demo',
-  };
 };
 
 const trackRecoveryPhraseAction = async (action: 'copy' | 'next' | 'view') => {
@@ -78,15 +52,15 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
 
-  // Create account and get recovery phrase
+  // Generate recovery phrase (mnemonic only, account creation happens after verification)
   const {
-    data: accountData,
-    isLoading: isCreatingAccount,
-    error: accountError,
+    data: phraseData,
+    isLoading: isGenerating,
+    error: generateError,
   } = useQuery({
-    queryKey: ['onboarding', 'create-account'],
-    queryFn: createAccountAndGetPhrase,
-    staleTime: Infinity, // Don't refetch - account creation should happen once
+    queryKey: ['onboarding', 'generate-phrase'],
+    queryFn: generateRecoveryPhrase,
+    staleTime: Infinity, // Don't refetch - phrase generation should happen once
     gcTime: 30 * 60 * 1000, // 30 minutes
     retry: false, // Don't retry on error
   });
@@ -123,8 +97,9 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     },
   });
 
-  // Use generated phrase from account creation
-  const recoveryPhrase = accountData?.phrase || [];
+  // Use generated phrase
+  const recoveryPhrase = phraseData?.phrase || [];
+  const mnemonic = phraseData?.mnemonic || '';
 
   const handleBack = () => {
     navigation.goBack();
@@ -167,46 +142,46 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     // Track analytics
     trackingMutation.mutate('next');
 
-    // Navigate to confirm recovery phrase screen with account data
+    // Navigate to confirm recovery phrase screen
+    // Account will be created after user verifies the phrase
     navigation.navigate('ConfirmRecoveryPhrase', {
       recoveryPhrase,
-      address: accountData?.address,
-      username: accountData?.username,
+      mnemonic,
     });
   };
 
-  // Show loading state while creating account
-  if (isCreatingAccount) {
+  // Show loading state while generating phrase
+  if (isGenerating) {
     return (
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" gap="$4">
           <ActivityIndicator size="large" color="#00EF8B" />
           <Text fontSize={24} fontWeight="700" color="$text">
-            {t('onboarding.creatingAccount')}
+            Generating Recovery Phrase
           </Text>
           <Text fontSize="$4" color="$textSecondary" text="center" px="$6">
-            {t('onboarding.generatingRecoveryPhrase')}
+            Creating your secure 12-word phrase...
           </Text>
         </YStack>
       </OnboardingBackground>
     );
   }
 
-  // Show error state if account creation fails
-  if (accountError) {
+  // Show error state if phrase generation fails
+  if (generateError) {
     return (
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4" gap="$4">
           <Text color="$error" text="center" fontSize={20} fontWeight="700">
-            {t('onboarding.accountCreationFailed')}
+            Failed to Generate Recovery Phrase
           </Text>
           <Text color="$textSecondary" text="center" fontSize="$4">
-            {accountError instanceof Error ? accountError.message : 'An unknown error occurred'}
+            {generateError instanceof Error ? generateError.message : 'An unknown error occurred'}
           </Text>
           <Button onPress={() => navigation.goBack()}>
             <XStack gap="$2" items="center" px="$4" py="$2">
               <Text fontSize="$4" fontWeight="600">
-                {t('common.goBack')}
+                Go Back
               </Text>
             </XStack>
           </Button>

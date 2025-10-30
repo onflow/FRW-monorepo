@@ -918,6 +918,9 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
+      '@onflow/frw-wallet':
+        specifier: workspace:^
+        version: link:../wallet
       '@tanstack/react-query':
         specifier: ^5.85.6
         version: 5.90.2(react@19.0.0)
@@ -9879,6 +9882,7 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qr-code-styling@1.9.2:
@@ -15074,7 +15078,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
