@@ -19,13 +19,14 @@ const mode = args[0];
 
 dotenv.config({ path: `.env.${mode}` });
 
-// Debug: Log Firebase API key (masked) to verify it's loaded
-const fbApiKey = process.env.FB_API_KEY;
-if (fbApiKey) {
-  const masked = `${fbApiKey.substring(0, 10)}...${fbApiKey.substring(fbApiKey.length - 4)}`;
-  console.log(`✅ Firebase API Key loaded: ${masked} (length: ${fbApiKey.length})`);
-} else {
-  console.warn('⚠️ Firebase API Key not found in environment');
+// Only log Firebase API key status in development mode
+if (process.env.NODE_ENV === 'development') {
+  const fbApiKey = process.env.FB_API_KEY;
+  if (fbApiKey) {
+    console.log(`✅ Firebase API Key loaded (length: ${fbApiKey.length})`);
+  } else {
+    console.warn('⚠️ Firebase API Key not found in environment');
+  }
 }
 
 const IS_BETA = process.env.IS_BETA === 'true';
