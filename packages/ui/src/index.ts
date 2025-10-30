@@ -16,6 +16,7 @@ export {
   View,
   XStack,
   YStack,
+  PortalProvider,
 } from 'tamagui';
 
 // Export our custom UI foundation components
@@ -37,6 +38,7 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
+export * from './components/AddContactDialog';
 
 export * from './components/AddressBookSection';
 export * from './components/AddressSearchBox';
@@ -74,6 +76,10 @@ export * from './components/SelectableNFTImage';
 export * from './components/SendArrowDivider';
 export * from './components/SendSectionHeader';
 export * from './components/StorageWarning';
+export * from './components/Surge/SurgeWarning';
+export * from './components/Surge/SurgeModal';
+export * from './components/Surge/SurgeFeeSection';
+export * from './components/Surge/SurgeFeeConfirmationSection';
 export * from './components/Tag';
 export * from './components/ToAccountSection';
 export * from './components/Toast';

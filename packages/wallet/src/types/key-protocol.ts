@@ -5,6 +5,12 @@
 
 import { type KeyType, type SignatureAlgorithm, type HashAlgorithm } from './key';
 import { type StorageProtocol } from './storage';
+import {
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthSignedMessage,
+  type HexLike,
+} from '../services/eth-signer';
 
 /**
  * Key protocol interface - exact match to iOS Flow Wallet Kit KeyProtocol.swift
@@ -73,6 +79,51 @@ export interface KeyProtocol<TKey = any, TSecret = any, TAdvance = any> {
    * List all stored key identifiers
    */
   allKeys(): Promise<string[]>;
+}
+
+/**
+ * Ethereum key protocol interface - matches FlowWalletKit/Sources/Keys/EthereumKeyProtocol.swift
+ * Provides EVM-compatible key derivation and signing capabilities
+ */
+export interface EthereumKeyProtocol {
+  /**
+   * Derive the EIP-55 checksummed address for the given derivation index.
+   * Defaults to the first account index (0).
+   */
+  ethAddress(index?: number): Promise<string>;
+
+  /**
+   * Return the uncompressed secp256k1 public key (65 bytes, 0x04-prefixed).
+   */
+  ethPublicKey(index?: number): Promise<Uint8Array>;
+
+  /**
+   * Return the raw 32-byte secp256k1 private key for the derivation index.
+   */
+  ethPrivateKey(index?: number): Promise<Uint8Array>;
+
+  /**
+   * Sign a 32-byte digest using Ethereum secp256k1 scheme and return [r|s|v].
+   */
+  ethSign(digest: Uint8Array, index?: number): Promise<Uint8Array>;
+
+  /**
+   * Sign an Ethereum transaction and return encoded payload with signature.
+   */
+  ethSignTransaction(
+    transaction: EthUnsignedTransaction,
+    index?: number
+  ): Promise<EthSignedTransaction>;
+
+  /**
+   * Sign an Ethereum personal message / EIP-191 payload.
+   */
+  ethSignPersonalMessage(message: HexLike, index?: number): Promise<EthSignedMessage>;
+
+  /**
+   * Sign an EIP-712 typed data payload.
+   */
+  ethSignTypedData(typedData: Record<string, unknown>, index?: number): Promise<EthSignedMessage>;
 }
 
 /**

@@ -66,9 +66,9 @@ export interface Spec extends TurboModule {
   // Toast methods
   showToast(
     title: string,
-    message?: string,
+    message?: string | null,
     type?: 'success' | 'error' | 'warning' | 'info',
-    duration?: number
+    duration?: number | null
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
@@ -83,8 +83,12 @@ export interface Spec extends TurboModule {
   checkNotificationPermission(): Promise<boolean>;
   // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
-  // Logging
-  logToNative(level: string, message: string, args: string[]): void;
+  // Native logging method for additional platform-specific logging
+  logToNative(
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string,
+    args: ReadonlyArray<string>
+  ): void;
   // Backup activities
   launchMultiBackup(): void;
   launchDeviceBackup(): void;

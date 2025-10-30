@@ -1569,5 +1569,26 @@
   },
   "legal_text": {
     "message": "使用Flow钱包即表示您同意<termslink>服务条款</termslink>和<privacylink>隐私政策</privacylink>"
+  },
+  "Surge__Modal__Title": {
+    "message": "您确定要继续使用激增定价吗？"
+  },
+  "Surge__Modal__Transaction__Fee": {
+    "message": "您的交易费用"
+  },
+  "Surge__Modal__Surge__Active": {
+    "message": "激增价格激活"
+  },
+  "Surge__Modal__Description": {
+    "message": "由于网络活动频繁，交易费用已提高，Flow Wallet 暂时不为您支付 gas 费用。当前网络费用比平时高 $1 倍。",
+    "placeholders": {
+      "multiplier": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "Surge__Modal__Hold__To__Agree": {
+    "message": "按住同意激增定价"
   }
 }

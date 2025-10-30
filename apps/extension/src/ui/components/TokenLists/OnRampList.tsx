@@ -1,4 +1,3 @@
-import { generateOnRampURL } from '@coinbase/cbpay-js';
 import CloseIcon from '@mui/icons-material/Close';
 import { ButtonBase, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -50,10 +49,7 @@ export const OnRampList = ({ close }) => {
       return;
     }
 
-    const onRampURL = generateOnRampURL({
-      appId: 'd22a56bd-68b7-4321-9b25-aa357fc7f9ce',
-      destinationWallets: [{ address: address, blockchains: ['flow'] }],
-    });
+    const onRampURL = `https://pay.coinbase.com/buy/input?appId=d22a56bd-68b7-4321-9b25-aa357fc7f9ce&destinationWallets=%5B%7B%22address%22%3A%22${address}%22%2C%22blockchains%22%3A%5B%22flow%22%5D%7D%5D`;
 
     if (onRampURL) {
       // Track before opening the tab

@@ -95,6 +95,10 @@
     "inaccessible": "Inaccessible",
     "confirmAddress": "Confirm address",
     "firstTimeSendMessage": "We noticed this may be your first time sending to this address. Please confirm the destination address.",
+    "newContactTitle": "New contact",
+    "contactNameLabel": "Contact name",
+    "contactNamePlaceholder": "Enter a name",
+    "addToAddressBookButton": "Add to address book",
     "sendSNFTs": "Send S/NFTs",
     "sendNFTs": "Send NFTs",
     "change": "Change",
@@ -113,7 +117,9 @@
     "noProfiles": "No Profiles",
     "noProfilesFound": "No profiles found",
     "failedToLoadRecipients": "Failed to load recipients",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "addressBookAdded": "Added to address book",
+    "failedToAddToAddressBook": "Failed to add to address book"
   },
   "buttons": {
     "retry": "Retry",
@@ -135,7 +141,25 @@
     "failedToLoadTokens": "Failed to load tokens",
     "failedToLoadNFTs": "Failed to load NFTs",
     "transactionPayloadError": "Failed to create transaction payload",
-    "transactionExecutionError": "Transaction execution failed"
+    "transactionExecutionError": "Transaction execution failed",
+    "generic": {
+      "title": "Something went wrong",
+      "message": "We encountered an unexpected error. Please try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "network": {
+      "title": "Connection Error",
+      "message": "Unable to connect to the network. Please check your connection and try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "critical": {
+      "title": "Critical Error",
+      "message": "A critical error occurred. Please restart the app.",
+      "button": "Restart",
+      "reportBug": "Report Bug"
+    }
   },
   "nft": {
     "untitled": "Untitled",
@@ -261,6 +285,17 @@
       "wrongWord": "Wrong word selected. Please try again.",
       "next": "Next",
       "finish": "Finish"
+    }
+  },
+  "surge": {
+    "title": "Surge price active",
+    "message": "Due to high network activity, transaction fees are elevated. Current network fees are 4x higher than usual.",
+    "modal": {
+      "title": "Are you really sure that you want to continue with surge pricing?",
+      "transactionFee": "Your transaction fee",
+      "surgeActive": "Surge price active",
+      "description": "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are {{multiplier}}× higher than usual.",
+      "holdToAgree": "Hold to agree to surge pricing"
     }
   }
 }

@@ -637,11 +637,8 @@
         "type": "object",
         "properties": {
           "data": {
-            "type": "array",
-            "description": "Response data payload",
-            "items": {
-              "$ref": "#/components/schemas/CurrencyEVMTokenData"
-            }
+            "type": "object",
+            "description": "Response data payload"
           },
           "status": {
             "type": "integer",
@@ -651,11 +648,9 @@
           "message": {
             "type": "string",
             "nullable": true,
-            "description": "Optional message, typically used for errors.",
-            "example": "Invalid EVM address format"
+            "description": "Optional response message"
           }
-        },
-        "required": ["data", "status"]
+        }
       },
       "FungibleToken": {
         "type": "object",
@@ -806,6 +801,27 @@
           "priceInCurrency",
           "balanceInCurrency"
         ]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrencyEVMTokenData"
+            }
+          },
+          "status": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message, typically used for errors.",
+            "example": "Invalid EVM address format"
+          }
+        },
+        "required": ["data", "status"]
       },
       "ERC20Token": {
         "type": "object",
@@ -1490,6 +1506,87 @@
           }
         },
         "required": ["status", "data"]
+      },
+      "SignedData": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The fee payer address",
+            "example": "0x1234567890abcdef"
+          },
+          "keyId": {
+            "type": "number",
+            "description": "The key index used for signing",
+            "example": 0
+          },
+          "sig": {
+            "type": "string",
+            "description": "The transaction signature",
+            "example": "a1b2c3d4e5f6..."
+          }
+        },
+        "required": ["address", "keyId", "sig"]
+      },
+      "SignaturePayload": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SignedData"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["status", "data"]
+      },
+      "PayerMsg": {
+        "type": "object",
+        "properties": {
+          "envelopeMessage": {
+            "type": "string"
+          }
+        },
+        "required": ["envelopeMessage"]
+      },
+      "PayerSignParams": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/PayerMsg"
+          },
+          "network": {
+            "schema": null,
+            "$ref": "#/components/schemas/Network"
+          }
+        },
+        "required": ["message"]
+      },
+      "PayloadMsg": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "string"
+          }
+        },
+        "required": ["payload"]
+      },
+      "AuthSignParams": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/PayloadMsg"
+          },
+          "network": {
+            "schema": null,
+            "$ref": "#/components/schemas/Network"
+          }
+        },
+        "required": ["message"]
       }
     }
   },
@@ -1648,16 +1745,16 @@
     },
     "/api/signAsBridgeFeePayer": {
       "post": {
-        "summary": "Sign as bridge fee payer",
-        "description": "Signs a Flow transaction as the bridge fee payer for approved bridge transactions",
-        "tags": ["Payer"],
+        "summary": "Sign as bridge fee payer (Deprecated)",
+        "description": "(Deprecated) Signs a Flow transaction as the bridge fee payer for approved bridge transactions",
+        "tags": ["Deprecated"],
         "parameters": [
           {
             "in": "header",
             "name": "network",
             "schema": {
               "type": "string",
-              "enum": ["mainnet", "testnet", "sandboxnet"],
+              "enum": ["mainnet", "testnet"],
               "default": "mainnet"
             },
             "description": "The Flow network to use for signing",
@@ -1788,6 +1885,78 @@
         }
       }
     },
+    "/api/signAsBridgePayer": {
+      "post": {
+        "summary": "Sign as bridge auth payer",
+        "description": "Signs a Flow transaction as the bridge fee payer for approved bridge transactions",
+        "tags": ["Payer"],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"],
+              "default": "mainnet"
+            },
+            "description": "The Flow network to use for signing",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthSignParams"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful signature response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignaturePayload"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - transaction verification failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable - bridge payer disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/signAsFeePayer": {
       "post": {
         "summary": "Sign as fee payer",
@@ -1811,21 +1980,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["message"],
-                "properties": {
-                  "message": {
-                    "type": "object",
-                    "required": ["envelope_message"],
-                    "properties": {
-                      "envelope_message": {
-                        "type": "string",
-                        "description": "The encoded transaction message to sign",
-                        "example": "464c4f572d56302e302d7472616e73616374696f6e0000000000000000000000..."
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/components/schemas/PayerSignParams"
               }
             }
           }
@@ -1836,29 +1991,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "envelopeSigs": {
-                      "type": "object",
-                      "properties": {
-                        "address": {
-                          "type": "string",
-                          "description": "The fee payer address",
-                          "example": "0x1234567890abcdef"
-                        },
-                        "keyId": {
-                          "type": "number",
-                          "description": "The key index used for signing",
-                          "example": 0
-                        },
-                        "sig": {
-                          "type": "string",
-                          "description": "The transaction signature",
-                          "example": "a1b2c3d4e5f6..."
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/SignaturePayload"
                 }
               }
             }
@@ -1868,13 +2001,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "verify transaction failed"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -1884,13 +2011,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Many Requests for surge: communicates temporary pressure and supports standard client backoff via Retry-After. Compatible with rate/fee surge semantics."
-                    }
-                  }
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -1900,13 +2021,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Internal server error"
-                    }
-                  }
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -1916,13 +2031,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Service Unavailable for disabled/stopped payer: indicates the service is intentionally unavailable or down; distinct from surge."
-                    }
-                  }
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -2131,6 +2240,16 @@
               "default": "mainnet"
             },
             "description": "The Flow network to query"
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"],
+              "default": "mainnet"
+            },
+            "description": "The Flow network to query"
           }
         ],
         "responses": {
@@ -2147,10 +2266,9 @@
           "405": {
             "description": "Method not allowed",
             "content": {
-              "text/plain": {
+              "application/json": {
                 "schema": {
-                  "type": "string",
-                  "example": "Method Not Allowed"
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -2160,7 +2278,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PayerStatusApiResponseV1"
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -3005,7 +3123,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Response",
+                  "$ref": "#/components/schemas/TokenResponse",
                   "type": "object",
                   "properties": {
                     "data": {

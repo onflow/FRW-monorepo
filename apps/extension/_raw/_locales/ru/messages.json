@@ -1572,5 +1572,26 @@
   },
   "legal_text": {
     "message": "Используя Flow Wallet, вы соглашаетесь с <termslink>Условиями использования</termslink> и <privacylink>Политикой конфиденциальности</privacylink>"
+  },
+  "Surge__Modal__Title": {
+    "message": "Вы действительно уверены, что хотите продолжить с повышенными ценами?"
+  },
+  "Surge__Modal__Transaction__Fee": {
+    "message": "Ваша комиссия за транзакцию"
+  },
+  "Surge__Modal__Surge__Active": {
+    "message": "Повышенные цены активны"
+  },
+  "Surge__Modal__Description": {
+    "message": "Из-за высокой активности сети комиссии за транзакции повышены, и Flow Wallet временно не оплачивает ваш газ. Текущие сетевые комиссии в $1 раз выше обычного.",
+    "placeholders": {
+      "multiplier": {
+        "content": "$1",
+        "example": "4"
+      }
+    }
+  },
+  "Surge__Modal__Hold__To__Agree": {
+    "message": "Удерживайте для согласия с повышенными ценами"
   }
 }

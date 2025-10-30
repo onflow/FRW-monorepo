@@ -56,8 +56,7 @@ const TransferList = () => {
         disableTypography={true}
         primary={
           !loading ? (
-            <Typography
-              variant="body1"
+            <Box
               sx={{
                 fontSize: 12,
                 fontWeight: '500',
@@ -76,9 +75,9 @@ const TransferList = () => {
                   prefix={!isContractCall ? (isReceive ? '+' : '-') : ''}
                 />
               ) : (
-                `${props.token}`
+                <Typography data-testid={`collection-${props.token}`}>{props.token}</Typography>
               )}
-            </Typography>
+            </Box>
           ) : (
             <Skeleton variant="text" width={35} height={15} />
           )
@@ -185,6 +184,7 @@ const TransferList = () => {
                         type={tx.type}
                         token={tx.token}
                         txType={tx.transferType}
+                        hash={tx.hash}
                       />
                     }
                     disablePadding
@@ -231,6 +231,7 @@ const TransferList = () => {
                         token={tx.token}
                         title={tx.interaction}
                         txType={tx.transferType}
+                        hash={tx.hash}
                       />
                     </ListItemButton>
                   </ListItem>

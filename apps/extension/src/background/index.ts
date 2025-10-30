@@ -278,16 +278,25 @@ const findPath = (service) => {
 const handlePreAuthz = async (id) => {
   // setApproval(true);
   // const wallet = await
-  const payer = await walletController.getPayerAddressAndKeyId();
   const address = await userWalletService.getCurrentAddress();
-  const network = await userWalletService.getNetwork();
-
+  if (!address) {
+    return;
+  }
   const keyIndex = await userWalletService.getKeyIndex();
+  const network = await userWalletService.getNetwork();
+  const surgeData = await walletController.getPayerStatus();
+  const isSurge = surgeData.data.surge.active;
+  let payerAddress = surgeData.data.feePayer.address;
+  let payerKeyId = surgeData.data.feePayer.keyIndex;
+  if (isSurge) {
+    payerAddress = address;
+    payerKeyId = keyIndex;
+  }
   const services = preAuthzServiceDefinition(
     address as string,
     keyIndex,
-    payer.address,
-    payer.keyId,
+    payerAddress,
+    payerKeyId,
     network
   );
 

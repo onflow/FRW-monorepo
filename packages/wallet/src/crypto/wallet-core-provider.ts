@@ -9,6 +9,8 @@ import {
   type PrivateKey,
   type PublicKey,
 } from '@trustwallet/wallet-core/dist/src/wallet-core';
+
+import { WalletError } from '../types/errors';
 /**
  * Wallet Core provider with Flow blockchain extensions
  */
@@ -32,12 +34,12 @@ export class WalletCoreProvider {
       this.core = await initWasm();
 
       if (!this.core) {
-        throw new Error('Failed to initialize Wallet Core');
+        throw WalletError.InitializationFailed();
       }
 
       this.initialized = true;
     } catch (error) {
-      throw new Error(`Wallet Core initialization failed: ${error}`);
+      throw WalletError.InitializationFailed({ cause: error });
     }
   }
 
@@ -49,6 +51,23 @@ export class WalletCoreProvider {
       await this.initialize();
     }
     return this.core!;
+  }
+
+  /**
+   * Get initialized Wallet Core instance.
+   */
+  static async getCore(): Promise<WalletCore> {
+    return await this.ensureInitialized();
+  }
+
+  /**
+   * Build standard Ethereum BIP44 path for the provided address index.
+   */
+  private static getEvmDerivationPath(index: number): string {
+    if (!Number.isInteger(index) || index < 0) {
+      throw WalletError.InvalidDerivationIndex({ details: { index } });
+    }
+    return `m/44'/60'/0'/0/${index}`;
   }
 
   /**
@@ -70,7 +89,7 @@ export class WalletCoreProvider {
     // Validate mnemonic (based on Mnemonic.test.ts)
     if (!core.Mnemonic.isValid(mnemonic)) {
       wallet.delete();
-      throw new Error('Generated invalid mnemonic');
+      throw WalletError.MnemonicInvalid();
     }
 
     return { wallet, mnemonic };
@@ -84,7 +103,7 @@ export class WalletCoreProvider {
 
     // Validate mnemonic first
     if (!core.Mnemonic.isValid(mnemonic)) {
-      throw new Error('Invalid mnemonic phrase');
+      throw WalletError.MnemonicInvalid();
     }
 
     // Create wallet from mnemonic (based on HDWallet.test.ts)
@@ -135,7 +154,9 @@ export class WalletCoreProvider {
         // Use getKeyByCurve with Curve.secp256k1 for Flow secp256k1 (matches iOS implementation)
         return wallet.getKeyByCurve(core.Curve.secp256k1, derivationPath);
       default:
-        throw new Error(`Unsupported signature algorithm: ${signatureAlgorithm}`);
+        throw WalletError.UnsupportedSignatureAlgorithm({
+          details: { signatureAlgorithm },
+        });
     }
   }
 
@@ -145,6 +166,40 @@ export class WalletCoreProvider {
   static async getEVMPrivateKeyBySignatureAlgorithm(wallet: HDWallet): Promise<PrivateKey> {
     const core = await this.ensureInitialized();
     return wallet.getKeyForCoin(core.CoinType.ethereum);
+  }
+
+  /**
+   * Get Ethereum private key for a specific derivation index using BIP44 path.
+   */
+  static async getEVMPrivateKey(wallet: HDWallet, index: number = 0): Promise<PrivateKey> {
+    const core = await this.ensureInitialized();
+    const derivationPath = this.getEvmDerivationPath(index);
+    return wallet.getKeyByCurve(core.Curve.secp256k1, derivationPath);
+  }
+
+  /**
+   * Derive Ethereum address for a specific derivation index directly from HD wallet.
+   */
+  static async deriveEVMAddressFromWallet(wallet: HDWallet, index: number = 0): Promise<string> {
+    const privateKey = await this.getEVMPrivateKey(wallet, index);
+
+    try {
+      const core = await this.ensureInitialized();
+      const publicKey = privateKey.getPublicKeySecp256k1(false);
+      const anyAddress = core.AnyAddress.createWithPublicKey(publicKey, core.CoinType.ethereum);
+
+      try {
+        return anyAddress.description();
+      } finally {
+        if (anyAddress && typeof anyAddress.delete === 'function') {
+          anyAddress.delete();
+        }
+      }
+    } finally {
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
+    }
   }
 
   /**
@@ -177,7 +232,9 @@ export class WalletCoreProvider {
           publicKey = privateKey.getPublicKeySecp256k1(false); // false = uncompressed
           break;
         default:
-          throw new Error(`Unsupported Flow signature algorithm: ${signatureAlgorithm}`);
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm },
+          });
       }
 
       // Get uncompressed format and convert to hex
@@ -330,7 +387,9 @@ export class WalletCoreProvider {
           curve = core.Curve.secp256k1;
           break;
         default:
-          throw new Error(`Unsupported signature algorithm: ${signatureAlgorithm}`);
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm },
+          });
       }
 
       // Sign the hashed data with the specified curve
@@ -374,7 +433,10 @@ export class WalletCoreProvider {
       // This handles all the cryptographic operations internally
       return wallet.getAddressForCoin(core.CoinType.ethereum);
     } catch (error) {
-      throw new Error(`Failed to derive EVM address: ${error}`);
+      throw WalletError.DerivationFailed({
+        cause: error,
+        details: { method: 'deriveEVMAddress' },
+      });
     }
   }
 
@@ -393,13 +455,80 @@ export class WalletCoreProvider {
       // Derive Ethereum address from public key
       const address = core.AnyAddress.createWithPublicKey(publicKey, core.CoinType.ethereum);
 
-      // Clean up
-      publicKey.delete();
-      privateKey.delete();
-
-      return address.description();
+      try {
+        return address.description();
+      } finally {
+        if (address && typeof address.delete === 'function') {
+          address.delete();
+        }
+        if (publicKey && typeof publicKey.delete === 'function') {
+          publicKey.delete();
+        }
+        if (privateKey && typeof privateKey.delete === 'function') {
+          privateKey.delete();
+        }
+      }
     } catch (error) {
-      throw new Error(`Failed to derive EVM address from private key: ${error}`);
+      throw WalletError.DerivationFailed({
+        cause: error,
+        details: { method: 'deriveEVMAddressFromPrivateKey' },
+      });
+    }
+  }
+
+  /**
+   * Derive secp256k1 public key (compressed or uncompressed) from raw private key bytes.
+   */
+  static async deriveEVMPublicKeyFromPrivateKey(
+    privateKeyBytes: Uint8Array,
+    compressed: boolean = false
+  ): Promise<Uint8Array> {
+    const privateKey = await this.createPrivateKeyFromBytes(privateKeyBytes);
+
+    try {
+      const publicKey = privateKey.getPublicKeySecp256k1(compressed);
+
+      try {
+        const keyData =
+          !compressed && publicKey.uncompressed
+            ? publicKey.uncompressed().data()
+            : publicKey.data();
+        return new Uint8Array(keyData);
+      } finally {
+        if (publicKey && typeof publicKey.delete === 'function') {
+          publicKey.delete();
+        }
+      }
+    } finally {
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
+    }
+  }
+
+  /**
+   * Sign a 32-byte digest with a secp256k1 private key (returns [r|s|v]).
+   */
+  static async signEvmDigestWithPrivateKey(
+    privateKeyBytes: Uint8Array,
+    digest: Uint8Array
+  ): Promise<Uint8Array> {
+    if (digest.length !== 32) {
+      throw WalletError.InvalidDigestLength({
+        details: { expected: 32, received: digest.length },
+      });
+    }
+
+    const core = await this.ensureInitialized();
+    const privateKey = await this.createPrivateKeyFromBytes(privateKeyBytes);
+
+    try {
+      const signature = privateKey.sign(digest, core.Curve.secp256k1);
+      return new Uint8Array(signature);
+    } finally {
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
     }
   }
 }

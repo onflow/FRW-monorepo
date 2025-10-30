@@ -92,6 +92,10 @@
     "inaccessible": "Inaccesible",
     "confirmAddress": "Confirmar dirección",
     "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino.",
+    "newContactTitle": "Nuevo contacto",
+    "contactNameLabel": "Nombre del contacto",
+    "contactNamePlaceholder": "Ingresa un nombre",
+    "addToAddressBookButton": "Agregar a la libreta de direcciones",
     "sendSNFTs": "Enviar S/NFTs",
     "sendNFTs": "Enviar NFTs",
     "change": "Cambiar",
@@ -110,7 +114,9 @@
     "noProfiles": "Sin Perfiles",
     "noProfilesFound": "No se encontraron perfiles",
     "failedToLoadRecipients": "Error al cargar destinatarios",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "addressBookAdded": "Añadido a la libreta de direcciones",
+    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones"
   },
   "buttons": {
     "retry": "Reintentar",
@@ -132,7 +138,25 @@
     "failedToLoadTokens": "Error al cargar tokens",
     "failedToLoadNFTs": "Error al cargar NFTs",
     "transactionPayloadError": "Error al crear la carga de la transacción",
-    "transactionExecutionError": "Error en la ejecución de la transacción"
+    "transactionExecutionError": "Error en la ejecución de la transacción",
+    "generic": {
+      "title": "Algo salió mal",
+      "message": "Encontramos un error inesperado. Por favor, inténtalo de nuevo.",
+      "button": "Intentar de nuevo",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "Problema de conexión",
+      "message": "No se puede conectar a la red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      "button": "Reintentar",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "Error crítico",
+      "message": "Ocurrió un error crítico. Por favor, reinicia la aplicación.",
+      "button": "Reiniciar aplicación",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "Sin título",
@@ -258,6 +282,17 @@
       "wrongWord": "Palabra incorrecta seleccionada. Por favor intenta de nuevo.",
       "next": "Siguiente",
       "finish": "Finalizar"
+    }
+  },
+  "surge": {
+    "title": "Precio de congestión activo",
+    "message": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas. Las tarifas de red actuales son 4 veces más altas de lo habitual.",
+    "modal": {
+      "title": "¿Estás seguro de que quieres continuar con el precio de congestión?",
+      "transactionFee": "Tu tarifa de transacción",
+      "surgeActive": "Precio de congestión activo",
+      "description": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas, y Flow Wallet no está pagando temporalmente por tu gas. Las tarifas de red actuales son {{multiplier}}× más altas de lo habitual.",
+      "holdToAgree": "Mantener para continuar con el precio de congestión"
     }
   }
 }

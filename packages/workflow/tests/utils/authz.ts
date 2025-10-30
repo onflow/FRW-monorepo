@@ -50,6 +50,25 @@ export function authFunc(opt: any) {
   };
 }
 
+export const payerAuthorization = async (account: any) => {
+  // TODO: get payer address and key id from config
+  const ADDRESS = '0x319e67f2ef9d937f'; // Fixed payer address
+  const KEY_ID = 0;
+  return {
+    ...account,
+    tempId: `${ADDRESS}-${KEY_ID}`,
+    addr: ADDRESS.replace('0x', ''),
+    keyId: Number(KEY_ID),
+    signingFunction: async (signable: any) => {
+      return {
+        addr: ADDRESS,
+        keyId: Number(KEY_ID),
+        signature: await getPayerSignature('http://localhost:3000/api/signAsFeePayer', signable),
+      };
+    },
+  };
+};
+
 export const bridgeAuthorization = async (account: any) => {
   // TODO: get payer address and key id from config
   const ADDRESS = '0xc33b4f1884ae1ea4'; // Fixed payer address
@@ -63,10 +82,29 @@ export const bridgeAuthorization = async (account: any) => {
       return {
         addr: ADDRESS,
         keyId: Number(KEY_ID),
-        signature: await getPayerSignature(
+        signature: await getAuthSignature(
           'http://localhost:3000/api/signAsBridgeFeePayer',
           signable
         ),
+      };
+    },
+  };
+};
+
+export const bridgeAuthorizationOnly = async (account: any) => {
+  // TODO: get payer address and key id from config
+  const ADDRESS = '0xc33b4f1884ae1ea4'; // Fixed payer address
+  const KEY_ID = 0;
+  return {
+    ...account,
+    tempId: `${ADDRESS}-${KEY_ID}`,
+    addr: ADDRESS.replace('0x', ''),
+    keyId: Number(KEY_ID),
+    signingFunction: async (signable: any) => {
+      return {
+        addr: ADDRESS,
+        keyId: Number(KEY_ID),
+        signature: await getAuthSignature('http://localhost:3000/api/signAsBridgePayer', signable),
       };
     },
   };
@@ -82,12 +120,31 @@ const getPayerSignature = async (endPoint: string, signable: any) => {
     body: JSON.stringify({
       transaction: signable.voucher,
       message: {
-        envelope_message: signable.message,
+        envelopeMessage: signable.message,
       },
     }),
   });
-  const data = (await response.json()) as { envelopeSigs: { sig: string } };
-  const signature = data.envelopeSigs.sig;
+  const { data } = (await response.json()) as { data: { sig: string } };
+  const signature = data.sig;
+  return signature;
+};
+
+const getAuthSignature = async (endPoint: string, signable: any) => {
+  const response = await fetch(endPoint, {
+    method: 'POST',
+    headers: {
+      network: 'mainnet',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      transaction: signable.voucher,
+      message: {
+        payload: signable.message,
+      },
+    }),
+  });
+  const { data } = (await response.json()) as { data: { sig: string } };
+  const signature = data.sig;
   return signature;
 };
 

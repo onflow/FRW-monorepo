@@ -1,6 +1,6 @@
 {
   "name": "frw-extension",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "Digital wallet created for everyone.",
   "type": "module",
   "scripts": {
@@ -39,7 +39,6 @@
     "build:zip": "pnpm build && node scripts/build-zip.js"
   },
   "dependencies": {
-    "@coinbase/cbpay-js": "^1.10.0",
     "@debank/common": "^0.3.60",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -48,6 +47,7 @@
     "@mui/system": "^7.2.0",
     "@noble/secp256k1": "^1.7.2",
     "@onflow/fcl": "^1.19.0",
+    "@onflow/frw-api": "workspace:*",
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-icons": "workspace:*",
