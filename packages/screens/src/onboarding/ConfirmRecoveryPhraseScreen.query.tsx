@@ -9,9 +9,11 @@ import {
   Button,
   ScrollView,
 } from '@onflow/frw-ui';
+import { SeedPhraseKey, SignatureAlgorithm, BIP44_PATHS } from '@onflow/frw-wallet';
 import { useMutation } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ActivityIndicator } from 'react-native';
 
 // Helper function to generate 3 random unique positions from 1-12
 const generateRandomPositions = (): number[] => {
@@ -53,11 +55,55 @@ const trackVerificationAction = async (action: 'answer' | 'complete' | 'failure'
  * Shows multiple choice questions for specific word positions in the recovery phrase
  * Uses TanStack Query for future backend integration
  */
+// Helper function to derive Flow address from mnemonic
+const deriveFlowAddressFromMnemonic = async (mnemonic: string): Promise<string> => {
+  try {
+    // Import MemoryStorage for temporary key storage during derivation
+    const { MemoryStorage } = await import('@onflow/frw-wallet');
+    const tempStorage = new MemoryStorage();
+
+    // Create SeedPhraseKey from mnemonic
+    const seedPhraseKey = await SeedPhraseKey.createAdvanced(
+      {
+        mnemonic,
+        derivationPath: BIP44_PATHS.FLOW, // m/44'/539'/0'/0/0
+        passphrase: '',
+      },
+      tempStorage
+    );
+
+    // Get public key using P-256 (Flow's default signature algorithm)
+    const publicKeyBytes = await seedPhraseKey.publicKey(SignatureAlgorithm.ECDSA_P256);
+
+    if (!publicKeyBytes) {
+      throw new Error('Failed to derive public key from mnemonic');
+    }
+
+    // Convert public key to Flow address format
+    // Flow address derivation: hash(publicKey) -> take first 8 bytes -> format as 0x...
+    const publicKeyHex = Buffer.from(publicKeyBytes).toString('hex');
+
+    // For now, return a placeholder - actual address derivation requires Flow SDK
+    // TODO: Use Flow SDK to properly derive address from public key
+    logger.info(
+      '[ConfirmRecoveryPhraseScreen] Derived public key:',
+      publicKeyHex.slice(0, 16) + '...'
+    );
+
+    // Return placeholder address (will be replaced with actual derivation)
+    return '0x' + publicKeyHex.slice(0, 16);
+  } catch (error) {
+    logger.error('[ConfirmRecoveryPhraseScreen] Failed to derive address:', error);
+    throw error;
+  }
+};
+
 export function ConfirmRecoveryPhraseScreen({
   route,
 }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
   // Get data from navigation params
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
@@ -145,31 +191,65 @@ export function ConfirmRecoveryPhraseScreen({
       return selectedAnswers[index] === question.correctAnswer;
     });
 
-    if (allCorrect) {
+    if (!allCorrect) {
+      // Track failure
+      trackingMutation.mutate('failure');
+      return;
+    }
+
+    try {
+      setIsCreatingAccount(true);
+
       // Track successful completion
       trackingMutation.mutate('complete');
 
-      // User verified the phrase - now save it securely and create account
-      logger.info('[ConfirmRecoveryPhraseScreen] Recovery phrase verified!');
+      // User verified the phrase - now derive address and save securely
+      logger.info(
+        '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'
+      );
 
-      // TODO: Save mnemonic securely using bridge
-      // The mnemonic should be:
-      // 1. Stored in secure storage (Android Keystore / iOS Keychain)
-      // 2. Used to derive Flow account address
-      // 3. Account registered with backend if needed (for COA features)
-      //
-      // For now, navigate to notification preferences
-      // Actual account creation implementation pending based on:
-      // - Whether this is pure EOA (no server) or COA-hybrid
-      // - Backend API integration requirements
-      logger.warn('[ConfirmRecoveryPhraseScreen] Mnemonic verified but not yet persisted');
-      logger.debug('[ConfirmRecoveryPhraseScreen] Mnemonic length:', mnemonic.split(' ').length);
+      // 1. Derive Flow address from mnemonic (EOA - calculated, not created)
+      const flowAddress = await deriveFlowAddressFromMnemonic(mnemonic);
+      logger.info('[ConfirmRecoveryPhraseScreen] Derived Flow address:', flowAddress);
 
-      // Navigate to notification preferences (final onboarding step)
-      navigation.navigate('NotificationPreferences');
-    } else {
-      // Track failure
-      trackingMutation.mutate('failure');
+      // 2. Save mnemonic securely to native secure storage
+      if (bridge.saveMnemonic) {
+        logger.info('[ConfirmRecoveryPhraseScreen] Saving mnemonic to secure storage...');
+
+        const saveResult = await bridge.saveMnemonic(mnemonic, flowAddress);
+
+        if (!saveResult.success) {
+          throw new Error(saveResult.error || 'Failed to save mnemonic to secure storage');
+        }
+
+        logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully!');
+        logger.info('[ConfirmRecoveryPhraseScreen] EOA account ready:', {
+          address: flowAddress,
+          accountType: 'eoa',
+          verified: true,
+        });
+
+        // Navigate to notification preferences (final onboarding step)
+        navigation.navigate('NotificationPreferences');
+      } else {
+        // Fallback for web/extension (no native bridge)
+        logger.warn(
+          '[ConfirmRecoveryPhraseScreen] No native bridge available, skipping mnemonic save'
+        );
+        logger.info('[ConfirmRecoveryPhraseScreen] EOA account ready (web/extension):', {
+          address: flowAddress,
+          accountType: 'eoa',
+          verified: true,
+        });
+
+        // Navigate anyway (for web/extension development)
+        navigation.navigate('NotificationPreferences');
+      }
+    } catch (error) {
+      logger.error('[ConfirmRecoveryPhraseScreen] Failed to create EOA account:', error);
+      // TODO: Show error UI to user
+    } finally {
+      setIsCreatingAccount(false);
     }
   };
 
@@ -177,6 +257,23 @@ export function ConfirmRecoveryPhraseScreen({
   const allAnswersCorrect = questions.every((question, index) => {
     return selectedAnswers[index] === question.correctAnswer;
   });
+
+  // Show loading overlay while creating account
+  if (isCreatingAccount) {
+    return (
+      <OnboardingBackground>
+        <YStack flex={1} items="center" justify="center" gap="$4">
+          <ActivityIndicator size="large" color="#00EF8B" />
+          <Text fontSize={24} fontWeight="700" color="$text">
+            Creating Your Account
+          </Text>
+          <Text fontSize="$4" color="$textSecondary" text="center" px="$6">
+            Deriving your Flow address from seed phrase...
+          </Text>
+        </YStack>
+      </OnboardingBackground>
+    );
+  }
 
   return (
     <OnboardingBackground>

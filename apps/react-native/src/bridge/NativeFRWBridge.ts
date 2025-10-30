@@ -78,6 +78,8 @@ export interface Spec extends TurboModule {
   createEOAAccount(): Promise<CreateAccountResponse>;
   // COA account creation (hybrid with server - Secure Enclave)
   createCOAAccount(): Promise<CreateAccountResponse>;
+  // Save mnemonic to secure storage (EOA accounts)
+  saveMnemonic(mnemonic: string, address: string): Promise<SaveMnemonicResponse>;
   // Notification permissions
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
@@ -107,6 +109,11 @@ export interface CreateAccountResponse {
   mnemonic: string | null;
   phrase: string[] | null;
   accountType: 'eoa' | 'coa' | null;
+  error: string | null;
+}
+
+export interface SaveMnemonicResponse {
+  success: boolean;
   error: string | null;
 }
 
