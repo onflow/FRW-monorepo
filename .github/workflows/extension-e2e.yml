@@ -28,6 +28,7 @@ jobs:
     concurrency:
       group: extension-e2e
       cancel-in-progress: false
+    environment: ${{ (inputs.build_target || 'pro') == 'pro' && 'production' || 'development' }}
     strategy:
       matrix:
         node-version: [22.x]
@@ -126,6 +127,41 @@ jobs:
           TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2 }}"
           TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
           EOF
+
+      - name: Derive extension ID from manifest key
+        env:
+          MANIFEST_KEY: ${{ secrets.MANIFEST_KEY }}
+          BETA_MANIFEST_KEY: ${{ secrets.BETA_MANIFEST_KEY }}
+          IS_BETA: "false"
+        run: |
+          node <<'NODE'
+          'use strict';
+          const fs = require('fs');
+          const crypto = require('crypto');
+
+          const { MANIFEST_KEY, BETA_MANIFEST_KEY, IS_BETA, GITHUB_ENV } = process.env;
+          const manifestKey =
+            IS_BETA === 'true' && BETA_MANIFEST_KEY ? BETA_MANIFEST_KEY : MANIFEST_KEY;
+
+          if (!manifestKey) {
+            console.log('No manifest key provided; skipping derived extension ID export.');
+            return;
+          }
+
+          try {
+            const keyBytes = Buffer.from(manifestKey, 'base64');
+            const hashHex = crypto.createHash('sha256').update(keyBytes).digest('hex').slice(0, 32);
+            const alphabet = 'abcdefghijklmnop';
+            let extensionId = '';
+            for (const char of hashHex) {
+              extensionId += alphabet[parseInt(char, 16)];
+            }
+            console.log(`Derived extension ID from manifest key: ${extensionId}`);
+            fs.appendFileSync(GITHUB_ENV, `TEST_EXTENSION_ID=${extensionId}\n`);
+          } catch (error) {
+            console.error(`Failed to derive extension ID: ${error.message}`);
+          }
+          NODE
 
       - name: Build packages
         run: pnpm build:packages
