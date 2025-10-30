@@ -41,6 +41,7 @@ import {
   registerStatusRefreshRegex,
 } from '@/data-model';
 import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant';
+import { BIP44_PATHS } from '@onflow/frw-wallet';
 import {
   type PublicPrivateKeyTuple,
   type AccountKeyRequest,
@@ -1435,6 +1436,102 @@ class UserWallet {
     };
     return deviceInfo;
   };
+
+  /**
+   * Get the Ethereum private key using EVM BIP44 path or from Simple Keyring
+   * @returns The Ethereum private key as hex string
+   */
+  async getEthereumPrivateKey(): Promise<string> {
+    // Check if keyring is unlocked first
+    if (!keyringService.isUnlocked()) {
+      throw new Error('Keyring is locked - please unlock first');
+    }
+
+    // First try to get from HD Keyring (mnemonic-based)
+    try {
+      const mnemonic = await keyringService.getMnemonicFromKeyring();
+      if (mnemonic) {
+        // Derive the private key using EVM BIP44 path
+        const evmPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+          mnemonic,
+          BIP44_PATHS.EVM,
+          ''
+        );
+
+        // Extract the secp256k1 private key (Ethereum)
+        const ethereumPrivateKey = evmPrivateKeyTuple.SECP256K1.pk;
+
+        if (ethereumPrivateKey) {
+          console.log('getEthereumPrivateKey - HD Keyring private key:', {
+            length: ethereumPrivateKey.length,
+            startsWith0x: ethereumPrivateKey.startsWith('0x'),
+            first8Chars: ethereumPrivateKey.substring(0, 8),
+          });
+          // Ensure the private key has 0x prefix for consistency
+          return ethereumPrivateKey.startsWith('0x')
+            ? ethereumPrivateKey
+            : `0x${ethereumPrivateKey}`;
+        }
+      }
+    } catch (error) {
+      // HD Keyring not available or failed, try Simple Keyring
+      console.log('HD Keyring not available, trying Simple Keyring:', error);
+    }
+
+    // If HD Keyring fails, try Simple Keyring (private key-based)
+    try {
+      const privateKey = await keyringService.getCurrentPrivateKey();
+      if (privateKey) {
+        // For Simple Keyring, the private key is already the Ethereum private key
+        // Just ensure it's in the correct format
+        const formattedKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
+        console.log('getEthereumPrivateKey - Simple Keyring private key:', {
+          originalLength: privateKey.length,
+          formattedLength: formattedKey.length,
+          startsWith0x: formattedKey.startsWith('0x'),
+          first8Chars: formattedKey.substring(0, 8),
+        });
+        return formattedKey;
+      }
+    } catch (error) {
+      console.log('Simple Keyring not available:', error);
+    }
+
+    throw new Error('No Ethereum private key found in either HD Keyring or Simple Keyring');
+  }
+
+  /**
+   * Convert private key hex string to Uint8Array
+   * @param privateKeyHex - The private key as a hex string
+   * @returns The private key as Uint8Array
+   */
+  privateKeyToUint8Array(privateKeyHex: string): Uint8Array {
+    console.log('privateKeyToUint8Array - Input:', {
+      privateKeyHex,
+      length: privateKeyHex?.length,
+      type: typeof privateKeyHex,
+    });
+
+    if (!privateKeyHex || typeof privateKeyHex !== 'string') {
+      throw new Error('Invalid private key input: ' + typeof privateKeyHex);
+    }
+
+    // Remove 0x prefix if present
+    const cleanHex = privateKeyHex.replace(/^0x/i, '');
+    console.log('privateKeyToUint8Array - Clean hex:', {
+      cleanHex,
+      length: cleanHex.length,
+    });
+
+    // Convert to Uint8Array
+    const result = Uint8Array.from(Buffer.from(cleanHex, 'hex'));
+    console.log('privateKeyToUint8Array - Result:', {
+      length: result.length,
+      first4Bytes: Array.from(result.slice(0, 4)),
+    });
+
+    return result;
+  }
 }
 
 // ------------------------------------------------------------------------------------------------

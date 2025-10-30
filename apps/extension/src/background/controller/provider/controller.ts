@@ -31,18 +31,6 @@ interface Web3WalletPermission {
 }
 
 /**
- * Converts a hex private key string to Uint8Array format for eth-signer
- * @param privateKeyHex - The private key as a hex string
- * @returns The private key as Uint8Array
- */
-function privateKeyToUint8Array(privateKeyHex: string): Uint8Array {
-  // Remove 0x prefix if present
-  const cleanHex = privateKeyHex.replace(/^0x/i, '');
-  // Convert to Uint8Array
-  return Uint8Array.from(Buffer.from(cleanHex, 'hex'));
-}
-
-/**
  * Derives Ethereum address from private key
  * @param privateKeyHex - The private key as a hex string
  * @returns The Ethereum address
@@ -55,38 +43,10 @@ function deriveEthereumAddress(privateKeyHex: string): string {
   return '0x' + addressBuffer.toString('hex');
 }
 
-/**
- * Gets the Ethereum private key using EVM BIP44 path
- * @returns The Ethereum private key as hex string
- */
-async function getEthereumPrivateKey(): Promise<string> {
-  // Get the mnemonic from the keyring
-  const mnemonic = await keyringService.getMnemonicFromKeyring();
-  if (!mnemonic) {
-    throw new Error('Mnemonic not found in keyring');
-  }
-
-  // Derive the private key using EVM BIP44 path
-  const evmPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
-    mnemonic,
-    BIP44_PATHS.EVM,
-    ''
-  );
-
-  // Extract the secp256k1 private key (Ethereum)
-  const ethereumPrivateKey = evmPrivateKeyTuple.SECP256K1.pk;
-
-  if (!ethereumPrivateKey) {
-    throw new Error('Ethereum private key not found in EVM derivation');
-  }
-
-  return ethereumPrivateKey;
-}
-
 async function signTypeData(typedData: Record<string, unknown>) {
   // Get the Ethereum private key using EVM BIP44 path
-  const ethereumPrivateKey = await getEthereumPrivateKey();
-  const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+  const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+  const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
   // Use eth-signer to sign the typed data
   const { signature, digest } = await EthSigner.signTypedData(privateKeyBytes, typedData);
@@ -252,8 +212,8 @@ class ProviderController extends BaseController {
         const nonce = await this.getTransactionCount(trxData.from);
 
         // Get the Ethereum private key using EVM BIP44 path
-        const ethereumPrivateKey = await getEthereumPrivateKey();
-        const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+        const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+        const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
         // Get the current chain ID
         const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
@@ -510,8 +470,8 @@ class ProviderController extends BaseController {
 
     try {
       // Get the Ethereum private key using secp256k1 algorithm
-      const ethereumPrivateKey = await getEthereumPrivateKey();
-      const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+      const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+      const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
       // Derive the Ethereum address from the private key
       const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);
@@ -768,8 +728,8 @@ class ProviderController extends BaseController {
 
     try {
       // Get the Ethereum private key using secp256k1 algorithm
-      const ethereumPrivateKey = await getEthereumPrivateKey();
-      const privateKeyBytes = privateKeyToUint8Array(ethereumPrivateKey);
+      const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+      const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
       // Derive the Ethereum address from the private key
       const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);

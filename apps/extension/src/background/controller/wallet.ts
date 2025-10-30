@@ -1714,6 +1714,23 @@ export class WalletController extends BaseController {
       throw error;
     }
   };
+
+  /**
+   * Get the Ethereum private key using EVM BIP44 path or from Simple Keyring
+   * @returns The Ethereum private key as hex string
+   */
+  getEthereumPrivateKey = async (): Promise<string> => {
+    return await userWalletService.getEthereumPrivateKey();
+  };
+
+  /**
+   * Convert private key hex string to Uint8Array
+   * @param privateKeyHex - The private key as a hex string
+   * @returns The private key as Uint8Array
+   */
+  privateKeyToUint8Array = (privateKeyHex: string): Uint8Array => {
+    return userWalletService.privateKeyToUint8Array(privateKeyHex);
+  };
 }
 
 export default new WalletController();

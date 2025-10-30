@@ -9,6 +9,15 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
+import {
+  EthSigner,
+  BIP44_PATHS,
+  type EthLegacyTransaction,
+  EthSignedTransaction,
+} from '@onflow/frw-wallet';
+import Web3 from 'web3';
+// Removed direct service imports - using walletController instead
+import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID, EVM_ENDPOINT } from '@/shared/constant';
 
 import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
 
@@ -138,6 +147,111 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   getSignKeyIndex(): number {
     return this.walletController.getKeyIndex() || 0;
+  }
+
+  async ethSignTransaction(transaction: any): Promise<string> {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
+
+    // Get the current nonce from the network
+    const nonce = await this.getTransactionCount(transaction.from);
+
+    const ethereumPrivateKey = await this.walletController.getEthereumPrivateKey();
+
+    const privateKeyBytes = await this.walletController.privateKeyToUint8Array(ethereumPrivateKey);
+
+    // Convert plain object back to Uint8Array if needed (cross-context serialization issue)
+    const actualPrivateKeyBytes =
+      privateKeyBytes instanceof Uint8Array
+        ? privateKeyBytes
+        : new Uint8Array(Object.values(privateKeyBytes));
+
+    const network = await this.walletController.getNetwork();
+    const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
+
+    if (!transaction.to || transaction.to === '') {
+      throw new Error('Transaction "to" address is required');
+    }
+
+    const gasLimit = '0x1C9C380'; // 30,000,000 in hex
+    const gasPrice = '0x0'; // Zero gas price
+    const value = transaction.value ? `0x${BigInt(transaction.value).toString(16)}` : '0x0';
+
+    const ethTransaction: EthLegacyTransaction = {
+      chainId: chainId,
+      nonce: parseInt(nonce, 16),
+      gasLimit: gasLimit,
+      gasPrice: gasPrice,
+      to: transaction.to,
+      value: value,
+      data: transaction.data || '0x',
+    };
+
+    // Debug logging
+    console.log('ethSignTransaction - Final ethTransaction object:', ethTransaction);
+
+    // Sign the transaction using EthSigner
+    try {
+      const signedTransaction = await EthSigner.signTransaction(
+        ethTransaction,
+        actualPrivateKeyBytes
+      );
+      return signedTransaction.rawTransaction;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async evmTransactionCallback(trxData: any): Promise<any> {
+    console.log('EVM Callback called with:', trxData);
+
+    if (trxData.state === 'EVM_TRX_BUILDING') {
+      // Use the ethSignTransaction method
+      const signedTx = await this.ethSignTransaction(trxData.trxData);
+      if (!signedTx) {
+        throw new Error('Failed to sign EVM transaction');
+      }
+      return signedTx;
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Get the current transaction count (nonce) for an address
+   */
+  private async getTransactionCount(address: string): Promise<string> {
+    const network = await this.walletController.getNetwork();
+    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+    const web3Instance = new Web3(provider);
+
+    return new Promise((resolve, reject) => {
+      if (!web3Instance.currentProvider) {
+        reject(new Error('Provider is undefined'));
+        return;
+      }
+
+      web3Instance.currentProvider.send(
+        {
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionCount',
+          params: [address, 'latest'],
+          id: Date.now(),
+        },
+        (error, response) => {
+          if (error) {
+            reject(error);
+          } else if (response && 'error' in response && response.error) {
+            reject(new Error(response.error.message || 'Failed to get transaction count'));
+          } else if (response && 'result' in response) {
+            resolve(response.result as string);
+          } else {
+            reject(new Error('Invalid response from provider'));
+          }
+        }
+      );
+    });
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {
