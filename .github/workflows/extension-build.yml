@@ -196,5 +196,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build shared packages
+        run: pnpm build:packages
+
       - name: Run unit tests
         run: pnpm -F frw-extension test:run
