@@ -28,6 +28,17 @@ export { PrivateKey } from './keys/private-key';
 
 // Wallet Core integration
 export { WalletCoreProvider } from './crypto/wallet-core-provider';
+export {
+  entropyToMnemonic,
+  generateBip39Mnemonic,
+  mnemonicToEntropy,
+  mnemonicToSeed,
+  suggestBip39Words,
+  type Bip39Strength,
+  type GenerateBip39Options,
+  validateBip39Mnemonic,
+  validateBip39Word,
+} from './crypto/bip39';
 
 // Ethereum services
 export {
