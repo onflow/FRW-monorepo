@@ -4,7 +4,7 @@
 
 import { type CadenceService } from '@onflow/frw-cadence';
 
-import { COA } from './COA';
+import { COA } from './coa';
 import { type ChildAccount } from '../types/account';
 import {
   type FlowAddress,

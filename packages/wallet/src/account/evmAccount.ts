@@ -3,7 +3,7 @@
  * Can be a standalone EVM account or a COA (Cadence Owned Account)
  */
 
-import { type FlowAccount } from './FlowAccount';
+import { type FlowAccount } from './flowAccount';
 import {
   type FlowChainID,
   type KeyProtocol,

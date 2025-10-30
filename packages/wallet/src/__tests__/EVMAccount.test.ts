@@ -4,8 +4,8 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { EVMAccount } from '../Account/EVMAccount';
-import { type FlowAccount } from '../Account/FlowAccount';
+import { EVMAccount } from '../account/evmAccount';
+import { type FlowAccount } from '../account/flowAccount';
 import {
   FlowChainID as FlowChainIDEnum,
   type KeyProtocol,

@@ -2,32 +2,32 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const accounts = {
-  // main: {
-  //   address: process.env.TEST_MAIN_ACCOUNT_ADDRESS || '',
-  //   pub: process.env.TEST_MAIN_ACCOUNT_PUBKEY,
-  //   evmAddr: process.env.TEST_MAIN_ACCOUNT_COA,
-  //   key: {
-  //     type: 'hex',
-  //     index: process.env.TEST_MAIN_ACCOUNT_KEY_INDEX,
-  //     signatureAlgorithm: 'ECDSA_P256',
-  //     hashAlgorithm: 'SHA3_256',
-  //     privateKey: process.env.TEST_MAIN_ACCOUNT_KEY,
-  //   },
-  // },
   main: {
-    address: process.env.TEST_MAIN_EOA_ACCOUNT_ADDRESS || '',
-    pub: process.env.TEST_MAIN_EOA_ACCOUNT_PUBKEY,
-    evmAddr: process.env.TEST_MAIN_EOA_ACCOUNT_COA,
-    eoaAddr: process.env.TEST_MAIN_EOA_ACCOUNT_EOA || '',
+    address: process.env.TEST_MAIN_ACCOUNT_ADDRESS || '',
+    pub: process.env.TEST_MAIN_ACCOUNT_PUBKEY,
+    evmAddr: process.env.TEST_MAIN_ACCOUNT_COA,
     key: {
       type: 'hex',
-      index: 0,
-      signatureAlgorithm: 'ECDSA_secp256k1',
-      hashAlgorithm: 'SHA2_256',
-      privateKey: process.env.TEST_MAIN_EOA_ACCOUNT_KEY,
+      index: process.env.TEST_MAIN_ACCOUNT_KEY_INDEX,
+      signatureAlgorithm: 'ECDSA_P256',
+      hashAlgorithm: 'SHA3_256',
+      privateKey: process.env.TEST_MAIN_ACCOUNT_KEY,
     },
-    mnemonic: process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC,
   },
+  // main: {
+  //   address: process.env.TEST_MAIN_EOA_ACCOUNT_ADDRESS || '',
+  //   pub: process.env.TEST_MAIN_EOA_ACCOUNT_PUBKEY,
+  //   evmAddr: process.env.TEST_MAIN_EOA_ACCOUNT_COA,
+  //   eoaAddr: process.env.TEST_MAIN_EOA_ACCOUNT_EOA || '',
+  //   key: {
+  //     type: 'hex',
+  //     index: 0,
+  //     signatureAlgorithm: 'ECDSA_secp256k1',
+  //     hashAlgorithm: 'SHA2_256',
+  //     privateKey: process.env.TEST_MAIN_EOA_ACCOUNT_KEY,
+  //   },
+  //   mnemonic: process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC,
+  // },
   child1: {
     address: process.env.TEST_CHILD_ACCOUNT_ONE_ADDR,
     key: process.env.CHILD_ACCOUNT_ONE_KEY || '',
