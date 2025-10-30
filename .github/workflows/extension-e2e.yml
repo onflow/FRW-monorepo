@@ -28,6 +28,7 @@ jobs:
     concurrency:
       group: extension-e2e
       cancel-in-progress: false
+    environment: ${{ (inputs.build_target || 'pro') == 'pro' && 'production' || 'development' }}
     strategy:
       matrix:
         node-version: [22.x]
@@ -127,6 +128,26 @@ jobs:
           TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
           EOF
 
+      - name: Derive extension ID from manifest key
+        env:
+          MANIFEST_KEY: ${{ secrets.MANIFEST_KEY }}
+          BETA_MANIFEST_KEY: ${{ secrets.BETA_MANIFEST_KEY }}
+          IS_BETA: "false"
+        run: |
+          manifest_key="$MANIFEST_KEY"
+          if [ "$IS_BETA" = "true" ] && [ -n "$BETA_MANIFEST_KEY" ]; then
+            manifest_key="$BETA_MANIFEST_KEY"
+          fi
+
+          if [ -z "$manifest_key" ]; then
+            echo "No manifest key provided; skipping derived extension ID export."
+            exit 0
+          fi
+
+          extension_id=$(node scripts/derive-extension-id.js --key "$manifest_key")
+          echo "Derived extension ID from manifest key: $extension_id"
+          echo "TEST_EXTENSION_ID=$extension_id" >> "$GITHUB_ENV"
+
       - name: Build packages
         run: pnpm build:packages
 
@@ -164,7 +185,7 @@ jobs:
       - name: Notify Discord on failure
         if: failure()
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL != '' && secrets.DISCORD_WEBHOOK_URL || vars.DISCORD_WEBHOOK_URL }}
         run: |
           if [ -z "$DISCORD_WEBHOOK_URL" ]; then
             echo "DISCORD_WEBHOOK_URL not set; skipping Discord notification."
@@ -178,7 +199,7 @@ jobs:
       - name: Notify Discord on success (optional)
         if: success() && env.NOTIFY_ON_SUCCESS == 'true'
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL != '' && secrets.DISCORD_WEBHOOK_URL || vars.DISCORD_WEBHOOK_URL }}
         run: |
           if [ -z "$DISCORD_WEBHOOK_URL" ]; then
             echo "DISCORD_WEBHOOK_URL not set; skipping Discord notification."
