@@ -5,6 +5,7 @@ import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
 import { AddressText } from './AddressText';
 import { Avatar } from '../foundation/Avatar';
+import { IconButton } from '../foundation/IconButton';
 import { Text } from '../foundation/Text';
 
 // Helper function to round balance to 5 decimal places
@@ -178,38 +179,30 @@ export function AccountSelector({
           <XStack gap="$2" items="center">
             {/* Copy Icon */}
             {showCopyButton && (
-              <XStack
-                width={24}
-                height={24}
-                items="center"
-                justify="center"
-                onPress={() => onCopyAddress?.(currentAccount.address)}
-                cursor="pointer"
-                opacity={0.7}
-                hoverStyle={{ opacity: 1 }}
-                mr="$2"
-              >
-                <Copy size={24} color="#FFFFFF" theme="outline" />
+              <XStack mr="$4">
+                <IconButton
+                  icon={<Copy size={24} color="#FFFFFF" theme="outline" />}
+                  variant="ghost"
+                  size="small"
+                  onPress={() => onCopyAddress?.(currentAccount.address)}
+                />
               </XStack>
             )}
 
             {/* Edit/Chevron Icon */}
             {showEditButton && (
-              <XStack
-                width={24}
-                height={24}
-                items="center"
-                justify="center"
-                pressStyle={{ opacity: 0.7 }}
+              <IconButton
+                icon={
+                  actionIcon === 'chevron' ? (
+                    <ChevronRight size={24} color="#767676" theme="outline" />
+                  ) : (
+                    <Edit size={24} color="#767676" theme="outline" />
+                  )
+                }
+                variant="ghost"
+                size="small"
                 onPress={handleEditClick}
-                cursor="pointer"
-              >
-                {actionIcon === 'chevron' ? (
-                  <ChevronRight size={24} color="#767676" theme="outline" />
-                ) : (
-                  <Edit size={24} color="#767676" theme="outline" />
-                )}
-              </XStack>
+              />
             )}
           </XStack>
         </XStack>
@@ -242,9 +235,12 @@ export function AccountSelector({
                 Select Account
               </Text>
 
-              <XStack onPress={() => setOpen(false)} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
-                <Close size={15} color="#767676" theme="outline" />
-              </XStack>
+              <IconButton
+                icon={<Close size={15} color="#767676" theme="outline" />}
+                variant="ghost"
+                size="small"
+                onPress={() => setOpen(false)}
+              />
             </XStack>
 
             {/* Account List */}
