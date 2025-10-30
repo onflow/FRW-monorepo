@@ -37,6 +37,8 @@ export type UserWalletStore = {
   network: FlowNetwork;
   // The public key of the currently active profile
   currentPubkey: string;
+  // The uid of the currently active profile
+  uid: string;
 };
 
 export const getUserWalletsData = async (): Promise<UserWalletStore | undefined> => {
@@ -72,6 +74,7 @@ export const getActiveAccountsByUserWallet = async (): Promise<ActiveAccountsSto
         activeAccountsKey(userWallet.network, userWallet.currentPubkey)
       )
     : undefined;
+  console.log('getActiveAccountsByUserWallet =====>', activeAccounts);
   return activeAccounts;
 };
 
