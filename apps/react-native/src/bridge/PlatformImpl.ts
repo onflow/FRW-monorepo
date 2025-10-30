@@ -108,6 +108,10 @@ class PlatformImpl implements PlatformSpec {
     this.instabugInitialized = initialized;
   }
 
+  isInstabugInitialized(): boolean {
+    return this.instabugInitialized;
+  }
+
   isDebug(): boolean {
     return this.debugMode;
   }
