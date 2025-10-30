@@ -27,31 +27,28 @@ const resources = {
   },
 };
 
-// Initialize i18n for screens layer - don't auto-initialize
-i18n.use(initReactI18next);
+// Initialize i18n for screens layer
+i18n.use(initReactI18next).init({
+  resources,
+  lng: 'en',
+  fallbackLng: 'en',
+
+  interpolation: {
+    escapeValue: false, // react already does escaping
+  },
+
+  // Configure react-i18next
+  react: {
+    useSuspense: false,
+  },
+});
 
 // Initialize function that can be called with platform-specific language
 export const initializeI18n = (language?: string) => {
   const lng = language && Object.keys(resources).includes(language) ? language : 'en';
-  
-  return i18n.init({
-    resources,
-    lng,
-    fallbackLng: 'en',
 
-    interpolation: {
-      escapeValue: false, // react already does escaping
-    },
-
-    // Configure react-i18next
-    react: {
-      useSuspense: false,
-    },
-  });
+  return i18n.changeLanguage(lng);
 };
-
-// Default initialization for backward compatibility
-initializeI18n();
 
 export default i18n;
 export { resources };

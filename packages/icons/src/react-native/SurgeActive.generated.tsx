@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Svg, { type SvgProps, Path, Rect } from 'react-native-svg';
 const SurgeActive = ({
-  color = 'currentColor',
+  color = '#000',
   size = 24,
   width,
   height,
@@ -15,9 +15,9 @@ const SurgeActive = ({
     viewBox="0 0 48 48"
     {...props}
   >
-    <Rect width={47.752} height={47.752} fill={color} rx={23.876} />
+    <Rect width={47.752} height={47.752} fill="#FDB022" rx={23.876} />
     <Path
-      stroke={color}
+      stroke="currentColor"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2.653}

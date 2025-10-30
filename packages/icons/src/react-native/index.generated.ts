@@ -30,4 +30,6 @@ export { default as Trash } from './Trash.generated';
 export { default as UserRoundPlus } from './UserRoundPlus.generated';
 export { default as VerifiedToken } from './VerifiedToken.generated';
 export { default as WalletCard } from './WalletCard.generated';
+export { default as WarningOctagonFill } from './WarningOctagonFill.generated';
+export { default as WifiOff } from './WifiOff.generated';
 export { default as X } from './X.generated';
