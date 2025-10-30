@@ -5,6 +5,7 @@ export * from './send/NFTListScreen.query';
 export * from './send/NFTDetailScreen.query';
 export { SendTokensScreen } from './send/SendTokensScreen.query';
 export { SendSummaryScreen } from './send/SendSummaryScreen.query';
+export { ReceiveScreen } from './receive/ReceiveScreen.query';
 
 // Export error fallback components
 export { GenericErrorFallback } from './error/GenericErrorFallback';

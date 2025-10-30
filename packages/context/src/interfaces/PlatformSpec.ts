@@ -85,6 +85,7 @@ export interface PlatformSpec {
 
   // UI interaction methods
   scanQRCode(): Promise<string>;
+  shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
 
   // Toast/Notification methods
