@@ -184,6 +184,19 @@ class UserWallet {
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.preloadAllAccounts(this.store.network, pubkey);
+
+    // Initialize wallet manager to calculate EOA address when public key changes
+    this.initializeWalletManager();
+  };
+
+  /**
+   * Initialize wallet manager to calculate EOA address
+   * This is called whenever the current public key changes
+   */
+  private initializeWalletManager = () => {
+    walletManager.init().catch((error) => {
+      console.error('Failed to initialize wallet manager after public key change:', error);
+    });
   };
 
   /**
@@ -203,6 +216,9 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     this.preloadAllAccounts(this.store.network, pubkey);
+
+    // Initialize wallet manager to calculate EOA address when public key changes
+    this.initializeWalletManager();
   };
 
   /**

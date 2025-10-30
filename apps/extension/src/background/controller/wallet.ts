@@ -26,7 +26,6 @@ import {
   accountManagementService,
   authenticationService,
 } from '@/core/service';
-import walletManager from '@/core/service/wallet-manager';
 import { retryOperation } from '@/core/utils';
 import {
   getValidData,
@@ -306,9 +305,6 @@ export class WalletController extends BaseController {
     // Login with the current keyring
     await userWalletService.loginWithKeyring();
     // Initialize wallet manager with current uid
-    walletManager.init().catch((error) => {
-      console.error('Failed to initialize wallet manager:', error);
-    });
     sessionService.broadcastEvent('unlock');
 
     // Refresh the wallet data

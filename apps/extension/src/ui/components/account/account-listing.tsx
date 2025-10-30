@@ -75,29 +75,6 @@ const AccountHierarchy = ({
         />
       )}
 
-      {account?.eoaAccount &&
-        account?.eoaAccount.address &&
-        isValidEthereumAddress(account?.eoaAccount.address) && (
-          <AccountCard
-            network={network}
-            key={account?.eoaAccount.address}
-            account={account?.eoaAccount}
-            parentAccount={account}
-            active={activeAccount?.address === account?.eoaAccount.address}
-            onClick={
-              onAccountClick ? () => onAccountClick(account?.eoaAccount, account) : undefined
-            }
-            onClickSecondary={
-              onAccountClickSecondary
-                ? () => onAccountClickSecondary(account?.eoaAccount, account)
-                : undefined
-            }
-            secondaryIcon={secondaryIcon}
-            showLink={true}
-            showCard={false}
-          />
-        )}
-
       {/* Child accounts */}
       {childAccounts &&
         childAccounts.map((linkedAccount) => (
@@ -157,6 +134,20 @@ export const AccountListing = ({
   const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
+
+  // Collect unique EOA accounts from all profiles
+  const uniqueEoaAccounts = React.useMemo(() => {
+    if (!accountList) return [];
+
+    const eoaAccounts = new Map();
+    accountList.forEach((account) => {
+      if (account?.eoaAccount?.address && isValidEthereumAddress(account.eoaAccount.address)) {
+        eoaAccounts.set(account.eoaAccount.address, account.eoaAccount);
+      }
+    });
+
+    return Array.from(eoaAccounts.values());
+  }, [accountList]);
 
   return (
     <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
@@ -229,6 +220,33 @@ export const AccountListing = ({
           </Typography>
         </>
       )}
+      {/* EOA Accounts - Show unique EOA accounts at the top */}
+      {uniqueEoaAccounts.length > 0 && (
+        <>
+          {uniqueEoaAccounts.map((eoaAccount, idx) => (
+            <Box
+              key={eoaAccount.address}
+              sx={{
+                ...(itemSx || {}),
+              }}
+            >
+              <AccountCard
+                network={network}
+                account={eoaAccount}
+                active={activeAccount?.address === eoaAccount.address}
+                onClick={onAccountClick ? () => onAccountClick(eoaAccount) : undefined}
+                onClickSecondary={
+                  onAccountClickSecondary ? () => onAccountClickSecondary(eoaAccount) : undefined
+                }
+                secondaryIcon={secondaryIcon}
+                showCard={false}
+                showLink={false}
+              />
+            </Box>
+          ))}
+        </>
+      )}
+
       {/* Loading state */}
       {accountList === undefined && (
         <AccountHierarchy network={network} account={undefined} activeAccount={activeAccount} />
