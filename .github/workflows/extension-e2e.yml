@@ -6,13 +6,21 @@ on:
   workflow_dispatch:
     inputs:
       build_target:
-        description: "Build target to test (dev or pro)"
+        description: "Build target to test"
         required: false
-        default: "dev"
+        default: "pro"
+        type: choice
+        options:
+          - dev
+          - pro
       notify_on_success:
         description: "Send Discord notification when the run succeeds"
         required: false
         default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 jobs:
   e2e:
@@ -24,7 +32,7 @@ jobs:
       matrix:
         node-version: [22.x]
     env:
-      BUILD_TARGET: ${{ inputs.build_target || 'dev' }}
+      BUILD_TARGET: ${{ inputs.build_target || 'pro' }}
       NOTIFY_ON_SUCCESS: ${{ inputs.notify_on_success || 'false' }}
 
     steps:
