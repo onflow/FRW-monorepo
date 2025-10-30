@@ -72,10 +72,6 @@ export interface Spec extends TurboModule {
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
-  // Recovery phrase generation
-  generateRecoveryPhrase(): Promise<RecoveryPhraseResponse>;
-  // EOA account creation (pure mnemonic-based, no server)
-  createEOAAccount(): Promise<CreateAccountResponse>;
   // COA account creation (hybrid with server - Secure Enclave)
   createCOAAccount(): Promise<CreateAccountResponse>;
   // Save mnemonic to secure storage (EOA accounts)
@@ -95,11 +91,6 @@ export interface Spec extends TurboModule {
   launchMultiBackup(): void;
   launchDeviceBackup(): void;
   launchSeedPhraseBackup(): void;
-}
-
-export interface RecoveryPhraseResponse {
-  phrase: string[];
-  mnemonic: string;
 }
 
 export interface CreateAccountResponse {
