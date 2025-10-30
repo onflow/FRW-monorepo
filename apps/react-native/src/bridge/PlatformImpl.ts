@@ -231,10 +231,6 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.scanQRCode();
   }
 
-  generateQRCode(data: string): Promise<string> {
-    return NativeFRWBridge.generateQRCode(data);
-  }
-
   shareQRCode(address: string, qrCodeDataUrl: string): Promise<void> {
     return NativeFRWBridge.shareQRCode(address, qrCodeDataUrl);
   }

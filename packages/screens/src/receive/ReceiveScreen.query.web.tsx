@@ -1,30 +1,31 @@
 import { bridge, navigation, toast } from '@onflow/frw-context';
+import { useAllProfiles, useProfileStore, tokenQueries, tokenQueryKeys } from '@onflow/frw-stores';
+import type { WalletAccount } from '@onflow/frw-types';
 import {
-  useReceiveStore,
-  useAllProfiles,
-  useProfileStore,
-  tokenQueries,
-  tokenQueryKeys,
-} from '@onflow/frw-stores';
-import { BackgroundWrapper, ExtensionHeader, Text, YStack, AccountSelector } from '@onflow/frw-ui';
+  BackgroundWrapper,
+  ExtensionHeader,
+  Text,
+  YStack,
+  Button,
+} from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
-import { useCallback, useEffect, useMemo, useRef, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text as RNText } from 'react-native';
 
 /**
  * Receive Assets Screen - displays QR code for receiving assets
  * Following MVVM pattern with TanStack Query integration
- * Web version - uses qrcode.react for web-compatible QR code generation
+ * Extension version - uses qrcode.react for web-compatible QR code generation
+ * State is managed locally as this is a simple single-page screen
  */
 export function ReceiveScreen(): ReactElement {
   const { t } = useTranslation();
-  const isExtension = bridge.getPlatform() === 'extension';
 
-  // Store hooks - QR code generated client-side with qrcode.react
-  const { selectedAccount, setSelectedAccount } = useReceiveStore();
+  // Local state for selected account - no need for store
+  const [selectedAccount, setSelectedAccount] = useState<WalletAccount | null>(null);
 
   // Profile hooks
   const allProfiles = useAllProfiles();
@@ -210,35 +211,14 @@ export function ReceiveScreen(): ReactElement {
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer" px={'$0' as any} pb={'$0' as any}>
-      {isExtension && (
-        <ExtensionHeader
-          title={t('receive.title', 'Receive Assets')}
-          help={false}
-          onGoBack={() => navigation.goBack()}
-          onNavigate={(link: string) => navigation.navigate(link)}
-        />
-      )}
+      <ExtensionHeader
+        title={t('receive.title', 'Receive Assets')}
+        help={false}
+        onGoBack={() => navigation.goBack()}
+        onNavigate={(link: string) => navigation.navigate(link)}
+      />
 
       <YStack flex={1} items="center" gap="$4" pt="$6" px="$4">
-        {/* Account Selector - Show balance from React Query */}
-        {!isExtension && selectedAccount && (
-          <YStack bg="$bg1" rounded="$4" p={16} gap={12} width="100%">
-            <AccountSelector
-              currentAccount={{
-                ...selectedAccount,
-                balance: balanceDisplay,
-              }}
-              accounts={accountsForSelector}
-              onAccountSelect={handleAccountSelect}
-              title=""
-              showEditButton={allAccounts.length > 1}
-              actionIcon="chevron"
-              showCopyButton={true}
-              onCopyAddress={handleCopyAddress}
-            />
-          </YStack>
-        )}
-
         {/* QR Code Section */}
         <YStack bg="$bg1" rounded="$4" pt="$4" pb="$4" px="$2" items="center" gap="$5" width="100%">
           {/* Title */}
@@ -268,33 +248,18 @@ export function ReceiveScreen(): ReactElement {
           )}
         </YStack>
 
-        {/* Share QR Code Button - Hidden on web for now */}
-        {!isExtension && (
-          <YStack pt="$2" mb={'$10'} width="100%">
-            <YStack
-              width="100%"
-              height={52}
-              bg={!selectedAccount?.address ? '#6b7280' : '$text'}
-              rounded={16}
-              items="center"
-              justify="center"
-              borderWidth={1}
-              borderColor={!selectedAccount?.address ? '#6b7280' : '$text'}
-              opacity={!selectedAccount?.address ? 0.7 : 1}
-              pressStyle={{ opacity: 0.9 }}
-              onPress={!selectedAccount?.address ? undefined : handleShareQRCode}
-              cursor={!selectedAccount?.address ? 'not-allowed' : 'pointer'}
-            >
-              <Text
-                fontSize="$4"
-                fontWeight="700"
-                color={!selectedAccount?.address ? '$white' : '$bg'}
-              >
-                {t('receive.shareQRCode', 'Share QR Code')}
-              </Text>
-            </YStack>
-          </YStack>
-        )}
+        {/* Share QR Code Button - Could implement download/copy for web */}
+        <YStack pt="$2" mb={'$10'} width="100%">
+          <Button
+            variant="inverse"
+            size="large"
+            fullWidth
+            disabled={!selectedAccount?.address}
+            onPress={handleShareQRCode}
+          >
+            {t('receive.shareQRCode', 'Share QR Code')}
+          </Button>
+        </YStack>
       </YStack>
     </BackgroundWrapper>
   );

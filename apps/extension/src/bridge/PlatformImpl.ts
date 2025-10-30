@@ -564,6 +564,13 @@ class ExtensionPlatformImpl implements PlatformSpec {
     });
   }
 
+  async shareQRCode(address: string, qrCodeDataUrl: string): Promise<void> {
+    // Extension doesn't support native sharing - this is a mobile-only feature
+    // Could potentially implement as a download or copy to clipboard
+    this.log('info', 'shareQRCode not implemented for extension platform');
+    throw new Error('QR code sharing is not supported in browser extensions');
+  }
+
   closeRN(id?: string | null): void {
     if (window.close) {
       window.close();
