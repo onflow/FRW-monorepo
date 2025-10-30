@@ -32,6 +32,18 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
 }
 
 /**
+ * Configure EVM for the specified network
+ */
+// export function configEVMProvider(network: string) {
+//   const provider = new ethers.providers.JsonRpcProvider(
+//     network === 'mainnet'
+//       ? 'https://mainnet.evm.nodes.onflow.org'
+//       : 'https://testnet.evm.nodes.onflow.org'
+//   );
+//   return provider;
+// }
+
+/**
  * Bridge interface for CadenceService creation
  */
 interface CadenceBridge extends BridgeLogger {

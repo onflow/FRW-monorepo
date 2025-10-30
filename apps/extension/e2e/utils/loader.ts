@@ -65,17 +65,19 @@ export const test = base.extend<{
     // Alternative approach: try to get extension ID from a page first
     let extensionId: string | null = null;
 
-    // In CI, use the known extension ID immediately
-    if (process.env.CI) {
-      extensionId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
-      console.log(`CI mode - using known extension ID: ${extensionId}`);
+    const envExtensionId = process.env.TEST_EXTENSION_ID;
+    const hasRealEnvId =
+      envExtensionId && envExtensionId !== 'TEST_EXTENSION_ID' && envExtensionId.trim().length > 0;
 
-      // Wait a bit longer for extension to initialize in CI
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
+    if (hasRealEnvId) {
+      extensionId = envExtensionId!;
+      console.log(`Using extension ID from TEST_EXTENSION_ID env: ${extensionId}`);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       await call(extensionId);
       return;
     }
+
+    console.log('TEST_EXTENSION_ID env not provided or placeholder, discovering dynamically...');
 
     // Method 1: Try service worker approach
     let [background] = context.serviceWorkers();
@@ -184,10 +186,14 @@ export const test = base.extend<{
       }
 
       // Use fallback extension ID (hardcoded from manifest key)
-      const fallbackId = process.env.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi';
-      console.log(`TEST_EXTENSION_ID env var: ${process.env.TEST_EXTENSION_ID}`);
-      if (!process.env.TEST_EXTENSION_ID) {
-        console.log(`No fallback extension ID available in env vars`);
+      const envId = process.env.TEST_EXTENSION_ID;
+      const isPlaceholder = envId === 'TEST_EXTENSION_ID';
+      const fallbackId = !envId || isPlaceholder ? 'cfiagdgiikmjgfjnlballglniejjgegi' : envId;
+      console.log(`TEST_EXTENSION_ID env var: ${envId ?? '<undefined>'}`);
+      if (!envId || isPlaceholder) {
+        console.log(
+          `No valid fallback extension ID available in env vars, using default manifest key derived ID`
+        );
       }
       console.log(`Using fallback extension ID: ${fallbackId}`);
       extensionId = fallbackId;
