@@ -635,8 +635,8 @@ importers:
         specifier: ^10.1.1
         version: 10.1.3
       instabug-reactnative:
-        specifier: ^15.0.1
-        version: 15.0.3(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
+        specifier: ^16.0.3
+        version: 16.0.3(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       ios:
         specifier: ^0.0.1
         version: 0.0.1
@@ -652,6 +652,9 @@ importers:
       react-native:
         specifier: 0.79.2
         version: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
+      react-native-error-boundary:
+        specifier: ^3.0.0
+        version: 3.0.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       react-native-gesture-handler:
         specifier: ^2.27.2
         version: 2.28.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
@@ -894,6 +897,9 @@ importers:
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context
+      '@onflow/frw-icons':
+        specifier: workspace:*
+        version: link:../icons
       '@onflow/frw-services':
         specifier: workspace:*
         version: link:../services
@@ -8076,12 +8082,16 @@ packages:
     resolution: {integrity: sha512-UjOaSel/iddGZJ5xP/Eixh6dY1XghiBw4XK13rCCIJcJfyhhoul/7KhLLUGtebEj6GDYM6Vnx/mVsjx2L/mFIA==}
     engines: {node: '>=12.0.0'}
 
-  instabug-reactnative@15.0.3:
-    resolution: {integrity: sha512-f5VgnSN/ZtR0ucrM4fmJFrUKgXBdCQK3Xd+KbXg7eyIptpwQ9ffN21LTcyZytJzBaWXjPK/mrYPqfPHzszv67A==}
+  instabug-reactnative@16.0.3:
+    resolution: {integrity: sha512-3UVYZPaysuOc7N3Q/dnDS9p/IVORPoVA+okaZ2c6WsP4jxp0trRvVoWHk+CmKdT5Pk6YmP9/yM27+tOIb+nF/Q==}
     hasBin: true
     peerDependencies:
+      expo: '*'
       react: 19.0.0
       react-native: 0.79.2
+    peerDependenciesMeta:
+      expo:
+        optional: true
 
   internal-ip@6.2.0:
     resolution: {integrity: sha512-D8WGsR6yDt8uq7vDMu7mjcR+yRMm3dW8yufyChmszWRjcSHuxLBkR3GdS2HZAjodsaGuCvXeEJpueisXJULghg==}
@@ -10010,6 +10020,12 @@ packages:
   react-is@19.2.0:
     resolution: {integrity: sha512-x3Ax3kNSMIIkyVYhWPyO09bu0uttcAIoecO/um/rKGQ4EltYWVYtyiGkS/3xMynrbVQdS69Jhlv8FXUEZehlzA==}
 
+  react-native-error-boundary@3.0.0:
+    resolution: {integrity: sha512-+8d3pkMQQx2HqK/MWrEJVQ4IlWpEgEJQPocYqFHgFWsx8KHSEKMi95srpwzMB3O4Hghjl2GFRS3b2bHP4nD4QQ==}
+    peerDependencies:
+      react: 19.0.0
+      react-native: 0.79.2
+
   react-native-gesture-handler@2.28.0:
     resolution: {integrity: sha512-0msfJ1vRxXKVgTgvL+1ZOoYw3/0z1R+Ked0+udoJhyplC2jbVKIJ8Z1bzWdpQRCV3QcQ87Op0zJVE5DhKK2A0A==}
     peerDependencies:
@@ -10042,6 +10058,12 @@ packages:
 
   react-native-safe-area-context@5.4.0:
     resolution: {integrity: sha512-JaEThVyJcLhA+vU0NU8bZ0a1ih6GiF4faZ+ArZLqpYbL6j7R3caRqj+mE3lEtKCuHgwjLg3bCxLL1GPUJZVqUA==}
+    peerDependencies:
+      react: 19.0.0
+      react-native: 0.79.2
+
+  react-native-safe-area-context@5.6.1:
+    resolution: {integrity: sha512-/wJE58HLEAkATzhhX1xSr+fostLsK8Q97EfpfMDKo8jlOc1QKESSX/FQrhk7HhQH/2uSaox4Y86sNaI02kteiA==}
     peerDependencies:
       react: 19.0.0
       react-native: 0.79.2
@@ -21345,7 +21367,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  instabug-reactnative@15.0.3(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0):
+  instabug-reactnative@16.0.3(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0):
     dependencies:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
@@ -23455,6 +23477,12 @@ snapshots:
 
   react-is@19.2.0: {}
 
+  react-native-error-boundary@3.0.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
+      react-native-safe-area-context: 5.6.1(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
+
   react-native-gesture-handler@2.28.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0):
     dependencies:
       '@egjs/hammerjs': 2.0.17
@@ -23499,6 +23527,11 @@ snapshots:
       - supports-color
 
   react-native-safe-area-context@5.4.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+      react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
+
+  react-native-safe-area-context@5.6.1(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0):
     dependencies:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
