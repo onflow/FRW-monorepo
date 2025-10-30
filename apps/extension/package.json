@@ -55,6 +55,7 @@
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-ui": "workspace:*",
+    "@onflow/frw-wallet": "workspace:^",
     "@reown/walletkit": "^1.2.8",
     "@tamagui/animations-react-native": "^1.132.16",
     "@tamagui/config": "^1.132.16",

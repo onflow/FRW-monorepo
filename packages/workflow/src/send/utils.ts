@@ -8,7 +8,7 @@ import type { SendPayload } from './types';
  * Default gas limits for different transaction types
  */
 export const GAS_LIMITS = {
-  EVM_DEFAULT: 30_000_000,
+  EVM_DEFAULT: 16_000_000,
   CADENCE_DEFAULT: 9999,
 } as const;
 
@@ -106,7 +106,10 @@ export const safeConvertToUFix64 = (
  * @returns Array of bytes representing the encoded function call
  * @throws Error if receiver address is invalid
  */
-export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
+export const encodeEvmContractCallData = (
+  payload: SendPayload,
+  returnHex: boolean = false
+): number[] | string => {
   const { type, amount = '', receiver, decimal, ids, sender } = payload;
   // const to = receiver.toLowerCase().replace(/^0x/, '');
   if (receiver.length !== 42) throw new Error('Invalid Ethereum address');
@@ -126,7 +129,7 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
   } else {
     // NFT transfer (ERC721 or ERC1155)
     if (ids.length === 1) {
-      if (amount === '') {
+      if (amount === '' || Number(amount) === 0) {
         // ERC721 NFT transfer (no amount parameter)
         const tokenId = ids[0];
 
@@ -156,9 +159,24 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
       }
     }
   }
-
+  if (returnHex) {
+    return callData;
+  }
   // Convert hex string to byte array
   const hexString = callData.slice(2); // Remove '0x' prefix
+  const dataArray = new Uint8Array(hexString.length / 2);
+  for (let i = 0; i < hexString.length; i += 2) {
+    dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+  }
+  const regularArray = Array.from(dataArray);
+
+  return regularArray;
+};
+
+export const convertHexToByteArray = (hexString: string): number[] => {
+  if (hexString.startsWith('0x')) {
+    hexString = hexString.slice(2);
+  }
   const dataArray = new Uint8Array(hexString.length / 2);
   for (let i = 0; i < hexString.length; i += 2) {
     dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
