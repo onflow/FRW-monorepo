@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
+import { IconButton } from '../foundation/IconButton';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 import type { Account, AccountCardProps } from '../types';
@@ -181,25 +182,21 @@ export function AccountCard({
         <XStack gap="$2" items="center">
           {/* Copy Icon */}
           {showCopyButton && (
-            <XStack
-              width={24}
-              height={24}
-              items="center"
-              justify="center"
+            <IconButton
+              icon={<Copy size={24} color="#FFFFFF" theme="outline" />}
+              variant="ghost"
+              size="small"
               onPress={() => onCopyAddress?.(account.address)}
-              cursor="pointer"
-              opacity={0.7}
-              hoverStyle={{ opacity: 1 }}
-            >
-              <Copy size={24} color="#FFFFFF" theme="outline" />
-            </XStack>
+            />
           )}
 
           {/* Edit Icon */}
           {showEditButton && (
-            <XStack width={24} height={24} items="center" justify="center" cursor="pointer">
-              <Edit size={24} color="#767676" theme="outline" />
-            </XStack>
+            <IconButton
+              icon={<Edit size={24} color="#767676" theme="outline" />}
+              variant="ghost"
+              size="small"
+            />
           )}
         </XStack>
       </XStack>
