@@ -335,6 +335,28 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           // Create accounts array for this profile
           const profileAccounts: any[] = [];
 
+          // Add EOA account at the top of each profile (only once per profile)
+          if (Array.isArray(profileMainAccounts) && profileMainAccounts.length > 0) {
+            const firstAccount = profileMainAccounts[0];
+            if (firstAccount.eoaAccount?.address) {
+              const eoaName = firstAccount.eoaAccount.name || 'EOA Account';
+              profileAccounts.push({
+                address: firstAccount.eoaAccount.address,
+                name: eoaName,
+                type: 'eoa',
+                balance: '0',
+                avatar: firstAccount.eoaAccount.icon || '',
+                emoji: firstAccount.eoaAccount.icon || '',
+                emojiInfo: {
+                  emoji: firstAccount.eoaAccount.icon || '',
+                  name: eoaName,
+                  color: firstAccount.eoaAccount.color || '#6B7280',
+                },
+                isActive: false,
+              });
+            }
+          }
+
           // Add main wallet accounts
           if (Array.isArray(profileMainAccounts) && profileMainAccounts.length > 0) {
             profileMainAccounts.forEach((account) => {
