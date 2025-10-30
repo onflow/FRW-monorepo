@@ -423,7 +423,10 @@ export const useSendStore = create<SendState>((set, get) => ({
         return null;
       }
       const contractAddress = isTokenTransaction
-        ? selectedToken?.evmAddress || ''
+        ? selectedToken?.evmAddress ||
+          (selectedToken?.identifier?.includes('1654653399040a61.FlowToken')
+            ? '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52'
+            : '')
         : selectedNFTs[0]?.evmAddress || '';
 
       // For ERC1155 NFTs, we need to include the amount/quantity
@@ -520,8 +523,18 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
+      // Create EVM transaction callback for EOA to Flow COA withdrawal (optional)
+      const evmCallback = async (trxData: any) => {
+        const bridgeWithEvmCallback = bridge as any;
+        if (!bridgeWithEvmCallback.evmTransactionCallback) {
+          // Return undefined if EVM callback is not available
+          return undefined;
+        }
+        return await bridgeWithEvmCallback.evmTransactionCallback(trxData);
+      };
+
       // Get cadence service and execute transaction
-      const result = await SendTransaction(payload, cadence);
+      const result = await SendTransaction(payload, cadence, evmCallback);
 
       logger.debug('[SendStore] Transaction result:', result);
 

@@ -1,5 +1,6 @@
 import { type SignAlgoString, type HashAlgoString, type ImportKeyType } from '../types/algo-types';
 export const FLOW_BIP44_PATH = "m/44'/539'/0'/0/0";
+export const EOA_BIP44_PATH = "m/44'/60'/0'/0/0";
 
 export const KEY_TYPE: { [key: string]: ImportKeyType } = {
   PASSKEY: 'Passkey',

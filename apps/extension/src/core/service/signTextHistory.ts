@@ -9,6 +9,7 @@ export interface SignTextHistoryItem {
   text: string;
   type:
     | 'personalSign'
+    | 'ethSign'
     | 'ethSignTypedData'
     | 'ethSignTypedDataV1'
     | 'ethSignTypedDataV3'

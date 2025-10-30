@@ -207,7 +207,6 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
           }
         }}
         onAnimationLoaded={() => {
-          console.log('[ConfirmationAnimation] Animation loaded successfully');
           // Android-specific: Set images folder to prevent IllegalStateException
           if (
             Platform.OS === 'android' &&

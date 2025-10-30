@@ -1,28 +1,24 @@
+import { ServiceContext } from '@onflow/frw-context';
+import { EthSigner, BIP44_PATHS, type EthLegacyTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
-import { intToHex, isHexString } from 'ethereumjs-util';
+import { intToHex } from 'ethereumjs-util';
 import { ethers } from 'ethers';
-import RLP from 'rlp';
 import Web3 from 'web3';
-import { stringToHex } from 'web3-utils';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';
+import { initializePlatform } from '@/bridge/PlatformImpl';
 import {
   keyringService,
   permissionService,
   sessionService,
   signTextHistoryService,
-  userWalletService,
 } from '@/core/service';
-import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
+import walletManager from '@/core/service/wallet-manager';
+import { seedWithPathAndPhrase2PublicPrivateKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
-import {
-  tupleToPrivateKey,
-  ensureEvmAddressPrefix,
-  isValidEthereumAddress,
-  consoleError,
-} from '@/shared/utils';
+import { ensureEvmAddressPrefix, isValidEthereumAddress, consoleError } from '@/shared/utils';
 
 import notificationService from '../notification';
 
@@ -34,163 +30,43 @@ interface Web3WalletPermission {
   date?: number;
 }
 
-interface COAOwnershipProof {
-  keyIndices: bigint[];
-  address: Uint8Array;
-  capabilityPath: string;
-  signatures: Uint8Array[];
-}
-
-function removeHexPrefix(hexString: string): string {
-  return hexString.startsWith('0x') ? hexString.substring(2) : hexString;
-}
-function toHexString(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-function createAndEncodeCOAOwnershipProof(
-  keyIndices: bigint[],
-  address: Uint8Array,
-  capabilityPath: string,
-  signatures: Uint8Array[]
-): Uint8Array {
-  const proof: COAOwnershipProof = {
-    keyIndices,
-    address,
-    capabilityPath,
-    signatures,
-  };
-  const encodedData = RLP.encode([
-    keyIndices,
-    proof.address,
-    Buffer.from(proof.capabilityPath, 'utf8'),
-    proof.signatures,
-  ]);
-
-  return encodedData; // Convert the encoded data to a hexadecimal string for easy display or transmission
-}
-
 /**
- * Gets the matching account and signing information for the current wallet
- * @returns Object containing account details and signing information
+ * Derives Ethereum address from private key
+ * @param privateKeyHex - The private key as a hex string
+ * @returns The Ethereum address
  */
-async function getSigningDetailsForCurrentWallet() {
-  const network = await Wallet.getNetwork();
-  const privateKeyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
-
-  // Find any account with public key information
-  const accounts = await getAccountsByPublicKeyTuple(privateKeyTuple, network);
-
-  const addressHex = await Wallet.getParentAddress();
-  const matchingAccount = accounts.find((account) => account.address === addressHex);
-
-  if (!matchingAccount) {
-    throw new Error('Current wallet not found in accounts');
-  }
-
-  // Get the private key from the private key tuple
-  const privateKey = tupleToPrivateKey(privateKeyTuple, matchingAccount.signAlgo);
-  const hashAlgo = matchingAccount.hashAlgo;
-  const signAlgo = matchingAccount.signAlgo;
-  const keyIndex = matchingAccount.keyIndex;
-
-  return {
-    addressHex,
-    privateKey,
-    hashAlgo,
-    signAlgo,
-    keyIndex,
-  };
+function deriveEthereumAddress(privateKeyHex: string): string {
+  const { privateToAddress } = require('ethereumjs-util');
+  const cleanHex = privateKeyHex.replace(/^0x/i, '');
+  const privateKeyBuffer = Buffer.from(cleanHex, 'hex');
+  const addressBuffer = privateToAddress(privateKeyBuffer);
+  return '0x' + addressBuffer.toString('hex');
 }
 
-/**
- * Common signing logic used by both message and typed data signing
- * @param dataToSign The prepared data to sign
- * @returns The encoded proof as a hex string
- */
-async function createSignatureProof(dataToSign: string) {
-  if (!(await Wallet.isUnlocked())) {
-    throw new Error('Wallet is locked');
-  }
+async function signTypeData(typedData: Record<string, unknown>) {
+  // Get the Ethereum private key using EVM BIP44 path
+  const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+  const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
-  const rightPaddedHexBuffer = (value: string, pad: number) =>
-    Buffer.from(value.padEnd(pad * 2, '0'), 'hex');
+  // Use eth-signer to sign the typed data
+  const { signature, digest } = await EthSigner.signTypedData(privateKeyBytes, typedData);
 
-  const USER_DOMAIN_TAG = rightPaddedHexBuffer(
-    Buffer.from('FLOW-V0.0-user').toString('hex'),
-    32
-  ).toString('hex');
-
-  const prependUserDomainTag = (msg: string) => USER_DOMAIN_TAG + msg;
-  const signableData = prependUserDomainTag(removeHexPrefix(dataToSign));
-
-  // Retrieve the private key from the wallet
-  const { addressHex, privateKey, hashAlgo, signAlgo, keyIndex } =
-    await getSigningDetailsForCurrentWallet();
-  if (!addressHex) {
-    throw new Error('Current wallet not found');
-  }
-
-  const signature = await signWithKey(signableData, signAlgo, hashAlgo, privateKey);
-
-  const addressBuffer = Buffer.from(addressHex.slice(2), 'hex');
-  const addressArray = Uint8Array.from(addressBuffer);
-
-  const encodedProof = createAndEncodeCOAOwnershipProof([BigInt(keyIndex)], addressArray, 'evm', [
-    Uint8Array.from(Buffer.from(signature, 'hex')),
-  ]);
-
-  return '0x' + toHexString(encodedProof);
+  return signature;
 }
-
-async function signMessage(msgParams, opts = {}) {
-  const web3 = new Web3();
-  const textData = msgParams.data;
-  const hashedData = web3.eth.accounts.hashMessage(textData);
-
-  return createSignatureProof(hashedData);
-}
-
-async function signTypeData(msgParams, opts = {}) {
-  const hashedData = Buffer.from(msgParams).toString('hex');
-
-  return createSignatureProof(hashedData);
-}
-
-const SignTypedDataVersion = {
-  V1: 'V1',
-  V3: 'V3',
-  V4: 'V4',
-} as const;
-
-export const TypedDataUtils = {
-  eip712Hash(message: any, version: string): Buffer {
-    const types = { ...message.types };
-    delete types.EIP712Domain;
-
-    const primaryType = message.primaryType || 'OrderComponents';
-
-    const encoder = new ethers.TypedDataEncoder({
-      [primaryType]: types[primaryType],
-      ...types,
-    });
-
-    const domainSeparator = ethers.TypedDataEncoder.hashDomain(message.domain);
-    const hashStruct = encoder.hash(message.message);
-
-    const encodedData = ethers.concat([
-      Buffer.from('1901', 'hex'),
-      Buffer.from(domainSeparator.slice(2), 'hex'),
-      Buffer.from(hashStruct.slice(2), 'hex'),
-    ]);
-
-    return Buffer.from(ethers.keccak256(encodedData).slice(2), 'hex');
-  },
-};
 
 class ProviderController extends BaseController {
+  // Method to initialize ServiceContext for SendTransaction workflow
+  private async initializeServiceContext() {
+    if (!ServiceContext.isInitialized()) {
+      // Import the platform implementation dynamically to avoid circular dependencies
+      const platform = initializePlatform();
+      // Ensure wallet controller is set on the platform
+      platform.setWalletController(Wallet);
+      // Initialize ServiceContext with the platform
+      ServiceContext.initialize(platform);
+    }
+  }
+
   ethRpc = async (data): Promise<any> => {
     const network = await Wallet.getNetwork(); // Get the current network
     const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
@@ -233,24 +109,18 @@ class ProviderController extends BaseController {
       permissionService.addConnectedSite(origin, name, icon, defaultChain);
     }
 
-    const currentWallet = await Wallet.getParentAddress();
     let evmAddress: string;
-
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
     try {
-      // Attempt to query the EVM address
+      // Get EOA address from walletManager
+      const eoaInfo = await walletManager.getEOAAccountInfo();
 
-      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
-
-      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
-        throw new Error('Invalid EVM address');
+      if (!eoaInfo || !eoaInfo.address || !isValidEthereumAddress(eoaInfo.address)) {
+        throw new Error('Invalid EOA address from walletManager');
       }
-      evmAddress = evmAccount.address;
+      evmAddress = eoaInfo.address;
     } catch (error) {
       // If an error occurs, request approval
-      consoleError('ethRequestAccounts - Error querying EVM address:', error);
+      consoleError('ethRequestAccounts - Error getting EOA address from walletManager:', error);
 
       await notificationService.requestApproval(
         {
@@ -259,12 +129,13 @@ class ProviderController extends BaseController {
         },
         { height: 599 }
       );
-      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
 
-      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
-        throw new Error('Invalid EVM address');
+      // Try again after approval
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+      if (!eoaInfo || !eoaInfo.address || !isValidEthereumAddress(eoaInfo.address)) {
+        throw new Error('Invalid EOA address from walletManager');
       }
-      evmAddress = evmAccount.address;
+      evmAddress = eoaInfo.address;
     }
 
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];
@@ -304,17 +175,83 @@ class ProviderController extends BaseController {
     const value = transactionParams.value || '0x0';
     const dataValue = transactionParams.data || '0x';
     const gas = transactionParams.gas || '0x1C9C380';
-    const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
-    const gasBigInt = BigInt(cleanHex);
+    const gasPrice = transactionParams.gasPrice || '0x0';
 
     try {
-      let result = await Wallet.dapSendEvmTX(to, gasBigInt, value, dataValue);
-      if (!result) {
-        throw new Error('Transaction hash is null or undefined');
+      // Get the current network and EOA account info
+      const network = await Wallet.getNetwork();
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+
+      const parentAddress = await Wallet.getParentAddress();
+      const coaAddress = await Wallet.getEvmAddress();
+      if (!parentAddress) {
+        throw new Error('Parent address not found');
       }
-      if (!result.startsWith('0x')) {
-        result = '0x' + result;
+
+      if (!eoaInfo || !eoaInfo.address) {
+        throw new Error('EOA account not found');
       }
+
+      if (!coaAddress) {
+        throw new Error('EVM account not found');
+      }
+
+      // Verify the transaction is from the correct EOA account
+      if (from.toLowerCase() !== eoaInfo.address.toLowerCase()) {
+        throw new Error('Transaction from address does not match EOA account');
+      }
+
+      // Initialize ServiceContext if not already initialized
+      await this.initializeServiceContext();
+
+      // Get the cadence service from ServiceContext
+      const cadenceService = ServiceContext.current().cadence;
+
+      const callback = async (trxData: any) => {
+        // Get the current nonce from the network
+        const nonce = await this.getTransactionCount(trxData.from);
+
+        // Get the Ethereum private key using EVM BIP44 path
+        const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+        const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+
+        // Get the current chain ID
+        const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
+
+        // Create the transaction object
+        const transaction: EthLegacyTransaction = {
+          chainId: chainId,
+          nonce: parseInt(nonce, 16),
+          gasLimit: trxData.gasLimit || gas,
+          gasPrice: gasPrice,
+          to: trxData.to,
+          value: trxData.value || '0x0',
+          data: trxData.data || '0x',
+        };
+
+        // Sign the transaction using EthSigner
+        const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
+
+        return signedTransaction;
+      };
+
+      // Create transaction data for EVM call
+      const trxData = {
+        from: from,
+        to: to,
+        value: value,
+        data: dataValue,
+        gasLimit: gas,
+      };
+
+      // Get the signed transaction from callback
+      const signedTransaction = await callback(trxData);
+
+      // Convert hex string to byte array for eoaCallContract
+      const rlpEncodedTransaction = this.convertHexToByteArray(signedTransaction.rawTransaction);
+
+      // Call eoaCallContract with the encoded transaction
+      const result = await cadenceService.eoaCallContract(rlpEncodedTransaction, eoaInfo.address);
 
       // Send message to close approval popup after successful transaction
       chrome.runtime.sendMessage({
@@ -322,9 +259,9 @@ class ProviderController extends BaseController {
         data: { success: true, result },
       });
 
-      return result;
+      const txHash = signedTransaction.transactionHash;
+      return txHash;
     } catch (error) {
-      // Send message to close approval popup even if transaction fails
       chrome.runtime.sendMessage({
         type: 'CLOSE_APPROVAL_POPUP',
         data: { success: false, error: error.message },
@@ -333,30 +270,108 @@ class ProviderController extends BaseController {
     }
   };
 
+  /**
+   * Convert hex string to byte array for eoaCallContract
+   * @param hexString - Hex string to convert
+   * @returns Array of bytes
+   */
+  private convertHexToByteArray(hexString: string): number[] {
+    if (hexString.startsWith('0x')) {
+      hexString = hexString.slice(2);
+    }
+    const dataArray = new Uint8Array(hexString.length / 2);
+    for (let i = 0; i < hexString.length; i += 2) {
+      dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+    }
+    const regularArray = Array.from(dataArray);
+    return regularArray;
+  }
+
+  /**
+   * Get the current transaction count (nonce) for an address
+   */
+  private async getTransactionCount(address: string): Promise<string> {
+    const network = await Wallet.getNetwork();
+    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+    const web3Instance = new Web3(provider);
+
+    return new Promise((resolve, reject) => {
+      if (!web3Instance.currentProvider) {
+        reject(new Error('Provider is undefined'));
+        return;
+      }
+
+      web3Instance.currentProvider.send(
+        {
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionCount',
+          params: [address, 'latest'],
+          id: Date.now(),
+        },
+        (error, response) => {
+          if (error) {
+            reject(error);
+          } else if (response && 'error' in response && response.error) {
+            reject(new Error(response.error.message || 'Failed to get transaction count'));
+          } else if (response && 'result' in response) {
+            resolve(response.result as string);
+          } else {
+            reject(new Error('Invalid response from provider'));
+          }
+        }
+      );
+    });
+  }
+
+  /**
+   * Send a raw signed transaction to the Ethereum network
+   */
+  private async sendRawTransaction(rawTransaction: string): Promise<string> {
+    const network = await Wallet.getNetwork();
+    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+    const web3Instance = new Web3(provider);
+
+    return new Promise((resolve, reject) => {
+      if (!web3Instance.currentProvider) {
+        reject(new Error('Provider is undefined'));
+        return;
+      }
+
+      web3Instance.currentProvider.send(
+        {
+          jsonrpc: '2.0',
+          method: 'eth_sendRawTransaction',
+          params: [rawTransaction],
+          id: Date.now(),
+        },
+        (error, response) => {
+          if (error) {
+            reject(error);
+          } else if (response && 'error' in response && response.error) {
+            reject(new Error(response.error.message || 'Transaction failed'));
+          } else if (response && 'result' in response) {
+            resolve(response.result as string);
+          } else {
+            reject(new Error('Invalid response from provider'));
+          }
+        }
+      );
+    });
+  }
+
   ethAccounts = async ({ session: { origin } }) => {
     if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
       return [];
     }
 
-    let currentWallet;
-    try {
-      // Attempt to query the currentNetwork address
-      currentWallet = await Wallet.getParentAddress();
-    } catch (error) {
-      // If an error occurs, request approval
-      consoleError('Error querying EVM address:', error);
-
-      return;
-    }
-
     let evmAccount: string | undefined;
     try {
-      // Attempt to query the EVM address
-      const evmAccountObj = await userWalletService.getEvmAccountOfParent(currentWallet);
-      evmAccount = evmAccountObj?.address;
+      // Get EOA address from walletManager
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+      evmAccount = eoaInfo?.address;
     } catch (error) {
-      // If an error occurs, request approval
-      consoleError('Error querying EVM address:', error);
+      // If an error occurs, log it but continue
+      consoleError('Error getting EOA address from walletManager:', error);
     }
 
     const account = evmAccount ? [evmAccount.toLowerCase()] : [];
@@ -449,19 +464,41 @@ class ProviderController extends BaseController {
     }
   };
 
-  // Should not be in controller
   personalSign = async ({ data, approvalRes, session }) => {
     if (!data.params) return;
     const [string, from] = data.params;
-    const hex = isHexString(string) ? string : stringToHex(string);
-    const result = await signMessage({ data: hex, from }, approvalRes?.extra);
-    signTextHistoryService.createHistory({
-      address: from,
-      text: string,
-      origin: session.origin,
-      type: 'personalSign',
-    });
-    return result;
+
+    try {
+      // Get the Ethereum private key using secp256k1 algorithm
+      const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+      const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+
+      // Derive the Ethereum address from the private key
+      const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);
+
+      // Validate that the requested address matches the derived address
+      if (from.toLowerCase() !== ethereumAddress.toLowerCase()) {
+        throw new Error('Address mismatch');
+      }
+
+      // Use eth-signer to sign the personal message
+      const { signature, digest } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
+
+      // Create history entry using the derived Ethereum address
+      signTextHistoryService.createHistory({
+        address: ethereumAddress,
+        text: string,
+        origin: session.origin,
+        type: 'personalSign',
+      });
+
+      // Return the signature and the address it was signed with
+      // This helps dApps understand which address the signature is valid for
+      return signature;
+    } catch (error) {
+      consoleError('Error in personalSign:', error);
+      throw error;
+    }
   };
 
   ethChainId = async ({ session }) => {
@@ -487,11 +524,11 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+    if (!eoaInfo || !eoaInfo.address) {
+      throw new Error('EOA address not found from walletManager');
     }
-    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
+    const evmaddress = { address: eoaInfo.address };
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;
@@ -528,14 +565,8 @@ class ProviderController extends BaseController {
       throw new Error('Provided address does not match the current address');
     }
 
-    const signTypeMethod =
-      request.data.method === 'eth_signTypedData_v3'
-        ? SignTypedDataVersion.V3
-        : SignTypedDataVersion.V4;
-
-    const hash = TypedDataUtils.eip712Hash(message, signTypeMethod);
-
-    const result = await signTypeData(hash);
+    // Get the Ethereum private key and sign the typed data
+    const result = await signTypeData(message);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
@@ -559,11 +590,11 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+    if (!eoaInfo || !eoaInfo.address) {
+      throw new Error('EOA address not found from walletManager');
     }
-    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
+    const evmaddress = { address: eoaInfo.address };
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;
@@ -601,9 +632,7 @@ class ProviderController extends BaseController {
       throw new Error('Provided address does not match the current address');
     }
 
-    const hash = TypedDataUtils.eip712Hash(message, SignTypedDataVersion.V4);
-
-    const result = await signTypeData(hash);
+    const result = await signTypeData(message);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
@@ -661,6 +690,99 @@ class ProviderController extends BaseController {
   ethSignTypedDataV4 = async (request) => {
     const result = await this.signTypeData(request);
     return result;
+  };
+
+  // eth_coinbase - Returns the current account address
+  ethCoinbase = async ({ session: { origin } }) => {
+    if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
+      return null;
+    }
+
+    try {
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+      if (!eoaInfo || !eoaInfo.address) {
+        return null;
+      }
+      return ensureEvmAddressPrefix(eoaInfo.address);
+    } catch (error) {
+      consoleError('Error getting EOA address for eth_coinbase:', error);
+      return null;
+    }
+  };
+
+  // net_version - Returns the network version
+  netVersion = async () => {
+    try {
+      const network = await Wallet.getNetwork();
+      return network === 'mainnet' ? MAINNET_CHAIN_ID : TESTNET_CHAIN_ID;
+    } catch (error) {
+      consoleError('Error getting network version:', error);
+      return MAINNET_CHAIN_ID; // Default to mainnet version
+    }
+  };
+
+  // eth_sign - Signs arbitrary data (different from personal_sign)
+  ethSign = async ({ data, approvalRes, session }) => {
+    if (!data.params) return;
+    const [address, message] = data.params;
+
+    try {
+      // Get the Ethereum private key using secp256k1 algorithm
+      const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+      const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+
+      // Derive the Ethereum address from the private key
+      const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);
+
+      // Validate that the requested address matches the derived address
+      if (address.toLowerCase() !== ethereumAddress.toLowerCase()) {
+        throw new Error('Address mismatch');
+      }
+
+      // eth_sign signs the raw message hash (32 bytes), not prefixed like personal_sign
+      // Convert message to bytes and hash it
+      const messageBytes =
+        typeof message === 'string'
+          ? message.startsWith('0x')
+            ? Buffer.from(message.slice(2), 'hex')
+            : Buffer.from(message, 'utf8')
+          : Buffer.from(message);
+
+      // Hash the message using keccak256
+      const messageHash = ethers.keccak256(messageBytes);
+
+      // Sign the hash using eth-signer
+      const { signature } = await EthSigner.signPersonalMessage(privateKeyBytes, messageHash);
+
+      // Create history entry
+      signTextHistoryService.createHistory({
+        address: ethereumAddress,
+        text: message,
+        origin: session.origin,
+        type: 'ethSign',
+      });
+
+      return signature;
+    } catch (error) {
+      consoleError('Error in ethSign:', error);
+      throw error;
+    }
+  };
+
+  // personal_ecRecover - Recovers the address from a signature
+  personalEcRecover = async ({ data }) => {
+    if (!data.params) return;
+    const [message, signature] = data.params;
+
+    try {
+      // Use ethers to recover the address from the signature
+      // ethers.utils.recoverAddress handles the personal message prefix automatically
+      const recoveredAddress = ethers.verifyMessage(message, signature);
+      return recoveredAddress;
+    } catch (error) {
+      consoleError('Error in personal_ecRecover:', error);
+      throw error;
+    }
   };
 }
 

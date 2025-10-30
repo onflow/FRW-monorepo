@@ -124,6 +124,21 @@ const ImportProfile = () => {
     dispatch({ type: 'SET_GOOGLE_IMPORT', payload: { show: true, accounts } });
   };
 
+  const handleRegisterNewProfile = (data: {
+    importData: any;
+    username: string;
+    isFromImport: boolean;
+  }) => {
+    // Navigate to the register flow with the import data and auto-generated username
+    navigate('/welcome/register', {
+      state: {
+        importData: data.importData,
+        username: data.username,
+        isFromImport: data.isFromImport,
+      },
+    });
+  };
+
   if (showGoogleImport) {
     return (
       <Google
@@ -156,6 +171,8 @@ const ImportProfile = () => {
           setMnemonic={(m) => dispatch({ type: 'SET_MNEMONIC', payload: m })}
           setPk={(k) => dispatch({ type: 'SET_PK', payload: k })}
           setAccounts={(a) => dispatch({ type: 'SET_ACCOUNTS', payload: a })}
+          pk={pk}
+          mnemonic={mnemonic}
           goPassword={() =>
             dispatch({
               type: 'SET_ACTIVE_TAB',
@@ -180,6 +197,7 @@ const ImportProfile = () => {
           setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}
           phrase={phrase}
           setPhrase={(p) => dispatch({ type: 'SET_PASSPHRASE', payload: p })}
+          onRegisterNewProfile={handleRegisterNewProfile}
         />
       )}
 

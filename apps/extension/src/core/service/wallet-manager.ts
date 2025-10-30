@@ -7,6 +7,7 @@ import {
   Wallet,
   WalletFactory,
   SeedPhraseKey,
+  PrivateKey,
   NETWORKS,
   type AccountsListener,
 } from '@onflow/frw-wallet';
@@ -18,6 +19,7 @@ export class WalletManager {
   private wallet: Wallet | null = null;
   private storage: ExtensionStorage;
   private seedPhraseKey: SeedPhraseKey | null = null;
+  private privateKey: PrivateKey | null = null;
   private currentUid: string | null = null;
 
   constructor() {
@@ -30,7 +32,6 @@ export class WalletManager {
   async init(uid?: string): Promise<void> {
     try {
       if (!keyringService.isUnlocked()) {
-        console.log('Keyring is locked, cannot initialize wallet');
         return;
       }
 
@@ -50,29 +51,57 @@ export class WalletManager {
         this.cleanup();
       }
 
-      // Get mnemonic for the specific uid from keyring
-      const mnemonic = await keyringService.getMnemonicFromKeyring();
-      console.log('keyTuple ==>', mnemonic);
-      if (!mnemonic) {
-        throw new Error('No mnemonic available from keyring');
+      // Check what type of keyring is available
+      const hdKeyrings = keyringService.getKeyringsByType('HD Key Tree');
+      const simpleKeyrings = keyringService.getKeyringsByType('Simple Key Pair');
+
+      if (hdKeyrings.length > 0) {
+        // Try to get mnemonic from HD keyring
+        const mnemonic = await keyringService.getMnemonicFromKeyring();
+
+        if (!mnemonic) {
+          throw new Error('No mnemonic available from HD keyring');
+        }
+
+        // Create SeedPhraseKey
+        this.seedPhraseKey = await SeedPhraseKey.createAdvanced(
+          {
+            mnemonic,
+            derivationPath: "m/44'/539'/0'/0/0", // Flow default path
+            passphrase: '',
+          },
+          this.storage
+        );
+
+        // Create wallet using factory
+        this.wallet = WalletFactory.createKeyWallet(
+          this.seedPhraseKey,
+          this.getNetworks(),
+          this.storage
+        );
+      } else if (simpleKeyrings.length > 0) {
+        // Try to get private key from Simple keyring
+        const privateKey = await keyringService.getCurrentPrivateKey();
+
+        if (!privateKey) {
+          throw new Error('No private key available from Simple keyring');
+        }
+
+        // Create PrivateKey instead of SeedPhraseKey
+        this.privateKey = await PrivateKey.createAdvanced(
+          Buffer.from(privateKey, 'hex'),
+          this.storage
+        );
+
+        // Create wallet using factory with private key
+        this.wallet = WalletFactory.createKeyWallet(
+          this.privateKey,
+          this.getNetworks(),
+          this.storage
+        );
+      } else {
+        throw new Error('No keyrings available - please import a mnemonic or private key');
       }
-
-      // Create SeedPhraseKey
-      this.seedPhraseKey = await SeedPhraseKey.createAdvanced(
-        {
-          mnemonic,
-          derivationPath: "m/44'/539'/0'/0/0", // Flow default path
-          passphrase: '',
-        },
-        this.storage
-      );
-
-      // Create wallet using factory
-      this.wallet = WalletFactory.createKeyWallet(
-        this.seedPhraseKey,
-        this.getNetworks(),
-        this.storage
-      );
 
       // Subscribe to account changes
       this.subscribeToWalletEvents();
@@ -81,7 +110,6 @@ export class WalletManager {
       await this.wallet.initialize();
 
       this.currentUid = targetUid;
-      console.log(`Wallet initialized for uid: ${targetUid}`);
     } catch (error) {
       console.error('Failed to initialize wallet:', error);
       this.cleanup();
@@ -96,7 +124,6 @@ export class WalletManager {
     if (!this.wallet) return;
 
     const accountsListener: AccountsListener = (accounts) => {
-      console.log('Wallet accounts changed:', accounts.size, accounts);
       // Notify extension about account changes
       this.onAccountsChanged(Array.from(accounts.values()));
     };
@@ -143,8 +170,7 @@ export class WalletManager {
       }
 
       // Get mnemonic from extension's keyring (keyring is already unlocked)
-      const keyTuple = await keyringService.getCurrentPublicPrivateKeyTuple();
-      const mnemonic = keyTuple.mnemonic;
+      const mnemonic = await keyringService.getMnemonicFromKeyring();
       if (!mnemonic) {
         throw new Error('No mnemonic available from keyring');
       }
@@ -184,23 +210,6 @@ export class WalletManager {
       return new Set([NETWORKS.FLOW_MAINNET, NETWORKS.FLOW_EVM_MAINNET]);
     } else {
       return new Set([NETWORKS.FLOW_TESTNET, NETWORKS.FLOW_EVM_TESTNET]);
-    }
-  }
-
-  /**
-   * Get all accounts (Flow + EVM) from wallet
-   */
-  async getAllAccounts(): Promise<{ flowAccounts: any[]; evmAccounts: any[] }> {
-    try {
-      const wallet = await this.getWallet();
-
-      return {
-        flowAccounts: wallet.getFlowAccounts(),
-        evmAccounts: wallet.getEVMAccounts(),
-      };
-    } catch (error) {
-      console.error('Failed to get all accounts:', error);
-      return { flowAccounts: [], evmAccounts: [] };
     }
   }
 
@@ -268,6 +277,7 @@ export class WalletManager {
       this.wallet = null;
     }
     this.seedPhraseKey = null;
+    this.privateKey = null;
     this.currentUid = null;
   }
 

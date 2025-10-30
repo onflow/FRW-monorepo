@@ -35,7 +35,8 @@ const ImportTabs = ({
   setMnemonic,
   setPk,
   setAccounts,
-
+  pk,
+  mnemonic,
   goPassword,
   handleSwitchTab,
   setErrorMessage,
@@ -45,10 +46,13 @@ const ImportTabs = ({
   setPath,
   phrase,
   setPhrase,
+  onRegisterNewProfile,
 }: {
   setMnemonic: (mnemonic: string) => void;
   setPk: (pk: string) => void;
   setAccounts: (accounts: PublicKeyAccount[]) => void;
+  pk: string | null;
+  mnemonic: string | null;
   goPassword: () => void;
   handleSwitchTab: () => void;
   setErrorMessage: (errorMessage: string) => void;
@@ -58,6 +62,11 @@ const ImportTabs = ({
   setPath: (path: string) => void;
   phrase: string;
   setPhrase: (phrase: string) => void;
+  onRegisterNewProfile?: (data: {
+    importData: any;
+    username: string;
+    isFromImport: boolean;
+  }) => void;
 }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isSignLoading, setSignLoading] = useState(false);
@@ -78,19 +87,72 @@ const ImportTabs = ({
   };
 
   const handleImport = async (accounts: PublicKeyAccount[]) => {
-    setAccounts(accounts);
-    const result = await usewallet.openapi.checkImport(accounts[0].publicKey);
-    if (result.status === 409) {
-      // The account has been previously imported, so just retrieve the current user name
-      goPassword();
-    } else {
-      // The key has never been imported before, we need to set a username and confirm / create a password
-      if (!accounts[0].address) {
-        handleNotFoundPopup();
-        return;
-      }
-      handleSwitchTab();
+    if (!accounts || accounts.length === 0) {
+      console.error('No accounts provided to handleImport');
+      setErrorMessage('No accounts found. Please check your input and try again.');
+      setShowError(true);
+      return;
     }
+
+    setAccounts(accounts);
+
+    try {
+      const result = await usewallet.openapi.checkImport(accounts[0].publicKey);
+      if (result.status === 409) {
+        // The account has been previously imported, so just retrieve the current user name
+        goPassword();
+      } else {
+        // The key has never been imported before, we need to set a username and confirm / create a password
+        if (!accounts[0].address) {
+          handleNotFoundPopup();
+          return;
+        }
+        handleSwitchTab();
+      }
+    } catch (error) {
+      setErrorMessage('Error checking account import status. Please try again.');
+      setShowError(true);
+    }
+  };
+
+  const handleRegisterNewProfile = () => {
+    // Generate auto username with timestamp (max 15 characters)
+    const timestamp = Math.floor(Date.now() / 1000);
+    const autoUsername = `ext${timestamp}`.substring(0, 15);
+
+    // Pass the import data and auto username to register page
+    let importData: any = null;
+
+    if (selectedTab === 2) {
+      // Recovery Phrase tab
+
+      importData = {
+        type: 'mnemonic',
+        mnemonic: mnemonic || '', // Use the actual mnemonic seed phrase
+        path: path,
+        passphrase: phrase, // This is the BIP39 passphrase
+      };
+    } else if (selectedTab === 3) {
+      // Private Key tab
+
+      importData = {
+        type: 'privateKey',
+        privateKey: pk || '',
+      };
+    } else if (selectedTab === 1) {
+      // Keystore tab
+
+      importData = {
+        type: 'privateKey',
+        privateKey: pk || '',
+      };
+    }
+
+    onRegisterNewProfile?.({
+      importData,
+      username: autoUsername,
+      isFromImport: true,
+    });
   };
 
   const handleNotFoundPopup = async () => {
@@ -199,15 +261,25 @@ const ImportTabs = ({
       </TabPanel>
       {!addressFound && (
         <ErrorModel
-          isOpen={setAddressFound}
+          isOpen={!addressFound}
           onOpenChange={setAddressFound}
           errorName={chrome.i18n.getMessage('No_Account_found')}
-          errorMessage={chrome.i18n.getMessage('We_cant_find')}
+          errorMessage={chrome.i18n.getMessage('Create_New_Profile_Description')}
+          customAction={onRegisterNewProfile ? true : undefined}
+          customActionText={chrome.i18n.getMessage('Register_New_Profile')}
+          onCustomAction={
+            onRegisterNewProfile
+              ? () => {
+                  setAddressFound(true);
+                  handleRegisterNewProfile();
+                }
+              : undefined
+          }
         />
       )}
       {!newKey && (
         <ErrorModel
-          isOpen={setKeyNew}
+          isOpen={!newKey}
           onOpenChange={setKeyNew}
           errorName={chrome.i18n.getMessage('Publickey_already_exist')}
           errorMessage={chrome.i18n.getMessage('Please_import_or_register_a_new_key')}

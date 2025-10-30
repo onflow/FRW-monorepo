@@ -31,21 +31,19 @@ import { useCachedData, useUserData } from './use-data';
 
 export const useMainAccounts = (
   network: string | undefined | null,
-  publicKey: string | undefined | null
+  userId: string | undefined | null
 ) => {
-  return useCachedData<MainAccount[]>(
-    network && publicKey ? mainAccountsKey(network, publicKey) : null
-  );
+  return useCachedData<MainAccount[]>(network && userId ? mainAccountsKey(network, userId) : null);
 };
 
 export const useMainAccount = (
   network: string | undefined | null,
   address: string | undefined | null
 ) => {
-  // The user wallet data - which public key is currently active
-  const userWallets = useUserWallets();
-  // The main accounts for the current public key
-  const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
+  // The current user ID
+  const currentId = useCurrentId();
+  // The main accounts for the current user
+  const mainAccounts = useMainAccounts(network, currentId);
   // The main account for the address
   const mainAccount = mainAccounts?.find((account) => account.address === address);
   return mainAccount;
@@ -87,9 +85,10 @@ export const useActiveAccounts = (
   network: string | undefined | null,
   publicKey: string | undefined | null
 ) => {
-  const mainAccounts = useMainAccounts(network, publicKey);
+  const currentId = useCurrentId();
+  const mainAccounts = useMainAccounts(network, currentId);
   const activeAccounts = useUserData<ActiveAccountsStore>(
-    network && publicKey ? activeAccountsKey(network, publicKey) : null
+    network && currentId ? activeAccountsKey(network, currentId) : null
   );
   if (!activeAccounts) {
     // Special case of where main accounts is loaded but we don't have active accounts
@@ -103,7 +102,6 @@ export const useActiveAccounts = (
       };
     }
   }
-  console.log('useActiveAccounts =====>', activeAccounts);
   return activeAccounts;
 };
 
@@ -150,10 +148,10 @@ export const usePayer = () => {
 
 export const usePendingAccountCreationTransactions = (
   network: string | undefined | null,
-  pubkey: string | undefined | null
+  userId: string | undefined | null
 ) => {
   return useCachedData<PendingTransaction[]>(
-    network && pubkey ? pendingAccountCreationTransactionsKey(network, pubkey) : null
+    network && userId ? pendingAccountCreationTransactionsKey(network, userId) : null
   );
 };
 

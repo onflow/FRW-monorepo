@@ -357,7 +357,6 @@ class KeyringService extends EventEmitter {
    * @deprecated use {@link getKeyringPublicPrivateKey} instead
    */
   getKeyringPrivateKeyTuple = async (keyrings: Keyring[]): Promise<PrivateKeyTuple> => {
-    console.log('keyrings ==>', keyrings);
     for (const keyring of keyrings) {
       if (keyring instanceof SimpleKeyring) {
         // If a private key is found, extract it and break the loop

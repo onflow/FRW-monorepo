@@ -41,7 +41,7 @@ interface ConnectProps {
 const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   // This is used to resolve or reject the approval in the background
   const [, resolveApproval, rejectApproval] = useApproval();
-  const { evmAddress, evmLoading } = useProfiles();
+  const { eoaAccount } = useProfiles();
   const { network: currentNetwork } = useNetwork();
   // This is used to interact with the wallet
   const usewallet = useWallet();
@@ -58,10 +58,11 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
 
   const init = useCallback(async () => {
     setLogo(icon);
-    if (isValidEthereumAddress(evmAddress)) {
+    if (!eoaAccount) return;
+    if (isValidEthereumAddress(eoaAccount.address)) {
       const walletInfo = {
         name: 'evm',
-        address: evmAddress,
+        address: eoaAccount.address,
         chain_id: currentNetwork,
         coins: ['flow'],
         id: 1,
@@ -76,7 +77,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     setDefaultChain(defaultChain);
 
     setIsLoading(false);
-  }, [usewallet, icon, currentNetwork, evmAddress]);
+  }, [usewallet, icon, currentNetwork, eoaAccount]);
 
   const createCoa = async () => {
     setIsLoading(true);
@@ -120,7 +121,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
 
   return (
     <Box sx={{ paddingTop: '18px' }}>
-      {evmLoading || isLoading ? (
+      {isLoading ? (
         <LLConnectLoading logo={logo} />
       ) : (
         <Box
@@ -133,7 +134,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
             background: 'linear-gradient(0deg, #121212, #11271D)',
           }}
         >
-          {isValidEthereumAddress(evmAddress) && (
+          {eoaAccount && isValidEthereumAddress(eoaAccount.address) && (
             <Box sx={{ display: 'flex', flexDirection: 'column', margin: '18px', gap: '18px' }}>
               <Box sx={{ display: 'flex', gap: '18px', marginBottom: '0px' }}>
                 <IconWithPlaceholder imageUrl={icon} />
@@ -192,7 +193,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               </Stack>
             </Box>
           )}
-          {isValidEthereumAddress(evmAddress) ? (
+          {eoaAccount && isValidEthereumAddress(eoaAccount.address) ? (
             <Box
               sx={{
                 display: 'flex',
@@ -226,7 +227,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
                 </Box>
                 <Box>
                   <Typography sx={{ color: '#FFFFFFCC', fontSize: '12px', marginTop: '11px' }}>
-                    {formatAddress(evmAddress)}
+                    {formatAddress(eoaAccount.address)}
                   </Typography>
                 </Box>
               </Box>
@@ -266,7 +267,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
               fullWidth
               onClick={handleCancel}
             />
-            {isValidEthereumAddress(evmAddress) ? (
+            {eoaAccount && isValidEthereumAddress(eoaAccount.address) ? (
               <LLPrimaryButton
                 label={chrome.i18n.getMessage('Connect')}
                 fullWidth
