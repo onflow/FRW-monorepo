@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicReference
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
+import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
+import org.onflow.flow.models.SigningAlgorithm
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -159,7 +161,17 @@ object WalletManager {
                 // For hardware-backed keys, we cannot create a wallet object because the key cannot be extracted
                 // The CryptoProviderManager will handle cryptographic operations using AndroidKeystoreCryptoProvider
                 // Transactions will get the address from account data instead of wallet object
-                currentWallet = null
+                if (e.alias == null) {
+                    logd(TAG, "Hardware-backed key alias is null")
+                    return false
+                }
+                val provider = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_P256,null)
+                val newWallet = WalletFactory.createProxyWallet(
+                  provider,
+                  setOf(ChainId.Mainnet, ChainId.Testnet),
+                  storage
+                )
+                currentWallet = newWallet
                 logd(TAG, "Hardware-backed key configuration complete")
             }
         }
