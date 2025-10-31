@@ -82,7 +82,7 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'send-asset' | 'token-detail';
+  screen: 'send-asset' | 'token-detail' | 'onboarding';
   sendToConfig?: string;
 }
 
@@ -96,4 +96,9 @@ export interface Currency {
   name: string;
   symbol: string;
   rate: string;
+}
+
+export interface SaveMnemonicResponse {
+  success: boolean;
+  error: string | null;
 }

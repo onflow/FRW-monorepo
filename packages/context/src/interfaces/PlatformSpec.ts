@@ -98,4 +98,39 @@ export interface PlatformSpec {
   hideToast?(id: string): void;
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
+
+  // Onboarding methods - Account creation
+  // EOA: Externally Owned Account (pure mnemonic-based, no server)
+  createEOAAccount?(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
+    error: string | null;
+  }>;
+
+  // COA: Cadence Owned Account (hybrid with server - Secure Enclave)
+  createCOAAccount?(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
+    error: string | null;
+  }>;
+
+  // Notification permission methods
+  requestNotificationPermission?(): Promise<boolean>;
+  checkNotificationPermission?(): Promise<boolean>;
+
+  // Screen security methods
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
+
+  // Backup activity launchers
+  launchMultiBackup?(): void;
+  launchDeviceBackup?(): void;
+  launchSeedPhraseBackup?(): void;
 }

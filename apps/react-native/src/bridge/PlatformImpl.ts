@@ -321,6 +321,120 @@ class PlatformImpl implements PlatformSpec {
       this.log('error', '[PlatformImpl] Failed to clear toasts via bridge:', error);
     }
   }
+
+  // Onboarding methods - Account creation
+  // EOA: Pure mnemonic-based account (no server)
+  async createEOAAccount(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
+    error: string | null;
+  }> {
+    try {
+      return await NativeFRWBridge.createEOAAccount();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to create EOA account via bridge:', error);
+      return {
+        success: false,
+        address: null,
+        username: null,
+        mnemonic: null,
+        phrase: null,
+        accountType: 'eoa',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // COA: Hybrid account with server (Secure Enclave)
+  async createCOAAccount(): Promise<{
+    success: boolean;
+    address: string | null;
+    username: string | null;
+    mnemonic: string | null;
+    phrase: string[] | null;
+    accountType: 'eoa' | 'coa' | null;
+    error: string | null;
+  }> {
+    try {
+      return await NativeFRWBridge.createCOAAccount();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to create COA account via bridge:', error);
+      return {
+        success: false,
+        address: null,
+        username: null,
+        mnemonic: null,
+        phrase: null,
+        accountType: 'coa',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // Notification permission methods
+  async requestNotificationPermission(): Promise<boolean> {
+    try {
+      return await NativeFRWBridge.requestNotificationPermission();
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to request notification permission via bridge:',
+        error
+      );
+      return false;
+    }
+  }
+
+  async checkNotificationPermission(): Promise<boolean> {
+    try {
+      return await NativeFRWBridge.checkNotificationPermission();
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to check notification permission via bridge:',
+        error
+      );
+      return false;
+    }
+  }
+
+  // Screen security
+  setScreenSecurityLevel(level: 'normal' | 'secure'): void {
+    try {
+      NativeFRWBridge.setScreenSecurityLevel(level);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to set screen security level via bridge:', error);
+    }
+  }
+
+  // Backup activity launchers
+  launchMultiBackup(): void {
+    try {
+      NativeFRWBridge.launchMultiBackup();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch multi-backup via bridge:', error);
+    }
+  }
+
+  launchDeviceBackup(): void {
+    try {
+      NativeFRWBridge.launchDeviceBackup();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch device backup via bridge:', error);
+    }
+  }
+
+  launchSeedPhraseBackup(): void {
+    try {
+      NativeFRWBridge.launchSeedPhraseBackup();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch seed phrase backup via bridge:', error);
+    }
+  }
 }
 
 export const platform = new PlatformImpl();

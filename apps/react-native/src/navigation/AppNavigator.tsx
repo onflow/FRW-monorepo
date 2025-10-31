@@ -7,6 +7,14 @@ import {
   SendTokensScreen,
   SendToScreen,
   ReceiveScreen,
+  // Onboarding screens
+  GetStartedScreen,
+  ProfileTypeSelectionScreen,
+  RecoveryPhraseScreen,
+  ConfirmRecoveryPhraseScreen,
+  SecureEnclaveScreen,
+  NotificationPreferencesScreen,
+  BackupOptionsScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -55,6 +63,14 @@ export type RootStackParamList = {
     token?: Record<string, unknown>;
     selectedNFTs?: Record<string, unknown>[];
   };
+  // Onboarding screens
+  GetStarted: undefined;
+  ProfileTypeSelection: undefined;
+  RecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: { recoveryPhrase?: string[] };
+  SecureEnclave: undefined;
+  NotificationPreferences: undefined;
+  BackupOptions: undefined;
 };
 
 interface AppNavigatorProps {
@@ -288,6 +304,102 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               options={{
                 headerTitle: t('navigation.receive'),
               }}
+            />
+          </Stack.Group>
+
+          {/* Onboarding Screens Group */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '', // Ensure no back title text
+              headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
+            }}
+          >
+            <Stack.Screen
+              name="GetStarted"
+              component={GetStartedScreen}
+              options={{
+                headerShown: false, // First screen doesn't need header
+              }}
+            />
+            <Stack.Screen
+              name="ProfileTypeSelection"
+              component={ProfileTypeSelectionScreen}
+              options={{
+                headerShown: false, // No header for profile type selection
+              }}
+            />
+            <Stack.Screen
+              name="RecoveryPhrase"
+              component={RecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.recoveryPhrase.navTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmRecoveryPhrase"
+              component={ConfirmRecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
+              }}
+            />
+            <Stack.Screen
+              name="SecureEnclave"
+              component={SecureEnclaveScreen}
+              options={{
+                headerTitle: '', // No title text
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
+              }}
+            />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+              options={{
+                headerTitle: t('onboarding.notificationPreferences.headerTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
+              }}
+            />
+            <Stack.Screen
+              name="BackupOptions"
+              component={BackupOptionsScreen}
+              options={({ navigation: screenNavigation }) => ({
+                headerTitle: t('onboarding.backupOptions.navTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                },
+                headerLeft: () => (
+                  <NavigationBackButton
+                    onPress={() => {
+                      // Trigger warning dialog in screen
+                      const handler = (globalThis as any).__backupOptionsBackHandler;
+                      if (handler && !handler()) {
+                        // Handler returned false, prevent navigation
+                        return;
+                      }
+                      // Otherwise navigate back normally
+                      screenNavigation.goBack();
+                    }}
+                  />
+                ),
+              })}
             />
           </Stack.Group>
         </Stack.Navigator>
