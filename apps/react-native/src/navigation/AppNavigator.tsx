@@ -5,6 +5,8 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  SendToScreen,
+  ReceiveScreen,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -35,8 +37,6 @@ import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
 // import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest'; // For testing error handling
 
-import { SendToScreen } from '../screens/SendToScreenWrapper';
-
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
   ColorDemo: undefined;
@@ -55,6 +55,7 @@ export type RootStackParamList = {
   SendTo: undefined;
   SendTokens: undefined;
   SendSummary: undefined;
+  Receive: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -295,6 +296,13 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={SendSummaryScreen}
               options={{
                 headerTitle: t('navigation.sending'),
+              }}
+            />
+            <Stack.Screen
+              name="Receive"
+              component={ReceiveScreen}
+              options={{
+                headerTitle: t('navigation.receive'),
               }}
             />
           </Stack.Group>
