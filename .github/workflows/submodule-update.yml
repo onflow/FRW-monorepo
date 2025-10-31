@@ -3,6 +3,14 @@ name: Update Mobile Submodules
 on:
   workflow_dispatch:
     inputs:
+      update_target:
+        description: "Select which mobile submodules to update"
+        required: true
+        type: choice
+        options:
+          - ios
+          - android
+          - both
       ios_ref:
         description: "Ref (branch, tag, or SHA) for apps/react-native/ios"
         required: false
@@ -104,13 +112,28 @@ jobs:
         env:
           IOS_REF: ${{ inputs.ios_ref }}
           ANDROID_REF: ${{ inputs.android_ref }}
+          UPDATE_TARGET: ${{ inputs.update_target }}
         run: |
           set -euo pipefail
           args=()
-          if [[ -n "${IOS_REF}" ]]; then
+          case "${UPDATE_TARGET}" in
+            ios)
+              args+=(--skip-android)
+              ;;
+            android)
+              args+=(--skip-ios)
+              ;;
+            both)
+              ;;
+            *)
+              echo "Unknown update target: ${UPDATE_TARGET}" >&2
+              exit 1
+              ;;
+          esac
+          if [[ "${UPDATE_TARGET}" != "android" && -n "${IOS_REF}" ]]; then
             args+=(--ios-ref "${IOS_REF}")
           fi
-          if [[ -n "${ANDROID_REF}" ]]; then
+          if [[ "${UPDATE_TARGET}" != "ios" && -n "${ANDROID_REF}" ]]; then
             args+=(--android-ref "${ANDROID_REF}")
           fi
           scripts/update-submodule-refs.sh "${args[@]}"
