@@ -874,7 +874,7 @@ describe('Test send strategies', () => {
         expect(value).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
-        expect(value).toBe(30_000_000); // Gas limit
+        expect(value).toBe(16_000_000); // Gas limit
       }
     }
   });
