@@ -14,29 +14,22 @@ on:
       update_mode:
         description: "Use create-pr (default) or update-existing-pr"
         required: true
+        type: choice
         default: create-pr
+        options:
+          - create-pr
+          - update-existing-pr
       target_pr_number:
         description: "Existing PR number when update_mode=update-existing-pr"
         required: false
       base_branch:
         description: "Base branch when creating a new PR"
         required: false
+        type: choice
         default: dev
-      pr_title:
-        description: "Pull request title when creating a new PR"
-        required: false
-        default: "chore: update mobile submodules"
-      pr_branch:
-        description: "Branch name prefix for created PRs"
-        required: false
-        default: automation/update-mobile-submodules
-      commit_message:
-        description: "Commit message used for the update"
-        required: false
-        default: "chore: update mobile submodules"
-      pr_body_suffix:
-        description: "Optional extra text appended to the PR body"
-        required: false
+        options:
+          - dev
+          - main
 
 jobs:
   update-submodules:
@@ -147,11 +140,11 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: ${{ inputs.commit_message }}
-          branch: ${{ inputs.pr_branch }}
+          commit-message: "chore: update mobile submodules"
+          branch: automation/update-mobile-submodules
           branch-suffix: timestamp
           base: ${{ inputs.base_branch }}
-          title: ${{ inputs.pr_title }}
+          title: "chore: update mobile submodules"
           add-paths: |
             apps/react-native/ios
             apps/react-native/android
@@ -162,14 +155,11 @@ jobs:
             ${{ steps.diff.outputs.status }}
             ```
             Triggered by: ${{ github.actor }}
-            ${{ inputs.pr_body_suffix }}
 
       - name: Commit changes to existing PR branch
         if: ${{ steps.diff.outputs.changed == 'true' && inputs.update_mode == 'update-existing-pr' }}
-        env:
-          COMMIT_MESSAGE: ${{ inputs.commit_message }}
         run: |
-          git commit -m "$COMMIT_MESSAGE"
+          git commit -m "chore: update mobile submodules"
 
       - name: Push changes
         if: ${{ steps.diff.outputs.changed == 'true' && inputs.update_mode == 'update-existing-pr' }}
