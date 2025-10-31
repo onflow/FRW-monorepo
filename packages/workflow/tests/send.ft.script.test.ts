@@ -1059,7 +1059,7 @@ describe('Test send strategies', () => {
         expect(typeof value).toBe('object');
       }
       if (idx === 3) {
-        expect(value).toBe(30000000); // Gas limit
+        expect(value).toBe(16000000); // Gas limit
       }
     }
   });
@@ -1108,7 +1108,7 @@ describe('Test send strategies', () => {
         expect(value).toStrictEqual([]);
       }
       if (idx === 3) {
-        expect(value).toBe(30000000); // Gas limit
+        expect(value).toBe(16000000); // Gas limit
       }
     }
   });
