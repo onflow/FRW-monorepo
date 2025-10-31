@@ -465,7 +465,7 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 ///
 transaction(nftIdentifier: String, ids: [UInt256], recipient: Address) {
     let nftType: Type
-    let receiver: &{NonFungibleToken.Receiver}
+    let receiver: &{NonFungibleToken.Collection}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount
     let viewResolver: &{ViewResolver}
@@ -504,8 +504,8 @@ transaction(nftIdentifier: String, ids: [UInt256], recipient: Address) {
             let collectionCap = signer.capabilities.storage.issue<&{NonFungibleToken.Collection}>(collectionData.storagePath)
             signer.capabilities.publish(collectionCap, at: collectionData.publicPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
-            ?? panic("Could not borrow Receiver from recipient's public capability path")
+
+        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Collection}>(collectionData.publicPath) ?? panic("Could not borrow Receiver from recipient's public capability path")
 
         /* --- Configure a ScopedFTProvider --- */
         //
@@ -1607,7 +1607,7 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 ///
 transaction(nftIdentifier: String, id: UInt256, recipient: Address) {
     let nftType: Type
-    let receiver: &{NonFungibleToken.Receiver}
+    let receiver: &{NonFungibleToken.Collection}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
     let coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount
     let viewResolver: &{ViewResolver}
@@ -1646,8 +1646,7 @@ transaction(nftIdentifier: String, id: UInt256, recipient: Address) {
             let collectionCap = signer.capabilities.storage.issue<&{NonFungibleToken.Collection}>(collectionData.storagePath)
             signer.capabilities.publish(collectionCap, at: collectionData.publicPath)
         }
-        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Receiver}>(collectionData.publicPath)
-            ?? panic("Could not borrow Receiver from recipient's public capability path")
+        self.receiver = getAccount(recipient).capabilities.borrow<&{NonFungibleToken.Collection}>(collectionData.publicPath) ?? panic("Could not borrow Receiver from recipient's public capability path")
 
         /* --- Configure a ScopedFTProvider --- */
         //
