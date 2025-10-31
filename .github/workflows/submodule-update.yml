@@ -1,0 +1,208 @@
+name: Update Mobile Submodules
+
+on:
+  workflow_dispatch:
+    inputs:
+      ios_ref:
+        description: "Ref (branch, tag, or SHA) for apps/react-native/ios"
+        required: false
+        default: dev
+      android_ref:
+        description: "Ref (branch, tag, or SHA) for apps/react-native/android"
+        required: false
+        default: dev
+      update_mode:
+        description: "Use create-pr (default) or update-existing-pr"
+        required: true
+        default: create-pr
+      target_pr_number:
+        description: "Existing PR number when update_mode=update-existing-pr"
+        required: false
+      base_branch:
+        description: "Base branch when creating a new PR"
+        required: false
+        default: dev
+      pr_title:
+        description: "Pull request title when creating a new PR"
+        required: false
+        default: "chore: update mobile submodules"
+      pr_branch:
+        description: "Branch name prefix for created PRs"
+        required: false
+        default: automation/update-mobile-submodules
+      commit_message:
+        description: "Commit message used for the update"
+        required: false
+        default: "chore: update mobile submodules"
+      pr_body_suffix:
+        description: "Optional extra text appended to the PR body"
+        required: false
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Configure git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Validate inputs
+        if: ${{ inputs.update_mode == 'update-existing-pr' && (inputs.target_pr_number == '' || inputs.target_pr_number == null) }}
+        run: |
+          echo "target_pr_number is required when update_mode=update-existing-pr" >&2
+          exit 1
+
+      - name: Lookup target pull request
+        if: ${{ inputs.update_mode == 'update-existing-pr' }}
+        id: pr_info
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ inputs.target_pr_number }}
+          script: |
+            const raw = core.getInput('pr_number');
+            const prNumber = parseInt(raw, 10);
+            if (!Number.isFinite(prNumber)) {
+              core.setFailed(`Invalid PR number provided: ${raw}`);
+              return;
+            }
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            if (pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
+              core.setFailed(`PR #${prNumber} originates from ${pr.head.repo.full_name}; cannot push updates.`);
+              return;
+            }
+            core.setOutput('head_ref', pr.head.ref);
+            core.setOutput('base_ref', pr.base.ref);
+            core.setOutput('pr_url', pr.html_url);
+
+      - name: Checkout base branch
+        if: ${{ inputs.update_mode != 'update-existing-pr' }}
+        env:
+          BASE_BRANCH: ${{ inputs.base_branch }}
+        run: |
+          git fetch origin "$BASE_BRANCH"
+          git checkout -B "$BASE_BRANCH" "origin/$BASE_BRANCH"
+
+      - name: Checkout PR branch
+        if: ${{ inputs.update_mode == 'update-existing-pr' }}
+        env:
+          HEAD_REF: ${{ steps.pr_info.outputs.head_ref }}
+        run: |
+          git fetch origin "$HEAD_REF"
+          git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
+
+      - name: Update submodules to requested refs
+        id: update
+        env:
+          IOS_REF: ${{ inputs.ios_ref }}
+          ANDROID_REF: ${{ inputs.android_ref }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [[ -n "${IOS_REF}" ]]; then
+            args+=(--ios-ref "${IOS_REF}")
+          fi
+          if [[ -n "${ANDROID_REF}" ]]; then
+            args+=(--android-ref "${ANDROID_REF}")
+          fi
+          scripts/update-submodule-refs.sh "${args[@]}"
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git submodule status > submodule-status.txt
+            {
+              echo "status<<'EOF'"
+              cat submodule-status.txt
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: No changes detected
+        if: ${{ steps.diff.outputs.changed == 'false' }}
+        run: |
+          echo "No submodule updates required."
+
+      - name: Create pull request
+        if: ${{ steps.diff.outputs.changed == 'true' && inputs.update_mode != 'update-existing-pr' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: ${{ inputs.commit_message }}
+          branch: ${{ inputs.pr_branch }}
+          branch-suffix: timestamp
+          base: ${{ inputs.base_branch }}
+          title: ${{ inputs.pr_title }}
+          add-paths: |
+            apps/react-native/ios
+            apps/react-native/android
+          body: |
+            ## Summary
+            Mobile submodule pointers updated via workflow run ${{ github.run_number }}.
+            ```
+            ${{ steps.diff.outputs.status }}
+            ```
+            Triggered by: ${{ github.actor }}
+            ${{ inputs.pr_body_suffix }}
+
+      - name: Commit changes to existing PR branch
+        if: ${{ steps.diff.outputs.changed == 'true' && inputs.update_mode == 'update-existing-pr' }}
+        env:
+          COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        run: |
+          git commit -m "$COMMIT_MESSAGE"
+
+      - name: Push changes
+        if: ${{ steps.diff.outputs.changed == 'true' && inputs.update_mode == 'update-existing-pr' }}
+        env:
+          HEAD_REF: ${{ steps.pr_info.outputs.head_ref }}
+        run: |
+          git push origin HEAD:"$HEAD_REF"
+
+      - name: Comment on existing PR
+        if: ${{ steps.diff.outputs.changed == 'true' && inputs.update_mode == 'update-existing-pr' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ inputs.target_pr_number }}
+          status: ${{ steps.diff.outputs.status }}
+          script: |
+            const raw = core.getInput('pr_number');
+            const prNumber = parseInt(raw, 10);
+            if (!Number.isFinite(prNumber)) {
+              core.setFailed(`Invalid PR number provided: ${raw}`);
+              return;
+            }
+            const status = core.getInput('status');
+            const lines = [
+              `Submodule pointers updated via workflow run ${context.runNumber} by @${context.actor}.`,
+              '',
+              '```',
+              status || 'No submodule diff output captured.',
+              '```'
+            ];
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: lines.join('\n'),
+            });
