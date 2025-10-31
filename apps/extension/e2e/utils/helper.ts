@@ -6,6 +6,8 @@ const isValidEthereumAddress = (address: string): boolean => {
   return regex.test(address);
 };
 
+const escapeForRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 import { expect, getAuth, saveAuth } from './loader';
 export const getClipboardText = async () => {
   const text = await navigator.clipboard.readText();
@@ -514,7 +516,9 @@ export const checkSentAmount = async ({
   });
   if (!isEvm) {
     await expect(
-      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
+      page
+        .getByTestId(activityItemRegexp)
+        .getByTestId(new RegExp(`^token-balance-${escapeForRegex(amount)}(?:0+)?$`))
     ).toBeVisible();
   }
 };
@@ -577,7 +581,9 @@ export const waitForTransaction = async ({
 
   if (amount) {
     await expect(
-      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
+      page
+        .getByTestId(activityItemRegexp)
+        .getByTestId(new RegExp(`^token-balance-${escapeForRegex(amount)}(?:0+)?$`))
     ).toBeVisible();
   }
 

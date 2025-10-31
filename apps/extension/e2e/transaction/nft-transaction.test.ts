@@ -1,3 +1,5 @@
+import { expect } from '@playwright/test';
+
 import {
   getCurrentAddress,
   waitForTransaction,
@@ -21,22 +23,40 @@ export const sendNFT = async ({ page, collectionName, receiver, successtext }) =
   // Wait for the EVM account to be loaded
   await getCurrentAddress(page);
   // send Ft token from COA
-  await page.getByTestId(`send-button`).click();
+  const sendButton = page.getByTestId(`send-button`);
+  await expect(sendButton).toBeVisible({ timeout: 30_000 });
+  await sendButton.click();
 
-  await page.getByTestId(`NFTs`).isVisible();
-  await page.getByTestId(`NFTs`).click();
-  await page.getByTestId(collectionName).isVisible();
-  await page.getByTestId(collectionName).click();
-  await page.getByTestId('0').isVisible();
-  await page.getByTestId('0').click();
+  const nftTab = page.getByTestId(`NFTs`);
+  await expect(nftTab).toBeVisible({ timeout: 60_000 });
+  await nftTab.click();
 
-  await page.getByTestId('confirm').click();
-  await page.getByPlaceholder('Search / Paste address').click();
-  await page.getByPlaceholder('Search / Paste address').fill(receiver);
+  const collectionTile = page.getByTestId(collectionName);
+  await expect(collectionTile, `Collection tile ${collectionName} should be visible`).toBeVisible({
+    timeout: 60_000,
+  });
+  await collectionTile.click();
 
-  await page.getByTestId('next').isVisible();
-  await page.getByTestId('next').click();
-  await page.getByTestId('confirm').click();
+  const firstNftTile = page.getByTestId('0');
+  await expect(firstNftTile, 'NFT tile index 0 should be visible').toBeVisible({ timeout: 60_000 });
+  await firstNftTile.click();
+
+  const confirmSelectionButton = page.getByTestId('confirm');
+  await expect(confirmSelectionButton).toBeEnabled({ timeout: 60_000 });
+  await confirmSelectionButton.click();
+
+  const addressInput = page.getByPlaceholder('Search / Paste address');
+  await expect(addressInput).toBeVisible({ timeout: 60_000 });
+  await addressInput.click();
+  await addressInput.fill(receiver);
+
+  const nextButton = page.getByTestId('next');
+  await expect(nextButton).toBeEnabled({ timeout: 60_000 });
+  await nextButton.click();
+
+  const confirmSendButton = page.getByTestId('confirm');
+  await expect(confirmSendButton).toBeEnabled({ timeout: 60_000 });
+  await confirmSendButton.click();
 
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext });
@@ -53,22 +73,43 @@ export const sendNFTs = async ({
   // Wait for the EVM account to be loaded
   await getCurrentAddress(page);
   // send Ft token from COA
-  await page.getByTestId(`send-button`).click();
+  const sendButton = page.getByTestId(`send-button`);
+  await expect(sendButton).toBeVisible({ timeout: 30_000 });
+  await sendButton.click();
 
-  await page.getByTestId(`NFTs`).isVisible();
-  await page.getByTestId(`NFTs`).click();
-  await page.getByTestId(collectionName).click();
+  const nftTab = page.getByTestId(`NFTs`);
+  await expect(nftTab).toBeVisible({ timeout: 60_000 });
+  await nftTab.click();
+
+  const collectionTile = page.getByTestId(collectionName);
+  await expect(collectionTile, `Collection tile ${collectionName} should be visible`).toBeVisible({
+    timeout: 60_000,
+  });
+  await collectionTile.click();
+
   for (let i = 0; i < idx.length; i++) {
-    await page.getByTestId(idx[i]).isVisible();
-    await page.getByTestId(idx[i]).click();
+    const nftTile = page.getByTestId(idx[i]);
+    await expect(nftTile, `NFT tile index ${idx[i]} should be visible`).toBeVisible({
+      timeout: 60_000,
+    });
+    await nftTile.click();
   }
-  await page.getByTestId('confirm').click();
-  await page.getByPlaceholder('Search / Paste address').click();
-  await page.getByPlaceholder('Search / Paste address').fill(receiver);
+  const confirmSelectionButton = page.getByTestId('confirm');
+  await expect(confirmSelectionButton).toBeEnabled({ timeout: 60_000 });
+  await confirmSelectionButton.click();
 
-  await page.getByTestId('next').isVisible();
-  await page.getByTestId('next').click();
-  await page.getByTestId('confirm').click();
+  const addressInput = page.getByPlaceholder('Search / Paste address');
+  await expect(addressInput).toBeVisible({ timeout: 60_000 });
+  await addressInput.click();
+  await addressInput.fill(receiver);
+
+  const nextButton = page.getByTestId('next');
+  await expect(nextButton).toBeEnabled({ timeout: 60_000 });
+  await nextButton.click();
+
+  const confirmSendButton = page.getByTestId('confirm');
+  await expect(confirmSendButton).toBeEnabled({ timeout: 60_000 });
+  await confirmSendButton.click();
 
   // Wait for the transaction to be completed
   const txId = await waitForTransaction({ page, successtext });

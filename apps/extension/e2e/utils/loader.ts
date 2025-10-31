@@ -55,6 +55,47 @@ export const test = base.extend<{
       permissions: ['clipboard-read', 'clipboard-write'],
     });
 
+    const attachDebugListeners = (page: import('@playwright/test').Page) => {
+      console.log(`[pw][page-open] ${page.url()}`);
+      page.on('close', () => {
+        console.log(`[pw][page-close] ${page.url()}`);
+      });
+      page.on('crash', () => {
+        console.log(`[pw][page-crash] ${page.url()}`);
+      });
+      page.on('pageerror', (error) => {
+        console.log(`[pw][page-error] ${page.url()} :: ${error?.stack || error?.message}`);
+      });
+      page.on('console', (msg) => {
+        const location = msg.location();
+        const locationSuffix =
+          location?.url && location.lineNumber !== undefined
+            ? ` @ ${location.url}:${location.lineNumber}:${location.columnNumber ?? 0}`
+            : '';
+        console.log(`[pw][console][${msg.type()}] ${msg.text()}${locationSuffix}`);
+      });
+      page.on('framenavigated', (frame) => {
+        if (frame === page.mainFrame()) {
+          console.log(`[pw][navigation] ${page.url()}`);
+        }
+      });
+    };
+
+    context.on('page', (page) => attachDebugListeners(page));
+    context.pages().forEach((page) => attachDebugListeners(page));
+    context.on('close', () => {
+      console.log('[pw][context-close]');
+    });
+    context.on('requestfailed', (request) => {
+      const failure = request.failure();
+      console.log(
+        `[pw][request-failed] ${request.method()} ${request.url()} :: ${failure?.errorText ?? 'unknown'}`
+      );
+    });
+    context.on('serviceworker', (worker) => {
+      console.log(`[pw][service-worker] ${worker.url()}`);
+    });
+
     // Give the extension time to initialize
     await new Promise((resolve) => setTimeout(resolve, 3000));
 

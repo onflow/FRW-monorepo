@@ -147,9 +147,9 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
             git submodule status > submodule-status.txt
             {
-              echo "status<<'EOF'"
+              echo "status<<EOF"
               cat submodule-status.txt
-              echo 'EOF'
+              echo "EOF"
             } >> "$GITHUB_OUTPUT"
           fi
 
