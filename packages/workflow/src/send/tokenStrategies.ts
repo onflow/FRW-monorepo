@@ -335,12 +335,28 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
     const { tokenContractAddr, amount, flowIdentifier, receiver, coaAddr, sender } = payload;
     if (isFlowToken(flowIdentifier)) {
       const formattedAmount = safeConvertToUFix64(amount);
-      return await this.cadenceService.callContract(
-        receiver,
-        formattedAmount,
-        [],
-        GAS_LIMITS.EVM_DEFAULT
-      );
+
+      if (sender !== coaAddr) {
+        const signedTx = await callback({
+          state: 'EVM_TRX_BUILDING',
+          trxData: {
+            from: sender,
+            to: receiver,
+            data: '0x',
+            gasLimit: GAS_LIMITS.EVM_DEFAULT,
+            value: formattedAmount,
+          },
+        });
+        const rlpEncoded = convertHexToByteArray(signedTx);
+        return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
+      } else {
+        return await this.cadenceService.callContract(
+          receiver,
+          formattedAmount,
+          [],
+          GAS_LIMITS.EVM_DEFAULT
+        );
+      }
     } else {
       if (validateEvmAddress(receiver) && sender !== coaAddr) {
         // eoa as sender
