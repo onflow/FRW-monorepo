@@ -14,10 +14,10 @@ const NftEvm = () => {
   const [isActive, setIsActive] = useState(true);
   const listTabRef = useRef<{ reload: () => void }>(null);
 
-  const { evmAddress } = useProfiles();
+  const { currentWallet } = useProfiles();
 
   // TODO: Think it could just be current address
-  const address = evmAddress;
+  const address = currentWallet?.address;
 
   const refreshButtonClicked = () => {
     listTabRef.current?.reload();
