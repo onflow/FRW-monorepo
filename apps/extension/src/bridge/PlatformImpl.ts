@@ -11,15 +11,17 @@ import {
 import { extractUidFromJwt } from '@onflow/frw-utils';
 import {
   EthSigner,
-  BIP44_PATHS,
   type EthLegacyTransaction,
-  EthSignedTransaction,
 } from '@onflow/frw-wallet';
 import Web3 from 'web3';
-// Removed direct service imports - using walletController instead
-import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID, EVM_ENDPOINT } from '@/shared/constant';
 
-import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
+// Removed direct service imports - using walletController instead
+import {
+  MAINNET_CHAIN_ID,
+  TESTNET_CHAIN_ID,
+  EVM_ENDPOINT,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+} from '@/shared/constant';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
@@ -176,7 +178,23 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
     const gasLimit = '0x1C9C380'; // 30,000,000 in hex
     const gasPrice = '0x0'; // Zero gas price
-    const value = transaction.value ? `0x${BigInt(transaction.value).toString(16)}` : '0x0';
+
+    let value = '0x0';
+    if (transaction.value) {
+      const web3 = new Web3();
+      let valueInWei: bigint;
+
+      // If value is already a hex string, parse it directly
+      if (typeof transaction.value === 'string' && transaction.value.startsWith('0x')) {
+        valueInWei = BigInt(transaction.value);
+      } else {
+        // Convert decimal value to wei using Web3
+        const valueStr = String(transaction.value);
+        valueInWei = BigInt(web3.utils.toWei(valueStr, 'ether'));
+      }
+
+      value = `0x${valueInWei.toString(16)}`;
+    }
 
     const ethTransaction: EthLegacyTransaction = {
       chainId: chainId,
@@ -188,19 +206,12 @@ class ExtensionPlatformImpl implements PlatformSpec {
       data: transaction.data || '0x',
     };
 
-    // Debug logging
-    console.log('ethSignTransaction - Final ethTransaction object:', ethTransaction);
-
     // Sign the transaction using EthSigner
-    try {
-      const signedTransaction = await EthSigner.signTransaction(
-        ethTransaction,
-        actualPrivateKeyBytes
-      );
-      return signedTransaction.rawTransaction;
-    } catch (error) {
-      throw error;
-    }
+    const signedTransaction = await EthSigner.signTransaction(
+      ethTransaction,
+      actualPrivateKeyBytes
+    );
+    return signedTransaction.rawTransaction;
   }
 
   async evmTransactionCallback(trxData: any): Promise<any> {
