@@ -6,7 +6,8 @@
     "selectTokens": "トークンを選択",
     "sendTokens": "トークンを送信",
     "nftDetails": "NFT詳細",
-    "colorDemo": "カラーデモ"
+    "colorDemo": "カラーデモ",
+    "receive": "資産を受け取る"
   },
   "common": {
     "cancel": "キャンセル",
@@ -116,7 +117,19 @@
     "failedToLoadRecipients": "受信者の読み込みに失敗しました",
     "copied": "コピーしました！",
     "addressBookAdded": "アドレス帳に追加しました",
-    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました"
+    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました",
+    "addressCopied": "アドレスをクリップボードにコピーしました",
+    "failedToCopy": "アドレスのコピーに失敗しました",
+    "failedToShare": "QRコードの共有に失敗しました"
+  },
+  "receive": {
+    "title": "資産を受け取る",
+    "receiveAccount": "受け取るアカウント",
+    "scanToReceive": "スキャンして受け取る",
+    "shareQRCode": "QRコードを共有",
+    "generatingQR": "QRコード生成中...",
+    "noQRCode": "QRコードが利用できません",
+    "evmWarning": "Flow EVMネットワーク上でのみ、このアドレスに資産を送信してください。他のネットワーク上でこのアドレスに送信された資産は失われます。"
   },
   "buttons": {
     "retry": "再試行",
