@@ -321,14 +321,9 @@ export class EoaToEVMStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
 
   canHandle(payload: SendPayload): boolean {
-    const { childAddrs, receiver, assetType, sender, coaAddr, type } = payload;
+    const { receiver, assetType, sender, coaAddr, type } = payload;
     return (
-      type === 'nft' &&
-      childAddrs.length > 0 &&
-      childAddrs.includes(receiver) &&
-      assetType === 'evm' &&
-      sender !== coaAddr &&
-      validateEvmAddress(receiver)
+      type === 'nft' && assetType === 'evm' && sender !== coaAddr && validateEvmAddress(receiver)
     );
   }
 
