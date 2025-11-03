@@ -1,19 +1,25 @@
-import { Box, CardMedia, Divider, Stack, Typography } from '@mui/material';
+import { Box, Card, CardMedia, Stack, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import { isValidEthereumAddress, consoleError } from '@/shared/utils';
-import flowgrey from '@/ui/assets/svg/flow-grey.svg';
+import { FlowIcon } from '@/ui/assets/icons/FlowIcon';
 import linkGlobe from '@/ui/assets/svg/linkGlobe.svg';
 import { LLConnectLoading, LLPrimaryButton, LLSecondaryButton } from '@/ui/components';
+import { AccountCard } from '@/ui/components/account/account-card';
 import { EnableEvm } from '@/ui/components/EnableEvm';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
+import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
 import { useApproval } from '@/ui/hooks/use-approval';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-import { formatAddress } from '@/ui/utils';
+import {
+  COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80,
+  COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+} from '@/ui/style/color';
 
+import { AccountSelectDrawer } from './AccountSelectDrawer';
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
 // import EthMove from '../EthMove';
 
@@ -41,13 +47,15 @@ interface ConnectProps {
 const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   // This is used to resolve or reject the approval in the background
   const [, resolveApproval, rejectApproval] = useApproval();
-  const { eoaAccount } = useProfiles();
+  const { eoaAccount, parentWallet, currentWallet } = useProfiles();
   const { network: currentNetwork } = useNetwork();
   // This is used to interact with the wallet
   const usewallet = useWallet();
 
   // This is used to show a loading spinner
   const [isLoading, setIsLoading] = useState(false);
+  const [showAccountDrawer, setShowAccountDrawer] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(currentWallet);
 
   const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
 
@@ -109,151 +117,263 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   const handleAllow = async () => {
     // This is called when the user clicks the allow button
     // This allows the connection to the dApp
-    resolveApproval({
+    const selectedAddress = selectedAccount?.address || eoaAccount?.address;
+    const approvalData = {
       defaultChain,
       signPermission: 'MAINNET_AND_TESTNET',
-    });
+      evmAddress: selectedAddress,
+    };
+    resolveApproval(approvalData);
   };
+
+  const handleAccountSelect = useCallback(
+    async (account: any, parentAccount?: any) => {
+      // Set the selected account
+      setSelectedAccount(account);
+
+      // Update the active wallet in the wallet service
+      if (account.address) {
+        const walletInfo = {
+          name: account.name || 'evm',
+          address: account.address,
+          chain_id: currentNetwork,
+          coins: ['flow'],
+          id: account.id || 1,
+          icon: account.icon || icon,
+          color: account.color || '#282828',
+          chain: currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
+        };
+
+        // Determine if it's an EVM account
+        const isEvmAccount = isValidEthereumAddress(account.address);
+        await usewallet.setActiveWallet(walletInfo, isEvmAccount ? 'evm' : null);
+      }
+    },
+    [usewallet, currentNetwork, icon]
+  );
 
   useEffect(() => {
     init();
   }, [init]);
 
+  useEffect(() => {
+    // Sync selected account with current wallet when it changes
+    if (currentWallet) {
+      setSelectedAccount(currentWallet);
+    }
+  }, [currentWallet]);
+
+  const networkDisplayName = currentNetwork === 'testnet' ? 'Flow Testnet' : 'Flow Mainnet';
+  const hasValidEoaAccount = eoaAccount && isValidEthereumAddress(eoaAccount.address);
+
   return (
-    <Box sx={{ paddingTop: '18px' }}>
+    <Box>
       {isLoading ? (
         <LLConnectLoading logo={logo} />
       ) : (
         <Box
           sx={{
-            margin: '0 18px 0px 18px',
             display: 'flex',
             flexDirection: 'column',
-            borderRadius: '12px',
             height: '100vh',
-            background: 'linear-gradient(0deg, #121212, #11271D)',
+            background: '#121212',
+            padding: '18px',
+            gap: '13px',
           }}
         >
-          {eoaAccount && isValidEthereumAddress(eoaAccount.address) && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', margin: '18px', gap: '18px' }}>
-              <Box sx={{ display: 'flex', gap: '18px', marginBottom: '0px' }}>
-                <IconWithPlaceholder imageUrl={icon} />
-                <Stack direction="column" sx={{ justifyContent: 'space-between' }}>
-                  <Typography
-                    sx={{
-                      fontSize: '12px',
-                      marginTop: '8px',
-                      color: '#FFFFFF66',
-                    }}
-                  >
-                    Connecting to
-                  </Typography>
-                  <Typography sx={{ fontSize: '18px', marginTop: '8px', fontWeight: '700' }}>
-                    {name}
-                  </Typography>
-                </Stack>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <CardMedia
-                  component="img"
-                  sx={{ width: '16px', height: '16px', marginRight: '8px' }}
-                  image={linkGlobe}
-                />
-                <Typography color="secondary.main" variant="overline">
-                  {origin}
+          {/* Header with app icon and name */}
+          {hasValidEoaAccount && (
+            <Box sx={{ display: 'flex', gap: '13px', alignItems: 'flex-start' }}>
+              <IconWithPlaceholder imageUrl={icon} />
+              <Stack direction="column" sx={{ justifyContent: 'space-between' }}>
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80,
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: '400',
+                    lineHeight: '20px',
+                  }}
+                >
+                  Connecting to
                 </Typography>
-              </Box>
-              <Divider />
-              <Typography
-                sx={{ textTransform: 'uppercase', fontSize: '12px' }}
-                variant="body1"
-                color="text.secondary"
-              >
-                {chrome.i18n.getMessage('Connect__Title')}:
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
-                <CheckCircleIcon
-                  size={20}
-                  color="#38B000"
-                  style={{ flexShrink: '0', marginTop: '5px' }}
-                />
-                <Typography sx={{ fontSize: '14px' }}>
-                  {chrome.i18n.getMessage('Connect__Body1')}
-                </Typography>
-              </Stack>
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ alignItems: 'flex-start', marginTop: '7px' }}
-              >
-                <CheckCircleIcon size={20} color="#38B000" style={{ flexShrink: '0' }} />
-                <Typography sx={{ fontSize: '14px' }}>
-                  {chrome.i18n.getMessage('Connect__Body2')}
+                <Typography
+                  sx={{
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    fontFamily: 'Inter, sans-serif',
+                    lineHeight: '24px',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  {name}
                 </Typography>
               </Stack>
             </Box>
           )}
-          {eoaAccount && isValidEthereumAddress(eoaAccount.address) ? (
-            <Box
+
+          {/* Network Badge Section */}
+          {hasValidEoaAccount && (
+            <Card
               sx={{
+                backgroundColor: '#2a2a2a',
+                borderRadius: '16px',
+                padding: '16px',
                 display: 'flex',
-                justifyContent: 'space-between',
-                padding: '18px 18px 24px',
+                flexDirection: 'column',
                 gap: '8px',
-                width: '100%',
               }}
             >
-              <Box
-                sx={{
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  backgroundColor: '#222222',
-                  flex: '1',
-                }}
-              >
-                <Box sx={{ display: 'flex' }}>
-                  <CardMedia
-                    component="img"
-                    sx={{
-                      height: '18px',
-                      width: '18px',
-                      borderRadius: '18px',
-                      backgroundColor: 'text.secondary',
-                      marginRight: '8px',
-                    }}
-                    image={flowgrey}
-                  />
-                  <Typography sx={{ color: '#FFFFFF66', fontSize: '12px' }}>EVM on Flow</Typography>
+              <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '100px',
+                    backgroundColor: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <FlowIcon width={12} height={12} color="#FFFFFF" />
                 </Box>
-                <Box>
-                  <Typography sx={{ color: '#FFFFFFCC', fontSize: '12px', marginTop: '11px' }}>
-                    {formatAddress(eoaAccount.address)}
-                  </Typography>
-                </Box>
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: '#FFFFFF',
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: '400',
+                    lineHeight: '20px',
+                  }}
+                >
+                  Connecting on {networkDisplayName}
+                </Typography>
               </Box>
-              <Box
+            </Card>
+          )}
+
+          {/* Request Text Section */}
+          {hasValidEoaAccount && (
+            <Card
+              sx={{
+                backgroundColor: '#2a2a2a',
+                borderRadius: '16px',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                height: '52px',
+              }}
+            >
+              <Box sx={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <CardMedia
+                  component="img"
+                  sx={{ width: '20px', height: '20px' }}
+                  image={linkGlobe}
+                />
+                <Typography
+                  sx={{
+                    fontSize: '14px',
+                    color: '#FFFFFF',
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: '400',
+                    lineHeight: '20px',
+                  }}
+                >
+                  {origin} is requesting access to:
+                </Typography>
+              </Box>
+            </Card>
+          )}
+
+          {/* Permissions Section */}
+          {hasValidEoaAccount && (
+            <Card
+              sx={{
+                backgroundColor: '#2a2a2a',
+                borderRadius: '16px',
+                padding: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '80px',
+                gap: '8px',
+              }}
+            >
+              <Box sx={{ display: 'flex', lignItems: 'center' }}>
+                <CheckCircleIcon
+                  size={20}
+                  color={COLOR_GREEN_FLOW_DARKMODE_00EF8B}
+                  style={{ flexShrink: '0' }}
+                />
+                <Typography
+                  sx={{
+                    fontSize: '13px',
+                    color: '#FFFFFF',
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: '500',
+                    lineHeight: '20px',
+                  }}
+                >
+                  {chrome.i18n.getMessage('Connect__Body1')}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <CheckCircleIcon
+                  size={20}
+                  color={COLOR_GREEN_FLOW_DARKMODE_00EF8B}
+                  style={{ flexShrink: '0' }}
+                />
+                <Typography
+                  sx={{
+                    fontSize: '13px',
+                    color: '#FFFFFF',
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: '500',
+                    lineHeight: '20px',
+                  }}
+                >
+                  {chrome.i18n.getMessage('Connect__Body2')}
+                </Typography>
+              </Box>
+            </Card>
+          )}
+
+          {/* Connecting Account Section */}
+          {hasValidEoaAccount ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Typography
                 sx={{
-                  borderRadius: '8px',
-                  padding: '12px 16px',
-                  backgroundColor: '#222222',
-                  flex: '1',
+                  fontSize: '14px',
+                  color: COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80,
+                  fontFamily: 'Inter, sans-serif',
+                  fontWeight: '400',
+                  lineHeight: '20px',
                 }}
               >
-                <Box sx={{ display: 'flex' }}>
-                  <CardMedia
-                    component="img"
-                    sx={{ height: '18px', width: '18px', borderRadius: '18px', marginRight: '8px' }}
-                    image={linkGlobe}
-                  />
-                  <Typography sx={{ color: '#FFFFFF66', fontSize: '12px' }}>
-                    {chrome.i18n.getMessage('Network')}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{ color: '#FFFFFFCC', fontSize: '12px', marginTop: '11px' }}>
-                    {currentNetwork}
-                  </Typography>
-                </Box>
+                Connecting Account
+              </Typography>
+              <Box
+                sx={{
+                  backgroundColor: '#242424',
+                  borderRadius: '16px',
+                  padding: '2px 16px 2px 16px',
+                  overflow: 'hidden',
+                }}
+              >
+                <AccountCard
+                  network={currentNetwork}
+                  account={selectedAccount || eoaAccount}
+                  parentAccount={parentWallet}
+                  showCard={false}
+                  showLink={true}
+                  onClick={() => setShowAccountDrawer(true)}
+                  onClickSecondary={() => setShowAccountDrawer(true)}
+                  secondaryIcon={
+                    <IconChevronRight size={24} color={COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80} />
+                  }
+                />
               </Box>
             </Box>
           ) : (
@@ -261,30 +381,61 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
           )}
 
           <Box sx={{ flexGrow: 1 }} />
-          <Stack direction="row" spacing={1} sx={{ paddingBottom: '32px' }}>
+          {/* Action Buttons */}
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              paddingBottom: '36px',
+              paddingTop: '0px',
+              gap: '17px',
+              justifyContent: 'space-between',
+            }}
+          >
             <LLSecondaryButton
               label={chrome.i18n.getMessage('Cancel')}
-              fullWidth
               onClick={handleCancel}
+              sx={{
+                flex: 1,
+                height: '52px',
+                borderRadius: '16px',
+              }}
             />
-            {eoaAccount && isValidEthereumAddress(eoaAccount.address) ? (
+            {hasValidEoaAccount ? (
               <LLPrimaryButton
                 label={chrome.i18n.getMessage('Connect')}
-                fullWidth
                 type="submit"
                 onClick={handleAllow}
+                sx={{
+                  flex: 1,
+                  height: '52px',
+                  borderRadius: '16px',
+                }}
               />
             ) : (
               <LLPrimaryButton
                 label={chrome.i18n.getMessage('Enable')}
-                fullWidth
                 type="submit"
                 onClick={createCoa}
+                sx={{
+                  flex: 1,
+                  height: '52px',
+                  borderRadius: '16px',
+                }}
               />
             )}
           </Stack>
         </Box>
       )}
+      <AccountSelectDrawer
+        open={showAccountDrawer}
+        onClose={() => setShowAccountDrawer(false)}
+        network={currentNetwork}
+        eoaAccount={eoaAccount}
+        parentWallet={parentWallet}
+        activeAccount={selectedAccount || currentWallet}
+        onAccountSelect={handleAccountSelect}
+      />
     </Box>
   );
 };

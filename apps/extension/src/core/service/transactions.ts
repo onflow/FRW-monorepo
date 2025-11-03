@@ -466,12 +466,12 @@ export class TransactionService {
     // Convert hex to BigInt directly to avoid potential number overflow
     const transactionValue = value === '0x' ? BigInt(0) : BigInt(value);
 
-    // await userWalletService.sendTransaction(script, [
-    //   fcl.arg(to, fcl.t.String),
-    //   fcl.arg(transactionValue.toString(), fcl.t.UInt256),
-    //   fcl.arg(regularArray, fcl.t.Array(fcl.t.UInt8)),
-    //   fcl.arg(gasLimit.toString(), fcl.t.UInt64),
-    // ]);
+    await userWalletService.sendTransaction(script, [
+      fcl.arg(to, fcl.t.String),
+      fcl.arg(transactionValue.toString(), fcl.t.UInt256),
+      fcl.arg(regularArray, fcl.t.Array(fcl.t.UInt8)),
+      fcl.arg(gasLimit.toString(), fcl.t.UInt64),
+    ]);
 
     const evmAddress = await userWalletService.getCurrentEvmAddress();
     if (!evmAddress) {
@@ -522,7 +522,6 @@ export class TransactionService {
     const encodedData = encode(transaction);
     const hash = keccak256(Buffer.from(encodedData));
     const hashHexString = Buffer.from(hash).toString('hex');
-    console.log('transaction: dapSendEvmTX: ', transaction, hashHexString);
     if (hashHexString) {
       return hashHexString;
     } else {
