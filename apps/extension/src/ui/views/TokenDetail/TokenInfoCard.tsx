@@ -75,6 +75,7 @@ const TokenInfoCard = ({
             ? tokenInfo.logoURI || (tokenInfo as CoinItem).icon || ''
             : '',
         decimal: tokenInfo && 'symbol' in tokenInfo ? tokenInfo.decimals || 8 : 18,
+        evmAddress: tokenInfo.address || '',
       };
       // Set token data in send store
       setSelectedToken(selectedToken);
