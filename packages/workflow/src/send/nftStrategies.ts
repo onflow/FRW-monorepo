@@ -313,3 +313,39 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
     );
   }
 }
+
+/**
+ * Strategy for sending NFTs to child account
+ */
+export class EoaToEVMStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+
+  canHandle(payload: SendPayload): boolean {
+    const { childAddrs, receiver, assetType, sender, coaAddr, type } = payload;
+    return (
+      type === 'nft' &&
+      childAddrs.length > 0 &&
+      childAddrs.includes(receiver) &&
+      assetType === 'evm' &&
+      sender !== coaAddr &&
+      validateEvmAddress(receiver)
+    );
+  }
+
+  async execute(payload: SendPayload, callback: any): Promise<any> {
+    const { receiver, tokenContractAddr, sender } = payload;
+    const callData = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
+    const signedTx = await callback({
+      state: 'EVM_TRX_BUILDING',
+      trxData: {
+        from: payload.sender,
+        to: tokenContractAddr,
+        data: callData,
+        gasLimit: GAS_LIMITS.EVM_DEFAULT,
+      },
+    });
+
+    const rlpEncoded = convertHexToByteArray(signedTx);
+    return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
+  }
+}
