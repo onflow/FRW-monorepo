@@ -5,14 +5,18 @@
   "description": "Flow Reference Wallet Monorepo",
   "scripts": {
     "build": "pnpm -r build",
+    "build:pkg": "pnpm -F './packages/**' build",
     "build:packages": "pnpm -F './packages/**' build",
     "build:extension": "pnpm -F frw-extension build:dev",
     "build:rn": "pnpm -F FRWRN bundle:android && pnpm -F FRWRN bundle:ios",
+    "build:pk": "pnpm -F @onflow/frw-passkeys build",
     "dev": "pnpm -r --parallel build:watch",
+    "dev:pkg": "pnpm -F './packages/**' --parallel build:watch",
     "dev:packages": "pnpm -F './packages/**' --parallel build:watch",
     "dev:extension": "pnpm -F frw-extension build:dev",
     "dev:rn": "pnpm -F FRWRN start",
     "dev:rn:full": "pnpm -F './packages/**' --parallel build:watch & pnpm -F FRWRN start",
+    "dev:pk": "pnpm -F @onflow/frw-passkeys dev",
     "clean": "pnpm -r clean && rm -rf **/node_modules && pnpm install",
     "test": "pnpm -r --filter='!FRWRN' test",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
@@ -45,6 +49,7 @@
     "globals": "^15.13.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
+    "pino-pretty": "^13.1.2",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.19.0"
@@ -55,10 +60,10 @@
   },
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
+    "@tamagui/animations-react-native": "^1.132.20",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native": "0.79.2",
-    "@tamagui/animations-react-native": "^1.132.20"
+    "react-native": "0.79.2"
   },
   "pnpm": {
     "overrides": {

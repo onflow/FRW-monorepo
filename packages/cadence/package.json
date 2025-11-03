@@ -38,9 +38,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.2",
-    "@onflow/fcl": "^1.13.1",
+    "@onflow/fcl": "^1.20.3",
     "@onflow/frw-utils": "workspace:*",
-    "@onflow/transport-http": "^1.13.0",
+    "@onflow/transport-http": "^1.14.0",
     "buffer": "^6.0.3"
   },
   "devDependencies": {
