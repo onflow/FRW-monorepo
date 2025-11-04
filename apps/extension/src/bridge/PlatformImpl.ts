@@ -448,15 +448,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
           // Use bridge fee payer function - get address from payer status
           config.authorizations.push(this.createBridgeAuthorizationFunction());
         }
-
         if (isSurge) {
-          const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
-          if (userApproved) {
-            config.payer = config.proposer;
-          } else {
-            // User rejected - stop the transaction
-            throw new Error('Transaction cancelled by user due to surge pricing');
-          }
+          config.payer = config.proposer;
         } else {
           // Check if free gas is allowed
           const allowed = await this.walletController.allowLilicoPay();
@@ -474,7 +467,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
                   ));
               if (isSurgeError) {
                 // Show surge modal and wait for user approval
-                const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
+                const userApproved = await this.walletController.showSurgeModalAndWait();
 
                 if (userApproved) {
                   config.payer = config.proposer;
