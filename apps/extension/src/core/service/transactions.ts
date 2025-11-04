@@ -168,7 +168,7 @@ export class TransactionService {
   async transferFlowEvm(
     recipientEVMAddressHex: string,
     amount = '1.0',
-    gasLimit = 30000000
+    gasLimit = 16000000
   ): Promise<string> {
     const script = await getScripts(
       userWalletService.getNetwork(),
@@ -214,7 +214,7 @@ export class TransactionService {
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
     const regularArray = Array.from(dataArray);
-    const gasLimit = 30000000;
+    const gasLimit = 16000000;
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(tokenContractAddress, fcl.t.Address),
@@ -384,7 +384,7 @@ export class TransactionService {
     await userWalletService.getNetwork();
 
     const script = await getScripts(userWalletService.getNetwork(), 'evm', 'callContractV2');
-    const gasLimit = 30000000;
+    const gasLimit = 16000000;
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
     const regularArray = Array.from(dataArray);
@@ -431,7 +431,7 @@ export class TransactionService {
     await userWalletService.getNetwork();
 
     const script = await getScripts(userWalletService.getNetwork(), 'evm', 'callContractV2');
-    const gasLimit = gas || 30000000;
+    const gasLimit = gas || 16000000;
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
     const regularArray = Array.from(dataArray);
@@ -732,7 +732,7 @@ export class TransactionService {
           const dataBuffer = Buffer.from(callData.slice(2), 'hex');
           const dataArray = Uint8Array.from(dataBuffer);
           const regularArray = Array.from(dataArray);
-          const gasLimit = 30_000_000;
+          const gasLimit = 16_000_000;
           return [
             await getScripts(network, 'evm', 'callContractV2'),
             [
