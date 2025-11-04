@@ -3,10 +3,11 @@ import { sha3_256 } from '@noble/hashes/sha3';
 import { logger } from '@onflow/frw-utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import type { PasskeyOption } from '../components/Passkey/passkey-select';
 import { PasskeySignContainer } from '../components/passkey-sign-container';
 import { FlowService } from '../services/flow-service';
 import { type KeyInfo, PasskeyService } from '../services/passkey-service';
-import { listCredentialRecords } from '../services/passkey-storage';
+import { getActiveCredential, listCredentialRecords } from '../services/passkey-storage';
 import { notifyViewReady, requestClose, sendApprove, sendDecline } from '../utils/fcl-messaging';
 import {
   bytesToHex,
@@ -63,11 +64,7 @@ type AuthzReadyPayload = {
   };
 };
 
-type CredentialItem = {
-  credentialId: string;
-  address?: string;
-  keyInfo?: KeyInfo | null;
-};
+type CredentialItem = PasskeyOption;
 
 const networkPreference =
   typeof process !== 'undefined' && process.env.NEXT_PUBLIC_FLOW_NETWORK === 'mainnet'
@@ -78,6 +75,7 @@ export default function AuthzPage() {
   const [signable, setSignable] = useState<FlowSignable | null>(null);
   const [credentials, setCredentials] = useState<CredentialItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [allowCredentialSelection, setAllowCredentialSelection] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [appName, setAppName] = useState('Flow dApp');
@@ -134,21 +132,78 @@ export default function AuthzPage() {
   }, [signable]);
 
   useEffect(() => {
+    if (credentials.length === 0) {
+      setAllowCredentialSelection(true);
+      setSelectedId(null);
+      return;
+    }
+
+    const normalizeAddress = (value?: string | null) => {
+      if (!value) return null;
+      const lower = value.toLowerCase();
+      return lower.startsWith('0x') ? lower : `0x${lower}`;
+    };
+
+    const signableAddress = normalizeAddress(signable?.addr ?? null);
+    if (signableAddress) {
+      const matched = credentials.find(
+        (item) => normalizeAddress(item.address ?? null) === signableAddress
+      );
+      if (matched) {
+        if (matched.credentialId !== selectedId) {
+          setSelectedId(matched.credentialId);
+        }
+        setAllowCredentialSelection(false);
+        return;
+      }
+    }
+
+    const active = getActiveCredential();
+    if (active) {
+      const matched = credentials.find((item) => item.credentialId === active.credentialId);
+      if (matched) {
+        if (matched.credentialId !== selectedId) {
+          setSelectedId(matched.credentialId);
+        }
+        setAllowCredentialSelection(false);
+        return;
+      }
+    }
+
+    if (!selectedId && credentials[0]) {
+      setSelectedId(credentials[0].credentialId);
+    }
+    setAllowCredentialSelection(true);
+  }, [credentials, selectedId, signable]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
 
     try {
       const records = listCredentialRecords();
       const stored = PasskeyService.listStoredKeyInfo();
-      const merged = records.map<CredentialItem>((record) => ({
-        credentialId: record.credentialId,
-        address: record.flowAddress,
-        keyInfo: stored.find((info) => info.credentialId === record.credentialId) ?? null,
-      }));
+      const merged = records.map<CredentialItem>((record) => {
+        const storedInfo = stored.find((info) => info.credentialId === record.credentialId) ?? null;
+        return {
+          credentialId: record.credentialId,
+          address: record.flowAddress,
+          keyInfo: storedInfo,
+          name: storedInfo?.username ?? null,
+        };
+      });
 
-      if (merged.length > 0) {
-        setCredentials(merged);
-        setSelectedId(merged[0]?.credentialId ?? null);
+      setCredentials(merged);
+
+      const active = getActiveCredential();
+      if (active) {
+        const matched = merged.find((item) => item.credentialId === active.credentialId);
+        if (matched) {
+          setSelectedId(matched.credentialId);
+          return;
+        }
       }
+
+      setSelectedId(merged[0]?.credentialId ?? null);
     } catch (loadError) {
       logger.error('Failed to load passkey credentials for authz', loadError);
       setError('Unable to load stored passkeys. Please try again.');
@@ -186,6 +241,16 @@ export default function AuthzPage() {
     sendDecline('User declined');
     requestClose();
   }, []);
+
+  const handleSelectCredential = useCallback(
+    (credentialId: string) => {
+      if (!allowCredentialSelection) {
+        return;
+      }
+      setSelectedId(credentialId);
+    },
+    [allowCredentialSelection]
+  );
 
   const performSigning = useCallback(
     async ({
@@ -230,7 +295,14 @@ export default function AuthzPage() {
           });
           setCredentials((prev) =>
             prev.map((item) =>
-              item.credentialId === credentialId ? { ...item, address: signerAddress } : item
+              item.credentialId === credentialId
+                ? {
+                    ...item,
+                    address: signerAddress,
+                    name: item.name ?? keyInfoForChallenge?.username ?? null,
+                    keyInfo: keyInfoForChallenge ?? item.keyInfo ?? null,
+                  }
+                : item
             )
           );
         }
@@ -296,9 +368,10 @@ export default function AuthzPage() {
             credentialId: assertion.id,
             address: resolvedAddress,
             keyInfo,
+            name: keyInfo.username ?? null,
           };
           if (existingIndex >= 0) {
-            next[existingIndex] = updated;
+            next[existingIndex] = { ...next[existingIndex], ...updated };
           } else {
             next.push(updated);
           }
@@ -377,10 +450,13 @@ export default function AuthzPage() {
       error={error}
       cadencePreview={cadencePreview}
       messageRole={roleForDisplay}
-      onSelectCredential={setSelectedId}
+      allowCredentialSelection={allowCredentialSelection}
+      onSelectCredential={handleSelectCredential}
       onApprove={handleApprove}
       onDecline={handleDecline}
-      onUseOtherCredential={signable ? handleUseOtherCredential : undefined}
+      onUseOtherCredential={
+        allowCredentialSelection && signable ? handleUseOtherCredential : undefined
+      }
     />
   );
 }

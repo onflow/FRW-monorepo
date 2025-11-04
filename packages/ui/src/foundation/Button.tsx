@@ -131,6 +131,8 @@ export function Button({
       disabled={disabled || loading}
       opacity={disabled && !loading ? 0.5 : 1}
       width={fullWidth ? '100%' : undefined}
+      flex={fullWidth ? 1 : undefined}
+      minWidth={fullWidth ? 0 : undefined}
       onPress={onPress}
       animation="quick"
       animateOnly={['transform', 'opacity']}

@@ -1,10 +1,16 @@
-import { PasskeyAuthContainer } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { PasskeyAuthContainer } from '../components/Passkey/auth-container';
+import type { PasskeyOption } from '../components/Passkey/passkey-select';
 import { FlowService } from '../services/flow-service';
 import { PasskeyService } from '../services/passkey-service';
-import { listCredentialRecords } from '../services/passkey-storage';
+import {
+  getActiveCredential,
+  getCredentialRecord,
+  listCredentialRecords,
+  setActiveCredential,
+} from '../services/passkey-storage';
 import { notifyViewReady, requestClose, sendApprove, sendDecline } from '../utils/fcl-messaging';
 
 type AuthnReadyPayload = {
@@ -36,13 +42,7 @@ type AuthnReadyPayload = {
   };
 };
 
-type CredentialItem = {
-  credentialId: string;
-  address?: string;
-  keyInfo?: {
-    keyIndex?: number;
-  } | null;
-};
+type CredentialItem = PasskeyOption;
 
 const networkPreference =
   typeof process !== 'undefined' && process.env.NEXT_PUBLIC_FLOW_NETWORK === 'mainnet'
@@ -157,17 +157,29 @@ export default function AuthnPage() {
       const records = listCredentialRecords();
       const storedInfo = PasskeyService.listStoredKeyInfo();
       logger.info('Stored info', { storedInfo });
-      const merged = records.map<CredentialItem>((record) => ({
-        credentialId: record.credentialId,
-        address: record.flowAddress,
-        keyInfo: storedInfo.find((info) => info.credentialId === record.credentialId) ?? null,
-      }));
+      const merged = records.map<CredentialItem>((record) => {
+        const stored = storedInfo.find((info) => info.credentialId === record.credentialId) ?? null;
+        return {
+          credentialId: record.credentialId,
+          address: record.flowAddress,
+          keyInfo: stored,
+          name: stored?.username ?? null,
+        };
+      });
 
       logger.info('Merged', { merged });
-      if (merged.length > 0) {
-        setCredentials(merged);
-        setSelectedId(merged[0]?.credentialId ?? null);
+      setCredentials(merged);
+
+      const active = getActiveCredential();
+      if (active) {
+        const matched = merged.find((item) => item.credentialId === active.credentialId);
+        if (matched) {
+          setSelectedId(matched.credentialId);
+          return;
+        }
       }
+
+      setSelectedId(merged[0]?.credentialId ?? null);
     } catch (loadError) {
       logger.error('Failed to load passkey credentials', loadError);
       setError('Unable to load stored passkeys. Please try again.');
@@ -190,6 +202,53 @@ export default function AuthnPage() {
       setIsProcessing(true);
 
       try {
+        if (credentialId) {
+          const credentialRecord = getCredentialRecord(credentialId);
+          if (credentialRecord?.flowAddress) {
+            const storedKeyInfo = PasskeyService.getStoredKeyInfo(credentialId);
+            logger.info('Authn using stored credential without WebAuthn prompt', {
+              credentialId,
+            });
+
+            setCredentials((prev) => {
+              const next = [...prev];
+              const existingIndex = next.findIndex((item) => item.credentialId === credentialId);
+              const updated: CredentialItem = {
+                credentialId,
+                address: credentialRecord.flowAddress,
+                keyInfo: storedKeyInfo ?? next[existingIndex]?.keyInfo ?? null,
+                name: storedKeyInfo?.username ?? next[existingIndex]?.name ?? null,
+              };
+              if (existingIndex >= 0) {
+                next[existingIndex] = { ...next[existingIndex], ...updated };
+              } else {
+                next.push(updated);
+              }
+              return next;
+            });
+            setSelectedId(credentialId);
+            setActiveCredential({
+              credentialId,
+              address: credentialRecord.flowAddress,
+            });
+
+            const services = buildServices(
+              credentialRecord.flowAddress,
+              storedKeyInfo?.keyIndex ?? 0
+            );
+
+            sendApprove({
+              f_type: 'AuthnResponse',
+              f_vsn: '1.0.0',
+              addr: credentialRecord.flowAddress,
+              network: networkPreference,
+              services,
+            });
+            requestClose();
+            return;
+          }
+        }
+
         const assertion = await PasskeyService.authenticate({
           credentialId,
           userVerification: 'required',
@@ -209,6 +268,7 @@ export default function AuthnPage() {
             credentialId: assertion.id,
             address,
             keyInfo,
+            name: keyInfo.username ?? null,
           };
           if (existingIndex >= 0) {
             next[existingIndex] = { ...next[existingIndex], ...updated };
@@ -218,18 +278,17 @@ export default function AuthnPage() {
           return next;
         });
         setSelectedId(assertion.id);
+        setActiveCredential({ credentialId: assertion.id, address });
 
         const services = buildServices(address, keyInfo.keyIndex ?? 0);
 
-        const response = {
+        sendApprove({
           f_type: 'AuthnResponse',
           f_vsn: '1.0.0',
           addr: address,
           network: networkPreference,
           services,
-        };
-
-        sendApprove(response);
+        });
         requestClose();
       } catch (approvalError) {
         logger.error('Authn approval failed', approvalError);

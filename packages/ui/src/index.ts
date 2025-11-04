@@ -63,8 +63,6 @@ export * from './components/NFTPropertiesGrid';
 export * from './components/NFTPropertyTag';
 export * from './components/NFTSelectionBar';
 export * from './components/NFTSendPreview';
-export * from './components/PasskeyAuthContainer';
-export * from './components/PasskeyCredentialCard';
 export * from './components/PercentageChangeBadge';
 export * from './components/ProfileList';
 export * from './components/RecipientItem';

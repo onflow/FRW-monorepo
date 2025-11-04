@@ -10,34 +10,23 @@ import {
 } from '@onflow/frw-ui';
 import { useMemo } from 'react';
 
-type PasskeyCredential = {
-  credentialId: string;
-  address?: string;
-  keyInfo?: {
-    keyIndex?: number;
-  } | null;
-};
+import { PasskeySelect, PasskeySummary, type PasskeyOption } from './Passkey/passkey-select';
 
 interface PasskeySignContainerProps {
   appName: string;
   appUrl?: string;
-  credentials: PasskeyCredential[];
+  credentials: PasskeyOption[];
   selectedCredentialId: string | null;
   isProcessing: boolean;
   error: string | null;
   cadencePreview?: string;
   messageRole?: 'payload' | 'envelope' | null;
+  allowCredentialSelection?: boolean;
   onSelectCredential: (credentialId: string) => void;
   onApprove: () => void;
   onDecline: () => void;
   onUseOtherCredential?: () => void;
 }
-
-const formatAddress = (address?: string) => {
-  if (!address) return 'Address pending';
-  const normalized = address.startsWith('0x') ? address : `0x${address}`;
-  return `${normalized.slice(0, 6)}…${normalized.slice(-4)}`;
-};
 
 export function PasskeySignContainer({
   appName,
@@ -48,6 +37,7 @@ export function PasskeySignContainer({
   error,
   cadencePreview,
   messageRole,
+  allowCredentialSelection = true,
   onSelectCredential,
   onApprove,
   onDecline,
@@ -66,6 +56,11 @@ export function PasskeySignContainer({
   }, [appName, appUrl]);
 
   const hasStoredCredentials = credentials.length > 0;
+  const selectedCredential = useMemo(
+    () => credentials.find((item) => item.credentialId === selectedCredentialId) ?? null,
+    [credentials, selectedCredentialId]
+  );
+  const canUseOtherCredential = allowCredentialSelection && !!onUseOtherCredential;
 
   return (
     <BackgroundWrapper backgroundColor="$background">
@@ -106,34 +101,36 @@ export function PasskeySignContainer({
                   Stored passkeys
                 </Paragraph>
                 {hasStoredCredentials ? (
-                  <YStack gap="$2" maxHeight={300} overflow="scroll">
-                    {credentials.map((credential) => {
-                      const isSelected = selectedCredentialId === credential.credentialId;
-                      return (
-                        <Card
-                          key={credential.credentialId}
-                          padding="$4"
-                          backgroundColor={isSelected ? '$primary' : '$background'}
-                          borderColor={isSelected ? '$primary' : '$borderColor'}
-                          borderWidth={isSelected ? 2 : 1}
-                          pressStyle={{ scale: 0.98 }}
-                          onPress={() => onSelectCredential(credential.credentialId)}
-                          animation="quick"
-                          animateOnly={['transform', 'backgroundColor', 'borderColor']}
-                        >
-                          <YStack gap="$1">
-                            <Paragraph fontWeight="600" color={isSelected ? '$color1' : '$color'}>
-                              {formatAddress(credential.address)}
-                            </Paragraph>
-                            <Paragraph fontSize="$2" color={isSelected ? '$color1' : '$gray11'}>
-                              Credential: {credential.credentialId.slice(0, 8)}…
-                              {credential.credentialId.slice(-6)}
-                            </Paragraph>
-                          </YStack>
-                        </Card>
-                      );
-                    })}
-                  </YStack>
+                  allowCredentialSelection ? (
+                    <PasskeySelect
+                      value={selectedCredentialId ?? undefined}
+                      options={credentials}
+                      onValueChange={onSelectCredential}
+                      disabled={isProcessing}
+                    />
+                  ) : selectedCredential ? (
+                    <Card
+                      padding="$4"
+                      backgroundColor="$backgroundStrong"
+                      borderColor="$borderColor"
+                      borderWidth={1}
+                    >
+                      <Paragraph fontWeight="600">Active passkey</Paragraph>
+                      <PasskeySummary option={selectedCredential} />
+                    </Card>
+                  ) : (
+                    <Card
+                      padding="$4"
+                      backgroundColor="$backgroundStrong"
+                      borderColor="$borderColor"
+                      borderWidth={1}
+                    >
+                      <Paragraph fontSize="$2" color="$gray11" textAlign="center">
+                        No matching passkey found for this session. Select another credential or try
+                        again.
+                      </Paragraph>
+                    </Card>
+                  )
                 ) : (
                   <Card
                     padding="$4"
@@ -152,16 +149,18 @@ export function PasskeySignContainer({
                     </YStack>
                   </Card>
                 )}
-                <Button
-                  variant="outline"
-                  onPress={onUseOtherCredential ?? (() => {})}
-                  disabled={isProcessing || !onUseOtherCredential}
-                  loading={false}
-                  loadingText={undefined}
-                  icon={undefined}
-                >
-                  Use Another Passkey
-                </Button>
+                {canUseOtherCredential ? (
+                  <Button
+                    variant="outline"
+                    onPress={onUseOtherCredential}
+                    disabled={isProcessing}
+                    loading={false}
+                    loadingText={undefined}
+                    icon={undefined}
+                  >
+                    Use Another Passkey
+                  </Button>
+                ) : null}
               </YStack>
 
               <Card
@@ -182,30 +181,42 @@ export function PasskeySignContainer({
                   borderColor="$borderColor"
                   borderWidth={1}
                   padding="$3"
+                  maxHeight={260}
+                  overflow="scroll"
                 >
-                  <Paragraph fontFamily="$mono" fontSize="$2" color="$gray11">
+                  <Paragraph
+                    fontFamily="$mono"
+                    fontSize="$2"
+                    color="$gray11"
+                    style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                  >
                     {cadencePreview ? cadencePreview : 'Waiting for transaction details…'}
                   </Paragraph>
                 </Card>
               </Card>
 
-              <XStack gap="$3">
+              <XStack gap="$3" width="100%">
                 <Button
                   variant="outline"
+                  size="large"
                   onPress={onDecline}
                   disabled={isProcessing}
                   loading={false}
                   loadingText={undefined}
                   icon={undefined}
+                  fullWidth={true}
                 >
                   Decline
                 </Button>
                 <Button
+                  variant="inverse"
+                  size="large"
                   onPress={onApprove}
                   disabled={isProcessing || !selectedCredentialId}
                   loading={false}
                   loadingText={undefined}
                   icon={undefined}
+                  fullWidth={true}
                 >
                   Approve
                 </Button>
