@@ -3,9 +3,11 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ToastProvider } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
 import { extensionTamaguiConfig, PortalProvider, SurgeModal } from '@onflow/frw-ui';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
+// import { feedbackIntegration } from '@sentry/browser';
+// import { captureException } from '@sentry/react';
 
 // Import Tamagui CSS for web support
 import '@tamagui/font-inter/css/400.css';
@@ -82,6 +84,24 @@ const App = ({ wallet }: { wallet: any }) => {
   const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
   const [hasResponded, setHasResponded] = useState(false);
   const [surgeData, setSurgeData] = useState<{ maxFee?: string; multiplier?: number } | null>(null);
+  const elFeedbackContainer = useRef(null);
+
+  const [bugReportForm, setBugReportForm] = useState<{
+    open: () => void;
+  } | null>(null);
+
+  // function produceUncaughtSentryErrorFromSidePanel(): void {
+  //   throw new Error('❌ Sentry Uncaught Error in produceUncaughtSentryErrorFromSidePanel');
+  // }
+
+  // function produceSentryErrorFromSidePanel(): void {
+  //   try {
+  //     console.error('❌ Sentry Error in produceSentryErrorFromSidePanel');
+  //     throw new Error('❌ Sentry Error in produceSentryErrorFromSidePanel');
+  //   } catch (error) {
+  //     captureException(error);
+  //   }
+  // }
 
   // Global surge modal for 429 errors and surge pricing
   useEffect(() => {

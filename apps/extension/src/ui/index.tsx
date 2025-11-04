@@ -7,6 +7,7 @@ import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
 import { getUITypeName } from '@/ui/utils';
+import './sentry-react.config';
 
 import Views from './views';
 
