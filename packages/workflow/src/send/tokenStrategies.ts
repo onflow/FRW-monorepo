@@ -322,7 +322,6 @@ export class EvmToFlowTokenWithEoaBridgeStrategy implements TransferStrategy {
 
 /**
  * Strategy for EVM to EVM token transfers
- * todo add Eoa support
  */
 export class EvmToEvmTokenStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
@@ -332,24 +331,57 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
     return type === 'token' && assetType === 'evm' && validateEvmAddress(receiver);
   }
 
-  async execute(payload: SendPayload): Promise<any> {
-    const { tokenContractAddr, amount, flowIdentifier, receiver } = payload;
+  async execute(payload: SendPayload, callback: any): Promise<any> {
+    const { tokenContractAddr, amount, flowIdentifier, receiver, coaAddr, sender } = payload;
     if (isFlowToken(flowIdentifier)) {
       const formattedAmount = safeConvertToUFix64(amount);
-      return await this.cadenceService.callContract(
-        receiver,
-        formattedAmount,
-        [],
-        GAS_LIMITS.EVM_DEFAULT
-      );
+
+      if (sender !== coaAddr) {
+        const signedTx = await callback({
+          state: 'EVM_TRX_BUILDING',
+          trxData: {
+            from: sender,
+            to: receiver,
+            data: '0x',
+            gasLimit: GAS_LIMITS.EVM_DEFAULT,
+            value: formattedAmount,
+          },
+        });
+        const rlpEncoded = convertHexToByteArray(signedTx);
+        return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
+      } else {
+        return await this.cadenceService.callContract(
+          receiver,
+          formattedAmount,
+          [],
+          GAS_LIMITS.EVM_DEFAULT
+        );
+      }
     } else {
-      const data = encodeEvmContractCallData(payload);
-      return await this.cadenceService.callContract(
-        tokenContractAddr,
-        '0.0',
-        data as number[],
-        GAS_LIMITS.EVM_DEFAULT
-      );
+      if (validateEvmAddress(receiver) && sender !== coaAddr) {
+        // eoa as sender
+        const callData = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
+        const signedTx = await callback({
+          state: 'EVM_TRX_BUILDING',
+          trxData: {
+            from: sender,
+            to: tokenContractAddr,
+            data: callData,
+            gasLimit: GAS_LIMITS.EVM_DEFAULT,
+          },
+        });
+        const rlpEncoded = convertHexToByteArray(signedTx);
+        return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
+      } else {
+        // coa as sender
+        const data = encodeEvmContractCallData(payload);
+        return await this.cadenceService.callContract(
+          tokenContractAddr,
+          '0.0',
+          data as number[],
+          GAS_LIMITS.EVM_DEFAULT
+        );
+      }
     }
   }
 }

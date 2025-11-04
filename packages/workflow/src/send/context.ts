@@ -9,6 +9,7 @@ import {
   TopShotNftStrategy,
   EvmToFlowNftWithEoaBridgeStrategy,
   EoaToChildNftStrategy,
+  EoaToEVMStrategy,
 } from './nftStrategies';
 import {
   ChildToChildTokenStrategy,
@@ -92,6 +93,7 @@ export const createTransferContext = (cadenceService: any, callback: any): Trans
   context.addStrategy(new EvmToFlowNftBridgeStrategy(cadenceService));
   context.addStrategy(new EvmToFlowNftWithEoaBridgeStrategy(cadenceService));
   context.addStrategy(new EvmToEvmNftStrategy(cadenceService));
+  context.addStrategy(new EoaToEVMStrategy(cadenceService));
 
   return context;
 };
