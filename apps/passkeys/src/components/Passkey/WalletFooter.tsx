@@ -35,7 +35,6 @@ export function PasskeyWalletFooter({
 
   const renderDetailedFooter = () => (
     <YStack gap="$4">
-      <Separator />
       <YStack gap="$4" $gtSm={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         {/* Links Section */}
         <XStack gap="$6" flexWrap="wrap" $gtSm={{ gap: '$8' }}>

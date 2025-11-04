@@ -1,4 +1,4 @@
-import { sha256 } from '@noble/hashes/sha256';
+import { sha256 } from '@noble/hashes/sha2';
 import { sha3_256 } from '@noble/hashes/sha3';
 import { logger } from '@onflow/frw-utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -25,17 +25,6 @@ const hashMessageForChallenge = async (
   if (hashAlgo === 'SHA3_256') {
     return sha3_256(messageBytes);
   }
-  // const subtle = typeof globalThis !== 'undefined' ? globalThis.crypto?.subtle : undefined;
-  // if (subtle?.digest) {
-  //   const digest = await subtle.digest(
-  //     'SHA-256',
-  //     messageBytes.buffer.slice(
-  //       messageBytes.byteOffset,
-  //       messageBytes.byteOffset + messageBytes.byteLength
-  //     )
-  //   );
-  //   return new Uint8Array(digest);
-  // }
   return sha256(messageBytes);
 };
 

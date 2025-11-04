@@ -26,11 +26,19 @@ export function PasskeyWalletHero({
       justify="center"
       py={isLanding ? '$12' : '$10'}
       px="$4"
-      bg="$background"
       minH={isLanding ? '80vh' : 'auto'}
+      pos="relative"
     >
       {/* Main Container */}
-      <YStack maxW={maxWidth} w="100%" items="center" gap={isLanding ? '$8' : '$6'} text="center">
+      <YStack
+        maxW={maxWidth}
+        w="100%"
+        items="center"
+        gap={isLanding ? '$8' : '$6'}
+        text="center"
+        zIndex={1}
+        pos="relative"
+      >
         {/* Flow Logo Section */}
         <YStack items="center" gap="$4">
           <XStack items="center" gap="$3">
@@ -53,7 +61,7 @@ export function PasskeyWalletHero({
           <H1
             fontSize={isLanding ? '$12' : '$10'}
             fontWeight="800"
-            color="$text"
+            color="white"
             textAlign="center"
             letterSpacing={-1}
             lineHeight={isLanding ? '$9' : '$8'}
@@ -61,13 +69,18 @@ export function PasskeyWalletHero({
               fontSize: isLanding ? '$10' : '$8',
               lineHeight: isLanding ? '$8' : '$7',
             }}
+            style={{
+              textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+            }}
           >
-            Secure Web3 with Passkeys
+            Momentum You Can See,
+            <br />
+            Control You Can Trust.
           </H1>
 
           <Paragraph
             fontSize={isLanding ? '$6' : '$5'}
-            color="$textMuted"
+            color="rgba(255, 255, 255, 0.8)"
             textAlign="center"
             lineHeight="$6"
             maxW={600}
@@ -75,9 +88,11 @@ export function PasskeyWalletHero({
               fontSize: isLanding ? '$5' : '$4',
               lineHeight: '$5',
             }}
+            style={{
+              textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+            }}
           >
-            The most secure and user-friendly way to access your Flow blockchain wallet. No seed
-            phrases, no passwords - just your biometric authentication.
+            Clear insights, real-time updates, and full command over your portfolio.
           </Paragraph>
         </YStack>
       </YStack>

@@ -85,7 +85,17 @@
       "mcp__chrome-devtools__fill",
       "mcp__chrome-devtools__list_network_requests",
       "Read(//Users/lmcmz/outblock/passkey-wallet-demo/src/**)",
-      "mcp__context7__resolve-library-id"
+      "mcp__context7__resolve-library-id",
+      "mcp__figma__get_design_context",
+      "mcp__figma__get_screenshot",
+      "Bash(google-chrome:*)",
+      "Bash(chromium:*)",
+      "mcp__chrome-devtools__take_screenshot",
+      "Read(//var/folders/j1/9pc_zc_j6lx052nqnp8kxn480000gn/T/chrome-devtools-mcp-FCWYgR/**)",
+      "Read(//var/folders/j1/9pc_zc_j6lx052nqnp8kxn480000gn/T/chrome-devtools-mcp-WxxaPw/**)",
+      "Read(//var/folders/j1/9pc_zc_j6lx052nqnp8kxn480000gn/T/chrome-devtools-mcp-yaDetq/**)",
+      "Read(//var/folders/j1/9pc_zc_j6lx052nqnp8kxn480000gn/T/chrome-devtools-mcp-lz6Df6/**)",
+      "Read(//var/folders/j1/9pc_zc_j6lx052nqnp8kxn480000gn/T/chrome-devtools-mcp-O7QLQE/**)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
