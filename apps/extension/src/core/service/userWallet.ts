@@ -2,6 +2,7 @@ import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { CadenceService } from '@onflow/frw-cadence';
+import { BIP44_PATHS } from '@onflow/frw-wallet';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
@@ -41,7 +42,6 @@ import {
   registerStatusRefreshRegex,
 } from '@/data-model';
 import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant';
-import { BIP44_PATHS } from '@onflow/frw-wallet';
 import {
   type PublicPrivateKeyTuple,
   type AccountKeyRequest,
@@ -852,24 +852,15 @@ class UserWallet {
           ));
 
       if (isSurgeError) {
-        // Show surge modal and wait for user approval
-        const userApproved = await this.showSurgeModalAndWait();
-
-        if (userApproved) {
-          // User approved - retry with bridge fee payer
-          const txID = await fcl.mutate({
-            cadence: cadence,
-            args: () => args,
-            proposer: this.authorizationFunction as any,
-            authorizations: [this.authorizationFunction as any],
-            payer: this.authorizationFunction as any,
-            limit: 9999,
-          });
-          return txID;
-        } else {
-          // User rejected - stop the transaction
-          throw new Error('Transaction cancelled by user due to surge pricing');
-        }
+        const txID = await fcl.mutate({
+          cadence: cadence,
+          args: () => args,
+          proposer: this.authorizationFunction as any,
+          authorizations: [this.authorizationFunction as any],
+          payer: this.authorizationFunction as any,
+          limit: 9999,
+        });
+        return txID;
       }
 
       analyticsService.track('script_error', {
