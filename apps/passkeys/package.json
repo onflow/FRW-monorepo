@@ -27,6 +27,7 @@
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
+    "@onflow/rlp": "^1.2.4",
     "@tamagui/animations-react-native": "^1.132.16",
     "@tamagui/config": "^1.132.16",
     "@tamagui/core": "^1.132.16",

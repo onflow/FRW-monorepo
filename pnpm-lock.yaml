@@ -616,6 +616,9 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@onflow/rlp':
+        specifier: ^1.2.4
+        version: 1.2.4
       '@tamagui/animations-react-native':
         specifier: ^1.132.16
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.0.0(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
@@ -15876,7 +15879,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 

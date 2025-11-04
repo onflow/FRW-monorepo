@@ -167,3 +167,11 @@ export interface EnhancedSegmentedControlProps {
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
 }
+
+export interface FeatureCardData {
+  id: string;
+  icon: React.ReactElement;
+  title: string;
+  description: string;
+  expandedDescription?: string;
+}

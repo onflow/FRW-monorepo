@@ -1,10 +1,11 @@
-import { p256 } from '@noble/curves/p256';
-import { sha256 } from '@noble/hashes/sha256';
+import { p256 } from '@noble/curves/nist.js';
+import { sha256 } from '@noble/hashes/sha2';
 import { logger } from '@onflow/frw-utils';
 
 type P256Point = InstanceType<typeof p256.ProjectivePoint>;
 
 import { getCredentialRecord, saveCredentialRecord } from './passkey-storage';
+import { hexToBytes } from '../utils/flow-encoding';
 import {
   base64UrlToHex,
   decodeAttestationObject,
@@ -74,6 +75,29 @@ export class PasskeyService {
     }
   }
 
+  static getStoredKeyInfo(credentialId: string): KeyInfo | null {
+    return this.loadKeyInfo(credentialId);
+  }
+
+  static listStoredKeyInfo(): KeyInfo[] {
+    if (typeof window === 'undefined') {
+      return [];
+    }
+
+    try {
+      const raw = window.localStorage.getItem(this.KEY_INFO_STORAGE_KEY);
+      if (!raw) {
+        return [];
+      }
+
+      const parsed = JSON.parse(raw) as Record<string, KeyInfo>;
+      return Object.values(parsed);
+    } catch (error) {
+      logger.warn('Failed to parse stored passkey info', error);
+      return [];
+    }
+  }
+
   /**
    * Create a new passkey credential
    */
@@ -132,13 +156,35 @@ export class PasskeyService {
   /**
    * Authenticate with existing passkey
    */
-  static async authenticate(credentialId?: string): Promise<PasskeyAssertion> {
+  static async authenticate(options?: {
+    credentialId?: string;
+    challenge?: Uint8Array | ArrayBuffer | string;
+    userVerification?: UserVerificationRequirement;
+    timeoutMs?: number;
+    rpId?: string;
+  }): Promise<PasskeyAssertion> {
+    const {
+      credentialId,
+      challenge,
+      userVerification = 'required',
+      timeoutMs = 60000,
+      rpId = typeof window !== 'undefined' ? window.location.hostname : undefined,
+    } = options ?? {};
+
+    const resolvedChallenge =
+      challenge ??
+      (typeof window !== 'undefined' ? crypto.getRandomValues(new Uint8Array(32)) : null);
+
+    if (!resolvedChallenge) {
+      throw new Error('Unable to generate WebAuthn challenge');
+    }
+
     const getOptions: CredentialRequestOptions = {
       publicKey: {
-        challenge: crypto.getRandomValues(new Uint8Array(32)),
-        rpId: window.location.hostname,
-        userVerification: 'required',
-        timeout: 60000,
+        challenge: this.toArrayBuffer(this.normalizeToUint8Array(resolvedChallenge)),
+        rpId,
+        userVerification,
+        timeout: timeoutMs,
       },
     };
 
@@ -198,7 +244,6 @@ export class PasskeyService {
     };
 
     this.persistKeyInfo(keyInfo);
-
     return keyInfo;
   }
 
@@ -407,6 +452,23 @@ export class PasskeyService {
       view[i] = binary.charCodeAt(i);
     }
     return buffer;
+  }
+
+  private static normalizeToUint8Array(data: Uint8Array | ArrayBuffer | string): Uint8Array {
+    if (typeof data === 'string') {
+      return hexToBytes(data);
+    }
+    if (data instanceof Uint8Array) {
+      return data;
+    }
+    return new Uint8Array(data);
+  }
+
+  private static toArrayBuffer(data: Uint8Array | ArrayBuffer): ArrayBuffer {
+    if (data instanceof ArrayBuffer) {
+      return data;
+    }
+    return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
   }
 
   /**

@@ -1,7 +1,9 @@
-import { BackgroundWrapper, Card, H1, Paragraph, Spinner, YStack } from '@onflow/frw-ui';
+import { BackgroundWrapper, Card, Paragraph, Spinner, YStack } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { PasskeyWalletFooter } from '../components/Passkey/WalletFooter';
+import { PasskeyWalletHero } from '../components/Passkey/WalletHero';
 import { PasskeyLogin } from '../components/passkey-login';
 import { PasskeySetup } from '../components/passkey-setup';
 import { WalletDashboard } from '../components/wallet-dashboard';
@@ -155,26 +157,29 @@ export default function PasskeyWallet() {
     return 'Preparing your passkey experience...';
   }, [appState]);
 
-  const renderContent = () => {
+  const handleGetStarted = useCallback(() => {
+    if (appState === 'login') {
+      switchToSetup();
+    }
+  }, [appState, switchToSetup]);
+
+  const handleLearnMore = useCallback(() => {
+    // Scroll to features section or navigate to docs
+    const featuresSection = document.getElementById('features-section');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  const renderAuthCard = () => {
     if (isProcessing) {
       return (
-        <Card padding="$6" alignItems="center" gap="$3" maxWidth={480} width="100%">
+        <Card p="$6" items="center" gap="$3" maxW={480} w="100%">
           <Spinner size="large" color="$primary" />
-          <Paragraph color="$gray11" textAlign="center">
+          <Paragraph color="$textMuted" textAlign="center">
             {processingMessage}
           </Paragraph>
         </Card>
-      );
-    }
-
-    if (appState === 'dashboard' && keyInfo && credentialId) {
-      return (
-        <WalletDashboard
-          keyInfo={keyInfo}
-          credentialId={credentialId}
-          onLogout={handleLogout}
-          initialAddress={flowAddress}
-        />
       );
     }
 
@@ -190,48 +195,62 @@ export default function PasskeyWallet() {
       );
 
     return (
-      <Card padding="$6" maxWidth={480} width="100%">
+      <Card p="$6" maxW={480} w="100%">
         {cardContent}
       </Card>
     );
   };
 
+  // Show dashboard if user is logged in
+  if (appState === 'dashboard' && keyInfo && credentialId) {
+    return (
+      <BackgroundWrapper bg="$background">
+        <YStack flex={1} py="$4">
+          <WalletDashboard
+            keyInfo={keyInfo}
+            credentialId={credentialId}
+            onLogout={handleLogout}
+            initialAddress={flowAddress}
+          />
+        </YStack>
+      </BackgroundWrapper>
+    );
+  }
+
   return (
-    <BackgroundWrapper backgroundColor="$background">
-      <YStack flex={1} paddingVertical="$8" gap="$6" alignItems="center" justifyContent="center">
-        <YStack gap="$3" alignItems="center" maxWidth={560}>
-          <H1 textAlign="center">🌊 Flow Passkey Wallet</H1>
-          <Paragraph textAlign="center" color="$gray11">
-            Secure, passwordless authentication for your Flow blockchain wallet powered by WebAuthn
-            passkeys.
-          </Paragraph>
+    <BackgroundWrapper bg="$background">
+      <YStack flex={1} minH="100vh">
+        {/* Hero Section */}
+        <YStack py="$8" items="center" justify="center" minH="100vh" gap="$8">
+          <PasskeyWalletHero
+            variant="homepage"
+            onGetStarted={handleGetStarted}
+            onLearnMore={handleLearnMore}
+            showTrustIndicators={true}
+            maxWidth={900}
+          />
+
+          {/* Auth Card Section */}
+          <YStack items="center" gap="$4" w="100%" maxW={480}>
+            {error && (
+              <Card bg="$red2" borderColor="$red6" borderWidth={1} p="$4" w="100%">
+                <Paragraph color="$red11" textAlign="center">
+                  {error}
+                </Paragraph>
+              </Card>
+            )}
+
+            {renderAuthCard()}
+          </YStack>
         </YStack>
 
-        {error && (
-          <Card
-            bg="$error10"
-            borderColor="$error"
-            borderWidth={1}
-            padding="$4"
-            maxWidth={480}
-            width="100%"
-          >
-            <Paragraph color="$error" textAlign="center">
-              {error}
-            </Paragraph>
-          </Card>
-        )}
-
-        {renderContent()}
-
-        <YStack gap="$1" alignItems="center">
-          <Paragraph fontSize="$2" color="$gray11" textAlign="center">
-            🔐 Powered by Flow blockchain and WebAuthn passkeys
-          </Paragraph>
-          <Paragraph fontSize="$2" color="$gray11" textAlign="center">
-            Built with Next.js, Tamagui, and the Flow Reference Wallet design system.
-          </Paragraph>
-        </YStack>
+        {/* Footer */}
+        <PasskeyWalletFooter
+          variant="detailed"
+          showBranding={true}
+          maxWidth={1200}
+          backgroundColor="$bg"
+        />
       </YStack>
     </BackgroundWrapper>
   );

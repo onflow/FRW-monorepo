@@ -89,7 +89,7 @@ export function PasskeyLogin({ onLoginSuccess, onError, onSwitchToSetup }: Passk
         </YStack>
 
         <Button
-          variant="primary"
+          variant="inverse"
           size="large"
           loading={isLoading}
           loadingText="Authenticating..."
@@ -106,7 +106,7 @@ export function PasskeyLogin({ onLoginSuccess, onError, onSwitchToSetup }: Passk
           </Paragraph>
           <Button
             variant="outline"
-            size="medium"
+            size="large"
             loading={false}
             loadingText={undefined}
             disabled={isLoading}

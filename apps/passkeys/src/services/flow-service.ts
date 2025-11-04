@@ -3,6 +3,7 @@ import { CadenceService, configureFCL, fcl } from '@onflow/frw-cadence';
 import { logger } from '@onflow/frw-utils';
 
 import { type KeyInfo } from './passkey-service';
+import { getCredentialRecord, saveCredentialRecord } from './passkey-storage';
 
 export interface FlowAccount {
   address: string;
@@ -133,6 +134,48 @@ export class FlowService {
         error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
+  }
+
+  /**
+   * Ensure a Flow address exists for the provided passkey credential.
+   * Returns the associated address if found or created.
+   */
+  static async ensureAddressForCredential(
+    keyInfo: KeyInfo,
+    credentialId: string,
+    networkOverride?: 'testnet' | 'mainnet'
+  ): Promise<string> {
+    await this.initialize(networkOverride);
+
+    const record = getCredentialRecord(credentialId);
+    if (record?.flowAddress) {
+      return record.flowAddress;
+    }
+
+    const publicKey = keyInfo.publicKey || record?.publicKey;
+    if (!publicKey) {
+      throw new Error('Missing public key for passkey credential');
+    }
+
+    const lookup = await this.findAddressByPublicKey(publicKey);
+    if (lookup.success && lookup.addresses.length > 0) {
+      const resolved = lookup.addresses[0];
+      saveCredentialRecord({ credentialId, flowAddress: resolved, publicKey });
+      return resolved;
+    }
+
+    const created = await this.createAddress(publicKey, networkOverride);
+    if (!created.success || !created.address) {
+      throw new Error(created.error || 'Failed to create Flow address');
+    }
+
+    saveCredentialRecord({
+      credentialId,
+      flowAddress: created.address,
+      publicKey,
+    });
+
+    return created.address;
   }
 
   /**
