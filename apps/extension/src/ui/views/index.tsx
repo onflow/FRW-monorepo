@@ -2,8 +2,8 @@ import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ToastProvider } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
-import { extensionTamaguiConfig, PortalProvider, SurgeModal } from '@onflow/frw-ui';
-import React, { useEffect, useState, useRef } from 'react';
+import { extensionTamaguiConfig, PortalProvider } from '@onflow/frw-ui';
+import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
 // import { feedbackIntegration } from '@sentry/browser';
@@ -14,7 +14,6 @@ import '@tamagui/font-inter/css/400.css';
 import '@tamagui/font-inter/css/700.css';
 
 import { PlatformProvider } from '@/bridge/PlatformContext';
-import { getSurgeData } from '@/bridge/PlatformImpl';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
@@ -81,97 +80,6 @@ function Main() {
 }
 
 const App = ({ wallet }: { wallet: any }) => {
-  const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
-  const [hasResponded, setHasResponded] = useState(false);
-  const [surgeData, setSurgeData] = useState<{ maxFee?: string; multiplier?: number } | null>(null);
-  const elFeedbackContainer = useRef(null);
-
-  const [bugReportForm, setBugReportForm] = useState<{
-    open: () => void;
-  } | null>(null);
-
-  // function produceUncaughtSentryErrorFromSidePanel(): void {
-  //   throw new Error('❌ Sentry Uncaught Error in produceUncaughtSentryErrorFromSidePanel');
-  // }
-
-  // function produceSentryErrorFromSidePanel(): void {
-  //   try {
-  //     console.error('❌ Sentry Error in produceSentryErrorFromSidePanel');
-  //     throw new Error('❌ Sentry Error in produceSentryErrorFromSidePanel');
-  //   } catch (error) {
-  //     captureException(error);
-  //   }
-  // }
-
-  // Global surge modal for 429 errors and surge pricing
-  useEffect(() => {
-    const handleMessage = async (message: any) => {
-      if (message.type === 'API_RATE_LIMIT' && message.data?.status === 429) {
-        console.log('UI: API rate limit detected, showing global surge modal:', message.data);
-        // Store surge data if available
-        if (message.data?.surgeData) {
-          setSurgeData(message.data.surgeData);
-        } else {
-          // Fetch surge data using the exported function
-          try {
-            const surgeData = await getSurgeData('mainnet');
-            setSurgeData(surgeData);
-          } catch (error) {
-            console.log('Error fetching surge data:', error);
-            setSurgeData(null);
-          }
-        }
-        setIsSurgeModalVisible(true);
-        setHasResponded(false); // Reset response flag when showing modal
-      } else if (message.type === 'CLOSE_APPROVAL_POPUP') {
-        // Close the approval popup window
-        if (window.close) {
-          window.close();
-        } else {
-          chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
-        }
-      }
-    };
-
-    // Add Chrome extension message listener
-    chrome.runtime.onMessage.addListener(handleMessage);
-
-    // Cleanup message listener on unmount
-    return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage);
-    };
-  }, []);
-
-  const handleSurgeModalClose = () => {
-    if (hasResponded) return; // Prevent multiple responses
-
-    setIsSurgeModalVisible(false);
-    setHasResponded(true);
-
-    // Send rejection response
-    chrome.runtime.sendMessage({
-      type: 'SURGE_APPROVAL_RESPONSE',
-      data: { approved: false },
-    });
-    setHasResponded(false);
-  };
-
-  const handleSurgeModalAgree = () => {
-    if (hasResponded) {
-      return; // Prevent multiple responses
-    }
-
-    setIsSurgeModalVisible(false);
-    setHasResponded(true);
-
-    // Send approval response
-    chrome.runtime.sendMessage({
-      type: 'SURGE_APPROVAL_RESPONSE',
-      data: { approved: true },
-    });
-    setHasResponded(false);
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -183,23 +91,6 @@ const App = ({ wallet }: { wallet: any }) => {
                 <WalletProvider wallet={wallet}>
                   <Main />
                 </WalletProvider>
-
-                <SurgeModal
-                  visible={isSurgeModalVisible}
-                  transactionFee={surgeData?.maxFee || '- 500.00'}
-                  multiplier={surgeData?.multiplier?.toString() || '4'}
-                  title={chrome.i18n.getMessage('Surge__Modal__Title')}
-                  transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
-                  surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
-                  description={chrome.i18n.getMessage(
-                    'Surge__Modal__Description',
-                    Number(surgeData?.multiplier || 4).toFixed(2)
-                  )}
-                  holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
-                  onClose={handleSurgeModalClose}
-                  onAgree={handleSurgeModalAgree}
-                  isLoading={false}
-                />
               </div>
             </QueryProvider>
           </ToastProvider>
