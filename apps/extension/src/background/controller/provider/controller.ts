@@ -18,10 +18,7 @@ import {
   userWalletService,
 } from '@/core/service';
 import walletManager from '@/core/service/wallet-manager';
-import {
-  getAccountsByPublicKeyTuple,
-  signWithKey,
-} from '@/core/utils';
+import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import {
   tupleToPrivateKey,
