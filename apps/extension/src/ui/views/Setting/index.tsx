@@ -10,6 +10,7 @@ import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
 import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
 import { AddressIcon } from '@/ui/assets/icons/settings/Address';
 import { BackupIcon } from '@/ui/assets/icons/settings/Backup';
+import { BugIcon } from '@/ui/assets/icons/settings/Bug';
 import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
 import { DevicesIcon } from '@/ui/assets/icons/settings/Devices';
 import { DevmodeIcon } from '@/ui/assets/icons/settings/Devmode';
@@ -195,7 +196,7 @@ const SettingTab = () => {
 
           <Divider sx={{ width: '90%' }} variant="middle" />
           <SettingsListItem
-            icon={<AboutIcon width={24} height={24} />}
+            icon={<BugIcon width={24} height={24} />}
             text={chrome.i18n.getMessage('Feedback')}
             onClick={async () => {
               try {
