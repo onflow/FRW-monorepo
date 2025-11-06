@@ -4,6 +4,7 @@
  */
 
 import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
+
 import {
   EthSigner,
   type EthUnsignedTransaction,

@@ -1,7 +1,7 @@
+import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
 // Platform-specific import - Use absolute path so Metro can apply extraNodeModules mapping
-import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 import { WalletError } from '../types/errors';
 
 export type Bip39Strength = 128 | 160 | 192 | 224 | 256;
@@ -38,7 +38,7 @@ export async function generateBip39Mnemonic(options: GenerateBip39Options = {}):
   const { strength = 128, passphrase = '' } = options;
   assertStrength(strength);
 
-  const { wallet, mnemonic} = await WalletCoreProvider.createHDWallet(strength, passphrase);
+  const { wallet, mnemonic } = await WalletCoreProvider.createHDWallet(strength, passphrase);
   try {
     return mnemonic;
   } finally {

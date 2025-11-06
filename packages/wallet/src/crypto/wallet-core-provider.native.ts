@@ -5,6 +5,7 @@
 
 import { generateMnemonic, validateMnemonic, mnemonicToSeedSync } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
+
 import { WalletError } from '../types/errors';
 
 // Mock types to match the web implementation interface
@@ -68,7 +69,7 @@ export class WalletCoreProvider {
       // Generate seed from mnemonic
       const seedBytes = mnemonicToSeedSync(mnemonic, passphrase);
       const seed = Array.from(seedBytes)
-        .map(b => b.toString(16).padStart(2, '0'))
+        .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
 
       this.currentWallet = { mnemonic, seed };
@@ -103,7 +104,7 @@ export class WalletCoreProvider {
       // Generate seed from mnemonic
       const seedBytes = mnemonicToSeedSync(mnemonic, passphrase);
       const seed = Array.from(seedBytes)
-        .map(b => b.toString(16).padStart(2, '0'))
+        .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
 
       this.currentWallet = { mnemonic, seed };
@@ -140,7 +141,7 @@ export class WalletCoreProvider {
    * Get word suggestions for auto-complete
    */
   static async suggestWords(prefix: string): Promise<string> {
-    const suggestions = wordlist.filter(w => w.startsWith(prefix.toLowerCase()));
+    const suggestions = wordlist.filter((w) => w.startsWith(prefix.toLowerCase()));
     return suggestions.join(' ');
   }
 
@@ -150,7 +151,11 @@ export class WalletCoreProvider {
    */
   static async deriveEVMAddress(wallet: MockHDWallet): Promise<string> {
     throw WalletError.UnsupportedOperation({
-      details: { method: 'deriveEVMAddress', platform: 'react-native', reason: 'Use native bridge for key derivation' },
+      details: {
+        method: 'deriveEVMAddress',
+        platform: 'react-native',
+        reason: 'Use native bridge for key derivation',
+      },
     });
   }
 
@@ -187,7 +192,7 @@ export class WalletCoreProvider {
    */
   static async bytesToHex(bytes: Uint8Array): Promise<string> {
     return Array.from(bytes)
-      .map(b => b.toString(16).padStart(2, '0'))
+      .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
   }
 

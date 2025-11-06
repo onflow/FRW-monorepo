@@ -3,9 +3,9 @@
  * Aligns with FlowWalletKit's Ethereum signing flows.
  */
 
+import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 import { TW } from '@trustwallet/wallet-core';
 
-import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 import { WalletError } from '../types/errors';
 
 export type HexLike = string | number | bigint | Uint8Array;
