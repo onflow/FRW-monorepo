@@ -199,25 +199,6 @@ export function BackupOptionsScreen(): React.ReactElement {
               {t('onboarding.backupOptions.skipWarning.confirm')}
             </Text>
           </YStack>
-
-          {/* Go back and set up backup - Secondary action */}
-          <YStack
-            width="100%"
-            height={48}
-            bg="transparent"
-            borderWidth={1}
-            borderColor="$text"
-            rounded={12}
-            items="center"
-            justify="center"
-            pressStyle={{ opacity: 0.7 }}
-            onPress={handleCancelSkip}
-            cursor="pointer"
-          >
-            <Text fontSize="$4" fontWeight="600" color="$text">
-              {t('onboarding.backupOptions.skipWarning.cancel')}
-            </Text>
-          </YStack>
         </YStack>
       </InfoDialog>
     </>

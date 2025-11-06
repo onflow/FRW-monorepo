@@ -280,10 +280,9 @@
         "description": "Create a 12 word recovery phrase"
       },
       "skipWarning": {
-        "title": "Skip backup setup?",
+        "title": "Proceed without a backup?",
         "message": "Without a backup, you may lose access to your wallet if you lose your device. Are you sure you want to continue without setting up a backup?",
-        "confirm": "Continue without backup",
-        "cancel": "Set up backup"
+        "confirm": "Continue without backup"
       }
     },
     "recoveryPhrase": {
