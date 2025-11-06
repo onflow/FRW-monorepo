@@ -125,7 +125,7 @@ export function AccountCreationLoadingState({
                   source={currentLoadingBarSource}
                   autoPlay={true}
                   loop={true}
-                  speed={0.4}
+                  speed={0.5}
                   style={{
                     width: 339,
                     height: 52,

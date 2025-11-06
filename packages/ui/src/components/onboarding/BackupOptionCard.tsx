@@ -43,21 +43,25 @@ export function BackupOptionCard({
     >
       {/* Background Image (optional) - absolutely positioned */}
       {backgroundImage && (
-        <Image
-          source={backgroundImage}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%',
-            resizeMode: 'stretch',
-            borderRadius: 16,
-            zIndex: 0,
-          }}
-        />
+        <View
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          overflow="hidden"
+          borderRadius={16}
+          zIndex={0}
+        >
+          <Image
+            source={backgroundImage}
+            style={{
+              width: '100%',
+              height: '100%',
+              resizeMode: 'cover',
+            }}
+          />
+        </View>
       )}
 
       {/* Recommended badge - absolute positioned in top-right */}
