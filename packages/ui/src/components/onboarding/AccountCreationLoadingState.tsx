@@ -125,13 +125,17 @@ export function AccountCreationLoadingState({
                   source={currentLoadingBarSource}
                   autoPlay={true}
                   loop={true}
+                  speed={0.4}
                   style={{
                     width: 339,
                     height: 52,
                   }}
                   resizeMode="cover"
                   onAnimationFailure={(error) => {
-                    console.error('[AccountCreationLoadingState] Loading bar animation failed:', error);
+                    console.error(
+                      '[AccountCreationLoadingState] Loading bar animation failed:',
+                      error
+                    );
                   }}
                 />
               </YStack>

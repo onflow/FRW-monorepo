@@ -73,14 +73,12 @@ export function BackupOptionsScreen(): React.ReactElement {
     trackingMutation.mutate('device');
 
     // Launch native device backup activity (QR code sync between devices)
+    // Don't close RN - user can press back to return to this screen
     if (bridge.launchDeviceBackup) {
       logger.info('[BackupOptionsScreen] Launching native device backup flow');
       bridge.launchDeviceBackup();
-      // Close RN and return to native app - native activity will handle the backup flow
-      bridge.closeRN();
     } else {
-      logger.warn('[BackupOptionsScreen] launchDeviceBackup not available - closing RN');
-      bridge.closeRN();
+      logger.warn('[BackupOptionsScreen] launchDeviceBackup not available');
     }
   };
 
@@ -89,14 +87,12 @@ export function BackupOptionsScreen(): React.ReactElement {
     trackingMutation.mutate('cloud');
 
     // Launch native multi-backup activity (Google Drive, Passkey, Recovery Phrase)
+    // Don't close RN - user can press back to return to this screen
     if (bridge.launchMultiBackup) {
       logger.info('[BackupOptionsScreen] Launching native multi-backup flow');
       bridge.launchMultiBackup();
-      // Close RN and return to native app - native activity will handle the backup flow
-      bridge.closeRN();
     } else {
-      logger.warn('[BackupOptionsScreen] launchMultiBackup not available - closing RN');
-      bridge.closeRN();
+      logger.warn('[BackupOptionsScreen] launchMultiBackup not available');
     }
   };
 
@@ -105,14 +101,12 @@ export function BackupOptionsScreen(): React.ReactElement {
     trackingMutation.mutate('recovery-phrase');
 
     // Launch native seed phrase backup activity (View/create recovery phrase)
+    // Don't close RN - user can press back to return to this screen
     if (bridge.launchSeedPhraseBackup) {
       logger.info('[BackupOptionsScreen] Launching native seed phrase backup flow');
       bridge.launchSeedPhraseBackup();
-      // Close RN and return to native app - native activity will handle the backup flow
-      bridge.closeRN();
     } else {
-      logger.warn('[BackupOptionsScreen] launchSeedPhraseBackup not available - closing RN');
-      bridge.closeRN();
+      logger.warn('[BackupOptionsScreen] launchSeedPhraseBackup not available');
     }
   };
 

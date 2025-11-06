@@ -85,11 +85,17 @@ export function SecureEnclaveScreen(): React.ReactElement {
     mutationFn: createSecureEnclaveAccount,
     onSuccess: (data) => {
       logger.info('[SecureEnclaveScreen] Account created successfully:', data);
-      // Navigation will be handled by AccountCreationLoadingState's onComplete
+      // Wait a moment to show success state, then navigate
+      setTimeout(() => {
+        setShowLoadingState(false);
+        navigation.navigate('NotificationPreferences');
+      }, 500);
     },
     onError: (error) => {
       logger.error('[SecureEnclaveScreen] Failed to create account:', error);
-      // Handle error - could show error dialog
+      // Hide loading and show error state
+      setShowLoadingState(false);
+      // TODO: Show error dialog to user
     },
   });
 
@@ -121,9 +127,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
     createAccountMutation.mutate();
   };
 
-  const handleLoadingComplete = () => {
+  const handleLoadingCancel = () => {
+    // User cancelled during loading - not typically used but available
     setShowLoadingState(false);
-    navigation.navigate('NotificationPreferences');
   };
 
   const handleBack = () => {
@@ -266,8 +272,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
         visible={showLoadingState}
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
-        onComplete={handleLoadingComplete}
-        duration={3000}
       />
     </>
   );
