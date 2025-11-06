@@ -105,7 +105,13 @@ export default [
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
       // Import rules
-      'import/no-unresolved': 'error',
+      'import/no-unresolved': [
+        'error',
+        {
+          // Ignore platform-specific wallet-core-provider import (resolved by Metro/bundler)
+          ignore: ['^@onflow/frw-wallet/crypto/wallet-core-provider$'],
+        },
+      ],
       'import/order': [
         'error',
         {
