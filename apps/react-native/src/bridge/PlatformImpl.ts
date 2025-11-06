@@ -435,6 +435,14 @@ class PlatformImpl implements PlatformSpec {
       this.log('error', '[PlatformImpl] Failed to launch seed phrase backup via bridge:', error);
     }
   }
+
+  launchNativeBackupOptions(): void {
+    try {
+      NativeFRWBridge.launchNativeBackupOptions();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch native backup options via bridge:', error);
+    }
+  }
 }
 
 export const platform = new PlatformImpl();

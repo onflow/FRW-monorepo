@@ -33,6 +33,9 @@ export function BackupOptionCard({
       onPress={onPress}
       position="relative"
       overflow="hidden"
+      cursor="pointer"
+      accessible
+      accessibilityRole="button"
       hoverStyle={{
         borderColor: 'rgba(0, 239, 139, 0.3)',
       }}
@@ -52,6 +55,7 @@ export function BackupOptionCard({
           overflow="hidden"
           borderRadius={16}
           zIndex={0}
+          pointerEvents="none"
         >
           <Image
             source={backgroundImage}
@@ -75,6 +79,7 @@ export function BackupOptionCard({
           bg="rgba(0, 239, 139, 0.15)"
           rounded={54}
           zIndex={10}
+          pointerEvents="none"
         >
           <Text fontSize={12} fontWeight="400" color="$primary">
             Recommended
@@ -83,7 +88,7 @@ export function BackupOptionCard({
       )}
 
       {/* Icon section */}
-      <View position="relative" width={80} height={56} mt="$4">
+      <View position="relative" width={80} height={56} mt="$4" pointerEvents="none">
         {/* Background shapes */}
         {iconBackground}
 
@@ -105,7 +110,7 @@ export function BackupOptionCard({
       </View>
 
       {/* Text content */}
-      <YStack gap="$2">
+      <YStack gap="$2" pointerEvents="none">
         <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
           {title}
         </Text>

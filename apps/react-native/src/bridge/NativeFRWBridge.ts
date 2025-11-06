@@ -89,6 +89,7 @@ export interface Spec extends TurboModule {
   launchMultiBackup(): void;
   launchDeviceBackup(): void;
   launchSeedPhraseBackup(): void;
+  launchNativeBackupOptions(): void;
 }
 
 export interface CreateAccountResponse {

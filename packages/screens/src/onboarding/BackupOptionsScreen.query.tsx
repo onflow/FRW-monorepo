@@ -69,13 +69,15 @@ export function BackupOptionsScreen(): React.ReactElement {
   };
 
   const handleDeviceBackup = () => {
+    logger.info('[BackupOptionsScreen] ========== DEVICE BACKUP PRESSED ==========');
+
     // Track selection
     trackingMutation.mutate('device');
 
-    // Launch native device backup activity (QR code sync between devices)
-    // Don't close RN - user can press back to return to this screen
+    // Launch specific device backup screen
+    // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchDeviceBackup) {
-      logger.info('[BackupOptionsScreen] Launching native device backup flow');
+      logger.info('[BackupOptionsScreen] Launching device backup screen');
       bridge.launchDeviceBackup();
     } else {
       logger.warn('[BackupOptionsScreen] launchDeviceBackup not available');
@@ -83,13 +85,15 @@ export function BackupOptionsScreen(): React.ReactElement {
   };
 
   const handleCloudBackup = () => {
+    logger.info('[BackupOptionsScreen] ========== CLOUD BACKUP PRESSED ==========');
+
     // Track selection
     trackingMutation.mutate('cloud');
 
-    // Launch native multi-backup activity (Google Drive, Passkey, Recovery Phrase)
-    // Don't close RN - user can press back to return to this screen
+    // Launch specific multi-backup screen (cloud/Google Drive)
+    // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchMultiBackup) {
-      logger.info('[BackupOptionsScreen] Launching native multi-backup flow');
+      logger.info('[BackupOptionsScreen] Launching multi-backup screen');
       bridge.launchMultiBackup();
     } else {
       logger.warn('[BackupOptionsScreen] launchMultiBackup not available');
@@ -97,13 +101,15 @@ export function BackupOptionsScreen(): React.ReactElement {
   };
 
   const handleRecoveryPhrase = () => {
+    logger.info('[BackupOptionsScreen] ========== RECOVERY PHRASE PRESSED ==========');
+
     // Track selection
     trackingMutation.mutate('recovery-phrase');
 
-    // Launch native seed phrase backup activity (View/create recovery phrase)
-    // Don't close RN - user can press back to return to this screen
+    // Launch specific seed phrase backup screen
+    // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchSeedPhraseBackup) {
-      logger.info('[BackupOptionsScreen] Launching native seed phrase backup flow');
+      logger.info('[BackupOptionsScreen] Launching seed phrase backup screen');
       bridge.launchSeedPhraseBackup();
     } else {
       logger.warn('[BackupOptionsScreen] launchSeedPhraseBackup not available');

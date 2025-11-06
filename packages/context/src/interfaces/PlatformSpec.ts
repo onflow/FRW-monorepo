@@ -133,4 +133,5 @@ export interface PlatformSpec {
   launchMultiBackup?(): void;
   launchDeviceBackup?(): void;
   launchSeedPhraseBackup?(): void;
+  launchNativeBackupOptions?(): void;
 }
