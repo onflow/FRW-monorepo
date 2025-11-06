@@ -1,6 +1,7 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
 import { Box, Divider, IconButton, List } from '@mui/material';
+import * as Sentry from '@sentry/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
@@ -22,6 +23,7 @@ import AddProfilePopup from '@/ui/components/settings/add-profile-popup';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+
 // Feature flags
 const SHOW_DEVICES = false;
 
@@ -191,6 +193,21 @@ const SettingTab = () => {
             endIcon={<IconEnd size={12} />}
           />
 
+          <Divider sx={{ width: '90%' }} variant="middle" />
+          <SettingsListItem
+            icon={<AboutIcon width={24} height={24} />}
+            text={chrome.i18n.getMessage('Feedback')}
+            onClick={async () => {
+              try {
+                const feedback = Sentry.getFeedback();
+                const form = await feedback?.createForm();
+                form!.appendToDom();
+                form!.open();
+              } catch (error) {
+                Sentry.captureException(error);
+              }
+            }}
+          />
           <Divider sx={{ width: '90%' }} variant="middle" />
 
           {SHOW_DEVICES && (

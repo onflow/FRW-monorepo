@@ -14,8 +14,8 @@ export const SENTRY_BASIC_CONFIG: BrowserOptions = {
   enabled: true,
 
   tracesSampleRate: IS_DEV ? 0 : 1.0, //  Capture 100% of the transactions
-  replaysSessionSampleRate: IS_DEV ? 0 : 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-  replaysOnErrorSampleRate: IS_DEV ? 0 : 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+  replaysSessionSampleRate: IS_DEV ? 1.0 : 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
+  replaysOnErrorSampleRate: IS_DEV ? 1.0 : 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
 
   beforeSend(event, hint) {
     const error = hint.originalException as Error;

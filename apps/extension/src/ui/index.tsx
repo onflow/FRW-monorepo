@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/react';
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -95,6 +96,11 @@ eventBus.addEventListener(EVENTS.broadcastToBackground, (data) => {
     params: data.data,
   });
 });
+
+window.onerror = function (message, source, lineno, colno, error) {
+  captureException(error);
+  console.error(message, source, lineno, colno, error);
+};
 
 const container = document.getElementById('root');
 const root = createRoot(container!); // createRoot(container!) if you use TypeScript

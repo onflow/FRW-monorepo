@@ -6,8 +6,6 @@ import { extensionTamaguiConfig, PortalProvider } from '@onflow/frw-ui';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
-// import { feedbackIntegration } from '@sentry/browser';
-// import { captureException } from '@sentry/react';
 
 // Import Tamagui CSS for web support
 import '@tamagui/font-inter/css/400.css';
