@@ -26,15 +26,29 @@
     ".": {
       "@onflow/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "react-native": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./crypto/wallet-core-provider": {
+      "types": "./dist/crypto/wallet-core-provider.d.ts",
+      "react-native": "./dist/crypto/wallet-core-provider.native.js",
+      "import": "./dist/crypto/wallet-core-provider.js",
+      "default": "./dist/crypto/wallet-core-provider.js"
     }
+  },
+  "react-native": {
+    "@onflow/frw-wallet/dist/crypto/wallet-core-provider": "./dist/crypto/wallet-core-provider.native.js",
+    "@onflow/frw-wallet/dist/crypto/wallet-core-provider.js": "./dist/crypto/wallet-core-provider.native.js",
+    "./dist/crypto/wallet-core-provider": "./dist/crypto/wallet-core-provider.native",
+    "./dist/crypto/wallet-core-provider.js": "./dist/crypto/wallet-core-provider.native.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.2",
     "@onflow/fcl": "^1.12.4",
     "@onflow/frw-cadence": "workspace:*",
     "@trustwallet/wallet-core": "^4.0.50",
+    "@scure/bip39": "^1.6.0",
     "buffer": "^6.0.3"
   },
   "devDependencies": {

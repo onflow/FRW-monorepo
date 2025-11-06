@@ -26,6 +26,17 @@ export class WalletCoreProvider {
       return;
     }
 
+    // Check if running in React Native - if so, this is the wrong implementation
+    // The native implementation should be loaded instead
+    if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
+      throw WalletError.UnsupportedOperation({
+        details: {
+          message:
+            'WASM wallet-core-provider should not be used in React Native. Use wallet-core-provider.native instead.',
+        },
+      });
+    }
+
     try {
       // Dynamic import to avoid bundling issues
       const { initWasm } = await import('@trustwallet/wallet-core');

@@ -5,7 +5,7 @@
 
 import { TW } from '@trustwallet/wallet-core';
 
-import { WalletCoreProvider } from '../crypto/wallet-core-provider';
+import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 import { WalletError } from '../types/errors';
 
 export type HexLike = string | number | bigint | Uint8Array;

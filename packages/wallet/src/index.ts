@@ -27,7 +27,7 @@ export { SeedPhraseKey } from './keys/seed-phrase-key';
 export { PrivateKey } from './keys/private-key';
 
 // Wallet Core integration
-export { WalletCoreProvider } from './crypto/wallet-core-provider';
+export { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 export {
   entropyToMnemonic,
   generateBip39Mnemonic,

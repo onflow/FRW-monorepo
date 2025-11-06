@@ -5,7 +5,7 @@
 
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
-import { WalletCoreProvider } from '../crypto/wallet-core-provider';
+import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 import {
   EthSigner,
   type EthUnsignedTransaction,

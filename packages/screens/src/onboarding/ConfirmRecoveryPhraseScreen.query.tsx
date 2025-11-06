@@ -9,7 +9,7 @@ import {
   Button,
   ScrollView,
 } from '@onflow/frw-ui';
-import { SeedPhraseKey, SignatureAlgorithm, BIP44_PATHS } from '@onflow/frw-wallet';
+import { SeedPhraseKey, SignatureAlgorithm, BIP44_PATHS, MemoryStorage } from '@onflow/frw-wallet';
 import { useMutation } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -58,8 +58,7 @@ const trackVerificationAction = async (action: 'answer' | 'complete' | 'failure'
 // Helper function to derive Flow address from mnemonic
 const deriveFlowAddressFromMnemonic = async (mnemonic: string): Promise<string> => {
   try {
-    // Import MemoryStorage for temporary key storage during derivation
-    const { MemoryStorage } = await import('@onflow/frw-wallet');
+    // Use MemoryStorage for temporary key storage during derivation
     const tempStorage = new MemoryStorage();
 
     // Create SeedPhraseKey from mnemonic
