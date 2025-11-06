@@ -42,7 +42,12 @@ const config = {
         'net',
       ];
 
-      if (nodeModules.includes(moduleName)) {
+      // Check if it's a Node.js module or subpath (e.g., 'fs/promises')
+      const isNodeModule = nodeModules.some(
+        mod => moduleName === mod || moduleName.startsWith(`${mod}/`)
+      );
+
+      if (isNodeModule) {
         return {
           type: 'empty',
         };
