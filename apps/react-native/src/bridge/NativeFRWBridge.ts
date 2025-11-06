@@ -72,10 +72,6 @@ export interface Spec extends TurboModule {
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
-  // COA account creation (hybrid with server - Secure Enclave)
-  createCOAAccount(): Promise<CreateAccountResponse>;
-  // Save mnemonic to secure storage (EOA accounts)
-  saveMnemonic(mnemonic: string, address: string): Promise<SaveMnemonicResponse>;
   // Notification permissions
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
@@ -91,21 +87,6 @@ export interface Spec extends TurboModule {
   launchMultiBackup(): void;
   launchDeviceBackup(): void;
   launchSeedPhraseBackup(): void;
-}
-
-export interface CreateAccountResponse {
-  success: boolean;
-  address: string | null;
-  username: string | null;
-  mnemonic: string | null;
-  phrase: string[] | null;
-  accountType: 'eoa' | 'coa' | null;
-  error: string | null;
-}
-
-export interface SaveMnemonicResponse {
-  success: boolean;
-  error: string | null;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
