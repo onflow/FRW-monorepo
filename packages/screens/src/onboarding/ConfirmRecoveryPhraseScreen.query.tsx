@@ -1,5 +1,7 @@
+import { Userv2Service, Userv3Service } from '@onflow/frw-api';
 import { bridge, logger, navigation } from '@onflow/frw-context';
 // import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
+import { Platform } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -202,51 +204,131 @@ export function ConfirmRecoveryPhraseScreen({
       // Track successful completion
       trackingMutation.mutate('complete');
 
-      // User verified the phrase - now derive address and save securely
       logger.info(
         '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'
       );
 
-      // 1. Derive Flow address from mnemonic (EOA - calculated, not created)
-      const flowAddress = await deriveFlowAddressFromMnemonic(mnemonic);
-      logger.info('[ConfirmRecoveryPhraseScreen] Derived Flow address:', flowAddress);
+      // Step 5: Extract public key from validated seed phrase
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Extracting public key from mnemonic');
+      const tempStorage = new MemoryStorage();
+      const seedPhraseKey = await SeedPhraseKey.createAdvanced(
+        {
+          mnemonic,
+          derivationPath: BIP44_PATHS.FLOW,
+          passphrase: '',
+        },
+        tempStorage
+      );
 
-      // 2. Save mnemonic securely to native secure storage
+      const publicKeyBytes = await seedPhraseKey.publicKey(SignatureAlgorithm.ECDSA_P256);
+      if (!publicKeyBytes) {
+        throw new Error('Failed to derive public key from mnemonic');
+      }
+
+      const publicKeyHex = Buffer.from(publicKeyBytes).toString('hex');
+      logger.info(
+        '[ConfirmRecoveryPhraseScreen] Public key extracted:',
+        publicKeyHex.slice(0, 16) + '...'
+      );
+
+      // Step 6: Register with backend (GoAPIService)
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering with backend...');
+
+      // Generate username (similar to Android registerOutblock)
+      const timestamp = Date.now().toString();
+      const username = `u${timestamp.slice(-8)}`;
+      logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
+
+      // Get device info
+      const platform = bridge.getPlatform();
+      const deviceInfo = {
+        device_id: '', // Will be filled by platform
+        name:
+          platform === Platform.iOS ? 'iOS' : platform === Platform.Android ? 'Android' : 'Unknown',
+        type: platform === Platform.iOS ? 'iOS' : platform === Platform.Android ? 'Android' : 'Web',
+        user_agent: navigator.userAgent || 'Flow Wallet',
+        version: bridge.getVersion?.() || '1.0.0',
+        ip: '',
+      };
+
+      // Call registration API
+      const registerResponse = await Userv3Service.register({
+        username,
+        accountKey: {
+          public_key: publicKeyHex,
+          sign_algo: 2, // ECDSA_P256
+          hash_algo: 1, // SHA2_256
+        },
+        deviceInfo,
+      });
+
+      if (!registerResponse.data?.custom_token) {
+        throw new Error('Registration failed: No custom token received');
+      }
+
+      const customToken = registerResponse.data.custom_token;
+      const userId = registerResponse.data.id;
+      logger.info('[ConfirmRecoveryPhraseScreen] Registration successful, userId:', userId);
+
+      // Create Flow address (triggers on-chain account creation)
+      logger.info('[ConfirmRecoveryPhraseScreen] Creating Flow address...');
+      const addressResponse = await Userv2Service.address2();
+
+      if (!addressResponse.data?.txid) {
+        throw new Error('Failed to create Flow address: No transaction ID received');
+      }
+
+      const txId = addressResponse.data.txid;
+      logger.info('[ConfirmRecoveryPhraseScreen] Flow address creation initiated, txId:', txId);
+
+      // Step 7: Data handoff to native layer
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 7: Passing data to native layer...');
+
       if (bridge.saveMnemonic) {
-        logger.info('[ConfirmRecoveryPhraseScreen] Saving mnemonic to secure storage...');
-
-        const saveResult = await bridge.saveMnemonic(mnemonic, flowAddress);
+        // Pass mnemonic, customToken, and txId to native for:
+        // - Secure storage (Step 8)
+        // - Firebase authentication (Step 9)
+        // - Wallet-Kit initialization (Step 10)
+        // - Fast account discovery using txId (Step 11)
+        const saveResult = await bridge.saveMnemonic(mnemonic, customToken, txId);
 
         if (!saveResult.success) {
           throw new Error(saveResult.error || 'Failed to save mnemonic to secure storage');
         }
 
-        logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully!');
-        logger.info('[ConfirmRecoveryPhraseScreen] EOA account ready:', {
-          address: flowAddress,
-          accountType: 'eoa',
-          verified: true,
-        });
+        logger.info('[ConfirmRecoveryPhraseScreen] Native handoff successful!');
+        logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete');
 
-        // Navigate to notification preferences (final onboarding step)
+        // Steps 8-13 are handled by native layer:
+        // 8. Secure storage
+        // 9. Firebase authentication
+        // 10. Wallet-Kit initialization
+        // 11. Fast account discovery (using txId)
+        // 12. UI transition (native closes RN view)
+        // 13. Optional notification permission
+
+        // Navigate to notification preferences (or native will close RN)
         navigation.navigate('NotificationPreferences');
       } else {
         // Fallback for web/extension (no native bridge)
         logger.warn(
-          '[ConfirmRecoveryPhraseScreen] No native bridge available, skipping mnemonic save'
+          '[ConfirmRecoveryPhraseScreen] No native bridge available, skipping native handoff'
         );
-        logger.info('[ConfirmRecoveryPhraseScreen] EOA account ready (web/extension):', {
-          address: flowAddress,
-          accountType: 'eoa',
-          verified: true,
-        });
 
-        // Navigate anyway (for web/extension development)
+        // For web/extension, we'd handle Firebase auth here directly
+        // But for now, just navigate
         navigation.navigate('NotificationPreferences');
       }
     } catch (error) {
       logger.error('[ConfirmRecoveryPhraseScreen] Failed to create EOA account:', error);
       // TODO: Show error UI to user
+      // For now, log the error details
+      if (error instanceof Error) {
+        logger.error('[ConfirmRecoveryPhraseScreen] Error details:', {
+          message: error.message,
+          stack: error.stack,
+        });
+      }
     } finally {
       setIsCreatingAccount(false);
     }

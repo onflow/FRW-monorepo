@@ -375,6 +375,30 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  // Save mnemonic and initialize wallet (Keychain/KeyStore + Firebase + Wallet-Kit)
+  async saveMnemonic(
+    mnemonic: string,
+    customToken: string,
+    txId: string
+  ): Promise<{
+    success: boolean;
+    error: string | null;
+  }> {
+    try {
+      return await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId);
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to save mnemonic and initialize wallet via bridge:',
+        error
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
   // Notification permission methods
   async requestNotificationPermission(): Promise<boolean> {
     try {

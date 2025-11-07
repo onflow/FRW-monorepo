@@ -74,6 +74,9 @@ export interface Spec extends TurboModule {
   clearAllToasts(): void;
   // COA account creation (hybrid with server - Secure Enclave)
   createCOAAccount(): Promise<CreateAccountResponse>;
+  // Save mnemonic and initialize wallet (Keychain/KeyStore) - for EOA accounts
+  // Native handles: secure storage, Firebase auth (customToken), Wallet-Kit init, account discovery (txId)
+  saveMnemonic(mnemonic: string, customToken: string, txId: string): Promise<SaveMnemonicResponse>;
   // Notification permissions
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
@@ -99,6 +102,11 @@ export interface CreateAccountResponse {
   mnemonic: string | null;
   phrase: string[] | null;
   accountType: 'eoa' | 'coa' | null;
+  error: string | null;
+}
+
+export interface SaveMnemonicResponse {
+  success: boolean;
   error: string | null;
 }
 

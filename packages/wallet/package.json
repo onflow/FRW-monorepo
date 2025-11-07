@@ -45,10 +45,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.2",
+    "@noble/curves": "^1.7.0",
+    "@noble/hashes": "^1.6.1",
     "@onflow/fcl": "^1.12.4",
     "@onflow/frw-cadence": "workspace:*",
-    "@trustwallet/wallet-core": "^4.0.50",
+    "@scure/bip32": "^1.6.0",
     "@scure/bip39": "^1.6.0",
+    "@trustwallet/wallet-core": "^4.0.50",
     "buffer": "^6.0.3"
   },
   "devDependencies": {

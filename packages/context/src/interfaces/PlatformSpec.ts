@@ -122,6 +122,18 @@ export interface PlatformSpec {
     error: string | null;
   }>;
 
+  // Save mnemonic to secure storage and initialize wallet (iOS Keychain / Android KeyStore)
+  // For EOA accounts: mnemonic + customToken + txId
+  // Native layer handles: secure storage, Firebase auth, Wallet-Kit init, account discovery
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string
+  ): Promise<{
+    success: boolean;
+    error: string | null;
+  }>;
+
   // Notification permission methods
   requestNotificationPermission?(): Promise<boolean>;
   checkNotificationPermission?(): Promise<boolean>;

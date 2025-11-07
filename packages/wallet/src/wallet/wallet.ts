@@ -2,9 +2,8 @@
  * Wallet class - exact match to Flow Wallet Kit iOS Wallet.swift
  */
 
-import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
-
 import { WalletTypeUtils } from './utils';
+import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { EthProvider } from '../services/eth-provider';
 import {
   type EthUnsignedTransaction,

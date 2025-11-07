@@ -1,8 +1,11 @@
 /**
  * React Native implementation of Trust Wallet Core integration for FRW
- * Uses @scure/bip39 pure JavaScript implementation (works universally)
+ * Uses pure JavaScript crypto libraries (@scure/bip39, @scure/bip32, @noble/curves)
  */
 
+import { p256 } from '@noble/curves/p256';
+import { secp256k1 } from '@noble/curves/secp256k1';
+import { HDKey } from '@scure/bip32';
 import { generateMnemonic, validateMnemonic, mnemonicToSeedSync } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
@@ -12,11 +15,13 @@ import { WalletError } from '../types/errors';
 interface MockHDWallet {
   mnemonic: string;
   seed: string;
+  hdKey: HDKey; // BIP32 HD key for derivation
   delete(): void;
 }
 
 interface MockPrivateKey {
   data(): Uint8Array;
+  publicKey: Uint8Array; // Store public key for later use
   delete(): void;
 }
 
@@ -72,11 +77,15 @@ export class WalletCoreProvider {
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
 
+      // Create HDKey from seed for BIP32/BIP44 derivation
+      const hdKey = HDKey.fromMasterSeed(seedBytes);
+
       this.currentWallet = { mnemonic, seed };
 
       const wallet: MockHDWallet = {
         mnemonic,
         seed,
+        hdKey,
         delete: () => {
           // Cleanup
           this.currentWallet = null;
@@ -107,11 +116,15 @@ export class WalletCoreProvider {
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
 
+      // Create HDKey from seed for BIP32/BIP44 derivation
+      const hdKey = HDKey.fromMasterSeed(seedBytes);
+
       this.currentWallet = { mnemonic, seed };
 
       const wallet: MockHDWallet = {
         mnemonic,
         seed,
+        hdKey,
         delete: () => {
           this.currentWallet = null;
         },
@@ -222,10 +235,67 @@ export class WalletCoreProvider {
     });
   }
 
-  static async getFlowPrivateKeyBySignatureAlgorithm(): Promise<any> {
-    throw WalletError.UnsupportedOperation({
-      details: { method: 'getFlowPrivateKeyBySignatureAlgorithm', platform: 'react-native' },
-    });
+  /**
+   * Get private key by signature algorithm for Flow (matches web implementation)
+   * @param wallet - HD wallet instance
+   * @param signatureAlgorithm - 'ECDSA_P256' or 'ECDSA_secp256k1'
+   * @param derivationPath - BIP44 derivation path (default: m/44'/539'/0'/0/0 for Flow)
+   * @returns MockPrivateKey with private key bytes and public key
+   */
+  static async getFlowPrivateKeyBySignatureAlgorithm(
+    wallet: MockHDWallet,
+    signatureAlgorithm: string,
+    derivationPath: string = "m/44'/539'/0'/0/0"
+  ): Promise<MockPrivateKey> {
+    await this.ensureInitialized();
+
+    try {
+      // Derive child key at the specified path
+      const derivedKey = wallet.hdKey.derive(derivationPath);
+
+      if (!derivedKey.privateKey) {
+        throw WalletError.KeyNotInitialized({ details: { derivationPath } });
+      }
+
+      const privateKeyBytes = derivedKey.privateKey;
+
+      // Get public key based on the signature algorithm
+      let publicKeyBytes: Uint8Array;
+
+      switch (signatureAlgorithm) {
+        case 'ECDSA_P256': {
+          // P-256 (NIST P-256, secp256r1) - Flow's default
+          const publicKey = p256.getPublicKey(privateKeyBytes, false); // false = uncompressed
+          publicKeyBytes = publicKey;
+          break;
+        }
+        case 'ECDSA_secp256k1': {
+          // secp256k1 - Bitcoin/Ethereum curve
+          const publicKey = secp256k1.getPublicKey(privateKeyBytes, false); // false = uncompressed
+          publicKeyBytes = publicKey;
+          break;
+        }
+        default:
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm },
+          });
+      }
+
+      const privateKey: MockPrivateKey = {
+        data: () => privateKeyBytes,
+        publicKey: publicKeyBytes,
+        delete: () => {
+          // Cleanup (no-op for pure JS)
+        },
+      };
+
+      return privateKey;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('UnsupportedSignatureAlgorithm')) {
+        throw error;
+      }
+      throw WalletError.DerivationFailed({ cause: error, details: { derivationPath } });
+    }
   }
 
   static async getEVMPrivateKeyBySignatureAlgorithm(): Promise<any> {
@@ -234,10 +304,43 @@ export class WalletCoreProvider {
     });
   }
 
-  static async getFlowPublicKeyBySignatureAlgorithm(): Promise<string> {
-    throw WalletError.UnsupportedOperation({
-      details: { method: 'getFlowPublicKeyBySignatureAlgorithm', platform: 'react-native' },
-    });
+  /**
+   * Get public key by signature algorithm for Flow (matches web implementation)
+   * @param wallet - HD wallet instance
+   * @param signatureAlgorithm - 'ECDSA_P256' or 'ECDSA_secp256k1'
+   * @param derivationPath - BIP44 derivation path (default: m/44'/539'/0'/0/0 for Flow)
+   * @returns Public key as hex string (without 0x04 prefix)
+   */
+  static async getFlowPublicKeyBySignatureAlgorithm(
+    wallet: MockHDWallet,
+    signatureAlgorithm: string,
+    derivationPath: string = "m/44'/539'/0'/0/0"
+  ): Promise<string> {
+    // Get private key (which also computes the public key)
+    const privateKey = await this.getFlowPrivateKeyBySignatureAlgorithm(
+      wallet,
+      signatureAlgorithm,
+      derivationPath
+    );
+
+    try {
+      // Get uncompressed public key bytes
+      const publicKeyBytes = privateKey.publicKey;
+
+      // Convert to hex
+      const publicKeyHex = Array.from(publicKeyBytes)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+
+      // Remove '04' prefix if present (matches iOS/web format() method)
+      // Uncompressed public keys start with 04, but Flow expects the key without this prefix
+      return publicKeyHex.startsWith('04') ? publicKeyHex.slice(2) : publicKeyHex;
+    } finally {
+      // Cleanup private key
+      if (privateKey && typeof privateKey.delete === 'function') {
+        privateKey.delete();
+      }
+    }
   }
 
   static async getEVMPublicKeyBySignatureAlgorithm(): Promise<string> {

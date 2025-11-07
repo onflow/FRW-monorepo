@@ -1,7 +1,6 @@
-import { WalletCoreProvider } from '@onflow/frw-wallet/crypto/wallet-core-provider';
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
-// Platform-specific import - Use absolute path so Metro can apply extraNodeModules mapping
+import { WalletCoreProvider } from './wallet-core-provider';
 import { WalletError } from '../types/errors';
 
 export type Bip39Strength = 128 | 160 | 192 | 224 | 256;
