@@ -37,6 +37,7 @@ import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
 import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
+import kotlinx.coroutines.flow.firstOrNull
 import org.onflow.flow.models.SigningAlgorithm
 
 object WalletManager {
@@ -416,6 +417,50 @@ object WalletManager {
         childAccountMap.values.forEach { it.refresh() }
     }
 
+    suspend fun getEOAAddress(): String? {
+        logd(TAG, "=== getEOAAddress() optimized START ===")
+
+        val walletInstance = wallet()
+        if (walletInstance == null) {
+            logd(TAG, "Wallet is null - likely hardware-backed key scenario")
+            return null
+        }
+
+        return try {
+            // Step 1: Check if EOA addresses are already cached
+            val cachedAddresses = walletInstance.eoaAddresses.value
+            logd(TAG, "Cached EOA addresses: $cachedAddresses (size: ${cachedAddresses.size})")
+
+            if (cachedAddresses.isNotEmpty()) {
+                val firstAddress = cachedAddresses.first()
+                logd(TAG, "EOA address from cache: $firstAddress")
+                return firstAddress
+            }
+
+            // Step 2: Generate EOA address (this will trigger updateEoaCache)
+            logd(TAG, "No cached EOA addresses, generating new one...")
+
+            // This call to ethAddress(0) will:
+            // 1. Generate the Ethereum address
+            // 2. Call updateEoaCache() which updates _eoaAddresses StateFlow
+            // 3. Return the generated address
+            val generatedAddress = walletInstance.ethAddress(0)
+            logd(TAG, "Generated EOA address: $generatedAddress")
+            generatedAddress
+
+        } catch (e: Exception) {
+            logd(TAG, "ERROR generating EOA address: ${e.message}")
+            logd(TAG, "Error type: ${e.javaClass.simpleName}")
+
+            // Fallback: Check if somehow an address exists in the StateFlow
+            val fallbackAddresses = walletInstance.eoaAddresses.value
+            val fallbackAddress = fallbackAddresses.firstOrNull()
+            logd(TAG, "Fallback EOA address: $fallbackAddress")
+            logd(TAG, "=== getEOAAddress() END (error fallback) ===")
+            fallbackAddress
+        }
+    }
+
     fun changeNetwork() {
         val currentNetwork = chainNetWorkString()
         logd(TAG, "Changing network to: $currentNetwork")
@@ -498,6 +543,7 @@ object WalletManager {
         val isChildAccount = childAccount(pref) != null
         val isEVMAddress = EVMWalletManager.isEVMWalletAddress(pref)
         val isInChildMap = childAccountMap.keys.contains(pref)
+        //todo check if isEOAAccount
 
         logd(TAG, "Address existence check - isChildAccount: $isChildAccount, isEVMAddress: $isEVMAddress, isInChildMap: $isInChildMap")
 

@@ -368,7 +368,6 @@ dependencies {
 
     // HD Wallet implementation
     implementation('com.trustwallet:wallet-core:4.3.2') {
-        exclude group: 'com.trustwallet', module: 'wallet-core-proto'
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
 

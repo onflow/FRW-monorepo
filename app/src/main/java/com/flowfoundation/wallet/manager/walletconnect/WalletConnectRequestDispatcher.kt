@@ -5,7 +5,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
-import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
+import com.flowfoundation.wallet.manager.evm.sendCOATransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
@@ -15,6 +15,8 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.Signable
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.isGasFree
+import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
+import com.flowfoundation.wallet.manager.evm.sendEOATransaction
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -78,6 +80,11 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import org.onflow.flow.models.Transaction
 import com.ionspin.kotlin.bignum.integer.toBigInteger
+import org.web3j.utils.Numeric
+import wallet.core.jni.CoinType
+import wallet.core.jni.Hash
+import wallet.core.jni.PublicKey
+import wallet.core.java.AnySigner
 
 private const val TAG = "WalletConnectRequestDispatcher"
 
@@ -98,18 +105,132 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.EVM_SIGN_TYPED_DATA.value, WalletConnectMethod.EVM_SIGN_TYPED_DATA_V3.value,
         WalletConnectMethod.EVM_SIGN_TYPED_DATA_V4.value -> evmSignTypedData()
         WalletConnectMethod.WALLET_WATCH_ASSETS.value -> watchAssets()
+        WalletConnectMethod.EVM_EC_RECOVER.value -> evmECRecover()
     }
+}
+
+suspend fun WCRequest.evmECRecover() {
+    logd(TAG, "=== evmECRecover Debug ===")
+    logd(TAG, "Raw params: $params")
+    
+    try {
+        // Parse params as JSON array: ["Hello, Flow EVM!", "0x...signature..."]
+        val json = Gson().fromJson<List<String>>(params, object : TypeToken<List<String>>() {}.type)
+        
+        if (json.size < 2) {
+            logd(TAG, "ERROR: Insufficient parameters for ecRecover")
+            reject()
+            return
+        }
+        
+        val message = json[0]
+        val signatureHex = json[1]
+        
+        logd(TAG, "Message: $message")
+        logd(TAG, "Signature: $signatureHex")
+        
+        try {
+            // Convert signature from hex to bytes
+            val signature = Numeric.hexStringToByteArray(signatureHex)
+            
+            if (signature.size != 65) {
+                logd(TAG, "ERROR: Invalid signature length: ${signature.size}, expected 65")
+                reject()
+                return
+            }
+            
+            // Normalize signature (similar to iOS EthereumSignatureUtils.normalize)
+            val normalizedSignature = normalizeSignature(signature)
+            
+            // Create prefix similar to iOS: "\u0019Ethereum Signed Message:\n{message.size}"
+            val prefix = "\u0019Ethereum Signed Message:\n${message.length}".toByteArray(Charsets.UTF_8)
+            val payload = prefix + message.toByteArray(Charsets.UTF_8)
+            
+            // Hash the payload with keccak256
+            val digest = Hash.keccak256(payload)
+            
+            logd(TAG, "Payload length: ${payload.size}")
+            logd(TAG, "Digest: ${Numeric.toHexString(digest)}")
+            
+            // Recover public key from signature and digest
+            val publicKey = try {
+                PublicKey.recover(normalizedSignature, digest)
+            } catch (e: Exception) {
+                logd(TAG, "ERROR: Failed to recover public key: ${e.message}")
+                reject()
+                return
+            }
+            
+            if (publicKey == null) {
+                logd(TAG, "ERROR: Failed to recover public key - null result")
+                reject()
+                return
+            }
+            
+            // Derive Ethereum address from public key
+            val address = CoinType.ETHEREUM.deriveAddressFromPublicKey(publicKey)
+            
+            logd(TAG, "Recovered address: $address")
+            approve(address)
+            
+        } catch (e: Exception) {
+            logd(TAG, "ERROR: Exception in ecRecover: ${e.message}")
+            e.printStackTrace()
+            reject()
+        }
+        
+    } catch (e: Exception) {
+        logd(TAG, "ERROR: Failed to parse ecRecover params: ${e.message}")
+        e.printStackTrace()
+        reject()
+    }
+}
+
+// Normalize Ethereum signature (convert recovery ID from 27/28 to 0/1 if needed)
+private fun normalizeSignature(signature: ByteArray): ByteArray {
+    val normalized = signature.copyOf()
+    val recoveryId = signature[64].toInt() and 0xFF
+    
+    // Convert recovery ID from 27/28 to 0/1 if needed
+    when (recoveryId) {
+        27 -> normalized[64] = 0
+        28 -> normalized[64] = 1
+        // If already 0 or 1, keep as is
+    }
+    
+    return normalized
 }
 
 suspend fun WCRequest.evmSignTypedData() {
     val activity = topActivity() ?: return
+
+    // Debug logging for JSON parsing issue
+    logd(TAG, "=== evmSignTypedData Debug ===")
+    logd(TAG, "Raw params: $params")
+    logd(TAG, "Params type: ${params?.javaClass?.simpleName}")
+    logd(TAG, "Params length: ${params?.length}")
+    if (params.length <= 1000) {
+        logd(TAG, "Params content first 500 chars: ${params.take(500)}")
+    }
+
     val jsonArray = Gson().fromJson(params, JsonArray::class.java)
+    logd(TAG, "Successfully parsed JsonArray, size: ${jsonArray.size()}")
+
     val messageObject = if (jsonArray.get(0).isJsonObject) {
+        logd(TAG, "Using first element as message object")
         jsonArray.get(0)
     } else {
+        logd(TAG, "Using second element as message object")
         jsonArray.get(1)
     } ?: return
+
     val message = Gson().toJson(messageObject)
+    logd(TAG, "Message JSON length: ${message.length}")
+    if (message.length <= 1000) {
+        logd(TAG, "Message JSON: $message")
+    } else {
+        logd(TAG, "Message JSON (first 500 chars): ${message.take(500)}")
+    }
     val dataEncoder = StructuredDataEncoder(message)
     val hashData = dataEncoder.hashStructuredData()
     logd(TAG, "hashData::$hashData")
@@ -126,7 +247,13 @@ suspend fun WCRequest.evmSignTypedData() {
         )
         EVMSignTypedDataDialog.observe { isApprove ->
             ioScope {
-                if (isApprove) approve(signTypedData(hashData)) else reject()
+                val result = if (DAppEVMConnectionManager.isCurrentEOAAccount()) {
+                    val data = WalletManager.wallet()?.ethSignTypedData(message)
+                    Numeric.toHexString(data)
+                } else {
+                    signTypedData(hashData)
+                }
+                if (isApprove) approve(result) else reject()
             }
         }
     }
@@ -152,11 +279,21 @@ private suspend fun WCRequest.evmSendTransaction() {
         EVMSendTransactionDialog.observe { isApprove ->
             ioScope {
                 if (isApprove) {
-                    sendEthereumTransaction(transaction) { txHash ->
-                        if (txHash.isEmpty()) {
-                            reject()
-                        } else {
-                            approve(txHash)
+                    if (DAppEVMConnectionManager.isCurrentEOAAccount()) {
+                        sendEOATransaction(chainId, transaction) { txHash ->
+                            if (txHash.isEmpty()) {
+                                reject()
+                            } else {
+                                approve(txHash)
+                            }
+                        }
+                    } else {
+                        sendCOATransaction(transaction) { txHash ->
+                            if (txHash.isEmpty()) {
+                                reject()
+                            } else {
+                                approve(txHash)
+                            }
                         }
                     }
                 } else reject()
@@ -204,7 +341,13 @@ private suspend fun WCRequest.evmSignMessage() {
         )
         EVMSignMessageDialog.observe { isApprove ->
             ioScope {
-                if (isApprove) approve(signEthereumMessage(message)) else reject()
+                val result = if (DAppEVMConnectionManager.isCurrentEOAAccount()) {
+                    val data = WalletManager.wallet()?.ethSignPersonalMessage(hexMessage.hexToBytes())
+                    Numeric.toHexString(data)
+                } else {
+                    signEthereumMessage(message)
+                }
+                if (isApprove) approve(result) else reject()
             }
         }
     }
