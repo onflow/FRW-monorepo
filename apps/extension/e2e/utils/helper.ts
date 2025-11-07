@@ -515,7 +515,7 @@ export const checkSentAmount = async ({
   if (!isEvm) {
     await expect(
       page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 60_000 });
   }
 };
 
@@ -578,7 +578,7 @@ export const waitForTransaction = async ({
   if (amount) {
     await expect(
       page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 60_000 });
   }
 
   return txId;
