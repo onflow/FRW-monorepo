@@ -495,7 +495,7 @@ export const checkNFTTrx = async ({ page, sealedText, collectionName, txId, isEv
       .isVisible();
     await expect(
       page.getByTestId(activityItemRegexp).getByTestId(`collection-${collectionName}`)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 60_000 });
   }
 };
 
@@ -531,7 +531,9 @@ export const checkSentNFT = async ({
   await expect(sealedItem).toBeVisible({
     timeout: 60_000,
   });
-  await expect(page.getByTestId(activityItemRegexp).getByTestId(collectionName)).toBeVisible();
+  await expect(page.getByTestId(activityItemRegexp).getByTestId(collectionName)).toBeVisible({
+    timeout: 60_000,
+  });
 };
 
 export const waitForTransaction = async ({
