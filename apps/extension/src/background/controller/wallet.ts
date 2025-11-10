@@ -26,7 +26,6 @@ import {
   accountManagementService,
   authenticationService,
 } from '@/core/service';
-import walletManager from '@/core/service/wallet-manager';
 import { retryOperation } from '@/core/utils';
 import {
   getValidData,
@@ -170,6 +169,17 @@ export class WalletController extends BaseController {
   registerNewProfile = async (username: string, password: string, mnemonic: string) => {
     return await accountManagementService.registerNewProfile(username, password, mnemonic);
   };
+
+  /**
+   * Create a new wallet profile using a private key.
+   * This creates a new Flow account and registers it with the backend.
+   * @param username the username for the new profile
+   * @param password the password for the new profile
+   * @param pk the private key to use for the new account
+   */
+  registerNewProfileUsingPrivateKey = async (username: string, password: string, pk: string) => {
+    return await accountManagementService.registerNewProfileUsingPrivateKey(username, password, pk);
+  };
   /**
    * Remove a profile and its associated keys
    * If it's the last profile, it behaves like a wallet reset
@@ -295,9 +305,6 @@ export class WalletController extends BaseController {
     // Login with the current keyring
     await userWalletService.loginWithKeyring();
     // Initialize wallet manager with current uid
-    walletManager.init().catch((error) => {
-      console.error('Failed to initialize wallet manager:', error);
-    });
     sessionService.broadcastEvent('unlock');
 
     // Refresh the wallet data
@@ -847,6 +854,14 @@ export class WalletController extends BaseController {
     }
     const wallet = await userWalletService.getCurrentWallet();
 
+    return wallet;
+  };
+
+  getSelectedAccount = async (): Promise<WalletAccount> => {
+    const wallet = await this.returnParentWallet();
+    if (!wallet) {
+      throw new Error('No wallet selected or wallet is locked');
+    }
     return wallet;
   };
 
@@ -1698,6 +1713,23 @@ export class WalletController extends BaseController {
       console.error('Failed to get JWT token:', error);
       throw error;
     }
+  };
+
+  /**
+   * Get the Ethereum private key using EVM BIP44 path or from Simple Keyring
+   * @returns The Ethereum private key as hex string
+   */
+  getEthereumPrivateKey = async (): Promise<string> => {
+    return await userWalletService.getEthereumPrivateKey();
+  };
+
+  /**
+   * Convert private key hex string to Uint8Array
+   * @param privateKeyHex - The private key as a hex string
+   * @returns The private key as Uint8Array
+   */
+  privateKeyToUint8Array = (privateKeyHex: string): Uint8Array => {
+    return userWalletService.privateKeyToUint8Array(privateKeyHex);
   };
 }
 

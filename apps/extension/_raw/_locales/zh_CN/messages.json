@@ -18,6 +18,12 @@
   "Send": {
     "message": "发送"
   },
+  "Register_New_Profile": {
+    "message": "注册新账户"
+  },
+  "Create_New_Profile_Description": {
+    "message": "是否使用此助记词在 Flow 上创建新账户？"
+  },
   "Swap": {
     "message": "置换"
   },

@@ -1,13 +1,7 @@
 import { bridge, navigation, toast } from '@onflow/frw-context';
 import { useAllProfiles, useProfileStore, tokenQueries, tokenQueryKeys } from '@onflow/frw-stores';
 import type { WalletAccount } from '@onflow/frw-types';
-import {
-  BackgroundWrapper,
-  ExtensionHeader,
-  Text,
-  YStack,
-  Button,
-} from '@onflow/frw-ui';
+import { BackgroundWrapper, ExtensionHeader, Text, YStack, Button } from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
