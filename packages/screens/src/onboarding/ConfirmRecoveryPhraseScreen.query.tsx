@@ -19,7 +19,6 @@ import {
   MemoryStorage,
   WalletCoreProvider,
 } from '@onflow/frw-wallet';
-import { useMutation } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -51,12 +50,6 @@ interface ConfirmRecoveryPhraseScreenProps {
     };
   };
 }
-
-const trackVerificationAction = async (action: 'answer' | 'complete' | 'failure') => {
-  // TODO: Replace with actual analytics API call
-  logger.debug('[ConfirmRecoveryPhraseScreen] Tracking verification action:', action);
-  return { success: true };
-};
 
 /**
  * ConfirmRecoveryPhraseScreen - Screen to verify the user has written down their recovery phrase
@@ -135,24 +128,6 @@ export function ConfirmRecoveryPhraseScreen({
     };
   }, []);
 
-  // Mutation for tracking analytics
-  const trackingMutation = useMutation({
-    mutationFn: trackVerificationAction,
-    onSuccess: (data, variables) => {
-      logger.debug(
-        '[ConfirmRecoveryPhraseScreen] Successfully tracked verification action:',
-        variables
-      );
-    },
-    onError: (error, variables) => {
-      logger.error(
-        '[ConfirmRecoveryPhraseScreen] Failed to track verification action:',
-        variables,
-        error
-      );
-    },
-  });
-
   // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration
   const questions = useMemo((): VerificationQuestion[] => {
     // Generate random positions for this verification session
@@ -186,9 +161,6 @@ export function ConfirmRecoveryPhraseScreen({
   };
 
   const handleSelectWord = (questionIndex: number, word: string) => {
-    // Track answer selection
-    trackingMutation.mutate('answer');
-
     setSelectedAnswers({
       ...selectedAnswers,
       [questionIndex]: word,
@@ -202,16 +174,11 @@ export function ConfirmRecoveryPhraseScreen({
     });
 
     if (!allCorrect) {
-      // Track failure
-      trackingMutation.mutate('failure');
       return;
     }
 
     try {
       setIsCreatingAccount(true);
-
-      // Track successful completion
-      trackingMutation.mutate('complete');
 
       logger.info(
         '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'

@@ -179,6 +179,7 @@ export class ProfileService {
           url: requestUrl,
           method: requestMethod,
           responseData: responseData || 'No response data',
+          responseDataString: JSON.stringify(responseData, null, 2),
           requestBody: error.config?.data
             ? JSON.parse(error.config.data)
             : 'Unable to parse request body',
