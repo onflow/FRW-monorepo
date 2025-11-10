@@ -9,6 +9,7 @@ import type {
 import { Platform } from '@onflow/frw-types';
 import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
+import { Buffer } from 'buffer';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 
