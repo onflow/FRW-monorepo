@@ -303,7 +303,7 @@ class ProviderController extends BaseController {
     const to = transactionParams.to || '';
     const value = transactionParams.value || '0x0';
     const dataValue = transactionParams.data || '0x';
-    const gas = transactionParams.gas || '0x1C9C380';
+    const gas = transactionParams.gas || '0xF42400';
     const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
     const gasBigInt = BigInt(cleanHex);
 
