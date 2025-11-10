@@ -1,5 +1,5 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
-import { profileService } from '@onflow/frw-services';
+import { ProfileService } from '@onflow/frw-services';
 // import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
 import { Platform } from '@onflow/frw-types';
 import {
@@ -229,13 +229,32 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       // Convert Uint8Array to hex string (React Native compatible - no Buffer)
-      const publicKeyHex = Array.from(publicKeyBytes)
+      // For ECDSA P-256, the public key should be 64 bytes (128 hex characters) after removing '04' prefix
+      let publicKeyHex = Array.from(publicKeyBytes)
         .map((b) => b.toString(16).padStart(2, '0'))
         .join('');
-      logger.info(
-        '[ConfirmRecoveryPhraseScreen] Public key extracted:',
-        publicKeyHex.slice(0, 16) + '...'
-      );
+
+      // Ensure we don't have '04' prefix (should already be removed by SeedPhraseKey.publicKey)
+      if (publicKeyHex.startsWith('04')) {
+        publicKeyHex = publicKeyHex.slice(2);
+      }
+
+      // Validate public key length for ECDSA P-256 (should be 64 bytes = 128 hex chars)
+      if (publicKeyHex.length !== 128) {
+        logger.error('[ConfirmRecoveryPhraseScreen] Invalid public key length:', {
+          length: publicKeyHex.length,
+          expected: 128,
+          publicKeyHex: publicKeyHex.slice(0, 32) + '...',
+        });
+        throw new Error(
+          `Invalid public key length: expected 128 hex characters (64 bytes), got ${publicKeyHex.length}`
+        );
+      }
+
+      logger.info('[ConfirmRecoveryPhraseScreen] Public key extracted:', {
+        length: publicKeyHex.length,
+        preview: publicKeyHex.slice(0, 16) + '...',
+      });
 
       // Step 6: Register with backend using ProfileService
       logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering with backend...');
@@ -258,7 +277,52 @@ export function ConfirmRecoveryPhraseScreen({
       };
 
       // Register user profile using ProfileService (wraps Userv3Service.register)
-      const profileSvc = profileService();
+      logger.info('[ConfirmRecoveryPhraseScreen] Getting ProfileService instance...');
+      logger.info('[ConfirmRecoveryPhraseScreen] ProfileService type:', typeof ProfileService);
+      logger.info('[ConfirmRecoveryPhraseScreen] ProfileService value:', ProfileService);
+      logger.info(
+        '[ConfirmRecoveryPhraseScreen] ProfileService.getInstance type:',
+        typeof ProfileService?.getInstance
+      );
+
+      // Use direct class import pattern (same as RecentRecipientsService in SendToScreen)
+      if (!ProfileService) {
+        logger.error('[ConfirmRecoveryPhraseScreen] ProfileService is undefined');
+        throw new Error(
+          'ProfileService class is not available. Module may not be loaded correctly.'
+        );
+      }
+
+      if (typeof ProfileService.getInstance !== 'function') {
+        logger.error('[ConfirmRecoveryPhraseScreen] ProfileService.getInstance is not a function', {
+          type: typeof ProfileService.getInstance,
+          ProfileService,
+        });
+        throw new Error(
+          'ProfileService.getInstance is not a function. Module may not be loaded correctly.'
+        );
+      }
+
+      const profileSvc = ProfileService.getInstance();
+
+      if (!profileSvc) {
+        logger.error(
+          '[ConfirmRecoveryPhraseScreen] ProfileService.getInstance() returned undefined'
+        );
+        throw new Error('ProfileService is not available. Services may not be initialized.');
+      }
+
+      if (typeof profileSvc.register !== 'function') {
+        logger.error('[ConfirmRecoveryPhraseScreen] profileSvc.register is not a function', {
+          type: typeof profileSvc.register,
+          profileSvc,
+        });
+        throw new Error(
+          `ProfileService.register is not a function. Type: ${typeof profileSvc.register}`
+        );
+      }
+
+      logger.info('[ConfirmRecoveryPhraseScreen] Calling profileSvc.register()...');
       const registerResponse = await profileSvc.register({
         username,
         accountKey: {
@@ -318,15 +382,48 @@ export function ConfirmRecoveryPhraseScreen({
         // But for now, just navigate
         navigation.navigate('NotificationPreferences');
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('[ConfirmRecoveryPhraseScreen] Failed to create EOA account:', error);
-      // TODO: Show error UI to user
-      // For now, log the error details
+
+      // Log detailed error information
       if (error instanceof Error) {
         logger.error('[ConfirmRecoveryPhraseScreen] Error details:', {
           message: error.message,
           stack: error.stack,
+          status: (error as any).status,
+          responseData: (error as any).responseData,
         });
+      }
+
+      // Show user-friendly error message
+      let errorMessage = t('onboarding.confirmRecoveryPhrase.error.generic', {
+        defaultValue: 'Failed to create account. Please try again.',
+      });
+
+      // Provide more specific error messages based on error type
+      if (error?.status === 500) {
+        errorMessage = t('onboarding.confirmRecoveryPhrase.error.server', {
+          defaultValue: 'Server error occurred. Please try again later.',
+        });
+      } else if (error?.status === 400) {
+        errorMessage = t('onboarding.confirmRecoveryPhrase.error.validation', {
+          defaultValue: 'Invalid account data. Please try again.',
+        });
+      } else if (error?.message) {
+        // Use the error message from ProfileService if available
+        errorMessage = error.message;
+      }
+
+      // Show toast notification
+      if (bridge.showToast) {
+        bridge.showToast(
+          t('onboarding.confirmRecoveryPhrase.error.title', {
+            defaultValue: 'Account Creation Failed',
+          }),
+          errorMessage,
+          'error',
+          6000
+        );
       }
     } finally {
       setIsCreatingAccount(false);
