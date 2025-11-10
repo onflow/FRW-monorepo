@@ -1,5 +1,5 @@
-import { Userv2Service, Userv3Service } from '@onflow/frw-api';
 import { bridge, logger, navigation } from '@onflow/frw-context';
+import { profileService } from '@onflow/frw-services';
 // import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
 import { Platform } from '@onflow/frw-types';
 import {
@@ -231,7 +231,7 @@ export function ConfirmRecoveryPhraseScreen({
         publicKeyHex.slice(0, 16) + '...'
       );
 
-      // Step 6: Register with backend (GoAPIService)
+      // Step 6: Register with backend using ProfileService
       logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering with backend...');
 
       // Generate username (similar to Android registerOutblock)
@@ -251,8 +251,9 @@ export function ConfirmRecoveryPhraseScreen({
         ip: '',
       };
 
-      // Call registration API
-      const registerResponse = await Userv3Service.register({
+      // Register user profile using ProfileService (wraps Userv3Service.register)
+      const profileSvc = profileService();
+      const registerResponse = await profileSvc.register({
         username,
         accountKey: {
           public_key: publicKeyHex,
@@ -262,21 +263,13 @@ export function ConfirmRecoveryPhraseScreen({
         deviceInfo,
       });
 
-      if (!registerResponse.data?.custom_token) {
-        throw new Error('Registration failed: No custom token received');
-      }
-
       const customToken = registerResponse.data.custom_token;
       const userId = registerResponse.data.id;
       logger.info('[ConfirmRecoveryPhraseScreen] Registration successful, userId:', userId);
 
-      // Create Flow address (triggers on-chain account creation)
+      // Create Flow address (triggers on-chain account creation) using ProfileService
       logger.info('[ConfirmRecoveryPhraseScreen] Creating Flow address...');
-      const addressResponse = await Userv2Service.address2();
-
-      if (!addressResponse.data?.txid) {
-        throw new Error('Failed to create Flow address: No transaction ID received');
-      }
+      const addressResponse = await profileSvc.createFlowAddress();
 
       const txId = addressResponse.data.txid;
       logger.info('[ConfirmRecoveryPhraseScreen] Flow address creation initiated, txId:', txId);

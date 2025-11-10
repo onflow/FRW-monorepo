@@ -5,6 +5,9 @@
 
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
+// Platform-specific import - Metro will automatically resolve .native.ts for React Native
+// For React Native: uses wallet-core-provider.native.ts (pure JS crypto)
+// For Web/Extension: uses wallet-core-provider.ts (WASM)
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
   EthSigner,
