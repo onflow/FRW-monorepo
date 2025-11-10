@@ -1,6 +1,5 @@
 import { Box, Stack } from '@mui/material';
-import * as fcl from '@onflow/fcl';
-import { SurgeFeeSection, SurgeWarning } from '@onflow/frw-ui';
+import { SurgeFeeSection, SurgeModal, SurgeWarning } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { getSurgeData } from '@/bridge/PlatformImpl';
@@ -32,6 +31,8 @@ const EthConfirm = ({ params }: ConnectProps) => {
   const [lilicoEnabled, setLilicoEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
   const [decodedCall, setDecodedCall] = useState<DecodedCall | null>(null);
+
+  const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
 
   const [surgeData, setSurgeData] = useState<{
     maxFee?: string;
@@ -113,39 +114,23 @@ const EthConfirm = ({ params }: ConnectProps) => {
   };
 
   const handleAllow = async () => {
-    await checkCoa();
-    const dontCloseWindow = params.method === 'eth_sendTransaction';
+    const isSurge = surgeData?.active || false;
+    setLoading(true);
+    if (isSurge && params.method === 'eth_sendTransaction') {
+      setIsSurgeModalVisible(true);
+      return;
+    }
 
-    resolveApproval(
-      {
-        defaultChain: MAINNET_CHAIN_ID,
-        signPermission: 'MAINNET_AND_TESTNET',
-      },
-      dontCloseWindow
-    ); // Keep window open during transaction
+    resolveApproval({
+      defaultChain: MAINNET_CHAIN_ID,
+      signPermission: 'MAINNET_AND_TESTNET',
+    });
   };
 
   const loadPayer = useCallback(async () => {
     const isEnabled = await usewallet.allowLilicoPay();
     setLilicoEnabled(isEnabled);
   }, [usewallet]);
-
-  const checkCoa = async () => {
-    setLoading(true);
-    try {
-      const isEnabled = await usewallet.checkCoaLink();
-      if (isEnabled) return;
-
-      const result = await usewallet.coaLink();
-      const res = await fcl.tx(result).onceSealed();
-      const transactionExecutedEvent = res.events.find((event) =>
-        event.type.includes('TransactionExecuted')
-      );
-      if (transactionExecutedEvent) return;
-    } catch (error) {
-      consoleError('Error checking COA:', error);
-    }
-  };
 
   useEffect(() => {
     if (params) {
@@ -154,6 +139,21 @@ const EthConfirm = ({ params }: ConnectProps) => {
       extractData(params);
     }
   }, [loadPayer, extractData, params, loadSurgeData]);
+
+  // Surge modal handlers
+  const handleSurgeModalClose = useCallback(() => {
+    setIsSurgeModalVisible(false);
+    handleCancel();
+  }, [handleCancel]);
+
+  const handleSurgeModalAgree = useCallback(async () => {
+    setIsSurgeModalVisible(false);
+
+    resolveApproval({
+      defaultChain: MAINNET_CHAIN_ID,
+      signPermission: 'MAINNET_AND_TESTNET',
+    });
+  }, [resolveApproval]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -192,18 +192,20 @@ const EthConfirm = ({ params }: ConnectProps) => {
 
         <Box sx={{ flexGrow: 1 }} />
       </Box>
-      <Box
-        sx={{
-          padding: '0 18px',
-        }}
-      >
-        <SurgeFeeSection
-          transactionFee={surgeData?.maxFee || '0.002501'}
-          showWarning={requestParams.method === 'personal_sign' ? false : isSurgeWarningVisible}
-          surgeMultiplier={surgeData?.multiplier || 1.0}
-          isSurgePricingActive={surgeData?.active || false}
-        />
-      </Box>
+      {requestParams.method === 'eth_sendTransaction' && (
+        <Box
+          sx={{
+            padding: '0 18px',
+          }}
+        >
+          <SurgeFeeSection
+            transactionFee={surgeData?.maxFee || '0.002501'}
+            showWarning={isSurgeWarningVisible}
+            surgeMultiplier={surgeData?.multiplier || 1.0}
+            isSurgePricingActive={surgeData?.active || false}
+          />
+        </Box>
+      )}
       <Box
         sx={{
           position: 'sticky',
@@ -217,7 +219,7 @@ const EthConfirm = ({ params }: ConnectProps) => {
             fullWidth
             onClick={handleCancel}
           />
-          {!loading ? (
+          {!loading && !isSurgeDataLoading ? (
             <LLPrimaryButton
               label={chrome.i18n.getMessage('Approve')}
               fullWidth
@@ -244,12 +246,28 @@ const EthConfirm = ({ params }: ConnectProps) => {
         }
         title="Surge pricing"
         variant="warning"
-        visible={requestParams.method === 'personal_sign' ? false : isSurgeWarningVisible}
+        visible={requestParams.method === 'eth_sendTransaction' ? isSurgeWarningVisible : false}
         onClose={() => setIsSurgeWarningVisible(false)}
         onButtonPress={() => {
           setIsSurgeWarningVisible(false);
         }}
         surgeMultiplier={surgeData?.multiplier || 1.0}
+      />
+      <SurgeModal
+        visible={isSurgeModalVisible}
+        transactionFee={surgeData?.maxFee || '0.002501'}
+        multiplier={surgeData?.multiplier?.toString() || '1.0'}
+        onClose={handleSurgeModalClose}
+        onAgree={handleSurgeModalAgree}
+        isLoading={false}
+        title={chrome.i18n.getMessage('Surge__Modal__Title')}
+        transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
+        surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
+        description={chrome.i18n.getMessage(
+          'Surge__Modal__Description',
+          Number(surgeData?.multiplier || 4).toFixed(2)
+        )}
+        holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
       />
     </Box>
   );

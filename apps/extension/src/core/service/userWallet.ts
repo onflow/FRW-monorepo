@@ -2,6 +2,7 @@ import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { CadenceService } from '@onflow/frw-cadence';
+import { BIP44_PATHS } from '@onflow/frw-wallet';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
@@ -82,6 +83,7 @@ import transactionActivityService from './transaction-activity';
 import walletManager from './wallet-manager';
 import { HTTP_STATUS_TOO_MANY_REQUESTS } from '../../shared/constant/domain-constants';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
+import { getCurrentProfileId } from '../utils/current-id';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import { fetchAccountsByPublicKey } from '../utils/key-indexer';
 import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
@@ -183,6 +185,19 @@ class UserWallet {
     // Load all data for the new pubkey. This is async but don't await it
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.preloadAllAccounts(this.store.network, pubkey);
+
+    // Initialize wallet manager to calculate EOA address when public key changes
+    this.initializeWalletManager();
+  };
+
+  /**
+   * Initialize wallet manager to calculate EOA address
+   * This is called whenever the current public key changes
+   */
+  private initializeWalletManager = () => {
+    walletManager.init().catch((error) => {
+      console.error('Failed to initialize wallet manager after public key change:', error);
+    });
   };
 
   /**
@@ -202,6 +217,9 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     this.preloadAllAccounts(this.store.network, pubkey);
+
+    // Initialize wallet manager to calculate EOA address when public key changes
+    this.initializeWalletManager();
   };
 
   /**
@@ -343,9 +361,13 @@ class UserWallet {
     if (!network || !pubkey) {
       throw new Error('Network or pubkey is not valid');
     }
+
+    // Get current user ID
+    const userId = await getCurrentProfileId();
+
     const activeAccounts: ActiveAccountsStore | undefined = await getActiveAccountsData(
       network,
-      pubkey
+      userId
     );
     const validatedActiveAccounts = await this.validateActiveAccountStore(
       network,
@@ -356,7 +378,7 @@ class UserWallet {
       const mainAccounts = await this.getMainAccounts();
       if (mainAccounts.length === 0) {
         // If the parent address is null, we need to reset to the first parent account
-        await removeLocalData(activeAccountsKey(network, pubkey));
+        await removeLocalData(activeAccountsKey(network, userId));
         return {
           parentAddress: null,
           currentAddress: null,
@@ -370,7 +392,7 @@ class UserWallet {
     ) {
       // Only update the active accounts if they have changed and the addresses are not null
       await setLocalData<ActiveAccountsStore>(
-        activeAccountsKey(network, pubkey),
+        activeAccountsKey(network, userId),
         validatedActiveAccounts
       );
     }
@@ -402,8 +424,8 @@ class UserWallet {
 
   getActiveAccounts = async (): Promise<ActiveAccountsStore> => {
     const network = this.getNetwork();
-    const pubkey = this.getCurrentPubkey();
-    return this.getActiveAccountsWithPubKey(network, pubkey);
+    const profileId = await getCurrentProfileId();
+    return this.getActiveAccountsWithPubKey(network, profileId);
   };
 
   // Get the main account address for the current public key
@@ -435,10 +457,13 @@ class UserWallet {
       throw new Error('Network is not set');
     }
 
+    // Get current user ID
+    const userId = await getCurrentProfileId();
+
     console.log('setActiveAccounts', pubkey, network, newActiveAccounts);
 
     // Save the data in storage
-    await setLocalData<ActiveAccountsStore>(activeAccountsKey(network, pubkey), newActiveAccounts);
+    await setLocalData<ActiveAccountsStore>(activeAccountsKey(network, userId), newActiveAccounts);
   };
   /**
    * Set the current account - the actively selected account
@@ -827,24 +852,15 @@ class UserWallet {
           ));
 
       if (isSurgeError) {
-        // Show surge modal and wait for user approval
-        const userApproved = await this.showSurgeModalAndWait();
-
-        if (userApproved) {
-          // User approved - retry with bridge fee payer
-          const txID = await fcl.mutate({
-            cadence: cadence,
-            args: () => args,
-            proposer: this.authorizationFunction as any,
-            authorizations: [this.authorizationFunction as any],
-            payer: this.authorizationFunction as any,
-            limit: 9999,
-          });
-          return txID;
-        } else {
-          // User rejected - stop the transaction
-          throw new Error('Transaction cancelled by user due to surge pricing');
-        }
+        const txID = await fcl.mutate({
+          cadence: cadence,
+          args: () => args,
+          proposer: this.authorizationFunction as any,
+          authorizations: [this.authorizationFunction as any],
+          payer: this.authorizationFunction as any,
+          limit: 9999,
+        });
+        return txID;
       }
 
       analyticsService.track('script_error', {
@@ -1411,6 +1427,102 @@ class UserWallet {
     };
     return deviceInfo;
   };
+
+  /**
+   * Get the Ethereum private key using EVM BIP44 path or from Simple Keyring
+   * @returns The Ethereum private key as hex string
+   */
+  async getEthereumPrivateKey(): Promise<string> {
+    // Check if keyring is unlocked first
+    if (!keyringService.isUnlocked()) {
+      throw new Error('Keyring is locked - please unlock first');
+    }
+
+    // First try to get from HD Keyring (mnemonic-based)
+    try {
+      const mnemonic = await keyringService.getMnemonicFromKeyring();
+      if (mnemonic) {
+        // Derive the private key using EVM BIP44 path
+        const evmPrivateKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+          mnemonic,
+          BIP44_PATHS.EVM,
+          ''
+        );
+
+        // Extract the secp256k1 private key (Ethereum)
+        const ethereumPrivateKey = evmPrivateKeyTuple.SECP256K1.pk;
+
+        if (ethereumPrivateKey) {
+          console.log('getEthereumPrivateKey - HD Keyring private key:', {
+            length: ethereumPrivateKey.length,
+            startsWith0x: ethereumPrivateKey.startsWith('0x'),
+            first8Chars: ethereumPrivateKey.substring(0, 8),
+          });
+          // Ensure the private key has 0x prefix for consistency
+          return ethereumPrivateKey.startsWith('0x')
+            ? ethereumPrivateKey
+            : `0x${ethereumPrivateKey}`;
+        }
+      }
+    } catch (error) {
+      // HD Keyring not available or failed, try Simple Keyring
+      console.log('HD Keyring not available, trying Simple Keyring:', error);
+    }
+
+    // If HD Keyring fails, try Simple Keyring (private key-based)
+    try {
+      const privateKey = await keyringService.getCurrentPrivateKey();
+      if (privateKey) {
+        // For Simple Keyring, the private key is already the Ethereum private key
+        // Just ensure it's in the correct format
+        const formattedKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
+        console.log('getEthereumPrivateKey - Simple Keyring private key:', {
+          originalLength: privateKey.length,
+          formattedLength: formattedKey.length,
+          startsWith0x: formattedKey.startsWith('0x'),
+          first8Chars: formattedKey.substring(0, 8),
+        });
+        return formattedKey;
+      }
+    } catch (error) {
+      console.log('Simple Keyring not available:', error);
+    }
+
+    throw new Error('No Ethereum private key found in either HD Keyring or Simple Keyring');
+  }
+
+  /**
+   * Convert private key hex string to Uint8Array
+   * @param privateKeyHex - The private key as a hex string
+   * @returns The private key as Uint8Array
+   */
+  privateKeyToUint8Array(privateKeyHex: string): Uint8Array {
+    console.log('privateKeyToUint8Array - Input:', {
+      privateKeyHex,
+      length: privateKeyHex?.length,
+      type: typeof privateKeyHex,
+    });
+
+    if (!privateKeyHex || typeof privateKeyHex !== 'string') {
+      throw new Error('Invalid private key input: ' + typeof privateKeyHex);
+    }
+
+    // Remove 0x prefix if present
+    const cleanHex = privateKeyHex.replace(/^0x/i, '');
+    console.log('privateKeyToUint8Array - Clean hex:', {
+      cleanHex,
+      length: cleanHex.length,
+    });
+
+    // Convert to Uint8Array
+    const result = Uint8Array.from(Buffer.from(cleanHex, 'hex'));
+    console.log('privateKeyToUint8Array - Result:', {
+      length: result.length,
+      first4Bytes: Array.from(result.slice(0, 4)),
+    });
+
+    return result;
+  }
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1529,12 +1641,12 @@ export const loadMainAccountStorageBalance = async (
 };
 
 /**
- * Setup the main accounts for a given public key after registration is complete
+ * Setup the main accounts for a given user after registration is complete
  * Store in the data cache
  * @param network - The network to load the accounts for
  * @param pubKey - The public key to load the accounts for
  * @param account - The account structure getting from fcl after registration is complete
- * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ * @returns The main accounts for the given user or null if not found. Does not throw an error.
  */
 const setupNewAccount = async (
   network: string,
@@ -1545,6 +1657,10 @@ const setupNewAccount = async (
   if (indexOfKey === -1) {
     throw new Error('Key not found');
   }
+
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   // Setup new account after registration is complete
   const mainAccounts: MainAccount[] = [
     {
@@ -1566,7 +1682,7 @@ const setupNewAccount = async (
 
   // Save the main accounts to the cache
   setCachedData(
-    mainAccountsKey(network, pubKey),
+    mainAccountsKey(network, userId),
     mainAccounts,
     mainAccounts.length > 0 ? 60_000 : 1_000
   );
@@ -1587,7 +1703,11 @@ const getMainAccountsWithPubKey = async (
   if (!network || !pubkey) {
     throw new Error('Network or pubkey is not set');
   }
-  const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, pubkey));
+
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
+  const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, userId));
   if (!mainAccounts) {
     return loadMainAccountsWithPubKey(network, pubkey);
   }
@@ -1602,23 +1722,23 @@ const metadataRequestCache = new Map<
 
 /**
  * Fetch user metadata from cache or API
- * @param pubKey - The public key to fetch metadata for
+ * @param userId - The user ID to fetch metadata for
  * @returns Promise<Record<string, { background: string; icon: string; name: string }>>
  */
 const fetchUserMetadata = async (
-  pubKey: string
+  userId: string
 ): Promise<Record<string, { background: string; icon: string; name: string }>> => {
   let customMetadata: Record<string, { background: string; icon: string; name: string }> = {};
 
   try {
     // Try to get from cache first
-    const cachedMetadata = await getCachedData<UserMetadataStore>(userMetadataKey(pubKey));
+    const cachedMetadata = await getCachedData<UserMetadataStore>(userMetadataKey(userId));
 
     if (cachedMetadata) {
       customMetadata = cachedMetadata as UserMetadataStore;
     } else {
-      // Check if there's already a request in progress for this pubKey
-      const cacheKey = userMetadataKey(pubKey);
+      // Check if there's already a request in progress for this userId
+      const cacheKey = userMetadataKey(userId);
       if (metadataRequestCache.has(cacheKey)) {
         customMetadata = await metadataRequestCache.get(cacheKey)!;
       } else {
@@ -1633,7 +1753,7 @@ const fetchUserMetadata = async (
           }
 
           // Cache the result
-          await setCachedData(userMetadataKey(pubKey), result, 300_000);
+          await setCachedData(userMetadataKey(userId), result, 300_000);
           return result;
         })();
 
@@ -1650,22 +1770,26 @@ const fetchUserMetadata = async (
 };
 
 /**
- * Load the main accounts for a given public key
+ * Load the main accounts for a given user
  * Store in the data cache
  * @param network - The network to load the accounts for
  * @param pubKey - The public key to load the accounts for
- * @returns The main accounts for the given public key or null if not found. Does not throw an error.
+ * @returns The main accounts for the given user or null if not found. Does not throw an error.
  */
 const loadMainAccountsWithPubKey = async (
   network: string,
   pubKey: string
 ): Promise<MainAccount[]> => {
   console.log('loadMainAccountsWithPubKey', network, pubKey);
+
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   // Get the accounts for the current public key
   const accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
 
-  // Get the placeholder accounts for the current public key
-  const placeholderAccounts = await getPlaceholderAccounts(network, pubKey);
+  // Get the placeholder accounts for the current user
+  const placeholderAccounts = await getPlaceholderAccounts(network, userId);
 
   const filteredPlaceholderAccounts = placeholderAccounts.filter((placeholderAccount) => {
     // Filter out placeholder accounts that are indexed
@@ -1675,7 +1799,7 @@ const loadMainAccountsWithPubKey = async (
   if (filteredPlaceholderAccounts.length < placeholderAccounts.length) {
     // Remove the placeholder accounts that are indexed
     await setCachedData(
-      placeholderAccountsKey(network, pubKey),
+      placeholderAccountsKey(network, userId),
       filteredPlaceholderAccounts,
       360_000
     );
@@ -1684,7 +1808,7 @@ const loadMainAccountsWithPubKey = async (
   const mainPublicKeyAccounts: PublicKeyAccount[] = [...accounts, ...filteredPlaceholderAccounts];
 
   // Fetch custom metadata from cache or API
-  const customMetadata = await fetchUserMetadata(pubKey);
+  const customMetadata = await fetchUserMetadata(userId);
 
   // Transform the address array into MainAccount objects
   const mainAccounts: MainAccount[] = mainPublicKeyAccounts.map(
@@ -1735,15 +1859,17 @@ const loadMainAccountsWithPubKey = async (
       }
     }
 
-    const eoaAccountInfo = {
-      address: eoaInfo?.address,
-      chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-      id: 99, // Special ID for EOA
-      name: 'EVM Account (EOA)',
-      icon: '🔷',
-      color: '#627EEA', // EVM blue
-      balance: eoaInfo?.balance || '0',
-    };
+    const eoaAccountInfo = eoaInfo?.address
+      ? {
+          address: eoaInfo.address,
+          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+          id: 99, // Special ID for EOA
+          name: 'EVM Account (EOA)',
+          icon: '🔷',
+          color: '#627EEA', // EVM blue
+          balance: eoaInfo.balance || '0',
+        }
+      : undefined;
 
     return {
       ...mainAccount,
@@ -1755,7 +1881,7 @@ const loadMainAccountsWithPubKey = async (
 
   // Save the merged accounts to the cache
   setCachedData(
-    mainAccountsKey(network, pubKey),
+    mainAccountsKey(network, userId),
     mainAccountsWithDetail,
     mainAccountsWithDetail.length > 0 ? 60_000 : 1_000
   );
@@ -1880,9 +2006,12 @@ export const addPendingAccountCreationTransaction = async (
   txId: string,
   replaceRandomTxId?: string
 ): Promise<void> => {
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   const existingPending =
     (await getValidData<PendingTransaction[]>(
-      pendingAccountCreationTransactionsKey(network, pubkey)
+      pendingAccountCreationTransactionsKey(network, userId)
     )) || [];
 
   // Remove any existing pending transaction with the same txId
@@ -1893,7 +2022,7 @@ export const addPendingAccountCreationTransaction = async (
   filtered.push(txId);
 
   // Set it to 3 minutes. That should be enough time to get the address created and indexed
-  await setCachedData(pendingAccountCreationTransactionsKey(network, pubkey), filtered, 360_000);
+  await setCachedData(pendingAccountCreationTransactionsKey(network, userId), filtered, 360_000);
 };
 
 /**
@@ -1907,13 +2036,16 @@ export const removePendingAccountCreationTransaction = async (
   pubkey: string,
   txId: string
 ): Promise<void> => {
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
   const existingPending =
     (await getValidData<PendingTransaction[]>(
-      pendingAccountCreationTransactionsKey(network, pubkey)
+      pendingAccountCreationTransactionsKey(network, userId)
     )) || [];
 
   const filtered = existingPending.filter((pendingTxId) => pendingTxId !== txId);
-  await setCachedData(pendingAccountCreationTransactionsKey(network, pubkey), filtered, 360_000);
+  await setCachedData(pendingAccountCreationTransactionsKey(network, userId), filtered, 360_000);
 };
 
 /**
@@ -1924,9 +2056,9 @@ export const removePendingAccountCreationTransaction = async (
  */
 const getPlaceholderAccounts = async (
   network: string,
-  pubkey: string
+  userId: string
 ): Promise<PublicKeyAccount[]> => {
-  return (await getValidData<PublicKeyAccount[]>(placeholderAccountsKey(network, pubkey))) || [];
+  return (await getValidData<PublicKeyAccount[]>(placeholderAccountsKey(network, userId))) || [];
 };
 
 /**
@@ -1971,13 +2103,16 @@ export const addPlaceholderPublicKeyAccount = async (
   txId: string,
   account: PublicKeyAccount
 ) => {
-  const placeholderAccounts = await getPlaceholderAccounts(network, pubkey);
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+
+  const placeholderAccounts = await getPlaceholderAccounts(network, userId);
 
   // Update the pending accounts
   placeholderAccounts.push(account);
 
   // Set to 3 minutes. That should be enough time to get the account indexed
-  await setCachedData(placeholderAccountsKey(network, pubkey), placeholderAccounts, 360_000);
+  await setCachedData(placeholderAccountsKey(network, userId), placeholderAccounts, 360_000);
 
   await loadMainAccountsWithPubKey(network, pubkey);
 
@@ -1987,11 +2122,15 @@ export const addPlaceholderPublicKeyAccount = async (
 };
 
 const clearPlaceholderAccounts = async (network: string, pubkey: string) => {
-  await clearCachedData(placeholderAccountsKey(network, pubkey));
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+  await clearCachedData(placeholderAccountsKey(network, userId));
 };
 
 const clearPendingAccountCreationTransactions = async (network: string, pubkey: string) => {
-  await clearCachedData(pendingAccountCreationTransactionsKey(network, pubkey));
+  // Get current user ID
+  const userId = await getCurrentProfileId();
+  await clearCachedData(pendingAccountCreationTransactionsKey(network, userId));
 };
 
 const initAccountLoaders = () => {

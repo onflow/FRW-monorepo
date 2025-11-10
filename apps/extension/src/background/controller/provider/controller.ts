@@ -1,13 +1,15 @@
+import { ServiceContext } from '@onflow/frw-context';
+import { EthSigner, type EthLegacyTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
-import { intToHex, isHexString } from 'ethereumjs-util';
+import { intToHex } from 'ethereumjs-util';
 import { ethers } from 'ethers';
 import RLP from 'rlp';
 import Web3 from 'web3';
-import { stringToHex } from 'web3-utils';
 
 import BaseController from '@/background/controller/base';
 import Wallet from '@/background/controller/wallet';
+import { initializePlatform } from '@/bridge/PlatformImpl';
 import {
   keyringService,
   permissionService,
@@ -15,6 +17,7 @@ import {
   signTextHistoryService,
   userWalletService,
 } from '@/core/service';
+import walletManager from '@/core/service/wallet-manager';
 import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
 import {
@@ -41,9 +44,14 @@ interface COAOwnershipProof {
   signatures: Uint8Array[];
 }
 
+// ============================================================================
+// COA Helper Functions
+// ============================================================================
+
 function removeHexPrefix(hexString: string): string {
   return hexString.startsWith('0x') ? hexString.substring(2) : hexString;
 }
+
 function toHexString(bytes: Uint8Array): string {
   return Array.from(bytes)
     .map((byte) => byte.toString(16).padStart(2, '0'))
@@ -69,7 +77,7 @@ function createAndEncodeCOAOwnershipProof(
     proof.signatures,
   ]);
 
-  return encodedData; // Convert the encoded data to a hexadecimal string for easy display or transmission
+  return encodedData;
 }
 
 /**
@@ -106,7 +114,7 @@ async function getSigningDetailsForCurrentWallet() {
 }
 
 /**
- * Common signing logic used by both message and typed data signing
+ * Common signing logic used by both message and typed data signing for COA
  * @param dataToSign The prepared data to sign
  * @returns The encoded proof as a hex string
  */
@@ -145,19 +153,58 @@ async function createSignatureProof(dataToSign: string) {
   return '0x' + toHexString(encodedProof);
 }
 
-async function signMessage(msgParams, opts = {}) {
+/**
+ * COA message signing function
+ */
+async function signMessageCOA(msgParams: { data: string; from: string }) {
   const web3 = new Web3();
   const textData = msgParams.data;
   const hashedData = web3.eth.accounts.hashMessage(textData);
-
   return createSignatureProof(hashedData);
 }
 
-async function signTypeData(msgParams, opts = {}) {
+/**
+ * COA typed data signing function
+ */
+async function signTypeDataCOA(msgParams: Buffer | string) {
   const hashedData = Buffer.from(msgParams).toString('hex');
-
   return createSignatureProof(hashedData);
 }
+
+// ============================================================================
+// EOA Helper Functions
+// ============================================================================
+
+/**
+ * Derives Ethereum address from private key
+ * @param privateKeyHex - The private key as a hex string
+ * @returns The Ethereum address
+ */
+function deriveEthereumAddress(privateKeyHex: string): string {
+  const { privateToAddress } = require('ethereumjs-util');
+  const cleanHex = privateKeyHex.replace(/^0x/i, '');
+  const privateKeyBuffer = Buffer.from(cleanHex, 'hex');
+  const addressBuffer = privateToAddress(privateKeyBuffer);
+  return '0x' + addressBuffer.toString('hex');
+}
+
+/**
+ * EOA typed data signing function
+ */
+async function signTypeDataEOA(typedData: Record<string, unknown>) {
+  // Get the Ethereum private key using EVM BIP44 path
+  const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+  const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+
+  // Use eth-signer to sign the typed data
+  const { signature, digest } = await EthSigner.signTypedData(privateKeyBytes, typedData);
+
+  return signature;
+}
+
+// ============================================================================
+// Shared Utility Functions
+// ============================================================================
 
 const SignTypedDataVersion = {
   V1: 'V1',
@@ -190,81 +237,208 @@ export const TypedDataUtils = {
   },
 };
 
+/**
+ * Checks if an address is a COA or EOA
+ * @param address - The address to check
+ * @returns true if COA, false if EOA
+ */
+async function isCOAAddress(address: string): Promise<boolean> {
+  try {
+    // Get EOA address
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+    if (eoaInfo?.address && address.toLowerCase() === eoaInfo.address.toLowerCase()) {
+      return false;
+    }
+
+    // Get COA address
+    const parentAddress = await Wallet.getParentAddress();
+    if (parentAddress) {
+      const coaAccount = await userWalletService.getEvmAccountOfParent(parentAddress);
+      if (coaAccount?.address && address.toLowerCase() === coaAccount.address.toLowerCase()) {
+        return true;
+      }
+    }
+
+    return false;
+  } catch (error) {
+    consoleError('Error checking if address is COA:', error);
+    return false;
+  }
+}
+
 class ProviderController extends BaseController {
-  ethRpc = async (data): Promise<any> => {
-    const network = await Wallet.getNetwork(); // Get the current network
+  private async initializeServiceContext() {
+    if (!ServiceContext.isInitialized()) {
+      // Import the platform implementation dynamically to avoid circular dependencies
+      const platform = initializePlatform();
+      // Ensure wallet controller is set on the platform
+      platform.setWalletController(Wallet);
+      // Initialize ServiceContext with the platform
+      ServiceContext.initialize(platform);
+    }
+  }
+
+  /**
+   * Convert hex string to byte array for eoaCallContract
+   * @param hexString - Hex string to convert
+   * @returns Array of bytes
+   */
+  private convertHexToByteArray(hexString: string): number[] {
+    if (hexString.startsWith('0x')) {
+      hexString = hexString.slice(2);
+    }
+    const dataArray = new Uint8Array(hexString.length / 2);
+    for (let i = 0; i < hexString.length; i += 2) {
+      dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+    }
+    const regularArray = Array.from(dataArray);
+    return regularArray;
+  }
+
+  /**
+   * Get the current transaction count (nonce) for an address
+   */
+  private async getTransactionCount(address: string): Promise<string> {
+    const network = await Wallet.getNetwork();
     const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
     const web3Instance = new Web3(provider);
 
     return new Promise((resolve, reject) => {
       if (!web3Instance.currentProvider) {
-        consoleError('Provider is undefined');
+        reject(new Error('Provider is undefined'));
         return;
       }
 
       web3Instance.currentProvider.send(
         {
           jsonrpc: '2.0',
-          method: data.method,
-          params: data.params,
-          id: new Date().getTime(),
+          method: 'eth_getTransactionCount',
+          params: [address, 'latest'],
+          id: Date.now(),
         },
-        (err, response) => {
-          if (err) {
-            consoleError('Error:', err);
-            reject(err);
+        (error, response) => {
+          if (error) {
+            reject(error);
+          } else if (response && 'error' in response && response.error) {
+            reject(new Error(response.error.message || 'Failed to get transaction count'));
+          } else if (response && 'result' in response) {
+            resolve(response.result as string);
           } else {
-            resolve(response);
+            reject(new Error('Invalid response from provider'));
           }
         }
       );
     });
-  };
+  }
+
+  // ========================================================================
+  // Account Management Methods
+  // ========================================================================
 
   ethRequestAccounts = async ({ session: { origin, name, icon } }) => {
+    let approvalResult: any;
+    let selectedEvmAddress: string | undefined;
+
+    // Request approval if wallet is locked or no permission
+    // This allows user to select account
     if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
-      const { defaultChain, signPermission } = await notificationService.requestApproval(
+      approvalResult = await notificationService.requestApproval(
         {
           params: { origin, name, icon },
           approvalComponent: 'EthConnect',
         },
         { height: 599 }
       );
-      permissionService.addConnectedSite(origin, name, icon, defaultChain);
+      if (approvalResult) {
+        const { defaultChain, signPermission, evmAddress } = approvalResult;
+        // Store the selected EVM address in the permission
+        permissionService.addConnectedSite(origin, name, icon, defaultChain, false, evmAddress);
+
+        // Priority 1: Use the selected EVM address from the approval result
+        if (evmAddress && isValidEthereumAddress(evmAddress)) {
+          selectedEvmAddress = evmAddress;
+        }
+      }
     }
 
-    const currentWallet = await Wallet.getParentAddress();
     let evmAddress: string;
 
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
-    try {
-      // Attempt to query the EVM address
+    // Priority 1: Use address from approval result if available
+    if (selectedEvmAddress) {
+      evmAddress = selectedEvmAddress;
+    } else {
+      // Priority 2: Check if there's a stored EVM address for this origin
+      const connectedSite = permissionService.getConnectedSite(origin);
+      if (connectedSite?.evmAddress && isValidEthereumAddress(connectedSite.evmAddress)) {
+        evmAddress = connectedSite.evmAddress;
+      } else {
+        // Priority 3: Check if current address is an EVM address
+        try {
+          const currentAddress = await Wallet.getCurrentAddress();
 
-      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
+          if (currentAddress && isValidEthereumAddress(currentAddress)) {
+            evmAddress = currentAddress;
+            // Store it for future use
+            if (connectedSite) {
+              permissionService.updateConnectSite(origin, { evmAddress }, true);
+            }
+          } else {
+            // Priority 4: Fall back to EOA address from walletManager
+            const eoaInfo = await walletManager.getEOAAccountInfo();
 
-      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
-        throw new Error('Invalid EVM address');
+            if (!eoaInfo || !eoaInfo.address || !isValidEthereumAddress(eoaInfo.address)) {
+              throw new Error('Invalid EOA address from walletManager');
+            }
+            evmAddress = eoaInfo.address;
+            // Store it for future use
+            if (connectedSite) {
+              permissionService.updateConnectSite(origin, { evmAddress: eoaInfo.address }, true);
+            }
+          }
+        } catch (error) {
+          // If an error occurs getting address, request approval
+          consoleError('ethRequestAccounts - Error getting address, requesting approval:', error);
+
+          approvalResult = await notificationService.requestApproval(
+            {
+              params: { origin, name, icon },
+              approvalComponent: 'EthConnect',
+            },
+            { height: 599 }
+          );
+
+          // Check if approval provided a selected address
+          if (approvalResult?.evmAddress && isValidEthereumAddress(approvalResult.evmAddress)) {
+            evmAddress = approvalResult.evmAddress;
+            // Store it in permission
+            const connectedSite = permissionService.getConnectedSite(origin);
+            if (connectedSite) {
+              permissionService.updateConnectSite(origin, { evmAddress }, true);
+            } else if (approvalResult.defaultChain) {
+              permissionService.addConnectedSite(
+                origin,
+                name,
+                icon,
+                approvalResult.defaultChain,
+                false,
+                evmAddress
+              );
+            }
+          } else {
+            // Final fallback: try to get current address or EOA
+            const currentAddress = await Wallet.getCurrentAddress();
+            if (currentAddress && isValidEthereumAddress(currentAddress)) {
+              evmAddress = currentAddress;
+            } else {
+              const eoaInfo = await walletManager.getEOAAccountInfo();
+              if (!eoaInfo || !eoaInfo.address || !isValidEthereumAddress(eoaInfo.address)) {
+                throw new Error('Invalid EOA address from walletManager');
+              }
+              evmAddress = eoaInfo.address;
+            }
+          }
+        }
       }
-      evmAddress = evmAccount.address;
-    } catch (error) {
-      // If an error occurs, request approval
-      consoleError('ethRequestAccounts - Error querying EVM address:', error);
-
-      await notificationService.requestApproval(
-        {
-          params: { origin, name, icon },
-          approvalComponent: 'EthConnect',
-        },
-        { height: 599 }
-      );
-      const evmAccount = await userWalletService.getEvmAccountOfParent(currentWallet);
-
-      if (!evmAccount || !isValidEthereumAddress(evmAccount.address)) {
-        throw new Error('Invalid EVM address');
-      }
-      evmAddress = evmAccount.address;
     }
 
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];
@@ -272,6 +446,51 @@ class ProviderController extends BaseController {
     sessionService.broadcastEvent('accountsChanged', account);
     return account;
   };
+
+  ethAccounts = async ({ session: { origin } }) => {
+    if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
+      return [];
+    }
+
+    let evmAccount: string | undefined;
+
+    // Priority 1: Use stored EVM address from permission if available
+    const connectedSite = permissionService.getConnectedSite(origin);
+    if (connectedSite?.evmAddress && isValidEthereumAddress(connectedSite.evmAddress)) {
+      evmAccount = connectedSite.evmAddress;
+    } else {
+      // Priority 2: Fall back to EOA address from walletManager
+      try {
+        const eoaInfo = await walletManager.getEOAAccountInfo();
+        evmAccount = eoaInfo?.address;
+        // Store it for future use
+        if (connectedSite && evmAccount) {
+          permissionService.updateConnectSite(origin, { evmAddress: evmAccount }, true);
+        }
+      } catch (error) {
+        // If an error occurs, log it but continue
+        consoleError('Error getting EOA address from walletManager:', error);
+      }
+    }
+
+    const account = evmAccount ? [ensureEvmAddressPrefix(evmAccount)] : [];
+    try {
+      await sessionService.broadcastEvent('accountsChanged', account);
+    } catch (error) {
+      consoleError('Error broadcasting accountsChanged event:', error);
+      // Continue despite the error
+    }
+
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    await delay(200);
+
+    return account;
+  };
+
+  // ========================================================================
+  // Transaction Methods (COA and EOA Routing)
+  // ========================================================================
 
   ethEstimateGas = async ({ data }) => {
     const network = await Wallet.getNetwork();
@@ -304,27 +523,18 @@ class ProviderController extends BaseController {
     const value = transactionParams.value || '0x0';
     const dataValue = transactionParams.data || '0x';
     const gas = transactionParams.gas || '0x1C9C380';
-    const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
-    const gasBigInt = BigInt(cleanHex);
+    const gasPrice = transactionParams.gasPrice || '0x0';
 
     try {
-      let result = await Wallet.dapSendEvmTX(to, gasBigInt, value, dataValue);
-      if (!result) {
-        throw new Error('Transaction hash is null or undefined');
-      }
-      if (!result.startsWith('0x')) {
-        result = '0x' + result;
-      }
+      // Check if address is COA or EOA
+      const isCOA = await isCOAAddress(from);
 
-      // Send message to close approval popup after successful transaction
-      chrome.runtime.sendMessage({
-        type: 'CLOSE_APPROVAL_POPUP',
-        data: { success: true, result },
-      });
-
-      return result;
+      if (isCOA) {
+        return await this.sendTransactionCOA(to, gas, value, dataValue);
+      } else {
+        return await this.sendTransactionEOA(from, to, value, dataValue, gas, gasPrice);
+      }
     } catch (error) {
-      // Send message to close approval popup even if transaction fails
       chrome.runtime.sendMessage({
         type: 'CLOSE_APPROVAL_POPUP',
         data: { success: false, error: error.message },
@@ -333,128 +543,148 @@ class ProviderController extends BaseController {
     }
   };
 
-  ethAccounts = async ({ session: { origin } }) => {
-    if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
-      return [];
+  // COA Transaction Method
+  private async sendTransactionCOA(
+    to: string,
+    gas: string,
+    value: string,
+    dataValue: string
+  ): Promise<string> {
+    const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
+    const gasBigInt = BigInt(cleanHex);
+
+    const result = await Wallet.dapSendEvmTX(to, gasBigInt, value, dataValue);
+    if (!result) {
+      throw new Error('Transaction hash is null or undefined');
     }
+    const txHash = result.startsWith('0x') ? result : `0x${result}`;
 
-    let currentWallet;
-    try {
-      // Attempt to query the currentNetwork address
-      currentWallet = await Wallet.getParentAddress();
-    } catch (error) {
-      // If an error occurs, request approval
-      consoleError('Error querying EVM address:', error);
+    // Send message to close approval popup after successful transaction
+    chrome.runtime.sendMessage({
+      type: 'CLOSE_APPROVAL_POPUP',
+      data: { success: true, result: txHash },
+    });
 
-      return;
-    }
+    return txHash;
+  }
 
-    let evmAccount: string | undefined;
-    try {
-      // Attempt to query the EVM address
-      const evmAccountObj = await userWalletService.getEvmAccountOfParent(currentWallet);
-      evmAccount = evmAccountObj?.address;
-    } catch (error) {
-      // If an error occurs, request approval
-      consoleError('Error querying EVM address:', error);
-    }
-
-    const account = evmAccount ? [evmAccount.toLowerCase()] : [];
-    try {
-      await sessionService.broadcastEvent('accountsChanged', account);
-    } catch (error) {
-      consoleError('Error broadcasting accountsChanged event:', error);
-      // Continue despite the error
-    }
-
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    await delay(200);
-
-    return account;
-  };
-
-  walletRequestPermissions = ({ data: { params: permissions } }) => {
-    const result: Web3WalletPermission[] = [];
-    if (permissions && 'eth_accounts' in permissions[0]) {
-      result.push({ parentCapability: 'eth_accounts' });
-    }
-    return result;
-  };
-
-  walletRevokePermissions = async ({ session: { origin }, data: { params } }) => {
-    const isUnlocked = await Wallet.isUnlocked();
-    if (isUnlocked && Wallet.getConnectedSite(origin)) {
-      if (params?.[0] && 'eth_accounts' in params[0]) {
-        Wallet.removeConnectedSite(origin);
-      }
-    }
-    return null;
-  };
-
-  walletWatchAsset = async ({ data }) => {
-    const result = await notificationService.requestApproval(
-      {
-        params: { data },
-        approvalComponent: 'EthSuggest',
-      },
-      { height: 599 }
-    );
-    return result;
-  };
-
-  walletSwitchEthereumChain = async ({
-    data: {
-      params: [chainParams],
-    },
-    session: { origin },
-  }) => {
-    let chainId = chainParams.chainId;
+  // EOA Transaction Method
+  private async sendTransactionEOA(
+    from: string,
+    to: string,
+    value: string,
+    dataValue: string,
+    gas: string,
+    gasPrice: string
+  ): Promise<string> {
+    // Get the current network and EOA account info
     const network = await Wallet.getNetwork();
-    if (typeof chainId === 'number') {
-      chainId = intToHex(chainId).toLowerCase();
-    } else {
-      chainId = `0x${new BigNumber(chainId).toString(16).toLowerCase()}`;
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+
+    const parentAddress = await Wallet.getParentAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
     }
 
-    switch (chainId) {
-      case '0x221': // 545 in decimal corresponds to testnet
-        if (network !== 'testnet') {
-          await notificationService.requestApproval(
-            {
-              params: { origin, target: 'testnet' },
-              approvalComponent: 'EthSwitch',
-            },
-            { height: 599 }
-          );
-        }
-        return null;
-
-      case '0x2eb': // 747 in decimal corresponds to mainnet
-        if (network !== 'mainnet') {
-          await notificationService.requestApproval(
-            {
-              params: { origin, target: 'mainnet' },
-              approvalComponent: 'EthSwitch',
-            },
-            { height: 599 }
-          );
-        }
-        return null;
-      default:
-        throw ethErrors.provider.custom({
-          code: 4902,
-          message: `Unrecognized  ChainId"${chainId}".`,
-        });
+    if (!eoaInfo || !eoaInfo.address) {
+      throw new Error('EOA account not found');
     }
-  };
 
-  // Should not be in controller
+    // Verify the transaction is from the correct EOA account
+    if (from.toLowerCase() !== eoaInfo.address.toLowerCase()) {
+      throw new Error('Transaction from address does not match EOA account');
+    }
+
+    // Initialize ServiceContext if not already initialized
+    await this.initializeServiceContext();
+
+    // Get the cadence service from ServiceContext
+    const cadenceService = ServiceContext.current().cadence;
+
+    const callback = async (trxData: any) => {
+      // Get the current nonce from the network
+      const nonce = await this.getTransactionCount(trxData.from);
+
+      // Get the Ethereum private key using EVM BIP44 path
+      const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+      const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+
+      // Get the current chain ID
+      const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
+
+      // Create the transaction object
+      const transaction: EthLegacyTransaction = {
+        chainId: chainId,
+        nonce: parseInt(nonce, 16),
+        gasLimit: trxData.gasLimit || gas,
+        gasPrice: gasPrice,
+        to: trxData.to,
+        value: trxData.value || '0x0',
+        data: trxData.data || '0x',
+      };
+
+      // Sign the transaction using EthSigner
+      const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
+
+      return signedTransaction;
+    };
+
+    // Create transaction data for EVM call
+    const trxData = {
+      from: from,
+      to: to,
+      value: value,
+      data: dataValue,
+      gasLimit: gas,
+    };
+
+    // Get the signed transaction from callback
+    const signedTransaction = await callback(trxData);
+
+    // Convert hex string to byte array for eoaCallContract
+    const rlpEncodedTransaction = this.convertHexToByteArray(signedTransaction.rawTransaction);
+
+    // Call eoaCallContract with the encoded transaction
+    const result = await cadenceService.eoaCallContract(rlpEncodedTransaction, eoaInfo.address);
+
+    // Send message to close approval popup after successful transaction
+    chrome.runtime.sendMessage({
+      type: 'CLOSE_APPROVAL_POPUP',
+      data: { success: true, result },
+    });
+
+    const txHash = signedTransaction.transactionHash;
+    return txHash;
+  }
+
+  // ========================================================================
+  // Signing Methods (COA and EOA Routing)
+  // ========================================================================
+
   personalSign = async ({ data, approvalRes, session }) => {
     if (!data.params) return;
     const [string, from] = data.params;
-    const hex = isHexString(string) ? string : stringToHex(string);
-    const result = await signMessage({ data: hex, from }, approvalRes?.extra);
+
+    try {
+      const isCOA = await isCOAAddress(from);
+
+      if (isCOA) {
+        return await this.personalSignCOA(string, from, session);
+      } else {
+        return await this.personalSignEOA(string, from, session);
+      }
+    } catch (error) {
+      consoleError('Error in personalSign:', error);
+      throw error;
+    }
+  };
+
+  // COA Personal Sign
+  private async personalSignCOA(string: string, from: string, session: any): Promise<string> {
+    const hex = string.startsWith('0x')
+      ? string
+      : `0x${Buffer.from(string, 'utf8').toString('hex')}`;
+    const result = await signMessageCOA({ data: hex, from });
     signTextHistoryService.createHistory({
       address: from,
       text: string,
@@ -462,16 +692,27 @@ class ProviderController extends BaseController {
       type: 'personalSign',
     });
     return result;
-  };
+  }
 
-  ethChainId = async ({ session }) => {
-    const network = await Wallet.getNetwork();
-    if (network === 'testnet') {
-      return TESTNET_CHAIN_ID;
-    } else {
-      return MAINNET_CHAIN_ID;
-    }
-  };
+  // EOA Personal Sign
+  private async personalSignEOA(string: string, from: string, session: any): Promise<string> {
+    // Get the Ethereum private key using secp256k1 algorithm
+    const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+    const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+
+    // Use eth-signer to sign the personal message
+    const { signature, digest } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
+
+    // Create history entry using the derived Ethereum address
+    signTextHistoryService.createHistory({
+      address: from,
+      text: string,
+      origin: session.origin,
+      type: 'personalSign',
+    });
+
+    return signature;
+  }
 
   signTypeData = async (request) => {
     let address;
@@ -487,11 +728,6 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
-    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;
@@ -520,22 +756,41 @@ class ProviderController extends BaseController {
       throw new Error('Provided chainId does not match the currently active chain');
     }
 
-    // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
+    // Check if address is COA or EOA
+    const isCOA = await isCOAAddress(address);
+
+    if (isCOA) {
+      return await this.signTypeDataCOAHandler(request, address, data, message);
+    } else {
+      return await this.signTypeDataEOAHandler(request, address, data, message);
+    }
+  };
+
+  // COA Typed Data Sign
+  private async signTypeDataCOAHandler(
+    request: any,
+    address: string,
+    data: any,
+    message: any
+  ): Promise<string> {
+    // COA signing path - validate address matches COA
+    const parentAddress = await Wallet.getParentAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
+    }
+    const coaAccount = await userWalletService.getEvmAccountOfParent(parentAddress);
     if (
-      ensureEvmAddressPrefix(evmaddress!.address.toLowerCase()) !==
-      ensureEvmAddressPrefix(address.toLowerCase())
+      !coaAccount?.address ||
+      ensureEvmAddressPrefix(coaAccount.address.toLowerCase()) !==
+        ensureEvmAddressPrefix(address.toLowerCase())
     ) {
-      throw new Error('Provided address does not match the current address');
+      throw new Error('Provided address does not match the COA address');
     }
 
-    const signTypeMethod =
-      request.data.method === 'eth_signTypedData_v3'
-        ? SignTypedDataVersion.V3
-        : SignTypedDataVersion.V4;
-
+    // Use COA signing method
+    const signTypeMethod = SignTypedDataVersion.V4;
     const hash = TypedDataUtils.eip712Hash(message, signTypeMethod);
-
-    const result = await signTypeData(hash);
+    const result = await signTypeDataCOA(hash);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
@@ -543,7 +798,37 @@ class ProviderController extends BaseController {
       type: 'ethSignTypedDataV4',
     });
     return result;
-  };
+  }
+
+  // EOA Typed Data Sign
+  private async signTypeDataEOAHandler(
+    request: any,
+    address: string,
+    data: any,
+    message: any
+  ): Promise<string> {
+    // EOA signing path - validate address matches EOA
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+    if (!eoaInfo || !eoaInfo.address) {
+      throw new Error('EOA address not found from walletManager');
+    }
+    if (
+      ensureEvmAddressPrefix(eoaInfo.address.toLowerCase()) !==
+      ensureEvmAddressPrefix(address.toLowerCase())
+    ) {
+      throw new Error('Provided address does not match the EOA address');
+    }
+
+    // Get the Ethereum private key and sign the typed data
+    const result = await signTypeDataEOA(message);
+    signTextHistoryService.createHistory({
+      address: address,
+      text: data,
+      origin: request.session.origin,
+      type: 'ethSignTypedDataV4',
+    });
+    return result;
+  }
 
   signTypeDataV1 = async (request) => {
     let address;
@@ -559,11 +844,6 @@ class ProviderController extends BaseController {
     );
 
     const network = await Wallet.getNetwork();
-    const currentWallet = await Wallet.getParentAddress();
-    if (!currentWallet) {
-      throw new Error('Current wallet not found');
-    }
-    const evmaddress = await userWalletService.getEvmAccountOfParent(currentWallet);
 
     if (network === 'testnet') {
       currentChain = TESTNET_CHAIN_ID;
@@ -593,17 +873,40 @@ class ProviderController extends BaseController {
       throw new Error('Provided chainId does not match the currently active chain');
     }
 
-    // Potentially shouldn't change the case to compare - we should be checking ERC-55 conformity
+    // Check if address is COA or EOA
+    const isCOA = await isCOAAddress(address);
+
+    if (isCOA) {
+      return await this.signTypeDataV1COA(request, address, data, message);
+    } else {
+      return await this.signTypeDataV1EOA(request, address, data, message);
+    }
+  };
+
+  // COA Typed Data V1 Sign
+  private async signTypeDataV1COA(
+    request: any,
+    address: string,
+    data: any,
+    message: any
+  ): Promise<string> {
+    // COA signing path - validate address matches COA
+    const parentAddress = await Wallet.getParentAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
+    }
+    const coaAccount = await userWalletService.getEvmAccountOfParent(parentAddress);
     if (
-      ensureEvmAddressPrefix(evmaddress!.address.toLowerCase()) !==
-      ensureEvmAddressPrefix(address.toLowerCase())
+      !coaAccount?.address ||
+      ensureEvmAddressPrefix(coaAccount.address.toLowerCase()) !==
+        ensureEvmAddressPrefix(address.toLowerCase())
     ) {
-      throw new Error('Provided address does not match the current address');
+      throw new Error('Provided address does not match the COA address');
     }
 
+    // Use COA signing method
     const hash = TypedDataUtils.eip712Hash(message, SignTypedDataVersion.V4);
-
-    const result = await signTypeData(hash);
+    const result = await signTypeDataCOA(hash);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
@@ -611,6 +914,164 @@ class ProviderController extends BaseController {
       type: 'ethSignTypedDataV1',
     });
     return result;
+  }
+
+  // EOA Typed Data V1 Sign
+  private async signTypeDataV1EOA(
+    request: any,
+    address: string,
+    data: any,
+    message: any
+  ): Promise<string> {
+    // EOA signing path - validate address matches EOA
+    const eoaInfo = await walletManager.getEOAAccountInfo();
+    if (!eoaInfo || !eoaInfo.address) {
+      throw new Error('EOA address not found from walletManager');
+    }
+    if (
+      ensureEvmAddressPrefix(eoaInfo.address.toLowerCase()) !==
+      ensureEvmAddressPrefix(address.toLowerCase())
+    ) {
+      throw new Error('Provided address does not match the EOA address');
+    }
+
+    const result = await signTypeDataEOA(message);
+    signTextHistoryService.createHistory({
+      address: address,
+      text: data,
+      origin: request.session.origin,
+      type: 'ethSignTypedDataV1',
+    });
+    return result;
+  }
+
+  ethSign = async ({ data, approvalRes, session }) => {
+    if (!data.params) return;
+    const [address, message] = data.params;
+
+    try {
+      const isCOA = await isCOAAddress(address);
+
+      if (isCOA) {
+        return await this.ethSignCOA(address, message, session);
+      } else {
+        return await this.ethSignEOA(address, message, session);
+      }
+    } catch (error) {
+      consoleError('Error in ethSign:', error);
+      throw error;
+    }
+  };
+
+  // COA eth_sign
+  private async ethSignCOA(address: string, message: any, session: any): Promise<string> {
+    // Validate address matches COA
+    const parentAddress = await Wallet.getParentAddress();
+    if (!parentAddress) {
+      throw new Error('Parent address not found');
+    }
+    const coaAccount = await userWalletService.getEvmAccountOfParent(parentAddress);
+    if (!coaAccount?.address || address.toLowerCase() !== coaAccount.address.toLowerCase()) {
+      throw new Error('Address mismatch');
+    }
+
+    // eth_sign signs the raw message hash (32 bytes), not prefixed like personal_sign
+    // Convert message to bytes and hash it
+    const messageBytes =
+      typeof message === 'string'
+        ? message.startsWith('0x')
+          ? Buffer.from(message.slice(2), 'hex')
+          : Buffer.from(message, 'utf8')
+        : Buffer.from(message);
+
+    // Hash the message using keccak256 (for COA, we need to hash it first like web3 does)
+    const web3 = new Web3();
+    const hashedData = web3.utils.keccak256(messageBytes);
+    // Remove 0x prefix for COA signing
+    const hashedDataWithoutPrefix = hashedData.startsWith('0x') ? hashedData.slice(2) : hashedData;
+
+    const result = await createSignatureProof(hashedDataWithoutPrefix);
+    signTextHistoryService.createHistory({
+      address: address,
+      text: message,
+      origin: session.origin,
+      type: 'ethSign',
+    });
+    return result;
+  }
+
+  // EOA eth_sign
+  private async ethSignEOA(address: string, message: any, session: any): Promise<string> {
+    // Get the Ethereum private key using secp256k1 algorithm
+    const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
+    const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+
+    // Derive the Ethereum address from the private key
+    const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);
+
+    // Validate that the requested address matches the derived address
+    if (address.toLowerCase() !== ethereumAddress.toLowerCase()) {
+      throw new Error('Address mismatch');
+    }
+
+    // eth_sign signs the raw message hash (32 bytes), not prefixed like personal_sign
+    // Convert message to bytes and hash it
+    const messageBytes =
+      typeof message === 'string'
+        ? message.startsWith('0x')
+          ? Buffer.from(message.slice(2), 'hex')
+          : Buffer.from(message, 'utf8')
+        : Buffer.from(message);
+
+    // Hash the message using keccak256
+    const messageHash = ethers.keccak256(messageBytes);
+
+    // Sign the hash using eth-signer
+    const { signature } = await EthSigner.signPersonalMessage(privateKeyBytes, messageHash);
+
+    // Create history entry
+    signTextHistoryService.createHistory({
+      address: ethereumAddress,
+      text: message,
+      origin: session.origin,
+      type: 'ethSign',
+    });
+
+    return signature;
+  }
+
+  // ========================================================================
+  // Other RPC Methods
+  // ========================================================================
+
+  ethRpc = async (data): Promise<any> => {
+    const network = await Wallet.getNetwork(); // Get the current network
+    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
+    const web3Instance = new Web3(provider);
+
+    return new Promise((resolve, reject) => {
+      if (!web3Instance.currentProvider) {
+        consoleError('Provider is undefined');
+        return;
+      }
+
+      web3Instance.currentProvider.send(
+        {
+          jsonrpc: '2.0',
+          method: data.method,
+          params: data.params,
+          id: new Date().getTime(),
+        },
+        (err, response) => {
+          if (err) {
+            consoleError('Error:', err);
+            reject(err);
+          } else {
+            resolve(response);
+          }
+        }
+      );
+    });
   };
 
   ethGetTransactionByHash = async (request) => {
@@ -661,6 +1122,143 @@ class ProviderController extends BaseController {
   ethSignTypedDataV4 = async (request) => {
     const result = await this.signTypeData(request);
     return result;
+  };
+
+  // ========================================================================
+  // Permission Methods
+  // ========================================================================
+
+  walletRequestPermissions = ({ data: { params: permissions } }) => {
+    const result: Web3WalletPermission[] = [];
+    if (permissions && 'eth_accounts' in permissions[0]) {
+      result.push({ parentCapability: 'eth_accounts' });
+    }
+    return result;
+  };
+
+  walletRevokePermissions = async ({ session: { origin }, data: { params } }) => {
+    const isUnlocked = await Wallet.isUnlocked();
+    if (isUnlocked && Wallet.getConnectedSite(origin)) {
+      if (params?.[0] && 'eth_accounts' in params[0]) {
+        Wallet.removeConnectedSite(origin);
+      }
+    }
+    return null;
+  };
+
+  walletWatchAsset = async ({ data }) => {
+    const result = await notificationService.requestApproval(
+      {
+        params: { data },
+        approvalComponent: 'EthSuggest',
+      },
+      { height: 599 }
+    );
+    return result;
+  };
+
+  // ========================================================================
+  // Chain/Network Methods
+  // ========================================================================
+
+  ethChainId = async ({ session }) => {
+    const network = await Wallet.getNetwork();
+    if (network === 'testnet') {
+      return TESTNET_CHAIN_ID;
+    } else {
+      return MAINNET_CHAIN_ID;
+    }
+  };
+
+  walletSwitchEthereumChain = async ({
+    data: {
+      params: [chainParams],
+    },
+    session: { origin },
+  }) => {
+    let chainId = chainParams.chainId;
+    const network = await Wallet.getNetwork();
+    if (typeof chainId === 'number') {
+      chainId = intToHex(chainId).toLowerCase();
+    } else {
+      chainId = `0x${new BigNumber(chainId).toString(16).toLowerCase()}`;
+    }
+
+    switch (chainId) {
+      case '0x221': // 545 in decimal corresponds to testnet
+        if (network !== 'testnet') {
+          await notificationService.requestApproval(
+            {
+              params: { origin, target: 'testnet' },
+              approvalComponent: 'EthSwitch',
+            },
+            { height: 599 }
+          );
+        }
+        return null;
+
+      case '0x2eb': // 747 in decimal corresponds to mainnet
+        if (network !== 'mainnet') {
+          await notificationService.requestApproval(
+            {
+              params: { origin, target: 'mainnet' },
+              approvalComponent: 'EthSwitch',
+            },
+            { height: 599 }
+          );
+        }
+        return null;
+      default:
+        throw ethErrors.provider.custom({
+          code: 4902,
+          message: `Unrecognized  ChainId"${chainId}".`,
+        });
+    }
+  };
+
+  // eth_coinbase - Returns the current account address
+  ethCoinbase = async ({ session: { origin } }) => {
+    if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
+      return null;
+    }
+
+    try {
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+      if (!eoaInfo || !eoaInfo.address) {
+        return null;
+      }
+      return ensureEvmAddressPrefix(eoaInfo.address);
+    } catch (error) {
+      consoleError('Error getting EOA address for eth_coinbase:', error);
+      return null;
+    }
+  };
+
+  // net_version - Returns the network version
+  netVersion = async () => {
+    try {
+      const network = await Wallet.getNetwork();
+      return network === 'mainnet' ? MAINNET_CHAIN_ID : TESTNET_CHAIN_ID;
+    } catch (error) {
+      consoleError('Error getting network version:', error);
+      return MAINNET_CHAIN_ID; // Default to mainnet version
+    }
+  };
+
+  // personal_ecRecover - Recovers the address from a signature
+  personalEcRecover = async ({ data }) => {
+    if (!data.params) return;
+    const [message, signature] = data.params;
+
+    try {
+      // Use ethers to recover the address from the signature
+      // ethers.utils.recoverAddress handles the personal message prefix automatically
+      const recoveredAddress = ethers.verifyMessage(message, signature);
+      return recoveredAddress;
+    } catch (error) {
+      consoleError('Error in personal_ecRecover:', error);
+      throw error;
+    }
   };
 }
 

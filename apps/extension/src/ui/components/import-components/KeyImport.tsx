@@ -31,16 +31,22 @@ const KeyImport = ({
       const inputValue = e.target[2].value;
       setPk(pk);
       const address = flowAddressRegex.test(inputValue) ? inputValue : null;
+
       const result = await usewallet.findAddressWithPrivateKey(pk, address);
-      if (!result) {
+
+      if (!result || result.length === 0) {
         onOpen();
         return;
       }
+
       const accounts: (PublicKeyAccount & { type: string })[] = result.map((a) => ({
         ...a,
         type: KEY_TYPE.PRIVATE_KEY,
       }));
+
       onImport(accounts);
+    } catch (error) {
+      onOpen();
     } finally {
       setLoading(false);
     }

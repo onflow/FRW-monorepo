@@ -15,6 +15,12 @@
     "message": "この拡張機能はベータテスト用です。自己責任で使用してください。",
     "description": "Application Descrtipion"
   },
+  "Register_New_Profile": {
+    "message": "新しいプロファイルを登録する"
+  },
+  "Create_New_Profile_Description": {
+    "message": "Flow 上で新しいプロファイルを作成するために、このシードフレーズを使用しますか？"
+  },
   "Send": {
     "message": "送信"
   },

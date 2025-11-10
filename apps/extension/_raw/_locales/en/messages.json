@@ -1198,6 +1198,12 @@
   "We_cant_find": {
     "message": "We can't find your address on flow with this key, or the key is invalid. Please check your input and try again."
   },
+  "Register_New_Profile": {
+    "message": "Register New Profile"
+  },
+  "Create_New_Profile_Description": {
+    "message": "Would you like to use this seed phrase to create a new profile on Flow?"
+  },
   "Add_account": {
     "message": "Add Profile"
   },
