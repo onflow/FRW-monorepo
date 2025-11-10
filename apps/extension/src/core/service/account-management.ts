@@ -735,7 +735,6 @@ export class AccountManagement {
    * Update account metadata (emoji, name, background color) via openapi API
    */
   async updateAccountMetadata(address: string, icon: string, name: string, background: string) {
-    console.log('updateAccountMetadata', address, icon, name, background);
     const result = await openapiService.updateAccountMetadata(address, icon, name, background);
 
     // Update the metadata cache after successful update
