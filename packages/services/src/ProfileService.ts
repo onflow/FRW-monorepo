@@ -238,21 +238,49 @@ export class ProfileService {
       // UserGoService.address2() returns Promise<any> - axios wraps it in 'data'
       const response = (await UserGoService.address2()) as any;
 
+      // Log the full response for debugging
+      logger.debug('[ProfileService] address2() response:', {
+        responseType: typeof response,
+        responseKeys: response ? Object.keys(response) : [],
+        responseData: response?.data,
+        fullResponse: response,
+      });
+
       // Handle both axios response structure and direct response
+      // The response.data is the transaction ID string directly
       const addressData = response.data || response;
 
-      if (!addressData?.txid) {
+      // Log the parsed address data
+      logger.debug('[ProfileService] Parsed address data:', {
+        addressDataType: typeof addressData,
+        addressDataKeys:
+          addressData && typeof addressData === 'object' ? Object.keys(addressData) : [],
+        addressData: addressData,
+      });
+
+      // The transaction ID is directly in response.data as a string
+      // If it's a string, that's the txid. If it's an object, check for txid property
+      const txid =
+        typeof addressData === 'string'
+          ? addressData
+          : addressData?.txid || addressData?.data?.txid || addressData?.transactionId;
+
+      if (!txid) {
+        logger.error('[ProfileService] No transaction ID found in response:', {
+          addressData,
+          response,
+        });
         throw new Error('Failed to create Flow address: No transaction ID received');
       }
 
       logger.info('[ProfileService] Flow address creation initiated:', {
-        txId: addressData.txid,
+        txId: txid,
       });
 
       // Return in consistent format with data wrapper
       return {
         data: {
-          txid: addressData.txid,
+          txid,
         },
       };
     } catch (error) {

@@ -359,6 +359,14 @@ export function ConfirmRecoveryPhraseScreen({
       const userId = registerResponse.data.id;
       logger.info('[ConfirmRecoveryPhraseScreen] Registration successful, userId:', userId);
 
+      // Validate registration response
+      if (!customToken) {
+        throw new Error('Registration response missing custom_token');
+      }
+      if (!userId) {
+        throw new Error('Registration response missing user id');
+      }
+
       // Create Flow address (triggers on-chain account creation) using ProfileService
       logger.info('[ConfirmRecoveryPhraseScreen] Creating Flow address...');
       const addressResponse = await profileSvc.createFlowAddress();
@@ -366,8 +374,21 @@ export function ConfirmRecoveryPhraseScreen({
       const txId = addressResponse.data.txid;
       logger.info('[ConfirmRecoveryPhraseScreen] Flow address creation initiated, txId:', txId);
 
+      // Validate transaction ID
+      if (!txId || typeof txId !== 'string') {
+        throw new Error('Flow address creation response missing or invalid transaction ID');
+      }
+
       // Step 7: Data handoff to native layer
       logger.info('[ConfirmRecoveryPhraseScreen] Step 7: Passing data to native layer...');
+      logger.info('[ConfirmRecoveryPhraseScreen] Parameters for saveMnemonic:', {
+        mnemonicLength: mnemonic?.length || 0,
+        customTokenLength: customToken?.length || 0,
+        txIdLength: txId?.length || 0,
+        mnemonicType: typeof mnemonic,
+        customTokenType: typeof customToken,
+        txIdType: typeof txId,
+      });
 
       if (bridge.saveMnemonic) {
         // Pass mnemonic, customToken, and txId to native for:
