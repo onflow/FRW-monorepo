@@ -26,8 +26,36 @@ export { FlowAccount, EVMAccount, COA, ChildAccount } from './account';
 export { SeedPhraseKey } from './keys/seed-phrase-key';
 export { PrivateKey } from './keys/private-key';
 
-// Wallet Core integration
-export { WalletCoreProvider } from './crypto/wallet-core-provider';
+// Wallet Core integration - Platform-specific export
+// React Native: uses wallet-core-provider.native.ts (pure JS crypto)
+// Web/Extension: uses wallet-core-provider.ts (WASM)
+// Metro should auto-resolve .native.ts, but we use conditional export as fallback
+let WalletCoreProviderExport: any;
+
+// Detect React Native environment
+const isReactNative =
+  (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') ||
+  (typeof global !== 'undefined' && typeof (global as any).__fbBatchedBridge !== 'undefined') ||
+  (typeof window !== 'undefined' && typeof (window as any).__fbBatchedBridge !== 'undefined');
+
+if (isReactNative) {
+  // React Native: Use native implementation (pure JS crypto)
+  try {
+    WalletCoreProviderExport = require('./crypto/wallet-core-provider.native').WalletCoreProvider;
+  } catch (error: any) {
+    console.error(
+      '[wallet/index] Failed to load native wallet-core-provider:',
+      error?.message || error
+    );
+    // Fallback to default (Metro should resolve it)
+    WalletCoreProviderExport = require('./crypto/wallet-core-provider').WalletCoreProvider;
+  }
+} else {
+  // Web/Extension: Use WASM implementation
+  WalletCoreProviderExport = require('./crypto/wallet-core-provider').WalletCoreProvider;
+}
+
+export { WalletCoreProviderExport as WalletCoreProvider };
 export {
   entropyToMnemonic,
   generateBip39Mnemonic,

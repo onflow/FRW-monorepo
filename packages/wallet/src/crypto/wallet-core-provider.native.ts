@@ -36,6 +36,7 @@ export class WalletCoreProvider {
    * Initialize - no-op for React Native (native module is always ready)
    */
   static async initialize(): Promise<void> {
+    console.log('[WalletCoreProvider.native] initialize() called - Native implementation loaded!');
     this.initialized = true;
   }
 

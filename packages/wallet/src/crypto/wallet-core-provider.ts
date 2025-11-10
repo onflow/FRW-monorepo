@@ -22,6 +22,12 @@ export class WalletCoreProvider {
    * Initialize Trust Wallet Core WASM module
    */
   static async initialize(): Promise<void> {
+    console.log('[WalletCoreProvider.web] initialize() called - Web/WASM implementation loaded!');
+    console.log(
+      '[WalletCoreProvider.web] navigator.product:',
+      typeof navigator !== 'undefined' ? navigator.product : 'undefined'
+    );
+
     if (this.initialized) {
       return;
     }
@@ -29,6 +35,7 @@ export class WalletCoreProvider {
     // Check if running in React Native - if so, this is the wrong implementation
     // The native implementation should be loaded instead
     if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
+      console.error('[WalletCoreProvider.web] ERROR: Web WASM version loaded in React Native!');
       throw WalletError.UnsupportedOperation({
         details: {
           message:

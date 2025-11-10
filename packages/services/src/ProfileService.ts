@@ -1,4 +1,4 @@
-import { Userv3GoService, Userv2Service } from '@onflow/frw-api';
+import { Userv3GoService, UserGoService } from '@onflow/frw-api';
 import { logger } from '@onflow/frw-utils';
 
 /**
@@ -58,22 +58,34 @@ export class ProfileService {
         publicKey: params.accountKey.public_key.slice(0, 16) + '...',
       });
 
-      const response = await Userv3GoService.register({
+      // Axios wraps the response in a 'data' property
+      // The TypeScript type says Promise<controllers_UserReturn> but axios returns { data: controllers_UserReturn }
+      const response = (await Userv3GoService.register({
         username: params.username,
         accountKey: params.accountKey,
         deviceInfo: params.deviceInfo,
-      });
+      })) as any; // Type assertion needed because axios wraps response
 
-      if (!response.data?.custom_token) {
+      // Handle both axios response structure and direct response
+      const userReturn = response.data || response;
+
+      if (!userReturn?.custom_token) {
         throw new Error('Registration failed: No custom token received');
       }
 
       logger.info('[ProfileService] Registration successful:', {
-        userId: response.data.id,
-        username: response.data.username,
+        userId: userReturn.id,
+        username: userReturn.username,
       });
 
-      return response;
+      // Return in consistent format with data wrapper
+      return {
+        data: {
+          id: userReturn.id!,
+          custom_token: userReturn.custom_token!,
+          username: userReturn.username,
+        },
+      };
     } catch (error) {
       logger.error('[ProfileService] Registration failed:', error);
       throw error;
@@ -94,17 +106,26 @@ export class ProfileService {
     try {
       logger.info('[ProfileService] Creating Flow address...');
 
-      const response = await Userv2Service.address2();
+      // UserGoService.address2() returns Promise<any> - axios wraps it in 'data'
+      const response = (await UserGoService.address2()) as any;
 
-      if (!response.data?.txid) {
+      // Handle both axios response structure and direct response
+      const addressData = response.data || response;
+
+      if (!addressData?.txid) {
         throw new Error('Failed to create Flow address: No transaction ID received');
       }
 
       logger.info('[ProfileService] Flow address creation initiated:', {
-        txId: response.data.txid,
+        txId: addressData.txid,
       });
 
-      return response;
+      // Return in consistent format with data wrapper
+      return {
+        data: {
+          txid: addressData.txid,
+        },
+      };
     } catch (error) {
       logger.error('[ProfileService] Failed to create Flow address:', error);
       throw error;
