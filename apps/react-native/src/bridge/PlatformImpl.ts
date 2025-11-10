@@ -9,6 +9,7 @@ import type {
 import { Platform } from '@onflow/frw-types';
 import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
+import { Buffer } from 'buffer';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 
@@ -23,6 +24,10 @@ const CONSOLE_STYLES: Record<'debug' | 'info' | 'warn' | 'error', string> = {
   warn: 'background:#d97706;color:#fff7ed;padding:0 4px;border-radius:2px;',
   error: 'background:#dc2626;color:#fef2f2;padding:0 4px;border-radius:2px;',
 };
+
+const bytesToHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString('hex');
+const hexToBytes = (hex: string): Uint8Array =>
+  new Uint8Array(Buffer.from(hex.startsWith('0x') ? hex.slice(2) : hex, 'hex'));
 
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
@@ -225,6 +230,16 @@ class PlatformImpl implements PlatformSpec {
 
   getSignKeyIndex(): number {
     return NativeFRWBridge.getSignKeyIndex();
+  }
+
+  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+    if (!(signData instanceof Uint8Array)) {
+      throw new Error('signData must be a Uint8Array');
+    }
+
+    const hexPayload = `0x${bytesToHex(signData)}`;
+    const signatureHex = await NativeFRWBridge.ethSign(hexPayload);
+    return hexToBytes(signatureHex);
   }
 
   scanQRCode(): Promise<string> {
