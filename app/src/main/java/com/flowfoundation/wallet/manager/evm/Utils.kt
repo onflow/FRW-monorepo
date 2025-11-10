@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
@@ -46,12 +47,52 @@ import wallet.core.jni.proto.Ethereum
 import wallet.core.jni.Hash
 import java.math.BigInteger
 
-fun loadInitJS(): String {
+suspend fun loadInitJS(): String {
+    // Refresh account data first
+    DAppEVMConnectionManager.refreshAccounts()
+
+    // Get address list: prefer StateFlow data, fallback to direct retrieval
+    val addressList = mutableListOf<String>()
+    val availableAccounts = DAppEVMConnectionManager.availableAccounts.value
+
+    if (availableAccounts.isNotEmpty()) {
+        // Use account data from StateFlow
+        availableAccounts.forEach { account ->
+            if (account.address.isNotEmpty()) {
+                addressList.add(account.address)
+            }
+        }
+    } else {
+        // StateFlow is empty, get directly from WalletManager
+        EVMWalletManager.getEVMAddress()?.let { coaAddress ->
+            if (coaAddress.isNotEmpty()) {
+                addressList.add(coaAddress)
+            }
+        }
+
+        WalletManager.getEOAAddressCached()?.let { eoaAddress ->
+            if (eoaAddress.isNotEmpty()) {
+                addressList.add(eoaAddress)
+            }
+        }
+    }
+
+    // Build addresses array string following Swift format
+    val addressesArray = addressList.joinToString(", ") { "\"$it\"" }
+    
+    // Get primary address (prefer COA, then EOA)
+    val primaryAddress = EVMWalletManager.getEVMAddress() ?: WalletManager.getEOAAddressCached() ?: ""
+    
+    logd("EvmUtils", "loadInitJS addresses: $addressList")
+    logd("EvmUtils", "loadInitJS primaryAddress: $primaryAddress")
+    logd("EvmUtils", "loadInitJS addressesArray: $addressesArray")
+
     return """
         (function() {
             var config = {
                 ethereum: {
-                    address: "${EVMWalletManager.getEVMAddress()}",
+                    address: "$primaryAddress",
+                    addresses: [$addressesArray],
                     chainId: ${networkChainId()},
                     rpcUrl: "${networkRPCUrl()}"
                 },

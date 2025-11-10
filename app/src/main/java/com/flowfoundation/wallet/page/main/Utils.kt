@@ -336,7 +336,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             logd("DrawerLayoutPresenter", "Building UI - main: $hasMainAccounts, linked: $hasLinkedAccounts, hasEVM: $hasEvmAccount, refreshBalance: $refreshBalance")
         }
 
-        if (llMainAccount.childCount > 0 && !refreshBalance) {
+        if (llMainAccount.isNotEmpty() && !refreshBalance) {
             var hasAnyBalance = false
             for (i in 0 until llMainAccount.childCount) {
                 val itemView = llMainAccount.getChildAt(i) as? ViewGroup ?: continue
@@ -422,7 +422,7 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     // Check EOA account
     try {
         ioScope {
-            val eoaAddress = WalletManager.getEOAAddress()
+            val eoaAddress = WalletManager.getEOAAddressCached()
 
             eoaAddress?.let { address ->
                 uiScope {
@@ -605,7 +605,7 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccountForHardwareBackedKey(
     // Check EOA account for hardware-backed keys
     try {
         ioScope {
-            val eoaAddress = WalletManager.getEOAAddress()
+            val eoaAddress = WalletManager.getEOAAddressCached()
             logd("DrawerLayoutPresenter", "EOA address: $eoaAddress")
 
             eoaAddress?.let { address ->

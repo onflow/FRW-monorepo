@@ -84,7 +84,7 @@ object DAppEVMConnectionManager {
                 }
 
                 // Load EOA account
-                val eoaAddress = WalletManager.getEOAAddress()
+                val eoaAddress = WalletManager.getEOAAddressCached()
                 if (!eoaAddress.isNullOrEmpty()) {
                     logd(TAG, "Found EOA account: $eoaAddress")
                     // EOA balance is hidden as per requirements
