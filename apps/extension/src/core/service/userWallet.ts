@@ -79,6 +79,8 @@ import openapiService, { getScripts } from './openapi';
 import preferenceService from './preference';
 import remoteConfigService from './remoteConfig';
 import transactionActivityService from './transaction-activity';
+import walletManager from './wallet-manager';
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '../../shared/constant/domain-constants';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
 import { fetchAccountsByPublicKey } from '../utils/key-indexer';
@@ -118,6 +120,7 @@ const USER_WALLET_TEMPLATE: UserWalletStore = {
   network: 'mainnet',
   emulatorMode: false,
   currentPubkey: '',
+  uid: '',
 };
 
 // Create an instance of the CadenceService
@@ -432,6 +435,8 @@ class UserWallet {
       throw new Error('Network is not set');
     }
 
+    console.log('setActiveAccounts', pubkey, network, newActiveAccounts);
+
     // Save the data in storage
     await setLocalData<ActiveAccountsStore>(activeAccountsKey(network, pubkey), newActiveAccounts);
   };
@@ -579,7 +584,47 @@ class UserWallet {
     const network = this.getNetwork();
     const pubkey = this.getCurrentPubkey();
 
-    return getMainAccountsWithPubKey(network, pubkey);
+    console.log('getMainAccounts', network, pubkey);
+
+    // Get original Flow main accounts
+    const originalMainAccounts = await getMainAccountsWithPubKey(network, pubkey);
+
+    // Try to get EOA account info and add it to main accounts
+    try {
+      let eoaAccountInfo: WalletAccount | undefined;
+
+      // Try to get EOA account info (this won't require password if cached)
+      const eoaInfo = await walletManager.getEOAAccountInfo();
+
+      if (eoaInfo) {
+        eoaAccountInfo = {
+          address: eoaInfo.address,
+          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+          id: 99, // Special ID for EOA
+          name: 'EVM Account (EOA)',
+          icon: '🔷',
+          color: '#627EEA', // EVM blue
+          balance: eoaInfo.balance || '0',
+        };
+      }
+
+      // Add EOA info to main accounts
+      const enhancedMainAccounts: MainAccount[] = originalMainAccounts.map((account) => ({
+        ...account,
+        eoaAccount: eoaAccountInfo,
+      }));
+
+      console.log('enhancedMainAccounts', enhancedMainAccounts);
+
+      return enhancedMainAccounts;
+    } catch (error) {
+      console.error('Failed to enhance main accounts with EOA:', error);
+      // Return original accounts if EOA enhancement fails
+      return originalMainAccounts.map((account) => ({
+        ...account,
+        eoaAccount: undefined,
+      }));
+    }
   };
 
   // Get the main account wallet for the current public key
@@ -711,6 +756,35 @@ class UserWallet {
     return 'unknown_script';
   };
 
+  // Helper function to wait for surge approval
+  private waitForSurgeApproval = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const handleMessage = (message: any) => {
+        if (message.type === 'SURGE_APPROVAL_RESPONSE') {
+          chrome.runtime.onMessage.removeListener(handleMessage);
+          resolve(message.data?.approved || false);
+        }
+      };
+      chrome.runtime.onMessage.addListener(handleMessage);
+    });
+  };
+
+  // Helper function to show surge modal and wait for user response
+  private showSurgeModalAndWait = async (): Promise<boolean> => {
+    // Send message to UI to show surge modal
+    chrome.runtime.sendMessage({
+      type: 'API_RATE_LIMIT',
+      data: {
+        status: HTTP_STATUS_TOO_MANY_REQUESTS,
+        api: 'sendTransaction',
+        timestamp: Date.now(),
+      },
+    });
+
+    // Wait for user response
+    return await this.waitForSurgeApproval();
+  };
+
   sendTransaction = async (
     cadence: string,
     args: unknown[],
@@ -719,11 +793,14 @@ class UserWallet {
     const scriptName = this.extractScriptName(cadence);
     try {
       const allowed = await this.allowFreeGas();
+      const bridgeAuth = this.bridgeFeePayerAuthFunction;
+      const payerAuth = this.payerAuthFunction;
       const payerFunction = shouldCoverFee
-        ? this.bridgeFeePayerAuthFunction
+        ? bridgeAuth
         : allowed
-          ? this.payerAuthFunction
+          ? payerAuth
           : this.authorizationFunction;
+
       const txID = await fcl.mutate({
         cadence: cadence,
         args: () => args,
@@ -739,6 +816,37 @@ class UserWallet {
 
       return txID;
     } catch (error) {
+      // Check if this is a 429 rate limit error from either payer function
+      const isSurgeError =
+        error instanceof Error &&
+        (error.message.includes(HTTP_STATUS_TOO_MANY_REQUESTS.toString()) ||
+          error.message.includes('Too Many Requests') ||
+          error.message.includes('Many Requests for surge') ||
+          error.message.includes(
+            'communicates temporary pressure and supports standard client backoff via Retry-After'
+          ));
+
+      if (isSurgeError) {
+        // Show surge modal and wait for user approval
+        const userApproved = await this.showSurgeModalAndWait();
+
+        if (userApproved) {
+          // User approved - retry with bridge fee payer
+          const txID = await fcl.mutate({
+            cadence: cadence,
+            args: () => args,
+            proposer: this.authorizationFunction as any,
+            authorizations: [this.authorizationFunction as any],
+            payer: this.authorizationFunction as any,
+            limit: 9999,
+          });
+          return txID;
+        } else {
+          // User rejected - stop the transaction
+          throw new Error('Transaction cancelled by user due to surge pricing');
+        }
+      }
+
       analyticsService.track('script_error', {
         script_id: scriptName,
         error: getErrorMessage(error),
@@ -958,53 +1066,32 @@ class UserWallet {
     };
   };
 
-  signBridgeFeePayer = async (signable): Promise<string> => {
+  signAsFeePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
-    const envelope = await openapiService.signBridgeFeePayer(tx, message);
-    const signature = envelope.envelopeSigs.sig;
+    const envelope = await openapiService.signAsFeePayer(tx, message);
+
+    // Check if envelope has an error status
+    if (envelope && envelope.status === 429) {
+      throw new Error(envelope.message);
+    }
+
+    const signature = envelope.data.sig;
     return signature;
   };
 
-  signPayer = async (signable): Promise<string> => {
+  signAsBridgePayer = async (signable): Promise<string> => {
     const tx = signable.voucher;
     const message = signable.message;
-    const envelope = await openapiService.signPayer(tx, message);
-    const signature = envelope.envelopeSigs.sig;
-    return signature;
-  };
+    const envelope = await openapiService.signAsBridgePayer(tx, message);
 
-  signProposer = async (signable): Promise<string> => {
-    const tx = signable.voucher;
-    const message = signable.message;
-    const envelope = await openapiService.signProposer(tx, message);
-    const signature = envelope.envelopeSigs.sig;
-    return signature;
-  };
+    // Check if envelope has an error status
+    if (envelope && envelope.status === 429) {
+      throw new Error(envelope.message);
+    }
 
-  proposerAuthFunction = async (account) => {
-    // authorization function need to return an account
-    const proposer = await openapiService.getProposer();
-    const address = fcl.withPrefix(proposer.data.address);
-    const ADDRESS = fcl.withPrefix(address);
-    // TODO: FIX THIS
-    const KEY_ID = proposer.data.keyIndex;
-    return {
-      ...account, // bunch of defaults in here, we want to overload some of them though
-      tempId: `${ADDRESS}-${KEY_ID}`, // tempIds are more of an advanced topic, for 99% of the times where you know the address and keyId you will want it to be a unique string per that address and keyId
-      addr: fcl.sansPrefix(ADDRESS), // the address of the signatory, currently it needs to be without a prefix right now
-      keyId: Number(KEY_ID), // this is the keyId for the accounts registered key that will be used to sign, make extra sure this is a number and not a string
-      signingFunction: async (signable) => {
-        // Singing functions are passed a signable and need to return a composite signature
-        // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signProposer(signable);
-        return {
-          addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
-          keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string
-          signature: signature, // this needs to be a hex string of the signature, where signable.message is the hex value that needs to be signed
-        };
-      },
-    };
+    const signature = envelope.data.sig;
+    return signature;
   };
 
   getPayerAddressAndKeyId = async (): Promise<{ address: string; keyId: number }> => {
@@ -1036,7 +1123,7 @@ class UserWallet {
       signingFunction: async (signable) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signPayer(signable);
+        const signature = await this.signAsFeePayer(signable);
         return {
           addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
           keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string
@@ -1075,7 +1162,7 @@ class UserWallet {
       signingFunction: async (signable) => {
         // Singing functions are passed a signable and need to return a composite signature
         // signable.message is a hex string of what needs to be signed.
-        const signature = await this.signBridgeFeePayer(signable);
+        const signature = await this.signAsBridgePayer(signable);
         return {
           addr: fcl.withPrefix(ADDRESS), // needs to be the same as the account.addr but this time with a prefix, eventually they will both be with a prefix
           keyId: Number(KEY_ID), // needs to be the same as account.keyId, once again make sure its a number and not a string
@@ -1573,6 +1660,7 @@ const loadMainAccountsWithPubKey = async (
   network: string,
   pubKey: string
 ): Promise<MainAccount[]> => {
+  console.log('loadMainAccountsWithPubKey', network, pubKey);
   // Get the accounts for the current public key
   const accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
 
@@ -1628,6 +1716,9 @@ const loadMainAccountsWithPubKey = async (
     mainAccounts.map((mainAccount) => mainAccount.address)
   );
 
+  // Try to get EOA account info (this won't require password if cached)
+  const eoaInfo = await walletManager.getEOAAccountInfo();
+
   const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
     const accountDetail = accountDetailMap[mainAccount.address];
     const evmAccount = accountDetail.COAs?.length
@@ -1644,9 +1735,20 @@ const loadMainAccountsWithPubKey = async (
       }
     }
 
+    const eoaAccountInfo = {
+      address: eoaInfo?.address,
+      chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+      id: 99, // Special ID for EOA
+      name: 'EVM Account (EOA)',
+      icon: '🔷',
+      color: '#627EEA', // EVM blue
+      balance: eoaInfo?.balance || '0',
+    };
+
     return {
       ...mainAccount,
       evmAccount,
+      eoaAccount: eoaAccountInfo,
       childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
     };
   });
@@ -1657,6 +1759,8 @@ const loadMainAccountsWithPubKey = async (
     mainAccountsWithDetail,
     mainAccountsWithDetail.length > 0 ? 60_000 : 1_000
   );
+
+  console.log('loadMainAccountsWithPubKey', mainAccountsWithDetail);
 
   return mainAccountsWithDetail;
 };

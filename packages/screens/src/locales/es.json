@@ -6,7 +6,8 @@
     "selectTokens": "Seleccionar Tokens",
     "sendTokens": "Enviar Tokens",
     "nftDetails": "Detalles NFT",
-    "colorDemo": "Demo de Colores"
+    "colorDemo": "Demo de Colores",
+    "receive": "Recibir Activos"
   },
   "common": {
     "cancel": "Cancelar",
@@ -92,6 +93,10 @@
     "inaccessible": "Inaccesible",
     "confirmAddress": "Confirmar dirección",
     "firstTimeSendMessage": "Notamos que esta puede ser la primera vez que envías a esta dirección. Por favor confirma la dirección de destino.",
+    "newContactTitle": "Nuevo contacto",
+    "contactNameLabel": "Nombre del contacto",
+    "contactNamePlaceholder": "Ingresa un nombre",
+    "addToAddressBookButton": "Agregar a la libreta de direcciones",
     "sendSNFTs": "Enviar S/NFTs",
     "sendNFTs": "Enviar NFTs",
     "change": "Cambiar",
@@ -110,7 +115,21 @@
     "noProfiles": "Sin Perfiles",
     "noProfilesFound": "No se encontraron perfiles",
     "failedToLoadRecipients": "Error al cargar destinatarios",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "addressBookAdded": "Añadido a la libreta de direcciones",
+    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones",
+    "addressCopied": "Dirección copiada al portapapeles",
+    "failedToCopy": "Error al copiar la dirección",
+    "failedToShare": "Error al compartir el código QR"
+  },
+  "receive": {
+    "title": "Recibir Activos",
+    "receiveAccount": "Recibir en la Cuenta",
+    "scanToReceive": "Escanear para recibir",
+    "shareQRCode": "Compartir Código QR",
+    "generatingQR": "Generando código QR...",
+    "noQRCode": "No hay código QR disponible",
+    "evmWarning": "Asegúrese de enviar activos solo a esta dirección en la red Flow EVM. Los activos enviados a esta dirección en otras redes se perderán."
   },
   "buttons": {
     "retry": "Reintentar",
@@ -133,28 +152,24 @@
     "failedToLoadNFTs": "Error al cargar NFTs",
     "transactionPayloadError": "Error al crear la carga de la transacción",
     "transactionExecutionError": "Error en la ejecución de la transacción",
-    "BRIDGE-01": "Puente de plataforma no disponible o no inicializado",
-    "TXN-01": "Error de transacción",
-    "ACCOUNT-01": "Error al obtener datos de activo accesible",
-    "ACCOUNT-02": "Error al obtener información de la cuenta",
-    "ADDR-01": "Error al cargar contactos de la libreta de direcciones",
-    "FLOW-01": "El servicio de Flow no está inicializado correctamente",
-    "FLOW-02": "Saldo no encontrado para la dirección especificada",
-    "FLOW-03": "No se pudo obtener el saldo de la cuenta",
-    "FLOW-04": "Esta función no está disponible en la plataforma actual",
-    "NFT-01": "Ruta de colección NFT no encontrada",
-    "NFT-02": "Error al cargar colecciones NFT",
-    "NFT-03": "Error al cargar NFTs de la colección",
-    "NFT-04": "Parámetros inválidos proporcionados para la operación NFT",
-    "RECIP-01": "Almacenamiento no disponible para destinatarios recientes",
-    "RECIP-02": "Error al cargar destinatarios recientes",
-    "RECIP-03": "Error al cargar destinatarios recientes locales",
-    "RECIP-04": "Error al cargar destinatarios recientes del servidor",
-    "RECIP-05": "Error al agregar destinatario reciente",
-    "RECIP-06": "Error al limpiar destinatarios recientes",
-    "TOKEN-01": "Error al obtener datos del token Flow",
-    "TOKEN-02": "Error al obtener datos del token ERC20",
-    "TOKEN-03": "Error al obtener información del token"
+    "generic": {
+      "title": "Algo salió mal",
+      "message": "Encontramos un error inesperado. Por favor, inténtalo de nuevo.",
+      "button": "Intentar de nuevo",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "Problema de conexión",
+      "message": "No se puede conectar a la red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      "button": "Reintentar",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "Error crítico",
+      "message": "Ocurrió un error crítico. Por favor, reinicia la aplicación.",
+      "button": "Reiniciar aplicación",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "Sin título",
@@ -198,6 +213,17 @@
         "descriptionMain": "Flow Wallet administra sus cuentas EVM y Cadence en Flow. Las cuentas EVM son compatibles con aplicaciones EVM, y las cuentas Cadence son compatibles con aplicaciones Cadence.",
         "descriptionSecondary": "Si una aplicación está en EVM o Cadence, solo las cuentas compatibles estarán disponibles para conectar."
       }
+    }
+  },
+  "surge": {
+    "title": "Precio de congestión activo",
+    "message": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas. Las tarifas de red actuales son 4 veces más altas de lo habitual.",
+    "modal": {
+      "title": "¿Estás seguro de que quieres continuar con el precio de congestión?",
+      "transactionFee": "Tu tarifa de transacción",
+      "surgeActive": "Precio de congestión activo",
+      "description": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas, y Flow Wallet no está pagando temporalmente por tu gas. Las tarifas de red actuales son {{multiplier}}× más altas de lo habitual.",
+      "holdToAgree": "Mantener para continuar con el precio de congestión"
     }
   }
 }

@@ -23,6 +23,7 @@
     "bundle:android:sourcemap": "react-native bundle --platform android --entry-file index.js --dev false --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output ./android-sourcemap.json"
   },
   "dependencies": {
+    "@onflow/frw-api": "workspace:^",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-screens": "workspace:^",
@@ -39,18 +40,21 @@
     "@react-navigation/native-stack": "^7.1.13",
     "buffer": "^6.0.3",
     "immer": "^10.1.1",
-    "instabug-reactnative": "^15.0.1",
+    "instabug-reactnative": "^16.0.3",
     "ios": "^0.0.1",
     "lottie-react-native": "^7.3.4",
     "react": "workspace:*",
     "react-i18next": "^15.6.1",
     "react-native": "workspace:*",
+    "react-native-error-boundary": "^3.0.0",
     "react-native-gesture-handler": "^2.27.2",
     "react-native-get-random-values": "^1.11.0",
     "react-native-reanimated": "^3.8.1",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "^4.14.1",
-    "react-native-svg": "^15.12.1"
+    "react-native-share": "^12.2.0",
+    "react-native-svg": "^15.12.1",
+    "react-native-view-shot": "^4.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -58,7 +62,7 @@
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.28.3",
     "@eslint/js": "^9.31.0",
-    "@react-native-community/cli": "19.0.0",
+    "@react-native-community/cli": "19.1.2",
     "@react-native-community/cli-platform-android": "19.0.0",
     "@react-native-community/cli-platform-ios": "19.0.0",
     "@react-native/babel-preset": "0.79.2",

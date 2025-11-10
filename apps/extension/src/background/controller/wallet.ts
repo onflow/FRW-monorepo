@@ -1,5 +1,6 @@
 import * as fcl from '@onflow/fcl';
-import type { AccountKey, Account as FclAccount } from '@onflow/typedefs';
+import type { AccountKey, Account as FclAccount } from '@onflow/fcl';
+import { type PayerStatusPayloadV1 } from '@onflow/frw-api';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
@@ -25,6 +26,7 @@ import {
   accountManagementService,
   authenticationService,
 } from '@/core/service';
+import walletManager from '@/core/service/wallet-manager';
 import { retryOperation } from '@/core/utils';
 import {
   getValidData,
@@ -292,6 +294,10 @@ export class WalletController extends BaseController {
     await keyringService.unlock(password);
     // Login with the current keyring
     await userWalletService.loginWithKeyring();
+    // Initialize wallet manager with current uid
+    walletManager.init().catch((error) => {
+      console.error('Failed to initialize wallet manager:', error);
+    });
     sessionService.broadcastEvent('unlock');
 
     // Refresh the wallet data
@@ -782,6 +788,7 @@ export class WalletController extends BaseController {
    */
 
   setActiveAccount = async (address: string, parentAddress: string) => {
+    console.log('setActiveAccount', address, parentAddress);
     if (!isValidFlowAddress(parentAddress)) {
       throw new Error('Invalid parent address');
     }
@@ -895,7 +902,7 @@ export class WalletController extends BaseController {
   transferFlowEvm = async (
     recipientEVMAddressHex: string,
     amount = '1.0',
-    gasLimit = 30000000
+    gasLimit = 16000000
   ): Promise<string> =>
     transactionService.transferFlowEvm(recipientEVMAddressHex, amount, gasLimit);
   transferFTToEvm = async (
@@ -1415,16 +1422,51 @@ export class WalletController extends BaseController {
     return userWalletService.allowFreeGas();
   };
 
-  signPayer = async (signable): Promise<string> => {
-    return await userWalletService.signPayer(signable);
+  showSurgeModalAndWait = async (payerStatus: any): Promise<boolean> => {
+    return new Promise((resolve) => {
+      // Send message to UI to show surge modal using the same pattern as API_RATE_LIMIT
+      chrome.runtime.sendMessage({
+        type: 'API_RATE_LIMIT',
+        data: {
+          status: 429,
+          api: 'surgePricing',
+          timestamp: Date.now(),
+          surgeData: {
+            maxFee: payerStatus?.surge?.maxFee,
+            multiplier: payerStatus?.surge?.multiplier,
+          },
+        },
+      });
+
+      // Listen for surge approval response
+      const handleSurgeResponse = (message: any) => {
+        if (message.type === 'SURGE_APPROVAL_RESPONSE') {
+          chrome.runtime.onMessage.removeListener(handleSurgeResponse);
+          resolve(message.data?.approved === true);
+        }
+      };
+
+      chrome.runtime.onMessage.addListener(handleSurgeResponse);
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        chrome.runtime.onMessage.removeListener(handleSurgeResponse);
+        resolve(false);
+      }, 30000);
+    });
   };
 
-  signBridgeFeePayer = async (signable): Promise<string> => {
-    return await userWalletService.signBridgeFeePayer(signable);
+  // New API methods using openapi service
+  signAsFeePayer = async (signable): Promise<string> => {
+    return await userWalletService.signAsFeePayer(signable);
   };
 
-  signProposer = async (signable): Promise<string> => {
-    return await userWalletService.signProposer(signable);
+  signAsBridgePayer = async (signable): Promise<string> => {
+    return await userWalletService.signAsBridgePayer(signable);
+  };
+
+  getPayerStatus = async (): Promise<PayerStatusPayloadV1> => {
+    return await openapiService.getPayerStatus();
   };
 
   getAuthorizationFunction = async () => {

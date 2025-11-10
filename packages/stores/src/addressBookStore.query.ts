@@ -1,4 +1,4 @@
-import { context, queryClient } from '@onflow/frw-context';
+import { bridge, context, queryClient } from '@onflow/frw-context';
 import { AddressBookService, RecentRecipientsService } from '@onflow/frw-services';
 import { FlatQueryDomain } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
@@ -27,17 +27,47 @@ interface UpdateContactRequest {
   isFavorite?: boolean;
 }
 
+const baseAddressBookKey = [FlatQueryDomain.ADDRESSBOOK] as const;
+const scopedAddressBookKey = (uid?: string | null) =>
+  [...baseAddressBookKey, { scope: 'firebase-uid', value: uid ?? 'anonymous' }] as const;
+
+const resolveCurrentUserUid = async (): Promise<string | null> => {
+  try {
+    if (typeof bridge.getCurrentUserUid === 'function') {
+      const uid = (await bridge.getCurrentUserUid()) ?? null;
+      return uid;
+    }
+
+    logger.warn(
+      '[AddressBook] bridge.getCurrentUserUid not implemented; falling back to anonymous scope'
+    );
+    return null;
+  } catch (error) {
+    logger.warn('[AddressBook] Failed to resolve current user uid', { error });
+    return null;
+  }
+};
+
 // Query Keys Factory for Address Book - Using optimized domain structure
 export const addressBookQueryKeys = {
-  all: [FlatQueryDomain.ADDRESSBOOK] as const, // Uses USER_SETTINGS domain
-  contacts: () => [...addressBookQueryKeys.all, FlatQueryDomain.CONTACTS] as const,
-  contact: (id: string) => [...addressBookQueryKeys.contacts(), id] as const,
-  favorites: () => [...addressBookQueryKeys.all, 'favorites'] as const,
-  recent: () => [...addressBookQueryKeys.all, FlatQueryDomain.RECENT] as const,
+  all: baseAddressBookKey, // Uses USER_SETTINGS domain
+  allByUid: scopedAddressBookKey,
+  currentUserUid: () => [...baseAddressBookKey, 'current-user-uid'] as const,
+  contacts: (uid?: string | null) =>
+    [...scopedAddressBookKey(uid), FlatQueryDomain.CONTACTS] as const,
+  contact: (id: string, uid?: string | null) =>
+    [...addressBookQueryKeys.contacts(uid), id] as const,
+  favorites: (uid?: string | null) => [...scopedAddressBookKey(uid), 'favorites'] as const,
+  recent: (uid?: string | null) => [...scopedAddressBookKey(uid), FlatQueryDomain.RECENT] as const,
 };
 
 // Query Functions - Pure data fetching logic for address book
 export const addressBookQueries = {
+  fetchCurrentUserUid: async (): Promise<string | null> => {
+    const uid = await resolveCurrentUserUid();
+    return uid;
+  },
+
   // Fetch all contacts
   fetchContacts: async (): Promise<Contact[]> => {
     try {
@@ -56,7 +86,7 @@ export const addressBookQueries = {
         updatedAt: Date.now(),
       }));
 
-      logger.debug('[AddressBookQuery] Fetched contacts:', {
+      logger.debug('[AddressBookQuery] Fetched contacts', {
         count: contacts.length,
         contacts: contacts,
       });
@@ -270,7 +300,10 @@ export const addressBookMutations = {
       await storage.set('recentRecipients', recentRecipients as any);
 
       // Invalidate the recent contacts query to trigger a refetch
-      queryClient.invalidateQueries({ queryKey: addressBookQueryKeys.recent() });
+      const uid = await resolveCurrentUserUid();
+      queryClient.invalidateQueries({
+        queryKey: addressBookQueryKeys.recent(uid ?? undefined),
+      });
 
       logger.debug('[AddressBookMutation] Set recent contact:', {
         contact,
@@ -290,6 +323,7 @@ interface AddressBookStoreState {
 }
 
 interface AddressBookStoreActions {
+  fetchCurrentUserUid: () => Promise<string | null>;
   // Query methods
   fetchContacts: () => Promise<Contact[]>;
   fetchContact: (id: string) => Promise<Contact>;
@@ -314,6 +348,10 @@ interface AddressBookStoreActions {
 type AddressBookStore = AddressBookStoreState & AddressBookStoreActions;
 
 export const useAddressBookStore = create<AddressBookStore>((_set, _get) => ({
+  fetchCurrentUserUid: async () => {
+    return await addressBookQueries.fetchCurrentUserUid();
+  },
+
   // Query methods - Direct API calls without TanStack Query for now
   fetchContacts: async () => {
     const result = await addressBookQueries.fetchContacts();
@@ -369,39 +407,3 @@ export const useAddressBookStore = create<AddressBookStore>((_set, _get) => ({
     return undefined;
   },
 }));
-
-// Real services are now integrated above - no more mock service needed!
-
-// Query keys, queries, and mutations are already exported above
-
-// Example usage in a React component:
-/*
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { addressBookQueryKeys, addressBookQueries, addressBookMutations } from '@onflow/frw-stores/src/addressBookStore.query';
-
-export function ContactsScreen() {
-  // Fetch contacts with automatic 5-minute cache
-  const { data: contacts, isLoading, error } = useQuery({
-    queryKey: addressBookQueryKeys.contacts(),
-    queryFn: () => addressBookQueries.fetchContacts(),
-    // staleTime automatically set to 5 minutes for USER_SETTINGS category
-  });
-
-  // Create contact mutation with cache updates
-  const createContactMutation = useMutation({
-    mutationFn: addressBookMutations.createContact,
-    onSuccess: (newContact) => {
-      // Cache automatically updated by store method
-      showSuccessToast('Contact created!');
-    },
-  });
-
-  return (
-    <YStack>
-      {contacts?.map(contact => (
-        <ContactCard key={contact.id} contact={contact} />
-      ))}
-    </YStack>
-  );
-}
-*/

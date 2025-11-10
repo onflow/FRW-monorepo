@@ -6,7 +6,8 @@
     "selectTokens": "トークンを選択",
     "sendTokens": "トークンを送信",
     "nftDetails": "NFT詳細",
-    "colorDemo": "カラーデモ"
+    "colorDemo": "カラーデモ",
+    "receive": "資産を受け取る"
   },
   "common": {
     "cancel": "キャンセル",
@@ -92,6 +93,10 @@
     "inaccessible": "アクセス不可",
     "confirmAddress": "アドレスを確認",
     "firstTimeSendMessage": "このアドレスへの送信は初回の可能性があります。送信先アドレスを確認してください。",
+    "newContactTitle": "新しい連絡先",
+    "contactNameLabel": "連絡先名",
+    "contactNamePlaceholder": "名前を入力",
+    "addToAddressBookButton": "アドレス帳に追加",
     "sendSNFTs": "S/NFTを送信",
     "sendNFTs": "NFTを送信",
     "change": "変更",
@@ -110,7 +115,21 @@
     "noProfiles": "プロファイルがありません",
     "noProfilesFound": "プロファイルが見つかりません",
     "failedToLoadRecipients": "受信者の読み込みに失敗しました",
-    "copied": "コピーしました！"
+    "copied": "コピーしました！",
+    "addressBookAdded": "アドレス帳に追加しました",
+    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました",
+    "addressCopied": "アドレスをクリップボードにコピーしました",
+    "failedToCopy": "アドレスのコピーに失敗しました",
+    "failedToShare": "QRコードの共有に失敗しました"
+  },
+  "receive": {
+    "title": "資産を受け取る",
+    "receiveAccount": "受け取るアカウント",
+    "scanToReceive": "スキャンして受け取る",
+    "shareQRCode": "QRコードを共有",
+    "generatingQR": "QRコード生成中...",
+    "noQRCode": "QRコードが利用できません",
+    "evmWarning": "Flow EVMネットワーク上でのみ、このアドレスに資産を送信してください。他のネットワーク上でこのアドレスに送信された資産は失われます。"
   },
   "buttons": {
     "retry": "再試行",
@@ -133,28 +152,24 @@
     "failedToLoadNFTs": "NFTの読み込みに失敗しました",
     "transactionPayloadError": "トランザクションペイロードの作成に失敗しました",
     "transactionExecutionError": "トランザクションの実行に失敗しました",
-    "BRIDGE-01": "プラットフォームブリッジが利用できないか、初期化されていません",
-    "TXN-01": "トランザクションエラー",
-    "ACCOUNT-01": "アクセス可能なアセットデータの取得に失敗しました",
-    "ACCOUNT-02": "アカウント情報の取得に失敗しました",
-    "ADDR-01": "アドレス帳の連絡先の読み込みに失敗しました",
-    "FLOW-01": "Flowサービスが正しく初期化されていません",
-    "FLOW-02": "指定されたアドレスの残高が見つかりません",
-    "FLOW-03": "アカウント残高の取得ができません",
-    "FLOW-04": "この機能は現在のプラットフォームでは利用できません",
-    "NFT-01": "NFTコレクションパスが見つかりません",
-    "NFT-02": "NFTコレクションの読み込みに失敗しました",
-    "NFT-03": "コレクションからのNFT読み込みに失敗しました",
-    "NFT-04": "NFT操作に無効なパラメータが提供されました",
-    "RECIP-01": "最近の受信者のストレージが利用できません",
-    "RECIP-02": "最近の受信者の読み込みに失敗しました",
-    "RECIP-03": "ローカルの最近の受信者の読み込みに失敗しました",
-    "RECIP-04": "サーバーの最近の受信者の読み込みに失敗しました",
-    "RECIP-05": "最近の受信者の追加に失敗しました",
-    "RECIP-06": "最近の受信者のクリアに失敗しました",
-    "TOKEN-01": "Flowトークンデータの取得に失敗しました",
-    "TOKEN-02": "ERC20トークンデータの取得に失敗しました",
-    "TOKEN-03": "トークン情報の取得に失敗しました"
+    "generic": {
+      "title": "エラーが発生しました",
+      "message": "予期しないエラーが発生しました。もう一度お試しください。",
+      "button": "再試行",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "接続の問題",
+      "message": "ネットワークに接続できません。接続を確認してもう一度お試しください。",
+      "button": "再試行",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "重大なエラー",
+      "message": "重大なエラーが発生しました。アプリを再起動してください。",
+      "button": "アプリを再起動",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "無題",
@@ -195,6 +210,17 @@
         "descriptionMain": "Flowウォレットは、Flow上のEVMアカウントとCadenceアカウントを管理します。EVMアカウントはEVMアプリと互換性があり、CadenceアカウントはCadenceアプリと互換性があります。",
         "descriptionSecondary": "アプリケーションがEVMまたはCadenceベースの場合、互換性のあるアカウントのみが接続に利用できます。"
       }
+    }
+  },
+  "surge": {
+    "title": "サージ価格がアクティブ",
+    "message": "ネットワークの高負荷により、取引手数料が上昇しています。現在のネットワーク手数料は通常の4倍です。",
+    "modal": {
+      "title": "サージ価格を続行してもよろしいですか？",
+      "transactionFee": "取引手数料",
+      "surgeActive": "サージ価格がアクティブ",
+      "description": "ネットワークの高負荷により、取引手数料が上昇しています。Flowウォレットは一時的にガス料金を支払っていません。現在のネットワーク手数料は通常の{{multiplier}}倍です。",
+      "holdToAgree": "サージ価格を続行するには長押ししてください"
     }
   }
 }

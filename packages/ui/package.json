@@ -40,12 +40,13 @@
     "eslint-plugin-storybook": "9.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-native-svg": "^15.13.0",
     "react-native-web": "^0.21.1",
     "rimraf": "^5.0.1",
     "storybook": "^9.1.1",
     "tsup": "^8.0.0",
     "typescript": "^5.0.4",
-    "vite": "^5.4.20",
+    "vite": "^5.4.21",
     "vitest": "^1.0.0"
   },
   "peerDependencies": {

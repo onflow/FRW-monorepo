@@ -5,6 +5,8 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  SendToScreen,
+  ReceiveScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -25,8 +27,7 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-
-import { SendToScreen } from '../screens/SendToScreenWrapper';
+// import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest'; // For testing error handling
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
@@ -46,6 +47,7 @@ export type RootStackParamList = {
   SendTo: undefined;
   SendTokens: undefined;
   SendSummary: undefined;
+  Receive: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -239,8 +241,10 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             <Stack.Screen
               name="SelectTokens"
               component={SelectTokensScreen}
+              // component={ErrorHandlingTest} // Uncomment for testing error handling
               options={{
-                headerTitle: t('navigation.send'),
+                headerTitle: t('navigation.selectTokens'),
+                // headerTitle: 'Error Test', // Use with ErrorHandlingTest
               }}
             />
             <Stack.Screen
@@ -276,6 +280,13 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={SendSummaryScreen}
               options={{
                 headerTitle: t('navigation.sending'),
+              }}
+            />
+            <Stack.Screen
+              name="Receive"
+              component={ReceiveScreen}
+              options={{
+                headerTitle: t('navigation.receive'),
               }}
             />
           </Stack.Group>

@@ -3,6 +3,7 @@
  * Handles Flow blockchain account discovery via key indexer service
  */
 
+import { WalletError } from '../types/errors';
 import { FlowChainID, SignatureAlgorithm, HashAlgorithm } from '../types/key';
 
 /**
@@ -79,7 +80,7 @@ export class KeyIndexerService {
   static async findAccount(publicKey: string, chainId: FlowChainID): Promise<KeyIndexerResponse> {
     const url = this.getKeyIndexerUrl(publicKey, chainId);
     if (!url) {
-      throw new Error('Incorrect key indexer URL');
+      throw WalletError.UnsupportedNetwork({ details: { chainId } });
     }
 
     try {
@@ -92,16 +93,28 @@ export class KeyIndexerService {
       });
 
       if (!response.ok) {
-        throw new Error(`Key indexer request failed with status: ${response.status}`);
+        throw WalletError.AccountDiscoveryFailed({
+          details: {
+            status: response.status,
+            url,
+            chainId,
+          },
+        });
       }
 
       const data = await response.json();
       return this.parseKeyIndexerResponse(data, publicKey);
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Key indexer request failed: ${error.message}`);
+      if (error instanceof WalletError) {
+        throw error;
       }
-      throw new Error('Key indexer request failed: Unknown error');
+      if (error instanceof Error) {
+        throw WalletError.AccountDiscoveryFailed({
+          cause: error,
+          details: { url, chainId },
+        });
+      }
+      throw WalletError.AccountDiscoveryFailed({ details: { url, chainId } });
     }
   }
 
@@ -119,7 +132,9 @@ export class KeyIndexerService {
     } else if (data.result && Array.isArray(data.result)) {
       accounts = data.result;
     } else {
-      throw new Error('Invalid key indexer response format');
+      throw WalletError.AccountDiscoveryFailed({
+        details: { reason: 'invalid_response_format' },
+      });
     }
 
     const parsedAccounts: PublicKeyAccount[] = accounts.map((account: any) => ({
@@ -250,13 +265,8 @@ export class KeyIndexerService {
    * @returns Boolean indicating if accounts were found
    */
   static async hasAccounts(publicKey: string, chainId: FlowChainID): Promise<boolean> {
-    try {
-      const accounts = await this.findAccountByKey(publicKey, chainId);
-      return accounts.length > 0;
-    } catch (error) {
-      console.warn(`Failed to check accounts for public key: ${error}`);
-      return false;
-    }
+    const accounts = await this.findAccountByKey(publicKey, chainId);
+    return accounts.length > 0;
   }
 
   /**

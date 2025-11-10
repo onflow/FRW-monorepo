@@ -19,7 +19,7 @@ export const NavigationCloseButton: React.FC = () => {
       variant="ghost"
       size="medium"
       onPress={handleClose}
-      mt="$-1" // Move top to reduce padding for iOS26
+      ml={10}
     />
   );
 };

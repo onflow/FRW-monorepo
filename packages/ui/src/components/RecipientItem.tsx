@@ -192,8 +192,8 @@ export function RecipientItem({
             <Card
               width="$6"
               height="$6"
-              onPress={(e: React.BaseSyntheticEvent) => {
-                e.stopPropagation();
+              onPress={(event: React.BaseSyntheticEvent | undefined) => {
+                event?.stopPropagation?.();
                 onAddToAddressBook();
               }}
               cursor="pointer"
@@ -210,8 +210,8 @@ export function RecipientItem({
             <Button
               width="$6"
               height="$6"
-              onPress={(e: React.BaseSyntheticEvent) => {
-                e.stopPropagation();
+              onPress={(event: React.BaseSyntheticEvent | undefined) => {
+                event?.stopPropagation?.();
                 onCopy();
               }}
               bg="transparent"

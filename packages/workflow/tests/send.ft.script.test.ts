@@ -1,15 +1,13 @@
-import { parseUnits } from '@ethersproject/units';
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
-import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import * as t from '@onflow/types';
 import dotenv from 'dotenv';
+import { parseUnits } from 'ethers';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { SendTransaction } from '../src';
 import { makeArgument, getIX } from './utils';
+import { SendTransaction, isValidSendTransactionPayload, convertToUFix64 } from '../src';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
-import { convertToUFix64 } from '../src/send/utils';
 
 dotenv.config();
 
@@ -874,7 +872,7 @@ describe('Test send strategies', () => {
         expect(value).toBe(convertToUFix64(payload.amount));
       }
       if (idx === 2) {
-        expect(value).toBe(30_000_000); // Gas limit
+        expect(value).toBe(16_000_000); // Gas limit
       }
     }
   });
@@ -1059,7 +1057,7 @@ describe('Test send strategies', () => {
         expect(typeof value).toBe('object');
       }
       if (idx === 3) {
-        expect(value).toBe(30000000); // Gas limit
+        expect(value).toBe(16000000); // Gas limit
       }
     }
   });
@@ -1108,7 +1106,7 @@ describe('Test send strategies', () => {
         expect(value).toStrictEqual([]);
       }
       if (idx === 3) {
-        expect(value).toBe(30000000); // Gas limit
+        expect(value).toBe(16000000); // Gas limit
       }
     }
   });

@@ -1,11 +1,10 @@
 import { CadenceService, configureFCL } from '@onflow/frw-cadence';
-import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import * as t from '@onflow/types';
 import dotenv from 'dotenv';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { SendTransaction } from '../src';
 import { makeArgument, getIX } from './utils';
+import { SendTransaction, isValidSendTransactionPayload } from '../src';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
 

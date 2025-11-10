@@ -1,7 +1,7 @@
 import type { CadenceService } from '@onflow/frw-cadence';
 
 import type { SendPayload, TransferStrategy } from './types';
-import { encodeEvmContractCallData, GAS_LIMITS } from './utils';
+import { encodeEvmContractCallData, GAS_LIMITS, convertHexToByteArray } from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
 
 /**
@@ -104,6 +104,47 @@ export class ParentToChildNftStrategy implements TransferStrategy {
 }
 
 /**
+ * Strategy for sending NFTs to child account
+ */
+export class EoaToChildNftStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+
+  canHandle(payload: SendPayload): boolean {
+    const { childAddrs, receiver, assetType, sender, coaAddr, type } = payload;
+    return (
+      type === 'nft' &&
+      childAddrs.length > 0 &&
+      childAddrs.includes(receiver) &&
+      assetType === 'evm' &&
+      sender !== coaAddr
+    );
+  }
+
+  async execute(payload: SendPayload, callback: any): Promise<any> {
+    const { flowIdentifier, ids, receiver, tokenContractAddr, sender, coaAddr } = payload;
+    const callData = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
+    const signedTx = await callback({
+      state: 'EVM_TRX_BUILDING',
+      trxData: {
+        from: payload.sender,
+        to: payload.tokenContractAddr,
+        data: callData,
+        gasLimit: GAS_LIMITS.EVM_DEFAULT,
+      },
+    });
+
+    const rlpEncoded = convertHexToByteArray(signedTx);
+    return await this.cadenceService.batchBridgeChildNftFromEoaWithPayer(
+      rlpEncoded,
+      sender,
+      flowIdentifier,
+      receiver,
+      ids.map((id) => `${id}`)
+    );
+  }
+}
+
+/**
  * Strategy for TopShot NFT transfers
  */
 export class TopShotNftStrategy implements TransferStrategy {
@@ -172,8 +213,10 @@ export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
   constructor(private cadenceService: CadenceService) {}
 
   canHandle(payload: SendPayload): boolean {
-    const { assetType, receiver, type } = payload;
-    return type === 'nft' && assetType === 'evm' && validateFlowAddress(receiver);
+    const { assetType, receiver, type, sender, coaAddr } = payload;
+    return (
+      type === 'nft' && assetType === 'evm' && validateFlowAddress(receiver) && sender === coaAddr
+    );
   }
 
   async execute(payload: SendPayload): Promise<any> {
@@ -183,6 +226,48 @@ export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
       ids.map((id) => `${id}`),
       receiver
     );
+  }
+}
+
+/**
+ * Strategy for EVM to Flow NFT bridge
+ */
+export class EvmToFlowNftWithEoaBridgeStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+
+  canHandle(payload: SendPayload): boolean {
+    const { assetType, receiver, type, sender, coaAddr } = payload;
+    return (
+      type === 'nft' && assetType === 'evm' && validateFlowAddress(receiver) && sender !== coaAddr
+    );
+  }
+
+  async execute(payload: SendPayload, callback: any): Promise<any> {
+    const { flowIdentifier, ids, receiver, tokenContractAddr, sender, coaAddr } = payload;
+
+    const callData = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
+    const signedTx = await callback({
+      state: 'EVM_TRX_BUILDING',
+      trxData: {
+        from: payload.sender,
+        to: payload.tokenContractAddr,
+        data: callData,
+        gasLimit: GAS_LIMITS.EVM_DEFAULT,
+      },
+    });
+
+    try {
+      const rlpEncoded = convertHexToByteArray(signedTx);
+      return await this.cadenceService.batchBridgeNftFromEoaToFlowWithPayer(
+        rlpEncoded,
+        sender,
+        flowIdentifier,
+        ids.map((id) => `${id}`),
+        receiver
+      );
+    } catch (e: any) {
+      await callback({ error: e.message, state: 'EVM_TRX_ERROR' });
+    }
   }
 }
 
@@ -213,7 +298,7 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
       return await this.cadenceService.batchCallContract(
         contracts,
         values,
-        datas,
+        datas as number[][],
         GAS_LIMITS.EVM_DEFAULT
       );
     }
@@ -223,8 +308,39 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
     return await this.cadenceService.callContract(
       tokenContractAddr,
       value,
-      data,
+      data as number[],
       GAS_LIMITS.EVM_DEFAULT
     );
+  }
+}
+
+/**
+ * Strategy for sending NFTs to child account
+ */
+export class EoaToEVMStrategy implements TransferStrategy {
+  constructor(private cadenceService: CadenceService) {}
+
+  canHandle(payload: SendPayload): boolean {
+    const { receiver, assetType, sender, coaAddr, type } = payload;
+    return (
+      type === 'nft' && assetType === 'evm' && sender !== coaAddr && validateEvmAddress(receiver)
+    );
+  }
+
+  async execute(payload: SendPayload, callback: any): Promise<any> {
+    const { receiver, tokenContractAddr, sender } = payload;
+    const callData = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
+    const signedTx = await callback({
+      state: 'EVM_TRX_BUILDING',
+      trxData: {
+        from: payload.sender,
+        to: tokenContractAddr,
+        data: callData,
+        gasLimit: GAS_LIMITS.EVM_DEFAULT,
+      },
+    });
+
+    const rlpEncoded = convertHexToByteArray(signedTx);
+    return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
   }
 }

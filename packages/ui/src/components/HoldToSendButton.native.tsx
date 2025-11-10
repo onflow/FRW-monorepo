@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { TouchableWithoutFeedback, Animated, Easing } from 'react-native';
-// eslint-disable-next-line import/no-unresolved
 import Svg, { Circle } from 'react-native-svg';
 import { View, useTheme } from 'tamagui';
 

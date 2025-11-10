@@ -56,8 +56,7 @@ const TransferList = () => {
         disableTypography={true}
         primary={
           !loading ? (
-            <Typography
-              variant="body1"
+            <Box
               sx={{
                 fontSize: 12,
                 fontWeight: '500',
@@ -76,9 +75,9 @@ const TransferList = () => {
                   prefix={!isContractCall ? (isReceive ? '+' : '-') : ''}
                 />
               ) : (
-                <div data-testid={`collection-${props.token}`}>{props.token}</div>
+                <Typography data-testid={`collection-${props.token}`}>{props.token}</Typography>
               )}
-            </Typography>
+            </Box>
           ) : (
             <Skeleton variant="text" width={35} height={15} />
           )

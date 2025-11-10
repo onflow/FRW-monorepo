@@ -12,12 +12,14 @@ import { type StorageProtocol } from '../types/key';
 export class MemoryStorage implements StorageProtocol {
   private storage = new Map<string, Uint8Array>();
 
-  get allKeys(): string[] {
-    return Array.from(this.storage.keys());
+  async allKeys(): Promise<string[]> {
+    return new Promise((resolve) => {
+      resolve(Array.from(this.storage.keys()));
+    });
   }
 
   async findKey(keyword: string): Promise<string[]> {
-    return this.allKeys.filter((key) => key.includes(keyword));
+    return await this.allKeys().then((keys) => keys.filter((key) => key.includes(keyword)));
   }
 
   async get(key: string): Promise<Uint8Array | null> {

@@ -6,7 +6,8 @@
     "selectTokens": "Select Tokens",
     "sendTokens": "Send Tokens",
     "nftDetails": "NFT Details",
-    "colorDemo": "Color Demo"
+    "colorDemo": "Color Demo",
+    "receive": "Receive Assets"
   },
   "common": {
     "cancel": "Cancel",
@@ -19,7 +20,8 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
-    "Search": "Search"
+    "Search": "Search",
+    "retry": "Retry"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -95,6 +97,10 @@
     "inaccessible": "Inaccessible",
     "confirmAddress": "Confirm address",
     "firstTimeSendMessage": "We noticed this may be your first time sending to this address. Please confirm the destination address.",
+    "newContactTitle": "New contact",
+    "contactNameLabel": "Contact name",
+    "contactNamePlaceholder": "Enter a name",
+    "addToAddressBookButton": "Add to address book",
     "sendSNFTs": "Send S/NFTs",
     "sendNFTs": "Send NFTs",
     "change": "Change",
@@ -113,7 +119,21 @@
     "noProfiles": "No Profiles",
     "noProfilesFound": "No profiles found",
     "failedToLoadRecipients": "Failed to load recipients",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "addressBookAdded": "Added to address book",
+    "failedToAddToAddressBook": "Failed to add to address book",
+    "addressCopied": "Address copied to clipboard",
+    "failedToCopy": "Failed to copy address",
+    "failedToShare": "Failed to share QR code"
+  },
+  "receive": {
+    "title": "Receive Assets",
+    "receiveAccount": "Receive to Account",
+    "scanToReceive": "Scan to receive",
+    "shareQRCode": "Share QR Code",
+    "generatingQR": "Generating QR code...",
+    "noQRCode": "No QR code available",
+    "evmWarning": "Please ensure you only send assets to this address on the Flow EVM network. Assets sent to this address on other networks will be lost."
   },
   "buttons": {
     "retry": "Retry",
@@ -136,28 +156,24 @@
     "failedToLoadNFTs": "Failed to load NFTs",
     "transactionPayloadError": "Failed to create transaction payload",
     "transactionExecutionError": "Transaction execution failed",
-    "BRIDGE-01": "Platform bridge not available or not initialized",
-    "TXN-01": "Transaction error",
-    "ACCOUNT-01": "Failed to fetch accessible asset data",
-    "ACCOUNT-02": "Failed to fetch account info",
-    "ADDR-01": "Failed to load address book contacts",
-    "FLOW-01": "Flow service is not properly initialized",
-    "FLOW-02": "Balance not found for the specified address",
-    "FLOW-03": "Unable to fetch account balance",
-    "FLOW-04": "This feature is not available on the current platform",
-    "NFT-01": "NFT collection path not found",
-    "NFT-02": "Failed to load NFT collections",
-    "NFT-03": "Failed to load NFTs from collection",
-    "NFT-04": "Invalid parameters provided for NFT operation",
-    "RECIP-01": "Storage not available for recent recipients",
-    "RECIP-02": "Failed to load recent recipients",
-    "RECIP-03": "Failed to load local recent recipients",
-    "RECIP-04": "Failed to load server recent recipients",
-    "RECIP-05": "Failed to add recent recipient",
-    "RECIP-06": "Failed to clear recent recipients",
-    "TOKEN-01": "Failed to fetch Flow token data",
-    "TOKEN-02": "Failed to fetch ERC20 token data",
-    "TOKEN-03": "Failed to get token information"
+    "generic": {
+      "title": "Something went wrong",
+      "message": "We encountered an unexpected error. Please try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "network": {
+      "title": "Connection Error",
+      "message": "Unable to connect to the network. Please check your connection and try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "critical": {
+      "title": "Critical Error",
+      "message": "A critical error occurred. Please restart the app.",
+      "button": "Restart",
+      "reportBug": "Report Bug"
+    }
   },
   "nft": {
     "untitled": "Untitled",
@@ -201,6 +217,17 @@
         "descriptionMain": "Flow Wallet manages your EVM and your Cadence accounts on Flow. EVM accounts are compatible with EVM apps, and Cadence accounts are compatible with Cadence apps.",
         "descriptionSecondary": "If an application is on EVM or Cadence, only compatible accounts will be available to connect."
       }
+    }
+  },
+  "surge": {
+    "title": "Surge price active",
+    "message": "Due to high network activity, transaction fees are elevated. Current network fees are 4x higher than usual.",
+    "modal": {
+      "title": "Are you really sure that you want to continue with surge pricing?",
+      "transactionFee": "Your transaction fee",
+      "surgeActive": "Surge price active",
+      "description": "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are {{multiplier}}× higher than usual.",
+      "holdToAgree": "Hold to agree to surge pricing"
     }
   }
 }

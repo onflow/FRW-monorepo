@@ -181,7 +181,7 @@ export class PayerService {
       body?: AuthSignParams;
     } = {} as any,
     options: IRequestOptions = {}
-  ): Promise<AuthSignaturePayload> {
+  ): Promise<SignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsBridgePayer';
 
@@ -203,7 +203,7 @@ export class PayerService {
       body?: PayerSignParams;
     } = {} as any,
     options: IRequestOptions = {}
-  ): Promise<FeePayerSignaturePayload> {
+  ): Promise<SignaturePayload> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/signAsFeePayer';
 
@@ -1500,46 +1500,46 @@ export interface SignedData {
   sig: string;
 }
 
-/** FeePayerSignaturePayload */
-export interface FeePayerSignaturePayload {
+/** SignaturePayload */
+export interface SignaturePayload {
   /**  */
   status: number;
 
   /**  */
-  data: object;
+  data: SignedData;
 
   /**  */
   message?: string;
 }
 
-/** AuthSignaturePayload */
-export interface AuthSignaturePayload {
+/** PayerMsg */
+export interface PayerMsg {
   /**  */
-  status: number;
-
-  /**  */
-  data: object;
-
-  /**  */
-  message?: string;
+  envelopeMessage: string;
 }
 
 /** PayerSignParams */
 export interface PayerSignParams {
   /**  */
-  message: object;
+  message: PayerMsg;
 
-  /** The Flow network to use for signing */
-  network?: EnumPayerSignParamsNetwork;
+  /**  */
+  network?: Network;
+}
+
+/** PayloadMsg */
+export interface PayloadMsg {
+  /**  */
+  payload: string;
 }
 
 /** AuthSignParams */
 export interface AuthSignParams {
   /**  */
-  message: object;
+  message: PayloadMsg;
 
-  /** The Flow network to use for signing */
-  network?: EnumAuthSignParamsNetwork;
+  /**  */
+  network?: Network;
 }
 
 export enum Network {

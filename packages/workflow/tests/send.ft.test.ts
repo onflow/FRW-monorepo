@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
+// import { SendTransaction } from '../src';
 
 // dotenv.config();
 
@@ -162,10 +163,11 @@ describe('Test send strategies', () => {
   //   type: 'token',
   //   assetType: 'evm',
   //   proposer: mainAccount.address,
-  //   receiver: mainAccount.address,
+  //   // receiver: mainAccount.address,
+  //   receiver: '0xc8955e600863871e',
   //   flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
   //   sender: mainAccount.evmAddr,
-  //   amount: '0.001',
+  //   amount: '0.000001',
   //   childAddrs: [],
   //   ids: [],
   //   decimal: 8,
@@ -173,22 +175,22 @@ describe('Test send strategies', () => {
   //   tokenContractAddr: '0x1234567890123456789012345678901234567890',
   // };
 
-  //   const payload = {
-  //     "type": "token",
-  //     "assetType": "evm",
-  //     "proposer": mainAccount.address,
-  //     "receiver": mainAccount.address,
-  //     "flowIdentifier": "A.1e4aa0b87d10b141.EVMVMBridgedToken_1b97100ea1d7126c4d60027e231ea4cb25314bdb.Vault",
-  //     "sender": mainAccount.evmAddr,
-  //     "childAddrs": [
-  //       "0x8e5a02ccc537163f"
-  //     ],
-  //     "ids": [],
-  //     "amount": "0.001",
-  //     "decimal": 18,
-  //     "coaAddr": mainAccount.evmAddr,
-  //     "tokenContractAddr": "0x1b97100ea1d7126c4d60027e231ea4cb25314bdb"
-  //   }
+  //   // const payload = {
+  //   //   "type": "token",
+  //   //   "assetType": "evm",
+  //   //   "proposer": mainAccount.address,
+  //   //   "receiver": mainAccount.address,
+  //   //   "flowIdentifier": "A.1e4aa0b87d10b141.EVMVMBridgedToken_1b97100ea1d7126c4d60027e231ea4cb25314bdb.Vault",
+  //   //   "sender": mainAccount.evmAddr,
+  //   //   "childAddrs": [
+  //   //     "0x8e5a02ccc537163f"
+  //   //   ],
+  //   //   "ids": [],
+  //   //   "amount": "0.001",
+  //   //   "decimal": 18,
+  //   //   "coaAddr": mainAccount.evmAddr,
+  //   //   "tokenContractAddr": "0x1b97100ea1d7126c4d60027e231ea4cb25314bdb"
+  //   // }
 
   //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
@@ -351,6 +353,48 @@ describe('Test send strategies', () => {
   //   };
 
   //   const txid = await SendTransaction(payload);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test EoaToChildFtStrategy - Bridge FT from EOA to Child', async () => {
+  //   const payload = {
+  //     type: 'token',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: mainAccount.address,
+  //     flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+  //     sender: mainAccount.eoaAddr,
+  //     amount: '0.00001',
+  //     childAddrs: [],
+  //     ids: [],
+  //     decimal: 6,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   console.log(txid);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test bridge Flow - Bridge from EOA to Coa to Flow', async () => {
+  //   const payload = {
+  //     type: 'token',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: mainAccount.address,
+  //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+  //     sender: mainAccount.eoaAddr,
+  //     amount: '0.00001',
+  //     childAddrs: [],
+  //     ids: [],
+  //     decimal: 18,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x0000000000000000000000000000000000000000',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   console.log(txid, '----txid----');
   //   expect(txid.length).toBe(64);
   // });
 });

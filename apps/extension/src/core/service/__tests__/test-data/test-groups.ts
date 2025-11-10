@@ -193,7 +193,7 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
               { type: 'String', value: '2b7E32BB7F9BA35ea1a0D8181c8D163B3B0D5ea2' },
               { type: 'UFix64', value: '0.10000000' },
               { type: 'Array', value: [] },
-              { type: 'UInt64', value: '30000000' },
+              { type: 'UInt64', value: '16000000' },
             ],
             proposalKey: { address: '0x552013bd8742476c', keyId: 0, sequenceNum: 178 },
             payer: '0xcb1cf3196916f9e2',
@@ -213,7 +213,6 @@ export const createTestGroups = (commonParams: CommonParams): ApiTestGroups => {
           },
         },
       },
-      { name: 'signProposer', params: { transaction: {}, message: '' } },
       { name: 'getProposer', params: {} },
       {
         name: 'getTransactionTemplate',

@@ -7147,36 +7147,6 @@ export const createTestResults = (
       timestamp: 1736481181659,
     },
     {
-      functionName: 'signProposer',
-      functionGroup: 'transactions',
-      functionParams: {
-        transaction: {},
-        message: '',
-      },
-      functionResponse: null,
-      fetchDetails: [
-        {
-          url: `${functionsURL}/signAsProposer`,
-          params: {},
-          requestInit: {
-            method: 'POST',
-            headers: {
-              Network: 'mainnet',
-              Accept: 'application/json',
-              Authorization: 'Bearer mock-token',
-              'Content-Type': 'application/json',
-            },
-            body: '{"transaction":{},"message":{"envelope_message":""}}',
-          },
-          responseData: null,
-          status: 500,
-          statusText: '',
-        },
-      ],
-      timestamp: 1736463342316,
-      error: 'Unexpected token \'I\', "Internal S"... is not valid JSON',
-    },
-    {
       functionName: 'getProposer',
       functionGroup: 'transactions',
       functionParams: {},

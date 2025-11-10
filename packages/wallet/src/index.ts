@@ -20,7 +20,7 @@ export {
   type AccountsListener,
   type LoadingListener,
 } from './wallet';
-export { Account, COA } from './account';
+export { FlowAccount, EVMAccount, COA, ChildAccount } from './account';
 
 // Key implementations - matches iOS Flow Wallet Kit key types
 export { SeedPhraseKey } from './keys/seed-phrase-key';
@@ -28,6 +28,38 @@ export { PrivateKey } from './keys/private-key';
 
 // Wallet Core integration
 export { WalletCoreProvider } from './crypto/wallet-core-provider';
+export {
+  entropyToMnemonic,
+  generateBip39Mnemonic,
+  mnemonicToEntropy,
+  mnemonicToSeed,
+  suggestBip39Words,
+  type Bip39Strength,
+  type GenerateBip39Options,
+  validateBip39Mnemonic,
+  validateBip39Word,
+} from './crypto/bip39';
+
+// Ethereum services
+export {
+  EthProvider,
+  EthRpcError,
+  type EthCallRequest,
+  type EthBlockTag,
+} from './services/eth-provider';
+export {
+  EthSigner,
+  type EthUnsignedTransaction,
+  type EthSignedTransaction,
+  type EthLegacyTransaction,
+  type EthEIP1559Transaction,
+  type EthAccessListEntry,
+  type EthSignedMessage,
+  type HexLike,
+} from './services/eth-signer';
+
+// Error types
+export { WalletError, WalletErrorCode, isWalletError } from './types/errors';
 
 // Core storage implementations (platform-specific ones should be implemented by apps)
 export { MemoryStorage } from './storage';
@@ -38,6 +70,7 @@ export {
   SignatureAlgorithm,
   HashAlgorithm,
   FlowChainID,
+  NETWORKS,
   type FlowAddress,
   type FlowAccountData,
   type FlowTransaction,
@@ -54,15 +87,11 @@ export { Chain, ChainUtils } from './types/chain';
 // Wallet type exports
 export { ChainID, type WalletType } from './types/wallet';
 
-// Account type exports
-export {
-  FlowVM,
-  type BaseAccount,
-  type FlowAccount,
-  type EVMAccount,
-  type ChildAccount,
-  type FlowVMProtocol,
-} from './types/account';
+// Account type exports (interfaces only)
+export { FlowVM, type BaseAccount, type FlowVMProtocol } from './types/account';
+
+// Note: FlowAccount, EVMAccount, ChildAccount classes are exported from ./Account above
+// The type interfaces FlowAccount, EVMAccount, ChildAccount are in ./types/account
 
 // Constants
 export { BIP44_PATHS } from './types/key';

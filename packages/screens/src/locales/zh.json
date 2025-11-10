@@ -6,7 +6,8 @@
     "selectTokens": "选择代币",
     "sendTokens": "发送代币",
     "nftDetails": "NFT详情",
-    "colorDemo": "颜色演示"
+    "colorDemo": "颜色演示",
+    "receive": "接收资产"
   },
   "common": {
     "cancel": "取消",
@@ -92,6 +93,10 @@
     "inaccessible": "不可访问",
     "confirmAddress": "确认地址",
     "firstTimeSendMessage": "我们注意到这可能是您第一次向此地址发送。请确认目标地址。",
+    "newContactTitle": "新建联系人",
+    "contactNameLabel": "联系人姓名",
+    "contactNamePlaceholder": "请输入姓名",
+    "addToAddressBookButton": "添加到地址簿",
     "sendSNFTs": "发送S/NFT",
     "sendNFTs": "发送NFT",
     "change": "更改",
@@ -110,7 +115,21 @@
     "noProfiles": "无配置文件",
     "noProfilesFound": "未找到配置文件",
     "failedToLoadRecipients": "无法加载收件人",
-    "copied": "已复制！"
+    "copied": "已复制！",
+    "addressBookAdded": "已添加到地址簿",
+    "failedToAddToAddressBook": "添加到地址簿失败",
+    "addressCopied": "地址已复制到剪贴板",
+    "failedToCopy": "无法复制地址",
+    "failedToShare": "无法分享二维码"
+  },
+  "receive": {
+    "title": "接收资产",
+    "receiveAccount": "接收到账户",
+    "scanToReceive": "扫描接收",
+    "shareQRCode": "分享二维码",
+    "generatingQR": "生成二维码中...",
+    "noQRCode": "二维码不可用",
+    "evmWarning": "请确保仅在Flow EVM网络上向此地址发送资产。发送到其他网络上此地址的资产将会丢失。"
   },
   "buttons": {
     "retry": "重试",
@@ -133,28 +152,24 @@
     "failedToLoadNFTs": "加载NFT失败",
     "transactionPayloadError": "创建交易载荷失败",
     "transactionExecutionError": "交易执行失败",
-    "BRIDGE-01": "平台桥接不可用或未初始化",
-    "TXN-01": "交易错误",
-    "ACCOUNT-01": "获取可访问资产数据失败",
-    "ACCOUNT-02": "获取账户信息失败",
-    "ADDR-01": "加载地址簿联系人失败",
-    "FLOW-01": "Flow服务未正确初始化",
-    "FLOW-02": "指定地址未找到余额",
-    "FLOW-03": "无法获取账户余额",
-    "FLOW-04": "此功能在当前平台上不可用",
-    "NFT-01": "NFT收藏路径未找到",
-    "NFT-02": "加载NFT收藏失败",
-    "NFT-03": "从收藏中加载NFT失败",
-    "NFT-04": "为NFT操作提供了无效参数",
-    "RECIP-01": "最近收件人存储不可用",
-    "RECIP-02": "加载最近收件人失败",
-    "RECIP-03": "加载本地最近收件人失败",
-    "RECIP-04": "加载服务器最近收件人失败",
-    "RECIP-05": "添加最近收件人失败",
-    "RECIP-06": "清除最近收件人失败",
-    "TOKEN-01": "获取Flow代币数据失败",
-    "TOKEN-02": "获取ERC20代币数据失败",
-    "TOKEN-03": "获取代币信息失败"
+    "generic": {
+      "title": "出现问题",
+      "message": "遇到了意外错误。请重试。",
+      "button": "重试",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "连接问题",
+      "message": "无法连接到网络。请检查您的连接后重试。",
+      "button": "重试",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "严重错误",
+      "message": "发生了严重错误。请重新启动应用程序。",
+      "button": "重启应用",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "无标题",
@@ -195,6 +210,17 @@
         "descriptionMain": "Flow 钱包管理您在 Flow 上的 EVM 和 Cadence 账户。EVM 账户与 EVM 应用兼容，Cadence 账户与 Cadence 应用兼容。",
         "descriptionSecondary": "如果应用是基于 EVM 或 Cadence，只有兼容的账户可用于连接。"
       }
+    }
+  },
+  "surge": {
+    "title": "网络拥堵价格激活",
+    "message": "由于网络活动频繁，交易费用已提高。当前网络费用比平时高 4 倍。",
+    "modal": {
+      "title": "您确定要继续使用激增定价吗？",
+      "transactionFee": "您的交易费用",
+      "surgeActive": "激增价格激活",
+      "description": "由于网络活动频繁，交易费用已提高，Flow Wallet 暂时不为您支付 gas 费用。当前网络费用比平时高 {{multiplier}} 倍。",
+      "holdToAgree": "按住同意激增定价"
     }
   }
 }

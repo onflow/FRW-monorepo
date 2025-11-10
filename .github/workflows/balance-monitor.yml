@@ -27,4 +27,4 @@ jobs:
         env:
           FLOW_ADDRESSES: ${{ vars.FLOW_ADDRESSES }}
           BALANCE_THRESHOLD: ${{ vars.BALANCE_THRESHOLD || '500000000' }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL != '' && secrets.DISCORD_WEBHOOK_URL || vars.DISCORD_WEBHOOK_URL }}
