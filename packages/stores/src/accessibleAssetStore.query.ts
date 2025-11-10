@@ -5,6 +5,8 @@ import {
   type CollectionModel,
   type NFTModel,
   type WalletAccount,
+  FRWError,
+  ErrorCode,
 } from '@onflow/frw-types';
 import {
   getCollectionResourceIdentifier,
@@ -49,9 +51,13 @@ export const accessibleAssetQueries = {
       });
 
       return accessibleIds || [];
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[AccessibleAssetQuery] Error fetching accessible IDs:', error);
-      throw error;
+      throw new FRWError(
+        ErrorCode.ACCESSIBLE_ASSET_FETCH_FAILED,
+        'Failed to fetch accessible IDs',
+        {}
+      );
     }
   },
 };
