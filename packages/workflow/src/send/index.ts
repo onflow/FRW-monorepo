@@ -18,7 +18,7 @@ export * from './tokenStrategies';
 import { logger } from '@onflow/frw-utils';
 
 import { createTransferContext } from './context';
-import type { SendPayload } from './types';
+import type { SendPayload, TransferExecutionHelpers } from './types';
 
 /**
  * Main entry point for sending transactions using Strategy Pattern
@@ -30,9 +30,9 @@ import type { SendPayload } from './types';
 export const SendTransaction = async (
   payload: SendPayload,
   cadenceService: any,
-  callback: any = () => {}
+  helpers: TransferExecutionHelpers = {}
 ) => {
   logger.debug('SendTransaction payload', payload);
-  const context = createTransferContext(cadenceService, callback);
+  const context = createTransferContext(cadenceService, helpers);
   return await context.execute(payload);
 };
