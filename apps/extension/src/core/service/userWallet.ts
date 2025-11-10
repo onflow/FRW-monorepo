@@ -639,8 +639,6 @@ class UserWallet {
         eoaAccount: eoaAccountInfo,
       }));
 
-      console.log('enhancedMainAccounts', enhancedMainAccounts);
-
       return enhancedMainAccounts;
     } catch (error) {
       console.error('Failed to enhance main accounts with EOA:', error);

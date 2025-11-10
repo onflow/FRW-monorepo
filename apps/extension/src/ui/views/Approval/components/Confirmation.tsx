@@ -114,7 +114,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     } finally {
       setIsSurgeDataLoading(false);
     }
-  }, [currentNetwork]);
+  }, [currentNetwork, isSurgeDataLoading]);
 
   const showSurgeModal = useCallback(() => {
     setIsSurgeModalVisible(true);
@@ -186,7 +186,6 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     if (!signable) {
       return;
     }
-    console.log('signable', signable);
     setIsApproving(true);
     setApproval(true);
 
@@ -452,6 +451,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
                   cadenceScript={cadenceScript}
                   setExpanded={setExpanded}
                   dedent={dedent}
+                  msgNetwork={msgNetwork}
                 />
               )}
               <Box sx={{ flexGrow: 1 }} />
