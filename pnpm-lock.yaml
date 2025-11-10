@@ -147,9 +147,15 @@ importers:
       '@onflow/frw-ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@onflow/frw-utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@onflow/frw-wallet':
         specifier: workspace:^
         version: link:../../packages/wallet
+      '@onflow/frw-workflow':
+        specifier: workspace:^
+        version: link:../../packages/workflow
       '@reown/walletkit':
         specifier: ^1.2.8
         version: 1.2.11(typescript@5.7.2)(zod@3.25.76)
@@ -15224,7 +15230,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 

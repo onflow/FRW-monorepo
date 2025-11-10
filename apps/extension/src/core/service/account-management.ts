@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl';
-import type { Account as FclAccount } from '@onflow/typedefs';
+import type { Account as FclAccount } from '@onflow/fcl';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
 
@@ -15,6 +15,9 @@ import {
   FLOW_BIP44_PATH,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
+  SIGN_ALGO_NUM_DEFAULT,
+  HASH_ALGO_NUM_DEFAULT,
+  DEFAULT_WEIGHT,
 } from '@/shared/constant';
 import type {
   AccountKeyRequest,
@@ -28,6 +31,7 @@ import {
   isValidEthereumAddress,
   consoleError,
   getErrorMessage,
+  tupleToPubKey,
 } from '@/shared/utils';
 
 import { authenticationService, preferenceService } from '.';
@@ -51,7 +55,7 @@ import {
   seedWithPathAndPhrase2PublicPrivateKey,
   generateRandomId,
 } from '../utils';
-import { returnCurrentProfileId } from '../utils/current-id';
+import { getCurrentProfileId, returnCurrentProfileId } from '../utils/current-id';
 import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
 import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
@@ -63,6 +67,7 @@ export class AccountManagement {
     // We're booting the keyring with the new password
     // This does not update the vault, it simply sets the password / cypher methods we're going to use to store our private keys in the vault
     await this.verifyPasswordIfBooted(password);
+
     // We're then registering the account with the public key
     // This calls our backend API which gives us back an account id
     // This register call ALSO sets the currentId in local storage
@@ -277,17 +282,42 @@ export class AccountManagement {
     derivationPath: string = FLOW_BIP44_PATH,
     passphrase: string = ''
   ): Promise<void> {
+    // Validate mnemonic first
+    if (!mnemonic || mnemonic.trim() === '') {
+      console.error('Mnemonic is empty or invalid');
+      throw new Error('Mnemonic is required');
+    }
+
+    // Validate mnemonic format using bip39
+    try {
+      const isValid = bip39.validateMnemonic(mnemonic);
+      if (!isValid) {
+        throw new Error('Invalid mnemonic format');
+      }
+    } catch (error) {
+      console.error('Mnemonic validation error:', error);
+      throw new Error('Invalid mnemonic format');
+    }
+
     // We should be validating the password as the first thing we do
     await this.verifyPasswordIfBooted(password);
 
     // Get the public key tuple from the mnemonic
-    const pubKTuple = formPubKeyTuple(
-      await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, derivationPath, passphrase)
+    const publicPrivateKey = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
     );
+
+    const pubKTuple = formPubKeyTuple(publicPrivateKey);
+
     // Check that there are accounts on the network for this public key
     const accounts = await getOrCheckAccountsByPublicKeyTuple(pubKTuple);
+
     if (accounts.length === 0) {
-      throw new Error('Invalid seed phrase');
+      throw new Error(
+        'No Flow accounts found for this seed phrase. Please ensure this mnemonic has been used to create Flow accounts, or use a different mnemonic.'
+      );
     }
     // We use the public key from the first account that is returned
     const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
@@ -328,6 +358,44 @@ export class AccountManagement {
 
     // Set the current pubkey in userWallet
     userWalletService.setCurrentPubkey(accountKeyStruct.public_key);
+  }
+
+  async registerNewProfileUsingPrivateKey(
+    username: string,
+    password: string,
+    pk: string
+  ): Promise<void> {
+    // We should be validating the password as the first thing we do
+    await this.verifyPasswordIfBooted(password);
+
+    // Get the public key tuple from the private key
+    const pubKTuple = await pk2PubKeyTuple(pk);
+
+    // Create account key from the public key tuple using the same logic as mnemonic registration
+    const accountKey: AccountKeyRequest = {
+      public_key: tupleToPubKey(pubKTuple, SIGN_ALGO_NUM_DEFAULT),
+      sign_algo: SIGN_ALGO_NUM_DEFAULT,
+      hash_algo: HASH_ALGO_NUM_DEFAULT,
+      weight: DEFAULT_WEIGHT,
+    };
+
+    // Register the account with the backend
+    await openapiService.register(accountKey, username);
+
+    // Create the keyring with the private key
+    await this.importPrivateKey(accountKey.public_key, accountKey.sign_algo, password, pk);
+
+    // Set a two minute cache for the register status
+    setCachedData(registerStatusKey(accountKey.public_key), true, 120_000);
+
+    // Create the Flow address for the account
+    const result = (await openapiService.createFlowAddressV2()) as { data: { txid: string } };
+
+    // Add the pending account creation transaction to the user wallet
+    await addPendingAccountCreationTransaction('mainnet', accountKey.public_key, result.data.txid);
+
+    // Switch to the new public key
+    await userWalletService.setCurrentPubkey(accountKey.public_key);
   }
 
   async importProfileUsingPrivateKey(
@@ -672,8 +740,8 @@ export class AccountManagement {
 
     // Update the metadata cache after successful update
     try {
-      const currentPubKey = userWalletService.getCurrentPubkey();
-      const cacheKey = userMetadataKey(currentPubKey);
+      const userId = await getCurrentProfileId();
+      const cacheKey = userMetadataKey(userId);
 
       // Get existing metadata from cache
       const existingMetadata = (await getValidData<UserMetadataStore>(cacheKey)) || {};
@@ -692,7 +760,8 @@ export class AccountManagement {
       // Update the specific account in the main accounts cache
       try {
         const network = await userWalletService.getNetwork();
-        const accountsCacheKey = mainAccountsKey(network, currentPubKey);
+        const userId = await getCurrentProfileId();
+        const accountsCacheKey = mainAccountsKey(network, userId);
         const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKey);
 
         if (existingMainAccounts && Array.isArray(existingMainAccounts)) {

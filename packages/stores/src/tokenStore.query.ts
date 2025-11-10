@@ -72,7 +72,7 @@ export const tokenQueries = {
       });
 
       return tokens;
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[TokenQuery] Error fetching tokens:', error);
       throw error;
     }
@@ -98,7 +98,7 @@ export const tokenQueries = {
       });
 
       return collections;
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[TokenQuery] Error fetching NFT collections:', error);
       throw error;
     }
@@ -131,7 +131,7 @@ export const tokenQueries = {
       });
 
       return result.nfts;
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[TokenQuery] Error fetching NFTs from collection:', error);
       throw error;
     }
@@ -308,7 +308,7 @@ export const tokenQueries = {
       }
 
       return allNFTs;
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[TokenQuery] Error fetching all NFTs from collection:', error);
       throw error;
     }
@@ -402,7 +402,7 @@ export const tokenQueries = {
         ...balanceData,
         lastUpdated: Date.now(),
       };
-    } catch (error: unknown) {
+    } catch (error: any) {
       logger.error('[TokenQuery] Error fetching balance:', error);
       throw error;
     }

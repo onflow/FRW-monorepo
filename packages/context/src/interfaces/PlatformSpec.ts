@@ -47,6 +47,9 @@ export interface PlatformSpec {
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
 
+  // EVM transaction callback for EOA to Flow COA withdrawal
+  evmTransactionCallback?(trxData: any): Promise<any>;
+
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;

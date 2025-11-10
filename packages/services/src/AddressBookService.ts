@@ -1,6 +1,6 @@
 import { AddressbookService } from '@onflow/frw-api';
 import { context, type PlatformSpec } from '@onflow/frw-context';
-import type { AddressBookResponse } from '@onflow/frw-types';
+import { type AddressBookResponse, FRWError, ErrorCode } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
 /**
@@ -22,9 +22,11 @@ export class AddressBookService {
       if (!bridgeToUse) {
         try {
           bridgeToUse = context.bridge;
-        } catch {
-          throw new Error(
-            'AddressBookService requires bridge parameter or initialized ServiceContext'
+        } catch (error) {
+          throw new FRWError(
+            ErrorCode.BRIDGE_NOT_FOUND,
+            'AddressBookService requires bridge parameter or initialized ServiceContext',
+            { bridge, error }
           );
         }
       }
@@ -87,10 +89,11 @@ export class AddressBookService {
       }
     } catch (error) {
       logger.error('[AddressBookService] Failed to fetch address book:', error);
-      // Return empty array on error
-      return {
-        contacts: [],
-      };
+      throw new FRWError(
+        ErrorCode.ADDRESSBOOK_FETCH_FAILED,
+        'Failed to fetch address book contacts',
+        { error }
+      );
     }
   }
 }

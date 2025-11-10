@@ -1548,3 +1548,12 @@ export enum Network {
 }
 type IPayerStatusPayloadV1StatusVersion = 1;
 type IPayerStatusApiResponseV1Status = 200 | 429 | 500 | 503;
+export enum EnumPayerSignParamsNetwork {
+  'mainnet' = 'mainnet',
+  'testnet' = 'testnet'
+}
+export enum EnumAuthSignParamsNetwork {
+  'mainnet' = 'mainnet',
+  'testnet' = 'testnet',
+  'sandboxnet' = 'sandboxnet'
+}

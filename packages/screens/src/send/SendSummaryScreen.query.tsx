@@ -443,8 +443,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         const currentAddress = fromAccount.address;
         tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('[SendSummaryScreen] Transaction failed:', error);
+      showError(error, t, bridge);
     }
   }, [executeTransaction, selectedCollection, fromAccount]);
 

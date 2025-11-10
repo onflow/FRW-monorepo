@@ -172,10 +172,16 @@ const Header = ({ _loading = false }) => {
         >
           <AccountAvatar
             network={network}
-            emoji={currentWallet.icon}
-            color={currentWallet.color}
+            emoji={currentWallet?.icon}
+            color={currentWallet?.color}
             parentEmoji={
-              parentWallet.address !== currentWallet.address ? parentWallet.icon : undefined
+              // Hide parent icon if it's an EOA account (id === 99 or name === 'EVM Account (EOA)')
+              currentWallet &&
+              (currentWallet.id === 99 || currentWallet.name === 'EVM Account (EOA)')
+                ? undefined
+                : currentWallet && parentWallet.address !== currentWallet.address
+                  ? parentWallet.icon
+                  : undefined
             }
             parentColor={parentWallet.color}
             active={true}
@@ -329,15 +335,31 @@ const Header = ({ _loading = false }) => {
             toggleDrawer={toggleDrawer}
             togglePop={togglePop}
             userInfo={userInfo}
-            activeAccount={currentWallet}
-            activeParentAccount={parentWallet}
+            activeAccount={
+              currentWallet || { address: '', name: '', icon: '', color: '', chain: 747, id: 0 }
+            }
+            activeParentAccount={
+              parentWallet || {
+                address: '',
+                name: '',
+                icon: '',
+                color: '',
+                chain: 747,
+                id: 0,
+                publicKey: '',
+                signAlgo: 0,
+                hashAlgo: 0,
+                keyIndex: 0,
+                weight: 1000,
+              }
+            }
             walletList={walletList}
             network={network}
             modeOn={developerMode}
             mainAddressLoading={mainAddressLoading}
             noAddress={noAddress ?? false}
           />
-          {appBarLabel(currentWallet)}
+          {appBarLabel(currentWallet || { address: '', name: '' })}
           <NewsDrawer />
           <Popup
             isConfirmationOpen={ispop}
@@ -347,7 +369,9 @@ const Header = ({ _loading = false }) => {
               setPop(false);
             }}
             userInfo={userInfo}
-            current={currentWallet}
+            current={
+              currentWallet || { address: '', name: '', icon: '', color: '', chain: 747, id: 0 }
+            }
             switchProfile={switchProfile}
             profileIds={profileIds || []}
             switchLoading={switchLoading}

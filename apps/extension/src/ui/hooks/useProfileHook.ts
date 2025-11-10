@@ -53,8 +53,8 @@ export const useProfiles = () => {
   const userInfo = useUserInfo(currentId);
   // The user wallet data - which public key is currently active
   const userWallets = useUserWallets();
-  // The main accounts for the current public key
-  const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
+  // The main accounts for the current user
+  const mainAccounts = useMainAccounts(network, currentId);
   const walletList = mainAccounts ?? [];
   // The accounts that have been selected by the user
   const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);
@@ -99,21 +99,10 @@ export const useProfiles = () => {
       ),
     [activeAccounts?.currentAddress, activeAccounts?.parentAddress]
   );
-  const pendingAccountTransactions = usePendingAccountCreationTransactions(
-    network,
-    userWallets?.currentPubkey
-  );
+  const pendingAccountTransactions = usePendingAccountCreationTransactions(network, currentId);
 
   // The current wallet is the wallet that the user is currently using
   const currentWallet = useMemo(() => {
-    console.log(
-      'currentWallet =====>',
-      activeAccountType,
-      evmAccount,
-      childAccounts,
-      parentWallet,
-      activeAccounts?.currentAddress
-    );
     switch (activeAccountType) {
       case 'evm':
         // evmAccount ?? INITIAL_WALLET;
@@ -144,6 +133,8 @@ export const useProfiles = () => {
     activeAccountType === 'child' ||
     (activeAccountType === 'main' && (!!evmAccount || !!childAccounts?.length));
 
+  const eoaAccount = parentWallet.eoaAccount;
+
   return {
     currentWallet,
     mainAddress,
@@ -168,5 +159,6 @@ export const useProfiles = () => {
     payer,
     network,
     pendingAccountTransactions,
+    eoaAccount,
   };
 };
