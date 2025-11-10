@@ -363,11 +363,8 @@ export function ConfirmRecoveryPhraseScreen({
         // - Firebase authentication (Step 9)
         // - Wallet-Kit initialization (Step 10)
         // - Fast account discovery using txId (Step 11)
-        const saveResult = await bridge.saveMnemonic(mnemonic, customToken, txId);
-
-        if (!saveResult.success) {
-          throw new Error(saveResult.error || 'Failed to save mnemonic to secure storage');
-        }
+        // saveMnemonic now throws errors on failure, so we can just await it
+        await bridge.saveMnemonic(mnemonic, customToken, txId);
 
         logger.info('[ConfirmRecoveryPhraseScreen] Native handoff successful!');
         logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete');
