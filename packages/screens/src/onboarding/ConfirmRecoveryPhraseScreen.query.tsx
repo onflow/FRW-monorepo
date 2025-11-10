@@ -10,12 +10,18 @@ import {
   OnboardingBackground,
   Button,
   ScrollView,
+  AccountCreationLoadingState,
 } from '@onflow/frw-ui';
-import { SeedPhraseKey, SignatureAlgorithm, BIP44_PATHS, MemoryStorage } from '@onflow/frw-wallet';
+import {
+  SeedPhraseKey,
+  SignatureAlgorithm,
+  BIP44_PATHS,
+  MemoryStorage,
+  WalletCoreProvider,
+} from '@onflow/frw-wallet';
 import { useMutation } from '@tanstack/react-query';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator } from 'react-native';
 
 // Helper function to generate 3 random unique positions from 1-12
 const generateRandomPositions = (): number[] => {
@@ -223,20 +229,26 @@ export function ConfirmRecoveryPhraseScreen({
         tempStorage
       );
 
-      const publicKeyBytes = await seedPhraseKey.publicKey(SignatureAlgorithm.ECDSA_P256);
-      if (!publicKeyBytes) {
-        throw new Error('Failed to derive public key from mnemonic');
+      // Get public key hex directly from WalletCoreProvider to avoid double conversion
+      // This matches the extension's approach which uses hex strings directly
+      const hdWallet = (seedPhraseKey as any).hdWallet;
+      if (!hdWallet) {
+        throw new Error('HD wallet not initialized');
       }
 
-      // Convert Uint8Array to hex string (React Native compatible - no Buffer)
-      // For ECDSA P-256, the public key should be 64 bytes (128 hex characters) after removing '04' prefix
-      let publicKeyHex = Array.from(publicKeyBytes)
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
+      // Get public key as hex string directly (already has '04' prefix removed)
+      const publicKeyHex = await WalletCoreProvider.getFlowPublicKeyBySignatureAlgorithm(
+        hdWallet,
+        'ECDSA_P256',
+        BIP44_PATHS.FLOW
+      );
 
-      // Ensure we don't have '04' prefix (should already be removed by SeedPhraseKey.publicKey)
-      if (publicKeyHex.startsWith('04')) {
-        publicKeyHex = publicKeyHex.slice(2);
+      // Validate public key format
+      if (!/^[0-9a-fA-F]+$/.test(publicKeyHex)) {
+        logger.error(
+          '[ConfirmRecoveryPhraseScreen] Invalid public key format - contains non-hex characters'
+        );
+        throw new Error('Invalid public key format: must be hexadecimal string');
       }
 
       // Validate public key length for ECDSA P-256 (should be 64 bytes = 128 hex chars)
@@ -266,8 +278,18 @@ export function ConfirmRecoveryPhraseScreen({
 
       // Get device info
       const platform = bridge.getPlatform();
+
+      // Generate a UUID v4 for device_id (required by backend)
+      const generateUUID = (): string => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          const r = (Math.random() * 16) | 0;
+          const v = c === 'x' ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        });
+      };
+
       const deviceInfo = {
-        device_id: '', // Will be filled by platform
+        device_id: generateUUID(), // Generate UUID for device identification
         name:
           platform === Platform.iOS ? 'iOS' : platform === Platform.Android ? 'Android' : 'Unknown',
         type: platform === Platform.iOS ? 'iOS' : platform === Platform.Android ? 'Android' : 'Web',
@@ -327,8 +349,8 @@ export function ConfirmRecoveryPhraseScreen({
         username,
         accountKey: {
           public_key: publicKeyHex,
-          sign_algo: 2, // ECDSA_P256
-          hash_algo: 1, // SHA2_256
+          sign_algo: 1, // ECDSA_P256 (Flow enum: 1 = P-256, 2 = secp256k1)
+          hash_algo: 3, // SHA3_256 (required for ECDSA_P256 per extension comment)
         },
         deviceInfo,
       });
@@ -435,136 +457,130 @@ export function ConfirmRecoveryPhraseScreen({
     return selectedAnswers[index] === question.correctAnswer;
   });
 
-  // Show loading overlay while creating account
-  if (isCreatingAccount) {
-    return (
+  return (
+    <>
       <OnboardingBackground>
-        <YStack flex={1} items="center" justify="center" gap="$4">
-          <ActivityIndicator size="large" color="#00EF8B" />
-          <Text fontSize={24} fontWeight="700" color="$text">
-            Creating Your Account
-          </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center" px="$6">
-            Deriving your Flow address from seed phrase...
-          </Text>
+        <YStack flex={1}>
+          <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+            <YStack px="$4" pt="$4">
+              {/* Title and description */}
+              <YStack items="center" mb="$8" gap="$2">
+                <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+                  {t('onboarding.confirmRecoveryPhrase.title')}
+                </Text>
+                <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
+                  {t('onboarding.confirmRecoveryPhrase.description')}
+                </Text>
+              </YStack>
+
+              {/* All questions */}
+              <YStack gap="$8">
+                {questions.map((question, index) => {
+                  const selectedAnswer = selectedAnswers[index];
+                  const isCorrect = selectedAnswer === question.correctAnswer;
+
+                  return (
+                    <YStack key={index} gap="$3" items="center">
+                      <Text fontSize="$5" fontWeight="700" color="$text" text="center">
+                        {t('onboarding.confirmRecoveryPhrase.selectWord', {
+                          position: question.position,
+                        })}
+                      </Text>
+
+                      {/* Word options container - Single horizontal row as per Figma */}
+                      <View
+                        width="100%"
+                        maxWidth={339}
+                        height={57}
+                        rounded={16}
+                        bg="rgba(255, 255, 255, 0.1)"
+                        borderWidth={1}
+                        borderColor="rgba(255, 255, 255, 0.1)"
+                        paddingHorizontal={12}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <XStack gap={8} width="100%" justify="space-between">
+                          {question.options.map((word) => {
+                            const isSelected = selectedAnswer === word;
+                            const isWrong = isSelected && word !== question.correctAnswer;
+                            const isCorrectSelection =
+                              isSelected && word === question.correctAnswer;
+
+                            return (
+                              <Button
+                                key={word}
+                                variant="ghost"
+                                onPress={() => handleSelectWord(index, word)}
+                                padding={0}
+                                flex={1}
+                              >
+                                <View
+                                  width="100%"
+                                  minWidth={58}
+                                  height={45}
+                                  rounded={10}
+                                  bg={
+                                    isCorrectSelection ? '$text' : isWrong ? '$text' : 'transparent'
+                                  }
+                                  alignItems="center"
+                                  justifyContent="center"
+                                >
+                                  <Text
+                                    fontSize={16}
+                                    fontWeight="500"
+                                    color={
+                                      isCorrectSelection ? '$primary' : isWrong ? '$error' : '$text'
+                                    }
+                                    text="center"
+                                    lineHeight={28}
+                                  >
+                                    {word}
+                                  </Text>
+                                </View>
+                              </Button>
+                            );
+                          })}
+                        </XStack>
+                      </View>
+                    </YStack>
+                  );
+                })}
+              </YStack>
+            </YStack>
+          </ScrollView>
+
+          {/* Finish button - matching other screens style */}
+          <YStack px="$4" pb="$6">
+            <YStack
+              width="100%"
+              height={52}
+              bg={!allAnswersCorrect ? '#6b7280' : '$text'}
+              rounded={16}
+              items="center"
+              justify="center"
+              borderWidth={1}
+              borderColor={!allAnswersCorrect ? '#6b7280' : '$text'}
+              opacity={!allAnswersCorrect ? 0.7 : 1}
+              pressStyle={{ opacity: 0.9 }}
+              onPress={!allAnswersCorrect ? undefined : handleFinish}
+              cursor={!allAnswersCorrect ? 'not-allowed' : 'pointer'}
+            >
+              <Text fontSize="$4" fontWeight="700" color={!allAnswersCorrect ? '$white' : '$bg'}>
+                {t('onboarding.confirmRecoveryPhrase.finish')}
+              </Text>
+            </YStack>
+          </YStack>
         </YStack>
       </OnboardingBackground>
-    );
-  }
 
-  return (
-    <OnboardingBackground>
-      <YStack flex={1}>
-        <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-          <YStack px="$4" pt="$4">
-            {/* Title and description */}
-            <YStack items="center" mb="$8" gap="$2">
-              <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
-                {t('onboarding.confirmRecoveryPhrase.title')}
-              </Text>
-              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
-                {t('onboarding.confirmRecoveryPhrase.description')}
-              </Text>
-            </YStack>
-
-            {/* All questions */}
-            <YStack gap="$8">
-              {questions.map((question, index) => {
-                const selectedAnswer = selectedAnswers[index];
-                const isCorrect = selectedAnswer === question.correctAnswer;
-
-                return (
-                  <YStack key={index} gap="$3" items="center">
-                    <Text fontSize="$5" fontWeight="700" color="$text" text="center">
-                      {t('onboarding.confirmRecoveryPhrase.selectWord', {
-                        position: question.position,
-                      })}
-                    </Text>
-
-                    {/* Word options container - Single horizontal row as per Figma */}
-                    <View
-                      width="100%"
-                      maxWidth={339}
-                      height={57}
-                      rounded={16}
-                      bg="rgba(255, 255, 255, 0.1)"
-                      borderWidth={1}
-                      borderColor="rgba(255, 255, 255, 0.1)"
-                      paddingHorizontal={12}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <XStack gap={8} width="100%" justify="space-between">
-                        {question.options.map((word) => {
-                          const isSelected = selectedAnswer === word;
-                          const isWrong = isSelected && word !== question.correctAnswer;
-                          const isCorrectSelection = isSelected && word === question.correctAnswer;
-
-                          return (
-                            <Button
-                              key={word}
-                              variant="ghost"
-                              onPress={() => handleSelectWord(index, word)}
-                              padding={0}
-                              flex={1}
-                            >
-                              <View
-                                width="100%"
-                                minWidth={58}
-                                height={45}
-                                rounded={10}
-                                bg={
-                                  isCorrectSelection ? '$text' : isWrong ? '$text' : 'transparent'
-                                }
-                                alignItems="center"
-                                justifyContent="center"
-                              >
-                                <Text
-                                  fontSize={16}
-                                  fontWeight="500"
-                                  color={
-                                    isCorrectSelection ? '$primary' : isWrong ? '$error' : '$text'
-                                  }
-                                  text="center"
-                                  lineHeight={28}
-                                >
-                                  {word}
-                                </Text>
-                              </View>
-                            </Button>
-                          );
-                        })}
-                      </XStack>
-                    </View>
-                  </YStack>
-                );
-              })}
-            </YStack>
-          </YStack>
-        </ScrollView>
-
-        {/* Finish button - matching other screens style */}
-        <YStack px="$4" pb="$6">
-          <YStack
-            width="100%"
-            height={52}
-            bg={!allAnswersCorrect ? '#6b7280' : '$text'}
-            rounded={16}
-            items="center"
-            justify="center"
-            borderWidth={1}
-            borderColor={!allAnswersCorrect ? '#6b7280' : '$text'}
-            opacity={!allAnswersCorrect ? 0.7 : 1}
-            pressStyle={{ opacity: 0.9 }}
-            onPress={!allAnswersCorrect ? undefined : handleFinish}
-            cursor={!allAnswersCorrect ? 'not-allowed' : 'pointer'}
-          >
-            <Text fontSize="$4" fontWeight="700" color={!allAnswersCorrect ? '$white' : '$bg'}>
-              {t('onboarding.confirmRecoveryPhrase.finish')}
-            </Text>
-          </YStack>
-        </YStack>
-      </YStack>
-    </OnboardingBackground>
+      {/* Account Creation Loading State - matches SecureEnclaveScreen */}
+      <AccountCreationLoadingState
+        visible={isCreatingAccount}
+        title={t('onboarding.confirmRecoveryPhrase.creating.title', {
+          defaultValue: 'Creating\nyour account',
+        })}
+      />
+    </>
   );
 }

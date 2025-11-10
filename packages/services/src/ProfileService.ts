@@ -83,6 +83,7 @@ export class ProfileService {
           public_key: params.accountKey.public_key,
           sign_algo: params.accountKey.sign_algo,
           hash_algo: params.accountKey.hash_algo,
+          weight: 1000, // Default weight for Flow accounts (required by backend)
         },
         deviceInfo: params.deviceInfo,
       };
@@ -93,10 +94,30 @@ export class ProfileService {
         accountKey: {
           public_key: requestPayload.accountKey.public_key.slice(0, 16) + '...',
           public_key_length: requestPayload.accountKey.public_key.length,
+          public_key_full: requestPayload.accountKey.public_key, // Log full key for debugging
           sign_algo: requestPayload.accountKey.sign_algo,
           hash_algo: requestPayload.accountKey.hash_algo,
+          weight: requestPayload.accountKey.weight,
         },
         deviceInfo: requestPayload.deviceInfo,
+      });
+
+      // Log the exact data that will be sent (after API codegen transformation)
+      logger.debug('[ProfileService] About to call Userv3GoService.register with:', {
+        username: requestPayload.username,
+        accountKey: requestPayload.accountKey,
+        deviceInfo: requestPayload.deviceInfo,
+      });
+
+      // Log what the extension would send for comparison (v1/register format)
+      logger.debug('[ProfileService] Extension format (v1/register) would be:', {
+        username: requestPayload.username,
+        account_key: {
+          public_key: requestPayload.accountKey.public_key,
+          sign_algo: requestPayload.accountKey.sign_algo,
+          hash_algo: requestPayload.accountKey.hash_algo,
+          weight: requestPayload.accountKey.weight,
+        },
       });
 
       // Validate public key format before sending
@@ -158,12 +179,17 @@ export class ProfileService {
           url: requestUrl,
           method: requestMethod,
           responseData: responseData || 'No response data',
+          requestBody: error.config?.data
+            ? JSON.parse(error.config.data)
+            : 'Unable to parse request body',
           requestPayload: {
             username: params.username,
             accountKey: {
               public_key: params.accountKey.public_key.slice(0, 16) + '...',
+              public_key_full: params.accountKey.public_key,
               sign_algo: params.accountKey.sign_algo,
               hash_algo: params.accountKey.hash_algo,
+              weight: 1000, // Default weight we're sending
             },
             deviceInfo: params.deviceInfo,
           },

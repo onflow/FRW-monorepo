@@ -274,12 +274,12 @@ const config = {
       immer: path.resolve(monorepoRoot, 'node_modules/.pnpm/immer@10.1.1/node_modules/immer'),
       // Force React Native to use the correct icons entry point
       '@onflow/frw-icons': path.resolve(monorepoRoot, 'packages/icons/dist/react-native/index.js'),
-      // Force wallet package to use SOURCE files for React Native (so Metro can auto-resolve .native.ts)
-      '@onflow/frw-wallet': path.resolve(monorepoRoot, 'packages/wallet/src/index.ts'),
-      // Force wallet-core-provider to use React Native SOURCE implementation
+      // Force wallet package to use DIST files (compiled with proper conditional exports)
+      '@onflow/frw-wallet': path.resolve(monorepoRoot, 'packages/wallet/dist/index.js'),
+      // Force wallet-core-provider to use React Native native implementation
       '@onflow/frw-wallet/crypto/wallet-core-provider': path.resolve(
         monorepoRoot,
-        'packages/wallet/src/crypto/wallet-core-provider.native.ts'
+        'packages/wallet/dist/crypto/wallet-core-provider.native.js'
       ),
     },
   },

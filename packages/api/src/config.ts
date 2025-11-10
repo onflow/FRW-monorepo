@@ -61,6 +61,18 @@ export function configureApiEndpoints(
         // TODO: Replace with proper logger when context is available
       }
       config.headers.network = getNetwork();
+
+      // Log request body for debugging (especially for /v3/register)
+      if (config.url?.includes('/v3/register') && config.data) {
+        try {
+          const requestBody =
+            typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
+          console.log('[API] /v3/register request body:', JSON.stringify(requestBody, null, 2));
+        } catch (e) {
+          console.log('[API] /v3/register request data (raw):', config.data);
+        }
+      }
+
       return config;
     },
     (error) => Promise.reject(error)
