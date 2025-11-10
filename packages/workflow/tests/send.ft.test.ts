@@ -372,7 +372,10 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
   //   };
 
-  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   const txid = await SendTransaction(payload, cadenceService, {
+  //     ethSign: evmTrxCallback,
+  //     network: 'mainnet',
+  //   });
   //   console.log(txid);
   //   expect(txid.length).toBe(64);
   // });
@@ -393,7 +396,10 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '0x0000000000000000000000000000000000000000',
   //   };
 
-  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   const txid = await SendTransaction(payload, cadenceService, {
+  //     ethSign: evmTrxCallback,
+  //     network: 'mainnet',
+  //   });
   //   console.log(txid, '----txid----');
   //   expect(txid.length).toBe(64);
   // });
