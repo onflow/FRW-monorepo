@@ -851,7 +851,24 @@ export class OpenApiService {
         username,
       }
     );
-    await this._loginWithToken(data.data.id, data.data.custom_token);
+
+    if (!data) {
+      throw new Error('Invalid response from registration API');
+    }
+
+    // Check if the response has the expected structure
+    const responseData = data.data || data;
+
+    if (!responseData.id || !responseData.custom_token) {
+      console.error('Missing required fields in registration response:', {
+        id: responseData.id,
+        custom_token: responseData.custom_token,
+        fullResponse: data,
+      });
+      throw new Error('Registration response missing required fields (id or custom_token)');
+    }
+
+    await this._loginWithToken(responseData.id, responseData.custom_token);
 
     // Track the registration
     analyticsService.track('account_created', {

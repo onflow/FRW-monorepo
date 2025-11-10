@@ -67,6 +67,8 @@ export const AccountCard = ({
   const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
   const isEvmAccount = account && isValidEthereumAddress(account.address);
   const isChildAccount = hasParentAccount && !isEvmAccount;
+  // EOA accounts are identified by id === 99 or name === 'EVM Account (EOA)'
+  const isEOAAccount = isEvmAccount && (account.id === 99 || account.name === 'EVM Account (EOA)');
 
   // Only show NFTs for child accounts
   const nftCatalogCollections = useCadenceNftCollectionsAndIds(
@@ -126,7 +128,7 @@ export const AccountCard = ({
             network={network}
             emoji={icon}
             color={color}
-            parentEmoji={showLink ? undefined : parentIcon}
+            parentEmoji={showLink || isEOAAccount ? undefined : parentIcon}
             parentColor={parentColor}
             active={active}
             spinning={spinning}
