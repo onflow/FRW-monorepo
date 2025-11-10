@@ -1,9 +1,10 @@
-import { Userv3GoService, UserGoService } from '@onflow/frw-api';
+import { UserGoService } from '@onflow/frw-api';
 import { logger } from '@onflow/frw-utils';
 
 /**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
+ * Matches extension implementation: uses /v1/register endpoint
  */
 export class ProfileService {
   private static instance: ProfileService;
@@ -23,27 +24,19 @@ export class ProfileService {
   /**
    * Register a new user profile with the backend
    * This is the correct API for EOA account creation (not COA)
+   * Matches extension implementation: uses /v1/register endpoint (not /v3/register)
    *
    * @param params - Registration parameters
    * @param params.username - Username for the new profile
    * @param params.accountKey - Account key with public key and signature/hash algorithms
-   * @param params.deviceInfo - Device information for registration
    * @returns Promise with registration response containing custom_token and user id
    */
   async register(params: {
     username: string;
     accountKey: {
       public_key: string;
-      sign_algo: number; // 2 for ECDSA_P256
-      hash_algo: number; // 1 for SHA2_256
-    };
-    deviceInfo: {
-      device_id?: string;
-      name: string;
-      type: string;
-      user_agent?: string;
-      version?: string;
-      ip?: string;
+      sign_algo: number; // 2 for ECDSA_secp256k1 (extension default)
+      hash_algo: number; // 1 for SHA2_256 (extension default)
     };
   }): Promise<{
     data: {
@@ -60,23 +53,23 @@ export class ProfileService {
         hashAlgo: params.accountKey.hash_algo,
       });
 
-      // Check if Userv3GoService is available
-      if (!Userv3GoService) {
-        logger.error('[ProfileService] Userv3GoService is undefined');
-        throw new Error('Userv3GoService is not available. API services may not be initialized.');
+      // Check if UserGoService is available
+      if (!UserGoService) {
+        logger.error('[ProfileService] UserGoService is undefined');
+        throw new Error('UserGoService is not available. API services may not be initialized.');
       }
 
-      if (typeof Userv3GoService.register !== 'function') {
-        logger.error('[ProfileService] Userv3GoService.register is not a function', {
-          type: typeof Userv3GoService.register,
-          Userv3GoService: Userv3GoService,
+      if (typeof UserGoService.register1 !== 'function') {
+        logger.error('[ProfileService] UserGoService.register1 is not a function', {
+          type: typeof UserGoService.register1,
+          UserGoService: UserGoService,
         });
         throw new Error(
-          `Userv3GoService.register is not a function. Type: ${typeof Userv3GoService.register}`
+          `UserGoService.register1 is not a function. Type: ${typeof UserGoService.register1}`
         );
       }
 
-      // Prepare request payload
+      // Prepare request payload (v1/register only takes username and account_key, no device_info)
       const requestPayload = {
         username: params.username,
         accountKey: {
@@ -85,7 +78,6 @@ export class ProfileService {
           hash_algo: params.accountKey.hash_algo,
           weight: 1000, // Default weight for Flow accounts (required by backend)
         },
-        deviceInfo: params.deviceInfo,
       };
 
       // Log request payload (without sensitive data)
@@ -99,14 +91,12 @@ export class ProfileService {
           hash_algo: requestPayload.accountKey.hash_algo,
           weight: requestPayload.accountKey.weight,
         },
-        deviceInfo: requestPayload.deviceInfo,
       });
 
       // Log the exact data that will be sent (after API codegen transformation)
-      logger.debug('[ProfileService] About to call Userv3GoService.register with:', {
+      logger.debug('[ProfileService] About to call UserGoService.register1 with:', {
         username: requestPayload.username,
         accountKey: requestPayload.accountKey,
-        deviceInfo: requestPayload.deviceInfo,
       });
 
       // Validate public key format before sending
@@ -116,21 +106,21 @@ export class ProfileService {
         throw new Error('Invalid public key format: must be hexadecimal string');
       }
 
-      // For ECDSA P-256, public key should be 128 hex characters (64 bytes)
+      // For ECDSA secp256k1, public key should be 128 hex characters (64 bytes)
       if (requestPayload.accountKey.sign_algo === 2 && publicKeyHex.length !== 128) {
-        logger.error('[ProfileService] Invalid public key length for ECDSA P-256:', {
+        logger.error('[ProfileService] Invalid public key length for ECDSA secp256k1:', {
           length: publicKeyHex.length,
           expected: 128,
           publicKey: publicKeyHex.slice(0, 32) + '...',
         });
         throw new Error(
-          `Invalid public key length for ECDSA P-256: expected 128 hex characters, got ${publicKeyHex.length}`
+          `Invalid public key length for ECDSA secp256k1: expected 128 hex characters, got ${publicKeyHex.length}`
         );
       }
 
       // Axios wraps the response in a 'data' property
       // The TypeScript type says Promise<controllers_UserReturn> but axios returns { data: controllers_UserReturn }
-      const response = (await Userv3GoService.register(requestPayload)) as any; // Type assertion needed because axios wraps response
+      const response = (await UserGoService.register1(requestPayload)) as any; // Type assertion needed because axios wraps response
 
       // Handle both axios response structure and direct response
       const userReturn = response.data || response;
@@ -181,7 +171,6 @@ export class ProfileService {
               hash_algo: params.accountKey.hash_algo,
               weight: 1000, // Default weight we're sending
             },
-            deviceInfo: params.deviceInfo,
           },
         });
 
@@ -225,7 +214,7 @@ export class ProfileService {
     try {
       logger.info('[ProfileService] Creating Flow address...');
 
-      // UserGoService.address2() returns Promise<any> - axios wraps it in 'data'
+      // UserGoService.address2() calls /v2/user/address (matches extension implementation)
       const response = (await UserGoService.address2()) as any;
 
       // Log the full response for debugging

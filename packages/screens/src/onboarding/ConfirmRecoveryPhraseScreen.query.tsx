@@ -1,7 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ProfileService } from '@onflow/frw-services';
 // import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
-import { Platform } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -203,10 +202,11 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('HD wallet not initialized');
       }
 
-      // Get public key as hex string directly (already has '04' prefix removed)
+      // Get public key as hex string directly using secp256k1 (matches extension default)
+      // Extension uses SIGN_ALGO_NUM_DEFAULT = ECDSA_secp256k1 (2) with HASH_ALGO_NUM_DEFAULT = SHA2_256 (1)
       const publicKeyHex = await WalletCoreProvider.getFlowPublicKeyBySignatureAlgorithm(
         hdWallet,
-        'ECDSA_P256',
+        'ECDSA_secp256k1',
         BIP44_PATHS.FLOW
       );
 
@@ -218,7 +218,7 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('Invalid public key format: must be hexadecimal string');
       }
 
-      // Validate public key length for ECDSA P-256 (should be 64 bytes = 128 hex chars)
+      // Validate public key length for ECDSA secp256k1 (should be 64 bytes = 128 hex chars)
       if (publicKeyHex.length !== 128) {
         logger.error('[ConfirmRecoveryPhraseScreen] Invalid public key length:', {
           length: publicKeyHex.length,
@@ -243,29 +243,7 @@ export function ConfirmRecoveryPhraseScreen({
       const username = `u${timestamp.slice(-8)}`;
       logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
 
-      // Get device info
-      const platform = bridge.getPlatform();
-
-      // Generate a UUID v4 for device_id (required by backend)
-      const generateUUID = (): string => {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-          const r = (Math.random() * 16) | 0;
-          const v = c === 'x' ? r : (r & 0x3) | 0x8;
-          return v.toString(16);
-        });
-      };
-
-      const deviceInfo = {
-        device_id: generateUUID(), // Generate UUID for device identification
-        name:
-          platform === Platform.iOS ? 'iOS' : platform === Platform.Android ? 'Android' : 'Unknown',
-        type: platform === Platform.iOS ? 'iOS' : platform === Platform.Android ? 'Android' : 'Web',
-        user_agent: navigator.userAgent || 'Flow Wallet',
-        version: bridge.getVersion?.() || '1.0.0',
-        ip: '',
-      };
-
-      // Register user profile using ProfileService (wraps Userv3Service.register)
+      // Register user profile using ProfileService (wraps UserGoService.register1 - /v1/register endpoint)
       logger.info('[ConfirmRecoveryPhraseScreen] Getting ProfileService instance...');
       logger.info('[ConfirmRecoveryPhraseScreen] ProfileService type:', typeof ProfileService);
       logger.info('[ConfirmRecoveryPhraseScreen] ProfileService value:', ProfileService);
@@ -312,14 +290,15 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       logger.info('[ConfirmRecoveryPhraseScreen] Calling profileSvc.register()...');
+      // Match extension implementation: sign_algo: 2 (ECDSA_secp256k1), hash_algo: 1 (SHA2_256)
+      // Extension uses /v1/register endpoint which doesn't require deviceInfo
       const registerResponse = await profileSvc.register({
         username,
         accountKey: {
           public_key: publicKeyHex,
-          sign_algo: 1, // ECDSA_P256 (Flow enum: 1 = P-256, 2 = secp256k1)
-          hash_algo: 3, // SHA3_256 (required for ECDSA_P256 per extension comment)
+          sign_algo: 2, // ECDSA_secp256k1 (matches extension SIGN_ALGO_NUM_DEFAULT)
+          hash_algo: 1, // SHA2_256 (matches extension HASH_ALGO_NUM_DEFAULT)
         },
-        deviceInfo,
       });
 
       const customToken = registerResponse.data.custom_token;
