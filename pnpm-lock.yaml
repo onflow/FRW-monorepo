@@ -160,22 +160,22 @@ importers:
         specifier: ^1.2.8
         version: 1.2.11(typescript@5.7.2)(zod@3.25.76)
       '@tamagui/animations-react-native':
-        specifier: ^1.132.16
+        specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/config':
-        specifier: ^1.132.16
+        specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@3.19.2(@babel/core@7.28.4)(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/core':
-        specifier: ^1.132.16
+        specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/font-inter':
-        specifier: ^1.132.16
+        specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/theme-builder':
-        specifier: ^1.132.17
+        specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/web':
-        specifier: ^1.132.16
+        specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@trustwallet/wallet-core':
         specifier: ^4.3.6
@@ -340,7 +340,7 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       tamagui:
-        specifier: ^1.132.16
+        specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       ts-toolbelt:
         specifier: ^9.6.0
@@ -3252,7 +3252,6 @@ packages:
   '@outblock/cadence-codegen@0.0.9':
     resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
     engines: {node: '>=14'}
-    cpu: [x64, arm64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -15258,9 +15257,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 

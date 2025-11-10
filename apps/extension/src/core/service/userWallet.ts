@@ -56,6 +56,7 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
+  type Emoji,
 } from '@/shared/types';
 import {
   getErrorMessage,
@@ -609,8 +610,6 @@ class UserWallet {
     const network = this.getNetwork();
     const pubkey = this.getCurrentPubkey();
 
-    console.log('getMainAccounts', network, pubkey);
-
     // Get original Flow main accounts
     const originalMainAccounts = await getMainAccountsWithPubKey(network, pubkey);
 
@@ -620,15 +619,15 @@ class UserWallet {
 
       // Try to get EOA account info (this won't require password if cached)
       const eoaInfo = await walletManager.getEOAAccountInfo();
-
+      const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
       if (eoaInfo) {
         eoaAccountInfo = {
           address: eoaInfo.address,
           chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
           id: 99, // Special ID for EOA
-          name: 'EVM Account (EOA)',
-          icon: '🔷',
-          color: '#627EEA', // EVM blue
+          name: eoaEmoji.name,
+          icon: eoaEmoji.emoji,
+          color: eoaEmoji.bgcolor,
           balance: eoaInfo.balance || '0',
         };
       }
@@ -638,8 +637,6 @@ class UserWallet {
         ...account,
         eoaAccount: eoaAccountInfo,
       }));
-
-      console.log('enhancedMainAccounts', enhancedMainAccounts);
 
       return enhancedMainAccounts;
     } catch (error) {
@@ -1780,8 +1777,6 @@ const loadMainAccountsWithPubKey = async (
   network: string,
   pubKey: string
 ): Promise<MainAccount[]> => {
-  console.log('loadMainAccountsWithPubKey', network, pubKey);
-
   // Get current user ID
   const userId = await getCurrentProfileId();
 
@@ -1814,11 +1809,7 @@ const loadMainAccountsWithPubKey = async (
   const mainAccounts: MainAccount[] = mainPublicKeyAccounts.map(
     (publicKeyAccount, index): MainAccount => {
       // Generate a hash from the address to get a consistent 0-9 index for emoji selection
-      const addressHash = publicKeyAccount.address.split('').reduce((hash, char) => {
-        return hash + char.charCodeAt(0);
-      }, 0);
-      const emojiIndex = addressHash % 10;
-      const defaultEmoji = getEmojiByIndex(emojiIndex);
+      const defaultEmoji = calculateEmojiIcon(publicKeyAccount.address);
 
       // Check if there's custom metadata for this address
       const customData = customMetadata[publicKeyAccount.address];
@@ -1859,14 +1850,15 @@ const loadMainAccountsWithPubKey = async (
       }
     }
 
+    const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
     const eoaAccountInfo = eoaInfo?.address
       ? {
           address: eoaInfo.address,
           chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
           id: 99, // Special ID for EOA
-          name: 'EVM Account (EOA)',
-          icon: '🔷',
-          color: '#627EEA', // EVM blue
+          name: eoaEmoji.name,
+          icon: eoaEmoji.emoji,
+          color: eoaEmoji.bgcolor,
           balance: eoaInfo.balance || '0',
         }
       : undefined;
@@ -2131,6 +2123,15 @@ const clearPendingAccountCreationTransactions = async (network: string, pubkey: 
   // Get current user ID
   const userId = await getCurrentProfileId();
   await clearCachedData(pendingAccountCreationTransactionsKey(network, userId));
+};
+
+export const calculateEmojiIcon = (address: string): Emoji => {
+  const addressHash = address.split('').reduce((hash, char) => {
+    return hash + char.charCodeAt(0);
+  }, 0);
+  const emojiIndex = addressHash % 10;
+  const defaultEmoji = getEmojiByIndex(emojiIndex);
+  return defaultEmoji;
 };
 
 const initAccountLoaders = () => {
