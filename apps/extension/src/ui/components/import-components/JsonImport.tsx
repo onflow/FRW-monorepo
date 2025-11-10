@@ -126,6 +126,7 @@ const JsonImport = ({
         style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
       >
         <PasswordTextarea
+          className="sentry-mask"
           minRows={5}
           placeholder={chrome.i18n.getMessage('You_can_import_the')}
           name="keystore"
@@ -133,6 +134,7 @@ const JsonImport = ({
           sx={{ marginBottom: '16px' }}
         />
         <TextField
+          className="sentry-mask"
           required
           placeholder={chrome.i18n.getMessage('Enter_password_for_json_file')}
           type={isVisible ? 'text' : 'password'}

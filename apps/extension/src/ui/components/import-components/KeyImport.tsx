@@ -60,6 +60,7 @@ const KeyImport = ({
         style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
       >
         <PasswordTextarea
+          className="sentry-mask"
           minRows={2}
           maxRows={2}
           placeholder={chrome.i18n.getMessage('Enter_your_Private_key')}
@@ -68,6 +69,7 @@ const KeyImport = ({
           sx={{ marginBottom: '16px' }}
         />
         <TextareaAutosize
+          className="sentry-mask"
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}
           style={{
             width: '100%',
