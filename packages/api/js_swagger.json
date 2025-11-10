@@ -626,6 +626,109 @@
         },
         "required": ["status", "message *"]
       },
+      "PayerRequest": {
+        "type": "object",
+        "required": ["cadence_base64"],
+        "properties": {
+          "cadence_base64": {
+            "type": "string",
+            "description": "Base64 encoded Cadence script"
+          },
+          "network": {
+            "$ref": "#/components/schemas/Network"
+          }
+        }
+      },
+      "PayerMsg": {
+        "type": "object",
+        "required": ["envelopeMessage"],
+        "properties": {
+          "envelopeMessage": {
+            "type": "string",
+            "description": "Envelope message for payer signing"
+          }
+        }
+      },
+      "PayloadMsg": {
+        "type": "object",
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "type": "string",
+            "description": "Message payload"
+          }
+        }
+      },
+      "payerSignRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/PayerMsg"
+          },
+          "network": {
+            "type": "string",
+            "description": "Network identifier"
+          }
+        }
+      },
+      "authSignRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/PayloadMsg"
+          },
+          "network": {
+            "type": "string",
+            "description": "Network identifier"
+          }
+        }
+      },
+      "PayerRequestHeaders": {
+        "type": "object",
+        "properties": {
+          "network": {
+            "$ref": "#/components/schemas/Network"
+          }
+        }
+      },
+      "SignedData": {
+        "type": "object",
+        "required": ["address", "keyId", "sig"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "The fee payer address",
+            "example": "0x1234567890abcdef"
+          },
+          "keyId": {
+            "type": "number",
+            "description": "The key index used for signing",
+            "example": 0
+          },
+          "sig": {
+            "type": "string",
+            "description": "The transaction signature",
+            "example": "a1b2c3d4e5f6..."
+          }
+        }
+      },
+      "PayerResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Response"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SignedData"
+              }
+            }
+          }
+        ]
+      },
       "Network": {
         "type": "string",
         "enum": ["mainnet", "testnet"],
@@ -1507,27 +1610,6 @@
         },
         "required": ["status", "data"]
       },
-      "SignedData": {
-        "type": "object",
-        "properties": {
-          "address": {
-            "type": "string",
-            "description": "The fee payer address",
-            "example": "0x1234567890abcdef"
-          },
-          "keyId": {
-            "type": "number",
-            "description": "The key index used for signing",
-            "example": 0
-          },
-          "sig": {
-            "type": "string",
-            "description": "The transaction signature",
-            "example": "a1b2c3d4e5f6..."
-          }
-        },
-        "required": ["address", "keyId", "sig"]
-      },
       "SignaturePayload": {
         "type": "object",
         "properties": {
@@ -1544,15 +1626,6 @@
         },
         "required": ["status", "data"]
       },
-      "PayerMsg": {
-        "type": "object",
-        "properties": {
-          "envelopeMessage": {
-            "type": "string"
-          }
-        },
-        "required": ["envelopeMessage"]
-      },
       "PayerSignParams": {
         "type": "object",
         "properties": {
@@ -1565,15 +1638,6 @@
           }
         },
         "required": ["message"]
-      },
-      "PayloadMsg": {
-        "type": "object",
-        "properties": {
-          "payload": {
-            "type": "string"
-          }
-        },
-        "required": ["payload"]
       },
       "AuthSignParams": {
         "type": "object",
@@ -1924,6 +1988,16 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
           "403": {
             "description": "Forbidden - transaction verification failed",
             "content": {
@@ -1992,6 +2066,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SignaturePayload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -2752,6 +2836,32 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NFTCollectionIdsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {},
+                      "example": []
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  },
+                  "required": ["data", "status", "message"]
                 }
               }
             }
