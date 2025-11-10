@@ -109,17 +109,6 @@ export class ProfileService {
         deviceInfo: requestPayload.deviceInfo,
       });
 
-      // Log what the extension would send for comparison (v1/register format)
-      logger.debug('[ProfileService] Extension format (v1/register) would be:', {
-        username: requestPayload.username,
-        account_key: {
-          public_key: requestPayload.accountKey.public_key,
-          sign_algo: requestPayload.accountKey.sign_algo,
-          hash_algo: requestPayload.accountKey.hash_algo,
-          weight: requestPayload.accountKey.weight,
-        },
-      });
-
       // Validate public key format before sending
       const publicKeyHex = requestPayload.accountKey.public_key;
       if (!/^[0-9a-fA-F]+$/.test(publicKeyHex)) {

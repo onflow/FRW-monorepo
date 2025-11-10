@@ -62,6 +62,22 @@ export function configureApiEndpoints(
           console.log('[API] /v3/register - Token present, length:', token.length);
         }
       } else {
+        // Endpoints that require authentication
+        const requiresAuth =
+          config.url?.includes('/v3/register') ||
+          config.url?.includes('/v3/login') ||
+          config.url?.includes('/v3/');
+
+        if (requiresAuth) {
+          const errorMessage =
+            `No authentication token available for ${config.url}. ` +
+            `Firebase Auth ID token is required for this endpoint. ` +
+            `This usually indicates a network connectivity issue preventing Firebase Auth from signing in anonymously. ` +
+            `Please check device/emulator internet connection and Firebase configuration.`;
+          console.error('[API]', errorMessage);
+          return Promise.reject(new Error(errorMessage));
+        }
+
         // TODO: Replace with proper logger when context is available
         if (config.url?.includes('/v3/register')) {
           console.warn('[API] /v3/register - No token available, request will likely fail');
