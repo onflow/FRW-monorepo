@@ -445,7 +445,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       }
     } catch (error: any) {
       logger.error('[SendSummaryScreen] Transaction failed:', error);
-      showError(error, t);
+      showError(error, t, bridge);
     }
   }, [executeTransaction, selectedCollection, fromAccount]);
 

@@ -434,7 +434,7 @@ export function SendToScreen(): ReactElement {
         } catch (error: any) {
           console.warn('Failed to add recent recipient:', error);
           // Don't block navigation if this fails
-          showError(error, t);
+          showError(error, t, bridge);
         }
       }
 
@@ -545,7 +545,7 @@ export function SendToScreen(): ReactElement {
       if (error.code !== 'SCAN_CANCELLED') {
         alert(`${t('common.error')}: ${t('errors.networkError')}`);
       }
-      showError(error, t);
+      showError(error, t, bridge);
     }
   }, [handleSearchChange, t]);
 
@@ -577,7 +577,7 @@ export function SendToScreen(): ReactElement {
       }, 1000);
     } catch (error: any) {
       logger.error('Failed to copy address:', error);
-      showError(error, t);
+      showError(error, t, bridge);
     }
   }, []);
 

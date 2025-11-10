@@ -13,8 +13,6 @@
   },
   "dependencies": {
     "@onflow/frw-types": "workspace:*",
-    "@onflow/frw-ui": "workspace:*",
-    "@onflow/frw-context": "workspace:*",
     "@babel/runtime": "^7.26.0"
   },
   "devDependencies": {

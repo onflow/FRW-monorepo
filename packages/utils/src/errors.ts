@@ -1,7 +1,6 @@
-import { bridge } from '@onflow/frw-context';
 import { FRWError } from '@onflow/frw-types';
 
-export const showError = (error: any, t: any) => {
+export const showError = (error: any, t: any, bridge: any) => {
   if (error instanceof FRWError) {
     bridge.showToast?.(
       t ? t('common.error') : 'Error',
