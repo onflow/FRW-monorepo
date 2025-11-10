@@ -9,10 +9,7 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
-import {
-  EthSigner,
-  type EthLegacyTransaction,
-} from '@onflow/frw-wallet';
+import { EthSigner, type EthLegacyTransaction } from '@onflow/frw-wallet';
 import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
@@ -545,15 +542,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
       const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
 
       const KEY_ID = Number(keyId) || 0;
-
-      // Debug: Log the address being used for authorization
-      console.log('Proposer function - selected account:', {
-        accountType: selectedAccount.type,
-        address: selectedAccount.address,
-        parentAddress: selectedAccount.parentAddress,
-        finalAddress: ADDRESS,
-        keyId: KEY_ID,
-      });
 
       return {
         ...account,
