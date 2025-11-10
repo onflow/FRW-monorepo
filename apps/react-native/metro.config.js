@@ -30,8 +30,64 @@ const config = {
     },
     // Mock Node.js modules for React Native
     resolveRequest: (context, moduleName, platform) => {
+      // CRITICAL: Force wallet-core-provider to use native implementation on React Native
+      // This must happen BEFORE any other resolution logic
+      if (
+        (platform === 'android' || platform === 'ios' || platform === 'native') &&
+        moduleName.includes('wallet-core-provider') &&
+        !moduleName.includes('.native')
+      ) {
+        // Check if it's a relative import
+        if (moduleName.startsWith('../') || moduleName.startsWith('./')) {
+          const originDir = context.originModulePath
+            ? path.dirname(context.originModulePath)
+            : monorepoRoot;
+          const nativePath = path.resolve(
+            originDir,
+            moduleName.replace('wallet-core-provider', 'wallet-core-provider.native.ts')
+          );
+
+          console.log('[METRO DEBUG] FORCING native wallet-core-provider:', {
+            moduleName,
+            originModulePath: context.originModulePath,
+            nativePath,
+            exists: require('fs').existsSync(nativePath),
+          });
+
+          if (require('fs').existsSync(nativePath)) {
+            return {
+              type: 'sourceFile',
+              filePath: nativePath,
+            };
+          }
+        }
+
+        // For absolute imports or package imports, redirect to source
+        const nativeSourcePath = path.resolve(
+          monorepoRoot,
+          'packages/wallet/src/crypto/wallet-core-provider.native.ts'
+        );
+
+        console.log('[METRO DEBUG] FORCING native wallet-core-provider (absolute):', {
+          moduleName,
+          originModulePath: context.originModulePath,
+          nativeSourcePath,
+          exists: require('fs').existsSync(nativeSourcePath),
+        });
+
+        if (require('fs').existsSync(nativeSourcePath)) {
+          return {
+            type: 'sourceFile',
+            filePath: nativeSourcePath,
+          };
+        }
+      }
+
       // DEBUG: Log wallet-core-provider related requests
-      if (moduleName.includes('wallet-core-provider') || moduleName.includes('@onflow/frw-wallet')) {
+      if (
+        moduleName.includes('wallet-core-provider') ||
+        moduleName.includes('@onflow/frw-wallet')
+      ) {
         console.log('[METRO DEBUG] Resolving:', {
           moduleName,
           platform,
@@ -40,13 +96,15 @@ const config = {
       }
 
       // Platform-specific resolution for absolute wallet-core-provider import
-      if (moduleName === '@onflow/frw-wallet/crypto/wallet-core-provider' &&
-          (platform === 'android' || platform === 'ios')) {
+      if (
+        moduleName === '@onflow/frw-wallet/crypto/wallet-core-provider' &&
+        (platform === 'android' || platform === 'ios')
+      ) {
         const nativePath = path.resolve(
           monorepoRoot,
-          'packages/wallet/dist/crypto/wallet-core-provider.native.js'
+          'packages/wallet/src/crypto/wallet-core-provider.native.ts'
         );
-        console.log('[METRO DEBUG] Redirecting absolute import to native:', nativePath);
+        console.log('[METRO DEBUG] Redirecting absolute import to native source:', nativePath);
         return {
           type: 'sourceFile',
           filePath: nativePath,
@@ -79,31 +137,107 @@ const config = {
       }
 
       // Mock @trustwallet/wallet-core for React Native (we use @scure/bip39 instead)
-      if (moduleName === '@trustwallet/wallet-core' || moduleName.startsWith('@trustwallet/wallet-core/')) {
+      if (
+        moduleName === '@trustwallet/wallet-core' ||
+        moduleName.startsWith('@trustwallet/wallet-core/')
+      ) {
         return {
           type: 'sourceFile',
           filePath: path.resolve(monorepoRoot, 'apps/react-native/metro-empty-module.js'),
         };
       }
 
-      // Platform-specific resolution for wallet-core-provider
-      // Intercept relative imports of wallet-core-provider and redirect to native version
-      if ((moduleName === './crypto/wallet-core-provider' ||
-           moduleName === './crypto/wallet-core-provider.js' ||
-           moduleName.endsWith('/crypto/wallet-core-provider') ||
-           moduleName.endsWith('/crypto/wallet-core-provider.js')) &&
-          (platform === 'android' || platform === 'ios')) {
-        // Resolve to the native implementation
+      // Intercept relative imports of wallet-core-provider within wallet package
+      // When files in packages/wallet/src import '../crypto/wallet-core-provider',
+      // redirect to .native.ts for React Native platforms
+      if (
+        (platform === 'android' || platform === 'ios' || platform === 'native') &&
+        context.originModulePath &&
+        (context.originModulePath.includes('packages/wallet/src') ||
+          context.originModulePath.includes('packages/wallet/dist')) &&
+        (moduleName === '../crypto/wallet-core-provider' ||
+          moduleName === './crypto/wallet-core-provider' ||
+          moduleName.endsWith('/crypto/wallet-core-provider') ||
+          (moduleName.includes('wallet-core-provider') && !moduleName.includes('.native')))
+      ) {
+        // Resolve relative to the origin file's directory
+        const originDir = path.dirname(context.originModulePath);
+        // Normalize the module path - handle '../crypto/wallet-core-provider'
+        let normalizedModule = moduleName;
+        if (moduleName.startsWith('../')) {
+          normalizedModule = moduleName;
+        } else if (moduleName.startsWith('./')) {
+          normalizedModule = moduleName.replace('./', '../');
+        }
+
+        // Build the native path
+        const nativePath = path.resolve(
+          originDir,
+          normalizedModule.replace('wallet-core-provider', 'wallet-core-provider.native.ts')
+        );
+        const nativePathJs = path.resolve(
+          originDir,
+          normalizedModule.replace('wallet-core-provider', 'wallet-core-provider.native.js')
+        );
+
+        console.log('[METRO DEBUG] Redirecting relative wallet-core-provider import to native:', {
+          from: context.originModulePath,
+          moduleName,
+          normalizedModule,
+          toTs: nativePath,
+          toJs: nativePathJs,
+          existsTs: require('fs').existsSync(nativePath),
+          existsJs: require('fs').existsSync(nativePathJs),
+        });
+
+        // Try .ts first (for source), then .js (for dist)
+        if (require('fs').existsSync(nativePath)) {
+          return {
+            type: 'sourceFile',
+            filePath: nativePath,
+          };
+        } else if (require('fs').existsSync(nativePathJs)) {
+          return {
+            type: 'sourceFile',
+            filePath: nativePathJs,
+          };
+        } else {
+          console.warn('[METRO DEBUG] Native file not found, falling back to default resolution');
+        }
+      }
+
+      // Also intercept when index.ts exports WalletCoreProvider
+      // This handles the case where @onflow/frw-wallet exports WalletCoreProvider
+      if (
+        (platform === 'android' || platform === 'ios') &&
+        context.originModulePath &&
+        (context.originModulePath.includes('packages/wallet/src/index.ts') ||
+          context.originModulePath.includes('packages/wallet/src/index.js')) &&
+        moduleName === './crypto/wallet-core-provider'
+      ) {
         const nativePath = path.resolve(
           monorepoRoot,
-          'packages/wallet/dist/crypto/wallet-core-provider.native.js'
+          'packages/wallet/src/crypto/wallet-core-provider.native.ts'
         );
-        console.log('[METRO DEBUG] Redirecting to native:', nativePath);
-        return {
-          type: 'sourceFile',
-          filePath: nativePath,
-        };
+        console.log(
+          '[METRO DEBUG] Redirecting index.ts export of wallet-core-provider to native:',
+          {
+            from: context.originModulePath,
+            moduleName,
+            to: nativePath,
+            exists: require('fs').existsSync(nativePath),
+          }
+        );
+        if (require('fs').existsSync(nativePath)) {
+          return {
+            type: 'sourceFile',
+            filePath: nativePath,
+          };
+        }
       }
+
+      // Let Metro handle relative imports naturally - it will auto-resolve .native.ts files
+      // Only intercept absolute imports (@onflow/frw-wallet/...)
 
       // Platform-specific resolution for wallet-core-provider chunks (legacy)
       // Redirect WASM chunk to React Native native implementation
@@ -140,10 +274,12 @@ const config = {
       immer: path.resolve(monorepoRoot, 'node_modules/.pnpm/immer@10.1.1/node_modules/immer'),
       // Force React Native to use the correct icons entry point
       '@onflow/frw-icons': path.resolve(monorepoRoot, 'packages/icons/dist/react-native/index.js'),
-      // Force wallet-core-provider to use React Native implementation
+      // Force wallet package to use SOURCE files for React Native (so Metro can auto-resolve .native.ts)
+      '@onflow/frw-wallet': path.resolve(monorepoRoot, 'packages/wallet/src/index.ts'),
+      // Force wallet-core-provider to use React Native SOURCE implementation
       '@onflow/frw-wallet/crypto/wallet-core-provider': path.resolve(
         monorepoRoot,
-        'packages/wallet/dist/crypto/wallet-core-provider.native.js'
+        'packages/wallet/src/crypto/wallet-core-provider.native.ts'
       ),
     },
   },

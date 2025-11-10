@@ -3,7 +3,6 @@
  */
 
 import { WalletTypeUtils } from './utils';
-import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { EthProvider } from '../services/eth-provider';
 import {
   type EthUnsignedTransaction,
@@ -29,6 +28,31 @@ import {
   BIP44_PATHS,
 } from '../types/key';
 import { type WalletType } from '../types/wallet';
+
+// Platform-specific import - React Native uses pure JS, Web uses WASM
+// Metro should auto-resolve .native.ts files, but we use require() as fallback
+let WalletCoreProvider: any;
+
+// Enhanced React Native detection
+const isReactNative =
+  (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') ||
+  (typeof global !== 'undefined' && typeof (global as any).__fbBatchedBridge !== 'undefined') ||
+  (typeof window !== 'undefined' && typeof (window as any).__fbBatchedBridge !== 'undefined');
+
+if (isReactNative) {
+  // React Native: Use native implementation (pure JS crypto)
+  try {
+    WalletCoreProvider = require('../crypto/wallet-core-provider.native').WalletCoreProvider;
+  } catch (error: any) {
+    console.error('[Wallet] Failed to load native wallet-core-provider:', error?.message || error);
+    throw new Error(
+      `Failed to load native wallet-core-provider in React Native: ${error?.message || 'Unknown error'}`
+    );
+  }
+} else {
+  // Web/Extension: Use WASM implementation
+  WalletCoreProvider = require('../crypto/wallet-core-provider').WalletCoreProvider;
+}
 
 /**
  * Account change listener callback

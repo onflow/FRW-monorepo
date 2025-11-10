@@ -1,6 +1,7 @@
 /**
  * React Native implementation of Trust Wallet Core integration for FRW
  * Uses pure JavaScript crypto libraries (@scure/bip39, @scure/bip32, @noble/curves)
+ * Implements Trust Wallet Core types to match Android flow-wallet-kit
  */
 
 import { p256 } from '@noble/curves/p256';
@@ -11,18 +12,215 @@ import { wordlist } from '@scure/bip39/wordlists/english';
 
 import { WalletError } from '../types/errors';
 
-// Mock types to match the web implementation interface
-interface MockHDWallet {
-  mnemonic: string;
-  seed: string;
-  hdKey: HDKey; // BIP32 HD key for derivation
+/**
+ * Trust Wallet Core compatible interfaces (local definitions to avoid WASM dependency)
+ * These match the Trust Wallet Core API used by Android flow-wallet-kit
+ */
+export interface HDWallet {
+  mnemonic(): string;
+  getKeyByCurve(curve: any, derivationPath: string): PrivateKey;
+  getKeyForCoin(coinType: any): PrivateKey;
+  getAddressForCoin(coinType: any): string;
   delete(): void;
 }
 
-interface MockPrivateKey {
+export interface PrivateKey {
   data(): Uint8Array;
-  publicKey: Uint8Array; // Store public key for later use
+  getPublicKeyNist256p1(): PublicKey;
+  getPublicKeySecp256k1(compressed: boolean): PublicKey;
+  sign(data: Uint8Array, curve: any): Uint8Array;
   delete(): void;
+}
+
+export interface PublicKey {
+  data(): Uint8Array;
+  uncompressed(): PublicKey;
+  delete(): void;
+}
+
+/**
+ * Native HDWallet implementation that matches Trust Wallet Core HDWallet interface
+ * Uses pure JS crypto libraries internally but exposes the same API as Trust Wallet Core
+ */
+class NativeHDWallet implements HDWallet {
+  private _mnemonic: string;
+  private _hdKey: HDKey;
+
+  constructor(mnemonic: string, hdKey: HDKey) {
+    this._mnemonic = mnemonic;
+    this._hdKey = hdKey;
+  }
+
+  mnemonic(): string {
+    return this._mnemonic;
+  }
+
+  getKeyByCurve(curve: any, derivationPath: string): PrivateKey {
+    // Derive child key at the specified path
+    const derivedKey = this._hdKey.derive(derivationPath);
+
+    if (!derivedKey.privateKey) {
+      throw WalletError.KeyNotInitialized({ details: { derivationPath } });
+    }
+
+    const privateKeyBytes = derivedKey.privateKey;
+
+    // Determine signature algorithm from curve
+    let signatureAlgorithm: string;
+    if (curve === 'nist256p1' || curve === 1) {
+      signatureAlgorithm = 'ECDSA_P256';
+    } else if (curve === 'secp256k1' || curve === 0) {
+      signatureAlgorithm = 'ECDSA_secp256k1';
+    } else {
+      throw WalletError.UnsupportedSignatureAlgorithm({
+        details: { curve: String(curve) },
+      });
+    }
+
+    // Get public key based on the signature algorithm
+    let publicKeyBytes: Uint8Array;
+    if (signatureAlgorithm === 'ECDSA_P256') {
+      publicKeyBytes = p256.getPublicKey(privateKeyBytes, false);
+    } else {
+      publicKeyBytes = secp256k1.getPublicKey(privateKeyBytes, false);
+    }
+
+    return new NativePrivateKey(privateKeyBytes, publicKeyBytes, signatureAlgorithm);
+  }
+
+  getKeyForCoin(coinType: any): PrivateKey {
+    // Default to Flow derivation path for Flow coin type
+    const derivationPath = "m/44'/539'/0'/0/0";
+    // Use secp256k1 for most coins, but Flow uses P-256
+    // For now, default to P-256 for Flow
+    return this.getKeyByCurve('nist256p1', derivationPath);
+  }
+
+  getAddressForCoin(coinType: any): string {
+    throw WalletError.UnsupportedOperation({
+      details: { method: 'getAddressForCoin', platform: 'react-native' },
+    });
+  }
+
+  delete(): void {
+    // Cleanup (no-op for pure JS)
+  }
+}
+
+/**
+ * Native PrivateKey implementation that matches Trust Wallet Core PrivateKey interface
+ */
+class NativePrivateKey implements PrivateKey {
+  private _privateKeyBytes: Uint8Array;
+  private _publicKeyBytes: Uint8Array;
+  private _signatureAlgorithm: string;
+
+  constructor(privateKeyBytes: Uint8Array, publicKeyBytes: Uint8Array, signatureAlgorithm: string) {
+    this._privateKeyBytes = privateKeyBytes;
+    this._publicKeyBytes = publicKeyBytes;
+    this._signatureAlgorithm = signatureAlgorithm;
+  }
+
+  data(): Uint8Array {
+    return this._privateKeyBytes;
+  }
+
+  getPublicKeyNist256p1(): PublicKey {
+    if (this._signatureAlgorithm !== 'ECDSA_P256') {
+      throw WalletError.UnsupportedSignatureAlgorithm({
+        details: {
+          requested: 'ECDSA_P256',
+          available: this._signatureAlgorithm,
+        },
+      });
+    }
+    return new NativePublicKey(this._publicKeyBytes);
+  }
+
+  getPublicKeySecp256k1(compressed: boolean): PublicKey {
+    if (this._signatureAlgorithm !== 'ECDSA_secp256k1') {
+      throw WalletError.UnsupportedSignatureAlgorithm({
+        details: {
+          requested: 'ECDSA_secp256k1',
+          available: this._signatureAlgorithm,
+        },
+      });
+    }
+    // For now, we always use uncompressed (compressed not implemented)
+    return new NativePublicKey(this._publicKeyBytes);
+  }
+
+  sign(data: Uint8Array, curve: any): Uint8Array {
+    // Determine signature algorithm from curve
+    let signAlgo: string;
+    if (curve === 'nist256p1' || curve === 1) {
+      signAlgo = 'ECDSA_P256';
+    } else if (curve === 'secp256k1' || curve === 0) {
+      signAlgo = 'ECDSA_secp256k1';
+    } else {
+      throw WalletError.UnsupportedSignatureAlgorithm({
+        details: { curve: String(curve) },
+      });
+    }
+
+    if (signAlgo !== this._signatureAlgorithm) {
+      throw WalletError.UnsupportedSignatureAlgorithm({
+        details: {
+          requested: signAlgo,
+          available: this._signatureAlgorithm,
+        },
+      });
+    }
+
+    // Sign using the appropriate curve
+    const sig =
+      signAlgo === 'ECDSA_P256'
+        ? p256.sign(data, this._privateKeyBytes)
+        : secp256k1.sign(data, this._privateKeyBytes);
+
+    // Convert ECDSASigRecovered to Uint8Array (r|s format, 32 bytes each)
+    // Convert bigint to bytes (big-endian, 32 bytes)
+    const rHex = sig.r.toString(16).padStart(64, '0');
+    const sHex = sig.s.toString(16).padStart(64, '0');
+
+    const rBytes = new Uint8Array(32);
+    const sBytes = new Uint8Array(32);
+
+    for (let i = 0; i < 32; i++) {
+      rBytes[i] = parseInt(rHex.substr(i * 2, 2), 16);
+      sBytes[i] = parseInt(sHex.substr(i * 2, 2), 16);
+    }
+
+    return new Uint8Array([...rBytes, ...sBytes]);
+  }
+
+  delete(): void {
+    // Cleanup (no-op for pure JS)
+  }
+}
+
+/**
+ * Native PublicKey implementation that matches Trust Wallet Core PublicKey interface
+ */
+class NativePublicKey implements PublicKey {
+  private _publicKeyBytes: Uint8Array;
+
+  constructor(publicKeyBytes: Uint8Array) {
+    this._publicKeyBytes = publicKeyBytes;
+  }
+
+  data(): Uint8Array {
+    return this._publicKeyBytes;
+  }
+
+  uncompressed(): PublicKey {
+    // Already uncompressed
+    return this;
+  }
+
+  delete(): void {
+    // Cleanup (no-op for pure JS)
+  }
 }
 
 /**
@@ -30,7 +228,6 @@ interface MockPrivateKey {
  */
 export class WalletCoreProvider {
   private static initialized = false;
-  private static currentWallet: { mnemonic: string; seed: string } | null = null;
 
   /**
    * Initialize - no-op for React Native (native module is always ready)
@@ -56,7 +253,7 @@ export class WalletCoreProvider {
     strength: number = 256,
     passphrase: string = ''
   ): Promise<{
-    wallet: MockHDWallet;
+    wallet: HDWallet;
     mnemonic: string;
   }> {
     await this.ensureInitialized();
@@ -74,24 +271,11 @@ export class WalletCoreProvider {
 
       // Generate seed from mnemonic
       const seedBytes = mnemonicToSeedSync(mnemonic, passphrase);
-      const seed = Array.from(seedBytes)
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
 
       // Create HDKey from seed for BIP32/BIP44 derivation
       const hdKey = HDKey.fromMasterSeed(seedBytes);
 
-      this.currentWallet = { mnemonic, seed };
-
-      const wallet: MockHDWallet = {
-        mnemonic,
-        seed,
-        hdKey,
-        delete: () => {
-          // Cleanup
-          this.currentWallet = null;
-        },
-      };
+      const wallet = new NativeHDWallet(mnemonic, hdKey);
 
       return { wallet, mnemonic };
     } catch (error) {
@@ -102,7 +286,7 @@ export class WalletCoreProvider {
   /**
    * Restore HD wallet from mnemonic
    */
-  static async restoreHDWallet(mnemonic: string, passphrase: string = ''): Promise<MockHDWallet> {
+  static async restoreHDWallet(mnemonic: string, passphrase: string = ''): Promise<HDWallet> {
     await this.ensureInitialized();
 
     try {
@@ -113,25 +297,11 @@ export class WalletCoreProvider {
 
       // Generate seed from mnemonic
       const seedBytes = mnemonicToSeedSync(mnemonic, passphrase);
-      const seed = Array.from(seedBytes)
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
 
       // Create HDKey from seed for BIP32/BIP44 derivation
       const hdKey = HDKey.fromMasterSeed(seedBytes);
 
-      this.currentWallet = { mnemonic, seed };
-
-      const wallet: MockHDWallet = {
-        mnemonic,
-        seed,
-        hdKey,
-        delete: () => {
-          this.currentWallet = null;
-        },
-      };
-
-      return wallet;
+      return new NativeHDWallet(mnemonic, hdKey);
     } catch (error) {
       throw WalletError.MnemonicInvalid({ cause: error });
     }
@@ -163,7 +333,7 @@ export class WalletCoreProvider {
    * Get Ethereum address
    * Note: Address derivation requires additional crypto libraries
    */
-  static async deriveEVMAddress(wallet: MockHDWallet): Promise<string> {
+  static async deriveEVMAddress(wallet: HDWallet): Promise<string> {
     throw WalletError.UnsupportedOperation({
       details: {
         method: 'deriveEVMAddress',
@@ -241,56 +411,30 @@ export class WalletCoreProvider {
    * @param wallet - HD wallet instance
    * @param signatureAlgorithm - 'ECDSA_P256' or 'ECDSA_secp256k1'
    * @param derivationPath - BIP44 derivation path (default: m/44'/539'/0'/0/0 for Flow)
-   * @returns MockPrivateKey with private key bytes and public key
+   * @returns PrivateKey with private key bytes and public key
    */
   static async getFlowPrivateKeyBySignatureAlgorithm(
-    wallet: MockHDWallet,
+    wallet: HDWallet,
     signatureAlgorithm: string,
     derivationPath: string = "m/44'/539'/0'/0/0"
-  ): Promise<MockPrivateKey> {
+  ): Promise<PrivateKey> {
     await this.ensureInitialized();
 
     try {
-      // Derive child key at the specified path
-      const derivedKey = wallet.hdKey.derive(derivationPath);
-
-      if (!derivedKey.privateKey) {
-        throw WalletError.KeyNotInitialized({ details: { derivationPath } });
+      // Map signature algorithm to Trust Wallet Core curve
+      let curve: any;
+      if (signatureAlgorithm === 'ECDSA_P256') {
+        curve = 'nist256p1'; // or 1
+      } else if (signatureAlgorithm === 'ECDSA_secp256k1') {
+        curve = 'secp256k1'; // or 0
+      } else {
+        throw WalletError.UnsupportedSignatureAlgorithm({
+          details: { signatureAlgorithm },
+        });
       }
 
-      const privateKeyBytes = derivedKey.privateKey;
-
-      // Get public key based on the signature algorithm
-      let publicKeyBytes: Uint8Array;
-
-      switch (signatureAlgorithm) {
-        case 'ECDSA_P256': {
-          // P-256 (NIST P-256, secp256r1) - Flow's default
-          const publicKey = p256.getPublicKey(privateKeyBytes, false); // false = uncompressed
-          publicKeyBytes = publicKey;
-          break;
-        }
-        case 'ECDSA_secp256k1': {
-          // secp256k1 - Bitcoin/Ethereum curve
-          const publicKey = secp256k1.getPublicKey(privateKeyBytes, false); // false = uncompressed
-          publicKeyBytes = publicKey;
-          break;
-        }
-        default:
-          throw WalletError.UnsupportedSignatureAlgorithm({
-            details: { signatureAlgorithm },
-          });
-      }
-
-      const privateKey: MockPrivateKey = {
-        data: () => privateKeyBytes,
-        publicKey: publicKeyBytes,
-        delete: () => {
-          // Cleanup (no-op for pure JS)
-        },
-      };
-
-      return privateKey;
+      // Use wallet's getKeyByCurve method
+      return wallet.getKeyByCurve(curve, derivationPath);
     } catch (error) {
       if (error instanceof Error && error.message.includes('UnsupportedSignatureAlgorithm')) {
         throw error;
@@ -313,7 +457,7 @@ export class WalletCoreProvider {
    * @returns Public key as hex string (without 0x04 prefix)
    */
   static async getFlowPublicKeyBySignatureAlgorithm(
-    wallet: MockHDWallet,
+    wallet: HDWallet,
     signatureAlgorithm: string,
     derivationPath: string = "m/44'/539'/0'/0/0"
   ): Promise<string> {
@@ -325,17 +469,36 @@ export class WalletCoreProvider {
     );
 
     try {
-      // Get uncompressed public key bytes
-      const publicKeyBytes = privateKey.publicKey;
+      // Get public key based on signature algorithm
+      let publicKey: PublicKey;
+      if (signatureAlgorithm === 'ECDSA_P256') {
+        publicKey = privateKey.getPublicKeyNist256p1();
+      } else if (signatureAlgorithm === 'ECDSA_secp256k1') {
+        publicKey = privateKey.getPublicKeySecp256k1(false); // false = uncompressed
+      } else {
+        throw WalletError.UnsupportedSignatureAlgorithm({
+          details: { signatureAlgorithm },
+        });
+      }
 
-      // Convert to hex
-      const publicKeyHex = Array.from(publicKeyBytes)
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
+      try {
+        // Get uncompressed public key bytes
+        const publicKeyBytes = publicKey.uncompressed().data();
 
-      // Remove '04' prefix if present (matches iOS/web format() method)
-      // Uncompressed public keys start with 04, but Flow expects the key without this prefix
-      return publicKeyHex.startsWith('04') ? publicKeyHex.slice(2) : publicKeyHex;
+        // Convert to hex
+        const publicKeyHex = Array.from(publicKeyBytes)
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        // Remove '04' prefix if present (matches iOS/web format() method)
+        // Uncompressed public keys start with 04, but Flow expects the key without this prefix
+        return publicKeyHex.startsWith('04') ? publicKeyHex.slice(2) : publicKeyHex;
+      } finally {
+        // Cleanup public key
+        if (publicKey && typeof publicKey.delete === 'function') {
+          publicKey.delete();
+        }
+      }
     } finally {
       // Cleanup private key
       if (privateKey && typeof privateKey.delete === 'function') {

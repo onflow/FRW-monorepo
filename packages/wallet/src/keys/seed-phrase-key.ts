@@ -5,10 +5,33 @@
 
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
-// Platform-specific import - Metro will automatically resolve .native.ts for React Native
-// For React Native: uses wallet-core-provider.native.ts (pure JS crypto)
-// For Web/Extension: uses wallet-core-provider.ts (WASM)
-import { WalletCoreProvider } from '../crypto/wallet-core-provider';
+// Platform-specific import - React Native uses pure JS, Web uses WASM
+// Metro should auto-resolve .native.ts files, but we use require() as fallback
+let WalletCoreProvider: any;
+
+// Enhanced React Native detection
+const isReactNative =
+  (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') ||
+  (typeof global !== 'undefined' && typeof (global as any).__fbBatchedBridge !== 'undefined') ||
+  (typeof window !== 'undefined' && typeof (window as any).__fbBatchedBridge !== 'undefined');
+
+if (isReactNative) {
+  // React Native: Use native implementation (pure JS crypto)
+  try {
+    WalletCoreProvider = require('../crypto/wallet-core-provider.native').WalletCoreProvider;
+  } catch (error: any) {
+    console.error(
+      '[SeedPhraseKey] Failed to load native wallet-core-provider:',
+      error?.message || error
+    );
+    throw new Error(
+      `Failed to load native wallet-core-provider in React Native: ${error?.message || 'Unknown error'}`
+    );
+  }
+} else {
+  // Web/Extension: Use WASM implementation
+  WalletCoreProvider = require('../crypto/wallet-core-provider').WalletCoreProvider;
+}
 import {
   EthSigner,
   type EthUnsignedTransaction,
@@ -262,21 +285,38 @@ export class SeedPhraseKey
     );
 
     try {
-      const core = await WalletCoreProvider['ensureInitialized']();
-
-      // Determine curve based on signature algorithm (matches iOS WCCurve)
+      // Determine curve based on signature algorithm
+      // For native implementation, use string identifiers; for web, use core.Curve enum
       let curve: any;
-      switch (signAlgo) {
-        case SignatureAlgorithm.ECDSA_P256:
-          curve = core.Curve.nist256p1;
-          break;
-        case SignatureAlgorithm.ECDSA_secp256k1:
-          curve = core.Curve.secp256k1;
-          break;
-        default:
-          throw WalletError.UnsupportedSignatureAlgorithm({
-            details: { signatureAlgorithm: signAlgo },
-          });
+      try {
+        // Try to get core (web/WASM implementation)
+        const core = await WalletCoreProvider['getCore']();
+        switch (signAlgo) {
+          case SignatureAlgorithm.ECDSA_P256:
+            curve = core.Curve.nist256p1;
+            break;
+          case SignatureAlgorithm.ECDSA_secp256k1:
+            curve = core.Curve.secp256k1;
+            break;
+          default:
+            throw WalletError.UnsupportedSignatureAlgorithm({
+              details: { signatureAlgorithm: signAlgo },
+            });
+        }
+      } catch {
+        // Native implementation - use string identifiers
+        switch (signAlgo) {
+          case SignatureAlgorithm.ECDSA_P256:
+            curve = 'nist256p1';
+            break;
+          case SignatureAlgorithm.ECDSA_secp256k1:
+            curve = 'secp256k1';
+            break;
+          default:
+            throw WalletError.UnsupportedSignatureAlgorithm({
+              details: { signatureAlgorithm: signAlgo },
+            });
+        }
       }
 
       // Sign with the private key and curve (matches iOS pk.sign(digest: hashed, curve: curve))

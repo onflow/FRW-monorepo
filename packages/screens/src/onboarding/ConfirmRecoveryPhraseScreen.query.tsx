@@ -82,7 +82,10 @@ const deriveFlowAddressFromMnemonic = async (mnemonic: string): Promise<string> 
 
     // Convert public key to Flow address format
     // Flow address derivation: hash(publicKey) -> take first 8 bytes -> format as 0x...
-    const publicKeyHex = Buffer.from(publicKeyBytes).toString('hex');
+    // Convert Uint8Array to hex string (React Native compatible - no Buffer)
+    const publicKeyHex = Array.from(publicKeyBytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
 
     // For now, return a placeholder - actual address derivation requires Flow SDK
     // TODO: Use Flow SDK to properly derive address from public key
@@ -225,7 +228,10 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('Failed to derive public key from mnemonic');
       }
 
-      const publicKeyHex = Buffer.from(publicKeyBytes).toString('hex');
+      // Convert Uint8Array to hex string (React Native compatible - no Buffer)
+      const publicKeyHex = Array.from(publicKeyBytes)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
       logger.info(
         '[ConfirmRecoveryPhraseScreen] Public key extracted:',
         publicKeyHex.slice(0, 16) + '...'
