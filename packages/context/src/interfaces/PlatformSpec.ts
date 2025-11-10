@@ -47,8 +47,8 @@ export interface PlatformSpec {
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
 
-  // EVM transaction callback for EOA to Flow COA withdrawal
-  evmTransactionCallback?(trxData: any): Promise<any>;
+  // EVM transaction signing for pre-encoded payloads
+  ethSign(signData: Uint8Array): Promise<Uint8Array>;
 
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;

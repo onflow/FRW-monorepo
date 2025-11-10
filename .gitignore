@@ -137,3 +137,4 @@ emulator-account.pkey
 # ESLint
 .eslintcache
 Flow-Wallet-Kit/
+/apps/passkeys/.next
