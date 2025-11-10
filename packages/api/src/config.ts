@@ -57,8 +57,15 @@ export function configureApiEndpoints(
       // TODO: Add debug logging when context is available
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        // Debug logging for registration endpoint
+        if (config.url?.includes('/v3/register')) {
+          console.log('[API] /v3/register - Token present, length:', token.length);
+        }
       } else {
         // TODO: Replace with proper logger when context is available
+        if (config.url?.includes('/v3/register')) {
+          console.warn('[API] /v3/register - No token available, request will likely fail');
+        }
       }
       config.headers.network = getNetwork();
 

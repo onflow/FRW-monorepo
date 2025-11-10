@@ -74,7 +74,8 @@ export interface Spec extends TurboModule {
   hideToast(id: string): void;
   clearAllToasts(): void;
   // COA account creation (hybrid with server - Secure Enclave)
-  createCOAAccount(): Promise<CreateAccountResponse>;
+  // Username must be provided by RN layer (3-15 chars as per server requirement)
+  createCOAAccount(username: string): Promise<CreateAccountResponse>;
   // Save mnemonic and initialize wallet (Keychain/KeyStore) - for EOA accounts
   // Native handles: secure storage, Firebase auth (customToken), Wallet-Kit init, account discovery (txId)
   saveMnemonic(mnemonic: string, customToken: string, txId: string): Promise<SaveMnemonicResponse>;
@@ -89,19 +90,16 @@ export interface Spec extends TurboModule {
     message: string,
     args: ReadonlyArray<string>
   ): void;
-  // Backup activities
-  launchMultiBackup(): void;
-  launchDeviceBackup(): void;
-  launchSeedPhraseBackup(): void;
-  launchNativeBackupOptions(): void;
+  // Native screen navigation - unified method for launching native Android/iOS screens
+  launchNativeScreen(screenName: string, params?: string | null): void;
 }
 
 export interface CreateAccountResponse {
   success: boolean;
   address: string | null;
   username: string | null;
-  mnemonic: string | null;
-  phrase: string[] | null;
+  // Note: mnemonic/phrase fields removed for COA accounts (Secure Enclave)
+  // Secure Enclave uses hardware-backed keys, no mnemonic is generated
   accountType: 'eoa' | 'coa' | null;
   error: string | null;
 }

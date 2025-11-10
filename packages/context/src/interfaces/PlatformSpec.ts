@@ -115,12 +115,12 @@ export interface PlatformSpec {
   }>;
 
   // COA: Cadence Owned Account (hybrid with server - Secure Enclave)
-  createCOAAccount?(): Promise<{
+  // Username must be provided by caller (3-15 chars as per server requirement)
+  // Note: COA accounts use hardware-backed keys, no mnemonic is generated
+  createCOAAccount?(username: string): Promise<{
     success: boolean;
     address: string | null;
     username: string | null;
-    mnemonic: string | null;
-    phrase: string[] | null;
     accountType: 'eoa' | 'coa' | null;
     error: string | null;
   }>;
@@ -144,9 +144,8 @@ export interface PlatformSpec {
   // Screen security methods
   setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
 
-  // Backup activity launchers
-  launchMultiBackup?(): void;
-  launchDeviceBackup?(): void;
-  launchSeedPhraseBackup?(): void;
-  launchNativeBackupOptions?(): void;
+  // Native screen navigation - unified method for launching native Android/iOS screens
+  // screenName: identifier for the screen to launch (e.g., 'multiBackup', 'deviceBackup', 'seedPhraseBackup', 'backupOptions')
+  // params: optional JSON string with screen-specific parameters
+  launchNativeScreen?(screenName: string, params?: string): void;
 }

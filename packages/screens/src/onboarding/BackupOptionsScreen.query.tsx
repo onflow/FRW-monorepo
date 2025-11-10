@@ -76,11 +76,11 @@ export function BackupOptionsScreen(): React.ReactElement {
 
     // Launch specific device backup screen
     // If user presses back, they will see WalletBackupActivity (all options)
-    if (bridge.launchDeviceBackup) {
+    if (bridge.launchNativeScreen) {
       logger.info('[BackupOptionsScreen] Launching device backup screen');
-      bridge.launchDeviceBackup();
+      bridge.launchNativeScreen('deviceBackup');
     } else {
-      logger.warn('[BackupOptionsScreen] launchDeviceBackup not available');
+      logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
     }
   };
 
@@ -92,11 +92,11 @@ export function BackupOptionsScreen(): React.ReactElement {
 
     // Launch specific multi-backup screen (cloud/Google Drive)
     // If user presses back, they will see WalletBackupActivity (all options)
-    if (bridge.launchMultiBackup) {
+    if (bridge.launchNativeScreen) {
       logger.info('[BackupOptionsScreen] Launching multi-backup screen');
-      bridge.launchMultiBackup();
+      bridge.launchNativeScreen('multiBackup');
     } else {
-      logger.warn('[BackupOptionsScreen] launchMultiBackup not available');
+      logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
     }
   };
 
@@ -108,11 +108,11 @@ export function BackupOptionsScreen(): React.ReactElement {
 
     // Launch specific seed phrase backup screen
     // If user presses back, they will see WalletBackupActivity (all options)
-    if (bridge.launchSeedPhraseBackup) {
+    if (bridge.launchNativeScreen) {
       logger.info('[BackupOptionsScreen] Launching seed phrase backup screen');
-      bridge.launchSeedPhraseBackup();
+      bridge.launchNativeScreen('seedPhraseBackup');
     } else {
-      logger.warn('[BackupOptionsScreen] launchSeedPhraseBackup not available');
+      logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
     }
   };
 

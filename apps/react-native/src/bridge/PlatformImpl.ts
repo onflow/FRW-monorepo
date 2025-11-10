@@ -365,25 +365,23 @@ class PlatformImpl implements PlatformSpec {
   }
 
   // COA: Hybrid account with server (Secure Enclave)
-  async createCOAAccount(): Promise<{
+  // Username must be provided (3-15 chars as per server requirement)
+  // Note: COA accounts use hardware-backed keys, no mnemonic is generated
+  async createCOAAccount(username: string): Promise<{
     success: boolean;
     address: string | null;
     username: string | null;
-    mnemonic: string | null;
-    phrase: string[] | null;
     accountType: 'eoa' | 'coa' | null;
     error: string | null;
   }> {
     try {
-      return await NativeFRWBridge.createCOAAccount();
+      return await NativeFRWBridge.createCOAAccount(username);
     } catch (error) {
       this.log('error', '[PlatformImpl] Failed to create COA account via bridge:', error);
       return {
         success: false,
         address: null,
         username: null,
-        mnemonic: null,
-        phrase: null,
         accountType: 'coa',
         error: error instanceof Error ? error.message : 'Unknown error',
       };
@@ -450,36 +448,12 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  // Backup activity launchers
-  launchMultiBackup(): void {
+  // Native screen navigation - unified method
+  launchNativeScreen(screenName: string, params?: string): void {
     try {
-      NativeFRWBridge.launchMultiBackup();
+      NativeFRWBridge.launchNativeScreen(screenName, params ?? null);
     } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to launch multi-backup via bridge:', error);
-    }
-  }
-
-  launchDeviceBackup(): void {
-    try {
-      NativeFRWBridge.launchDeviceBackup();
-    } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to launch device backup via bridge:', error);
-    }
-  }
-
-  launchSeedPhraseBackup(): void {
-    try {
-      NativeFRWBridge.launchSeedPhraseBackup();
-    } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to launch seed phrase backup via bridge:', error);
-    }
-  }
-
-  launchNativeBackupOptions(): void {
-    try {
-      NativeFRWBridge.launchNativeBackupOptions();
-    } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to launch native backup options via bridge:', error);
+      this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);
     }
   }
 }

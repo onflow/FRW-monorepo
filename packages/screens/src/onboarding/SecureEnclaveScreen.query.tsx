@@ -37,7 +37,14 @@ const fetchSecureEnclaveConfig = async () => {
 const createSecureEnclaveAccount = async () => {
   // Use bridge.createCOAAccount() if available (React Native)
   if (bridge.createCOAAccount) {
-    const result = await bridge.createCOAAccount();
+    // Auto-generate username (3-15 chars as per server requirement)
+    // Use last 8 digits of timestamp to keep it within length limit
+    const timestamp = Date.now().toString();
+    const username = `u${timestamp.slice(-8)}`; // e.g., "u12345678" (9 chars)
+
+    logger.info('[SecureEnclaveScreen] Creating COA account with username:', username);
+
+    const result = await bridge.createCOAAccount(username);
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to create COA account');
@@ -45,6 +52,7 @@ const createSecureEnclaveAccount = async () => {
 
     logger.info('[SecureEnclaveScreen] COA account created successfully:', {
       address: result.address,
+      username: result.username,
       accountType: result.accountType,
     });
 
