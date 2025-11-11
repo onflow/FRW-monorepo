@@ -29,6 +29,7 @@ import {
   isValidFlowAddress,
   logger,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
@@ -430,9 +431,10 @@ export function SendToScreen(): ReactElement {
             emoji: recipient.emojiInfo?.emoji,
             avatar: recipient.avatar,
           });
-        } catch (error) {
+        } catch (error: any) {
           console.warn('Failed to add recent recipient:', error);
           // Don't block navigation if this fails
+          showError(error, t, bridge);
         }
       }
 
@@ -543,6 +545,7 @@ export function SendToScreen(): ReactElement {
       if (error.code !== 'SCAN_CANCELLED') {
         alert(`${t('common.error')}: ${t('errors.networkError')}`);
       }
+      showError(error, t, bridge);
     }
   }, [handleSearchChange, t]);
 
@@ -572,8 +575,9 @@ export function SendToScreen(): ReactElement {
         setCopiedAddress(null);
         setCopiedId(null);
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Failed to copy address:', error);
+      showError(error, t, bridge);
     }
   }, []);
 

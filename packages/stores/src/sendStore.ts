@@ -5,6 +5,8 @@ import {
   type NFTModel,
   type TokenModel,
   addressType,
+  FRWError,
+  ErrorCode,
 } from '@onflow/frw-types';
 import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
@@ -523,18 +525,13 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
-      // Create EVM transaction callback for EOA to Flow COA withdrawal (optional)
-      const evmCallback = async (trxData: any) => {
-        const bridgeWithEvmCallback = bridge as any;
-        if (!bridgeWithEvmCallback.evmTransactionCallback) {
-          // Return undefined if EVM callback is not available
-          return undefined;
-        }
-        return await bridgeWithEvmCallback.evmTransactionCallback(trxData);
+      const helpers = {
+        ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
+        network: bridge.getNetwork ? bridge.getNetwork() : undefined,
       };
 
       // Get cadence service and execute transaction
-      const result = await SendTransaction(payload, cadence, evmCallback);
+      const result = await SendTransaction(payload, cadence, helpers);
 
       logger.debug('[SendStore] Transaction result:', result);
 
@@ -558,7 +555,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         error: errorMessage,
       });
 
-      throw error;
+      throw new FRWError(ErrorCode.TRANSACTION_ERROR, errorMessage);
     }
   },
 

@@ -119,7 +119,6 @@ const AccountDetail = () => {
   const loadPayerStatus = useCallback(async () => {
     try {
       const status = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
-      console.log('status', status);
       setPayerStatus(status);
     } catch (error) {
       consoleError('Failed to load payer status:', error);

@@ -9,7 +9,7 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
-import { EthSigner, type EthLegacyTransaction } from '@onflow/frw-wallet';
+import { EthSigner, WalletCoreProvider, type EthLegacyTransaction } from '@onflow/frw-wallet';
 import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
@@ -148,6 +148,21 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.walletController.getKeyIndex() || 0;
   }
 
+  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
+
+    if (!(signData instanceof Uint8Array)) {
+      throw new Error('signData must be a Uint8Array');
+    }
+
+    const ethereumPrivateKey = await this.walletController.getEthereumPrivateKey();
+    const privateKeyBytes = await this.walletController.privateKeyToUint8Array(ethereumPrivateKey);
+
+    return await WalletCoreProvider.signEvmDigestWithPrivateKey(privateKeyBytes, signData);
+  }
+
   async ethSignTransaction(transaction: any): Promise<string> {
     if (!this.walletController) {
       throw new Error('Wallet controller not initialized');
@@ -209,21 +224,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
       actualPrivateKeyBytes
     );
     return signedTransaction.rawTransaction;
-  }
-
-  async evmTransactionCallback(trxData: any): Promise<any> {
-    console.log('EVM Callback called with:', trxData);
-
-    if (trxData.state === 'EVM_TRX_BUILDING') {
-      // Use the ethSignTransaction method
-      const signedTx = await this.ethSignTransaction(trxData.trxData);
-      if (!signedTx) {
-        throw new Error('Failed to sign EVM transaction');
-      }
-      return signedTx;
-    }
-
-    return undefined;
   }
 
   /**

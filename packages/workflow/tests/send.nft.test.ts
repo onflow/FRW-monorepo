@@ -315,7 +315,10 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '0x2B7CfE0f24c18690a4E34a154e313859B7c6e342',
   //   };
 
-  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   const txid = await SendTransaction(payload, cadenceService, {
+  //     ethSign: evmTrxCallback,
+  //     network: 'mainnet',
+  //   });
   //   console.log(txid)
   //   expect(txid.length).toBe(64);
   // });
@@ -336,18 +339,16 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '0x2B7CfE0f24c18690a4E34a154e313859B7c6e342',
   //   };
 
-  //   const txid = await SendTransaction(payload, cadenceService, evmTrxCallback);
+  //   const txid = await SendTransaction(payload, cadenceService, {
+  //     ethSign: evmTrxCallback,
+  //     network: 'mainnet',
+  //   });
   //   console.log(txid);
   //   expect(txid.length).toBe(64);
   // });
 
-  // it('Test EoaToChildNftStrategy - Bridge NFT from EOA to Child', async () => {
-  //   const trxData = await evmTrxCallback({
-  //     trxData: { from: '0x41aD2bc63A2059f9b623533d87fe99887D794847', to: mainAccount.eoaAddr, value: '0', data: '0x', gasLimit: 30_000_000 },
-  //   });
-  //   const rlpEncodedTransaction = convertHexToByteArray(trxData);
-  //   const txid = await cadenceService.eoaCallContract(rlpEncodedTransaction, mainAccount.eoaAddr);
-  //   console.log(txid);
-  //   expect(txid.length).toBe(64);
+  // it('Test EoaToChildNftStrategy - Bridge NFT from EOA to Child (manual)', async () => {
+  //   const signature = await evmTrxCallback(new Uint8Array(32).fill(0));
+  //   expect(signature.length).toBe(65);
   // });
 });
