@@ -179,6 +179,11 @@ class UserWallet {
    * @param pubkey - The pubkey to set
    */
   setCurrentPubkey = async (pubkey: string) => {
+    // Ensure store is initialized before accessing it
+    if (!this.store) {
+      await this.init();
+    }
+
     // Note that values that are set in the proxy store are immediately available through the proxy
     // It stores the value in memory immediately
     // However the value in storage may not be updated immediately
@@ -190,6 +195,7 @@ class UserWallet {
 
     // Initialize wallet manager to calculate EOA address when public key changes
     this.initializeWalletManager();
+    return this.store.currentPubkey;
   };
 
   /**

@@ -160,7 +160,13 @@ class ExtensionPlatformImpl implements PlatformSpec {
     const ethereumPrivateKey = await this.walletController.getEthereumPrivateKey();
     const privateKeyBytes = await this.walletController.privateKeyToUint8Array(ethereumPrivateKey);
 
-    return await WalletCoreProvider.signEvmDigestWithPrivateKey(privateKeyBytes, signData);
+    // Convert plain object back to Uint8Array if needed (cross-context serialization issue)
+    const actualPrivateKeyBytes =
+      privateKeyBytes instanceof Uint8Array
+        ? privateKeyBytes
+        : new Uint8Array(Object.values(privateKeyBytes));
+
+    return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
   }
 
   async ethSignTransaction(transaction: any): Promise<string> {
