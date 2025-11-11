@@ -19,7 +19,15 @@ export interface SendPayload {
 /**
  * Strategy interface for transfer operations
  */
+export type EthSignFn = (signData: Uint8Array) => Promise<Uint8Array>;
+
+export interface TransferExecutionHelpers {
+  ethSign?: EthSignFn;
+  network?: 'mainnet' | 'testnet' | string;
+  gasPrice?: number | string | bigint;
+}
+
 export interface TransferStrategy {
   canHandle(payload: SendPayload): boolean;
-  execute(payload: SendPayload, callback?: any, evmProvider?: any): Promise<any>;
+  execute(payload: SendPayload, helpers?: TransferExecutionHelpers): Promise<any>;
 }

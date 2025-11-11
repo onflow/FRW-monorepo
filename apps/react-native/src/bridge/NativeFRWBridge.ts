@@ -44,6 +44,7 @@ export interface Spec extends TurboModule {
   getLanguage(): string;
   // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
   sign(hexData: string): Promise<string>;
+  ethSign(hexData: string): Promise<string>;
   getRecentContacts(): Promise<RecentContactsResponse>;
   // Wallet accounts method
   getWalletAccounts(): Promise<WalletAccountsResponse>;
