@@ -15,7 +15,6 @@ import {
   accountBalanceRefreshRegex,
   coinListKey,
   mainAccountsKey,
-  mainAccountsRefreshRegex,
   mainAccountStorageBalanceKey,
   mainAccountStorageBalanceRefreshRegex,
   type MainAccountStorageBalanceStore,
@@ -41,6 +40,7 @@ import {
   registerStatusKey,
   registerStatusRefreshRegex,
 } from '@/data-model';
+import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
 import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant';
 import {
   type PublicPrivateKeyTuple,
@@ -56,6 +56,7 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
+  type KeyringStateV3,
   type Emoji,
 } from '@/shared/types';
 import {
@@ -460,8 +461,6 @@ class UserWallet {
 
     // Get current user ID
     const userId = await getCurrentProfileId();
-
-    console.log('setActiveAccounts', pubkey, network, newActiveAccounts);
 
     // Save the data in storage
     await setLocalData<ActiveAccountsStore>(activeAccountsKey(network, userId), newActiveAccounts);
@@ -1450,20 +1449,15 @@ class UserWallet {
         const ethereumPrivateKey = evmPrivateKeyTuple.SECP256K1.pk;
 
         if (ethereumPrivateKey) {
-          console.log('getEthereumPrivateKey - HD Keyring private key:', {
-            length: ethereumPrivateKey.length,
-            startsWith0x: ethereumPrivateKey.startsWith('0x'),
-            first8Chars: ethereumPrivateKey.substring(0, 8),
-          });
           // Ensure the private key has 0x prefix for consistency
           return ethereumPrivateKey.startsWith('0x')
             ? ethereumPrivateKey
             : `0x${ethereumPrivateKey}`;
         }
       }
-    } catch (error) {
+    } catch (err) {
       // HD Keyring not available or failed, try Simple Keyring
-      console.log('HD Keyring not available, trying Simple Keyring:', error);
+      consoleError('HD Keyring not available, trying Simple Keyring', getErrorMessage(err));
     }
 
     // If HD Keyring fails, try Simple Keyring (private key-based)
@@ -1473,16 +1467,10 @@ class UserWallet {
         // For Simple Keyring, the private key is already the Ethereum private key
         // Just ensure it's in the correct format
         const formattedKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
-        console.log('getEthereumPrivateKey - Simple Keyring private key:', {
-          originalLength: privateKey.length,
-          formattedLength: formattedKey.length,
-          startsWith0x: formattedKey.startsWith('0x'),
-          first8Chars: formattedKey.substring(0, 8),
-        });
         return formattedKey;
       }
-    } catch (error) {
-      console.log('Simple Keyring not available:', error);
+    } catch (err) {
+      consoleError('Simple Keyring not available:', getErrorMessage(err));
     }
 
     throw new Error('No Ethereum private key found in either HD Keyring or Simple Keyring');
@@ -1494,29 +1482,15 @@ class UserWallet {
    * @returns The private key as Uint8Array
    */
   privateKeyToUint8Array(privateKeyHex: string): Uint8Array {
-    console.log('privateKeyToUint8Array - Input:', {
-      privateKeyHex,
-      length: privateKeyHex?.length,
-      type: typeof privateKeyHex,
-    });
-
     if (!privateKeyHex || typeof privateKeyHex !== 'string') {
       throw new Error('Invalid private key input: ' + typeof privateKeyHex);
     }
 
     // Remove 0x prefix if present
     const cleanHex = privateKeyHex.replace(/^0x/i, '');
-    console.log('privateKeyToUint8Array - Clean hex:', {
-      cleanHex,
-      length: cleanHex.length,
-    });
 
     // Convert to Uint8Array
     const result = Uint8Array.from(Buffer.from(cleanHex, 'hex'));
-    console.log('privateKeyToUint8Array - Result:', {
-      length: result.length,
-      first4Bytes: Array.from(result.slice(0, 4)),
-    });
 
     return result;
   }
@@ -1878,8 +1852,6 @@ const loadMainAccountsWithPubKey = async (
     mainAccountsWithDetail.length > 0 ? 60_000 : 1_000
   );
 
-  console.log('loadMainAccountsWithPubKey', mainAccountsWithDetail);
-
   return mainAccountsWithDetail;
 };
 
@@ -2135,7 +2107,27 @@ export const calculateEmojiIcon = (address: string): Emoji => {
 };
 
 const initAccountLoaders = () => {
-  registerRefreshListener(mainAccountsRefreshRegex, loadMainAccountsWithPubKey);
+  const mainAccountsRefreshRegexFixed = new RegExp('^main-accounts-([^-]+)-(.+)-refresh$');
+
+  registerRefreshListener(
+    mainAccountsRefreshRegexFixed,
+    async (network: string, userId: string) => {
+      const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as KeyringStateV3 | null;
+
+      if (!keyringState?.vault) {
+        throw new Error('Keyring state not found or vault is empty');
+      }
+
+      const vaultEntry = keyringState.vault.find((entry) => entry.id === userId);
+      if (!vaultEntry?.publicKey) {
+        throw new Error(`No public key found for userId: ${userId}`);
+      }
+
+      const pubKey = vaultEntry.publicKey;
+
+      return loadMainAccountsWithPubKey(network, pubKey);
+    }
+  );
 
   // Use batch refresh for account balances to avoid hitting the backend too hard
   registerBatchRefreshListener(

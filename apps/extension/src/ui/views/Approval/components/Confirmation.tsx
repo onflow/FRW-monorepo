@@ -186,7 +186,6 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
     if (!signable) {
       return;
     }
-    console.log('signable', signable);
     setIsApproving(true);
     setApproval(true);
 

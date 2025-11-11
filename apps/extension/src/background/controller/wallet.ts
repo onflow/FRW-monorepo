@@ -795,7 +795,6 @@ export class WalletController extends BaseController {
    */
 
   setActiveAccount = async (address: string, parentAddress: string) => {
-    console.log('setActiveAccount', address, parentAddress);
     if (!isValidFlowAddress(parentAddress)) {
       throw new Error('Invalid parent address');
     }
