@@ -9,13 +9,11 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
-import { EthSigner, WalletCoreProvider, type EthLegacyTransaction } from '@onflow/frw-wallet';
+import {  WalletCoreProvider } from '@onflow/frw-wallet';
 import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
 import {
-  MAINNET_CHAIN_ID,
-  TESTNET_CHAIN_ID,
   EVM_ENDPOINT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@/shared/constant';
