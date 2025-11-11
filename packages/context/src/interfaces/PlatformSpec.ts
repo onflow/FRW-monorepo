@@ -131,6 +131,14 @@ export interface PlatformSpec {
   // Returns: Promise<void> - resolves on success, throws error on failure
   saveMnemonic?(mnemonic: string, customToken: string, txId: string): Promise<void>;
 
+  // Sign out of Firebase and sign in anonymously (needed before creating new accounts)
+  // Ensures clean authentication state for account creation (matches COA flow)
+  // Returns: Promise<void> - resolves on success, throws error on failure
+  signOutAndSignInAnonymously?(): Promise<void>;
+  // Sign in with custom token (needed after registration to authenticate for API calls)
+  // Returns: Promise<void> - resolves on success, throws error on failure
+  signInWithCustomToken?(customToken: string): Promise<void>;
+
   // Notification permission methods
   requestNotificationPermission?(): Promise<boolean>;
   checkNotificationPermission?(): Promise<boolean>;

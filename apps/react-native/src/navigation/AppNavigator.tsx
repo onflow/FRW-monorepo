@@ -67,7 +67,7 @@ export type RootStackParamList = {
   GetStarted: undefined;
   ProfileTypeSelection: undefined;
   RecoveryPhrase: undefined;
-  ConfirmRecoveryPhrase: { recoveryPhrase?: string[] };
+  ConfirmRecoveryPhrase: { recoveryPhrase?: string[]; mnemonic?: string };
   SecureEnclave: undefined;
   NotificationPreferences: undefined;
   BackupOptions: undefined;

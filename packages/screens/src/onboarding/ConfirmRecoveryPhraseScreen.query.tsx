@@ -11,6 +11,7 @@ import {
   ScrollView,
   AccountCreationLoadingState,
 } from '@onflow/frw-ui';
+import { decodeJwtPayload } from '@onflow/frw-utils';
 import {
   SeedPhraseKey,
   SignatureAlgorithm,
@@ -35,6 +36,66 @@ const generateRandomPositions = (): number[] => {
   return selected.sort((a, b) => a - b); // Sort for better UX
 };
 
+/**
+ * Wait for Firebase ID token to refresh after custom token sign-in
+ * Checks if token is no longer anonymous (firebase.sign_in_provider !== 'anonymous')
+ * Retries up to maxAttempts times with delay between attempts
+ */
+async function waitForTokenRefresh(maxAttempts: number = 10, delayMs: number = 500): Promise<void> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const token = await bridge.getJWT();
+      if (!token) {
+        logger.debug(
+          `[ConfirmRecoveryPhraseScreen] Token refresh check ${attempt}/${maxAttempts}: No token yet`
+        );
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          continue;
+        }
+        throw new Error('Token refresh timeout: No token available');
+      }
+
+      // Decode token to check if it's still anonymous
+      const payload = decodeJwtPayload<{
+        firebase?: { sign_in_provider?: string };
+        provider_id?: string;
+      }>(token);
+
+      const isAnonymous =
+        payload?.firebase?.sign_in_provider === 'anonymous' || payload?.provider_id === 'anonymous';
+
+      if (!isAnonymous) {
+        logger.info(
+          `[ConfirmRecoveryPhraseScreen] Token refreshed successfully after ${attempt} attempt(s)`
+        );
+        return; // Token is no longer anonymous, we're good!
+      }
+
+      logger.debug(
+        `[ConfirmRecoveryPhraseScreen] Token refresh check ${attempt}/${maxAttempts}: Still anonymous, waiting...`
+      );
+
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    } catch (error) {
+      logger.error(
+        `[ConfirmRecoveryPhraseScreen] Error checking token refresh (attempt ${attempt}/${maxAttempts}):`,
+        error
+      );
+      if (attempt === maxAttempts) {
+        throw new Error(
+          `Token refresh timeout: Failed to verify token refresh after ${maxAttempts} attempts`
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw new Error(`Token refresh timeout: Token still anonymous after ${maxAttempts} attempts`);
+}
+
 interface VerificationQuestion {
   position: number;
   options: string[];
@@ -48,6 +109,8 @@ interface ConfirmRecoveryPhraseScreenProps {
       mnemonic?: string;
     };
   };
+  // React Navigation also passes navigation prop, but we use the abstraction
+  navigation?: unknown;
 }
 
 /**
@@ -111,6 +174,18 @@ export function ConfirmRecoveryPhraseScreen({
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
   const mnemonic = route?.params?.mnemonic || '';
 
+  // Log received params for debugging
+  useEffect(() => {
+    logger.info('[ConfirmRecoveryPhraseScreen] Received route params:', {
+      hasRoute: !!route,
+      hasParams: !!route?.params,
+      recoveryPhraseLength: recoveryPhrase?.length || 0,
+      mnemonicLength: mnemonic?.length || 0,
+      recoveryPhrase: recoveryPhrase?.slice(0, 3) || [],
+      routeParams: route?.params,
+    });
+  }, [route, recoveryPhrase, mnemonic]);
+
   // Enable screenshot protection when screen mounts (showing recovery phrase words)
   useEffect(() => {
     logger.info('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
@@ -129,6 +204,19 @@ export function ConfirmRecoveryPhraseScreen({
 
   // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration
   const questions = useMemo((): VerificationQuestion[] => {
+    // Validate recovery phrase
+    if (!recoveryPhrase || recoveryPhrase.length !== 12) {
+      logger.warn('[ConfirmRecoveryPhraseScreen] Invalid recovery phrase:', {
+        length: recoveryPhrase?.length || 0,
+        recoveryPhrase: recoveryPhrase?.slice(0, 3) || [],
+      });
+      return [];
+    }
+
+    logger.info(
+      '[ConfirmRecoveryPhraseScreen] Generating verification questions from recovery phrase'
+    );
+
     // Generate random positions for this verification session
     const verificationPositions = generateRandomPositions();
 
@@ -148,11 +236,18 @@ export function ConfirmRecoveryPhraseScreen({
       return Array.from(options).sort(() => Math.random() - 0.5);
     };
 
-    return verificationPositions.map((position: number) => ({
+    const generatedQuestions = verificationPositions.map((position: number) => ({
       position,
       options: generateOptions(recoveryPhrase[position - 1], recoveryPhrase),
       correctAnswer: recoveryPhrase[position - 1],
     }));
+
+    logger.info('[ConfirmRecoveryPhraseScreen] Generated questions:', {
+      count: generatedQuestions.length,
+      positions: generatedQuestions.map((q) => q.position),
+    });
+
+    return generatedQuestions;
   }, [recoveryPhrase]);
 
   const handleBack = () => {
@@ -236,6 +331,8 @@ export function ConfirmRecoveryPhraseScreen({
       });
 
       // Step 6: Register with backend using ProfileService
+      // Note: Remote version worked without signOutAndSignInAnonymously() or signInWithCustomToken()
+      // It relies on anonymous Firebase auth that's already active
       logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering with backend...');
 
       // Generate username (similar to Android registerOutblock)
@@ -313,7 +410,34 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('Registration response missing user id');
       }
 
+      // Step 6.5: Authenticate with custom token (matches extension's _loginWithToken behavior)
+      // Extension's register() automatically calls _loginWithToken() which signs in with custom token
+      // This replaces any existing Firebase user (handles multi-profile scenario)
+      // Then createFlowAddressV2() is called immediately after
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 6.5: Authenticating with custom token...');
+
+      if (bridge?.signInWithCustomToken && typeof bridge.signInWithCustomToken === 'function') {
+        try {
+          logger.info('[ConfirmRecoveryPhraseScreen] Calling bridge.signInWithCustomToken()...');
+          await bridge.signInWithCustomToken(customToken);
+          logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
+
+          // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
+          // The API interceptor needs the refreshed token to authenticate with the backend
+          logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
+          await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
+          logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
+        } catch (error) {
+          logger.error('[ConfirmRecoveryPhraseScreen] Custom token authentication failed:', error);
+          throw error; // Re-throw to stop the flow
+        }
+      } else {
+        logger.error('[ConfirmRecoveryPhraseScreen] signInWithCustomToken not available on bridge');
+        throw new Error('signInWithCustomToken bridge method is required for EOA account creation');
+      }
+
       // Create Flow address (triggers on-chain account creation) using ProfileService
+      // Matches extension: createFlowAddressV2() called immediately after register()
       logger.info('[ConfirmRecoveryPhraseScreen] Creating Flow address...');
       const addressResponse = await profileSvc.createFlowAddress();
 
@@ -465,7 +589,7 @@ export function ConfirmRecoveryPhraseScreen({
                         justifyContent="center"
                       >
                         <XStack gap={8} width="100%" justify="space-between">
-                          {question.options.map((word) => {
+                          {question.options.map((word, wordIndex) => {
                             const isSelected = selectedAnswer === word;
                             const isWrong = isSelected && word !== question.correctAnswer;
                             const isCorrectSelection =
@@ -473,7 +597,7 @@ export function ConfirmRecoveryPhraseScreen({
 
                             return (
                               <Button
-                                key={word}
+                                key={`${question.position}-${wordIndex}-${word}`}
                                 variant="ghost"
                                 onPress={() => handleSelectWord(index, word)}
                                 padding={0}

@@ -403,6 +403,28 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  async signOutAndSignInAnonymously(): Promise<void> {
+    try {
+      await NativeFRWBridge.signOutAndSignInAnonymously();
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to sign out and sign in anonymously via bridge:',
+        error
+      );
+      throw error;
+    }
+  }
+
+  async signInWithCustomToken(customToken: string): Promise<void> {
+    try {
+      await NativeFRWBridge.signInWithCustomToken(customToken);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to sign in with custom token via bridge:', error);
+      throw error;
+    }
+  }
+
   // Notification permission methods
   async requestNotificationPermission(): Promise<boolean> {
     try {

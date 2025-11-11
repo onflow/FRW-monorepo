@@ -80,6 +80,12 @@ export interface Spec extends TurboModule {
   // Native handles: secure storage, Firebase auth (customToken), Wallet-Kit init, account discovery (txId)
   // Returns: Promise<void> - resolves on success, rejects with error on failure
   saveMnemonic(mnemonic: string, customToken: string, txId: string): Promise<void>;
+  // Sign out of Firebase and sign in anonymously (needed before creating new accounts)
+  // Returns: Promise<void> - resolves on success, rejects with error on failure
+  signOutAndSignInAnonymously(): Promise<void>;
+  // Sign in with custom token (needed after registration to authenticate for API calls)
+  // Returns: Promise<void> - resolves on success, rejects with error on failure
+  signInWithCustomToken(customToken: string): Promise<void>;
   // Notification permissions
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;

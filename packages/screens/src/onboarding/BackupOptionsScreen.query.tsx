@@ -59,8 +59,23 @@ export function BackupOptionsScreen(): React.ReactElement {
     // User confirmed they want to skip additional backups
     setShowWarningDialog(false);
 
+    logger.info(
+      '[BackupOptionsScreen] User confirmed skip backup - closing React Native and returning to native home screen'
+    );
+
     // Close React Native and return to native Android app
-    bridge.closeRN();
+    // Use a small delay to ensure dialog is dismissed first
+    setTimeout(() => {
+      const platform = bridge.getPlatform();
+      logger.info('[BackupOptionsScreen] Closing RN, platform:', platform);
+
+      if (platform === 'android' || platform === 'ios') {
+        bridge.closeRN();
+        logger.info('[BackupOptionsScreen] closeRN() called');
+      } else {
+        logger.warn('[BackupOptionsScreen] Not Android/iOS platform, cannot close RN');
+      }
+    }, 100);
   };
 
   const handleCancelSkip = () => {

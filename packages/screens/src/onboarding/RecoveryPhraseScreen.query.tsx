@@ -14,6 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useQueryClient } from '../providers/QueryProvider';
+
 /**
  * RecoveryPhraseScreen - Generates and displays recovery phrase
  * Uses @onflow/frw-wallet's BIP39 implementation to generate mnemonic
@@ -50,19 +52,77 @@ const generateRecoveryPhrase = async (): Promise<{
 
 export function RecoveryPhraseScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
+  const [isResettingAuth, setIsResettingAuth] = useState(true);
+  // Start with null - will be set after reset completes to ensure fresh mnemonic
+  const [profileId, setProfileId] = useState<string | null>(null);
+
+  // Reset Firebase auth and invalidate cache when screen mounts (for new profile creation)
+  useEffect(() => {
+    const resetForNewProfile = async () => {
+      try {
+        logger.info('[RecoveryPhraseScreen] Resetting for new profile creation...');
+
+        // Generate a new profile ID for this session
+        const newProfileId = `profile-${Date.now()}`;
+        logger.info('[RecoveryPhraseScreen] Generated new profile ID:', newProfileId);
+
+        // Aggressively remove all cached mnemonic queries
+        queryClient.removeQueries({
+          queryKey: ['onboarding', 'generate-phrase'],
+        });
+        logger.info('[RecoveryPhraseScreen] Removed all cached mnemonic queries');
+
+        // Also invalidate to trigger refetch if needed
+        await queryClient.invalidateQueries({
+          queryKey: ['onboarding', 'generate-phrase'],
+        });
+        logger.info('[RecoveryPhraseScreen] Invalidated mnemonic cache');
+
+        // Sign out and sign in anonymously to ensure clean Firebase state
+        // This is important for multi-profile scenarios
+        if (bridge.signOutAndSignInAnonymously) {
+          try {
+            await bridge.signOutAndSignInAnonymously();
+            logger.info('[RecoveryPhraseScreen] Firebase auth reset successful');
+          } catch (error) {
+            logger.warn(
+              '[RecoveryPhraseScreen] Firebase auth reset failed (may already be anonymous):',
+              error
+            );
+            // Continue anyway - if already anonymous, that's fine
+          }
+        }
+
+        // Set profile ID after reset completes to trigger new query
+        setProfileId(newProfileId);
+      } catch (error) {
+        logger.error('[RecoveryPhraseScreen] Error resetting for new profile:', error);
+        // Continue anyway - don't block the user
+        // Still set a new profile ID to ensure unique mnemonic
+        setProfileId(`profile-${Date.now()}`);
+      } finally {
+        setIsResettingAuth(false);
+      }
+    };
+
+    resetForNewProfile();
+  }, []); // Empty deps - run once on mount
 
   // Generate recovery phrase (mnemonic only, account creation happens after verification)
+  // Use a unique key with profile ID to force regeneration for each new profile
   const {
     data: phraseData,
     isLoading: isGenerating,
     error: generateError,
   } = useQuery({
-    queryKey: ['onboarding', 'generate-phrase'],
+    queryKey: ['onboarding', 'generate-phrase', profileId],
     queryFn: generateRecoveryPhrase,
-    staleTime: Infinity, // Don't refetch - phrase generation should happen once
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    enabled: !isResettingAuth && !!profileId, // Wait for auth reset and profileId before generating
+    staleTime: 0, // Always generate fresh mnemonic
+    gcTime: 0, // Don't cache - each profile needs a unique mnemonic
     retry: false, // Don't retry on error
   });
 
@@ -90,6 +150,9 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   // Use generated phrase
   const recoveryPhrase = phraseData?.phrase || [];
   const mnemonic = phraseData?.mnemonic || '';
+
+  // Show loading state while resetting auth or generating phrase
+  const isLoading = isResettingAuth || isGenerating;
 
   const handleBack = () => {
     navigation.goBack();
@@ -156,175 +219,178 @@ export function RecoveryPhraseScreen(): React.ReactElement {
 
   return (
     <>
-      <OnboardingBackground>
-        <YStack flex={1} px="$4" pt="$4">
-          {/* Title and description */}
-          <YStack items="center" mb="$6" gap="$2">
-            <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
-              {t('onboarding.recoveryPhrase.title')}
-            </Text>
-            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
-              {t('onboarding.recoveryPhrase.description')}
-            </Text>
-          </YStack>
-
-          {/* Recovery phrase grid - 2 columns x 6 rows */}
-          <YStack
-            width={320}
-            bg="rgba(255, 255, 255, 0.1)"
-            rounded={16}
-            pt={24}
-            pb={24}
-            px={18}
-            mb={16}
-            self="center"
-            position="relative"
-          >
-            {/* Only render words when phrase is revealed */}
-            {isPhraseRevealed ? (
-              <YStack gap={20}>
-                {/* Generate 6 rows with 2 columns each */}
-                {Array.from({ length: 6 }, (_, rowIndex) => (
-                  <XStack key={rowIndex} gap={40} justify="space-between">
-                    {/* Left column */}
-                    {recoveryPhrase[rowIndex * 2] && (
-                      <XStack gap={8} items="center" flex={1}>
-                        <View
-                          width={32}
-                          height={32}
-                          bg="rgba(255, 255, 255, 0.1)"
-                          rounded={8}
-                          items="center"
-                          justify="center"
-                        >
-                          <Text fontSize={20} color="$text">
-                            {rowIndex * 2 + 1}
-                          </Text>
-                        </View>
-                        <Text fontSize={16} color="$text">
-                          {recoveryPhrase[rowIndex * 2]}
-                        </Text>
-                      </XStack>
-                    )}
-
-                    {/* Right column */}
-                    {recoveryPhrase[rowIndex * 2 + 1] && (
-                      <XStack gap={8} items="center" flex={1}>
-                        <View
-                          width={32}
-                          height={32}
-                          bg="rgba(255, 255, 255, 0.1)"
-                          rounded={8}
-                          items="center"
-                          justify="center"
-                        >
-                          <Text fontSize={20} color="$text">
-                            {rowIndex * 2 + 2}
-                          </Text>
-                        </View>
-                        <Text fontSize={16} color="$text">
-                          {recoveryPhrase[rowIndex * 2 + 1]}
-                        </Text>
-                      </XStack>
-                    )}
-                  </XStack>
-                ))}
-              </YStack>
-            ) : (
-              /* Click to reveal overlay - shown when phrase is not revealed */
-              <YStack
-                height={340}
-                items="center"
-                justify="center"
-                cursor="pointer"
-                onPress={handleRevealPhrase}
-              >
-                <YStack items="center" gap={12}>
-                  <View
-                    width={42}
-                    height={40}
-                    bg="rgba(255, 255, 255, 0.1)"
-                    rounded={8}
-                    items="center"
-                    justify="center"
-                  >
-                    <RevealPhrase size={20} color="rgba(255, 255, 255, 0.5)" />
-                  </View>
-                  <Text fontSize={16} fontWeight="500" color="$text" text="center">
-                    Click to reveal phrase
-                  </Text>
-                </YStack>
-              </YStack>
-            )}
-          </YStack>
-
-          {/* Copy button */}
-          <XStack justify="center" mb={16}>
-            <Button variant="ghost" onPress={handleCopy}>
-              <XStack gap={12} items="center">
-                <Copy size={24} color="#00EF8B" />
-                <Text fontSize={16} fontWeight="700" color="$primary">
-                  {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
-                </Text>
-              </XStack>
-            </Button>
-          </XStack>
-
-          {/* Warning card */}
-          <XStack
-            gap={12}
-            p={16}
-            rounded={16}
-            borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.15)"
-            mb={24}
-          >
-            <View width={24} height={24} items="center" justify="center">
-              <Warning size={24} color="rgba(255, 255, 255, 0.5)" />
-            </View>
-            <YStack flex={1} gap={4}>
-              <Text fontSize={16} fontWeight="700" color="$text">
-                {t('onboarding.recoveryPhrase.warning.title')}
-              </Text>
-              <Text fontSize={16} color="$textSecondary" lineHeight={17}>
-                {t('onboarding.recoveryPhrase.warning.description')}
-              </Text>
-            </YStack>
-          </XStack>
-
-          {/* Spacer */}
-          <YStack flex={1} />
-
-          {/* Next button - matching other screens style */}
-          <YStack pb={24}>
-            <YStack
-              width="100%"
-              height={52}
-              bg="$text"
-              rounded={16}
-              items="center"
-              justify="center"
-              borderWidth={1}
-              borderColor="$text"
-              pressStyle={{ opacity: 0.9 }}
-              onPress={handleNext}
-              cursor="pointer"
-            >
-              <Text fontSize={16} fontWeight="700" color="$bg">
-                {t('onboarding.recoveryPhrase.next')}
-              </Text>
-            </YStack>
-          </YStack>
-        </YStack>
-      </OnboardingBackground>
-
-      {/* Account Creation Loading State - shown while generating mnemonic */}
+      {/* Show loading overlay immediately when resetting or generating */}
       <AccountCreationLoadingState
-        visible={isGenerating}
+        visible={isLoading}
         title={t('onboarding.recoveryPhrase.generating.title', {
-          defaultValue: 'Generating\nRecovery Phrase',
+          defaultValue: 'Generating\nrecovery phrase',
         })}
       />
+
+      {/* Only show content when not loading */}
+      {!isLoading && (
+        <OnboardingBackground>
+          <YStack flex={1} px="$4" pt="$4">
+            {/* Title and description */}
+            <YStack items="center" mb="$6" gap="$2">
+              <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+                {t('onboarding.recoveryPhrase.title')}
+              </Text>
+              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
+                {t('onboarding.recoveryPhrase.description')}
+              </Text>
+            </YStack>
+
+            {/* Recovery phrase grid - 2 columns x 6 rows */}
+            <YStack
+              width={320}
+              bg="rgba(255, 255, 255, 0.1)"
+              rounded={16}
+              pt={24}
+              pb={24}
+              px={18}
+              mb={16}
+              self="center"
+              position="relative"
+            >
+              {/* Only render words when phrase is revealed */}
+              {isPhraseRevealed ? (
+                <YStack gap={20}>
+                  {/* Generate 6 rows with 2 columns each */}
+                  {Array.from({ length: 6 }, (_, rowIndex) => (
+                    <XStack key={rowIndex} gap={40} justify="space-between">
+                      {/* Left column */}
+                      {recoveryPhrase[rowIndex * 2] && (
+                        <XStack gap={8} items="center" flex={1}>
+                          <View
+                            width={32}
+                            height={32}
+                            bg="rgba(255, 255, 255, 0.1)"
+                            rounded={8}
+                            items="center"
+                            justify="center"
+                          >
+                            <Text fontSize={20} color="$text">
+                              {rowIndex * 2 + 1}
+                            </Text>
+                          </View>
+                          <Text fontSize={16} color="$text">
+                            {recoveryPhrase[rowIndex * 2]}
+                          </Text>
+                        </XStack>
+                      )}
+
+                      {/* Right column */}
+                      {recoveryPhrase[rowIndex * 2 + 1] && (
+                        <XStack gap={8} items="center" flex={1}>
+                          <View
+                            width={32}
+                            height={32}
+                            bg="rgba(255, 255, 255, 0.1)"
+                            rounded={8}
+                            items="center"
+                            justify="center"
+                          >
+                            <Text fontSize={20} color="$text">
+                              {rowIndex * 2 + 2}
+                            </Text>
+                          </View>
+                          <Text fontSize={16} color="$text">
+                            {recoveryPhrase[rowIndex * 2 + 1]}
+                          </Text>
+                        </XStack>
+                      )}
+                    </XStack>
+                  ))}
+                </YStack>
+              ) : (
+                /* Click to reveal overlay - shown when phrase is not revealed */
+                <YStack
+                  height={340}
+                  items="center"
+                  justify="center"
+                  cursor="pointer"
+                  onPress={handleRevealPhrase}
+                >
+                  <YStack items="center" gap={12}>
+                    <View
+                      width={42}
+                      height={40}
+                      bg="rgba(255, 255, 255, 0.1)"
+                      rounded={8}
+                      items="center"
+                      justify="center"
+                    >
+                      <RevealPhrase size={20} color="rgba(255, 255, 255, 0.5)" />
+                    </View>
+                    <Text fontSize={16} fontWeight="500" color="$text" text="center">
+                      Click to reveal phrase
+                    </Text>
+                  </YStack>
+                </YStack>
+              )}
+            </YStack>
+
+            {/* Copy button */}
+            <XStack justify="center" mb={16}>
+              <Button variant="ghost" onPress={handleCopy}>
+                <XStack gap={12} items="center">
+                  <Copy size={24} color="#00EF8B" />
+                  <Text fontSize={16} fontWeight="700" color="$primary">
+                    {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
+                  </Text>
+                </XStack>
+              </Button>
+            </XStack>
+
+            {/* Warning card */}
+            <XStack
+              gap={12}
+              p={16}
+              rounded={16}
+              borderWidth={1}
+              borderColor="rgba(255, 255, 255, 0.15)"
+              mb={24}
+            >
+              <View width={24} height={24} items="center" justify="center">
+                <Warning size={24} color="rgba(255, 255, 255, 0.5)" />
+              </View>
+              <YStack flex={1} gap={4}>
+                <Text fontSize={16} fontWeight="700" color="$text">
+                  {t('onboarding.recoveryPhrase.warning.title')}
+                </Text>
+                <Text fontSize={16} color="$textSecondary" lineHeight={17}>
+                  {t('onboarding.recoveryPhrase.warning.description')}
+                </Text>
+              </YStack>
+            </XStack>
+
+            {/* Spacer */}
+            <YStack flex={1} />
+
+            {/* Next button - matching other screens style */}
+            <YStack pb={24}>
+              <YStack
+                width="100%"
+                height={52}
+                bg="$text"
+                rounded={16}
+                items="center"
+                justify="center"
+                borderWidth={1}
+                borderColor="$text"
+                pressStyle={{ opacity: 0.9 }}
+                onPress={handleNext}
+                cursor="pointer"
+              >
+                <Text fontSize={16} fontWeight="700" color="$bg">
+                  {t('onboarding.recoveryPhrase.next')}
+                </Text>
+              </YStack>
+            </YStack>
+          </YStack>
+        </OnboardingBackground>
+      )}
     </>
   );
 }

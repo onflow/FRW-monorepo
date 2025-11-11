@@ -201,10 +201,12 @@ export class ProfileService {
   }
 
   /**
-   * Create a Flow address (triggers on-chain account creation)
-   * This initiates the Flow account creation transaction
+   * Create a Flow address for the currently logged-in user.
+   * This triggers an on-chain transaction to create the account.
+   * Matches extension implementation: uses /v2/user/address endpoint
+   * Extension calls createFlowAddressV2() immediately after register() which authenticates with custom token
    *
-   * @returns Promise with transaction ID for account creation
+   * @returns Promise with transaction ID
    */
   async createFlowAddress(): Promise<{
     data: {
@@ -214,7 +216,9 @@ export class ProfileService {
     try {
       logger.info('[ProfileService] Creating Flow address...');
 
+      // Extension uses /v2/user/address (createFlowAddressV2)
       // UserGoService.address2() calls /v2/user/address (matches extension implementation)
+      logger.debug('[ProfileService] Calling UserGoService.address2()...');
       const response = (await UserGoService.address2()) as any;
 
       // Log the full response for debugging
@@ -262,8 +266,23 @@ export class ProfileService {
           txid,
         },
       };
-    } catch (error) {
-      logger.error('[ProfileService] Failed to create Flow address:', error);
+    } catch (error: any) {
+      // Log detailed error information for debugging
+      const errorResponseData = error?.response?.data;
+      logger.error('[ProfileService] Failed to create Flow address:', {
+        errorMessage: error?.message,
+        errorStatus: error?.response?.status,
+        errorStatusText: error?.response?.statusText,
+        errorUrl: error?.config?.url || error?.request?.responseURL,
+        errorMethod: error?.config?.method,
+        errorResponseData: errorResponseData,
+        errorResponseDataString: errorResponseData
+          ? JSON.stringify(errorResponseData, null, 2)
+          : 'No response data',
+        errorResponseHeaders: error?.response?.headers,
+        requestHeaders: error?.config?.headers,
+        fullError: error,
+      });
       throw error;
     }
   }
