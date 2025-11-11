@@ -81,6 +81,9 @@
   "Developer__Mode": {
     "message": "Developer Mode"
   },
+  "Feedback": {
+    "message": "Feedback"
+  },
   "Emulator_Mode": {
     "message": "Emulator Mode"
   },
