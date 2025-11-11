@@ -25,6 +25,19 @@ const formatBalance = (balance: string): string => {
   return `${rounded}${restOfString}`;
 };
 
+// Helper function to detect EOA accounts
+// Based on Android bridge logic: id === 'eoa' (from NativeFRWBridge.kt line 340)
+// Also supports extension logic: id === '99' || name includes 'EOA'
+const isEOAAccount = (account: WalletAccount): boolean => {
+  return (
+    account.type === 'evm' &&
+    (account.id === 'eoa' ||
+      account.id === '99' ||
+      account.name?.includes('EOA') ||
+      account.name?.includes('EVM Account (EOA)'))
+  );
+};
+
 export interface AccountSelectorProps {
   currentAccount: WalletAccount;
   accounts: WalletAccount[];
@@ -131,7 +144,7 @@ export function AccountSelector({
                 </Text>
                 {currentAccount.type === 'evm' && (
                   <XStack
-                    bg="$accentEVM"
+                    bg={isEOAAccount(currentAccount) ? '$accentEOA' : '$accentEVM'}
                     rounded="$4"
                     px={4}
                     items="center"
@@ -145,7 +158,7 @@ export function AccountSelector({
                       lineHeight={9.7}
                       letterSpacing={0.128}
                     >
-                      EVM
+                      {isEOAAccount(currentAccount) ? 'EOA' : 'EVM'}
                     </Text>
                   </XStack>
                 )}
@@ -314,7 +327,7 @@ export function AccountSelector({
                             </Text>
                             {account.type === 'evm' && (
                               <XStack
-                                bg="$accentEVM"
+                                bg={isEOAAccount(account) ? '$accentEOA' : '$accentEVM'}
                                 rounded="$4"
                                 px={4}
                                 items="center"
@@ -328,7 +341,7 @@ export function AccountSelector({
                                   lineHeight={9.7}
                                   letterSpacing={0.128}
                                 >
-                                  EVM
+                                  {isEOAAccount(account) ? 'EOA' : 'EVM'}
                                 </Text>
                               </XStack>
                             )}
