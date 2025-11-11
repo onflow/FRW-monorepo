@@ -169,69 +169,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
   }
 
-  async ethSignTransaction(transaction: any): Promise<string> {
-    if (!this.walletController) {
-      throw new Error('Wallet controller not initialized');
-    }
-
-    // Get the current nonce from the network
-    const nonce = await this.getTransactionCount(transaction.from);
-
-    const ethereumPrivateKey = await this.walletController.getEthereumPrivateKey();
-
-    const privateKeyBytes = await this.walletController.privateKeyToUint8Array(ethereumPrivateKey);
-
-    // Convert plain object back to Uint8Array if needed (cross-context serialization issue)
-    const actualPrivateKeyBytes =
-      privateKeyBytes instanceof Uint8Array
-        ? privateKeyBytes
-        : new Uint8Array(Object.values(privateKeyBytes));
-
-    const network = await this.walletController.getNetwork();
-    const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
-
-    if (!transaction.to || transaction.to === '') {
-      throw new Error('Transaction "to" address is required');
-    }
-
-    const gasLimit = '0x1C9C380'; // 30,000,000 in hex
-    const gasPrice = '0x0'; // Zero gas price
-
-    let value = '0x0';
-    if (transaction.value) {
-      const web3 = new Web3();
-      let valueInWei: bigint;
-
-      // If value is already a hex string, parse it directly
-      if (typeof transaction.value === 'string' && transaction.value.startsWith('0x')) {
-        valueInWei = BigInt(transaction.value);
-      } else {
-        // Convert decimal value to wei using Web3
-        const valueStr = String(transaction.value);
-        valueInWei = BigInt(web3.utils.toWei(valueStr, 'ether'));
-      }
-
-      value = `0x${valueInWei.toString(16)}`;
-    }
-
-    const ethTransaction: EthLegacyTransaction = {
-      chainId: chainId,
-      nonce: parseInt(nonce, 16),
-      gasLimit: gasLimit,
-      gasPrice: gasPrice,
-      to: transaction.to,
-      value: value,
-      data: transaction.data || '0x',
-    };
-
-    // Sign the transaction using EthSigner
-    const signedTransaction = await EthSigner.signTransaction(
-      ethTransaction,
-      actualPrivateKeyBytes
-    );
-    return signedTransaction.rawTransaction;
-  }
-
   /**
    * Get the current transaction count (nonce) for an address
    */
