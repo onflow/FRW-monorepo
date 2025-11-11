@@ -159,23 +159,29 @@ importers:
       '@reown/walletkit':
         specifier: ^1.2.8
         version: 1.2.11(typescript@5.7.2)(zod@3.25.76)
+      '@sentry/browser':
+        specifier: ^10.22.0
+        version: 10.23.0
+      '@sentry/react':
+        specifier: ^10.22.0
+        version: 10.23.0(react@19.0.0)
       '@tamagui/animations-react-native':
-        specifier: ^1.132.20
+        specifier: ^1.132.16
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/config':
-        specifier: ^1.132.20
+        specifier: ^1.132.16
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@3.19.2(@babel/core@7.28.4)(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/core':
-        specifier: ^1.132.20
+        specifier: ^1.132.16
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/font-inter':
-        specifier: ^1.132.20
+        specifier: ^1.132.16
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/theme-builder':
-        specifier: ^1.132.20
+        specifier: ^1.132.17
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/web':
-        specifier: ^1.132.20
+        specifier: ^1.132.16
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@trustwallet/wallet-core':
         specifier: ^4.3.6
@@ -3797,6 +3803,36 @@ packages:
 
   '@scure/bip39@1.6.0':
     resolution: {integrity: sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==}
+
+  '@sentry-internal/browser-utils@10.23.0':
+    resolution: {integrity: sha512-FUak8FH51TnGrx2i31tgqun0VsbDCVQS7dxWnUZHdi+0hpnFoq9+wBHY+qrOQjaInZSz3crIifYv3z7SEzD0Jg==}
+    engines: {node: '>=18'}
+
+  '@sentry-internal/feedback@10.23.0':
+    resolution: {integrity: sha512-+HWC9VTPICsFX/lIPoBU9GxTaJZVXJcukP+qGxj+j/8q/Dy1w22JHDWcJbZiaW4kWWlz7VbA0KVKS3grD+e9aA==}
+    engines: {node: '>=18'}
+
+  '@sentry-internal/replay-canvas@10.23.0':
+    resolution: {integrity: sha512-GLNY8JPcMI6xhQ5FHiYO/W/3flrwZMt4CI/E3jDRNujYWbCrca60MRke6k7Zm1qi9rZ1FuhVWZ6BAFc4vwXnSg==}
+    engines: {node: '>=18'}
+
+  '@sentry-internal/replay@10.23.0':
+    resolution: {integrity: sha512-5yPD7jVO2JY8+JEHXep0Bf/ugp4rmxv5BkHIcSAHQsKSPhziFks2x+KP+6M8hhbF1WydqAaDYlGjrkL2yspHqA==}
+    engines: {node: '>=18'}
+
+  '@sentry/browser@10.23.0':
+    resolution: {integrity: sha512-9hViLfYONxRJykOhJQ3ZHQ758t1wQIsxEC7mTsydbDm+m12LgbBtXbfgcypWHlom5Yvb+wg6W+31bpdGnATglw==}
+    engines: {node: '>=18'}
+
+  '@sentry/core@10.23.0':
+    resolution: {integrity: sha512-4aZwu6VnSHWDplY5eFORcVymhfvS/P6BRfK81TPnG/ReELaeoykKjDwR+wC4lO7S0307Vib9JGpszjsEZw245g==}
+    engines: {node: '>=18'}
+
+  '@sentry/react@10.23.0':
+    resolution: {integrity: sha512-WtDrhs9zF5YAf1DwsIhmS2E1EXx4cA3WeFCzty+rpS7e6XQXk+riAdHvAUZxccHkzv5sxSOCYANFy3J7oUiYcg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: 19.0.0
 
   '@sideway/address@4.1.5':
     resolution: {integrity: sha512-IqO/DUQHUkPeixNQ8n0JA6102hT9CmaljNTPmQ1u8MEhBo/R4Q8eKLN/vGZxuebwOroDB4cbpjheD4+/sKFK4Q==}
@@ -15695,6 +15731,41 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
+
+  '@sentry-internal/browser-utils@10.23.0':
+    dependencies:
+      '@sentry/core': 10.23.0
+
+  '@sentry-internal/feedback@10.23.0':
+    dependencies:
+      '@sentry/core': 10.23.0
+
+  '@sentry-internal/replay-canvas@10.23.0':
+    dependencies:
+      '@sentry-internal/replay': 10.23.0
+      '@sentry/core': 10.23.0
+
+  '@sentry-internal/replay@10.23.0':
+    dependencies:
+      '@sentry-internal/browser-utils': 10.23.0
+      '@sentry/core': 10.23.0
+
+  '@sentry/browser@10.23.0':
+    dependencies:
+      '@sentry-internal/browser-utils': 10.23.0
+      '@sentry-internal/feedback': 10.23.0
+      '@sentry-internal/replay': 10.23.0
+      '@sentry-internal/replay-canvas': 10.23.0
+      '@sentry/core': 10.23.0
+
+  '@sentry/core@10.23.0': {}
+
+  '@sentry/react@10.23.0(react@19.0.0)':
+    dependencies:
+      '@sentry/browser': 10.23.0
+      '@sentry/core': 10.23.0
+      hoist-non-react-statics: 3.3.2
+      react: 19.0.0
 
   '@sideway/address@4.1.5':
     dependencies:

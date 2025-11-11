@@ -74,6 +74,7 @@ const SeedPhraseImport = ({
         style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
       >
         <PasswordTextarea
+          className="sentry-mask"
           minRows={4}
           placeholder={chrome.i18n.getMessage('Import_12_or_24_words')}
           required
@@ -84,6 +85,7 @@ const SeedPhraseImport = ({
           }}
         />
         <TextareaAutosize
+          className="sentry-mask"
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}
           style={{
             width: '100%',

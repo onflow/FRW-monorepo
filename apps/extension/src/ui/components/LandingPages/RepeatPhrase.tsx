@@ -88,7 +88,7 @@ const RepeatPhrase = ({ handleSwitchTab, mnemonic }) => {
 
   return (
     <>
-      <Box className="registerBox">
+      <Box className="registerBox sentry-mask">
         <Typography variant="h4" sx={{ fontWeight: 700 }} color="neutral.contrastText">
           {chrome.i18n.getMessage('Verify') + ' '}
           <Box display="inline" color="primary.main">

@@ -96,6 +96,9 @@
   "Developer__Mode": {
     "message": "Режим разработчика"
   },
+  "Feedback": {
+    "message": "Обратная связь"
+  },
   "Emulator_Mode": {
     "message": "Pежим эмулятора"
   },
