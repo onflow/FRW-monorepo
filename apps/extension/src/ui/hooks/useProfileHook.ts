@@ -53,8 +53,8 @@ export const useProfiles = () => {
   const userInfo = useUserInfo(currentId);
   // The user wallet data - which public key is currently active
   const userWallets = useUserWallets();
-  // The main accounts for the current user
-  const mainAccounts = useMainAccounts(network, currentId);
+  // The main accounts for the current pubkey
+  const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
   const walletList = mainAccounts ?? [];
   // The accounts that have been selected by the user
   const activeAccounts = useActiveAccounts(network, userWallets?.currentPubkey);
