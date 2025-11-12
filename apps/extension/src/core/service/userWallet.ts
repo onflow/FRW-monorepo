@@ -17,7 +17,6 @@ import {
   mainAccountsKey,
   mainAccountsRefreshRegex,
   mainAccountsKeyUid,
-  mainAccountsUidRefreshRegex,
   mainAccountStorageBalanceKey,
   mainAccountStorageBalanceRefreshRegex,
   type MainAccountStorageBalanceStore,
@@ -43,7 +42,6 @@ import {
   registerStatusKey,
   registerStatusRefreshRegex,
 } from '@/data-model';
-import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
 import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant';
 import {
   type PublicPrivateKeyTuple,
@@ -59,7 +57,6 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-  type KeyringStateV3,
   type Emoji,
 } from '@/shared/types';
 import {
@@ -2114,23 +2111,23 @@ const initAccountLoaders = () => {
     return loadMainAccountsWithPubKey(network, pubkey);
   });
 
-  // Refresh listener for userId-based keys
-  registerRefreshListener(mainAccountsUidRefreshRegex, async (network: string, userId: string) => {
-    const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as KeyringStateV3 | null;
+  // Refresh listener for userId-based keys(not needed yet, removed to avoid multiple refresh)
+  // registerRefreshListener(mainAccountsUidRefreshRegex, async (network: string, userId: string) => {
+  //   const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as KeyringStateV3 | null;
 
-    if (!keyringState?.vault) {
-      throw new Error('Keyring state not found or vault is empty');
-    }
+  //   if (!keyringState?.vault) {
+  //     throw new Error('Keyring state not found or vault is empty');
+  //   }
 
-    const vaultEntry = keyringState.vault.find((entry) => entry.id === userId);
-    if (!vaultEntry?.publicKey) {
-      throw new Error(`No public key found for userId: ${userId}`);
-    }
+  //   const vaultEntry = keyringState.vault.find((entry) => entry.id === userId);
+  //   if (!vaultEntry?.publicKey) {
+  //     throw new Error(`No public key found for userId: ${userId}`);
+  //   }
 
-    const pubKey = vaultEntry.publicKey;
+  //   const pubKey = vaultEntry.publicKey;
 
-    return loadMainAccountsWithPubKey(network, pubKey);
-  });
+  //   return loadMainAccountsWithPubKey(network, pubKey);
+  // });
 
   // Use batch refresh for account balances to avoid hitting the backend too hard
   registerBatchRefreshListener(
