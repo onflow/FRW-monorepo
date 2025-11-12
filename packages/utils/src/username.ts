@@ -413,34 +413,56 @@ function pick<T>(arr: T[]): T {
  * Format: [adjective]word1word2word3 or word1word2word3
  * If any word is an adjective, it's placed first
  * Avoids repeating the same word
+ * Ensures username is between 3-15 characters as required by the API
  *
- * @returns A randomly generated username string
+ * @returns A randomly generated username string (3-15 characters)
  */
 export function generateRandomUsername(): string {
-  const word1 = pick(allWords);
-  let word2 = pick(allWords);
-  // Avoid repeating the same word
-  while (word2 === word1) {
-    word2 = pick(allWords);
+  // Filter to only short words (max 5 chars) to ensure 3 words fit in 15 chars
+  const shortWords = allWords.filter((word) => word.length <= 5);
+
+  let username = '';
+  let attempts = 0;
+  const maxAttempts = 100;
+
+  // Keep trying until we get a valid username (3-15 chars)
+  while (attempts < maxAttempts) {
+    const word1 = pick(shortWords);
+    let word2 = pick(shortWords);
+    // Avoid repeating the same word
+    while (word2 === word1) {
+      word2 = pick(shortWords);
+    }
+
+    let word3 = pick(shortWords);
+    // Avoid repeating words
+    while (word3 === word1 || word3 === word2) {
+      word3 = pick(shortWords);
+    }
+
+    // Check if any word is an adjective
+    const words = [word1, word2, word3];
+    const adjectiveIndex = words.findIndex((word) => adjectives.includes(word));
+
+    if (adjectiveIndex !== -1) {
+      // Put adjective first, then the other two words
+      const adjective = words[adjectiveIndex];
+      const otherWords = words.filter((_, index) => index !== adjectiveIndex);
+      username = `${adjective}${otherWords[0]}${otherWords[1]}`;
+    } else {
+      // No adjective, just concatenate in order
+      username = `${word1}${word2}${word3}`;
+    }
+
+    // Check if username meets length requirements (3-15 chars)
+    if (username.length >= 3 && username.length <= 15) {
+      return username;
+    }
+
+    attempts++;
   }
 
-  let word3 = pick(allWords);
-  // Avoid repeating words
-  while (word3 === word1 || word3 === word2) {
-    word3 = pick(allWords);
-  }
-
-  // Check if any word is an adjective
-  const words = [word1, word2, word3];
-  const adjectiveIndex = words.findIndex((word) => adjectives.includes(word));
-
-  if (adjectiveIndex !== -1) {
-    // Put adjective first, then the other two words
-    const adjective = words[adjectiveIndex];
-    const otherWords = words.filter((_, index) => index !== adjectiveIndex);
-    return `${adjective}${otherWords[0]}${otherWords[1]}`;
-  }
-
-  // No adjective, just concatenate in order
-  return `${word1}${word2}${word3}`;
+  // Fallback: if we somehow couldn't generate a valid username, use first 3 short words
+  const fallback = shortWords.slice(0, 3).join('');
+  return fallback.substring(0, 15); // Ensure max 15 chars
 }

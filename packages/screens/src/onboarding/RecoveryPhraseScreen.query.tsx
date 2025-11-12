@@ -1,4 +1,4 @@
-import { bridge, logger, navigation } from '@onflow/frw-context';
+import { bridge, logger, navigation, toast } from '@onflow/frw-context';
 import { Copy, Warning, RevealPhrase } from '@onflow/frw-icons';
 import {
   YStack,
@@ -165,19 +165,32 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       const platform = bridge.getPlatform();
 
       // Use RN clipboard via global injected helper when not web/extension
-      if (platform !== 'extension' && typeof window === 'undefined') {
-        const rnClipboard = (globalThis as any).clipboard;
-        if (rnClipboard?.setString) {
-          rnClipboard.setString(phraseText);
-        }
+      // Check for React Native environment by checking for the global clipboard helper
+      const rnClipboard = (globalThis as any).clipboard;
+      if (platform !== 'extension' && rnClipboard?.setString) {
+        rnClipboard.setString(phraseText);
+        logger.debug('Recovery phrase copied using RN Clipboard');
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(phraseText);
+        logger.debug('Recovery phrase copied using Web Clipboard API');
+      } else {
+        throw new Error('No clipboard API available');
       }
 
       setCopiedToClipboard(true);
       setTimeout(() => setCopiedToClipboard(false), 2000);
+
+      // Show success toast
+      toast.show({
+        title: t('messages.copied'),
+        type: 'success',
+      });
     } catch (error) {
       logger.error('Failed to copy recovery phrase:', error);
+      toast.show({
+        title: t('messages.failedToCopy'),
+        type: 'error',
+      });
     }
   };
 
