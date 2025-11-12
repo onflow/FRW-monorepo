@@ -4,7 +4,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { encode } from 'rlp';
 import web3, { Web3 } from 'web3';
 
-import { triggerRefresh, mainAccountsKey } from '@/data-model';
+import { triggerRefresh, mainAccountsKey, mainAccountsKeyUid } from '@/data-model';
 import { erc20Abi as erc20ABI, EVM_ENDPOINT } from '@/shared/constant';
 import {
   type NftTransactionState,
@@ -1426,9 +1426,11 @@ export class TransactionService {
     try {
       await fcl.tx(txID).onceSealed();
 
-      // Refresh the EVM address
+      // Refresh the EVM address (refresh both pubkey and userId versions)
       const userId = await getCurrentProfileId();
-      triggerRefresh(mainAccountsKey(network, userId));
+      const pubkey = userWalletService.getCurrentPubkey();
+      triggerRefresh(mainAccountsKey(network, pubkey));
+      triggerRefresh(mainAccountsKeyUid(network, userId));
 
       // Track with success
       await this.trackCoaCreation(txID);

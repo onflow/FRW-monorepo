@@ -31,19 +31,19 @@ import { useCachedData, useUserData } from './use-data';
 
 export const useMainAccounts = (
   network: string | undefined | null,
-  userId: string | undefined | null
+  pubkey: string | undefined | null
 ) => {
-  return useCachedData<MainAccount[]>(network && userId ? mainAccountsKey(network, userId) : null);
+  return useCachedData<MainAccount[]>(network && pubkey ? mainAccountsKey(network, pubkey) : null);
 };
 
 export const useMainAccount = (
   network: string | undefined | null,
   address: string | undefined | null
 ) => {
-  // The current user ID
-  const currentId = useCurrentId();
-  // The main accounts for the current user
-  const mainAccounts = useMainAccounts(network, currentId);
+  // Get the current pubkey from user wallets
+  const userWallets = useUserWallets();
+  // The main accounts for the current pubkey
+  const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
   // The main account for the address
   const mainAccount = mainAccounts?.find((account) => account.address === address);
   return mainAccount;
@@ -85,8 +85,8 @@ export const useActiveAccounts = (
   network: string | undefined | null,
   publicKey: string | undefined | null
 ) => {
+  const mainAccounts = useMainAccounts(network, publicKey);
   const currentId = useCurrentId();
-  const mainAccounts = useMainAccounts(network, currentId);
   const activeAccounts = useUserData<ActiveAccountsStore>(
     network && currentId ? activeAccountsKey(network, currentId) : null
   );

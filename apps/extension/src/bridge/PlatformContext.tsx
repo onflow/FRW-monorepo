@@ -321,7 +321,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           const profileVaultEntry = keyringState?.vault?.find(
             (entry: any) => entry.id === profileId
           );
-          const profilePublicKey = profileVaultEntry?.id;
+          const profilePublicKey = profileVaultEntry?.publicKey;
 
           if (!profilePublicKey) {
             logger.warn(`No public key found for profile ${profileId}`);
@@ -628,11 +628,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       // Fallback: if platform doesn't have address but currentWallet does, use it
       if (!platformAddress && currentWallet?.address) {
         return currentWallet.address;
-      }
-
-      // Additional fallback: try to get from userWallets if available
-      if (!platformAddress && !currentWallet?.address && userWallets?.[0]?.address) {
-        return userWallets[0].address;
       }
 
       return platformAddress;
