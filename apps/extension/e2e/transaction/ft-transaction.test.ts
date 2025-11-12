@@ -7,6 +7,8 @@ import {
   checkSentAmount,
   loginToSenderAccount,
   loginToSenderOrReceiver,
+  switchToEOAAccount,
+  loginToEOAAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 
@@ -91,6 +93,42 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
     page,
     tokenName: 'USDC.e',
     receiver: process.env.TEST_RECEIVER_EVM_ADDR,
+    amount: '0.000001',
+  });
+  txList.push(tx1);
+
+  await Promise.all(
+    txList.map(async (tx) => {
+      await checkSentAmount({
+        page,
+        txId: tx.txId,
+        amount: tx.amount,
+        sealedText: 'sealed',
+        ingoreFlowCharge: tx.ingoreFlowCharge,
+        isEvm: true,
+      });
+    })
+  );
+});
+
+test('send FTs with EOA ', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  await loginToEOAAccount({
+    page,
+    extensionId,
+  });
+  const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
+    [];
+
+  await switchToEOAAccount({
+    page,
+    address: process.env.TEST_EOA_ADDR,
+  });
+
+  const tx1 = await sendFT({
+    page,
+    tokenName: 'USDC.e',
+    receiver: process.env.TEST_SENDER_ADDR,
     amount: '0.000001',
   });
   txList.push(tx1);

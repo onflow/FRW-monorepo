@@ -11,6 +11,8 @@ import {
   checkNFTTrx,
   switchToMainAccount,
   switchToChildAccount,
+  switchToEOAAccount,
+  loginToEOAAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 
@@ -513,6 +515,47 @@ test('NFT from child to child back', async ({ page, extensionId }) => {
     page,
     collectionName: 'NBA Top Shot',
     receiver: senderChildAddr,
+    successtext: /success|Finalized|Executed|Sealed/,
+  });
+
+  txList.push(tx1);
+
+  // Go to the activity page
+  await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
+  await page.waitForURL(/.*\/dashboard.*/);
+  // Check the amounts that were sent for each transaction
+  await Promise.all(
+    txList.map(async (tx) => {
+      await checkNFTTrx({
+        page,
+        txId: tx.txId,
+        collectionName: 'NBA Top Shot',
+        sealedText: 'Sealed',
+        isEvm: true,
+      });
+    })
+  );
+});
+
+// test EOA TO EOA
+test('NFT from EOA to EOA', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  await loginToEOAAccount({
+    page,
+    extensionId,
+  });
+  const txList: { txId: string; collectionName: string }[] = [];
+
+  //Send NFT to sender COA
+  await switchToEOAAccount({
+    page,
+    address: process.env.TEST_EOA_ADDR,
+  });
+
+  const tx1 = await sendNFT({
+    page,
+    collectionName: 'FLOAT',
+    receiver: process.env.TEST_EOA_ADDR,
     successtext: /success|Finalized|Executed|Sealed/,
   });
 

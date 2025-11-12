@@ -247,6 +247,7 @@ export const AccountListing = ({
                 secondaryIcon={secondaryIcon}
                 showCard={false}
                 showLink={false}
+                data-testid={`eoa-account-${eoaAccount.address}`}
               />
             </Box>
           ))}

@@ -38,6 +38,7 @@ import {
   transformAccountForCard,
   transformAccountForDisplay,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';

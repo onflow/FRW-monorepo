@@ -362,6 +362,24 @@ export const loginToSenderAccount = async ({ page, extensionId }) => {
   });
 };
 
+export const loginToEOAAccount = async ({ page, extensionId }) => {
+  if (!process.env.TEST_EOA_ADDR) {
+    throw new Error('TEST_EOA_ADDR is not set');
+  }
+
+  if (!process.env.TEST_PASSWORD) {
+    throw new Error('TEST_PASSWORD is not set');
+  }
+
+  await loginToExtensionAccount({
+    page,
+    extensionId,
+    addr: process.env.TEST_EOA_FLOW_ADDR!,
+    password: process.env.TEST_PASSWORD!,
+    nickname: process.env.TEST_EOA_NICKNAME!,
+  });
+};
+
 export const loginToReceiverAccount = async ({ page, extensionId }) => {
   if (!process.env.TEST_RECEIVER_ADDR) {
     throw new Error('TEST_RECEIVER_ADDR is not set');
@@ -387,6 +405,17 @@ export const importReceiverAccount = async ({ page, extensionId }) => {
     seedPhrase: process.env.TEST_SEED_PHRASE_RECEIVER,
     username: 'receiver',
     accountAddr: process.env.TEST_RECEIVER_ADDR,
+  };
+  await importAccountBySeedPhrase(config);
+};
+
+export const importEoaAccount = async ({ page, extensionId }) => {
+  const config = {
+    page,
+    extensionId,
+    seedPhrase: process.env.TEST_SEED_PHRASE_EOA,
+    username: 'eoatest',
+    accountAddr: process.env.TEST_EOA_FLOW_ADDR,
   };
   await importAccountBySeedPhrase(config);
 };
@@ -460,6 +489,18 @@ export const switchToMainAccount = async ({ page, address }) => {
   // switch to another flow account
   await page
     .getByTestId(new RegExp(`main-account-${address}`, 'i'))
+    .first()
+    .click();
+  // get address
+  await getCurrentAddress(page);
+};
+
+export const switchToEOAAccount = async ({ page, address }) => {
+  // Assume the user is on the dashboard page
+  await page.getByTestId('account-menu-button').click();
+  // switch to another flow account
+  await page
+    .getByTestId(new RegExp(`eoa-account-${address}`, 'i'))
     .first()
     .click();
   // get address
