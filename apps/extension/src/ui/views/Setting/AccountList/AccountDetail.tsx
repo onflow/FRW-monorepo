@@ -181,9 +181,13 @@ const AccountDetail = () => {
                     onClickSecondary={toggleEditProfile}
                   />
                 )
-              : userWallet?.evmAccount && (
+              : (userWallet?.evmAccount || userWallet?.eoaAccount) && (
                   <AccountCard
-                    account={userWallet?.evmAccount}
+                    account={
+                      address === userWallet?.evmAccount?.address
+                        ? userWallet?.evmAccount
+                        : userWallet?.eoaAccount
+                    }
                     network={network}
                     showCard={true}
                     onClick={toggleEditProfile}
