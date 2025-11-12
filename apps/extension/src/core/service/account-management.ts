@@ -6,6 +6,7 @@ import * as ethUtil from 'ethereumjs-util';
 import {
   userMetadataKey,
   mainAccountsKey,
+  mainAccountsKeyUid,
   registerStatusKey,
   type UserMetadataStore,
   getValidData,
@@ -756,12 +757,14 @@ export class AccountManagement {
       // Update the cache with new metadata
       await setCachedData(cacheKey, updatedMetadata, 300_000);
 
-      // Update the specific account in the main accounts cache
+      // Update the specific account in the main accounts cache (both pubkey and userId versions)
       try {
         const network = await userWalletService.getNetwork();
         const userId = await getCurrentProfileId();
-        const accountsCacheKey = mainAccountsKey(network, userId);
-        const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKey);
+        const pubkey = userWalletService.getCurrentPubkey();
+        const accountsCacheKeyUid = mainAccountsKeyUid(network, userId);
+        const accountsCacheKeyPubkey = mainAccountsKey(network, pubkey);
+        const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKeyUid);
 
         if (existingMainAccounts && Array.isArray(existingMainAccounts)) {
           const updatedMainAccounts = existingMainAccounts.map((account) => {
@@ -807,7 +810,9 @@ export class AccountManagement {
             return account;
           });
 
-          await setCachedData(accountsCacheKey, updatedMainAccounts, 60_000);
+          // Update both pubkey and userId versions
+          await setCachedData(accountsCacheKeyUid, updatedMainAccounts, 60_000);
+          await setCachedData(accountsCacheKeyPubkey, updatedMainAccounts, 60_000);
         }
       } catch (updateError) {
         consoleError('Failed to update main accounts cache:', updateError);
