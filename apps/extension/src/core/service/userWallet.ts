@@ -15,6 +15,7 @@ import {
   accountBalanceRefreshRegex,
   coinListKey,
   mainAccountsKey,
+  mainAccountsRefreshRegex,
   mainAccountsKeyUid,
   mainAccountsUidRefreshRegex,
   mainAccountStorageBalanceKey,
@@ -2109,14 +2110,9 @@ export const calculateEmojiIcon = (address: string): Emoji => {
 
 const initAccountLoaders = () => {
   // Refresh listener for pubkey-based keys
-  const mainAccountsRefreshRegexFixed = new RegExp('^main-accounts-([^-]+)-(.+)-refresh$');
-
-  registerRefreshListener(
-    mainAccountsRefreshRegexFixed,
-    async (network: string, pubkey: string) => {
-      return loadMainAccountsWithPubKey(network, pubkey);
-    }
-  );
+  registerRefreshListener(mainAccountsRefreshRegex, async (network: string, pubkey: string) => {
+    return loadMainAccountsWithPubKey(network, pubkey);
+  });
 
   // Refresh listener for userId-based keys
   registerRefreshListener(mainAccountsUidRefreshRegex, async (network: string, userId: string) => {

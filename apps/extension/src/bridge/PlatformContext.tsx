@@ -10,6 +10,7 @@ import { getCachedData } from '@/data-model/cache-data-access';
 import { userInfoCachekey, getCachedMainAccounts } from '@/data-model/cache-data-keys';
 import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
 import { getLocalData } from '@/data-model/storage';
+import { type KeyringStateV3, type VaultEntryV3 } from '@/shared/types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
@@ -317,9 +318,9 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           const profileUserInfo = (await getCachedData(userInfoCachekey(profileId))) || {};
 
           // Get the public key for this profile from keyring
-          const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as any;
+          const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as KeyringStateV3 | null;
           const profileVaultEntry = keyringState?.vault?.find(
-            (entry: any) => entry.id === profileId
+            (entry: VaultEntryV3) => entry.id === profileId
           );
           const profilePublicKey = profileVaultEntry?.publicKey;
 
