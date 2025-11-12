@@ -126,8 +126,6 @@ export const AccountListing = ({
   itemSx,
   ignoreHidden = false,
 }: AccountListingProps) => {
-  console.log('accountList', accountList);
-
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
   // Check if the EVM account is not valid

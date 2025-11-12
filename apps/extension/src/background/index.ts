@@ -134,6 +134,17 @@ async function restoreAppState() {
   await walletController.setLoaded(true);
 }
 
+// function produceSentryErrorFromServiceWorker(): void {
+//   try {
+//     console.error("❌ Sentry Error in produceSentryErrorFromServiceWorker");
+//     throw new Error("❌ Sentry Error in produceSentryErrorFromServiceWorker");
+//   } catch (error) {
+//     sentry.scope.captureException(error);
+//   }
+// }
+
+// produceSentryErrorFromServiceWorker();
+
 restoreAppState();
 
 chrome.runtime.onInstalled.addListener(({ reason }: chrome.runtime.InstalledDetails) => {

@@ -18,9 +18,11 @@ import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
 import { useCadenceNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
 import {
   COLOR_ACCENT_EVM_627EEA,
+  COLOR_BLACK_000000,
   COLOR_DARKMODE_BACKGROUND_CARDS_1A1A1A,
   COLOR_DARKMODE_TEXT_PRIMARY_FFFFFF,
   COLOR_DARKMODE_TEXT_SECONDARY_B3B3B3,
+  COLOR_GREEN_FLOW_DARKMODE_00EF8B,
   COLOR_GREY_ICONS_767676,
 } from '@/ui/style/color';
 import { formatAddress } from '@/ui/utils';
@@ -154,6 +156,7 @@ export const AccountCard = ({
               <span
                 style={{
                   padding: '0px 4px',
+                  paddingRight: isEOAAccount ? '4px' : '0px',
                   justifyContent: 'center',
                   alignItems: 'center',
                   borderRadius: '16px',
@@ -167,6 +170,25 @@ export const AccountCard = ({
                 }}
               >
                 EVM
+                {!isEOAAccount && (
+                  <span
+                    style={{
+                      padding: '0px 4px',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: '16px',
+                      background: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
+                      color: COLOR_BLACK_000000,
+                      fontSize: '8px',
+                      marginLeft: '4px',
+                      fontWeight: '400',
+                      letterSpacing: '0.128px',
+                      lineHeight: '1.5em',
+                    }}
+                  >
+                    FLOW
+                  </span>
+                )}
               </span>
             )}
           </Typography>
