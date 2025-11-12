@@ -11,7 +11,7 @@ import {
   ScrollView,
   AccountCreationLoadingState,
 } from '@onflow/frw-ui';
-import { decodeJwtPayload } from '@onflow/frw-utils';
+import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
 import {
   SeedPhraseKey,
   SignatureAlgorithm,
@@ -335,9 +335,8 @@ export function ConfirmRecoveryPhraseScreen({
       // It relies on anonymous Firebase auth that's already active
       logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering with backend...');
 
-      // Generate username (similar to Android registerOutblock)
-      const timestamp = Date.now().toString();
-      const username = `u${timestamp.slice(-8)}`;
+      // Generate random username using word combinations
+      const username = generateRandomUsername();
       logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
 
       // Register user profile using ProfileService (wraps UserGoService.register1 - /v1/register endpoint)

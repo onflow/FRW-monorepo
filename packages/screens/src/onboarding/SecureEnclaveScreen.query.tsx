@@ -11,6 +11,7 @@ import {
   AccountCreationLoadingState,
   ShieldAnimation,
 } from '@onflow/frw-ui';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,10 +38,8 @@ const fetchSecureEnclaveConfig = async () => {
 const createSecureEnclaveAccount = async () => {
   // Use bridge.createCOAAccount() if available (React Native)
   if (bridge.createCOAAccount) {
-    // Auto-generate username (3-15 chars as per server requirement)
-    // Use last 8 digits of timestamp to keep it within length limit
-    const timestamp = Date.now().toString();
-    const username = `u${timestamp.slice(-8)}`; // e.g., "u12345678" (9 chars)
+    // Auto-generate random username using word combinations
+    const username = generateRandomUsername();
 
     logger.info('[SecureEnclaveScreen] Creating COA account with username:', username);
 
