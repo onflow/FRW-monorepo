@@ -1,4 +1,4 @@
-import { logger, navigation } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
 import {
   YStack,
   Text,
@@ -70,8 +70,13 @@ export function GetStartedScreen(): React.ReactElement {
     // Track analytics
     trackingMutation.mutate('sign_in');
 
-    // TODO: Navigate to sign in flow
-    navigation.navigate('SignIn');
+    // Launch native Android wallet restore screen
+    // This goes to the existing native account recovery flow
+    if (bridge.launchNativeScreen) {
+      bridge.launchNativeScreen('walletRestore');
+    } else {
+      logger.warn('launchNativeScreen not available on this platform');
+    }
   };
 
   // Show loading state while fetching config

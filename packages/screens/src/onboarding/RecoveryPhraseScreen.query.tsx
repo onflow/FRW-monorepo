@@ -368,22 +368,23 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             {/* Spacer */}
             <YStack flex={1} />
 
-            {/* Next button - matching other screens style */}
+            {/* Next button - disabled until phrase is revealed */}
             <YStack pb={24}>
               <YStack
                 width="100%"
                 height={52}
-                bg="$text"
-                rounded={16}
-                items="center"
-                justify="center"
+                backgroundColor={!isPhraseRevealed ? '#6b7280' : '$text'}
+                borderRadius={16}
+                alignItems="center"
+                justifyContent="center"
                 borderWidth={1}
-                borderColor="$text"
+                borderColor={!isPhraseRevealed ? '#6b7280' : '$text'}
+                opacity={!isPhraseRevealed ? 0.7 : 1}
                 pressStyle={{ opacity: 0.9 }}
-                onPress={handleNext}
-                cursor="pointer"
+                onPress={!isPhraseRevealed ? undefined : handleNext}
+                cursor={!isPhraseRevealed ? 'not-allowed' : 'pointer'}
               >
-                <Text fontSize={16} fontWeight="700" color="$bg">
+                <Text fontSize={16} fontWeight="700" color={!isPhraseRevealed ? '$white' : '$bg'}>
                   {t('onboarding.recoveryPhrase.next')}
                 </Text>
               </YStack>
