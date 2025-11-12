@@ -161,45 +161,6 @@ export class WalletManager {
   }
 
   /**
-   * Get or create Wallet instance (deprecated - use init instead)
-   */
-  private async getWallet(): Promise<Wallet> {
-    if (!this.wallet) {
-      if (!keyringService.isUnlocked()) {
-        throw new Error('Keyring is locked - please unlock first');
-      }
-
-      // Get mnemonic from extension's keyring (keyring is already unlocked)
-      const mnemonic = await keyringService.getMnemonicFromKeyring();
-      if (!mnemonic) {
-        throw new Error('No mnemonic available from keyring');
-      }
-
-      // Create SeedPhraseKey with Flow derivation path (wallet will handle EVM internally)
-      this.seedPhraseKey = await SeedPhraseKey.createAdvanced(
-        {
-          mnemonic,
-          derivationPath: "m/44'/539'/0'/0/0", // Flow default path
-          passphrase: '',
-        },
-        this.storage
-      );
-
-      // Create wallet using factory
-      this.wallet = WalletFactory.createKeyWallet(
-        this.seedPhraseKey,
-        this.getNetworks(),
-        this.storage
-      );
-
-      // Initialize wallet to load all accounts (Flow + EVM)
-      await this.wallet.initialize();
-    }
-
-    return this.wallet;
-  }
-
-  /**
    * Get networks based on extension's network setting
    */
   private getNetworks(): Set<any> {
