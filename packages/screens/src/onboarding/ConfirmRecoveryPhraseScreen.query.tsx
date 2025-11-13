@@ -479,6 +479,33 @@ export function ConfirmRecoveryPhraseScreen({
         // 12. UI transition (native closes RN view)
         // 13. Optional notification permission
 
+        // Step 14: Create COA account (in addition to EOA)
+        // Recovery phrase flow creates BOTH EOA (seed phrase) and COA (Cadence Owned Account)
+        // Uses the same username as the EOA account for consistency
+        logger.info('[ConfirmRecoveryPhraseScreen] Step 14: Creating COA account...');
+
+        if (bridge.registerSecureTypeAccount) {
+          // Reuse the same username that was generated for EOA account (line 339)
+          logger.info(
+            '[ConfirmRecoveryPhraseScreen] Registering COA account with username:',
+            username
+          );
+
+          const coaResult = await bridge.registerSecureTypeAccount(username);
+
+          if (!coaResult.success) {
+            throw new Error(coaResult.error || 'Failed to create COA account');
+          }
+
+          logger.info('[ConfirmRecoveryPhraseScreen] COA account created successfully:', {
+            address: coaResult.address,
+            username: coaResult.username,
+          });
+        } else {
+          logger.warn('[ConfirmRecoveryPhraseScreen] registerSecureTypeAccount not available');
+          throw new Error('COA account creation not supported on this platform');
+        }
+
         // Navigate to notification preferences (or native will close RN)
         navigation.navigate('NotificationPreferences');
       } else {
