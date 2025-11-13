@@ -54,24 +54,8 @@ export function configureApiEndpoints(
   goInstance.interceptors.request.use(
     async (config) => {
       const token = await getJWT();
-      // TODO: Add debug logging when context is available
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        // Debug logging for registration endpoint
-        if (config.url?.includes('/v3/register')) {
-          console.log('[API] /v3/register - Token present, length:', token.length);
-        }
-        // Debug logging for address creation endpoints
-        if (config.url?.includes('/v1/user/address')) {
-          console.log('[API] /v1/user/address - Token present, length:', token.length);
-          console.log('[API] /v1/user/address - Full URL:', config.baseURL + config.url);
-          console.log('[API] /v1/user/address - Method:', config.method);
-        }
-        if (config.url?.includes('/v2/user/address')) {
-          console.log('[API] /v2/user/address - Token present, length:', token.length);
-          console.log('[API] /v2/user/address - Full URL:', config.baseURL + config.url);
-          console.log('[API] /v2/user/address - Method:', config.method);
-        }
       } else {
         // Endpoints that require authentication
         const requiresAuth =
@@ -88,56 +72,8 @@ export function configureApiEndpoints(
           console.error('[API]', errorMessage);
           return Promise.reject(new Error(errorMessage));
         }
-
-        // Log warning for address creation endpoints if no token
-        if (config.url?.includes('/v1/user/address')) {
-          console.warn('[API] /v1/user/address - No token available, request will likely fail');
-          console.warn('[API] /v1/user/address - Full URL:', config.baseURL + config.url);
-        }
-        if (config.url?.includes('/v2/user/address')) {
-          console.warn('[API] /v2/user/address - No token available, request will likely fail');
-          console.warn('[API] /v2/user/address - Full URL:', config.baseURL + config.url);
-        }
-
-        // TODO: Replace with proper logger when context is available
-        if (config.url?.includes('/v3/register')) {
-          console.warn('[API] /v3/register - No token available, request will likely fail');
-        }
       }
       config.headers.network = getNetwork();
-
-      // Log request body for debugging (especially for /v3/register)
-      if (config.url?.includes('/v3/register') && config.data) {
-        try {
-          const requestBody =
-            typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
-          console.log('[API] /v3/register request body:', JSON.stringify(requestBody, null, 2));
-        } catch (e) {
-          console.log('[API] /v3/register request data (raw):', config.data);
-        }
-      }
-
-      // Log request details for address creation endpoints
-      if (config.url?.includes('/v1/user/address')) {
-        console.log('[API] /v1/user/address request details:', {
-          url: config.baseURL + config.url,
-          method: config.method,
-          headers: {
-            Authorization: config.headers.Authorization ? 'Bearer [token]' : 'none',
-            network: config.headers.network,
-          },
-        });
-      }
-      if (config.url?.includes('/v2/user/address')) {
-        console.log('[API] /v2/user/address request details:', {
-          url: config.baseURL + config.url,
-          method: config.method,
-          headers: {
-            Authorization: config.headers.Authorization ? 'Bearer [token]' : 'none',
-            network: config.headers.network,
-          },
-        });
-      }
 
       return config;
     },
