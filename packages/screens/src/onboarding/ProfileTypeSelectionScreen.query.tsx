@@ -7,41 +7,16 @@ import {
   Button,
   ShieldAnimation,
 } from '@onflow/frw-ui';
-import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
  * ProfileTypeSelectionScreen - Second screen in onboarding flow
  * Allows users to choose between recovery phrase or secure enclave profile type
- * Uses TanStack Query for future backend integration
  */
-
-// Future API functions (placeholder for now)
-const fetchProfileTypeConfig = async () => {
-  // TODO: Replace with actual API call
-  return {
-    showRecoveryPhrase: true,
-    showSecureEnclave: true,
-    recommendedType: 'recovery_phrase',
-    secureEnclaveAvailable: true,
-  };
-};
 
 export function ProfileTypeSelectionScreen(): React.ReactElement {
   const { t } = useTranslation();
-
-  // Query for profile type configuration
-  const {
-    data: profileConfig,
-    isLoading: isLoadingConfig,
-    error: configError,
-  } = useQuery({
-    queryKey: ['onboarding', 'profile-type-config'],
-    queryFn: fetchProfileTypeConfig,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-  });
 
   const handleNext = () => {
     // Navigate to recovery phrase setup
@@ -52,30 +27,6 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
     // Navigate to secure enclave setup
     navigation.navigate('SecureEnclave');
   };
-
-  // Show loading state while fetching config
-  if (isLoadingConfig) {
-    return (
-      <OnboardingBackground>
-        <YStack flex={1} items="center" justify="center">
-          <Text>Loading...</Text>
-        </YStack>
-      </OnboardingBackground>
-    );
-  }
-
-  // Show error state if config fetch fails
-  if (configError) {
-    return (
-      <OnboardingBackground>
-        <YStack flex={1} items="center" justify="center" px="$4">
-          <Text color="$red10" text="center">
-            Failed to load profile configuration. Please try again.
-          </Text>
-        </YStack>
-      </OnboardingBackground>
-    );
-  }
 
   return (
     <OnboardingBackground>
