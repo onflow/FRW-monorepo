@@ -70,6 +70,19 @@ export function SecureEnclaveScreen(): React.ReactElement {
         );
 
         setShowLoadingState(false);
+
+        // Check notification permission before navigating
+        if (bridge.checkNotificationPermission) {
+          const isGranted = await bridge.checkNotificationPermission();
+          if (isGranted) {
+            logger.info(
+              '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
+            );
+            navigation.navigate('BackupOptions');
+            return;
+          }
+        }
+
         navigation.navigate('NotificationPreferences');
       } else {
         // Fallback for platforms without secure type account support
@@ -79,6 +92,19 @@ export function SecureEnclaveScreen(): React.ReactElement {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         setShowLoadingState(false);
+
+        // Check notification permission before navigating
+        if (bridge.checkNotificationPermission) {
+          const isGranted = await bridge.checkNotificationPermission();
+          if (isGranted) {
+            logger.info(
+              '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
+            );
+            navigation.navigate('BackupOptions');
+            return;
+          }
+        }
+
         navigation.navigate('NotificationPreferences');
       }
     } catch (error) {
