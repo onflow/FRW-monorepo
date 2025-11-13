@@ -92,7 +92,7 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
   const tx1 = await sendFT({
     page,
     tokenName: 'USDC.e',
-    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
+    receiver: process.env.TEST_SENDER_EVM_ADDR,
     amount: '0.000001',
   });
   txList.push(tx1);
