@@ -1,6 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { YStack, Text, OnboardingBackground, NotificationPreviewImage } from '@onflow/frw-ui';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,18 +9,6 @@ import { useTranslation } from 'react-i18next';
  * Shows a preview of notifications and allows users to enable them
  * Uses native bridge for permission request
  */
-
-// Check if notifications are supported
-const fetchNotificationConfig = async (): Promise<{
-  isSupported: boolean;
-  permissionStatus: string;
-}> => {
-  // All platforms support notifications
-  return {
-    isSupported: true,
-    permissionStatus: 'not_determined',
-  };
-};
 
 // Request notification permission via bridge
 const requestNotificationPermission = async (enable: boolean): Promise<{ granted: boolean }> => {
@@ -56,12 +44,6 @@ const requestNotificationPermission = async (enable: boolean): Promise<{ granted
   return { granted: false };
 };
 
-const trackNotificationChoice = async (choice: 'enable' | 'skip') => {
-  // TODO: Replace with actual analytics API call
-  logger.debug('[NotificationPreferencesScreen] Tracking notification choice:', choice);
-  return { success: true };
-};
-
 export function NotificationPreferencesScreen(): React.ReactElement {
   const { t } = useTranslation();
   const [isCheckingPermission, setIsCheckingPermission] = React.useState(true);
@@ -93,18 +75,6 @@ export function NotificationPreferencesScreen(): React.ReactElement {
     checkExistingPermission();
   }, []);
 
-  // Query for notification configuration
-  const {
-    data: notificationConfig,
-    isLoading: isLoadingConfig,
-    error: configError,
-  } = useQuery({
-    queryKey: ['onboarding', 'notification-config'],
-    queryFn: fetchNotificationConfig,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-  });
-
   // Mutation for requesting notification permission
   const notificationMutation = useMutation({
     mutationFn: requestNotificationPermission,
@@ -123,63 +93,26 @@ export function NotificationPreferencesScreen(): React.ReactElement {
     },
   });
 
-  // Mutation for tracking analytics
-  const trackingMutation = useMutation({
-    mutationFn: trackNotificationChoice,
-    onSuccess: (data, variables) => {
-      logger.debug(
-        '[NotificationPreferencesScreen] Successfully tracked notification choice:',
-        variables
-      );
-    },
-    onError: (error, variables) => {
-      logger.error(
-        '[NotificationPreferencesScreen] Failed to track notification choice:',
-        variables,
-        error
-      );
-    },
-  });
-
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleEnableNotifications = () => {
-    // Track analytics
-    trackingMutation.mutate('enable');
-
     // Request notification permissions and navigate to backup options
     notificationMutation.mutate(true);
   };
 
   const handleMaybeLater = () => {
-    // Track analytics
-    trackingMutation.mutate('skip');
-
     // Skip notification setup and go to backup options
     navigation.navigate('BackupOptions');
   };
 
-  // Show loading state while checking permission or fetching config
-  if (isCheckingPermission || isLoadingConfig) {
+  // Show loading state while checking permission
+  if (isCheckingPermission) {
     return (
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center">
           <Text>Loading...</Text>
-        </YStack>
-      </OnboardingBackground>
-    );
-  }
-
-  // Show error state if config fetch fails
-  if (configError) {
-    return (
-      <OnboardingBackground>
-        <YStack flex={1} items="center" justify="center" px="$4">
-          <Text color="$textSecondary" text="center">
-            Failed to load notification configuration. Please try again.
-          </Text>
         </YStack>
       </OnboardingBackground>
     );
