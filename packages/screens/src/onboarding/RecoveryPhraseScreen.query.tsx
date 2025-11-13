@@ -56,8 +56,6 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
   const [isResettingAuth, setIsResettingAuth] = useState(true);
-  // Start with null - will be set after reset completes to ensure fresh mnemonic
-  const [profileId, setProfileId] = useState<string | null>(null);
 
   // Reset Firebase auth and invalidate cache when screen mounts (for new profile creation)
   useEffect(() => {
@@ -65,24 +63,13 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       try {
         logger.info('[RecoveryPhraseScreen] Resetting for new profile creation...');
 
-        // Generate a new profile ID for this session
-        const newProfileId = `profile-${Date.now()}`;
-        logger.info('[RecoveryPhraseScreen] Generated new profile ID:', newProfileId);
-
-        // Aggressively remove all cached mnemonic queries
+        // Remove all cached mnemonic queries to ensure fresh generation
         queryClient.removeQueries({
           queryKey: ['onboarding', 'generate-phrase'],
         });
         logger.info('[RecoveryPhraseScreen] Removed all cached mnemonic queries');
 
-        // Also invalidate to trigger refetch if needed
-        await queryClient.invalidateQueries({
-          queryKey: ['onboarding', 'generate-phrase'],
-        });
-        logger.info('[RecoveryPhraseScreen] Invalidated mnemonic cache');
-
         // Sign out and sign in anonymously to ensure clean Firebase state
-        // This is important for multi-profile scenarios
         if (bridge.signOutAndSignInAnonymously) {
           try {
             await bridge.signOutAndSignInAnonymously();
@@ -95,14 +82,9 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             // Continue anyway - if already anonymous, that's fine
           }
         }
-
-        // Set profile ID after reset completes to trigger new query
-        setProfileId(newProfileId);
       } catch (error) {
         logger.error('[RecoveryPhraseScreen] Error resetting for new profile:', error);
         // Continue anyway - don't block the user
-        // Still set a new profile ID to ensure unique mnemonic
-        setProfileId(`profile-${Date.now()}`);
       } finally {
         setIsResettingAuth(false);
       }
@@ -112,15 +94,14 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   }, []); // Empty deps - run once on mount
 
   // Generate recovery phrase (mnemonic only, account creation happens after verification)
-  // Use a unique key with profile ID to force regeneration for each new profile
   const {
     data: phraseData,
     isLoading: isGenerating,
     error: generateError,
   } = useQuery({
-    queryKey: ['onboarding', 'generate-phrase', profileId],
+    queryKey: ['onboarding', 'generate-phrase'],
     queryFn: generateRecoveryPhrase,
-    enabled: !isResettingAuth && !!profileId, // Wait for auth reset and profileId before generating
+    enabled: !isResettingAuth, // Wait for auth reset before generating
     staleTime: 0, // Always generate fresh mnemonic
     gcTime: 0, // Don't cache - each profile needs a unique mnemonic
     retry: false, // Don't retry on error
