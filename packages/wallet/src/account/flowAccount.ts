@@ -177,10 +177,8 @@ export class FlowAccount implements FlowSigner {
     try {
       const p256PublicKey = await this.key.publicKey(SignatureAlgorithm.ECDSA_P256, undefined);
       if (p256PublicKey) {
-        // Convert Uint8Array to hex string (React Native compatible - no Buffer)
-        const p256PublicKeyHex = Array.from(p256PublicKey)
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('');
+        // Convert Uint8Array to hex string using Buffer (polyfilled in React Native)
+        const p256PublicKeyHex = Buffer.from(p256PublicKey).toString('hex');
         const p256Keys = this.account.keys.filter(
           (key) => !key.revoked && key.weight >= 1000 && key.publicKey.hex === p256PublicKeyHex
         );
@@ -196,10 +194,8 @@ export class FlowAccount implements FlowSigner {
         undefined
       );
       if (secp256k1PublicKey) {
-        // Convert Uint8Array to hex string (React Native compatible - no Buffer)
-        const secp256k1PublicKeyHex = Array.from(secp256k1PublicKey)
-          .map((b) => b.toString(16).padStart(2, '0'))
-          .join('');
+        // Convert Uint8Array to hex string using Buffer (polyfilled in React Native)
+        const secp256k1PublicKeyHex = Buffer.from(secp256k1PublicKey).toString('hex');
         const secpKeys = this.account.keys.filter(
           (key) => !key.revoked && key.weight >= 1000 && key.publicKey.hex === secp256k1PublicKeyHex
         );
