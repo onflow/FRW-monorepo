@@ -97,3 +97,13 @@ export interface Currency {
   symbol: string;
   rate: string;
 }
+
+export interface CreateAccountResponse {
+  success: boolean;
+  address: string | null;
+  username: string | null;
+  // Note: mnemonic/phrase fields removed for COA accounts (Secure Enclave)
+  // Secure Enclave uses hardware-backed keys, no mnemonic is generated
+  accountType: 'eoa' | 'coa' | null;
+  error: string | null;
+}
