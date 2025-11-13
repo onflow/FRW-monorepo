@@ -8,11 +8,15 @@ import {
 } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Linking } from 'react-native';
 
 /**
  * GetStartedScreen - First screen of the FTE onboarding flow
  * Displays welcome message with create account and sign in options
  */
+
+const TERMS_OF_SERVICE_URL = 'https://wallet.flow.com/terms-of-service';
+const PRIVACY_POLICY_URL = 'https://wallet.flow.com/privacy-policy';
 
 export function GetStartedScreen(): React.ReactElement {
   const { t } = useTranslation();
@@ -29,6 +33,32 @@ export function GetStartedScreen(): React.ReactElement {
       bridge.launchNativeScreen('walletRestore');
     } else {
       logger.warn('launchNativeScreen not available on this platform');
+    }
+  };
+
+  const handleOpenTerms = async () => {
+    try {
+      const supported = await Linking.canOpenURL(TERMS_OF_SERVICE_URL);
+      if (supported) {
+        await Linking.openURL(TERMS_OF_SERVICE_URL);
+      } else {
+        logger.warn('Cannot open terms of service URL');
+      }
+    } catch (error) {
+      logger.error('Failed to open terms of service:', error);
+    }
+  };
+
+  const handleOpenPrivacy = async () => {
+    try {
+      const supported = await Linking.canOpenURL(PRIVACY_POLICY_URL);
+      if (supported) {
+        await Linking.openURL(PRIVACY_POLICY_URL);
+      } else {
+        logger.warn('Cannot open privacy policy URL');
+      }
+    } catch (error) {
+      logger.error('Failed to open privacy policy:', error);
     }
   };
 
@@ -90,9 +120,34 @@ export function GetStartedScreen(): React.ReactElement {
             </Text>
           </YStack>
 
-          <Text fontSize="$3" color="$textSecondary" text="center" lineHeight={17} mt="$2">
-            {t('onboarding.getStarted.termsAndPrivacy')}
-          </Text>
+          <YStack marginTop="$2" alignItems="center" paddingHorizontal="$4">
+            <Text fontSize="$3" color="$textSecondary" lineHeight={17} textAlign="center">
+              By using Flow Wallet you agree to the{' '}
+              <Text
+                fontSize="$3"
+                color="$textSecondary"
+                lineHeight={17}
+                textDecorationLine="underline"
+                onPress={handleOpenTerms}
+                cursor="pointer"
+                pressStyle={{ opacity: 0.7 }}
+              >
+                terms of service
+              </Text>{' '}
+              and{' '}
+              <Text
+                fontSize="$3"
+                color="$textSecondary"
+                lineHeight={17}
+                textDecorationLine="underline"
+                onPress={handleOpenPrivacy}
+                cursor="pointer"
+                pressStyle={{ opacity: 0.7 }}
+              >
+                privacy policy
+              </Text>
+            </Text>
+          </YStack>
         </YStack>
       </YStack>
     </OnboardingBackground>
