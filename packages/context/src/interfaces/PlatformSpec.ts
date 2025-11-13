@@ -107,6 +107,20 @@ export interface PlatformSpec {
   // Onboarding methods - Account creation
   // EOA: Externally Owned Account (pure mnemonic-based, no server)
   createEOAAccount?(): Promise<CreateEOAAccountResponse>;
+  // Generate seed phrase (mnemonic) and derive account key using native wallet-core
+  // Returns: SPResponse with mnemonic, accountKey, and derivation path
+  generateSeedPhrase?(strength?: number): Promise<{
+    mnemonic: string;
+    accountKey: {
+      publicKey: string;
+      hashAlgoStr: string;
+      signAlgoStr: string;
+      weight: number;
+      hashAlgo: number;
+      signAlgo: number;
+    };
+    drivepath: string;
+  }>;
 
   // Register Secure Type Account (Secure Enclave profile - hardware-backed keys)
   // Username must be provided by caller (3-20 chars as per server requirement)

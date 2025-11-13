@@ -9,7 +9,6 @@ import {
   Button,
   AccountCreationLoadingState,
 } from '@onflow/frw-ui';
-import { generateBip39Mnemonic } from '@onflow/frw-wallet';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,23 +17,40 @@ import { useQueryClient } from '../providers/QueryProvider';
 
 /**
  * RecoveryPhraseScreen - Generates and displays recovery phrase
- * Uses @onflow/frw-wallet's BIP39 implementation to generate mnemonic
+ * Uses native wallet-core bridge to generate mnemonic and derive account key
  * Phrase is stored temporarily until user verifies it
  */
 
-// Generate BIP39 mnemonic using @onflow/frw-wallet
-// This generates the seed phrase but does NOT create an account yet
-// Account will be derived from seed phrase later (EOA = calculated, not created)
+// Generate recovery phrase using native wallet-core bridge
+// This generates the seed phrase and account key but does NOT create an account yet
+// Account will be created after user verifies the phrase
 const generateRecoveryPhrase = async (): Promise<{
   phrase: string[];
   mnemonic: string;
+  accountKey: {
+    publicKey: string;
+    hashAlgoStr: string;
+    signAlgoStr: string;
+    weight: number;
+    hashAlgo: number;
+    signAlgo: number;
+  };
+  drivepath: string;
 }> => {
   try {
-    // Generate 12-word mnemonic (128-bit entropy) using Trust Wallet Core
-    const mnemonic = await generateBip39Mnemonic({ strength: 128 });
-    const phrase = mnemonic.trim().split(/\s+/);
+    // Generate 12-word mnemonic (128-bit entropy) using native wallet-core bridge
+    if (!bridge.generateSeedPhrase) {
+      throw new Error('generateSeedPhrase bridge method is not available');
+    }
 
-    logger.info('[RecoveryPhraseScreen] Generated BIP39 mnemonic with', phrase.length, 'words');
+    const response = await bridge.generateSeedPhrase(128);
+    const phrase = response.mnemonic.trim().split(/\s+/);
+
+    logger.info(
+      '[RecoveryPhraseScreen] Generated mnemonic via native bridge with',
+      phrase.length,
+      'words'
+    );
 
     if (phrase.length !== 12) {
       throw new Error(`Expected 12 words, got ${phrase.length}`);
@@ -42,7 +58,9 @@ const generateRecoveryPhrase = async (): Promise<{
 
     return {
       phrase,
-      mnemonic,
+      mnemonic: response.mnemonic,
+      accountKey: response.accountKey,
+      drivepath: response.drivepath,
     };
   } catch (error) {
     logger.error('[RecoveryPhraseScreen] Failed to generate mnemonic:', error);
@@ -185,6 +203,8 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     navigation.navigate('ConfirmRecoveryPhrase', {
       recoveryPhrase,
       mnemonic,
+      accountKey: phraseData?.accountKey,
+      drivepath: phraseData?.drivepath,
     });
   };
 

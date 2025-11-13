@@ -403,6 +403,26 @@ class PlatformImpl implements PlatformSpec {
 
   // Save mnemonic and initialize wallet (Keychain/KeyStore + Firebase + Wallet-Kit)
   // Throws error on failure, resolves on success
+  async generateSeedPhrase(strength: number = 128): Promise<{
+    mnemonic: string;
+    accountKey: {
+      publicKey: string;
+      hashAlgoStr: string;
+      signAlgoStr: string;
+      weight: number;
+      hashAlgo: number;
+      signAlgo: number;
+    };
+    drivepath: string;
+  }> {
+    try {
+      return await NativeFRWBridge.generateSeedPhrase(strength);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to generate seed phrase via bridge:', error);
+      throw error;
+    }
+  }
+
   async saveMnemonic(mnemonic: string, customToken: string, txId: string): Promise<void> {
     try {
       await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId);

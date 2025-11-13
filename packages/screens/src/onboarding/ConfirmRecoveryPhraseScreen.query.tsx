@@ -12,13 +12,7 @@ import {
   AccountCreationLoadingState,
 } from '@onflow/frw-ui';
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
-import {
-  SeedPhraseKey,
-  SignatureAlgorithm,
-  BIP44_PATHS,
-  MemoryStorage,
-  WalletCoreProvider,
-} from '@onflow/frw-wallet';
+// Removed wallet-core.native imports - now using native bridge for key generation
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -107,6 +101,15 @@ interface ConfirmRecoveryPhraseScreenProps {
     params?: {
       recoveryPhrase?: string[];
       mnemonic?: string;
+      accountKey?: {
+        publicKey: string;
+        hashAlgoStr: string;
+        signAlgoStr: string;
+        weight: number;
+        hashAlgo: number;
+        signAlgo: number;
+      };
+      drivepath?: string;
     };
   };
   // React Navigation also passes navigation prop, but we use the abstraction
@@ -116,52 +119,8 @@ interface ConfirmRecoveryPhraseScreenProps {
 /**
  * ConfirmRecoveryPhraseScreen - Screen to verify the user has written down their recovery phrase
  * Shows multiple choice questions for specific word positions in the recovery phrase
- * Uses TanStack Query for future backend integration
+ * Uses native wallet-core bridge for key generation (no longer uses wallet-core.native)
  */
-// Helper function to derive Flow address from mnemonic
-const deriveFlowAddressFromMnemonic = async (mnemonic: string): Promise<string> => {
-  try {
-    // Use MemoryStorage for temporary key storage during derivation
-    const tempStorage = new MemoryStorage();
-
-    // Create SeedPhraseKey from mnemonic
-    const seedPhraseKey = await SeedPhraseKey.createAdvanced(
-      {
-        mnemonic,
-        derivationPath: BIP44_PATHS.FLOW, // m/44'/539'/0'/0/0
-        passphrase: '',
-      },
-      tempStorage
-    );
-
-    // Get public key using P-256 (Flow's default signature algorithm)
-    const publicKeyBytes = await seedPhraseKey.publicKey(SignatureAlgorithm.ECDSA_P256);
-
-    if (!publicKeyBytes) {
-      throw new Error('Failed to derive public key from mnemonic');
-    }
-
-    // Convert public key to Flow address format
-    // Flow address derivation: hash(publicKey) -> take first 8 bytes -> format as 0x...
-    // Convert Uint8Array to hex string (React Native compatible - no Buffer)
-    const publicKeyHex = Array.from(publicKeyBytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    // For now, return a placeholder - actual address derivation requires Flow SDK
-    // TODO: Use Flow SDK to properly derive address from public key
-    logger.info(
-      '[ConfirmRecoveryPhraseScreen] Derived public key:',
-      publicKeyHex.slice(0, 16) + '...'
-    );
-
-    // Return placeholder address (will be replaced with actual derivation)
-    return '0x' + publicKeyHex.slice(0, 16);
-  } catch (error) {
-    logger.error('[ConfirmRecoveryPhraseScreen] Failed to derive address:', error);
-    throw error;
-  }
-};
 
 export function ConfirmRecoveryPhraseScreen({
   route,
@@ -173,6 +132,8 @@ export function ConfirmRecoveryPhraseScreen({
   // Get data from navigation params
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
   const mnemonic = route?.params?.mnemonic || '';
+  const accountKey = route?.params?.accountKey;
+  const drivepath = route?.params?.drivepath;
 
   // Log received params for debugging
   useEffect(() => {
@@ -181,10 +142,12 @@ export function ConfirmRecoveryPhraseScreen({
       hasParams: !!route?.params,
       recoveryPhraseLength: recoveryPhrase?.length || 0,
       mnemonicLength: mnemonic?.length || 0,
+      hasAccountKey: !!accountKey,
+      drivepath: drivepath,
       recoveryPhrase: recoveryPhrase?.slice(0, 3) || [],
       routeParams: route?.params,
     });
-  }, [route, recoveryPhrase, mnemonic]);
+  }, [route, recoveryPhrase, mnemonic, accountKey, drivepath]);
 
   // Enable screenshot protection when screen mounts (showing recovery phrase words)
   useEffect(() => {
@@ -278,32 +241,16 @@ export function ConfirmRecoveryPhraseScreen({
         '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'
       );
 
-      // Step 5: Extract public key from validated seed phrase
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Extracting public key from mnemonic');
-      const tempStorage = new MemoryStorage();
-      const seedPhraseKey = await SeedPhraseKey.createAdvanced(
-        {
-          mnemonic,
-          derivationPath: BIP44_PATHS.FLOW,
-          passphrase: '',
-        },
-        tempStorage
-      );
+      // Step 5: Use account key from native bridge (generated via wallet-core)
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Using account key from native bridge');
 
-      // Get public key hex directly from WalletCoreProvider to avoid double conversion
-      // This matches the extension's approach which uses hex strings directly
-      const hdWallet = (seedPhraseKey as any).hdWallet;
-      if (!hdWallet) {
-        throw new Error('HD wallet not initialized');
+      if (!accountKey) {
+        throw new Error(
+          'Account key not available from bridge. Please regenerate the recovery phrase.'
+        );
       }
 
-      // Get public key as hex string directly using secp256k1 (matches extension default)
-      // Extension uses SIGN_ALGO_NUM_DEFAULT = ECDSA_secp256k1 (2) with HASH_ALGO_NUM_DEFAULT = SHA2_256 (1)
-      const publicKeyHex = await WalletCoreProvider.getFlowPublicKeyBySignatureAlgorithm(
-        hdWallet,
-        'ECDSA_secp256k1',
-        BIP44_PATHS.FLOW
-      );
+      const publicKeyHex = accountKey.publicKey;
 
       // Validate public key format
       if (!/^[0-9a-fA-F]+$/.test(publicKeyHex)) {
@@ -325,9 +272,11 @@ export function ConfirmRecoveryPhraseScreen({
         );
       }
 
-      logger.info('[ConfirmRecoveryPhraseScreen] Public key extracted:', {
+      logger.info('[ConfirmRecoveryPhraseScreen] Using account key from bridge:', {
         length: publicKeyHex.length,
         preview: publicKeyHex.slice(0, 16) + '...',
+        signAlgo: accountKey.signAlgo,
+        hashAlgo: accountKey.hashAlgo,
       });
 
       // Step 6: Register with backend using ProfileService
@@ -386,14 +335,14 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       logger.info('[ConfirmRecoveryPhraseScreen] Calling profileSvc.register()...');
-      // Match extension implementation: sign_algo: 2 (ECDSA_secp256k1), hash_algo: 1 (SHA2_256)
+      // Use account key from native bridge (already has correct sign_algo and hash_algo)
       // Extension uses /v1/register endpoint which doesn't require deviceInfo
       const registerResponse = await profileSvc.register({
         username,
         accountKey: {
           public_key: publicKeyHex,
-          sign_algo: 2, // ECDSA_secp256k1 (matches extension SIGN_ALGO_NUM_DEFAULT)
-          hash_algo: 1, // SHA2_256 (matches extension HASH_ALGO_NUM_DEFAULT)
+          sign_algo: accountKey.signAlgo, // From native bridge (ECDSA_secp256k1 = 2)
+          hash_algo: accountKey.hashAlgo, // From native bridge (SHA2_256 = 1)
         },
       });
 

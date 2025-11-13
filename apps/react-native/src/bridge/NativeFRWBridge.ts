@@ -117,6 +117,24 @@ export interface Spec extends TurboModule {
   ): void;
   // Native screen navigation - unified method for launching native Android/iOS screens
   launchNativeScreen(screenName: string, params?: string | null): void;
+  // Generate seed phrase (mnemonic) and derive account key using native wallet-core
+  // Returns: SPResponse with mnemonic, accountKey, and derivation path
+  generateSeedPhrase(strength?: number): Promise<SPResponse>;
+}
+
+interface AccountKey {
+  publicKey: string;
+  hashAlgoStr: string;
+  signAlgoStr: string;
+  weight: number;
+  hashAlgo: number;
+  signAlgo: number;
+}
+
+interface SPResponse {
+  mnemonic: string;
+  accountKey: AccountKey;
+  drivepath: string;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

@@ -1,63 +1,9 @@
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
-// Platform-specific import - React Native uses pure JS, Web uses WASM
-// Metro should auto-resolve .native.ts files, but we use require() as fallback
-let WalletCoreProvider: any;
-
-// Enhanced React Native detection
-const isReactNative =
-  (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') ||
-  (typeof global !== 'undefined' && typeof (global as any).__fbBatchedBridge !== 'undefined') ||
-  (typeof window !== 'undefined' && typeof (window as any).__fbBatchedBridge !== 'undefined');
-
-// Debug logging (will be removed in production)
-if (typeof console !== 'undefined') {
-  console.log('[bip39] Platform detection:', {
-    navigatorProduct: typeof navigator !== 'undefined' ? navigator.product : 'undefined',
-    hasFBBatchedBridge:
-      typeof global !== 'undefined' ? typeof (global as any).__fbBatchedBridge : 'undefined',
-    isReactNative,
-  });
-}
-
-if (isReactNative) {
-  // React Native: Use native implementation (pure JS crypto)
-  // Try require first (works in Metro bundler)
-  try {
-    WalletCoreProvider = require('./wallet-core-provider.native').WalletCoreProvider;
-    if (typeof WalletCoreProvider === 'undefined') {
-      throw new Error('WalletCoreProvider is undefined');
-    }
-    if (typeof console !== 'undefined') {
-      console.log('[bip39] Successfully loaded native wallet-core-provider');
-    }
-  } catch (error: any) {
-    // If require fails, try with .ts extension
-    try {
-      WalletCoreProvider = require('./wallet-core-provider.native.ts').WalletCoreProvider;
-      if (typeof console !== 'undefined') {
-        console.log('[bip39] Successfully loaded native wallet-core-provider with .ts extension');
-      }
-    } catch (error2: any) {
-      console.error(
-        '[bip39] Failed to load native wallet-core-provider:',
-        error?.message || error,
-        error2?.message || error2
-      );
-      // Last resort: throw descriptive error
-      throw new Error(
-        `Failed to load native wallet-core-provider in React Native: ${error?.message || 'Unknown error'}`
-      );
-    }
-  }
-} else {
-  // Web/Extension: Use WASM implementation
-  WalletCoreProvider = require('./wallet-core-provider').WalletCoreProvider;
-  if (typeof console !== 'undefined') {
-    console.log('[bip39] Loaded web wallet-core-provider (WASM)');
-  }
-}
-
+// Wallet Core integration - Web/Extension uses WASM implementation
+// Note: React Native onboarding uses native bridge (NativeFRWBridge.generateSeedPhrase)
+// instead of WalletCoreProvider. This module is for extension/web use only.
+import { WalletCoreProvider } from './wallet-core-provider';
 import { WalletError } from '../types/errors';
 
 export type Bip39Strength = 128 | 160 | 192 | 224 | 256;
