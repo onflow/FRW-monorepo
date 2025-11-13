@@ -105,6 +105,9 @@ export interface CreateAccountResponse {
   // Note: mnemonic/phrase fields removed for COA accounts (Secure Enclave)
   // Secure Enclave uses hardware-backed keys, no mnemonic is generated
   accountType: 'eoa' | 'coa' | null;
+  // Transaction ID for account creation (used by native for fast account discovery)
+  // Optional for backward compatibility - native should populate this field
+  txId: string | null;
   error: string | null;
 }
 

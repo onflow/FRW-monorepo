@@ -112,6 +112,7 @@ export interface PlatformSpec {
   // Username must be provided by caller (3-20 chars as per server requirement)
   // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
   // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
+  // Returns: CreateAccountResponse with txId for native-side account verification (matches EOA flow)
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>;
 
   // Create linked COA account (for Recovery Phrase flow)

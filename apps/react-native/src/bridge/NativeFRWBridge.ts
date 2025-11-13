@@ -34,6 +34,7 @@ interface CreateAccountResponse {
   address: string | null;
   username: string | null;
   accountType: 'eoa' | 'coa' | null;
+  txId: string | null;
   error: string | null;
 }
 
