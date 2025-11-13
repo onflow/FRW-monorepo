@@ -1,4 +1,4 @@
-import { bridge, logger, navigation } from '@onflow/frw-context';
+import { bridge, logger, navigation, cadence } from '@onflow/frw-context';
 import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
 import {
   YStack,
@@ -20,6 +20,48 @@ import { useTranslation } from 'react-i18next';
  * SecureEnclaveScreen - Advanced profile type screen showing Secure Enclave features
  * Displays the benefits and limitations of using device hardware security
  */
+
+/**
+ * Poll for account creation on-chain
+ * @param address - The Flow address to check
+ * @param maxAttempts - Maximum number of polling attempts (default: 20)
+ * @param delayMs - Delay between attempts in milliseconds (default: 1000)
+ * @returns Promise<boolean> - True if account exists, false otherwise
+ */
+const pollForAccountCreation = async (
+  address: string,
+  maxAttempts: number = 20,
+  delayMs: number = 1000
+): Promise<boolean> => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      logger.info(`[SecureEnclaveScreen] Polling for account (attempt ${attempt}/${maxAttempts})`);
+
+      // Try to fetch account info from chain
+      const accountInfo = await cadence.getAccountInfo(address);
+
+      if (accountInfo && accountInfo.address) {
+        logger.info('[SecureEnclaveScreen] Account found on-chain:', {
+          address: accountInfo.address,
+          balance: accountInfo.balance,
+          attempt,
+        });
+        return true;
+      }
+    } catch (error) {
+      // Account might not exist yet, continue polling
+      logger.debug(`[SecureEnclaveScreen] Account not found yet (attempt ${attempt}):`, error);
+    }
+
+    // Wait before next attempt (except on last attempt)
+    if (attempt < maxAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  logger.warn('[SecureEnclaveScreen] Account polling timed out after max attempts');
+  return false;
+};
 
 export function SecureEnclaveScreen(): React.ReactElement {
   const { t } = useTranslation();
@@ -58,11 +100,27 @@ export function SecureEnclaveScreen(): React.ReactElement {
           accountType: result.accountType,
         });
 
-        // Wait a moment to show success state, then navigate
-        setTimeout(() => {
+        // Poll for account creation on-chain
+        if (result.address) {
+          logger.info('[SecureEnclaveScreen] Polling for account on-chain:', result.address);
+
+          const accountExists = await pollForAccountCreation(result.address, 20, 1000);
+
+          if (accountExists) {
+            logger.info('[SecureEnclaveScreen] Account verified on-chain, proceeding to next step');
+            setShowLoadingState(false);
+            navigation.navigate('NotificationPreferences');
+          } else {
+            logger.warn('[SecureEnclaveScreen] Account not found on-chain after polling');
+            // Still proceed, but log the warning
+            setShowLoadingState(false);
+            navigation.navigate('NotificationPreferences');
+          }
+        } else {
+          logger.warn('[SecureEnclaveScreen] No address returned, skipping verification');
           setShowLoadingState(false);
           navigation.navigate('NotificationPreferences');
-        }, 500);
+        }
       } else {
         // Fallback for platforms without secure type account support
         logger.warn(
