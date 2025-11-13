@@ -22,7 +22,7 @@ export function OnboardingHeader({
           <View w={32} h={32} bg="$primary" rounded={999} items="center" justify="center">
             <FlowLogo size={32} />
           </View>
-          <Text fontSize="$5" fontWeight="600" color="$text">
+          <Text fontSize="$5" fontWeight="700" color="$text">
             {logoText}
           </Text>
         </XStack>

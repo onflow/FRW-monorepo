@@ -105,9 +105,12 @@ export function GetStartedScreen(): React.ReactElement {
 
   return (
     <OnboardingBackground backgroundImage={getStartedBackground}>
-      <YStack flex={1} px="$4">
-        {/* Main content centered */}
-        <YStack flex={1} justify="center" items="center" gap="$4">
+      <YStack flex={1} paddingHorizontal="$4">
+        {/* Top spacer to position title in upper third */}
+        <YStack flex={1} />
+
+        {/* Main content */}
+        <YStack alignItems="center" gap="$4">
           <OnboardingHeader
             title={t('onboarding.getStarted.title')}
             subtitle={t('onboarding.getStarted.subtitle')}
@@ -115,8 +118,11 @@ export function GetStartedScreen(): React.ReactElement {
           />
         </YStack>
 
+        {/* Larger spacer to push buttons to bottom */}
+        <YStack flex={2} />
+
         {/* Bottom buttons - matching send workflow style */}
-        <YStack pb="$6" gap="$3">
+        <YStack paddingBottom="$6" gap="$3">
           {/* Create Account Button - Primary */}
           <YStack
             width="100%"
