@@ -1,4 +1,6 @@
 import type {
+  CreateAccountResponse,
+  CreateEOAAccountResponse,
   Currency,
   Platform,
   RecentContactsResponse,
@@ -104,27 +106,13 @@ export interface PlatformSpec {
 
   // Onboarding methods - Account creation
   // EOA: Externally Owned Account (pure mnemonic-based, no server)
-  createEOAAccount?(): Promise<{
-    success: boolean;
-    address: string | null;
-    username: string | null;
-    mnemonic: string | null;
-    phrase: string[] | null;
-    accountType: 'eoa' | 'coa' | null;
-    error: string | null;
-  }>;
+  createEOAAccount?(): Promise<CreateEOAAccountResponse>;
 
   // Register Secure Type Account (Secure Enclave profile - hardware-backed keys)
   // Username must be provided by caller (3-20 chars as per server requirement)
   // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
   // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
-  registerSecureTypeAccount?(username: string): Promise<{
-    success: boolean;
-    address: string | null;
-    username: string | null;
-    accountType: 'eoa' | 'coa' | null;
-    error: string | null;
-  }>;
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>;
 
   // Create linked COA account (for Recovery Phrase flow)
   // Creates a COA child account linked to the current main account via Cadence transaction
