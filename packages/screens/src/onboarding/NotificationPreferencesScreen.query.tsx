@@ -64,6 +64,34 @@ const trackNotificationChoice = async (choice: 'enable' | 'skip') => {
 
 export function NotificationPreferencesScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const [isCheckingPermission, setIsCheckingPermission] = React.useState(true);
+
+  // Check if permission is already granted on mount
+  React.useEffect(() => {
+    const checkExistingPermission = async () => {
+      try {
+        // Check if bridge has permission checking capability
+        if (bridge.checkNotificationPermission) {
+          const isGranted = await bridge.checkNotificationPermission();
+          if (isGranted) {
+            logger.info(
+              '[NotificationPreferencesScreen] Notification permission already granted, skipping screen'
+            );
+            // Skip this screen and go directly to BackupOptions
+            navigation.navigate('BackupOptions');
+            return;
+          }
+        }
+      } catch (error) {
+        logger.warn('[NotificationPreferencesScreen] Failed to check existing permission:', error);
+        // Continue to show the screen on error
+      } finally {
+        setIsCheckingPermission(false);
+      }
+    };
+
+    checkExistingPermission();
+  }, []);
 
   // Query for notification configuration
   const {
@@ -133,8 +161,8 @@ export function NotificationPreferencesScreen(): React.ReactElement {
     navigation.navigate('BackupOptions');
   };
 
-  // Show loading state while fetching config
-  if (isLoadingConfig) {
+  // Show loading state while checking permission or fetching config
+  if (isCheckingPermission || isLoadingConfig) {
     return (
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center">

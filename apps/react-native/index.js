@@ -2,20 +2,10 @@
  * @format
  */
 
-// Polyfill Buffer for React Native (required by some crypto libraries)
-import { Buffer } from 'buffer';
-if (typeof global !== 'undefined') {
-  global.Buffer = Buffer;
-}
-if (typeof globalThis !== 'undefined') {
-  globalThis.Buffer = Buffer;
-}
-// Also set on window for compatibility
-if (typeof window !== 'undefined') {
-  window.Buffer = Buffer;
-}
+// Import polyfills FIRST before any other imports
+import './src/utils/polyfills';
 
-// Import array extensions FIRST before any other imports
+// Import array extensions
 import '@onflow/frw-utils';
 
 // import CodePush from '@revopush/react-native-code-push';

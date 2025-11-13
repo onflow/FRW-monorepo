@@ -114,10 +114,11 @@ export interface PlatformSpec {
     error: string | null;
   }>;
 
-  // COA: Cadence Owned Account (hybrid with server - Secure Enclave)
-  // Username must be provided by caller (3-15 chars as per server requirement)
-  // Note: COA accounts use hardware-backed keys, no mnemonic is generated
-  createCOAAccount?(username: string): Promise<{
+  // Register Secure Type Account (Secure Enclave profile - hardware-backed keys)
+  // Username must be provided by caller (3-20 chars as per server requirement)
+  // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
+  // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
+  registerSecureTypeAccount?(username: string): Promise<{
     success: boolean;
     address: string | null;
     username: string | null;

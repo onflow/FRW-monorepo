@@ -34,21 +34,24 @@ export function SecureEnclaveScreen(): React.ReactElement {
     setShowLoadingState(true);
 
     try {
-      // Create COA account with Secure Enclave (hardware-backed keys)
-      // COA = Cadence Owned Account (hybrid with server backend)
-      if (bridge.createCOAAccount) {
+      // Register Secure Type Account (hardware-backed keys via Secure Enclave)
+      // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
+      if (bridge.registerSecureTypeAccount) {
         // Auto-generate random username using word combinations
         const username = generateRandomUsername();
 
-        logger.info('[SecureEnclaveScreen] Creating COA account with username:', username);
+        logger.info(
+          '[SecureEnclaveScreen] Registering secure type account with username:',
+          username
+        );
 
-        const result = await bridge.createCOAAccount(username);
+        const result = await bridge.registerSecureTypeAccount(username);
 
         if (!result.success) {
-          throw new Error(result.error || 'Failed to create COA account');
+          throw new Error(result.error || 'Failed to register secure type account');
         }
 
-        logger.info('[SecureEnclaveScreen] COA account created successfully:', {
+        logger.info('[SecureEnclaveScreen] Secure type account registered successfully:', {
           address: result.address,
           username: result.username,
           accountType: result.accountType,
@@ -60,15 +63,17 @@ export function SecureEnclaveScreen(): React.ReactElement {
           navigation.navigate('NotificationPreferences');
         }, 500);
       } else {
-        // Fallback for platforms without COA support
-        logger.warn('[SecureEnclaveScreen] Using fallback - createCOAAccount not available');
+        // Fallback for platforms without secure type account support
+        logger.warn(
+          '[SecureEnclaveScreen] Using fallback - registerSecureTypeAccount not available'
+        );
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         setShowLoadingState(false);
         navigation.navigate('NotificationPreferences');
       }
     } catch (error) {
-      logger.error('[SecureEnclaveScreen] Failed to create account:', error);
+      logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       // Hide loading and show error state
       setShowLoadingState(false);
       // TODO: Show error dialog to user

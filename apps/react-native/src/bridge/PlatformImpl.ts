@@ -364,10 +364,11 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  // COA: Hybrid account with server (Secure Enclave)
-  // Username must be provided (3-15 chars as per server requirement)
-  // Note: COA accounts use hardware-backed keys, no mnemonic is generated
-  async createCOAAccount(username: string): Promise<{
+  // Register Secure Type Account (Secure Enclave profile)
+  // Username must be provided (3-20 chars as per server requirement)
+  // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
+  // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
+  async registerSecureTypeAccount(username: string): Promise<{
     success: boolean;
     address: string | null;
     username: string | null;
@@ -375,9 +376,9 @@ class PlatformImpl implements PlatformSpec {
     error: string | null;
   }> {
     try {
-      return await NativeFRWBridge.createCOAAccount(username);
+      return await NativeFRWBridge.registerSecureTypeAccount(username);
     } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to create COA account via bridge:', error);
+      this.log('error', '[PlatformImpl] Failed to register secure type account via bridge:', error);
       return {
         success: false,
         address: null,

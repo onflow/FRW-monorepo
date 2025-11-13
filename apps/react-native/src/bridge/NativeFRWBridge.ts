@@ -73,9 +73,10 @@ export interface Spec extends TurboModule {
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
-  // COA account creation (hybrid with server - Secure Enclave)
-  // Username must be provided by RN layer (3-15 chars as per server requirement)
-  createCOAAccount(username: string): Promise<CreateAccountResponse>;
+  // Register Secure Type Account (Secure Enclave profile - hardware-backed keys)
+  // Username must be provided by RN layer (3-20 chars as per server requirement)
+  // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
+  registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
   // Save mnemonic and initialize wallet (Keychain/KeyStore) - for EOA accounts
   // Native handles: secure storage, Firebase auth (customToken), Wallet-Kit init, account discovery (txId)
   // Returns: Promise<void> - resolves on success, rejects with error on failure
