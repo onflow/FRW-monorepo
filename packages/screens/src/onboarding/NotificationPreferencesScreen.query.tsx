@@ -1,5 +1,11 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
-import { YStack, Text, OnboardingBackground, NotificationPreviewImage } from '@onflow/frw-ui';
+import {
+  YStack,
+  Text,
+  Button,
+  OnboardingBackground,
+  NotificationPreviewImage,
+} from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -137,43 +143,17 @@ export function NotificationPreferencesScreen(): React.ReactElement {
           <NotificationPreviewImage width={375} height={492} />
         </YStack>
 
-        {/* Action buttons - matching SecureEnclaveScreen style */}
+        {/* Action buttons */}
         <YStack pb="$6" gap="$3">
           {/* Turn on notifications button - Primary style */}
-          <YStack
-            width="100%"
-            height={52}
-            bg="$text"
-            rounded={16}
-            items="center"
-            justify="center"
-            borderWidth={1}
-            borderColor="$text1"
-            pressStyle={{ opacity: 0.9 }}
-            onPress={handleEnableNotifications}
-            cursor="pointer"
-          >
-            <Text fontSize="$4" fontWeight="700" color="$bg">
-              {t('onboarding.notificationPreferences.enableButton')}
-            </Text>
-          </YStack>
+          <Button variant="inverse" size="large" fullWidth onPress={handleEnableNotifications}>
+            {t('onboarding.notificationPreferences.enableButton')}
+          </Button>
 
-          {/* Maybe later button - No border style */}
-          <YStack
-            width="100%"
-            height={52}
-            bg="transparent"
-            rounded={16}
-            items="center"
-            justify="center"
-            pressStyle={{ opacity: 0.9 }}
-            onPress={handleMaybeLater}
-            cursor="pointer"
-          >
-            <Text fontSize="$4" fontWeight="700" color="$text">
-              {t('onboarding.notificationPreferences.maybeLater')}
-            </Text>
-          </YStack>
+          {/* Maybe later button - Ghost style */}
+          <Button variant="ghost" size="large" fullWidth onPress={handleMaybeLater}>
+            {t('onboarding.notificationPreferences.maybeLater')}
+          </Button>
         </YStack>
       </YStack>
     </OnboardingBackground>

@@ -5,6 +5,7 @@ import {
   XStack,
   Text,
   View,
+  Button,
   OnboardingBackground,
   InfoDialog,
   HoldToSendButton,
@@ -142,25 +143,11 @@ export function SecureEnclaveScreen(): React.ReactElement {
           {/* Spacer */}
           <YStack flex={1} />
 
-          {/* Next button - matching ProfileTypeSelectionScreen style */}
+          {/* Next button */}
           <YStack pb="$6">
-            <YStack
-              width="100%"
-              height={52}
-              bg="$text"
-              rounded={16}
-              items="center"
-              justify="center"
-              borderWidth={1}
-              borderColor="$text1"
-              pressStyle={{ opacity: 0.9 }}
-              onPress={handleNext}
-              cursor="pointer"
-            >
-              <Text fontSize="$4" fontWeight="600" color="$bg">
-                {t('onboarding.secureEnclave.next')}
-              </Text>
-            </YStack>
+            <Button variant="inverse" size="large" fullWidth onPress={handleNext}>
+              {t('onboarding.secureEnclave.next')}
+            </Button>
           </YStack>
         </YStack>
       </OnboardingBackground>

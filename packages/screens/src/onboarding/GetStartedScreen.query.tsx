@@ -2,6 +2,7 @@ import { bridge, logger, navigation } from '@onflow/frw-context';
 import {
   YStack,
   Text,
+  Button,
   OnboardingBackground,
   OnboardingHeader,
   getStartedBackground,
@@ -80,45 +81,17 @@ export function GetStartedScreen(): React.ReactElement {
         {/* Larger spacer to push buttons to bottom */}
         <YStack flex={2} />
 
-        {/* Bottom buttons - matching send workflow style */}
+        {/* Bottom buttons */}
         <YStack paddingBottom="$6" gap="$3">
           {/* Create Account Button - Primary */}
-          <YStack
-            width="100%"
-            height={52}
-            bg="$text"
-            rounded={16}
-            items="center"
-            justify="center"
-            borderWidth={1}
-            borderColor="$text1"
-            pressStyle={{ opacity: 0.9 }}
-            onPress={handleCreateAccount}
-            cursor="pointer"
-          >
-            <Text fontSize="$4" fontWeight="700" color="$bg">
-              {t('onboarding.getStarted.createAccount')}
-            </Text>
-          </YStack>
+          <Button variant="inverse" size="large" fullWidth onPress={handleCreateAccount}>
+            {t('onboarding.getStarted.createAccount')}
+          </Button>
 
-          {/* Sign In Button - Secondary */}
-          <YStack
-            width="100%"
-            height={52}
-            bg="transparent"
-            rounded={16}
-            items="center"
-            justify="center"
-            borderWidth={1}
-            borderColor="$primary"
-            pressStyle={{ opacity: 0.9 }}
-            onPress={handleSignIn}
-            cursor="pointer"
-          >
-            <Text fontSize="$4" fontWeight="700" color="$text">
-              {t('onboarding.getStarted.signIn')}
-            </Text>
-          </YStack>
+          {/* Sign In Button - Outline */}
+          <Button variant="outline" size="large" fullWidth onPress={handleSignIn}>
+            {t('onboarding.getStarted.signIn')}
+          </Button>
 
           <YStack marginTop="$2" alignItems="center" paddingHorizontal="$4">
             <Text fontSize="$3" color="$textSecondary" lineHeight={17} textAlign="center">

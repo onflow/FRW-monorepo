@@ -58,25 +58,11 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
         {/* Spacer */}
         <YStack flex={1} />
 
-        {/* Next button - matching GetStartedScreen style */}
+        {/* Next button */}
         <YStack mb="$3">
-          <YStack
-            width="100%"
-            height={52}
-            backgroundColor="$text"
-            borderRadius={16}
-            alignItems="center"
-            justifyContent="center"
-            borderWidth={1}
-            borderColor="$text1"
-            pressStyle={{ opacity: 0.9 }}
-            onPress={handleNext}
-            cursor="pointer"
-          >
-            <Text fontSize="$4" fontWeight="700" color="$bg">
-              {t('onboarding.profileType.next')}
-            </Text>
-          </YStack>
+          <Button variant="inverse" size="large" fullWidth onPress={handleNext}>
+            {t('onboarding.profileType.next')}
+          </Button>
         </YStack>
 
         {/* Secure enclave link */}
