@@ -277,6 +277,7 @@
       "navTitle": "多链账户",
       "title": "恢复短语",
       "description": "按正确顺序写下这些单词，并将其存放在安全的地方。",
+      "clickToReveal": "点击显示短语",
       "copy": "复制",
       "next": "下一步",
       "warning": {

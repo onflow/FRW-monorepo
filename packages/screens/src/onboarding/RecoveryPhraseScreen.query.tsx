@@ -336,8 +336,8 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                     >
                       <RevealPhrase size={20} color="rgba(255, 255, 255, 0.5)" />
                     </View>
-                    <Text fontSize={16} fontWeight="500" color="$text" text="center">
-                      Click to reveal phrase
+                    <Text fontSize={16} fontWeight="500" color="$text" textAlign="center">
+                      {t('onboarding.recoveryPhrase.clickToReveal')}
                     </Text>
                   </YStack>
                 </YStack>

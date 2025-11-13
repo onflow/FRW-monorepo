@@ -53,22 +53,6 @@ export class ProfileService {
         hashAlgo: params.accountKey.hash_algo,
       });
 
-      // Check if UserGoService is available
-      if (!UserGoService) {
-        logger.error('[ProfileService] UserGoService is undefined');
-        throw new Error('UserGoService is not available. API services may not be initialized.');
-      }
-
-      if (typeof UserGoService.register1 !== 'function') {
-        logger.error('[ProfileService] UserGoService.register1 is not a function', {
-          type: typeof UserGoService.register1,
-          UserGoService: UserGoService,
-        });
-        throw new Error(
-          `UserGoService.register1 is not a function. Type: ${typeof UserGoService.register1}`
-        );
-      }
-
       // Prepare request payload (v1/register only takes username and account_key, no device_info)
       const requestPayload = {
         username: params.username,

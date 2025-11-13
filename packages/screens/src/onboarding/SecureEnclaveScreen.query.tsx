@@ -12,160 +12,72 @@ import {
   ShieldAnimation,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
-import { useQuery, useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
  * SecureEnclaveScreen - Advanced profile type screen showing Secure Enclave features
  * Displays the benefits and limitations of using device hardware security
- * Uses TanStack Query for future backend integration
  */
-
-// Future API functions (placeholder for now)
-const fetchSecureEnclaveConfig = async () => {
-  // TODO: Replace with actual API call
-  return {
-    isAvailable: true,
-    features: ['secureEnclave', 'hardwareSecurity'],
-    limitations: ['noEvm'],
-    estimatedCreationTime: 3000,
-  };
-};
-
-// Create COA account with Secure Enclave (hardware-backed keys)
-// COA = Cadence Owned Account (hybrid with server backend)
-const createSecureEnclaveAccount = async () => {
-  // Use bridge.createCOAAccount() if available (React Native)
-  if (bridge.createCOAAccount) {
-    // Auto-generate random username using word combinations
-    const username = generateRandomUsername();
-
-    logger.info('[SecureEnclaveScreen] Creating COA account with username:', username);
-
-    const result = await bridge.createCOAAccount(username);
-
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to create COA account');
-    }
-
-    logger.info('[SecureEnclaveScreen] COA account created successfully:', {
-      address: result.address,
-      username: result.username,
-      accountType: result.accountType,
-    });
-
-    return result;
-  }
-
-  // Fallback for platforms without COA support
-  logger.warn('[SecureEnclaveScreen] Using fallback - createCOAAccount not available');
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  return { success: true, accountId: 'secure_account_123' };
-};
-
-const trackSecureEnclaveSelection = async (action: 'confirm' | 'cancel') => {
-  // TODO: Replace with actual analytics API call
-  logger.debug('[SecureEnclaveScreen] Tracking secure enclave action:', action);
-  return { success: true };
-};
 
 export function SecureEnclaveScreen(): React.ReactElement {
   const { t } = useTranslation();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
 
-  // Query for secure enclave configuration
-  const {
-    data: secureEnclaveConfig,
-    isLoading: isLoadingConfig,
-    error: configError,
-  } = useQuery({
-    queryKey: ['onboarding', 'secure-enclave-config'],
-    queryFn: fetchSecureEnclaveConfig,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-  });
-
-  // Mutation for account creation
-  const createAccountMutation = useMutation({
-    mutationFn: createSecureEnclaveAccount,
-    onSuccess: (data) => {
-      logger.info('[SecureEnclaveScreen] Account created successfully:', data);
-      // Wait a moment to show success state, then navigate
-      setTimeout(() => {
-        setShowLoadingState(false);
-        navigation.navigate('NotificationPreferences');
-      }, 500);
-    },
-    onError: (error) => {
-      logger.error('[SecureEnclaveScreen] Failed to create account:', error);
-      // Hide loading and show error state
-      setShowLoadingState(false);
-      // TODO: Show error dialog to user
-    },
-  });
-
-  // Mutation for tracking analytics
-  const trackingMutation = useMutation({
-    mutationFn: trackSecureEnclaveSelection,
-    onSuccess: (data, variables) => {
-      logger.debug('[SecureEnclaveScreen] Successfully tracked secure enclave action:', variables);
-    },
-    onError: (error, variables) => {
-      logger.error(
-        '[SecureEnclaveScreen] Failed to track secure enclave action:',
-        variables,
-        error
-      );
-    },
-  });
-
   const handleNext = () => {
-    // Track analytics
-    trackingMutation.mutate('confirm');
     setShowConfirmDialog(true);
   };
 
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
     setShowLoadingState(true);
-    // Trigger account creation mutation
-    createAccountMutation.mutate();
-  };
 
-  const handleLoadingCancel = () => {
-    // User cancelled during loading - not typically used but available
-    setShowLoadingState(false);
+    try {
+      // Create COA account with Secure Enclave (hardware-backed keys)
+      // COA = Cadence Owned Account (hybrid with server backend)
+      if (bridge.createCOAAccount) {
+        // Auto-generate random username using word combinations
+        const username = generateRandomUsername();
+
+        logger.info('[SecureEnclaveScreen] Creating COA account with username:', username);
+
+        const result = await bridge.createCOAAccount(username);
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to create COA account');
+        }
+
+        logger.info('[SecureEnclaveScreen] COA account created successfully:', {
+          address: result.address,
+          username: result.username,
+          accountType: result.accountType,
+        });
+
+        // Wait a moment to show success state, then navigate
+        setTimeout(() => {
+          setShowLoadingState(false);
+          navigation.navigate('NotificationPreferences');
+        }, 500);
+      } else {
+        // Fallback for platforms without COA support
+        logger.warn('[SecureEnclaveScreen] Using fallback - createCOAAccount not available');
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        setShowLoadingState(false);
+        navigation.navigate('NotificationPreferences');
+      }
+    } catch (error) {
+      logger.error('[SecureEnclaveScreen] Failed to create account:', error);
+      // Hide loading and show error state
+      setShowLoadingState(false);
+      // TODO: Show error dialog to user
+    }
   };
 
   const handleBack = () => {
     navigation.goBack();
   };
-
-  // Show loading state while fetching config
-  if (isLoadingConfig) {
-    return (
-      <OnboardingBackground>
-        <YStack flex={1} items="center" justify="center">
-          <Text>Loading...</Text>
-        </YStack>
-      </OnboardingBackground>
-    );
-  }
-
-  // Show error state if config fetch fails
-  if (configError) {
-    return (
-      <OnboardingBackground>
-        <YStack flex={1} items="center" justify="center" px="$4">
-          <Text color="$red10" text="center">
-            Failed to load secure enclave configuration. Please try again.
-          </Text>
-        </YStack>
-      </OnboardingBackground>
-    );
-  }
 
   return (
     <>

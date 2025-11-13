@@ -289,6 +289,7 @@
       "navTitle": "Create account",
       "title": "Recovery phrase",
       "description": "Write down these words in the right order and store them somewhere safe.",
+      "clickToReveal": "Click to reveal phrase",
       "copy": "Copy",
       "next": "Next",
       "warning": {

@@ -97,8 +97,3 @@ export interface Currency {
   symbol: string;
   rate: string;
 }
-
-export interface SaveMnemonicResponse {
-  success: boolean;
-  error: string | null;
-}

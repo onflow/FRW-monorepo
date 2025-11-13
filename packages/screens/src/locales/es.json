@@ -280,6 +280,7 @@
       "navTitle": "Cuenta multicadena",
       "title": "Frase de recuperación",
       "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
+      "clickToReveal": "Haz clic para revelar la frase",
       "copy": "Copiar",
       "next": "Siguiente",
       "warning": {
