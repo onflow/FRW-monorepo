@@ -120,3 +120,26 @@ export interface CreateEOAAccountResponse {
   accountType: 'eoa' | 'coa' | null;
   error: string | null;
 }
+
+/**
+ * Account key information with cryptographic algorithm details
+ * Used for Flow blockchain account creation and key management
+ */
+export interface AccountKey {
+  publicKey: string;
+  hashAlgoStr: string;
+  signAlgoStr: string;
+  weight: number;
+  hashAlgo: number;
+  signAlgo: number;
+}
+
+/**
+ * Response from seed phrase generation
+ * Contains mnemonic, derived account key, and BIP44 derivation path
+ */
+export interface SeedPhraseGenerationResponse {
+  mnemonic: string;
+  accountKey: AccountKey;
+  drivepath: string;
+}

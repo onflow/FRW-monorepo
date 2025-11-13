@@ -55,17 +55,6 @@ const config = {
         };
       }
 
-      // Mock @trustwallet/wallet-core for React Native (we use @scure/bip39 instead)
-      if (
-        moduleName === '@trustwallet/wallet-core' ||
-        moduleName.startsWith('@trustwallet/wallet-core/')
-      ) {
-        return {
-          type: 'sourceFile',
-          filePath: path.resolve(monorepoRoot, 'apps/react-native/metro-empty-module.js'),
-        };
-      }
-
       // Let Metro handle all other module requests
       return context.resolveRequest(context, moduleName, platform);
     },
@@ -89,8 +78,6 @@ const config = {
       immer: path.resolve(monorepoRoot, 'node_modules/.pnpm/immer@10.1.1/node_modules/immer'),
       // Force React Native to use the correct icons entry point
       '@onflow/frw-icons': path.resolve(monorepoRoot, 'packages/icons/dist/react-native/index.js'),
-      // Force wallet package to use DIST files (compiled with proper conditional exports)
-      '@onflow/frw-wallet': path.resolve(monorepoRoot, 'packages/wallet/dist/index.js'),
     },
   },
   transformer: {

@@ -64,13 +64,7 @@ export function configureApiEndpoints(
           config.url?.includes('/v3/');
 
         if (requiresAuth) {
-          const errorMessage =
-            `No authentication token available for ${config.url}. ` +
-            `Firebase Auth ID token is required for this endpoint. ` +
-            `This usually indicates a network connectivity issue preventing Firebase Auth from signing in anonymously. ` +
-            `Please check device/emulator internet connection and Firebase configuration.`;
-          console.error('[API]', errorMessage);
-          return Promise.reject(new Error(errorMessage));
+          return Promise.reject(new Error(`Authentication required for ${config.url}`));
         }
       }
       config.headers.network = getNetwork();

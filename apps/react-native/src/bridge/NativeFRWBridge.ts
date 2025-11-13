@@ -3,6 +3,8 @@ import type {
   Currency as SharedCurrency,
   EnvironmentVariables as SharedEnvironmentVariables,
   CreateAccountResponse as SharedCreateAccountResponse,
+  AccountKey as SharedAccountKey,
+  SeedPhraseGenerationResponse as SharedSeedPhraseGenerationResponse,
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
@@ -12,7 +14,7 @@ import { TurboModuleRegistry } from 'react-native';
 
 /**
  * Local interfaces for Codegen - must be defined in the same file
- * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, and {@link SharedCreateAccountResponse} in @onflow/frw-types
+ * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, {@link SharedCreateAccountResponse}, {@link SharedAccountKey}, and {@link SharedSeedPhraseGenerationResponse} in @onflow/frw-types
  *
  * React Native Codegen limitation: Cannot resolve imported types.
  * These must stay in sync with the source types manually.
@@ -46,6 +48,11 @@ const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
 const _createAccountResponseSyncCheck: CreateAccountResponse = {} as SharedCreateAccountResponse;
 const _createAccountResponseReverseSyncCheck: SharedCreateAccountResponse =
   {} as CreateAccountResponse;
+const _accountKeySyncCheck: AccountKey = {} as SharedAccountKey;
+const _accountKeyReverseSyncCheck: SharedAccountKey = {} as AccountKey;
+const _seedPhraseGenerationResponseSyncCheck: SPResponse = {} as SharedSeedPhraseGenerationResponse;
+const _seedPhraseGenerationResponseReverseSyncCheck: SharedSeedPhraseGenerationResponse =
+  {} as SPResponse;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -118,7 +125,7 @@ export interface Spec extends TurboModule {
   // Native screen navigation - unified method for launching native Android/iOS screens
   launchNativeScreen(screenName: string, params?: string | null): void;
   // Generate seed phrase (mnemonic) and derive account key using native wallet-core
-  // Returns: SPResponse with mnemonic, accountKey, and derivation path
+  // Returns: SPResponse (alias for SeedPhraseGenerationResponse) with mnemonic, accountKey, and derivation path
   generateSeedPhrase(strength?: number): Promise<SPResponse>;
 }
 

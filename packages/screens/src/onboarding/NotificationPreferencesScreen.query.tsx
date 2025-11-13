@@ -99,10 +99,6 @@ export function NotificationPreferencesScreen(): React.ReactElement {
     },
   });
 
-  const handleBack = () => {
-    navigation.goBack();
-  };
-
   const handleEnableNotifications = () => {
     // Request notification permissions and navigate to backup options
     notificationMutation.mutate(true);
