@@ -389,6 +389,18 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  // Create linked COA account (for Recovery Phrase flow)
+  // Creates a COA child account linked to the current main account via Cadence transaction
+  // Returns transaction ID to track the transaction status
+  async createLinkedCOAAccount(): Promise<string> {
+    try {
+      return await NativeFRWBridge.createLinkedCOAAccount();
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to create linked COA account via bridge:', error);
+      throw error; // Re-throw the error to propagate to caller
+    }
+  }
+
   // Save mnemonic and initialize wallet (Keychain/KeyStore + Firebase + Wallet-Kit)
   // Throws error on failure, resolves on success
   async saveMnemonic(mnemonic: string, customToken: string, txId: string): Promise<void> {

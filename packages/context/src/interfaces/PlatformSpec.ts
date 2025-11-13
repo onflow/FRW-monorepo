@@ -126,6 +126,12 @@ export interface PlatformSpec {
     error: string | null;
   }>;
 
+  // Create linked COA account (for Recovery Phrase flow)
+  // Creates a COA child account linked to the current main account via Cadence transaction
+  // Returns: transaction ID to track the transaction status
+  // This is different from registerSecureTypeAccount which creates a new main COA account
+  createLinkedCOAAccount?(): Promise<string>;
+
   // Save mnemonic to secure storage and initialize wallet (iOS Keychain / Android KeyStore)
   // For EOA accounts: mnemonic + customToken + txId
   // Native layer handles: secure storage, Firebase auth, Wallet-Kit init, account discovery

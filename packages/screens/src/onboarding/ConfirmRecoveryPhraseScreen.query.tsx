@@ -479,31 +479,29 @@ export function ConfirmRecoveryPhraseScreen({
         // 12. UI transition (native closes RN view)
         // 13. Optional notification permission
 
-        // Step 14: Create COA account (in addition to EOA)
-        // Recovery phrase flow creates BOTH EOA (seed phrase) and COA (Cadence Owned Account)
-        // Uses the same username as the EOA account for consistency
-        logger.info('[ConfirmRecoveryPhraseScreen] Step 14: Creating COA account...');
+        // Step 14: Create linked COA account (in addition to EOA)
+        // Recovery phrase flow creates BOTH EOA (seed phrase) and linked COA (Cadence Owned Account)
+        // COA is linked to the main Flow account as a child account
+        logger.info('[ConfirmRecoveryPhraseScreen] Step 14: Creating linked COA account...');
 
-        if (bridge.registerSecureTypeAccount) {
-          // Reuse the same username that was generated for EOA account (line 339)
-          logger.info(
-            '[ConfirmRecoveryPhraseScreen] Registering COA account with username:',
-            username
-          );
+        if (bridge.createLinkedCOAAccount) {
+          logger.info('[ConfirmRecoveryPhraseScreen] Creating linked COA via Cadence transaction');
 
-          const coaResult = await bridge.registerSecureTypeAccount(username);
+          const txId = await bridge.createLinkedCOAAccount();
 
-          if (!coaResult.success) {
-            throw new Error(coaResult.error || 'Failed to create COA account');
+          if (!txId || typeof txId !== 'string') {
+            throw new Error('Failed to create linked COA account: invalid transaction ID');
           }
 
-          logger.info('[ConfirmRecoveryPhraseScreen] COA account created successfully:', {
-            address: coaResult.address,
-            username: coaResult.username,
+          logger.info('[ConfirmRecoveryPhraseScreen] Linked COA creation transaction submitted:', {
+            txId,
           });
+
+          // Note: Transaction will be processed by the network asynchronously
+          // The EVM account manager will detect and cache the COA address once confirmed
         } else {
-          logger.warn('[ConfirmRecoveryPhraseScreen] registerSecureTypeAccount not available');
-          throw new Error('COA account creation not supported on this platform');
+          logger.warn('[ConfirmRecoveryPhraseScreen] createLinkedCOAAccount not available');
+          throw new Error('Linked COA account creation not supported on this platform');
         }
 
         // Navigate to notification preferences (or native will close RN)

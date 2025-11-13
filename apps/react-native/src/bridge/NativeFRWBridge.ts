@@ -77,6 +77,10 @@ export interface Spec extends TurboModule {
   // Username must be provided by RN layer (3-20 chars as per server requirement)
   // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
   registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
+  // Create linked COA account (for Recovery Phrase flow)
+  // Creates a COA child account linked to the current main account via Cadence transaction
+  // Returns: transaction ID to track the transaction status
+  createLinkedCOAAccount(): Promise<string>;
   // Save mnemonic and initialize wallet (Keychain/KeyStore) - for EOA accounts
   // Native handles: secure storage, Firebase auth (customToken), Wallet-Kit init, account discovery (txId)
   // Returns: Promise<void> - resolves on success, rejects with error on failure
