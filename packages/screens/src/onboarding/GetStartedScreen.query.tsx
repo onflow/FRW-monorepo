@@ -15,7 +15,7 @@ import { Linking } from 'react-native';
  * Displays welcome message with create account and sign in options
  */
 
-const TERMS_OF_SERVICE_URL = 'https://wallet.flow.com/terms-of-service';
+const TERMS_OF_SERVICE_URL = 'https://wallet.flow.com/terms-of-serivce';
 const PRIVACY_POLICY_URL = 'https://wallet.flow.com/privacy-policy';
 
 export function GetStartedScreen(): React.ReactElement {
