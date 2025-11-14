@@ -21,6 +21,17 @@ describe('EthSigner', () => {
     privateKeyTypedData = new Uint8Array(core.Hash.keccak256(new TextEncoder().encode('cow')));
   });
 
+  it('does not truncate odd-length hex payload values', () => {
+    const hexLikeToBytes = Reflect.get(EthSigner as object, 'hexLikeToBytes') as (
+      value: string
+    ) => Uint8Array;
+
+    const bytes = hexLikeToBytes.call(EthSigner, '0x38d7ea4c68000');
+    const actual = BigInt(`0x${Buffer.from(bytes).toString('hex')}`);
+
+    expect(actual).toBe(BigInt('0x38d7ea4c68000'));
+  });
+
   it('signs legacy transactions matching wallet core vector', async () => {
     const signed = await EthSigner.signTransaction(
       {
