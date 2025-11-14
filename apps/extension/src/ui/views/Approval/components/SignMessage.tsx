@@ -41,6 +41,8 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
   const { network: currentNetwork } = useNetwork();
   const [msgNetwork, setMsgNetwork] = useState('testnet');
   const [showSwitch, setShowSwitch] = useState(false);
+  const [showFullMessage, setShowFullMessage] = useState(false);
+  const MAX_MESSAGE_PREVIEW_LENGTH = 1000; // Characters to show before truncating
 
   const rightPaddedHexBuffer = (value: string, pad: number) =>
     Buffer.from(value.padEnd(pad * 2, '0'), 'hex');
@@ -245,18 +247,98 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
                     sx={{
                       background: '#333333',
                       borderRadius: '12px',
-                      height: '100%',
                       padding: '12px 8px',
                       mb: '12px',
-                      overflow: 'scroll',
+                      maxHeight: '400px',
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
                     }}
                   >
-                    <Typography
-                      component="p"
-                      sx={{ fontWeight: '400', fontSize: '14px', fontFamily: 'Inter' }}
-                    >
-                      {message && Buffer.from(message, 'hex').toString('utf8')}
-                    </Typography>
+                    {message &&
+                      (() => {
+                        try {
+                          // Validate hex string length to prevent memory issues
+                          const cleanHex = message.replace(/^0x/, '');
+                          if (cleanHex.length > 100000) {
+                            // If hex string is too long, don't try to decode it
+                            return (
+                              <Typography
+                                component="p"
+                                sx={{ fontWeight: '400', fontSize: '14px', fontFamily: 'Inter' }}
+                              >
+                                Message is too long to display ({cleanHex.length / 2} bytes). Please
+                                review carefully before signing.
+                              </Typography>
+                            );
+                          }
+
+                          // Check if hex string is valid
+                          if (cleanHex.length % 2 !== 0) {
+                            return (
+                              <Typography
+                                component="p"
+                                sx={{ fontWeight: '400', fontSize: '14px', fontFamily: 'Inter' }}
+                              >
+                                {message}
+                              </Typography>
+                            );
+                          }
+
+                          const decoded = Buffer.from(cleanHex, 'hex').toString('utf8');
+                          const displayText = showFullMessage
+                            ? decoded
+                            : decoded.substring(0, MAX_MESSAGE_PREVIEW_LENGTH);
+
+                          return (
+                            <>
+                              <Typography
+                                component="p"
+                                sx={{
+                                  fontWeight: '400',
+                                  fontSize: '14px',
+                                  fontFamily: 'Inter',
+                                  whiteSpace: 'pre-wrap',
+                                  wordBreak: 'break-word',
+                                }}
+                              >
+                                {displayText}
+                                {!showFullMessage &&
+                                  decoded.length > MAX_MESSAGE_PREVIEW_LENGTH && <>...</>}
+                              </Typography>
+                              {decoded.length > MAX_MESSAGE_PREVIEW_LENGTH && (
+                                <Typography
+                                  component="button"
+                                  onClick={() => setShowFullMessage(!showFullMessage)}
+                                  sx={{
+                                    marginTop: '8px',
+                                    color: '#41CC5D',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    textDecoration: 'underline',
+                                    fontFamily: 'Inter',
+                                  }}
+                                >
+                                  {showFullMessage ? 'Show less' : 'Show full message'}
+                                </Typography>
+                              )}
+                            </>
+                          );
+                        } catch {
+                          // If decoding fails, show the hex string as-is
+                          return (
+                            <Typography
+                              component="p"
+                              sx={{ fontWeight: '400', fontSize: '14px', fontFamily: 'Inter' }}
+                            >
+                              {message.length > MAX_MESSAGE_PREVIEW_LENGTH
+                                ? `${message.substring(0, MAX_MESSAGE_PREVIEW_LENGTH)}...`
+                                : message}
+                            </Typography>
+                          );
+                        }
+                      })()}
                   </Box>
                 </AccordionDetails>
               </Accordion>
