@@ -717,7 +717,7 @@ class ProviderController extends BaseController {
     const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
     // Use eth-signer to sign the personal message
-    const { signature, digest } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
+    const { signature } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
 
     // Create history entry using the derived Ethereum address
     signTextHistoryService.createHistory({
