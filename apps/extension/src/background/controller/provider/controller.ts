@@ -208,7 +208,7 @@ async function signTypeDataEOA(typedData: Record<string, unknown>) {
   const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
   // Use eth-signer to sign the typed data
-  const { signature, digest } = await EthSigner.signTypedData(privateKeyBytes, typedData);
+  const { signature } = await EthSigner.signTypedData(privateKeyBytes, typedData);
 
   return signature;
 }
@@ -622,7 +622,7 @@ class ProviderController extends BaseController {
       const transaction: EthUnsignedTransaction = isEIP1559
         ? {
             chainId: chainId,
-            nonce: parseInt(nonce, 16),
+            nonce: nonce,
             gasLimit: trxData.gasLimit || gas,
             maxFeePerGas: maxFeePerGas,
             maxPriorityFeePerGas: maxPriorityFeePerGas || '0x0',
@@ -632,7 +632,7 @@ class ProviderController extends BaseController {
           }
         : {
             chainId: chainId,
-            nonce: parseInt(nonce, 16),
+            nonce: nonce,
             gasLimit: trxData.gasLimit || gas,
             gasPrice: gasPrice,
             to: trxData.to,
@@ -677,7 +677,7 @@ class ProviderController extends BaseController {
   // Signing Methods (COA and EOA Routing)
   // ========================================================================
 
-  personalSign = async ({ data, approvalRes, session }) => {
+  personalSign = async ({ data, approvalRes: _approvalRes, session }) => {
     if (!data.params) return;
     const [string, from] = data.params;
 
@@ -961,7 +961,7 @@ class ProviderController extends BaseController {
     return result;
   }
 
-  ethSign = async ({ data, approvalRes, session }) => {
+  ethSign = async ({ data, approvalRes: _approvalRes, session }) => {
     if (!data.params) return;
     const [address, message] = data.params;
 
@@ -1177,7 +1177,7 @@ class ProviderController extends BaseController {
   // Chain/Network Methods
   // ========================================================================
 
-  ethChainId = async ({ session }) => {
+  ethChainId = async ({ session: _session }) => {
     const network = await Wallet.getNetwork();
     if (network === 'testnet') {
       return TESTNET_CHAIN_ID;
