@@ -193,8 +193,6 @@ class UserWallet {
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.preloadAllAccounts(this.store.network, pubkey);
 
-    // Initialize wallet manager to calculate EOA address when public key changes
-    this.initializeWalletManager();
     return this.store.currentPubkey;
   };
 
@@ -225,9 +223,6 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     this.preloadAllAccounts(this.store.network, pubkey);
-
-    // Initialize wallet manager to calculate EOA address when public key changes
-    this.initializeWalletManager();
   };
 
   /**
@@ -336,6 +331,9 @@ class UserWallet {
       // Other methods will throw an error if they are not set
       return;
     }
+
+    // Initialize wallet manager to calculate EOA address
+    this.initializeWalletManager();
 
     try {
       // Get the main accounts
