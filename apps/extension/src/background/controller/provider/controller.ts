@@ -20,40 +20,23 @@ import {
 import walletManager from '@/core/service/wallet-manager';
 import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
+import type { FlowChainId } from '@/shared/types/network-types';
+import type {
+  COAOwnershipProof,
+  EIP712TypedData,
+  EthConnectApprovalResult,
+  TransactionParams,
+  Web3WalletPermission,
+} from '@/shared/types/provider-types';
 import {
   tupleToPrivateKey,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   consoleError,
 } from '@/shared/utils';
+import { networkToChainId } from '@/shared/utils/network-utils';
 
 import notificationService from '../notification';
-
-interface Web3WalletPermission {
-  // The name of the method corresponding to the permission
-  parentCapability: string;
-
-  // The date the permission was granted, in UNIX epoch time
-  date?: number;
-}
-
-interface COAOwnershipProof {
-  keyIndices: bigint[];
-  address: Uint8Array;
-  capabilityPath: string;
-  signatures: Uint8Array[];
-}
-
-interface TransactionParams {
-  from?: string;
-  to?: string;
-  gas?: string;
-  value?: string;
-  data?: string;
-  gasPrice?: string;
-  maxFeePerGas?: string;
-  maxPriorityFeePerGas?: string;
-}
 
 // ============================================================================
 // COA Helper Functions
@@ -224,7 +207,7 @@ const SignTypedDataVersion = {
 } as const;
 
 export const TypedDataUtils = {
-  eip712Hash(message: any, version: string): Buffer {
+  eip712Hash(message: EIP712TypedData, _version: string): Buffer {
     const types = { ...message.types };
     delete types.EIP712Domain;
 
@@ -347,7 +330,7 @@ class ProviderController extends BaseController {
   // ========================================================================
 
   ethRequestAccounts = async ({ session: { origin, name, icon } }) => {
-    let approvalResult: any;
+    let approvalResult: EthConnectApprovalResult | undefined;
     let selectedEvmAddress: string | undefined;
 
     // Request approval if wallet is locked or no permission
@@ -361,9 +344,15 @@ class ProviderController extends BaseController {
         { height: 599 }
       );
       if (approvalResult) {
-        const { defaultChain, signPermission, evmAddress } = approvalResult;
+        const { defaultChain, evmAddress } = approvalResult;
+        // Convert string network to FlowChainId if needed
+        const chainId: FlowChainId | undefined = defaultChain
+          ? typeof defaultChain === 'string'
+            ? networkToChainId(defaultChain)
+            : defaultChain
+          : undefined;
         // Store the selected EVM address in the permission
-        permissionService.addConnectedSite(origin, name, icon, defaultChain, false, evmAddress);
+        permissionService.addConnectedSite(origin, name, icon, chainId, false, evmAddress);
 
         // Priority 1: Use the selected EVM address from the approval result
         if (evmAddress && isValidEthereumAddress(evmAddress)) {
@@ -426,14 +415,12 @@ class ProviderController extends BaseController {
             if (connectedSite) {
               permissionService.updateConnectSite(origin, { evmAddress }, true);
             } else if (approvalResult.defaultChain) {
-              permissionService.addConnectedSite(
-                origin,
-                name,
-                icon,
-                approvalResult.defaultChain,
-                false,
-                evmAddress
-              );
+              // Convert string network to FlowChainId if needed
+              const chainId: FlowChainId =
+                typeof approvalResult.defaultChain === 'string'
+                  ? networkToChainId(approvalResult.defaultChain)
+                  : approvalResult.defaultChain;
+              permissionService.addConnectedSite(origin, name, icon, chainId, false, evmAddress);
             }
           } else {
             // Final fallback: try to get current address or EOA
@@ -763,7 +750,7 @@ class ProviderController extends BaseController {
     let message;
     try {
       message = typeof data === 'string' ? JSON.parse(data) : data;
-    } catch (e) {
+    } catch {
       throw new Error('Invalid JSON data provided');
     }
     const { chainId } = message.domain || {};
@@ -880,7 +867,7 @@ class ProviderController extends BaseController {
     let message;
     try {
       message = typeof data === 'string' ? JSON.parse(data) : data;
-    } catch (e) {
+    } catch {
       throw new Error('Invalid JSON data provided');
     }
     const { chainId } = message.domain || {};
