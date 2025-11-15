@@ -1,5 +1,5 @@
 import { ServiceContext } from '@onflow/frw-context';
-import { EthSigner, type EthLegacyTransaction } from '@onflow/frw-wallet';
+import { EthSigner, type EthUnsignedTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex } from 'ethereumjs-util';
@@ -42,6 +42,17 @@ interface COAOwnershipProof {
   address: Uint8Array;
   capabilityPath: string;
   signatures: Uint8Array[];
+}
+
+interface TransactionParams {
+  from?: string;
+  to?: string;
+  gas?: string;
+  value?: string;
+  data?: string;
+  gasPrice?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
 }
 
 // ============================================================================
@@ -515,24 +526,17 @@ class ProviderController extends BaseController {
     }
 
     // Accessing the first item in 'params' array
-    const transactionParams = data.data.params[0];
+    const transactionParams: TransactionParams = data.data.params[0];
 
-    // Extracting individual parameters
     const from = transactionParams.from || '';
-    const to = transactionParams.to || '';
-    const value = transactionParams.value || '0x0';
-    const dataValue = transactionParams.data || '0x';
-    const gas = transactionParams.gas || '0x1C9C380';
-    const gasPrice = transactionParams.gasPrice || '0x0';
 
     try {
       // Check if address is COA or EOA
       const isCOA = await isCOAAddress(from);
-
       if (isCOA) {
-        return await this.sendTransactionCOA(to, gas, value, dataValue);
+        return await this.sendTransactionCOA(transactionParams);
       } else {
-        return await this.sendTransactionEOA(from, to, value, dataValue, gas, gasPrice);
+        return await this.sendTransactionEOA(transactionParams);
       }
     } catch (error) {
       chrome.runtime.sendMessage({
@@ -544,12 +548,8 @@ class ProviderController extends BaseController {
   };
 
   // COA Transaction Method
-  private async sendTransactionCOA(
-    to: string,
-    gas: string,
-    value: string,
-    dataValue: string
-  ): Promise<string> {
+  private async sendTransactionCOA(transactionParams: TransactionParams): Promise<string> {
+    const { to = '', gas = '0x1C9C380', value = '0x0', data: dataValue = '0x' } = transactionParams;
     const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
     const gasBigInt = BigInt(cleanHex);
 
@@ -569,14 +569,17 @@ class ProviderController extends BaseController {
   }
 
   // EOA Transaction Method
-  private async sendTransactionEOA(
-    from: string,
-    to: string,
-    value: string,
-    dataValue: string,
-    gas: string,
-    gasPrice: string
-  ): Promise<string> {
+  private async sendTransactionEOA(transactionParams: TransactionParams): Promise<string> {
+    const {
+      from = '',
+      to = '',
+      value = '0x0',
+      data: dataValue = '0x',
+      gas = '0x1C9C380',
+      gasPrice = '0x0',
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    } = transactionParams;
     // Get the current network and EOA account info
     const network = await Wallet.getNetwork();
     const eoaInfo = await walletManager.getEOAAccountInfo();
@@ -612,17 +615,30 @@ class ProviderController extends BaseController {
       // Get the current chain ID
       const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
 
-      // Create the transaction object
-      const transaction: EthLegacyTransaction = {
-        chainId: chainId,
-        nonce: parseInt(nonce, 16),
-        gasLimit: trxData.gasLimit || gas,
-        gasPrice: gasPrice,
-        to: trxData.to,
-        value: trxData.value || '0x0',
-        data: trxData.data || '0x',
-      };
+      // Determine if this is an EIP-1559 transaction
+      const isEIP1559 = maxFeePerGas !== undefined;
 
+      // Create the transaction object (legacy or EIP-1559)
+      const transaction: EthUnsignedTransaction = isEIP1559
+        ? {
+            chainId: chainId,
+            nonce: parseInt(nonce, 16),
+            gasLimit: trxData.gasLimit || gas,
+            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: maxPriorityFeePerGas || '0x0',
+            to: trxData.to,
+            value: trxData.value || '0x0',
+            data: trxData.data || '0x',
+          }
+        : {
+            chainId: chainId,
+            nonce: parseInt(nonce, 16),
+            gasLimit: trxData.gasLimit || gas,
+            gasPrice: gasPrice,
+            to: trxData.to,
+            value: trxData.value || '0x0',
+            data: trxData.data || '0x',
+          };
       // Sign the transaction using EthSigner
       const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
 
