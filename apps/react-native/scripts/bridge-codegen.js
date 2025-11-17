@@ -497,6 +497,18 @@ enum RNBridge {
     code += generateSwiftEnum(enumName, values);
   });
 
+  // Add InitialRoute enum (special case with rawValue)
+  code += `    enum InitialRoute: String, Codable {
+        case getStarted = "GetStarted"
+        case profileTypeSelection = "ProfileTypeSelection"
+        case selectTokens = "SelectTokens"
+        case sendTo = "SendTo"
+        case sendTokens = "SendTokens"
+        case home = "Home"
+    }
+
+`;
+
   // Generate structs and enums
   interfaces.forEach(iface => {
     if (iface.isEnum) {
@@ -593,6 +605,18 @@ class RNBridge {
   enums.forEach((values, enumName) => {
     code += generateKotlinEnum(enumName, values);
   });
+
+  // Add InitialRoute enum (special case with routeName parameter)
+  code += `    enum class InitialRoute(val routeName: String) {
+        GET_STARTED("GetStarted"),
+        PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        SELECT_TOKENS("SelectTokens"),
+        SEND_TO("SendTo"),
+        SEND_TOKENS("SendTokens"),
+        HOME("Home")
+    }
+
+`;
 
   // Generate data classes and enums
   interfaces.forEach(iface => {

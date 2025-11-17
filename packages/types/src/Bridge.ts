@@ -98,15 +98,16 @@ export interface Currency {
   rate: string;
 }
 
+export interface SaveMnemonicResponse {
+  success: boolean;
+  error: string;
+}
+
 export interface CreateAccountResponse {
   success: boolean;
   address: string | null;
   username: string | null;
-  // Note: mnemonic/phrase fields removed for COA accounts (Secure Enclave)
-  // Secure Enclave uses hardware-backed keys, no mnemonic is generated
   accountType: 'eoa' | 'coa' | null;
-  // Transaction ID for account creation (used by native for fast account discovery)
-  // Optional for backward compatibility - native should populate this field
   txId: string | null;
   error: string | null;
 }
@@ -143,3 +144,25 @@ export interface SeedPhraseGenerationResponse {
   accountKey: AccountKey;
   drivepath: string;
 }
+
+/**
+ * Alias for SeedPhraseGenerationResponse used in native code
+ * @deprecated Use SeedPhraseGenerationResponse instead
+ */
+export interface SPResponse {
+  mnemonic: string;
+  accountKey: AccountKey;
+  drivepath: string;
+}
+
+/**
+ * Initial route configuration for onboarding flow
+ * Determines which screen to show when launching the React Native app
+ */
+export type InitialRoute =
+  | 'GetStarted'
+  | 'ProfileTypeSelection'
+  | 'SelectTokens'
+  | 'SendTo'
+  | 'SendTokens'
+  | 'Home';
