@@ -1,4 +1,5 @@
 import { CheckCircle, Close, Copy, Edit, Link } from '@onflow/frw-icons';
+import { isValidFlowAddress } from '@onflow/frw-utils';
 import React, { useState } from 'react';
 import { ScrollView, XStack, YStack } from 'tamagui';
 
@@ -124,26 +125,58 @@ export function AccountCard({
                 {account.name || 'Unnamed Account'}
               </Text>
               {/* EVM Badge - inline with name */}
-              {account.type === 'evm' && (
-                <XStack
-                  bg="$accentEVM"
-                  rounded="$4"
-                  px={4}
-                  items="center"
-                  justify="center"
-                  height={16}
-                >
-                  <Text
-                    fontSize={8}
-                    fontWeight="400"
-                    color="#FFFFFF"
-                    lineHeight={9.7}
-                    letterSpacing={0.128}
+              {/* Show EVM chip only if it's not an EOA account (EOA accounts are Flow addresses with type='evm') */}
+              {account.type === 'evm' &&
+                !(
+                  account.id === 'main' &&
+                  account.address &&
+                  isValidFlowAddress(account.address)
+                ) && (
+                  <XStack
+                    bg="$accentEVM"
+                    rounded="$4"
+                    px={4}
+                    items="center"
+                    justify="center"
+                    height={16}
                   >
-                    EVM
-                  </Text>
-                </XStack>
-              )}
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="#FFFFFF"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EVM
+                    </Text>
+                  </XStack>
+                )}
+              {/* EOA Badge - for Recovery Phrase Flow accounts with EOA address */}
+              {/* Show EOA chip if: account type is EVM (set by native to trigger chip), 
+                  it's the main account, and the address is a Flow address (not EVM) */}
+              {account.type === 'evm' &&
+                account.id === 'main' &&
+                account.address &&
+                isValidFlowAddress(account.address) && (
+                  <XStack
+                    bg="$primary"
+                    rounded="$4"
+                    px={4}
+                    items="center"
+                    justify="center"
+                    height={16}
+                  >
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="#000000"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EOA
+                    </Text>
+                  </XStack>
+                )}
             </XStack>
 
             {/* Account Address */}

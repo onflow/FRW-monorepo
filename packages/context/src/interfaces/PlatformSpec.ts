@@ -120,16 +120,23 @@ export interface PlatformSpec {
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>;
 
   // Create linked COA account (for Recovery Phrase flow)
-  // Creates a COA child account linked to the current main account via Cadence transaction
-  // Returns: transaction ID to track the transaction status
+  // Creates a COA (EVM) account linked to the current main Flow account via Cadence transaction
+  // Note: Flow account is created earlier via saveMnemonic() -> backend API address2()
+  // Returns: transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
   // This is different from registerSecureTypeAccount which creates a new main COA account
   createLinkedCOAAccount?(): Promise<string>;
 
   // Save mnemonic to secure storage and initialize wallet (iOS Keychain / Android KeyStore)
-  // For EOA accounts: mnemonic + customToken + txId
+  // For EOA accounts: mnemonic + customToken + txId + username
+  // username: Original username with proper capitalization (to preserve case when backend returns lowercase)
   // Native layer handles: secure storage, Firebase auth, Wallet-Kit init, account discovery
   // Returns: Promise<void> - resolves on success, throws error on failure
-  saveMnemonic?(mnemonic: string, customToken: string, txId: string): Promise<void>;
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void>;
 
   // Sign out of Firebase and sign in anonymously (needed before creating new accounts)
   // Ensures clean authentication state for account creation (matches COA flow)

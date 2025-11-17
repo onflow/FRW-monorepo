@@ -226,7 +226,11 @@
       "subtitle": "Welcome to Flow Wallet\nCreate an account to get started.",
       "createAccount": "Create a new account",
       "signIn": "I already have an account",
-      "termsAndPrivacy": "By using Flow Wallet you agree to the terms of service and privacy policy"
+      "termsAndPrivacy": "By using Flow Wallet you agree to the terms of service and privacy policy",
+      "agreementText": "By using Flow Wallet you agree to the",
+      "termsOfService": "terms of service",
+      "and": "and",
+      "privacyPolicy": "privacy policy"
     },
     "profileType": {
       "welcomeTitle": "Welcome to\nFlow Wallet",

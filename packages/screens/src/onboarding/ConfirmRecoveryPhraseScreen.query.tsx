@@ -137,15 +137,14 @@ export function ConfirmRecoveryPhraseScreen({
 
   // Log received params for debugging
   useEffect(() => {
-    logger.info('[ConfirmRecoveryPhraseScreen] Received route params:', {
+    logger.debug('[ConfirmRecoveryPhraseScreen] Received route params:', {
       hasRoute: !!route,
       hasParams: !!route?.params,
       recoveryPhraseLength: recoveryPhrase?.length || 0,
       mnemonicLength: mnemonic?.length || 0,
       hasAccountKey: !!accountKey,
       drivepath: drivepath,
-      recoveryPhrase: recoveryPhrase?.slice(0, 3) || [],
-      routeParams: route?.params,
+      // Note: Never log recoveryPhrase or mnemonic - sensitive data
     });
   }, [route, recoveryPhrase, mnemonic, accountKey, drivepath]);
 
@@ -171,7 +170,7 @@ export function ConfirmRecoveryPhraseScreen({
     if (!recoveryPhrase || recoveryPhrase.length !== 12) {
       logger.warn('[ConfirmRecoveryPhraseScreen] Invalid recovery phrase:', {
         length: recoveryPhrase?.length || 0,
-        recoveryPhrase: recoveryPhrase?.slice(0, 3) || [],
+        // Note: Never log recoveryPhrase - sensitive data
       });
       return [];
     }
@@ -265,18 +264,18 @@ export function ConfirmRecoveryPhraseScreen({
         logger.error('[ConfirmRecoveryPhraseScreen] Invalid public key length:', {
           length: publicKeyHex.length,
           expected: 128,
-          publicKeyHex: publicKeyHex.slice(0, 32) + '...',
+          // Note: Never log publicKey - sensitive data
         });
         throw new Error(
           `Invalid public key length: expected 128 hex characters (64 bytes), got ${publicKeyHex.length}`
         );
       }
 
-      logger.info('[ConfirmRecoveryPhraseScreen] Using account key from bridge:', {
+      logger.debug('[ConfirmRecoveryPhraseScreen] Using account key from bridge:', {
         length: publicKeyHex.length,
-        preview: publicKeyHex.slice(0, 16) + '...',
         signAlgo: accountKey.signAlgo,
         hashAlgo: accountKey.hashAlgo,
+        // Note: Never log publicKey - sensitive data
       });
 
       // Step 6: Register with backend using ProfileService
@@ -409,13 +408,14 @@ export function ConfirmRecoveryPhraseScreen({
       });
 
       if (bridge.saveMnemonic) {
-        // Pass mnemonic, customToken, and txId to native for:
+        // Pass mnemonic, customToken, txId, and username to native for:
         // - Secure storage (Step 8)
         // - Firebase authentication (Step 9)
         // - Wallet-Kit initialization (Step 10)
         // - Fast account discovery using txId (Step 11)
+        // - Preserving original username capitalization (backend may return lowercase)
         // saveMnemonic now throws errors on failure, so we can just await it
-        await bridge.saveMnemonic(mnemonic, customToken, txId);
+        await bridge.saveMnemonic(mnemonic, customToken, txId, username);
 
         logger.info('[ConfirmRecoveryPhraseScreen] Native handoff successful!');
         logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete');
@@ -428,26 +428,37 @@ export function ConfirmRecoveryPhraseScreen({
         // 12. UI transition (native closes RN view)
         // 13. Optional notification permission
 
-        // Step 14: Create linked COA account (in addition to EOA)
-        // Recovery phrase flow creates BOTH EOA (seed phrase) and linked COA (Cadence Owned Account)
-        // COA is linked to the main Flow account as a child account
+        // Step 14: Create linked COA account (in addition to EOA and Flow account)
+        // Recovery phrase flow creates: EOA (seed phrase), Flow account (via backend), and COA (EVM) account
+        // Flow account is created earlier via backend API address2(), COA is linked to the main Flow account
         logger.info('[ConfirmRecoveryPhraseScreen] Step 14: Creating linked COA account...');
 
         if (bridge.createLinkedCOAAccount) {
-          logger.info('[ConfirmRecoveryPhraseScreen] Creating linked COA via Cadence transaction');
+          logger.info(
+            '[ConfirmRecoveryPhraseScreen] Creating linked COA account via Cadence transaction'
+          );
 
           const txId = await bridge.createLinkedCOAAccount();
 
-          if (!txId || typeof txId !== 'string') {
+          // Handle case where COA account already exists (e.g., account reuse or previous partial creation)
+          if (txId === 'COA_ALREADY_EXISTS') {
+            logger.info(
+              '[ConfirmRecoveryPhraseScreen] COA account already exists, skipping creation'
+            );
+            // Continue flow normally - COA account is already available
+          } else if (!txId || typeof txId !== 'string') {
             throw new Error('Failed to create linked COA account: invalid transaction ID');
+          } else {
+            logger.info(
+              '[ConfirmRecoveryPhraseScreen] Linked COA account creation transaction submitted:',
+              {
+                txId,
+              }
+            );
+
+            // Note: Transaction finalization and COA verification are handled in native code
+            // The COA should be available when onboarding completes
           }
-
-          logger.info('[ConfirmRecoveryPhraseScreen] Linked COA creation transaction submitted:', {
-            txId,
-          });
-
-          // Note: Transaction will be processed by the network asynchronously
-          // The EVM account manager will detect and cache the COA address once confirmed
         } else {
           logger.warn('[ConfirmRecoveryPhraseScreen] createLinkedCOAAccount not available');
           throw new Error('Linked COA account creation not supported on this platform');

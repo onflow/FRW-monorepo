@@ -95,7 +95,7 @@ export function GetStartedScreen(): React.ReactElement {
 
           <YStack marginTop="$2" alignItems="center" paddingHorizontal="$4">
             <Text fontSize="$3" color="$textSecondary" lineHeight={17} textAlign="center">
-              By using Flow Wallet you agree to the{' '}
+              {t('onboarding.getStarted.agreementText')}{' '}
               <Text
                 fontSize="$3"
                 color="$textSecondary"
@@ -105,9 +105,9 @@ export function GetStartedScreen(): React.ReactElement {
                 cursor="pointer"
                 pressStyle={{ opacity: 0.7 }}
               >
-                terms of service
+                {t('onboarding.getStarted.termsOfService')}
               </Text>{' '}
-              and{' '}
+              {t('onboarding.getStarted.and')}{' '}
               <Text
                 fontSize="$3"
                 color="$textSecondary"
@@ -117,7 +117,7 @@ export function GetStartedScreen(): React.ReactElement {
                 cursor="pointer"
                 pressStyle={{ opacity: 0.7 }}
               >
-                privacy policy
+                {t('onboarding.getStarted.privacyPolicy')}
               </Text>
             </Text>
           </YStack>
