@@ -98,13 +98,20 @@ export interface Spec extends TurboModule {
   // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
   registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
   // Create linked COA account (for Recovery Phrase flow)
-  // Creates a COA child account linked to the current main account via Cadence transaction
-  // Returns: transaction ID to track the transaction status
+  // Creates a COA (EVM) account linked to the current main Flow account via Cadence transaction
+  // Note: Flow account is created earlier via saveMnemonic() -> backend API address2()
+  // Returns: transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
   createLinkedCOAAccount(): Promise<string>;
   // Save mnemonic and initialize wallet (Keychain/KeyStore) - for EOA accounts
   // Native handles: secure storage, Firebase auth (customToken), Wallet-Kit init, account discovery (txId)
+  // username: Original username with proper capitalization (to preserve case when backend returns lowercase)
   // Returns: Promise<void> - resolves on success, rejects with error on failure
-  saveMnemonic(mnemonic: string, customToken: string, txId: string): Promise<void>;
+  saveMnemonic(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void>;
   // Sign out of Firebase and sign in anonymously (needed before creating new accounts)
   // Returns: Promise<void> - resolves on success, rejects with error on failure
   signOutAndSignInAnonymously(): Promise<void>;

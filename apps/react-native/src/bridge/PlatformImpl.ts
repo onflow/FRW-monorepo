@@ -390,8 +390,9 @@ class PlatformImpl implements PlatformSpec {
   }
 
   // Create linked COA account (for Recovery Phrase flow)
-  // Creates a COA child account linked to the current main account via Cadence transaction
-  // Returns transaction ID to track the transaction status
+  // Creates a COA (EVM) account linked to the current main Flow account via Cadence transaction
+  // Note: Flow account is created earlier via saveMnemonic() -> backend API address2()
+  // Returns transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
   async createLinkedCOAAccount(): Promise<string> {
     try {
       return await NativeFRWBridge.createLinkedCOAAccount();
@@ -423,9 +424,14 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  async saveMnemonic(mnemonic: string, customToken: string, txId: string): Promise<void> {
+  async saveMnemonic(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void> {
     try {
-      await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId);
+      await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId, username);
     } catch (error) {
       this.log(
         'error',
