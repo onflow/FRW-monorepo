@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { PrivateKey } from '../keys/private-key';
-import { EthSigner } from '../services/eth-signer';
+import { EthSigner, type EthUnsignedTransaction } from '../services/eth-signer';
 import { MemoryStorage } from '../storage/memory-storage';
 
 describe('EthSigner', () => {
@@ -19,6 +19,17 @@ describe('EthSigner', () => {
     );
     const core = await WalletCoreProvider.getCore();
     privateKeyTypedData = new Uint8Array(core.Hash.keccak256(new TextEncoder().encode('cow')));
+  });
+
+  it('does not truncate odd-length hex payload values', () => {
+    const hexLikeToBytes = Reflect.get(EthSigner as object, 'hexLikeToBytes') as (
+      value: string
+    ) => Uint8Array;
+
+    const bytes = hexLikeToBytes.call(EthSigner, '0x38d7ea4c68000');
+    const actual = BigInt(`0x${Buffer.from(bytes).toString('hex')}`);
+
+    expect(actual).toBe(BigInt('0x38d7ea4c68000'));
   });
 
   it('signs legacy transactions matching wallet core vector', async () => {
@@ -103,6 +114,54 @@ describe('EthSigner', () => {
     expect(signature).toBe(
       '0x4355c47d63924e8a72e509b65029052eb6c299d53a04e167c5775fd466751c9d07299936d304c153f6443dfa05f40ff007d72911b6f72307f996231605b9156201'
     );
+  });
+
+  it('signs EIP-1559 transactions as typed payloads', async () => {
+    const signed = await EthSigner.signTransaction(
+      {
+        chainId: 0x01,
+        nonce: 0x00,
+        gasLimit: '0x5208',
+        to: '0x3535353535353535353535353535353535353535',
+        value: '0x00',
+        maxFeePerGas: '0x59682f00',
+        maxPriorityFeePerGas: '0x3b9aca00',
+      },
+      privateKeyLegacy
+    );
+
+    expect(signed.rawTransaction.startsWith('0x02')).toBe(true);
+    expect(signed.transactionHash).toHaveLength(66);
+  });
+
+  it('prefers EIP-1559 settings when both fee styles are provided', async () => {
+    const mixedFeeTx = {
+      chainId: 0x01,
+      nonce: 0x01,
+      gasLimit: '0x5208',
+      to: '0x3535353535353535353535353535353535353535',
+      value: '0x00',
+      gasPrice: '0x04a817c800',
+      maxFeePerGas: '0x59682f00',
+      maxPriorityFeePerGas: '0x3b9aca00',
+    } as EthUnsignedTransaction;
+
+    const signed = await EthSigner.signTransaction(mixedFeeTx, privateKeyLegacy);
+    expect(signed.rawTransaction.startsWith('0x02')).toBe(true);
+  });
+
+  it('uses legacy mode when only gasPrice is provided', async () => {
+    const legacyTx = {
+      chainId: 0x01,
+      nonce: 0x02,
+      gasPrice: '0x04a817c800',
+      gasLimit: '0x5208',
+      to: '0x3535353535353535353535353535353535353535',
+      value: '0x00',
+    };
+
+    const signed = await EthSigner.signTransaction(legacyTx, privateKeyLegacy);
+    expect(signed.rawTransaction.startsWith('0x02')).toBe(false);
   });
 
   it('signs via PrivateKey implementing EthereumKeyProtocol', async () => {

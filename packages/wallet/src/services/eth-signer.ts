@@ -230,9 +230,12 @@ export class EthSigner {
   }
 
   private static hexToBytes(value: string): Uint8Array {
-    const clean = this.stripHexPrefix(value);
+    let clean = this.stripHexPrefix(value);
     if (clean.length === 0) {
       return new Uint8Array([0]);
+    }
+    if (clean.length % 2 !== 0) {
+      clean = `0${clean}`;
     }
     return Uint8Array.from(Buffer.from(clean, 'hex'));
   }
