@@ -1,6 +1,5 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ProfileService } from '@onflow/frw-services';
-// import { FlowLogo } from '@onflow/frw-icons'; // Temporarily disabled
 import {
   YStack,
   XStack,
@@ -13,7 +12,6 @@ import {
   useTheme,
 } from '@onflow/frw-ui';
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
-// Removed wallet-core.native imports - now using native bridge for key generation
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 

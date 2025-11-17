@@ -118,9 +118,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
       }
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
-      // Hide loading and show error state
       setShowLoadingState(false);
-      // TODO: Show error dialog to user
     }
   };
 

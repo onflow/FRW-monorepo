@@ -8,13 +8,13 @@ import {
   cardBackground,
   View,
   InfoDialog,
+  useTheme,
 } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const trackBackupSelection = async (backupType: 'device' | 'cloud' | 'recovery-phrase') => {
-  // TODO: Replace with actual analytics API call
   logger.debug('[BackupOptionsScreen] Tracking backup selection:', backupType);
   return { success: true };
 };
@@ -27,7 +27,13 @@ const trackBackupSelection = async (backupType: 'device' | 'cloud' | 'recovery-p
  */
 export function BackupOptionsScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [showWarningDialog, setShowWarningDialog] = useState(false);
+
+  // Theme-aware icon colors
+  const isDark =
+    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
+  const iconColor = isDark ? '#000000' : '#FFFFFF';
 
   // Mutation for tracking backup selection
   const trackingMutation = useMutation({
@@ -148,7 +154,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             <BackupOptionCard
               icon={
                 <View ml={-5}>
-                  <RecoveryPhraseBackup size={70} color="$bg" />
+                  <RecoveryPhraseBackup size={70} color={iconColor} />
                 </View>
               }
               iconBackground={<></>}
@@ -163,7 +169,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             <BackupOptionCard
               icon={
                 <View ml={20}>
-                  <CloudBackup size={110} color="$bg" />
+                  <CloudBackup size={110} color={iconColor} />
                 </View>
               }
               iconBackground={<></>}
@@ -178,7 +184,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             <BackupOptionCard
               icon={
                 <View ml={20}>
-                  <DeviceBackup size={110} color="$bg" />
+                  <DeviceBackup size={110} color={iconColor} />
                 </View>
               }
               iconBackground={<></>}
