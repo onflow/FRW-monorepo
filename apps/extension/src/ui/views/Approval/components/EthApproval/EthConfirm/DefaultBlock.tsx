@@ -31,32 +31,15 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
       return hexString;
     }
 
-    // Prevent processing extremely long hex strings to avoid memory issues
-    if (cleanHex.length > 100000) {
-      return `[Message too long to display: ${cleanHex.length / 2} bytes]`;
-    }
+    // Convert hex to bytes
+    const bytes = Buffer.from(cleanHex, 'hex');
 
+    // Check for valid UTF-8 encoding
+    const decoder = new TextDecoder('utf-8', { fatal: true });
     try {
-      // Convert hex to bytes
-      const bytes = Buffer.from(cleanHex, 'hex');
-
-      // Check for valid UTF-8 encoding
-      const decoder = new TextDecoder('utf-8', { fatal: true });
-      const decoded = decoder.decode(bytes);
-
-      // Truncate very long decoded strings to prevent rendering issues
-      const MAX_DISPLAY_LENGTH = 5000;
-      if (decoded.length > MAX_DISPLAY_LENGTH) {
-        return decoded.substring(0, MAX_DISPLAY_LENGTH) + '\n\n...[Message truncated]';
-      }
-
-      return decoded;
+      return decoder.decode(bytes);
     } catch (e) {
-      // If decoding fails, return truncated hex string
-      const MAX_HEX_LENGTH = 200;
-      return cleanHex.length > MAX_HEX_LENGTH
-        ? `0x${cleanHex.substring(0, MAX_HEX_LENGTH)}...[truncated]`
-        : hexString;
+      return hexString;
     }
   };
 
@@ -114,21 +97,12 @@ export const DefaultBlock = ({ title, host, data, logo }) => {
                   borderRadius: '12px',
                   padding: '12px 8px',
                   mb: '12px',
-                  maxHeight: '400px',
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
+                  overflow: 'hidden',
                 }}
               >
                 <Typography
                   component="pre"
-                  sx={{
-                    fontWeight: '400',
-                    fontSize: '10px',
-                    fontFamily: 'Inter',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    margin: 0,
-                  }}
+                  sx={{ fontWeight: '400', fontSize: '10px', fontFamily: 'Inter' }}
                 >
                   <Highlight className="swift">{`${processItem(data[0])}`}</Highlight>
                 </Typography>
