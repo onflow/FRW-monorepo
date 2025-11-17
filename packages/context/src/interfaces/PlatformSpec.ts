@@ -19,6 +19,23 @@ export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
 /**
+ * Available native screen identifiers for Android
+ * These correspond to the NativeScreen enum in Android: NativeScreen.kt
+ */
+export enum NativeScreenName {
+  /** Cloud backup screen (Google Drive, Passkey, Recovery Phrase) */
+  MULTI_BACKUP = 'multiBackup',
+  /** QR code sync between devices */
+  DEVICE_BACKUP = 'deviceBackup',
+  /** View/create recovery phrase backup */
+  SEED_PHRASE_BACKUP = 'seedPhraseBackup',
+  /** Native backup options screen */
+  BACKUP_OPTIONS = 'backupOptions',
+  /** Native account restore/recovery screen with multiple options */
+  WALLET_RESTORE = 'walletRestore',
+}
+
+/**
  * Platform specification interface for platform abstraction
  * This interface defines all methods that platform-specific implementations must implement
  */
@@ -154,7 +171,7 @@ export interface PlatformSpec {
   setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
 
   // Native screen navigation - unified method for launching native Android/iOS screens
-  // screenName: identifier for the screen to launch (e.g., 'multiBackup', 'deviceBackup', 'seedPhraseBackup', 'backupOptions')
+  // screenName: identifier for the screen to launch (use NativeScreenName enum)
   // params: optional JSON string with screen-specific parameters
-  launchNativeScreen?(screenName: string, params?: string): void;
+  launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
 }

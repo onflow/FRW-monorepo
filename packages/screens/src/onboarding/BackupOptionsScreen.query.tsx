@@ -1,4 +1,4 @@
-import { bridge, logger } from '@onflow/frw-context';
+import { bridge, logger, NativeScreenName } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
 import {
   YStack,
@@ -93,7 +93,7 @@ export function BackupOptionsScreen(): React.ReactElement {
     // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchNativeScreen) {
       logger.info('[BackupOptionsScreen] Launching device backup screen');
-      bridge.launchNativeScreen('deviceBackup');
+      bridge.launchNativeScreen(NativeScreenName.DEVICE_BACKUP);
     } else {
       logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
     }
@@ -109,7 +109,7 @@ export function BackupOptionsScreen(): React.ReactElement {
     // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchNativeScreen) {
       logger.info('[BackupOptionsScreen] Launching multi-backup screen');
-      bridge.launchNativeScreen('multiBackup');
+      bridge.launchNativeScreen(NativeScreenName.MULTI_BACKUP);
     } else {
       logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
     }
@@ -125,7 +125,7 @@ export function BackupOptionsScreen(): React.ReactElement {
     // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchNativeScreen) {
       logger.info('[BackupOptionsScreen] Launching seed phrase backup screen');
-      bridge.launchNativeScreen('seedPhraseBackup');
+      bridge.launchNativeScreen(NativeScreenName.SEED_PHRASE_BACKUP);
     } else {
       logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
     }

@@ -1,4 +1,10 @@
-import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
+import {
+  type Cache,
+  type Navigation,
+  type NativeScreenName,
+  type PlatformSpec,
+  type Storage,
+} from '@onflow/frw-context';
 import type {
   Currency,
   RecentContactsResponse,
@@ -501,7 +507,7 @@ class PlatformImpl implements PlatformSpec {
   }
 
   // Native screen navigation - unified method
-  launchNativeScreen(screenName: string, params?: string): void {
+  launchNativeScreen(screenName: NativeScreenName, params?: string): void {
     try {
       NativeFRWBridge.launchNativeScreen(screenName, params ?? null);
     } catch (error) {
