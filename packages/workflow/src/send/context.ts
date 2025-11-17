@@ -24,18 +24,18 @@ import {
   ParentToChildTokenStrategy,
   EoaToFlowCoaWithdrawalStrategy,
 } from './tokenStrategies';
-import type { SendPayload, TransferStrategy } from './types';
+import type { SendPayload, TransferStrategy, TransferExecutionHelpers } from './types';
 
 /**
  * Context class that uses the Strategy Pattern to execute transfers
  */
 export class TransferContext {
   private strategies: TransferStrategy[];
-  private callback: any;
+  private helpers: TransferExecutionHelpers;
 
-  constructor(callback: any = () => {}) {
+  constructor(helpers: TransferExecutionHelpers = {}) {
     this.strategies = [];
-    this.callback = callback;
+    this.helpers = helpers;
   }
 
   /**
@@ -54,7 +54,7 @@ export class TransferContext {
   async execute(payload: SendPayload): Promise<any> {
     for (const strategy of this.strategies) {
       if (strategy.canHandle(payload)) {
-        return await strategy.execute(payload, this.callback);
+        return await strategy.execute(payload, this.helpers);
       }
     }
     return null;
@@ -66,8 +66,11 @@ export class TransferContext {
  * @param cadenceService - CadenceService instance for executing transactions
  * @returns Configured TransferContext instance
  */
-export const createTransferContext = (cadenceService: any, callback: any): TransferContext => {
-  const context = new TransferContext(callback);
+export const createTransferContext = (
+  cadenceService: any,
+  helpers: TransferExecutionHelpers = {}
+): TransferContext => {
+  const context = new TransferContext(helpers);
 
   // Add token transfer strategies
   context.addStrategy(new ChildToChildTokenStrategy(cadenceService));

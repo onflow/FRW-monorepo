@@ -1,8 +1,13 @@
 import { Interface } from '@ethersproject/abi';
+import type { BigNumberish } from '@ethersproject/bignumber';
+import { arrayify, hexlify } from '@ethersproject/bytes';
+import { keccak256 } from '@ethersproject/keccak256';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { serialize, type UnsignedTransaction } from '@ethersproject/transactions';
 import { parseUnits } from '@ethersproject/units';
 import { logger } from '@onflow/frw-utils';
 
-import type { SendPayload } from './types';
+import type { SendPayload, TransferExecutionHelpers } from './types';
 
 /**
  * Default gas limits for different transaction types
@@ -184,4 +189,95 @@ export const convertHexToByteArray = (hexString: string): number[] => {
   const regularArray = Array.from(dataArray);
 
   return regularArray;
+};
+
+type SupportedEvmNetwork = 'mainnet' | 'testnet';
+
+const FLOW_EVM_CHAIN_IDS: Record<SupportedEvmNetwork, number> = {
+  mainnet: 747,
+  testnet: 545,
+};
+
+const FLOW_EVM_RPC_ENDPOINTS: Record<SupportedEvmNetwork, string> = {
+  mainnet: 'https://mainnet.evm.nodes.onflow.org',
+  testnet: 'https://testnet.evm.nodes.onflow.org',
+};
+
+const resolveNetworkKey = (network?: string): SupportedEvmNetwork => {
+  if (!network) return 'mainnet';
+  const normalized = network.toLowerCase();
+  return normalized.includes('test') ? 'testnet' : 'mainnet';
+};
+
+const resolveChainId = (helpers?: TransferExecutionHelpers): number => {
+  return FLOW_EVM_CHAIN_IDS[resolveNetworkKey(helpers?.network)];
+};
+
+const resolveRpcUrl = (helpers?: TransferExecutionHelpers): string => {
+  return FLOW_EVM_RPC_ENDPOINTS[resolveNetworkKey(helpers?.network)];
+};
+
+const providerCache = new Map<string, JsonRpcProvider>();
+
+const getRpcProvider = (helpers?: TransferExecutionHelpers): JsonRpcProvider => {
+  const rpcUrl = resolveRpcUrl(helpers);
+  let provider = providerCache.get(rpcUrl);
+  if (!provider) {
+    provider = new JsonRpcProvider(rpcUrl);
+    providerCache.set(rpcUrl, provider);
+  }
+  return provider;
+};
+
+const getNonce = async (address: string, helpers?: TransferExecutionHelpers): Promise<number> => {
+  const provider = getRpcProvider(helpers);
+  return await provider.getTransactionCount(address);
+};
+
+export interface LegacyTransactionRequest {
+  from: string;
+  to: string;
+  data?: string;
+  value?: BigNumberish;
+  gasLimit?: BigNumberish;
+  gasPrice?: BigNumberish;
+}
+
+export const signLegacyEvmTransaction = async (
+  tx: LegacyTransactionRequest,
+  helpers?: TransferExecutionHelpers
+): Promise<string> => {
+  if (!helpers?.ethSign) {
+    throw new Error('ethSign helper is required for EVM transaction signing');
+  }
+
+  if (!tx.from || !tx.to) {
+    throw new Error('EVM transaction requires both from and to addresses');
+  }
+
+  const [nonce, chainId] = await Promise.all([
+    getNonce(tx.from, helpers),
+    Promise.resolve(resolveChainId(helpers)),
+  ]);
+
+  const gasLimit = tx.gasLimit ?? GAS_LIMITS.EVM_DEFAULT;
+  const gasPrice = tx.gasPrice ?? helpers?.gasPrice ?? 0;
+
+  const unsignedTx: UnsignedTransaction = {
+    type: 0,
+    chainId,
+    nonce,
+    gasPrice,
+    gasLimit,
+    to: tx.to,
+    value: tx.value ?? 0,
+    data: tx.data ?? '0x',
+  };
+
+  const serializedUnsigned = serialize(unsignedTx);
+  const digest = arrayify(keccak256(serializedUnsigned));
+  const signatureBytes = await helpers.ethSign(digest);
+  const signatureHex = hexlify(signatureBytes);
+
+  return serialize(unsignedTx, signatureHex);
 };

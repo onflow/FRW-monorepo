@@ -119,7 +119,6 @@ const AccountDetail = () => {
   const loadPayerStatus = useCallback(async () => {
     try {
       const status = await fetchPayerStatusWithCache(network as 'mainnet' | 'testnet');
-      console.log('status', status);
       setPayerStatus(status);
     } catch (error) {
       consoleError('Failed to load payer status:', error);
@@ -182,9 +181,13 @@ const AccountDetail = () => {
                     onClickSecondary={toggleEditProfile}
                   />
                 )
-              : userWallet?.evmAccount && (
+              : (userWallet?.evmAccount || userWallet?.eoaAccount) && (
                   <AccountCard
-                    account={userWallet?.evmAccount}
+                    account={
+                      address === userWallet?.evmAccount?.address
+                        ? userWallet?.evmAccount
+                        : userWallet?.eoaAccount
+                    }
                     network={network}
                     showCard={true}
                     onClick={toggleEditProfile}

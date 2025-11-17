@@ -9,13 +9,11 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
-import { EthSigner, type EthLegacyTransaction } from '@onflow/frw-wallet';
+import {  WalletCoreProvider } from '@onflow/frw-wallet';
 import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
 import {
-  MAINNET_CHAIN_ID,
-  TESTNET_CHAIN_ID,
   EVM_ENDPOINT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
 } from '@/shared/constant';
@@ -148,16 +146,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.walletController.getKeyIndex() || 0;
   }
 
-  async ethSignTransaction(transaction: any): Promise<string> {
+  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
     if (!this.walletController) {
       throw new Error('Wallet controller not initialized');
     }
 
-    // Get the current nonce from the network
-    const nonce = await this.getTransactionCount(transaction.from);
+    if (!(signData instanceof Uint8Array)) {
+      throw new Error('signData must be a Uint8Array');
+    }
 
     const ethereumPrivateKey = await this.walletController.getEthereumPrivateKey();
-
     const privateKeyBytes = await this.walletController.privateKeyToUint8Array(ethereumPrivateKey);
 
     // Convert plain object back to Uint8Array if needed (cross-context serialization issue)
@@ -166,64 +164,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
         ? privateKeyBytes
         : new Uint8Array(Object.values(privateKeyBytes));
 
-    const network = await this.walletController.getNetwork();
-    const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
-
-    if (!transaction.to || transaction.to === '') {
-      throw new Error('Transaction "to" address is required');
-    }
-
-    const gasLimit = '0x1C9C380'; // 30,000,000 in hex
-    const gasPrice = '0x0'; // Zero gas price
-
-    let value = '0x0';
-    if (transaction.value) {
-      const web3 = new Web3();
-      let valueInWei: bigint;
-
-      // If value is already a hex string, parse it directly
-      if (typeof transaction.value === 'string' && transaction.value.startsWith('0x')) {
-        valueInWei = BigInt(transaction.value);
-      } else {
-        // Convert decimal value to wei using Web3
-        const valueStr = String(transaction.value);
-        valueInWei = BigInt(web3.utils.toWei(valueStr, 'ether'));
-      }
-
-      value = `0x${valueInWei.toString(16)}`;
-    }
-
-    const ethTransaction: EthLegacyTransaction = {
-      chainId: chainId,
-      nonce: parseInt(nonce, 16),
-      gasLimit: gasLimit,
-      gasPrice: gasPrice,
-      to: transaction.to,
-      value: value,
-      data: transaction.data || '0x',
-    };
-
-    // Sign the transaction using EthSigner
-    const signedTransaction = await EthSigner.signTransaction(
-      ethTransaction,
-      actualPrivateKeyBytes
-    );
-    return signedTransaction.rawTransaction;
-  }
-
-  async evmTransactionCallback(trxData: any): Promise<any> {
-    console.log('EVM Callback called with:', trxData);
-
-    if (trxData.state === 'EVM_TRX_BUILDING') {
-      // Use the ethSignTransaction method
-      const signedTx = await this.ethSignTransaction(trxData.trxData);
-      if (!signedTx) {
-        throw new Error('Failed to sign EVM transaction');
-      }
-      return signedTx;
-    }
-
-    return undefined;
+    return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
   }
 
   /**

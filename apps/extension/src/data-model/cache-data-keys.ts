@@ -107,15 +107,26 @@ export type UserMetadataStore = Record<string, { background: string; icon: strin
  * --------------------------------------------------------------------
  */
 // Profile Accounts - the Main (Flow) accounts of a given user on a given network
-export const mainAccountsKey = (network: string, userId: string) =>
-  `main-accounts-${network}-${userId}`;
+// Keyed by network and publickey
+export const mainAccountsKey = (network: string, pubkey: string) =>
+  `main-accounts-${network}-${pubkey}`;
 
 export const mainAccountsRefreshRegex = refreshKey(mainAccountsKey);
 
+// Keyed by network and userId
+export const mainAccountsKeyUid = (network: string, userId: string) =>
+  `main-accounts-uid-${network}-${userId}`;
+
+export const mainAccountsUidRefreshRegex = refreshKey(mainAccountsKeyUid);
+
 export type MainAccountStore = MainAccount[];
 
-export const getCachedMainAccounts = async (network: string, userId: string) => {
-  return getCachedData<MainAccountStore>(mainAccountsKey(network, userId));
+export const getCachedMainAccounts = async (network: string, pubkey: string) => {
+  return getCachedData<MainAccountStore>(mainAccountsKey(network, pubkey));
+};
+
+export const getCachedMainAccountsUid = async (network: string, userId: string) => {
+  return getCachedData<MainAccountStore>(mainAccountsKeyUid(network, userId));
 };
 
 // Pending Accounts

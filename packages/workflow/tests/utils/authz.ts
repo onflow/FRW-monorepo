@@ -170,19 +170,31 @@ export function test2Authz() {
   return authz;
 }
 
-export const evmTrxCallback = async (props: any) => {
-  const evmProvider = new ethers.JsonRpcProvider('https://mainnet.evm.nodes.onflow.org');
+const DEFAULT_EVM_RPC = 'https://mainnet.evm.nodes.onflow.org';
 
-  // const mnemonic = process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC || '';
-  // const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
-  const wallet = new ethers.Wallet(process.env.TEST_MAIN_EOA_ACCOUNT_PK!);
-  wallet.connect(evmProvider);
-  const { trxData } = props;
-  // add nonce
-  const nonce = await evmProvider.getTransactionCount(wallet.address);
-  // add chainId
-  const chainId = 747;
-  const tx = await wallet.signTransaction({ ...trxData, nonce, chainId });
-  console.log(tx, '---tx---');
-  return tx;
+let cachedSigner: ethers.Wallet | null = null;
+
+const getTestEvmSigner = (): ethers.Wallet => {
+  if (cachedSigner) {
+    return cachedSigner;
+  }
+
+  const privateKey = process.env.TEST_MAIN_EOA_ACCOUNT_PK;
+  if (!privateKey) {
+    throw new Error('TEST_MAIN_EOA_ACCOUNT_PK is not defined');
+  }
+
+  const rpcUrl = process.env.TEST_MAIN_EVM_RPC_URL || DEFAULT_EVM_RPC;
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  cachedSigner = new ethers.Wallet(privateKey, provider);
+  return cachedSigner;
+};
+
+export const evmTrxCallback = async (digest: Uint8Array): Promise<Uint8Array> => {
+  const signer = getTestEvmSigner();
+  if (digest.length !== 32) {
+    throw new Error('ethSign expects a 32-byte digest');
+  }
+  const signature = signer.signingKey.sign(ethers.hexlify(digest));
+  return ethers.getBytes(signature.serialized ?? signature);
 };
