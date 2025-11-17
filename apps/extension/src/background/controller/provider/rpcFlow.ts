@@ -88,12 +88,57 @@ const flowContext = flow
       },
       mapMethod,
     } = ctx;
-    consoleLog('flow - use #3 - check approval', mapMethod, origin, name, icon);
+    consoleLog('flow - use #3 - check approval', params, mapMethod, origin, name, icon);
 
     const [approvalType, condition, { height = 599 } = {}] =
       Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
     if (mapMethod === 'ethSendTransaction' || mapMethod === 'personalSign') {
       ctx.request.requestedApproval = true;
+
+      // Check if message is too long and show special popup
+      const MAX_DATA_LENGTH = 30000;
+      let isMessageTooLong = false;
+      let rawMessage = '';
+
+      if (params && params[0]) {
+        if (typeof params[0] === 'string' && params[0].length > MAX_DATA_LENGTH) {
+          isMessageTooLong = true;
+          rawMessage = params[0];
+        } else if (
+          typeof params[0] === 'object' &&
+          params[0].data &&
+          typeof params[0].data === 'string' &&
+          params[0].data.length > MAX_DATA_LENGTH
+        ) {
+          isMessageTooLong = true;
+          rawMessage = params[0].data;
+        }
+      }
+
+      if (isMessageTooLong) {
+        // Truncate rawMessage to 10000 characters for display to prevent performance issues
+        const MAX_DISPLAY_LENGTH = 10000;
+        const rawMessageLength = rawMessage.length;
+        const truncatedRawMessage = rawMessage.substring(0, MAX_DISPLAY_LENGTH);
+        ctx.approvalRes = await notificationService.requestApproval(
+          {
+            approvalComponent: 'EthMessageTooLong',
+            params: {
+              method,
+              data: params,
+              session: { origin, name, icon },
+              rawMessage: truncatedRawMessage,
+              rawMessageLength: rawMessageLength,
+            },
+            origin,
+          },
+          { height }
+        );
+        // The approval will be rejected by the EthMessageTooLong component when user closes it
+        // No need to process further since message cannot be signed
+        return;
+      }
+
       ctx.approvalRes = await notificationService.requestApproval(
         {
           approvalComponent: 'EthConfirm',
