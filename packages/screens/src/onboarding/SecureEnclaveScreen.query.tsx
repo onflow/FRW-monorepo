@@ -11,6 +11,7 @@ import {
   HoldToSendButton,
   AccountCreationLoadingState,
   ShieldAnimation,
+  useTheme,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState } from 'react';
@@ -23,8 +24,16 @@ import { useTranslation } from 'react-i18next';
 
 export function SecureEnclaveScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
+
+  // Theme-aware colors for icons
+  const isDark =
+    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
+  const primaryColor = isDark ? '#00EF8B' : '#00D77D';
+  const errorColor = isDark ? '#EF4444' : '#DC2626';
+  const shieldBgColor = isDark ? '#00EF8B' : '#00D77D';
 
   const handleNext = () => {
     setShowConfirmDialog(true);
@@ -151,7 +160,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
           <YStack gap="$2" items="center" mb="$6">
             {/* Secure enclave */}
             <XStack gap="$2" items="center">
-              <SecureEnclave size={16} color="#00EF8B" />
+              <SecureEnclave size={16} color={primaryColor} />
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.secureEnclave')}
               </Text>
@@ -159,7 +168,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* Hardware security */}
             <XStack gap="$2" items="center">
-              <HardwareGradeSecurity size={16} color="#00EF8B" />
+              <HardwareGradeSecurity size={16} color={primaryColor} />
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.hardwareSecurity')}
               </Text>
@@ -167,7 +176,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* No EVM support */}
             <XStack gap="$2" items="center">
-              <ShieldOff size={16} color="#EF4444" />
+              <ShieldOff size={16} color={errorColor} />
               <Text fontSize="$4" color="$error">
                 {t('onboarding.secureEnclave.features.noEvm')}
               </Text>
@@ -190,8 +199,17 @@ export function SecureEnclaveScreen(): React.ReactElement {
       <InfoDialog visible={showConfirmDialog} onClose={() => setShowConfirmDialog(false)}>
         <YStack gap="$4" items="center">
           {/* Shield icon with green background */}
-          <View w={57} h={57} bg="$primary" rounded={999} items="center" justify="center">
-            <Shield size={24} color="#000000" />
+          <View
+            w={24}
+            h={24}
+            bg={isDark ? '#00EF8B' : '#00D77D'}
+            rounded={999}
+            items="center"
+            justify="center"
+          >
+            <View p="$2">
+              <Shield size={22} color={isDark ? '#000000' : '#FFFFFF'} />
+            </View>
           </View>
 
           {/* Dialog title */}

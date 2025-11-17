@@ -148,7 +148,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             <BackupOptionCard
               icon={
                 <View ml={-5}>
-                  <RecoveryPhraseBackup size={70} color="#000000" />
+                  <RecoveryPhraseBackup size={70} color="$bg" />
                 </View>
               }
               iconBackground={<></>}
@@ -163,7 +163,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             <BackupOptionCard
               icon={
                 <View ml={20}>
-                  <CloudBackup size={110} color="#000000" />
+                  <CloudBackup size={110} color="$bg" />
                 </View>
               }
               iconBackground={<></>}
@@ -178,7 +178,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             <BackupOptionCard
               icon={
                 <View ml={20}>
-                  <DeviceBackup size={110} color="#000000" />
+                  <DeviceBackup size={110} color="$bg" />
                 </View>
               }
               iconBackground={<></>}
@@ -216,7 +216,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             onPress={handleConfirmSkip}
             cursor="pointer"
           >
-            <Text fontSize="$4" fontWeight="600" color="$white">
+            <Text fontSize="$4" fontWeight="600" color="$text">
               {t('onboarding.backupOptions.skipWarning.confirm')}
             </Text>
           </YStack>

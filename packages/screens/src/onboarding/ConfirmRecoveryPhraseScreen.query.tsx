@@ -10,6 +10,7 @@ import {
   Button,
   ScrollView,
   AccountCreationLoadingState,
+  useTheme,
 } from '@onflow/frw-ui';
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
 // Removed wallet-core.native imports - now using native bridge for key generation
@@ -126,8 +127,17 @@ export function ConfirmRecoveryPhraseScreen({
   route,
 }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+
+  // Theme-aware glassmorphic backgrounds
+  const isDark =
+    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
+  const glassBg = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+  const glassBorder = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)';
+  const disabledBg = isDark ? 'rgba(107, 114, 128, 0.5)' : 'rgba(0, 0, 0, 0.1)';
+  const disabledText = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
 
   // Get data from navigation params
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
@@ -565,9 +575,9 @@ export function ConfirmRecoveryPhraseScreen({
                         maxWidth={339}
                         height={57}
                         rounded={16}
-                        bg="rgba(255, 255, 255, 0.1)"
+                        bg={glassBg}
                         borderWidth={1}
-                        borderColor="rgba(255, 255, 255, 0.1)"
+                        borderColor={glassBorder}
                         paddingHorizontal={12}
                         alignItems="center"
                         justifyContent="center"
@@ -593,7 +603,11 @@ export function ConfirmRecoveryPhraseScreen({
                                   height={45}
                                   rounded={10}
                                   bg={
-                                    isCorrectSelection ? '$text' : isWrong ? '$text' : 'transparent'
+                                    isCorrectSelection
+                                      ? '#FFFFFF'
+                                      : isWrong
+                                        ? '#FFFFFF'
+                                        : 'transparent'
                                   }
                                   alignItems="center"
                                   justifyContent="center"
@@ -602,7 +616,15 @@ export function ConfirmRecoveryPhraseScreen({
                                     fontSize={16}
                                     fontWeight="500"
                                     color={
-                                      isCorrectSelection ? '$primary' : isWrong ? '$error' : '$text'
+                                      isCorrectSelection
+                                        ? isDark
+                                          ? '#00EF8B'
+                                          : '#00D77D'
+                                        : isWrong
+                                          ? isDark
+                                            ? '#EF4444'
+                                            : '#DC2626'
+                                          : '$text'
                                     }
                                     text="center"
                                     lineHeight={28}
@@ -627,18 +649,22 @@ export function ConfirmRecoveryPhraseScreen({
             <YStack
               width="100%"
               height={52}
-              bg={!allAnswersCorrect ? '#6b7280' : '$text'}
+              bg={!allAnswersCorrect ? disabledBg : '$text'}
               rounded={16}
               items="center"
               justify="center"
               borderWidth={1}
-              borderColor={!allAnswersCorrect ? '#6b7280' : '$text'}
+              borderColor={!allAnswersCorrect ? disabledBg : '$text'}
               opacity={!allAnswersCorrect ? 0.7 : 1}
               pressStyle={{ opacity: 0.9 }}
               onPress={!allAnswersCorrect ? undefined : handleFinish}
               cursor={!allAnswersCorrect ? 'not-allowed' : 'pointer'}
             >
-              <Text fontSize="$4" fontWeight="700" color={!allAnswersCorrect ? '$white' : '$bg'}>
+              <Text
+                fontSize="$4"
+                fontWeight="700"
+                color={!allAnswersCorrect ? disabledText : '$bg'}
+              >
                 {t('onboarding.confirmRecoveryPhrase.finish')}
               </Text>
             </YStack>
