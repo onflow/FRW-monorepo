@@ -6,6 +6,8 @@ import {
   OnboardingBackground,
   OnboardingHeader,
   getStartedBackground,
+  getStartedBackgroundLight,
+  useTheme,
 } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +23,12 @@ const PRIVACY_POLICY_URL = 'https://wallet.flow.com/privacy-policy';
 
 export function GetStartedScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
+
+  // Theme-aware background selection
+  const isDark =
+    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
+  const backgroundImage = isDark ? getStartedBackground : getStartedBackgroundLight;
 
   const handleCreateAccount = () => {
     // Navigate to profile type selection for create account flow
@@ -64,7 +72,7 @@ export function GetStartedScreen(): React.ReactElement {
   };
 
   return (
-    <OnboardingBackground backgroundImage={getStartedBackground}>
+    <OnboardingBackground backgroundImage={backgroundImage}>
       <YStack flex={1} paddingHorizontal="$4">
         {/* Top spacer to position title in upper third */}
         <YStack flex={1} />
