@@ -1,4 +1,5 @@
 import { Box, Typography, Switch } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material/styles';
 import React from 'react';
 
 import { COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
@@ -8,6 +9,7 @@ interface SettingsSwitchCardProps {
   checked: boolean;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
+  customStyle?: SxProps<Theme>;
 }
 
 const SettingsSwitchCard: React.FC<SettingsSwitchCardProps> = ({
@@ -15,6 +17,7 @@ const SettingsSwitchCard: React.FC<SettingsSwitchCardProps> = ({
   checked,
   onChange,
   disabled = false,
+  customStyle,
 }) => (
   <Box
     sx={{
@@ -27,6 +30,7 @@ const SettingsSwitchCard: React.FC<SettingsSwitchCardProps> = ({
       alignItems: 'flex-start',
       justifyContent: 'center',
       gap: '0px',
+      ...customStyle,
     }}
   >
     <Box

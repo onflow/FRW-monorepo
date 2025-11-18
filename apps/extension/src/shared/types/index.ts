@@ -7,6 +7,7 @@ export * from './keyring-types';
 export * from './network-types';
 export * from './news-types';
 export * from './nft-types';
+export * from './provider-types';
 export * from './token-info';
 export * from './tracking-types';
 export * from './transaction-types';

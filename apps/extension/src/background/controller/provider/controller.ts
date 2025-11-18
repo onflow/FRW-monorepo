@@ -1,5 +1,5 @@
 import { ServiceContext } from '@onflow/frw-context';
-import { EthSigner, type EthLegacyTransaction } from '@onflow/frw-wallet';
+import { EthSigner, type EthUnsignedTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex } from 'ethereumjs-util';
@@ -20,29 +20,23 @@ import {
 import walletManager from '@/core/service/wallet-manager';
 import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 import { EVM_ENDPOINT, MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
+import type { FlowChainId } from '@/shared/types/network-types';
+import type {
+  COAOwnershipProof,
+  EIP712TypedData,
+  EthConnectApprovalResult,
+  TransactionParams,
+  Web3WalletPermission,
+} from '@/shared/types/provider-types';
 import {
   tupleToPrivateKey,
   ensureEvmAddressPrefix,
   isValidEthereumAddress,
   consoleError,
 } from '@/shared/utils';
+import { networkToChainId } from '@/shared/utils/network-utils';
 
 import notificationService from '../notification';
-
-interface Web3WalletPermission {
-  // The name of the method corresponding to the permission
-  parentCapability: string;
-
-  // The date the permission was granted, in UNIX epoch time
-  date?: number;
-}
-
-interface COAOwnershipProof {
-  keyIndices: bigint[];
-  address: Uint8Array;
-  capabilityPath: string;
-  signatures: Uint8Array[];
-}
 
 // ============================================================================
 // COA Helper Functions
@@ -197,7 +191,7 @@ async function signTypeDataEOA(typedData: Record<string, unknown>) {
   const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
   // Use eth-signer to sign the typed data
-  const { signature, digest } = await EthSigner.signTypedData(privateKeyBytes, typedData);
+  const { signature } = await EthSigner.signTypedData(privateKeyBytes, typedData);
 
   return signature;
 }
@@ -213,7 +207,7 @@ const SignTypedDataVersion = {
 } as const;
 
 export const TypedDataUtils = {
-  eip712Hash(message: any, version: string): Buffer {
+  eip712Hash(message: EIP712TypedData, _version: string): Buffer {
     const types = { ...message.types };
     delete types.EIP712Domain;
 
@@ -336,7 +330,7 @@ class ProviderController extends BaseController {
   // ========================================================================
 
   ethRequestAccounts = async ({ session: { origin, name, icon } }) => {
-    let approvalResult: any;
+    let approvalResult: EthConnectApprovalResult | undefined;
     let selectedEvmAddress: string | undefined;
 
     // Request approval if wallet is locked or no permission
@@ -350,9 +344,15 @@ class ProviderController extends BaseController {
         { height: 599 }
       );
       if (approvalResult) {
-        const { defaultChain, signPermission, evmAddress } = approvalResult;
+        const { defaultChain, evmAddress } = approvalResult;
+        // Convert string network to FlowChainId if needed
+        const chainId: FlowChainId | undefined = defaultChain
+          ? typeof defaultChain === 'string'
+            ? networkToChainId(defaultChain)
+            : defaultChain
+          : undefined;
         // Store the selected EVM address in the permission
-        permissionService.addConnectedSite(origin, name, icon, defaultChain, false, evmAddress);
+        permissionService.addConnectedSite(origin, name, icon, chainId, false, evmAddress);
 
         // Priority 1: Use the selected EVM address from the approval result
         if (evmAddress && isValidEthereumAddress(evmAddress)) {
@@ -415,14 +415,12 @@ class ProviderController extends BaseController {
             if (connectedSite) {
               permissionService.updateConnectSite(origin, { evmAddress }, true);
             } else if (approvalResult.defaultChain) {
-              permissionService.addConnectedSite(
-                origin,
-                name,
-                icon,
-                approvalResult.defaultChain,
-                false,
-                evmAddress
-              );
+              // Convert string network to FlowChainId if needed
+              const chainId: FlowChainId =
+                typeof approvalResult.defaultChain === 'string'
+                  ? networkToChainId(approvalResult.defaultChain)
+                  : approvalResult.defaultChain;
+              permissionService.addConnectedSite(origin, name, icon, chainId, false, evmAddress);
             }
           } else {
             // Final fallback: try to get current address or EOA
@@ -515,24 +513,17 @@ class ProviderController extends BaseController {
     }
 
     // Accessing the first item in 'params' array
-    const transactionParams = data.data.params[0];
+    const transactionParams: TransactionParams = data.data.params[0];
 
-    // Extracting individual parameters
     const from = transactionParams.from || '';
-    const to = transactionParams.to || '';
-    const value = transactionParams.value || '0x0';
-    const dataValue = transactionParams.data || '0x';
-    const gas = transactionParams.gas || '0x1C9C380';
-    const gasPrice = transactionParams.gasPrice || '0x0';
 
     try {
       // Check if address is COA or EOA
       const isCOA = await isCOAAddress(from);
-
       if (isCOA) {
-        return await this.sendTransactionCOA(to, gas, value, dataValue);
+        return await this.sendTransactionCOA(transactionParams);
       } else {
-        return await this.sendTransactionEOA(from, to, value, dataValue, gas, gasPrice);
+        return await this.sendTransactionEOA(transactionParams);
       }
     } catch (error) {
       chrome.runtime.sendMessage({
@@ -544,12 +535,8 @@ class ProviderController extends BaseController {
   };
 
   // COA Transaction Method
-  private async sendTransactionCOA(
-    to: string,
-    gas: string,
-    value: string,
-    dataValue: string
-  ): Promise<string> {
+  private async sendTransactionCOA(transactionParams: TransactionParams): Promise<string> {
+    const { to = '', gas = '0x1C9C380', value = '0x0', data: dataValue = '0x' } = transactionParams;
     const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
     const gasBigInt = BigInt(cleanHex);
 
@@ -569,14 +556,17 @@ class ProviderController extends BaseController {
   }
 
   // EOA Transaction Method
-  private async sendTransactionEOA(
-    from: string,
-    to: string,
-    value: string,
-    dataValue: string,
-    gas: string,
-    gasPrice: string
-  ): Promise<string> {
+  private async sendTransactionEOA(transactionParams: TransactionParams): Promise<string> {
+    const {
+      from = '',
+      to = '',
+      value = '0x0',
+      data: dataValue = '0x',
+      gas = '0x1C9C380',
+      gasPrice = '0x0',
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    } = transactionParams;
     // Get the current network and EOA account info
     const network = await Wallet.getNetwork();
     const eoaInfo = await walletManager.getEOAAccountInfo();
@@ -612,17 +602,30 @@ class ProviderController extends BaseController {
       // Get the current chain ID
       const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
 
-      // Create the transaction object
-      const transaction: EthLegacyTransaction = {
-        chainId: chainId,
-        nonce: parseInt(nonce, 16),
-        gasLimit: trxData.gasLimit || gas,
-        gasPrice: gasPrice,
-        to: trxData.to,
-        value: trxData.value || '0x0',
-        data: trxData.data || '0x',
-      };
+      // Determine if this is an EIP-1559 transaction
+      const isEIP1559 = maxFeePerGas !== undefined;
 
+      // Create the transaction object (legacy or EIP-1559)
+      const transaction: EthUnsignedTransaction = isEIP1559
+        ? {
+            chainId: chainId,
+            nonce: nonce,
+            gasLimit: trxData.gasLimit || gas,
+            maxFeePerGas: maxFeePerGas,
+            maxPriorityFeePerGas: maxPriorityFeePerGas || '0x0',
+            to: trxData.to,
+            value: trxData.value || '0x0',
+            data: trxData.data || '0x',
+          }
+        : {
+            chainId: chainId,
+            nonce: nonce,
+            gasLimit: trxData.gasLimit || gas,
+            gasPrice: gasPrice,
+            to: trxData.to,
+            value: trxData.value || '0x0',
+            data: trxData.data || '0x',
+          };
       // Sign the transaction using EthSigner
       const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
 
@@ -661,7 +664,7 @@ class ProviderController extends BaseController {
   // Signing Methods (COA and EOA Routing)
   // ========================================================================
 
-  personalSign = async ({ data, approvalRes, session }) => {
+  personalSign = async ({ data, approvalRes: _approvalRes, session }) => {
     if (!data.params) return;
     const [string, from] = data.params;
 
@@ -701,7 +704,7 @@ class ProviderController extends BaseController {
     const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
 
     // Use eth-signer to sign the personal message
-    const { signature, digest } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
+    const { signature } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
 
     // Create history entry using the derived Ethereum address
     signTextHistoryService.createHistory({
@@ -747,7 +750,7 @@ class ProviderController extends BaseController {
     let message;
     try {
       message = typeof data === 'string' ? JSON.parse(data) : data;
-    } catch (e) {
+    } catch {
       throw new Error('Invalid JSON data provided');
     }
     const { chainId } = message.domain || {};
@@ -864,7 +867,7 @@ class ProviderController extends BaseController {
     let message;
     try {
       message = typeof data === 'string' ? JSON.parse(data) : data;
-    } catch (e) {
+    } catch {
       throw new Error('Invalid JSON data provided');
     }
     const { chainId } = message.domain || {};
@@ -945,7 +948,7 @@ class ProviderController extends BaseController {
     return result;
   }
 
-  ethSign = async ({ data, approvalRes, session }) => {
+  ethSign = async ({ data, approvalRes: _approvalRes, session }) => {
     if (!data.params) return;
     const [address, message] = data.params;
 
@@ -1161,7 +1164,7 @@ class ProviderController extends BaseController {
   // Chain/Network Methods
   // ========================================================================
 
-  ethChainId = async ({ session }) => {
+  ethChainId = async ({ session: _session }) => {
     const network = await Wallet.getNetwork();
     if (network === 'testnet') {
       return TESTNET_CHAIN_ID;
