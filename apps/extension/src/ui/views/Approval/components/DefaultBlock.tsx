@@ -15,6 +15,7 @@ import Highlight from 'react-highlight';
 
 import { consoleError } from '@/shared/utils';
 import IconFlow from '@/ui/components/iconfont/IconFlow';
+import { networkColor } from '@/ui/style/color';
 
 export const DefaultBlock = ({
   title,
@@ -27,6 +28,7 @@ export const DefaultBlock = ({
   cadenceScript,
   setExpanded,
   dedent,
+  msgNetwork,
 }) => {
   const processItem = (item) => {
     if (Array.isArray(item)) {
@@ -61,6 +63,7 @@ export const DefaultBlock = ({
             width: '60px',
             borderRadius: '12px',
             backgroundColor: 'text.secondary',
+            border: `1px solid ${networkColor(msgNetwork)}`,
           }}
           src={logo}
         />
@@ -69,6 +72,12 @@ export const DefaultBlock = ({
           <Typography color="secondary.main" variant="overline">
             {host}
           </Typography>
+
+          {msgNetwork !== 'mainnet' && (
+            <Typography color={networkColor(msgNetwork)} variant="overline">
+              {msgNetwork}
+            </Typography>
+          )}
         </Stack>
       </Box>
       <Divider />
