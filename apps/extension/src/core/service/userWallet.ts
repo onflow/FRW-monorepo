@@ -1807,42 +1807,79 @@ const loadMainAccountsWithPubKey = async (
   // Try to get EOA account info (this won't require password if cached)
   const eoaInfo = await walletManager.getEOAAccountInfo();
 
-  const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
-    const accountDetail = accountDetailMap[mainAccount.address];
-    const evmAccount = accountDetail.COAs?.length
-      ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
-      : undefined;
+  // Helper function to check if COA account has assets (balance > 0)
+  const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {
+    if (!evmAddress) return false;
 
-    // Apply custom metadata to evmAccount if it exists
-    if (evmAccount && evmAccount.address) {
-      const evmCustomData = customMetadata[evmAccount.address];
-      if (evmCustomData) {
-        evmAccount.name = evmCustomData.name || evmAccount.name;
-        evmAccount.icon = evmCustomData.icon || evmAccount.icon;
-        evmAccount.color = evmCustomData.background || evmAccount.color;
+    try {
+      // Get balance from cache
+      const balanceKey = accountBalanceKey(network, evmAddress);
+      const cachedBalance = await getCachedData<string>(balanceKey);
+
+      // If no cached balance, trigger refresh and return false (will be filtered out)
+      // The balance will be available on next load
+      if (!cachedBalance) {
+        // Trigger refresh for next time
+        triggerRefresh(balanceKey);
+        return false;
       }
+
+      // Parse balance string (e.g., "0.5" or "0.00000000")
+      const balanceValue = parseFloat(cachedBalance);
+      return balanceValue > 0;
+    } catch (error) {
+      console.error('Error checking COA balance:', error);
+      return false;
     }
+  };
 
-    const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
-    const eoaAccountInfo = eoaInfo?.address
-      ? {
-          address: eoaInfo.address,
-          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-          id: 99, // Special ID for EOA
-          name: eoaEmoji.name,
-          icon: eoaEmoji.emoji,
-          color: eoaEmoji.bgcolor,
-          balance: eoaInfo.balance || '0',
+  const mainAccountsWithDetail: MainAccount[] = await Promise.all(
+    mainAccounts.map(async (mainAccount) => {
+      const accountDetail = accountDetailMap[mainAccount.address];
+      const rawEvmAccount = accountDetail.COAs?.length
+        ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
+        : undefined;
+
+      // Filter out COA accounts that don't have assets
+      let evmAccount: WalletAccount | undefined = undefined;
+      if (rawEvmAccount?.address) {
+        const hasAssets = await checkCoaHasAssets(rawEvmAccount.address);
+        if (hasAssets) {
+          evmAccount = rawEvmAccount;
         }
-      : undefined;
+      }
 
-    return {
-      ...mainAccount,
-      evmAccount,
-      eoaAccount: eoaAccountInfo,
-      childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
-    };
-  });
+      // Apply custom metadata to evmAccount if it exists
+      if (evmAccount && evmAccount.address) {
+        const evmCustomData = customMetadata[evmAccount.address];
+        if (evmCustomData) {
+          evmAccount.name = evmCustomData.name || evmAccount.name;
+          evmAccount.icon = evmCustomData.icon || evmAccount.icon;
+          evmAccount.color = evmCustomData.background || evmAccount.color;
+        }
+      }
+
+      const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
+      const eoaAccountInfo = eoaInfo?.address
+        ? {
+            address: eoaInfo.address,
+            chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+            id: 99, // Special ID for EOA
+            name: eoaEmoji.name,
+            icon: eoaEmoji.emoji,
+            color: eoaEmoji.bgcolor,
+            balance: eoaInfo.balance || '0',
+          }
+        : undefined;
+
+      return {
+        ...mainAccount,
+        evmAccount,
+        eoaAccount: eoaAccountInfo,
+        childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
+      };
+    })
+  );
 
   // Save the merged accounts to the cache (both pubkey and userId versions)
   const ttl = mainAccountsWithDetail.length > 0 ? 60_000 : 1_000;
