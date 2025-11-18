@@ -4,6 +4,7 @@ import { permissionService } from '@/core/service';
 import { underline2Camelcase } from '@/core/utils';
 import { eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
+import type { FlowContext, ProviderRequest } from '@/shared/types/provider-types';
 import { consoleLog } from '@/shared/utils';
 
 import notificationService from '../notification';
@@ -34,7 +35,7 @@ const flowContext = flow
       } catch (error) {
         // Catch any error and throw the custom error
         throw ethErrors.rpc.methodNotFound({
-          message: `method [${ctx.request.data.method}] doesn't have a corresponding handler`,
+          message: `method [${ctx.request.data.method}] doesn't have a corresponding handler, ${error}`,
           data: ctx.request.data,
         });
       }
@@ -66,7 +67,7 @@ const flowContext = flow
     ) {
       if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
         ctx.request.requestedApproval = true;
-        const { defaultChain, signPermission } = await notificationService.requestApproval(
+        const { defaultChain } = await notificationService.requestApproval(
           {
             params: { origin, name, icon },
             approvalComponent: 'EthConnect',
@@ -90,7 +91,7 @@ const flowContext = flow
     } = ctx;
     consoleLog('flow - use #3 - check approval', params, mapMethod, origin, name, icon);
 
-    const [approvalType, condition, { height = 599 } = {}] =
+    const [{ height = 599 } = {}] =
       Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
     if (mapMethod === 'ethSendTransaction' || mapMethod === 'personalSign') {
       ctx.request.requestedApproval = true;
@@ -116,10 +117,8 @@ const flowContext = flow
       }
 
       if (isMessageTooLong) {
-        // Truncate rawMessage to 10000 characters for display to prevent performance issues
-        const MAX_DISPLAY_LENGTH = 10000;
         const rawMessageLength = rawMessage.length;
-        const truncatedRawMessage = rawMessage.substring(0, MAX_DISPLAY_LENGTH);
+        const truncatedRawMessage = rawMessage.substring(0, MAX_DATA_LENGTH);
         ctx.approvalRes = await notificationService.requestApproval(
           {
             approvalComponent: 'EthMessageTooLong',
@@ -191,7 +190,7 @@ const flowContext = flow
         }
         return result;
       })
-      .catch((e: any) => {
+      .catch((e) => {
         consoleLog('flow - process error', mapMethod, e);
 
         if (isSignApproval(approvalType)) {
@@ -227,8 +226,8 @@ const flowContext = flow
   })
   .callback();
 
-export default (request) => {
-  const ctx: any = { request: { ...request, requestedApproval: false } };
+export default (request: ProviderRequest) => {
+  const ctx: FlowContext = { request: { ...request, requestedApproval: false } };
   return flowContext(ctx).finally(() => {
     if (ctx.request.requestedApproval) {
       flow.requestedApproval = false;
