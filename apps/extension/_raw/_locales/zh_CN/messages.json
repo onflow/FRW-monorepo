@@ -1599,5 +1599,8 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "按住同意激增定价"
+  },
+  "Scan_to_receive": {
+    "message": "扫描接收"
   }
 }

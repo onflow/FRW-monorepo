@@ -1611,5 +1611,8 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "Hold to agree to surge pricing"
+  },
+  "Scan_to_receive": {
+    "message": "Scan to receive"
   }
 }
