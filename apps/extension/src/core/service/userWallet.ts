@@ -14,6 +14,7 @@ import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
   coinListKey,
+  evmNftCollectionsAndIdsKey,
   mainAccountsKey,
   mainAccountsRefreshRegex,
   mainAccountsKeyUid,
@@ -1807,28 +1808,69 @@ const loadMainAccountsWithPubKey = async (
   // Try to get EOA account info (this won't require password if cached)
   const eoaInfo = await walletManager.getEOAAccountInfo();
 
-  // Helper function to check if COA account has assets (balance > 0)
+  // Helper function to check if COA account has assets
   const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {
     if (!evmAddress) return false;
 
     try {
-      // Get balance from cache
+      // Check Flow balance - always fetch if not cached
       const balanceKey = accountBalanceKey(network, evmAddress);
-      const cachedBalance = await getCachedData<string>(balanceKey);
+      let balance: string | null | undefined = await getCachedData<string>(balanceKey);
 
-      // If no cached balance, trigger refresh and return false (will be filtered out)
-      // The balance will be available on next load
-      if (!cachedBalance) {
-        // Trigger refresh for next time
-        triggerRefresh(balanceKey);
-        return false;
+      if (!balance) {
+        try {
+          balance = await loadAccountBalance(network, evmAddress);
+        } catch (error) {
+          consoleError('Error fetching Flow balance for COA:', error as Error);
+        }
       }
 
-      // Parse balance string (e.g., "0.5" or "0.00000000")
-      const balanceValue = parseFloat(cachedBalance);
-      return balanceValue > 0;
+      if (balance) {
+        const balanceValue = parseFloat(balance);
+        if (balanceValue > 0) {
+          return true;
+        }
+      }
+
+      // Check ERC20 tokens
+      const tokenListKey = coinListKey(network, evmAddress, 'usd');
+      const cachedTokens =
+        await getCachedData<Array<{ balance?: string; rawBalance?: string }>>(tokenListKey);
+
+      if (cachedTokens && cachedTokens.length > 0) {
+        const hasTokenBalance = cachedTokens.some((token) => {
+          const balance = parseFloat(token.balance || token.rawBalance || '0');
+          return balance > 0;
+        });
+        if (hasTokenBalance) {
+          return true;
+        }
+      } else {
+        triggerRefresh(tokenListKey);
+      }
+
+      // Check NFTs
+      const nftKey = evmNftCollectionsAndIdsKey(network, evmAddress);
+      const cachedNfts = await getCachedData<Array<{ count?: number; ids?: string[] }>>(nftKey);
+
+      if (cachedNfts && cachedNfts.length > 0) {
+        const hasNfts = cachedNfts.some((collection) => {
+          return (
+            (collection.count && collection.count > 0) ||
+            (collection.ids && collection.ids.length > 0)
+          );
+        });
+        if (hasNfts) {
+          return true;
+        }
+      } else {
+        triggerRefresh(nftKey);
+      }
+
+      // If no assets data found, return false
+      return false;
     } catch (error) {
-      console.error('Error checking COA balance:', error);
+      consoleError('Error checking COA assets:', error as Error);
       return false;
     }
   };
