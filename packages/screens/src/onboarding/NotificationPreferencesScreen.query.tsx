@@ -50,9 +50,22 @@ const requestNotificationPermission = async (enable: boolean): Promise<{ granted
   return { granted: false };
 };
 
-export function NotificationPreferencesScreen(): React.ReactElement {
+interface NotificationPreferencesScreenProps {
+  route?: {
+    params?: {
+      accountType?: 'recovery' | 'secure-enclave';
+    };
+  };
+}
+
+export function NotificationPreferencesScreen({
+  route,
+}: NotificationPreferencesScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [isCheckingPermission, setIsCheckingPermission] = React.useState(true);
+
+  // Get account type from route params (defaults to secure-enclave if not specified)
+  const accountType = route?.params?.accountType || 'secure-enclave';
 
   // Check if permission is already granted on mount
   React.useEffect(() => {
@@ -65,8 +78,16 @@ export function NotificationPreferencesScreen(): React.ReactElement {
             logger.info(
               '[NotificationPreferencesScreen] Notification permission already granted, skipping screen'
             );
-            // Skip this screen and go directly to BackupOptions
-            navigation.navigate('BackupOptions');
+            // Navigate based on account type
+            if (accountType === 'recovery') {
+              logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+              bridge.closeRN();
+            } else {
+              logger.info(
+                '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+              );
+              navigation.navigate('BackupOptions');
+            }
             return;
           }
         }
@@ -79,23 +100,39 @@ export function NotificationPreferencesScreen(): React.ReactElement {
     };
 
     checkExistingPermission();
-  }, []);
+  }, [accountType]);
 
   // Mutation for requesting notification permission
   const notificationMutation = useMutation({
     mutationFn: requestNotificationPermission,
     onSuccess: (data, variables) => {
       logger.info('[NotificationPreferencesScreen] Notification permission result:', data);
-      // Navigate to backup options regardless of permission result
-      navigation.navigate('BackupOptions');
+      // Navigate based on account type
+      if (accountType === 'recovery') {
+        logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+        bridge.closeRN();
+      } else {
+        logger.info(
+          '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+        );
+        navigation.navigate('BackupOptions');
+      }
     },
     onError: (error, variables) => {
       logger.error(
         '[NotificationPreferencesScreen] Failed to request notification permission:',
         error
       );
-      // Still navigate to backup options on error
-      navigation.navigate('BackupOptions');
+      // Navigate based on account type even on error
+      if (accountType === 'recovery') {
+        logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+        bridge.closeRN();
+      } else {
+        logger.info(
+          '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+        );
+        navigation.navigate('BackupOptions');
+      }
     },
   });
 
@@ -105,8 +142,16 @@ export function NotificationPreferencesScreen(): React.ReactElement {
   };
 
   const handleMaybeLater = () => {
-    // Skip notification setup and go to backup options
-    navigation.navigate('BackupOptions');
+    // Navigate based on account type
+    if (accountType === 'recovery') {
+      logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+      bridge.closeRN();
+    } else {
+      logger.info(
+        '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+      );
+      navigation.navigate('BackupOptions');
+    }
   };
 
   // Show loading state while checking permission

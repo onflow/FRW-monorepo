@@ -69,7 +69,7 @@ export type RootStackParamList = {
   RecoveryPhrase: undefined;
   ConfirmRecoveryPhrase: { recoveryPhrase?: string[]; mnemonic?: string };
   SecureEnclave: undefined;
-  NotificationPreferences: undefined;
+  NotificationPreferences: { accountType?: 'recovery' | 'secure-enclave' };
   BackupOptions: undefined;
 };
 

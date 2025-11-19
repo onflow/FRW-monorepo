@@ -472,8 +472,9 @@ export function ConfirmRecoveryPhraseScreen({
           throw new Error('Linked COA account creation not supported on this platform');
         }
 
-        // Navigate to notification preferences (or native will close RN)
-        navigation.navigate('NotificationPreferences');
+        // Navigate to notification preferences with accountType parameter
+        // Recovery phrase flow should skip BackupOptionsScreen
+        navigation.navigate('NotificationPreferences', { accountType: 'recovery' });
       } else {
         // Fallback for web/extension (no native bridge)
         logger.warn(
@@ -481,8 +482,8 @@ export function ConfirmRecoveryPhraseScreen({
         );
 
         // For web/extension, we'd handle Firebase auth here directly
-        // But for now, just navigate
-        navigation.navigate('NotificationPreferences');
+        // But for now, just navigate with accountType parameter
+        navigation.navigate('NotificationPreferences', { accountType: 'recovery' });
       }
     } catch (error: any) {
       logger.error('[ConfirmRecoveryPhraseScreen] Failed to create EOA account:', error);
