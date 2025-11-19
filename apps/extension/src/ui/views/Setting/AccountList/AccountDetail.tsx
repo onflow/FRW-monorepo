@@ -5,7 +5,7 @@ import { fetchPayerStatusWithCache } from '@onflow/frw-stores';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 
-import { getLocalData, setLocalData } from '@/data-model';
+import { getLocalData } from '@/data-model';
 import { type Emoji, type StorageInfo } from '@/shared/types';
 import { consoleError, isValidEthereumAddress, isValidFlowAddress } from '@/shared/utils';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
@@ -15,7 +15,6 @@ import SettingsListItem from '@/ui/components/settings/setting-list-item';
 import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
 import { toggleAccountHidden, useAccountHidden } from '@/ui/hooks/preference-hooks';
 import { useMainAccount } from '@/ui/hooks/use-account-hooks';
-import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { COLOR_WHITE_ALPHA_80_FFFFFFCC } from '@/ui/style/color';
@@ -46,13 +45,11 @@ const AccountDetail = () => {
   const userWallet = useMainAccount(network, parentAddress || address);
   const [showProfile, setShowProfile] = useState(false);
   const [gasKillSwitch, setGasKillSwitch] = useState(false);
-  const [modeGas, setGasMode] = useState(false);
   const [showError, setShowError] = useState(false);
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [emoji, setEmoji] = useState<Emoji | null>(null);
   const [payerStatus, setPayerStatus] = useState<any>(null);
-  const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
 
   // Use the new preference hook for hidden address status
   const isHidden = useAccountHidden(userWallet?.address || '');
@@ -64,25 +61,13 @@ const AccountDetail = () => {
     setShowError(false);
   };
 
-  const loadGasMode = useCallback(async () => {
-    const isFreeGasFeeEnabled = await getLocalData<boolean>('lilicoPayer');
-    if (isFreeGasFeeEnabled) {
-      setGasMode(isFreeGasFeeEnabled);
-    }
-  }, []);
-
   const loadGasKillSwitch = useCallback(async () => {
     await wallet.getPayerAddressAndKeyId();
+    const isFreeGasFeeEnabled = await getLocalData<boolean>('lilicoPayer');
     if (isFreeGasFeeEnabled) {
       setGasKillSwitch(isFreeGasFeeEnabled);
     }
-  }, [isFreeGasFeeEnabled, wallet]);
-
-  const switchGasMode = async () => {
-    setGasMode(!modeGas);
-    setLocalData('lilicoPayer', !modeGas);
-    setShowError(true);
-  };
+  }, [wallet]);
 
   const toggleHiddenStatus = async () => {
     if (userWallet?.address) {
@@ -128,14 +113,13 @@ const AccountDetail = () => {
   useEffect(() => {
     try {
       loadGasKillSwitch();
-      loadGasMode();
       loadStorageInfo();
       checkKeyphrase();
       loadPayerStatus();
     } catch (error) {
       consoleError(error);
     }
-  }, [checkKeyphrase, loadGasKillSwitch, loadGasMode, loadStorageInfo, loadPayerStatus]);
+  }, [checkKeyphrase, loadGasKillSwitch, loadStorageInfo, loadPayerStatus]);
 
   return (
     <div className="page" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -181,9 +165,13 @@ const AccountDetail = () => {
                     onClickSecondary={toggleEditProfile}
                   />
                 )
-              : userWallet?.evmAccount && (
+              : (userWallet?.evmAccount || userWallet?.eoaAccount) && (
                   <AccountCard
-                    account={userWallet?.evmAccount}
+                    account={
+                      address === userWallet?.evmAccount?.address
+                        ? userWallet?.evmAccount
+                        : userWallet?.eoaAccount
+                    }
                     network={network}
                     showCard={true}
                     onClick={toggleEditProfile}
@@ -251,14 +239,6 @@ const AccountDetail = () => {
                 onChange={() => {
                   toggleHiddenStatus();
                 }}
-              />
-              <SettingsSwitchCard
-                label="Free gas fee"
-                checked={modeGas}
-                onChange={() => {
-                  switchGasMode();
-                }}
-                disabled={!gasKillSwitch}
               />
               {payerStatus?.surge?.active && (
                 <Box sx={{ padding: '18px', borderRadius: '16px', backgroundColor: '#FDB02226' }}>
@@ -361,7 +341,11 @@ const AccountDetail = () => {
           severity="warning"
           sx={{ width: '100%' }}
         >
-          {chrome.i18n.getMessage('You__will__need__to__connect__to__your__wallet__again')}
+          {
+            chrome.i18n.getMessage(
+              'You__will__need__to__connect__to__your__wallet__again'
+            ) as string
+          }
         </Alert>
       </Snackbar>
       {showProfile && address && (

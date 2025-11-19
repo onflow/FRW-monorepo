@@ -1,10 +1,11 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
-import { Box, Divider, IconButton, List } from '@mui/material';
+import { Alert, Box, Divider, IconButton, List, Snackbar, Typography } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
+import { getLocalData, setLocalData } from '@/data-model';
 import { AboutIcon } from '@/ui/assets/icons/settings/About';
 import { AccountListIcon } from '@/ui/assets/icons/settings/AccountList';
 import { AddProfileIcon } from '@/ui/assets/icons/settings/AddProfile';
@@ -22,9 +23,10 @@ import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { ProfileItem } from '@/ui/components/profile/profile-item';
 import AddProfilePopup from '@/ui/components/settings/add-profile-popup';
 import SettingsListItem from '@/ui/components/settings/setting-list-item';
+import SettingsSwitchCard from '@/ui/components/settings/settings-switch';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-
 // Feature flags
 const SHOW_DEVICES = false;
 
@@ -33,15 +35,48 @@ const SettingTab = () => {
   const { profileIds, activeAccountType, userInfo } = useProfiles();
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [isAddProfilePopupOpen, setIsAddProfilePopupOpen] = useState(false);
+  const [modeGas, setGasMode] = useState(false);
+  const [gasKillSwitch, setGasKillSwitch] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
 
   const checkIsKeyphrase = useCallback(async () => {
     const keyrings = await usewallet.checkMnemonics();
     await setIsKeyphrase(keyrings);
   }, [usewallet]);
 
+  const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setShowError(false);
+  };
+
+  const loadGasMode = useCallback(async () => {
+    const isFreeGasFeeEnabled = await getLocalData<boolean>('lilicoPayer');
+    if (isFreeGasFeeEnabled) {
+      setGasMode(isFreeGasFeeEnabled);
+    }
+  }, []);
+
+  const loadGasKillSwitch = useCallback(async () => {
+    await usewallet.getPayerAddressAndKeyId();
+    if (isFreeGasFeeEnabled) {
+      setGasKillSwitch(isFreeGasFeeEnabled);
+    }
+  }, [isFreeGasFeeEnabled, usewallet]);
+
+  const switchGasMode = async () => {
+    setGasMode(!modeGas);
+    setLocalData('lilicoPayer', !modeGas);
+    setShowError(true);
+  };
+
   useEffect(() => {
+    loadGasKillSwitch();
     checkIsKeyphrase();
-  }, [checkIsKeyphrase]);
+    loadGasMode();
+  }, [checkIsKeyphrase, loadGasMode, loadGasKillSwitch]);
 
   return (
     <div className="page">
@@ -230,6 +265,44 @@ const SettingTab = () => {
             endIcon={<IconEnd size={12} />}
           />
         </List>
+        {isFreeGasFeeEnabled && (
+          <List
+            className="list"
+            sx={{
+              margin: '8px auto 2px auto',
+              pt: 0,
+              pb: 0,
+              borderRadius: '16px',
+              overflow: 'hidden',
+              backgroundColor: '#282828',
+              '&:hover': {
+                backgroundColor: '#282828',
+              },
+            }}
+          >
+            <SettingsSwitchCard
+              label="Free gas fee"
+              checked={modeGas}
+              onChange={() => {
+                switchGasMode();
+              }}
+              disabled={!gasKillSwitch}
+              customStyle={{
+                paddingY: '8px',
+              }}
+            />
+          </List>
+        )}
+
+        {isFreeGasFeeEnabled && (
+          <Typography
+            variant="body1"
+            color="#717171"
+            style={{ weight: 400, fontSize: '12px', marginBottom: '18px' }}
+          >
+            * {chrome.i18n.getMessage('Allow__lilico__to__pay__the__gas__fee')}
+          </Typography>
+        )}
         <List
           className="list"
           sx={{
@@ -252,6 +325,17 @@ const SettingTab = () => {
           />
         </List>
       </Box>
+
+      <Snackbar open={showError} autoHideDuration={6000} onClose={handleErrorClose}>
+        <Alert
+          onClose={handleErrorClose}
+          variant="filled"
+          severity="warning"
+          sx={{ width: '100%' }}
+        >
+          {chrome.i18n.getMessage('You__will__need__to__connect__to__your__wallet__again')}
+        </Alert>
+      </Snackbar>
 
       <AddProfilePopup
         isOpen={isAddProfilePopupOpen}

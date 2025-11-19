@@ -15,6 +15,8 @@ import {
   accountBalanceRefreshRegex,
   coinListKey,
   mainAccountsKey,
+  mainAccountsRefreshRegex,
+  mainAccountsKeyUid,
   mainAccountStorageBalanceKey,
   mainAccountStorageBalanceRefreshRegex,
   type MainAccountStorageBalanceStore,
@@ -40,7 +42,6 @@ import {
   registerStatusKey,
   registerStatusRefreshRegex,
 } from '@/data-model';
-import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
 import { DEFAULT_WEIGHT, FLOW_BIP44_PATH } from '@/shared/constant';
 import {
   type PublicPrivateKeyTuple,
@@ -56,7 +57,6 @@ import {
   type PublicKeyAccount,
   type WalletAccount,
   type WalletAddress,
-  type KeyringStateV3,
   type Emoji,
 } from '@/shared/types';
 import {
@@ -193,8 +193,6 @@ class UserWallet {
     // NOTE: If this is remvoed... everything runs just fine (I've checked)
     this.preloadAllAccounts(this.store.network, pubkey);
 
-    // Initialize wallet manager to calculate EOA address when public key changes
-    this.initializeWalletManager();
     return this.store.currentPubkey;
   };
 
@@ -225,9 +223,6 @@ class UserWallet {
 
     // Load all data for the new pubkey. This is async but don't await it
     this.preloadAllAccounts(this.store.network, pubkey);
-
-    // Initialize wallet manager to calculate EOA address when public key changes
-    this.initializeWalletManager();
   };
 
   /**
@@ -336,6 +331,9 @@ class UserWallet {
       // Other methods will throw an error if they are not set
       return;
     }
+
+    // Initialize wallet manager to calculate EOA address
+    this.initializeWalletManager();
 
     try {
       // Get the main accounts
@@ -1657,12 +1655,10 @@ const setupNewAccount = async (
     },
   ];
 
-  // Save the main accounts to the cache
-  setCachedData(
-    mainAccountsKey(network, userId),
-    mainAccounts,
-    mainAccounts.length > 0 ? 60_000 : 1_000
-  );
+  // Save the main accounts to the cache (both pubkey and userId versions)
+  const ttl = mainAccounts.length > 0 ? 60_000 : 1_000;
+  setCachedData(mainAccountsKey(network, pubKey), mainAccounts, ttl);
+  setCachedData(mainAccountsKeyUid(network, userId), mainAccounts, ttl);
 
   return mainAccounts;
 };
@@ -1681,10 +1677,7 @@ const getMainAccountsWithPubKey = async (
     throw new Error('Network or pubkey is not set');
   }
 
-  // Get current user ID
-  const userId = await getCurrentProfileId();
-
-  const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, userId));
+  const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, pubkey));
   if (!mainAccounts) {
     return loadMainAccountsWithPubKey(network, pubkey);
   }
@@ -1851,12 +1844,10 @@ const loadMainAccountsWithPubKey = async (
     };
   });
 
-  // Save the merged accounts to the cache
-  setCachedData(
-    mainAccountsKey(network, userId),
-    mainAccountsWithDetail,
-    mainAccountsWithDetail.length > 0 ? 60_000 : 1_000
-  );
+  // Save the merged accounts to the cache (both pubkey and userId versions)
+  const ttl = mainAccountsWithDetail.length > 0 ? 60_000 : 1_000;
+  setCachedData(mainAccountsKey(network, pubKey), mainAccountsWithDetail, ttl);
+  setCachedData(mainAccountsKeyUid(network, userId), mainAccountsWithDetail, ttl);
 
   return mainAccountsWithDetail;
 };
@@ -2113,27 +2104,28 @@ export const calculateEmojiIcon = (address: string): Emoji => {
 };
 
 const initAccountLoaders = () => {
-  const mainAccountsRefreshRegexFixed = new RegExp('^main-accounts-([^-]+)-(.+)-refresh$');
+  // Refresh listener for pubkey-based keys
+  registerRefreshListener(mainAccountsRefreshRegex, async (network: string, pubkey: string) => {
+    return loadMainAccountsWithPubKey(network, pubkey);
+  });
 
-  registerRefreshListener(
-    mainAccountsRefreshRegexFixed,
-    async (network: string, userId: string) => {
-      const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as KeyringStateV3 | null;
+  // Refresh listener for userId-based keys(not needed yet, removed to avoid multiple refresh)
+  // registerRefreshListener(mainAccountsUidRefreshRegex, async (network: string, userId: string) => {
+  //   const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as KeyringStateV3 | null;
 
-      if (!keyringState?.vault) {
-        throw new Error('Keyring state not found or vault is empty');
-      }
+  //   if (!keyringState?.vault) {
+  //     throw new Error('Keyring state not found or vault is empty');
+  //   }
 
-      const vaultEntry = keyringState.vault.find((entry) => entry.id === userId);
-      if (!vaultEntry?.publicKey) {
-        throw new Error(`No public key found for userId: ${userId}`);
-      }
+  //   const vaultEntry = keyringState.vault.find((entry) => entry.id === userId);
+  //   if (!vaultEntry?.publicKey) {
+  //     throw new Error(`No public key found for userId: ${userId}`);
+  //   }
 
-      const pubKey = vaultEntry.publicKey;
+  //   const pubKey = vaultEntry.publicKey;
 
-      return loadMainAccountsWithPubKey(network, pubKey);
-    }
-  );
+  //   return loadMainAccountsWithPubKey(network, pubKey);
+  // });
 
   // Use batch refresh for account balances to avoid hitting the backend too hard
   registerBatchRefreshListener(
