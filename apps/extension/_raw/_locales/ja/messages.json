@@ -1602,5 +1602,8 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "サージ価格に同意するために長押し"
+  },
+  "Scan_to_receive": {
+    "message": "受信をスキャン"
   }
 }

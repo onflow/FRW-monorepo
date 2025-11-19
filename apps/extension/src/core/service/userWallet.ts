@@ -621,7 +621,7 @@ class UserWallet {
       let eoaAccountInfo: WalletAccount | undefined;
 
       // Try to get EOA account info (this won't require password if cached)
-      const eoaInfo = await walletManager.getEOAAccountInfo();
+      const eoaInfo = await walletManager.getEOAAccountInfo(pubkey);
       const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
       if (eoaInfo) {
         eoaAccountInfo = {
@@ -1805,7 +1805,7 @@ const loadMainAccountsWithPubKey = async (
   );
 
   // Try to get EOA account info (this won't require password if cached)
-  const eoaInfo = await walletManager.getEOAAccountInfo();
+  const eoaInfo = await walletManager.getEOAAccountInfo(pubKey);
 
   // Helper function to check if COA account has assets (balance > 0)
   const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {
