@@ -1,4 +1,5 @@
-import { navigation } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
+import { ArrowLeft } from '@onflow/frw-icons';
 import {
   YStack,
   XStack,
@@ -6,6 +7,8 @@ import {
   OnboardingBackground,
   Button,
   ShieldAnimation,
+  IconButton,
+  useTheme,
 } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,10 +16,15 @@ import { useTranslation } from 'react-i18next';
 /**
  * ProfileTypeSelectionScreen - Second screen in onboarding flow
  * Allows users to choose between recovery phrase or secure enclave profile type
+ *
+ * Back button behavior:
+ * - If launched directly from native (e.g., Import Wallet), closes RN and returns to native
+ * - If navigated from GetStartedScreen, goes back to GetStartedScreen
  */
 
 export function ProfileTypeSelectionScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const handleNext = () => {
     // Navigate to recovery phrase setup
@@ -28,11 +36,37 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
     navigation.navigate('SecureEnclave');
   };
 
+  const handleBack = () => {
+    // If we can go back in the navigation stack, do so
+    // Otherwise, we were launched directly from native, so close RN
+    if (navigation.canGoBack()) {
+      logger.info('[ProfileTypeSelectionScreen] Navigating back in stack');
+      navigation.goBack();
+    } else {
+      logger.info(
+        '[ProfileTypeSelectionScreen] No navigation stack, closing RN (returning to native)'
+      );
+      bridge.closeRN();
+    }
+  };
+
   return (
     <OnboardingBackground>
       <YStack flex={1} px="$4">
+        {/* Custom back button */}
+        <YStack pt="$4" pb="$2">
+          <IconButton
+            icon={<ArrowLeft color={theme.text} size={24} width={24} height={24} />}
+            variant="ghost"
+            size="medium"
+            onPress={handleBack}
+            ml="$-2"
+            pl="$2"
+          />
+        </YStack>
+
         {/* Title */}
-        <YStack mt={68} mb="$6">
+        <YStack mt="$6" mb="$6">
           <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
             {t('onboarding.profileType.welcomeTitle')}
           </Text>
