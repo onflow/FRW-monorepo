@@ -186,14 +186,10 @@ export class WalletManager {
   /**
    * Save EOA address to localStorage by public key
    */
-  private async saveEOAAddress(
-    publicKey: string,
-    address: string,
-    balance?: string
-  ): Promise<void> {
+  private async saveEOAAddress(publicKey: string, address: string): Promise<void> {
     try {
       const storageKey = this.getEOAAddressStorageKey(publicKey);
-      await setLocalData(storageKey, { address, balance: balance || '0' });
+      await setLocalData(storageKey, { address });
     } catch (error) {
       consoleError('Failed to save EOA address to localStorage:', error as Error);
     }
@@ -207,8 +203,11 @@ export class WalletManager {
   ): Promise<{ address: string; balance?: string } | null> {
     try {
       const storageKey = this.getEOAAddressStorageKey(publicKey);
-      const cached = await getLocalData<{ address: string; balance?: string }>(storageKey);
-      return cached || null;
+      const cached = await getLocalData<{ address: string }>(storageKey);
+      if (cached?.address) {
+        return { address: cached.address };
+      }
+      return null;
     } catch (error) {
       consoleError('Failed to get EOA address from localStorage:', error as Error);
       return null;
@@ -254,7 +253,7 @@ export class WalletManager {
 
         // Save to localStorage if we have a public key
         if (targetPublicKey) {
-          await this.saveEOAAddress(targetPublicKey, eoaInfo.address, eoaInfo.balance);
+          await this.saveEOAAddress(targetPublicKey, eoaInfo.address);
         }
 
         return eoaInfo;
