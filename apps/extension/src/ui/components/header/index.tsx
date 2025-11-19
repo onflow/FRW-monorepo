@@ -11,7 +11,9 @@ import { isValidEthereumAddress, consoleError, consoleWarn } from '@/shared/util
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import NewsView from '@/ui/components/news/NewsView';
+import { COAAddressCopyModal } from '@/ui/components/PopupModal/coa-address-copy-modal';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { useCOACopy } from '@/ui/hooks/use-coa-copy';
 import { useNews } from '@/ui/hooks/use-news';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -54,6 +56,8 @@ const Header = ({ _loading = false }) => {
   // const { unreadCount } = useNotificationStore();
   // TODO: add notification count
   const { unreadCount } = useNews();
+
+  const { showModal, addressToCopy, handleCopy, handleConfirmCopy, closeModal } = useCOACopy();
 
   const toggleDrawer = () => {
     setDrawer((prevDrawer) => !prevDrawer);
@@ -164,6 +168,12 @@ const Header = ({ _loading = false }) => {
   const appBarLabel = (props: AppBarLabelProps) => {
     const haveAddress = !mainAddressLoading && props && props.address;
 
+    const handleHeaderCopy = () => {
+      if (haveAddress && props.address) {
+        handleCopy(props.address, currentWallet?.id, currentWallet?.name);
+      }
+    };
+
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
         <Box
@@ -210,11 +220,7 @@ const Header = ({ _loading = false }) => {
               <Button
                 data-testid="copy-address-button"
                 disabled={!haveAddress}
-                onClick={() => {
-                  if (haveAddress) {
-                    navigator.clipboard.writeText(props.address);
-                  }
-                }}
+                onClick={handleHeaderCopy}
                 variant="text"
               >
                 <Box
@@ -379,6 +385,14 @@ const Header = ({ _loading = false }) => {
         </Toolbar>
       </AppBar>
       <StorageExceededAlert open={errorCode === 1103} onClose={() => setErrorCode(null)} />
+      {addressToCopy && (
+        <COAAddressCopyModal
+          isOpen={showModal}
+          onClose={closeModal}
+          onConfirm={() => handleConfirmCopy(addressToCopy)}
+          address={addressToCopy}
+        />
+      )}
     </StyledEngineProvider>
   );
 };
