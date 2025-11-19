@@ -12,8 +12,12 @@ import {
   type AccountsListener,
 } from '@onflow/frw-wallet';
 
+import { getLocalData, setLocalData } from '@/data-model';
+import { consoleError } from '@/shared/utils';
+
 import { ExtensionStorage } from './extension-storage';
 import keyringService from './keyring';
+import userWalletService from './userWallet';
 
 export class WalletManager {
   private wallet: Wallet | null = null;
@@ -152,7 +156,6 @@ export class WalletManager {
   private async getCurrentUid(): Promise<string | null> {
     try {
       // Try to get uid from userWallet service
-      const userWalletService = require('./userWallet').default;
       return userWalletService.getCurrentPubkey() || null;
     } catch (error) {
       console.error('Failed to get current uid:', error);
@@ -164,7 +167,6 @@ export class WalletManager {
    * Get networks based on extension's network setting
    */
   private getNetworks(): Set<any> {
-    const userWalletService = require('./userWallet').default;
     const network = userWalletService.getNetwork();
 
     if (network === 'mainnet') {
@@ -175,10 +177,64 @@ export class WalletManager {
   }
 
   /**
-   * Get EOA account information
+   * Get storage key for EOA address by public key
    */
-  async getEOAAccountInfo(): Promise<{ address: string; balance?: string } | null> {
+  private getEOAAddressStorageKey(publicKey: string): string {
+    return `eoaAddress_${publicKey}`;
+  }
+
+  /**
+   * Save EOA address to localStorage by public key
+   */
+  private async saveEOAAddress(
+    publicKey: string,
+    address: string,
+    balance?: string
+  ): Promise<void> {
     try {
+      const storageKey = this.getEOAAddressStorageKey(publicKey);
+      await setLocalData(storageKey, { address, balance: balance || '0' });
+    } catch (error) {
+      consoleError('Failed to save EOA address to localStorage:', error as Error);
+    }
+  }
+
+  /**
+   * Get EOA address from localStorage by public key
+   */
+  private async getEOAAddressFromStorage(
+    publicKey: string
+  ): Promise<{ address: string; balance?: string } | null> {
+    try {
+      const storageKey = this.getEOAAddressStorageKey(publicKey);
+      const cached = await getLocalData<{ address: string; balance?: string }>(storageKey);
+      return cached || null;
+    } catch (error) {
+      consoleError('Failed to get EOA address from localStorage:', error as Error);
+      return null;
+    }
+  }
+
+  /**
+   * Get EOA account information
+   * @param publicKey - Optional public key. If not provided, uses current profile's public key
+   * @returns EOA address and balance, or null if not found
+   */
+  async getEOAAccountInfo(
+    publicKey?: string
+  ): Promise<{ address: string; balance?: string } | null> {
+    try {
+      // Use provided public key or get current one
+      const targetPublicKey = publicKey || userWalletService.getCurrentPubkey();
+
+      // If we have a public key, check localStorage first
+      if (targetPublicKey) {
+        const cachedEOA = await this.getEOAAddressFromStorage(targetPublicKey);
+        if (cachedEOA?.address) {
+          return cachedEOA;
+        }
+      }
+
       // Ensure wallet is initialized
       if (!this.wallet) {
         await this.init();
@@ -191,15 +247,22 @@ export class WalletManager {
       const evmAccounts = this.wallet.getEVMAccounts();
       if (evmAccounts.length > 0) {
         const firstEVMAccount = evmAccounts[0];
-        return {
+        const eoaInfo = {
           address: firstEVMAccount.address,
           balance: firstEVMAccount.balance || '0',
         };
+
+        // Save to localStorage if we have a public key
+        if (targetPublicKey) {
+          await this.saveEOAAddress(targetPublicKey, eoaInfo.address, eoaInfo.balance);
+        }
+
+        return eoaInfo;
       }
 
       return null;
     } catch (error) {
-      console.error('Failed to get EOA account info:', error);
+      consoleError('Failed to get EOA account info:', error as Error);
       return null;
     }
   }
