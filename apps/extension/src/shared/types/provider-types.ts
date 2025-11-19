@@ -1,6 +1,41 @@
 import type { FlowChainId } from './network-types';
 
 /**
+ * EIP-1193 RequestArguments interface
+ * Standard structure for Ethereum provider requests
+ */
+export interface RequestArguments {
+  readonly method: string;
+  readonly params?: readonly unknown[] | object;
+}
+
+/**
+ * Provider request structure
+ * Wraps EIP-1193 request arguments with session information
+ * Used throughout the provider controller
+ */
+export interface ProviderRequest {
+  data: RequestArguments;
+  session: {
+    origin: string;
+    name: string;
+    icon: string;
+  };
+}
+
+/**
+ * Flow context structure
+ * Used in the RPC flow middleware to track request state
+ */
+export interface FlowContext {
+  request: ProviderRequest & {
+    requestedApproval?: boolean;
+  };
+  mapMethod?: string;
+  approvalRes?: unknown;
+}
+
+/**
  * Ethereum provider transaction parameters
  * Used for eth_sendTransaction and related RPC methods
  */
