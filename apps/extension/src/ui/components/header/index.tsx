@@ -4,6 +4,7 @@ import { AppBar, Button, Drawer, IconButton, Skeleton, Toolbar, Typography } fro
 import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
+import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -11,7 +12,6 @@ import { isValidEthereumAddress, consoleError, consoleWarn } from '@/shared/util
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import NewsView from '@/ui/components/news/NewsView';
-import { COAAddressCopyModal } from '@/ui/components/PopupModal/coa-address-copy-modal';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
 import { useCOACopy } from '@/ui/hooks/use-coa-copy';
 import { useNews } from '@/ui/hooks/use-news';
@@ -387,7 +387,7 @@ const Header = ({ _loading = false }) => {
       <StorageExceededAlert open={errorCode === 1103} onClose={() => setErrorCode(null)} />
       {addressToCopy && (
         <COAAddressCopyModal
-          isOpen={showModal}
+          visible={showModal}
           onClose={closeModal}
           onConfirm={() => handleConfirmCopy(addressToCopy)}
           address={addressToCopy}

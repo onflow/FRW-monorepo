@@ -8,6 +8,7 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
+import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React from 'react';
 
 import { type WalletAccount } from '@/shared/types';
@@ -29,7 +30,6 @@ import {
 import { formatAddress } from '@/ui/utils';
 
 import { AccountAvatar } from './account-avatar';
-import { COAAddressCopyModal } from '../PopupModal/coa-address-copy-modal';
 import { TokenBalance } from '../TokenLists/TokenBalance';
 
 type AccountCardWithCopyProps = {
@@ -251,7 +251,7 @@ export const AccountCard = ({
       )}
       {addressToCopy && (
         <COAAddressCopyModal
-          isOpen={showModal}
+          visible={showModal}
           onClose={closeModal}
           onConfirm={() => handleConfirmCopy(addressToCopy)}
           address={addressToCopy}
