@@ -8,3 +8,4 @@ export { default as EthConfirm } from './EthApproval/EthConfirm';
 export { default as EthSwitch } from './EthApproval/EthSwitch';
 export { default as EthSignType } from './EthApproval/EthSignType';
 export { default as EthSignV1 } from './EthApproval/EthSignV1';
+export { default as EthMessageTooLong } from './EthApproval/EthMessageTooLong';
