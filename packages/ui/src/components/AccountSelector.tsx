@@ -65,6 +65,9 @@ export function AccountSelector({
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
 
+  // Icon color that works in both light and dark modes
+  const iconColor = '#767676';
+
   const handleAccountSelect = (account: WalletAccount) => {
     onAccountSelect(account);
     setOpen(false);
@@ -133,7 +136,7 @@ export function AccountSelector({
               <XStack items="center" gap={4}>
                 {/* Link icon for linked accounts */}
                 {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
-                  <Link size={12.8} color="#767676" theme="outline" />
+                  <Link size={12.8} color={iconColor} theme="outline" />
                 )}
                 <Text
                   color="$text"
@@ -247,7 +250,7 @@ export function AccountSelector({
             {showCopyButton && (
               <XStack mr="$4">
                 <IconButton
-                  icon={<Copy size={24} color="#FFFFFF" theme="outline" />}
+                  icon={<Copy size={24} color={iconColor} theme="outline" />}
                   variant="ghost"
                   size="small"
                   onPress={() => onCopyAddress?.(currentAccount.address)}
@@ -373,7 +376,7 @@ export function AccountSelector({
                           <XStack items="center" gap={4}>
                             {/* Link icon for linked accounts */}
                             {(account.type === 'child' || account.parentEmoji) && (
-                              <Link size={12.8} color="#767676" theme="outline" />
+                              <Link size={12.8} color={iconColor} theme="outline" />
                             )}
                             <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
                               {account.name || 'Unnamed Account'}
