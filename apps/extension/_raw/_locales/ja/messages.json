@@ -1602,5 +1602,14 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "サージ価格に同意するために長押し"
+  },
+  "COA_Modal_Title": {
+    "message": "Flow 上の EVM アドレス"
+  },
+  "COA_Modal_Warning": {
+    "message": "Flow 上の EVM アドレスをコピーしました。このアドレスに Flow 上の資産のみを送信してください。そうしないと資産が失われる可能性があります。"
+  },
+  "COA_Modal_Confirm_Button": {
+    "message": "アドレスをコピーする"
   }
 }

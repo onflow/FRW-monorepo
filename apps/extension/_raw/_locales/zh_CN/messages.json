@@ -1599,5 +1599,14 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "按住同意激增定价"
+  },
+  "COA_Modal_Title": {
+    "message": "Flow 上的 EVM 地址"
+  },
+  "COA_Modal_Warning": {
+    "message": "您已复制 Flow 网络上的 EVM 地址。请确保您只向此地址发送 Flow 网络上的资产，否则资产可能会丢失。"
+  },
+  "COA_Modal_Confirm_Button": {
+    "message": "确认复制地址"
   }
 }

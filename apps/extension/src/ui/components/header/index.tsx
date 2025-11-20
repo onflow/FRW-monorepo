@@ -391,6 +391,9 @@ const Header = ({ _loading = false }) => {
           onClose={closeModal}
           onConfirm={() => handleConfirmCopy(addressToCopy)}
           address={addressToCopy}
+          title={chrome.i18n.getMessage('COA_Modal_Title')}
+          warningMessage={chrome.i18n.getMessage('COA_Modal_Warning')}
+          confirmButtonText={chrome.i18n.getMessage('COA_Modal_Confirm_Button')}
         />
       )}
     </StyledEngineProvider>
