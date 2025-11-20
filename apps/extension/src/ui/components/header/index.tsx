@@ -4,14 +4,16 @@ import { AppBar, Button, Drawer, IconButton, Skeleton, Toolbar, Typography } fro
 import Box from '@mui/material/Box';
 import { StyledEngineProvider } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
+import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { isValidEthereumAddress, consoleError, consoleWarn } from '@/shared/utils';
+import { isValidEthereumAddress, isEOAAddress, consoleError, consoleWarn } from '@/shared/utils';
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import NewsView from '@/ui/components/news/NewsView';
 import StorageExceededAlert from '@/ui/components/StorageExceededAlert';
+import { useCOACopy } from '@/ui/hooks/use-coa-copy';
 import { useNews } from '@/ui/hooks/use-news';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -54,6 +56,8 @@ const Header = ({ _loading = false }) => {
   // const { unreadCount } = useNotificationStore();
   // TODO: add notification count
   const { unreadCount } = useNews();
+
+  const { showModal, addressToCopy, handleCopy, handleConfirmCopy, closeModal } = useCOACopy();
 
   const toggleDrawer = () => {
     setDrawer((prevDrawer) => !prevDrawer);
@@ -164,6 +168,12 @@ const Header = ({ _loading = false }) => {
   const appBarLabel = (props: AppBarLabelProps) => {
     const haveAddress = !mainAddressLoading && props && props.address;
 
+    const handleHeaderCopy = () => {
+      if (haveAddress && props.address) {
+        handleCopy(props.address, currentWallet?.id, currentWallet?.name);
+      }
+    };
+
     return (
       <Toolbar sx={{ height: '56px', width: '100%', display: 'flex', px: '0px' }}>
         <Box
@@ -175,9 +185,8 @@ const Header = ({ _loading = false }) => {
             emoji={currentWallet?.icon}
             color={currentWallet?.color}
             parentEmoji={
-              // Hide parent icon if it's an EOA account (id === 99 or name === 'EVM Account (EOA)')
-              currentWallet &&
-              (currentWallet.id === 99 || currentWallet.name === 'EVM Account (EOA)')
+              // Hide parent icon if it's an EOA account (EOA addresses do NOT start with 0x000000)
+              currentWallet && currentWallet.address && isEOAAddress(currentWallet.address)
                 ? undefined
                 : currentWallet && parentWallet.address !== currentWallet.address
                   ? parentWallet.icon
@@ -210,11 +219,7 @@ const Header = ({ _loading = false }) => {
               <Button
                 data-testid="copy-address-button"
                 disabled={!haveAddress}
-                onClick={() => {
-                  if (haveAddress) {
-                    navigator.clipboard.writeText(props.address);
-                  }
-                }}
+                onClick={handleHeaderCopy}
                 variant="text"
               >
                 <Box
@@ -379,6 +384,17 @@ const Header = ({ _loading = false }) => {
         </Toolbar>
       </AppBar>
       <StorageExceededAlert open={errorCode === 1103} onClose={() => setErrorCode(null)} />
+      {addressToCopy && (
+        <COAAddressCopyModal
+          visible={showModal}
+          onClose={closeModal}
+          onConfirm={() => handleConfirmCopy(addressToCopy)}
+          address={addressToCopy}
+          title={chrome.i18n.getMessage('COA_Modal_Title')}
+          warningMessage={chrome.i18n.getMessage('COA_Modal_Warning')}
+          confirmButtonText={chrome.i18n.getMessage('COA_Modal_Confirm_Button')}
+        />
+      )}
     </StyledEngineProvider>
   );
 };
