@@ -56,7 +56,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
         {/* Custom back button */}
         <YStack pt="$4" pb="$2">
           <IconButton
-            icon={<ArrowLeft color={theme.text} size={24} width={24} height={24} />}
+            icon={<ArrowLeft color={theme.text.val} size={24} width={24} height={24} />}
             variant="ghost"
             size="medium"
             onPress={handleBack}
