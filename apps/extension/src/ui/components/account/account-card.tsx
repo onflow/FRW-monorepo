@@ -12,7 +12,7 @@ import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React from 'react';
 
 import { type WalletAccount } from '@/shared/types';
-import { isValidEthereumAddress } from '@/shared/utils';
+import { isValidEthereumAddress, isEOAAddress, isCOAAddress } from '@/shared/utils';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
@@ -71,10 +71,8 @@ export const AccountCard = ({
   const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
   const isEvmAccount = account && isValidEthereumAddress(account.address);
   const isChildAccount = hasParentAccount && !isEvmAccount;
-  // EOA accounts are identified by id === 99 or name === 'EVM Account (EOA)'
-  const isEOAAccount = isEvmAccount && (account.id === 99 || account.name === 'EVM Account (EOA)');
-  // COA (Contract-Owned Account) is an EVM account that is not EOA
-  const isCOAAccount = isEvmAccount && !isEOAAccount;
+  const isEOAAccount = account && address ? isEOAAddress(address) : false;
+  const isCOAAccount = account && address ? isCOAAddress(address) : false;
 
   const { showModal, addressToCopy, handleCopy, handleConfirmCopy, closeModal } = useCOACopy();
 
