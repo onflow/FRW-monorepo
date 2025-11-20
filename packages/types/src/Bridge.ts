@@ -41,7 +41,7 @@ export interface WalletAccount {
   parentAddress?: string;
   avatar?: string;
   isActive: boolean;
-  type?: 'main' | 'child' | 'evm';
+  type?: 'main' | 'child' | 'evm' | 'eoa';
   balance?: string;
   nfts?: string;
 }
