@@ -76,13 +76,19 @@ export const AccountCard = ({
 
   const { showModal, addressToCopy, handleCopy, handleConfirmCopy, closeModal } = useCOACopy();
 
+  // If a custom icon is provided, treat it as a custom action (e.g., opening drawer)
+  const isCustomSecondaryAction =
+    React.isValidElement(secondaryIcon) && secondaryIcon.type !== CopyIcon;
+
   const handleCopyClick = () => {
     if (address) {
-      // Use the hook's handleCopy which checks for COA
-      handleCopy(address, account?.id, account?.name);
-      // If not COA, also call the original handler if provided
-      if (!isCOAAccount && onClickSecondary) {
+      if (isCustomSecondaryAction && onClickSecondary) {
         onClickSecondary();
+      } else {
+        handleCopy(address, account?.id, account?.name);
+        if (!isCOAAccount && onClickSecondary) {
+          onClickSecondary();
+        }
       }
     }
   };
