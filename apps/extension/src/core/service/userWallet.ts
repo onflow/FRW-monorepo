@@ -14,6 +14,7 @@ import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
   coinListKey,
+  evmNftCollectionsAndIdsKey,
   mainAccountsKey,
   mainAccountsRefreshRegex,
   mainAccountsKeyUid,
@@ -1807,42 +1808,120 @@ const loadMainAccountsWithPubKey = async (
   // Try to get EOA account info (this won't require password if cached)
   const eoaInfo = await walletManager.getEOAAccountInfo(pubKey);
 
-  const mainAccountsWithDetail: MainAccount[] = mainAccounts.map((mainAccount) => {
-    const accountDetail = accountDetailMap[mainAccount.address];
-    const evmAccount = accountDetail.COAs?.length
-      ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
-      : undefined;
+  // Helper function to check if COA account has assets
+  const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {
+    if (!evmAddress) return false;
 
-    // Apply custom metadata to evmAccount if it exists
-    if (evmAccount && evmAccount.address) {
-      const evmCustomData = customMetadata[evmAccount.address];
-      if (evmCustomData) {
-        evmAccount.name = evmCustomData.name || evmAccount.name;
-        evmAccount.icon = evmCustomData.icon || evmAccount.icon;
-        evmAccount.color = evmCustomData.background || evmAccount.color;
-      }
-    }
+    try {
+      // Check Flow balance - always fetch if not cached
+      const balanceKey = accountBalanceKey(network, evmAddress);
+      let balance: string | null | undefined = await getCachedData<string>(balanceKey);
 
-    const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
-    const eoaAccountInfo = eoaInfo?.address
-      ? {
-          address: eoaInfo.address,
-          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-          id: 99, // Special ID for EOA
-          name: eoaEmoji.name,
-          icon: eoaEmoji.emoji,
-          color: eoaEmoji.bgcolor,
-          balance: eoaInfo.balance || '0',
+      if (!balance) {
+        try {
+          balance = await loadAccountBalance(network, evmAddress);
+        } catch (error) {
+          consoleError('Error fetching Flow balance for COA:', error as Error);
         }
-      : undefined;
+      }
 
-    return {
-      ...mainAccount,
-      evmAccount,
-      eoaAccount: eoaAccountInfo,
-      childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
-    };
-  });
+      if (balance) {
+        const balanceValue = parseFloat(balance);
+        if (balanceValue > 0) {
+          return true;
+        }
+      }
+
+      // Check ERC20 tokens
+      const tokenListKey = coinListKey(network, evmAddress, 'usd');
+      const cachedTokens =
+        await getCachedData<Array<{ balance?: string; rawBalance?: string }>>(tokenListKey);
+
+      if (cachedTokens && cachedTokens.length > 0) {
+        const hasTokenBalance = cachedTokens.some((token) => {
+          const balance = parseFloat(token.balance || token.rawBalance || '0');
+          return balance > 0;
+        });
+        if (hasTokenBalance) {
+          return true;
+        }
+      } else {
+        triggerRefresh(tokenListKey);
+      }
+
+      // Check NFTs
+      const nftKey = evmNftCollectionsAndIdsKey(network, evmAddress);
+      const cachedNfts = await getCachedData<Array<{ count?: number; ids?: string[] }>>(nftKey);
+
+      if (cachedNfts && cachedNfts.length > 0) {
+        const hasNfts = cachedNfts.some((collection) => {
+          return (
+            (collection.count && collection.count > 0) ||
+            (collection.ids && collection.ids.length > 0)
+          );
+        });
+        if (hasNfts) {
+          return true;
+        }
+      } else {
+        triggerRefresh(nftKey);
+      }
+
+      // If no assets data found, return false
+      return false;
+    } catch (error) {
+      consoleError('Error checking COA assets:', error as Error);
+      return false;
+    }
+  };
+
+  const mainAccountsWithDetail: MainAccount[] = await Promise.all(
+    mainAccounts.map(async (mainAccount) => {
+      const accountDetail = accountDetailMap[mainAccount.address];
+      const rawEvmAccount = accountDetail.COAs?.length
+        ? evmAddressToWalletAccount(network, accountDetail.COAs[0])
+        : undefined;
+
+      // Filter out COA accounts that don't have assets
+      let evmAccount: WalletAccount | undefined = undefined;
+      if (rawEvmAccount?.address) {
+        const hasAssets = await checkCoaHasAssets(rawEvmAccount.address);
+        if (hasAssets) {
+          evmAccount = rawEvmAccount;
+        }
+      }
+
+      // Apply custom metadata to evmAccount if it exists
+      if (evmAccount && evmAccount.address) {
+        const evmCustomData = customMetadata[evmAccount.address];
+        if (evmCustomData) {
+          evmAccount.name = evmCustomData.name || evmAccount.name;
+          evmAccount.icon = evmCustomData.icon || evmAccount.icon;
+          evmAccount.color = evmCustomData.background || evmAccount.color;
+        }
+      }
+
+      const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
+      const eoaAccountInfo = eoaInfo?.address
+        ? {
+            address: eoaInfo.address,
+            chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+            id: 99, // Special ID for EOA
+            name: eoaEmoji.name,
+            icon: eoaEmoji.emoji,
+            color: eoaEmoji.bgcolor,
+            balance: eoaInfo.balance || '0',
+          }
+        : undefined;
+
+      return {
+        ...mainAccount,
+        evmAccount,
+        eoaAccount: eoaAccountInfo,
+        childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
+      };
+    })
+  );
 
   // Save the merged accounts to the cache (both pubkey and userId versions)
   const ttl = mainAccountsWithDetail.length > 0 ? 60_000 : 1_000;
