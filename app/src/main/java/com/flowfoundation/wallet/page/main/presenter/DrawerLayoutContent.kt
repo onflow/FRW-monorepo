@@ -91,629 +91,629 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun DrawerLayoutCompose(drawer: DrawerLayout) {
-  val context = LocalContext.current
-  val activity = remember { getActivityFromContext(context) as FragmentActivity }
-  val viewModel = remember { ViewModelProvider(activity)[DrawerLayoutViewModel::class.java] }
+    val context = LocalContext.current
+    val activity = remember { getActivityFromContext(context) as FragmentActivity }
+    val viewModel = remember { ViewModelProvider(activity)[DrawerLayoutViewModel::class.java] }
 
-  val userInfo by viewModel.userInfo.collectAsStateWithLifecycle()
-  val showEvmLayout by viewModel.showEvmLayout.collectAsStateWithLifecycle()
-  val accounts by viewModel.accounts.collectAsStateWithLifecycle()
-  val balanceMap by viewModel.balanceMap.collectAsStateWithLifecycle()
+    val userInfo by viewModel.userInfo.collectAsStateWithLifecycle()
+    val showEvmLayout by viewModel.showEvmLayout.collectAsStateWithLifecycle()
+    val accounts by viewModel.accounts.collectAsStateWithLifecycle()
+    val balanceMap by viewModel.balanceMap.collectAsStateWithLifecycle()
 
-  LaunchedEffect(Unit) {
-    viewModel.loadData()
-  }
-
-  DisposableEffect(drawer) {
-    val listener = object : DrawerLayout.DrawerListener {
-      override fun onDrawerOpened(drawerView: View) {
+    LaunchedEffect(Unit) {
         viewModel.loadData()
-      }
-      override fun onDrawerClosed(drawerView: View) {}
-      override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
-      override fun onDrawerStateChanged(newState: Int) {}
     }
 
-    drawer.addDrawerListener(listener)
-    onDispose {
-      drawer.removeDrawerListener(listener)
-    }
-  }
+    DisposableEffect(drawer) {
+        val listener = object : DrawerLayout.DrawerListener {
+            override fun onDrawerOpened(drawerView: View) {
+                viewModel.loadData()
+            }
+            override fun onDrawerClosed(drawerView: View) {}
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+            override fun onDrawerStateChanged(newState: Int) {}
+        }
 
-  Column(
-    modifier = Modifier
-      .fillMaxHeight()
-      .background(colorResource(id = R.color.deep_bg))
-      .padding(horizontal = 18.dp, vertical = 24.dp)
-  ) {
-    userInfo?.let {
-      HeaderSection(
-        userInfo = it,
-        onAccountSwitchClick = { ProfileSwitchDialog.show(activity.supportFragmentManager) }
-      )
-      HorizontalDivider(
-        color = colorResource(id = R.color.border_line_stroke),
+        drawer.addDrawerListener(listener)
+        onDispose {
+            drawer.removeDrawerListener(listener)
+        }
+    }
+
+    Column(
         modifier = Modifier
-          .fillMaxWidth()
-          .padding(top = 14.dp)
-      )
-    }
-
-    if (showEvmLayout) {
-      Spacer(modifier = Modifier.height(24.dp))
-      EVMSection(
-        onEvmClick = {
-          if (EVMWalletManager.haveEVMAddress()) {
-            drawer.close()
-          } else {
-            EnableEVMActivity.launch(activity)
-          }
+            .fillMaxHeight()
+            .background(colorResource(id = R.color.deep_bg))
+            .padding(horizontal = 18.dp, vertical = 24.dp)
+    ) {
+        userInfo?.let {
+            HeaderSection(
+                userInfo = it,
+                onAccountSwitchClick = { ProfileSwitchDialog.show(activity.supportFragmentManager) }
+            )
+            HorizontalDivider(
+                color = colorResource(id = R.color.border_line_stroke),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 14.dp)
+            )
         }
-      )
-    }
 
-    AccountListSection(
-      accounts = accounts,
-      balanceMap = balanceMap,
-      onCopyClick = { address ->
-        textToClipboard(address)
-        toast(msgRes = R.string.copy_address_toast)
-      },
-      onAccountClick = { address ->
-        FlowLoadingDialog(context).show()
-        WalletManager.selectWalletAddress(address)
-        ioScope {
-          delay(200)
-          doNetworkChangeTask()
-          clearCacheDir()
-          clearWebViewCache()
-          setMeowDomainClaimed(false)
-          NftCollectionStateManager.clear()
-          TransactionStateManager.reload()
-          FungibleTokenListManager.clear()
-          StakingManager.clear()
-          CryptoProviderManager.clear()
-          delay(1000)
-          uiScope {
-            MainActivity.relaunch(Env.getApp())
-          }
+        if (showEvmLayout) {
+            Spacer(modifier = Modifier.height(24.dp))
+            EVMSection(
+                onEvmClick = {
+                    if (EVMWalletManager.haveEVMAddress()) {
+                        drawer.close()
+                    } else {
+                        EnableEVMActivity.launch(activity)
+                    }
+                }
+            )
         }
-      },
-      modifier = Modifier.weight(1f)
-    )
 
-    HorizontalDivider(
-      color = colorResource(id = R.color.border_line_stroke),
-      modifier = Modifier.fillMaxWidth()
-    )
-    BottomSection(
-      onImportWalletClick = {
-        WalletRestoreActivity.launch(activity)
-      }
-    )
-  }
+        AccountListSection(
+            accounts = accounts,
+            balanceMap = balanceMap,
+            onCopyClick = { address ->
+                textToClipboard(address)
+                toast(msgRes = R.string.copy_address_toast)
+            },
+            onAccountClick = { address ->
+                FlowLoadingDialog(context).show()
+                WalletManager.selectWalletAddress(address)
+                ioScope {
+                    delay(200)
+                    doNetworkChangeTask()
+                    clearCacheDir()
+                    clearWebViewCache()
+                    setMeowDomainClaimed(false)
+                    NftCollectionStateManager.clear()
+                    TransactionStateManager.reload()
+                    FungibleTokenListManager.clear()
+                    StakingManager.clear()
+                    CryptoProviderManager.clear()
+                    delay(1000)
+                    uiScope {
+                        MainActivity.relaunch(Env.getApp())
+                    }
+                }
+            },
+            modifier = Modifier.weight(1f)
+        )
+
+        HorizontalDivider(
+            color = colorResource(id = R.color.border_line_stroke),
+            modifier = Modifier.fillMaxWidth()
+        )
+        BottomSection(
+            onImportWalletClick = {
+                WalletRestoreActivity.launch(activity)
+            }
+        )
+    }
 }
 
 @Composable
 fun HeaderSection(
-  userInfo: UserInfoData,
-  onAccountSwitchClick: () -> Unit
+    userInfo: UserInfoData,
+    onAccountSwitchClick: () -> Unit
 ) {
-  val avatarUrl = userInfo.avatar.parseAvatarUrl()
-  val avatar = if (avatarUrl.contains("flovatar.com")) {
-    avatarUrl.svgToPng()
-  } else {
-    avatarUrl
-  }
-  ConstraintLayout(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = 40.dp)
-  ) {
-    val (icon, name, switch) = createRefs()
-    AsyncImage(
-      model = avatar,
-      contentDescription = "User Avatar",
-      contentScale = ContentScale.Crop,
-      placeholder = painterResource(id = R.drawable.ic_placeholder),
-      error = painterResource(id = R.drawable.ic_placeholder),
-      modifier = Modifier
-        .constrainAs(icon) {
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-          start.linkTo(parent.start)
-          end.linkTo(name.start)
-        }
-        .size(40.dp)
-        .clip(RoundedCornerShape(8.dp))
-    )
-
-    Text(
-      text = userInfo.nickname,
-      color = colorResource(id = R.color.text_1),
-      fontSize = 14.sp,
-      fontWeight = FontWeight.SemiBold,
-      modifier = Modifier
-        .constrainAs(name) {
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-          start.linkTo(icon.end, 16.dp)
-          end.linkTo(switch.start, 16.dp)
-          width = Dimension.fillToConstraints
-        }
-    )
-
-    IconButton(
-      onClick = onAccountSwitchClick,
-      modifier = Modifier
-        .constrainAs(switch) {
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-          end.linkTo(parent.end, (-12).dp)
-        }
-    ) {
-      Icon(
-        painter = painterResource(id = R.drawable.ic_switch_profile),
-        contentDescription = "Switch Profile",
-        tint = colorResource(id = R.color.icon)
-      )
+    val avatarUrl = userInfo.avatar.parseAvatarUrl()
+    val avatar = if (avatarUrl.contains("flovatar.com")) {
+        avatarUrl.svgToPng()
+    } else {
+        avatarUrl
     }
-  }
+    ConstraintLayout(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 40.dp)
+    ) {
+        val (icon, name, switch) = createRefs()
+        AsyncImage(
+            model = avatar,
+            contentDescription = "User Avatar",
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.ic_placeholder),
+            error = painterResource(id = R.drawable.ic_placeholder),
+            modifier = Modifier
+                .constrainAs(icon) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(name.start)
+                }
+                .size(40.dp)
+                .clip(RoundedCornerShape(8.dp))
+        )
+
+        Text(
+            text = userInfo.nickname,
+            color = colorResource(id = R.color.text_1),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .constrainAs(name) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(icon.end, 16.dp)
+                    end.linkTo(switch.start, 16.dp)
+                    width = Dimension.fillToConstraints
+                }
+        )
+
+        IconButton(
+            onClick = onAccountSwitchClick,
+            modifier = Modifier
+                .constrainAs(switch) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    end.linkTo(parent.end, (-12).dp)
+                }
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_switch_profile),
+                contentDescription = "Switch Profile",
+                tint = colorResource(id = R.color.icon)
+            )
+        }
+    }
 }
 
 @Composable
 fun EVMSection(onEvmClick: () -> Unit) {
-  ConstraintLayout(modifier = Modifier
-    .fillMaxWidth()
-    .clickable(onClick = onEvmClick)
-    .background(
-      color = colorResource(id = R.color.bg_card),
-      shape = RoundedCornerShape(16.dp)
-    )
-    .padding(vertical = 12.dp, horizontal = 16.dp)
-  ) {
-    val (title, desc, icon) = createRefs()
-
-    val evm = stringResource(R.string.label_evm)
-    val raw = stringResource(R.string.add_evm_account, evm)
-    val parts = raw.split(evm)
-
-    val inlineContentId = "evmLabel"
-
-    val annotatedText = buildAnnotatedString {
-      append(parts[0])
-      appendInlineContent(inlineContentId, "[EVM]")
-      if (parts.size > 1) {
-        append(parts[1])
-      }
-    }
-
-    val inlineContent = mapOf(
-      inlineContentId to InlineTextContent(
-        placeholder = Placeholder(
-          width = 40.sp,
-          height = 16.sp,
-          placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+    ConstraintLayout(modifier = Modifier
+        .fillMaxWidth()
+        .clickable(onClick = onEvmClick)
+        .background(
+            color = colorResource(id = R.color.bg_card),
+            shape = RoundedCornerShape(16.dp)
         )
-      ) {
-        Box(
-          modifier = Modifier
-            .height(16.dp)
-            .background(
-              color = colorResource(R.color.evm),
-              shape = RoundedCornerShape(16.dp)
-            )
-            .padding(horizontal = 6.dp, vertical = 1.dp),
-          contentAlignment = Alignment.Center
-        ) {
-          Text(
-            text = evm,
+        .padding(vertical = 12.dp, horizontal = 16.dp)
+    ) {
+        val (title, desc, icon) = createRefs()
+
+        val evm = stringResource(R.string.label_evm)
+        val raw = stringResource(R.string.add_evm_account, evm)
+        val parts = raw.split(evm)
+
+        val inlineContentId = "evmLabel"
+
+        val annotatedText = buildAnnotatedString {
+            append(parts[0])
+            appendInlineContent(inlineContentId, "[EVM]")
+            if (parts.size > 1) {
+                append(parts[1])
+            }
+        }
+
+        val inlineContent = mapOf(
+            inlineContentId to InlineTextContent(
+                placeholder = Placeholder(
+                    width = 40.sp,
+                    height = 16.sp,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .height(16.dp)
+                        .background(
+                            color = colorResource(R.color.evm),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(horizontal = 6.dp, vertical = 1.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = evm,
+                        color = colorResource(id = R.color.text_1),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        )
+
+        Text(
+            text = annotatedText,
+            inlineContent = inlineContent,
             color = colorResource(id = R.color.text_1),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .constrainAs(title) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(desc.top, 4.dp)
+                    start.linkTo(parent.start)
+                    end.linkTo(icon.start, 16.dp)
+                    width = Dimension.fillToConstraints
+                }
+        )
+
+        Text(
+            text = stringResource(R.string.enable_evm_desc),
+            color = colorResource(id = R.color.text_2),
             fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
-          )
-        }
-      }
-    )
+            modifier = Modifier
+                .constrainAs(desc) {
+                    top.linkTo(title.bottom)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(title.start)
+                    end.linkTo(title.end)
+                }
+        )
 
-    Text(
-      text = annotatedText,
-      inlineContent = inlineContent,
-      color = colorResource(id = R.color.text_1),
-      fontSize = 14.sp,
-      fontWeight = FontWeight.SemiBold,
-      modifier = Modifier
-        .constrainAs(title) {
-          top.linkTo(parent.top)
-          bottom.linkTo(desc.top, 4.dp)
-          start.linkTo(parent.start)
-          end.linkTo(icon.start, 16.dp)
-          width = Dimension.fillToConstraints
-        }
-    )
-
-    Text(
-      text = stringResource(R.string.enable_evm_desc),
-      color = colorResource(id = R.color.text_2),
-      fontSize = 12.sp,
-      modifier = Modifier
-        .constrainAs(desc) {
-          top.linkTo(title.bottom)
-          bottom.linkTo(parent.bottom)
-          start.linkTo(title.start)
-          end.linkTo(title.end)
-        }
-    )
-
-    Icon(
-      painter = painterResource(id = R.drawable.ic_arrow_right),
-      contentDescription = "Arrow Right",
-      tint = colorResource(id = R.color.icon),
-      modifier = Modifier
-        .constrainAs(icon) {
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-          end.linkTo(parent.end)
-        }
-    )
-  }
+        Icon(
+            painter = painterResource(id = R.drawable.ic_arrow_right),
+            contentDescription = "Arrow Right",
+            tint = colorResource(id = R.color.icon),
+            modifier = Modifier
+                .constrainAs(icon) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    end.linkTo(parent.end)
+                }
+        )
+    }
 }
 
 @Composable
 fun ActiveAccountSection(
-  item: WalletAccountData,
-  balanceMap: Map<String, String>,
-  onCopyClick: (String) -> Unit,
+    item: WalletAccountData,
+    balanceMap: Map<String, String>,
+    onCopyClick: (String) -> Unit,
 ) {
-  val activeLinkedAccount = item.linkedAccounts.firstOrNull { it.isSelected }
-  val activeAddress = if (item.isSelected) {
-    item.address
-  } else {
-    activeLinkedAccount?.address ?: ""
-  }
-  val balance = balanceMap[activeAddress] ?: ""
-  val activeEmojiId = if (item.isSelected) {
-    item.emojiId
-  } else {
-    activeLinkedAccount?.emojiId?: Emoji.EMPTY.id
-  }
-  val activeName = if (item.isSelected) {
-    item.name
-  } else {
-    activeLinkedAccount?.name?: ""
-  }
-  val activeIcon = if (item.isSelected) {
-    null
-  } else {
-    activeLinkedAccount?.icon
-  }
-  val walletEmojiId = item.emojiId
-  ConstraintLayout(
-    modifier = Modifier
-      .fillMaxWidth()
-      .background(
-        color = colorResource(id = R.color.bg_card),
-        shape = RoundedCornerShape(16.dp)
-      )
-      .padding(10.dp)
-  ) {
-    val (icon, walletIcon, name, address, balanceText, copy) = createRefs()
-    Box(
-      modifier = Modifier
-        .size(42.dp)
-        .border(
-          width = 1.dp,
-          color = colorResource(
-            if (item.isSelected) R.color.colorSecondary else R.color.transparent
-          ),
-          shape = CircleShape
-        )
-        .constrainAs(icon) {
-          start.linkTo(parent.start, 7.dp)
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-        },
-      contentAlignment = Alignment.Center
-    ) {
-      if (activeIcon.isNullOrEmpty()) {
-        Box(
-          modifier = Modifier
-            .size(36.dp)
-            .background(
-              color = Color(Emoji.getEmojiColorRes(activeEmojiId)),
-              shape = CircleShape
-            ),
-          contentAlignment = Alignment.Center
-        ) {
-          Text(
-            text = Emoji.getEmojiById(activeEmojiId),
-            fontSize = 18.sp
-          )
-        }
-      } else {
-        AsyncImage(
-          model = activeIcon,
-          contentDescription = "Account Icon",
-          modifier = Modifier
-            .size(36.dp)
-            .background(
-              color = Color.Transparent,
-              shape = CircleShape
-            )
-        )
-      }
+    val activeLinkedAccount = item.linkedAccounts.firstOrNull { it.isSelected }
+    val activeAddress = if (item.isSelected) {
+        item.address
+    } else {
+        activeLinkedAccount?.address ?: ""
     }
-
-    if (activeLinkedAccount != null) {
-      Box(
-        modifier = Modifier
-          .size(20.dp)
-          .border(
-            width = 1.dp,
-            color = colorResource(R.color.bg_card),
-            shape = CircleShape
-          )
-          .constrainAs(walletIcon) {
-            start.linkTo(parent.start)
-            top.linkTo(icon.top)
-          },
-        contentAlignment = Alignment.Center
-      ) {
-        Box(
-          modifier = Modifier
-            .size(18.dp)
-            .background(
-              color = Color(Emoji.getEmojiColorRes(walletEmojiId)),
-              shape = CircleShape
-            ),
-          contentAlignment = Alignment.Center
-        ) {
-          Text(
-            text = Emoji.getEmojiById(walletEmojiId),
-            fontSize = 12.sp
-          )
-        }
-      }
+    val balance = balanceMap[activeAddress] ?: ""
+    val activeEmojiId = if (item.isSelected) {
+        item.emojiId
+    } else {
+        activeLinkedAccount?.emojiId?: Emoji.EMPTY.id
     }
-
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier
-        .constrainAs(name) {
-          top.linkTo(parent.top)
-          bottom.linkTo(address.top)
-          start.linkTo(icon.end, 9.dp)
-          end.linkTo(copy.start, 12.dp)
-          width = Dimension.fillToConstraints
-        }
-    ) {
-      if (activeLinkedAccount != null) {
-        Icon(
-          painter = painterResource(id = R.drawable.ic_link),
-          contentDescription = "LinkedAccount",
-          tint = colorResource(id = R.color.icon),
-          modifier = Modifier.size(12.dp)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-      }
-
-      Text(
-        text = activeName,
-        color = colorResource(id = R.color.text_1),
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
+    val activeName = if (item.isSelected) {
+        item.name
+    } else {
+        activeLinkedAccount?.name?: ""
+    }
+    val activeIcon = if (item.isSelected) {
+        null
+    } else {
+        activeLinkedAccount?.icon
+    }
+    val walletEmojiId = item.emojiId
+    ConstraintLayout(
         modifier = Modifier
-          .weight(1f, fill = false)
-      )
-
-      if (activeLinkedAccount != null && activeLinkedAccount.isCOAAccount) {
-        Spacer(modifier = Modifier.width(4.dp))
-        ConstraintLayout(
-          modifier = Modifier
+            .fillMaxWidth()
             .background(
-              color = colorResource(R.color.evm),
-              shape = RoundedCornerShape(16.dp)
-            )
-            .padding(horizontal = 4.dp, vertical = 1.dp)
-        ) {
-          val (evmLabel, flowLabel) = createRefs()
-          Text(
-            text = stringResource(R.string.label_evm),
-            color = colorResource(id = R.color.white),
-            fontSize = 8.sp,
-            modifier = Modifier.constrainAs(evmLabel) {
-              top.linkTo(parent.top)
-              bottom.linkTo(parent.bottom)
-              start.linkTo(parent.start)
-              end.linkTo(flowLabel.start)
-            }
-          )
-          Box(
-            modifier = Modifier
-              .constrainAs(flowLabel) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                start.linkTo(evmLabel.end, margin = 4.dp)
-                end.linkTo(parent.end)
-              }
-              .background(
-                color = colorResource(R.color.evm_on_flow_end_color),
+                color = colorResource(id = R.color.bg_card),
                 shape = RoundedCornerShape(16.dp)
-              )
-              .padding(horizontal = 4.dp, vertical = 1.dp)
-          ) {
-            Text(
-              text = stringResource(R.string.label_flow),
-              color = colorResource(id = R.color.black),
-              fontSize = 8.sp
             )
-          }
-        }
-      }
-      else if (item.isEOAAccount) {
-        Spacer(modifier = Modifier.width(4.dp))
+            .padding(10.dp)
+    ) {
+        val (icon, walletIcon, name, address, balanceText, copy) = createRefs()
         Box(
-          modifier = Modifier
-            .background(
-              color = colorResource(R.color.evm),
-              shape = RoundedCornerShape(16.dp)
-            )
-            .padding(horizontal = 4.dp, vertical = 1.dp)
+            modifier = Modifier
+                .size(42.dp)
+                .border(
+                    width = 1.dp,
+                    color = colorResource(
+                        if (item.isSelected) R.color.colorSecondary else R.color.transparent
+                    ),
+                    shape = CircleShape
+                )
+                .constrainAs(icon) {
+                    start.linkTo(parent.start, 7.dp)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                },
+            contentAlignment = Alignment.Center
         ) {
-          Text(
-            text = stringResource(R.string.label_evm),
-            color = colorResource(id = R.color.white),
-            fontSize = 8.sp
-          )
+            if (activeIcon.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            color = Color(Emoji.getEmojiColorRes(activeEmojiId)),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = Emoji.getEmojiById(activeEmojiId),
+                        fontSize = 18.sp
+                    )
+                }
+            } else {
+                AsyncImage(
+                    model = activeIcon,
+                    contentDescription = "Account Icon",
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            color = Color.Transparent,
+                            shape = CircleShape
+                        )
+                )
+            }
         }
-      }
-    }
 
-    Text(
-      text = shortenEVMString(activeAddress),
-      color = colorResource(id = R.color.text_2),
-      fontSize = 12.sp,
-      modifier = Modifier
-        .constrainAs(address) {
-          top.linkTo(name.bottom, 2.dp)
-          bottom.linkTo(balanceText.top, 2.dp)
-          start.linkTo(name.start)
-          end.linkTo(name.end)
-          width = Dimension.fillToConstraints
+        if (activeLinkedAccount != null) {
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .border(
+                        width = 1.dp,
+                        color = colorResource(R.color.bg_card),
+                        shape = CircleShape
+                    )
+                    .constrainAs(walletIcon) {
+                        start.linkTo(parent.start)
+                        top.linkTo(icon.top)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .background(
+                            color = Color(Emoji.getEmojiColorRes(walletEmojiId)),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = Emoji.getEmojiById(walletEmojiId),
+                        fontSize = 12.sp
+                    )
+                }
+            }
         }
-    )
-    Text(
-      text = balance,
-      color = colorResource(id = R.color.text_2),
-      fontSize = 12.sp,
-      modifier = Modifier
-        .constrainAs(balanceText) {
-          top.linkTo(address.bottom)
-          bottom.linkTo(parent.bottom)
-          start.linkTo(name.start)
-          end.linkTo(name.end)
-          width = Dimension.fillToConstraints
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .constrainAs(name) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(address.top)
+                    start.linkTo(icon.end, 9.dp)
+                    end.linkTo(copy.start, 12.dp)
+                    width = Dimension.fillToConstraints
+                }
+        ) {
+            if (activeLinkedAccount != null) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_link),
+                    contentDescription = "LinkedAccount",
+                    tint = colorResource(id = R.color.icon),
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+
+            Text(
+                text = activeName,
+                color = colorResource(id = R.color.text_1),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+            )
+
+            if (activeLinkedAccount != null && activeLinkedAccount.isCOAAccount) {
+                Spacer(modifier = Modifier.width(4.dp))
+                ConstraintLayout(
+                    modifier = Modifier
+                        .background(
+                            color = colorResource(R.color.evm),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                ) {
+                    val (evmLabel, flowLabel) = createRefs()
+                    Text(
+                        text = stringResource(R.string.label_evm),
+                        color = colorResource(id = R.color.white),
+                        fontSize = 8.sp,
+                        modifier = Modifier.constrainAs(evmLabel) {
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(flowLabel.start)
+                        }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .constrainAs(flowLabel) {
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(evmLabel.end, margin = 4.dp)
+                                end.linkTo(parent.end)
+                            }
+                            .background(
+                                color = colorResource(R.color.evm_on_flow_end_color),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.label_flow),
+                            color = colorResource(id = R.color.black),
+                            fontSize = 8.sp
+                        )
+                    }
+                }
+            }
+            else if (item.isEOAAccount) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = colorResource(R.color.evm),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_evm),
+                        color = colorResource(id = R.color.white),
+                        fontSize = 8.sp
+                    )
+                }
+            }
         }
-    )
-    Icon(
-      painter = painterResource(id = R.drawable.ic_copy_address),
-      contentDescription = "Copy",
-      tint = colorResource(id = R.color.icon),
-      modifier = Modifier
-        .size(20.dp)
-        .clickable(onClick = { onCopyClick(activeAddress) })
-        .constrainAs(copy) {
-          end.linkTo(parent.end)
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-        }
-    )
-  }
+
+        Text(
+            text = shortenEVMString(activeAddress),
+            color = colorResource(id = R.color.text_2),
+            fontSize = 12.sp,
+            modifier = Modifier
+                .constrainAs(address) {
+                    top.linkTo(name.bottom, 2.dp)
+                    bottom.linkTo(balanceText.top, 2.dp)
+                    start.linkTo(name.start)
+                    end.linkTo(name.end)
+                    width = Dimension.fillToConstraints
+                }
+        )
+        Text(
+            text = balance,
+            color = colorResource(id = R.color.text_2),
+            fontSize = 12.sp,
+            modifier = Modifier
+                .constrainAs(balanceText) {
+                    top.linkTo(address.bottom)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(name.start)
+                    end.linkTo(name.end)
+                    width = Dimension.fillToConstraints
+                }
+        )
+        Icon(
+            painter = painterResource(id = R.drawable.ic_copy_address),
+            contentDescription = "Copy",
+            tint = colorResource(id = R.color.icon),
+            modifier = Modifier
+                .size(20.dp)
+                .clickable(onClick = { onCopyClick(activeAddress) })
+                .constrainAs(copy) {
+                    end.linkTo(parent.end)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                }
+        )
+    }
 }
 
 @Composable
 fun AccountListSection(
-  accounts: List<WalletAccountData>,
-  balanceMap: Map<String, String>,
-  onCopyClick: (String) -> Unit,
-  onAccountClick: (String) -> Unit,
-  modifier: Modifier = Modifier
+    accounts: List<WalletAccountData>,
+    balanceMap: Map<String, String>,
+    onCopyClick: (String) -> Unit,
+    onAccountClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  val scrollState = rememberScrollState()
-  val activeAccount = accounts.firstOrNull { account -> account.isSelected || account.linkedAccounts.any { it.isSelected } }
-  Column(
-    modifier = modifier
-      .fillMaxWidth()
-      .padding(vertical = 24.dp)
-      .verticalScroll(scrollState)
-  ) {
-    Text(
-      text = stringResource(id = R.string.active_account),
-      color = colorResource(id = R.color.text_2),
-      fontSize = 14.sp
-    )
-    activeAccount?.let {
-      Spacer(modifier = Modifier.height(16.dp))
-      ActiveAccountSection(
-        item = it,
-        balanceMap = balanceMap,
-        onCopyClick = onCopyClick
-      )
-    }
-    Spacer(modifier = Modifier.height(16.dp))
-    Text(
-      text = stringResource(id = R.string.other_accounts),
-      color = colorResource(id = R.color.text_2),
-      fontSize = 14.sp,
-    )
-
-    accounts.forEach { account ->
-      WalletAccountSection(
-        item = account,
-        balance = balanceMap[account.address.toAddress()] ?: "",
-        onCopyClick = onCopyClick,
-        onAccountClick = { onAccountClick(account.address) }
-      )
-      account.linkedAccounts.forEach { linkedAccount ->
-        LinkedAccountSection(
-          item = linkedAccount,
-          balance = balanceMap[linkedAccount.address.toAddress()] ?: "",
-          onCopyClick = onCopyClick,
-          onAccountClick = { onAccountClick(linkedAccount.address) }
+    val scrollState = rememberScrollState()
+    val activeAccount = accounts.firstOrNull { account -> account.isSelected || account.linkedAccounts.any { it.isSelected } }
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp)
+            .verticalScroll(scrollState)
+    ) {
+        Text(
+            text = stringResource(id = R.string.active_account),
+            color = colorResource(id = R.color.text_2),
+            fontSize = 14.sp
         )
-      }
+        activeAccount?.let {
+            Spacer(modifier = Modifier.height(16.dp))
+            ActiveAccountSection(
+                item = it,
+                balanceMap = balanceMap,
+                onCopyClick = onCopyClick
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(id = R.string.other_accounts),
+            color = colorResource(id = R.color.text_2),
+            fontSize = 14.sp,
+        )
+
+        accounts.forEach { account ->
+            WalletAccountSection(
+                item = account,
+                balance = balanceMap[account.address.toAddress()] ?: "",
+                onCopyClick = onCopyClick,
+                onAccountClick = { onAccountClick(account.address) }
+            )
+            account.linkedAccounts.forEach { linkedAccount ->
+                LinkedAccountSection(
+                    item = linkedAccount,
+                    balance = balanceMap[linkedAccount.address.toAddress()] ?: "",
+                    onCopyClick = onCopyClick,
+                    onAccountClick = { onAccountClick(linkedAccount.address) }
+                )
+            }
+        }
     }
-  }
 }
 
 @Composable
 fun BottomSection(
-  onImportWalletClick: () -> Unit
+    onImportWalletClick: () -> Unit
 ) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = 16.dp)
-      .clickable(onClick = onImportWalletClick),
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Box(modifier = Modifier
-      .size(40.dp)
-      .background(
-        color = colorResource(id = R.color.bg_card),
-        shape = CircleShape
-      ),
-      contentAlignment = Alignment.Center
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .clickable(onClick = onImportWalletClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-      Icon(
-        painter = painterResource(id = R.drawable.ic_baseline_add_24),
-        contentDescription = "Add Account",
-        tint = colorResource(id = R.color.text_1)
-      )
+        Box(modifier = Modifier
+            .size(40.dp)
+            .background(
+                color = colorResource(id = R.color.bg_card),
+                shape = CircleShape
+            ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_baseline_add_24),
+                contentDescription = "Add Account",
+                tint = colorResource(id = R.color.text_1)
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = stringResource(id = R.string.add_account),
+            color = colorResource(id = R.color.text_2),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
-    Spacer(modifier = Modifier.width(16.dp))
-    Text(
-      text = stringResource(id = R.string.add_account),
-      color = colorResource(id = R.color.text_2),
-      fontSize = 16.sp,
-      fontWeight = FontWeight.SemiBold
-    )
-  }
 }
 
 fun setupDrawerLayoutCompose(drawer: DrawerLayout) {
-  val composeView = ComposeView(drawer.context)
-  composeView.setContent {
-    DrawerLayoutCompose(drawer)
-  }
+    val composeView = ComposeView(drawer.context)
+    composeView.setContent {
+        DrawerLayoutCompose(drawer)
+    }
 
-  val layoutParams = DrawerLayout.LayoutParams(
-    (ScreenUtils.getScreenWidth() * 0.8f).toInt(),
-    DrawerLayout.LayoutParams.MATCH_PARENT
-  ).apply {
-    gravity = GravityCompat.START
-  }
-  composeView.layoutParams = layoutParams
+    val layoutParams = DrawerLayout.LayoutParams(
+        (ScreenUtils.getScreenWidth() * 0.8f).toInt(),
+        DrawerLayout.LayoutParams.MATCH_PARENT
+    ).apply {
+        gravity = GravityCompat.START
+    }
+    composeView.layoutParams = layoutParams
 
-  drawer.addView(composeView)
+    drawer.addView(composeView)
 }

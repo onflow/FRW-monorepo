@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.dialog.profile
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -309,7 +310,7 @@ private fun LocalSwitchAccountItem(
     }
 }
 
-private fun handleAccountSwitch(context: android.content.Context, account: Account, onDismiss: () -> Unit) {
+private fun handleAccountSwitch(context: Context, account: Account, onDismiss: () -> Unit) {
     if (isTestnet()) {
         SwitchNetworkDialog(context, DialogType.SWITCH).show()
     } else {
@@ -324,7 +325,7 @@ private fun handleAccountSwitch(context: android.content.Context, account: Accou
     }
 }
 
-private fun handleLocalAccountSwitch(context: android.content.Context, account: LocalSwitchAccount, onDismiss: () -> Unit) {
+private fun handleLocalAccountSwitch(context: Context, account: LocalSwitchAccount, onDismiss: () -> Unit) {
     if (isTestnet()) {
         SwitchNetworkDialog(context, DialogType.SWITCH).show()
     } else {

@@ -28,7 +28,7 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.CurrencyListActiv
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrencyFromFlag
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
 import com.flowfoundation.wallet.page.profile.subpage.theme.ThemeSettingActivity
-import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletListActivity
+import com.flowfoundation.wallet.page.account.AccountListActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccountsActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
@@ -69,7 +69,7 @@ class ProfileFragmentPresenter(
             )
         }
         binding.actionGroup.addressButton.setOnClickListener { AddressBookActivity.launch(context) }
-        binding.actionGroup.walletButton.setOnClickListener { WalletListActivity.launch(context) }
+        binding.actionGroup.walletButton.setOnClickListener { AccountListActivity.launch(context) }
         binding.actionGroup.inboxButton.setOnClickListener { InboxActivity.launch(context) }
 
         binding.group0.backupPreference.setOnClickListener { WalletBackupActivity.launch(context) }

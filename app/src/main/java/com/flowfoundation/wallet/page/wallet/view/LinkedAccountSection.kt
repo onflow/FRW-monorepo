@@ -36,181 +36,195 @@ import com.flowfoundation.wallet.utils.shortenEVMString
 
 @Composable
 fun LinkedAccountSection(
-  item: LinkedAccountData,
-  balance: String,
-  onCopyClick: ((String) -> Unit)? = null,
-  onAccountClick: (() -> Unit)? = null
+    item: LinkedAccountData,
+    balance: String,
+    onCopyClick: ((String) -> Unit)? = null,
+    onAccountClick: (() -> Unit)? = null
 ) {
-  ConstraintLayout(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = 8.dp)
-      .clickable(enabled = onAccountClick != null) { onAccountClick?.invoke() }
-      .alpha(if (item.isSelected) 1f else 0.7f)
-  ) {
-    val (linkedIcon, icon, name, address, balanceText, copy) = createRefs()
-    Icon(
-      painter = painterResource(id = R.drawable.ic_link),
-      contentDescription = "LinkedAccount",
-      tint = colorResource(id = R.color.icon),
-      modifier = Modifier
-        .size(20.dp)
-        .constrainAs(linkedIcon) {
-          start.linkTo(parent.start, 14.dp)
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-        }
-    )
-    Box(
-      modifier = Modifier
-        .size(42.dp)
-        .border(
-          width = 1.dp,
-          color = colorResource(
-            if (item.isSelected) R.color.accent_green else R.color.transparent
-          ),
-          shape = CircleShape
-        )
-        .constrainAs(icon) {
-          start.linkTo(linkedIcon.end, 10.dp)
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-        },
-      contentAlignment = Alignment.Center
-    ) {
-      if (item.icon.isNullOrEmpty()) {
-        Box(
-          modifier = Modifier
-            .size(36.dp)
-            .background(
-              color = Color(Emoji.getEmojiColorRes(item.emojiId)),
-              shape = CircleShape
-            ),
-          contentAlignment = Alignment.Center
-        ) {
-          Text(
-            text = Emoji.getEmojiById(item.emojiId),
-            fontSize = 18.sp
-          )
-        }
-      } else {
-        AsyncImage(
-          model = item.icon,
-          contentDescription = "Account Icon",
-          modifier = Modifier
-            .size(36.dp)
-            .background(
-              color = Color.Transparent,
-              shape = CircleShape
-            )
-        )
-      }
-    }
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier
-        .constrainAs(name) {
-          top.linkTo(parent.top)
-          bottom.linkTo(address.top)
-          start.linkTo(icon.end, 8.dp)
-          end.linkTo(copy.start, 12.dp)
-          width = Dimension.fillToConstraints
-        }
-    ) {
-
-      Text(
-        text = item.name,
-        color = colorResource(id = R.color.text_1),
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
+    ConstraintLayout(
         modifier = Modifier
-          .weight(1f, fill = false)
-      )
-
-      if (item.isCOAAccount) {
-        Spacer(modifier = Modifier.width(4.dp))
-        ConstraintLayout(
-          modifier = Modifier
-            .background(
-              color = colorResource(R.color.evm),
-              shape = RoundedCornerShape(16.dp)
-            )
-        ) {
-          val (evmLabel, flowLabel) = createRefs()
-          Text(
-            text = stringResource(R.string.label_evm),
-            color = colorResource(id = R.color.white),
-            fontSize = 8.sp,
-            modifier = Modifier.constrainAs(evmLabel) {
-              top.linkTo(parent.top)
-              bottom.linkTo(parent.bottom)
-              start.linkTo(parent.start, margin = 4.dp)
-              end.linkTo(flowLabel.start)
-            }
-          )
-          Box(
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable(enabled = onAccountClick != null) { onAccountClick?.invoke() }
+            .alpha(if (item.isSelected) 1f else 0.7f)
+    ) {
+        val (linkedIcon, icon, name, address, balanceText, copy) = createRefs()
+        Icon(
+            painter = painterResource(id = R.drawable.ic_link),
+            contentDescription = "LinkedAccount",
+            tint = colorResource(id = R.color.icon),
             modifier = Modifier
-              .constrainAs(flowLabel) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                start.linkTo(evmLabel.end, margin = 4.dp)
-                end.linkTo(parent.end)
-              }
-              .background(
-                color = colorResource(R.color.evm_on_flow_end_color),
-                shape = RoundedCornerShape(16.dp)
-              )
-              .padding(horizontal = 4.dp, vertical = 1.dp)
-          ) {
+                .size(20.dp)
+                .constrainAs(linkedIcon) {
+                    start.linkTo(parent.start, 14.dp)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                }
+        )
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .border(
+                    width = 1.dp,
+                    color = colorResource(
+                        if (item.isSelected) R.color.accent_green else R.color.transparent
+                    ),
+                    shape = CircleShape
+                )
+                .constrainAs(icon) {
+                    start.linkTo(linkedIcon.end, 10.dp)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            if (item.icon.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            color = Color(Emoji.getEmojiColorRes(item.emojiId)),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = Emoji.getEmojiById(item.emojiId),
+                        fontSize = 18.sp
+                    )
+                }
+            } else {
+                AsyncImage(
+                    model = item.icon,
+                    contentDescription = "Account Icon",
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            color = Color.Transparent,
+                            shape = CircleShape
+                        )
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .constrainAs(name) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(address.top)
+                    start.linkTo(icon.end, 8.dp)
+                    end.linkTo(copy.start, 12.dp)
+                    width = Dimension.fillToConstraints
+                }
+        ) {
+
             Text(
-              text = stringResource(R.string.label_flow),
-              color = colorResource(id = R.color.black),
-              fontSize = 8.sp
+                text = item.name,
+                color = colorResource(id = R.color.text_1),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .weight(1f, fill = false)
             )
-          }
+
+            if (item.isCOAAccount) {
+                Spacer(modifier = Modifier.width(4.dp))
+                ConstraintLayout(
+                    modifier = Modifier
+                        .background(
+                            color = colorResource(R.color.evm),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                ) {
+                    val (evmLabel, flowLabel) = createRefs()
+                    Text(
+                        text = stringResource(R.string.label_evm),
+                        color = colorResource(id = R.color.white),
+                        fontSize = 8.sp,
+                        modifier = Modifier.constrainAs(evmLabel) {
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start, margin = 4.dp)
+                            end.linkTo(flowLabel.start)
+                        }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .constrainAs(flowLabel) {
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                                start.linkTo(evmLabel.end, margin = 4.dp)
+                                end.linkTo(parent.end)
+                            }
+                            .background(
+                                color = colorResource(R.color.evm_on_flow_end_color),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.label_flow),
+                            color = colorResource(id = R.color.black),
+                            fontSize = 8.sp
+                        )
+                    }
+                }
+            }
         }
-      }
+        Text(
+            text = shortenEVMString(item.address),
+            color = colorResource(id = R.color.text_2),
+            fontSize = 12.sp,
+            modifier = Modifier
+                .constrainAs(address) {
+                    top.linkTo(name.bottom, 2.dp)
+                    bottom.linkTo(balanceText.top, 2.dp)
+                    start.linkTo(name.start)
+                    end.linkTo(name.end)
+                    width = Dimension.fillToConstraints
+                }
+        )
+        Text(
+            text = balance,
+            color = colorResource(id = R.color.text_2),
+            fontSize = 12.sp,
+            modifier = Modifier
+                .constrainAs(balanceText) {
+                    top.linkTo(address.bottom)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(name.start)
+                    end.linkTo(name.end)
+                    width = Dimension.fillToConstraints
+                }
+        )
+        if (onCopyClick != null) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_copy_address),
+                contentDescription = "Copy",
+                tint = colorResource(id = R.color.icon),
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(onClick = { onCopyClick(item.address) })
+                    .constrainAs(copy) {
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                    }
+            )
+        } else {
+            // Show arrow icon when onCopyClick is null
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = "View Details",
+                tint = colorResource(id = R.color.icon),
+                modifier = Modifier
+                    .size(20.dp)
+                    .constrainAs(copy) {
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                    }
+            )
+        }
     }
-    Text(
-      text = shortenEVMString(item.address),
-      color = colorResource(id = R.color.text_2),
-      fontSize = 12.sp,
-      modifier = Modifier
-        .constrainAs(address) {
-          top.linkTo(name.bottom, 2.dp)
-          bottom.linkTo(balanceText.top, 2.dp)
-          start.linkTo(name.start)
-          end.linkTo(name.end)
-          width = Dimension.fillToConstraints
-        }
-    )
-    Text(
-      text = balance,
-      color = colorResource(id = R.color.text_2),
-      fontSize = 12.sp,
-      modifier = Modifier
-        .constrainAs(balanceText) {
-          top.linkTo(address.bottom)
-          bottom.linkTo(parent.bottom)
-          start.linkTo(name.start)
-          end.linkTo(name.end)
-          width = Dimension.fillToConstraints
-        }
-    )
-    if (onCopyClick!= null) {
-      Icon(
-        painter = painterResource(id = R.drawable.ic_copy_address),
-        contentDescription = "Copy",
-        tint = colorResource(id = R.color.icon),
-        modifier = Modifier
-          .size(20.dp)
-          .clickable(onClick = { onCopyClick(item.address) })
-          .constrainAs(copy) {
-            end.linkTo(parent.end)
-            top.linkTo(parent.top)
-            bottom.linkTo(parent.bottom)
-          }
-      )
-    }
-  }
 }

@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.page.main.model.WalletAccountData
 import com.flowfoundation.wallet.utils.shortenEVMString
@@ -35,143 +37,195 @@ import com.flowfoundation.wallet.utils.shortenEVMString
 
 @Composable
 fun WalletAccountSection(
-  item: WalletAccountData,
-  balance: String,
-  isSelected: Boolean = false,
-  canSelected: Boolean = false,
-  onCopyClick: ((String) -> Unit)? = null,
-  onAccountClick: (() -> Unit)? = null
+    item: WalletAccountData,
+    balance: String,
+    isSelected: Boolean = false,
+    canSelected: Boolean = false,
+    onCopyClick: ((String) -> Unit)? = null,
+    onAccountClick: (() -> Unit)? = null,
+    onVisibilityToggle: (() -> Unit)? = null
 ) {
-  ConstraintLayout(
-    modifier = Modifier
-      .fillMaxWidth()
-      .clickable(enabled = onAccountClick != null) { onAccountClick?.invoke() }
-      .padding(vertical = 12.dp)
-      .alpha(if (item.isSelected) 1f else 0.7f)
-  ) {
-    val (icon, name, address, balanceText, copy) = createRefs()
-    Box(
-      modifier = Modifier
-        .size(42.dp)
-        .border(
-          width = 1.dp,
-          color = colorResource(
-            if (item.isSelected) R.color.accent_green else R.color.transparent
-          ),
-          shape = CircleShape
-        )
-        .constrainAs(icon) {
-          start.linkTo(parent.start)
-          top.linkTo(parent.top)
-          bottom.linkTo(parent.bottom)
-        },
-      contentAlignment = Alignment.Center
-    ) {
-      Box(
-        modifier = Modifier
-          .size(36.dp)
-          .background(
-            color = Color(Emoji.getEmojiColorRes(item.emojiId)),
-            shape = CircleShape
-          ),
-        contentAlignment = Alignment.Center
-      ) {
-        Text(
-          text = Emoji.getEmojiById(item.emojiId),
-          fontSize = 18.sp
-        )
-      }
+    // Check if this is account list scenario (canSelected=false and onCopyClick=null)
+    val isAccountListMode = !canSelected && onCopyClick == null
+    val userInfo = AccountManager.userInfo()
+    val isHidden = if (isAccountListMode && userInfo != null) {
+        AccountVisibilityManager.isCurrentProfileAccountHidden(item.address)
+    } else {
+        false
     }
-    Row(
-      verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier
-        .constrainAs(name) {
-          top.linkTo(parent.top)
-          bottom.linkTo(address.top)
-          start.linkTo(icon.end, 8.dp)
-          end.linkTo(copy.start, 12.dp)
-          width = Dimension.fillToConstraints
-        }
-    ) {
-      Text(
-        text = item.name,
-        color = colorResource(id = R.color.text_1),
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
+    ConstraintLayout(
         modifier = Modifier
-          .weight(1f, fill = false)
-      )
-      if (item.isEOAAccount) {
-        Spacer(modifier = Modifier.width(4.dp))
+            .fillMaxWidth()
+            .clickable(enabled = onAccountClick != null) { onAccountClick?.invoke() }
+            .padding(vertical = 12.dp)
+            .alpha(if (item.isSelected) 1f else 0.7f)
+    ) {
+        val (icon, name, address, balanceText, copy, unhideIcon) = createRefs()
         Box(
-          modifier = Modifier
-            .background(
-              color = colorResource(R.color.evm),
-              shape = RoundedCornerShape(16.dp)
-            )
-            .padding(horizontal = 4.dp, vertical = 1.dp)
+            modifier = Modifier
+                .size(42.dp)
+                .border(
+                    width = 1.dp,
+                    color = colorResource(
+                        if (item.isSelected) R.color.accent_green else R.color.transparent
+                    ),
+                    shape = CircleShape
+                )
+                .constrainAs(icon) {
+                    start.linkTo(parent.start)
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                },
+            contentAlignment = Alignment.Center
         ) {
-          Text(
-            text = stringResource(R.string.label_evm),
-            color = colorResource(id = R.color.white),
-            fontSize = 8.sp
-          )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(
+                        color = Color(Emoji.getEmojiColorRes(item.emojiId)),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = Emoji.getEmojiById(item.emojiId),
+                    fontSize = 18.sp
+                )
+            }
         }
-      }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .constrainAs(name) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(address.top)
+                    start.linkTo(icon.end, 8.dp)
+                    end.linkTo(copy.start, 12.dp)
+                    width = Dimension.fillToConstraints
+                }
+        ) {
+            Text(
+                text = item.name,
+                color = colorResource(id = R.color.text_1),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+            )
+            if (item.isEOAAccount) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = colorResource(R.color.evm),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_evm),
+                        color = colorResource(id = R.color.white),
+                        fontSize = 8.sp
+                    )
+                }
+            }
+
+            // Show "(Hidden)" text when account is hidden (account list mode only)
+            if (isAccountListMode && isHidden) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "(Hidden)",
+                    color = colorResource(id = R.color.text_2),
+                    fontSize = 12.sp
+                )
+            }
+        }
+        Text(
+            text = shortenEVMString(item.address),
+            color = colorResource(id = R.color.text_2),
+            fontSize = 12.sp,
+            modifier = Modifier
+                .constrainAs(address) {
+                    top.linkTo(name.bottom, 2.dp)
+                    bottom.linkTo(balanceText.top, 2.dp)
+                    start.linkTo(name.start)
+                    end.linkTo(name.end)
+                    width = Dimension.fillToConstraints
+                }
+        )
+        Text(
+            text = balance,
+            color = colorResource(id = R.color.text_2),
+            fontSize = 12.sp,
+            modifier = Modifier
+                .constrainAs(balanceText) {
+                    top.linkTo(address.bottom)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(name.start)
+                    end.linkTo(name.end)
+                    width = Dimension.fillToConstraints
+                }
+        )
+        if (onCopyClick != null) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_copy_address),
+                contentDescription = "Copy",
+                tint = colorResource(id = R.color.icon),
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable(onClick = { onCopyClick(item.address) })
+                    .constrainAs(copy) {
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                    }
+            )
+        } else if (canSelected) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_check_round),
+                contentDescription = "Select Profile",
+                tint = colorResource(id = if (isSelected) R.color.icon else R.color.accent_green),
+                modifier = Modifier
+                    .size(20.dp)
+                    .constrainAs(copy) {
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                    }
+            )
+        } else {
+            // Account list mode: show arrow icon on the right
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = "View Details",
+                tint = colorResource(id = R.color.icon),
+                modifier = Modifier
+                    .size(20.dp)
+                    .constrainAs(copy) {
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                    }
+            )
+
+            // Show unhide icon to the left of arrow when account is hidden
+            if (isHidden) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_eye_off),
+                    contentDescription = "Show Account",
+                    tint = colorResource(id = R.color.icon),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable(enabled = onVisibilityToggle != null) {
+                            onVisibilityToggle?.invoke()
+                        }
+                        .constrainAs(unhideIcon) {
+                            end.linkTo(copy.start, 8.dp)
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                        }
+                )
+            }
+        }
     }
-    Text(
-      text = shortenEVMString(item.address),
-      color = colorResource(id = R.color.text_2),
-      fontSize = 12.sp,
-      modifier = Modifier
-        .constrainAs(address) {
-          top.linkTo(name.bottom, 2.dp)
-          bottom.linkTo(balanceText.top, 2.dp)
-          start.linkTo(name.start)
-          end.linkTo(name.end)
-          width = Dimension.fillToConstraints
-        }
-    )
-    Text(
-      text = balance,
-      color = colorResource(id = R.color.text_2),
-      fontSize = 12.sp,
-      modifier = Modifier
-        .constrainAs(balanceText) {
-          top.linkTo(address.bottom)
-          bottom.linkTo(parent.bottom)
-          start.linkTo(name.start)
-          end.linkTo(name.end)
-          width = Dimension.fillToConstraints
-        }
-    )
-    if (onCopyClick != null) {
-      Icon(
-        painter = painterResource(id = R.drawable.ic_copy_address),
-        contentDescription = "Copy",
-        tint = colorResource(id = R.color.icon),
-        modifier = Modifier
-          .size(20.dp)
-          .clickable(onClick = { onCopyClick(item.address) })
-          .constrainAs(copy) {
-            end.linkTo(parent.end)
-            top.linkTo(parent.top)
-            bottom.linkTo(parent.bottom)
-          }
-      )
-    } else if (canSelected) {
-      Icon(
-        painter = painterResource(id = R.drawable.ic_check_round),
-        contentDescription = "Select Profile",
-        tint = colorResource(id = if (isSelected) R.color.icon else R.color.accent_green),
-        modifier = Modifier
-          .size(20.dp)
-          .constrainAs(copy) {
-            end.linkTo(parent.end)
-            top.linkTo(parent.top)
-            bottom.linkTo(parent.bottom)
-          }
-      )
-    }
-  }
 }

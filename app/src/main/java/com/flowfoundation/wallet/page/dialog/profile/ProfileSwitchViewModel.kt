@@ -9,9 +9,10 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAllFlowBalance
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
-import com.flowfoundation.wallet.page.wallet.viewmodel.AvatarData
+import com.flowfoundation.wallet.page.wallet.model.AvatarData
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.ioScope
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,27 +20,36 @@ import java.math.BigDecimal
 
 // Data class to represent a profile item with all its data
 data class ProfileItemData(
+    @SerializedName("account")
     val account: Account,
+    @SerializedName("avatarList")
     val avatarList: List<AvatarData>,
+    @SerializedName("balanceMap")
     val balanceMap: Map<String, String>
 )
 
 // Sealed class for different item types in the switch list
 sealed class SwitchItemData {
-    data class ProfileItem(val data: ProfileItemData) : SwitchItemData()
-    data class LocalSwitchItem(val account: LocalSwitchAccount) : SwitchItemData()
+    data class ProfileItem(
+        @SerializedName("data")
+        val data: ProfileItemData
+    ) : SwitchItemData()
+    data class LocalSwitchItem(
+        @SerializedName("account")
+        val account: LocalSwitchAccount
+    ) : SwitchItemData()
 }
 
 class ProfileSwitchViewModel : ViewModel() {
-    
+
     private val _switchItemList = MutableStateFlow<List<SwitchItemData>>(emptyList())
     val switchItemList: StateFlow<List<SwitchItemData>> = _switchItemList.asStateFlow()
-    
+
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-    
+
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
-    
+
     // Cache for verified COA addresses and their avatar data per profile
     private val verifiedCoaAvatarsMap = mutableMapOf<String, MutableMap<String, AvatarData>>()
 
@@ -47,7 +57,7 @@ class ProfileSwitchViewModel : ViewModel() {
         ioScope {
             val rawList = AccountManager.getSwitchAccountList()
             val processedList = mutableListOf<SwitchItemData>()
-            
+
             rawList.forEach { item ->
                 when (item) {
                     is Account -> {
@@ -59,27 +69,27 @@ class ProfileSwitchViewModel : ViewModel() {
                     }
                 }
             }
-            
+
             _switchItemList.value = processedList
             _isLoading.value = false
         }
     }
-    
+
     private suspend fun fetchProfileData(profile: Account): ProfileItemData {
         val wallet = profile.wallet ?: return ProfileItemData(profile, emptyList(), emptyMap())
         val addressList = mutableListOf<String>()
         val avatars = mutableListOf<AvatarData>()
         val address = wallet.walletAddress() ?: return ProfileItemData(profile, emptyList(), emptyMap())
         val profileId = wallet.id
-        
+
         // Initialize cache for this profile if not exists
         if (profileId !in verifiedCoaAvatarsMap) {
             verifiedCoaAvatarsMap[profileId] = mutableMapOf()
         }
         val verifiedCoaAvatars = verifiedCoaAvatarsMap[profileId]!!
-        
+
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
-        
+
         // Add main account emoji
         avatars.add(AvatarData.Emoji(emojiInfo.emojiId))
         addressList.add(address)
