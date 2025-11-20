@@ -1611,5 +1611,8 @@
   },
   "COA_Modal_Confirm_Button": {
     "message": "确认复制地址"
+  },
+  "Scan_to_receive": {
+    "message": "Scan to receive"
   }
 }

@@ -1611,5 +1611,8 @@
   },
   "COA_Modal_Confirm_Button": {
     "message": "Подтвердить копирование адреса"
+  },
+  "Scan_to_receive": {
+    "message": "Сканируйте для получения"
   }
 }

@@ -1620,5 +1620,8 @@
   },
   "COA_Modal_Confirm_Button": {
     "message": "Confirm to copy address"
+  },
+  "Scan_to_receive": {
+    "message": "Scan to receive"
   }
 }
