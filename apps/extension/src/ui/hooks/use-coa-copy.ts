@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-import { isValidEthereumAddress } from '@/shared/utils';
+import { isCOAAddress } from '@/shared/utils';
 
 interface UseCOACopyResult {
   showModal: boolean;
@@ -19,7 +19,7 @@ export const useCOACopy = (): UseCOACopyResult => {
   const [addressToCopy, setAddressToCopy] = useState<string>('');
 
   const handleCopy = useCallback((addr: string, id?: number, name?: string) => {
-    const isCOA = isValidEthereumAddress(addr) && !(id === 99 || name === 'EVM Account (EOA)');
+    const isCOA = isCOAAddress(addr);
     if (isCOA) {
       setAddressToCopy(addr);
       setShowModal(true);

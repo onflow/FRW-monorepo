@@ -8,7 +8,7 @@ import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { isValidEthereumAddress, consoleError, consoleWarn } from '@/shared/utils';
+import { isValidEthereumAddress, isEOAAddress, consoleError, consoleWarn } from '@/shared/utils';
 import { AccountAvatar } from '@/ui/components/account/account-avatar';
 import IconCopy from '@/ui/components/iconfont/IconCopy';
 import NewsView from '@/ui/components/news/NewsView';
@@ -185,9 +185,8 @@ const Header = ({ _loading = false }) => {
             emoji={currentWallet?.icon}
             color={currentWallet?.color}
             parentEmoji={
-              // Hide parent icon if it's an EOA account (id === 99 or name === 'EVM Account (EOA)')
-              currentWallet &&
-              (currentWallet.id === 99 || currentWallet.name === 'EVM Account (EOA)')
+              // Hide parent icon if it's an EOA account (EOA addresses do NOT start with 0x000000)
+              currentWallet && currentWallet.address && isEOAAddress(currentWallet.address)
                 ? undefined
                 : currentWallet && parentWallet.address !== currentWallet.address
                   ? parentWallet.icon
