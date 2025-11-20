@@ -166,3 +166,20 @@ export type InitialRoute =
   | 'SendTo'
   | 'SendTokens'
   | 'Home';
+
+/**
+ * Available native screen identifiers for Android/iOS
+ * These correspond to the NativeScreen enum in Android: NativeScreen.kt
+ */
+export enum NativeScreenName {
+  /** Cloud backup screen (Google Drive, Passkey, Recovery Phrase) */
+  MULTI_BACKUP = 'multiBackup',
+  /** QR code sync between devices */
+  DEVICE_BACKUP = 'deviceBackup',
+  /** View/create recovery phrase backup */
+  SEED_PHRASE_BACKUP = 'seedPhraseBackup',
+  /** Native backup options screen */
+  BACKUP_OPTIONS = 'backupOptions',
+  /** Native account restore/recovery screen with multiple options */
+  WALLET_RESTORE = 'walletRestore',
+}

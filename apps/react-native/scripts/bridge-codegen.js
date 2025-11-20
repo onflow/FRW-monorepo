@@ -138,6 +138,45 @@ function parseTypeScriptInterfaces(content, filePath) {
     });
   }
 
+  // Parse type aliases with union of string literals (e.g., export type InitialRoute = 'A' | 'B' | 'C')
+  const typeAliasRegex = /export\s+type\s+(\w+)\s*=\s*([^;]+);/g;
+  while ((match = typeAliasRegex.exec(content)) !== null) {
+    const typeName = match[1];
+    const typeDefinition = match[2].trim();
+
+    // Check if it's a union of string literals
+    if (typeDefinition.includes('|') && typeDefinition.includes("'")) {
+      const enumValues = extractEnumValues(typeDefinition);
+      if (enumValues.length > 1) {
+        interfaces.push({
+          name: typeName,
+          isEnum: true,
+          isTypeAlias: true, // Mark as type alias for special Kotlin handling
+          enumValues: enumValues.map(value => ({
+            key: value,
+            value: value,
+          })),
+        });
+      }
+    }
+  }
+
+  // Parse inline enum declarations (e.g., export enum NativeScreenName { ... })
+  const enumRegex = /export\s+enum\s+(\w+)\s*\{([\s\S]*?)\}/g;
+  while ((match = enumRegex.exec(content)) !== null) {
+    const enumName = match[1];
+    const enumBody = match[2];
+    const enumValues = parseEnumValues(enumBody);
+
+    if (enumValues.length > 0) {
+      interfaces.push({
+        name: enumName,
+        isEnum: true,
+        enumValues,
+      });
+    }
+  }
+
   // Also parse re-exported types
   const reexportedInterfaces = parseExportTypeStatements(content, filePath);
   interfaces.push(...reexportedInterfaces);
@@ -497,25 +536,34 @@ enum RNBridge {
     code += generateSwiftEnum(enumName, values);
   });
 
-  // Add InitialRoute enum (special case with rawValue)
-  code += `    enum InitialRoute: String, Codable {
-        case getStarted = "GetStarted"
-        case profileTypeSelection = "ProfileTypeSelection"
-        case selectTokens = "SelectTokens"
-        case sendTo = "SendTo"
-        case sendTokens = "SendTokens"
-        case home = "Home"
-    }
-
-`;
-
   // Generate structs and enums
   interfaces.forEach(iface => {
     if (iface.isEnum) {
       // Generate enum
       code += `    enum ${iface.name}: String, Codable {\n`;
       iface.enumValues.forEach(enumValue => {
-        code += `        case ${enumValue.key.toLowerCase()} = "${enumValue.value}"\n`;
+        // Convert enum key to Swift camelCase
+        // Handle SCREAMING_SNAKE_CASE (MULTI_BACKUP -> multiBackup)
+        // Handle PascalCase (GetStarted -> getStarted)
+        const isScreamingSnakeCase =
+          enumValue.key.includes('_') && enumValue.key === enumValue.key.toUpperCase();
+        let swiftCase;
+
+        if (isScreamingSnakeCase) {
+          // SCREAMING_SNAKE_CASE: Convert to camelCase
+          swiftCase = enumValue.key
+            .toLowerCase()
+            .split('_')
+            .map((part, index) =>
+              index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
+            )
+            .join('');
+        } else {
+          // PascalCase: Convert to camelCase by lowercasing first char
+          swiftCase = enumValue.key.charAt(0).toLowerCase() + enumValue.key.slice(1);
+        }
+
+        code += `        case ${swiftCase} = "${enumValue.value}"\n`;
       });
       code += `    }\n\n`;
     } else {
@@ -606,28 +654,35 @@ class RNBridge {
     code += generateKotlinEnum(enumName, values);
   });
 
-  // Add InitialRoute enum (special case with routeName parameter)
-  code += `    enum class InitialRoute(val routeName: String) {
-        GET_STARTED("GetStarted"),
-        PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
-        SELECT_TOKENS("SelectTokens"),
-        SEND_TO("SendTo"),
-        SEND_TOKENS("SendTokens"),
-        HOME("Home")
-    }
-
-`;
-
   // Generate data classes and enums
   interfaces.forEach(iface => {
     if (iface.isEnum) {
-      // Generate enum
-      code += `    enum class ${iface.name} {\n`;
+      // Generate enum - type aliases get string parameter for easier string access
+      const needsStringParam = iface.isTypeAlias;
+
+      if (needsStringParam) {
+        code += `    enum class ${iface.name}(val routeName: String) {\n`;
+      } else {
+        code += `    enum class ${iface.name} {\n`;
+      }
+
       iface.enumValues.forEach((enumValue, index) => {
         const comma = index < iface.enumValues.length - 1 ? ',' : '';
-        // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
-        const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
-        code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
+        // Convert PascalCase to UPPER_SNAKE_CASE for Kotlin enum constants
+        // If the key is already all uppercase (e.g., EVM), keep it as-is
+        const isAllUppercase = enumValue.key === enumValue.key.toUpperCase();
+        const kotlinEnumCase = isAllUppercase
+          ? enumValue.key
+          : enumValue.key
+              .replace(/([A-Z])/g, '_$1')
+              .toUpperCase()
+              .replace(/^_/, '');
+
+        if (needsStringParam) {
+          code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}("${enumValue.value}")${comma}\n`;
+        } else {
+          code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
+        }
       });
       code += `    }\n\n`;
     } else {

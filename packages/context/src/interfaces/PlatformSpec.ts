@@ -1,13 +1,14 @@
-import type {
-  CreateAccountResponse,
-  CreateEOAAccountResponse,
-  Currency,
-  Platform,
-  RecentContactsResponse,
-  SeedPhraseGenerationResponse,
-  WalletAccount,
-  WalletAccountsResponse,
-  WalletProfilesResponse,
+import {
+  type CreateAccountResponse,
+  type CreateEOAAccountResponse,
+  type Currency,
+  NativeScreenName,
+  type Platform,
+  type RecentContactsResponse,
+  type SeedPhraseGenerationResponse,
+  type WalletAccount,
+  type WalletAccountsResponse,
+  type WalletProfilesResponse,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -18,22 +19,8 @@ import type { Storage } from './storage/Storage';
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
-/**
- * Available native screen identifiers for Android
- * These correspond to the NativeScreen enum in Android: NativeScreen.kt
- */
-export enum NativeScreenName {
-  /** Cloud backup screen (Google Drive, Passkey, Recovery Phrase) */
-  MULTI_BACKUP = 'multiBackup',
-  /** QR code sync between devices */
-  DEVICE_BACKUP = 'deviceBackup',
-  /** View/create recovery phrase backup */
-  SEED_PHRASE_BACKUP = 'seedPhraseBackup',
-  /** Native backup options screen */
-  BACKUP_OPTIONS = 'backupOptions',
-  /** Native account restore/recovery screen with multiple options */
-  WALLET_RESTORE = 'walletRestore',
-}
+// Re-export NativeScreenName for convenience
+export { NativeScreenName };
 
 /**
  * Platform specification interface for platform abstraction

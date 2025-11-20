@@ -6,8 +6,11 @@ import {
   type Storage,
 } from '@onflow/frw-context';
 import type {
+  CreateAccountResponse,
+  CreateEOAAccountResponse,
   Currency,
   RecentContactsResponse,
+  SeedPhraseGenerationResponse,
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
@@ -345,15 +348,7 @@ class PlatformImpl implements PlatformSpec {
 
   // Onboarding methods - Account creation
   // EOA: Pure mnemonic-based account (no server)
-  async createEOAAccount(): Promise<{
-    success: boolean;
-    address: string | null;
-    username: string | null;
-    mnemonic: string | null;
-    phrase: string[] | null;
-    accountType: 'eoa' | 'coa' | null;
-    error: string | null;
-  }> {
+  async createEOAAccount(): Promise<CreateEOAAccountResponse> {
     try {
       return await NativeFRWBridge.createEOAAccount();
     } catch (error) {
@@ -374,13 +369,7 @@ class PlatformImpl implements PlatformSpec {
   // Username must be provided (3-20 chars as per server requirement)
   // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
   // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
-  async registerSecureTypeAccount(username: string): Promise<{
-    success: boolean;
-    address: string | null;
-    username: string | null;
-    accountType: 'eoa' | 'coa' | null;
-    error: string | null;
-  }> {
+  async registerSecureTypeAccount(username: string): Promise<CreateAccountResponse> {
     try {
       return await NativeFRWBridge.registerSecureTypeAccount(username);
     } catch (error) {
@@ -390,6 +379,7 @@ class PlatformImpl implements PlatformSpec {
         address: null,
         username: null,
         accountType: 'coa',
+        txId: null,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
@@ -410,18 +400,7 @@ class PlatformImpl implements PlatformSpec {
 
   // Save mnemonic and initialize wallet (Keychain/KeyStore + Firebase + Wallet-Kit)
   // Throws error on failure, resolves on success
-  async generateSeedPhrase(strength: number = 128): Promise<{
-    mnemonic: string;
-    accountKey: {
-      publicKey: string;
-      hashAlgoStr: string;
-      signAlgoStr: string;
-      weight: number;
-      hashAlgo: number;
-      signAlgo: number;
-    };
-    drivepath: string;
-  }> {
+  async generateSeedPhrase(strength: number = 128): Promise<SeedPhraseGenerationResponse> {
     try {
       return await NativeFRWBridge.generateSeedPhrase(strength);
     } catch (error) {

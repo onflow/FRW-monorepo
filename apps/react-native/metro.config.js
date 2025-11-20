@@ -28,36 +28,6 @@ const config = {
     alias: {
       '@': path.resolve(projectRoot, 'src'),
     },
-    // Mock Node.js modules for React Native
-    resolveRequest: (context, moduleName, platform) => {
-      // List of Node.js modules to mock
-      const nodeModules = [
-        'fs',
-        'path',
-        'crypto',
-        'stream',
-        'util',
-        'os',
-        'http',
-        'https',
-        'zlib',
-        'net',
-      ];
-
-      // Check if it's a Node.js module or subpath (e.g., 'fs/promises')
-      const isNodeModule = nodeModules.some(
-        mod => moduleName === mod || moduleName.startsWith(`${mod}/`)
-      );
-
-      if (isNodeModule) {
-        return {
-          type: 'empty',
-        };
-      }
-
-      // Let Metro handle all other module requests
-      return context.resolveRequest(context, moduleName, platform);
-    },
     // Force Metro to use single instances of critical packages from monorepo root
     extraNodeModules: {
       react: path.resolve(monorepoRoot, 'node_modules/react'),

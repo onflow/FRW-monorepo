@@ -296,52 +296,7 @@ export function ConfirmRecoveryPhraseScreen({
       logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
 
       // Register user profile using ProfileService (wraps UserGoService.register1 - /v1/register endpoint)
-      logger.info('[ConfirmRecoveryPhraseScreen] Getting ProfileService instance...');
-      logger.info('[ConfirmRecoveryPhraseScreen] ProfileService type:', typeof ProfileService);
-      logger.info('[ConfirmRecoveryPhraseScreen] ProfileService value:', ProfileService);
-      logger.info(
-        '[ConfirmRecoveryPhraseScreen] ProfileService.getInstance type:',
-        typeof ProfileService?.getInstance
-      );
-
-      // Use direct class import pattern (same as RecentRecipientsService in SendToScreen)
-      if (!ProfileService) {
-        logger.error('[ConfirmRecoveryPhraseScreen] ProfileService is undefined');
-        throw new Error(
-          'ProfileService class is not available. Module may not be loaded correctly.'
-        );
-      }
-
-      if (typeof ProfileService.getInstance !== 'function') {
-        logger.error('[ConfirmRecoveryPhraseScreen] ProfileService.getInstance is not a function', {
-          type: typeof ProfileService.getInstance,
-          ProfileService,
-        });
-        throw new Error(
-          'ProfileService.getInstance is not a function. Module may not be loaded correctly.'
-        );
-      }
-
       const profileSvc = ProfileService.getInstance();
-
-      if (!profileSvc) {
-        logger.error(
-          '[ConfirmRecoveryPhraseScreen] ProfileService.getInstance() returned undefined'
-        );
-        throw new Error('ProfileService is not available. Services may not be initialized.');
-      }
-
-      if (typeof profileSvc.register !== 'function') {
-        logger.error('[ConfirmRecoveryPhraseScreen] profileSvc.register is not a function', {
-          type: typeof profileSvc.register,
-          profileSvc,
-        });
-        throw new Error(
-          `ProfileService.register is not a function. Type: ${typeof profileSvc.register}`
-        );
-      }
-
-      logger.info('[ConfirmRecoveryPhraseScreen] Calling profileSvc.register()...');
       // Use account key from native bridge (already has correct sign_algo and hash_algo)
       // Extension uses /v1/register endpoint which doesn't require deviceInfo
       const registerResponse = await profileSvc.register({
@@ -371,24 +326,19 @@ export function ConfirmRecoveryPhraseScreen({
       // Then createFlowAddressV2() is called immediately after
       logger.info('[ConfirmRecoveryPhraseScreen] Step 6.5: Authenticating with custom token...');
 
-      if (bridge?.signInWithCustomToken && typeof bridge.signInWithCustomToken === 'function') {
-        try {
-          logger.info('[ConfirmRecoveryPhraseScreen] Calling bridge.signInWithCustomToken()...');
-          await bridge.signInWithCustomToken(customToken);
-          logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
+      try {
+        logger.info('[ConfirmRecoveryPhraseScreen] Calling bridge.signInWithCustomToken()...');
+        await bridge.signInWithCustomToken(customToken);
+        logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
 
-          // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
-          // The API interceptor needs the refreshed token to authenticate with the backend
-          logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
-          await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
-          logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
-        } catch (error) {
-          logger.error('[ConfirmRecoveryPhraseScreen] Custom token authentication failed:', error);
-          throw error; // Re-throw to stop the flow
-        }
-      } else {
-        logger.error('[ConfirmRecoveryPhraseScreen] signInWithCustomToken not available on bridge');
-        throw new Error('signInWithCustomToken bridge method is required for EOA account creation');
+        // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
+        // The API interceptor needs the refreshed token to authenticate with the backend
+        logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
+        await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
+        logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
+      } catch (error) {
+        logger.error('[ConfirmRecoveryPhraseScreen] Custom token authentication failed:', error);
+        throw error; // Re-throw to stop the flow
       }
 
       // Create Flow address (triggers on-chain account creation) using ProfileService

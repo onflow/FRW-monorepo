@@ -28,9 +28,6 @@ export enum WalletErrorCode {
   // Account / Network
   AccountDiscoveryFailed = 'NET-01',
   UnsupportedNetwork = 'NET-02',
-
-  // Platform
-  UnsupportedOperation = 'PLAT-01',
 }
 
 const walletErrorMessages: Record<WalletErrorCode, string> = {
@@ -50,7 +47,6 @@ const walletErrorMessages: Record<WalletErrorCode, string> = {
   [WalletErrorCode.EthereumRpcError]: 'Ethereum RPC responded with an error',
   [WalletErrorCode.AccountDiscoveryFailed]: 'Account discovery failed',
   [WalletErrorCode.UnsupportedNetwork]: 'Unsupported network requested',
-  [WalletErrorCode.UnsupportedOperation]: 'Operation is not supported on this platform',
 };
 
 export interface WalletErrorOptions {
@@ -142,10 +138,6 @@ export class WalletError extends Error {
 
   static UnsupportedNetwork(options?: WalletErrorOptions): WalletError {
     return WalletError.fromCode(WalletErrorCode.UnsupportedNetwork, options);
-  }
-
-  static UnsupportedOperation(options?: WalletErrorOptions): WalletError {
-    return WalletError.fromCode(WalletErrorCode.UnsupportedOperation, options);
   }
 }
 

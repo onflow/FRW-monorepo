@@ -40,10 +40,6 @@ const generateRecoveryPhrase = async (): Promise<{
 }> => {
   try {
     // Generate 12-word mnemonic (128-bit entropy) using native wallet-core bridge
-    if (!bridge.generateSeedPhrase) {
-      throw new Error('generateSeedPhrase bridge method is not available');
-    }
-
     const response = await bridge.generateSeedPhrase(128);
     const phrase = response.mnemonic.trim().split(/\s+/);
 
