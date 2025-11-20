@@ -1612,6 +1612,15 @@
   "Surge__Modal__Hold__To__Agree": {
     "message": "Hold to agree to surge pricing"
   },
+  "COA_Modal_Title": {
+    "message": "EVM on Flow address"
+  },
+  "COA_Modal_Warning": {
+    "message": "You have copied an EVM address on the Flow network, please make sure you only send assets on the Flow network to this address otherwise they will be lost."
+  },
+  "COA_Modal_Confirm_Button": {
+    "message": "Confirm to copy address"
+  },
   "Scan_to_receive": {
     "message": "Scan to receive"
   }

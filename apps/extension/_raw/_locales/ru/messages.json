@@ -1603,6 +1603,15 @@
   "Surge__Modal__Hold__To__Agree": {
     "message": "Удерживайте для согласия с повышенными ценами"
   },
+  "COA_Modal_Title": {
+    "message": "Flow EVM адрес"
+  },
+  "COA_Modal_Warning": {
+    "message": "Вы скопировали EVM адрес в сети Flow. Пожалуйста, убедитесь, что вы отправляете активы только в сети Flow на этот адрес, иначе они могут быть потеряны."
+  },
+  "COA_Modal_Confirm_Button": {
+    "message": "Подтвердить копирование адреса"
+  },
   "Scan_to_receive": {
     "message": "Сканируйте для получения"
   }
