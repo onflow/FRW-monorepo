@@ -182,6 +182,62 @@ export class Wallet {
   }
 
   /**
+   * Get cached EOA addresses derived from current EVM accounts
+   */
+  get eoaAddress(): Set<string> {
+    return new Set(this.getEVMAccounts().map((account) => account.address));
+  }
+
+  /**
+   * Derive and store primary EOA account for the wallet.
+   */
+  async getEOAAccount(forceRefresh: boolean = false): Promise<string[]> {
+    const address = await this.derivePrimaryEvmAddress();
+    const evmNetworks = this.getEVMNetworks();
+
+    if (evmNetworks.length > 0) {
+      this.upsertEvmAccounts(address, evmNetworks, forceRefresh);
+    }
+
+    return [address];
+  }
+
+  private getEvmAccountKey(evmNetwork: EVMNetworkConfig, address: string): string {
+    return `${evmNetwork.chainId}_${address}`;
+  }
+
+  private upsertEvmAccounts(
+    address: string,
+    evmNetworks: EVMNetworkConfig[],
+    forceRefresh: boolean
+  ): void {
+    for (const evmNetwork of evmNetworks) {
+      const accountKey = this.getEvmAccountKey(evmNetwork, address);
+      if (!forceRefresh && this.accounts.has(accountKey)) {
+        continue;
+      }
+
+      const evmAccount: EVMAccount = {
+        address,
+        network: evmNetwork,
+        chain: Chain.EVM,
+        balance: '0',
+      };
+
+      this.setAccount(accountKey, evmAccount);
+    }
+  }
+
+  private async derivePrimaryEvmAddress(): Promise<string> {
+    const key = this.getEthereumKey();
+    if (!key) {
+      throw WalletError.EthereumCapabilityMissing();
+    }
+
+    return await key.ethAddress(0);
+  }
+
+  /**
    * Add new network to wallet
    */
   addNetwork(network: Network): void {
@@ -280,11 +336,7 @@ export class Wallet {
   private notifyAccountsListeners(): void {
     const accountsCopy = new Map(this.accounts);
     this.accountsListeners.forEach((listener) => {
-      try {
-        listener(accountsCopy);
-      } catch (error) {
-        console.error('Error in accounts listener:', error);
-      }
+      listener(accountsCopy);
     });
   }
 
@@ -295,11 +347,7 @@ export class Wallet {
     if (this.isLoading !== loading) {
       this.isLoading = loading;
       this.loadingListeners.forEach((listener) => {
-        try {
-          listener(loading);
-        } catch (error) {
-          console.error('Error in loading listener:', error);
-        }
+        listener(loading);
       });
     }
   }
@@ -345,9 +393,6 @@ export class Wallet {
 
       // Cache the results
       await this.cacheAccountData();
-    } catch (error) {
-      console.error('Failed to fetch accounts:', error);
-      throw error;
     } finally {
       this.setLoadingState(false);
     }
@@ -363,38 +408,29 @@ export class Wallet {
       return [];
     }
 
-    try {
-      // Get public key for the signature algorithm
-      const publicKeyBytes = await this.key.publicKey(signAlgo, BIP44_PATHS.FLOW);
-      if (!publicKeyBytes) {
-        return [];
-      }
-
-      // Convert to hex string (remove 0x prefix if present)
-      const publicKeyHex = await WalletCoreProvider.bytesToHex(new Uint8Array(publicKeyBytes));
-      const cleanPublicKey = publicKeyHex.replace(/^0x/, '');
-
-      // Query key indexer service for each Flow network
-      const flowNetworks = this.getFlowNetworks();
-      const allFoundAccounts: PublicKeyAccount[] = [];
-
-      for (const flowNetwork of flowNetworks) {
-        try {
-          const foundAccounts = await KeyIndexerService.findAccountByKey(
-            cleanPublicKey,
-            flowNetwork.flowChainId
-          );
-          allFoundAccounts.push(...foundAccounts);
-        } catch (error) {
-          console.warn(`Failed to search accounts on ${flowNetwork.name}:`, error);
-        }
-      }
-
-      return KeyIndexerService.filterByWeight(allFoundAccounts, Wallet.FULL_WEIGHT_THRESHOLD);
-    } catch (error) {
-      console.warn(`Failed to search accounts for ${signAlgo}:`, error);
+    // Get public key for the signature algorithm
+    const publicKeyBytes = await this.key.publicKey(signAlgo, BIP44_PATHS.FLOW);
+    if (!publicKeyBytes) {
       return [];
     }
+
+    // Convert to hex string (remove 0x prefix if present)
+    const publicKeyHex = await WalletCoreProvider.bytesToHex(new Uint8Array(publicKeyBytes));
+    const cleanPublicKey = publicKeyHex.replace(/^0x/, '');
+
+    // Query key indexer service for each Flow network
+    const flowNetworks = this.getFlowNetworks();
+    const allFoundAccounts: PublicKeyAccount[] = [];
+
+    for (const flowNetwork of flowNetworks) {
+      const foundAccounts = await KeyIndexerService.findAccountByKey(
+        cleanPublicKey,
+        flowNetwork.flowChainId
+      );
+      allFoundAccounts.push(...foundAccounts);
+    }
+
+    return KeyIndexerService.filterByWeight(allFoundAccounts, Wallet.FULL_WEIGHT_THRESHOLD);
   }
 
   /**
@@ -438,59 +474,13 @@ export class Wallet {
       return;
     }
 
-    try {
-      // Get all EVM networks from wallet configuration
-      const evmNetworks = this.getEVMNetworks();
-
-      for (const evmNetwork of evmNetworks) {
-        const evmAddress = await this.getEVMAddressForKey(evmNetwork);
-
-        if (evmAddress) {
-          const evmAccount: EVMAccount = {
-            address: evmAddress,
-            network: evmNetwork,
-            chain: Chain.EVM,
-            balance: '0', // Will be populated when balances are fetched
-          };
-
-          this.setAccount(`${evmNetwork.chainId}_${evmAddress}`, evmAccount);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to discover EVM accounts:', error);
-    }
-  }
-
-  /**
-   * Get EVM address for the current key using WalletCore - local computation only
-   */
-  private async getEVMAddressForKey(evmNetwork: EVMNetworkConfig): Promise<string | null> {
-    if (!this.key) {
-      return null;
+    const evmNetworks = this.getEVMNetworks();
+    if (evmNetworks.length === 0) {
+      return;
     }
 
-    try {
-      // For seed phrase keys, use HD wallet derivation through WalletCore
-      // For private key keys, derive address directly from the key
-
-      // Get private key bytes for secp256k1 curve (EVM-compatible)
-      const privateKeyBytes = await this.key.privateKey(
-        SignatureAlgorithm.ECDSA_secp256k1,
-        BIP44_PATHS.EVM
-      );
-      if (!privateKeyBytes) {
-        return null;
-      }
-
-      // Use WalletCore to derive EVM address from private key - no network request needed
-      const evmAddress = await WalletCoreProvider.deriveEVMAddressFromPrivateKey(
-        new Uint8Array(privateKeyBytes)
-      );
-      return evmAddress;
-    } catch (error) {
-      console.warn(`Failed to derive EVM address for network ${evmNetwork.name}:`, error);
-      return null;
-    }
+    const address = await this.derivePrimaryEvmAddress();
+    this.upsertEvmAccounts(address, evmNetworks, false);
   }
 
   /**
@@ -548,20 +538,16 @@ export class Wallet {
    * Cache account data for faster subsequent loads
    */
   private async cacheAccountData(): Promise<void> {
-    try {
-      const accountsData = {
-        accounts: Array.from(this.accounts.entries()),
-        networks: Array.from(this.networks),
-        lastUpdated: Date.now(),
-      };
+    const accountsData = {
+      accounts: Array.from(this.accounts.entries()),
+      networks: Array.from(this.networks),
+      lastUpdated: Date.now(),
+    };
 
-      await this.cacheStorage.set(
-        `wallet_${this.id}_accounts`,
-        new TextEncoder().encode(JSON.stringify(accountsData))
-      );
-    } catch (error) {
-      console.warn('Failed to cache account data:', error);
-    }
+    await this.cacheStorage.set(
+      `wallet_${this.id}_accounts`,
+      new TextEncoder().encode(JSON.stringify(accountsData))
+    );
   }
 
   /**
@@ -589,92 +575,60 @@ export class Wallet {
    * @returns true if cached data was loaded, false otherwise
    */
   private async loadCachedAccountData(): Promise<boolean> {
-    try {
-      const cachedData = await this.cacheStorage.get(`wallet_${this.id}_accounts`);
-      if (!cachedData) {
-        return false;
-      }
-
-      const parsed = JSON.parse(new TextDecoder().decode(cachedData));
-
-      // Check if cached data is not too old (e.g., 24 hours)
-      const maxCacheAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-      const now = Date.now();
-      if (parsed.lastUpdated && now - parsed.lastUpdated > maxCacheAge) {
-        console.log('Cached data is too old, will fetch fresh data');
-        return false;
-      }
-
-      // Validate cached data structure
-      if (
-        !parsed.accounts ||
-        !Array.isArray(parsed.accounts) ||
-        !parsed.networks ||
-        !Array.isArray(parsed.networks)
-      ) {
-        console.warn('Invalid cached data structure');
-        return false;
-      }
-
-      // Create temporary collections to validate data
-      const tempAccounts = new Map<string, FlowAccount | EVMAccount>();
-      const tempNetworks = new Set<Network>();
-
-      try {
-        // Validate and populate accounts
-        for (const [address, accountData] of parsed.accounts) {
-          if (typeof address === 'string' && accountData && typeof accountData === 'object') {
-            tempAccounts.set(address, accountData);
-          }
-        }
-
-        // Validate and populate networks
-        for (const network of parsed.networks) {
-          if (network && typeof network === 'object' && network.chain && network.name) {
-            tempNetworks.add(network);
-          }
-        }
-
-        // Only replace existing data if validation successful
-        if (tempAccounts.size > 0 || tempNetworks.size > 0) {
-          // Backup current state
-          const oldAccounts = new Map(this.accounts);
-          const oldNetworks = new Set(this.networks);
-
-          try {
-            // Replace with validated cached data
-            this.accounts.clear();
-            tempAccounts.forEach((account, address) => {
-              this.accounts.set(address, account);
-            });
-
-            this.networks.clear();
-            tempNetworks.forEach((network) => {
-              this.networks.add(network);
-            });
-
-            console.log(`Loaded ${this.accounts.size} cached accounts for wallet ${this.id}`);
-
-            // Notify listeners of the change
-            this.notifyAccountsListeners();
-            return true;
-          } catch (replaceError) {
-            // Restore backup if replacement fails
-            console.error('Failed to replace cached data, restoring backup:', replaceError);
-            this.accounts = oldAccounts;
-            this.networks = oldNetworks;
-            return false;
-          }
-        }
-
-        return false;
-      } catch (validationError) {
-        console.warn('Failed to validate cached data:', validationError);
-        return false;
-      }
-    } catch (error) {
-      console.warn('Failed to load cached account data:', error);
+    const cachedData = await this.cacheStorage.get(`wallet_${this.id}_accounts`);
+    if (!cachedData) {
       return false;
     }
+
+    const parsed = JSON.parse(new TextDecoder().decode(cachedData));
+
+    // Check if cached data is not too old (e.g., 24 hours)
+    const maxCacheAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const now = Date.now();
+    if (parsed.lastUpdated && now - parsed.lastUpdated > maxCacheAge) {
+      return false;
+    }
+
+    if (!Array.isArray(parsed.accounts) || !Array.isArray(parsed.networks)) {
+      return false;
+    }
+
+    const tempAccounts = new Map<string, FlowAccount | EVMAccount>();
+    const tempNetworks = new Set<Network>();
+
+    for (const entry of parsed.accounts) {
+      if (
+        Array.isArray(entry) &&
+        entry.length === 2 &&
+        typeof entry[0] === 'string' &&
+        entry[1] &&
+        typeof entry[1] === 'object'
+      ) {
+        tempAccounts.set(entry[0], entry[1] as FlowAccount | EVMAccount);
+      }
+    }
+
+    for (const network of parsed.networks) {
+      if (network && typeof network === 'object' && 'chain' in network && 'name' in network) {
+        tempNetworks.add(network as Network);
+      }
+    }
+
+    if (tempAccounts.size === 0 && tempNetworks.size === 0) {
+      return false;
+    }
+
+    this.accounts.clear();
+    tempAccounts.forEach((account, address) => {
+      this.accounts.set(address, account);
+    });
+
+    this.networks.clear();
+    tempNetworks.forEach((network) => {
+      this.networks.add(network);
+    });
+
+    this.notifyAccountsListeners();
+    return true;
   }
 }
