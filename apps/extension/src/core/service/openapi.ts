@@ -2056,8 +2056,6 @@ export class OpenApiService {
     address: string
   ): Promise<{ data: { session: { onrampUrl: string } }; status: number }> => {
     const requestData = {
-      purchaseCurrency: 'flow',
-      destinationNetwork: 'flow',
       address,
     };
 
