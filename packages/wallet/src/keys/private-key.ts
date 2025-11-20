@@ -3,9 +3,6 @@
  * Uses Trust Wallet Core for cryptographic operations
  */
 
-// Wallet Core integration - Web/Extension uses WASM implementation
-// Note: React Native onboarding uses native bridge (NativeFRWBridge.generateSeedPhrase)
-// instead of WalletCoreProvider. This module is for extension/web use only.
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
   EthSigner,
@@ -41,7 +38,7 @@ export class PrivateKey
   constructor(
     storage: StorageProtocol,
     privateKeyData: Uint8Array,
-    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_secp256k1
+    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256
   ) {
     this.storage = storage;
     this.privateKeyData = privateKeyData;
@@ -69,11 +66,7 @@ export class PrivateKey
   /**
    * Create PrivateKey with specific key data
    */
-  static async createAdvanced(
-    advance: Uint8Array,
-    storage: StorageProtocol,
-    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256
-  ): Promise<PrivateKey> {
+  static async createAdvanced(advance: Uint8Array, storage: StorageProtocol): Promise<PrivateKey> {
     await WalletCoreProvider.initialize();
 
     // Validate key length
@@ -83,7 +76,7 @@ export class PrivateKey
       });
     }
 
-    return new PrivateKey(storage, advance, signatureAlgorithm);
+    return new PrivateKey(storage, advance, SignatureAlgorithm.ECDSA_P256);
   }
 
   /**
@@ -125,12 +118,8 @@ export class PrivateKey
   /**
    * Restore PrivateKey from secret (raw bytes)
    */
-  static async restore(
-    secret: Uint8Array,
-    storage: StorageProtocol,
-    signatureAlgorithm: SignatureAlgorithm = SignatureAlgorithm.ECDSA_P256
-  ): Promise<PrivateKey> {
-    return await this.createAdvanced(secret, storage, signatureAlgorithm);
+  static async restore(secret: Uint8Array, storage: StorageProtocol): Promise<PrivateKey> {
+    return await this.createAdvanced(secret, storage);
   }
 
   // Instance methods (matches iOS KeyProtocol)
@@ -157,21 +146,26 @@ export class PrivateKey
    * Extract public key for given signature algorithm
    */
   async publicKey(signAlgo: SignatureAlgorithm): Promise<Uint8Array | null> {
-    switch (signAlgo) {
-      case SignatureAlgorithm.ECDSA_P256:
-        // P-256 public key derivation
-        // This requires additional cryptographic library since Trust Wallet Core
-        // doesn't directly support P-256 key derivation from raw bytes
-        return this.deriveP256PublicKey(this.privateKeyData);
+    try {
+      switch (signAlgo) {
+        case SignatureAlgorithm.ECDSA_P256:
+          // P-256 public key derivation
+          // This requires additional cryptographic library since Trust Wallet Core
+          // doesn't directly support P-256 key derivation from raw bytes
+          return this.deriveP256PublicKey(this.privateKeyData);
 
-      case SignatureAlgorithm.ECDSA_secp256k1:
-        // secp256k1 public key derivation
-        return this.deriveSecp256k1PublicKey(this.privateKeyData);
+        case SignatureAlgorithm.ECDSA_secp256k1:
+          // secp256k1 public key derivation
+          return this.deriveSecp256k1PublicKey(this.privateKeyData);
 
-      default:
-        throw WalletError.UnsupportedSignatureAlgorithm({
-          details: { signatureAlgorithm: signAlgo },
-        });
+        default:
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm: signAlgo },
+          });
+      }
+    } catch (error) {
+      console.error('Failed to derive public key:', error);
+      return null;
     }
   }
 

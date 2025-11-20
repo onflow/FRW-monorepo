@@ -20,27 +20,14 @@ export {
   type AccountsListener,
   type LoadingListener,
 } from './wallet';
-export { FlowAccount, EVMAccount, COA, ChildAccount } from './account';
+export { Account, COA } from './account';
 
 // Key implementations - matches iOS Flow Wallet Kit key types
 export { SeedPhraseKey } from './keys/seed-phrase-key';
 export { PrivateKey } from './keys/private-key';
 
-// Wallet Core integration - Web/Extension uses WASM implementation
-// Note: React Native onboarding uses native bridge (NativeFRWBridge.generateSeedPhrase)
-// instead of WalletCoreProvider. This export is for extension/web use only.
+// Wallet Core integration
 export { WalletCoreProvider } from './crypto/wallet-core-provider';
-export {
-  entropyToMnemonic,
-  generateBip39Mnemonic,
-  mnemonicToEntropy,
-  mnemonicToSeed,
-  suggestBip39Words,
-  type Bip39Strength,
-  type GenerateBip39Options,
-  validateBip39Mnemonic,
-  validateBip39Word,
-} from './crypto/bip39';
 
 // Ethereum services
 export {
@@ -72,7 +59,6 @@ export {
   SignatureAlgorithm,
   HashAlgorithm,
   FlowChainID,
-  NETWORKS,
   type FlowAddress,
   type FlowAccountData,
   type FlowTransaction,
@@ -89,11 +75,15 @@ export { Chain, ChainUtils } from './types/chain';
 // Wallet type exports
 export { ChainID, type WalletType } from './types/wallet';
 
-// Account type exports (interfaces only)
-export { FlowVM, type BaseAccount, type FlowVMProtocol } from './types/account';
-
-// Note: FlowAccount, EVMAccount, ChildAccount classes are exported from ./Account above
-// The type interfaces FlowAccount, EVMAccount, ChildAccount are in ./types/account
+// Account type exports
+export {
+  FlowVM,
+  type BaseAccount,
+  type FlowAccount,
+  type EVMAccount,
+  type ChildAccount,
+  type FlowVMProtocol,
+} from './types/account';
 
 // Constants
 export { BIP44_PATHS } from './types/key';

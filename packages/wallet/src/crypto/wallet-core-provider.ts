@@ -22,26 +22,8 @@ export class WalletCoreProvider {
    * Initialize Trust Wallet Core WASM module
    */
   static async initialize(): Promise<void> {
-    console.log('[WalletCoreProvider.web] initialize() called - Web/WASM implementation loaded!');
-    console.log(
-      '[WalletCoreProvider.web] navigator.product:',
-      typeof navigator !== 'undefined' ? navigator.product : 'undefined'
-    );
-
     if (this.initialized) {
       return;
-    }
-
-    // Check if running in React Native - if so, this is the wrong implementation
-    // The native implementation should be loaded instead
-    if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
-      console.error('[WalletCoreProvider.web] ERROR: Web WASM version loaded in React Native!');
-      throw WalletError.UnsupportedOperation({
-        details: {
-          message:
-            'WASM wallet-core-provider should not be used in React Native. Use wallet-core-provider.native instead.',
-        },
-      });
     }
 
     try {
@@ -116,7 +98,7 @@ export class WalletCoreProvider {
   /**
    * Restore HD wallet from mnemonic
    */
-  static async restoreHDWallet(mnemonic: string, passphrase: string = ''): Promise<HDWallet> {
+  static async restoreHDWallet(mnemonic: string, password: string = ''): Promise<any> {
     const core = await this.ensureInitialized();
 
     // Validate mnemonic first
@@ -125,7 +107,7 @@ export class WalletCoreProvider {
     }
 
     // Create wallet from mnemonic (based on HDWallet.test.ts)
-    const wallet = core.HDWallet.createWithMnemonic(mnemonic, passphrase);
+    const wallet = core.HDWallet.createWithMnemonic(mnemonic, password);
 
     return wallet;
   }
