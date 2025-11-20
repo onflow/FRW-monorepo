@@ -129,7 +129,7 @@ export const AccountListing = ({
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
   // Check if the EVM account is not valid
-  const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
+  const noEvmAccount = !evmAccount;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
 
