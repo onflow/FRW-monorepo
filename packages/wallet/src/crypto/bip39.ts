@@ -1,8 +1,5 @@
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
-// Wallet Core integration - Web/Extension uses WASM implementation
-// Note: React Native onboarding uses native bridge (NativeFRWBridge.generateSeedPhrase)
-// instead of WalletCoreProvider. This module is for extension/web use only.
 import { WalletCoreProvider } from './wallet-core-provider';
 import { WalletError } from '../types/errors';
 
