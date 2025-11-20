@@ -48,6 +48,7 @@ export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationAnimation';
 export * from './components/ConfirmationDrawer';
+export * from './components/COAAddressCopyModal';
 export * from './components/ERC1155QuantitySelector';
 export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';

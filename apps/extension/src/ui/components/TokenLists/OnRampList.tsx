@@ -1,5 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { ButtonBase, IconButton, Typography } from '@mui/material';
+import { ButtonBase, CircularProgress, IconButton, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { Box } from '@mui/system';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 // import { LLHeader } from '@/ui/components';
 // import Coinbase from '@/ui/assets/svg/coinbasepay-txt.svg';
 
+import { consoleError } from '@/shared/utils';
 import Coinbase from '@/ui/assets/svg/coinbase-pay.svg';
 import MoonPay from '@/ui/assets/svg/moonpay.svg';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -16,9 +17,10 @@ import { useWallet } from '@/ui/hooks/use-wallet';
 export const OnRampList = ({ close }) => {
   const wallet = useWallet();
   const [address, setAddress] = useState<string | null>(null);
+  const [isLoadingCoinbase, setIsLoadingCoinbase] = useState(false);
 
   const loadAddress = useCallback(async () => {
-    const address = await wallet.getCurrentAddress();
+    const address = await wallet.getParentAddress();
     setAddress(address);
   }, [wallet]);
 
@@ -45,19 +47,26 @@ export const OnRampList = ({ close }) => {
   };
 
   const loadCoinbasePay = async () => {
-    if (!address) {
+    if (!address || isLoadingCoinbase) {
       return;
     }
 
-    const onRampURL = `https://pay.coinbase.com/buy/input?appId=d22a56bd-68b7-4321-9b25-aa357fc7f9ce&destinationWallets=%5B%7B%22address%22%3A%22${address}%22%2C%22blockchains%22%3A%5B%22flow%22%5D%7D%5D`;
+    setIsLoadingCoinbase(true);
+    try {
+      const response = await wallet.openapi.getCoinbaseOnRampURL(address);
 
-    if (onRampURL) {
-      // Track before opening the tab
-      wallet.trackOnRampClicked('coinbase');
+      if (response?.data?.session?.onrampUrl) {
+        // Track before opening the tab
+        wallet.trackOnRampClicked('coinbase');
 
-      await chrome.tabs.create({
-        url: onRampURL,
-      });
+        await chrome.tabs.create({
+          url: response.data.session.onrampUrl,
+        });
+      }
+    } catch (error) {
+      consoleError('Error fetching Coinbase onramp URL:', error);
+    } finally {
+      setIsLoadingCoinbase(false);
     }
   };
 
@@ -92,10 +101,22 @@ export const OnRampList = ({ close }) => {
         </ButtonBase>
 
         <ButtonBase
-          sx={{ width: '100%', backgroundColor: '#0052FF', borderRadius: '8px', height: '80px' }}
+          sx={{
+            width: '100%',
+            backgroundColor: '#0052FF',
+            borderRadius: '8px',
+            height: '80px',
+            opacity: isLoadingCoinbase ? 0.6 : 1,
+            cursor: isLoadingCoinbase ? 'not-allowed' : 'pointer',
+          }}
           onClick={loadCoinbasePay}
+          disabled={isLoadingCoinbase}
         >
-          <img src={Coinbase} style={{ height: '50px' }} />
+          {isLoadingCoinbase ? (
+            <CircularProgress size={30} sx={{ color: '#FFFFFF' }} />
+          ) : (
+            <img src={Coinbase} style={{ height: '50px' }} />
+          )}
         </ButtonBase>
       </Box>
     </Box>
