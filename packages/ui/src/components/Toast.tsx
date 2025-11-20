@@ -11,6 +11,8 @@ export interface ToastProps {
   type?: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
   onClose?: () => void;
+  feedbackCallback?: () => void;
+  reportMsg?: string;
 }
 
 export const Toast: React.FC<ToastProps> = ({
@@ -20,6 +22,8 @@ export const Toast: React.FC<ToastProps> = ({
   type = 'error',
   duration = 4000,
   onClose,
+  feedbackCallback,
+  reportMsg,
 }) => {
   const theme = useTheme();
   const [isVisible, setIsVisible] = useState(visible);
@@ -132,6 +136,37 @@ export const Toast: React.FC<ToastProps> = ({
           </Text>
         )}
       </YStack>
+      {feedbackCallback && (
+        <YStack
+          onPress={feedbackCallback}
+          cursor="pointer"
+          rounded="$4"
+          p="$2"
+          shadowColor={theme.shadowColor}
+          shadowOffset={{ width: 0, height: 1 }}
+          shadowOpacity={1}
+          pressStyle={{ opacity: 0.8 }}
+          items="center"
+          justify="center"
+        >
+          {/* <InfoIcon color={theme.warning?.val || theme.warning} /> */}
+          <Text
+            color={styles.messageColor as any}
+            fontSize="$1"
+            fontWeight="400"
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            Report
+          </Text>
+        </YStack>
+        // <IconButton
+        //   icon={<InfoIcon color="#767676" size={56} width={56} height={56} />}
+        //   variant="secondary"
+        //   size="large"
+        //   onPress={feedbackCallback}
+        //   ml={10}
+        // />
+      )}
     </XStack>
   );
 

@@ -22,7 +22,10 @@ export interface ToastState {
   visible: boolean;
 }
 
-export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const ToastProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+  feedbackCallback,
+}) => {
   const [toasts, setToasts] = useState<ToastState[]>([]);
 
   const show = useCallback((toast: ToastMessage) => {
@@ -85,6 +88,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           type={toast.type}
           duration={toast.duration}
           onClose={() => hide(toast.id)}
+          feedbackCallback={feedbackCallback}
         />
       ))}
     </ToastContext.Provider>
