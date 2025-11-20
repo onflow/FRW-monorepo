@@ -2051,6 +2051,27 @@ export class OpenApiService {
     return currencies;
   };
 
+  // ** Get Coinbase onramp URL **
+  getCoinbaseOnRampURL = async (
+    address: string
+  ): Promise<{ data: { session: { onrampUrl: string } }; status: number }> => {
+    const requestData = {
+      purchaseCurrency: 'flow',
+      destinationNetwork: 'flow',
+      address,
+    };
+
+    const response = await this.sendRequest(
+      'POST',
+      `/api/v4/onramp/coinbase`,
+      {},
+      requestData,
+      this.store.webNextUrl
+    );
+
+    return response;
+  };
+
   async fetchCadenceTokenInfo(
     network: string,
     address: string,
