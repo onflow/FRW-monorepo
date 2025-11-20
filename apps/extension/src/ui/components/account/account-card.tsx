@@ -8,6 +8,7 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
+import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React from 'react';
 
 import { type WalletAccount } from '@/shared/types';
@@ -15,6 +16,7 @@ import { isValidEthereumAddress } from '@/shared/utils';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
+import { useCOACopy } from '@/ui/hooks/use-coa-copy';
 import { useCadenceNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
 import {
   COLOR_ACCENT_EVM_627EEA,
@@ -71,6 +73,21 @@ export const AccountCard = ({
   const isChildAccount = hasParentAccount && !isEvmAccount;
   // EOA accounts are identified by id === 99 or name === 'EVM Account (EOA)'
   const isEOAAccount = isEvmAccount && (account.id === 99 || account.name === 'EVM Account (EOA)');
+  // COA (Contract-Owned Account) is an EVM account that is not EOA
+  const isCOAAccount = isEvmAccount && !isEOAAccount;
+
+  const { showModal, addressToCopy, handleCopy, handleConfirmCopy, closeModal } = useCOACopy();
+
+  const handleCopyClick = () => {
+    if (address) {
+      // Use the hook's handleCopy which checks for COA
+      handleCopy(address, account?.id, account?.name);
+      // If not COA, also call the original handler if provided
+      if (!isCOAAccount && onClickSecondary) {
+        onClickSecondary();
+      }
+    }
+  };
 
   // Only show NFTs for child accounts
   const nftCatalogCollections = useCadenceNftCollectionsAndIds(
@@ -225,12 +242,23 @@ export const AccountCard = ({
           </Typography>
         </Box>
       </CardActionArea>
-      {onClickSecondary && !isPending && (
+      {!isPending && (
         <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>
-          <IconButton onClick={onClickSecondary} aria-label="Copy address" disabled={!address}>
+          <IconButton onClick={handleCopyClick} aria-label="Copy address" disabled={!address}>
             {secondaryIcon}
           </IconButton>
         </CardActions>
+      )}
+      {addressToCopy && (
+        <COAAddressCopyModal
+          visible={showModal}
+          onClose={closeModal}
+          onConfirm={() => handleConfirmCopy(addressToCopy)}
+          address={addressToCopy}
+          title={chrome.i18n.getMessage('COA_Modal_Title')}
+          warningMessage={chrome.i18n.getMessage('COA_Modal_Warning')}
+          confirmButtonText={chrome.i18n.getMessage('COA_Modal_Confirm_Button')}
+        />
       )}
     </Card>
   );
