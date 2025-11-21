@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 import React from 'react';
 
 import { type MainAccount, type WalletAccount } from '@/shared/types';
-import { isValidEthereumAddress } from '@/shared/utils';
+import { isValidEthereumAddress, isEOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
@@ -129,7 +129,7 @@ export const AccountListing = ({
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
   // Check if the EVM account is not valid
-  const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
+  const noEvmAccount = !evmAccount;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
 
@@ -191,8 +191,8 @@ export const AccountListing = ({
             showLink={false}
             data-testid="active-account-card"
           />
-          {/* If the EVM account is not valid, show the EnableEvmAccountCard */}
-          {noEvmAccount && (
+          {/* If the EVM account is not valid, show the EnableEvmAccountCard (but not if current address is EOA) */}
+          {noEvmAccount && activeAccount?.address && !isEOAAddress(activeAccount.address) && (
             <EnableEvmAccountCard
               showCard={false}
               onEnableEvmClick={() =>
