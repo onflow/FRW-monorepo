@@ -564,7 +564,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
       return;
     }
 
-    const prefix = `[FRW-Extension-${level.toUpperCase()}]`;
+    const prefix = `[FW-${level.toUpperCase()}]`;
     const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
 
     // Console logging for development
@@ -573,7 +573,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
         console.log(prefix, message, ...args);
         break;
       case 'info':
-        console.info(prefix, message, ...args);
+        // Only log info to console in debug mode to keep prod console clean
+        if (this.debugMode) {
+          console.info(prefix, message, ...args);
+        }
         break;
       case 'warn':
         console.warn(prefix, message, ...args);

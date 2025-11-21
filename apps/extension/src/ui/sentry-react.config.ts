@@ -24,7 +24,7 @@ init({
       ignore: ['.ignore-me'],
     }),
     captureConsoleIntegration({
-      levels: ['error'],
+      levels: ['error', 'log', 'warn', 'info'],
     }),
     feedbackIntegration({
       colorScheme: 'system',

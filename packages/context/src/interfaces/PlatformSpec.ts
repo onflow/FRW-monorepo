@@ -74,14 +74,6 @@ export interface PlatformSpec {
   log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
   isDebug(): boolean;
 
-  // Optional platform-specific logging callback for additional logging mechanisms
-  // This enables backup logging solutions (e.g., local files, Instabug API) alongside the default bridge.log
-  logCallback?: (
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    ...args: unknown[]
-  ) => void;
-
   // Error reporting methods - for checking Instabug availability
   isInstabugInitialized?(): boolean;
   setInstabugInitialized?(initialized: boolean): void;
