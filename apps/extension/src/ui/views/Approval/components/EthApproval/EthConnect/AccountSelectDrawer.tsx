@@ -13,6 +13,7 @@ interface AccountSelectDrawerProps {
   parentWallet?: MainAccount;
   activeAccount?: WalletAccount;
   onAccountSelect: (account: WalletAccount, parentAccount?: WalletAccount) => void;
+  showCoaFirst?: boolean; // If true, show COA account first in the list
 }
 
 export const AccountSelectDrawer = ({
@@ -23,6 +24,7 @@ export const AccountSelectDrawer = ({
   parentWallet,
   activeAccount,
   onAccountSelect,
+  showCoaFirst = false,
 }: AccountSelectDrawerProps) => {
   const evmAccount = parentWallet?.evmAccount;
 
@@ -37,20 +39,32 @@ export const AccountSelectDrawer = ({
     parentAccount?: WalletAccount;
   }> = [];
 
-  // Add EOA account if it exists
-  if (eoaAccount && isValidEthereumAddress(eoaAccount.address)) {
-    availableAccounts.push({
-      account: eoaAccount,
-      parentAccount: parentWallet,
-    });
-  }
-
-  // Add EVM COA account if it exists
-  if (evmAccount && isValidEthereumAddress(evmAccount.address)) {
-    availableAccounts.push({
-      account: evmAccount,
-      parentAccount: parentWallet,
-    });
+  if (showCoaFirst) {
+    if (evmAccount && isValidEthereumAddress(evmAccount.address)) {
+      availableAccounts.push({
+        account: evmAccount,
+        parentAccount: parentWallet,
+      });
+    }
+    if (eoaAccount && isValidEthereumAddress(eoaAccount.address)) {
+      availableAccounts.push({
+        account: eoaAccount,
+        parentAccount: parentWallet,
+      });
+    }
+  } else {
+    if (eoaAccount && isValidEthereumAddress(eoaAccount.address)) {
+      availableAccounts.push({
+        account: eoaAccount,
+        parentAccount: parentWallet,
+      });
+    }
+    if (evmAccount && isValidEthereumAddress(evmAccount.address) && evmAccount.hasAssets) {
+      availableAccounts.push({
+        account: evmAccount,
+        parentAccount: parentWallet,
+      });
+    }
   }
 
   return (
