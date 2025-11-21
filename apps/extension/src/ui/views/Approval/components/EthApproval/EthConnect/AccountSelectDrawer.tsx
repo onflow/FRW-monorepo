@@ -59,7 +59,7 @@ export const AccountSelectDrawer = ({
         parentAccount: parentWallet,
       });
     }
-    if (evmAccount && isValidEthereumAddress(evmAccount.address) && evmAccount.hasAssets) {
+    if (evmAccount && isValidEthereumAddress(evmAccount.address)) {
       availableAccounts.push({
         account: evmAccount,
         parentAccount: parentWallet,
