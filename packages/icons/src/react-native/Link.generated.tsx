@@ -17,10 +17,9 @@ const Link = ({
   >
     <G clipPath="url(#link_svg__a)">
       <Path
-        stroke="#fff"
+        stroke={color}
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeOpacity={0.502}
         strokeWidth={1.6}
         d="M5.833 7.033a2.667 2.667 0 0 0 4.022.288l1.6-1.6a2.667 2.667 0 0 0-3.771-3.77l-.917.912m1.2 3.104a2.667 2.667 0 0 0-4.022-.288l-1.6 1.6a2.667 2.667 0 0 0 3.77 3.77l.913-.912"
       />
