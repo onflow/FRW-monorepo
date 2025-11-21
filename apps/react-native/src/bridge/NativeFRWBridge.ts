@@ -2,9 +2,6 @@ import type {
   RecentContactsResponse,
   Currency as SharedCurrency,
   EnvironmentVariables as SharedEnvironmentVariables,
-  CreateAccountResponse as SharedCreateAccountResponse,
-  AccountKey as SharedAccountKey,
-  SeedPhraseGenerationResponse as SharedSeedPhraseGenerationResponse,
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
@@ -14,7 +11,7 @@ import { TurboModuleRegistry } from 'react-native';
 
 /**
  * Local interfaces for Codegen - must be defined in the same file
- * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, {@link SharedCreateAccountResponse}, {@link SharedAccountKey}, and {@link SharedSeedPhraseGenerationResponse} in @onflow/frw-types
+ * @see {@link SharedEnvironmentVariables} and {@link SharedCurrency} in @onflow/frw-types
  *
  * React Native Codegen limitation: Cannot resolve imported types.
  * These must stay in sync with the source types manually.
@@ -31,28 +28,11 @@ interface Currency {
   rate: string;
 }
 
-interface CreateAccountResponse {
-  success: boolean;
-  address: string | null;
-  username: string | null;
-  accountType: 'eoa' | 'coa' | null;
-  txId: string | null;
-  error: string | null;
-}
-
 // Compile-time sync validation
 const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
 const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables;
 const _currencySyncCheck: Currency = {} as SharedCurrency;
 const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
-const _createAccountResponseSyncCheck: CreateAccountResponse = {} as SharedCreateAccountResponse;
-const _createAccountResponseReverseSyncCheck: SharedCreateAccountResponse =
-  {} as CreateAccountResponse;
-const _accountKeySyncCheck: AccountKey = {} as SharedAccountKey;
-const _accountKeyReverseSyncCheck: SharedAccountKey = {} as AccountKey;
-const _seedPhraseGenerationResponseSyncCheck: SPResponse = {} as SharedSeedPhraseGenerationResponse;
-const _seedPhraseGenerationResponseReverseSyncCheck: SharedSeedPhraseGenerationResponse =
-  {} as SPResponse;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -93,62 +73,12 @@ export interface Spec extends TurboModule {
   ): void;
   hideToast(id: string): void;
   clearAllToasts(): void;
-  // Register Secure Type Account (Secure Enclave profile - hardware-backed keys)
-  // Username must be provided by RN layer (3-20 chars as per server requirement)
-  // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
-  registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
-  // Create linked COA account (for Recovery Phrase flow)
-  // Creates a COA (EVM) account linked to the current main Flow account via Cadence transaction
-  // Note: Flow account is created earlier via saveMnemonic() -> backend API address2()
-  // Returns: transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
-  createLinkedCOAAccount(): Promise<string>;
-  // Save mnemonic and initialize wallet (Keychain/KeyStore) - for EOA accounts
-  // Native handles: secure storage, Firebase auth (customToken), Wallet-Kit init, account discovery (txId)
-  // username: Original username with proper capitalization (to preserve case when backend returns lowercase)
-  // Returns: Promise<void> - resolves on success, rejects with error on failure
-  saveMnemonic(
-    mnemonic: string,
-    customToken: string,
-    txId: string,
-    username: string
-  ): Promise<void>;
-  // Sign out of Firebase and sign in anonymously (needed before creating new accounts)
-  // Returns: Promise<void> - resolves on success, rejects with error on failure
-  signOutAndSignInAnonymously(): Promise<void>;
-  // Sign in with custom token (needed after registration to authenticate for API calls)
-  // Returns: Promise<void> - resolves on success, rejects with error on failure
-  signInWithCustomToken(customToken: string): Promise<void>;
-  // Notification permissions
-  requestNotificationPermission(): Promise<boolean>;
-  checkNotificationPermission(): Promise<boolean>;
-  // Screen security
-  setScreenSecurityLevel(level: 'normal' | 'secure'): void;
   // Native logging method for additional platform-specific logging
   logToNative(
     level: 'debug' | 'info' | 'warn' | 'error',
     message: string,
     args: ReadonlyArray<string>
   ): void;
-  // Native screen navigation - unified method for launching native Android/iOS screens
-  launchNativeScreen(screenName: string, params?: string | null): void;
-  // Generate seed phrase (mnemonic) and derive account key using native wallet-core
-  // Returns: SPResponse (alias for SeedPhraseGenerationResponse) with mnemonic, accountKey, and derivation path
-  generateSeedPhrase(strength?: number): Promise<SPResponse>;
-}
-
-interface AccountKey {
-  publicKey: string;
-  hashAlgoStr: string;
-  signAlgoStr: string;
-  weight: number;
-  hashAlgo: number;
-  signAlgo: number;
-}
-
-interface SPResponse {
-  mnemonic: string;
-  accountKey: AccountKey;
-  drivepath: string;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
