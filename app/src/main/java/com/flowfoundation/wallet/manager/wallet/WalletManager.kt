@@ -877,6 +877,7 @@ object WalletManager {
             }
         }
     }
+
 }
 
 // Extension functions for backward compatibility

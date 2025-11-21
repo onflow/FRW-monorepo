@@ -103,6 +103,17 @@ class ReactNativeActivity : ReactActivity() {
         private const val TAG = "ReactNativeActivity"
 
         /**
+         * Convert ScreenType enum to screen string
+         */
+        private fun screenTypeToString(screenType: RNBridge.ScreenType): String {
+            return when (screenType) {
+                RNBridge.ScreenType.SEND_ASSET -> "send-asset"
+                RNBridge.ScreenType.TOKEN_DETAIL -> "token-detail"
+                RNBridge.ScreenType.RECEIVE -> "receive"
+            }
+        }
+
+        /**
          * Determine the route name based on screen type and sendToConfig
          */
         private fun getRouteName(screenType: RNBridge.ScreenType, sendToConfig: RNBridge.SendToConfig?): String {
@@ -122,6 +133,7 @@ class ReactNativeActivity : ReactActivity() {
                     } ?: "SelectTokens"
                 }
                 RNBridge.ScreenType.TOKEN_DETAIL -> "Home"
+                RNBridge.ScreenType.RECEIVE -> "Receive"
             }
         }
 
@@ -144,11 +156,12 @@ class ReactNativeActivity : ReactActivity() {
         /**
          * Launch the React Native Demo Activity with parameters
          */
-        fun launch(context: Context, screenType: RNBridge.ScreenType?, address: String?, network: String?) {
+        fun launch(context: Context, screenType: RNBridge.ScreenType?, address: String?, network: String?, initialRoute: String? = null) {
             Log.d(TAG, "Launching ReactNativeActivity with params:")
             Log.d(TAG, "  screenType: $screenType")
             Log.d(TAG, "  address: $address")
             Log.d(TAG, "  network: $network")
+            Log.d(TAG, "  initialRoute: $initialRoute")
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
@@ -163,14 +176,18 @@ class ReactNativeActivity : ReactActivity() {
             network?.let {
                 intent.putExtra("network", it)
             }
-            screenType?.let {
-                // Convert screen enum to string and determine route based on screen type
-                val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
-                val routeName = getRouteName(it, null)
 
+            // Use explicit initialRoute if provided, otherwise determine from screenType
+            val routeName = initialRoute ?: screenType?.let {
+                val screenString = screenTypeToString(it)
                 intent.putExtra("screen", screenString)
-                intent.putExtra("initialRoute", routeName)
+                getRouteName(it, null)
             }
+
+            routeName?.let {
+                intent.putExtra("initialRoute", it)
+            }
+
             context.startActivity(intent)
         }
 
@@ -198,7 +215,7 @@ class ReactNativeActivity : ReactActivity() {
             }
 
             // Convert screen enum to string and determine route based on screen type and config
-            val screenString = if (screenType == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+            val screenString = screenTypeToString(screenType)
             val routeName = getRouteName(screenType, sendToConfig)
 
             intent.putExtra("screen", screenString)
@@ -248,5 +265,6 @@ class ReactNativeActivity : ReactActivity() {
             val sendToConfig = RNBridge.SendToConfig(null, finalFromAccount, null, targetAddress)
             launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network)
         }
+
     }
 }

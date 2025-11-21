@@ -13,12 +13,14 @@ class RNBridge {
     enum class AccountType {
         @SerializedName("main") MAIN,
         @SerializedName("child") CHILD,
-        @SerializedName("evm") EVM
+        @SerializedName("evm") EVM,
+        @SerializedName("eoa") EOA
     }
 
     enum class ScreenType {
         @SerializedName("send-asset") SEND_ASSET,
-        @SerializedName("token-detail") TOKEN_DETAIL
+        @SerializedName("token-detail") TOKEN_DETAIL,
+        @SerializedName("receive") RECEIVE
     }
 
     data class EmojiInfo(
