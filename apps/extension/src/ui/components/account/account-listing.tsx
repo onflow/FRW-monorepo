@@ -57,23 +57,28 @@ const AccountHierarchy = ({
         showCard={false}
       />
 
-      {/* EVM account */}
-      {evmAccount && evmAccount.address && isValidEthereumAddress(evmAccount.address) && (
-        <AccountCard
-          network={network}
-          key={evmAccount.address}
-          account={evmAccount}
-          parentAccount={account}
-          active={activeAccount?.address === evmAccount.address}
-          onClick={onAccountClick ? () => onAccountClick(evmAccount, account) : undefined}
-          onClickSecondary={
-            onAccountClickSecondary ? () => onAccountClickSecondary(evmAccount, account) : undefined
-          }
-          secondaryIcon={secondaryIcon}
-          showLink={true}
-          showCard={false}
-        />
-      )}
+      {/* EVM account - only render if it has assets */}
+      {evmAccount &&
+        evmAccount.address &&
+        isValidEthereumAddress(evmAccount.address) &&
+        evmAccount.hasAssets && (
+          <AccountCard
+            network={network}
+            key={evmAccount.address}
+            account={evmAccount}
+            parentAccount={account}
+            active={activeAccount?.address === evmAccount.address}
+            onClick={onAccountClick ? () => onAccountClick(evmAccount, account) : undefined}
+            onClickSecondary={
+              onAccountClickSecondary
+                ? () => onAccountClickSecondary(evmAccount, account)
+                : undefined
+            }
+            secondaryIcon={secondaryIcon}
+            showLink={true}
+            showCard={false}
+          />
+        )}
 
       {/* Child accounts */}
       {childAccounts &&
@@ -109,7 +114,7 @@ type AccountListingProps = {
   onEnableEvmClick?: (parentAddress: string) => void;
   secondaryIcon?: React.ReactNode;
   showActiveAccount?: boolean;
-  itemSx?: any;
+  itemSx?: React.CSSProperties;
   ignoreHidden?: boolean;
 };
 
@@ -224,7 +229,7 @@ export const AccountListing = ({
       {/* EOA Accounts - Show unique EOA accounts at the top */}
       {uniqueEoaAccounts.length > 0 && (
         <>
-          {uniqueEoaAccounts.map(({ eoaAccount, parentAccount }, idx) => (
+          {uniqueEoaAccounts.map(({ eoaAccount, parentAccount }) => (
             <Box
               key={eoaAccount.address}
               sx={{
