@@ -382,7 +382,7 @@ export function AccountSelector({
                             <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
                               {account.name || 'Unnamed Account'}
                             </Text>
-                            {account.type === 'evm' && (
+                            {(account.type === 'evm' || account.type === 'eoa') && (
                               <>
                                 {isEOAAccount(account) ? (
                                   // EOA: Pure EVM account - solid blue chip
