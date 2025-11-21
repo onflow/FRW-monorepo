@@ -2,7 +2,7 @@ import {
   init,
   browserTracingIntegration,
   replayIntegration,
-  captureConsoleIntegration,
+  consoleLoggingIntegration,
   feedbackIntegration,
 } from '@sentry/react';
 
@@ -10,6 +10,7 @@ import { SENTRY_BASIC_CONFIG } from '../shared/constant/senty-constants';
 
 init({
   ...SENTRY_BASIC_CONFIG,
+  enableLogs: true, // Enable structured logging
   integrations: [
     browserTracingIntegration(),
     replayIntegration({
@@ -21,8 +22,9 @@ init({
       maxReplayDuration: 60000,
       ignore: ['.ignore-me'],
     }),
-    captureConsoleIntegration({
-      levels: ['error'],
+    // Capture console.warn and console.error as logs
+    consoleLoggingIntegration({
+      levels: ['warn', 'error'],
     }),
     feedbackIntegration({
       colorScheme: 'system',
@@ -30,3 +32,6 @@ init({
     }),
   ],
 });
+
+// User context is set by background service and automatically shared
+// No need to export setUserInSentry from UI

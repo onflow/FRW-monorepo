@@ -1,3 +1,4 @@
+import { setUserInSentry } from '@/background/sentry';
 import {
   userInfoCachekey,
   userInfoRefreshRegex,
@@ -12,6 +13,7 @@ import { type UserInfoResponse, type LoggedInAccount } from '@/shared/types';
 import { consoleError } from '@/shared/utils';
 
 import openapiService from './openapi';
+import userWalletService from './userWallet';
 import { getCurrentProfileId, returnCurrentProfileId } from '../utils/current-id';
 import createSessionStore from '../utils/persistStore';
 
@@ -129,6 +131,19 @@ class UserInfoService {
       this.userList[userIndex] = userInfoWithAvatar;
     }
     await setLocalData(storedUserListKey, this.userList);
+
+    // Update Sentry user context with user info
+    try {
+      const address = await userWalletService.getCurrentAddress();
+      setUserInSentry({
+        uid: currentId,
+        username: userInfoWithAvatar.username,
+        address: address || undefined,
+      });
+    } catch (error) {
+      // Silently fail - don't break user info update if Sentry update fails
+      consoleError('Failed to update Sentry user context:', error);
+    }
   };
 
   fetchUserInfo = async (): Promise<UserInfoResponse> => {

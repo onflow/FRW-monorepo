@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth/web-extension';
 import { getId, getInstallations } from 'firebase/installations';
 
+import { setUserInSentry } from '@/background/sentry';
 import { consoleLog } from '@/shared/utils';
 
 import { analyticsService } from './analytics';
@@ -26,22 +27,33 @@ export class AuthenticationService {
   init(firebaseConfig: FirebaseOptions) {
     this.app = initializeApp(firebaseConfig);
     const auth = this.getAuth();
-    onAuthStateChanged(auth, (user: User | null) => {
+    onAuthStateChanged(auth, async (user: User | null) => {
       if (user) {
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/firebase.User
         // const uid = user.uid;
         if (user.isAnonymous) {
           consoleLog('User is anonymous');
+          // Clear Sentry user context for anonymous users
+          setUserInSentry(null);
         } else {
           if (analyticsService) {
             analyticsService.identify(user.uid, user.displayName ?? user.uid);
           }
           consoleLog('User is signed in');
+
+          // Set Sentry user context with Firebase UID
+          // Additional user info (username, address) will be set by user service
+          setUserInSentry({
+            uid: user.uid,
+            username: user.displayName || undefined,
+          });
         }
       } else {
         // User is signed out
         consoleLog('User is signed out');
+        // Clear Sentry user context
+        setUserInSentry(null);
       }
     });
   }
