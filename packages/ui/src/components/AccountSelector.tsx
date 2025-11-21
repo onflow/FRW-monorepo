@@ -32,11 +32,12 @@ const formatBalance = (balance: string): string => {
 // COA = Cadence Owned Account / Flow-linked EVM (shows "EVM FLOW" chip)
 const isEOAAccount = (account: WalletAccount): boolean => {
   return (
-    account.type === 'evm' &&
-    (account.id === 'eoa' ||
-      account.id === '99' ||
-      account.name?.includes('EOA') ||
-      account.name?.includes('EVM Account (EOA)'))
+    account.type === 'eoa' ||
+    (account.type === 'evm' &&
+      (account.id === 'eoa' ||
+        account.id === '99' ||
+        account.name?.includes('EOA') ||
+        account.name?.includes('EVM Account (EOA)')))
   );
 };
 
@@ -147,7 +148,7 @@ export function AccountSelector({
                 >
                   {currentAccount.name || 'Unnamed Account'}
                 </Text>
-                {currentAccount.type === 'evm' && (
+                {(currentAccount.type === 'evm' || currentAccount.type === 'eoa') && (
                   <>
                     {isEOAAccount(currentAccount) ? (
                       // EOA: Pure EVM account - solid blue chip
