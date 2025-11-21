@@ -378,6 +378,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   // Create send payload for transaction execution
   createSendPayload: async (): Promise<SendPayload | null> => {
     const state = get();
+    logger.info('[SendStore] createSendPayload -- state:', state);
     const { fromAccount, toAccount, selectedToken, selectedNFTs, formData, transactionType } =
       state;
 
@@ -403,8 +404,8 @@ export const useSendStore = create<SendState>((set, get) => ({
       // Get wallet accounts for child addresses and COA
       const { accounts } = await bridge.getWalletAccounts();
       const selectedAccount = await bridge.getSelectedAccount();
-      logger.debug('[SendStore] createSendPayload -- Selected account:', selectedAccount);
-      logger.debug('[SendStore] createSendPayload -- Accounts:', accounts);
+      logger.info('[SendStore] createSendPayload -- Selected account:', selectedAccount);
+      logger.info('[SendStore] createSendPayload -- Accounts:', accounts);
       const mainAccount =
         selectedAccount.type === 'main'
           ? selectedAccount

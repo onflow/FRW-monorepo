@@ -32,7 +32,6 @@ export const SendTransaction = async (
   cadenceService: any,
   helpers: TransferExecutionHelpers = {}
 ) => {
-  logger.debug('SendTransaction payload', payload);
   logger.info('SendTransaction cadenceService', payload);
   const context = createTransferContext(cadenceService, helpers);
   return await context.execute(payload);
