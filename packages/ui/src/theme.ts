@@ -54,6 +54,8 @@ const flowColors = {
   // Accent colors
   accentEVM: '#627EEA', // EVM chip background color
 
+  green10: '#12B76A',
+
   // Essential grayscale (minimal set)
   white: '#ffffff', // used by surfaceLight1, textLight4, textDark1
   black: '#000000', // also used as inverse bg in light mode
@@ -68,6 +70,9 @@ const flowColors = {
   lightBg1: 'rgba(242, 242, 247, 1)',
 
   lightBorder1: 'rgba(0, 0, 0, 0.1)',
+  gray11: '#A1A1AA',
+
+  red10: '#F04438',
   // Dark accent colors (for use with opacity in light mode)
   dark80: 'rgba(0, 0, 0, 0.8)', // 80% black
   dark40: 'rgba(0, 0, 0, 0.4)', // 40% black
