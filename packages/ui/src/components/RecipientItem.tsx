@@ -1,5 +1,5 @@
 import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
-import { isValidEthereumAddress } from '@onflow/frw-utils';
+import { isValidEthereumAddress, isCOAAddress, isEOAAddress } from '@onflow/frw-utils';
 import React from 'react';
 import { Button, Card, XStack, YStack, Text } from 'tamagui';
 
@@ -141,64 +141,68 @@ export function RecipientItem({
             >
               {name || emojiInfo?.name}
             </Text>
-            {!isEVM && isValidEthereumAddress(address) && (
-              <XStack
-                bg="$accentEVM"
-                rounded="$4"
-                px={4}
-                items="center"
-                justify="center"
-                height={16}
-              >
-                <Text
-                  fontSize={8}
-                  fontWeight="400"
-                  color="$white"
-                  lineHeight={9.7}
-                  letterSpacing={0.128}
-                >
-                  EVM
-                </Text>
-              </XStack>
-            )}
-            {isEVM && (
-              <XStack
-                bg="$accentEVM"
-                rounded="$4"
-                pl={4}
-                items="center"
-                justify="center"
-                height={16}
-              >
-                <Text
-                  fontSize={8}
-                  fontWeight="400"
-                  color="$white"
-                  lineHeight={9.7}
-                  letterSpacing={0.128}
-                >
-                  EVM
-                </Text>
-                <XStack
-                  bg="$primaryColor"
-                  rounded="$4"
-                  px={4}
-                  ml={4}
-                  items="center"
-                  justify="center"
-                  height={16}
-                >
-                  <Text
-                    fontSize={8}
-                    fontWeight="400"
-                    color="$black"
-                    lineHeight={9.7}
-                    letterSpacing={0.128}
+            {isValidEthereumAddress(address) && (
+              <>
+                {isEOAAddress(address) && (
+                  <XStack
+                    bg="$accentEVM"
+                    rounded="$4"
+                    px={4}
+                    items="center"
+                    justify="center"
+                    height={16}
                   >
-                    FLOW
-                  </Text>
-                </XStack>
-              </XStack>
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="$white"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EVM
+                    </Text>
+                  </XStack>
+                )}
+                {isCOAAddress(address) && (
+                  <XStack
+                    bg="$accentEVM"
+                    rounded="$4"
+                    pl={4}
+                    items="center"
+                    justify="center"
+                    height={16}
+                  >
+                    <Text
+                      fontSize={8}
+                      fontWeight="400"
+                      color="$white"
+                      lineHeight={9.7}
+                      letterSpacing={0.128}
+                    >
+                      EVM
+                    </Text>
+                    <XStack
+                      bg="$primaryColor"
+                      rounded="$4"
+                      px={4}
+                      ml={4}
+                      items="center"
+                      justify="center"
+                      height={16}
+                    >
+                      <Text
+                        fontSize={8}
+                        fontWeight="400"
+                        color="$black"
+                        lineHeight={9.7}
+                        letterSpacing={0.128}
+                      >
+                        FLOW
+                      </Text>
+                    </XStack>
+                  </XStack>
+                )}
+              </>
             )}
           </XStack>
 

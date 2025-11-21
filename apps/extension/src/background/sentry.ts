@@ -10,6 +10,7 @@ import {
   breadcrumbsIntegration,
   globalHandlersIntegration,
   makeFetchTransport,
+  consoleLoggingIntegration,
   Scope,
 } from '@sentry/browser';
 
@@ -25,12 +26,17 @@ const getIsolatedSentry = (): IsolatedSentry => {
   if (!isolatedSentry) {
     const sentryClient = new BrowserClient({
       ...SENTRY_BASIC_CONFIG,
+      enableLogs: true,
       transport: makeFetchTransport,
       stackParser: defaultStackParser,
       integrations: [
         browserApiErrorsIntegration(),
         breadcrumbsIntegration(),
         globalHandlersIntegration(),
+        // Capture console.warn and console.error as logs
+        consoleLoggingIntegration({
+          levels: ['warn', 'error', 'info'],
+        }),
       ],
     });
 

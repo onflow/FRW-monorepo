@@ -1886,8 +1886,12 @@ const loadMainAccountsWithPubKey = async (
       let evmAccount: WalletAccount | undefined = undefined;
       if (rawEvmAccount?.address) {
         const hasAssets = await checkCoaHasAssets(rawEvmAccount.address);
+
+        evmAccount = rawEvmAccount;
         if (hasAssets) {
-          evmAccount = rawEvmAccount;
+          evmAccount.hasAssets = true;
+        } else {
+          evmAccount.hasAssets = false;
         }
       }
 

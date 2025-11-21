@@ -4,12 +4,14 @@ import {
   replayIntegration,
   captureConsoleIntegration,
   feedbackIntegration,
+  consoleLoggingIntegration,
 } from '@sentry/react';
 
 import { SENTRY_BASIC_CONFIG } from '../shared/constant/senty-constants';
 
 init({
   ...SENTRY_BASIC_CONFIG,
+  enableLogs: true,
   integrations: [
     browserTracingIntegration(),
     replayIntegration({
@@ -27,6 +29,9 @@ init({
     feedbackIntegration({
       colorScheme: 'system',
       autoInject: false,
+    }),
+    consoleLoggingIntegration({
+      levels: ['warn', 'error', 'info'],
     }),
   ],
 });

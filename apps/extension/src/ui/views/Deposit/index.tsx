@@ -3,7 +3,11 @@ import QRCodeStyling from 'qr-code-styling';
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 
 import { type MainAccount, type WalletAccount } from '@/shared/types';
-import { getActiveAccountTypeForAddress, isValidEthereumAddress } from '@/shared/utils';
+import {
+  getActiveAccountTypeForAddress,
+  isValidEthereumAddress,
+  isEOAAddress,
+} from '@/shared/utils';
 import { LLHeader } from '@/ui/components';
 import { AccountCard } from '@/ui/components/account/account-card';
 import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
@@ -129,15 +133,11 @@ const Deposit = () => {
     );
   }, [selectedAddress, selectedAccountParentWallet?.address]);
 
-  // Check if selected account is EOA (EOA accounts don't need the warning, only COA does)
+  // Check if selected account is EOA (EOA addresses do NOT start with 0x000000)
   const isEOAAccount = useMemo(() => {
-    if (!selectedAccount) return false;
-    return (
-      selectedAccount.id === 99 ||
-      selectedAccount.name === 'EVM Account (EOA)' ||
-      selectedAccountParentWallet?.eoaAccount?.address === selectedAccount.address
-    );
-  }, [selectedAccount, selectedAccountParentWallet?.eoaAccount?.address]);
+    if (!selectedAccount?.address) return false;
+    return isEOAAddress(selectedAccount.address);
+  }, [selectedAccount]);
 
   // Update QR code when selected address changes
   useEffect(() => {

@@ -5,7 +5,7 @@
  * with support for base64 placeholders and graceful fallbacks.
  */
 
-import { convertedSVGURL } from '@onflow/frw-utils';
+import { convertedSVGURL, logger } from '@onflow/frw-utils';
 import { Platform } from 'react-native';
 
 // Flow token placeholder image (79x78 PNG)
@@ -37,7 +37,7 @@ async function imageUrlToBase64(url: string): Promise<string | null> {
     const convertedUrl = convertedSVGURL(url);
     const response = await fetch(convertedUrl);
     if (!response.ok) {
-      console.warn('[LottieInjection] Failed to fetch image:', response.status);
+      logger.warn('[LottieInjection] Failed to fetch image:', response.status);
       return null;
     }
 
@@ -45,7 +45,7 @@ async function imageUrlToBase64(url: string): Promise<string | null> {
 
     // Android-specific: Validate that we got a valid image format to prevent bitmap crashes
     if (Platform.OS === 'android' && blob.type && !blob.type.startsWith('image/')) {
-      console.warn('[LottieInjection] Android: Invalid image format received:', blob.type);
+      logger.warn('[LottieInjection] Android: Invalid image format received:', blob.type);
       return null;
     }
 
@@ -59,7 +59,7 @@ async function imageUrlToBase64(url: string): Promise<string | null> {
           result &&
           !result.match(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/)
         ) {
-          console.warn(
+          logger.warn(
             '[LottieInjection] Android: Invalid base64 image format:',
             result.substring(0, 50)
           );
@@ -72,7 +72,7 @@ async function imageUrlToBase64(url: string): Promise<string | null> {
       reader.readAsDataURL(blob);
     });
   } catch (error) {
-    console.warn('[LottieInjection] Error converting image to base64:', error);
+    logger.warn('[LottieInjection] Error converting image to base64:', error);
     return null;
   }
 }
@@ -89,8 +89,8 @@ function injectImageIntoLottie(
     return animationData;
   }
 
-  console.log(`[LottieInjection] 🔍 Looking for image with ID: "${targetImageId}"`);
-  console.log(`[LottieInjection] 🎯 Will replace with: ${imageSource.substring(0, 100)}...`);
+  logger.debug(`[LottieInjection] 🔍 Looking for image with ID: "${targetImageId}"`);
+  logger.debug(`[LottieInjection] 🎯 Will replace with: ${imageSource.substring(0, 100)}...`);
 
   // Deep clone to avoid mutating original data
   const clonedData = JSON.parse(JSON.stringify(animationData));
@@ -109,10 +109,10 @@ function injectImageIntoLottie(
 
     // Check for image assets - log what we find
     if (node.id) {
-      console.log(`[LottieInjection] 🔎 Found node with id: "${node.id}" at path: ${path}`);
+      logger.debug(`[LottieInjection] 🔎 Found node with id: "${node.id}" at path: ${path}`);
       if (node.id === targetImageId) {
-        console.log(`[LottieInjection] 🎯 MATCH! Found target image "${targetImageId}"`);
-        console.log(`[LottieInjection] 📋 Current node structure:`, {
+        logger.debug(`[LottieInjection] 🎯 MATCH! Found target image "${targetImageId}"`);
+        logger.debug(`[LottieInjection] 📋 Current node structure:`, {
           id: node.id,
           p: node.p,
           u: node.u,
@@ -127,7 +127,7 @@ function injectImageIntoLottie(
           node.p = imageSource;
           node.u = ''; // Clear base path
           foundAndReplaced = true;
-          console.log(
+          logger.debug(
             `[LottieInjection] ✅ Replaced node.p from "${oldValue}" to "${imageSource.substring(0, 50)}..."`
           );
         } else if (node.src) {
@@ -135,11 +135,11 @@ function injectImageIntoLottie(
           const oldValue = node.src;
           node.src = imageSource;
           foundAndReplaced = true;
-          console.log(
+          logger.debug(
             `[LottieInjection] ✅ Replaced node.src from "${oldValue}" to "${imageSource.substring(0, 50)}..."`
           );
         } else {
-          console.log(
+          logger.debug(
             `[LottieInjection] ⚠️ Found target image but no 'p' or 'src' property to replace!`
           );
         }
@@ -148,7 +148,7 @@ function injectImageIntoLottie(
 
     // Check if this is an asset with refId (layers that reference images)
     if (node.refId) {
-      console.log(`[LottieInjection] 🔗 Found layer with refId: "${node.refId}" at path: ${path}`);
+      logger.debug(`[LottieInjection] 🔗 Found layer with refId: "${node.refId}" at path: ${path}`);
     }
 
     // Recursively process all properties
@@ -163,13 +163,13 @@ function injectImageIntoLottie(
   processNode(clonedData, 'root');
 
   if (foundAndReplaced) {
-    console.log(`[LottieInjection] 🎉 Successfully found and replaced image "${targetImageId}"`);
+    logger.debug(`[LottieInjection] 🎉 Successfully found and replaced image "${targetImageId}"`);
   } else {
-    console.log(`[LottieInjection] ❌ Could not find image "${targetImageId}" in animation data`);
+    logger.debug(`[LottieInjection] ❌ Could not find image "${targetImageId}" in animation data`);
 
     // Debug: Let's log the assets structure
     if (clonedData.assets) {
-      console.log(
+      logger.debug(
         `[LottieInjection] 📋 Available assets:`,
         clonedData.assets.map((asset: any) => ({
           id: asset.id,
@@ -180,7 +180,7 @@ function injectImageIntoLottie(
         }))
       );
     } else {
-      console.log(`[LottieInjection] ❌ No assets array found in animation data`);
+      logger.debug(`[LottieInjection] ❌ No assets array found in animation data`);
     }
   }
 
@@ -196,7 +196,7 @@ export async function injectImageWithFallbacks(
   imageUrl: string
 ): Promise<InjectionResult> {
   if (!animationData || !targetImageId) {
-    console.warn('[LottieInjection] Invalid parameters provided');
+    logger.warn('[LottieInjection] Invalid parameters provided');
     return {
       success: false,
       method: 'failed',
@@ -204,14 +204,14 @@ export async function injectImageWithFallbacks(
     };
   }
 
-  console.log(
+  logger.debug(
     `[LottieInjection] Starting injection for ${targetImageId} with imageUrl:`,
     imageUrl || 'PLACEHOLDER'
   );
 
   // If empty imageUrl provided, use base64 placeholder immediately
   if (!imageUrl || imageUrl.trim() === '') {
-    console.log('[LottieInjection] 📍 Using base64 placeholder for empty imageUrl');
+    logger.debug('[LottieInjection] 📍 Using base64 placeholder for empty imageUrl');
     try {
       const placeholderData = injectImageIntoLottie(
         animationData,
@@ -224,7 +224,7 @@ export async function injectImageWithFallbacks(
         animationData: placeholderData,
       };
     } catch (error) {
-      console.error('[LottieInjection] Placeholder injection failed:', error);
+      logger.error('[LottieInjection] Placeholder injection failed:', error);
       return {
         success: false,
         method: 'failed',
@@ -235,7 +235,7 @@ export async function injectImageWithFallbacks(
 
   // Android: Check for SVG content early and use placeholder to prevent crashes
   if (Platform.OS === 'android' && isSVGContent(imageUrl)) {
-    console.log(
+    logger.debug(
       '[LottieInjection] 🛡️ Android + SVG detected, using safe placeholder to prevent crash'
     );
     try {
@@ -250,7 +250,7 @@ export async function injectImageWithFallbacks(
         animationData: placeholderData,
       };
     } catch (error) {
-      console.error('[LottieInjection] SVG fallback injection failed:', error);
+      logger.error('[LottieInjection] SVG fallback injection failed:', error);
       return {
         success: false,
         method: 'failed',
@@ -265,7 +265,7 @@ export async function injectImageWithFallbacks(
       const base64Image = await imageUrlToBase64(imageUrl);
       if (base64Image) {
         const injectedData = injectImageIntoLottie(animationData, targetImageId, base64Image);
-        console.log('[LottieInjection] ✅ Successfully injected via base64');
+        logger.debug('[LottieInjection] ✅ Successfully injected via base64');
         return {
           success: true,
           method: 'base64',
@@ -273,7 +273,7 @@ export async function injectImageWithFallbacks(
         };
       }
     } catch (error) {
-      console.warn('[LottieInjection] Base64 conversion failed:', error);
+      logger.warn('[LottieInjection] Base64 conversion failed:', error);
     }
   }
 
@@ -282,28 +282,28 @@ export async function injectImageWithFallbacks(
   if (Platform.OS !== 'android') {
     try {
       const injectedData = injectImageIntoLottie(animationData, targetImageId, imageUrl);
-      console.log('[LottieInjection] ✅ Successfully injected via URL');
+      logger.debug('[LottieInjection] ✅ Successfully injected via URL');
       return {
         success: true,
         method: 'url',
         animationData: injectedData,
       };
     } catch (error) {
-      console.warn('[LottieInjection] URL injection failed:', error);
+      logger.warn('[LottieInjection] URL injection failed:', error);
     }
   }
 
   // Strategy 3: Use base64 placeholder as final fallback
   try {
     const placeholderData = injectImageIntoLottie(animationData, targetImageId, BASE64_PLACEHOLDER);
-    console.log('[LottieInjection] ⚠️ Using placeholder fallback');
+    logger.debug('[LottieInjection] ⚠️ Using placeholder fallback');
     return {
       success: true, // Mark as success since we provided a safe fallback
       method: 'base64',
       animationData: placeholderData,
     };
   } catch (error) {
-    console.error('[LottieInjection] All injection strategies failed:', error);
+    logger.error('[LottieInjection] All injection strategies failed:', error);
     return {
       success: false,
       method: 'failed',

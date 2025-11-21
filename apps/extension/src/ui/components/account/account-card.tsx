@@ -12,7 +12,7 @@ import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React from 'react';
 
 import { type WalletAccount } from '@/shared/types';
-import { isValidEthereumAddress } from '@/shared/utils';
+import { isValidEthereumAddress, isEOAAddress, isCOAAddress } from '@/shared/utils';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
@@ -71,20 +71,24 @@ export const AccountCard = ({
   const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
   const isEvmAccount = account && isValidEthereumAddress(account.address);
   const isChildAccount = hasParentAccount && !isEvmAccount;
-  // EOA accounts are identified by id === 99 or name === 'EVM Account (EOA)'
-  const isEOAAccount = isEvmAccount && (account.id === 99 || account.name === 'EVM Account (EOA)');
-  // COA (Contract-Owned Account) is an EVM account that is not EOA
-  const isCOAAccount = isEvmAccount && !isEOAAccount;
+  const isEOAAccount = account && address ? isEOAAddress(address) : false;
+  const isCOAAccount = account && address ? isCOAAddress(address) : false;
 
   const { showModal, addressToCopy, handleCopy, handleConfirmCopy, closeModal } = useCOACopy();
 
+  // If a custom icon is provided, treat it as a custom action (e.g., opening drawer)
+  const isCustomSecondaryAction =
+    React.isValidElement(secondaryIcon) && secondaryIcon.type !== CopyIcon;
+
   const handleCopyClick = () => {
     if (address) {
-      // Use the hook's handleCopy which checks for COA
-      handleCopy(address, account?.id, account?.name);
-      // If not COA, also call the original handler if provided
-      if (!isCOAAccount && onClickSecondary) {
+      if (isCustomSecondaryAction && onClickSecondary) {
         onClickSecondary();
+      } else {
+        handleCopy(address, account?.id, account?.name);
+        if (!isCOAAccount && onClickSecondary) {
+          onClickSecondary();
+        }
       }
     }
   };

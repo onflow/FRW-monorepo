@@ -8,6 +8,7 @@ import {
   CURRENT_ID_KEY,
   type RemoteConfig,
   getValidData,
+  getCachedData,
   setCachedData,
   getLocalData,
   setLocalData,
@@ -2150,6 +2151,32 @@ export class OpenApiService {
   async getUserMetadata(): Promise<any> {
     return this.sendRequest('GET', '/api/metadata/user/metadatas', {}, {}, this.store.webNextUrl);
   }
+
+  getCoaDomainsWhitelist = async (): Promise<string[]> => {
+    const CACHE_KEY = 'coa-domains-whitelist';
+
+    try {
+      const cached = await getCachedData<string[]>(CACHE_KEY);
+      if (cached && Array.isArray(cached) && cached.length > 0) {
+        return cached;
+      }
+
+      const response = await fetch(`${this.store.webNextUrl}/coa-domains.json`);
+      if (!response.ok) {
+        return [];
+      }
+      const data = await response.json();
+      const domains = Array.isArray(data) ? data : [];
+
+      if (domains.length > 0) {
+        await setCachedData(CACHE_KEY, domains, 1000 * 60 * 60); // Cache for 1 hour
+      }
+
+      return domains;
+    } catch {
+      return [];
+    }
+  };
 }
 
 const openApiService = new OpenApiService();
