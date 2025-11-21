@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { EVMBadge } from './EVMBadge';
 import { Avatar } from '../foundation/Avatar';
 import { IconButton } from '../foundation/IconButton';
 import { Text } from '../foundation/Text';
@@ -149,75 +150,7 @@ export function AccountSelector({
                   {currentAccount.name || 'Unnamed Account'}
                 </Text>
                 {(currentAccount.type === 'evm' || currentAccount.type === 'eoa') && (
-                  <>
-                    {isEOAAccount(currentAccount) ? (
-                      // EOA: Pure EVM account - solid blue chip
-                      <XStack
-                        bg="$accentEVM"
-                        rounded="$4"
-                        px={4}
-                        items="center"
-                        justify="center"
-                        height={16}
-                      >
-                        <Text
-                          fontSize={8}
-                          fontWeight="400"
-                          color="$white"
-                          lineHeight={9.7}
-                          letterSpacing={0.128}
-                        >
-                          EVM
-                        </Text>
-                      </XStack>
-                    ) : (
-                      // COA: Flow-linked EVM account - green FLOW pill overlaps blue EVM pill
-                      <XStack items="center">
-                        {/* Blue EVM pill (base layer) */}
-                        <XStack
-                          bg="$accentEVM"
-                          pl={4}
-                          pr={16}
-                          items="center"
-                          justify="center"
-                          height={16}
-                          rounded="$4"
-                          z={1}
-                        >
-                          <Text
-                            fontSize={8}
-                            fontWeight="400"
-                            color="$white"
-                            lineHeight={9.7}
-                            letterSpacing={0.128}
-                          >
-                            EVM
-                          </Text>
-                        </XStack>
-                        {/* Green FLOW pill (overlays on top with curved left edge) */}
-                        <XStack
-                          bg="$primary"
-                          px={4}
-                          ml="$-3"
-                          items="center"
-                          justify="center"
-                          height={16}
-                          rounded="$4"
-                          z={2}
-                        >
-                          <Text
-                            fontSize={8}
-                            fontWeight="400"
-                            color="$black"
-                            lineHeight={9.7}
-                            letterSpacing={0.128}
-                          >
-                            FLOW
-                          </Text>
-                        </XStack>
-                      </XStack>
-                    )}
-                  </>
+                  <EVMBadge variant={isEOAAccount(currentAccount) ? 'eoa' : 'coa'} />
                 )}
               </XStack>
 
@@ -383,75 +316,7 @@ export function AccountSelector({
                               {account.name || 'Unnamed Account'}
                             </Text>
                             {(account.type === 'evm' || account.type === 'eoa') && (
-                              <>
-                                {isEOAAccount(account) ? (
-                                  // EOA: Pure EVM account - solid blue chip
-                                  <XStack
-                                    bg="$accentEVM"
-                                    rounded="$4"
-                                    px={4}
-                                    items="center"
-                                    justify="center"
-                                    height={16}
-                                  >
-                                    <Text
-                                      fontSize={8}
-                                      fontWeight="400"
-                                      color="$white"
-                                      lineHeight={9.7}
-                                      letterSpacing={0.128}
-                                    >
-                                      EVM
-                                    </Text>
-                                  </XStack>
-                                ) : (
-                                  // COA: Flow-linked EVM account - green FLOW pill overlaps blue EVM pill
-                                  <XStack items="center">
-                                    {/* Blue EVM pill (base layer) */}
-                                    <XStack
-                                      bg="$accentEVM"
-                                      pl={4}
-                                      pr={16}
-                                      items="center"
-                                      justify="center"
-                                      height={16}
-                                      rounded="$4"
-                                      z={1}
-                                    >
-                                      <Text
-                                        fontSize={8}
-                                        fontWeight="400"
-                                        color="$white"
-                                        lineHeight={9.7}
-                                        letterSpacing={0.128}
-                                      >
-                                        EVM
-                                      </Text>
-                                    </XStack>
-                                    {/* Green FLOW pill (overlays on top with curved left edge) */}
-                                    <XStack
-                                      bg="$primary"
-                                      px={4}
-                                      ml="$-3"
-                                      items="center"
-                                      justify="center"
-                                      height={16}
-                                      rounded="$4"
-                                      z={2}
-                                    >
-                                      <Text
-                                        fontSize={8}
-                                        fontWeight="400"
-                                        color="$black"
-                                        lineHeight={9.7}
-                                        letterSpacing={0.128}
-                                      >
-                                        FLOW
-                                      </Text>
-                                    </XStack>
-                                  </XStack>
-                                )}
-                              </>
+                              <EVMBadge variant={isEOAAccount(account) ? 'eoa' : 'coa'} />
                             )}
                           </XStack>
                           <AddressText
