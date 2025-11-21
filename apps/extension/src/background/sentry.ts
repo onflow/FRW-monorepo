@@ -62,7 +62,12 @@ export const setUserInSentry = (
   userData: {
     uid?: string;
     username?: string;
-    address?: string;
+    flowAddress?: string;
+    coaAddress?: string;
+    eoaAddress?: string;
+    selectedAccount?: string;
+    network?: string;
+    version?: string;
   } | null
 ): void => {
   const { scope } = getIsolatedSentry();
@@ -71,6 +76,7 @@ export const setUserInSentry = (
     // Clear user context on logout
     scope.setUser(null);
     scope.setContext('wallet', null);
+    scope.setContext('app', null);
     return;
   }
 
@@ -80,8 +86,17 @@ export const setUserInSentry = (
     username: userData.username,
   });
 
-  // Set additional wallet context
+  // Set wallet context with all address information
   scope.setContext('wallet', {
-    address: userData.address,
+    flowAddress: userData.flowAddress,
+    coaAddress: userData.coaAddress,
+    eoaAddress: userData.eoaAddress,
+    selectedAccount: userData.selectedAccount,
+  });
+
+  // Set app context
+  scope.setContext('app', {
+    network: userData.network,
+    version: userData.version,
   });
 };

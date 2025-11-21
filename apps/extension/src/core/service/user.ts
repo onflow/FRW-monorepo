@@ -132,13 +132,35 @@ class UserInfoService {
     }
     await setLocalData(storedUserListKey, this.userList);
 
-    // Update Sentry user context with user info
+    // Update Sentry user context with comprehensive wallet info
     try {
-      const address = await userWalletService.getCurrentAddress();
+      const currentAddress = await userWalletService.getCurrentAddress();
+      const parentAccount = await userWalletService.getParentAccount();
+      const evmAccount = await userWalletService.getEvmAccount();
+      const network = userWalletService.getNetwork();
+      const accountType = await userWalletService.getActiveAccountType();
+
+      // Get app version from manifest
+      const manifest = chrome.runtime.getManifest();
+
+      // Get EOA address if available
+      let eoaAddress: string | undefined;
+      try {
+        const eoaInfo = await userWalletService.getMainAccounts();
+        eoaAddress = eoaInfo[0]?.eoaAccount?.address;
+      } catch (error) {
+        // EOA might not be available, silently continue
+      }
+
       setUserInSentry({
         uid: currentId,
         username: userInfoWithAvatar.username,
-        address: address || undefined,
+        flowAddress: parentAccount?.address || undefined,
+        coaAddress: evmAccount?.address || undefined,
+        eoaAddress: eoaAddress,
+        selectedAccount: accountType || 'unknown',
+        network: network,
+        version: manifest.version,
       });
     } catch (error) {
       // Silently fail - don't break user info update if Sentry update fails
