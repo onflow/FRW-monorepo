@@ -33,6 +33,7 @@ export const SendTransaction = async (
   helpers: TransferExecutionHelpers = {}
 ) => {
   logger.debug('SendTransaction payload', payload);
+  logger.info('SendTransaction cadenceService', payload);
   const context = createTransferContext(cadenceService, helpers);
   return await context.execute(payload);
 };

@@ -403,6 +403,8 @@ export const useSendStore = create<SendState>((set, get) => ({
       // Get wallet accounts for child addresses and COA
       const { accounts } = await bridge.getWalletAccounts();
       const selectedAccount = await bridge.getSelectedAccount();
+      logger.debug('[SendStore] createSendPayload -- Selected account:', selectedAccount);
+      logger.debug('[SendStore] createSendPayload -- Accounts:', accounts);
       const mainAccount =
         selectedAccount.type === 'main'
           ? selectedAccount
