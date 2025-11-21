@@ -2,6 +2,7 @@ import { Box, Card, CardMedia, Stack, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { MAINNET_CHAIN_ID, TESTNET_CHAIN_ID } from '@/shared/constant';
+import { type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, consoleError } from '@/shared/utils';
 import { FlowIcon } from '@/ui/assets/icons/FlowIcon';
 import linkGlobe from '@/ui/assets/svg/linkGlobe.svg';
@@ -23,8 +24,28 @@ import { AccountSelectDrawer } from './AccountSelectDrawer';
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
 // import EthMove from '../EthMove';
 
+// Whitelist of host URLs that should show COA account first
+const COA_FIRST_WHITELIST = ['flow-evm-dapp.vercel.app', 'rewards.flow.com'];
+
+const isWhitelistedForCoaFirst = (origin: string): boolean => {
+  if (!origin) return false;
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    return COA_FIRST_WHITELIST.some((whitelisted) => {
+      return hostname === whitelisted || hostname.endsWith(`.${whitelisted}`);
+    });
+  } catch {
+    return false;
+  }
+};
+
 interface ConnectProps {
-  params: any;
+  params: {
+    icon?: string;
+    name?: string;
+    origin?: string;
+  };
 }
 
 // The EthConnect component is used to connect to the dApp
@@ -52,10 +73,30 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   // This is used to interact with the wallet
   const usewallet = useWallet();
 
+  // Check if origin is whitelisted for COA first
+  const isCoaFirst = origin ? isWhitelistedForCoaFirst(origin) : false;
+  const evmAccount = parentWallet?.evmAccount;
+
   // This is used to show a loading spinner
   const [isLoading, setIsLoading] = useState(false);
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState(currentWallet);
+
+  const getInitialAccount = () => {
+    if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+      return evmAccount;
+    }
+    return currentWallet || eoaAccount;
+  };
+
+  const [selectedAccount, setSelectedAccount] = useState(getInitialAccount());
+
+  useEffect(() => {
+    if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+      setSelectedAccount(evmAccount);
+    } else if (!selectedAccount || (selectedAccount === evmAccount && !isCoaFirst)) {
+      setSelectedAccount(currentWallet || eoaAccount);
+    }
+  }, [isCoaFirst, evmAccount, currentWallet, eoaAccount, selectedAccount]);
 
   const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
 
@@ -65,7 +106,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   // This is used to initialize the component when the page is loaded
 
   const init = useCallback(async () => {
-    setLogo(icon);
+    setLogo(icon || '');
     if (!eoaAccount) return;
     if (isValidEthereumAddress(eoaAccount.address)) {
       const walletInfo = {
@@ -74,7 +115,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         chain_id: currentNetwork,
         coins: ['flow'],
         id: 1,
-        icon: icon,
+        icon: icon || '',
         color: '#282828',
         chain: currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
       };
@@ -127,7 +168,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   };
 
   const handleAccountSelect = useCallback(
-    async (account: any, parentAccount?: any) => {
+    async (account: WalletAccount, _parentAccount?: WalletAccount) => {
       // Set the selected account
       setSelectedAccount(account);
 
@@ -139,7 +180,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
           chain_id: currentNetwork,
           coins: ['flow'],
           id: account.id || 1,
-          icon: account.icon || icon,
+          icon: account.icon || icon || '',
           color: account.color || '#282828',
           chain: currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
         };
@@ -157,11 +198,14 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   }, [init]);
 
   useEffect(() => {
-    // Sync selected account with current wallet when it changes
     if (currentWallet) {
-      setSelectedAccount(currentWallet);
+      if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+        setSelectedAccount(evmAccount);
+      } else {
+        setSelectedAccount(currentWallet);
+      }
     }
-  }, [currentWallet]);
+  }, [currentWallet, isCoaFirst, evmAccount]);
 
   const networkDisplayName = currentNetwork === 'testnet' ? 'Flow Testnet' : 'Flow Mainnet';
   const hasValidEoaAccount = eoaAccount && isValidEthereumAddress(eoaAccount.address);
@@ -184,7 +228,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
           {/* Header with app icon and name */}
           {hasValidEoaAccount && (
             <Box sx={{ display: 'flex', gap: '13px', alignItems: 'flex-start' }}>
-              <IconWithPlaceholder imageUrl={icon} />
+              <IconWithPlaceholder imageUrl={icon || ''} />
               <Stack direction="column" sx={{ justifyContent: 'space-between' }}>
                 <Typography
                   sx={{
@@ -206,7 +250,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
                     color: '#FFFFFF',
                   }}
                 >
-                  {name}
+                  {name || 'Unknown'}
                 </Typography>
               </Stack>
             </Box>
@@ -282,7 +326,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
                     lineHeight: '20px',
                   }}
                 >
-                  {origin} is requesting access to:
+                  {origin || 'Unknown'} is requesting access to:
                 </Typography>
               </Box>
             </Card>
@@ -435,6 +479,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         parentWallet={parentWallet}
         activeAccount={selectedAccount || currentWallet}
         onAccountSelect={handleAccountSelect}
+        showCoaFirst={isCoaFirst}
       />
     </Box>
   );
