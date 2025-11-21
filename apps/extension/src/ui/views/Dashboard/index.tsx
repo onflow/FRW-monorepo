@@ -47,16 +47,16 @@ const Dashboard = () => {
         id: userInfo.id,
         username: userInfo.username,
       });
-      const { eoaAccount = null, childAccounts = [] } = currentWallet;
+      const { eoaAccount = null, childAccounts = [], evmAccount = null } = currentWallet;
       setExtras({
         COA: eoaAccount ? eoaAccount.address : '',
-        EOA: '',
-        selectedAccount: '',
+        EOA: evmAccount ? evmAccount.address : '',
+        selectedAccount: currentWallet.address,
         flowAccount: currentWallet?.address,
         childs: childAccounts.map((item) => item.address).join(','),
       });
     }
-  }, [userInfo, mainAddress]);
+  }, [userInfo, mainAddress, currentWallet]);
 
   return (
     <Box
