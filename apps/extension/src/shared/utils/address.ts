@@ -62,3 +62,31 @@ export const getActiveAccountTypeForAddress = (
   }
   throw new Error(`Invalid active account address: ${address}`);
 };
+
+/**
+ * Checks if an EVM address is a COA
+ * COA addresses start with 0x000000
+ * @param address - The address to check
+ * @returns true if the address is a COA, false otherwise
+ */
+export const isCOAAddress = (address: string): boolean => {
+  if (!isValidEthereumAddress(address)) {
+    return false;
+  }
+  // Ensure address has 0x prefix for comparison
+  const normalizedAddress = address.startsWith('0x') ? address : `0x${address}`;
+  return normalizedAddress.toLowerCase().startsWith('0x000000');
+};
+
+/**
+ * Checks if an EVM address is an EOA
+ * EOA addresses do NOT start with 0x000000
+ * @param address - The address to check
+ * @returns true if the address is an EOA, false otherwise
+ */
+export const isEOAAddress = (address: string): boolean => {
+  if (!isValidEthereumAddress(address)) {
+    return false;
+  }
+  return !isCOAAddress(address);
+};

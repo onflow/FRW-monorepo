@@ -52,7 +52,8 @@ const flowColors = {
   error10: 'rgba(240, 68, 56, 0.1)', // Error red 10%
 
   // Accent colors
-  accentEVM: '#627EEA', // EVM chip background color
+  accentEVM: '#627EEA', // EVM chip background color (COA - Cadence Owned Account)
+  accentEOA: '#FF8A00', // EOA chip background color (Externally Owned Account)
 
   // Essential grayscale (minimal set)
   white: '#ffffff', // used by surfaceLight1, textLight4, textDark1
@@ -368,6 +369,7 @@ const themesBuilder = createThemeBuilder()
 
       // Accent colors
       accentEVM: flowColors.accentEVM, // $accentEVM
+      accentEOA: flowColors.accentEOA, // $accentEOA
 
       // Light accent shortcuts (for dark mode usage)
       light80: flowColors.light80, // $light80

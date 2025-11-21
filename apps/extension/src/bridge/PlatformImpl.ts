@@ -9,14 +9,11 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
-import {  WalletCoreProvider } from '@onflow/frw-wallet';
+import { WalletCoreProvider } from '@onflow/frw-wallet';
 import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
-import {
-  EVM_ENDPOINT,
-  HTTP_STATUS_TOO_MANY_REQUESTS,
-} from '@/shared/constant';
+import { EVM_ENDPOINT, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
