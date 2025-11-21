@@ -1730,6 +1730,14 @@ export class WalletController extends BaseController {
   privateKeyToUint8Array = (privateKeyHex: string): Uint8Array => {
     return userWalletService.privateKeyToUint8Array(privateKeyHex);
   };
+
+  /**
+   * Get COA domains whitelist from API
+   * @returns Array of whitelisted domain strings
+   */
+  getCoaDomainsWhitelist = async (): Promise<string[]> => {
+    return await openapiService.getCoaDomainsWhitelist();
+  };
 }
 
 export default new WalletController();

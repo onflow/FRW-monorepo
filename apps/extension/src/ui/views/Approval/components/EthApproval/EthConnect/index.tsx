@@ -19,20 +19,27 @@ import {
   COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80,
   COLOR_GREEN_FLOW_DARKMODE_00EF8B,
 } from '@/ui/style/color';
+import type { WalletControllerType } from '@/ui/utils/WalletContext';
 
 import { AccountSelectDrawer } from './AccountSelectDrawer';
 import IconWithPlaceholder from '../EthApprovalComponents/IconWithPlaceholder';
 // import EthMove from '../EthMove';
 
-// Whitelist of host URLs that should show COA account first
-const COA_FIRST_WHITELIST = ['flow-evm-dapp.vercel.app', 'rewards.flow.com'];
+const fetchCoaDomainsWhitelist = async (wallet: WalletControllerType): Promise<string[]> => {
+  try {
+    return await wallet.getCoaDomainsWhitelist();
+  } catch (error) {
+    consoleError('Error fetching coa-domains whitelist:', error as Error);
+    return [];
+  }
+};
 
-const isWhitelistedForCoaFirst = (origin: string): boolean => {
-  if (!origin) return false;
+const isWhitelistedForCoaFirst = (origin: string, whitelist: string[]): boolean => {
+  if (!origin || whitelist.length === 0) return false;
   try {
     const url = new URL(origin);
     const hostname = url.hostname;
-    return COA_FIRST_WHITELIST.some((whitelisted) => {
+    return whitelist.some((whitelisted) => {
       return hostname === whitelisted || hostname.endsWith(`.${whitelisted}`);
     });
   } catch {
@@ -73,9 +80,16 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   // This is used to interact with the wallet
   const usewallet = useWallet();
 
-  // Check if origin is whitelisted for COA first
-  const isCoaFirst = origin ? isWhitelistedForCoaFirst(origin) : false;
+  const [coaWhitelist, setCoaWhitelist] = useState<string[]>([]);
   const evmAccount = parentWallet?.evmAccount;
+
+  // Fetch whitelist on mount
+  useEffect(() => {
+    fetchCoaDomainsWhitelist(usewallet).then(setCoaWhitelist);
+  }, [usewallet]);
+
+  // Check if origin is whitelisted for COA first
+  const isCoaFirst = origin ? isWhitelistedForCoaFirst(origin, coaWhitelist) : false;
 
   // This is used to show a loading spinner
   const [isLoading, setIsLoading] = useState(false);
@@ -89,14 +103,20 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   };
 
   const [selectedAccount, setSelectedAccount] = useState(getInitialAccount());
+  const [userSelectedAccount, setUserSelectedAccount] = useState<WalletAccount | null>(null);
 
   useEffect(() => {
+    // Only auto-select if user hasn't manually selected an account
+    if (userSelectedAccount) {
+      return;
+    }
+    
     if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
       setSelectedAccount(evmAccount);
     } else if (!selectedAccount || (selectedAccount === evmAccount && !isCoaFirst)) {
       setSelectedAccount(currentWallet || eoaAccount);
     }
-  }, [isCoaFirst, evmAccount, currentWallet, eoaAccount, selectedAccount]);
+  }, [isCoaFirst, evmAccount, currentWallet, eoaAccount, selectedAccount, userSelectedAccount]);
 
   const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
 
@@ -169,8 +189,9 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
 
   const handleAccountSelect = useCallback(
     async (account: WalletAccount, _parentAccount?: WalletAccount) => {
-      // Set the selected account
+      // Set the selected account and mark it as user-selected
       setSelectedAccount(account);
+      setUserSelectedAccount(account);
 
       // Update the active wallet in the wallet service
       if (account.address) {
@@ -198,6 +219,11 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   }, [init]);
 
   useEffect(() => {
+    // Only auto-select if user hasn't manually selected an account
+    if (userSelectedAccount) {
+      return;
+    }
+    
     if (currentWallet) {
       if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
         setSelectedAccount(evmAccount);
@@ -205,7 +231,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
         setSelectedAccount(currentWallet);
       }
     }
-  }, [currentWallet, isCoaFirst, evmAccount]);
+  }, [currentWallet, isCoaFirst, evmAccount, userSelectedAccount]);
 
   const networkDisplayName = currentNetwork === 'testnet' ? 'Flow Testnet' : 'Flow Mainnet';
   const hasValidEoaAccount = eoaAccount && isValidEthereumAddress(eoaAccount.address);
