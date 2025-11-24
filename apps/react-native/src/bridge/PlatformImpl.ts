@@ -378,15 +378,16 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  // Create linked COA account (for Recovery Phrase flow)
-  // Creates a COA (EVM) account linked to the current main Flow account via Cadence transaction
-  // Note: Flow account is created earlier via saveMnemonic() -> backend API address2()
+  // Link COA account on-chain (for Recovery Phrase flow)
+  // Executes an on-chain Cadence transaction to link the COA to the user's Flow address
+  // IMPORTANT: The Flow address AND COA are already created by the backend during registration
+  // This function only executes the on-chain linking transaction after the wallet is initialized
   // Returns transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
-  async createLinkedCOAAccount(): Promise<string> {
+  async linkCOAAccountOnChain(): Promise<string> {
     try {
-      return await NativeFRWBridge.createLinkedCOAAccount();
+      return await NativeFRWBridge.linkCOAAccountOnChain();
     } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to create linked COA account via bridge:', error);
+      this.log('error', '[PlatformImpl] Failed to link COA account on-chain via bridge:', error);
       throw error; // Re-throw the error to propagate to caller
     }
   }

@@ -79,6 +79,22 @@ export interface Spec extends TurboModule {
     message: string,
     args: ReadonlyArray<string>
   ): void;
+  // Onboarding methods
+  registerSecureTypeAccount(username: string): Promise<object>;
+  linkCOAAccountOnChain(): Promise<string>;
+  generateSeedPhrase(strength?: number | null): Promise<object>;
+  signOutAndSignInAnonymously(): Promise<void>;
+  signInWithCustomToken(customToken: string): Promise<void>;
+  saveMnemonic(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void>;
+  requestNotificationPermission(): Promise<boolean>;
+  checkNotificationPermission(): Promise<boolean>;
+  setScreenSecurityLevel(level: 'normal' | 'secure'): void;
+  launchNativeScreen(screenName: string, params?: string | null): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

@@ -386,40 +386,35 @@ export function ConfirmRecoveryPhraseScreen({
         // 12. UI transition (native closes RN view)
         // 13. Optional notification permission
 
-        // Step 14: Create linked COA account (in addition to EOA and Flow account)
+        // Step 14: Link COA account on-chain (in addition to EOA and Flow account)
         // Recovery phrase flow creates: EOA (seed phrase), Flow account (via backend), and COA (EVM) account
-        // Flow account is created earlier via backend API address2(), COA is linked to the main Flow account
-        logger.info('[ConfirmRecoveryPhraseScreen] Step 14: Creating linked COA account...');
+        // IMPORTANT: Flow account AND COA are already created by backend, this only links them on-chain
+        logger.info('[ConfirmRecoveryPhraseScreen] Step 14: Linking COA account on-chain...');
 
-        if (bridge.createLinkedCOAAccount) {
+        if (bridge.linkCOAAccountOnChain) {
           logger.info(
-            '[ConfirmRecoveryPhraseScreen] Creating linked COA account via Cadence transaction'
+            '[ConfirmRecoveryPhraseScreen] Linking COA account on-chain via Cadence transaction'
           );
 
-          const txId = await bridge.createLinkedCOAAccount();
+          const txId = await bridge.linkCOAAccountOnChain();
 
-          // Handle case where COA account already exists (e.g., account reuse or previous partial creation)
+          // Handle case where COA account already linked (e.g., account reuse or previous partial creation)
           if (txId === 'COA_ALREADY_EXISTS') {
-            logger.info(
-              '[ConfirmRecoveryPhraseScreen] COA account already exists, skipping creation'
-            );
-            // Continue flow normally - COA account is already available
+            logger.info('[ConfirmRecoveryPhraseScreen] COA account already linked, skipping');
+            // Continue flow normally - COA account is already linked
           } else if (!txId || typeof txId !== 'string') {
-            throw new Error('Failed to create linked COA account: invalid transaction ID');
+            throw new Error('Failed to link COA account on-chain: invalid transaction ID');
           } else {
-            logger.info(
-              '[ConfirmRecoveryPhraseScreen] Linked COA account creation transaction submitted:',
-              {
-                txId,
-              }
-            );
+            logger.info('[ConfirmRecoveryPhraseScreen] COA link transaction submitted:', {
+              txId,
+            });
 
             // Note: Transaction finalization and COA verification are handled in native code
             // The COA should be available when onboarding completes
           }
         } else {
-          logger.warn('[ConfirmRecoveryPhraseScreen] createLinkedCOAAccount not available');
-          throw new Error('Linked COA account creation not supported on this platform');
+          logger.warn('[ConfirmRecoveryPhraseScreen] linkCOAAccountOnChain not available');
+          throw new Error('COA account linking not supported on this platform');
         }
 
         // Navigate to notification preferences with accountType parameter
