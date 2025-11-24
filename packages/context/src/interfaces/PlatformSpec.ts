@@ -1,10 +1,14 @@
-import type {
-  Currency,
-  Platform,
-  RecentContactsResponse,
-  WalletAccount,
-  WalletAccountsResponse,
-  WalletProfilesResponse,
+import {
+  type CreateAccountResponse,
+  type CreateEOAAccountResponse,
+  type Currency,
+  type NativeScreenName,
+  type Platform,
+  type RecentContactsResponse,
+  type SeedPhraseGenerationResponse,
+  type WalletAccount,
+  type WalletAccountsResponse,
+  type WalletProfilesResponse,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -93,4 +97,58 @@ export interface PlatformSpec {
   hideToast?(id: string): void;
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
+
+  // Onboarding methods - Account creation
+  // EOA: Externally Owned Account (pure mnemonic-based, no server)
+  createEOAAccount?(): Promise<CreateEOAAccountResponse>;
+  // Generate seed phrase (mnemonic) and derive account key using native wallet-core
+  // Returns: SeedPhraseGenerationResponse with mnemonic, accountKey, and derivation path
+  generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
+
+  // Register Secure Type Account (Secure Enclave profile - hardware-backed keys)
+  // Username must be provided by caller (3-20 chars as per server requirement)
+  // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
+  // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
+  // Returns: CreateAccountResponse with txId for native-side account verification (matches EOA flow)
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>;
+
+  // Link COA account on-chain (for Recovery Phrase flow)
+  // Executes an on-chain Cadence transaction to link the COA to the user's Flow address
+  // IMPORTANT: The Flow address AND COA are already created by the backend during registration via saveMnemonic() -> backend API
+  // This function only executes the on-chain linking transaction after the wallet is initialized
+  // Returns: transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA is already linked
+  // This is different from registerSecureTypeAccount which creates a new Secure Enclave-backed account
+  linkCOAAccountOnChain?(): Promise<string>;
+
+  // Save mnemonic to secure storage and initialize wallet (iOS Keychain / Android KeyStore)
+  // For EOA accounts: mnemonic + customToken + txId + username
+  // username: Original username with proper capitalization (to preserve case when backend returns lowercase)
+  // Native layer handles: secure storage, Firebase auth, Wallet-Kit init, account discovery
+  // Returns: Promise<void> - resolves on success, throws error on failure
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void>;
+
+  // Sign out of Firebase and sign in anonymously (needed before creating new accounts)
+  // Ensures clean authentication state for account creation (matches COA flow)
+  // Returns: Promise<void> - resolves on success, throws error on failure
+  signOutAndSignInAnonymously?(): Promise<void>;
+  // Sign in with custom token (needed after registration to authenticate for API calls)
+  // Returns: Promise<void> - resolves on success, throws error on failure
+  signInWithCustomToken?(customToken: string): Promise<void>;
+
+  // Notification permission methods
+  requestNotificationPermission?(): Promise<boolean>;
+  checkNotificationPermission?(): Promise<boolean>;
+
+  // Screen security methods
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
+
+  // Native screen navigation - unified method for launching native Android/iOS screens
+  // screenName: identifier for the screen to launch (use NativeScreenName enum)
+  // params: optional JSON string with screen-specific parameters
+  launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
 }
