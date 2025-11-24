@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 // import { getTrx } from '../src/utils';
-// import { SendTransaction } from '../src';
+import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
-import { authz, bridgeAuthorizationOnly } from './utils/authz';
+import { authz, bridgeAuthorizationOnly, payerAuthorization } from './utils/authz';
 // import { convertHexToByteArray } from '../src/send/utils';
 
 dotenv.config();
@@ -21,7 +21,7 @@ describe('Test NFT send strategies', () => {
     configureFCL('mainnet');
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        config.payer = authz;
+        config.payer = payerAuthorization;
         config.proposer = authz;
         config.authorizations = config.name.includes('WithPayer')
           ? [authz, bridgeAuthorizationOnly]
@@ -56,25 +56,25 @@ describe('Test NFT send strategies', () => {
   //   expect(txid.length).toBe(64);
   // });
 
-  // it('Test TopShotNftStrategy - TopShot NFT transfer', async () => {
-  //   const payload = {
-  //     type: 'nft',
-  //     assetType: 'flow',
-  //     proposer: mainAccount.address,
-  //     receiver: mainAccount.address,
-  //     flowIdentifier: 'A.0b2a3299cc857e29.TopShot.NFT',
-  //     sender: mainAccount.address,
-  //     amount: '0',
-  //     childAddrs: [],
-  //     ids: [17884712],
-  //     decimal: 0,
-  //     coaAddr: mainAccount.evmAddr,
-  //     tokenContractAddr: '',
-  //   };
+  it('Test TopShotNftStrategy - TopShot NFT transfer', async () => {
+    const payload = {
+      type: 'nft',
+      assetType: 'flow',
+      proposer: mainAccount.address,
+      receiver: mainAccount.address,
+      flowIdentifier: 'A.0b2a3299cc857e29.TopShot.NFT',
+      sender: mainAccount.address,
+      amount: '0',
+      childAddrs: [],
+      ids: [17884712],
+      decimal: 0,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
 
-  //   const txid = await SendTransaction(payload);
-  //   expect(txid.length).toBe(64);
-  // });
+    const txid = await SendTransaction(payload, cadenceService);
+    expect(txid.length).toBe(64);
+  });
 
   // it('Test FlowToEvmNftBridgeStrategy - Bridge NFT to EVM address', async () => {
 
