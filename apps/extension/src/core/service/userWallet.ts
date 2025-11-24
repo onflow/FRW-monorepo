@@ -3,6 +3,7 @@ import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { CadenceService } from '@onflow/frw-cadence';
 import { BIP44_PATHS } from '@onflow/frw-wallet';
+import { captureException } from '@sentry/react';
 import * as ethUtil from 'ethereumjs-util';
 import { signInAnonymously } from 'firebase/auth/web-extension';
 import { TransactionError } from 'web3';
@@ -1043,6 +1044,20 @@ class UserWallet {
         tx_id: txId,
         is_successful: false,
         error_message: errorMessage,
+      });
+
+      // Report to Sentry with error code classification
+      captureException(err instanceof Error ? err : new Error(errorMessage), {
+        tags: {
+          flow_error_code: errorCode ? `code-${errorCode}` : 'unknown',
+          flow_network: network,
+        },
+        extra: {
+          txId,
+          address,
+          errorMessage,
+          errorCode,
+        },
       });
 
       // Notify about the error through callback

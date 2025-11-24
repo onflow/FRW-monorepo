@@ -10,6 +10,7 @@ import {
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
 import { WalletCoreProvider } from '@onflow/frw-wallet';
+import { addBreadcrumb, type SeverityLevel } from '@sentry/browser';
 import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
@@ -564,16 +565,32 @@ class ExtensionPlatformImpl implements PlatformSpec {
       return;
     }
 
-    const prefix = `[FRW-Extension-${level.toUpperCase()}]`;
+    const prefix = `[FW-${level.toUpperCase()}]`;
     const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
+
+    // Send to Sentry as Breadcrumb
+    try {
+      const sentryLevel = level === 'warn' ? 'warning' : level;
+      addBreadcrumb({
+        category: 'console',
+        message: fullMessage,
+        level: sentryLevel as SeverityLevel,
+        type: 'default',
+      });
+    } catch (error) {
+      // Ignore sentry errors
+    }
 
     // Console logging for development
     switch (level) {
       case 'debug':
-        console.log(prefix, message, ...args);
+        console.debug(prefix, message, ...args);
         break;
       case 'info':
-        console.info(prefix, message, ...args);
+        // Only log info to console in debug mode to keep prod console clean
+        if (this.debugMode) {
+          console.info(prefix, message, ...args);
+        }
         break;
       case 'warn':
         console.warn(prefix, message, ...args);
