@@ -103,7 +103,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
               items="center"
               px={44} // Left and right padding equal to close button width + spacing (24 + 20 = 44)
             >
-              <Text id="info-dialog-title" fontSize="$4" fontWeight="600" color="$text" ta="center">
+              <Text id="info-dialog-title" fontSize="$4" fontWeight="700" color="$text" ta="center">
                 {title}
               </Text>
             </YStack>
@@ -128,7 +128,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Close size={10} color={theme.white.val} style={{ alignSelf: 'center' }} />
+            <Close size={24} color="rgba(255, 255, 255, 0.8)" style={{ alignSelf: 'center' }} />
           </YStack>
         </YStack>
 

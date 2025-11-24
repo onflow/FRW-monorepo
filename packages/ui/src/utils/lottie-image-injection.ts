@@ -89,6 +89,9 @@ function injectImageIntoLottie(
     return animationData;
   }
 
+  logger.debug(`[LottieInjection] 🔍 Looking for image with ID: "${targetImageId}"`);
+  logger.debug(`[LottieInjection] 🎯 Will replace with: ${imageSource.substring(0, 100)}...`);
+
   // Deep clone to avoid mutating original data
   const clonedData = JSON.parse(JSON.stringify(animationData));
   let foundAndReplaced = false;
@@ -106,8 +109,17 @@ function injectImageIntoLottie(
 
     // Check for image assets - log what we find
     if (node.id) {
+      logger.debug(`[LottieInjection] 🔎 Found node with id: "${node.id}" at path: ${path}`);
       if (node.id === targetImageId) {
         logger.debug(`[LottieInjection] 🎯 MATCH! Found target image "${targetImageId}"`);
+        logger.debug(`[LottieInjection] 📋 Current node structure:`, {
+          id: node.id,
+          p: node.p,
+          u: node.u,
+          src: node.src,
+          w: node.w,
+          h: node.h,
+        });
 
         if (node.p) {
           // Standard Lottie image asset
@@ -132,6 +144,11 @@ function injectImageIntoLottie(
           );
         }
       }
+    }
+
+    // Check if this is an asset with refId (layers that reference images)
+    if (node.refId) {
+      logger.debug(`[LottieInjection] 🔗 Found layer with refId: "${node.refId}" at path: ${path}`);
     }
 
     // Recursively process all properties
@@ -186,6 +203,11 @@ export async function injectImageWithFallbacks(
       animationData,
     };
   }
+
+  logger.debug(
+    `[LottieInjection] Starting injection for ${targetImageId} with imageUrl:`,
+    imageUrl || 'PLACEHOLDER'
+  );
 
   // If empty imageUrl provided, use base64 placeholder immediately
   if (!imageUrl || imageUrl.trim() === '') {
@@ -251,7 +273,7 @@ export async function injectImageWithFallbacks(
         };
       }
     } catch (error) {
-      logger.debug('[LottieInjection] Base64 conversion failed:', error);
+      logger.warn('[LottieInjection] Base64 conversion failed:', error);
     }
   }
 
@@ -267,7 +289,7 @@ export async function injectImageWithFallbacks(
         animationData: injectedData,
       };
     } catch (error) {
-      logger.debug('[LottieInjection] URL injection failed:', error);
+      logger.warn('[LottieInjection] URL injection failed:', error);
     }
   }
 
