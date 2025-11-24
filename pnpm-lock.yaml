@@ -1203,24 +1203,12 @@ importers:
       '@babel/runtime':
         specifier: ^7.28.2
         version: 7.28.4
-      '@noble/curves':
-        specifier: ^1.7.0
-        version: 1.9.7
-      '@noble/hashes':
-        specifier: ^1.6.1
-        version: 1.8.0
       '@onflow/fcl':
         specifier: ^1.12.4
         version: 1.20.2(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.0.0)(tsx@4.20.6)(typescript@5.7.2)(yaml@2.8.1)(zod@3.25.76)
       '@onflow/frw-cadence':
         specifier: workspace:*
         version: link:../cadence
-      '@scure/bip32':
-        specifier: ^1.6.0
-        version: 1.7.0
-      '@scure/bip39':
-        specifier: ^1.6.0
-        version: 1.6.0
       '@trustwallet/wallet-core':
         specifier: ^4.0.50
         version: 4.3.15
@@ -3285,6 +3273,7 @@ packages:
   '@outblock/cadence-codegen@0.0.9':
     resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
     engines: {node: '>=14'}
+    cpu: [x64, arm64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -15469,9 +15458,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
