@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 /**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
- * Matches extension implementation: uses /v3/register endpoint
  */
 export class ProfileService {
   private static instance: ProfileService;

@@ -300,10 +300,9 @@ export function ConfirmRecoveryPhraseScreen({
       const username = generateRandomUsername();
       logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
 
-      // Register user profile using ProfileService (wraps UserGoService.register1 - /v1/register endpoint)
+      // Register user profile using ProfileService
       const profileSvc = ProfileService.getInstance();
       // Use account key from native bridge (already has correct sign_algo and hash_algo)
-      // Extension uses /v1/register endpoint which doesn't require deviceInfo
       const registerResponse = await profileSvc.register({
         username,
         accountKey: {
