@@ -130,11 +130,6 @@ export function ConfirmRecoveryPhraseScreen({
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
   // Theme-aware glassmorphic backgrounds
-  const isDark =
-    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
-
-  const disabledBg = isDark ? 'rgba(107, 114, 128, 0.5)' : 'rgba(0, 0, 0, 0.1)';
-  const disabledText = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
 
   // Get data from navigation params
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
@@ -504,13 +499,9 @@ export function ConfirmRecoveryPhraseScreen({
                                     fontWeight="500"
                                     color={
                                       isCorrectSelection
-                                        ? isDark
-                                          ? '#00EF8B'
-                                          : '#00D77D'
+                                        ? theme.color.green6.val
                                         : isWrong
-                                          ? isDark
-                                            ? '#EF4444'
-                                            : '#DC2626'
+                                          ? theme.color.red6.val
                                           : '$text'
                                     }
                                     text="center"
@@ -536,12 +527,12 @@ export function ConfirmRecoveryPhraseScreen({
             <YStack
               width="100%"
               height={52}
-              bg={!allAnswersCorrect ? disabledBg : '$text'}
+              bg={!allAnswersCorrect ? '$bg3' : '$text'}
               rounded={16}
               items="center"
               justify="center"
               borderWidth={1}
-              borderColor={!allAnswersCorrect ? disabledBg : '$text'}
+              borderColor={!allAnswersCorrect ? '$bg3' : '$text'}
               opacity={!allAnswersCorrect ? 0.7 : 1}
               pressStyle={{ opacity: 0.9 }}
               onPress={!allAnswersCorrect ? undefined : handleFinish}
@@ -550,7 +541,7 @@ export function ConfirmRecoveryPhraseScreen({
               <Text
                 fontSize="$4"
                 fontWeight="700"
-                color={!allAnswersCorrect ? disabledText : '$bg'}
+                color={!allAnswersCorrect ? theme.color.gray8.val : '$bg'}
               >
                 {t('onboarding.confirmRecoveryPhrase.finish')}
               </Text>
