@@ -437,7 +437,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       return result;
     } catch (error: any) {
       logger.error('[SendTokensScreen] Transaction failed:', error);
-      showError(error, bridge, 'Transaction failed');
+      showError(error, bridge, t('send.failed'));
     }
     return null;
   }, [
