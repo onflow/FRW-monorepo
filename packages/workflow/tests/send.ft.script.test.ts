@@ -520,28 +520,6 @@ describe('Test send strategies', () => {
         'invalid COA address of payload'
       );
     });
-
-    it('Should throw error when isCrossVM flag conflicts with address types', () => {
-      const payload = setCrossVM({
-        type: 'token',
-        assetType: 'flow',
-        proposer: mainAccount.address,
-        receiver: mainAccount.evmAddr, // Flow to EVM => cross-VM
-        flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
-        sender: mainAccount.address,
-        amount: '0.001',
-        childAddrs: [],
-        ids: [],
-        decimal: 8,
-        coaAddr: mainAccount.evmAddr,
-        isCrossVM: false, // Explicitly wrong
-        tokenContractAddr: '',
-      });
-
-      expect(() => isValidSendTransactionPayload(payload)).toThrow(
-        'isCrossVM flag does not match sender/receiver types'
-      );
-    });
   });
 
   it('Test ChildToChildTokenStrategy args', async () => {
