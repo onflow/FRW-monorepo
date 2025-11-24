@@ -82,7 +82,7 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'send-asset' | 'token-detail' | 'onboarding';
+  screen: 'send-asset' | 'token-detail' | 'onboarding' | 'receive';
   sendToConfig?: string;
 }
 

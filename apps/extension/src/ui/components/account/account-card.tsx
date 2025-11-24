@@ -8,13 +8,15 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
+import { COAAddressCopyModal } from '@onflow/frw-ui';
 import React from 'react';
 
 import { type WalletAccount } from '@/shared/types';
-import { isValidEthereumAddress } from '@/shared/utils';
+import { isValidEthereumAddress, isEOAAddress, isCOAAddress } from '@/shared/utils';
 import { CopyIcon } from '@/ui/assets/icons/CopyIcon';
 import { LinkIcon } from '@/ui/assets/icons/LinkIcon';
 import { useAccountBalance } from '@/ui/hooks/use-account-hooks';
+import { useCOACopy } from '@/ui/hooks/use-coa-copy';
 import { useCadenceNftCollectionsAndIds } from '@/ui/hooks/useNftHook';
 import {
   COLOR_ACCENT_EVM_627EEA,
@@ -69,8 +71,27 @@ export const AccountCard = ({
   const hasParentAccount = account && parentAccount && parentAccount.address !== account.address;
   const isEvmAccount = account && isValidEthereumAddress(account.address);
   const isChildAccount = hasParentAccount && !isEvmAccount;
-  // EOA accounts are identified by id === 99 or name === 'EVM Account (EOA)'
-  const isEOAAccount = isEvmAccount && (account.id === 99 || account.name === 'EVM Account (EOA)');
+  const isEOAAccount = account && address ? isEOAAddress(address) : false;
+  const isCOAAccount = account && address ? isCOAAddress(address) : false;
+
+  const { showModal, addressToCopy, handleCopy, handleConfirmCopy, closeModal } = useCOACopy();
+
+  // If a custom icon is provided, treat it as a custom action (e.g., opening drawer)
+  const isCustomSecondaryAction =
+    React.isValidElement(secondaryIcon) && secondaryIcon.type !== CopyIcon;
+
+  const handleCopyClick = () => {
+    if (address) {
+      if (isCustomSecondaryAction && onClickSecondary) {
+        onClickSecondary();
+      } else {
+        handleCopy(address, account?.id, account?.name);
+        if (!isCOAAccount && onClickSecondary) {
+          onClickSecondary();
+        }
+      }
+    }
+  };
 
   // Only show NFTs for child accounts
   const nftCatalogCollections = useCadenceNftCollectionsAndIds(
@@ -225,12 +246,23 @@ export const AccountCard = ({
           </Typography>
         </Box>
       </CardActionArea>
-      {onClickSecondary && !isPending && (
+      {!isPending && (
         <CardActions sx={{ padding: '0px', marginLeft: 'auto' }}>
-          <IconButton onClick={onClickSecondary} aria-label="Copy address" disabled={!address}>
+          <IconButton onClick={handleCopyClick} aria-label="Copy address" disabled={!address}>
             {secondaryIcon}
           </IconButton>
         </CardActions>
+      )}
+      {addressToCopy && (
+        <COAAddressCopyModal
+          visible={showModal}
+          onClose={closeModal}
+          onConfirm={() => handleConfirmCopy(addressToCopy)}
+          address={addressToCopy}
+          title={chrome.i18n.getMessage('COA_Modal_Title')}
+          warningMessage={chrome.i18n.getMessage('COA_Modal_Warning')}
+          confirmButtonText={chrome.i18n.getMessage('COA_Modal_Confirm_Button')}
+        />
       )}
     </Card>
   );

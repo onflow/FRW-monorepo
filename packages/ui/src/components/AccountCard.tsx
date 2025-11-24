@@ -216,7 +216,7 @@ export function AccountCard({
           {/* Copy Icon */}
           {showCopyButton && (
             <IconButton
-              icon={<Copy size={24} color="#FFFFFF" theme="outline" />}
+              icon={<Copy size={24} color="#767676" theme="outline" />}
               variant="ghost"
               size="small"
               onPress={() => onCopyAddress?.(account.address)}

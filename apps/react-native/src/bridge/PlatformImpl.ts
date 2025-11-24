@@ -42,12 +42,16 @@ class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
 
-  // Optional platform-specific logging callback using native bridge
-  logCallback?: (
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    ...args: unknown[]
-  ) => void = (level, message, ...args) => {
+  log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
+    if (level === 'debug' && !this.debugMode) {
+      return;
+    }
+
+    const prefix = `[FRW-${level.toUpperCase()}]`;
+    const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
+    const formattedPrefix = `%c${prefix}`;
+    const styleArgs = [CONSOLE_STYLES[level]];
+
     // Use native bridge for additional logging
     try {
       // Convert all args to strings for native bridge compatibility
@@ -58,17 +62,6 @@ class PlatformImpl implements PlatformSpec {
     } catch (error) {
       // Silently fail - don't use console here to avoid recursion
     }
-  };
-
-  log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
-    if (level === 'debug' && !this.debugMode) {
-      return;
-    }
-
-    const prefix = `[FRW-${level.toUpperCase()}]`;
-    const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
-    const formattedPrefix = `%c${prefix}`;
-    const styleArgs = [CONSOLE_STYLES[level]];
 
     // Console logging for development - always use console directly
     switch (level) {
