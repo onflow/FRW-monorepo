@@ -1,6 +1,7 @@
 import { Drawer } from '@mui/material';
 import Box from '@mui/material/Box';
-import React, { useState } from 'react';
+import { setUser, setExtras } from '@sentry/react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import { ButtonRow } from '@/ui/components';
@@ -21,7 +22,16 @@ const Dashboard = () => {
   const { network, emulatorModeOn } = useNetwork();
   const { balance, coinsLoaded } = useCoins();
   const currency = useCurrency();
-  const { noAddress, registerStatus, canMoveToOtherAccount, activeAccountType } = useProfiles();
+  const {
+    noAddress,
+    registerStatus,
+    canMoveToOtherAccount,
+    activeAccountType,
+    userInfo,
+    mainAddress,
+    currentWallet,
+    currentWalletList,
+  } = useProfiles();
   const navigate = useNavigate();
   const location = useLocation();
   // Use this to show the onramp drawer. Navigate to dashboard?onramp=true
@@ -29,6 +39,24 @@ const Dashboard = () => {
   const [showMoveBoard, setShowMoveBoard] = useState(false);
 
   const swapLink = getSwapLink(network, activeAccountType);
+
+  useEffect(() => {
+    console.log(currentWallet, 'userInfo====', mainAddress, currentWalletList);
+    if (userInfo && userInfo.id && currentWallet) {
+      setUser({
+        id: userInfo.id,
+        username: userInfo.username,
+      });
+      const { eoaAccount = null, childAccounts = [], evmAccount = null } = currentWallet;
+      setExtras({
+        COA: eoaAccount ? eoaAccount.address : '',
+        EOA: evmAccount ? evmAccount.address : '',
+        selectedAccount: currentWallet.address,
+        flowAccount: currentWallet?.address,
+        childs: childAccounts.map((item) => item.address).join(','),
+      });
+    }
+  }, [userInfo, mainAddress, currentWallet]);
 
   return (
     <Box

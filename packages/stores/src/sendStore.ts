@@ -378,6 +378,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   // Create send payload for transaction execution
   createSendPayload: async (): Promise<SendPayload | null> => {
     const state = get();
+    logger.info('[SendStore] createSendPayload -- state:', state);
     const { fromAccount, toAccount, selectedToken, selectedNFTs, formData, transactionType } =
       state;
 
@@ -403,6 +404,8 @@ export const useSendStore = create<SendState>((set, get) => ({
       // Get wallet accounts for child addresses and COA
       const { accounts } = await bridge.getWalletAccounts();
       const selectedAccount = await bridge.getSelectedAccount();
+      logger.info('[SendStore] createSendPayload -- Selected account:', selectedAccount);
+      logger.info('[SendStore] createSendPayload -- Accounts:', accounts);
       const mainAccount =
         selectedAccount.type === 'main'
           ? selectedAccount
@@ -424,6 +427,10 @@ export const useSendStore = create<SendState>((set, get) => ({
         logger.error('[SendStore] No main account found');
         return null;
       }
+      const senderType = addressType(fromAccount.address);
+      const receiverType = addressType(toAccount.address);
+      const isCrossVM = senderType !== receiverType;
+
       const contractAddress = isTokenTransaction
         ? selectedToken?.evmAddress ||
           (selectedToken?.identifier?.includes('1654653399040a61.FlowToken')
@@ -478,7 +485,7 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
-        assetType: addressType(fromAccount.address),
+        assetType: senderType,
         proposer: mainAccount.address,
         receiver: toAccount.address,
         flowIdentifier,
@@ -494,6 +501,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : nftAmount,
         decimal: selectedToken?.decimal || 8,
         coaAddr: coaAddr,
+        isCrossVM,
         tokenContractAddr: contractAddress,
       };
 
