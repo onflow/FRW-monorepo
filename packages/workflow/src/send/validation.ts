@@ -77,7 +77,7 @@ export const validateNftPayload = (payload: SendPayload): void => {
  * @throws Error with descriptive message if validation fails
  */
 export const isValidSendTransactionPayload = (payload: SendPayload): boolean => {
-  const { type, assetType, proposer, receiver, flowIdentifier = '', sender } = payload;
+  const { type, assetType, proposer, receiver, flowIdentifier = '', sender, coaAddr } = payload;
 
   // Validate proposer address format (must be Flow address)
   if (!validateFlowAddress(proposer)) {
@@ -96,6 +96,10 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
 
   if (assetType === 'flow' && !flowIdentifier) {
     throw new Error('flowIdentifier of transaction payload is missing');
+  }
+
+  if (coaAddr && !validateEvmAddress(coaAddr)) {
+    throw new Error('invalid COA address of payload');
   }
 
   // Validate asset-specific requirements
