@@ -5,9 +5,6 @@
 
 import type { HDWallet } from '@trustwallet/wallet-core/dist/src/wallet-core';
 
-// Wallet Core integration - Web/Extension uses WASM implementation
-// Note: React Native onboarding uses native bridge (NativeFRWBridge.generateSeedPhrase)
-// instead of WalletCoreProvider. This module is for extension/web use only.
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import {
   EthSigner,
@@ -262,38 +259,21 @@ export class SeedPhraseKey
     );
 
     try {
-      // Determine curve based on signature algorithm
-      // For native implementation, use string identifiers; for web, use core.Curve enum
+      const core = await WalletCoreProvider['ensureInitialized']();
+
+      // Determine curve based on signature algorithm (matches iOS WCCurve)
       let curve: any;
-      try {
-        // Try to get core (web/WASM implementation)
-        const core = await WalletCoreProvider['getCore']();
-        switch (signAlgo) {
-          case SignatureAlgorithm.ECDSA_P256:
-            curve = core.Curve.nist256p1;
-            break;
-          case SignatureAlgorithm.ECDSA_secp256k1:
-            curve = core.Curve.secp256k1;
-            break;
-          default:
-            throw WalletError.UnsupportedSignatureAlgorithm({
-              details: { signatureAlgorithm: signAlgo },
-            });
-        }
-      } catch {
-        // Native implementation - use string identifiers
-        switch (signAlgo) {
-          case SignatureAlgorithm.ECDSA_P256:
-            curve = 'nist256p1';
-            break;
-          case SignatureAlgorithm.ECDSA_secp256k1:
-            curve = 'secp256k1';
-            break;
-          default:
-            throw WalletError.UnsupportedSignatureAlgorithm({
-              details: { signatureAlgorithm: signAlgo },
-            });
-        }
+      switch (signAlgo) {
+        case SignatureAlgorithm.ECDSA_P256:
+          curve = core.Curve.nist256p1;
+          break;
+        case SignatureAlgorithm.ECDSA_secp256k1:
+          curve = core.Curve.secp256k1;
+          break;
+        default:
+          throw WalletError.UnsupportedSignatureAlgorithm({
+            details: { signatureAlgorithm: signAlgo },
+          });
       }
 
       // Sign with the private key and curve (matches iOS pk.sign(digest: hashed, curve: curve))

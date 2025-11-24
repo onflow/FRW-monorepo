@@ -237,12 +237,7 @@ export class EthSigner {
     if (clean.length % 2 !== 0) {
       clean = `0${clean}`;
     }
-    // Convert hex string to Uint8Array (React Native compatible - no Buffer)
-    const bytes = new Uint8Array(clean.length / 2);
-    for (let i = 0; i < clean.length; i += 2) {
-      bytes[i / 2] = parseInt(clean.slice(i, i + 2), 16);
-    }
-    return bytes;
+    return Uint8Array.from(Buffer.from(clean, 'hex'));
   }
 
   private static stripHexPrefix(value: string): string {
