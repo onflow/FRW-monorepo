@@ -1,10 +1,11 @@
-import { UserGoService } from '@onflow/frw-api';
+import { Userv3Service } from '@onflow/frw-api';
 import { logger } from '@onflow/frw-utils';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
- * Matches extension implementation: uses /v1/register endpoint
+ * Matches extension implementation: uses /v3/register endpoint
  */
 export class ProfileService {
   private static instance: ProfileService;
@@ -24,7 +25,7 @@ export class ProfileService {
   /**
    * Register a new user profile with the backend
    * This is the correct API for EOA account creation (not COA)
-   * Matches extension implementation: uses /v1/register endpoint (not /v3/register)
+   * Matches extension implementation: uses /v3/register endpoint (not /v1/register)
    *
    * @param params - Registration parameters
    * @param params.username - Username for the new profile
@@ -35,7 +36,7 @@ export class ProfileService {
     username: string;
     accountKey: {
       public_key: string;
-      sign_algo: number; // 2 for ECDSA_secp256k1 (extension default)
+      sign_algo: number; // 2 for ECD-SA_secp256k1 (extension default)
       hash_algo: number; // 1 for SHA2_256 (extension default)
     };
   }): Promise<{
@@ -46,14 +47,7 @@ export class ProfileService {
     };
   }> {
     try {
-      logger.info('[ProfileService] Registering new user profile:', {
-        username: params.username,
-        publicKey: params.accountKey.public_key.slice(0, 16) + '...',
-        signAlgo: params.accountKey.sign_algo,
-        hashAlgo: params.accountKey.hash_algo,
-      });
-
-      // Prepare request payload (v1/register only takes username and account_key, no device_info)
+      // Prepare request payload (v3/register takes username, account_key and device_info)
       const requestPayload = {
         username: params.username,
         accountKey: {
@@ -62,49 +56,41 @@ export class ProfileService {
           hash_algo: params.accountKey.hash_algo,
           weight: 1000, // Default weight for Flow accounts (required by backend)
         },
+        deviceInfo: {
+          device_id: uuidv4(),
+          type: 'frw-sdk',
+          platform: 'browser',
+        },
       };
 
-      // Log request payload (without sensitive data)
-      logger.debug('[ProfileService] Request payload:', {
+      // Single consolidated log before registration
+      logger.info('[ProfileService] Registering user:', {
         username: requestPayload.username,
         accountKey: {
           public_key: requestPayload.accountKey.public_key.slice(0, 16) + '...',
           public_key_length: requestPayload.accountKey.public_key.length,
-          public_key_full: requestPayload.accountKey.public_key, // Log full key for debugging
           sign_algo: requestPayload.accountKey.sign_algo,
           hash_algo: requestPayload.accountKey.hash_algo,
           weight: requestPayload.accountKey.weight,
         },
       });
 
-      // Log the exact data that will be sent (after API codegen transformation)
-      logger.debug('[ProfileService] About to call UserGoService.register1 with:', {
-        username: requestPayload.username,
-        accountKey: requestPayload.accountKey,
-      });
-
-      // Validate public key format before sending
+      // Validate public key format and length for ECDSA secp256k1 (64 bytes = 128 hex chars)
       const publicKeyHex = requestPayload.accountKey.public_key;
-      if (!/^[0-9a-fA-F]+$/.test(publicKeyHex)) {
-        logger.error('[ProfileService] Invalid public key format - contains non-hex characters');
-        throw new Error('Invalid public key format: must be hexadecimal string');
-      }
-
-      // For ECDSA secp256k1, public key should be 128 hex characters (64 bytes)
-      if (requestPayload.accountKey.sign_algo === 2 && publicKeyHex.length !== 128) {
-        logger.error('[ProfileService] Invalid public key length for ECDSA secp256k1:', {
+      if (requestPayload.accountKey.sign_algo === 2 && !/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
+        logger.error('[ProfileService] Invalid public key for ECDSA secp256k1:', {
           length: publicKeyHex.length,
           expected: 128,
-          publicKey: publicKeyHex.slice(0, 32) + '...',
+          isHex: /^[0-9a-fA-F]+$/.test(publicKeyHex),
         });
         throw new Error(
-          `Invalid public key length for ECDSA secp256k1: expected 128 hex characters, got ${publicKeyHex.length}`
+          `Invalid public key for ECDSA secp256k1: expected 128 hexadecimal characters (64 bytes), got ${publicKeyHex.length}`
         );
       }
 
       // Axios wraps the response in a 'data' property
       // The TypeScript type says Promise<controllers_UserReturn> but axios returns { data: controllers_UserReturn }
-      const response = (await UserGoService.register1(requestPayload)) as any; // Type assertion needed because axios wraps response
+      const response = (await Userv3Service.register(requestPayload)) as any; // Type assertion needed because axios wraps response
 
       // Handle both axios response structure and direct response
       const userReturn = response.data || response;
@@ -142,18 +128,13 @@ export class ProfileService {
           url: requestUrl,
           method: requestMethod,
           responseData: responseData || 'No response data',
-          responseDataString: JSON.stringify(responseData, null, 2),
-          requestBody: error.config?.data
-            ? JSON.parse(error.config.data)
-            : 'Unable to parse request body',
           requestPayload: {
             username: params.username,
             accountKey: {
               public_key: params.accountKey.public_key.slice(0, 16) + '...',
-              public_key_full: params.accountKey.public_key,
               sign_algo: params.accountKey.sign_algo,
               hash_algo: params.accountKey.hash_algo,
-              weight: 1000, // Default weight we're sending
+              weight: 1000,
             },
           },
         });
@@ -201,29 +182,12 @@ export class ProfileService {
       logger.info('[ProfileService] Creating Flow address...');
 
       // Extension uses /v2/user/address (createFlowAddressV2)
-      // UserGoService.address2() calls /v2/user/address (matches extension implementation)
-      logger.debug('[ProfileService] Calling UserGoService.address2()...');
-      const response = (await UserGoService.address2()) as any;
-
-      // Log the full response for debugging
-      logger.debug('[ProfileService] address2() response:', {
-        responseType: typeof response,
-        responseKeys: response ? Object.keys(response) : [],
-        responseData: response?.data,
-        fullResponse: response,
-      });
+      // Userv3Service.address2() calls /v2/user/address (matches extension implementation)
+      const response = (await Userv3Service.address2()) as any;
 
       // Handle both axios response structure and direct response
       // The response.data is the transaction ID string directly
       const addressData = response.data || response;
-
-      // Log the parsed address data
-      logger.debug('[ProfileService] Parsed address data:', {
-        addressDataType: typeof addressData,
-        addressDataKeys:
-          addressData && typeof addressData === 'object' ? Object.keys(addressData) : [],
-        addressData: addressData,
-      });
 
       // The transaction ID is directly in response.data as a string
       // If it's a string, that's the txid. If it's an object, check for txid property
@@ -251,21 +215,13 @@ export class ProfileService {
         },
       };
     } catch (error: any) {
-      // Log detailed error information for debugging
-      const errorResponseData = error?.response?.data;
       logger.error('[ProfileService] Failed to create Flow address:', {
-        errorMessage: error?.message,
-        errorStatus: error?.response?.status,
-        errorStatusText: error?.response?.statusText,
-        errorUrl: error?.config?.url || error?.request?.responseURL,
-        errorMethod: error?.config?.method,
-        errorResponseData: errorResponseData,
-        errorResponseDataString: errorResponseData
-          ? JSON.stringify(errorResponseData, null, 2)
-          : 'No response data',
-        errorResponseHeaders: error?.response?.headers,
-        requestHeaders: error?.config?.headers,
-        fullError: error,
+        message: error?.message,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        url: error?.config?.url || error?.request?.responseURL,
+        method: error?.config?.method,
+        responseData: error?.response?.data,
       });
       throw error;
     }

@@ -248,34 +248,47 @@ export function ConfirmRecoveryPhraseScreen({
         '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'
       );
 
-      // Step 5: Use account key from native bridge (generated via wallet-core)
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Using account key from native bridge');
+      // Step 1: Validate all required data and bridge methods before starting
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 1: Validating prerequisites...');
 
+      // Check account key
       if (!accountKey) {
         throw new Error(
           'Account key not available from bridge. Please regenerate the recovery phrase.'
         );
       }
 
-      const publicKeyHex = accountKey.publicKey;
-
-      // Validate public key format
-      if (!/^[0-9a-fA-F]+$/.test(publicKeyHex)) {
-        logger.error(
-          '[ConfirmRecoveryPhraseScreen] Invalid public key format - contains non-hex characters'
-        );
-        throw new Error('Invalid public key format: must be hexadecimal string');
+      // Check mnemonic
+      if (!mnemonic || typeof mnemonic !== 'string' || mnemonic.trim().length === 0) {
+        throw new Error('Mnemonic not available. Please regenerate the recovery phrase.');
       }
 
-      // Validate public key length for ECDSA secp256k1 (should be 64 bytes = 128 hex chars)
-      if (publicKeyHex.length !== 128) {
-        logger.error('[ConfirmRecoveryPhraseScreen] Invalid public key length:', {
+      // Check required bridge methods upfront
+      const missingMethods: string[] = [];
+      if (!bridge.signInWithCustomToken) missingMethods.push('signInWithCustomToken');
+      if (!bridge.saveMnemonic) missingMethods.push('saveMnemonic');
+      if (!bridge.linkCOAAccountOnChain) missingMethods.push('linkCOAAccountOnChain');
+
+      if (missingMethods.length > 0) {
+        const errorMsg = `Missing required bridge methods: ${missingMethods.join(', ')}`;
+        logger.error('[ConfirmRecoveryPhraseScreen]', errorMsg);
+        throw new Error(`Platform not supported: ${errorMsg}`);
+      }
+
+      logger.info('[ConfirmRecoveryPhraseScreen] All prerequisites validated successfully');
+
+      const publicKeyHex = accountKey.publicKey;
+
+      // Validate public key format and length for ECDSA secp256k1 (64 bytes = 128 hex chars)
+      if (!/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
+        logger.error('[ConfirmRecoveryPhraseScreen] Invalid public key:', {
           length: publicKeyHex.length,
           expected: 128,
+          isHex: /^[0-9a-fA-F]+$/.test(publicKeyHex),
           // Note: Never log publicKey - sensitive data
         });
         throw new Error(
-          `Invalid public key length: expected 128 hex characters (64 bytes), got ${publicKeyHex.length}`
+          `Invalid public key: expected 128 hexadecimal characters (64 bytes), got ${publicKeyHex.length}`
         );
       }
 
@@ -286,10 +299,8 @@ export function ConfirmRecoveryPhraseScreen({
         // Note: Never log publicKey - sensitive data
       });
 
-      // Step 6: Register with backend using ProfileService
-      // Note: Remote version worked without signOutAndSignInAnonymously() or signInWithCustomToken()
-      // It relies on anonymous Firebase auth that's already active
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering with backend...');
+      // Step 2: Register with backend using ProfileService
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 2: Registering with backend...');
 
       // Generate random username using word combinations
       const username = generateRandomUsername();
@@ -320,116 +331,49 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('Registration response missing user id');
       }
 
-      // Step 6.5: Authenticate with custom token (matches extension's _loginWithToken behavior)
-      // Extension's register() automatically calls _loginWithToken() which signs in with custom token
-      // This replaces any existing Firebase user (handles multi-profile scenario)
-      // Then createFlowAddressV2() is called immediately after
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 6.5: Authenticating with custom token...');
+      // Step 3: Authenticate with custom token
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 3: Authenticating with custom token...');
+      await bridge.signInWithCustomToken(customToken);
+      logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
 
-      try {
-        logger.info('[ConfirmRecoveryPhraseScreen] Calling bridge.signInWithCustomToken()...');
-        await bridge.signInWithCustomToken(customToken);
-        logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
+      // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
+      logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
+      await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
+      logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
 
-        // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
-        // The API interceptor needs the refreshed token to authenticate with the backend
-        logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
-        await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
-        logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
-      } catch (error) {
-        logger.error('[ConfirmRecoveryPhraseScreen] Custom token authentication failed:', error);
-        throw error; // Re-throw to stop the flow
-      }
-
-      // Create Flow address (triggers on-chain account creation) using ProfileService
-      // Matches extension: createFlowAddressV2() called immediately after register()
-      logger.info('[ConfirmRecoveryPhraseScreen] Creating Flow address...');
+      // Step 4: Create Flow address (triggers on-chain account creation)
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
       const addressResponse = await profileSvc.createFlowAddress();
-
       const txId = addressResponse.data.txid;
-      logger.info('[ConfirmRecoveryPhraseScreen] Flow address creation initiated, txId:', txId);
+      logger.info('[ConfirmRecoveryPhraseScreen] Flow address created, txId:', txId);
 
       // Validate transaction ID
       if (!txId || typeof txId !== 'string') {
         throw new Error('Flow address creation response missing or invalid transaction ID');
       }
 
-      // Step 7: Data handoff to native layer
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 7: Passing data to native layer...');
-      logger.info('[ConfirmRecoveryPhraseScreen] Parameters for saveMnemonic:', {
-        mnemonicLength: mnemonic?.length || 0,
-        customTokenLength: customToken?.length || 0,
-        txIdLength: txId?.length || 0,
-        mnemonicType: typeof mnemonic,
-        customTokenType: typeof customToken,
-        txIdType: typeof txId,
-      });
+      // Step 5: Save mnemonic to native secure storage
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Saving mnemonic to native storage...');
+      await bridge.saveMnemonic(mnemonic, customToken, txId, username);
+      logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully');
 
-      if (bridge.saveMnemonic) {
-        // Pass mnemonic, customToken, txId, and username to native for:
-        // - Secure storage (Step 8)
-        // - Firebase authentication (Step 9)
-        // - Wallet-Kit initialization (Step 10)
-        // - Fast account discovery using txId (Step 11)
-        // - Preserving original username capitalization (backend may return lowercase)
-        // saveMnemonic now throws errors on failure, so we can just await it
-        await bridge.saveMnemonic(mnemonic, customToken, txId, username);
+      // Step 6: Link COA account on-chain
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Linking COA account on-chain...');
+      const coaTxId = await bridge.linkCOAAccountOnChain();
 
-        logger.info('[ConfirmRecoveryPhraseScreen] Native handoff successful!');
-        logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete');
-
-        // Steps 8-13 are handled by native layer:
-        // 8. Secure storage
-        // 9. Firebase authentication
-        // 10. Wallet-Kit initialization
-        // 11. Fast account discovery (using txId)
-        // 12. UI transition (native closes RN view)
-        // 13. Optional notification permission
-
-        // Step 14: Link COA account on-chain (in addition to EOA and Flow account)
-        // Recovery phrase flow creates: EOA (seed phrase), Flow account (via backend), and COA (EVM) account
-        // IMPORTANT: Flow account AND COA are already created by backend, this only links them on-chain
-        logger.info('[ConfirmRecoveryPhraseScreen] Step 14: Linking COA account on-chain...');
-
-        if (bridge.linkCOAAccountOnChain) {
-          logger.info(
-            '[ConfirmRecoveryPhraseScreen] Linking COA account on-chain via Cadence transaction'
-          );
-
-          const txId = await bridge.linkCOAAccountOnChain();
-
-          // Handle case where COA account already linked (e.g., account reuse or previous partial creation)
-          if (txId === 'COA_ALREADY_EXISTS') {
-            logger.info('[ConfirmRecoveryPhraseScreen] COA account already linked, skipping');
-            // Continue flow normally - COA account is already linked
-          } else if (!txId || typeof txId !== 'string') {
-            throw new Error('Failed to link COA account on-chain: invalid transaction ID');
-          } else {
-            logger.info('[ConfirmRecoveryPhraseScreen] COA link transaction submitted:', {
-              txId,
-            });
-
-            // Note: Transaction finalization and COA verification are handled in native code
-            // The COA should be available when onboarding completes
-          }
-        } else {
-          logger.warn('[ConfirmRecoveryPhraseScreen] linkCOAAccountOnChain not available');
-          throw new Error('COA account linking not supported on this platform');
-        }
-
-        // Navigate to notification preferences with accountType parameter
-        // Recovery phrase flow should skip BackupOptionsScreen
-        navigation.navigate('NotificationPreferences', { accountType: 'recovery' });
+      // Handle case where COA account already linked
+      if (coaTxId === 'COA_ALREADY_EXISTS') {
+        logger.info('[ConfirmRecoveryPhraseScreen] COA account already linked, skipping');
+      } else if (!coaTxId || typeof coaTxId !== 'string') {
+        throw new Error('Failed to link COA account on-chain: invalid transaction ID');
       } else {
-        // Fallback for web/extension (no native bridge)
-        logger.warn(
-          '[ConfirmRecoveryPhraseScreen] No native bridge available, skipping native handoff'
-        );
-
-        // For web/extension, we'd handle Firebase auth here directly
-        // But for now, just navigate with accountType parameter
-        navigation.navigate('NotificationPreferences', { accountType: 'recovery' });
+        logger.info('[ConfirmRecoveryPhraseScreen] COA link transaction submitted:', coaTxId);
       }
+
+      logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete!');
+
+      // Navigate to notification preferences
+      navigation.navigate('NotificationPreferences', { accountType: 'recovery' });
     } catch (error: any) {
       logger.error('[ConfirmRecoveryPhraseScreen] Failed to create EOA account:', error);
 

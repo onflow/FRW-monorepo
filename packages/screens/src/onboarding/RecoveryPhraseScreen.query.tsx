@@ -10,22 +10,16 @@ import {
   AccountCreationLoadingState,
   useTheme,
 } from '@onflow/frw-ui';
-import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { useQueryClient } from '../providers/QueryProvider';
 
 /**
  * RecoveryPhraseScreen - Generates and displays recovery phrase
  * Uses native wallet-core bridge to generate mnemonic and derive account key
- * Phrase is stored temporarily until user verifies it
+ * Phrase is generated once on mount and passed to next screen as navigation param
  */
 
-// Generate recovery phrase using native wallet-core bridge
-// This generates the seed phrase and account key but does NOT create an account yet
-// Account will be created after user verifies the phrase
-const generateRecoveryPhrase = async (): Promise<{
+interface PhraseData {
   phrase: string[];
   mnemonic: string;
   accountKey: {
@@ -37,41 +31,16 @@ const generateRecoveryPhrase = async (): Promise<{
     signAlgo: number;
   };
   drivepath: string;
-}> => {
-  try {
-    // Generate 12-word mnemonic (128-bit entropy) using native wallet-core bridge
-    const response = await bridge.generateSeedPhrase(128);
-    const phrase = response.mnemonic.trim().split(/\s+/);
-
-    logger.info(
-      '[RecoveryPhraseScreen] Generated mnemonic via native bridge with',
-      phrase.length,
-      'words'
-    );
-
-    if (phrase.length !== 12) {
-      throw new Error(`Expected 12 words, got ${phrase.length}`);
-    }
-
-    return {
-      phrase,
-      mnemonic: response.mnemonic,
-      accountKey: response.accountKey,
-      drivepath: response.drivepath,
-    };
-  } catch (error) {
-    logger.error('[RecoveryPhraseScreen] Failed to generate mnemonic:', error);
-    throw new Error('Failed to generate recovery phrase: ' + (error as Error).message);
-  }
-};
+}
 
 export function RecoveryPhraseScreen(): React.ReactElement {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const theme = useTheme();
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
-  const [isResettingAuth, setIsResettingAuth] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(true);
+  const [phraseData, setPhraseData] = useState<PhraseData | null>(null);
+  const [generateError, setGenerateError] = useState<Error | null>(null);
 
   // Theme-aware glassmorphic backgrounds
   const isDark =
@@ -80,19 +49,15 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   const glassBorder = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
   const glassIcon = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)';
 
-  // Reset Firebase auth and invalidate cache when screen mounts (for new profile creation)
+  // Generate mnemonic once on mount
   useEffect(() => {
-    const resetForNewProfile = async () => {
+    let isMounted = true;
+
+    const generatePhrase = async () => {
       try {
-        logger.info('[RecoveryPhraseScreen] Resetting for new profile creation...');
+        logger.info('[RecoveryPhraseScreen] Starting mnemonic generation...');
 
-        // Remove all cached mnemonic queries to ensure fresh generation
-        queryClient.removeQueries({
-          queryKey: ['onboarding', 'generate-phrase'],
-        });
-        logger.info('[RecoveryPhraseScreen] Removed all cached mnemonic queries');
-
-        // Sign out and sign in anonymously to ensure clean Firebase state
+        // Reset Firebase auth for new profile creation
         if (bridge.signOutAndSignInAnonymously) {
           try {
             await bridge.signOutAndSignInAnonymously();
@@ -105,30 +70,45 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             // Continue anyway - if already anonymous, that's fine
           }
         }
+
+        // Generate 12-word mnemonic (128-bit entropy) using native wallet-core bridge
+        const response = await bridge.generateSeedPhrase(128);
+        const phrase = response.mnemonic.trim().split(/\s+/);
+
+        logger.info('[RecoveryPhraseScreen] Generated mnemonic with', phrase.length, 'words');
+
+        if (phrase.length !== 12) {
+          throw new Error(`Expected 12 words, got ${phrase.length}`);
+        }
+
+        if (isMounted) {
+          setPhraseData({
+            phrase,
+            mnemonic: response.mnemonic,
+            accountKey: response.accountKey,
+            drivepath: response.drivepath,
+          });
+        }
       } catch (error) {
-        logger.error('[RecoveryPhraseScreen] Error resetting for new profile:', error);
-        // Continue anyway - don't block the user
+        logger.error('[RecoveryPhraseScreen] Failed to generate mnemonic:', error);
+        if (isMounted) {
+          setGenerateError(
+            error instanceof Error ? error : new Error('Failed to generate recovery phrase')
+          );
+        }
       } finally {
-        setIsResettingAuth(false);
+        if (isMounted) {
+          setIsGenerating(false);
+        }
       }
     };
 
-    resetForNewProfile();
-  }, []); // Empty deps - run once on mount
+    generatePhrase();
 
-  // Generate recovery phrase (mnemonic only, account creation happens after verification)
-  const {
-    data: phraseData,
-    isLoading: isGenerating,
-    error: generateError,
-  } = useQuery({
-    queryKey: ['onboarding', 'generate-phrase'],
-    queryFn: generateRecoveryPhrase,
-    enabled: !isResettingAuth, // Wait for auth reset before generating
-    staleTime: 0, // Always generate fresh mnemonic
-    gcTime: 0, // Don't cache - each profile needs a unique mnemonic
-    retry: false, // Don't retry on error
-  });
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty deps - run once on mount
 
   // Enable screenshot protection when screen mounts
   useEffect(() => {
@@ -137,17 +117,12 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       bridge.setScreenSecurityLevel('secure');
     }
 
-    // Cleanup: disable screenshot protection and clear sensitive data when unmounting
+    // Cleanup: disable screenshot protection when unmounting
     return () => {
-      logger.info(
-        '[RecoveryPhraseScreen] Disabling screenshot protection and clearing sensitive data'
-      );
+      logger.info('[RecoveryPhraseScreen] Disabling screenshot protection');
       if (bridge.setScreenSecurityLevel) {
         bridge.setScreenSecurityLevel('normal');
       }
-
-      // Clear account data from query cache when leaving this screen
-      // This helps ensure the mnemonic doesn't stay in memory longer than needed
     };
   }, []);
 
@@ -155,8 +130,8 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   const recoveryPhrase = phraseData?.phrase || [];
   const mnemonic = phraseData?.mnemonic || '';
 
-  // Show loading state while resetting auth or generating phrase
-  const isLoading = isResettingAuth || isGenerating;
+  // Show loading state while generating phrase
+  const isLoading = isGenerating;
 
   const handleBack = () => {
     navigation.goBack();
