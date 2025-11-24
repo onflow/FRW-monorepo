@@ -52,9 +52,9 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
   return (
     <OnboardingBackground>
-      <YStack flex={1} px="$4">
+      <YStack flex={1} px="$4" pt="$4">
         {/* Custom back button */}
-        <YStack pt="$4" pb="$2">
+        <YStack pt="$6">
           <IconButton
             icon={<ArrowLeft color={theme.text.val} size={24} width={24} height={24} />}
             variant="ghost"
