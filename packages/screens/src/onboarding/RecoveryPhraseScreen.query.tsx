@@ -42,13 +42,6 @@ export function RecoveryPhraseScreen(): React.ReactElement {
   const [phraseData, setPhraseData] = useState<PhraseData | null>(null);
   const [generateError, setGenerateError] = useState<Error | null>(null);
 
-  // Theme-aware glassmorphic backgrounds
-  const isDark =
-    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
-  const glassBg = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-  const glassBorder = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
-  const glassIcon = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)';
-
   // Generate mnemonic once on mount
   useEffect(() => {
     let isMounted = true;
@@ -246,7 +239,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             {/* Recovery phrase grid - 2 columns x 6 rows */}
             <YStack
               width={320}
-              bg={glassBg}
+              bg="$bgGlass"
               rounded={16}
               pt={24}
               pb={24}
@@ -267,7 +260,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                           <View
                             width={32}
                             height={32}
-                            bg="rgba(255, 255, 255, 0.1)"
+                            bg="$bgGlass"
                             rounded={8}
                             items="center"
                             justify="center"
@@ -288,7 +281,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                           <View
                             width={32}
                             height={32}
-                            bg={glassBg}
+                            bg="$bgGlass"
                             rounded={8}
                             items="center"
                             justify="center"
@@ -318,12 +311,12 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                     <View
                       width={42}
                       height={40}
-                      bg={glassBg}
+                      bg="$bgGlass"
                       rounded={8}
                       items="center"
                       justify="center"
                     >
-                      <RevealPhrase size={20} color={glassIcon} />
+                      <RevealPhrase size={20} color={theme.iconGlass.val} />
                     </View>
                     <Text fontSize={16} fontWeight="500" color="$text" textAlign="center">
                       {t('onboarding.recoveryPhrase.clickToReveal')}
@@ -337,8 +330,8 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             <XStack justify="center" mb={16}>
               <Button variant="ghost" onPress={handleCopy}>
                 <XStack gap={12} items="center">
-                  <Copy size={24} color={isDark ? '#00EF8B' : '#00D77D'} />
-                  <Text fontSize={16} fontWeight="700" color={isDark ? '#00EF8B' : '#00D77D'}>
+                  <Copy size={24} color={theme.primary.val} />
+                  <Text fontSize={16} fontWeight="700" color={theme.primary.val}>
                     {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
                   </Text>
                 </XStack>
@@ -346,9 +339,9 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             </XStack>
 
             {/* Warning card */}
-            <XStack gap={12} p={16} rounded={16} borderWidth={1} borderColor={glassBorder} mb={24}>
+            <XStack gap={12} p={16} rounded={16} borderWidth={1} borderColor="$borderGlass" mb={24}>
               <View width={24} height={24} items="center" justify="center">
-                <Warning size={24} color={glassIcon} />
+                <Warning size={24} color={theme.iconGlass.val} />
               </View>
               <YStack flex={1} gap={4}>
                 <Text fontSize={16} fontWeight="700" color="$text">

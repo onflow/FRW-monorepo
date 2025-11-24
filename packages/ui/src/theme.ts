@@ -64,6 +64,8 @@ const flowColors = {
   light40: 'rgba(255, 255, 255, 0.4)', // 40% white
   light25: 'rgba(255, 255, 255, 0.25)', // 25% white
   light10: 'rgba(255, 255, 255, 0.1)', // 10% white — same value used by darkBg1 and darkBorder1
+  light15: 'rgba(255, 255, 255, 0.15)', // 15% white
+  light50: 'rgba(255, 255, 255, 0.5)', // 50% white
   light5: 'rgba(255, 255, 255, 0.05)', // 5% white
 
   lightBg1: 'rgba(242, 242, 247, 1)',
@@ -74,12 +76,15 @@ const flowColors = {
   dark40: 'rgba(0, 0, 0, 0.4)', // 40% black
   dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
   dark10: 'rgba(0, 0, 0, 0.1)', // 10% black — same value as lightBorder1 and shadowLight
+  dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
   dark5: 'rgba(0, 0, 0, 0.05)', // 5% black
+  dark80: 'rgba(0, 0, 0, 0.8)', // 80% black
 
   darkBg1: 'rgba(255, 255, 255, 0.1)',
   grayBg1: '#373737',
 
   darkBorder1: 'rgba(255, 255, 255, 0.1)',
+  light35: 'rgba(255, 255, 255, 0.35)', // 35% white
 
   // Shadow colors for light mode
   shadowLight: 'rgba(0, 0, 0, 0.1)', // alias of dark10 / lightBorder1
@@ -142,6 +147,12 @@ const palettePairs: PalettePair[] = [
   { light: flowColors.shadowLightPress, dark: flowColors.shadowDarkPress },
   // 21 - shadow (focus)
   { light: flowColors.shadowLightFocus, dark: flowColors.shadowDarkFocus },
+  // 22 - bgGlass (glassmorphic background)
+  { light: flowColors.dark5, dark: flowColors.light10 },
+  // 23 - borderGlass (glassmorphic border)
+  { light: flowColors.dark10, dark: flowColors.light15 },
+  // 24 - iconGlass (glassmorphic icon)
+  { light: flowColors.dark40, dark: flowColors.light50 },
 ];
 
 // Size system
@@ -384,6 +395,11 @@ const themesBuilder = createThemeBuilder()
       dark25: flowColors.dark25, // $dark25
       dark10: flowColors.dark10, // $dark10
       dark5: flowColors.dark5, // $dark5
+
+      // Theme-aware glassmorphic colors
+      bgGlass: 22, // $bgGlass -> palette[22] (light: black 25%, dark: white 10%)
+      borderGlass: 23, // $borderGlass -> palette[23] (light: black 10%, dark: white 35%)
+      iconGlass: 24, // $iconGlass -> palette[24] (light: black 80%, dark: white 50%)
 
       // Theme-aware subtle backgrounds via palette indices
       subtleBg: 13, // $subtleBg -> palette[13] (light: black 5%, dark: white 5%)

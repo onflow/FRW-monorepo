@@ -1,4 +1,4 @@
-import { Userv3Service } from '@onflow/frw-api';
+import { UserGoService, Userv3GoService } from '@onflow/frw-api';
 import { logger } from '@onflow/frw-utils';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -90,7 +90,7 @@ export class ProfileService {
 
       // Axios wraps the response in a 'data' property
       // The TypeScript type says Promise<controllers_UserReturn> but axios returns { data: controllers_UserReturn }
-      const response = (await Userv3Service.register(requestPayload)) as any; // Type assertion needed because axios wraps response
+      const response = (await Userv3GoService.register(requestPayload)) as any; // Type assertion needed because axios wraps response
 
       // Handle both axios response structure and direct response
       const userReturn = response.data || response;
@@ -182,8 +182,8 @@ export class ProfileService {
       logger.info('[ProfileService] Creating Flow address...');
 
       // Extension uses /v2/user/address (createFlowAddressV2)
-      // Userv3Service.address2() calls /v2/user/address (matches extension implementation)
-      const response = (await Userv3Service.address2()) as any;
+      // UserGoService.address2() calls /v2/user/address (matches extension implementation)
+      const response = (await UserGoService.address2()) as any;
 
       // Handle both axios response structure and direct response
       // The response.data is the transaction ID string directly
