@@ -413,10 +413,23 @@ export const useSendStore = create<SendState>((set, get) => ({
               (account) =>
                 account.type === 'main' && account.address === selectedAccount.parentAddress
             );
-      const coaAddr =
+      let coaAddr =
         accounts.filter(
           (account) => account.type === 'evm' && account.parentAddress === mainAccount?.address
         )[0]?.address || '';
+
+      // Fallback: fetch COA via cadence if missing
+      if (!coaAddr && mainAccount?.address) {
+        try {
+          coaAddr = await cadence.getAddr(mainAccount.address);
+          // cadence.getAddr returns without 0x; normalize
+          if (coaAddr && !coaAddr.startsWith('0x')) {
+            coaAddr = `0x${coaAddr}`;
+          }
+        } catch (err) {
+          logger.warn('[SendStore] Failed to fetch COA address from cadence', err);
+        }
+      }
       const childAddrs = accounts
         .filter(
           (account) => account.type === 'child' && account.parentAddress === mainAccount?.address
