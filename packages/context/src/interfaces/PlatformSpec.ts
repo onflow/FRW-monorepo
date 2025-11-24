@@ -2,7 +2,7 @@ import {
   type CreateAccountResponse,
   type CreateEOAAccountResponse,
   type Currency,
-  NativeScreenName,
+  type NativeScreenName,
   type Platform,
   type RecentContactsResponse,
   type SeedPhraseGenerationResponse,
@@ -18,9 +18,6 @@ import type { Storage } from './storage/Storage';
 // Re-export CadenceService interceptor types
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
-
-// Re-export NativeScreenName for convenience
-export { NativeScreenName };
 
 /**
  * Platform specification interface for platform abstraction

@@ -1,14 +1,9 @@
-import {
-  type Cache,
-  type Navigation,
-  type NativeScreenName,
-  type PlatformSpec,
-  type Storage,
-} from '@onflow/frw-context';
+import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   CreateAccountResponse,
   CreateEOAAccountResponse,
   Currency,
+  NativeScreenName,
   RecentContactsResponse,
   SeedPhraseGenerationResponse,
   WalletAccount,

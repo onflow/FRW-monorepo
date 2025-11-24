@@ -1,4 +1,5 @@
-import { bridge, logger, navigation, NativeScreenName } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
+import { NativeScreenName } from '@onflow/frw-types';
 import {
   YStack,
   Text,

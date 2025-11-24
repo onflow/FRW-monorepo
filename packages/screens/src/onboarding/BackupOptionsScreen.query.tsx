@@ -1,5 +1,6 @@
-import { bridge, logger, NativeScreenName } from '@onflow/frw-context';
+import { bridge, logger } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
+import { NativeScreenName } from '@onflow/frw-types';
 import {
   YStack,
   Text,
