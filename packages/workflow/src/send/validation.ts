@@ -98,7 +98,12 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
     throw new Error('flowIdentifier of transaction payload is missing');
   }
 
-  if (coaAddr && !validateEvmAddress(coaAddr)) {
+  if (
+    coaAddr &&
+    !validateEvmAddress(coaAddr) &&
+    ((validateEvmAddress(sender) && validateFlowAddress(receiver)) ||
+      (validateFlowAddress(sender) && validateEvmAddress(receiver)))
+  ) {
     throw new Error('invalid COA address of payload');
   }
 
