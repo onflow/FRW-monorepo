@@ -132,8 +132,7 @@ export function ConfirmRecoveryPhraseScreen({
   // Theme-aware glassmorphic backgrounds
   const isDark =
     theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
-  const glassBg = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-  const glassBorder = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)';
+
   const disabledBg = isDark ? 'rgba(107, 114, 128, 0.5)' : 'rgba(0, 0, 0, 0.1)';
   const disabledText = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
 
@@ -463,9 +462,9 @@ export function ConfirmRecoveryPhraseScreen({
                         maxWidth={339}
                         height={57}
                         rounded={16}
-                        bg={glassBg}
+                        bg="$bgGlass"
                         borderWidth={1}
-                        borderColor={glassBorder}
+                        borderColor="$borderGlass"
                         paddingHorizontal={12}
                         alignItems="center"
                         justifyContent="center"
