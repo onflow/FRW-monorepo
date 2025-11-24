@@ -84,8 +84,12 @@ const Deposit = () => {
         });
       }
 
-      // Add EVM COA account if exists
-      if (wallet?.evmAccount && isValidEthereumAddress(wallet.evmAccount.address)) {
+      // Add EVM COA account if exists and has assets
+      if (
+        wallet?.evmAccount &&
+        isValidEthereumAddress(wallet.evmAccount.address) &&
+        wallet.evmAccount.hasAssets !== false
+      ) {
         accounts.push({
           account: wallet.evmAccount,
           parentAccount: wallet,
