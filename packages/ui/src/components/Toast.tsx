@@ -105,18 +105,20 @@ export const Toast: React.FC<ToastProps> = ({
         zIndex: 999999,
         borderRadius: 34,
         minWidth: 200,
+        maxWidth: 400,
         margin: '2px auto',
         pointerEvents: 'auto',
         touchAction: 'none',
         userSelect: 'none',
-        padding: '6px 24px',
+        padding: '6px 12px',
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: 4,
       }}
     >
       <YStack>{styles.icon}</YStack>
-      <YStack style={{ alignItems: 'flex-start', flexDirection: 'column' }}>
+      <YStack style={{ alignItems: 'flex-start', flexDirection: 'column', marginLeft: 1 }}>
         <Text
           color={styles.titleColor as any}
           fontSize="$4"
@@ -132,7 +134,7 @@ export const Toast: React.FC<ToastProps> = ({
             fontWeight="400"
             style={{ whiteSpace: 'nowrap' }}
           >
-            {message}
+            {message.slice(0, 50)}
           </Text>
         )}
       </YStack>
@@ -141,31 +143,21 @@ export const Toast: React.FC<ToastProps> = ({
           onPress={feedbackCallback}
           cursor="pointer"
           rounded="$4"
-          p="$2"
+          p="$1"
+          bg="$white"
           shadowColor={theme.shadowColor}
           shadowOffset={{ width: 0, height: 1 }}
           shadowOpacity={1}
           pressStyle={{ opacity: 0.8 }}
           items="center"
           justify="center"
+          ml="$1"
         >
           {/* <InfoIcon color={theme.warning?.val || theme.warning} /> */}
-          <Text
-            color={styles.messageColor as any}
-            fontSize="$1"
-            fontWeight="400"
-            style={{ whiteSpace: 'nowrap' }}
-          >
+          <Text color="$black" fontSize="$1" fontWeight="400" style={{ whiteSpace: 'nowrap' }}>
             Report
           </Text>
         </YStack>
-        // <IconButton
-        //   icon={<InfoIcon color="#767676" size={56} width={56} height={56} />}
-        //   variant="secondary"
-        //   size="large"
-        //   onPress={feedbackCallback}
-        //   ml={10}
-        // />
       )}
     </XStack>
   );
