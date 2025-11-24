@@ -24,7 +24,8 @@ init({
       ignore: ['.ignore-me'],
     }),
     captureConsoleIntegration({
-      levels: ['error', 'log', 'warn', 'info'],
+      // Only capture console errors as Sentry events to avoid noise
+      levels: ['error'],
     }),
     feedbackIntegration({
       colorScheme: 'system',

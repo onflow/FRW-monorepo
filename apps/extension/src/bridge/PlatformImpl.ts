@@ -11,7 +11,6 @@ import {
 import { extractUidFromJwt } from '@onflow/frw-utils';
 import { WalletCoreProvider } from '@onflow/frw-wallet';
 import { addBreadcrumb, type SeverityLevel } from '@sentry/browser';
-import * as Sentry from '@sentry/react';
 import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
@@ -585,7 +584,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
     // Console logging for development
     switch (level) {
       case 'debug':
-        Sentry.logger.debug(message, ...args);
         console.debug(prefix, message, ...args);
         break;
       case 'info':
@@ -593,14 +591,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
         if (this.debugMode) {
           console.info(prefix, message, ...args);
         }
-        Sentry.logger.info(message, ...args);
         break;
       case 'warn':
-        Sentry.logger.warn(message, ...args);
         console.warn(prefix, message, ...args);
         break;
       case 'error':
-        Sentry.logger.error(message, ...args);
         console.error(prefix, message, ...args);
         break;
     }
