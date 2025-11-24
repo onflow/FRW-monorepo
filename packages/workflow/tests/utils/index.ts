@@ -50,3 +50,13 @@ export const makeArgument = (arg: Record<string, any>, idx) => (ix: any) => {
 
   return ix;
 };
+
+// Helper to mark cross-VM transfers in tests
+export const isEvmAddress = (address: string) => address.length > 18;
+
+export const setCrossVM = <T extends { sender: string; receiver: string; isCrossVM?: boolean }>(
+  payload: T
+) => ({
+  ...payload,
+  isCrossVM: payload.isCrossVM ?? isEvmAddress(payload.sender) !== isEvmAddress(payload.receiver),
+});
