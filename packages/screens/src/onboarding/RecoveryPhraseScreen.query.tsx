@@ -57,17 +57,25 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       try {
         logger.info('[RecoveryPhraseScreen] Starting mnemonic generation...');
 
-        // Reset Firebase auth for new profile creation
-        if (bridge.signOutAndSignInAnonymously) {
-          try {
-            await bridge.signOutAndSignInAnonymously();
-            logger.info('[RecoveryPhraseScreen] Firebase auth reset successful');
-          } catch (error) {
-            logger.warn(
-              '[RecoveryPhraseScreen] Firebase auth reset failed (may already be anonymous):',
-              error
-            );
-            // Continue anyway - if already anonymous, that's fine
+        // Only reset auth if no user is currently signed in.
+        // This prevents signing out an existing user when they are creating a new profile.
+        if (bridge.signOutAndSignInAnonymously && bridge.getCurrentUserUid) {
+          const uid = await bridge.getCurrentUserUid();
+          if (!uid) {
+            try {
+              await bridge.signOutAndSignInAnonymously();
+              logger.info(
+                '[RecoveryPhraseScreen] No user was signed in. Firebase auth reset successful.'
+              );
+            } catch (error) {
+              logger.warn(
+                '[RecoveryPhraseScreen] Firebase auth reset failed (may already be anonymous):',
+                error
+              );
+              // Continue anyway - if already anonymous, that's fine
+            }
+          } else {
+            logger.info('[RecoveryPhraseScreen] User is already signed in. Skipping auth reset.');
           }
         }
 
@@ -224,7 +232,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       {/* Only show content when not loading */}
       {!isLoading && (
         <OnboardingBackground>
-          <YStack flex={1} px="$4" pt="$4">
+          <YStack flex={1} px="$4">
             {/* Title and description */}
             <YStack items="center" mb="$6" gap="$2">
               <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>

@@ -141,7 +141,7 @@ export function BackupOptionsScreen(): React.ReactElement {
   return (
     <>
       <GradientBackground>
-        <YStack flex={1} px="$4" pt="$4">
+        <YStack flex={1} px="$4">
           {/* Title */}
           <YStack items="center" mb="$6" gap="$2">
             <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={20} maxW={320}>

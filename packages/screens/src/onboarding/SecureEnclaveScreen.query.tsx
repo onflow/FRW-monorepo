@@ -28,13 +28,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
 
-  // Theme-aware colors for icons
-  const isDark =
-    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
-  const primaryColor = isDark ? '#00EF8B' : '#00D77D';
-  const errorColor = isDark ? '#EF4444' : '#DC2626';
-  const shieldBgColor = isDark ? '#00EF8B' : '#00D77D';
-
   const handleNext = () => {
     setShowConfirmDialog(true);
   };
@@ -44,78 +37,56 @@ export function SecureEnclaveScreen(): React.ReactElement {
     setShowLoadingState(true);
 
     try {
-      // Register Secure Type Account (hardware-backed keys via Secure Enclave)
-      // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
-      if (bridge.registerSecureTypeAccount) {
-        // Auto-generate random username using word combinations
-        const username = generateRandomUsername();
-
-        logger.info(
-          '[SecureEnclaveScreen] Registering secure type account with username:',
-          username
-        );
-
-        const result = await bridge.registerSecureTypeAccount(username);
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to register secure type account');
-        }
-
-        logger.info('[SecureEnclaveScreen] Secure type account registered successfully:', {
-          address: result.address,
-          username: result.username,
-          accountType: result.accountType,
-          txId: result.txId,
-        });
-
-        // Account verification is handled by native layer using txId (matches EOA flow)
-        // Native layer will:
-        // 1. Use txId for fast account discovery on-chain
-        // 2. Initialize wallet and authentication
-        // 3. Cache account information
-        // The loading state can be dismissed immediately as native handles the rest
-        logger.info(
-          '[SecureEnclaveScreen] Account creation complete, native layer will handle verification'
-        );
-
-        setShowLoadingState(false);
-
-        // Check notification permission before navigating
-        if (bridge.checkNotificationPermission) {
-          const isGranted = await bridge.checkNotificationPermission();
-          if (isGranted) {
-            logger.info(
-              '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
-            );
-            navigation.navigate('BackupOptions');
-            return;
-          }
-        }
-
-        navigation.navigate('NotificationPreferences');
-      } else {
-        // Fallback for platforms without secure type account support
-        logger.warn(
-          '[SecureEnclaveScreen] Using fallback - registerSecureTypeAccount not available'
-        );
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        setShowLoadingState(false);
-
-        // Check notification permission before navigating
-        if (bridge.checkNotificationPermission) {
-          const isGranted = await bridge.checkNotificationPermission();
-          if (isGranted) {
-            logger.info(
-              '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
-            );
-            navigation.navigate('BackupOptions');
-            return;
-          }
-        }
-
-        navigation.navigate('NotificationPreferences');
+      // Validate required bridge method upfront
+      if (!bridge.registerSecureTypeAccount) {
+        const errorMsg = 'Missing required bridge method: registerSecureTypeAccount';
+        logger.error('[SecureEnclaveScreen]', errorMsg);
+        throw new Error(`Platform not supported: ${errorMsg}`);
       }
+
+      // Auto-generate random username using word combinations
+      const username = generateRandomUsername();
+
+      logger.info('[SecureEnclaveScreen] Registering secure type account with username:', username);
+
+      const result = await bridge.registerSecureTypeAccount(username);
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to register secure type account');
+      }
+
+      logger.info('[SecureEnclaveScreen] Secure type account registered successfully:', {
+        address: result.address,
+        username: result.username,
+        accountType: result.accountType,
+        txId: result.txId,
+      });
+
+      // Account verification is handled by native layer using txId (matches EOA flow)
+      // Native layer will:
+      // 1. Use txId for fast account discovery on-chain
+      // 2. Initialize wallet and authentication
+      // 3. Cache account information
+      // The loading state can be dismissed immediately as native handles the rest
+      logger.info(
+        '[SecureEnclaveScreen] Account creation complete, native layer will handle verification'
+      );
+
+      setShowLoadingState(false);
+
+      // Check notification permission before navigating
+      if (bridge.checkNotificationPermission) {
+        const isGranted = await bridge.checkNotificationPermission();
+        if (isGranted) {
+          logger.info(
+            '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
+          );
+          navigation.navigate('BackupOptions');
+          return;
+        }
+      }
+
+      navigation.navigate('NotificationPreferences');
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       setShowLoadingState(false);
@@ -158,7 +129,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
           <YStack gap="$2" items="center" mb="$6">
             {/* Secure enclave */}
             <XStack gap="$2" items="center">
-              <SecureEnclave size={16} color={primaryColor} />
+              <SecureEnclave size={16} color={theme.primary.val} />
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.secureEnclave')}
               </Text>
@@ -166,7 +137,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* Hardware security */}
             <XStack gap="$2" items="center">
-              <HardwareGradeSecurity size={16} color={primaryColor} />
+              <HardwareGradeSecurity size={16} color={theme.primary.val} />
               <Text fontSize="$4" color="$primary">
                 {t('onboarding.secureEnclave.features.hardwareSecurity')}
               </Text>
@@ -174,7 +145,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
             {/* No EVM support */}
             <XStack gap="$2" items="center">
-              <ShieldOff size={16} color={errorColor} />
+              <ShieldOff size={16} color={theme.error.val} />
               <Text fontSize="$4" color="$error">
                 {t('onboarding.secureEnclave.features.noEvm')}
               </Text>
@@ -197,16 +168,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
       <InfoDialog visible={showConfirmDialog} onClose={() => setShowConfirmDialog(false)}>
         <YStack gap="$4" items="center">
           {/* Shield icon with green background */}
-          <View
-            w={24}
-            h={24}
-            bg={isDark ? '#00EF8B' : '#00D77D'}
-            rounded={999}
-            items="center"
-            justify="center"
-          >
+          <View w={24} h={24} bg={theme.primary.val} rounded={999} items="center" justify="center">
             <View p="$2">
-              <Shield size={22} color={isDark ? '#000000' : '#FFFFFF'} />
+              <Shield size={22} color={theme.color.val} />
             </View>
           </View>
 
