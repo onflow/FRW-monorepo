@@ -1,5 +1,6 @@
 import type {
   CreateAccountResponse,
+  CreateEOAAccountResponse,
   Currency,
   DeviceInfo,
   NativeScreenName,
@@ -97,6 +98,7 @@ export interface PlatformSpec {
 
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
+  createEOAAccount?(): Promise<CreateEOAAccountResponse>;
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
   registerAccountWithBackend?(): Promise<string>; // Sends Flow key to backend to create Flow + COA addresses, returns txId or "COA_ALREADY_EXISTS"
 
@@ -110,6 +112,7 @@ export interface PlatformSpec {
 
   // Firebase authentication
   signInWithCustomToken?(customToken: string): Promise<void>;
+  signOutAndSignInAnonymously?(): Promise<void>;
 
   // Permissions
   requestNotificationPermission?(): Promise<boolean>;
