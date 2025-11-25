@@ -1,6 +1,6 @@
 import { isDarkMode } from '@onflow/frw-utils';
 import React, { useEffect, useState } from 'react';
-import { View, useTheme, Text } from 'tamagui';
+import { View, useTheme } from 'tamagui';
 
 import LottieView from './LottieView';
 import shieldAnimationDark from '../assets/animations/shield-with-lock-dark-2.json';
@@ -57,12 +57,7 @@ export const ShieldAnimation: React.FC<ShieldAnimationProps> = ({
   }, [isCurrentlyDarkMode]);
 
   if (!isReady || !currentAnimationSource) {
-    // Show shield emoji while loading
-    return (
-      <View width={width} height={height} alignItems="center" justifyContent="center">
-        <Text fontSize={80}>🛡️</Text>
-      </View>
-    );
+    return null;
   }
 
   return (
