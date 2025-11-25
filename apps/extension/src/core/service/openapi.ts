@@ -1559,10 +1559,13 @@ export class OpenApiService {
     const auditorsResponse = await fetch(`https://flix.flow.com/v1/auditors?network=${network}`);
     const auditors = (await auditorsResponse.json()) as Array<{ address: string; name?: string }>;
 
-    fcl.config().put(
-      'flow.auditors',
-      auditors.map((item) => item.address)
-    );
+    fcl
+      .config()
+      .put(
+        'flow.auditors',
+        auditors.map((item) => item.address)
+      )
+      .put('logger.level', 1);
 
     const audits = await (fcl.InteractionTemplateUtils.getInteractionTemplateAudits as any)({
       template: template as object,

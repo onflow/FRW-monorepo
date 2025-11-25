@@ -30,6 +30,7 @@ init({
     feedbackIntegration({
       colorScheme: 'system',
       autoInject: false,
+      showName: false,
     }),
     consoleLoggingIntegration({
       levels: ['warn', 'error', 'info'],

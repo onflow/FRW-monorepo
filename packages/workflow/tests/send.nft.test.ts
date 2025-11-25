@@ -3,9 +3,8 @@ import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 // import { getTrx } from '../src/utils';
-// import { SendTransaction } from '../src';
 import { accounts } from './utils/accounts';
-import { authz, bridgeAuthorizationOnly } from './utils/authz';
+import { authz, bridgeAuthorizationOnly, payerAuthorization } from './utils/authz';
 // import { convertHexToByteArray } from '../src/send/utils';
 
 dotenv.config();
@@ -21,7 +20,7 @@ describe('Test NFT send strategies', () => {
     configureFCL('mainnet');
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        config.payer = authz;
+        config.payer = payerAuthorization;
         config.proposer = authz;
         config.authorizations = config.name.includes('WithPayer')
           ? [authz, bridgeAuthorizationOnly]
@@ -72,7 +71,7 @@ describe('Test NFT send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 

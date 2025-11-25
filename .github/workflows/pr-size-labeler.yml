@@ -37,5 +37,10 @@ jobs:
             **/yarn.lock
             package.json
             **/package.json
+            docs/**.md
             *.md
             **/*.md
+            **/*.generated.js
+            **/*.generated.ts
+            **/*.generated.tsx
+            **/.github/**/*.yml

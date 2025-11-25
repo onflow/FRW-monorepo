@@ -13,6 +13,8 @@ export interface SendPayload {
   amount: string; // Token amount to transfer
   decimal: number; // Token decimal places
   coaAddr: string; // User's COA (Cadence Owned Account) address
+  // Required: true when sender and receiver are different VM types (Flow <-> EVM).
+  isCrossVM: boolean;
   tokenContractAddr: string; // Token contract address (Flow or EVM format)
 }
 
