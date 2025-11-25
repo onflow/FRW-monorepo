@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm'],
-  dts: false, // Disable TypeScript declarations due to type errors (Avatar.tsx strict mode issues)
+  dts: false, // Disable TypeScript declarations due to duplicate export issue
   splitting: false,
   sourcemap: true,
   clean: true,
