@@ -1559,10 +1559,13 @@ export class OpenApiService {
     const auditorsResponse = await fetch(`https://flix.flow.com/v1/auditors?network=${network}`);
     const auditors = (await auditorsResponse.json()) as Array<{ address: string; name?: string }>;
 
-    fcl.config().put(
-      'flow.auditors',
-      auditors.map((item) => item.address)
-    );
+    fcl
+      .config()
+      .put(
+        'flow.auditors',
+        auditors.map((item) => item.address)
+      )
+      .put('logger.level', 1);
 
     const audits = await (fcl.InteractionTemplateUtils.getInteractionTemplateAudits as any)({
       template: template as object,
@@ -2154,7 +2157,7 @@ export class OpenApiService {
 
   getCoaDomainsWhitelist = async (): Promise<string[]> => {
     const CACHE_KEY = 'coa-domains-whitelist';
-    
+
     try {
       const cached = await getCachedData<string[]>(CACHE_KEY);
       if (cached && Array.isArray(cached) && cached.length > 0) {
@@ -2167,11 +2170,11 @@ export class OpenApiService {
       }
       const data = await response.json();
       const domains = Array.isArray(data) ? data : [];
-      
+
       if (domains.length > 0) {
         await setCachedData(CACHE_KEY, domains, 1000 * 60 * 60); // Cache for 1 hour
       }
-      
+
       return domains;
     } catch {
       return [];
