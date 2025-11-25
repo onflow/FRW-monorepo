@@ -1,9 +1,14 @@
-import { Toast, type ToastProps } from '@onflow/frw-ui';
 import React, { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
-import type { ToastMessage } from './interfaces/ToastManager';
+import { Toast, type ToastProps } from './Toast';
 
-// Import Toast component from UI package
+// Toast message type definition
+export interface ToastMessage {
+  title: string;
+  message?: string;
+  type?: 'success' | 'error' | 'warning' | 'info';
+  duration?: number;
+}
 
 export interface ToastContextValue {
   show: (toast: ToastMessage) => void;

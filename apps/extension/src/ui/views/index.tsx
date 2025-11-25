@@ -1,8 +1,7 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { ToastProvider } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
-import { extensionTamaguiConfig, PortalProvider } from '@onflow/frw-ui';
+import { extensionTamaguiConfig, PortalProvider, ToastProvider } from '@onflow/frw-ui';
 import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';

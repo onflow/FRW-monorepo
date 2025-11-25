@@ -85,6 +85,7 @@ export * from './components/Surge/SurgeFeeConfirmationSection';
 export * from './components/Tag';
 export * from './components/ToAccountSection';
 export * from './components/Toast';
+export * from './components/ToastContext';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionFeeSection';
