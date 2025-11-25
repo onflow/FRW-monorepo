@@ -28,7 +28,7 @@ export function BackupOptionCard({
       p="$6"
       rounded={16}
       borderWidth={1}
-      borderColor="rgba(255, 255, 255, 0.1)"
+      borderColor="$light10"
       gap="$4"
       onPress={onPress}
       position="relative"
