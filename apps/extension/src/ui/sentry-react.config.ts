@@ -5,16 +5,21 @@ import {
   captureConsoleIntegration,
   feedbackIntegration,
   consoleLoggingIntegration,
+  breadcrumbsIntegration,
+  browserProfilingIntegration,
 } from '@sentry/react';
 
-import { SENTRY_BASIC_CONFIG } from '../shared/constant/senty-constants';
+import { SENTRY_BASIC_CONFIG, SENTRY_NETWORK_ALLOW_URLS } from '../shared/constant/senty-constants';
 
 init({
   ...SENTRY_BASIC_CONFIG,
   enableLogs: true,
   integrations: [
     browserTracingIntegration(),
+    browserProfilingIntegration(),
+    breadcrumbsIntegration(),
     replayIntegration({
+      networkDetailAllowUrls: SENTRY_NETWORK_ALLOW_URLS,
       // Set to false to disable text masking
       maskAllText: false,
       // Set to false to disable media blocking
@@ -36,4 +41,7 @@ init({
       levels: ['warn', 'error', 'info'],
     }),
   ],
+  tracesSampleRate: SENTRY_BASIC_CONFIG.tracesSampleRate,
+  profilesSampleRate: SENTRY_BASIC_CONFIG.profilesSampleRate,
+  tracePropagationTargets: SENTRY_BASIC_CONFIG.tracePropagationTargets,
 });

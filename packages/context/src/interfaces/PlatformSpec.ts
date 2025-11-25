@@ -1,14 +1,15 @@
-import {
-  type CreateAccountResponse,
-  type CreateEOAAccountResponse,
-  type Currency,
-  type NativeScreenName,
-  type Platform,
-  type RecentContactsResponse,
-  type SeedPhraseGenerationResponse,
-  type WalletAccount,
-  type WalletAccountsResponse,
-  type WalletProfilesResponse,
+import type { forms_DeviceInfo } from '@onflow/frw-api';
+import type {
+  CreateAccountResponse,
+  CreateEOAAccountResponse,
+  Currency,
+  NativeScreenName,
+  Platform,
+  RecentContactsResponse,
+  SeedPhraseGenerationResponse,
+  WalletAccount,
+  WalletAccountsResponse,
+  WalletProfilesResponse,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -35,6 +36,7 @@ export interface PlatformSpec {
 
   getCurrency(): Currency;
   getPlatform(): Platform;
+  getDeviceInfo(): forms_DeviceInfo;
 
   // API endpoint methods
   getApiEndpoint(): string;
@@ -46,12 +48,9 @@ export interface PlatformSpec {
   cache(): Cache;
   navigation(): Navigation;
 
-  // Cryptographic operations
-  // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
+  // Cryptographic operations (hexData due to Turbo Module limitations)
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
-
-  // EVM transaction signing for pre-encoded payloads
   ethSign(signData: Uint8Array): Promise<Uint8Array>;
 
   // Data access methods
@@ -61,7 +60,7 @@ export interface PlatformSpec {
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrentUserUid?(): Promise<string | null>;
 
-  // Transaction monitoring and post-transaction actions
+  // Transaction monitoring
   listenTransaction?(
     txId: string,
     showNotification: boolean,
@@ -70,24 +69,23 @@ export interface PlatformSpec {
     icon?: string
   ): void;
 
-  // CadenceService configuration using interceptor pattern
-  // This method allows the bridge to configure all FCL-related functionality
+  // CadenceService configuration (FCL interceptors)
   configureCadenceService(cadenceService: any): void;
 
-  // Logging methods - platform-specific logging implementation
+  // Logging
   log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
   isDebug(): boolean;
 
-  // Error reporting methods - for checking Instabug availability
+  // Error reporting (Instabug)
   isInstabugInitialized?(): boolean;
   setInstabugInitialized?(initialized: boolean): void;
 
-  // UI interaction methods
+  // UI interactions
   scanQRCode(): Promise<string>;
   shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
 
-  // Toast/Notification methods
+  // Toast notifications
   showToast?(
     title: string,
     message?: string,
@@ -112,10 +110,14 @@ export interface PlatformSpec {
   // Returns: CreateAccountResponse with txId for native-side account verification (matches EOA flow)
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>;
 
-  // Register account with backend (for Recovery Phrase flow)
-  // Sends the Flow public key to backend, which creates both Flow address and COA address
-  // This is called after mnemonic is saved and wallet is initialized
-  // Returns: transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
+  /**
+   * Register account with backend (for Recovery Phrase flow)
+   * Sends the Flow public key to backend, which creates both Flow address and COA address
+   * This is called after mnemonic is saved and wallet is initialized
+   * @returns Transaction ID (txId) if successful, or the string "COA_ALREADY_EXISTS" if account already exists
+   * @example "a1b2c3d4..." // Transaction ID
+   * @example "COA_ALREADY_EXISTS" // Account already exists
+   */
   registerAccountWithBackend?(): Promise<string>;
 
   // Save mnemonic to secure storage and initialize wallet (iOS Keychain / Android KeyStore)

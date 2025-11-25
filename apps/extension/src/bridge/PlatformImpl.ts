@@ -10,11 +10,9 @@ import {
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
 import { WalletCoreProvider } from '@onflow/frw-wallet';
-import { addBreadcrumb, type SeverityLevel } from '@sentry/browser';
-import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
-import { EVM_ENDPOINT, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
@@ -163,42 +161,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
         : new Uint8Array(Object.values(privateKeyBytes));
 
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
-  }
-
-  /**
-   * Get the current transaction count (nonce) for an address
-   */
-  private async getTransactionCount(address: string): Promise<string> {
-    const network = await this.walletController.getNetwork();
-    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
-    const web3Instance = new Web3(provider);
-
-    return new Promise((resolve, reject) => {
-      if (!web3Instance.currentProvider) {
-        reject(new Error('Provider is undefined'));
-        return;
-      }
-
-      web3Instance.currentProvider.send(
-        {
-          jsonrpc: '2.0',
-          method: 'eth_getTransactionCount',
-          params: [address, 'latest'],
-          id: Date.now(),
-        },
-        (error, response) => {
-          if (error) {
-            reject(error);
-          } else if (response && 'error' in response && response.error) {
-            reject(new Error(response.error.message || 'Failed to get transaction count'));
-          } else if (response && 'result' in response) {
-            resolve(response.result as string);
-          } else {
-            reject(new Error('Invalid response from provider'));
-          }
-        }
-      );
-    });
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {
@@ -561,36 +523,16 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
-    if (level === 'debug' && !this.debugMode) {
-      return;
-    }
-
     const prefix = `[FW-${level.toUpperCase()}]`;
-    const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
 
-    // Send to Sentry as Breadcrumb
-    try {
-      const sentryLevel = level === 'warn' ? 'warning' : level;
-      addBreadcrumb({
-        category: 'console',
-        message: fullMessage,
-        level: sentryLevel as SeverityLevel,
-        type: 'default',
-      });
-    } catch (error) {
-      // Ignore sentry errors
-    }
-
-    // Console logging for development
     switch (level) {
       case 'debug':
-        console.debug(prefix, message, ...args);
+        if (this.debugMode) {
+          console.debug(prefix, message, ...args);
+        }
         break;
       case 'info':
-        // Only log info to console in debug mode to keep prod console clean
-        if (this.debugMode) {
-          console.info(prefix, message, ...args);
-        }
+        console.info(prefix, message, ...args);
         break;
       case 'warn':
         console.warn(prefix, message, ...args);
@@ -598,19 +540,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
       case 'error':
         console.error(prefix, message, ...args);
         break;
-    }
-
-    // Extension-specific logging (could integrate with analytics)
-    try {
-      // Could send to background script for centralized logging
-      chrome.runtime.sendMessage({
-        type: 'LOG',
-        level,
-        message: fullMessage,
-        timestamp: Date.now(),
-      });
-    } catch (error) {
-      // Ignore logging errors to prevent cascading failures
     }
   }
 
