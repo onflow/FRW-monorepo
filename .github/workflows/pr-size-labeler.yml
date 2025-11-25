@@ -44,3 +44,5 @@ jobs:
             **/*.generated.ts
             **/*.generated.tsx
             **/.github/**/*.yml
+            packages/ui/src/assets/**/*.{png,jpg,jpeg,gif,webp,svg}
+            packages/ui/src/assets/**/*.json
