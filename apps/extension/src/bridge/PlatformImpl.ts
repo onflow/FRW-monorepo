@@ -13,7 +13,6 @@ import { WalletCoreProvider } from '@onflow/frw-wallet';
 
 // Removed direct service imports - using walletController instead
 import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
-import { type ConsoleMessageType, trackConsole } from '@/shared/utils';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
@@ -523,54 +522,15 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return payerStatus?.surge;
   }
 
-  private formatLogArg(arg: unknown): string {
-    if (arg === undefined) {
-      return 'undefined';
-    }
-    if (arg instanceof Error) {
-      return `${arg.name}: ${arg.message}`;
-    }
-
-    if (typeof arg === 'object' && arg !== null) {
-      try {
-        return JSON.stringify(arg);
-      } catch {
-        return String(arg);
-      }
-    }
-
-    return String(arg);
-  }
-
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     const prefix = `[FW-${level.toUpperCase()}]`;
-    const formattedArgs = args.map((arg) => this.formatLogArg(arg));
-    const baseMessage = message;
-    const fullMessage =
-      formattedArgs.length > 0 ? `${baseMessage} ${formattedArgs.join(' ')}` : baseMessage;
 
-    // Forward to unified tracker (Sentry breadcrumb + runtime tracker)
-    const consoleTypeMap: Record<typeof level, ConsoleMessageType> = {
-      debug: 'console_debug',
-      info: 'console_info',
-      warn: 'console_warn',
-      error: 'console_error',
-    };
-    const consoleType = consoleTypeMap[level];
-    trackConsole(consoleType, [prefix, message, ...args]);
-
-    // Console logging for development
     switch (level) {
       case 'debug':
-        if (this.debugMode) {
-          console.debug(prefix, message, ...args);
-        }
+        console.debug(prefix, message, ...args);
         break;
       case 'info':
-        // Only log info to console in debug mode to keep prod console clean
-        if (this.debugMode) {
-          console.info(prefix, message, ...args);
-        }
+        console.info(prefix, message, ...args);
         break;
       case 'warn':
         console.warn(prefix, message, ...args);
