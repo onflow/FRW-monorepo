@@ -69,8 +69,7 @@
       "Bash(gh api:*)",
       "Bash(./android/gradlew:*)",
       "Bash(cat:*)",
-      "Bash(adb uninstall:*)",
-      "Bash(for file in packages/screens/src/onboarding/{GetStartedScreen,NotificationPreferencesScreen,ProfileTypeSelectionScreen,RecoveryPhraseScreen,SecureEnclaveScreen,ConfirmRecoveryPhraseScreen}.query.tsx)"
+      "Bash(adb uninstall:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
