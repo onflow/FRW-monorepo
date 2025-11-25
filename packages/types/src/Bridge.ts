@@ -82,7 +82,7 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'send-asset' | 'token-detail' | 'receive';
+  screen: 'send-asset' | 'token-detail' | 'onboarding' | 'receive';
   sendToConfig?: string;
 }
 
@@ -96,4 +96,90 @@ export interface Currency {
   name: string;
   symbol: string;
   rate: string;
+}
+
+export interface SaveMnemonicResponse {
+  success: boolean;
+  error: string;
+}
+
+export interface CreateAccountResponse {
+  success: boolean;
+  address: string | null;
+  username: string | null;
+  accountType: 'eoa' | 'coa' | null;
+  txId: string | null;
+  error: string | null;
+}
+
+export interface CreateEOAAccountResponse {
+  success: boolean;
+  address: string | null;
+  username: string | null;
+  mnemonic: string | null;
+  phrase: string[] | null;
+  accountType: 'eoa' | 'coa' | null;
+  error: string | null;
+}
+
+/**
+ * Account key information with cryptographic algorithm details
+ * Used for Flow blockchain account creation and key management
+ */
+export interface AccountKey {
+  publicKey: string;
+  hashAlgoStr: string;
+  signAlgoStr: string;
+  weight: number;
+  hashAlgo: number;
+  signAlgo: number;
+}
+
+/**
+ * Response from seed phrase generation
+ * Contains mnemonic, derived account key, and BIP44 derivation path
+ */
+export interface SeedPhraseGenerationResponse {
+  mnemonic: string;
+  accountKey: AccountKey;
+  drivepath: string;
+}
+
+/**
+ * Alias for SeedPhraseGenerationResponse used in native code
+ * @deprecated Use SeedPhraseGenerationResponse instead
+ */
+export interface SPResponse {
+  mnemonic: string;
+  accountKey: AccountKey;
+  drivepath: string;
+}
+
+/**
+ * Initial route configuration for onboarding flow
+ * Determines which screen to show when launching the React Native app
+ */
+export type InitialRoute =
+  | 'GetStarted'
+  | 'ProfileTypeSelection'
+  | 'SelectTokens'
+  | 'SendTo'
+  | 'SendTokens'
+  | 'Home';
+
+/**
+ * Available native screen identifiers for Android/iOS
+ * These correspond to the NativeScreen enum in Android: NativeScreen.kt
+ */
+export enum NativeScreenName {
+  /** Cloud backup screen (Google Drive, Passkey, Recovery Phrase) */
+  MULTI_BACKUP = 'multiBackup',
+  /** QR code sync between devices */
+  DEVICE_BACKUP = 'deviceBackup',
+  /** View/create recovery phrase backup */
+  SEED_PHRASE_BACKUP = 'seedPhraseBackup',
+  /** Native backup options screen */
+  BACKUP_OPTIONS = 'backupOptions',
+  /** Native account restore/recovery screen with multiple options */
+  WALLET_RESTORE = 'walletRestore',
 }
