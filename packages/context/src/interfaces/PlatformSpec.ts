@@ -1,14 +1,14 @@
-import {
-  type CreateAccountResponse,
-  type CreateEOAAccountResponse,
-  type Currency,
-  type NativeScreenName,
-  type Platform,
-  type RecentContactsResponse,
-  type SeedPhraseGenerationResponse,
-  type WalletAccount,
-  type WalletAccountsResponse,
-  type WalletProfilesResponse,
+import type {
+  CreateAccountResponse,
+  Currency,
+  DeviceInfo,
+  NativeScreenName,
+  Platform,
+  RecentContactsResponse,
+  SeedPhraseGenerationResponse,
+  WalletAccount,
+  WalletAccountsResponse,
+  WalletProfilesResponse,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -35,6 +35,7 @@ export interface PlatformSpec {
 
   getCurrency(): Currency;
   getPlatform(): Platform;
+  getDeviceInfo(): DeviceInfo;
 
   // API endpoint methods
   getApiEndpoint(): string;
@@ -95,7 +96,6 @@ export interface PlatformSpec {
   setToastCallback?(callback: (toast: any) => void): void;
 
   // Account creation
-  createEOAAccount?(): Promise<CreateEOAAccountResponse>; // EOA: mnemonic-based account
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
   registerAccountWithBackend?(): Promise<string>; // Sends Flow key to backend to create Flow + COA addresses, returns txId or "COA_ALREADY_EXISTS"
@@ -109,7 +109,6 @@ export interface PlatformSpec {
   ): Promise<void>;
 
   // Firebase authentication
-  signOutAndSignInAnonymously?(): Promise<void>;
   signInWithCustomToken?(customToken: string): Promise<void>;
 
   // Permissions
