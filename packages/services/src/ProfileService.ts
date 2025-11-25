@@ -1,6 +1,6 @@
 import { UserGoService, Userv3GoService } from '@onflow/frw-api';
+import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * ProfileService - Wraps user registration and account creation APIs
@@ -46,6 +46,9 @@ export class ProfileService {
     };
   }> {
     try {
+      // Get device info from native platform implementation
+      const deviceInfo = bridge.getDeviceInfo();
+
       // Prepare request payload (v3/register takes username, account_key and device_info)
       const requestPayload = {
         username: params.username,
@@ -55,11 +58,7 @@ export class ProfileService {
           hash_algo: params.accountKey.hash_algo,
           weight: 1000, // Default weight for Flow accounts (required by backend)
         },
-        deviceInfo: {
-          device_id: uuidv4(),
-          type: 'frw-sdk',
-          platform: 'browser',
-        },
+        deviceInfo,
       };
 
       // Single consolidated log before registration

@@ -183,3 +183,13 @@ export enum NativeScreenName {
   /** Native account restore/recovery screen with multiple options */
   WALLET_RESTORE = 'walletRestore',
 }
+
+/**
+ * Device information for backend registration
+ * Provided by native platform implementations
+ */
+export interface DeviceInfo {
+  device_id: string;
+  type: string;
+  platform: string;
+}

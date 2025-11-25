@@ -1,5 +1,6 @@
 import type {
   Currency,
+  DeviceInfo,
   Platform,
   RecentContactsResponse,
   WalletAccount,
@@ -31,6 +32,7 @@ export interface PlatformSpec {
 
   getCurrency(): Currency;
   getPlatform(): Platform;
+  getDeviceInfo(): DeviceInfo;
 
   // API endpoint methods
   getApiEndpoint(): string;

@@ -36,9 +36,7 @@
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
-    "@onflow/frw-workflow": "workspace:*",
-    "@types/uuid": "^11.0.0",
-    "uuid": "^11.1.0"
+    "@onflow/frw-workflow": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
