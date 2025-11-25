@@ -527,7 +527,9 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
     switch (level) {
       case 'debug':
-        console.debug(prefix, message, ...args);
+        if (this.debugMode) {
+          console.debug(prefix, message, ...args);
+        }
         break;
       case 'info':
         console.info(prefix, message, ...args);
@@ -538,19 +540,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
       case 'error':
         console.error(prefix, message, ...args);
         break;
-    }
-
-    // Extension-specific logging (could integrate with analytics)
-    try {
-      // Could send to background script for centralized logging
-      chrome.runtime.sendMessage({
-        type: 'LOG',
-        level,
-        message: fullMessage,
-        timestamp: Date.now(),
-      });
-    } catch (error) {
-      // Ignore logging errors to prevent cascading failures
     }
   }
 
