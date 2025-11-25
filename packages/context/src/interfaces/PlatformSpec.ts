@@ -98,7 +98,7 @@ export interface PlatformSpec {
   createEOAAccount?(): Promise<CreateEOAAccountResponse>; // EOA: mnemonic-based account
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
-  linkCOAAccountOnChain?(): Promise<string>; // Returns txId or "COA_ALREADY_EXISTS"
+  registerAccountWithBackend?(): Promise<string>; // Sends Flow key to backend to create Flow + COA addresses, returns txId or "COA_ALREADY_EXISTS"
 
   // Wallet initialization
   saveMnemonic?(
