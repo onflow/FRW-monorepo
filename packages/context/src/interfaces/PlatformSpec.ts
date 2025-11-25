@@ -1,7 +1,7 @@
+import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
   CreateAccountResponse,
   Currency,
-  DeviceInfo,
   NativeScreenName,
   Platform,
   RecentContactsResponse,
@@ -35,7 +35,7 @@ export interface PlatformSpec {
 
   getCurrency(): Currency;
   getPlatform(): Platform;
-  getDeviceInfo(): DeviceInfo;
+  getDeviceInfo(): forms_DeviceInfo;
 
   // API endpoint methods
   getApiEndpoint(): string;
@@ -98,7 +98,13 @@ export interface PlatformSpec {
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
-  registerAccountWithBackend?(): Promise<string>; // Sends Flow key to backend to create Flow + COA addresses, returns txId or "COA_ALREADY_EXISTS"
+  /**
+   * Sends Flow public key to backend to create Flow + COA addresses on-chain
+   * @returns Transaction ID (txId) if successful, or the string "COA_ALREADY_EXISTS" if account already exists
+   * @example "a1b2c3d4..." // Transaction ID
+   * @example "COA_ALREADY_EXISTS" // Account already exists
+   */
+  registerAccountWithBackend?(): Promise<string>;
 
   // Wallet initialization
   saveMnemonic?(
