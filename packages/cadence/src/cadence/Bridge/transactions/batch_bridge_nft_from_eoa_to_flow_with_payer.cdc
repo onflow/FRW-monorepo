@@ -22,7 +22,7 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 /// @param id: The ERC721 id of the NFT to bridge to Cadence from EVM
 /// @param recipient: The Flow account address to receive the bridged NFT
 ///
-transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier: String, ids: [UInt256], recipient: Address) {
+transaction(rlpEncodedTransactions: [[UInt8]],  coinbaseAddr: String, nftIdentifier: String, ids: [UInt256], recipient: Address) {
     let nftType: Type
     let receiver: &{NonFungibleToken.Collection}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
@@ -32,12 +32,13 @@ transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier
     prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account, payer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
 
         let coinbase = EVM.addressFromString(coinbaseAddr)
-
-        let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
-        assert(
-            runResult.status == EVM.Status.successful,
-            message: "evm tx was not executed successfully."
-        )
+        for index, rlpEncodedTransaction in rlpEncodedTransactions {
+            let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
+            assert(
+                runResult.status == EVM.Status.successful,
+                message: "evm tx was not executed successfully."
+            )
+        }
         /* --- Reference the signer's CadenceOwnedAccount --- */
         //
         // Borrow a reference to the signer's COA
