@@ -373,16 +373,19 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  // Link COA account on-chain (for Recovery Phrase flow)
-  // Executes an on-chain Cadence transaction to link the COA to the user's Flow address
-  // IMPORTANT: The Flow address AND COA are already created by the backend during registration
-  // This function only executes the on-chain linking transaction after the wallet is initialized
+  // Register account with backend (for Recovery Phrase flow)
+  // Sends Flow public key to backend, which creates both Flow address and COA address
+  // This is called after mnemonic is saved and wallet is initialized
   // Returns transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
-  async linkCOAAccountOnChain(): Promise<string> {
+  async registerAccountWithBackend(): Promise<string> {
     try {
-      return await NativeFRWBridge.linkCOAAccountOnChain();
+      return await NativeFRWBridge.registerAccountWithBackend();
     } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to link COA account on-chain via bridge:', error);
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to register account with backend via bridge:',
+        error
+      );
       throw error; // Re-throw the error to propagate to caller
     }
   }

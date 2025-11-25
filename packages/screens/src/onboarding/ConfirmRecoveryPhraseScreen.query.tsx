@@ -261,7 +261,7 @@ export function ConfirmRecoveryPhraseScreen({
       const missingMethods: string[] = [];
       if (!bridge.signInWithCustomToken) missingMethods.push('signInWithCustomToken');
       if (!bridge.saveMnemonic) missingMethods.push('saveMnemonic');
-      if (!bridge.linkCOAAccountOnChain) missingMethods.push('linkCOAAccountOnChain');
+      if (!bridge.registerAccountWithBackend) missingMethods.push('registerAccountWithBackend');
 
       if (missingMethods.length > 0) {
         const errorMsg = `Missing required bridge methods: ${missingMethods.join(', ')}`;
@@ -350,17 +350,20 @@ export function ConfirmRecoveryPhraseScreen({
       await bridge.saveMnemonic(mnemonic, customToken, txId, username);
       logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully');
 
-      // Step 6: Link COA account on-chain
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Linking COA account on-chain...');
-      const coaTxId = await bridge.linkCOAAccountOnChain();
+      // Step 6: Register account with backend (creates Flow + COA addresses)
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering account with backend...');
+      const coaTxId = await bridge.registerAccountWithBackend();
 
-      // Handle case where COA account already linked
+      // Handle case where COA account already exists
       if (coaTxId === 'COA_ALREADY_EXISTS') {
-        logger.info('[ConfirmRecoveryPhraseScreen] COA account already linked, skipping');
+        logger.info('[ConfirmRecoveryPhraseScreen] COA account already exists, skipping');
       } else if (!coaTxId || typeof coaTxId !== 'string') {
-        throw new Error('Failed to link COA account on-chain: invalid transaction ID');
+        throw new Error('Failed to register account with backend: invalid transaction ID');
       } else {
-        logger.info('[ConfirmRecoveryPhraseScreen] COA link transaction submitted:', coaTxId);
+        logger.info(
+          '[ConfirmRecoveryPhraseScreen] Account registration transaction submitted:',
+          coaTxId
+        );
       }
 
       logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete!');

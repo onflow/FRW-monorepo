@@ -112,13 +112,11 @@ export interface PlatformSpec {
   // Returns: CreateAccountResponse with txId for native-side account verification (matches EOA flow)
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>;
 
-  // Link COA account on-chain (for Recovery Phrase flow)
-  // Executes an on-chain Cadence transaction to link the COA to the user's Flow address
-  // IMPORTANT: The Flow address AND COA are already created by the backend during registration via saveMnemonic() -> backend API
-  // This function only executes the on-chain linking transaction after the wallet is initialized
-  // Returns: transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA is already linked
-  // This is different from registerSecureTypeAccount which creates a new Secure Enclave-backed account
-  linkCOAAccountOnChain?(): Promise<string>;
+  // Register account with backend (for Recovery Phrase flow)
+  // Sends the Flow public key to backend, which creates both Flow address and COA address
+  // This is called after mnemonic is saved and wallet is initialized
+  // Returns: transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
+  registerAccountWithBackend?(): Promise<string>;
 
   // Save mnemonic to secure storage and initialize wallet (iOS Keychain / Android KeyStore)
   // For EOA accounts: mnemonic + customToken + txId + username

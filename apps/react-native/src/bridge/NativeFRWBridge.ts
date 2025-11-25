@@ -112,7 +112,7 @@ export interface Spec extends TurboModule {
   ): void;
   // Onboarding methods
   registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
-  linkCOAAccountOnChain(): Promise<string>;
+  registerAccountWithBackend(): Promise<string>;
   generateSeedPhrase(strength?: number | null): Promise<SeedPhraseGenerationResponse>;
   signOutAndSignInAnonymously(): Promise<void>;
   signInWithCustomToken(customToken: string): Promise<void>;
