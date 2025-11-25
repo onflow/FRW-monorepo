@@ -70,5 +70,8 @@ export {
   getThemeCardBackground,
 } from './theme';
 
+// Username utilities
+export { generateRandomUsername } from './username';
+
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';
