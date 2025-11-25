@@ -28,12 +28,12 @@ export function OnboardingHeader({
         </XStack>
       )}
 
-      <Text fontSize={40} lineHeight={48} fontWeight="700" color="$text" text="center" px="$4">
+      <Text fontSize="$10" lineHeight="$12" fontWeight="700" color="$text" text="center" px="$4">
         {title}
       </Text>
 
       {subtitle && (
-        <Text fontSize="$4" lineHeight={20} color="$textSecondary" text="center" px="$4">
+        <Text fontSize="$4" lineHeight="$5" color="$textSecondary" text="center" px="$4">
           {subtitle}
         </Text>
       )}
