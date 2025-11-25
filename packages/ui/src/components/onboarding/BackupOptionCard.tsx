@@ -9,6 +9,7 @@ interface BackupOptionCardProps {
   title: string;
   description: string;
   recommended?: boolean;
+  recommendedText?: string; // i18n label for "Recommended" badge
   onPress: () => void;
   backgroundImage?: any; // Optional background image for the card
 }
@@ -19,6 +20,7 @@ export function BackupOptionCard({
   title,
   description,
   recommended = false,
+  recommendedText = 'Recommended', // Default fallback
   onPress,
   backgroundImage,
 }: BackupOptionCardProps): React.ReactElement {
@@ -82,7 +84,7 @@ export function BackupOptionCard({
           pointerEvents="none"
         >
           <Text fontSize={12} fontWeight="400" color="$primary">
-            Recommended
+            {recommendedText}
           </Text>
         </View>
       )}
