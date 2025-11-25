@@ -2,6 +2,25 @@ import { UserGoService, Userv3GoService } from '@onflow/frw-api';
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
+// Type for the axios-wrapped response from register endpoint
+interface AxiosWrappedResponse<T> {
+  data: T;
+}
+
+// Type extracted from API - matches controllers_UserReturn from goService.generated.ts
+interface UserReturn {
+  id?: string;
+  custom_token?: string;
+  username?: string;
+}
+
+// Type for Flow address response - can be string or object with txid
+interface FlowAddressData {
+  txid?: string;
+  data?: { txid?: string };
+  transactionId?: string;
+}
+
 /**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
@@ -87,11 +106,13 @@ export class ProfileService {
       }
 
       // Axios wraps the response in a 'data' property
-      // The TypeScript type says Promise<controllers_UserReturn> but axios returns { data: controllers_UserReturn }
-      const response = (await Userv3GoService.register(requestPayload)) as any; // Type assertion needed because axios wraps response
+      // The TypeScript type says Promise<UserReturn> but axios returns { data: UserReturn }
+      const response = (await Userv3GoService.register(
+        requestPayload
+      )) as unknown as AxiosWrappedResponse<UserReturn>;
 
       // Handle both axios response structure and direct response
-      const userReturn = response.data || response;
+      const userReturn: UserReturn = response.data || (response as unknown as UserReturn);
 
       if (!userReturn?.custom_token || !userReturn?.id) {
         throw new Error(
@@ -183,18 +204,21 @@ export class ProfileService {
 
       // Extension uses /v2/user/address (createFlowAddressV2)
       // UserGoService.address2() calls /v2/user/address (matches extension implementation)
-      const response = (await UserGoService.address2()) as any;
+      const response = (await UserGoService.address2()) as unknown as AxiosWrappedResponse<string>;
 
       // Handle both axios response structure and direct response
       // The response.data is the transaction ID string directly
-      const addressData = response.data || response;
+      const addressData: string | FlowAddressData =
+        response.data || (response as unknown as string);
 
       // The transaction ID is directly in response.data as a string
       // If it's a string, that's the txid. If it's an object, check for txid property
-      const txid =
+      const txid: string | undefined =
         typeof addressData === 'string'
           ? addressData
-          : addressData?.txid || addressData?.data?.txid || addressData?.transactionId;
+          : (addressData as FlowAddressData).txid ||
+            (addressData as FlowAddressData).data?.txid ||
+            (addressData as FlowAddressData).transactionId;
 
       if (!txid) {
         logger.error('[ProfileService] No transaction ID found in response:', {
