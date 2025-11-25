@@ -26,7 +26,6 @@ import {
   googleDriveService,
 } from '@/core/service';
 import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
-import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
@@ -37,7 +36,6 @@ import notificationService from './controller/notification';
 import packageJson from '../../package.json';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { getAuthTokenWrapper } from './utils/googleDriveAuthToken';
-import { logListener } from './utils/log-listener';
 import { mixpanelService } from './utils/mixpanel-analytics';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 
@@ -80,14 +78,7 @@ async function restoreAppState() {
   if (process.env.MIXPANEL_TOKEN) {
     // This will set the analytics service to mixpanel
     await mixpanelService.init(process.env.MIXPANEL_TOKEN);
-
-    // Listen to log events
-    await logListener.init();
   }
-
-  // Initialize Chrome logging (Sentry breadcrumbs + console tracker) even without mixpanel
-  // so prod/beta builds still emit breadcrumbs when console output is suppressed
-  initializeChromeLogging();
 
   // 5. Load keyring store
   await keyringService.loadKeyringStore();
