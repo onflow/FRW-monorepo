@@ -5,6 +5,8 @@ import {
   captureConsoleIntegration,
   feedbackIntegration,
   consoleLoggingIntegration,
+  breadcrumbsIntegration,
+  browserProfilingIntegration,
 } from '@sentry/react';
 
 import { SENTRY_BASIC_CONFIG } from '../shared/constant/senty-constants';
@@ -14,6 +16,8 @@ init({
   enableLogs: true,
   integrations: [
     browserTracingIntegration(),
+    browserProfilingIntegration(),
+    breadcrumbsIntegration(),
     replayIntegration({
       networkDetailAllowUrls: [
         'rest-mainnet.onflow.org',
