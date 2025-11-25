@@ -90,14 +90,14 @@ export function AccountCreationLoadingState({
 
           {/* Animation - matching Figma design: 232.25 x 248.55 */}
           {isReady && currentAnimationSource && (
-            <YStack width={232} height={249} items="center" justify="center" mb="$6">
+            <YStack width="$48" aspectRatio={232 / 249} items="center" justify="center" mb="$6">
               <LottieView
                 source={currentAnimationSource}
                 autoPlay={true}
                 loop={true}
                 style={{
-                  width: 232,
-                  height: 249,
+                  width: '100%',
+                  aspectRatio: 232 / 249,
                 }}
                 resizeMode="contain"
                 onAnimationFailure={(error) => {
@@ -108,7 +108,7 @@ export function AccountCreationLoadingState({
           )}
 
           {/* Progress section - matching Figma design width: 339px */}
-          <YStack width={339} items="center" gap="$3">
+          <YStack width="100%" maxW={339} items="center" gap="$3" px="$4">
             {/* Status text */}
             <Text fontSize="$4" fontWeight="700" color="$primary">
               {statusText}
@@ -116,15 +116,15 @@ export function AccountCreationLoadingState({
 
             {/* Loading bar animation */}
             {isReady && currentLoadingBarSource && (
-              <YStack width="100%" height={52} items="center" justify="center">
+              <YStack width="100%" height="$13" items="center" justify="center">
                 <LottieView
                   source={currentLoadingBarSource}
                   autoPlay={true}
                   loop={true}
                   speed={0.5}
                   style={{
-                    width: 339,
-                    height: 52,
+                    width: '100%',
+                    height: '100%',
                   }}
                   resizeMode="cover"
                   onAnimationFailure={(error) => {
