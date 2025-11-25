@@ -74,13 +74,6 @@ export class ProfileService {
       // Single consolidated log before registration
       logger.info('[ProfileService] Registering user:', {
         username: requestPayload.username,
-        accountKey: {
-          public_key: requestPayload.accountKey.public_key!.slice(0, 16) + '...',
-          public_key_length: requestPayload.accountKey.public_key!.length,
-          sign_algo: requestPayload.accountKey.sign_algo,
-          hash_algo: requestPayload.accountKey.hash_algo,
-          weight: requestPayload.accountKey.weight,
-        },
       });
 
       // Validate public key format and length for ECDSA secp256k1 (64 bytes = 128 hex chars)
@@ -126,15 +119,7 @@ export class ProfileService {
           url: requestUrl,
           method: requestMethod,
           responseData: responseData || 'No response data',
-          requestPayload: {
-            username: params.username,
-            accountKey: {
-              public_key: params.accountKey.public_key!.slice(0, 16) + '...',
-              sign_algo: params.accountKey.sign_algo,
-              hash_algo: params.accountKey.hash_algo,
-              weight: 1000,
-            },
-          },
+          username: params.username,
         });
 
         // Create a more informative error message
