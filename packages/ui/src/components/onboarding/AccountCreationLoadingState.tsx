@@ -108,7 +108,7 @@ export function AccountCreationLoadingState({
           )}
 
           {/* Progress section - matching Figma design width: 339px */}
-          <YStack width="100%" maxW={339} items="center" gap="$3" px="$4">
+          <YStack width="100%" maxW="$84.75" items="center" gap="$3" px="$4">
             {/* Status text */}
             <Text fontSize="$4" fontWeight="700" color="$primary">
               {statusText}

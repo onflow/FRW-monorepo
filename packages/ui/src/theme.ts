@@ -205,6 +205,20 @@ export const size = {
   $47: 188,
   $48: 192,
   $49: 196,
+  $50: 200,
+  $51: 204,
+  $52: 208,
+  $53: 212,
+  $54: 216,
+  $55: 220,
+  $56: 224,
+  $57: 228,
+  $58: 232,
+  $59: 236,
+  $60: 240,
+  $61: 244,
+  $62: 248,
+  '$84.75': 339, // For AccountCreationLoadingState progress section width
 };
 
 // Space system (includes negative values)
