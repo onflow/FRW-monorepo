@@ -14,8 +14,8 @@ export function ProfileTypeCard({
 }: ProfileTypeCardProps): React.ReactElement {
   return (
     <YStack
-      w={168}
-      h={210}
+      w="$42"
+      aspectRatio={1.25}
       rounded={27}
       items="center"
       justify="center"
@@ -36,7 +36,7 @@ export function ProfileTypeCard({
           {title}
         </Text>
 
-        <Text fontSize="$3" color="$textSecondary" text="center" lineHeight={17}>
+        <Text fontSize="$3" color="$textSecondary" text="center" lineHeight="$4.5">
           {description}
         </Text>
       </YStack>
