@@ -1,3 +1,5 @@
+import { addBreadcrumb, type SeverityLevel } from '@sentry/browser';
+
 import { stripSensitive } from './strip-sensitive';
 
 // Get the formatted stack trace
@@ -47,20 +49,70 @@ export const setConsoleTracker = (tracker: ConsoleTracker, replace: boolean) => 
   replaceTracker = replace;
 };
 
-export const trackConsole = (type: ConsoleMessageType, message: string, code: number = 0) => {
-  const sanitizedMessage = stripSensitive(message);
+const severityMap: Record<ConsoleMessageType, { level: SeverityLevel; prefix: string }> = {
+  console_log: { level: 'info', prefix: '[FW-INFO]' },
+  console_info: { level: 'info', prefix: '[FW-INFO]' },
+  console_warn: { level: 'warning', prefix: '[FW-WARN]' },
+  console_error: { level: 'error', prefix: '[FW-ERROR]' },
+  console_debug: { level: 'debug', prefix: '[FW-DEBUG]' },
+  console_trace: { level: 'debug', prefix: '[FW-DEBUG]' },
+};
+
+const serializeArg = (arg: unknown) => {
+  if (arg instanceof Error) {
+    return { name: arg.name, message: arg.message, stack: arg.stack };
+  }
+  if (typeof arg === 'object' && arg !== null) {
+    try {
+      return JSON.parse(JSON.stringify(arg));
+    } catch {
+      return String(arg);
+    }
+  }
+  return arg;
+};
+
+const sendSentryBreadcrumb = (
+  type: ConsoleMessageType,
+  message: string,
+  stack: string,
+  args: unknown[]
+) => {
+  try {
+    const { level, prefix } = severityMap[type] ?? { level: 'info', prefix: '[FW-INFO]' };
+    const prefixedMessage = `${prefix} ${message}`;
+    addBreadcrumb({
+      category: 'console',
+      message: prefixedMessage,
+      level,
+      type: 'default',
+      data: {
+        stack,
+        args: args.map(serializeArg),
+      },
+    });
+  } catch {
+    // ignore Sentry errors to avoid cascading failures
+  }
+};
+
+export const trackConsole = (type: ConsoleMessageType, args: unknown[], code: number = 0) => {
+  const sanitizedMessage = stripSensitive(args.map((a) => String(a)).join(' '));
   const stack = getFormattedStackTrace();
 
   const tracker = customTracker || defaultTracker;
   tracker(type, sanitizedMessage, stack, code);
+
+  // In prod/beta replaceTracker is true; still send to Sentry so breadcrumbs are not lost
+  sendSentryBreadcrumb(type, sanitizedMessage, stack, args);
 };
 
 const _consoleLog = (...args: unknown[]) => {
-  trackConsole('console_log', ` ${args.join(' ')}`);
+  trackConsole('console_log', args);
 };
 
 const _consoleInfo = (...args: unknown[]) => {
-  trackConsole('console_info', ` ${args.join(' ')}`);
+  trackConsole('console_info', args);
 };
 
 const _consoleError = (...args: unknown[]) => {
@@ -75,7 +127,7 @@ const _consoleError = (...args: unknown[]) => {
   // eslint-disable-next-line no-console
   console.error(sanitizedMessage);
   try {
-    trackConsole('console_error', sanitizedMessage);
+    trackConsole('console_error', args.length ? args : [sanitizedMessage]);
   } catch {
     // ignore
     // eslint-disable-next-line no-console
@@ -84,15 +136,15 @@ const _consoleError = (...args: unknown[]) => {
 };
 
 const _consoleWarn = (...args: unknown[]) => {
-  trackConsole('console_warn', ` ${args.join(' ')}`);
+  trackConsole('console_warn', args);
 };
 
 const _consoleDebug = (...args: unknown[]) => {
-  trackConsole('console_debug', ` ${args.join(' ')}`);
+  trackConsole('console_debug', args);
 };
 
 const _consoleTrace = (...args: unknown[]) => {
-  trackConsole('console_trace', ` ${args.join(' ')}`);
+  trackConsole('console_trace', args);
 };
 
 // Export the original console functions if not in production
