@@ -89,9 +89,6 @@ function injectImageIntoLottie(
     return animationData;
   }
 
-  logger.debug(`[LottieInjection] 🔍 Looking for image with ID: "${targetImageId}"`);
-  logger.debug(`[LottieInjection] 🎯 Will replace with: ${imageSource.substring(0, 100)}...`);
-
   // Deep clone to avoid mutating original data
   const clonedData = JSON.parse(JSON.stringify(animationData));
   let foundAndReplaced = false;
@@ -107,48 +104,18 @@ function injectImageIntoLottie(
       return;
     }
 
-    // Check for image assets - log what we find
-    if (node.id) {
-      logger.debug(`[LottieInjection] 🔎 Found node with id: "${node.id}" at path: ${path}`);
-      if (node.id === targetImageId) {
-        logger.debug(`[LottieInjection] 🎯 MATCH! Found target image "${targetImageId}"`);
-        logger.debug(`[LottieInjection] 📋 Current node structure:`, {
-          id: node.id,
-          p: node.p,
-          u: node.u,
-          src: node.src,
-          w: node.w,
-          h: node.h,
-        });
-
-        if (node.p) {
-          // Standard Lottie image asset
-          const oldValue = node.p;
-          node.p = imageSource;
-          node.u = ''; // Clear base path
-          foundAndReplaced = true;
-          logger.debug(
-            `[LottieInjection] ✅ Replaced node.p from "${oldValue}" to "${imageSource.substring(0, 50)}..."`
-          );
-        } else if (node.src) {
-          // Alternative image format
-          const oldValue = node.src;
-          node.src = imageSource;
-          foundAndReplaced = true;
-          logger.debug(
-            `[LottieInjection] ✅ Replaced node.src from "${oldValue}" to "${imageSource.substring(0, 50)}..."`
-          );
-        } else {
-          logger.debug(
-            `[LottieInjection] ⚠️ Found target image but no 'p' or 'src' property to replace!`
-          );
-        }
+    // Check for image assets
+    if (node.id && node.id === targetImageId) {
+      if (node.p) {
+        // Standard Lottie image asset
+        node.p = imageSource;
+        node.u = ''; // Clear base path
+        foundAndReplaced = true;
+      } else if (node.src) {
+        // Alternative image format
+        node.src = imageSource;
+        foundAndReplaced = true;
       }
-    }
-
-    // Check if this is an asset with refId (layers that reference images)
-    if (node.refId) {
-      logger.debug(`[LottieInjection] 🔗 Found layer with refId: "${node.refId}" at path: ${path}`);
     }
 
     // Recursively process all properties
@@ -162,26 +129,8 @@ function injectImageIntoLottie(
 
   processNode(clonedData, 'root');
 
-  if (foundAndReplaced) {
-    logger.debug(`[LottieInjection] 🎉 Successfully found and replaced image "${targetImageId}"`);
-  } else {
-    logger.debug(`[LottieInjection] ❌ Could not find image "${targetImageId}" in animation data`);
-
-    // Debug: Let's log the assets structure
-    if (clonedData.assets) {
-      logger.debug(
-        `[LottieInjection] 📋 Available assets:`,
-        clonedData.assets.map((asset: any) => ({
-          id: asset.id,
-          p: asset.p,
-          u: asset.u,
-          w: asset.w,
-          h: asset.h,
-        }))
-      );
-    } else {
-      logger.debug(`[LottieInjection] ❌ No assets array found in animation data`);
-    }
+  if (!foundAndReplaced) {
+    logger.warn(`[LottieInjection] Could not find image "${targetImageId}" in animation data`);
   }
 
   return clonedData;
@@ -204,14 +153,8 @@ export async function injectImageWithFallbacks(
     };
   }
 
-  logger.debug(
-    `[LottieInjection] Starting injection for ${targetImageId} with imageUrl:`,
-    imageUrl || 'PLACEHOLDER'
-  );
-
   // If empty imageUrl provided, use base64 placeholder immediately
   if (!imageUrl || imageUrl.trim() === '') {
-    logger.debug('[LottieInjection] 📍 Using base64 placeholder for empty imageUrl');
     try {
       const placeholderData = injectImageIntoLottie(
         animationData,
@@ -235,9 +178,6 @@ export async function injectImageWithFallbacks(
 
   // Android: Check for SVG content early and use placeholder to prevent crashes
   if (Platform.OS === 'android' && isSVGContent(imageUrl)) {
-    logger.debug(
-      '[LottieInjection] 🛡️ Android + SVG detected, using safe placeholder to prevent crash'
-    );
     try {
       const placeholderData = injectImageIntoLottie(
         animationData,
@@ -265,7 +205,6 @@ export async function injectImageWithFallbacks(
       const base64Image = await imageUrlToBase64(imageUrl);
       if (base64Image) {
         const injectedData = injectImageIntoLottie(animationData, targetImageId, base64Image);
-        logger.debug('[LottieInjection] ✅ Successfully injected via base64');
         return {
           success: true,
           method: 'base64',
@@ -282,7 +221,6 @@ export async function injectImageWithFallbacks(
   if (Platform.OS !== 'android') {
     try {
       const injectedData = injectImageIntoLottie(animationData, targetImageId, imageUrl);
-      logger.debug('[LottieInjection] ✅ Successfully injected via URL');
       return {
         success: true,
         method: 'url',
@@ -296,7 +234,6 @@ export async function injectImageWithFallbacks(
   // Strategy 3: Use base64 placeholder as final fallback
   try {
     const placeholderData = injectImageIntoLottie(animationData, targetImageId, BASE64_PLACEHOLDER);
-    logger.debug('[LottieInjection] ⚠️ Using placeholder fallback');
     return {
       success: true, // Mark as success since we provided a safe fallback
       method: 'base64',
