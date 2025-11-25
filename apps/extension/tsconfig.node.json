@@ -17,5 +17,5 @@
       "allowJs": true
     }
   },
-  "include": ["webpack.config.ts", "build/**/*.ts"]
+  "include": ["webpack.config.ts", "vite.config.ts", "build/**/*.ts"]
 }

@@ -43,6 +43,7 @@
     "__tests__",
     "build",
     "webpack.config.ts",
+    "vite.config.ts",
     "postcss.config.mjs",
     "svgTransform.js",
     ".storybook/**/*"
