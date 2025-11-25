@@ -437,7 +437,7 @@ fun main(address: String): String? {
   }
 
   // Tag: SrcCadenceBridgeTransactions
-  public async batchBridgeNftFromEoaToFlowWithPayer(rlpEncodedTransaction: number[], coinbaseAddr: string, nftIdentifier: string, ids: string[], recipient: string) {
+  public async batchBridgeNftFromEoaToFlowWithPayer(rlpEncodedTransactions: number[][], coinbaseAddr: string, nftIdentifier: string, ids: string[], recipient: string) {
     const code = `
 import MetadataViews from 0xMetadataViews
 import ViewResolver from 0xMetadataViews
@@ -463,7 +463,7 @@ import CrossVMMetadataViews from 0xCrossVMMetadataViews
 /// @param id: The ERC721 id of the NFT to bridge to Cadence from EVM
 /// @param recipient: The Flow account address to receive the bridged NFT
 ///
-transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier: String, ids: [UInt256], recipient: Address) {
+transaction(rlpEncodedTransactions: [[UInt8]],  coinbaseAddr: String, nftIdentifier: String, ids: [UInt256], recipient: Address) {
     let nftType: Type
     let receiver: &{NonFungibleToken.Collection}
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
@@ -473,12 +473,13 @@ transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier
     prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account, payer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
 
         let coinbase = EVM.addressFromString(coinbaseAddr)
-
-        let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
-        assert(
-            runResult.status == EVM.Status.successful,
-            message: "evm tx was not executed successfully."
-        )
+        for index, rlpEncodedTransaction in rlpEncodedTransactions {
+            let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
+            assert(
+                runResult.status == EVM.Status.successful,
+                message: "evm tx was not executed successfully."
+            )
+        }
         /* --- Reference the signer's CadenceOwnedAccount --- */
         //
         // Borrow a reference to the signer's COA
@@ -701,7 +702,7 @@ access(all) fun mustCall(
       name: "batchBridgeNftFromEoaToFlowWithPayer",
       type: "transaction",
       args: (arg: any, t: any) => [
-        arg(rlpEncodedTransaction, t.Array(t.UInt8)),
+        arg(rlpEncodedTransactions, t.Array(t.Array(t.UInt8))),
         arg(coinbaseAddr, t.String),
         arg(nftIdentifier, t.String),
         arg(ids, t.Array(t.UInt256)),
@@ -3750,6 +3751,47 @@ transaction(evmContractAddressHexes: [String], amounts: [UFix64], datas: [[UInt8
   }
 
 
+  public async batchEoaCallContract(rlpEncodedTransactions: number[][], coinbaseAddr: string) {
+    const code = `
+import FungibleToken from 0xFungibleToken
+import FlowToken from 0xFlowToken
+import EVM from 0xEVM
+
+transaction(rlpEncodedTransactions: [[UInt8]],  coinbaseAddr: String) {
+
+    prepare(signer: auth(Storage, EVM.Withdraw) &Account) {
+        let coinbase = EVM.addressFromString(coinbaseAddr)
+
+        for index, rlpEncodedTransaction in rlpEncodedTransactions {
+            let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
+            assert(
+                runResult.status == EVM.Status.successful,
+                message: "evm tx was not executed successfully."
+            )
+        }
+    }
+    
+    execute {
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "batchEoaCallContract",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(rlpEncodedTransactions, t.Array(t.Array(t.UInt8))),
+        arg(coinbaseAddr, t.String),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
   public async callContract(toEVMAddressHex: string, amount: string, data: number[], gasLimit: number) {
     const code = `
 import FungibleToken from 0xFungibleToken
@@ -4703,7 +4745,7 @@ access(all) fun main(parent: Address): [Address] {
   }
 
   // Tag: SrcCadenceHybridcustodyTransactions
-  public async batchBridgeChildNftFromEoaWithPayer(rlpEncodedTransaction: number[], coinbaseAddr: string, nftIdentifier: string, child: string, ids: string[]) {
+  public async batchBridgeChildNftFromEoaWithPayer(rlpEncodedTransactions: number[][], coinbaseAddr: string, nftIdentifier: string, child: string, ids: string[]) {
     const code = `
 import MetadataViews from 0xMetadataViews
 import ViewResolver from 0xMetadataViews
@@ -4720,16 +4762,18 @@ import HybridCustody from 0xHybridCustody
 import CapabilityFilter from 0xCapabilityFilter
 import CrossVMMetadataViews from 0xCrossVMMetadataViews
 
-transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier: String, child: Address, ids: [UInt256]) {
+transaction(rlpEncodedTransactions: [[UInt8]],  coinbaseAddr: String, nftIdentifier: String, child: Address, ids: [UInt256]) {
 
     prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account, payer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
         let coinbase = EVM.addressFromString(coinbaseAddr)
-
-        let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
-        assert(
-            runResult.status == EVM.Status.successful,
-            message: "evm tx was not executed successfully."
-        )
+        for index, rlpEncodedTransaction in rlpEncodedTransactions {
+            let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
+            assert(
+                runResult.status == EVM.Status.successful,
+                message: "evm tx was not executed successfully."
+            )
+        }
+     
         /* --- Reference the signer's CadenceOwnedAccount --- */
         //
         // Borrow a reference to the signer's COA
@@ -4948,7 +4992,7 @@ access(all) fun mustCall(
       name: "batchBridgeChildNftFromEoaWithPayer",
       type: "transaction",
       args: (arg: any, t: any) => [
-        arg(rlpEncodedTransaction, t.Array(t.UInt8)),
+        arg(rlpEncodedTransactions, t.Array(t.Array(t.UInt8))),
         arg(coinbaseAddr, t.String),
         arg(nftIdentifier, t.String),
         arg(child, t.Address),
