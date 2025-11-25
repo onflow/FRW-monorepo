@@ -127,20 +127,41 @@ export class EoaToChildNftStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
     const { flowIdentifier, ids, receiver, tokenContractAddr, sender, coaAddr } = payload;
-    const callData = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
-    const signedTx = await signLegacyEvmTransaction(
-      {
-        from: sender,
-        to: tokenContractAddr,
-        data: callData as string,
-        gasLimit: GAS_LIMITS.EVM_DEFAULT,
-      },
-      _helpers
-    );
+    const callDatas = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
+    const rlpEncodeds: number[][] = [];
 
-    const rlpEncoded = convertHexToByteArray(signedTx);
+    if (ids.length === 1) {
+      const signedTx = await signLegacyEvmTransaction(
+        {
+          from: sender,
+          to: tokenContractAddr,
+          data: callDatas as string,
+          gasLimit: GAS_LIMITS.EVM_DEFAULT,
+        },
+        _helpers
+      );
+      const rlpEncoded = convertHexToByteArray(signedTx);
+      rlpEncodeds.push(rlpEncoded);
+    } else {
+      for (let idx = 0; idx < ids.length; idx++) {
+        const signedTx = await signLegacyEvmTransaction(
+          {
+            from: sender,
+            to: tokenContractAddr,
+            data: callDatas[idx] as string,
+            gasLimit: GAS_LIMITS.EVM_DEFAULT,
+          },
+          _helpers,
+          idx
+        );
+
+        const rlpEncoded = convertHexToByteArray(signedTx);
+        rlpEncodeds.push(rlpEncoded);
+      }
+    }
+
     return await this.cadenceService.batchBridgeChildNftFromEoaWithPayer(
-      rlpEncoded,
+      rlpEncodeds,
       sender,
       flowIdentifier,
       receiver,
@@ -250,20 +271,41 @@ export class EvmToFlowNftWithEoaBridgeStrategy implements TransferStrategy {
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
     const { flowIdentifier, ids, receiver, tokenContractAddr, sender, coaAddr } = payload;
 
-    const callData = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
-    const signedTx = await signLegacyEvmTransaction(
-      {
-        from: sender,
-        to: tokenContractAddr,
-        data: callData as string,
-        gasLimit: GAS_LIMITS.EVM_DEFAULT,
-      },
-      _helpers
-    );
+    const callDatas = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
+    const rlpEncodeds: number[][] = [];
 
-    const rlpEncoded = convertHexToByteArray(signedTx);
+    if (ids.length === 1) {
+      const signedTx = await signLegacyEvmTransaction(
+        {
+          from: sender,
+          to: tokenContractAddr,
+          data: callDatas as string,
+          gasLimit: GAS_LIMITS.EVM_DEFAULT,
+        },
+        _helpers
+      );
+      const rlpEncoded = convertHexToByteArray(signedTx);
+      rlpEncodeds.push(rlpEncoded);
+    } else {
+      for (let idx = 0; idx < ids.length; idx++) {
+        const signedTx = await signLegacyEvmTransaction(
+          {
+            from: sender,
+            to: tokenContractAddr,
+            data: callDatas[idx] as string,
+            gasLimit: GAS_LIMITS.EVM_DEFAULT,
+          },
+          _helpers,
+          idx
+        );
+
+        const rlpEncoded = convertHexToByteArray(signedTx);
+        rlpEncodeds.push(rlpEncoded);
+      }
+    }
+
     return await this.cadenceService.batchBridgeNftFromEoaToFlowWithPayer(
-      rlpEncoded,
+      rlpEncodeds,
       sender,
       flowIdentifier,
       ids.map((id) => `${id}`),
@@ -330,19 +372,37 @@ export class EoaToEVMStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { receiver, tokenContractAddr, sender } = payload;
-    const callData = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
-    const signedTx = await signLegacyEvmTransaction(
-      {
-        from: sender,
-        to: tokenContractAddr,
-        data: callData as string,
-        gasLimit: GAS_LIMITS.EVM_DEFAULT,
-      },
-      _helpers
-    );
+    const { receiver, tokenContractAddr, sender, ids } = payload;
+    const callDatas = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
+    if (ids.length === 1) {
+      const signedTx = await signLegacyEvmTransaction(
+        {
+          from: sender,
+          to: tokenContractAddr,
+          data: callDatas as string,
+          gasLimit: GAS_LIMITS.EVM_DEFAULT,
+        },
+        _helpers
+      );
 
-    const rlpEncoded = convertHexToByteArray(signedTx);
-    return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
+      const rlpEncoded = convertHexToByteArray(signedTx);
+      return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
+    } else {
+      const rlpEncodeds: number[][] = [];
+      for (let idx = 0; idx < ids.length; idx++) {
+        const signedTx = await signLegacyEvmTransaction(
+          {
+            from: sender,
+            to: tokenContractAddr,
+            data: callDatas[idx] as string,
+            gasLimit: GAS_LIMITS.EVM_DEFAULT,
+          },
+          _helpers,
+          idx
+        );
+        rlpEncodeds.push(convertHexToByteArray(signedTx));
+      }
+      return await this.cadenceService.batchEoaCallContract(rlpEncodeds, sender);
+    }
   }
 }
