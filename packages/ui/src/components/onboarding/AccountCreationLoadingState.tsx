@@ -89,7 +89,7 @@ export function AccountCreationLoadingState({
           </Text>
 
           {/* Animation - matching Figma design: 232.25 x 248.55 */}
-          {isReady && currentAnimationSource ? (
+          {isReady && currentAnimationSource && (
             <YStack width={232} height={249} items="center" justify="center" mb="$6">
               <LottieView
                 source={currentAnimationSource}
@@ -105,10 +105,6 @@ export function AccountCreationLoadingState({
                 }}
               />
             </YStack>
-          ) : (
-            <YStack width={232} height={249} items="center" justify="center" mb="$6">
-              <Text fontSize={80}>✨</Text>
-            </YStack>
           )}
 
           {/* Progress section - matching Figma design width: 339px */}
@@ -119,7 +115,7 @@ export function AccountCreationLoadingState({
             </Text>
 
             {/* Loading bar animation */}
-            {isReady && currentLoadingBarSource ? (
+            {isReady && currentLoadingBarSource && (
               <YStack width="100%" height={52} items="center" justify="center">
                 <LottieView
                   source={currentLoadingBarSource}
@@ -139,10 +135,6 @@ export function AccountCreationLoadingState({
                   }}
                 />
               </YStack>
-            ) : (
-              <View width="100%" height={52} items="center" justify="center">
-                <Text fontSize={24}>⏳</Text>
-              </View>
             )}
           </YStack>
         </YStack>
