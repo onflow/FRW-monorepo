@@ -1,4 +1,4 @@
-import { isDarkMode } from '@onflow/frw-utils';
+import { isDarkMode, logger } from '@onflow/frw-utils';
 import React, { useEffect, useState } from 'react';
 import { YStack, Text, View, useTheme } from 'tamagui';
 
@@ -49,7 +49,7 @@ export function AccountCreationLoadingState({
         setCurrentLoadingBarSource(loadingBarAnimation);
         setIsReady(true);
       } catch (error) {
-        console.error('[AccountCreationLoadingState] Failed to prepare animation:', error);
+        logger.error('[AccountCreationLoadingState] Failed to prepare animation:', error);
         setIsReady(true);
       }
     };
@@ -101,7 +101,7 @@ export function AccountCreationLoadingState({
                 }}
                 resizeMode="contain"
                 onAnimationFailure={(error) => {
-                  console.error('[AccountCreationLoadingState] Animation failed:', error);
+                  logger.error('[AccountCreationLoadingState] Animation failed:', error);
                 }}
               />
             </YStack>
@@ -128,7 +128,7 @@ export function AccountCreationLoadingState({
                   }}
                   resizeMode="cover"
                   onAnimationFailure={(error) => {
-                    console.error(
+                    logger.error(
                       '[AccountCreationLoadingState] Loading bar animation failed:',
                       error
                     );
