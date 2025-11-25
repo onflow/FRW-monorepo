@@ -17,7 +17,7 @@ export function FeatureItem({
   return (
     <XStack items="center" gap="$2">
       {icon}
-      <Text fontSize="$3" color={color} lineHeight={17}>
+      <Text fontSize="$3" color={color} lineHeight="$4.25">
         {text}
       </Text>
     </XStack>

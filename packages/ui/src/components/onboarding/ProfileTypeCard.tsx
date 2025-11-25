@@ -16,7 +16,7 @@ export function ProfileTypeCard({
     <YStack
       w="$42"
       aspectRatio={1.25}
-      rounded={27}
+      rounded="$6.75"
       items="center"
       justify="center"
       bg="$light5"

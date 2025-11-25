@@ -167,10 +167,12 @@ export const size = {
   '$3.5': 14,
   $4: 16,
   $true: 16,
+  '$4.25': 17, // For lineHeight in onboarding components
   '$4.5': 18,
   $5: 20,
   $6: 24,
   $7: 28,
+  '$7.5': 30, // For fontSize in AccountCreationLoadingState
   $8: 32,
   $9: 36,
   $10: 40,
@@ -257,12 +259,14 @@ export const radius = {
   true: 16,
   5: 20,
   6: 24,
+  '6.75': 27, // For ProfileTypeCard rounded corners
   7: 28,
   8: 32,
   9: 36,
   10: 40,
   11: 44,
   12: 48,
+  13: 54, // For BackupOptionCard recommended badge
 };
 
 // Create themes using createThemeBuilder
