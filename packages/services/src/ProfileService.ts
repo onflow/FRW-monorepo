@@ -7,18 +7,6 @@ import {
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
-// Type for the axios-wrapped response from register endpoint
-interface AxiosWrappedResponse<T> {
-  data: T;
-}
-
-// Type for Flow address response - can be string or object with txid
-interface FlowAddressData {
-  txid?: string;
-  data?: { txid?: string };
-  transactionId?: string;
-}
-
 /**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
@@ -108,15 +96,8 @@ export class ProfileService {
         );
       }
 
-      // Axios wraps the response in a 'data' property
-      // The TypeScript type says Promise<controllers_UserReturn> but axios returns { data: controllers_UserReturn }
-      const response = (await Userv3GoService.register(
-        requestPayload
-      )) as unknown as AxiosWrappedResponse<controllers_UserReturn>;
-
-      // Handle both axios response structure and direct response
-      const userReturn: controllers_UserReturn =
-        response.data || (response as unknown as controllers_UserReturn);
+      // The generated axios wrapper already unwraps res.data, so we get controllers_UserReturn directly
+      const userReturn = await Userv3GoService.register(requestPayload);
 
       if (!userReturn?.custom_token || !userReturn?.id) {
         throw new Error(
@@ -196,33 +177,19 @@ export class ProfileService {
 
       // Extension uses /v2/user/address (createFlowAddressV2)
       // UserGoService.address2() calls /v2/user/address (matches extension implementation)
-      const response = (await UserGoService.address2()) as unknown as AxiosWrappedResponse<string>;
+      // The generated axios wrapper unwraps res.data, returning the txid string or an object with txid
+      const response: any = await UserGoService.address2();
 
-      // Handle both axios response structure and direct response
-      // The response.data is the transaction ID string directly
-      const addressData: string | FlowAddressData =
-        response.data || (response as unknown as string);
-
-      // The transaction ID is directly in response.data as a string
-      // If it's a string, that's the txid. If it's an object, check for txid property
+      // Response can be a string (txid directly) or an object with txid property
       const txid: string | undefined =
-        typeof addressData === 'string'
-          ? addressData
-          : (addressData as FlowAddressData).txid ||
-            (addressData as FlowAddressData).data?.txid ||
-            (addressData as FlowAddressData).transactionId;
+        typeof response === 'string' ? response : response?.txid || response?.transactionId;
 
       if (!txid) {
-        logger.error('[ProfileService] No transaction ID found in response:', {
-          addressData,
-          response,
-        });
+        logger.error('[ProfileService] No transaction ID found in response:', { response });
         throw new Error('Failed to create Flow address: No transaction ID received');
       }
 
-      logger.info('[ProfileService] Flow address creation initiated:', {
-        txId: txid,
-      });
+      logger.info('[ProfileService] Flow address creation initiated:', { txId: txid });
 
       return txid;
     } catch (error: any) {
