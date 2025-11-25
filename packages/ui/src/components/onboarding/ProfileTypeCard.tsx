@@ -19,9 +19,9 @@ export function ProfileTypeCard({
       rounded={27}
       items="center"
       justify="center"
-      bg="rgba(255, 255, 255, 0.05)"
+      bg="$light5"
       borderWidth={1}
-      borderColor="rgba(255, 255, 255, 0.5)"
+      borderColor="$light50"
       style={{
         backdropFilter: 'blur(100px)',
         WebkitBackdropFilter: 'blur(100px)',
