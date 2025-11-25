@@ -110,7 +110,6 @@ export interface PlatformSpec {
 
   // Firebase authentication
   signInWithCustomToken?(customToken: string): Promise<void>;
-  signOutAndSignInAnonymously?(): Promise<void>;
 
   // Permissions
   requestNotificationPermission?(): Promise<boolean>;
