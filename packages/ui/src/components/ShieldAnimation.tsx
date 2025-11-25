@@ -1,4 +1,4 @@
-import { isDarkMode } from '@onflow/frw-utils';
+import { isDarkMode, logger } from '@onflow/frw-utils';
 import React, { useEffect, useState } from 'react';
 import { View, useTheme } from 'tamagui';
 
@@ -48,7 +48,7 @@ export const ShieldAnimation: React.FC<ShieldAnimationProps> = ({
         setCurrentAnimationSource(result.animationData);
         setIsReady(true);
       } catch (error) {
-        console.error('[ShieldAnimation] Failed to prepare animation:', error);
+        logger.error('[ShieldAnimation] Failed to prepare animation:', error);
         setIsReady(true);
       }
     };
@@ -72,7 +72,7 @@ export const ShieldAnimation: React.FC<ShieldAnimationProps> = ({
         }}
         resizeMode="contain"
         onAnimationFailure={(error) => {
-          console.error('[ShieldAnimation] Animation failed:', error);
+          logger.error('[ShieldAnimation] Animation failed:', error);
         }}
       />
     </View>
