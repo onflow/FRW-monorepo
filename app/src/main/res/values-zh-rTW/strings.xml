@@ -233,7 +233,7 @@
     <string name="restore_with_recovery_phrase">用恢復短語恢復</string>
     <string name="not_logged_in_toast">你尚未登入錢包</string>
     <string name="free_gas_fee">免費 gas 費用</string>
-    <string name="free_gas_fee_desc">允許 Flow 錢包支付所有交易的 gas 費用。</string>
+    <string name="free_gas_fee_desc">* 允許 Flow 錢包支付所有交易的 gas 費用。</string>
     <string name="file_picker_title">選擇文件</string>
     <string name="transaction_fee">交易手續費</string>
     <string name="hold_to_confirm">按住確認</string>

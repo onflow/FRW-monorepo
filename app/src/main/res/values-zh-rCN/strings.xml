@@ -235,8 +235,7 @@
     <string name="restore_with_recovery_phrase">用助记词恢复</string>
     <string name="not_logged_in_toast">您尚未登录钱包</string>
     <string name="free_gas_fee">免加密货币手续费</string>
-    <string name="free_gas_fee_desc">让 Flow Wallet 为我的所有交易支付加密货币手续费
-。</string>
+    <string name="free_gas_fee_desc">* 让 Flow Wallet 为我的所有交易支付加密货币手续费。</string>
     <string name="file_picker_title">选择文件</string>
     <string name="transaction_fee">交易手续费</string>
     <string name="hold_to_confirm">按住确认</string>

@@ -237,8 +237,7 @@
     <string name="restore_with_recovery_phrase">Восстановление с помощью фразы восстановления</string>
     <string name="not_logged_in_toast">Вы не вошли в кошелек</string>
     <string name="free_gas_fee">Бесплатная плата за газ</string>
-    <string name="free_gas_fee_desc">Разрешите Flow Wallet оплачивать газовый сбор за все мои транзакции
-        .</string>
+    <string name="free_gas_fee_desc">* Разрешите Flow Wallet оплачивать газовый сбор за все моитранзакции.</string>
     <string name="file_picker_title">Выберите файл</string>
     <string name="transaction_fee">Комиссия за транзакцию</string>
     <string name="hold_to_confirm">Удерживайте, чтобы подтвердить</string>
