@@ -84,7 +84,7 @@ export function AccountCreationLoadingState({
       <OnboardingBackground showDecorations={false}>
         <YStack flex={1} items="center" justify="center">
           {/* Title */}
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36} mb="$8">
+          <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight="$9" mb="$8">
             {title}
           </Text>
 
