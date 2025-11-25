@@ -1,17 +1,15 @@
-import { UserGoService, Userv3GoService } from '@onflow/frw-api';
+import {
+  UserGoService,
+  Userv3GoService,
+  type controllers_UserReturn,
+  type forms_AccountKey,
+} from '@onflow/frw-api';
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
 // Type for the axios-wrapped response from register endpoint
 interface AxiosWrappedResponse<T> {
   data: T;
-}
-
-// Type extracted from API - matches controllers_UserReturn from goService.generated.ts
-interface UserReturn {
-  id?: string;
-  custom_token?: string;
-  username?: string;
 }
 
 // Type for Flow address response - can be string or object with txid
@@ -47,29 +45,34 @@ export class ProfileService {
    *
    * @param params - Registration parameters
    * @param params.username - Username for the new profile
-   * @param params.accountKey - Account key with public key and signature/hash algorithms
+   * @param params.accountKey - Account key with public key and signature/hash algorithms (uses forms_AccountKey from API)
    * @returns Promise with registration response containing custom_token and user id
    */
   async register(params: {
     username: string;
-    accountKey: {
-      public_key: string;
-      sign_algo: number; // 2 for ECDSA_secp256k1 (extension default)
-      hash_algo: number; // 1 for SHA2_256 (extension default)
-    };
-  }): Promise<{
-    data: {
-      id: string;
-      custom_token: string;
-      username?: string;
-    };
-  }> {
+    accountKey: Omit<forms_AccountKey, 'weight'>; // Weight is added internally
+  }): Promise<controllers_UserReturn> {
     try {
+      // Validate required fields
+      if (!params.accountKey.public_key) {
+        throw new Error('public_key is required in accountKey');
+      }
+      if (params.accountKey.sign_algo === undefined) {
+        throw new Error('sign_algo is required in accountKey');
+      }
+      if (params.accountKey.hash_algo === undefined) {
+        throw new Error('hash_algo is required in accountKey');
+      }
+
       // Get device info from native platform implementation
       const deviceInfo = bridge.getDeviceInfo();
 
       // Prepare request payload (v3/register takes username, account_key and device_info)
-      const requestPayload = {
+      const requestPayload: {
+        username: string;
+        accountKey: forms_AccountKey;
+        deviceInfo: ReturnType<typeof bridge.getDeviceInfo>;
+      } = {
         username: params.username,
         accountKey: {
           public_key: params.accountKey.public_key,
@@ -84,8 +87,8 @@ export class ProfileService {
       logger.info('[ProfileService] Registering user:', {
         username: requestPayload.username,
         accountKey: {
-          public_key: requestPayload.accountKey.public_key.slice(0, 16) + '...',
-          public_key_length: requestPayload.accountKey.public_key.length,
+          public_key: requestPayload.accountKey.public_key!.slice(0, 16) + '...',
+          public_key_length: requestPayload.accountKey.public_key!.length,
           sign_algo: requestPayload.accountKey.sign_algo,
           hash_algo: requestPayload.accountKey.hash_algo,
           weight: requestPayload.accountKey.weight,
@@ -93,7 +96,7 @@ export class ProfileService {
       });
 
       // Validate public key format and length for ECDSA secp256k1 (64 bytes = 128 hex chars)
-      const publicKeyHex = requestPayload.accountKey.public_key;
+      const publicKeyHex = requestPayload.accountKey.public_key!;
       if (requestPayload.accountKey.sign_algo === 2 && !/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
         logger.error('[ProfileService] Invalid public key for ECDSA secp256k1:', {
           length: publicKeyHex.length,
@@ -106,13 +109,14 @@ export class ProfileService {
       }
 
       // Axios wraps the response in a 'data' property
-      // The TypeScript type says Promise<UserReturn> but axios returns { data: UserReturn }
+      // The TypeScript type says Promise<controllers_UserReturn> but axios returns { data: controllers_UserReturn }
       const response = (await Userv3GoService.register(
         requestPayload
-      )) as unknown as AxiosWrappedResponse<UserReturn>;
+      )) as unknown as AxiosWrappedResponse<controllers_UserReturn>;
 
       // Handle both axios response structure and direct response
-      const userReturn: UserReturn = response.data || (response as unknown as UserReturn);
+      const userReturn: controllers_UserReturn =
+        response.data || (response as unknown as controllers_UserReturn);
 
       if (!userReturn?.custom_token || !userReturn?.id) {
         throw new Error(
@@ -122,17 +126,9 @@ export class ProfileService {
 
       logger.info('[ProfileService] Registration successful:', {
         userId: userReturn.id,
-        username: userReturn.username,
       });
 
-      // Return in consistent format with data wrapper
-      return {
-        data: {
-          id: userReturn.id,
-          custom_token: userReturn.custom_token,
-          username: userReturn.username,
-        },
-      };
+      return userReturn;
     } catch (error: any) {
       // Enhanced error handling for Axios errors
       if (error?.response) {
@@ -152,7 +148,7 @@ export class ProfileService {
           requestPayload: {
             username: params.username,
             accountKey: {
-              public_key: params.accountKey.public_key.slice(0, 16) + '...',
+              public_key: params.accountKey.public_key!.slice(0, 16) + '...',
               sign_algo: params.accountKey.sign_algo,
               hash_algo: params.accountKey.hash_algo,
               weight: 1000,
@@ -192,13 +188,9 @@ export class ProfileService {
    * Matches extension implementation: uses /v2/user/address endpoint
    * Extension calls createFlowAddressV2() immediately after register() which authenticates with custom token
    *
-   * @returns Promise with transaction ID
+   * @returns Promise with transaction ID string
    */
-  async createFlowAddress(): Promise<{
-    data: {
-      txid: string;
-    };
-  }> {
+  async createFlowAddress(): Promise<string> {
     try {
       logger.info('[ProfileService] Creating Flow address...');
 
@@ -232,12 +224,7 @@ export class ProfileService {
         txId: txid,
       });
 
-      // Return in consistent format with data wrapper
-      return {
-        data: {
-          txid,
-        },
-      };
+      return txid;
     } catch (error: any) {
       logger.error('[ProfileService] Failed to create Flow address:', {
         message: error?.message,
