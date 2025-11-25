@@ -21,17 +21,17 @@ addHost(process.env.API_BASE_URL);
 addHost(process.env.API_GO_SERVER_URL);
 
 const baseHostsRegex = [
-  /^https:\/\/rest-mainnet\.onflow\.org/,
-  /^https:\/\/rest-testnet\.onflow\.org/,
-  /^https:\/\/mainnet\.evm\.nodes\.onflow\.org/,
-  /^https:\/\/testnet\.evm\.nodes\.onflow\.org/,
-  /^https:\/\/lilico\.app/,
-  /^https:\/\/web\.api\.wallet\.flow\.com/,
-  /^https:\/\/api\.lilico\.app/,
+  /^https:\/\/rest-mainnet\.onflow\.org\//,
+  /^https:\/\/rest-testnet\.onflow\.org\//,
+  /^https:\/\/mainnet\.evm\.nodes\.onflow\.org\//,
+  /^https:\/\/testnet\.evm\.nodes\.onflow\.org\//,
+  /^https:\/\/lilico\.app\//,
+  /^https:\/\/web\.api\.wallet\.flow\.com\//,
+  /^https:\/\/api\.lilico\.app\//,
 ];
 
 const envHostRegex = apiHosts.map(
-  (host) => new RegExp(`^https:\\/\\/${host.replaceAll('.', '\\.')}`)
+  (host) => new RegExp(`^https:\\/\\/${host.replaceAll('.', '\\.')}\\/`)
 );
 
 export const tracePropagationTargets = [
