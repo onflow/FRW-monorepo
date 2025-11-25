@@ -15,6 +15,15 @@ init({
   integrations: [
     browserTracingIntegration(),
     replayIntegration({
+      networkDetailAllowUrls: [
+        'rest-mainnet.onflow.org',
+        'rest-testnet.onflow.org',
+        'mainnet.evm.nodes.onflow.org',
+        'testnet.evm.nodes.onflow.org',
+        'lilico.app',
+        'web.api.wallet.flow.com',
+        'api.lilico.app',
+      ],
       // Set to false to disable text masking
       maskAllText: false,
       // Set to false to disable media blocking
