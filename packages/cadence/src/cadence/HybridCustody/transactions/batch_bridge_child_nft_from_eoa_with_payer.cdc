@@ -13,16 +13,18 @@ import HybridCustody from 0xHybridCustody
 import CapabilityFilter from 0xCapabilityFilter
 import CrossVMMetadataViews from 0xCrossVMMetadataViews
 
-transaction(rlpEncodedTransaction: [UInt8],  coinbaseAddr: String, nftIdentifier: String, child: Address, ids: [UInt256]) {
+transaction(rlpEncodedTransactions: [[UInt8]],  coinbaseAddr: String, nftIdentifier: String, child: Address, ids: [UInt256]) {
 
     prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account, payer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
         let coinbase = EVM.addressFromString(coinbaseAddr)
-
-        let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
-        assert(
-            runResult.status == EVM.Status.successful,
-            message: "evm tx was not executed successfully."
-        )
+        for index, rlpEncodedTransaction in rlpEncodedTransactions {
+            let runResult = EVM.run(tx: rlpEncodedTransaction, coinbase: coinbase)
+            assert(
+                runResult.status == EVM.Status.successful,
+                message: "evm tx was not executed successfully."
+            )
+        }
+     
         /* --- Reference the signer's CadenceOwnedAccount --- */
         //
         // Borrow a reference to the signer's COA
