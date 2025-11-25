@@ -12,6 +12,8 @@ import {
   makeFetchTransport,
   consoleLoggingIntegration,
   Scope,
+  browserTracingIntegration,
+  browserProfilingIntegration,
 } from '@sentry/browser';
 
 import { SENTRY_BASIC_CONFIG } from '../shared/constant/senty-constants';
@@ -30,6 +32,8 @@ const getIsolatedSentry = (): IsolatedSentry => {
       transport: makeFetchTransport,
       stackParser: defaultStackParser,
       integrations: [
+        browserTracingIntegration(),
+        browserProfilingIntegration(),
         browserApiErrorsIntegration(),
         breadcrumbsIntegration(),
         globalHandlersIntegration(),
