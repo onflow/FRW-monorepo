@@ -15,12 +15,18 @@ interface AccountCreationLoadingStateProps {
   statusText?: string;
   onComplete?: () => void;
   duration?: number;
+  /** Progress percentage (0-100). If provided, disables automatic progress. Set to 100 to trigger completion. */
+  progress?: number;
 }
 
 /**
  * AccountCreationLoadingState - Shared loading state for account creation
  * Shows a beautiful animation with theme-based Lottie animations
  * Automatically switches between light and dark animations based on theme
+ *
+ * Progress behavior:
+ * - Without `progress` prop: Auto-progresses 1% per 100ms up to 99%, then waits for completion
+ * - With `progress` prop: Displays the given progress (0-100). Set to 100 to trigger completion.
  */
 export function AccountCreationLoadingState({
   visible,
@@ -28,12 +34,14 @@ export function AccountCreationLoadingState({
   statusText = 'Configuring account',
   onComplete,
   duration = 3000,
+  progress: externalProgress,
 }: AccountCreationLoadingStateProps): React.ReactElement | null {
   const theme = useTheme();
   const isCurrentlyDarkMode = isDarkMode(theme);
   const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(null);
   const [currentLoadingBarSource, setCurrentLoadingBarSource] = useState<any>(null);
   const [isReady, setIsReady] = useState(false);
+  const [internalProgress, setInternalProgress] = useState(0);
 
   // Handle theme-based animation switching
   useEffect(() => {
@@ -57,16 +65,41 @@ export function AccountCreationLoadingState({
     prepareAnimation();
   }, [isCurrentlyDarkMode]);
 
-  // Handle completion after duration
+  // Calculate current progress (external or internal)
+  const currentProgress = externalProgress !== undefined ? externalProgress : internalProgress;
+
+  // Auto-progress effect (only when no external progress is provided)
   useEffect(() => {
-    if (visible && onComplete) {
+    if (!visible || externalProgress !== undefined) return;
+
+    // Reset progress when becoming visible
+    setInternalProgress(0);
+
+    // Progress from 0 to 99% at 1% per 100ms
+    const progressInterval = setInterval(() => {
+      setInternalProgress((prev) => {
+        if (prev >= 99) {
+          clearInterval(progressInterval);
+          return 99;
+        }
+        return prev + 1;
+      });
+    }, 100);
+
+    return () => clearInterval(progressInterval);
+  }, [visible, externalProgress]);
+
+  // Handle completion when progress reaches 100%
+  useEffect(() => {
+    if (visible && currentProgress >= 100 && onComplete) {
+      // Small delay to show 100% briefly before completing
       const timer = setTimeout(() => {
         onComplete();
-      }, duration);
+      }, 300);
 
       return () => clearTimeout(timer);
     }
-  }, [visible, onComplete, duration]);
+  }, [visible, currentProgress, onComplete]);
 
   if (!visible) return null;
 
@@ -107,21 +140,21 @@ export function AccountCreationLoadingState({
             </YStack>
           )}
 
-          {/* Progress section - matching Figma design width: 339px */}
+          {/* Progress section - responsive width */}
           <YStack width="100%" maxW="$84.75" items="center" gap="$3" px="$4">
-            {/* Status text */}
+            {/* Status text with progress percentage */}
             <Text fontSize="$4" fontWeight="700" color="$primary">
-              {statusText}
+              {statusText} {Math.round(currentProgress)}%
             </Text>
 
-            {/* Loading bar animation */}
+            {/* Loading bar animation - progress controlled */}
             {isReady && currentLoadingBarSource && (
               <YStack width="100%" height="$13" items="center" justify="center">
                 <LottieView
                   source={currentLoadingBarSource}
-                  autoPlay={true}
-                  loop={true}
-                  speed={0.5}
+                  autoPlay={false}
+                  loop={false}
+                  progress={currentProgress / 100}
                   style={{
                     width: '100%',
                     height: '100%',
