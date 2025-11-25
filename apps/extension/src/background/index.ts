@@ -81,11 +81,13 @@ async function restoreAppState() {
     // This will set the analytics service to mixpanel
     await mixpanelService.init(process.env.MIXPANEL_TOKEN);
 
-    // Initialize Chrome logging - has to be done after mixpanel is initialized
-    initializeChromeLogging();
     // Listen to log events
     await logListener.init();
   }
+
+  // Initialize Chrome logging (Sentry breadcrumbs + console tracker) even without mixpanel
+  // so prod/beta builds still emit breadcrumbs when console output is suppressed
+  initializeChromeLogging();
 
   // 5. Load keyring store
   await keyringService.loadKeyringStore();

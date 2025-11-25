@@ -10,11 +10,10 @@ import {
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
 import { WalletCoreProvider } from '@onflow/frw-wallet';
-import { addBreadcrumb, type SeverityLevel } from '@sentry/browser';
-import Web3 from 'web3';
 
 // Removed direct service imports - using walletController instead
-import { EVM_ENDPOINT, HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
+import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
+import { type ConsoleMessageType, trackConsole } from '@/shared/utils';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
@@ -163,42 +162,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
         : new Uint8Array(Object.values(privateKeyBytes));
 
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
-  }
-
-  /**
-   * Get the current transaction count (nonce) for an address
-   */
-  private async getTransactionCount(address: string): Promise<string> {
-    const network = await this.walletController.getNetwork();
-    const provider = new Web3.providers.HttpProvider(EVM_ENDPOINT[network]);
-    const web3Instance = new Web3(provider);
-
-    return new Promise((resolve, reject) => {
-      if (!web3Instance.currentProvider) {
-        reject(new Error('Provider is undefined'));
-        return;
-      }
-
-      web3Instance.currentProvider.send(
-        {
-          jsonrpc: '2.0',
-          method: 'eth_getTransactionCount',
-          params: [address, 'latest'],
-          id: Date.now(),
-        },
-        (error, response) => {
-          if (error) {
-            reject(error);
-          } else if (response && 'error' in response && response.error) {
-            reject(new Error(response.error.message || 'Failed to get transaction count'));
-          } else if (response && 'result' in response) {
-            resolve(response.result as string);
-          } else {
-            reject(new Error('Invalid response from provider'));
-          }
-        }
-      );
-    });
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {
@@ -560,31 +523,48 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return payerStatus?.surge;
   }
 
+  private formatLogArg(arg: unknown): string {
+    if (arg === undefined) {
+      return 'undefined';
+    }
+    if (arg instanceof Error) {
+      return `${arg.name}: ${arg.message}`;
+    }
+
+    if (typeof arg === 'object' && arg !== null) {
+      try {
+        return JSON.stringify(arg);
+      } catch {
+        return String(arg);
+      }
+    }
+
+    return String(arg);
+  }
+
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
-    if (level === 'debug' && !this.debugMode) {
-      return;
-    }
-
     const prefix = `[FW-${level.toUpperCase()}]`;
-    const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
+    const formattedArgs = args.map((arg) => this.formatLogArg(arg));
+    const baseMessage = message;
+    const fullMessage =
+      formattedArgs.length > 0 ? `${baseMessage} ${formattedArgs.join(' ')}` : baseMessage;
 
-    // Send to Sentry as Breadcrumb
-    try {
-      const sentryLevel = level === 'warn' ? 'warning' : level;
-      addBreadcrumb({
-        category: 'console',
-        message: fullMessage,
-        level: sentryLevel as SeverityLevel,
-        type: 'default',
-      });
-    } catch (error) {
-      // Ignore sentry errors
-    }
+    // Forward to unified tracker (Sentry breadcrumb + runtime tracker)
+    const consoleTypeMap: Record<typeof level, ConsoleMessageType> = {
+      debug: 'console_debug',
+      info: 'console_info',
+      warn: 'console_warn',
+      error: 'console_error',
+    };
+    const consoleType = consoleTypeMap[level];
+    trackConsole(consoleType, [prefix, message, ...args]);
 
     // Console logging for development
     switch (level) {
       case 'debug':
-        console.debug(prefix, message, ...args);
+        if (this.debugMode) {
+          console.debug(prefix, message, ...args);
+        }
         break;
       case 'info':
         // Only log info to console in debug mode to keep prod console clean
