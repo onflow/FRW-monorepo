@@ -21,7 +21,8 @@
     "error": "Error",
     "success": "Success",
     "Search": "Search",
-    "retry": "Retry"
+    "retry": "Retry",
+    "recommended": "Recommended"
   },
   "tabs": {
     "tokens": "Tokens",

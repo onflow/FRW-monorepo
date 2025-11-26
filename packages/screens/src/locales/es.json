@@ -20,7 +20,8 @@
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",
-    "Search": "Buscar"
+    "Search": "Buscar",
+    "recommended": "Recomendado"
   },
   "tabs": {
     "tokens": "Tokens",
