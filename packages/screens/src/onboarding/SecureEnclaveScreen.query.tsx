@@ -27,7 +27,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
   const theme = useTheme();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
 
   const handleNext = () => {
     setShowConfirmDialog(true);
@@ -36,7 +35,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
     setShowLoadingState(true);
-    setLoadingProgress(0);
 
     try {
       // Validate required bridge method upfront
@@ -51,9 +49,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
       logger.info('[SecureEnclaveScreen] Registering secure type account with username:', username);
 
-      // Start progress animation
-      setLoadingProgress(20);
-
       const result = await bridge.registerSecureTypeAccount(username);
 
       if (!result.success) {
@@ -67,9 +62,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
         txId: result.txId,
       });
 
-      // Update progress to show completion
-      setLoadingProgress(80);
-
       // Account verification is handled by native layer using txId (matches EOA flow)
       // Native layer will:
       // 1. Use txId for fast account discovery on-chain
@@ -79,13 +71,16 @@ export function SecureEnclaveScreen(): React.ReactElement {
         '[SecureEnclaveScreen] Account creation complete, native layer will handle verification'
       );
 
-      // Complete the progress animation
-      setLoadingProgress(100);
-      // The loading state will auto-dismiss via onComplete callback
+      // Wait for auto-progress animation to show meaningful progress
+      // The auto-progress goes from 0-99% at 1% per 100ms
+      // Wait 3 seconds to show progress, then navigate
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      // Dismiss loading state and navigate
+      await handleLoadingComplete();
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       setShowLoadingState(false);
-      setLoadingProgress(0);
     }
   };
 
@@ -211,8 +206,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
         visible={showLoadingState}
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
-        progress={loadingProgress}
-        onComplete={handleLoadingComplete}
       />
     </>
   );
