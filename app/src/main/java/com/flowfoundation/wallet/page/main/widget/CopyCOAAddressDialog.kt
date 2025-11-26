@@ -169,7 +169,7 @@ private fun SendButtonWrapper(
         factory = { context ->
             SendButton(context).apply {
                 // Set default text
-                updateDefaultText(R.string.hold_to_confirm)
+                updateDefaultText(R.string.confirm_to_copy_address)
 
                 // Set card properties
                 setCardBackgroundColor(context.getColor(R.color.button_color))
