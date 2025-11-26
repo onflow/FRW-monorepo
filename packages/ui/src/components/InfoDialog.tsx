@@ -2,7 +2,7 @@ import { Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Platform, Modal } from 'react-native';
-import { YStack, Stack, useTheme } from 'tamagui';
+import { YStack, Stack, useTheme, getTokens } from 'tamagui';
 
 import { Text } from '../foundation/Text';
 
@@ -30,6 +30,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
   onButtonClick,
 }) => {
   const theme = useTheme();
+  const tokens = getTokens();
 
   // Handle escape key press and body scroll prevention
   useEffect(() => {
@@ -128,7 +129,7 @@ export const InfoDialog: React.FC<InfoDialogProps> = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Close size={24} color="$light80" style={{ alignSelf: 'center' }} />
+            <Close size={24} color={tokens.color.light80.val} style={{ alignSelf: 'center' }} />
           </YStack>
         </YStack>
 
