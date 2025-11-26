@@ -112,16 +112,6 @@ export interface CreateAccountResponse {
   error: string | null;
 }
 
-export interface CreateEOAAccountResponse {
-  success: boolean;
-  address: string | null;
-  username: string | null;
-  mnemonic: string | null;
-  phrase: string[] | null;
-  accountType: 'eoa' | 'coa' | null;
-  error: string | null;
-}
-
 /**
  * Account key information with cryptographic algorithm details
  * Used for Flow blockchain account creation and key management

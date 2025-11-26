@@ -1,7 +1,6 @@
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   CreateAccountResponse,
-  CreateEOAAccountResponse,
   Currency,
   NativeScreenName,
   RecentContactsResponse,
@@ -348,24 +347,6 @@ class PlatformImpl implements PlatformSpec {
   }
 
   // Onboarding methods - Account creation
-  // EOA: Pure mnemonic-based account (no server)
-  async createEOAAccount(): Promise<CreateEOAAccountResponse> {
-    try {
-      return await NativeFRWBridge.createEOAAccount();
-    } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to create EOA account via bridge:', error);
-      return {
-        success: false,
-        address: null,
-        username: null,
-        mnemonic: null,
-        phrase: null,
-        accountType: 'eoa',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
-
   // Register Secure Type Account (Secure Enclave profile)
   // Username must be provided (3-20 chars as per server requirement)
   // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
