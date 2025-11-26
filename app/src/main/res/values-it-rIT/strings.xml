@@ -237,8 +237,7 @@
     <string name="restore_with_recovery_phrase">Ripristino con frase di recupero</string>
     <string name="not_logged_in_toast">Non hai effettuato l\'accesso al portafoglio</string>
     <string name="free_gas_fee">Tassa sul gas gratuita</string>
-    <string name="free_gas_fee_desc">Consentire a Flow Wallet di pagare la tariffa del gas per tutte le mie transazioni
-        .</string>
+    <string name="free_gas_fee_desc">* Consentire a Flow Wallet di pagare la tariffa del gas pertutte le mie transazioni.</string>
     <string name="file_picker_title">Selezionare il file</string>
     <string name="transaction_fee">Costo della Transazione</string>
     <string name="hold_to_confirm">Tenere premuto per confermare</string>

@@ -236,8 +236,7 @@
     <string name="restore_with_recovery_phrase">リカバリーフレーズで復元</string>
     <string name="not_logged_in_toast">ウォレットにログインしていません</string>
     <string name="free_gas_fee">ガソリン代無料</string>
-    <string name="free_gas_fee_desc">Flow Walletが私のすべての取引のガス料金を支払うことを許可する
-。</string>
+    <string name="free_gas_fee_desc">* Flow Walletが私のすべての取引のガス料金を支払うことを許可する。</string>
     <string name="file_picker_title">ファイルを選択</string>
     <string name="transaction_fee">トランザクション料金</string>
     <string name="hold_to_confirm">ホールドして確認</string>

@@ -237,8 +237,7 @@
     <string name="restore_with_recovery_phrase">복구 구문으로 복원</string>
     <string name="not_logged_in_toast">지갑에 로그인하지 않았습니다.</string>
     <string name="free_gas_fee">무료 가스 요금</string>
-    <string name="free_gas_fee_desc">플로우 월렛이 내 모든 거래에 대한 가스 요금을 결제하도록 허용
-        .</string>
+    <string name="free_gas_fee_desc">* 플로우 월렛이 내 모든 거래에 대한 가스 요금을 결제하도록 허용.</string>
     <string name="file_picker_title">파일 선택</string>
     <string name="transaction_fee">거래 수수료</string>
     <string name="hold_to_confirm">확인하려면 길게 누르기</string>

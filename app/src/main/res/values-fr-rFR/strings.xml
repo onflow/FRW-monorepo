@@ -237,8 +237,7 @@
     <string name="restore_with_recovery_phrase">Restauration avec phrase de récupération</string>
     <string name="not_logged_in_toast">Vous n\'êtes pas connecté au portefeuille</string>
     <string name="free_gas_fee">Taxe sur l\'essence gratuite</string>
-    <string name="free_gas_fee_desc">Permettre à Flow Wallet de payer les frais d\'essence pour toutes mes transactions
-        .</string>
+    <string name="free_gas_fee_desc">* Permettre à Flow Wallet de payer les frais d\'essence pourtoutes mes transactions.</string>
     <string name="file_picker_title">Sélectionner un fichier</string>
     <string name="transaction_fee">Frais de Transaction</string>
     <string name="hold_to_confirm">Maintenir pour confirmer</string>

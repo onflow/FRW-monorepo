@@ -237,8 +237,7 @@
     <string name="restore_with_recovery_phrase">Wiederherstellen mit Recovery Phrase</string>
     <string name="not_logged_in_toast">Sie sind nicht bei der Brieftasche eingeloggt</string>
     <string name="free_gas_fee">Kostenlose Gasgebühr</string>
-    <string name="free_gas_fee_desc">Erlauben Sie Flow Wallet, die Gasgebühr für alle meine Transaktionen zu zahlen
-        .</string>
+    <string name="free_gas_fee_desc">* Erlauben Sie Flow Wallet, die Gasgebühr für alle meine Transaktionen zu zahlen.</string>
     <string name="file_picker_title">Datei auswählen</string>
     <string name="transaction_fee">Transaktionsgebühr</string>
     <string name="hold_to_confirm">Halten zum Bestätigen</string>
