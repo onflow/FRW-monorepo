@@ -187,13 +187,12 @@ class PlatformImpl implements PlatformSpec {
 
   getDeviceInfo(): forms_DeviceInfo {
     // Return basic device info - most fields are optional and handled by backend
-    // Generate a stable device_id based on platform and build
-    const deviceId = `${RNPlatform.OS}-${this.getBuildNumber()}`;
-
+    // Note: device_id should be a persistent UUID stored in device storage
+    // For now, we return undefined and let the backend generate one
+    // TODO: Implement persistent device_id storage via native bridge
     return {
       type: RNPlatform.OS,
       user_agent: `FRW/${this.getVersion()} (${RNPlatform.OS} ${RNPlatform.Version})`,
-      device_id: deviceId,
       name: `Flow Wallet ${RNPlatform.OS}`,
     };
   }
