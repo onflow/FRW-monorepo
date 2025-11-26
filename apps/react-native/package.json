@@ -20,7 +20,9 @@
     "postinstall": "pnpm run codegen:bridge",
     "bundle:ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",
     "bundle:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
-    "bundle:android:sourcemap": "react-native bundle --platform android --entry-file index.js --dev false --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output ./android-sourcemap.json"
+    "bundle:android:sourcemap": "react-native bundle --platform android --entry-file index.js --dev false --bundle-output android/app/src/main/assets/index.android.bundle --sourcemap-output ./android-sourcemap.json",
+    "analyze:ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output /tmp/ios-bundle.js --assets-dest /tmp/ios-assets && react-native-bundle-discovery server ../../metro-stats.json",
+    "analyze:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output /tmp/android-bundle.js --assets-dest /tmp/android-assets && react-native-bundle-discovery server ../../metro-stats.json"
   },
   "dependencies": {
     "@onflow/frw-api": "workspace:^",
@@ -84,6 +86,7 @@
     "imageoptim-cli": "^3.1.9",
     "lint-staged": "^15.2.10",
     "prettier": "2.8.8",
+    "react-native-bundle-discovery": "^1.2.3",
     "react-query-external-sync": "^2.2.3",
     "socket.io-client": "^4.8.1",
     "typescript": "5.0.4",
