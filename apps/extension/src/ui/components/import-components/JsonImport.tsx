@@ -53,6 +53,8 @@ const JsonImport = ({
   const [errorMesssage, setErrorMessage] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isTextareaDragOver, setIsTextareaDragOver] = useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const hasJsonStructure = (str: string): boolean => {
@@ -207,12 +209,21 @@ const JsonImport = ({
     }
   };
 
-  const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
+  const handleTextFile = async (file: File): Promise<string | null> => {
+    try {
+      const text = await file.text();
+      const trimmedText = text.trim();
+      if (hasJsonStructure(trimmedText)) {
+        return prettifyJson(trimmedText);
+      }
+      return null;
+    } catch (error) {
+      consoleError('Error reading text file:', error);
+      return null;
     }
+  };
 
+  const handlePdfFile = async (file: File) => {
     if (file.type !== 'application/pdf') {
       setErrorMessage('Please select a valid PDF file');
       return;
@@ -222,10 +233,108 @@ const JsonImport = ({
     if (extractedJson) {
       setJson(extractedJson);
       checkJSONImport(extractedJson);
-      // Clear the file input so the same file can be selected again
-      event.target.value = '';
     } else {
       setErrorMessage('Could not find valid JSON in the PDF file');
+    }
+  };
+
+  const handleFile = async (file: File) => {
+    if (isPdfLoading || isLoading || isSignLoading) {
+      return;
+    }
+
+    // Handle PDF files
+    if (file.type === 'application/pdf') {
+      await handlePdfFile(file);
+      return;
+    }
+
+    // Handle text/JSON files
+    if (
+      file.type === 'application/json' ||
+      file.type === 'text/plain' ||
+      file.name.endsWith('.json') ||
+      file.name.endsWith('.txt')
+    ) {
+      const jsonContent = await handleTextFile(file);
+      if (jsonContent) {
+        setJson(jsonContent);
+        checkJSONImport(jsonContent);
+      } else {
+        setErrorMessage('Could not find valid JSON in the file');
+      }
+      return;
+    }
+
+    setErrorMessage('Please drop a valid PDF or JSON file');
+  };
+
+  const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    await handleFile(file);
+    // Clear the file input so the same file can be selected again
+    event.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    if (isPdfLoading || isLoading || isSignLoading) {
+      return;
+    }
+
+    const files = Array.from(e.dataTransfer.files);
+    const file = files[0];
+
+    if (file) {
+      await handleFile(file);
+    }
+  };
+
+  const handleTextareaDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsTextareaDragOver(true);
+  };
+
+  const handleTextareaDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsTextareaDragOver(false);
+  };
+
+  const handleTextareaDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsTextareaDragOver(false);
+
+    if (isPdfLoading || isLoading || isSignLoading) {
+      return;
+    }
+
+    const files = Array.from(e.dataTransfer.files);
+    const file = files[0];
+
+    if (file) {
+      await handleFile(file);
     }
   };
 
@@ -248,10 +357,36 @@ const JsonImport = ({
               setJson(newValue);
               checkJSONImport(newValue);
             }}
+            onDragOver={handleTextareaDragOver}
+            onDragLeave={handleTextareaDragLeave}
+            onDrop={handleTextareaDrop}
             required
-            sx={{ marginBottom: '0' }}
+            sx={{
+              marginBottom: '0',
+              border: isTextareaDragOver
+                ? `2px dashed ${COLOR_DARKMODE_WHITE_3pc}`
+                : '1px solid #767676',
+              backgroundColor: isTextareaDragOver ? `${COLOR_DARKMODE_WHITE_3pc}20` : undefined,
+              transition: 'all 0.2s ease-in-out',
+            }}
           />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Box
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: isDragOver ? '12px' : '0',
+              borderRadius: '12px',
+              border: isDragOver
+                ? `2px dashed ${COLOR_DARKMODE_WHITE_3pc}`
+                : '2px dashed transparent',
+              backgroundColor: isDragOver ? `${COLOR_DARKMODE_WHITE_3pc}20` : 'transparent',
+              transition: 'all 0.2s ease-in-out',
+            }}
+          >
             <input
               accept="application/pdf"
               style={{ display: 'none' }}
@@ -282,6 +417,18 @@ const JsonImport = ({
                   : chrome.i18n.getMessage('Upload_PDF') || 'Upload PDF'}
               </Button>
             </label>
+            {isDragOver && (
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontFamily: 'Inter',
+                }}
+              >
+                Drop PDF file here
+              </Typography>
+            )}
           </Box>
         </Box>
         <TextField
