@@ -4,7 +4,8 @@ import {
   Text,
   Button,
   OnboardingBackground,
-  NotificationPreviewImage,
+  Image,
+  pushNotifications,
 } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React from 'react';
@@ -181,7 +182,7 @@ export function NotificationPreferencesScreen({
 
         {/* Notification Preview Image - centered */}
         <YStack flex={1} items="center" justify="center">
-          <NotificationPreviewImage width={375} height={492} />
+          <Image source={pushNotifications} width={375} height={492} objectFit="contain" />
         </YStack>
 
         {/* Action buttons */}
