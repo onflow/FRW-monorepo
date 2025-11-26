@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 const { stat } = require('fs').promises;
-const { execSync, exec } = require('child_process');
+const { execFile } = require('child_process');
 const { promisify } = require('util');
 const { glob } = require('glob');
 const path = require('path');
 const os = require('os');
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // Configuration
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
@@ -80,14 +80,73 @@ const EXCLUDE_PATTERNS = [
 
 async function checkImageOptimCLI() {
   try {
-    execSync('which imageoptim', { stdio: 'ignore' });
+    // Use execFileAsync to safely check if imageoptim command exists
+    await execFileAsync('which', ['imageoptim']);
     return true;
   } catch {
     return false;
   }
 }
 
+async function checkBrew() {
+  try {
+    await execFileAsync('which', ['brew']);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function installImageOptimCLI() {
+  console.log('📦 Installing ImageOptim-CLI via Homebrew...');
+
+  try {
+    // Install imageoptim-cli
+    await execFileAsync('brew', ['install', 'imageoptim-cli']);
+    console.log('✅ ImageOptim-CLI installed successfully');
+
+    // Also install the apps if not present
+    try {
+      await execFileAsync('brew', ['install', '--cask', 'imageoptim']);
+      console.log('✅ ImageOptim.app installed successfully');
+    } catch {
+      console.log('ℹ️  ImageOptim.app may already be installed');
+    }
+
+    try {
+      await execFileAsync('brew', ['install', '--cask', 'imagealpha']);
+      console.log('✅ ImageAlpha.app installed successfully');
+    } catch {
+      console.log('ℹ️  ImageAlpha.app may already be installed (or deprecated)');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to install ImageOptim-CLI:', error.message);
+    return false;
+  }
+}
+
 async function optimizeWithImageOptimCLI(filePath) {
+  // Input validation for security
+  if (!filePath || typeof filePath !== 'string') {
+    throw new Error('Invalid file path provided');
+  }
+
+  // Ensure the file path is absolute and doesn't contain dangerous characters
+  const resolvedPath = path.resolve(filePath);
+  if (resolvedPath !== filePath) {
+    console.warn(`Warning: Normalizing path from ${filePath} to ${resolvedPath}`);
+    filePath = resolvedPath;
+  }
+
+  // Check if file exists and is readable
+  try {
+    await stat(filePath);
+  } catch {
+    throw new Error(`File not accessible: ${filePath}`);
+  }
+
   const ext = path.extname(filePath).toLowerCase();
   const originalStats = await stat(filePath);
   const originalSize = originalStats.size;
@@ -99,7 +158,7 @@ async function optimizeWithImageOptimCLI(filePath) {
   // Try ImageAlpha first for PNG files, then fallback to ImageOptim
   if (ext === '.png') {
     try {
-      await execAsync(`imageoptim --imagealpha "${filePath}"`);
+      await execFileAsync('imageoptim', ['--imagealpha', filePath]);
 
       const optimizedStats = await stat(filePath);
       const optimizedSize = optimizedStats.size;
@@ -118,7 +177,7 @@ async function optimizeWithImageOptimCLI(filePath) {
       // ImageAlpha failed, try regular ImageOptim
       console.log(`     ⚠️  ImageAlpha failed, trying ImageOptim...`);
       try {
-        await execAsync(`imageoptim "${filePath}"`);
+        await execFileAsync('imageoptim', [filePath]);
 
         const optimizedStats = await stat(filePath);
         const optimizedSize = optimizedStats.size;
@@ -141,7 +200,7 @@ async function optimizeWithImageOptimCLI(filePath) {
   } else {
     // For non-PNG files, use regular ImageOptim
     try {
-      await execAsync(`imageoptim "${filePath}"`);
+      await execFileAsync('imageoptim', [filePath]);
 
       const optimizedStats = await stat(filePath);
       const optimizedSize = optimizedStats.size;
@@ -194,12 +253,14 @@ Usage: node scripts/bulk-optimize-images.js [options]
 Options:
   -n, --dry-run              Show what files would be optimized (no changes)
   -f, --force                Skip confirmation prompt
+  --install                  Install ImageOptim-CLI via Homebrew (macOS only)
   --exclude=<pattern>        Add custom exclude pattern (can be used multiple times)
   -h, --help                 Show this help message
 
 Examples:
   node scripts/bulk-optimize-images.js --dry-run
   node scripts/bulk-optimize-images.js --force
+  node scripts/bulk-optimize-images.js --install
   node scripts/bulk-optimize-images.js --exclude="**/my-folder/**"
   pnpm optimize-images --dry-run
 `);
@@ -215,6 +276,7 @@ async function main() {
 
   const isDryRun = args.includes('--dry-run') || args.includes('-n');
   const isForce = args.includes('--force') || args.includes('-f');
+  const shouldInstall = args.includes('--install');
   const customExcludes = args
     .filter((arg) => arg.startsWith('--exclude='))
     .map((arg) => arg.split('=')[1]);
@@ -226,17 +288,89 @@ async function main() {
     console.log('🏃‍♂️ DRY RUN MODE - No files will be modified\n');
   }
 
+  // Handle install-only mode
+  if (shouldInstall) {
+    if (os.platform() !== 'darwin') {
+      console.log('❌ Installation is only supported on macOS');
+      process.exit(1);
+    }
+
+    if (await checkBrew()) {
+      console.log('📦 Installing ImageOptim-CLI and required apps...\n');
+      const installed = await installImageOptimCLI();
+      process.exit(installed ? 0 : 1);
+    } else {
+      console.log('❌ Homebrew not found. Please install Homebrew first:');
+      console.log(
+        '   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+      );
+      process.exit(1);
+    }
+  }
+
   // Check platform and tool availability
   if (os.platform() !== 'darwin') {
     console.log('❌ This tool requires macOS and ImageOptim-CLI');
-    console.log('   Install with: brew install imageoptim-cli');
+    console.log('   For other platforms, images will be validated but not optimized');
     process.exit(1);
   }
 
+  // Check if ImageOptim-CLI is installed
   if (!(await checkImageOptimCLI())) {
     console.log('❌ ImageOptim-CLI not found');
-    console.log('   Install with: brew install imageoptim-cli');
-    process.exit(1);
+
+    // Check if Homebrew is available for auto-installation
+    if (await checkBrew()) {
+      if (!isDryRun) {
+        const readline = require('readline');
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+
+        const shouldInstall = await new Promise((resolve) => {
+          rl.question(
+            '\n📦 Would you like to install ImageOptim-CLI via Homebrew? (y/N): ',
+            (answer) => {
+              resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+            }
+          );
+        });
+        rl.close();
+
+        if (shouldInstall) {
+          const installed = await installImageOptimCLI();
+          if (!installed) {
+            console.log('\n❌ Installation failed. Please install manually:');
+            console.log('   brew install imageoptim-cli');
+            console.log('   brew install --cask imageoptim');
+            console.log('   brew install --cask imagealpha');
+            process.exit(1);
+          }
+          console.log(''); // Empty line for better formatting
+        } else {
+          console.log('\n❌ ImageOptim-CLI is required for optimization.');
+          console.log('   Install with: brew install imageoptim-cli');
+          process.exit(1);
+        }
+      } else {
+        console.log('\n💡 To install ImageOptim-CLI, run:');
+        console.log('   brew install imageoptim-cli');
+        console.log('   brew install --cask imageoptim');
+        console.log('   brew install --cask imagealpha');
+        process.exit(1);
+      }
+    } else {
+      console.log('\n❌ Homebrew not found. Please install Homebrew first:');
+      console.log(
+        '   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+      );
+      console.log('\n   Then install ImageOptim-CLI:');
+      console.log('   brew install imageoptim-cli');
+      console.log('   brew install --cask imageoptim');
+      console.log('   brew install --cask imagealpha');
+      process.exit(1);
+    }
   }
 
   console.log('✅ ImageOptim-CLI detected\n');
