@@ -20,7 +20,8 @@
     "loading": "加载中...",
     "error": "错误",
     "success": "成功",
-    "Search": "搜索"
+    "Search": "搜索",
+    "recommended": "推荐"
   },
   "tabs": {
     "tokens": "代币",

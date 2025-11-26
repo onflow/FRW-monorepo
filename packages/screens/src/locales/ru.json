@@ -20,7 +20,8 @@
     "loading": "Загрузка...",
     "error": "Ошибка",
     "success": "Успешно",
-    "Search": "Поиск"
+    "Search": "Поиск",
+    "recommended": "Рекомендуется"
   },
   "tabs": {
     "tokens": "Токены",
