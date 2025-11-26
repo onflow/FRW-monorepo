@@ -44,6 +44,7 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^15.13.0",
     "husky": "^9.1.7",
+    "imagemin-cli": "^8.0.0",
     "lint-staged": "^15.2.10",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
@@ -55,10 +56,10 @@
   },
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
+    "@tamagui/animations-react-native": "^1.132.20",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native": "0.79.2",
-    "@tamagui/animations-react-native": "^1.132.20"
+    "react-native": "0.79.2"
   },
   "pnpm": {
     "overrides": {
