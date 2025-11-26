@@ -220,6 +220,17 @@
       }
     }
   },
+  "surge": {
+    "title": "Precio de congestión activo",
+    "message": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas. Las tarifas de red actuales son 4 veces más altas de lo habitual.",
+    "modal": {
+      "title": "¿Estás seguro de que quieres continuar con el precio de congestión?",
+      "transactionFee": "Tu tarifa de transacción",
+      "surgeActive": "Precio de congestión activo",
+      "description": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas, y Flow Wallet no está pagando temporalmente por tu gas. Las tarifas de red actuales son {{multiplier}}× más altas de lo habitual.",
+      "holdToAgree": "Mantener para continuar con el precio de congestión"
+    }
+  },
   "onboarding": {
     "flowWallet": "Cartera Flow",
     "getStarted": {
@@ -307,17 +318,6 @@
       "description": "Por favor selecciona las palabras una por una según su orden.",
       "selectWord": "Selecciona la palabra en #{{position}}",
       "finish": "Finalizar"
-    }
-  },
-  "surge": {
-    "title": "Precio de congestión activo",
-    "message": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas. Las tarifas de red actuales son 4 veces más altas de lo habitual.",
-    "modal": {
-      "title": "¿Estás seguro de que quieres continuar con el precio de congestión?",
-      "transactionFee": "Tu tarifa de transacción",
-      "surgeActive": "Precio de congestión activo",
-      "description": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas, y Flow Wallet no está pagando temporalmente por tu gas. Las tarifas de red actuales son {{multiplier}}× más altas de lo habitual.",
-      "holdToAgree": "Mantener para continuar con el precio de congestión"
     }
   }
 }
