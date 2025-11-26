@@ -3,11 +3,7 @@ import { IconButton } from '@onflow/frw-ui';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import React from 'react';
 
-interface NavigationBackButtonProps {
-  onPress?: () => void;
-}
-
-export const NavigationBackButton: React.FC<NavigationBackButtonProps> = ({ onPress }) => {
+export const NavigationBackButton: React.FC = () => {
   const navigation = useNavigation();
   const theme = useTheme();
 
@@ -20,9 +16,8 @@ export const NavigationBackButton: React.FC<NavigationBackButtonProps> = ({ onPr
       icon={<ArrowLeft color={theme.colors.text} size={24} width={24} height={24} />}
       variant="ghost"
       size="medium"
-      onPress={onPress || (() => navigation.goBack())}
-      ml="$-2" // Move left to reduce padding
-      pl="$2" // Add some internal padding
+      onPress={() => navigation.goBack()}
+      ml={10}
     />
   );
 };
