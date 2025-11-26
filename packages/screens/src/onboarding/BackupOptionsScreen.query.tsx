@@ -135,7 +135,7 @@ export function BackupOptionsScreen(): React.ReactElement {
         <YStack flex={1} z={1} px="$4">
           {/* Title */}
           <YStack items="center" mb="$6" gap="$2">
-            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={20} maxW={320}>
+            <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$5" maxW={320}>
               {t('onboarding.backupOptions.subtitle')}
             </Text>
           </YStack>
@@ -200,7 +200,7 @@ export function BackupOptionsScreen(): React.ReactElement {
       >
         <YStack gap="$4" width="100%" px="$4">
           {/* Warning message */}
-          <Text fontSize="$4" fontWeight="400" color="$text" text="center" lineHeight={20}>
+          <Text fontSize="$4" fontWeight="400" color="$text" text="center" lineHeight="$5">
             {t('onboarding.backupOptions.skipWarning.message')}
           </Text>
 
