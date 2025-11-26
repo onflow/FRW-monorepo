@@ -1,7 +1,16 @@
 import { bridge, logger } from '@onflow/frw-context';
-import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
+import { CloudBackup, DeviceBackup, RecoveryPhraseBackup, ArrowLeft } from '@onflow/frw-icons';
 import { NativeScreenName } from '@onflow/frw-types';
-import { YStack, Text, BackupOptionCard, cardBackground, View, InfoDialog } from '@onflow/frw-ui';
+import {
+  YStack,
+  Text,
+  BackupOptionCard,
+  cardBackground,
+  View,
+  InfoDialog,
+  IconButton,
+  useTheme,
+} from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme, BackHandler } from 'react-native';
@@ -10,22 +19,27 @@ import { useColorScheme, BackHandler } from 'react-native';
  * BackupOptionsScreen - Screen for selecting additional backup methods
  * Allows users to choose between device backup, cloud backup, or view recovery phrase
  * Shows warning dialog when user tries to exit without setting up additional backup
- * Hardware/system back button is intercepted to show warning
+ * Both UI back button and hardware back button trigger the warning
  */
 export function BackupOptionsScreen(): React.ReactElement {
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
+  const theme = useTheme();
   const [showWarningDialog, setShowWarningDialog] = useState(false);
 
   // Theme-aware icon colors
   const isDark = colorScheme === 'dark';
   const iconColor = isDark ? '#000000' : '#FFFFFF';
 
+  // Handler to show warning dialog (used by both UI button and hardware back button)
+  const handleBackPress = () => {
+    setShowWarningDialog(true);
+  };
+
   // Intercept hardware back button to show warning dialog
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      // Show warning dialog
-      setShowWarningDialog(true);
+      handleBackPress();
       // Return true to prevent default back behavior
       return true;
     });
@@ -98,6 +112,16 @@ export function BackupOptionsScreen(): React.ReactElement {
     <>
       <YStack flex={1} bg="$background" overflow="hidden">
         <YStack flex={1} z={1} px="$4">
+          {/* Back button */}
+          <YStack pt="$4" pb="$2">
+            <IconButton
+              icon={<ArrowLeft color={theme.text.val} size={24} width={24} height={24} />}
+              variant="ghost"
+              size="medium"
+              onPress={handleBackPress}
+            />
+          </YStack>
+
           {/* Title */}
           <YStack items="center" mb="$6" gap="$2">
             <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$5" maxW={320}>
