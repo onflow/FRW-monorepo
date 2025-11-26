@@ -83,6 +83,7 @@
     "imageoptim-cli": "^3.1.9",
     "lint-staged": "^15.2.10",
     "prettier": "2.8.8",
+    "react-native-bundle-discovery": "^1.2.3",
     "react-query-external-sync": "^2.2.3",
     "socket.io-client": "^4.8.1",
     "typescript": "5.0.4",
