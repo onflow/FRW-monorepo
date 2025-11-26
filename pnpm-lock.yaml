@@ -862,9 +862,6 @@ importers:
       '@onflow/frw-types':
         specifier: workspace:*
         version: link:../types
-      '@onflow/frw-ui':
-        specifier: workspace:*
-        version: link:../ui
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
