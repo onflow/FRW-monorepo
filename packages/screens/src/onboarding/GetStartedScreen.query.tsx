@@ -8,11 +8,10 @@ import {
   OnboardingHeader,
   getStartedBackground,
   getStartedBackgroundLight,
-  useTheme,
 } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking } from 'react-native';
+import { Linking, useColorScheme } from 'react-native';
 
 /**
  * GetStartedScreen - First screen of the FTE onboarding flow
@@ -24,11 +23,10 @@ const PRIVACY_POLICY_URL = 'https://wallet.flow.com/privacy-policy';
 
 export function GetStartedScreen(): React.ReactElement {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const colorScheme = useColorScheme();
 
   // Theme-aware background selection
-  const isDark =
-    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
+  const isDark = colorScheme === 'dark';
   const backgroundImage = isDark ? getStartedBackground : getStartedBackgroundLight;
 
   const handleCreateAccount = () => {
