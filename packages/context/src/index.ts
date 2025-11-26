@@ -28,8 +28,14 @@ export {
   toast,
 } from './ServiceContext';
 
-// Toast Context - Moved to @onflow/frw-ui package to avoid circular dependency
-// Import ToastProvider, useToast, usePlatformToast from @onflow/frw-ui instead
+// Toast Context
+export {
+  ToastProvider,
+  useToast,
+  usePlatformToast,
+  type ToastContextValue,
+  type ToastState,
+} from './ToastContext';
 
 // Query Client Manager
 export {
