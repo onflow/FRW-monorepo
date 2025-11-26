@@ -161,6 +161,7 @@ export function BackupOptionsScreen(): React.ReactElement {
               title={t('onboarding.backupOptions.deviceBackup.title')}
               description={t('onboarding.backupOptions.deviceBackup.description')}
               recommended={true}
+              recommendedText={t('common.recommended')}
               backgroundImage={cardBackground}
               onPress={handleDeviceBackup}
             />
@@ -176,6 +177,7 @@ export function BackupOptionsScreen(): React.ReactElement {
               title={t('onboarding.backupOptions.cloudBackup.title')}
               description={t('onboarding.backupOptions.cloudBackup.description')}
               recommended={true}
+              recommendedText={t('common.recommended')}
               backgroundImage={cardBackground}
               onPress={handleCloudBackup}
             />
