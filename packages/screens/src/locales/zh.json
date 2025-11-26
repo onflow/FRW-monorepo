@@ -286,6 +286,11 @@
       "recoveryPhrase": {
         "title": "创建恢复短语备份",
         "description": "创建一个12个单词的恢复短语"
+      },
+      "skipWarning": {
+        "title": "在没有备份的情况下继续？",
+        "message": "如果没有备份，如果您丢失设备，您可能会失去对钱包的访问权限。您确定要在不设置备份的情况下继续吗？",
+        "confirm": "在没有备份的情况下继续"
       }
     },
     "recoveryPhrase": {
