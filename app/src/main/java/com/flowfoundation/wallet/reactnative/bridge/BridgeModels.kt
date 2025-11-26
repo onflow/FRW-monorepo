@@ -20,7 +20,14 @@ class RNBridge {
     enum class ScreenType {
         @SerializedName("send-asset") SEND_ASSET,
         @SerializedName("token-detail") TOKEN_DETAIL,
+        @SerializedName("onboarding") ONBOARDING,
         @SerializedName("receive") RECEIVE
+    }
+
+    enum class AccountTypeType {
+        @SerializedName("eoa") EOA,
+        @SerializedName("coa") COA,
+        @SerializedName("null") NULL
     }
 
     data class EmojiInfo(
@@ -152,6 +159,117 @@ class RNBridge {
         val symbol: String,
         @SerializedName("rate")
         val rate: String
+    )
+
+    data class SaveMnemonicResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class CreateAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("username")
+        val username: String,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
+        @SerializedName("txId")
+        val txId: String,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class CreateEOAAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("username")
+        val username: String,
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("phrase")
+        val phrase: String,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class AccountKey(
+        @SerializedName("publicKey")
+        val publicKey: String,
+        @SerializedName("hashAlgoStr")
+        val hashAlgoStr: String,
+        @SerializedName("signAlgoStr")
+        val signAlgoStr: String,
+        @SerializedName("weight")
+        val weight: Int,
+        @SerializedName("hashAlgo")
+        val hashAlgo: Int,
+        @SerializedName("signAlgo")
+        val signAlgo: Int
+    )
+
+    data class SeedPhraseGenerationResponse(
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("accountKey")
+        val accountKey: AccountKey,
+        @SerializedName("drivepath")
+        val drivepath: String
+    )
+
+    data class SPResponse(
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("accountKey")
+        val accountKey: AccountKey,
+        @SerializedName("drivepath")
+        val drivepath: String
+    )
+
+    data class DeviceInfo(
+        @SerializedName("device_id")
+        val device_id: String?,
+        @SerializedName("name")
+        val name: String?,
+        @SerializedName("type")
+        val type: String?,
+        @SerializedName("user_agent")
+        val user_agent: String?,
+        @SerializedName("ip")
+        val ip: String?,
+        @SerializedName("city")
+        val city: String?,
+        @SerializedName("country")
+        val country: String?,
+        @SerializedName("countryCode")
+        val countryCode: String?,
+        @SerializedName("continent")
+        val continent: String?,
+        @SerializedName("continentCode")
+        val continentCode: String?,
+        @SerializedName("regionName")
+        val regionName: String?,
+        @SerializedName("district")
+        val district: String?,
+        @SerializedName("zip")
+        val zip: String?,
+        @SerializedName("lat")
+        val lat: Int?,
+        @SerializedName("lon")
+        val lon: Int?,
+        @SerializedName("isp")
+        val isp: String?,
+        @SerializedName("org")
+        val org: String?,
+        @SerializedName("currency")
+        val currency: String?
     )
 
     data class NFTModel(
