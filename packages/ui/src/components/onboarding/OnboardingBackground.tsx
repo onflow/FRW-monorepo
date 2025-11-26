@@ -1,13 +1,13 @@
 import React from 'react';
-import { YStack, Image, type ViewProps, useTheme } from 'tamagui';
+import { YStack, Image, type ViewProps } from 'tamagui';
 
-import { fullBackground, fullBackgroundLight } from '../../assets/images';
+import { fullBackground } from '../../assets/images';
 
 interface OnboardingBackgroundProps extends ViewProps {
   children: React.ReactNode;
   showDecorations?: boolean;
   useBackgroundImage?: boolean;
-  backgroundImage?: any; // Custom background image (optional, defaults to theme-aware full_bg)
+  backgroundImage?: any; // Custom background image (optional, defaults to fullBackground)
 }
 
 export function OnboardingBackground({
@@ -17,14 +17,7 @@ export function OnboardingBackground({
   backgroundImage,
   ...props
 }: OnboardingBackgroundProps): React.ReactElement {
-  const theme = useTheme();
-
-  // Use theme-aware background if no custom image provided
-  // Check if current theme is dark by looking at theme name or background color
-  const isDark =
-    theme.background?.toString().startsWith('#0') || theme.background?.toString().startsWith('#1');
-  const defaultBackgroundImage = isDark ? fullBackground : fullBackgroundLight;
-  const selectedBackground = backgroundImage ?? defaultBackgroundImage;
+  const selectedBackground = backgroundImage ?? fullBackground;
 
   return (
     <YStack flex={1} bg="$background" position="relative" {...props}>
