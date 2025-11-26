@@ -113,10 +113,10 @@ export function BackupOptionCard({
 
       {/* Text content */}
       <YStack gap="$2" pointerEvents="none">
-        <Text fontSize="$6" fontWeight="700" color="$text" lineHeight="$7">
+        <Text fontSize="$6" fontWeight="700" color="$text">
           {title}
         </Text>
-        <Text fontSize="$4" color="$textSecondary" lineHeight="$4.25">
+        <Text fontSize="$4" color="$textSecondary">
           {description}
         </Text>
       </YStack>

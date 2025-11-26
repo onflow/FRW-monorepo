@@ -171,11 +171,11 @@ export function NotificationPreferencesScreen({
       <YStack flex={1} px="$4" justify="space-between">
         {/* Title and description */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight="$9" mb="$3">
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" mb="$3">
             {t('onboarding.notificationPreferences.title')}
           </Text>
 
-          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$5" px="$2">
+          <Text fontSize="$4" color="$textSecondary" text="center" px="$2">
             {t('onboarding.notificationPreferences.subtitle')}
           </Text>
         </YStack>
