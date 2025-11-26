@@ -29,6 +29,11 @@ export function GetStartedScreen(): React.ReactElement {
   const isDark = colorScheme === 'dark';
   const backgroundImage = isDark ? getStartedBackground : getStartedBackgroundLight;
 
+  // Debug logging
+  logger.debug('[GetStartedScreen] colorScheme:', colorScheme);
+  logger.debug('[GetStartedScreen] isDark:', isDark);
+  logger.debug('[GetStartedScreen] backgroundImage:', backgroundImage);
+
   const handleCreateAccount = () => {
     // Navigate to profile type selection for create account flow
     navigation.navigate('ProfileTypeSelection');
