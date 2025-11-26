@@ -1,7 +1,6 @@
 import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
   CreateAccountResponse,
-  CreateEOAAccountResponse,
   Currency,
   NativeScreenName,
   Platform,
@@ -96,35 +95,18 @@ export interface PlatformSpec {
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
 
-  // Onboarding methods - Account creation
-  // EOA: Externally Owned Account (pure mnemonic-based, no server)
-  createEOAAccount?(): Promise<CreateEOAAccountResponse>;
-  // Generate seed phrase (mnemonic) and derive account key using native wallet-core
-  // Returns: SeedPhraseGenerationResponse with mnemonic, accountKey, and derivation path
+  // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
-
-  // Register Secure Type Account (Secure Enclave profile - hardware-backed keys)
-  // Username must be provided by caller (3-20 chars as per server requirement)
-  // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
-  // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
-  // Returns: CreateAccountResponse with txId for native-side account verification (matches EOA flow)
-  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>;
-
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
   /**
-   * Register account with backend (for Recovery Phrase flow)
-   * Sends the Flow public key to backend, which creates both Flow address and COA address
-   * This is called after mnemonic is saved and wallet is initialized
+   * Sends Flow public key to backend to create Flow + COA addresses on-chain
    * @returns Transaction ID (txId) if successful, or the string "COA_ALREADY_EXISTS" if account already exists
    * @example "a1b2c3d4..." // Transaction ID
    * @example "COA_ALREADY_EXISTS" // Account already exists
    */
   registerAccountWithBackend?(): Promise<string>;
 
-  // Save mnemonic to secure storage and initialize wallet (iOS Keychain / Android KeyStore)
-  // For EOA accounts: mnemonic + customToken + txId + username
-  // username: Original username with proper capitalization (to preserve case when backend returns lowercase)
-  // Native layer handles: secure storage, Firebase auth, Wallet-Kit init, account discovery
-  // Returns: Promise<void> - resolves on success, throws error on failure
+  // Wallet initialization
   saveMnemonic?(
     mnemonic: string,
     customToken: string,
@@ -132,23 +114,16 @@ export interface PlatformSpec {
     username: string
   ): Promise<void>;
 
-  // Sign out of Firebase and sign in anonymously (needed before creating new accounts)
-  // Ensures clean authentication state for account creation (matches COA flow)
-  // Returns: Promise<void> - resolves on success, throws error on failure
-  signOutAndSignInAnonymously?(): Promise<void>;
-  // Sign in with custom token (needed after registration to authenticate for API calls)
-  // Returns: Promise<void> - resolves on success, throws error on failure
+  // Firebase authentication
   signInWithCustomToken?(customToken: string): Promise<void>;
 
-  // Notification permission methods
+  // Permissions
   requestNotificationPermission?(): Promise<boolean>;
   checkNotificationPermission?(): Promise<boolean>;
 
-  // Screen security methods
+  // Screen security
   setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
 
-  // Native screen navigation - unified method for launching native Android/iOS screens
-  // screenName: identifier for the screen to launch (use NativeScreenName enum)
-  // params: optional JSON string with screen-specific parameters
+  // Native screen navigation
   launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
 }
