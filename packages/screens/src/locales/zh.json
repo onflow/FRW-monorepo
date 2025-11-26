@@ -295,8 +295,6 @@
       "title": "确认短语",
       "description": "请根据顺序逐一选择单词。",
       "selectWord": "选择位置 #{{position}} 的单词",
-      "wrongWord": "选择的单词错误。请重试。",
-      "next": "下一步",
       "finish": "完成"
     }
   },

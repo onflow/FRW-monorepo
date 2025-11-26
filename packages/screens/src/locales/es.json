@@ -298,8 +298,6 @@
       "title": "Confirmar frase",
       "description": "Por favor selecciona las palabras una por una según su orden.",
       "selectWord": "Selecciona la palabra en #{{position}}",
-      "wrongWord": "Palabra incorrecta seleccionada. Por favor intenta de nuevo.",
-      "next": "Siguiente",
       "finish": "Finalizar"
     }
   },

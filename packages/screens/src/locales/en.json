@@ -307,8 +307,6 @@
       "title": "Confirm phrase",
       "description": "Please select the word one by one referring to its order.",
       "selectWord": "Select the word at #{{position}}",
-      "wrongWord": "Wrong word selected. Please try again.",
-      "next": "Next",
       "finish": "Finish"
     }
   },
