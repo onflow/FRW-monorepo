@@ -27,6 +27,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
   const theme = useTheme();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   const handleNext = () => {
     setShowConfirmDialog(true);
@@ -35,6 +36,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
     setShowLoadingState(true);
+    setLoadingProgress(0);
 
     try {
       // Validate required bridge method upfront
@@ -49,6 +51,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
       logger.info('[SecureEnclaveScreen] Registering secure type account with username:', username);
 
+      // Start progress animation
+      setLoadingProgress(20);
+
       const result = await bridge.registerSecureTypeAccount(username);
 
       if (!result.success) {
@@ -62,35 +67,44 @@ export function SecureEnclaveScreen(): React.ReactElement {
         txId: result.txId,
       });
 
+      // Update progress to show completion
+      setLoadingProgress(80);
+
       // Account verification is handled by native layer using txId (matches EOA flow)
       // Native layer will:
       // 1. Use txId for fast account discovery on-chain
       // 2. Initialize wallet and authentication
       // 3. Cache account information
-      // The loading state can be dismissed immediately as native handles the rest
       logger.info(
         '[SecureEnclaveScreen] Account creation complete, native layer will handle verification'
       );
 
-      setShowLoadingState(false);
-
-      // Check notification permission before navigating
-      if (bridge.checkNotificationPermission) {
-        const isGranted = await bridge.checkNotificationPermission();
-        if (isGranted) {
-          logger.info(
-            '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
-          );
-          navigation.navigate('BackupOptions');
-          return;
-        }
-      }
-
-      navigation.navigate('NotificationPreferences');
+      // Complete the progress animation
+      setLoadingProgress(100);
+      // The loading state will auto-dismiss via onComplete callback
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       setShowLoadingState(false);
+      setLoadingProgress(0);
     }
+  };
+
+  const handleLoadingComplete = async () => {
+    setShowLoadingState(false);
+
+    // Check notification permission before navigating
+    if (bridge.checkNotificationPermission) {
+      const isGranted = await bridge.checkNotificationPermission();
+      if (isGranted) {
+        logger.info(
+          '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
+        );
+        navigation.navigate('BackupOptions');
+        return;
+      }
+    }
+
+    navigation.navigate('NotificationPreferences');
   };
 
   const handleBack = () => {
@@ -197,6 +211,8 @@ export function SecureEnclaveScreen(): React.ReactElement {
         visible={showLoadingState}
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
+        progress={loadingProgress}
+        onComplete={handleLoadingComplete}
       />
     </>
   );
