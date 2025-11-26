@@ -4,7 +4,6 @@ import { NativeScreenName } from '@onflow/frw-types';
 import {
   YStack,
   Text,
-  GradientBackground,
   BackupOptionCard,
   cardBackground,
   View,
@@ -140,8 +139,8 @@ export function BackupOptionsScreen(): React.ReactElement {
 
   return (
     <>
-      <GradientBackground>
-        <YStack flex={1} px="$4">
+      <YStack flex={1} bg="$background" overflow="hidden">
+        <YStack flex={1} z={1} px="$4">
           {/* Title */}
           <YStack items="center" mb="$6" gap="$2">
             <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={20} maxW={320}>
@@ -197,7 +196,7 @@ export function BackupOptionsScreen(): React.ReactElement {
             />
           </YStack>
         </YStack>
-      </GradientBackground>
+      </YStack>
 
       {/* Warning Dialog - Skip backup confirmation */}
       <InfoDialog
