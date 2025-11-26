@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -55,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -74,6 +76,8 @@ import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.wallet.view.LinkedAccountSection
 import com.flowfoundation.wallet.page.wallet.view.WalletAccountSection
+import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
+import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.clearCacheDir
@@ -87,7 +91,9 @@ import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
+import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 import kotlinx.coroutines.delay
 
 @Composable
@@ -194,6 +200,13 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
         BottomSection(
             onImportWalletClick = {
                 WalletRestoreActivity.launch(activity)
+            },
+            onAddProfileClick = {
+                if (isTestnet()) {
+                    SwitchNetworkDialog(context, DialogType.CREATE).show()
+                } else {
+                    WalletCreateActivity.launch(context, step = WALLET_CREATE_STEP_USERNAME)
+                }
             }
         )
     }
@@ -296,27 +309,56 @@ fun EVMSection(onEvmClick: () -> Unit) {
         val inlineContent = mapOf(
             inlineContentId to InlineTextContent(
                 placeholder = Placeholder(
-                    width = 40.sp,
+                    width = 62.sp,
                     height = 16.sp,
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                 )
             ) {
                 Box(
-                    modifier = Modifier
-                        .height(16.dp)
-                        .background(
-                            color = colorResource(R.color.evm),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 6.dp, vertical = 1.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.BottomCenter,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Text(
-                        text = evm,
-                        color = colorResource(id = R.color.text_1),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    ConstraintLayout(
+                        modifier = Modifier
+                            .background(
+                                color = colorResource(R.color.evm),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                        ) {
+                            val (evmLabel, flowLabel) = createRefs()
+                            Text(
+                                text = stringResource(R.string.label_evm),
+                                color = colorResource(id = R.color.white),
+                                fontSize = 8.sp,
+                                modifier = Modifier
+                                    .constrainAs(evmLabel) {
+                                      top.linkTo(parent.top)
+                                      bottom.linkTo(parent.bottom)
+                                      start.linkTo(parent.start, margin = 4.dp)
+                                      end.linkTo(flowLabel.start, margin = 2.dp)
+                                    }
+                            )
+                            Box(
+                              modifier = Modifier
+                                .constrainAs(flowLabel) {
+                                  top.linkTo(parent.top)
+                                  bottom.linkTo(parent.bottom)
+                                  start.linkTo(evmLabel.end, margin = 2.dp)
+                                  end.linkTo(parent.end)
+                                }
+                                .background(
+                                  color = colorResource(R.color.evm_on_flow_end_color),
+                                  shape = RoundedCornerShape(16.dp)
+                                )
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                              Text(
+                                text = stringResource(R.string.label_flow),
+                                color = colorResource(id = R.color.black),
+                                fontSize = 8.sp
+                              )
+                            }
+                    }
                 }
             }
         )
@@ -673,13 +715,13 @@ fun AccountListSection(
 
 @Composable
 fun BottomSection(
-    onImportWalletClick: () -> Unit
+    onImportWalletClick: () -> Unit,
+    onAddProfileClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp)
-            .clickable(onClick = onImportWalletClick),
+            .padding(top = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier
@@ -687,7 +729,8 @@ fun BottomSection(
             .background(
                 color = colorResource(id = R.color.bg_card),
                 shape = CircleShape
-            ),
+            )
+            .clickable(onClick = onAddProfileClick),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -698,10 +741,11 @@ fun BottomSection(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = stringResource(id = R.string.add_account),
+            text = stringResource(id = R.string.recover_profile),
             color = colorResource(id = R.color.text_2),
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.clickable(onClick = onImportWalletClick)
         )
     }
 }
