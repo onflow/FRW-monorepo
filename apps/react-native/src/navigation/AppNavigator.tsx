@@ -391,12 +391,12 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                     onPress={() => {
                       // Trigger warning dialog in screen
                       const handler = (globalThis as any).__backupOptionsBackHandler;
-                      if (handler && !handler()) {
-                        // Handler returned false, prevent navigation
+                      if (handler && handler()) {
+                        // Handler returned true to prevent navigation and show warning dialog
                         return;
                       }
-                      // Otherwise navigate back normally
-                      screenNavigation.goBack();
+                      // Otherwise, close RN instead of navigating back
+                      platform.closeRN();
                     }}
                   />
                 ),
