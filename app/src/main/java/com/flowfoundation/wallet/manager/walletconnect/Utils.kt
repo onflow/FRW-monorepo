@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
+import androidx.appcompat.app.AppCompatActivity
 import com.flowfoundation.wallet.manager.app.EVM_MAINNET
 import com.flowfoundation.wallet.manager.app.EVM_TESTNET
 import com.flowfoundation.wallet.manager.app.flowChainNetworkString
@@ -8,8 +9,10 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
+import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.annotations.SerializedName
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
@@ -104,13 +107,17 @@ fun Sign.Model.SessionProposal.reject() {
     SignClient.rejectSession(reject) { error -> loge(error.throwable) }
 }
 
-internal fun WCRequest.approve(result: String) {
+internal fun WCRequest.approve(result: String, onSuccess: (() -> Unit)? = null) {
     logd(TAG, "SessionRequest.approve:$result")
     val response = Sign.Params.Response(
         sessionTopic = topic,
         jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, result)
     )
-    SignClient.respond(response) { error -> loge(error.throwable) }
+    SignClient.respond(
+        response,
+        onSuccess = { onSuccess?.invoke() },
+        onError = { error -> loge(error.throwable) }
+    )
 }
 
 internal fun WCRequest.reject() {
@@ -128,3 +135,39 @@ internal class SignableMessage(
     @SerializedName("message")
     val message: String?,
 )
+
+internal fun WCRequest.findRedirectUrl(): String? {
+    return try {
+        val sessionRedirect = SignClient.getActiveSessionByTopic(topic)?.redirect
+        when {
+            !sessionRedirect.isNullOrBlank() -> sessionRedirect
+            !metaData?.redirect.isNullOrBlank() -> metaData?.redirect
+            else -> null
+        }
+    } catch (e: Exception) {
+        loge(TAG, "Error finding redirect URL: ${e.message}")
+        null
+    }
+}
+
+internal fun WCRequest.handleRedirectIfNeeded(redirectUrl: String?, activity: AppCompatActivity?) {
+    if (redirectUrl.isNullOrBlank()) {
+        logd(TAG, "No redirect URL configured for topic: $topic")
+        return
+    }
+
+    if (activity == null) {
+        loge(TAG, "No activity available to perform redirect")
+        return
+    }
+
+    uiScope {
+        try {
+            logd(TAG, "Redirecting to: $redirectUrl")
+            redirectUrl.openInSystemBrowser(activity, true)
+        } catch (e: Exception) {
+            loge(TAG, "Failed to open redirect URL: ${e.message}")
+            loge(e)
+        }
+    }
+}
