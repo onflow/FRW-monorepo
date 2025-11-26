@@ -1,3 +1,4 @@
+import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   CreateAccountResponse,
@@ -182,6 +183,14 @@ class PlatformImpl implements PlatformSpec {
   }
   getPlatform(): Platform {
     return RNPlatform.OS === 'ios' ? Platform.iOS : Platform.Android;
+  }
+
+  getDeviceInfo(): forms_DeviceInfo {
+    // Return basic device info - most fields are optional and handled by backend
+    return {
+      type: RNPlatform.OS,
+      user_agent: `FRW/${this.getVersion()} (${RNPlatform.OS} ${RNPlatform.Version})`,
+    };
   }
 
   getApiEndpoint(): string {
