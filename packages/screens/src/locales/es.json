@@ -20,7 +20,9 @@
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",
-    "Search": "Buscar"
+    "Search": "Buscar",
+    "recommended": "Recomendado",
+    "retry": "Reintentar"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -105,7 +107,10 @@
     "sendTokens": "Enviar Tokens",
     "confirmSend": "Confirmar envío",
     "holdToSend": "Mantener para enviar",
-    "unknownAccount": "Cuenta Desconocida"
+    "unknownAccount": "Cuenta Desconocida",
+    "errors": {
+      "amountExceedsBalance": "La cantidad excede el saldo disponible"
+    }
   },
   "messages": {
     "loading": "Cargando...",
@@ -224,6 +229,95 @@
       "surgeActive": "Precio de congestión activo",
       "description": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas, y Flow Wallet no está pagando temporalmente por tu gas. Las tarifas de red actuales son {{multiplier}}× más altas de lo habitual.",
       "holdToAgree": "Mantener para continuar con el precio de congestión"
+    }
+  },
+  "onboarding": {
+    "flowWallet": "Cartera Flow",
+    "getStarted": {
+      "title": "Comienza con Flow Wallet",
+      "subtitle": "Bienvenido a Flow Wallet\nCrea una cuenta para comenzar.",
+      "createAccount": "Crear una nueva cuenta",
+      "signIn": "Ya tengo una cuenta",
+      "agreementText": "Al usar Flow Wallet aceptas los",
+      "termsOfService": "términos de servicio",
+      "and": "y la",
+      "privacyPolicy": "política de privacidad"
+    },
+    "profileType": {
+      "welcomeTitle": "Bienvenido a\nFlow Wallet",
+      "recoveryPhrase": {
+        "title": "Asegurado por una Frase de Recuperación",
+        "description": "Una frase de recuperación es una serie de palabras generadas que protegerán tu cartera."
+      },
+      "secureEnclaveProfile": "Perfil Secure Enclave",
+      "next": "Siguiente"
+    },
+    "secureEnclave": {
+      "title": "Avanzado",
+      "cardTitle": "Perfil Seguro",
+      "cardDescription": "Utilizando claves de dispositivo con seguridad de grado de hardware, Flow Wallet en modo seguro es una cartera de hardware ultra segura en la que puedes confiar. Solo disponible para cuentas Cadence en Flow.",
+      "features": {
+        "secureEnclave": "Secure enclave",
+        "hardwareSecurity": "Seguridad de grado de hardware",
+        "noEvm": "Sin soporte EVM"
+      },
+      "next": "Siguiente",
+      "dialog": {
+        "title": "¿Eres un usuario avanzado?",
+        "description": "¿Estás seguro de que deseas crear un Perfil Seguro? Esto limitará el acceso a ciertas funciones y no te dará acceso a una cuenta EVM en Flow.",
+        "holdToConfirm": "Mantén para confirmar"
+      },
+      "creating": {
+        "title": "Creando\ntu cuenta",
+        "configuring": "Configurando cuenta"
+      }
+    },
+    "notificationPreferences": {
+      "headerTitle": "Notificaciones",
+      "title": "Recibe notificaciones push",
+      "subtitle": "Recibe notificaciones cuando tus transferencias, intercambios y aprobaciones se completen.",
+      "enableButton": "Activar notificaciones push",
+      "maybeLater": "Quizás más tarde"
+    },
+    "backupOptions": {
+      "navTitle": "Copia de seguridad",
+      "subtitle": "Selecciona cómo te gustaría hacer una copia de seguridad de tu cuenta para terminar de crear tu cuenta. Puedes cambiar esto más tarde en configuración.",
+      "deviceBackup": {
+        "title": "Crear copia de seguridad del dispositivo",
+        "description": "Usa tu dispositivo como cartera de respaldo para proteger tus activos digitales"
+      },
+      "cloudBackup": {
+        "title": "Crear copia de seguridad en la nube",
+        "description": "Crea una copia de seguridad en la nube con proveedores de confianza como Google Drive e iCloud"
+      },
+      "recoveryPhrase": {
+        "title": "Crear copia de seguridad con frase de recuperación",
+        "description": "Crea una frase de recuperación de 12 palabras"
+      },
+      "skipWarning": {
+        "title": "¿Continuar sin copia de seguridad?",
+        "message": "Sin una copia de seguridad, puede perder el acceso a su billetera si pierde su dispositivo. ¿Está seguro de que desea continuar sin configurar una copia de seguridad?",
+        "confirm": "Continuar sin copia de seguridad"
+      }
+    },
+    "recoveryPhrase": {
+      "navTitle": "Cuenta multicadena",
+      "title": "Frase de recuperación",
+      "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
+      "clickToReveal": "Haz clic para revelar la frase",
+      "copy": "Copiar",
+      "next": "Siguiente",
+      "warning": {
+        "title": "¡No compartas tu frase secreta!",
+        "description": "Si alguien tiene tu frase secreta,\nTendrá control total de tu cartera."
+      }
+    },
+    "confirmRecoveryPhrase": {
+      "navTitle": "Cuenta multicadena",
+      "title": "Confirmar frase",
+      "description": "Por favor selecciona las palabras una por una según su orden.",
+      "selectWord": "Selecciona la palabra en #{{position}}",
+      "finish": "Finalizar"
     }
   }
 }
