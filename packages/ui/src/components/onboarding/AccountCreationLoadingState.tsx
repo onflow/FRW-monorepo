@@ -142,9 +142,9 @@ export function AccountCreationLoadingState({
 
           {/* Progress section - responsive width */}
           <YStack width="100%" maxW="$84.75" items="center" gap="$3" px="$4">
-            {/* Status text with progress percentage */}
+            {/* Status text without percentage */}
             <Text fontSize="$4" fontWeight="700" color="$primary">
-              {statusText} {Math.round(currentProgress)}%
+              {statusText}
             </Text>
 
             {/* Loading bar animation - progress controlled */}
