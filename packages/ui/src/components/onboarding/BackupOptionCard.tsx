@@ -9,6 +9,7 @@ interface BackupOptionCardProps {
   title: string;
   description: string;
   recommended?: boolean;
+  recommendedText?: string; // i18n label for "Recommended" badge
   onPress: () => void;
   backgroundImage?: any; // Optional background image for the card
 }
@@ -19,6 +20,7 @@ export function BackupOptionCard({
   title,
   description,
   recommended = false,
+  recommendedText = 'Recommended', // Default fallback
   onPress,
   backgroundImage,
 }: BackupOptionCardProps): React.ReactElement {
@@ -26,9 +28,9 @@ export function BackupOptionCard({
     <YStack
       flex={1}
       p="$6"
-      rounded={16}
+      rounded="$true"
       borderWidth={1}
-      borderColor="rgba(255, 255, 255, 0.1)"
+      borderColor="$light10"
       gap="$4"
       onPress={onPress}
       position="relative"
@@ -53,7 +55,7 @@ export function BackupOptionCard({
           right={0}
           bottom={0}
           overflow="hidden"
-          borderRadius={16}
+          borderRadius="$true"
           zIndex={0}
           pointerEvents="none"
         >
@@ -75,27 +77,27 @@ export function BackupOptionCard({
           top="$6"
           right="$6"
           px="$2"
-          py={4}
+          py="$1"
           bg="rgba(0, 239, 139, 0.15)"
-          rounded={54}
+          rounded="$13"
           zIndex={10}
           pointerEvents="none"
         >
-          <Text fontSize={12} fontWeight="400" color="$primary">
-            Recommended
+          <Text fontSize="$3" fontWeight="400" color="$primary">
+            {recommendedText}
           </Text>
         </View>
       )}
 
       {/* Icon section */}
-      <View position="relative" width={80} height={56} mt="$4" pointerEvents="none">
+      <View position="relative" width="$20" height="$14" mt="$4" pointerEvents="none">
         {/* Background shapes */}
         {iconBackground}
 
         {/* Icon */}
         <View
-          width={56}
-          height={56}
+          width="$14"
+          height="$14"
           items="center"
           justify="center"
           style={{
@@ -111,10 +113,10 @@ export function BackupOptionCard({
 
       {/* Text content */}
       <YStack gap="$2" pointerEvents="none">
-        <Text fontSize={24} fontWeight="700" color="$text" lineHeight={29}>
+        <Text fontSize="$6" fontWeight="700" color="$text" lineHeight="$7">
           {title}
         </Text>
-        <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
+        <Text fontSize="$4" color="$textSecondary" lineHeight="$4.25">
           {description}
         </Text>
       </YStack>

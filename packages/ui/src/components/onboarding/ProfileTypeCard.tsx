@@ -10,45 +10,33 @@ interface ProfileTypeCardProps {
 export function ProfileTypeCard({
   icon,
   title,
-  description
+  description,
 }: ProfileTypeCardProps): React.ReactElement {
   return (
     <YStack
-      w={168}
-      h={210}
-      rounded={27}
+      w="$42"
+      aspectRatio={1.25}
+      rounded="$6.75"
       items="center"
       justify="center"
-      bg="rgba(255, 255, 255, 0.05)"
+      bg="$light5"
       borderWidth={1}
-      borderColor="rgba(255, 255, 255, 0.5)"
+      borderColor="$light50"
       style={{
         backdropFilter: 'blur(100px)',
         WebkitBackdropFilter: 'blur(100px)',
       }}
     >
       {/* Icon container */}
-      <View mb="$3">
-        {icon}
-      </View>
+      <View mb="$3">{icon}</View>
 
       {/* Text content */}
       <YStack items="center" gap="$2" px="$3">
-        <Text
-          fontSize="$4"
-          fontWeight="600"
-          color="$text"
-          text="center"
-        >
+        <Text fontSize="$4" fontWeight="600" color="$text" text="center">
           {title}
         </Text>
 
-        <Text
-          fontSize="$3"
-          color="$textSecondary"
-          text="center"
-          lineHeight={17}
-        >
+        <Text fontSize="$3" color="$textSecondary" text="center" lineHeight="$4.5">
           {description}
         </Text>
       </YStack>

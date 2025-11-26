@@ -10,18 +10,14 @@ interface FeatureItemProps {
 export function FeatureItem({
   icon,
   text,
-  variant = 'success'
+  variant = 'success',
 }: FeatureItemProps): React.ReactElement {
   const color = variant === 'success' ? '$primary' : '$error';
 
   return (
     <XStack items="center" gap="$2">
       {icon}
-      <Text
-        fontSize="$3"
-        color={color}
-        lineHeight={17}
-      >
+      <Text fontSize="$3" color={color} lineHeight="$4.25">
         {text}
       </Text>
     </XStack>

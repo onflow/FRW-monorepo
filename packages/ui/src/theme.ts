@@ -76,9 +76,7 @@ const flowColors = {
   dark40: 'rgba(0, 0, 0, 0.4)', // 40% black
   dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
   dark10: 'rgba(0, 0, 0, 0.1)', // 10% black — same value as lightBorder1 and shadowLight
-  dark25: 'rgba(0, 0, 0, 0.25)', // 25% black
   dark5: 'rgba(0, 0, 0, 0.05)', // 5% black
-  dark80: 'rgba(0, 0, 0, 0.8)', // 80% black
 
   darkBg1: 'rgba(255, 255, 255, 0.1)',
   grayBg1: '#373737',
@@ -169,10 +167,12 @@ export const size = {
   '$3.5': 14,
   $4: 16,
   $true: 16,
+  '$4.25': 17, // For lineHeight in onboarding components
   '$4.5': 18,
   $5: 20,
   $6: 24,
   $7: 28,
+  '$7.5': 30, // For fontSize in AccountCreationLoadingState
   $8: 32,
   $9: 36,
   $10: 40,
@@ -205,6 +205,20 @@ export const size = {
   $47: 188,
   $48: 192,
   $49: 196,
+  $50: 200,
+  $51: 204,
+  $52: 208,
+  $53: 212,
+  $54: 216,
+  $55: 220,
+  $56: 224,
+  $57: 228,
+  $58: 232,
+  $59: 236,
+  $60: 240,
+  $61: 244,
+  $62: 248,
+  '$84.75': 339, // For AccountCreationLoadingState progress section width
 };
 
 // Space system (includes negative values)
@@ -259,12 +273,14 @@ export const radius = {
   true: 16,
   5: 20,
   6: 24,
+  '6.75': 27, // For ProfileTypeCard rounded corners
   7: 28,
   8: 32,
   9: 36,
   10: 40,
   11: 44,
   12: 48,
+  13: 54, // For BackupOptionCard recommended badge
 };
 
 // Create themes using createThemeBuilder
