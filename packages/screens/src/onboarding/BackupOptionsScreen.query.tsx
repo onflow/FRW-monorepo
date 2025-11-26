@@ -2,21 +2,14 @@ import { bridge, logger } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
 import { NativeScreenName } from '@onflow/frw-types';
 import { YStack, Text, BackupOptionCard, cardBackground, View, InfoDialog } from '@onflow/frw-ui';
-import { useMutation } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useColorScheme } from 'react-native';
-
-const trackBackupSelection = async (backupType: 'device' | 'cloud' | 'recovery-phrase') => {
-  logger.debug('[BackupOptionsScreen] Tracking backup selection:', backupType);
-  return { success: true };
-};
 
 /**
  * BackupOptionsScreen - Screen for selecting additional backup methods
  * Allows users to choose between device backup, cloud backup, or view recovery phrase
  * Shows warning dialog when user tries to exit without setting up additional backup
- * Uses TanStack Query for future backend integration
  */
 export function BackupOptionsScreen(): React.ReactElement {
   const { t } = useTranslation();
@@ -27,23 +20,12 @@ export function BackupOptionsScreen(): React.ReactElement {
   const isDark = colorScheme === 'dark';
   const iconColor = isDark ? '#000000' : '#FFFFFF';
 
-  // Mutation for tracking backup selection
-  const trackingMutation = useMutation({
-    mutationFn: trackBackupSelection,
-    onSuccess: (data, variables) => {
-      logger.debug('[BackupOptionsScreen] Successfully tracked backup selection:', variables);
-    },
-    onError: (error, variables) => {
-      logger.error('[BackupOptionsScreen] Failed to track backup selection:', variables, error);
-    },
-  });
-
   // Intercept back navigation to show warning dialog
   useEffect(() => {
     // Register back handler globally for navigator to call
     const backHandler = (): boolean => {
       setShowWarningDialog(true);
-      return false; // Prevent default navigation
+      return true; // Return true to prevent default navigation
     };
 
     (globalThis as any).__backupOptionsBackHandler = backHandler;
@@ -82,15 +64,10 @@ export function BackupOptionsScreen(): React.ReactElement {
   };
 
   const handleDeviceBackup = () => {
-    logger.info('[BackupOptionsScreen] ========== DEVICE BACKUP PRESSED ==========');
-
-    // Track selection
-    trackingMutation.mutate('device');
+    logger.info('[BackupOptionsScreen] Device backup selected');
 
     // Launch specific device backup screen
-    // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchNativeScreen) {
-      logger.info('[BackupOptionsScreen] Launching device backup screen');
       bridge.launchNativeScreen(NativeScreenName.DEVICE_BACKUP);
     } else {
       logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
@@ -98,15 +75,10 @@ export function BackupOptionsScreen(): React.ReactElement {
   };
 
   const handleCloudBackup = () => {
-    logger.info('[BackupOptionsScreen] ========== CLOUD BACKUP PRESSED ==========');
-
-    // Track selection
-    trackingMutation.mutate('cloud');
+    logger.info('[BackupOptionsScreen] Cloud backup selected');
 
     // Launch specific multi-backup screen (cloud/Google Drive)
-    // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchNativeScreen) {
-      logger.info('[BackupOptionsScreen] Launching multi-backup screen');
       bridge.launchNativeScreen(NativeScreenName.MULTI_BACKUP);
     } else {
       logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
@@ -114,15 +86,10 @@ export function BackupOptionsScreen(): React.ReactElement {
   };
 
   const handleRecoveryPhrase = () => {
-    logger.info('[BackupOptionsScreen] ========== RECOVERY PHRASE PRESSED ==========');
-
-    // Track selection
-    trackingMutation.mutate('recovery-phrase');
+    logger.info('[BackupOptionsScreen] Recovery phrase selected');
 
     // Launch specific seed phrase backup screen
-    // If user presses back, they will see WalletBackupActivity (all options)
     if (bridge.launchNativeScreen) {
-      logger.info('[BackupOptionsScreen] Launching seed phrase backup screen');
       bridge.launchNativeScreen(NativeScreenName.SEED_PHRASE_BACKUP);
     } else {
       logger.warn('[BackupOptionsScreen] launchNativeScreen not available');
