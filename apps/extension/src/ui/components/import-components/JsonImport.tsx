@@ -49,30 +49,43 @@ const JsonImport = ({
 }) => {
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
-  const [isInvalid, setIsInvalid] = useState(false);
   const [json, setJson] = useState('');
   const [errorMesssage, setErrorMessage] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
 
-  const hasJsonStructure = (str) => {
+  const hasJsonStructure = (str: string): boolean => {
     if (typeof str !== 'string') return false;
     try {
       const result = JSON.parse(str);
       const type = Object.prototype.toString.call(result);
       return type === '[object Object]' || type === '[object Array]';
-    } catch (err) {
+    } catch {
       return false;
     }
   };
 
-  const handleImport = async (e) => {
+  /**
+   * Prettifies JSON string with 2-space indentation
+   * Returns the original string if prettification fails
+   */
+  const prettifyJson = (jsonString: string): string => {
+    try {
+      const parsed = JSON.parse(jsonString);
+      return JSON.stringify(parsed, null, 2);
+    } catch {
+      // If parsing fails, return original string
+      return jsonString;
+    }
+  };
+
+  const handleImport = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
       setLoading(true);
       e.preventDefault();
 
-      const formData = new FormData(e.target);
+      const formData = new FormData(e.currentTarget);
       const keystoreInput = formData.get('keystore') as string;
       const passwordInput = formData.get('password') as string;
       const addressInput = formData.get('address') as string;
@@ -123,16 +136,23 @@ const JsonImport = ({
     }
   };
 
-  const checkJSONImport = (event) => {
-    setJson(event);
+  const checkJSONImport = (event: string): boolean => {
     if (event.length === 0) {
-      setIsInvalid(false);
+      setJson('');
       setErrorMessage('');
       return false;
     }
     const result = hasJsonStructure(event);
-    setIsInvalid(!result);
     setErrorMessage(!result ? 'Not a valid json input' : '');
+
+    // Prettify JSON if it's valid
+    if (result) {
+      const prettified = prettifyJson(event);
+      setJson(prettified);
+    } else {
+      setJson(event);
+    }
+
     return result;
   };
 
@@ -149,7 +169,7 @@ const JsonImport = ({
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item) => item.str).join(' ');
+        const pageText = textContent.items.map((item) => ('str' in item ? item.str : '')).join(' ');
         extractedText += pageText;
       }
 
@@ -161,18 +181,21 @@ const JsonImport = ({
         // Validate it's valid JSON
         try {
           JSON.parse(jsonString);
-          return jsonString;
+          // Prettify the JSON before returning
+          return JSON.stringify(JSON.parse(jsonString), null, 2);
         } catch {
           // If the matched string isn't valid JSON, try the whole text
-          if (hasJsonStructure(extractedText.trim())) {
-            return extractedText.trim();
+          const trimmedText = extractedText.trim();
+          if (hasJsonStructure(trimmedText)) {
+            return JSON.stringify(JSON.parse(trimmedText), null, 2);
           }
         }
       }
 
       // If no JSON pattern found, check if the whole text is JSON
-      if (hasJsonStructure(extractedText.trim())) {
-        return extractedText.trim();
+      const trimmedText = extractedText.trim();
+      if (hasJsonStructure(trimmedText)) {
+        return JSON.stringify(JSON.parse(trimmedText), null, 2);
       }
 
       return null;
