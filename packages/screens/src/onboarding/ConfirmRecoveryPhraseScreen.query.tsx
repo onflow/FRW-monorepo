@@ -9,7 +9,6 @@ import {
   Button,
   ScrollView,
   AccountCreationLoadingState,
-  useTheme,
 } from '@onflow/frw-ui';
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -125,7 +124,6 @@ export function ConfirmRecoveryPhraseScreen({
   route,
 }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
@@ -500,11 +498,7 @@ export function ConfirmRecoveryPhraseScreen({
                                     fontSize={16}
                                     fontWeight="500"
                                     color={
-                                      isCorrectSelection
-                                        ? theme.color.green6.val
-                                        : isWrong
-                                          ? theme.color.red6.val
-                                          : '$text'
+                                      isCorrectSelection ? '$success' : isWrong ? '$error' : '$text'
                                     }
                                     text="center"
                                     lineHeight={28}
@@ -543,7 +537,7 @@ export function ConfirmRecoveryPhraseScreen({
               <Text
                 fontSize="$4"
                 fontWeight="700"
-                color={!allAnswersCorrect ? theme.color.gray8.val : '$bg'}
+                color={!allAnswersCorrect ? '$textSecondary' : '$bg'}
               >
                 {t('onboarding.confirmRecoveryPhrase.finish')}
               </Text>
