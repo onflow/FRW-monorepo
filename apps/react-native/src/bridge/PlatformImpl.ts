@@ -187,9 +187,14 @@ class PlatformImpl implements PlatformSpec {
 
   getDeviceInfo(): forms_DeviceInfo {
     // Return basic device info - most fields are optional and handled by backend
+    // Generate a stable device_id based on platform and build
+    const deviceId = `${RNPlatform.OS}-${this.getBuildNumber()}`;
+
     return {
       type: RNPlatform.OS,
       user_agent: `FRW/${this.getVersion()} (${RNPlatform.OS} ${RNPlatform.Version})`,
+      device_id: deviceId,
+      name: `Flow Wallet ${RNPlatform.OS}`,
     };
   }
 
