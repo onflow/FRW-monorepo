@@ -21,7 +21,8 @@
     "error": "错误",
     "success": "成功",
     "Search": "搜索",
-    "recommended": "推荐"
+    "recommended": "推荐",
+    "retry": "重试"
   },
   "tabs": {
     "tokens": "代币",
@@ -106,7 +107,10 @@
     "sendTokens": "发送代币",
     "confirmSend": "确认发送",
     "holdToSend": "长按发送",
-    "unknownAccount": "未知账户"
+    "unknownAccount": "未知账户",
+    "errors": {
+      "amountExceedsBalance": "金额超出可用余额"
+    }
   },
   "messages": {
     "loading": "加载中...",
@@ -190,7 +194,10 @@
     "notFound": {
       "title": "未找到NFT",
       "message": "无法找到或加载请求的NFT"
-    }
+    },
+    "confirmSelection_plural": "确认 {{count}} 个NFT",
+    "itemCount_plural": "{{count}} 个物品",
+    "selectedCount_plural": "已选择 {{count}} 个NFT"
   },
   "storage": {
     "warning": {

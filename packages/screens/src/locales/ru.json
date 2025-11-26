@@ -21,7 +21,8 @@
     "error": "Ошибка",
     "success": "Успешно",
     "Search": "Поиск",
-    "recommended": "Рекомендуется"
+    "recommended": "Рекомендуется",
+    "retry": "Повторить"
   },
   "tabs": {
     "tokens": "Токены",
@@ -106,7 +107,10 @@
     "sendTokens": "Отправить токены",
     "confirmSend": "Подтвердить отправку",
     "holdToSend": "Удерживайте для отправки",
-    "unknownAccount": "Неизвестный аккаунт"
+    "unknownAccount": "Неизвестный аккаунт",
+    "errors": {
+      "amountExceedsBalance": "Сумма превышает доступный баланс"
+    }
   },
   "messages": {
     "loading": "Загрузка...",
@@ -199,7 +203,13 @@
     "notFound": {
       "title": "NFT не найден",
       "message": "Запрашиваемый NFT не может быть найден или загружен"
-    }
+    },
+    "confirmSelection": "Подтвердить {{count}} NFT",
+    "confirmSelection_plural": "Подтвердить {{count}} NFT",
+    "itemCount": "{{count}} элемент",
+    "itemCount_plural": "{{count}} элементов",
+    "selectedCount": "Выбран {{count}} NFT",
+    "selectedCount_plural": "Выбрано {{count}} NFT"
   },
   "storage": {
     "warning": {

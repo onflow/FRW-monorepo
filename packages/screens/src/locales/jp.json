@@ -21,7 +21,8 @@
     "error": "エラー",
     "success": "成功",
     "Search": "検索",
-    "recommended": "おすすめ"
+    "recommended": "おすすめ",
+    "retry": "再試行"
   },
   "tabs": {
     "tokens": "トークン",
@@ -106,7 +107,10 @@
     "sendTokens": "トークンを送信",
     "confirmSend": "送信を確認",
     "holdToSend": "長押しで送信",
-    "unknownAccount": "不明なアカウント"
+    "unknownAccount": "不明なアカウント",
+    "errors": {
+      "amountExceedsBalance": "金額が利用可能残高を超えています"
+    }
   },
   "messages": {
     "loading": "読み込み中...",
@@ -190,7 +194,10 @@
     "notFound": {
       "title": "NFTが見つかりません",
       "message": "要求されたNFTが見つからないか、読み込めませんでした"
-    }
+    },
+    "confirmSelection_plural": "{{count}} 個のNFTを確認",
+    "itemCount_plural": "{{count}} 個のアイテム",
+    "selectedCount_plural": "選択された{{count}} 個のNFT"
   },
   "storage": {
     "warning": {
