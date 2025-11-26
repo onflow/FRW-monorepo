@@ -8,7 +8,6 @@ import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 import type { Account, AccountCardProps } from '../types';
 import { AddressText } from './AddressText';
-import { EVMBadge } from './EVMBadge';
 
 // Helper function to format balance with max 5 decimal places
 function formatBalance(balance?: string): string {
@@ -125,7 +124,26 @@ export function AccountCard({
                 {account.name || 'Unnamed Account'}
               </Text>
               {/* EVM Badge - inline with name */}
-              {account.type === 'evm' && <EVMBadge variant="eoa" />}
+              {account.type === 'evm' && (
+                <XStack
+                  bg="$accentEVM"
+                  rounded="$4"
+                  px={4}
+                  items="center"
+                  justify="center"
+                  height={16}
+                >
+                  <Text
+                    fontSize={8}
+                    fontWeight="400"
+                    color="#FFFFFF"
+                    lineHeight={9.7}
+                    letterSpacing={0.128}
+                  >
+                    EVM
+                  </Text>
+                </XStack>
+              )}
             </XStack>
 
             {/* Account Address */}
@@ -318,7 +336,26 @@ export function AccountCard({
                                     {acc.name || 'Unnamed Account'}
                                   </Text>
                                   {/* EVM Badge - inline with name */}
-                                  {acc.type === 'evm' && <EVMBadge variant="eoa" />}
+                                  {acc.type === 'evm' && (
+                                    <XStack
+                                      bg="$accentEVM"
+                                      rounded="$4"
+                                      px={4}
+                                      items="center"
+                                      justify="center"
+                                      height={16}
+                                    >
+                                      <Text
+                                        fontSize={8}
+                                        fontWeight="400"
+                                        color="#FFFFFF"
+                                        lineHeight={9.7}
+                                        letterSpacing={0.128}
+                                      >
+                                        EVM
+                                      </Text>
+                                    </XStack>
+                                  )}
                                 </XStack>
 
                                 <AddressText
