@@ -4,12 +4,13 @@ import { NativeScreenName } from '@onflow/frw-types';
 import { YStack, Text, BackupOptionCard, cardBackground, View, InfoDialog } from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, BackHandler } from 'react-native';
 
 /**
  * BackupOptionsScreen - Screen for selecting additional backup methods
  * Allows users to choose between device backup, cloud backup, or view recovery phrase
  * Shows warning dialog when user tries to exit without setting up additional backup
+ * Hardware/system back button is intercepted to show warning
  */
 export function BackupOptionsScreen(): React.ReactElement {
   const { t } = useTranslation();
@@ -20,19 +21,16 @@ export function BackupOptionsScreen(): React.ReactElement {
   const isDark = colorScheme === 'dark';
   const iconColor = isDark ? '#000000' : '#FFFFFF';
 
-  // Intercept back navigation to show warning dialog
+  // Intercept hardware back button to show warning dialog
   useEffect(() => {
-    // Register back handler globally for navigator to call
-    const backHandler = (): boolean => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // Show warning dialog
       setShowWarningDialog(true);
-      return true; // Return true to prevent default navigation
-    };
+      // Return true to prevent default back behavior
+      return true;
+    });
 
-    (globalThis as any).__backupOptionsBackHandler = backHandler;
-
-    return () => {
-      delete (globalThis as any).__backupOptionsBackHandler;
-    };
+    return () => backHandler.remove();
   }, []);
 
   const handleConfirmSkip = () => {

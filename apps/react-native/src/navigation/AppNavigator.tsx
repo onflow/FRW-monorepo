@@ -380,27 +380,9 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             <Stack.Screen
               name="BackupOptions"
               component={BackupOptionsScreen}
-              options={({ navigation: screenNavigation }) => ({
-                headerTitle: t('onboarding.backupOptions.navTitle'),
-                headerRight: () => null, // No close button
-                headerStyle: {
-                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
-                },
-                headerLeft: () => (
-                  <NavigationBackButton
-                    onPress={() => {
-                      // Trigger warning dialog in screen
-                      const handler = (globalThis as any).__backupOptionsBackHandler;
-                      if (handler && handler()) {
-                        // Handler returned true to prevent navigation and show warning dialog
-                        return;
-                      }
-                      // Otherwise, close RN instead of navigating back
-                      platform.closeRN();
-                    }}
-                  />
-                ),
-              })}
+              options={{
+                headerShown: false, // No header - user exits via backup options or system back button
+              }}
             />
           </Stack.Group>
         </Stack.Navigator>
