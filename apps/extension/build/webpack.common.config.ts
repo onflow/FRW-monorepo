@@ -141,6 +141,11 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
             from: path.resolve(__dirname, '../node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm'),
             to: 'wallet-core.wasm',
           },
+          // Copy PDF.js worker for browser extension compatibility
+          {
+            from: path.resolve(__dirname, '../node_modules/pdfjs-dist/build/pdf.worker.min.mjs'),
+            to: 'pdf.worker.min.mjs',
+          },
           // Add this pattern to copy the manifest.json from _raw to dist
           {
             from: '_raw/_locales',
