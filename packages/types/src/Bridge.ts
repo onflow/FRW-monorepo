@@ -187,9 +187,25 @@ export enum NativeScreenName {
 /**
  * Device information for backend registration
  * Provided by native platform implementations
+ * Must match forms_DeviceInfo from goService.generated.ts
  */
 export interface DeviceInfo {
-  device_id: string;
-  type: string;
-  platform: string;
+  device_id?: string;
+  name?: string;
+  type?: string;
+  user_agent?: string;
+  ip?: string;
+  city?: string;
+  country?: string;
+  countryCode?: string;
+  continent?: string;
+  continentCode?: string;
+  regionName?: string;
+  district?: string;
+  zip?: string;
+  lat?: number;
+  lon?: number;
+  isp?: string;
+  org?: string;
+  currency?: string;
 }
