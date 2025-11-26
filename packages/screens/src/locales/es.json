@@ -278,6 +278,11 @@
       "recoveryPhrase": {
         "title": "Crear copia de seguridad con frase de recuperación",
         "description": "Crea una frase de recuperación de 12 palabras"
+      },
+      "skipWarning": {
+        "title": "¿Continuar sin copia de seguridad?",
+        "message": "Sin una copia de seguridad, puede perder el acceso a su billetera si pierde su dispositivo. ¿Está seguro de que desea continuar sin configurar una copia de seguridad?",
+        "confirm": "Continuar sin copia de seguridad"
       }
     },
     "recoveryPhrase": {
