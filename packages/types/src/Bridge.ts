@@ -107,7 +107,7 @@ export interface CreateAccountResponse {
   success: boolean;
   address: string | null;
   username: string | null;
-  accountType: 'eoa' | 'coa' | null;
+  accountType: 'full' | 'hardware' | null; // full = mnemonic-based account, hardware = secure enclave
   txId: string | null;
   error: string | null;
 }
