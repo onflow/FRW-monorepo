@@ -273,7 +273,7 @@ export const radius = {
   true: 16,
   5: 20,
   6: 24,
-  '6.75': 27, // For ProfileTypeCard rounded corners
+  '6.75': 27,
   7: 28,
   8: 32,
   9: 36,

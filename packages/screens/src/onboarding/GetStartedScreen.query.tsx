@@ -1,17 +1,9 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { NativeScreenName } from '@onflow/frw-types';
-import {
-  YStack,
-  Text,
-  Button,
-  OnboardingBackground,
-  OnboardingHeader,
-  getStartedBackground,
-  getStartedBackgroundLight,
-} from '@onflow/frw-ui';
+import { YStack, Text, Button, OnboardingBackground, OnboardingHeader } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, useColorScheme } from 'react-native';
+import { Linking } from 'react-native';
 
 /**
  * GetStartedScreen - First screen of the FTE onboarding flow
@@ -23,16 +15,6 @@ const PRIVACY_POLICY_URL = 'https://wallet.flow.com/privacy-policy';
 
 export function GetStartedScreen(): React.ReactElement {
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
-
-  // Theme-aware background selection
-  const isDark = colorScheme === 'dark';
-  const backgroundImage = isDark ? getStartedBackground : getStartedBackgroundLight;
-
-  // Debug logging
-  logger.debug('[GetStartedScreen] colorScheme:', colorScheme);
-  logger.debug('[GetStartedScreen] isDark:', isDark);
-  logger.debug('[GetStartedScreen] backgroundImage:', backgroundImage);
 
   const handleCreateAccount = () => {
     // Navigate to profile type selection for create account flow
@@ -76,7 +58,7 @@ export function GetStartedScreen(): React.ReactElement {
   };
 
   return (
-    <OnboardingBackground backgroundImage={backgroundImage}>
+    <OnboardingBackground variant="getStarted">
       <YStack flex={1} paddingHorizontal="$4">
         {/* Top spacer to position title in upper third */}
         <YStack flex={1} />
