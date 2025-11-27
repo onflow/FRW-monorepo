@@ -381,7 +381,12 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="BackupOptions"
               component={BackupOptionsScreen}
               options={{
-                headerShown: false, // No header - user exits via backup options or system back button
+                headerTitle: t('onboarding.backupOptions.navTitle'),
+                headerRight: () => null,
+                headerStyle: {
+                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+                },
+                headerLeft: () => <NavigationBackButton />,
               }}
             />
           </Stack.Group>
