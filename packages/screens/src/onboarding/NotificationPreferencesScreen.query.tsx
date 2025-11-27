@@ -1,6 +1,7 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import {
   YStack,
+  XStack,
   Text,
   Button,
   OnboardingBackground,
@@ -186,16 +187,22 @@ export function NotificationPreferencesScreen({
         </YStack>
 
         {/* Action buttons */}
-        <YStack pb="$6" gap="$3">
+        <YStack>
           {/* Turn on notifications button - Primary style */}
-          <Button variant="inverse" size="large" fullWidth onPress={handleEnableNotifications}>
-            {t('onboarding.notificationPreferences.enableButton')}
-          </Button>
+          <YStack mb="$3">
+            <Button variant="inverse" size="large" fullWidth onPress={handleEnableNotifications}>
+              {t('onboarding.notificationPreferences.enableButton')}
+            </Button>
+          </YStack>
 
-          {/* Maybe later button - Ghost style */}
-          <Button variant="ghost" size="large" fullWidth onPress={handleMaybeLater}>
-            {t('onboarding.notificationPreferences.maybeLater')}
-          </Button>
+          {/* Maybe later button - Ghost style, centered like secure enclave profile */}
+          <XStack justify="center" pb="$8">
+            <Button variant="ghost" onPress={handleMaybeLater}>
+              <Text fontSize="$4" fontWeight="600" color="$textSecondary">
+                {t('onboarding.notificationPreferences.maybeLater')}
+              </Text>
+            </Button>
+          </XStack>
         </YStack>
       </YStack>
     </OnboardingBackground>
