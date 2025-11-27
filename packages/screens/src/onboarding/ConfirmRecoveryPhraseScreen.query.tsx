@@ -310,8 +310,9 @@ export function ConfirmRecoveryPhraseScreen({
         },
       });
 
-      const customToken = registerResponse.data.custom_token;
-      const userId = registerResponse.data.id;
+      // ProfileService returns normalized response with custom_token and id at root level
+      const customToken = registerResponse.custom_token;
+      const userId = registerResponse.id;
       logger.info('[ConfirmRecoveryPhraseScreen] Registration successful, userId:', userId);
 
       // Validate registration response
