@@ -95,6 +95,8 @@ export interface Spec extends TurboModule {
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
+  // Device info method
+  getDeviceId(): string;
   // Toast methods
   showToast(
     title: string,
