@@ -183,15 +183,24 @@ export class ProfileService {
 
       // Extension uses /v2/user/address (createFlowAddressV2)
       // UserGoService.address2() calls /v2/user/address (matches extension implementation)
-      // The generated axios wrapper unwraps res.data, returning the txid string or an object with txid
       const response: any = await UserGoService.address2();
+
+      // Backend wraps response in { data: {...}, status, message }
+      const responseData = response?.data || response;
 
       // Response can be a string (txid directly) or an object with txid property
       const txid: string | undefined =
-        typeof response === 'string' ? response : response?.txid || response?.transactionId;
+        typeof responseData === 'string'
+          ? responseData
+          : responseData?.txid || responseData?.transactionId;
 
       if (!txid) {
-        logger.error('[ProfileService] No transaction ID found in response:', { response });
+        logger.error('[ProfileService] No transaction ID found in response:', {
+          response,
+          responseData,
+          hasData: !!response?.data,
+          responseKeys: response ? Object.keys(response) : [],
+        });
         throw new Error('Failed to create Flow address: No transaction ID received');
       }
 

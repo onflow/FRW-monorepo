@@ -335,8 +335,7 @@ export function ConfirmRecoveryPhraseScreen({
 
       // Step 4: Create Flow address (triggers on-chain account creation)
       logger.info('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
-      const addressResponse = await profileSvc.createFlowAddress();
-      const txId = addressResponse.data.txid;
+      const txId = await profileSvc.createFlowAddress();
       logger.info('[ConfirmRecoveryPhraseScreen] Flow address created, txId:', txId);
 
       // Validate transaction ID
