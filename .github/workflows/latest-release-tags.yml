@@ -5,7 +5,7 @@ on:
     tags:
       - release/ios-*
       - release/android-*
-      - release/extension-*
+      - release/ext-*
   workflow_dispatch:
     inputs:
       release_tag:
@@ -46,7 +46,7 @@ jobs:
             release/android-*)
               latest_tag="android-latest"
               ;;
-            release/extension-*)
+            release/ext-*)
               latest_tag="extension-latest"
               ;;
             *)
