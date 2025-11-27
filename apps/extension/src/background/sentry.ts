@@ -10,7 +10,10 @@ import {
   breadcrumbsIntegration,
   globalHandlersIntegration,
   makeFetchTransport,
+  consoleLoggingIntegration,
   Scope,
+  browserTracingIntegration,
+  browserProfilingIntegration,
 } from '@sentry/browser';
 
 import { SENTRY_BASIC_CONFIG } from '../shared/constant/senty-constants';
@@ -25,12 +28,19 @@ const getIsolatedSentry = (): IsolatedSentry => {
   if (!isolatedSentry) {
     const sentryClient = new BrowserClient({
       ...SENTRY_BASIC_CONFIG,
+      enableLogs: true,
       transport: makeFetchTransport,
       stackParser: defaultStackParser,
       integrations: [
+        browserTracingIntegration(),
+        browserProfilingIntegration(),
         browserApiErrorsIntegration(),
         breadcrumbsIntegration(),
         globalHandlersIntegration(),
+        // Capture console.warn and console.error as logs
+        consoleLoggingIntegration({
+          levels: ['warn', 'error', 'info'],
+        }),
       ],
     });
 

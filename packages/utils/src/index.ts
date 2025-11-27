@@ -5,6 +5,8 @@ export {
   getAddressType,
   truncateAddress,
   isValidEthereumAddress,
+  isCOAAddress,
+  isEOAAddress,
 } from './address';
 
 // JWT utilities
@@ -67,6 +69,9 @@ export {
   getThemeBackgroundColor,
   getThemeCardBackground,
 } from './theme';
+
+// Username utilities
+export { generateRandomUsername } from './username';
 
 // Re-export types from @onflow/frw-types for convenience
 export type { WalletType, NFTModel } from '@onflow/frw-types';

@@ -114,8 +114,8 @@ export const safeConvertToUFix64 = (
 export const encodeEvmContractCallData = (
   payload: SendPayload,
   returnHex: boolean = false
-): number[] | string => {
-  const { type, amount = '', receiver, decimal, ids, sender } = payload;
+): number[] | string | string[] => {
+  const { type, amount = '', receiver, decimal, ids, sender, coaAddr } = payload;
   // const to = receiver.toLowerCase().replace(/^0x/, '');
   if (receiver.length !== 42) throw new Error('Invalid Ethereum address');
   let callData = '0x';
@@ -161,6 +161,20 @@ export const encodeEvmContractCallData = (
           nftAmount,
           '0x', // Empty data parameter
         ]);
+      }
+    } else {
+      // batch nft
+      const datas: string[] = [];
+      for (const tokenId of ids) {
+        const abi = ['function safeTransferFrom(address from, address to, uint256 tokenId)'];
+        const iface = new Interface(abi);
+
+        // Encode function call data
+        callData = iface.encodeFunctionData('safeTransferFrom', [sender, receiver, tokenId]);
+        datas.push(callData);
+      }
+      if (returnHex) {
+        return datas;
       }
     }
   }
@@ -245,7 +259,8 @@ export interface LegacyTransactionRequest {
 
 export const signLegacyEvmTransaction = async (
   tx: LegacyTransactionRequest,
-  helpers?: TransferExecutionHelpers
+  helpers?: TransferExecutionHelpers,
+  nonceSteper?: number
 ): Promise<string> => {
   if (!helpers?.ethSign) {
     throw new Error('ethSign helper is required for EVM transaction signing');
@@ -266,7 +281,7 @@ export const signLegacyEvmTransaction = async (
   const unsignedTx: UnsignedTransaction = {
     type: 0,
     chainId,
-    nonce,
+    nonce: nonceSteper && nonceSteper > 0 ? nonce + nonceSteper : nonce,
     gasPrice,
     gasLimit,
     to: tx.to,

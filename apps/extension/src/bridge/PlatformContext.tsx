@@ -376,7 +376,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                 },
                 isActive: false, // Only current profile's main address is active
               });
-              if (account.evmAccount?.address) {
+              if (account.evmAccount?.address && account.evmAccount.hasAssets !== false) {
                 const evmName = account.evmAccount.name || 'EVM Account';
                 profileAccounts.push({
                   address: account.evmAccount.address,

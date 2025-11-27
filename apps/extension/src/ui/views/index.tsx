@@ -1,8 +1,9 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { ToastProvider } from '@onflow/frw-context';
+import { ToastProvider, type ToastRenderer } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
-import { extensionTamaguiConfig, PortalProvider } from '@onflow/frw-ui';
+import { extensionTamaguiConfig, PortalProvider, Toast } from '@onflow/frw-ui';
+import * as Sentry from '@sentry/react';
 import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
@@ -78,12 +79,37 @@ function Main() {
 }
 
 const App = ({ wallet }: { wallet: any }) => {
+  const feedbackCallback = async () => {
+    try {
+      const feedback = Sentry.getFeedback();
+      const form = await feedback?.createForm();
+      form!.appendToDom();
+
+      form!.open();
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+  };
+
+  const renderToast: ToastRenderer = (toast, { hide }) => (
+    <Toast
+      key={toast.id}
+      title={toast.title}
+      visible={toast.visible}
+      message={toast.message}
+      type={toast.type}
+      duration={toast.duration}
+      onClose={() => hide(toast.id)}
+      feedbackCallback={feedbackCallback}
+    />
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <PortalProvider shouldAddRootHost>
         <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
-          <ToastProvider>
+          <ToastProvider renderToast={renderToast}>
             <QueryProvider>
               <div className="t_dark" style={{ minHeight: '100vh' }}>
                 <WalletProvider wallet={wallet}>
