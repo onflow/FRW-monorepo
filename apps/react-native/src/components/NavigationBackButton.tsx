@@ -32,7 +32,8 @@ export const NavigationBackButton: React.FC = () => {
       variant="ghost"
       size="medium"
       onPress={handlePress}
-      ml={10}
+      ml="$-2"
+      pl="$2"
     />
   );
 };
