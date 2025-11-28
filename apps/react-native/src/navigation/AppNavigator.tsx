@@ -375,7 +375,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerLeft: () => null, // No back button
                 headerRight: () => null, // No close button
                 headerStyle: {
-                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                  backgroundColor: theme.bg.val,
                 },
               }}
             />
@@ -386,7 +386,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: t('onboarding.backupOptions.navTitle'),
                 headerRight: () => null,
                 headerStyle: {
-                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF',
+                  backgroundColor: theme.bg.val,
                 },
                 headerLeft: () => <NavigationBackButton />,
               }}
