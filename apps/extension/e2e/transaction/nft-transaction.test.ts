@@ -19,9 +19,9 @@ import { test } from '../utils/loader';
 const senderChildAddr = process.env.TEST_SENDER_CHILD_ADDR!;
 const senderChildAddr2 = process.env.TEST_SENDER_CHILD_ADDR2!;
 
-export const sendNFT = async ({ page, collectionName, receiver, successtext }) => {
+export const sendNFT = async ({ page, collectionName, receiver, successtext, isCoa = false }) => {
   // Wait for the EVM account to be loaded
-  await getCurrentAddress(page);
+  await getCurrentAddress(page, isCoa);
   // send Ft token from COA
   await page.getByTestId(`send-button`).click();
 
@@ -51,9 +51,10 @@ export const sendNFTs = async ({
   receiver,
   successtext,
   idx = ['0', '1'],
+  isCoa = false,
 }) => {
   // Wait for the EVM account to be loaded
-  await getCurrentAddress(page);
+  await getCurrentAddress(page, isCoa);
   // send Ft token from COA
   await page.getByTestId(`send-button`).click();
 
@@ -180,6 +181,7 @@ test('NFT Coa to Coa', async ({ page, extensionId }) => {
     collectionName: 'FLOAT',
     receiver: process.env.TEST_SENDER_EVM_ADDR!,
     successtext: /success|Finalized|Executed|Sealed/,
+    isCoa: true,
   });
 
   txList.push(tx1);
@@ -213,7 +215,7 @@ test('NFT to Flow', async ({ page, extensionId }) => {
   //Send NFT to sender COA
   await switchToEvmAddress({
     page,
-    address: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    address: process.env.TEST_SENDER_EVM_ADDR,
   });
 
   const tx1 = await sendNFT({
@@ -221,6 +223,7 @@ test('NFT to Flow', async ({ page, extensionId }) => {
     collectionName: 'FLOAT',
     receiver: process.env.TEST_SENDER_ADDR!,
     successtext: /success|Finalized|Executed|Sealed/,
+    isCoa: true,
   });
 
   txList.push(tx1);
@@ -304,6 +307,7 @@ test('NFT 1155 transactions to evm', async ({ page, extensionId }) => {
     receiver: process.env.TEST_SENDER_EVM_ADDR!,
     successtext: /success|Finalized|Executed|Sealed/,
     idx: ['0'],
+    isCoa: true,
   });
 
   txList.push(tx1);
@@ -394,6 +398,7 @@ test('NFT from evm to child', async ({ page, extensionId }) => {
     receiver: senderChildAddr,
     successtext: /success|Finalized|Executed|Sealed/,
     idx: ['0'],
+    isCoa: true,
   });
 
   txList.push(tx1);

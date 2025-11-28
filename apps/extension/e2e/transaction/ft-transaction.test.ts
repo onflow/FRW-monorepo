@@ -2,7 +2,6 @@ import {
   getCurrentAddress,
   waitForTransaction,
   switchToEvmAddress,
-  getSenderEvmAccount,
   switchToMainAccount,
   checkSentAmount,
   loginToSenderAccount,
@@ -14,9 +13,16 @@ import { test } from '../utils/loader';
 
 // const senderChildAddr = process.env.TEST_SENDER_CHILD_ADDR!;
 
-export const sendFT = async ({ page, tokenName, receiver, amount, ingoreFlowCharge = false }) => {
+export const sendFT = async ({
+  page,
+  tokenName,
+  receiver,
+  amount,
+  ingoreFlowCharge = false,
+  isCoa = false,
+}) => {
   // Wait for the EVM account to be loaded
-  await getCurrentAddress(page);
+  await getCurrentAddress(page, isCoa);
   // send Ft token from COA
   await page.getByTestId(`send-button`).click();
 
@@ -86,7 +92,7 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
     [];
   await switchToEvmAddress({
     page,
-    address: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    address: process.env.TEST_SENDER_EVM_ADDR,
   });
 
   const tx1 = await sendFT({
@@ -94,6 +100,7 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
     tokenName: 'USDC.e',
     receiver: process.env.TEST_SENDER_EVM_ADDR,
     amount: '0.000001',
+    isCoa: true,
   });
   txList.push(tx1);
 

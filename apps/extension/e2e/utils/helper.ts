@@ -23,7 +23,7 @@ export const closeOpenedPages = async (page: Page) => {
   }
 };
 
-export const getCurrentAddress = async (page: Page) => {
+export const getCurrentAddress = async (page: Page, isCoa = false) => {
   // Wait for the dashboard page to be fully loaded
   await page.waitForURL(/.*\/dashboard.*/);
 
@@ -33,6 +33,10 @@ export const getCurrentAddress = async (page: Page) => {
 
   // const flowAddr = await page.getByTestId('account-address').textContent();
   await copyIcon.click();
+
+  if (isCoa) {
+    await page.getByTestId('close-button').click();
+  }
 
   const flowAddr = await page.evaluate(getClipboardText);
   return flowAddr;
@@ -480,7 +484,11 @@ export const switchToEvmAddress = async ({ page, address }) => {
     .first()
     .click();
   // get address
-  await getCurrentAddress(page);
+  let isCoa = false;
+  if (address.indexOf('0x0000000000000000000') > -1) {
+    isCoa = true;
+  }
+  await getCurrentAddress(page, isCoa);
 };
 
 export const switchToMainAccount = async ({ page, address }) => {
