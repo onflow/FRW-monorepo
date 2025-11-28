@@ -20,9 +20,6 @@ const HomeScreen = () => {
       <Button onPress={() => navigation.navigate('SelectTokens')}>
         <Text>Send</Text>
       </Button>
-      <Button onPress={() => navigation.navigate('GetStarted')} style={{ marginTop: 10 }}>
-        <Text>Test Onboarding</Text>
-      </Button>
     </ScrollView>
   );
 };
