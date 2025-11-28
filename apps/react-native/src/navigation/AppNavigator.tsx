@@ -24,6 +24,7 @@ import {
   type InitialProps,
   type NFTModel,
 } from '@onflow/frw-types';
+import { useTheme } from '@onflow/frw-ui';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -85,6 +86,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { address, network, initialRoute, initialProps } = props;
   const navigationRef = useRef<any>(null);
 
@@ -339,7 +341,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: t('onboarding.recoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
                 headerStyle: {
-                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                  backgroundColor: theme.bg.val,
                 },
               }}
             />
@@ -350,7 +352,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
                 headerStyle: {
-                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                  backgroundColor: theme.bg.val,
                 },
               }}
             />
@@ -361,7 +363,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: '', // No title text
                 headerRight: () => null, // No close button
                 headerStyle: {
-                  backgroundColor: isDarkMode ? '#000000' : '#FFFFFF', // Use $bg colors
+                  backgroundColor: theme.bg.val,
                 },
               }}
             />
