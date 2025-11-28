@@ -1,5 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ArrowLeft } from '@onflow/frw-icons';
+import { ScreenName } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -28,12 +29,12 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
   const handleNext = () => {
     // Navigate to recovery phrase setup
-    navigation.navigate('RecoveryPhrase');
+    navigation.navigate(ScreenName.RECOVERY_PHRASE);
   };
 
   const handleSecureEnclave = () => {
     // Navigate to secure enclave setup
-    navigation.navigate('SecureEnclave');
+    navigation.navigate(ScreenName.SECURE_ENCLAVE);
   };
 
   const handleBack = () => {
@@ -67,7 +68,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
         {/* Title */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize="$21" fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+          <Text fontSize="$7m" fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
             {t('onboarding.profileType.welcomeTitle')}
           </Text>
         </YStack>

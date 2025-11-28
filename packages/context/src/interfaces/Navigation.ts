@@ -1,3 +1,5 @@
+import type { ScreenName } from '@onflow/frw-types';
+
 /**
  * Navigation abstraction interface
  * Each platform implements its own navigation system (React Navigation, React Router, etc.)
@@ -6,7 +8,7 @@ export interface Navigation {
   /**
    * Navigate to a screen with optional parameters
    */
-  navigate(screen: string, params?: Record<string, unknown>): void;
+  navigate(screen: ScreenName, params?: Record<string, unknown>): void;
 
   /**
    * Go back to the previous screen
@@ -26,12 +28,12 @@ export interface Navigation {
   /**
    * Replace the current screen with a new one
    */
-  replace(screen: string, params?: Record<string, unknown>): void;
+  replace(screen: ScreenName, params?: Record<string, unknown>): void;
 
   /**
    * Push a new screen onto the stack
    */
-  push(screen: string, params?: Record<string, unknown>): void;
+  push(screen: ScreenName, params?: Record<string, unknown>): void;
 
   /**
    * Pop the current screen from the stack

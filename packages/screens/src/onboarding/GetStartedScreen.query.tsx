@@ -1,5 +1,5 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
-import { NativeScreenName } from '@onflow/frw-types';
+import { NativeScreenName, ScreenName } from '@onflow/frw-types';
 import { YStack, Text, Button, OnboardingBackground, OnboardingHeader } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ export function GetStartedScreen(): React.ReactElement {
 
   const handleCreateAccount = () => {
     // Navigate to profile type selection for create account flow
-    navigation.navigate('ProfileTypeSelection');
+    navigation.navigate(ScreenName.PROFILE_TYPE_SELECTION);
   };
 
   const handleSignIn = () => {
