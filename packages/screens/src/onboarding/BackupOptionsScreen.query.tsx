@@ -1,10 +1,18 @@
 import { bridge, logger } from '@onflow/frw-context';
 import { CloudBackup, DeviceBackup, RecoveryPhraseBackup } from '@onflow/frw-icons';
 import { NativeScreenName } from '@onflow/frw-types';
-import { YStack, Text, BackupOptionCard, cardBackground, View, InfoDialog } from '@onflow/frw-ui';
+import {
+  YStack,
+  Text,
+  BackupOptionCard,
+  cardBackground,
+  View,
+  InfoDialog,
+  useTheme,
+} from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useColorScheme, BackHandler } from 'react-native';
+import { BackHandler } from 'react-native';
 
 /**
  * BackupOptionsScreen - Screen for selecting additional backup methods
@@ -14,12 +22,11 @@ import { useColorScheme, BackHandler } from 'react-native';
  */
 export function BackupOptionsScreen(): React.ReactElement {
   const { t } = useTranslation();
-  const colorScheme = useColorScheme();
+  const theme = useTheme();
   const [showWarningDialog, setShowWarningDialog] = useState(false);
 
-  // Theme-aware icon colors
-  const isDark = colorScheme === 'dark';
-  const iconColor = isDark ? '#000000' : '#FFFFFF';
+  // Use theme color for icons
+  const iconColor = theme.color.val;
 
   // Register global handler for NavigationBackButton to call
   useEffect(() => {
