@@ -1,6 +1,6 @@
 import { navigation, bridge, logger } from '@onflow/frw-context';
 import { useSendStore, sendSelectors, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
-import { type NFTModel } from '@onflow/frw-types';
+import { type NFTModel, ScreenName } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   NFTDetailView,
@@ -248,7 +248,7 @@ export function NFTDetailScreen(): React.ReactElement {
     }
 
     setCurrentStep('send-to');
-    navigation.navigate('SendTo');
+    navigation.navigate(ScreenName.SEND_TO);
   }, [selectedNFTs, setCurrentStep]);
 
   // Handle NFT press in selection bar (navigate to different NFT detail)
