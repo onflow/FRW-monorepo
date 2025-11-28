@@ -67,7 +67,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
         {/* Title */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+          <Text fontSize="$21" fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
             {t('onboarding.profileType.welcomeTitle')}
           </Text>
         </YStack>

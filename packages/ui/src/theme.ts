@@ -172,7 +172,6 @@ export const size = {
   $5: 20,
   $6: 24,
   $7: 28,
-  '$7.5': 30, // For fontSize in AccountCreationLoadingState
   $8: 32,
   $9: 36,
   $10: 40,
@@ -186,6 +185,7 @@ export const size = {
   $18: 72,
   $19: 76,
   $20: 80,
+  $21: 30, // Special size for larger onboarding text (30px)
   $31: 124,
   $32: 128,
   $33: 132,
