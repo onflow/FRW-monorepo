@@ -138,3 +138,5 @@ emulator-account.pkey
 .eslintcache
 Flow-Wallet-Kit/
 /apps/passkeys/.next
+metro-stats.json
+/apps/react-native/.bundle-discovery
