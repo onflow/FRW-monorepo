@@ -3,13 +3,11 @@ import { ProfileService } from '@onflow/frw-services';
 import { ScreenName } from '@onflow/frw-types';
 import {
   YStack,
-  XStack,
   Text,
-  View,
   OnboardingBackground,
-  Button,
   ScrollView,
   AccountCreationLoadingState,
+  RecoveryPhraseQuestion,
 } from '@onflow/frw-ui';
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
@@ -251,7 +249,7 @@ export function ConfirmRecoveryPhraseScreen({
     navigation.goBack();
   };
 
-  const handleSelectWord = (questionIndex: number, word: string) => {
+  const handleSelectWord = (questionIndex: number) => (word: string) => {
     setSelectedAnswers({
       ...selectedAnswers,
       [questionIndex]: word,
@@ -366,81 +364,19 @@ export function ConfirmRecoveryPhraseScreen({
 
               {/* All questions */}
               <YStack gap="$8">
-                {questions.map((question, index) => {
-                  const selectedAnswer = selectedAnswers[index];
-                  const isCorrect = selectedAnswer === question.correctAnswer;
-
-                  return (
-                    <YStack key={index} gap="$3" items="center">
-                      <Text fontSize="$5" fontWeight="700" color="$text" text="center">
-                        {t('onboarding.confirmRecoveryPhrase.selectWord', {
-                          position: question.position,
-                        })}
-                      </Text>
-
-                      {/* Word options container - Single horizontal row as per Figma */}
-                      <View
-                        width="100%"
-                        maxWidth={339}
-                        height={57}
-                        rounded={16}
-                        bg="$bgGlass"
-                        borderWidth={1}
-                        borderColor="$borderGlass"
-                        paddingHorizontal={12}
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <XStack gap={8} width="100%" justify="space-between">
-                          {question.options.map((word, wordIndex) => {
-                            const isSelected = selectedAnswer === word;
-                            const isWrong = isSelected && word !== question.correctAnswer;
-                            const isCorrectSelection =
-                              isSelected && word === question.correctAnswer;
-
-                            return (
-                              <Button
-                                key={`${question.position}-${wordIndex}-${word}`}
-                                variant="ghost"
-                                onPress={() => handleSelectWord(index, word)}
-                                padding={0}
-                                flex={1}
-                              >
-                                <View
-                                  width="100%"
-                                  minWidth={58}
-                                  height={45}
-                                  rounded={10}
-                                  bg={
-                                    isCorrectSelection
-                                      ? '#FFFFFF'
-                                      : isWrong
-                                        ? '#FFFFFF'
-                                        : 'transparent'
-                                  }
-                                  alignItems="center"
-                                  justifyContent="center"
-                                >
-                                  <Text
-                                    fontSize={16}
-                                    fontWeight="500"
-                                    color={
-                                      isCorrectSelection ? '$success' : isWrong ? '$error' : '$text'
-                                    }
-                                    text="center"
-                                    lineHeight={28}
-                                  >
-                                    {word}
-                                  </Text>
-                                </View>
-                              </Button>
-                            );
-                          })}
-                        </XStack>
-                      </View>
-                    </YStack>
-                  );
-                })}
+                {questions.map((question, index) => (
+                  <RecoveryPhraseQuestion
+                    key={index}
+                    position={question.position}
+                    options={question.options}
+                    selectedAnswer={selectedAnswers[index]}
+                    correctAnswer={question.correctAnswer}
+                    onSelectWord={handleSelectWord(index)}
+                    questionLabel={t('onboarding.confirmRecoveryPhrase.selectWord', {
+                      position: question.position,
+                    })}
+                  />
+                ))}
               </YStack>
             </YStack>
           </ScrollView>
