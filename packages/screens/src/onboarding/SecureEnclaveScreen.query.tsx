@@ -1,6 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
-import { NativeScreenName } from '@onflow/frw-types';
+import { NativeScreenName, ScreenName } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -81,15 +81,6 @@ export function SecureEnclaveScreen(): React.ReactElement {
         txId: result.txId,
       });
 
-      // Account verification is handled by native layer using txId (matches EOA flow)
-      // Native layer will:
-      // 1. Use txId for fast account discovery on-chain
-      // 2. Initialize wallet and authentication
-      // 3. Cache account information
-      logger.info(
-        '[SecureEnclaveScreen] Account creation complete, native layer will handle verification'
-      );
-
       // Progress updates are now sent from native code in real-time
       // When progress reaches 100%, AccountCreationLoadingState will automatically call onComplete
       // Wait a brief moment to ensure the 100% progress is visible
@@ -122,7 +113,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
       }
     }
 
-    navigation.navigate('NotificationPreferences');
+    navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES);
   };
 
   const handleBack = () => {
