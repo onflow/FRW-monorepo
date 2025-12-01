@@ -1,4 +1,5 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
+import { ScreenName } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -77,18 +78,18 @@ export function NotificationPreferencesScreen({
         if (bridge.checkNotificationPermission) {
           const isGranted = await bridge.checkNotificationPermission();
           if (isGranted) {
-            logger.info(
+            logger.debug(
               '[NotificationPreferencesScreen] Notification permission already granted, skipping screen'
             );
             // Navigate based on account type
             if (accountType === 'recovery') {
-              logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+              logger.debug('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
               bridge.closeRN();
             } else {
-              logger.info(
+              logger.debug(
                 '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
               );
-              navigation.navigate('BackupOptions');
+              navigation.navigate(ScreenName.BACKUP_OPTIONS);
             }
             return;
           }
@@ -108,16 +109,16 @@ export function NotificationPreferencesScreen({
   const notificationMutation = useMutation({
     mutationFn: requestNotificationPermission,
     onSuccess: (data, variables) => {
-      logger.info('[NotificationPreferencesScreen] Notification permission result:', data);
+      logger.debug('[NotificationPreferencesScreen] Notification permission result:', data);
       // Navigate based on account type
       if (accountType === 'recovery') {
-        logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+        logger.debug('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
         bridge.closeRN();
       } else {
-        logger.info(
+        logger.debug(
           '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
         );
-        navigation.navigate('BackupOptions');
+        navigation.navigate(ScreenName.BACKUP_OPTIONS);
       }
     },
     onError: (error, variables) => {
@@ -127,13 +128,13 @@ export function NotificationPreferencesScreen({
       );
       // Navigate based on account type even on error
       if (accountType === 'recovery') {
-        logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+        logger.debug('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
         bridge.closeRN();
       } else {
-        logger.info(
+        logger.debug(
           '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
         );
-        navigation.navigate('BackupOptions');
+        navigation.navigate(ScreenName.BACKUP_OPTIONS);
       }
     },
   });
@@ -146,13 +147,13 @@ export function NotificationPreferencesScreen({
   const handleMaybeLater = () => {
     // Navigate based on account type
     if (accountType === 'recovery') {
-      logger.info('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
+      logger.debug('[NotificationPreferencesScreen] Recovery phrase flow, closing RN');
       bridge.closeRN();
     } else {
-      logger.info(
+      logger.debug(
         '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
       );
-      navigation.navigate('BackupOptions');
+      navigation.navigate(ScreenName.BACKUP_OPTIONS);
     }
   };
 
@@ -172,7 +173,7 @@ export function NotificationPreferencesScreen({
       <YStack flex={1} px="$4" justify="space-between">
         {/* Title and description */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" mb="$3">
+          <Text fontSize="$7m" fontWeight="700" color="$text" text="center" mb="$3">
             {t('onboarding.notificationPreferences.title')}
           </Text>
 
