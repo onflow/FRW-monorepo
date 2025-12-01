@@ -1,17 +1,20 @@
-import { bridge, logger, navigation } from '@onflow/frw-context';
+import { bridge, logger } from '@onflow/frw-context';
 import { ProfileService } from '@onflow/frw-services';
 import { ScreenName } from '@onflow/frw-types';
 import {
   YStack,
+  XStack,
   Text,
+  View,
   OnboardingBackground,
+  Button,
   ScrollView,
   AccountCreationLoadingState,
-  RecoveryPhraseQuestion,
 } from '@onflow/frw-ui';
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DeviceEventEmitter } from 'react-native';
 
 // Helper function to generate 3 random unique positions from 1-12
 const generateRandomPositions = (): number[] => {
@@ -109,6 +112,8 @@ interface ConfirmRecoveryPhraseScreenProps {
       drivepath?: string;
     };
   };
+  // React Navigation also passes navigation prop, but we use the abstraction
+  navigation?: unknown;
 }
 
 /**
@@ -119,10 +124,27 @@ interface ConfirmRecoveryPhraseScreenProps {
 
 export function ConfirmRecoveryPhraseScreen({
   route,
+  navigation,
 }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  // Listen for progress events from native code
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      'AccountCreationProgress',
+      (event: { progress: number; status: string }) => {
+        logger.debug('[ConfirmRecoveryPhraseScreen] Progress event:', event.progress, event.status);
+        setProgress(event.progress);
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   // Theme-aware glassmorphic backgrounds
 
@@ -130,22 +152,52 @@ export function ConfirmRecoveryPhraseScreen({
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
   const mnemonic = route?.params?.mnemonic || '';
   const accountKey = route?.params?.accountKey;
+  const drivepath = route?.params?.drivepath;
+
+  // Log received params for debugging
+  useEffect(() => {
+    logger.debug('[ConfirmRecoveryPhraseScreen] Received route params:', {
+      hasRoute: !!route,
+      hasParams: !!route?.params,
+      recoveryPhraseLength: recoveryPhrase?.length || 0,
+      mnemonicLength: mnemonic?.length || 0,
+      hasAccountKey: !!accountKey,
+      drivepath: drivepath,
+      // Note: Never log recoveryPhrase or mnemonic - sensitive data
+    });
+  }, [route, recoveryPhrase, mnemonic, accountKey, drivepath]);
 
   // Enable screenshot protection when screen mounts (showing recovery phrase words)
   useEffect(() => {
-    logger.debug('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
+    logger.info('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
     if (bridge.setScreenSecurityLevel) {
       bridge.setScreenSecurityLevel('secure');
     }
 
     // Cleanup: disable screenshot protection when unmounting
     return () => {
-      logger.debug('[ConfirmRecoveryPhraseScreen] Disabling screenshot protection');
+      logger.info('[ConfirmRecoveryPhraseScreen] Disabling screenshot protection');
       if (bridge.setScreenSecurityLevel) {
         bridge.setScreenSecurityLevel('normal');
       }
     };
   }, []);
+
+  // Hide back button during account creation
+  useLayoutEffect(() => {
+    if (navigation && typeof navigation === 'object' && 'setOptions' in navigation) {
+      const nav = navigation as { setOptions: (options: Record<string, unknown>) => void };
+      if (isCreatingAccount) {
+        // Hide back button during account creation
+        nav.setOptions({
+          headerLeft: () => null,
+        });
+      }
+      // Note: We don't restore the back button here because:
+      // 1. When isCreatingAccount becomes false, the user is typically navigated away
+      // 2. The navigator's default/initial headerLeft configuration remains active
+    }
+  }, [isCreatingAccount, navigation]);
 
   // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration
   const questions = useMemo((): VerificationQuestion[] => {
@@ -158,7 +210,7 @@ export function ConfirmRecoveryPhraseScreen({
       return [];
     }
 
-    logger.debug(
+    logger.info(
       '[ConfirmRecoveryPhraseScreen] Generating verification questions from recovery phrase'
     );
 
@@ -187,7 +239,7 @@ export function ConfirmRecoveryPhraseScreen({
       correctAnswer: recoveryPhrase[position - 1],
     }));
 
-    logger.debug('[ConfirmRecoveryPhraseScreen] Generated questions:', {
+    logger.info('[ConfirmRecoveryPhraseScreen] Generated questions:', {
       count: generatedQuestions.length,
       positions: generatedQuestions.map((q) => q.position),
     });
@@ -195,7 +247,11 @@ export function ConfirmRecoveryPhraseScreen({
     return generatedQuestions;
   }, [recoveryPhrase]);
 
-  const handleSelectWord = (questionIndex: number) => (word: string) => {
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  const handleSelectWord = (questionIndex: number, word: string) => {
     setSelectedAnswers({
       ...selectedAnswers,
       [questionIndex]: word,
@@ -213,14 +269,15 @@ export function ConfirmRecoveryPhraseScreen({
     }
 
     try {
+      setProgress(0);
       setIsCreatingAccount(true);
 
       logger.info(
         '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'
       );
 
-      // Step 1: Validate required data before starting
-      logger.debug('[ConfirmRecoveryPhraseScreen] Step 1: Validating prerequisites...');
+      // Step 1: Validate all required data and bridge methods before starting
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 1: Validating prerequisites...');
 
       // Check account key
       if (!accountKey) {
@@ -234,7 +291,19 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('Mnemonic not available. Please regenerate the recovery phrase.');
       }
 
-      logger.debug('[ConfirmRecoveryPhraseScreen] All prerequisites validated successfully');
+      // Check required bridge methods upfront
+      const missingMethods: string[] = [];
+      if (!bridge.signInWithCustomToken) missingMethods.push('signInWithCustomToken');
+      if (!bridge.saveMnemonic) missingMethods.push('saveMnemonic');
+      if (!bridge.registerAccountWithBackend) missingMethods.push('registerAccountWithBackend');
+
+      if (missingMethods.length > 0) {
+        const errorMsg = `Missing required bridge methods: ${missingMethods.join(', ')}`;
+        logger.error('[ConfirmRecoveryPhraseScreen]', errorMsg);
+        throw new Error(`Platform not supported: ${errorMsg}`);
+      }
+
+      logger.info('[ConfirmRecoveryPhraseScreen] All prerequisites validated successfully');
 
       const publicKeyHex = accountKey.publicKey;
 
@@ -259,11 +328,11 @@ export function ConfirmRecoveryPhraseScreen({
       });
 
       // Step 2: Register with backend using ProfileService
-      logger.debug('[ConfirmRecoveryPhraseScreen] Step 2: Registering with backend...');
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 2: Registering with backend...');
 
       // Generate random username using word combinations
       const username = generateRandomUsername();
-      logger.debug('[ConfirmRecoveryPhraseScreen] Generated username:', username);
+      logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
 
       // Register user profile using ProfileService
       const profileSvc = ProfileService.getInstance();
@@ -291,17 +360,18 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       // Step 3: Authenticate with custom token
-      logger.debug('[ConfirmRecoveryPhraseScreen] Step 3: Authenticating with custom token...');
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 3: Authenticating with custom token...');
       await bridge.signInWithCustomToken(customToken);
       logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
 
       // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
-      logger.debug('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
+      logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
       await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
       logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
 
-      // Step 4: Create Flow address (triggers on-chain account creation)
-      logger.debug('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
+      // Step 4: Call /v2/user/address to create Flow address (triggers on-chain account creation)
+      // This is called once here, and saveMnemonic will wait for the address to be indexed
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
       const txId = await profileSvc.createFlowAddress();
       logger.info('[ConfirmRecoveryPhraseScreen] Flow address created, txId:', txId);
 
@@ -311,12 +381,14 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       // Step 5: Save mnemonic to native secure storage
-      logger.debug('[ConfirmRecoveryPhraseScreen] Step 5: Saving mnemonic to native storage...');
+      // Note: saveMnemonic will wait for the Flow address to be indexed by the server
+      // using the txId to track the transaction status
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Saving mnemonic to native storage...');
       await bridge.saveMnemonic(mnemonic, customToken, txId, username);
       logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully');
 
       // Step 6: Register account with backend (creates Flow + COA addresses)
-      logger.debug('[ConfirmRecoveryPhraseScreen] Step 6: Registering account with backend...');
+      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering account with backend...');
       const coaTxId = await bridge.registerAccountWithBackend();
 
       // Handle case where COA account already exists
@@ -399,26 +471,88 @@ export function ConfirmRecoveryPhraseScreen({
                 <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
                   {t('onboarding.confirmRecoveryPhrase.title')}
                 </Text>
-                <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$1" maxW={280}>
+                <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
                   {t('onboarding.confirmRecoveryPhrase.description')}
                 </Text>
               </YStack>
 
               {/* All questions */}
               <YStack gap="$8">
-                {questions.map((question, index) => (
-                  <RecoveryPhraseQuestion
-                    key={index}
-                    position={question.position}
-                    options={question.options}
-                    selectedAnswer={selectedAnswers[index]}
-                    correctAnswer={question.correctAnswer}
-                    onSelectWord={handleSelectWord(index)}
-                    questionLabel={t('onboarding.confirmRecoveryPhrase.selectWord', {
-                      position: question.position,
-                    })}
-                  />
-                ))}
+                {questions.map((question, index) => {
+                  const selectedAnswer = selectedAnswers[index];
+                  const isCorrect = selectedAnswer === question.correctAnswer;
+
+                  return (
+                    <YStack key={index} gap="$3" items="center">
+                      <Text fontSize="$5" fontWeight="700" color="$text" text="center">
+                        {t('onboarding.confirmRecoveryPhrase.selectWord', {
+                          position: question.position,
+                        })}
+                      </Text>
+
+                      {/* Word options container - Single horizontal row as per Figma */}
+                      <View
+                        width="100%"
+                        maxWidth={339}
+                        height={57}
+                        rounded={16}
+                        bg="$bgGlass"
+                        borderWidth={1}
+                        borderColor="$borderGlass"
+                        paddingHorizontal={12}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <XStack gap={8} width="100%" justify="space-between">
+                          {question.options.map((word, wordIndex) => {
+                            const isSelected = selectedAnswer === word;
+                            const isWrong = isSelected && word !== question.correctAnswer;
+                            const isCorrectSelection =
+                              isSelected && word === question.correctAnswer;
+
+                            return (
+                              <Button
+                                key={`${question.position}-${wordIndex}-${word}`}
+                                variant="ghost"
+                                onPress={() => handleSelectWord(index, word)}
+                                padding={0}
+                                flex={1}
+                              >
+                                <View
+                                  width="100%"
+                                  minWidth={58}
+                                  height={45}
+                                  rounded={10}
+                                  bg={
+                                    isCorrectSelection
+                                      ? '#FFFFFF'
+                                      : isWrong
+                                        ? '#FFFFFF'
+                                        : 'transparent'
+                                  }
+                                  alignItems="center"
+                                  justifyContent="center"
+                                >
+                                  <Text
+                                    fontSize={16}
+                                    fontWeight="500"
+                                    color={
+                                      isCorrectSelection ? '$success' : isWrong ? '$error' : '$text'
+                                    }
+                                    text="center"
+                                    lineHeight={28}
+                                  >
+                                    {word}
+                                  </Text>
+                                </View>
+                              </Button>
+                            );
+                          })}
+                        </XStack>
+                      </View>
+                    </YStack>
+                  );
+                })}
               </YStack>
             </YStack>
           </ScrollView>
@@ -429,7 +563,7 @@ export function ConfirmRecoveryPhraseScreen({
               width="100%"
               height={52}
               bg={!allAnswersCorrect ? '$bg3' : '$text'}
-              rounded="$4"
+              rounded={16}
               items="center"
               justify="center"
               borderWidth={1}
@@ -457,6 +591,10 @@ export function ConfirmRecoveryPhraseScreen({
         title={t('onboarding.confirmRecoveryPhrase.creating.title', {
           defaultValue: 'Creating\nyour account',
         })}
+        statusText={t('onboarding.confirmRecoveryPhrase.creating.configuring', {
+          defaultValue: 'Configuring account',
+        })}
+        progress={progress}
       />
     </>
   );
