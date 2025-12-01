@@ -57,6 +57,7 @@ import {
   generateRandomId,
 } from '../utils';
 import { getCurrentProfileId, returnCurrentProfileId } from '../utils/current-id';
+import { fclEnsureNetwork } from '../utils/fclConfig';
 import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
 import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 
@@ -483,6 +484,11 @@ export class AccountManagement {
     if (!isValidFlowAddress(address)) {
       throw new Error('Invalid address');
     }
+
+    // Ensure FCL is configured for the current network before querying
+    const network = userWalletService.getNetwork();
+    await fclEnsureNetwork(network);
+
     return await fcl.account(address);
   }
 
