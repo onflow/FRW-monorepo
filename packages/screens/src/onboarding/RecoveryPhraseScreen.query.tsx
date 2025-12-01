@@ -173,15 +173,17 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4" gap="$4">
           <Text color="$error" text="center" fontSize={20} fontWeight="700">
-            Failed to Generate Recovery Phrase
+            {t('onboarding.recoveryPhrase.error.title')}
           </Text>
           <Text color="$textSecondary" text="center" fontSize="$4">
-            {generateError instanceof Error ? generateError.message : 'An unknown error occurred'}
+            {generateError instanceof Error
+              ? generateError.message
+              : t('onboarding.recoveryPhrase.error.unknown')}
           </Text>
           <Button onPress={() => navigation.goBack()}>
             <XStack gap="$2" items="center" px="$4" py="$2">
               <Text fontSize="$4" fontWeight="600">
-                Go Back
+                {t('common.goBack')}
               </Text>
             </XStack>
           </Button>
