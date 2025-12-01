@@ -1196,7 +1196,7 @@
     "message": "移动应用"
   },
   "You_can_import_the": {
-    "message": "从另一个钱包（例如：Blocto）粘贴 Json 内容"
+    "message": "粘贴 JSON 或拖放 PDF/JSON 文件到此处从Blocto"
   },
   "Enter_password_for_json_file": {
     "message": "输入 json 文件的密码"

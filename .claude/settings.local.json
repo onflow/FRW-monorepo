@@ -69,7 +69,13 @@
       "Bash(gh api:*)",
       "Bash(./android/gradlew:*)",
       "Bash(cat:*)",
-      "Bash(adb uninstall:*)"
+      "Bash(adb uninstall:*)",
+      "Bash(npx imagemin-cli:*)",
+      "Bash(npx lint-staged:*)",
+      "Bash(npx imagemin:*)",
+      "Bash(brew list:*)",
+      "Bash(brew install:*)",
+      "Bash(imageoptim:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

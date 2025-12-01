@@ -20,7 +20,9 @@
     "loading": "加载中...",
     "error": "错误",
     "success": "成功",
-    "Search": "搜索"
+    "Search": "搜索",
+    "recommended": "推荐",
+    "retry": "重试"
   },
   "tabs": {
     "tokens": "代币",
@@ -105,7 +107,10 @@
     "sendTokens": "发送代币",
     "confirmSend": "确认发送",
     "holdToSend": "长按发送",
-    "unknownAccount": "未知账户"
+    "unknownAccount": "未知账户",
+    "errors": {
+      "amountExceedsBalance": "金额超出可用余额"
+    }
   },
   "messages": {
     "loading": "加载中...",
@@ -189,7 +194,10 @@
     "notFound": {
       "title": "未找到NFT",
       "message": "无法找到或加载请求的NFT"
-    }
+    },
+    "confirmSelection_plural": "确认 {{count}} 个NFT",
+    "itemCount_plural": "{{count}} 个物品",
+    "selectedCount_plural": "已选择 {{count}} 个NFT"
   },
   "storage": {
     "warning": {
@@ -221,6 +229,95 @@
       "surgeActive": "激增价格激活",
       "description": "由于网络活动频繁，交易费用已提高，Flow Wallet 暂时不为您支付 gas 费用。当前网络费用比平时高 {{multiplier}} 倍。",
       "holdToAgree": "按住同意激增定价"
+    }
+  },
+  "onboarding": {
+    "flowWallet": "Flow 钱包",
+    "getStarted": {
+      "title": "开始使用 Flow 钱包",
+      "subtitle": "欢迎使用 Flow 钱包\n创建账户以开始使用。",
+      "createAccount": "创建新账户",
+      "signIn": "我已经有账户",
+      "agreementText": "使用 Flow 钱包即表示您同意",
+      "termsOfService": "服务条款",
+      "and": "和",
+      "privacyPolicy": "隐私政策"
+    },
+    "profileType": {
+      "welcomeTitle": "欢迎使用\nFlow 钱包",
+      "recoveryPhrase": {
+        "title": "由恢复短语保护",
+        "description": "恢复短语是生成的一系列单词，用于保护您的钱包。"
+      },
+      "secureEnclaveProfile": "安全飞地配置文件",
+      "next": "下一步"
+    },
+    "secureEnclave": {
+      "title": "高级",
+      "cardTitle": "安全配置文件",
+      "cardDescription": "Flow 钱包在安全模式下使用具有硬件级安全性的设备密钥，是您可以信赖的超安全硬件钱包。仅适用于 Flow 上的 Cadence 账户。",
+      "features": {
+        "secureEnclave": "安全飞地",
+        "hardwareSecurity": "硬件级安全",
+        "noEvm": "不支持 EVM"
+      },
+      "next": "下一步",
+      "dialog": {
+        "title": "您是高级用户吗？",
+        "description": "您确定要创建安全配置文件吗？这将限制对某些功能的访问，并且不会让您访问 Flow 上的 EVM 账户。",
+        "holdToConfirm": "长按确认"
+      },
+      "creating": {
+        "title": "正在创建\n您的账户",
+        "configuring": "配置账户中"
+      }
+    },
+    "notificationPreferences": {
+      "headerTitle": "通知",
+      "title": "获取推送通知",
+      "subtitle": "在您的转账、交换和批准完成时获得通知。",
+      "enableButton": "开启推送通知",
+      "maybeLater": "稍后再说"
+    },
+    "backupOptions": {
+      "navTitle": "备份",
+      "subtitle": "选择您想要如何备份账户以完成账户创建。您稍后可以在设置中更改。",
+      "deviceBackup": {
+        "title": "创建设备备份",
+        "description": "使用您的设备作为备份钱包以保护您的数字资产"
+      },
+      "cloudBackup": {
+        "title": "创建云备份",
+        "description": "使用谷歌云端硬盘和iCloud等可信提供商创建云备份"
+      },
+      "recoveryPhrase": {
+        "title": "创建恢复短语备份",
+        "description": "创建一个12个单词的恢复短语"
+      },
+      "skipWarning": {
+        "title": "在没有备份的情况下继续？",
+        "message": "如果没有备份，如果您丢失设备，您可能会失去对钱包的访问权限。您确定要在不设置备份的情况下继续吗？",
+        "confirm": "在没有备份的情况下继续"
+      }
+    },
+    "recoveryPhrase": {
+      "navTitle": "多链账户",
+      "title": "恢复短语",
+      "description": "按正确顺序写下这些单词，并将其存放在安全的地方。",
+      "clickToReveal": "点击显示短语",
+      "copy": "复制",
+      "next": "下一步",
+      "warning": {
+        "title": "不要分享您的秘密短语！",
+        "description": "如果有人获得了您的秘密短语，\n他们将完全控制您的钱包。"
+      }
+    },
+    "confirmRecoveryPhrase": {
+      "navTitle": "多链账户",
+      "title": "确认短语",
+      "description": "请根据顺序逐一选择单词。",
+      "selectWord": "选择位置 #{{position}} 的单词",
+      "finish": "完成"
     }
   }
 }

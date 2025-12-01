@@ -88,7 +88,7 @@ import walletManager from './wallet-manager';
 import { HTTP_STATUS_TOO_MANY_REQUESTS } from '../../shared/constant/domain-constants';
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { getCurrentProfileId } from '../utils/current-id';
-import { fclConfig, fclConfirmNetwork } from '../utils/fclConfig';
+import { fclConfig, fclEnsureNetwork, getFlowClient } from '../utils/fclConfig';
 import { fetchAccountsByPublicKey } from '../utils/key-indexer';
 import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 import {
@@ -1582,11 +1582,9 @@ const preloadAllAccountsWithPubKey = async (
  */
 
 const loadAccountListBalance = async (network: string, addressList: string[]) => {
-  // Check if the network is valid
-  if (!(await fclConfirmNetwork(network))) {
-    // Do nothing if the network is not valid
-    throw new Error('Network has been switched');
-  }
+  // Ensure FCL is configured for the correct network before querying
+  // This is needed because cadenceService uses the global fcl instance
+  await fclEnsureNetwork(network);
 
   // Use the external getFlowBalanceForAnyAccounts method
   const accountsBalances: Record<string, string | undefined> =
@@ -1614,14 +1612,12 @@ export const loadMainAccountStorageBalance = async (
   network: string,
   address: string
 ): Promise<MainAccountStorageBalanceStore> => {
-  // Check if the network is valid
-  if (!(await fclConfirmNetwork(network))) {
-    // Do nothing if the network is not valid
-    throw new Error('Network has been switched');
-  }
   if (!isValidFlowAddress(address)) {
     throw new Error('Invalid address');
   }
+  // Ensure FCL is configured for the correct network before querying
+  await fclEnsureNetwork(network);
+
   const storageBalance: MainAccountStorageBalanceStore = await openapiService.getFlowAccountInfo(
     network,
     address
@@ -1972,9 +1968,17 @@ const loadAccountsDetail = async (
   network: string,
   mainAccountAddresses: string[]
 ): Promise<AccountDetailMap> => {
+  // Get the emulator mode setting
+  const isEmulatorMode = await userWalletService.getEmulatorMode();
+
+  // Get a network-specific Flow client to avoid network mismatch issues
+  // This ensures the script is executed on the correct network's access node
+  const flowClient = getFlowClient(network as FlowNetwork, isEmulatorMode);
+
   const script = await getScripts(network, 'basic', 'getAccountsDetail');
 
-  const accountsDetail: AccountDetailMap = await fcl.query({
+  // Use the network-specific client instead of the global fcl instance
+  const accountsDetail: AccountDetailMap = await flowClient.query({
     cadence: script,
     args: (arg, t) => [arg(mainAccountAddresses, t.Array(t.Address))],
   });
