@@ -1,5 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
+import { NativeScreenName } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -91,10 +92,13 @@ export function SecureEnclaveScreen(): React.ReactElement {
     if (bridge.checkNotificationPermission) {
       const isGranted = await bridge.checkNotificationPermission();
       if (isGranted) {
-        logger.info(
-          '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
+        logger.debug(
+          '[SecureEnclaveScreen] Notification permission already granted, launching native backup screen'
         );
-        navigation.navigate('BackupOptions');
+        // Launch native backup options screen instead of RN screen
+        if (bridge.launchNativeScreen) {
+          bridge.launchNativeScreen(NativeScreenName.BACKUP_OPTIONS);
+        }
         return;
       }
     }
