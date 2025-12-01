@@ -1,6 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
-import { ScreenName } from '@onflow/frw-types';
+import { NativeScreenName } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -92,15 +92,18 @@ export function SecureEnclaveScreen(): React.ReactElement {
     if (bridge.checkNotificationPermission) {
       const isGranted = await bridge.checkNotificationPermission();
       if (isGranted) {
-        logger.info(
-          '[SecureEnclaveScreen] Notification permission already granted, skipping to BackupOptions'
+        logger.debug(
+          '[SecureEnclaveScreen] Notification permission already granted, launching native backup screen'
         );
-        navigation.navigate(ScreenName.BACKUP_OPTIONS);
+        // Launch native backup options screen instead of RN screen
+        if (bridge.launchNativeScreen) {
+          bridge.launchNativeScreen(NativeScreenName.BACKUP_OPTIONS);
+        }
         return;
       }
     }
 
-    navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES);
+    navigation.navigate('NotificationPreferences');
   };
 
   const handleBack = () => {
@@ -113,7 +116,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
         <YStack flex={1} px="$4">
           {/* Advanced text */}
           <YStack mb="$6">
-            <Text fontSize="$7m" fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+            <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
               {t('onboarding.secureEnclave.title')}
             </Text>
           </YStack>
