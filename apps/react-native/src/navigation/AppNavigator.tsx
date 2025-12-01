@@ -14,7 +14,6 @@ import {
   ConfirmRecoveryPhraseScreen,
   SecureEnclaveScreen,
   NotificationPreferencesScreen,
-  BackupOptionsScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -71,7 +70,6 @@ export type RootStackParamList = {
   ConfirmRecoveryPhrase: { recoveryPhrase?: string[]; mnemonic?: string };
   SecureEnclave: undefined;
   NotificationPreferences: { accountType?: 'recovery' | 'secure-enclave' };
-  BackupOptions: undefined;
 };
 
 interface AppNavigatorProps {
@@ -377,18 +375,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
-              }}
-            />
-            <Stack.Screen
-              name="BackupOptions"
-              component={BackupOptionsScreen}
-              options={{
-                headerTitle: t('onboarding.backupOptions.navTitle'),
-                headerRight: () => null,
-                headerStyle: {
-                  backgroundColor: theme.bg.val,
-                },
-                headerLeft: () => <NavigationBackButton />,
               }}
             />
           </Stack.Group>

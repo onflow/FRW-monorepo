@@ -350,7 +350,8 @@ export function ConfirmRecoveryPhraseScreen({
       await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
       logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
 
-      // Step 4: Create Flow address (triggers on-chain account creation)
+      // Step 4: Call /v2/user/address to create Flow address (triggers on-chain account creation)
+      // This is called once here, and saveMnemonic will wait for the address to be indexed
       logger.info('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
       const txId = await profileSvc.createFlowAddress();
       logger.info('[ConfirmRecoveryPhraseScreen] Flow address created, txId:', txId);
@@ -361,6 +362,8 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       // Step 5: Save mnemonic to native secure storage
+      // Note: saveMnemonic will wait for the Flow address to be indexed by the server
+      // using the txId to track the transaction status
       logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Saving mnemonic to native storage...');
       await bridge.saveMnemonic(mnemonic, customToken, txId, username);
       logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully');
