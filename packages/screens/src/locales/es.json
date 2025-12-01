@@ -317,7 +317,16 @@
       "title": "Confirmar frase",
       "description": "Por favor selecciona las palabras una por una según su orden.",
       "selectWord": "Selecciona la palabra en #{{position}}",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "creating": {
+        "title": "Creando\ntu cuenta"
+      },
+      "error": {
+        "title": "Error al crear la cuenta",
+        "generic": "No se pudo crear la cuenta. Por favor, inténtalo de nuevo.",
+        "server": "Ocurrió un error en el servidor. Por favor, inténtalo más tarde.",
+        "validation": "Datos de cuenta inválidos. Por favor, inténtalo de nuevo."
+      }
     }
   }
 }

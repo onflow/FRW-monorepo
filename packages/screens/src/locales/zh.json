@@ -317,7 +317,16 @@
       "title": "确认短语",
       "description": "请根据顺序逐一选择单词。",
       "selectWord": "选择位置 #{{position}} 的单词",
-      "finish": "完成"
+      "finish": "完成",
+      "creating": {
+        "title": "正在创建\\n您的账户"
+      },
+      "error": {
+        "title": "账户创建失败",
+        "generic": "创建账户失败。请重试。",
+        "server": "服务器错误。请稍后重试。",
+        "validation": "无效的账户数据。请重试。"
+      }
     }
   }
 }
