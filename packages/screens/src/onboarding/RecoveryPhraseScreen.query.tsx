@@ -8,6 +8,7 @@ import {
   OnboardingBackground,
   Button,
   AccountCreationLoadingState,
+  WarningCard,
   useTheme,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
@@ -319,19 +320,11 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             </XStack>
 
             {/* Warning card */}
-            <XStack gap="$3" p="$4" rounded="$4" borderWidth={1} borderColor="$borderGlass" mb="$6">
-              <View width={24} height={24} items="center" justify="center">
-                <Warning size={24} color={theme.iconGlass.val} />
-              </View>
-              <YStack flex={1} gap="$1">
-                <Text fontSize="$4" fontWeight="700" color="$text">
-                  {t('onboarding.recoveryPhrase.warning.title')}
-                </Text>
-                <Text fontSize="$4" color="$textSecondary" lineHeight={17}>
-                  {t('onboarding.recoveryPhrase.warning.description')}
-                </Text>
-              </YStack>
-            </XStack>
+            <WarningCard
+              icon={<Warning size={24} color={theme.iconGlass.val} />}
+              title={t('onboarding.recoveryPhrase.warning.title')}
+              description={t('onboarding.recoveryPhrase.warning.description')}
+            />
 
             {/* Spacer */}
             <YStack flex={1} />
