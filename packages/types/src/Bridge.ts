@@ -185,6 +185,33 @@ export enum NativeScreenName {
 }
 
 /**
+ * React Native screen identifiers for navigation
+ * Used with navigation.navigate() throughout the app
+ */
+export enum ScreenName {
+  /** First screen - Get Started with create account and sign in options */
+  GET_STARTED = 'GetStarted',
+  /** Profile type selection - Choose between recovery phrase or secure enclave */
+  PROFILE_TYPE_SELECTION = 'ProfileTypeSelection',
+  /** Recovery phrase setup screen */
+  RECOVERY_PHRASE = 'RecoveryPhrase',
+  /** Secure enclave setup screen */
+  SECURE_ENCLAVE = 'SecureEnclave',
+  /** Select tokens to send screen */
+  SELECT_TOKENS = 'SelectTokens',
+  /** Send to address/recipient screen */
+  SEND_TO = 'SendTo',
+  /** Send tokens amount screen */
+  SEND_TOKENS = 'SendTokens',
+  /** Send transaction summary screen */
+  SEND_SUMMARY = 'SendSummary',
+  /** NFT collection list screen */
+  NFT_LIST = 'NFTList',
+  /** NFT detail screen */
+  NFT_DETAIL = 'NFTDetail',
+}
+
+/**
  * Device information for backend registration
  * Provided by native platform implementations
  * Must match forms_DeviceInfo from goService.generated.ts
