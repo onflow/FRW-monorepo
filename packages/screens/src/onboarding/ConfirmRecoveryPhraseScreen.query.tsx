@@ -245,10 +245,6 @@ export function ConfirmRecoveryPhraseScreen({
     return generatedQuestions;
   }, [recoveryPhrase]);
 
-  const handleBack = () => {
-    navigation.goBack();
-  };
-
   const handleSelectWord = (questionIndex: number) => (word: string) => {
     setSelectedAnswers({
       ...selectedAnswers,
