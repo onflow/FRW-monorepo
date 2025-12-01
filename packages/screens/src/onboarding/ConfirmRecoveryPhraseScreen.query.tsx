@@ -13,6 +13,7 @@ import {
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DeviceEventEmitter } from 'react-native';
 
 // Helper function to generate 3 random unique positions from 1-12
 const generateRandomPositions = (): number[] => {
@@ -127,6 +128,22 @@ export function ConfirmRecoveryPhraseScreen({
   const { t } = useTranslation();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  // Listen for progress events from native code
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      'AccountCreationProgress',
+      (event: { progress: number; status: string }) => {
+        logger.debug('[ConfirmRecoveryPhraseScreen] Progress event:', event.progress, event.status);
+        setProgress(event.progress);
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   // Theme-aware glassmorphic backgrounds
 
@@ -251,6 +268,7 @@ export function ConfirmRecoveryPhraseScreen({
     }
 
     try {
+      setProgress(0);
       setIsCreatingAccount(true);
 
       logger.info(
@@ -572,6 +590,10 @@ export function ConfirmRecoveryPhraseScreen({
         title={t('onboarding.confirmRecoveryPhrase.creating.title', {
           defaultValue: 'Creating\nyour account',
         })}
+        statusText={t('onboarding.confirmRecoveryPhrase.creating.configuring', {
+          defaultValue: 'Configuring account',
+        })}
+        progress={progress}
       />
     </>
   );

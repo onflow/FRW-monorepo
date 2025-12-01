@@ -15,8 +15,9 @@ import {
   useTheme,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { DeviceEventEmitter } from 'react-native';
 
 /**
  * SecureEnclaveScreen - Advanced profile type screen showing Secure Enclave features
@@ -28,6 +29,22 @@ export function SecureEnclaveScreen(): React.ReactElement {
   const theme = useTheme();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  // Listen for progress events from native code
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      'AccountCreationProgress',
+      (event: { progress: number; status: string }) => {
+        logger.debug('[SecureEnclaveScreen] Progress event:', event.progress, event.status);
+        setProgress(event.progress);
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const handleNext = () => {
     setShowConfirmDialog(true);
@@ -35,6 +52,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
+    setProgress(0);
     setShowLoadingState(true);
 
     try {
@@ -72,16 +90,17 @@ export function SecureEnclaveScreen(): React.ReactElement {
         '[SecureEnclaveScreen] Account creation complete, native layer will handle verification'
       );
 
-      // Wait for auto-progress animation to show meaningful progress
-      // The auto-progress goes from 0-99% at 1% per 100ms
-      // Wait 3 seconds to show progress, then navigate
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // Progress updates are now sent from native code in real-time
+      // When progress reaches 100%, AccountCreationLoadingState will automatically call onComplete
+      // Wait a brief moment to ensure the 100% progress is visible
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Dismiss loading state and navigate
       await handleLoadingComplete();
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       setShowLoadingState(false);
+      setProgress(0);
     }
   };
 
@@ -210,6 +229,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
         visible={showLoadingState}
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
+        progress={progress}
       />
     </>
   );
