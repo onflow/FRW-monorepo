@@ -193,8 +193,12 @@ export enum ScreenName {
   GET_STARTED = 'GetStarted',
   /** Profile type selection - Choose between recovery phrase or secure enclave */
   PROFILE_TYPE_SELECTION = 'ProfileTypeSelection',
+  /** Backup options screen - Choose backup method */
+  BACKUP_OPTIONS = 'BackupOptions',
   /** Recovery phrase setup screen */
   RECOVERY_PHRASE = 'RecoveryPhrase',
+  /** Confirm recovery phrase screen - Verify user wrote down recovery phrase */
+  CONFIRM_RECOVERY_PHRASE = 'ConfirmRecoveryPhrase',
   /** Secure enclave setup screen */
   SECURE_ENCLAVE = 'SecureEnclave',
   /** Notification preferences screen */
