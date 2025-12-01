@@ -1,4 +1,4 @@
-import { bridge, logger } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ProfileService } from '@onflow/frw-services';
 import {
   YStack,
@@ -11,7 +11,7 @@ import {
   AccountCreationLoadingState,
 } from '@onflow/frw-ui';
 import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
-import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Helper function to generate 3 random unique positions from 1-12
@@ -110,8 +110,6 @@ interface ConfirmRecoveryPhraseScreenProps {
       drivepath?: string;
     };
   };
-  // React Navigation also passes navigation prop, but we use the abstraction
-  navigation?: unknown;
 }
 
 /**
@@ -122,7 +120,6 @@ interface ConfirmRecoveryPhraseScreenProps {
 
 export function ConfirmRecoveryPhraseScreen({
   route,
-  navigation,
 }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
@@ -150,22 +147,6 @@ export function ConfirmRecoveryPhraseScreen({
       }
     };
   }, []);
-
-  // Hide back button during account creation
-  useLayoutEffect(() => {
-    if (navigation && typeof navigation === 'object' && 'setOptions' in navigation) {
-      const nav = navigation as { setOptions: (options: Record<string, unknown>) => void };
-      if (isCreatingAccount) {
-        // Hide back button during account creation
-        nav.setOptions({
-          headerLeft: () => null,
-        });
-      }
-      // Note: We don't restore the back button here because:
-      // 1. When isCreatingAccount becomes false, the user is typically navigated away
-      // 2. The navigator's default/initial headerLeft configuration remains active
-    }
-  }, [isCreatingAccount, navigation]);
 
   // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration
   const questions = useMemo((): VerificationQuestion[] => {
