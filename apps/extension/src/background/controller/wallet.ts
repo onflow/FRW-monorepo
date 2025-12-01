@@ -302,6 +302,16 @@ export class WalletController extends BaseController {
   unlock = async (password: string) => {
     // Submit the password. This will unlock the keyring or throw an error
     await keyringService.unlock(password);
+
+    // Ensure network is set to mainnet (default) when unlocking
+    const currentNetwork = await userWalletService.getNetwork();
+    if (currentNetwork !== 'mainnet') {
+      await this.switchNetwork('mainnet');
+    } else {
+      // Still ensure FCL is configured for mainnet
+      await userWalletService.switchFclNetwork('mainnet');
+    }
+
     // Login with the current keyring
     await userWalletService.loginWithKeyring();
     // Initialize wallet manager with current uid

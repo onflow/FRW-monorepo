@@ -1,6 +1,6 @@
 {
   "name": "frw-extension",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Digital wallet created for everyone.",
   "type": "module",
   "scripts": {
@@ -99,6 +99,7 @@
     "koa-compose": "^4.1.0",
     "lodash": "^4.17.21",
     "loglevel": "^1.9.2",
+    "pdfjs-dist": "^4.0.379",
     "lottie-react-native": "^7.3.4",
     "lru-cache": "^11.1.0",
     "nanoid": "^3.3.11",

@@ -10,7 +10,7 @@ import {
   tokenQueries,
   tokenQueryKeys,
 } from '@onflow/frw-stores';
-import type { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount, ScreenName } from '@onflow/frw-types';
 import {
   SearchableTabLayout,
   RecipientList,
@@ -446,10 +446,10 @@ export function SendToScreen(): ReactElement {
       // Navigate to appropriate screen based on transaction type
       if (transactionType === 'single-nft' || transactionType === 'multiple-nfts') {
         // Use the shared SendSummary screen for both single and multiple NFTs
-        navigation.navigate('SendSummary', { address: recipient.address, recipient });
+        navigation.navigate(ScreenName.SEND_SUMMARY, { address: recipient.address, recipient });
       } else {
         // Default to tokens screen
-        navigation.navigate('SendTokens', { address: recipient.address, recipient });
+        navigation.navigate(ScreenName.SEND_TOKENS, { address: recipient.address, recipient });
       }
     },
     [setToAccount, activeTab, transactionType, fromAccount, balanceData]

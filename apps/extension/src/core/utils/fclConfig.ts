@@ -1,4 +1,5 @@
 import * as fcl from '@onflow/fcl';
+import { createFlowClient } from '@onflow/fcl';
 import { addresses } from '@onflow/frw-cadence';
 
 import { type FlowNetwork } from '@/shared/types';
@@ -10,6 +11,10 @@ const HOST_MAINNET = 'https://rest-mainnet.onflow.org';
 // NOTE: These are the currently the same hosts. TODO: figure out how to run both networks simultaneously.
 export const EMULATOR_HOST_TESTNET = 'http://localhost:8888';
 export const EMULATOR_HOST_MAINNET = 'http://localhost:8888';
+
+// Cache for network-specific Flow clients
+type FlowClient = ReturnType<typeof createFlowClient>;
+const flowClients: Map<string, FlowClient> = new Map();
 
 // Configure FCL for Mainnet
 export const fclMainnetConfig = async (emulatorMode?: boolean) => {
@@ -59,4 +64,45 @@ export const fclConfirmNetwork = async (network: string) => {
   }
   const currentNetwork = await fcl.config().get('flow.network');
   return currentNetwork === network;
+};
+
+/**
+ * Get or create a Flow client for a specific network
+ * Uses createFlowClient to create isolated client instances per network
+ * This prevents issues when switching between networks
+ * @param network - The network to get the client for
+ * @param emulatorMode - Whether to use emulator mode
+ * @returns A Flow client configured for the specified network
+ */
+export const getFlowClient = (network: FlowNetwork, emulatorMode: boolean = false): FlowClient => {
+  const cacheKey = `${network}-${emulatorMode ? 'emulator' : 'main'}`;
+
+  // Return cached client if it exists
+  if (flowClients.has(cacheKey)) {
+    return flowClients.get(cacheKey)!;
+  }
+
+  // Determine the access node URL
+  const accessNodeUrl = emulatorMode
+    ? network === 'testnet'
+      ? EMULATOR_HOST_TESTNET
+      : EMULATOR_HOST_MAINNET
+    : network === 'testnet'
+      ? HOST_TESTNET
+      : HOST_MAINNET;
+
+  // Create client configuration
+  // Note: Contract addresses are already included in the scripts from getScripts,
+  // so we only need to configure the access node URL and network
+  const clientConfig: Parameters<typeof createFlowClient>[0] = {
+    accessNodeUrl,
+    flowNetwork: network,
+  };
+
+  const client = createFlowClient(clientConfig);
+
+  // Cache the client
+  flowClients.set(cacheKey, client);
+
+  return client;
 };
