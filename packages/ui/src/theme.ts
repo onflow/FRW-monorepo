@@ -172,7 +172,7 @@ export const size = {
   $5: 20,
   $6: 24,
   $7: 28,
-  '$7.5': 30, // For fontSize in AccountCreationLoadingState
+  $7m: 30, // Medium variant between $7 (28) and $8 (32) for onboarding text
   $8: 32,
   $9: 36,
   $10: 40,

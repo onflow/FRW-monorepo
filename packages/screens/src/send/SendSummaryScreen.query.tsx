@@ -9,7 +9,12 @@ import {
   payerStatusQueryKeys,
   payerStatusQueries,
 } from '@onflow/frw-stores';
-import { Platform, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
+import {
+  Platform,
+  type NFTTransactionDisplayData,
+  type SendFormData,
+  ScreenName,
+} from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -365,11 +370,11 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       }
     }
 
-    navigation.navigate('NFTList');
+    navigation.navigate(ScreenName.NFT_LIST);
   }, [fromAccount]);
 
   const handleEditAccountPress = useCallback(() => {
-    navigation.navigate('SendTo');
+    navigation.navigate(ScreenName.SEND_TO);
   }, []);
 
   const handleRemoveNFT = useCallback(
@@ -379,7 +384,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       setSelectedNFTs(updatedNFTs);
 
       if (updatedNFTs.length === 0) {
-        navigation.navigate('NFTList');
+        navigation.navigate(ScreenName.NFT_LIST);
       }
     },
     [selectedNFTs, setSelectedNFTs]
