@@ -49,14 +49,14 @@ const Dashboard = () => {
       });
       const { eoaAccount = null, childAccounts = [], evmAccount = null } = currentWallet;
       setExtras({
-        COA: eoaAccount ? eoaAccount.address : '',
-        EOA: evmAccount ? evmAccount.address : '',
+        EOA: eoaAccount ? eoaAccount.address : '',
+        COA: evmAccount ? evmAccount.address : '',
         selectedAccount: currentWallet.address,
         flowAccount: currentWallet?.address,
         childs: childAccounts.map((item) => item.address).join(','),
       });
     }
-  }, [userInfo, mainAddress, currentWallet]);
+  }, [userInfo, mainAddress, currentWallet?.evmAccount, currentWallet?.eoaAccount]);
 
   return (
     <Box
