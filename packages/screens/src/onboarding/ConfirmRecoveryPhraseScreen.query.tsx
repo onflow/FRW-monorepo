@@ -137,14 +137,14 @@ export function ConfirmRecoveryPhraseScreen({
 
   // Enable screenshot protection when screen mounts (showing recovery phrase words)
   useEffect(() => {
-    logger.info('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
+    logger.debug('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
     if (bridge.setScreenSecurityLevel) {
       bridge.setScreenSecurityLevel('secure');
     }
 
     // Cleanup: disable screenshot protection when unmounting
     return () => {
-      logger.info('[ConfirmRecoveryPhraseScreen] Disabling screenshot protection');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Disabling screenshot protection');
       if (bridge.setScreenSecurityLevel) {
         bridge.setScreenSecurityLevel('normal');
       }
@@ -178,7 +178,7 @@ export function ConfirmRecoveryPhraseScreen({
       return [];
     }
 
-    logger.info(
+    logger.debug(
       '[ConfirmRecoveryPhraseScreen] Generating verification questions from recovery phrase'
     );
 
@@ -207,7 +207,7 @@ export function ConfirmRecoveryPhraseScreen({
       correctAnswer: recoveryPhrase[position - 1],
     }));
 
-    logger.info('[ConfirmRecoveryPhraseScreen] Generated questions:', {
+    logger.debug('[ConfirmRecoveryPhraseScreen] Generated questions:', {
       count: generatedQuestions.length,
       positions: generatedQuestions.map((q) => q.position),
     });
@@ -240,7 +240,7 @@ export function ConfirmRecoveryPhraseScreen({
       );
 
       // Step 1: Validate required data before starting
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 1: Validating prerequisites...');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Step 1: Validating prerequisites...');
 
       // Check account key
       if (!accountKey) {
@@ -254,7 +254,7 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('Mnemonic not available. Please regenerate the recovery phrase.');
       }
 
-      logger.info('[ConfirmRecoveryPhraseScreen] All prerequisites validated successfully');
+      logger.debug('[ConfirmRecoveryPhraseScreen] All prerequisites validated successfully');
 
       const publicKeyHex = accountKey.publicKey;
 
@@ -279,11 +279,11 @@ export function ConfirmRecoveryPhraseScreen({
       });
 
       // Step 2: Register with backend using ProfileService
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 2: Registering with backend...');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Step 2: Registering with backend...');
 
       // Generate random username using word combinations
       const username = generateRandomUsername();
-      logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
+      logger.debug('[ConfirmRecoveryPhraseScreen] Generated username:', username);
 
       // Register user profile using ProfileService
       const profileSvc = ProfileService.getInstance();
@@ -311,17 +311,17 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       // Step 3: Authenticate with custom token
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 3: Authenticating with custom token...');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Step 3: Authenticating with custom token...');
       await bridge.signInWithCustomToken(customToken);
       logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
 
       // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
-      logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
       await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
       logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
 
       // Step 4: Create Flow address (triggers on-chain account creation)
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
       const txId = await profileSvc.createFlowAddress();
       logger.info('[ConfirmRecoveryPhraseScreen] Flow address created, txId:', txId);
 
@@ -331,12 +331,12 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       // Step 5: Save mnemonic to native secure storage
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Saving mnemonic to native storage...');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Step 5: Saving mnemonic to native storage...');
       await bridge.saveMnemonic(mnemonic, customToken, txId, username);
       logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully');
 
       // Step 6: Register account with backend (creates Flow + COA addresses)
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering account with backend...');
+      logger.debug('[ConfirmRecoveryPhraseScreen] Step 6: Registering account with backend...');
       const coaTxId = await bridge.registerAccountWithBackend();
 
       // Handle case where COA account already exists
