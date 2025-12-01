@@ -50,28 +50,6 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       try {
         logger.info('[RecoveryPhraseScreen] Starting mnemonic generation...');
 
-        // Only reset auth if no user is currently signed in.
-        // This prevents signing out an existing user when they are creating a new profile.
-        if (bridge.signOutAndSignInAnonymously && bridge.getCurrentUserUid) {
-          const uid = await bridge.getCurrentUserUid();
-          if (!uid) {
-            try {
-              await bridge.signOutAndSignInAnonymously();
-              logger.info(
-                '[RecoveryPhraseScreen] No user was signed in. Firebase auth reset successful.'
-              );
-            } catch (error) {
-              logger.warn(
-                '[RecoveryPhraseScreen] Firebase auth reset failed (may already be anonymous):',
-                error
-              );
-              // Continue anyway - if already anonymous, that's fine
-            }
-          } else {
-            logger.info('[RecoveryPhraseScreen] User is already signed in. Skipping auth reset.');
-          }
-        }
-
         // Generate 12-word mnemonic (128-bit entropy) using native wallet-core bridge
         const response = await bridge.generateSeedPhrase(128);
         const phrase = response.mnemonic.trim().split(/\s+/);
