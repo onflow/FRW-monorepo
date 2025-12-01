@@ -342,6 +342,15 @@ class PlatformImpl implements PlatformSpec {
       this.log('error', '[PlatformImpl] Failed to clear toasts via bridge:', error);
     }
   }
+
+  launchNativeScreen(screenName: string): void {
+    try {
+      this.log('info', `[PlatformImpl] Launching native screen: ${screenName}`);
+      NativeFRWBridge.launchNativeScreen(screenName);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to launch native screen via bridge:', error);
+    }
+  }
 }
 
 export const platform = new PlatformImpl();

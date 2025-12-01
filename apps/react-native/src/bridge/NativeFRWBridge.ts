@@ -79,6 +79,8 @@ export interface Spec extends TurboModule {
     message: string,
     args: ReadonlyArray<string>
   ): void;
+  // Launch native screen method
+  launchNativeScreen(screenName: string): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
