@@ -319,7 +319,7 @@
       "selectWord": "选择位置 #{{position}} 的单词",
       "finish": "完成",
       "creating": {
-        "title": "正在创建\\n您的账户"
+        "title": "正在创建\n您的账户"
       },
       "error": {
         "title": "账户创建失败",
