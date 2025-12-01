@@ -134,20 +134,6 @@ export function ConfirmRecoveryPhraseScreen({
   const recoveryPhrase = route?.params?.recoveryPhrase || [];
   const mnemonic = route?.params?.mnemonic || '';
   const accountKey = route?.params?.accountKey;
-  const drivepath = route?.params?.drivepath;
-
-  // Log received params for debugging
-  useEffect(() => {
-    logger.debug('[ConfirmRecoveryPhraseScreen] Received route params:', {
-      hasRoute: !!route,
-      hasParams: !!route?.params,
-      recoveryPhraseLength: recoveryPhrase?.length || 0,
-      mnemonicLength: mnemonic?.length || 0,
-      hasAccountKey: !!accountKey,
-      drivepath: drivepath,
-      // Note: Never log recoveryPhrase or mnemonic - sensitive data
-    });
-  }, [route, recoveryPhrase, mnemonic, accountKey, drivepath]);
 
   // Enable screenshot protection when screen mounts (showing recovery phrase words)
   useEffect(() => {
@@ -229,10 +215,6 @@ export function ConfirmRecoveryPhraseScreen({
     return generatedQuestions;
   }, [recoveryPhrase]);
 
-  const handleBack = () => {
-    navigation.goBack();
-  };
-
   const handleSelectWord = (questionIndex: number, word: string) => {
     setSelectedAnswers({
       ...selectedAnswers,
@@ -257,7 +239,7 @@ export function ConfirmRecoveryPhraseScreen({
         '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'
       );
 
-      // Step 1: Validate all required data and bridge methods before starting
+      // Step 1: Validate required data before starting
       logger.info('[ConfirmRecoveryPhraseScreen] Step 1: Validating prerequisites...');
 
       // Check account key
@@ -270,18 +252,6 @@ export function ConfirmRecoveryPhraseScreen({
       // Check mnemonic
       if (!mnemonic || typeof mnemonic !== 'string' || mnemonic.trim().length === 0) {
         throw new Error('Mnemonic not available. Please regenerate the recovery phrase.');
-      }
-
-      // Check required bridge methods upfront
-      const missingMethods: string[] = [];
-      if (!bridge.signInWithCustomToken) missingMethods.push('signInWithCustomToken');
-      if (!bridge.saveMnemonic) missingMethods.push('saveMnemonic');
-      if (!bridge.registerAccountWithBackend) missingMethods.push('registerAccountWithBackend');
-
-      if (missingMethods.length > 0) {
-        const errorMsg = `Missing required bridge methods: ${missingMethods.join(', ')}`;
-        logger.error('[ConfirmRecoveryPhraseScreen]', errorMsg);
-        throw new Error(`Platform not supported: ${errorMsg}`);
       }
 
       logger.info('[ConfirmRecoveryPhraseScreen] All prerequisites validated successfully');
