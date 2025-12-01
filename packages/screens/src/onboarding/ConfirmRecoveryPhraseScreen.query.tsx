@@ -272,160 +272,50 @@ export function ConfirmRecoveryPhraseScreen({
       setProgress(0);
       setIsCreatingAccount(true);
 
-      logger.info(
-        '[ConfirmRecoveryPhraseScreen] Recovery phrase verified! Creating EOA account...'
-      );
+      if (!accountKey || !mnemonic) {
+        throw new Error('Missing required data. Please regenerate the recovery phrase.');
+      }
 
-      // Step 1: Validate all required data and bridge methods before starting
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 1: Validating prerequisites...');
-
-      // Check account key
-      if (!accountKey) {
+      if (!/^[0-9a-fA-F]{128}$/.test(accountKey.publicKey)) {
         throw new Error(
-          'Account key not available from bridge. Please regenerate the recovery phrase.'
+          `Invalid public key: expected 128 hex chars, got ${accountKey.publicKey.length}`
         );
       }
 
-      // Check mnemonic
-      if (!mnemonic || typeof mnemonic !== 'string' || mnemonic.trim().length === 0) {
-        throw new Error('Mnemonic not available. Please regenerate the recovery phrase.');
-      }
-
-      // Check required bridge methods upfront
-      const missingMethods: string[] = [];
-      if (!bridge.signInWithCustomToken) missingMethods.push('signInWithCustomToken');
-      if (!bridge.saveMnemonic) missingMethods.push('saveMnemonic');
-      if (!bridge.registerAccountWithBackend) missingMethods.push('registerAccountWithBackend');
-
-      if (missingMethods.length > 0) {
-        const errorMsg = `Missing required bridge methods: ${missingMethods.join(', ')}`;
-        logger.error('[ConfirmRecoveryPhraseScreen]', errorMsg);
-        throw new Error(`Platform not supported: ${errorMsg}`);
-      }
-
-      logger.info('[ConfirmRecoveryPhraseScreen] All prerequisites validated successfully');
-
-      const publicKeyHex = accountKey.publicKey;
-
-      // Validate public key format and length for ECDSA secp256k1 (64 bytes = 128 hex chars)
-      if (!/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
-        logger.error('[ConfirmRecoveryPhraseScreen] Invalid public key:', {
-          length: publicKeyHex.length,
-          expected: 128,
-          isHex: /^[0-9a-fA-F]+$/.test(publicKeyHex),
-          // Note: Never log publicKey - sensitive data
-        });
-        throw new Error(
-          `Invalid public key: expected 128 hexadecimal characters (64 bytes), got ${publicKeyHex.length}`
-        );
-      }
-
-      logger.debug('[ConfirmRecoveryPhraseScreen] Using account key from bridge:', {
-        length: publicKeyHex.length,
-        signAlgo: accountKey.signAlgo,
-        hashAlgo: accountKey.hashAlgo,
-        // Note: Never log publicKey - sensitive data
-      });
-
-      // Step 2: Register with backend using ProfileService
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 2: Registering with backend...');
-
-      // Generate random username using word combinations
       const username = generateRandomUsername();
-      logger.info('[ConfirmRecoveryPhraseScreen] Generated username:', username);
-
-      // Register user profile using ProfileService
       const profileSvc = ProfileService.getInstance();
-      // Use account key from native bridge (already has correct sign_algo and hash_algo)
+
       const registerResponse = await profileSvc.register({
         username,
         accountKey: {
-          public_key: publicKeyHex,
-          sign_algo: accountKey.signAlgo, // From native bridge (ECDSA_secp256k1 = 2)
-          hash_algo: accountKey.hashAlgo, // From native bridge (SHA2_256 = 1)
+          public_key: accountKey.publicKey,
+          sign_algo: accountKey.signAlgo,
+          hash_algo: accountKey.hashAlgo,
         },
       });
 
-      // ProfileService returns normalized response with custom_token and id at root level
-      const customToken = registerResponse.custom_token;
-      const userId = registerResponse.id;
-      logger.info('[ConfirmRecoveryPhraseScreen] Registration successful, userId:', userId);
-
-      // Validate registration response
-      if (!customToken) {
-        throw new Error('Registration response missing custom_token');
-      }
-      if (!userId) {
-        throw new Error('Registration response missing user id');
+      if (!registerResponse.custom_token || !registerResponse.id) {
+        throw new Error('Registration response missing required fields');
       }
 
-      // Step 3: Authenticate with custom token
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 3: Authenticating with custom token...');
-      await bridge.signInWithCustomToken(customToken);
-      logger.info('[ConfirmRecoveryPhraseScreen] Custom token authentication successful');
+      await bridge.signInWithCustomToken(registerResponse.custom_token);
+      await waitForTokenRefresh(10, 500);
+      await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, '', username);
 
-      // Wait for ID token to refresh (Firebase token refresh happens asynchronously)
-      logger.info('[ConfirmRecoveryPhraseScreen] Waiting for ID token refresh...');
-      await waitForTokenRefresh(10, 500); // Max 10 attempts, 500ms delay = 5 seconds max
-      logger.info('[ConfirmRecoveryPhraseScreen] ID token refreshed successfully');
-
-      // Step 4: Call /v2/user/address to create Flow address (triggers on-chain account creation)
-      // This is called once here, and saveMnemonic will wait for the address to be indexed
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 4: Creating Flow address...');
-      const txId = await profileSvc.createFlowAddress();
-      logger.info('[ConfirmRecoveryPhraseScreen] Flow address created, txId:', txId);
-
-      // Validate transaction ID
-      if (!txId || typeof txId !== 'string') {
-        throw new Error('Flow address creation response missing or invalid transaction ID');
-      }
-
-      // Step 5: Save mnemonic to native secure storage
-      // Note: saveMnemonic will wait for the Flow address to be indexed by the server
-      // using the txId to track the transaction status
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 5: Saving mnemonic to native storage...');
-      await bridge.saveMnemonic(mnemonic, customToken, txId, username);
-      logger.info('[ConfirmRecoveryPhraseScreen] Mnemonic saved successfully');
-
-      // Step 6: Register account with backend (creates Flow + COA addresses)
-      logger.info('[ConfirmRecoveryPhraseScreen] Step 6: Registering account with backend...');
       const coaTxId = await bridge.registerAccountWithBackend();
 
-      // Handle case where COA account already exists
-      if (coaTxId === 'COA_ALREADY_EXISTS') {
-        logger.info('[ConfirmRecoveryPhraseScreen] COA account already exists, skipping');
-      } else if (!coaTxId || typeof coaTxId !== 'string') {
+      if (coaTxId !== 'COA_ALREADY_EXISTS' && (!coaTxId || typeof coaTxId !== 'string')) {
         throw new Error('Failed to register account with backend: invalid transaction ID');
-      } else {
-        logger.info(
-          '[ConfirmRecoveryPhraseScreen] Account registration transaction submitted:',
-          coaTxId
-        );
       }
 
-      logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete!');
-
-      // Navigate to notification preferences
       navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES, { accountType: 'recovery' });
     } catch (error: any) {
-      logger.error('[ConfirmRecoveryPhraseScreen] Failed to create EOA account:', error);
+      logger.error('[ConfirmRecoveryPhraseScreen] Account creation failed:', error);
 
-      // Log detailed error information
-      if (error instanceof Error) {
-        logger.error('[ConfirmRecoveryPhraseScreen] Error details:', {
-          message: error.message,
-          stack: error.stack,
-          status: (error as any).status,
-          responseData: (error as any).responseData,
-        });
-      }
-
-      // Show user-friendly error message
       let errorMessage = t('onboarding.confirmRecoveryPhrase.error.generic', {
         defaultValue: 'Failed to create account. Please try again.',
       });
 
-      // Provide more specific error messages based on error type
       if (error?.status === 500) {
         errorMessage = t('onboarding.confirmRecoveryPhrase.error.server', {
           defaultValue: 'Server error occurred. Please try again later.',
@@ -435,11 +325,9 @@ export function ConfirmRecoveryPhraseScreen({
           defaultValue: 'Invalid account data. Please try again.',
         });
       } else if (error?.message) {
-        // Use the error message from ProfileService if available
         errorMessage = error.message;
       }
 
-      // Show toast notification
       if (bridge.showToast) {
         bridge.showToast(
           t('onboarding.confirmRecoveryPhrase.error.title', {
