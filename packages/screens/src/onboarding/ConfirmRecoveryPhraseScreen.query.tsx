@@ -152,20 +152,6 @@ export function ConfirmRecoveryPhraseScreen({
   const accountKey = route?.params?.accountKey;
   const drivepath = route?.params?.drivepath;
 
-  // Log received params for debugging
-  useEffect(() => {
-    logger.debug('[ConfirmRecoveryPhraseScreen] Received route params:', {
-      hasRoute: !!route,
-      hasParams: !!route?.params,
-      recoveryPhraseLength: recoveryPhrase?.length || 0,
-      mnemonicLength: mnemonic?.length || 0,
-      hasAccountKey: !!accountKey,
-      drivepath: drivepath,
-      // Note: Never log recoveryPhrase or mnemonic - sensitive data
-    });
-  }, [route, recoveryPhrase, mnemonic, accountKey, drivepath]);
-
-  // Enable screenshot protection when screen mounts (showing recovery phrase words)
   useEffect(() => {
     logger.info('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
     if (bridge.setScreenSecurityLevel) {
