@@ -1,5 +1,6 @@
 import { bridge, logger } from '@onflow/frw-context';
 import { ProfileService } from '@onflow/frw-services';
+import { ScreenName } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -405,7 +406,7 @@ export function ConfirmRecoveryPhraseScreen({
       logger.info('[ConfirmRecoveryPhraseScreen] EOA account creation complete!');
 
       // Navigate to notification preferences
-      navigation.navigate('NotificationPreferences', { accountType: 'recovery' });
+      navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES, { accountType: 'recovery' });
     } catch (error: any) {
       logger.error('[ConfirmRecoveryPhraseScreen] Failed to create EOA account:', error);
 

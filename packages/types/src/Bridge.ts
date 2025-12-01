@@ -185,8 +185,12 @@ export enum ScreenName {
   PROFILE_TYPE_SELECTION = 'ProfileTypeSelection',
   /** Recovery phrase setup screen */
   RECOVERY_PHRASE = 'RecoveryPhrase',
+  /** Confirm recovery phrase screen */
+  CONFIRM_RECOVERY_PHRASE = 'ConfirmRecoveryPhrase',
   /** Secure enclave setup screen */
   SECURE_ENCLAVE = 'SecureEnclave',
+  /** Notification preferences screen */
+  NOTIFICATION_PREFERENCES = 'NotificationPreferences',
   /** Select tokens to send screen */
   SELECT_TOKENS = 'SelectTokens',
   /** Send to address/recipient screen */
