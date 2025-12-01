@@ -296,12 +296,6 @@ export function ConfirmRecoveryPhraseScreen({
       await waitForTokenRefresh(10, 500);
       await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, '', username);
 
-      const coaTxId = await bridge.registerAccountWithBackend();
-
-      if (coaTxId !== 'COA_ALREADY_EXISTS' && (!coaTxId || typeof coaTxId !== 'string')) {
-        throw new Error('Failed to register account with backend: invalid transaction ID');
-      }
-
       navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES, { accountType: 'recovery' });
     } catch (error: any) {
       logger.error('[ConfirmRecoveryPhraseScreen] Account creation failed:', error);
