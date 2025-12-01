@@ -185,7 +185,7 @@ export function NotificationPreferencesScreen({
       <YStack flex={1} px="$4" justify="space-between">
         {/* Title and description */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize="$7m" fontWeight="700" color="$text" text="center" mb="$3">
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" mb="$3">
             {t('onboarding.notificationPreferences.title')}
           </Text>
 
