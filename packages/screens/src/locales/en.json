@@ -13,6 +13,7 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "back": "Back",
+    "goBack": "Go Back",
     "close": "Close",
     "done": "Done",
     "next": "Next",
@@ -310,6 +311,10 @@
       "warning": {
         "title": "Do not share your secret phrase!",
         "description": "If someone has your secret phrase,\nThey will have full control of your wallet."
+      },
+      "error": {
+        "title": "Failed to Generate Recovery Phrase",
+        "unknown": "An unknown error occurred"
       }
     },
     "confirmRecoveryPhrase": {
