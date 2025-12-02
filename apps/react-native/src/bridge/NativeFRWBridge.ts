@@ -79,8 +79,10 @@ export interface Spec extends TurboModule {
     message: string,
     args: ReadonlyArray<string>
   ): void;
-  // Launch native screen method
-  launchNativeScreen(screenName: string): void;
+  // Launch native screen method - use union type to match NativeScreenName enum values
+  launchNativeScreen(
+    screenName: 'multiBackup' | 'deviceBackup' | 'seedPhraseBackup' | 'backupOptions' | 'walletRestore'
+  ): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

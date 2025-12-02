@@ -1,6 +1,7 @@
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
   Currency,
+  NativeScreenName,
   RecentContactsResponse,
   WalletAccount,
   WalletAccountsResponse,
@@ -343,10 +344,10 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  launchNativeScreen(screenName: string): void {
+  launchNativeScreen(screenName: NativeScreenName): void {
     try {
       this.log('info', `[PlatformImpl] Launching native screen: ${screenName}`);
-      NativeFRWBridge.launchNativeScreen(screenName);
+      NativeFRWBridge.launchNativeScreen(screenName as any);
     } catch (error) {
       this.log('error', '[PlatformImpl] Failed to launch native screen via bridge:', error);
     }
