@@ -212,7 +212,7 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       await bridge.signInWithCustomToken(registerResponse.custom_token);
-      await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, '', username);
+      await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, username);
 
       navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES, { accountType: 'recovery' });
     } catch (error: any) {

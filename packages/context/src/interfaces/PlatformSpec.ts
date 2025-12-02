@@ -100,12 +100,7 @@ export interface PlatformSpec {
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
 
   // Wallet initialization
-  saveMnemonic?(
-    mnemonic: string,
-    customToken: string,
-    txId: string,
-    username: string
-  ): Promise<void>;
+  saveMnemonic?(mnemonic: string, customToken: string, username: string): Promise<void>;
 
   // Firebase authentication
   signInWithCustomToken?(customToken: string): Promise<void>;
