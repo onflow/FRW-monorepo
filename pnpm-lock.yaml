@@ -1105,9 +1105,6 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:^
         version: link:../utils
-      '@react-native-community/blur':
-        specifier: ^4.4.1
-        version: 4.4.1(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       '@tamagui/config':
         specifier: ^1.132.20
         version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native-reanimated@3.19.2(@babel/core@7.28.4)(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
@@ -15826,9 +15823,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
@@ -16464,7 +16459,7 @@ snapshots:
 
   '@svgr/hast-util-to-babel-ast@8.0.0':
     dependencies:
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.5
       entities: 4.5.0
 
   '@svgr/plugin-jsx@5.5.0':
@@ -17884,7 +17879,7 @@ snapshots:
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.5
 
   '@types/bn.js@4.11.6':
     dependencies:
