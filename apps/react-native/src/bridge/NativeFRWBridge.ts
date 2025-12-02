@@ -116,7 +116,6 @@ export interface Spec extends TurboModule {
   registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
   registerAccountWithBackend(): Promise<string>;
   generateSeedPhrase(strength?: number | null): Promise<SeedPhraseGenerationResponse>;
-  signOutAndSignInAnonymously(): Promise<void>;
   signInWithCustomToken(customToken: string): Promise<void>;
   saveMnemonic(
     mnemonic: string,
@@ -129,7 +128,12 @@ export interface Spec extends TurboModule {
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
   // Launch native screen method - use union type to match NativeScreenName enum values
   launchNativeScreen(
-    screenName: 'multiBackup' | 'deviceBackup' | 'seedPhraseBackup' | 'backupOptions' | 'walletRestore',
+    screenName:
+      | 'multiBackup'
+      | 'deviceBackup'
+      | 'seedPhraseBackup'
+      | 'backupOptions'
+      | 'walletRestore',
     params?: string | null
   ): void;
 }
