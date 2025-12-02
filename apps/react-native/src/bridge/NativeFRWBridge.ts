@@ -127,7 +127,11 @@ export interface Spec extends TurboModule {
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
-  launchNativeScreen(screenName: string, params?: string | null): void;
+  // Launch native screen method - use union type to match NativeScreenName enum values
+  launchNativeScreen(
+    screenName: 'multiBackup' | 'deviceBackup' | 'seedPhraseBackup' | 'backupOptions' | 'walletRestore',
+    params?: string | null
+  ): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

@@ -494,7 +494,7 @@ class PlatformImpl implements PlatformSpec {
   // Native screen navigation - unified method
   launchNativeScreen(screenName: NativeScreenName, params?: string): void {
     try {
-      NativeFRWBridge.launchNativeScreen(screenName, params ?? null);
+      NativeFRWBridge.launchNativeScreen(screenName as any, params ?? null);
     } catch (error) {
       this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);
     }
