@@ -8,6 +8,7 @@ import {
   OnboardingBackground,
   Button,
   AccountCreationLoadingState,
+  WarningCard,
   useTheme,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
@@ -49,28 +50,6 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     const generatePhrase = async () => {
       try {
         logger.info('[RecoveryPhraseScreen] Starting mnemonic generation...');
-
-        // Only reset auth if no user is currently signed in.
-        // This prevents signing out an existing user when they are creating a new profile.
-        if (bridge.signOutAndSignInAnonymously && bridge.getCurrentUserUid) {
-          const uid = await bridge.getCurrentUserUid();
-          if (!uid) {
-            try {
-              await bridge.signOutAndSignInAnonymously();
-              logger.info(
-                '[RecoveryPhraseScreen] No user was signed in. Firebase auth reset successful.'
-              );
-            } catch (error) {
-              logger.warn(
-                '[RecoveryPhraseScreen] Firebase auth reset failed (may already be anonymous):',
-                error
-              );
-              // Continue anyway - if already anonymous, that's fine
-            }
-          } else {
-            logger.info('[RecoveryPhraseScreen] User is already signed in. Skipping auth reset.');
-          }
-        }
 
         // Generate 12-word mnemonic (128-bit entropy) using native wallet-core bridge
         const response = await bridge.generateSeedPhrase(128);
@@ -194,16 +173,18 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     return (
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4" gap="$4">
-          <Text color="$error" text="center" fontSize={20} fontWeight="700">
-            Failed to Generate Recovery Phrase
+          <Text color="$error" text="center" fontSize="$5" fontWeight="700">
+            {t('onboarding.recoveryPhrase.error.title')}
           </Text>
           <Text color="$textSecondary" text="center" fontSize="$4">
-            {generateError instanceof Error ? generateError.message : 'An unknown error occurred'}
+            {generateError instanceof Error
+              ? generateError.message
+              : t('onboarding.recoveryPhrase.error.unknown')}
           </Text>
           <Button onPress={() => navigation.goBack()}>
             <XStack gap="$2" items="center" px="$4" py="$2">
               <Text fontSize="$4" fontWeight="600">
-                Go Back
+                {t('common.goBack')}
               </Text>
             </XStack>
           </Button>
@@ -228,10 +209,10 @@ export function RecoveryPhraseScreen(): React.ReactElement {
           <YStack flex={1} px="$4">
             {/* Title and description */}
             <YStack items="center" mb="$6" gap="$2">
-              <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+              <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight="$8">
                 {t('onboarding.recoveryPhrase.title')}
               </Text>
-              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
+              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$4" maxW={280}>
                 {t('onboarding.recoveryPhrase.description')}
               </Text>
             </YStack>
@@ -240,36 +221,36 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             <YStack
               width={320}
               bg="$bgGlass"
-              rounded={16}
-              pt={24}
-              pb={24}
-              px={18}
-              mb={16}
+              rounded="$4"
+              pt="$6"
+              pb="$6"
+              px="$4.5"
+              mb="$4"
               self="center"
               position="relative"
             >
               {/* Only render words when phrase is revealed */}
               {isPhraseRevealed ? (
-                <YStack gap={20}>
+                <YStack gap="$5">
                   {/* Generate 6 rows with 2 columns each */}
                   {Array.from({ length: 6 }, (_, rowIndex) => (
-                    <XStack key={rowIndex} gap={40} justify="space-between">
+                    <XStack key={rowIndex} gap="$10" justify="space-between">
                       {/* Left column */}
                       {recoveryPhrase[rowIndex * 2] && (
-                        <XStack gap={8} items="center" flex={1}>
+                        <XStack gap="$2" items="center" flex={1}>
                           <View
-                            width={32}
-                            height={32}
+                            w="$8"
+                            h="$8"
                             bg="$bgGlass"
-                            rounded={8}
+                            rounded="$2"
                             items="center"
                             justify="center"
                           >
-                            <Text fontSize={20} color="$text">
+                            <Text fontSize="$5" color="$text">
                               {rowIndex * 2 + 1}
                             </Text>
                           </View>
-                          <Text fontSize={16} color="$text">
+                          <Text fontSize="$4" color="$text">
                             {recoveryPhrase[rowIndex * 2]}
                           </Text>
                         </XStack>
@@ -277,20 +258,20 @@ export function RecoveryPhraseScreen(): React.ReactElement {
 
                       {/* Right column */}
                       {recoveryPhrase[rowIndex * 2 + 1] && (
-                        <XStack gap={8} items="center" flex={1}>
+                        <XStack gap="$2" items="center" flex={1}>
                           <View
-                            width={32}
-                            height={32}
+                            w="$8"
+                            h="$8"
                             bg="$bgGlass"
-                            rounded={8}
+                            rounded="$2"
                             items="center"
                             justify="center"
                           >
-                            <Text fontSize={20} color="$text">
+                            <Text fontSize="$5" color="$text">
                               {rowIndex * 2 + 2}
                             </Text>
                           </View>
-                          <Text fontSize={16} color="$text">
+                          <Text fontSize="$4" color="$text">
                             {recoveryPhrase[rowIndex * 2 + 1]}
                           </Text>
                         </XStack>
@@ -307,18 +288,18 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                   cursor="pointer"
                   onPress={handleRevealPhrase}
                 >
-                  <YStack items="center" gap={12}>
+                  <YStack items="center" gap="$3">
                     <View
                       width={42}
                       height={40}
                       bg="$bgGlass"
-                      rounded={8}
+                      rounded="$2"
                       items="center"
                       justify="center"
                     >
                       <RevealPhrase size={20} color={theme.iconGlass.val} />
                     </View>
-                    <Text fontSize={16} fontWeight="500" color="$text" textAlign="center">
+                    <Text fontSize="$4" fontWeight="500" color="$text" text="center">
                       {t('onboarding.recoveryPhrase.clickToReveal')}
                     </Text>
                   </YStack>
@@ -327,11 +308,11 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             </YStack>
 
             {/* Copy button */}
-            <XStack justify="center" mb={16}>
+            <XStack justify="center" mb="$4">
               <Button variant="ghost" onPress={handleCopy}>
-                <XStack gap={12} items="center">
+                <XStack gap="$3" items="center">
                   <Copy size={24} color={theme.primary.val} />
-                  <Text fontSize={16} fontWeight="700" color={theme.primary.val}>
+                  <Text fontSize="$4" fontWeight="700" style={{ color: theme.primary.val }}>
                     {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
                   </Text>
                 </XStack>
@@ -339,25 +320,17 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             </XStack>
 
             {/* Warning card */}
-            <XStack gap={12} p={16} rounded={16} borderWidth={1} borderColor="$borderGlass" mb={24}>
-              <View width={24} height={24} items="center" justify="center">
-                <Warning size={24} color={theme.iconGlass.val} />
-              </View>
-              <YStack flex={1} gap={4}>
-                <Text fontSize={16} fontWeight="700" color="$text">
-                  {t('onboarding.recoveryPhrase.warning.title')}
-                </Text>
-                <Text fontSize={16} color="$textSecondary" lineHeight={17}>
-                  {t('onboarding.recoveryPhrase.warning.description')}
-                </Text>
-              </YStack>
-            </XStack>
+            <WarningCard
+              icon={<Warning size={24} color={theme.iconGlass.val} />}
+              title={t('onboarding.recoveryPhrase.warning.title')}
+              description={t('onboarding.recoveryPhrase.warning.description')}
+            />
 
             {/* Spacer */}
             <YStack flex={1} />
 
             {/* Next button - disabled until phrase is revealed */}
-            <YStack pb={24}>
+            <YStack pb="$6">
               <Button
                 variant="inverse"
                 size="large"
