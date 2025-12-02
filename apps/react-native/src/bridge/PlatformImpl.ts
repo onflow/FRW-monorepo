@@ -387,23 +387,6 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  // Register account with backend (for Recovery Phrase flow)
-  // Sends Flow public key to backend, which creates both Flow address and COA address
-  // This is called after mnemonic is saved and wallet is initialized
-  // Returns transaction ID to track the transaction status, or "COA_ALREADY_EXISTS" if COA already exists
-  async registerAccountWithBackend(): Promise<string> {
-    try {
-      return await NativeFRWBridge.registerAccountWithBackend();
-    } catch (error) {
-      this.log(
-        'error',
-        '[PlatformImpl] Failed to register account with backend via bridge:',
-        error
-      );
-      throw error; // Re-throw the error to propagate to caller
-    }
-  }
-
   // Save mnemonic and initialize wallet (Keychain/KeyStore + Firebase + Wallet-Kit)
   // Throws error on failure, resolves on success
   async generateSeedPhrase(strength: number = 128): Promise<SeedPhraseGenerationResponse> {

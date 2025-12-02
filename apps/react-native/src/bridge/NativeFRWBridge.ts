@@ -114,7 +114,6 @@ export interface Spec extends TurboModule {
   ): void;
   // Onboarding methods
   registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
-  registerAccountWithBackend(): Promise<string>;
   generateSeedPhrase(strength?: number | null): Promise<SeedPhraseGenerationResponse>;
   signInWithCustomToken(customToken: string): Promise<void>;
   saveMnemonic(

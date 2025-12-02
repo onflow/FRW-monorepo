@@ -3,3 +3,4 @@ export { OnboardingBackground } from './OnboardingBackground';
 export { OnboardingHeader } from './OnboardingHeader';
 export { BackupOptionCard } from './BackupOptionCard';
 export { WarningCard } from './WarningCard';
+export { RecoveryPhraseQuestion } from './RecoveryPhraseQuestion';
