@@ -1,5 +1,5 @@
 import { bridge, logger } from '@onflow/frw-context';
-import { ProfileService } from '@onflow/frw-services';
+import { profileService } from '@onflow/frw-services';
 import { ScreenName } from '@onflow/frw-types';
 import {
   YStack,
@@ -9,7 +9,7 @@ import {
   AccountCreationLoadingState,
   RecoveryPhraseQuestion,
 } from '@onflow/frw-ui';
-import { decodeJwtPayload, generateRandomUsername } from '@onflow/frw-utils';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DeviceEventEmitter } from 'react-native';
@@ -27,66 +27,6 @@ const generateRandomPositions = (): number[] => {
 
   return selected.sort((a, b) => a - b); // Sort for better UX
 };
-
-/**
- * Wait for Firebase ID token to refresh after custom token sign-in
- * Checks if token is no longer anonymous (firebase.sign_in_provider !== 'anonymous')
- * Retries up to maxAttempts times with delay between attempts
- */
-async function waitForTokenRefresh(maxAttempts: number = 10, delayMs: number = 500): Promise<void> {
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const token = await bridge.getJWT();
-      if (!token) {
-        logger.debug(
-          `[ConfirmRecoveryPhraseScreen] Token refresh check ${attempt}/${maxAttempts}: No token yet`
-        );
-        if (attempt < maxAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-          continue;
-        }
-        throw new Error('Token refresh timeout: No token available');
-      }
-
-      // Decode token to check if it's still anonymous
-      const payload = decodeJwtPayload<{
-        firebase?: { sign_in_provider?: string };
-        provider_id?: string;
-      }>(token);
-
-      const isAnonymous =
-        payload?.firebase?.sign_in_provider === 'anonymous' || payload?.provider_id === 'anonymous';
-
-      if (!isAnonymous) {
-        logger.info(
-          `[ConfirmRecoveryPhraseScreen] Token refreshed successfully after ${attempt} attempt(s)`
-        );
-        return; // Token is no longer anonymous, we're good!
-      }
-
-      logger.debug(
-        `[ConfirmRecoveryPhraseScreen] Token refresh check ${attempt}/${maxAttempts}: Still anonymous, waiting...`
-      );
-
-      if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-    } catch (error) {
-      logger.error(
-        `[ConfirmRecoveryPhraseScreen] Error checking token refresh (attempt ${attempt}/${maxAttempts}):`,
-        error
-      );
-      if (attempt === maxAttempts) {
-        throw new Error(
-          `Token refresh timeout: Failed to verify token refresh after ${maxAttempts} attempts`
-        );
-      }
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
-
-  throw new Error(`Token refresh timeout: Token still anonymous after ${maxAttempts} attempts`);
-}
 
 interface VerificationQuestion {
   position: number;
@@ -256,16 +196,9 @@ export function ConfirmRecoveryPhraseScreen({
         throw new Error('Missing required data. Please regenerate the recovery phrase.');
       }
 
-      if (!/^[0-9a-fA-F]{128}$/.test(accountKey.publicKey)) {
-        throw new Error(
-          `Invalid public key: expected 128 hex chars, got ${accountKey.publicKey.length}`
-        );
-      }
-
       const username = generateRandomUsername();
-      const profileSvc = ProfileService.getInstance();
 
-      const registerResponse = await profileSvc.register({
+      const registerResponse = await profileService().register({
         username,
         accountKey: {
           public_key: accountKey.publicKey,
@@ -279,7 +212,6 @@ export function ConfirmRecoveryPhraseScreen({
       }
 
       await bridge.signInWithCustomToken(registerResponse.custom_token);
-      await waitForTokenRefresh(10, 500);
       await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, '', username);
 
       navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES, { accountType: 'recovery' });
