@@ -1,3 +1,4 @@
+import * as fcl from '@onflow/fcl';
 import {
   UserGoService,
   Userv3GoService,
@@ -6,6 +7,7 @@ import {
 } from '@onflow/frw-api';
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
+import { send as httpSend } from '@onflow/transport-http';
 
 /**
  * ProfileService - Wraps user registration and account creation APIs
@@ -13,8 +15,33 @@ import { logger } from '@onflow/frw-utils';
  */
 export class ProfileService {
   private static instance: ProfileService;
+  private fclConfigured = false;
 
   private constructor() {}
+
+  /**
+   * Configure FCL for the current network
+   * This is called automatically when needed
+   */
+  private ensureFCLConfigured(): void {
+    if (this.fclConfigured) {
+      return;
+    }
+
+    const network = bridge.getNetwork() as 'mainnet' | 'testnet';
+    const accessNodeUrl =
+      network === 'mainnet' ? 'https://rest-mainnet.onflow.org' : 'https://rest-testnet.onflow.org';
+
+    fcl
+      .config()
+      .put('flow.network', network)
+      .put('accessNode.api', accessNodeUrl)
+      .put('sdk.transport', httpSend)
+      .put('logger.level', 1);
+
+    this.fclConfigured = true;
+    logger.info('[ProfileService] FCL configured for network:', { network, accessNodeUrl });
+  }
 
   /**
    * Get singleton instance
@@ -184,6 +211,72 @@ export class ProfileService {
         statusText: error?.response?.statusText,
         url: error?.config?.url || error?.request?.responseURL,
         method: error?.config?.method,
+        responseData: error?.response?.data,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create Flow address and wait for transaction to complete.
+   * This method combines createFlowAddress() with FCL transaction monitoring.
+   * Use this for user-facing account creation flows where you need to wait for completion.
+   *
+   * @param onProgress - Optional callback for progress updates (0-100)
+   * @returns Promise with the created Flow address
+   */
+  async createFlowAddressAndWait(onProgress?: (progress: number) => void): Promise<string> {
+    try {
+      // Ensure FCL is configured for the current network
+      this.ensureFCLConfigured();
+
+      // Step 1: Initiate Flow address creation (0-20%)
+      if (onProgress) onProgress(20);
+      const txid = await this.createFlowAddress();
+
+      // Step 2: Wait for transaction to be sealed (20-90%)
+      if (onProgress) onProgress(50);
+      logger.info('[ProfileService] Waiting for transaction to seal:', { txId: txid });
+
+      const txResult = await fcl.tx(txid).onceSealed();
+
+      if (onProgress) onProgress(90);
+
+      // Step 3: Extract the created address from AccountCreated event
+      const accountCreatedEvent = txResult.events.find(
+        (event: any) => event.type === 'flow.AccountCreated'
+      );
+
+      if (!accountCreatedEvent) {
+        logger.error('[ProfileService] AccountCreated event not found:', {
+          txId: txid,
+          events: txResult.events.map((e: any) => e.type),
+        });
+        throw new Error('Account creation event not found in transaction');
+      }
+
+      const createdAddress = accountCreatedEvent.data.address;
+
+      if (!createdAddress) {
+        logger.error('[ProfileService] No address in AccountCreated event:', {
+          txId: txid,
+          eventData: accountCreatedEvent.data,
+        });
+        throw new Error('Address not found in account creation event');
+      }
+
+      logger.info('[ProfileService] Flow address created successfully:', {
+        txId: txid,
+        address: createdAddress,
+      });
+
+      if (onProgress) onProgress(100);
+
+      return createdAddress;
+    } catch (error: any) {
+      logger.error('[ProfileService] Failed to create and wait for Flow address:', {
+        message: error?.message,
+        status: error?.response?.status,
         responseData: error?.response?.data,
       });
       throw error;

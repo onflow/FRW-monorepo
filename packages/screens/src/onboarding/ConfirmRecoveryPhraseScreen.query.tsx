@@ -255,7 +255,27 @@ export function ConfirmRecoveryPhraseScreen({
         );
       }
 
-      navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES, { accountType: 'recovery' });
+      // Create Flow address on-chain and wait for transaction to complete
+      try {
+        const flowAddress = await profileService().createFlowAddressAndWait((progress) => {
+          setProgress(progress);
+        });
+
+        logger.info('[ConfirmRecoveryPhraseScreen] Flow address created:', { flowAddress });
+      } catch (flowAddressError: any) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_FLOW_ADDRESS_CREATION_FAILED,
+          'Failed to create Flow address on blockchain',
+          {
+            originalError: flowAddressError,
+            message: flowAddressError?.message,
+          }
+        );
+      }
+
+      (navigation as any).navigate(ScreenName.NOTIFICATION_PREFERENCES, {
+        accountType: 'recovery',
+      });
     } catch (error: any) {
       // Log error with code for analytics
       const errorCode = error instanceof FRWError ? error.code : 'UNKNOWN';
@@ -299,6 +319,11 @@ export function ConfirmRecoveryPhraseScreen({
             break;
           case ErrorCode.ACCOUNT_CREATION_MISSING_DATA:
             errorMessage = error.message;
+            break;
+          case ErrorCode.ACCOUNT_FLOW_ADDRESS_CREATION_FAILED:
+            errorMessage = t('onboarding.confirmRecoveryPhrase.error.flowAddress', {
+              defaultValue: 'Failed to create Flow address. Please try again.',
+            });
             break;
           default:
             errorMessage = error.message || errorMessage;
