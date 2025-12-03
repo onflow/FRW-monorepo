@@ -101,41 +101,20 @@ export class ProfileService {
         );
       }
 
-      // The generated axios wrapper returns res.data which contains { data: {...}, status, message }
-      const response: any = await Userv3GoService.register(requestPayload);
+      // The generated axios wrapper already unwraps res.data, so we get controllers_UserReturn directly
+      const userReturn = await Userv3GoService.register(requestPayload);
 
-      // Log the full response to debug structure
-      logger.info('[ProfileService] Registration response received:', {
-        responseType: typeof response,
-        hasData: !!response?.data,
-        hasCustomToken: !!response?.custom_token,
-        hasId: !!response?.id,
-        responseKeys: response ? Object.keys(response) : [],
-        response: response,
-      });
-
-      // Backend wraps response in { data: {...}, status, message }
-      const userReturn = response?.data || response;
-
-      if (!userReturn?.custom_token && !userReturn?.customToken) {
-        throw new Error('Registration failed: Missing custom_token in response');
+      if (!userReturn?.custom_token || !userReturn?.id) {
+        throw new Error(
+          'Registration failed: Missing required fields (custom_token or id) in response'
+        );
       }
-
-      if (!userReturn?.id && !userReturn?.uid) {
-        throw new Error('Registration failed: Missing id/uid in response');
-      }
-
-      // Normalize field names (backend might use customToken or custom_token, uid or id)
-      const normalizedReturn: controllers_UserReturn = {
-        custom_token: userReturn.custom_token || userReturn.customToken,
-        id: userReturn.id || userReturn.uid,
-      };
 
       logger.info('[ProfileService] Registration successful:', {
-        userId: normalizedReturn.id,
+        userId: userReturn.id,
       });
 
-      return normalizedReturn;
+      return userReturn;
     } catch (error: any) {
       // Enhanced error handling for Axios errors
       if (error?.response) {
