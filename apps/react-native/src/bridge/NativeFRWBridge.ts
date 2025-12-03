@@ -6,6 +6,7 @@ import type {
   WalletAccountsResponse,
   WalletProfilesResponse,
 } from '@onflow/frw-types';
+import { type NativeScreenName as SharedNativeScreenName } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
@@ -44,8 +45,11 @@ const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
 const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables;
 const _currencySyncCheck: Currency = {} as SharedCurrency;
 const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
-// Note: Cannot create compile-time validation for NativeScreenName since it's a union type
-// Manual validation: Ensure values match SharedNativeScreenName enum values
+
+// NativeScreenName validation - ensures local union matches SharedNativeScreenName enum values
+type SharedNativeScreenNameValues = `${SharedNativeScreenName}`;
+const _nativeScreenNameSyncCheck: NativeScreenName = {} as SharedNativeScreenNameValues;
+const _nativeScreenNameReverseSyncCheck: SharedNativeScreenNameValues = {} as NativeScreenName;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
