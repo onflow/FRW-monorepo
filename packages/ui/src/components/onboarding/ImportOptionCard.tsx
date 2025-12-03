@@ -75,7 +75,7 @@ export function ImportOptionCard({
         <YStack gap="$3" items="flex-start">
           {/* Icon */}
           {icon && (
-            <View width="$10" height="$10" items="center" justify="center">
+            <View width="$7" height="$7" items="center" justify="center">
               {icon}
             </View>
           )}
@@ -102,7 +102,7 @@ export function ImportOptionCard({
         <XStack gap="$3" items="center">
           {/* Icon */}
           {icon && (
-            <View width="$10" height="$10" items="center" justify="center" shrink={0}>
+            <View width="$7" height="$7" items="center" justify="center" shrink={0}>
               {icon}
             </View>
           )}

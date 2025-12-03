@@ -75,7 +75,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
           {/* Key store */}
           <ImportOptionCard
             layout="vertical"
-            icon={<Pocket size={40} color="#00EF8B" />}
+            icon={<Pocket size={28} color="#00EF8B" />}
             title={t('onboarding.importOtherMethods.keyStore.title')}
             subtitle={t('onboarding.importOtherMethods.keyStore.subtitle')}
             onPress={handleKeyStore}
@@ -84,7 +84,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
           {/* Private key */}
           <ImportOptionCard
             layout="vertical"
-            icon={<Key size={40} color="#00EF8B" />}
+            icon={<Key size={28} color="#00EF8B" />}
             title={t('onboarding.importOtherMethods.privateKey.title')}
             subtitle={t('onboarding.importOtherMethods.privateKey.subtitle')}
             onPress={handlePrivateKey}
@@ -93,7 +93,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
           {/* Google Drive */}
           <ImportOptionCard
             layout="vertical"
-            icon={<GoogleDrive size={40} color="#00EF8B" />}
+            icon={<GoogleDrive size={28} color="#00EF8B" />}
             title={t('onboarding.importOtherMethods.googleDrive.title')}
             subtitle={t('onboarding.importOtherMethods.googleDrive.subtitle')}
             onPress={handleGoogleDrive}
@@ -103,7 +103,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
           {Platform.OS === 'ios' && (
             <ImportOptionCard
               layout="vertical"
-              icon={<Icloud size={40} color="#00EF8B" />}
+              icon={<Icloud size={28} color="#00EF8B" />}
               title={t('onboarding.importOtherMethods.iCloud.title')}
               subtitle={t('onboarding.importOtherMethods.iCloud.subtitle')}
               onPress={handleICloud}

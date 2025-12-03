@@ -80,7 +80,7 @@ export function ImportProfileScreen(): React.ReactElement {
         <YStack gap="$3" pt="$4">
           {/* Previous profiles - with badge showing count */}
           <ImportOptionCard
-            icon={<UserRoundPlus size={40} color="#00EF8B" />}
+            icon={<UserRoundPlus size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.previousProfiles.title')}
             subtitle={t('onboarding.importProfile.previousProfiles.subtitle', { count: 2 })}
             badge="2"
@@ -89,7 +89,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Device Backup */}
           <ImportOptionCard
-            icon={<Smartphone size={40} color="#00EF8B" />}
+            icon={<Smartphone size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.deviceBackup.title')}
             subtitle={t('onboarding.importProfile.deviceBackup.subtitle')}
             onPress={handleDeviceBackup}
@@ -97,7 +97,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Cloud Multi-Backup */}
           <ImportOptionCard
-            icon={<UploadCloud size={40} color="#00EF8B" />}
+            icon={<UploadCloud size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.cloudBackup.title')}
             subtitle={t('onboarding.importProfile.cloudBackup.subtitle')}
             onPress={handleCloudBackup}
@@ -105,7 +105,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Recovery Phrase */}
           <ImportOptionCard
-            icon={<FileText size={40} color="#00EF8B" />}
+            icon={<FileText size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.recoveryPhrase.title')}
             subtitle={t('onboarding.importProfile.recoveryPhrase.subtitle')}
             onPress={handleRecoveryPhrase}
