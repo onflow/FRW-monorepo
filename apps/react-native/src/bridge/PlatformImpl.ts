@@ -140,8 +140,10 @@ class PlatformImpl implements PlatformSpec {
 
   async getCurrentUserUid(): Promise<string | null> {
     try {
-      if (typeof NativeFRWBridge.getCurrentUserUid === 'function') {
-        return (await NativeFRWBridge.getCurrentUserUid()) ?? null;
+      // Runtime check for optional native method (may not be available in all native implementations)
+      const bridge = NativeFRWBridge as any;
+      if (typeof bridge.getCurrentUserUid === 'function') {
+        return (await bridge.getCurrentUserUid()) ?? null;
       }
 
       const token = await this.getJWT();
@@ -380,7 +382,7 @@ class PlatformImpl implements PlatformSpec {
         success: false,
         address: null,
         username: null,
-        accountType: 'coa',
+        accountType: 'hardware', // secure enclave accounts are hardware-based
         txId: null,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
@@ -464,6 +466,7 @@ class PlatformImpl implements PlatformSpec {
   // Native screen navigation - unified method
   launchNativeScreen(screenName: NativeScreenName, params?: string): void {
     try {
+      this.log('info', `[PlatformImpl] Launching native screen: ${screenName}`);
       NativeFRWBridge.launchNativeScreen(screenName as any, params ?? null);
     } catch (error) {
       this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);

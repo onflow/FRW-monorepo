@@ -8,12 +8,13 @@ import type {
   CreateAccountResponse as SharedCreateAccountResponse,
   SeedPhraseGenerationResponse as SharedSeedPhraseGenerationResponse,
 } from '@onflow/frw-types';
+import { type NativeScreenName as SharedNativeScreenName } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 /**
  * Local interfaces for Codegen - must be defined in the same file
- * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, {@link SharedCreateAccountResponse}, and {@link SharedSeedPhraseGenerationResponse} in @onflow/frw-types
+ * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, {@link SharedCreateAccountResponse}, {@link SharedSeedPhraseGenerationResponse}, and {@link SharedNativeScreenName} in @onflow/frw-types
  *
  * React Native Codegen limitation: Cannot resolve imported types.
  * These must stay in sync with the source types manually.
@@ -43,7 +44,7 @@ interface CreateAccountResponse {
   success: boolean;
   address: string | null;
   username: string | null;
-  accountType: 'eoa' | 'coa' | null;
+  accountType: 'full' | 'hardware' | null; // full = mnemonic-based account, hardware = secure enclave
   txId: string | null;
   error: string | null;
 }
@@ -53,6 +54,17 @@ interface SeedPhraseGenerationResponse {
   accountKey: AccountKey;
   drivepath: string;
 }
+
+/**
+ * Local type for NativeScreenName - must match enum values from @onflow/frw-types
+ * @see {@link SharedNativeScreenName}
+ */
+type NativeScreenName =
+  | 'multiBackup'
+  | 'deviceBackup'
+  | 'seedPhraseBackup'
+  | 'backupOptions'
+  | 'walletRestore';
 
 // Compile-time sync validation
 const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
@@ -64,6 +76,11 @@ const _createAccountReverseSyncCheck: SharedCreateAccountResponse = {} as Create
 const _seedPhraseSyncCheck: SeedPhraseGenerationResponse = {} as SharedSeedPhraseGenerationResponse;
 const _seedPhraseReverseSyncCheck: SharedSeedPhraseGenerationResponse =
   {} as SeedPhraseGenerationResponse;
+
+// NativeScreenName validation - ensures local union matches SharedNativeScreenName enum values
+type SharedNativeScreenNameValues = `${SharedNativeScreenName}`;
+const _nativeScreenNameSyncCheck: NativeScreenName = {} as SharedNativeScreenNameValues;
+const _nativeScreenNameReverseSyncCheck: SharedNativeScreenNameValues = {} as NativeScreenName;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -125,16 +142,8 @@ export interface Spec extends TurboModule {
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
-  // Launch native screen method - use union type to match NativeScreenName enum values
-  launchNativeScreen(
-    screenName:
-      | 'multiBackup'
-      | 'deviceBackup'
-      | 'seedPhraseBackup'
-      | 'backupOptions'
-      | 'walletRestore',
-    params?: string | null
-  ): void;
+  // Launch native screen method - uses local NativeScreenName type for Codegen compatibility
+  launchNativeScreen(screenName: NativeScreenName, params?: string | null): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
