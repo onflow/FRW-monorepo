@@ -1,6 +1,6 @@
 import { ChevronRight } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, YStack, View } from 'tamagui';
+import { XStack, YStack, View, useTheme } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
 
@@ -32,6 +32,7 @@ export function ImportOptionCard({
   onPress,
 }: ImportOptionCardProps): React.ReactElement {
   const isVertical = layout === 'vertical';
+  const theme = useTheme();
 
   return (
     <YStack
@@ -63,7 +64,7 @@ export function ImportOptionCard({
           justify="center"
           z={10}
         >
-          <Text fontSize="$3" fontWeight="600" color="$text">
+          <Text fontSize="$3" fontWeight="600" color={theme.background.val}>
             {badge}
           </Text>
         </YStack>
@@ -94,7 +95,7 @@ export function ImportOptionCard({
 
           {/* Chevron right arrow - centered vertically in card */}
           <YStack position="absolute" r={16} t="50%" mt={-12}>
-            <ChevronRight size={24} color="#767676" />
+            <ChevronRight size={24} color={theme.textSecondary.val} />
           </YStack>
         </YStack>
       ) : (
@@ -121,7 +122,7 @@ export function ImportOptionCard({
 
           {/* Chevron right arrow */}
           <YStack position="absolute" r={16} t="50%" mt={-12}>
-            <ChevronRight size={24} color="#767676" />
+            <ChevronRight size={24} color={theme.textSecondary.val} />
           </YStack>
         </XStack>
       )}
