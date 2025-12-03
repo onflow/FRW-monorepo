@@ -8,6 +8,18 @@ import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
 /**
+ * Response from /v2/user/address endpoint
+ * Backend returns: { data: { txid?: string }, status: number, message: string }
+ */
+interface CreateFlowAddressV2Response {
+  data?: {
+    txid?: string;
+  };
+  status: number;
+  message: string;
+}
+
+/**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
  */
@@ -181,10 +193,10 @@ export class ProfileService {
       logger.info('[ProfileService] Creating Flow address...');
 
       // UserGoService.address2() calls /v2/user/address
-      const response: any = await UserGoService.address2();
+      const response = (await UserGoService.address2()) as CreateFlowAddressV2Response;
 
       // Backend always wraps in { data: { txid?: string }, status, message }
-      const txid = response?.data?.txid;
+      const txid = response.data?.txid;
 
       if (!txid) {
         logger.error('[ProfileService] No transaction ID found in response:', {
