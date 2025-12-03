@@ -3,6 +3,7 @@ import { ArrowLeft } from '@onflow/frw-icons';
 import { YStack, Text, IconButton, useTheme, ImportOptionCard } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Platform } from 'react-native';
 
 /**
  * ImportOtherMethodsScreen - Allows users to import wallet via other methods
@@ -73,6 +74,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
         <YStack gap="$3" pt="$4">
           {/* Key store */}
           <ImportOptionCard
+            layout="vertical"
             icon={
               <YStack w="$10" h="$10" items="center" justify="center">
                 <Text fontSize="$6" color="$primary">
@@ -87,6 +89,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
 
           {/* Private key */}
           <ImportOptionCard
+            layout="vertical"
             icon={
               <YStack w="$10" h="$10" items="center" justify="center">
                 <Text fontSize="$6" color="$primary">
@@ -101,6 +104,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
 
           {/* Google Drive */}
           <ImportOptionCard
+            layout="vertical"
             icon={
               <YStack w="$10" h="$10" items="center" justify="center">
                 <Text fontSize="$6" color="$primary">
@@ -113,19 +117,22 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
             onPress={handleGoogleDrive}
           />
 
-          {/* iCloud */}
-          <ImportOptionCard
-            icon={
-              <YStack w="$10" h="$10" items="center" justify="center">
-                <Text fontSize="$6" color="$primary">
-                  ☁️
-                </Text>
-              </YStack>
-            }
-            title={t('onboarding.importOtherMethods.iCloud.title')}
-            subtitle={t('onboarding.importOtherMethods.iCloud.subtitle')}
-            onPress={handleICloud}
-          />
+          {/* iCloud - iOS only */}
+          {Platform.OS === 'ios' && (
+            <ImportOptionCard
+              layout="vertical"
+              icon={
+                <YStack w="$10" h="$10" items="center" justify="center">
+                  <Text fontSize="$6" color="$primary">
+                    ☁️
+                  </Text>
+                </YStack>
+              }
+              title={t('onboarding.importOtherMethods.iCloud.title')}
+              subtitle={t('onboarding.importOtherMethods.iCloud.subtitle')}
+              onPress={handleICloud}
+            />
+          )}
         </YStack>
 
         {/* Spacer to push content up */}

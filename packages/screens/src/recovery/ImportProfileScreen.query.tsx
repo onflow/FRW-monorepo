@@ -73,7 +73,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
         {/* Import Options List */}
         <YStack gap="$3" pt="$4">
-          {/* Previous profiles - with badge showing "2" */}
+          {/* Previous profiles - with badge showing count */}
           <ImportOptionCard
             icon={
               <YStack w="$10" h="$10" items="center" justify="center">
@@ -83,7 +83,7 @@ export function ImportProfileScreen(): React.ReactElement {
               </YStack>
             }
             title={t('onboarding.importProfile.previousProfiles.title')}
-            subtitle={t('onboarding.importProfile.previousProfiles.subtitle')}
+            subtitle={t('onboarding.importProfile.previousProfiles.subtitle', { count: 2 })}
             badge="2"
             onPress={handlePreviousProfiles}
           />

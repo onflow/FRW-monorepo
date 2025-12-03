@@ -258,7 +258,7 @@
       "subtitle": "Import your profile using a backup.",
       "previousProfiles": {
         "title": "Previous profiles",
-        "subtitle": "Found 2 profiles previously on this device"
+        "subtitle": "Found {{count}} profiles previously on this device"
       },
       "deviceBackup": {
         "title": "From Device Backup",

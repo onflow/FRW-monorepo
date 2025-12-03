@@ -253,6 +253,45 @@
       "secureEnclaveProfile": "Perfil Secure Enclave",
       "next": "Siguiente"
     },
+    "importProfile": {
+      "title": "Importar perfil",
+      "subtitle": "Importa tu perfil usando una copia de seguridad.",
+      "previousProfiles": {
+        "title": "Perfiles anteriores",
+        "subtitle": "Se encontraron {{count}} perfiles previamente en este dispositivo"
+      },
+      "deviceBackup": {
+        "title": "Desde Copia de Seguridad del Dispositivo",
+        "subtitle": "Dispositivos móviles o de extensión"
+      },
+      "cloudBackup": {
+        "title": "Desde Copia de Seguridad Multi-Nube",
+        "subtitle": "Google Drive, iCloud o DropBox."
+      },
+      "anotherMethod": {
+        "title": "Desde otro método",
+        "subtitle": ""
+      }
+    },
+    "importOtherMethods": {
+      "title": "Desde otros métodos",
+      "keyStore": {
+        "title": "Almacén de claves",
+        "subtitle": "Importar archivo keystore (Copia de Seguridad Blocto)"
+      },
+      "privateKey": {
+        "title": "Clave privada",
+        "subtitle": "Importar con clave hexadecimal sin procesar"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "Desde copia de seguridad heredada de Google Drive"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "Desde copia de seguridad heredada de iCloud"
+      }
+    },
     "secureEnclave": {
       "title": "Avanzado",
       "cardTitle": "Perfil Seguro",
