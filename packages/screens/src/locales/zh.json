@@ -339,6 +339,10 @@
         "title": "云多重备份",
         "subtitle": "从Google Drive和iCloud等云服务提供商导入。"
       },
+      "recoveryPhrase": {
+        "title": "从恢复短语",
+        "subtitle": "12个单词的恢复短语。"
+      },
       "otherMethod": {
         "title": "从其他方式",
         "subtitle": "使用密钥库、私钥或恢复短语导入您的个人资料。"

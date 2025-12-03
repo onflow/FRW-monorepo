@@ -268,6 +268,10 @@
         "title": "クラウドマルチバックアップから",
         "subtitle": "Google DriveやiCloudなどのクラウドプロバイダーからインポートします。"
       },
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズから",
+        "subtitle": "12単語のリカバリーフレーズ。"
+      },
       "otherMethod": {
         "title": "別の方法から",
         "subtitle": "キーストア、秘密鍵、またはリカバリーフレーズを使用してプロフィールをインポートします。"

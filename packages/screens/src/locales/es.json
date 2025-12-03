@@ -268,6 +268,10 @@
         "title": "Desde Copia de Seguridad Multi-Nube",
         "subtitle": "Google Drive, iCloud o DropBox."
       },
+      "recoveryPhrase": {
+        "title": "Desde Frase de Recuperación",
+        "subtitle": "Frase de recuperación de 12 palabras."
+      },
       "anotherMethod": {
         "title": "Desde otro método",
         "subtitle": ""

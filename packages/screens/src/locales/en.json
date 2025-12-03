@@ -268,6 +268,10 @@
         "title": "From Cloud Multi-Backup",
         "subtitle": "Google Drive, iCloud or DropBox."
       },
+      "recoveryPhrase": {
+        "title": "From Recovery Phrase",
+        "subtitle": "12 word recovery phrase."
+      },
       "anotherMethod": {
         "title": "From another method",
         "subtitle": ""

@@ -1,5 +1,5 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
-import { ArrowLeft, UserRoundPlus, Smartphone, UploadCloud } from '@onflow/frw-icons';
+import { ArrowLeft, UserRoundPlus, Smartphone, UploadCloud, FileText } from '@onflow/frw-icons';
 import { ScreenName } from '@onflow/frw-types';
 import { YStack, Text, IconButton, useTheme, ImportOptionCard } from '@onflow/frw-ui';
 import React from 'react';
@@ -39,6 +39,11 @@ export function ImportProfileScreen(): React.ReactElement {
   const handleCloudBackup = () => {
     logger.info('[ImportProfileScreen] Cloud backup selected');
     // TODO: Navigate to cloud backup screen
+  };
+
+  const handleRecoveryPhrase = () => {
+    logger.info('[ImportProfileScreen] Recovery phrase selected');
+    // TODO: Navigate to recovery phrase input screen
   };
 
   const handleAnotherMethod = () => {
@@ -96,6 +101,14 @@ export function ImportProfileScreen(): React.ReactElement {
             title={t('onboarding.importProfile.cloudBackup.title')}
             subtitle={t('onboarding.importProfile.cloudBackup.subtitle')}
             onPress={handleCloudBackup}
+          />
+
+          {/* From Recovery Phrase */}
+          <ImportOptionCard
+            icon={<FileText size={40} color="#00EF8B" />}
+            title={t('onboarding.importProfile.recoveryPhrase.title')}
+            subtitle={t('onboarding.importProfile.recoveryPhrase.subtitle')}
+            onPress={handleRecoveryPhrase}
           />
 
           {/* From another method - no icon */}
