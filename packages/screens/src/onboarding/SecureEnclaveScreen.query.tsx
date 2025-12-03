@@ -15,36 +15,61 @@ import {
   useTheme,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DeviceEventEmitter } from 'react-native';
+
+interface SecureEnclaveScreenProps {
+  // React Navigation passes navigation prop, but we use the abstraction
+  navigation?: unknown;
+}
 
 /**
  * SecureEnclaveScreen - Advanced profile type screen showing Secure Enclave features
  * Displays the benefits and limitations of using device hardware security
  */
 
-export function SecureEnclaveScreen(): React.ReactElement {
+export function SecureEnclaveScreen({
+  navigation: navProp,
+}: SecureEnclaveScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showLoadingState, setShowLoadingState] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState<number | undefined>(undefined);
 
-  // Listen for progress events from native code
+  // Hide back button during account creation
+  useLayoutEffect(() => {
+    if (navProp && typeof navProp === 'object' && 'setOptions' in navProp) {
+      const nav = navProp as { setOptions: (options: Record<string, unknown>) => void };
+      if (showLoadingState) {
+        nav.setOptions({
+          headerLeft: () => null,
+          gestureEnabled: false,
+        });
+      }
+    }
+  }, [showLoadingState, navProp]);
+
+  // Listen for progress events from native code (blockchain confirmation sends 100%)
   useEffect(() => {
+    if (!showLoadingState) return;
+
     const subscription = DeviceEventEmitter.addListener(
-      'AccountCreationProgress',
+      'accountCreationProgress',
       (event: { progress: number; status: string }) => {
-        logger.debug('[SecureEnclaveScreen] Progress event:', event.progress, event.status);
-        setProgress(event.progress);
+        logger.debug('[SecureEnclaveScreen] Progress event received:', event);
+        // Only set progress when blockchain confirms (100%)
+        if (event.progress === 100) {
+          setProgress(100);
+        }
       }
     );
 
     return () => {
       subscription.remove();
     };
-  }, []);
+  }, [showLoadingState]);
 
   const handleNext = () => {
     setShowConfirmDialog(true);
@@ -52,26 +77,19 @@ export function SecureEnclaveScreen(): React.ReactElement {
 
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
-    setProgress(0);
     setShowLoadingState(true);
+    setProgress(undefined); // Reset progress to enable default animation
 
     try {
-      // Validate required bridge method upfront
-      if (!bridge.registerSecureTypeAccount) {
-        const errorMsg = 'Missing required bridge method: registerSecureTypeAccount';
-        logger.error('[SecureEnclaveScreen]', errorMsg);
-        throw new Error(`Platform not supported: ${errorMsg}`);
-      }
-
       // Auto-generate random username using word combinations
       const username = generateRandomUsername();
 
       logger.info('[SecureEnclaveScreen] Registering secure type account with username:', username);
 
-      const result = await bridge.registerSecureTypeAccount(username);
+      const result = await bridge.registerSecureTypeAccount?.(username);
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to register secure type account');
+      if (!result?.success) {
+        throw new Error(result?.error || 'Failed to register secure type account');
       }
 
       logger.info('[SecureEnclaveScreen] Secure type account registered successfully:', {
@@ -80,18 +98,9 @@ export function SecureEnclaveScreen(): React.ReactElement {
         accountType: result.accountType,
         txId: result.txId,
       });
-
-      // Progress updates are now sent from native code in real-time
-      // When progress reaches 100%, AccountCreationLoadingState will automatically call onComplete
-      // Wait a brief moment to ensure the 100% progress is visible
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Dismiss loading state and navigate
-      await handleLoadingComplete();
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       setShowLoadingState(false);
-      setProgress(0);
     }
   };
 
@@ -221,6 +230,7 @@ export function SecureEnclaveScreen(): React.ReactElement {
         title={t('onboarding.secureEnclave.creating.title')}
         statusText={t('onboarding.secureEnclave.creating.configuring')}
         progress={progress}
+        onComplete={handleLoadingComplete}
       />
     </>
   );
