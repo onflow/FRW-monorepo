@@ -1199,7 +1199,7 @@ export class UserService {
   /**
    * Add an address
    */
-  static address2(options: IRequestOptions = {}): Promise<any> {
+  static address2(options: IRequestOptions = {}): Promise<controllers_AccountReturnv2> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/v2/user/address';
 
@@ -1650,6 +1650,48 @@ export class Userv3Service {
       axios(configs, resolve, reject);
     });
   }
+}
+
+export class Userv4Service {
+  /**
+   * Register user V4
+   */
+  static register(
+    params: {
+      /** User Name (3-20 characters, alphanumeric) */
+      username: string;
+      /** Account key with public key, sign algorithm, and hash algorithm */
+      accountKey: forms_AccountKey;
+      /** Device information including device ID, name, type, and user agent */
+      deviceInfo: forms_DeviceInfo;
+      /** Signature for verification (must sign the Authorization token) */
+      signature: string;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<controllers_UserReturn> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/v4/register';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = {
+        username: params['username'],
+        account_key: params['accountKey'],
+        device_info: params['deviceInfo'],
+        signature: params['signature']
+      };
+
+      configs.data = data;
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
+/** controllers_AccountReturnv2 */
+export interface controllers_AccountReturnv2 {
+  /**  */
+  txid?: string;
 }
 
 /** controllers_AddressFilterResponse */
