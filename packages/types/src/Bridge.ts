@@ -197,6 +197,10 @@ export enum ScreenName {
   RECOVERY_PHRASE = 'RecoveryPhrase',
   /** Secure enclave setup screen */
   SECURE_ENCLAVE = 'SecureEnclave',
+  /** Import existing profile/wallet screen */
+  IMPORT_PROFILE = 'ImportProfile',
+  /** Import via other methods screen (recovery phrase, etc.) */
+  IMPORT_OTHER_METHODS = 'ImportOtherMethods',
   /** Notification preferences screen */
   NOTIFICATION_PREFERENCES = 'NotificationPreferences',
   /** Select tokens to send screen */
