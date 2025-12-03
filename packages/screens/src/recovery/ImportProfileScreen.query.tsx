@@ -1,5 +1,5 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
-import { ArrowLeft } from '@onflow/frw-icons';
+import { ArrowLeft, UserRoundPlus, Smartphone, UploadCloud } from '@onflow/frw-icons';
 import { ScreenName } from '@onflow/frw-types';
 import { YStack, Text, IconButton, useTheme, ImportOptionCard } from '@onflow/frw-ui';
 import React from 'react';
@@ -75,13 +75,7 @@ export function ImportProfileScreen(): React.ReactElement {
         <YStack gap="$3" pt="$4">
           {/* Previous profiles - with badge showing count */}
           <ImportOptionCard
-            icon={
-              <YStack w="$10" h="$10" items="center" justify="center">
-                <Text fontSize="$6" color="$primary">
-                  👤
-                </Text>
-              </YStack>
-            }
+            icon={<UserRoundPlus size={40} color="#00EF8B" />}
             title={t('onboarding.importProfile.previousProfiles.title')}
             subtitle={t('onboarding.importProfile.previousProfiles.subtitle', { count: 2 })}
             badge="2"
@@ -90,13 +84,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Device Backup */}
           <ImportOptionCard
-            icon={
-              <YStack w="$10" h="$10" items="center" justify="center">
-                <Text fontSize="$6" color="$primary">
-                  📱
-                </Text>
-              </YStack>
-            }
+            icon={<Smartphone size={40} color="#00EF8B" />}
             title={t('onboarding.importProfile.deviceBackup.title')}
             subtitle={t('onboarding.importProfile.deviceBackup.subtitle')}
             onPress={handleDeviceBackup}
@@ -104,13 +92,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Cloud Multi-Backup */}
           <ImportOptionCard
-            icon={
-              <YStack w="$10" h="$10" items="center" justify="center">
-                <Text fontSize="$6" color="$primary">
-                  ☁️
-                </Text>
-              </YStack>
-            }
+            icon={<UploadCloud size={40} color="#00EF8B" />}
             title={t('onboarding.importProfile.cloudBackup.title')}
             subtitle={t('onboarding.importProfile.cloudBackup.subtitle')}
             onPress={handleCloudBackup}

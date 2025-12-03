@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Svg, { type SvgProps, ClipPath, Defs, G, Path } from 'react-native-svg';
-const Link = ({
+const UploadCloud = ({
   color = '#000',
   size = 24,
   width,
@@ -12,24 +12,23 @@ const Link = ({
     width={width ?? size}
     height={height ?? size}
     fill="none"
-    viewBox="0 0 14 13"
+    viewBox="0 0 28 28"
     {...props}
   >
-    <G clipPath="url(#link_svg__a)">
+    <G clipPath="url(#upload-cloud_svg__a)">
       <Path
-        stroke="#fff"
+        stroke="#00EF8B"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeOpacity={0.502}
-        strokeWidth={1.6}
-        d="M5.833 7.033a2.667 2.667 0 0 0 4.022.288l1.6-1.6a2.667 2.667 0 0 0-3.771-3.77l-.917.912m1.2 3.104a2.667 2.667 0 0 0-4.022-.288l-1.6 1.6a2.667 2.667 0 0 0 3.77 3.77l.913-.912"
+        strokeWidth={2}
+        d="M18.666 18.666 14 13.999m0 0-4.667 4.667M14 13.999v10.5m9.788-3.045A5.834 5.834 0 0 0 21 10.5h-1.47A9.332 9.332 0 1 0 3.5 19.016"
       />
     </G>
     <Defs>
-      <ClipPath id="link_svg__a">
-        <Path fill="#fff" d="M.5.1h12.8v12.8H.5z" />
+      <ClipPath id="upload-cloud_svg__a">
+        <Path fill="#fff" d="M0 0h28v28H0z" />
       </ClipPath>
     </Defs>
   </Svg>
 );
-export default Link;
+export default UploadCloud;
