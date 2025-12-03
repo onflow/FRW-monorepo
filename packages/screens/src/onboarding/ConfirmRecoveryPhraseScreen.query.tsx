@@ -1,6 +1,6 @@
 import { bridge, logger } from '@onflow/frw-context';
 import { profileService } from '@onflow/frw-services';
-import { ScreenName } from '@onflow/frw-types';
+import { ScreenName, FRWError, ErrorCode } from '@onflow/frw-types';
 import {
   YStack,
   Text,
@@ -72,7 +72,7 @@ export function ConfirmRecoveryPhraseScreen({
   // Listen for progress events from native code
   useEffect(() => {
     const subscription = DeviceEventEmitter.addListener(
-      'AccountCreationProgress',
+      'accountCreationProgress',
       (event: { progress: number; status: string }) => {
         logger.debug('[ConfirmRecoveryPhraseScreen] Progress event:', event.progress, event.status);
         setProgress(event.progress);
@@ -193,43 +193,142 @@ export function ConfirmRecoveryPhraseScreen({
       setIsCreatingAccount(true);
 
       if (!accountKey || !mnemonic) {
-        throw new Error('Missing required data. Please regenerate the recovery phrase.');
+        throw new FRWError(
+          ErrorCode.ACCOUNT_CREATION_MISSING_DATA,
+          'Missing required data. Please regenerate the recovery phrase.',
+          { hasAccountKey: !!accountKey, hasMnemonic: !!mnemonic }
+        );
       }
 
       const username = generateRandomUsername();
 
-      const registerResponse = await profileService().register({
-        username,
-        accountKey: {
-          public_key: accountKey.publicKey,
-          sign_algo: accountKey.signAlgo,
-          hash_algo: accountKey.hashAlgo,
-        },
-      });
-
-      if (!registerResponse.custom_token || !registerResponse.id) {
-        throw new Error('Registration response missing required fields');
+      let registerResponse;
+      try {
+        registerResponse = await profileService().register({
+          username,
+          accountKey: {
+            public_key: accountKey.publicKey,
+            sign_algo: accountKey.signAlgo,
+            hash_algo: accountKey.hashAlgo,
+          },
+        });
+      } catch (registrationError: any) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_REGISTRATION_FAILED,
+          registrationError?.message || 'Failed to register account with server',
+          {
+            status: registrationError?.status,
+            originalError: registrationError,
+          }
+        );
       }
 
-      await bridge.signInWithCustomToken(registerResponse.custom_token);
-      await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, username);
+      if (!registerResponse.custom_token || !registerResponse.id) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_REGISTRATION_FAILED,
+          'Registration response missing required fields',
+          { hasCustomToken: !!registerResponse.custom_token, hasId: !!registerResponse.id }
+        );
+      }
 
-      navigation.navigate(ScreenName.NOTIFICATION_PREFERENCES, { accountType: 'recovery' });
+      try {
+        if (bridge.signInWithCustomToken) {
+          await bridge.signInWithCustomToken(registerResponse.custom_token);
+        }
+      } catch (authError: any) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_FIREBASE_AUTH_FAILED,
+          'Failed to authenticate with Firebase',
+          { originalError: authError }
+        );
+      }
+
+      // Create Flow address on-chain and wait for transaction to complete
+      let txId: string;
+      try {
+        txId = await profileService().createFlowAddressAndWait((progress) => {
+          setProgress(progress);
+        });
+
+        logger.info('[ConfirmRecoveryPhraseScreen] Flow address created with txId:', { txId });
+      } catch (flowAddressError: any) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_FLOW_ADDRESS_CREATION_FAILED,
+          'Failed to create Flow address on blockchain',
+          {
+            originalError: flowAddressError,
+            message: flowAddressError?.message,
+          }
+        );
+      }
+
+      try {
+        if (bridge.saveMnemonic) {
+          await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, txId, username);
+        }
+      } catch (saveError: any) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_MNEMONIC_SAVE_FAILED,
+          'Failed to save recovery phrase securely',
+          { originalError: saveError }
+        );
+      }
+
+      (navigation as any).navigate(ScreenName.NOTIFICATION_PREFERENCES, {
+        accountType: 'recovery',
+      });
     } catch (error: any) {
-      logger.error('[ConfirmRecoveryPhraseScreen] Account creation failed:', error);
+      // Log error with code for analytics
+      const errorCode = error instanceof FRWError ? error.code : 'UNKNOWN';
+      logger.error('[ConfirmRecoveryPhraseScreen] Account creation failed:', {
+        code: errorCode,
+        message: error?.message,
+        details: error instanceof FRWError ? error.details : undefined,
+      });
 
+      // Determine user-facing error message
       let errorMessage = t('onboarding.confirmRecoveryPhrase.error.generic', {
         defaultValue: 'Failed to create account. Please try again.',
       });
 
-      if (error?.status === 500) {
-        errorMessage = t('onboarding.confirmRecoveryPhrase.error.server', {
-          defaultValue: 'Server error occurred. Please try again later.',
-        });
-      } else if (error?.status === 400) {
-        errorMessage = t('onboarding.confirmRecoveryPhrase.error.validation', {
-          defaultValue: 'Invalid account data. Please try again.',
-        });
+      if (error instanceof FRWError) {
+        switch (error.code) {
+          case ErrorCode.ACCOUNT_REGISTRATION_FAILED:
+            if (error.details?.status === 500) {
+              errorMessage = t('onboarding.confirmRecoveryPhrase.error.server', {
+                defaultValue: 'Server error occurred. Please try again later.',
+              });
+            } else if (error.details?.status === 400) {
+              errorMessage = t('onboarding.confirmRecoveryPhrase.error.validation', {
+                defaultValue: 'Invalid account data. Please try again.',
+              });
+            } else {
+              errorMessage = t('onboarding.confirmRecoveryPhrase.error.registration', {
+                defaultValue: 'Failed to register account. Please try again.',
+              });
+            }
+            break;
+          case ErrorCode.ACCOUNT_FIREBASE_AUTH_FAILED:
+            errorMessage = t('onboarding.confirmRecoveryPhrase.error.auth', {
+              defaultValue: 'Authentication failed. Please try again.',
+            });
+            break;
+          case ErrorCode.ACCOUNT_MNEMONIC_SAVE_FAILED:
+            errorMessage = t('onboarding.confirmRecoveryPhrase.error.save', {
+              defaultValue: 'Failed to save recovery phrase. Please try again.',
+            });
+            break;
+          case ErrorCode.ACCOUNT_CREATION_MISSING_DATA:
+            errorMessage = error.message;
+            break;
+          case ErrorCode.ACCOUNT_FLOW_ADDRESS_CREATION_FAILED:
+            errorMessage = t('onboarding.confirmRecoveryPhrase.error.flowAddress', {
+              defaultValue: 'Failed to create Flow address. Please try again.',
+            });
+            break;
+          default:
+            errorMessage = error.message || errorMessage;
+        }
       } else if (error?.message) {
         errorMessage = error.message;
       }

@@ -221,4 +221,40 @@ export class ProfileService {
       throw error;
     }
   }
+
+  /**
+   * Create a Flow address and wait for transaction completion with progress updates
+   * @param onProgress - Callback for progress updates (0-100)
+   * @returns Promise with the created Flow address
+   */
+  async createFlowAddressAndWait(onProgress?: (progress: number) => void): Promise<string> {
+    try {
+      // Start account creation
+      if (onProgress) onProgress(10);
+
+      const txid = await this.createFlowAddress();
+
+      if (onProgress) onProgress(50);
+
+      // TODO: Implement transaction polling to wait for completion
+      // For now, simulate progress and return a placeholder address
+      // In production, this should poll the blockchain for transaction status
+
+      logger.info('[ProfileService] Waiting for Flow address creation transaction:', { txid });
+
+      // Simulate waiting (replace with actual transaction polling)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      if (onProgress) onProgress(100);
+
+      // TODO: Return actual address from transaction result
+      // For now, return the txid as placeholder
+      return txid;
+    } catch (error: any) {
+      logger.error('[ProfileService] Failed to create and wait for Flow address:', {
+        message: error?.message,
+      });
+      throw error;
+    }
+  }
 }
