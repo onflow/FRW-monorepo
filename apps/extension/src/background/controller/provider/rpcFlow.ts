@@ -52,8 +52,8 @@ const flowContext = flow
     } = ctx;
     consoleLog('flow - use #2 - check connect', mapMethod, origin, name, icon);
 
-    // Special case: Always show EthConnect for eth_requestAccounts (regardless of permission)
-    const isRequestAccounts = mapMethod === 'ethRequestAccounts';
+    // Special case: Always show EthConnect for beezie.io when requesting accounts
+    const isBeezieRequest = origin === 'https://beezie.io' && mapMethod === 'ethRequestAccounts';
 
     // check connect
     // TODO: create a whitelist and list of safe methods to remove the need for Reflect.getMetadata
@@ -68,9 +68,9 @@ const flowContext = flow
       mapMethod !== 'ethChainId' &&
       !Reflect.getMetadata('SAFE', providerController, mapMethod)
     ) {
-      // Always show EthConnect for eth_requestAccounts, or if no permission/wallet locked
+      // Always show EthConnect for beezie.io eth_requestAccounts, or if no permission/wallet locked
       if (
-        isRequestAccounts ||
+        isBeezieRequest ||
         !permissionService.hasPermission(origin) ||
         !(await Wallet.isUnlocked())
       ) {
