@@ -64,7 +64,7 @@ export function ImportOptionCard({
           justify="center"
           z={10}
         >
-          <Text fontSize="$3" fontWeight="600" color={theme.background.val}>
+          <Text fontSize="$3" fontWeight="600" color="$background">
             {badge}
           </Text>
         </YStack>
