@@ -12,6 +12,7 @@ import { EnableEvm } from '@/ui/components/EnableEvm';
 import CheckCircleIcon from '@/ui/components/iconfont/IconCheckmark';
 import IconChevronRight from '@/ui/components/iconfont/IconChevronRight';
 import { useApproval } from '@/ui/hooks/use-approval';
+import { useCoaHasAssets } from '@/ui/hooks/use-coa-assets';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -82,6 +83,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
 
   const [coaWhitelist, setCoaWhitelist] = useState<string[]>([]);
   const evmAccount = parentWallet?.evmAccount;
+  const coaHasAssets = useCoaHasAssets(currentNetwork, evmAccount);
 
   // Fetch whitelist on mount
   useEffect(() => {
@@ -96,6 +98,11 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
 
   const getInitialAccount = () => {
+    // If COA has assets, prioritize it
+    if (coaHasAssets && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+      return evmAccount;
+    }
+    // Otherwise check whitelist
     if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
       return evmAccount;
     }
@@ -110,13 +117,27 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     if (userSelectedAccount) {
       return;
     }
-    
-    if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+
+    // If COA has assets, prioritize it
+    if (coaHasAssets && evmAccount && isValidEthereumAddress(evmAccount.address)) {
       setSelectedAccount(evmAccount);
-    } else if (!selectedAccount || (selectedAccount === evmAccount && !isCoaFirst)) {
+    } else if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+      setSelectedAccount(evmAccount);
+    } else if (
+      !selectedAccount ||
+      (selectedAccount === evmAccount && !isCoaFirst && !coaHasAssets)
+    ) {
       setSelectedAccount(currentWallet || eoaAccount);
     }
-  }, [isCoaFirst, evmAccount, currentWallet, eoaAccount, selectedAccount, userSelectedAccount]);
+  }, [
+    coaHasAssets,
+    isCoaFirst,
+    evmAccount,
+    currentWallet,
+    eoaAccount,
+    selectedAccount,
+    userSelectedAccount,
+  ]);
 
   const [defaultChain, setDefaultChain] = useState(MAINNET_CHAIN_ID);
 
@@ -223,15 +244,18 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
     if (userSelectedAccount) {
       return;
     }
-    
+
     if (currentWallet) {
-      if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+      // If COA has assets, prioritize it
+      if (coaHasAssets && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+        setSelectedAccount(evmAccount);
+      } else if (isCoaFirst && evmAccount && isValidEthereumAddress(evmAccount.address)) {
         setSelectedAccount(evmAccount);
       } else {
         setSelectedAccount(currentWallet);
       }
     }
-  }, [currentWallet, isCoaFirst, evmAccount, userSelectedAccount]);
+  }, [currentWallet, coaHasAssets, isCoaFirst, evmAccount, userSelectedAccount]);
 
   const networkDisplayName = currentNetwork === 'testnet' ? 'Flow Testnet' : 'Flow Mainnet';
   const hasValidEoaAccount = eoaAccount && isValidEthereumAddress(eoaAccount.address);
