@@ -81,7 +81,7 @@ export function ImportOptionCard({
           )}
 
           {/* Text content */}
-          <YStack flex={1} gap="$1" pr="$8">
+          <YStack gap="$1" pr="$8">
             <Text fontSize="$4" fontWeight="700" color="$text">
               {title}
             </Text>
@@ -91,7 +91,7 @@ export function ImportOptionCard({
           </YStack>
 
           {/* Chevron right arrow - centered vertically in card */}
-          <YStack position="absolute" r={16} top="50%" transform={[{ translateY: -10 }]}>
+          <YStack position="absolute" r={16} t="50%" mt={-10}>
             <ChevronRight size={20} color="#767676" />
           </YStack>
         </YStack>
