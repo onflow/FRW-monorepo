@@ -51,51 +51,49 @@ export function ImportOptionCard({
     >
       {/* Badge in top-right corner (optional) */}
       {badge && (
-        <View
+        <YStack
           position="absolute"
-          top="$4"
-          right="$4"
-          w="$6"
-          h="$6"
-          rounded="$6"
+          t={16}
+          r={16}
+          width={24}
+          height={24}
+          rounded={100}
           bg="$primary"
           items="center"
           justify="center"
-          zIndex={10}
+          z={10}
         >
           <Text fontSize="$3" fontWeight="600" color="$text">
             {badge}
           </Text>
-        </View>
+        </YStack>
       )}
 
       {/* Content: horizontal or vertical layout */}
       {isVertical ? (
         // Vertical layout: icon above text
-        <YStack gap="$3" items="flex-start">
+        <YStack gap="$3" items="stretch" width="100%">
           {/* Icon */}
           {icon && (
-            <View width="$7" height="$7" items="center" justify="center">
+            <View width="$7" height="$7" items="center" justify="center" self="flex-start">
               {icon}
             </View>
           )}
 
-          {/* Text content and chevron in a row */}
-          <XStack flex={1} items="center" gap="$3" width="100%">
-            <YStack flex={1} gap="$1">
-              <Text fontSize="$4" fontWeight="600" color="$text">
-                {title}
-              </Text>
-              <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
-                {subtitle}
-              </Text>
-            </YStack>
+          {/* Text content */}
+          <YStack flex={1} gap="$1" pr="$8">
+            <Text fontSize="$4" fontWeight="700" color="$text">
+              {title}
+            </Text>
+            <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
+              {subtitle}
+            </Text>
+          </YStack>
 
-            {/* Chevron right arrow */}
-            <View shrink={0}>
-              <ChevronRight size={20} color="rgba(255, 255, 255, 0.4)" />
-            </View>
-          </XStack>
+          {/* Chevron right arrow - centered vertically in card */}
+          <YStack position="absolute" r={16} top="50%" transform={[{ translateY: -10 }]}>
+            <ChevronRight size={20} color="#767676" />
+          </YStack>
         </YStack>
       ) : (
         // Horizontal layout: icon to the left
@@ -109,7 +107,7 @@ export function ImportOptionCard({
 
           {/* Text content */}
           <YStack flex={1} gap="$1">
-            <Text fontSize="$4" fontWeight="600" color="$text">
+            <Text fontSize="$4" fontWeight="700" color="$text">
               {title}
             </Text>
             <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
@@ -119,7 +117,7 @@ export function ImportOptionCard({
 
           {/* Chevron right arrow */}
           <View shrink={0}>
-            <ChevronRight size={20} color="rgba(255, 255, 255, 0.4)" />
+            <ChevronRight size={20} color="#767676" />
           </View>
         </XStack>
       )}

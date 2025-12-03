@@ -80,6 +80,7 @@ export function ImportProfileScreen(): React.ReactElement {
         <YStack gap="$3" pt="$4">
           {/* Previous profiles - with badge showing count */}
           <ImportOptionCard
+            layout="vertical"
             icon={<UserRoundPlus size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.previousProfiles.title')}
             subtitle={t('onboarding.importProfile.previousProfiles.subtitle', { count: 2 })}
@@ -89,6 +90,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Device Backup */}
           <ImportOptionCard
+            layout="vertical"
             icon={<Smartphone size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.deviceBackup.title')}
             subtitle={t('onboarding.importProfile.deviceBackup.subtitle')}
@@ -97,6 +99,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Cloud Multi-Backup */}
           <ImportOptionCard
+            layout="vertical"
             icon={<UploadCloud size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.cloudBackup.title')}
             subtitle={t('onboarding.importProfile.cloudBackup.subtitle')}
@@ -105,6 +108,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
           {/* From Recovery Phrase */}
           <ImportOptionCard
+            layout="vertical"
             icon={<FileText size={28} color="#00EF8B" />}
             title={t('onboarding.importProfile.recoveryPhrase.title')}
             subtitle={t('onboarding.importProfile.recoveryPhrase.subtitle')}
