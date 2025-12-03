@@ -85,14 +85,16 @@ export function ImportOptionCard({
             <Text fontSize="$4" fontWeight="700" color="$text">
               {title}
             </Text>
-            <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
-              {subtitle}
-            </Text>
+            {subtitle && (
+              <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
+                {subtitle}
+              </Text>
+            )}
           </YStack>
 
           {/* Chevron right arrow - centered vertically in card */}
-          <YStack position="absolute" r={16} t="50%" mt={-10}>
-            <ChevronRight size={20} color="#767676" />
+          <YStack position="absolute" r={16} t="50%" mt={-12}>
+            <ChevronRight size={24} color="#767676" />
           </YStack>
         </YStack>
       ) : (
@@ -110,15 +112,17 @@ export function ImportOptionCard({
             <Text fontSize="$4" fontWeight="700" color="$text">
               {title}
             </Text>
-            <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
-              {subtitle}
-            </Text>
+            {subtitle && (
+              <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
+                {subtitle}
+              </Text>
+            )}
           </YStack>
 
           {/* Chevron right arrow */}
-          <View shrink={0}>
-            <ChevronRight size={20} color="#767676" />
-          </View>
+          <YStack position="absolute" r={16} t="50%" mt={-12}>
+            <ChevronRight size={24} color="#767676" />
+          </YStack>
         </XStack>
       )}
     </YStack>
