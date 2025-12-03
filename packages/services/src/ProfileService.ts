@@ -172,8 +172,7 @@ export class ProfileService {
   /**
    * Create a Flow address for the currently logged-in user.
    * This triggers an on-chain transaction to create the account.
-   * Matches extension implementation: uses /v2/user/address endpoint
-   * Extension calls createFlowAddressV2() immediately after register() which authenticates with custom token
+   * Uses /v2/user/address endpoint which returns { data: { txid?: string } }
    *
    * @returns Promise with transaction ID string
    */
@@ -181,25 +180,16 @@ export class ProfileService {
     try {
       logger.info('[ProfileService] Creating Flow address...');
 
-      // Extension uses /v2/user/address (createFlowAddressV2)
-      // UserGoService.address2() calls /v2/user/address (matches extension implementation)
+      // UserGoService.address2() calls /v2/user/address
       const response: any = await UserGoService.address2();
 
-      // Backend wraps response in { data: {...}, status, message }
-      const responseData = response?.data || response;
-
-      // Response can be a string (txid directly) or an object with txid property
-      const txid: string | undefined =
-        typeof responseData === 'string'
-          ? responseData
-          : responseData?.txid || responseData?.transactionId;
+      // Backend always wraps in { data: { txid?: string }, status, message }
+      const txid = response?.data?.txid;
 
       if (!txid) {
         logger.error('[ProfileService] No transaction ID found in response:', {
           response,
-          responseData,
           hasData: !!response?.data,
-          responseKeys: response ? Object.keys(response) : [],
         });
         throw new Error('Failed to create Flow address: No transaction ID received');
       }
