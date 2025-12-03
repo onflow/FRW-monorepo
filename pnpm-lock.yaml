@@ -22,7 +22,7 @@ importers:
     dependencies:
       '@tamagui/animations-react-native':
         specifier: ^1.132.20
-        version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
+        version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -31,7 +31,7 @@ importers:
         version: 19.0.0(react@19.0.0)
       react-native:
         specifier: 0.79.2
-        version: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
+        version: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
     devDependencies:
       '@commitlint/cli':
         specifier: ^19.6.0
@@ -74,7 +74,7 @@ importers:
         version: 0.4.23(eslint@9.37.0(jiti@2.6.1))
       eslint-plugin-storybook:
         specifier: ^9.1.1
-        version: 9.1.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2)
+        version: 9.1.1(eslint@9.37.0(jiti@2.6.1))(storybook@9.1.10(prettier@3.6.2)(vite@7.2.2(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.7.2)
       eslint-plugin-unused-imports:
         specifier: ^4.1.4
         version: 4.2.0(@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2))(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2))(eslint@9.37.0(jiti@2.6.1))
@@ -791,6 +791,37 @@ importers:
       typescript-eslint:
         specifier: ^8.37.0
         version: 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2)
+
+  packages/analytics:
+    dependencies:
+      '@babel/runtime':
+        specifier: ^7.28.2
+        version: 7.28.4
+      '@onflow/frw-utils':
+        specifier: workspace:*
+        version: link:../utils
+      mixpanel-browser:
+        specifier: ^2.50.0
+        version: 2.72.0(@mixpanel/rrweb-utils@2.0.0-alpha.18.2)
+    devDependencies:
+      '@types/mixpanel-browser':
+        specifier: ^2.50.0
+        version: 2.66.0(@mixpanel/rrweb-utils@2.0.0-alpha.18.2)
+      '@types/node':
+        specifier: ^22.11.0
+        version: 22.18.8
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(jiti@2.6.1)(jsdom@26.1.0)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      tsup:
+        specifier: ^8.3.5
+        version: 8.5.0(@swc/core@1.13.5)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.7.2)(yaml@2.8.1)
+      typescript:
+        specifier: 5.7.2
+        version: 5.7.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(jiti@2.6.1)(jsdom@26.1.0)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/api:
     dependencies:
@@ -3041,6 +3072,27 @@ packages:
     resolution: {integrity: sha512-DIbsNUyqWLFgqJlZxi1OOCMYvI23GqFCvNJAtzv8/WXWzJfnJnvp1M24j7VvUe3URBi3S86UgQ7+7aWU9p/cnQ==}
     engines: {node: ^18.18 || ^20.14 || >=22}
 
+  '@mixpanel/rrdom@2.0.0-alpha.18.2':
+    resolution: {integrity: sha512-vX/tbnS14ZzzatC7vOyvAm9tOLU8tof0BuppBlphzEx1YHTSw8DQiAmyAc0AmXidchLV0W+cUHV/WsehPLh2hQ==}
+
+  '@mixpanel/rrweb-plugin-console-record@2.0.0-alpha.18.2':
+    resolution: {integrity: sha512-Xkwh2gSdLqHRkWSXv8CPVCPQj5L85KnWc5DZQ0CXNRFgm2hTl5/YP6zfUubVs2JVXZHGcSGU+g7JVO2WcFJyyg==}
+    peerDependencies:
+      '@mixpanel/rrweb': ^2.0.0-alpha.18
+      '@mixpanel/rrweb-utils': ^2.0.0-alpha.18
+
+  '@mixpanel/rrweb-snapshot@2.0.0-alpha.18.2':
+    resolution: {integrity: sha512-2kSnjZZ3QZ9zOz/isOt8s54mXUUDgXk/u0eEi/rE0xBWDeuA0NHrBcqiMc+w4F/yWWUpo5F5zcuPeYpc6ufAsw==}
+
+  '@mixpanel/rrweb-types@2.0.0-alpha.18.2':
+    resolution: {integrity: sha512-ucIYe1mfJ2UksvXW+d3bOySTB2/0yUSqQJlUydvbBz6OO2Bhq3nJHyLXV9ExkgUMZm1ZyDcvvmNUd1+5tAXlpA==}
+
+  '@mixpanel/rrweb-utils@2.0.0-alpha.18.2':
+    resolution: {integrity: sha512-OomKIB6GTx5xvCLJ7iic2khT/t/tnCJUex13aEqsbSqIT/UzUUsqf+LTrgUK5ex+f6odmkCNjre2y5jvpNqn+g==}
+
+  '@mixpanel/rrweb@2.0.0-alpha.18.2':
+    resolution: {integrity: sha512-J3dVTEu6Z4p8di7y9KKvUooNuBjX97DdG6XGWoPEPi07A9512h9M8MEtvlY3mK0PGfuC0Mz5Pv/Ws6gjGYfKQg==}
+
   '@mjackson/form-data-parser@0.4.0':
     resolution: {integrity: sha512-zDQ0sFfXqn2bJaZ/ypXfGUe0lUjCzXybBHYEoyWaO2w1dZ0nOM9nRER8tVVv3a8ZIgO/zF6p2I5ieWJAUOzt3w==}
 
@@ -3374,7 +3426,6 @@ packages:
   '@outblock/cadence-codegen@0.0.9':
     resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
     engines: {node: '>=14'}
-    cpu: [x64, arm64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -5039,6 +5090,9 @@ packages:
   '@types/cookies@0.9.1':
     resolution: {integrity: sha512-E/DPgzifH4sM1UMadJMWd6mO2jOd4g1Ejwzx8/uRCDpJis1IrlyQEcGAYEomtAqRYmD5ORbNXMeI9U0RiVGZbg==}
 
+  '@types/css-font-loading-module@0.0.7':
+    resolution: {integrity: sha512-nl09VhutdjINdWyXxHWN/w9zlNCfr60JUqJbd24YXUuCwgeL0TpFSdElCwb6cxfB6ybE19Gjj4g0jsgkXxKv1Q==}
+
   '@types/d3-array@3.2.2':
     resolution: {integrity: sha512-hOLWVbm7uRza0BYXpIIW5pxfrKe0W+D5lrFiAEYR+pb6w3N2SwSMaJbXdUfSEv+dT4MfHBLtn5js0LAWaO6otw==}
 
@@ -5155,6 +5209,10 @@ packages:
 
   '@types/minimatch@3.0.5':
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
+
+  '@types/mixpanel-browser@2.66.0':
+    resolution: {integrity: sha512-07zYZZ9ZVHc7R4ktM+3a2clZvKkj+EJcYZ/FevTs011Fr9tdp59lVgAskMf6ZQUp3lOHLqi7K3f+9QtmEsqh1w==}
+    deprecated: This is a stub types definition. mixpanel-browser provides its own type definitions, so you do not need this installed.
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -5739,6 +5797,9 @@ packages:
   '@xmldom/xmldom@0.8.11':
     resolution: {integrity: sha512-cQzWCtO6C8TQiYl1ruKNn2U6Ao4o4WBBcbL61yJl84x+j5sOWWFU9X7DpND8XZG3daDppSsigMdfAIl2upQBRw==}
     engines: {node: '>=10.0.0'}
+
+  '@xstate/fsm@1.6.5':
+    resolution: {integrity: sha512-b5o1I6aLNeYlU/3CPlj/Z91ybk1gUsKT+5NAJI+2W4UjvS5KLG28K9v5UvNoFVjHV8PajVZ00RH3vnjyQO7ZAw==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -9474,6 +9535,12 @@ packages:
   minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
+
+  mitt@3.0.1:
+    resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
+
+  mixpanel-browser@2.72.0:
+    resolution: {integrity: sha512-Olc+1ebVBSVBjtR/Pp4t8Pc1wAI9AfA5e668B0MsI/gKJ43QcndzfQ/AT/TiP1Klup8O1C9vwykoWjvPqX+SRA==}
 
   mkdirp@0.5.6:
     resolution: {integrity: sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==}
@@ -14836,6 +14903,34 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@mixpanel/rrdom@2.0.0-alpha.18.2':
+    dependencies:
+      '@mixpanel/rrweb-snapshot': 2.0.0-alpha.18.2
+
+  '@mixpanel/rrweb-plugin-console-record@2.0.0-alpha.18.2(@mixpanel/rrweb-utils@2.0.0-alpha.18.2)(@mixpanel/rrweb@2.0.0-alpha.18.2)':
+    dependencies:
+      '@mixpanel/rrweb': 2.0.0-alpha.18.2
+      '@mixpanel/rrweb-utils': 2.0.0-alpha.18.2
+
+  '@mixpanel/rrweb-snapshot@2.0.0-alpha.18.2':
+    dependencies:
+      postcss: 8.5.6
+
+  '@mixpanel/rrweb-types@2.0.0-alpha.18.2': {}
+
+  '@mixpanel/rrweb-utils@2.0.0-alpha.18.2': {}
+
+  '@mixpanel/rrweb@2.0.0-alpha.18.2':
+    dependencies:
+      '@mixpanel/rrdom': 2.0.0-alpha.18.2
+      '@mixpanel/rrweb-snapshot': 2.0.0-alpha.18.2
+      '@mixpanel/rrweb-types': 2.0.0-alpha.18.2
+      '@mixpanel/rrweb-utils': 2.0.0-alpha.18.2
+      '@types/css-font-loading-module': 0.0.7
+      '@xstate/fsm': 1.6.5
+      base64-arraybuffer: 1.0.2
+      mitt: 3.0.1
+
   '@mjackson/form-data-parser@0.4.0':
     dependencies:
       '@mjackson/multipart-parser': 0.6.3
@@ -15706,21 +15801,6 @@ snapshots:
       nullthrows: 1.1.1
       yargs: 17.7.2
 
-  '@react-native/community-cli-plugin@0.79.2':
-    dependencies:
-      '@react-native/dev-middleware': 0.79.2
-      chalk: 4.1.2
-      debug: 2.6.9
-      invariant: 2.2.4
-      metro: 0.82.5
-      metro-config: 0.82.5
-      metro-core: 0.82.5
-      semver: 7.7.3
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@react-native/community-cli-plugin@0.79.2(@react-native-community/cli@19.1.2(typescript@5.7.2))':
     dependencies:
       '@react-native/dev-middleware': 0.79.2
@@ -15829,13 +15909,6 @@ snapshots:
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
     optionalDependencies:
       '@types/react': 19.2.2
-
-  '@react-native/virtualized-lists@0.79.2(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      invariant: 2.2.4
-      nullthrows: 1.1.1
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
 
   '@react-navigation/core@7.12.4(react@19.0.0)':
     dependencies:
@@ -16675,16 +16748,6 @@ snapshots:
     transitivePeerDependencies:
       - react-dom
 
-  '@tamagui/animations-react-native@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/use-presence': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/web': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
-    transitivePeerDependencies:
-      - react-dom
-
   '@tamagui/avatar@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/core': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
@@ -16835,11 +16898,6 @@ snapshots:
     dependencies:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
-
-  '@tamagui/constants@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
 
   '@tamagui/core@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -17034,14 +17092,6 @@ snapshots:
   '@tamagui/helpers@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
-      '@tamagui/simple-hash': 1.135.0
-      react: 19.0.0
-    transitivePeerDependencies:
-      - react-native
-
-  '@tamagui/helpers@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
       '@tamagui/simple-hash': 1.135.0
       react: 19.0.0
     transitivePeerDependencies:
@@ -17554,13 +17604,6 @@ snapshots:
     transitivePeerDependencies:
       - react-native
 
-  '@tamagui/use-event@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      react: 19.0.0
-    transitivePeerDependencies:
-      - react-native
-
   '@tamagui/use-force-update@1.135.0(react@19.0.0)':
     dependencies:
       react: 19.0.0
@@ -17573,14 +17616,6 @@ snapshots:
   '@tamagui/use-presence@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/web': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
-      react: 19.0.0
-    transitivePeerDependencies:
-      - react-dom
-      - react-native
-
-  '@tamagui/use-presence@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/web': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
       react: 19.0.0
     transitivePeerDependencies:
       - react-dom
@@ -17619,22 +17654,6 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
-
-  '@tamagui/web@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/compose-refs': 1.135.0(react@19.0.0)
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/helpers': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/is-equal-shallow': 1.135.0(react@19.0.0)
-      '@tamagui/normalize-css-color': 1.135.0
-      '@tamagui/timer': 1.135.0
-      '@tamagui/types': 1.135.0
-      '@tamagui/use-did-finish-ssr': 1.135.0(react@19.0.0)
-      '@tamagui/use-event': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/use-force-update': 1.135.0(react@19.0.0)
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
 
   '@tamagui/z-index-stack@1.135.0(react@19.0.0)':
     dependencies:
@@ -17978,6 +17997,8 @@ snapshots:
       '@types/keygrip': 1.0.6
       '@types/node': 22.18.8
 
+  '@types/css-font-loading-module@0.0.7': {}
+
   '@types/d3-array@3.2.2': {}
 
   '@types/d3-color@3.1.3': {}
@@ -18099,6 +18120,12 @@ snapshots:
   '@types/mime@1.3.5': {}
 
   '@types/minimatch@3.0.5': {}
+
+  '@types/mixpanel-browser@2.66.0(@mixpanel/rrweb-utils@2.0.0-alpha.18.2)':
+    dependencies:
+      mixpanel-browser: 2.72.0(@mixpanel/rrweb-utils@2.0.0-alpha.18.2)
+    transitivePeerDependencies:
+      - '@mixpanel/rrweb-utils'
 
   '@types/ms@2.1.0': {}
 
@@ -18489,9 +18516,9 @@ snapshots:
       istanbul-lib-report: 3.0.1
       istanbul-lib-source-maps: 5.0.6
       istanbul-reports: 3.2.0
-      magic-string: 0.30.19
+      magic-string: 0.30.21
       magicast: 0.3.5
-      std-env: 3.9.0
+      std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(jiti@2.6.1)(jsdom@26.1.0)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
@@ -19189,6 +19216,8 @@ snapshots:
       react: 19.0.0
 
   '@xmldom/xmldom@0.8.11': {}
+
+  '@xstate/fsm@1.6.5': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
@@ -21273,14 +21302,6 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-storybook@9.1.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2):
-    dependencies:
-      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2)
-      eslint: 9.37.0(jiti@2.6.1)
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
   eslint-plugin-unused-imports@4.2.0(@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2))(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2))(eslint@9.37.0(jiti@2.6.1)):
     dependencies:
       eslint: 9.37.0(jiti@2.6.1)
@@ -23210,8 +23231,8 @@ snapshots:
 
   magicast@0.3.5:
     dependencies:
-      '@babel/parser': 7.28.4
-      '@babel/types': 7.28.4
+      '@babel/parser': 7.28.5
+      '@babel/types': 7.28.5
       source-map-js: 1.2.1
 
   make-dir@1.3.0:
@@ -23548,6 +23569,15 @@ snapshots:
   minipass@4.2.8: {}
 
   minipass@7.1.2: {}
+
+  mitt@3.0.1: {}
+
+  mixpanel-browser@2.72.0(@mixpanel/rrweb-utils@2.0.0-alpha.18.2):
+    dependencies:
+      '@mixpanel/rrweb': 2.0.0-alpha.18.2
+      '@mixpanel/rrweb-plugin-console-record': 2.0.0-alpha.18.2(@mixpanel/rrweb-utils@2.0.0-alpha.18.2)(@mixpanel/rrweb@2.0.0-alpha.18.2)
+    transitivePeerDependencies:
+      - '@mixpanel/rrweb-utils'
 
   mkdirp@0.5.6:
     dependencies:
@@ -24753,52 +24783,6 @@ snapshots:
       yargs: 17.7.2
     optionalDependencies:
       '@types/react': 19.2.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@react-native-community/cli'
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0):
-    dependencies:
-      '@jest/create-cache-key-function': 29.7.0
-      '@react-native/assets-registry': 0.79.2
-      '@react-native/codegen': 0.79.2(@babel/core@7.28.4)
-      '@react-native/community-cli-plugin': 0.79.2
-      '@react-native/gradle-plugin': 0.79.2
-      '@react-native/js-polyfills': 0.79.2
-      '@react-native/normalize-colors': 0.79.2
-      '@react-native/virtualized-lists': 0.79.2(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      abort-controller: 3.0.0
-      anser: 1.4.10
-      ansi-regex: 5.0.1
-      babel-jest: 29.7.0(@babel/core@7.28.4)
-      babel-plugin-syntax-hermes-parser: 0.25.1
-      base64-js: 1.5.1
-      chalk: 4.1.2
-      commander: 12.1.0
-      event-target-shim: 5.0.1
-      flow-enums-runtime: 0.0.6
-      glob: 7.2.3
-      invariant: 2.2.4
-      jest-environment-node: 29.7.0
-      memoize-one: 5.2.1
-      metro-runtime: 0.82.5
-      metro-source-map: 0.82.5
-      nullthrows: 1.1.1
-      pretty-format: 29.7.0
-      promise: 8.3.0
-      react: 19.0.0
-      react-devtools-core: 6.1.5
-      react-refresh: 0.14.2
-      regenerator-runtime: 0.13.11
-      scheduler: 0.25.0
-      semver: 7.7.3
-      stacktrace-parser: 0.1.11
-      whatwg-fetch: 3.6.20
-      ws: 6.2.3
-      yargs: 17.7.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@react-native-community/cli'

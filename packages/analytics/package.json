@@ -1,0 +1,59 @@
+{
+  "name": "@onflow/frw-analytics",
+  "version": "0.0.1",
+  "description": "Package for flow wallet analytics",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "source": "./src/index.ts",
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "pnpm build",
+    "lint": "eslint . --cache",
+    "lint:fix": "eslint . --cache --fix"
+  },
+  "exports": {
+    ".": {
+      "@onflow/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.2",
+    "@onflow/frw-utils": "workspace:*",
+    "mixpanel-browser": "^2.50.0"
+  },
+  "devDependencies": {
+    "@types/mixpanel-browser": "^2.50.0",
+    "@types/node": "^22.11.0",
+    "@vitest/coverage-v8": "3.2.4",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onflow/FRW-core.git",
+    "directory": "packages/cadence"
+  },
+  "license": "LGPL-3.0-or-later"
+}
