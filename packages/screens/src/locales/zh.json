@@ -351,6 +351,10 @@
     "importOtherMethods": {
       "title": "从其他方式",
       "subtitle": "选择导入个人资料的方式。",
+      "recoveryPhrase": {
+        "title": "恢复短语",
+        "subtitle": "12个单词的恢复短语"
+      },
       "keyStore": {
         "title": "密钥库",
         "subtitle": "密钥库文件是您以密码加密的文件形式的钱包。"
@@ -367,6 +371,12 @@
         "title": "iCloud",
         "subtitle": "从iCloud导入备份。"
       }
+    },
+    "confirmImportProfile": {
+      "title": "确认要导入的个人资料",
+      "emptyTitle": "未找到个人资料",
+      "emptyMessage": "此设备上未找到之前的个人资料",
+      "importButton": "导入个人资料"
     }
   }
 }

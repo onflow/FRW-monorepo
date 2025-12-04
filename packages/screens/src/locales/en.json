@@ -279,6 +279,11 @@
     },
     "importOtherMethods": {
       "title": "From other methods",
+      "subtitle": "Import profile using alternative methods",
+      "recoveryPhrase": {
+        "title": "Recovery phrase",
+        "subtitle": "12 word recovery phrase"
+      },
       "keyStore": {
         "title": "Key store",
         "subtitle": "Import keystore file (Blocto Backup)"
@@ -295,6 +300,12 @@
         "title": "iCloud",
         "subtitle": "From legacy iCloud backup"
       }
+    },
+    "confirmImportProfile": {
+      "title": "Confirm which profile to import",
+      "emptyTitle": "No profiles found",
+      "emptyMessage": "No previous profiles were found on this device",
+      "importButton": "Import profile"
     },
     "secureEnclave": {
       "title": "Advanced",
