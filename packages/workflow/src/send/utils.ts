@@ -8,7 +8,7 @@ import type { SendPayload } from './types';
  * Default gas limits for different transaction types
  */
 export const GAS_LIMITS = {
-  EVM_DEFAULT: 30_000_000,
+  EVM_DEFAULT: 16_777_216,
   CADENCE_DEFAULT: 9999,
 } as const;
 
