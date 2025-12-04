@@ -1,4 +1,4 @@
-import { CheckCircle } from '@onflow/frw-icons';
+import { CheckCircle, Link } from '@onflow/frw-icons';
 import type { WalletAccount, WalletProfile } from '@onflow/frw-types';
 import React from 'react';
 import { FlatList } from 'react-native';
@@ -149,10 +149,10 @@ function ProfileImportItem({
       address: account.address,
       avatar: account.avatar,
       emojiInfo: account.emojiInfo,
-      parentEmojiInfo: account.parentEmoji || null,
+      parentEmojiInfo: null, // Don't show parent emoji overlay for linked accounts
       type: 'account' as const,
       isSelected: false,
-      isLinked: !!(account.parentAddress || account.type === 'child'),
+      isLinked: !!(account.parentAddress || account.type === 'child' || account.type === 'evm'),
       isEVM: account.type === 'evm',
       balance: (account as any).balance || '0 FLOW', // Balance is added in SendToScreen
       showBalance: true,
@@ -211,7 +211,21 @@ function ProfileImportItem({
       <YStack gap="$3">
         {accountsData.map((account, index) => (
           <React.Fragment key={account.id}>
-            <RecipientItem {...account} onPress={() => handleAccountPress(account)} />
+            {account.isLinked ? (
+              <XStack items="center" gap="$3" pl={5}>
+                {/* Link icon on the left for linked accounts - aligned with main account avatar */}
+                <YStack width={24} height={24} items="center" justify="center">
+                  <Link size={20} color={theme.textSecondary.val} theme="outline" />
+                </YStack>
+                {/* Account item without inline link icon - not clickable */}
+                <YStack flex={1}>
+                  <RecipientItem {...{ ...account, isLinked: false, isEVM: false }} />
+                </YStack>
+              </XStack>
+            ) : (
+              /* Main account - flush left, no wrapper, not clickable */
+              <RecipientItem {...account} />
+            )}
           </React.Fragment>
         ))}
       </YStack>

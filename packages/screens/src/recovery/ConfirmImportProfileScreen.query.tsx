@@ -1,6 +1,6 @@
 import { logger } from '@onflow/frw-context';
 import type { WalletProfile } from '@onflow/frw-types';
-import { YStack, Text, useTheme, ProfileImportList } from '@onflow/frw-ui';
+import { YStack, Text, useTheme, ProfileImportList, Button } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -22,7 +22,7 @@ const mockProfiles: WalletProfile[] = [
         name: 'Main Account',
         emojiInfo: { emoji: '🦊', name: 'Fox', color: '#FF6B35' },
         type: 'main',
-        balance: '1,234.56',
+        balance: '1,234.56 FLOW',
         isActive: true,
       },
       {
@@ -32,7 +32,7 @@ const mockProfiles: WalletProfile[] = [
         emojiInfo: { emoji: '🐼', name: 'Panda', color: '#4ECDC4' },
         parentEmoji: { emoji: '🦊', name: 'Fox', color: '#FF6B35' },
         type: 'child',
-        balance: '567.89',
+        balance: '567.89 FLOW',
         isActive: true,
       },
     ],
@@ -44,11 +44,21 @@ const mockProfiles: WalletProfile[] = [
     accounts: [
       {
         id: 'account-3',
-        address: '0xevmaddress123456789',
-        name: 'EVM Account',
+        address: '0x9876543210fedcba',
+        name: 'Main Account',
         emojiInfo: { emoji: '⚡', name: 'Zap', color: '#9B59B6' },
+        type: 'main',
+        balance: '1,567.34 FLOW',
+        isActive: true,
+      },
+      {
+        id: 'account-4',
+        address: '0x000000000000000000000002a7f32b3700000000',
+        name: 'EVM Account',
+        emojiInfo: { emoji: '🔷', name: 'Diamond', color: '#3498DB' },
+        parentEmoji: { emoji: '⚡', name: 'Zap', color: '#9B59B6' },
         type: 'evm',
-        balance: '89.12',
+        balance: '89.12 FLOW',
         isActive: true,
       },
     ],
@@ -74,6 +84,14 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
     logger.info('[ConfirmImportProfileScreen] Account selected:', account);
     // When an account is pressed, we could also select its parent profile
     // For now, just log it
+  };
+
+  const handleImportProfile = () => {
+    if (!selectedProfileUid) return;
+
+    const selectedProfile = mockProfiles.find((p) => p.uid === selectedProfileUid);
+    logger.info('[ConfirmImportProfileScreen] Importing profile:', selectedProfile);
+    // TODO: Implement actual profile import/restoration logic
   };
 
   return (
@@ -104,6 +122,21 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
           isMobile={true}
           contentPaddingHorizontal={16}
         />
+      </YStack>
+
+      {/* Bottom Button - anchored to bottom */}
+      <YStack px="$4" pb="$6">
+        <Button
+          variant="inverse"
+          size="large"
+          fullWidth
+          disabled={!selectedProfileUid}
+          onPress={handleImportProfile}
+        >
+          {t('onboarding.confirmImportProfile.importButton', {
+            defaultValue: 'Import profile',
+          })}
+        </Button>
       </YStack>
     </YStack>
   );
