@@ -1,6 +1,6 @@
 import { logger } from '@onflow/frw-context';
 import type { WalletProfile } from '@onflow/frw-types';
-import { YStack, Text, useTheme, ProfileImportList, Button } from '@onflow/frw-ui';
+import { YStack, Text, ProfileImportList, Button } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -9,69 +9,16 @@ import { useTranslation } from 'react-i18next';
  * Allows users to select and restore a profile from device storage
  */
 
-// Mock data - TODO: Replace with actual data from device storage
-const mockProfiles: WalletProfile[] = [
-  {
-    uid: 'profile-1',
-    name: 'Nick Name',
-    avatar: '👤',
-    accounts: [
-      {
-        id: 'account-1',
-        address: '0x1234567890abcdef',
-        name: 'Main Account',
-        emojiInfo: { emoji: '🦊', name: 'Fox', color: '#FF6B35' },
-        type: 'main',
-        balance: '1,234.56 FLOW',
-        isActive: true,
-      },
-      {
-        id: 'account-2',
-        address: '0xabcdef1234567890',
-        name: 'Linked Account',
-        emojiInfo: { emoji: '🐼', name: 'Panda', color: '#4ECDC4' },
-        parentEmoji: { emoji: '🦊', name: 'Fox', color: '#FF6B35' },
-        type: 'child',
-        balance: '567.89 FLOW',
-        isActive: true,
-      },
-    ],
-  },
-  {
-    uid: 'profile-2',
-    name: 'EVM Profile',
-    avatar: '⚡',
-    accounts: [
-      {
-        id: 'account-3',
-        address: '0x9876543210fedcba',
-        name: 'Main Account',
-        emojiInfo: { emoji: '⚡', name: 'Zap', color: '#9B59B6' },
-        type: 'main',
-        balance: '1,567.34 FLOW',
-        isActive: true,
-      },
-      {
-        id: 'account-4',
-        address: '0x000000000000000000000002a7f32b3700000000',
-        name: 'EVM Account',
-        emojiInfo: { emoji: '🔷', name: 'Diamond', color: '#3498DB' },
-        parentEmoji: { emoji: '⚡', name: 'Zap', color: '#9B59B6' },
-        type: 'evm',
-        balance: '89.12 FLOW',
-        isActive: true,
-      },
-    ],
-  },
-];
+// TODO: Fetch profiles from device storage
+// TODO: Use a hook or query to load previously saved profiles
+const profiles: WalletProfile[] = [];
 
 export function ConfirmImportProfileScreen(): React.ReactElement {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [isLoading] = React.useState(false);
   // Set first profile as default selected
   const [selectedProfileUid, setSelectedProfileUid] = React.useState<string | undefined>(
-    mockProfiles[0]?.uid
+    profiles[0]?.uid
   );
 
   const handleProfilePress = (profile: WalletProfile) => {
@@ -89,7 +36,7 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
   const handleImportProfile = () => {
     if (!selectedProfileUid) return;
 
-    const selectedProfile = mockProfiles.find((p) => p.uid === selectedProfileUid);
+    const selectedProfile = profiles.find((p) => p.uid === selectedProfileUid);
     logger.info('[ConfirmImportProfileScreen] Importing profile:', selectedProfile);
     // TODO: Implement actual profile import/restoration logic
   };
@@ -108,7 +55,7 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
       {/* Profile List */}
       <YStack flex={1}>
         <ProfileImportList
-          profiles={mockProfiles}
+          profiles={profiles}
           onAccountPress={handleAccountPress}
           onProfilePress={handleProfilePress}
           selectedProfileUid={selectedProfileUid}
