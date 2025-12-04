@@ -8,6 +8,18 @@ import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
 /**
+ * Response from /v2/user/address endpoint
+ * Backend returns: { data: { txid?: string }, status: number, message: string }
+ */
+interface CreateFlowAddressV2Response {
+  data?: {
+    txid?: string;
+  };
+  status: number;
+  message: string;
+}
+
+/**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
  */
@@ -151,8 +163,7 @@ export class ProfileService {
   /**
    * Create a Flow address for the currently logged-in user.
    * This triggers an on-chain transaction to create the account.
-   * Matches extension implementation: uses /v2/user/address endpoint
-   * Extension calls createFlowAddressV2() immediately after register() which authenticates with custom token
+   * Uses /v2/user/address endpoint which returns { data: { txid?: string } }
    *
    * @returns Promise with transaction ID string
    */
@@ -160,17 +171,17 @@ export class ProfileService {
     try {
       logger.info('[ProfileService] Creating Flow address...');
 
-      // Extension uses /v2/user/address (createFlowAddressV2)
-      // UserGoService.address2() calls /v2/user/address (matches extension implementation)
-      // The generated axios wrapper unwraps res.data, returning the txid string or an object with txid
-      const response: any = await UserGoService.address2();
+      // UserGoService.address2() calls /v2/user/address
+      const response = (await UserGoService.address2()) as CreateFlowAddressV2Response;
 
-      // Response can be a string (txid directly) or an object with txid property
-      const txid: string | undefined =
-        typeof response === 'string' ? response : response?.txid || response?.transactionId;
+      // Backend always wraps in { data: { txid?: string }, status, message }
+      const txid = response.data?.txid;
 
       if (!txid) {
-        logger.error('[ProfileService] No transaction ID found in response:', { response });
+        logger.error('[ProfileService] No transaction ID found in response:', {
+          response,
+          hasData: !!response?.data,
+        });
         throw new Error('Failed to create Flow address: No transaction ID received');
       }
 
