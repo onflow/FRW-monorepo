@@ -1,5 +1,5 @@
-import { bridge, logger, navigation } from '@onflow/frw-context';
-import { ScreenName } from '@onflow/frw-types';
+import { bridge, logger } from '@onflow/frw-context';
+import { NativeScreenName } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -87,9 +87,12 @@ export function NotificationPreferencesScreen({
               bridge.closeRN();
             } else {
               logger.debug(
-                '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+                '[NotificationPreferencesScreen] Secure enclave flow, launching native backup screen'
               );
-              navigation.navigate(ScreenName.BACKUP_OPTIONS);
+              // Launch native backup options screen instead of RN screen
+              if (bridge.launchNativeScreen) {
+                bridge.launchNativeScreen(NativeScreenName.BACKUP_OPTIONS);
+              }
             }
             return;
           }
@@ -116,9 +119,12 @@ export function NotificationPreferencesScreen({
         bridge.closeRN();
       } else {
         logger.debug(
-          '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+          '[NotificationPreferencesScreen] Secure enclave flow, launching native backup screen'
         );
-        navigation.navigate(ScreenName.BACKUP_OPTIONS);
+        // Launch native backup options screen instead of RN screen
+        if (bridge.launchNativeScreen) {
+          bridge.launchNativeScreen(NativeScreenName.BACKUP_OPTIONS);
+        }
       }
     },
     onError: (error, variables) => {
@@ -132,9 +138,12 @@ export function NotificationPreferencesScreen({
         bridge.closeRN();
       } else {
         logger.debug(
-          '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+          '[NotificationPreferencesScreen] Secure enclave flow, launching native backup screen'
         );
-        navigation.navigate(ScreenName.BACKUP_OPTIONS);
+        // Launch native backup options screen instead of RN screen
+        if (bridge.launchNativeScreen) {
+          bridge.launchNativeScreen(NativeScreenName.BACKUP_OPTIONS);
+        }
       }
     },
   });
@@ -151,9 +160,12 @@ export function NotificationPreferencesScreen({
       bridge.closeRN();
     } else {
       logger.debug(
-        '[NotificationPreferencesScreen] Secure enclave flow, navigating to BackupOptions'
+        '[NotificationPreferencesScreen] Secure enclave flow, launching native backup screen'
       );
-      navigation.navigate(ScreenName.BACKUP_OPTIONS);
+      // Launch native backup options screen instead of RN screen
+      if (bridge.launchNativeScreen) {
+        bridge.launchNativeScreen(NativeScreenName.BACKUP_OPTIONS);
+      }
     }
   };
 
@@ -173,7 +185,7 @@ export function NotificationPreferencesScreen({
       <YStack flex={1} px="$4" justify="space-between">
         {/* Title and description */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize="$7m" fontWeight="700" color="$text" text="center" mb="$3">
+          <Text fontSize={30} fontWeight="700" color="$text" text="center" mb="$3">
             {t('onboarding.notificationPreferences.title')}
           </Text>
 

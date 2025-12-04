@@ -6,12 +6,13 @@ import type {
   WalletAccountsResponse,
   WalletProfilesResponse,
 } from '@onflow/frw-types';
+import { type NativeScreenName as SharedNativeScreenName } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 /**
  * Local interfaces for Codegen - must be defined in the same file
- * @see {@link SharedEnvironmentVariables} and {@link SharedCurrency} in @onflow/frw-types
+ * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, and {@link SharedNativeScreenName} in @onflow/frw-types
  *
  * React Native Codegen limitation: Cannot resolve imported types.
  * These must stay in sync with the source types manually.
@@ -28,11 +29,27 @@ interface Currency {
   rate: string;
 }
 
+/**
+ * Local type for NativeScreenName - must match enum values from @onflow/frw-types
+ * @see {@link SharedNativeScreenName}
+ */
+type NativeScreenName =
+  | 'multiBackup'
+  | 'deviceBackup'
+  | 'seedPhraseBackup'
+  | 'backupOptions'
+  | 'walletRestore';
+
 // Compile-time sync validation
 const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
 const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables;
 const _currencySyncCheck: Currency = {} as SharedCurrency;
 const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
+
+// NativeScreenName validation - ensures local union matches SharedNativeScreenName enum values
+type SharedNativeScreenNameValues = `${SharedNativeScreenName}`;
+const _nativeScreenNameSyncCheck: NativeScreenName = {} as SharedNativeScreenNameValues;
+const _nativeScreenNameReverseSyncCheck: SharedNativeScreenNameValues = {} as NativeScreenName;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -79,6 +96,8 @@ export interface Spec extends TurboModule {
     message: string,
     args: ReadonlyArray<string>
   ): void;
+  // Launch native screen method - uses local NativeScreenName type for Codegen compatibility
+  launchNativeScreen(screenName: NativeScreenName): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

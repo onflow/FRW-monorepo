@@ -197,6 +197,8 @@ export enum ScreenName {
   RECOVERY_PHRASE = 'RecoveryPhrase',
   /** Secure enclave setup screen */
   SECURE_ENCLAVE = 'SecureEnclave',
+  /** Notification preferences screen */
+  NOTIFICATION_PREFERENCES = 'NotificationPreferences',
   /** Select tokens to send screen */
   SELECT_TOKENS = 'SelectTokens',
   /** Send to address/recipient screen */
