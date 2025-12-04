@@ -7,6 +7,15 @@ import {
   SendTokensScreen,
   SendToScreen,
   ReceiveScreen,
+  // Onboarding screens
+  GetStartedScreen,
+  ProfileTypeSelectionScreen,
+  SecureEnclaveScreen,
+  NotificationPreferencesScreen,
+  RecoveryPhraseScreen,
+  // Recovery screens
+  ImportProfileScreen,
+  ImportOtherMethodsScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -16,6 +25,7 @@ import {
   type InitialProps,
   type NFTModel,
 } from '@onflow/frw-types';
+import { useTheme } from '@onflow/frw-ui';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -55,6 +65,15 @@ export type RootStackParamList = {
     token?: Record<string, unknown>;
     selectedNFTs?: Record<string, unknown>[];
   };
+  // Onboarding screens
+  GetStarted: undefined;
+  ProfileTypeSelection: undefined;
+  SecureEnclave: undefined;
+  NotificationPreferences: undefined;
+  RecoveryPhrase: undefined;
+  // Recovery screens
+  ImportProfile: undefined;
+  ImportOtherMethods: undefined;
 };
 
 interface AppNavigatorProps {
@@ -71,6 +90,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
   const { address, network, initialRoute, initialProps } = props;
   const navigationRef = useRef<any>(null);
+  const theme = useTheme();
 
   // Send store actions
   const {
@@ -181,7 +201,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
 
-  // Memoize navigation themes with hardcoded colors
+  // Memoize navigation themes using Tamagui theme values
   const navigationThemes = useMemo(() => {
     const customLightTheme = {
       ...DefaultTheme,
@@ -199,16 +219,16 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       ...DarkTheme,
       colors: {
         ...DarkTheme.colors,
-        background: '#121212', // surfaceDarkDrawer color for dark mode
-        card: '#121212', // Use surfaceDarkDrawer for header background consistency
-        text: '#FFFFFF', // White text for dark mode
+        background: theme.background.val, // Use Tamagui background color
+        card: theme.background.val, // Use Tamagui background color for header
+        text: theme.text.val, // Use Tamagui text color
         border: '#B3B3B3', // Light gray border
-        primary: '#00EF8B', // Flow brand green
+        primary: theme.primary.val, // Use Tamagui primary color
       },
     };
 
     return { customLightTheme, customDarkTheme };
-  }, []);
+  }, [theme]);
 
   // Use the current theme based on dark mode state
   const currentTheme = isDarkMode
@@ -290,6 +310,48 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               }}
             />
           </Stack.Group>
+
+          {/* Onboarding screens - no header */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen name="GetStarted" component={GetStartedScreen} />
+            <Stack.Screen name="ProfileTypeSelection" component={ProfileTypeSelectionScreen} />
+            <Stack.Screen name="SecureEnclave" component={SecureEnclaveScreen} />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+            />
+            <Stack.Screen name="RecoveryPhrase" component={RecoveryPhraseScreen} />
+          </Stack.Group>
+
+          {/* Recovery screens with headers */}
+          <Stack.Screen
+            name="ImportProfile"
+            component={ImportProfileScreen}
+            options={{
+              headerShown: true,
+              headerTitle: '',
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          />
+          <Stack.Screen
+            name="ImportOtherMethods"
+            component={ImportOtherMethodsScreen}
+            options={{
+              headerShown: true,
+              headerTitle: t('onboarding.importProfile.title'),
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
