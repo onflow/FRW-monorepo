@@ -1,7 +1,7 @@
 import { logger, navigation } from '@onflow/frw-context';
 import { UserRoundPlus, Smartphone, UploadCloud, FileText } from '@onflow/frw-icons';
 import { ScreenName } from '@onflow/frw-types';
-import { YStack, Text, ImportOptionCard } from '@onflow/frw-ui';
+import { YStack, Text, ImportOptionCard, useTheme } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 export function ImportProfileScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const handlePreviousProfiles = () => {
     logger.info('[ImportProfileScreen] Previous profiles selected');
@@ -56,7 +57,7 @@ export function ImportProfileScreen(): React.ReactElement {
           {/* Previous profiles - with badge showing count */}
           <ImportOptionCard
             layout="vertical"
-            icon={<UserRoundPlus size={28} color="#00EF8B" />}
+            icon={<UserRoundPlus size={28} color={theme.primary.val} />}
             title={t('onboarding.importProfile.previousProfiles.title')}
             subtitle={t('onboarding.importProfile.previousProfiles.subtitle', { count: 2 })}
             badge="2"
@@ -66,7 +67,7 @@ export function ImportProfileScreen(): React.ReactElement {
           {/* From Device Backup */}
           <ImportOptionCard
             layout="vertical"
-            icon={<Smartphone size={28} color="#00EF8B" />}
+            icon={<Smartphone size={28} color={theme.primary.val} />}
             title={t('onboarding.importProfile.deviceBackup.title')}
             subtitle={t('onboarding.importProfile.deviceBackup.subtitle')}
             onPress={handleDeviceBackup}
@@ -75,7 +76,7 @@ export function ImportProfileScreen(): React.ReactElement {
           {/* From Cloud Multi-Backup */}
           <ImportOptionCard
             layout="vertical"
-            icon={<UploadCloud size={28} color="#00EF8B" />}
+            icon={<UploadCloud size={28} color={theme.primary.val} />}
             title={t('onboarding.importProfile.cloudBackup.title')}
             subtitle={t('onboarding.importProfile.cloudBackup.subtitle')}
             onPress={handleCloudBackup}
@@ -84,7 +85,7 @@ export function ImportProfileScreen(): React.ReactElement {
           {/* From Recovery Phrase */}
           <ImportOptionCard
             layout="vertical"
-            icon={<FileText size={28} color="#00EF8B" />}
+            icon={<FileText size={28} color={theme.primary.val} />}
             title={t('onboarding.importProfile.recoveryPhrase.title')}
             subtitle={t('onboarding.importProfile.recoveryPhrase.subtitle')}
             onPress={handleRecoveryPhrase}

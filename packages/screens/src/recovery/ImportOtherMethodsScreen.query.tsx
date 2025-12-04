@@ -1,6 +1,6 @@
 import { logger } from '@onflow/frw-context';
 import { Pocket, Key, GoogleDrive, Icloud } from '@onflow/frw-icons';
-import { YStack, Text, ImportOptionCard } from '@onflow/frw-ui';
+import { YStack, Text, ImportOptionCard, useTheme } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
@@ -12,6 +12,7 @@ import { Platform } from 'react-native';
 
 export function ImportOtherMethodsScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const handleKeyStore = () => {
     logger.info('[ImportOtherMethodsScreen] Key store selected');
@@ -47,7 +48,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
         <YStack gap="$3" pt="$4">
           {/* Key store */}
           <ImportOptionCard
-            icon={<Pocket size={28} color="#00EF8B" />}
+            icon={<Pocket size={28} color={theme.primary.val} />}
             title={t('onboarding.importOtherMethods.keyStore.title')}
             subtitle={t('onboarding.importOtherMethods.keyStore.subtitle')}
             onPress={handleKeyStore}
@@ -55,7 +56,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
 
           {/* Private key */}
           <ImportOptionCard
-            icon={<Key size={28} color="#00EF8B" />}
+            icon={<Key size={28} color={theme.primary.val} />}
             title={t('onboarding.importOtherMethods.privateKey.title')}
             subtitle={t('onboarding.importOtherMethods.privateKey.subtitle')}
             onPress={handlePrivateKey}
@@ -63,7 +64,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
 
           {/* Google Drive */}
           <ImportOptionCard
-            icon={<GoogleDrive size={28} color="#00EF8B" />}
+            icon={<GoogleDrive size={28} color={theme.primary.val} />}
             title={t('onboarding.importOtherMethods.googleDrive.title')}
             subtitle={t('onboarding.importOtherMethods.googleDrive.subtitle')}
             onPress={handleGoogleDrive}
@@ -72,7 +73,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
           {/* iCloud - iOS only */}
           {Platform.OS === 'ios' && (
             <ImportOptionCard
-              icon={<Icloud size={28} color="#00EF8B" />}
+              icon={<Icloud size={28} color={theme.primary.val} />}
               title={t('onboarding.importOtherMethods.iCloud.title')}
               subtitle={t('onboarding.importOtherMethods.iCloud.subtitle')}
               onPress={handleICloud}
