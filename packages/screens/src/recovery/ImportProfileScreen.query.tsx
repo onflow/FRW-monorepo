@@ -16,7 +16,7 @@ export function ImportProfileScreen(): React.ReactElement {
 
   const handlePreviousProfiles = () => {
     logger.info('[ImportProfileScreen] Previous profiles selected');
-    // TODO: Navigate to previous profiles screen
+    navigation.navigate(ScreenName.CONFIRM_IMPORT_PROFILE);
   };
 
   const handleDeviceBackup = () => {
@@ -44,7 +44,7 @@ export function ImportProfileScreen(): React.ReactElement {
       <YStack flex={1} px="$4" pt="$4">
         {/* Header Section */}
         <YStack mt="$8" mb="$6" gap="$3" items="center">
-          <Text fontSize="$6" fontWeight="700" color="$text" text="center" lineHeight={29}>
+          <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight={29}>
             {t('onboarding.importProfile.title')}
           </Text>
           <Text fontSize={14} color="$textSecondary" text="center" lineHeight={17}>

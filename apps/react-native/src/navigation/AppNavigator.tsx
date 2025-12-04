@@ -16,6 +16,7 @@ import {
   // Recovery screens
   ImportProfileScreen,
   ImportOtherMethodsScreen,
+  ConfirmImportProfileScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -74,6 +75,7 @@ export type RootStackParamList = {
   // Recovery screens
   ImportProfile: undefined;
   ImportOtherMethods: undefined;
+  ConfirmImportProfile: undefined;
 };
 
 interface AppNavigatorProps {
@@ -343,6 +345,18 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           <Stack.Screen
             name="ImportOtherMethods"
             component={ImportOtherMethodsScreen}
+            options={{
+              headerShown: true,
+              headerTitle: t('onboarding.importProfile.title'),
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          />
+          <Stack.Screen
+            name="ConfirmImportProfile"
+            component={ConfirmImportProfileScreen}
             options={{
               headerShown: true,
               headerTitle: t('onboarding.importProfile.title'),
