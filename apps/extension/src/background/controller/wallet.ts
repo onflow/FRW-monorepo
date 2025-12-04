@@ -926,7 +926,7 @@ export class WalletController extends BaseController {
   transferFlowEvm = async (
     recipientEVMAddressHex: string,
     amount = '1.0',
-    gasLimit = 16000000
+    gasLimit = 16777216
   ): Promise<string> =>
     transactionService.transferFlowEvm(recipientEVMAddressHex, amount, gasLimit);
   transferFTToEvm = async (
