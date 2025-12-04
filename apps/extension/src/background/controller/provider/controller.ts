@@ -536,7 +536,7 @@ class ProviderController extends BaseController {
 
   // COA Transaction Method
   private async sendTransactionCOA(transactionParams: TransactionParams): Promise<string> {
-    const { to = '', gas = '0x1C9C380', value = '0x0', data: dataValue = '0x' } = transactionParams;
+    const { to = '', gas = '0x1000000', value = '0x0', data: dataValue = '0x' } = transactionParams;
     const cleanHex = gas.startsWith('0x') ? gas : `0x${gas}`;
     const gasBigInt = BigInt(cleanHex);
 
@@ -562,7 +562,7 @@ class ProviderController extends BaseController {
       to = '',
       value = '0x0',
       data: dataValue = '0x',
-      gas = '0x1C9C380',
+      gas = '0x1000000',
       gasPrice = '0x0',
       maxFeePerGas,
       maxPriorityFeePerGas,
