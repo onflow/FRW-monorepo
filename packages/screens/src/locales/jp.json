@@ -253,6 +253,50 @@
       "secureEnclaveProfile": "セキュアエンクレーブプロファイル",
       "next": "次へ"
     },
+    "importProfile": {
+      "title": "プロフィールをインポート",
+      "subtitle": "バックアップを使用してプロフィールをインポートします。",
+      "previousProfiles": {
+        "title": "以前のプロフィール",
+        "subtitle": "このデバイスで以前に{{count}}個のプロフィールが見つかりました"
+      },
+      "deviceBackup": {
+        "title": "デバイスバックアップから",
+        "subtitle": "別の携帯電話への物理的なアクセスを使用してプロフィールをインポートします。"
+      },
+      "cloudBackup": {
+        "title": "クラウドマルチバックアップから",
+        "subtitle": "Google DriveやiCloudなどのクラウドプロバイダーからインポートします。"
+      },
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズから",
+        "subtitle": "12単語のリカバリーフレーズ。"
+      },
+      "otherMethod": {
+        "title": "別の方法から",
+        "subtitle": "キーストア、秘密鍵、またはリカバリーフレーズを使用してプロフィールをインポートします。"
+      }
+    },
+    "importOtherMethods": {
+      "title": "別の方法から",
+      "subtitle": "プロフィールをインポートする方法を選択してください。",
+      "keyStore": {
+        "title": "キーストア",
+        "subtitle": "キーストアファイルは、パスワードで暗号化されたファイル形式のウォレットです。"
+      },
+      "privateKey": {
+        "title": "秘密鍵",
+        "subtitle": "アカウントの秘密鍵を貼り付けます。"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "Google Driveからバックアップをインポートします。"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "iCloudからバックアップをインポートします。"
+      }
+    },
     "secureEnclave": {
       "title": "高度な設定",
       "cardTitle": "セキュアプロファイル",
