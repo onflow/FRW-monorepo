@@ -1,6 +1,6 @@
-import { logger, navigation } from '@onflow/frw-context';
+import { logger, navigation, bridge } from '@onflow/frw-context';
 import { UserRoundPlus, Smartphone, UploadCloud, FileText } from '@onflow/frw-icons';
-import { ScreenName } from '@onflow/frw-types';
+import { ScreenName, NativeScreenName } from '@onflow/frw-types';
 import { YStack, Text, ImportOptionCard, useTheme } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,17 +21,17 @@ export function ImportProfileScreen(): React.ReactElement {
 
   const handleDeviceBackup = () => {
     logger.info('[ImportProfileScreen] Device backup selected');
-    // TODO: Navigate to device backup screen
+    bridge.launchNativeScreen?.(NativeScreenName.DEVICE_BACKUP);
   };
 
   const handleCloudBackup = () => {
     logger.info('[ImportProfileScreen] Cloud backup selected');
-    // TODO: Navigate to cloud backup screen
+    bridge.launchNativeScreen?.(NativeScreenName.MULTI_RESTORE);
   };
 
   const handleRecoveryPhrase = () => {
     logger.info('[ImportProfileScreen] Recovery phrase selected');
-    // TODO: Navigate to recovery phrase input screen
+    bridge.launchNativeScreen?.(NativeScreenName.RECOVERY_PHRASE_RESTORE);
   };
 
   const handleAnotherMethod = () => {
