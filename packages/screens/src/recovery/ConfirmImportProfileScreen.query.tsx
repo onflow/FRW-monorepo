@@ -1,5 +1,6 @@
 import { logger } from '@onflow/frw-context';
-import { YStack, Text, useTheme } from '@onflow/frw-ui';
+import type { WalletProfile } from '@onflow/frw-types';
+import { YStack, Text, useTheme, ProfileImportList } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -8,34 +9,101 @@ import { useTranslation } from 'react-i18next';
  * Allows users to select and restore a profile from device storage
  */
 
+// Mock data - TODO: Replace with actual data from device storage
+const mockProfiles: WalletProfile[] = [
+  {
+    uid: 'profile-1',
+    name: 'Nick Name',
+    avatar: '👤',
+    accounts: [
+      {
+        id: 'account-1',
+        address: '0x1234567890abcdef',
+        name: 'Main Account',
+        emojiInfo: { emoji: '🦊', name: 'Fox', color: '#FF6B35' },
+        type: 'main',
+        balance: '1,234.56',
+        isActive: true,
+      },
+      {
+        id: 'account-2',
+        address: '0xabcdef1234567890',
+        name: 'Linked Account',
+        emojiInfo: { emoji: '🐼', name: 'Panda', color: '#4ECDC4' },
+        parentEmoji: { emoji: '🦊', name: 'Fox', color: '#FF6B35' },
+        type: 'child',
+        balance: '567.89',
+        isActive: true,
+      },
+    ],
+  },
+  {
+    uid: 'profile-2',
+    name: 'EVM Profile',
+    avatar: '⚡',
+    accounts: [
+      {
+        id: 'account-3',
+        address: '0xevmaddress123456789',
+        name: 'EVM Account',
+        emojiInfo: { emoji: '⚡', name: 'Zap', color: '#9B59B6' },
+        type: 'evm',
+        balance: '89.12',
+        isActive: true,
+      },
+    ],
+  },
+];
+
 export function ConfirmImportProfileScreen(): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
+  const [isLoading] = React.useState(false);
+  // Set first profile as default selected
+  const [selectedProfileUid, setSelectedProfileUid] = React.useState<string | undefined>(
+    mockProfiles[0]?.uid
+  );
 
-  const handleSelectProfile = (profileId: string) => {
-    logger.info('[ConfirmImportProfileScreen] Profile selected:', profileId);
+  const handleProfilePress = (profile: WalletProfile) => {
+    logger.info('[ConfirmImportProfileScreen] Profile selected:', profile);
+    setSelectedProfileUid(profile.uid);
     // TODO: Implement profile restoration logic
+  };
+
+  const handleAccountPress = (account: any) => {
+    logger.info('[ConfirmImportProfileScreen] Account selected:', account);
+    // When an account is pressed, we could also select its parent profile
+    // For now, just log it
   };
 
   return (
     <YStack flex={1} bg="$background">
-      <YStack flex={1} px="$4" pt="$4">
-        {/* Header Section */}
-        <YStack mt="$8" mb="$6" items="center">
-          <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight={38}>
-            {t('onboarding.confirmImportProfile.title', {
-              defaultValue: 'Confirm which profile to import',
-            })}
-          </Text>
-        </YStack>
+      {/* Header Section */}
+      <YStack mt="$8" mb="$6" px="$4" items="center">
+        <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight={38}>
+          {t('onboarding.confirmImportProfile.title', {
+            defaultValue: 'Confirm which profile to import',
+          })}
+        </Text>
+      </YStack>
 
-        {/* Profile List - TODO: Implement actual profile cards */}
-        <YStack gap="$3" pt="$4">
-          <Text color="$text">Previous profiles list will be shown here</Text>
-        </YStack>
-
-        {/* Spacer to push content up */}
-        <YStack flex={1} />
+      {/* Profile List */}
+      <YStack flex={1}>
+        <ProfileImportList
+          profiles={mockProfiles}
+          onAccountPress={handleAccountPress}
+          onProfilePress={handleProfilePress}
+          selectedProfileUid={selectedProfileUid}
+          isLoading={isLoading}
+          emptyTitle={t('onboarding.confirmImportProfile.emptyTitle', {
+            defaultValue: 'No profiles found',
+          })}
+          emptyMessage={t('onboarding.confirmImportProfile.emptyMessage', {
+            defaultValue: 'No previous profiles were found on this device',
+          })}
+          isMobile={true}
+          contentPaddingHorizontal={16}
+        />
       </YStack>
     </YStack>
   );
