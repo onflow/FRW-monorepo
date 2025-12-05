@@ -10,7 +10,7 @@ describe('Register Reducer', () => {
   describe('Initial State', () => {
     it('should have the correct initial state', () => {
       expect(INITIAL_REGISTER_STATE).toEqual({
-        activeTab: STEPS.USERNAME,
+        activeTab: STEPS.RECOVERY,
         nickname: '',
         password: undefined,
         mnemonic: '',
@@ -45,11 +45,11 @@ describe('Register Reducer', () => {
     });
 
     describe('GO_BACK', () => {
-      it('should go back from RECOVERY to USERNAME', () => {
+      it('should not change state when going back from RECOVERY (first step)', () => {
         const state = { ...INITIAL_REGISTER_STATE, activeTab: STEPS.RECOVERY };
         const action = { type: 'GO_BACK' as const };
         const newState = registerReducer(state, action);
-        expect(newState.activeTab).toBe(STEPS.USERNAME);
+        expect(newState.activeTab).toBe(STEPS.RECOVERY);
       });
 
       it('should go back from REPEAT to RECOVERY', () => {
@@ -74,10 +74,10 @@ describe('Register Reducer', () => {
       });
 
       it('should not change state for other steps', () => {
-        const state = { ...INITIAL_REGISTER_STATE, activeTab: STEPS.USERNAME };
+        const state = { ...INITIAL_REGISTER_STATE, activeTab: STEPS.ALL_SET };
         const action = { type: 'GO_BACK' as const };
         const newState = registerReducer(state, action);
-        expect(newState.activeTab).toBe(STEPS.USERNAME);
+        expect(newState.activeTab).toBe(STEPS.ALL_SET);
       });
     });
   });
