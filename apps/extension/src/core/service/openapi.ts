@@ -1,7 +1,10 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
+import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import dayjs from 'dayjs';
+import * as ethUtil from 'ethereumjs-util';
+import { signInAnonymously } from 'firebase/auth/web-extension';
 
 import {
   cadenceScriptsKey,
@@ -13,7 +16,16 @@ import {
   getLocalData,
   setLocalData,
 } from '@/data-model';
-import { DEFAULT_CURRENCY, Period, type PeriodFrequency, PriceProvider } from '@/shared/constant';
+import {
+  FLOW_BIP44_PATH,
+  SIGN_ALGO_NUM_DEFAULT,
+  HASH_ALGO_NUM_DEFAULT,
+  DEFAULT_WEIGHT,
+  DEFAULT_CURRENCY,
+  Period,
+  type PeriodFrequency,
+  PriceProvider,
+} from '@/shared/constant';
 import type {
   BalanceMap,
   CadenceTokenInfo,
@@ -56,6 +68,9 @@ import {
   getPeriodFrequency,
   getPriceProvider,
   consoleInfo,
+  getCompatibleHashAlgo,
+  tupleToPubKey,
+  tupleToPrivateKey,
 } from '@/shared/utils';
 
 import { findKeyAndInfo } from '../utils';
@@ -66,8 +81,15 @@ import {
   authenticationService,
   versionService,
 } from './index';
+import { defaultAccountKey } from '../utils/account-key';
 import { returnCurrentProfileId } from '../utils/current-id';
-import { verifySignature } from '../utils/modules/publicPrivateKey';
+import {
+  seedWithPathAndPhrase2PublicPrivateKey,
+  signWithKey,
+  pk2PubKeyTuple,
+  verifySignature,
+} from '../utils/modules/publicPrivateKey';
+
 
 type CurrencyResponse = {
   data: {
@@ -226,6 +248,11 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
     path: '/v1/register',
     method: 'post',
     params: ['username', 'account_key'],
+  },
+  registerV4: {
+    path: '/v4/register',
+    method: 'post',
+    params: ['flow_account_info', 'username', 'device_info'],
   },
   create_flow_address: {
     path: '/v1/user/address',
@@ -876,6 +903,160 @@ export class OpenApiService {
       public_key: account_key.public_key,
       sign_algo: getStringFromSignAlgo(account_key.sign_algo),
       hash_algo: getStringFromHashAlgo(account_key.hash_algo),
+    });
+    return data;
+  };
+
+  registerV4 = async (mnemonicOrPrivateKey: string, username: string, isPrivateKey = false) => {
+    analyticsService.time('account_created');
+
+    let accountKey: AccountKeyRequest;
+    let privateKey: string;
+
+    if (isPrivateKey) {
+      const pubKTuple = await pk2PubKeyTuple(mnemonicOrPrivateKey);
+      accountKey = {
+        public_key: tupleToPubKey(pubKTuple, SIGN_ALGO_NUM_DEFAULT),
+        sign_algo: SIGN_ALGO_NUM_DEFAULT,
+        hash_algo: HASH_ALGO_NUM_DEFAULT,
+        weight: DEFAULT_WEIGHT,
+      };
+      privateKey = mnemonicOrPrivateKey;
+    } else {
+      const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        FLOW_BIP44_PATH
+      );
+      accountKey = defaultAccountKey(pubKTuple);
+
+      privateKey = tupleToPrivateKey(pubKTuple, accountKey.sign_algo);
+    }
+
+    // Get Firebase auth token for signature
+    const auth = authenticationService.getAuth();
+    let idToken = await auth.currentUser?.getIdToken();
+    if (idToken === null || !idToken) {
+      // Sign in anonymously first if needed
+      const userCredential = await signInAnonymously(auth);
+      idToken = await userCredential.user.getIdToken();
+      if (idToken === null || !idToken) {
+        throw new Error('Failed to get idToken - even after signing in anonymously');
+      }
+    }
+
+    const rightPaddedHexBuffer = (value: string, pad: number) =>
+      Buffer.from(value.padEnd(pad * 2, '0'), 'hex').toString('hex');
+    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
+    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
+
+    const hashAlgo = getCompatibleHashAlgo(accountKey.sign_algo);
+
+    const signature = await signWithKey(message, accountKey.sign_algo, hashAlgo, privateKey);
+
+    const deviceInfo = await userWalletService.getDeviceInfo();
+
+    let evmPrivateKey: string;
+    if (isPrivateKey) {
+      evmPrivateKey = mnemonicOrPrivateKey;
+    } else {
+      const evmKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        BIP44_PATHS.EVM,
+        ''
+      );
+      evmPrivateKey = evmKeyTuple.SECP256K1.pk;
+    }
+
+    const cleanHex = evmPrivateKey.replace(/^0x/i, '');
+    const privateKeyBytes = Uint8Array.from(Buffer.from(cleanHex, 'hex'));
+    const eoaAddress = await WalletCoreProvider.deriveEVMAddressFromPrivateKey(privateKeyBytes);
+
+    // Go's VerifyEVMSignature function:
+    //   1. Takes message []byte (the idToken as UTF-8 bytes)
+    //   2. Hashes it: hash := crypto.Keccak256Hash(message)
+    //   3. Decodes signature: sig, err := hexutil.Decode(signature)
+    //   4. Recovers pubkey: recoveredPub, err := crypto.SigToPub(hash.Bytes(), sig)
+    //   5. Derives address: recoveredAddr := crypto.PubkeyToAddress(*recoveredPub)
+    //   6. Compares addresses
+
+    const messageBytes = Buffer.from(idToken, 'utf8');
+    const messageHash = ethUtil.keccak256(messageBytes);
+    const messageHashBytes = Uint8Array.from(messageHash);
+
+    const signatureBytes = await WalletCoreProvider.signEvmDigestWithPrivateKey(
+      privateKeyBytes,
+      messageHashBytes
+    );
+
+    const signatureWithPrefix = '0x' + Buffer.from(signatureBytes).toString('hex');
+
+    const requestPayload: {
+      flow_account_info: {
+        account_key: {
+          public_key: string;
+          sign_algo: number;
+          hash_algo: number;
+          weight: number;
+        };
+        signature: string;
+      };
+      evm_account_info: {
+        eoa_address: string;
+        signature: string;
+      };
+      username: string;
+      device_info: DeviceInfoRequest;
+    } = {
+      flow_account_info: {
+        account_key: {
+          public_key: accountKey.public_key,
+          sign_algo: accountKey.sign_algo,
+          hash_algo: accountKey.hash_algo,
+          weight: accountKey.weight,
+        },
+        signature: signature,
+      },
+      evm_account_info: {
+        eoa_address: eoaAddress,
+        signature: signatureWithPrefix,
+      },
+      username: username,
+      device_info: deviceInfo,
+    };
+
+    const config = this.store.config.registerV4;
+
+    await authenticationService.waitForAuthInit();
+    const currentUser = authenticationService.getAuth().currentUser;
+    if (currentUser) {
+      const headerIdToken = await currentUser.getIdToken();
+      if (headerIdToken !== idToken) {
+        consoleError('WARNING: idToken mismatch!', {
+          signingToken: idToken.substring(0, 50) + '...',
+          headerToken: headerIdToken.substring(0, 50) + '...',
+        });
+      } else {
+        consoleLog('idToken matches between signing and Authorization header');
+      }
+    }
+    const data = await this.sendRequest(config.method, config.path, {}, requestPayload);
+
+    if (!data) {
+      throw new Error('Invalid response from registration API');
+    }
+
+    const responseData = data.data || data;
+
+    if (!responseData.id || !responseData.custom_token) {
+      throw new Error('Registration response missing required fields (id or custom_token)');
+    }
+
+    await this._loginWithToken(responseData.id, responseData.custom_token);
+
+    analyticsService.track('account_created', {
+      public_key: accountKey.public_key,
+      sign_algo: getStringFromSignAlgo(accountKey.sign_algo),
+      hash_algo: getStringFromHashAlgo(accountKey.hash_algo),
     });
     return data;
   };
