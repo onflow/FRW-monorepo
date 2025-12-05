@@ -182,6 +182,16 @@ export enum NativeScreenName {
   BACKUP_OPTIONS = 'backupOptions',
   /** Native account restore/recovery screen with multiple options */
   WALLET_RESTORE = 'walletRestore',
+  /** Restore account from 12-word recovery phrase */
+  RECOVERY_PHRASE_RESTORE = 'recoveryPhraseRestore',
+  /** Restore account from key store file */
+  KEY_STORE_RESTORE = 'keyStoreRestore',
+  /** Restore account from private key */
+  PRIVATE_KEY_RESTORE = 'privateKeyRestore',
+  /** Restore account from Google Drive backup */
+  GOOGLE_DRIVE_RESTORE = 'googleDriveRestore',
+  /** Multi-restore with cloud backup options */
+  MULTI_RESTORE = 'multiRestore',
 }
 
 /**

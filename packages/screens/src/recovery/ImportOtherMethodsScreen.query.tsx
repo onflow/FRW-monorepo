@@ -1,5 +1,6 @@
-import { logger } from '@onflow/frw-context';
+import { logger, bridge } from '@onflow/frw-context';
 import { Pocket, Key, GoogleDrive, Icloud } from '@onflow/frw-icons';
+import { NativeScreenName } from '@onflow/frw-types';
 import { YStack, Text, ImportOptionCard, useTheme } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,22 +17,22 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
 
   const handleKeyStore = () => {
     logger.info('[ImportOtherMethodsScreen] Key store selected');
-    // TODO: Navigate to key store import screen
+    bridge.launchNativeScreen?.(NativeScreenName.KEY_STORE_RESTORE);
   };
 
   const handlePrivateKey = () => {
     logger.info('[ImportOtherMethodsScreen] Private key selected');
-    // TODO: Navigate to private key import screen
+    bridge.launchNativeScreen?.(NativeScreenName.PRIVATE_KEY_RESTORE);
   };
 
   const handleGoogleDrive = () => {
     logger.info('[ImportOtherMethodsScreen] Google Drive selected');
-    // TODO: Navigate to Google Drive import screen
+    bridge.launchNativeScreen?.(NativeScreenName.GOOGLE_DRIVE_RESTORE);
   };
 
   const handleICloud = () => {
     logger.info('[ImportOtherMethodsScreen] iCloud selected');
-    // TODO: Navigate to iCloud import screen
+    bridge.launchNativeScreen?.(NativeScreenName.MULTI_RESTORE);
   };
 
   return (
