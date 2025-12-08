@@ -98,13 +98,23 @@ export interface PlatformSpec {
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
   /**
-   * Register Secure Enclave account with backend
-   * Native handles the full flow: registration, tx waiting, and wallet initialization
-   * Returns after everything is complete (tx confirmed, wallet initialized)
+   * Register Secure Enclave account with backend and initiate on-chain account creation
+   * Returns early with txId so RN can monitor transaction status
+   * Does NOT wait for transaction to seal - RN will handle that
    * @param username - Username for the account
-   * @returns Response with address, txId, and account details
+   * @returns Response with txId for RN to monitor (address may be null until tx seals)
    */
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
+
+  /**
+   * Initialize Secure Enclave wallet after account creation transaction has sealed
+   * Called by RN after monitoring tx status confirms the transaction is sealed
+   * @param txId - Transaction ID from account creation
+   * @returns Promise that resolves when wallet is initialized
+   */
+  initSecureEnclaveWallet?(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }>;
 
   // Wallet initialization
   /**

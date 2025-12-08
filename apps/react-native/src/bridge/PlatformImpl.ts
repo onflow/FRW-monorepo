@@ -389,6 +389,23 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  // Initialize Secure Enclave wallet after transaction has sealed
+  // Called by RN after monitoring tx status confirms the transaction is sealed
+  async initSecureEnclaveWallet(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }> {
+    try {
+      return await NativeFRWBridge.initSecureEnclaveWallet(txId);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to init secure enclave wallet via bridge:', error);
+      return {
+        success: false,
+        address: null,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
   // Save mnemonic and initialize wallet (Keychain/KeyStore + Firebase + Wallet-Kit)
   // Throws error on failure, resolves on success
   async generateSeedPhrase(strength: number = 128): Promise<SeedPhraseGenerationResponse> {

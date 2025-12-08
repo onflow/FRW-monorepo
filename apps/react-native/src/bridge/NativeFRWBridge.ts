@@ -136,6 +136,9 @@ export interface Spec extends TurboModule {
   ): void;
   // Onboarding methods
   registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
+  initSecureEnclaveWallet(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }>;
   generateSeedPhrase(strength?: number | null): Promise<SeedPhraseGenerationResponse>;
   signInWithCustomToken(customToken: string): Promise<void>;
   saveMnemonic(
