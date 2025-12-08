@@ -1,6 +1,6 @@
-import { configureFCL, waitForTransaction } from '@onflow/frw-cadence';
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
+import { profileService } from '@onflow/frw-services';
 import { NativeScreenName, ScreenName } from '@onflow/frw-types';
 import {
   YStack,
@@ -80,27 +80,17 @@ export function SecureEnclaveScreen({
         username: result.username,
       });
 
-      // Step 2: Configure FCL for mainnet (backend creates accounts on mainnet)
-      setProgress(20);
-      configureFCL('mainnet');
-
-      // Step 3: Monitor transaction status until sealed (same as seed phrase flow)
+      // Step 2: Monitor transaction status until sealed (using ProfileService)
       logger.info('[SecureEnclaveScreen] Waiting for transaction to seal:', { txId: result.txId });
-      setProgress(30);
 
-      const txResult = await waitForTransaction(result.txId);
-      setProgress(70);
-
-      // Extract the created address from AccountCreated event
-      const accountCreatedEvent = txResult.events.find(
-        (event) => event.type === 'flow.AccountCreated'
+      const flowAddress = await profileService().waitForAccountCreationTx(
+        result.txId,
+        (progress) => {
+          // Map 0-100 from service to 20-70 for our progress
+          setProgress(20 + Math.floor(progress * 0.5));
+        }
       );
 
-      if (!accountCreatedEvent) {
-        throw new Error('Account creation event not found in transaction');
-      }
-
-      const flowAddress = accountCreatedEvent.data.address as string;
       logger.info('[SecureEnclaveScreen] Transaction sealed, address created:', { flowAddress });
 
       // Step 4: Notify native to initialize wallet with the txId

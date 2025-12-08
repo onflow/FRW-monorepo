@@ -282,4 +282,63 @@ export class ProfileService {
       throw error;
     }
   }
+
+  /**
+   * Wait for an existing transaction to seal and extract the created Flow address.
+   * Used by SecureEnclave flow where native initiates the tx and RN monitors it.
+   *
+   * @param txId - Transaction ID to monitor
+   * @param onProgress - Optional callback for progress updates (0-100)
+   * @returns Promise with the created Flow address
+   */
+  async waitForAccountCreationTx(
+    txId: string,
+    onProgress?: (progress: number) => void
+  ): Promise<string> {
+    try {
+      // Backend creates accounts on mainnet, ensure FCL is configured for mainnet
+      configureFCL('mainnet');
+
+      if (onProgress) onProgress(20);
+      logger.info('[ProfileService] Waiting for account creation transaction:', { txId });
+
+      // Wait for transaction to be sealed
+      if (onProgress) onProgress(40);
+      const txResult = await waitForTransaction(txId);
+
+      if (onProgress) onProgress(80);
+
+      // Extract the created address from AccountCreated event
+      const accountCreatedEvent = txResult.events.find(
+        (event) => event.type === 'flow.AccountCreated'
+      );
+
+      if (!accountCreatedEvent) {
+        logger.error('[ProfileService] AccountCreated event not found:', {
+          txId,
+          events: txResult.events.map((e) => e.type),
+        });
+        throw new Error('Account creation event not found in transaction');
+      }
+
+      const address = accountCreatedEvent.data.address as string;
+
+      if (!address) {
+        throw new Error('Address not found in account creation event');
+      }
+
+      logger.info('[ProfileService] Account creation transaction sealed:', { txId, address });
+
+      if (onProgress) onProgress(100);
+
+      return address;
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      logger.error('[ProfileService] Failed to wait for account creation tx:', {
+        txId,
+        message: err?.message,
+      });
+      throw error;
+    }
+  }
 }
