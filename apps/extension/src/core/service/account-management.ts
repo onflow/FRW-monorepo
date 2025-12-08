@@ -14,7 +14,6 @@ import {
 } from '@/data-model';
 import {
   FLOW_BIP44_PATH,
-  HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
   SIGN_ALGO_NUM_DEFAULT,
   HASH_ALGO_NUM_DEFAULT,
@@ -323,30 +322,17 @@ export class AccountManagement {
     }
     // We use the public key from the first account that is returned
     const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
-    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
+    const flowAddress = accounts[0].address;
 
-    const importCheckResult = (await openapiService.checkImport(accountKeyStruct.public_key)) as {
-      status: number;
-    };
-    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
-      // The account has been previously imported, so just sign in with it
-
-      // Sign in with the mnemonic
-      await userWalletService.loginWithMnemonic(mnemonic, true, derivationPath, passphrase);
-    } else {
-      // We have to create a new user on our backend
-      // Get the device info so we can do analytics
-      const deviceInfo = await userWalletService.getDeviceInfo();
-      // Import the account creating a new user on our backend and sign in as the new user
-      // TODO: Why can't we just call register here?
-      await openapiService.importKey(
-        accountKeyStruct,
-        deviceInfo,
-        username,
-        {},
-        accounts[0].address
-      );
-    }
+    // Import the account using v4 API (backend will handle conflicts)
+    await openapiService.importV4(
+      mnemonic,
+      username,
+      flowAddress,
+      false,
+      derivationPath,
+      passphrase
+    );
 
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.createKeyringWithMnemonics(
@@ -421,28 +407,10 @@ export class AccountManagement {
     // We use the public key from the first account that is returned
     const publicKey = accounts[0].publicKey;
     const signAlgo = accounts[0].signAlgo;
-    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
-    const importCheckResult = (await openapiService.checkImport(publicKey)) as { status: number };
-    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
-      // The account has been previously imported, so just sign in with it
+    const flowAddress = accounts[0].address;
 
-      // Sign in with the private key
-      await userWalletService.loginWithPk(pk, true);
-    } else {
-      // We have to create a new user on our backend
-      const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
-      // Get the device info so we can do analytics
-      const deviceInfo = await userWalletService.getDeviceInfo();
-      // Import the account creating a new user on our backend and sign in as the new user
-      // TODO: Why can't we just call register here?
-      await openapiService.importKey(
-        accountKeyStruct,
-        deviceInfo,
-        username,
-        {},
-        accounts[0].address
-      );
-    }
+    // Import the account using v4 API (backend will handle conflicts)
+    await openapiService.importV4(pk, username, flowAddress, true);
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.importPrivateKey(publicKey, signAlgo, password, pk);
 
