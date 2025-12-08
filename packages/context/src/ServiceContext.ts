@@ -177,39 +177,70 @@ export class ServiceContext {
 }
 
 // Create global proxy instances for easy access across packages
+// All proxies include try-catch to handle early access before ServiceContext initialization
 export const context = new Proxy({} as ServiceContext, {
   get(target, prop): unknown {
-    return ServiceContext.current()[prop as keyof ServiceContext];
+    try {
+      return ServiceContext.current()[prop as keyof ServiceContext];
+    } catch {
+      // Return undefined if ServiceContext not available
+      return undefined;
+    }
   },
 });
 
 export const cadence = new Proxy({} as CadenceService, {
   get(target, prop): unknown {
-    return ServiceContext.current().cadence[prop as keyof CadenceService];
+    try {
+      return ServiceContext.current().cadence[prop as keyof CadenceService];
+    } catch {
+      // Return no-op async functions if ServiceContext not available
+      return async (): Promise<null> => null;
+    }
   },
 });
 
 export const bridge = new Proxy({} as PlatformSpec, {
   get(target, prop): unknown {
-    return ServiceContext.current().bridge[prop as keyof PlatformSpec];
+    try {
+      return ServiceContext.current().bridge[prop as keyof PlatformSpec];
+    } catch {
+      // Return no-op functions if ServiceContext not available
+      return (): void => {};
+    }
   },
 });
 
 export const storage = new Proxy({} as Storage, {
   get(target, prop): unknown {
-    return ServiceContext.current().storage[prop as keyof Storage];
+    try {
+      return ServiceContext.current().storage[prop as keyof Storage];
+    } catch {
+      // Return no-op async functions if ServiceContext not available
+      return async (): Promise<null> => null;
+    }
   },
 });
 
 export const cache = new Proxy({} as Cache, {
   get(target, prop): unknown {
-    return ServiceContext.current().cache[prop as keyof Cache];
+    try {
+      return ServiceContext.current().cache[prop as keyof Cache];
+    } catch {
+      // Return no-op async functions if ServiceContext not available
+      return async (): Promise<null> => null;
+    }
   },
 });
 
 export const navigation = new Proxy({} as Navigation, {
   get(target, prop): unknown {
-    return ServiceContext.current().navigation[prop as keyof Navigation];
+    try {
+      return ServiceContext.current().navigation[prop as keyof Navigation];
+    } catch {
+      // Return no-op functions if ServiceContext not available
+      return (): void => {};
+    }
   },
 });
 
