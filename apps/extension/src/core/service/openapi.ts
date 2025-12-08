@@ -253,6 +253,16 @@ const dataConfig: Record<string, OpenApiConfigValue> = {
     method: 'post',
     params: ['flow_account_info', 'username', 'device_info'],
   },
+  importV4: {
+    path: '/v4/import',
+    method: 'post',
+    params: ['flow_account_info', 'username', 'address', 'device_info'],
+  },
+  loginV4: {
+    path: '/v4/login',
+    method: 'post',
+    params: ['flow_account_info', 'device_info'],
+  },
   create_flow_address: {
     path: '/v1/user/address',
     method: 'post',
@@ -906,6 +916,52 @@ export class OpenApiService {
     return data;
   };
 
+  /**
+   * Shared helper function to generate Flow and EVM signatures for v4 APIs
+   * This is used by registerV4, importV4, and loginV4
+   */
+  private async generateV4Signatures(
+    accountKey: AccountKeyRequest,
+    privateKey: string,
+    evmPrivateKey: string,
+    idToken: string
+  ): Promise<{
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+  }> {
+    // Generate Flow signature
+    const rightPaddedHexBuffer = (value: string, pad: number) =>
+      Buffer.from(value.padEnd(pad * 2, '0'), 'hex').toString('hex');
+    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
+    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
+
+    const hashAlgo = getCompatibleHashAlgo(accountKey.sign_algo);
+    const flowSignature = await signWithKey(message, accountKey.sign_algo, hashAlgo, privateKey);
+
+    // Generate EVM signature
+    const cleanHex = evmPrivateKey.replace(/^0x/i, '');
+    const privateKeyBytes = Uint8Array.from(Buffer.from(cleanHex, 'hex'));
+    const eoaAddress = await WalletCoreProvider.deriveEVMAddressFromPrivateKey(privateKeyBytes);
+
+    const messageBytes = Buffer.from(idToken, 'utf8');
+    const messageHash = ethUtil.keccak256(messageBytes);
+    const messageHashBytes = Uint8Array.from(messageHash);
+
+    const signatureBytes = await WalletCoreProvider.signEvmDigestWithPrivateKey(
+      privateKeyBytes,
+      messageHashBytes
+    );
+
+    const evmSignature = '0x' + Buffer.from(signatureBytes).toString('hex');
+
+    return {
+      flowSignature,
+      evmSignature,
+      eoaAddress: ethUtil.toChecksumAddress(eoaAddress),
+    };
+  }
+
   registerV4 = async (mnemonicOrPrivateKey: string, username: string, isPrivateKey = false) => {
     analyticsService.time('account_created');
 
@@ -943,17 +999,7 @@ export class OpenApiService {
       }
     }
 
-    const rightPaddedHexBuffer = (value: string, pad: number) =>
-      Buffer.from(value.padEnd(pad * 2, '0'), 'hex').toString('hex');
-    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
-    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
-
-    const hashAlgo = getCompatibleHashAlgo(accountKey.sign_algo);
-
-    const signature = await signWithKey(message, accountKey.sign_algo, hashAlgo, privateKey);
-
-    const deviceInfo = await userWalletService.getDeviceInfo();
-
+    // Get EVM private key
     let evmPrivateKey: string;
     if (isPrivateKey) {
       evmPrivateKey = mnemonicOrPrivateKey;
@@ -966,28 +1012,23 @@ export class OpenApiService {
       evmPrivateKey = evmKeyTuple.SECP256K1.pk;
     }
 
-    const cleanHex = evmPrivateKey.replace(/^0x/i, '');
-    const privateKeyBytes = Uint8Array.from(Buffer.from(cleanHex, 'hex'));
-    const eoaAddress = await WalletCoreProvider.deriveEVMAddressFromPrivateKey(privateKeyBytes);
-
-    // Go's VerifyEVMSignature function:
-    //   1. Takes message []byte (the idToken as UTF-8 bytes)
-    //   2. Hashes it: hash := crypto.Keccak256Hash(message)
-    //   3. Decodes signature: sig, err := hexutil.Decode(signature)
-    //   4. Recovers pubkey: recoveredPub, err := crypto.SigToPub(hash.Bytes(), sig)
-    //   5. Derives address: recoveredAddr := crypto.PubkeyToAddress(*recoveredPub)
-    //   6. Compares addresses
-
-    const messageBytes = Buffer.from(idToken, 'utf8');
-    const messageHash = ethUtil.keccak256(messageBytes);
-    const messageHashBytes = Uint8Array.from(messageHash);
-
-    const signatureBytes = await WalletCoreProvider.signEvmDigestWithPrivateKey(
-      privateKeyBytes,
-      messageHashBytes
+    // Generate signatures using shared function
+    const { flowSignature, evmSignature, eoaAddress } = await this.generateV4Signatures(
+      accountKey,
+      privateKey,
+      evmPrivateKey,
+      idToken
     );
 
-    const signatureWithPrefix = '0x' + Buffer.from(signatureBytes).toString('hex');
+    // Get minimal device info (only device_id, skip location)
+    const installationId = await this.getInstallationId();
+    const deviceInfo: DeviceInfoRequest = {
+      device_id: installationId,
+      ip: '',
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
 
     const requestPayload: {
       flow_account_info: {
@@ -1013,11 +1054,11 @@ export class OpenApiService {
           hash_algo: accountKey.hash_algo,
           weight: accountKey.weight,
         },
-        signature: signature,
+        signature: flowSignature,
       },
       evm_account_info: {
         eoa_address: eoaAddress,
-        signature: signatureWithPrefix,
+        signature: evmSignature,
       },
       username: username,
       device_info: deviceInfo,
@@ -1057,6 +1098,283 @@ export class OpenApiService {
       sign_algo: getStringFromSignAlgo(accountKey.sign_algo),
       hash_algo: getStringFromHashAlgo(accountKey.hash_algo),
     });
+    return data;
+  };
+
+  importV4 = async (
+    mnemonicOrPrivateKey: string,
+    username: string,
+    address: string,
+    isPrivateKey = false,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ) => {
+    let accountKey: AccountKeyRequest;
+    let privateKey: string;
+    let evmPrivateKey: string;
+
+    if (isPrivateKey) {
+      const pubKTuple = await pk2PubKeyTuple(mnemonicOrPrivateKey);
+      accountKey = {
+        public_key: tupleToPubKey(pubKTuple, SIGN_ALGO_NUM_DEFAULT),
+        sign_algo: SIGN_ALGO_NUM_DEFAULT,
+        hash_algo: HASH_ALGO_NUM_DEFAULT,
+        weight: DEFAULT_WEIGHT,
+      };
+      privateKey = mnemonicOrPrivateKey;
+      evmPrivateKey = mnemonicOrPrivateKey;
+    } else {
+      const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        derivationPath,
+        passphrase
+      );
+      accountKey = defaultAccountKey(pubKTuple);
+      privateKey = tupleToPrivateKey(pubKTuple, accountKey.sign_algo);
+
+      const evmKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        BIP44_PATHS.EVM,
+        ''
+      );
+      evmPrivateKey = evmKeyTuple.SECP256K1.pk;
+    }
+
+    // Get Firebase auth token for signature
+    const auth = authenticationService.getAuth();
+    let idToken = await auth.currentUser?.getIdToken();
+    if (idToken === null || !idToken) {
+      const userCredential = await signInAnonymously(auth);
+      idToken = await userCredential.user.getIdToken();
+      if (idToken === null || !idToken) {
+        throw new Error('Failed to get idToken - even after signing in anonymously');
+      }
+    }
+
+    // Generate signatures using shared function
+    const { flowSignature, evmSignature, eoaAddress } = await this.generateV4Signatures(
+      accountKey,
+      privateKey,
+      evmPrivateKey,
+      idToken
+    );
+
+    // Get minimal device info (only device_id, skip location)
+    const installationId = await this.getInstallationId();
+    const deviceInfo: DeviceInfoRequest = {
+      device_id: installationId,
+      ip: '',
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
+
+    const requestPayload: {
+      flow_account_info: {
+        account_key: {
+          public_key: string;
+          sign_algo: number;
+          hash_algo: number;
+          weight: number;
+        };
+        signature: string;
+      };
+      evm_account_info?: {
+        eoa_address: string;
+        signature: string;
+      };
+      username: string;
+      address: string;
+      device_info?: DeviceInfoRequest;
+      backup_info?: any;
+    } = {
+      flow_account_info: {
+        account_key: {
+          public_key: accountKey.public_key,
+          sign_algo: accountKey.sign_algo,
+          hash_algo: accountKey.hash_algo,
+          weight: accountKey.weight,
+        },
+        signature: flowSignature,
+      },
+      evm_account_info: {
+        eoa_address: eoaAddress,
+        signature: evmSignature,
+      },
+      username: username,
+      address: address,
+      device_info: deviceInfo,
+    };
+
+    const config = this.store.config.importV4;
+
+    await authenticationService.waitForAuthInit();
+    const currentUser = authenticationService.getAuth().currentUser;
+    if (currentUser) {
+      const headerIdToken = await currentUser.getIdToken();
+      if (headerIdToken !== idToken) {
+        consoleError('WARNING: idToken mismatch in importV4!', {
+          signingToken: idToken.substring(0, 50) + '...',
+          headerToken: headerIdToken.substring(0, 50) + '...',
+        });
+      }
+    }
+
+    const data = await this.sendRequest(config.method, config.path, {}, requestPayload);
+
+    if (!data) {
+      throw new Error('Invalid response from import API');
+    }
+
+    // Check for error status
+    if (data.status && data.status !== 201) {
+      const error = new Error(data.message || 'Import failed');
+      (error as any).response = { status: data.status };
+      throw error;
+    }
+
+    const responseData = data.data || data;
+
+    if (!responseData.id || !responseData.custom_token) {
+      throw new Error('Import response missing required fields (id or custom_token)');
+    }
+
+    await this._loginWithToken(responseData.id, responseData.custom_token);
+    return data;
+  };
+
+  loginV4 = async (
+    mnemonicOrPrivateKey: string,
+    isPrivateKey = false,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ) => {
+    let accountKey: AccountKeyRequest;
+    let privateKey: string;
+    let evmPrivateKey: string;
+
+    if (isPrivateKey) {
+      const pubKTuple = await pk2PubKeyTuple(mnemonicOrPrivateKey);
+      accountKey = {
+        public_key: tupleToPubKey(pubKTuple, SIGN_ALGO_NUM_DEFAULT),
+        sign_algo: SIGN_ALGO_NUM_DEFAULT,
+        hash_algo: HASH_ALGO_NUM_DEFAULT,
+        weight: DEFAULT_WEIGHT,
+      };
+      privateKey = mnemonicOrPrivateKey;
+      evmPrivateKey = mnemonicOrPrivateKey;
+    } else {
+      const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        derivationPath,
+        passphrase
+      );
+      accountKey = defaultAccountKey(pubKTuple);
+      privateKey = tupleToPrivateKey(pubKTuple, accountKey.sign_algo);
+
+      const evmKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        BIP44_PATHS.EVM,
+        ''
+      );
+      evmPrivateKey = evmKeyTuple.SECP256K1.pk;
+    }
+
+    // Get Firebase auth token for signature
+    const auth = authenticationService.getAuth();
+    let idToken = await auth.currentUser?.getIdToken();
+    if (idToken === null || !idToken) {
+      const userCredential = await signInAnonymously(auth);
+      idToken = await userCredential.user.getIdToken();
+      if (idToken === null || !idToken) {
+        throw new Error('Failed to get idToken - even after signing in anonymously');
+      }
+    }
+
+    // Generate signatures using shared function
+    const { flowSignature, evmSignature, eoaAddress } = await this.generateV4Signatures(
+      accountKey,
+      privateKey,
+      evmPrivateKey,
+      idToken
+    );
+
+    // Get minimal device info (only device_id, skip location)
+    const installationId = await this.getInstallationId();
+    const deviceInfo: DeviceInfoRequest = {
+      device_id: installationId,
+      ip: '',
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
+
+    const requestPayload: {
+      flow_account_info: {
+        account_key: {
+          public_key: string;
+          sign_algo: number;
+          hash_algo: number;
+          weight: number;
+        };
+        signature: string;
+      };
+      evm_account_info?: {
+        eoa_address: string;
+        signature: string;
+      };
+      device_info?: DeviceInfoRequest;
+    } = {
+      flow_account_info: {
+        account_key: {
+          public_key: accountKey.public_key,
+          sign_algo: accountKey.sign_algo,
+          hash_algo: accountKey.hash_algo,
+          weight: accountKey.weight,
+        },
+        signature: flowSignature,
+      },
+      evm_account_info: {
+        eoa_address: eoaAddress,
+        signature: evmSignature,
+      },
+      device_info: deviceInfo,
+    };
+
+    const config = this.store.config.loginV4;
+
+    await authenticationService.waitForAuthInit();
+    const currentUser = authenticationService.getAuth().currentUser;
+    if (currentUser) {
+      const headerIdToken = await currentUser.getIdToken();
+      if (headerIdToken !== idToken) {
+        consoleError('WARNING: idToken mismatch in loginV4!', {
+          signingToken: idToken.substring(0, 50) + '...',
+          headerToken: headerIdToken.substring(0, 50) + '...',
+        });
+      }
+    }
+
+    const data = await this.sendRequest(config.method, config.path, {}, requestPayload);
+
+    if (!data) {
+      throw new Error('Invalid response from login API');
+    }
+
+    // Check for error status (404 = wallet not found, 401 = signature verification failed, etc.)
+    if (data.status && data.status !== 200) {
+      const error = new Error(data.message || 'Login failed');
+      (error as any).response = { status: data.status };
+      throw error;
+    }
+
+    const responseData = data.data || data;
+
+    if (!responseData.id || !responseData.custom_token) {
+      throw new Error('Login response missing required fields (id or custom_token)');
+    }
+
+    await this._loginWithToken(responseData.id, responseData.custom_token);
     return data;
   };
 

@@ -64,7 +64,12 @@ type NativeScreenName =
   | 'deviceBackup'
   | 'seedPhraseBackup'
   | 'backupOptions'
-  | 'walletRestore';
+  | 'walletRestore'
+  | 'recoveryPhraseRestore'
+  | 'keyStoreRestore'
+  | 'privateKeyRestore'
+  | 'googleDriveRestore'
+  | 'multiRestore';
 
 // Compile-time sync validation
 const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
