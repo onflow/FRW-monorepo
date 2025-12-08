@@ -96,69 +96,37 @@ export class ProfileService {
         deviceInfo,
       };
 
-      // Single consolidated log before registration
-      logger.info('[ProfileService] Registering user:', {
-        username: requestPayload.username,
-      });
+      logger.info('[ProfileService] Registering user:', { username: requestPayload.username });
 
-      // Validate public key format and length for ECDSA secp256k1 (64 bytes = 128 hex chars)
+      // Validate public key format for ECDSA secp256k1 (64 bytes = 128 hex chars)
       const publicKeyHex = requestPayload.accountKey.public_key!;
       if (requestPayload.accountKey.sign_algo === 2 && !/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
-        logger.error('[ProfileService] Invalid public key for ECDSA secp256k1:', {
-          length: publicKeyHex.length,
-          expected: 128,
-          isHex: /^[0-9a-fA-F]+$/.test(publicKeyHex),
-        });
         throw new Error(
-          `Invalid public key for ECDSA secp256k1: expected 128 hexadecimal characters (64 bytes), got ${publicKeyHex.length}`
+          `Invalid public key for ECDSA secp256k1: expected 128 hex chars, got ${publicKeyHex.length}`
         );
       }
 
-      // The generated axios wrapper unwraps res.data, but the API returns a wrapped response:
-      // { data: { custom_token, uid }, message, status }
-      // So we need to access the inner data object
+      // API returns wrapped response: { data: { custom_token, uid }, message, status }
       const apiResponse = await Userv3GoService.register(requestPayload);
 
-      // Debug: log the actual response to diagnose API issues
-      logger.info('[ProfileService] Registration API response:', {
-        responseKeys: apiResponse ? Object.keys(apiResponse) : [],
-        hasDataField: !!(apiResponse as any)?.data,
-      });
-
-      // Handle wrapped response: { data: { custom_token, uid }, message, status }
+      // Extract inner data object if wrapped
       const userReturn =
         (apiResponse as any)?.data?.custom_token || (apiResponse as any)?.data?.uid
           ? (apiResponse as any).data
           : apiResponse;
-
-      logger.info('[ProfileService] Registration data:', {
-        hasCustomToken: !!userReturn?.custom_token,
-        hasId: !!userReturn?.id || !!userReturn?.uid,
-      });
 
       // Backend may return 'uid' instead of 'id'
       const customToken = userReturn?.custom_token;
       const userId = userReturn?.id || userReturn?.uid;
 
       if (!customToken || !userId) {
-        logger.error('[ProfileService] Missing required fields in response:', {
-          response: apiResponse,
-          extractedData: userReturn,
-        });
-        throw new Error(
-          'Registration failed: Missing required fields (custom_token or id) in response'
-        );
+        logger.error('[ProfileService] Registration failed: missing custom_token or id');
+        throw new Error('Registration failed: Missing required fields in response');
       }
 
-      logger.info('[ProfileService] Registration successful:', {
-        userId,
-      });
+      logger.info('[ProfileService] Registration successful:', { userId });
 
-      // Return normalized response
-      return {
-        custom_token: customToken,
-        id: userId,
-      };
+      return { custom_token: customToken, id: userId };
     } catch (error: any) {
       // Enhanced error handling for Axios errors
       if (error?.response) {
