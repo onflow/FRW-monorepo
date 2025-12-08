@@ -97,6 +97,13 @@ export interface PlatformSpec {
 
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
+  /**
+   * Register Secure Enclave account with backend
+   * Native handles the full flow: registration, tx waiting, and wallet initialization
+   * Returns after everything is complete (tx confirmed, wallet initialized)
+   * @param username - Username for the account
+   * @returns Response with address, txId, and account details
+   */
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
 
   // Wallet initialization

@@ -1,8 +1,11 @@
+import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type {
+  CreateAccountResponse,
   Currency,
   NativeScreenName,
   RecentContactsResponse,
+  SeedPhraseGenerationResponse,
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
@@ -137,8 +140,10 @@ class PlatformImpl implements PlatformSpec {
 
   async getCurrentUserUid(): Promise<string | null> {
     try {
-      if (typeof NativeFRWBridge.getCurrentUserUid === 'function') {
-        return (await NativeFRWBridge.getCurrentUserUid()) ?? null;
+      // Runtime check for optional native method (may not be available in all native implementations)
+      const bridge = NativeFRWBridge as any;
+      if (typeof bridge.getCurrentUserUid === 'function') {
+        return (await bridge.getCurrentUserUid()) ?? null;
       }
 
       const token = await this.getJWT();
@@ -180,6 +185,25 @@ class PlatformImpl implements PlatformSpec {
   }
   getPlatform(): Platform {
     return RNPlatform.OS === 'ios' ? Platform.iOS : Platform.Android;
+  }
+
+  getDeviceInfo(): forms_DeviceInfo {
+    // Get persistent device ID from native bridge
+    const deviceId = NativeFRWBridge.getDeviceId();
+
+    // Backend expects numeric type codes: "1" for Android, "2" for iOS
+    const deviceType = RNPlatform.OS === 'android' ? '1' : '2';
+
+    // Device name formatted like Android implementation
+    const deviceName =
+      RNPlatform.OS === 'android' ? `Android ${RNPlatform.Version}` : `iOS ${RNPlatform.Version}`;
+
+    return {
+      device_id: deviceId,
+      name: deviceName,
+      type: deviceType,
+      user_agent: `FRW/${this.getVersion()} (${RNPlatform.OS} ${RNPlatform.Version})`,
+    };
   }
 
   getApiEndpoint(): string {
@@ -344,12 +368,108 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  launchNativeScreen(screenName: NativeScreenName): void {
+  // Onboarding methods - Account creation
+  // Register Secure Type Account (Secure Enclave profile)
+  // Username must be provided (3-20 chars as per server requirement)
+  // Note: Secure Type accounts use hardware-backed keys, no mnemonic is generated
+  // This creates a COA account with hardware security, distinct from seed phrase EOA accounts
+  async registerSecureTypeAccount(username: string): Promise<CreateAccountResponse> {
+    try {
+      return await NativeFRWBridge.registerSecureTypeAccount(username);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to register secure type account via bridge:', error);
+      return {
+        success: false,
+        address: null,
+        username: null,
+        accountType: 'coa', // secure enclave accounts are COA (hardware-backed)
+        txId: null,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // Save mnemonic and initialize wallet (Keychain/KeyStore + Firebase + Wallet-Kit)
+  // Throws error on failure, resolves on success
+  async generateSeedPhrase(strength: number = 128): Promise<SeedPhraseGenerationResponse> {
+    try {
+      return await NativeFRWBridge.generateSeedPhrase(strength);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to generate seed phrase via bridge:', error);
+      throw error;
+    }
+  }
+
+  async saveMnemonic(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void> {
+    try {
+      await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId, username);
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to save mnemonic and initialize wallet via bridge:',
+        error
+      );
+      throw error; // Re-throw the error to propagate to caller
+    }
+  }
+
+  async signInWithCustomToken(customToken: string): Promise<void> {
+    try {
+      await NativeFRWBridge.signInWithCustomToken(customToken);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to sign in with custom token via bridge:', error);
+      throw error;
+    }
+  }
+
+  // Notification permission methods
+  async requestNotificationPermission(): Promise<boolean> {
+    try {
+      return await NativeFRWBridge.requestNotificationPermission();
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to request notification permission via bridge:',
+        error
+      );
+      return false;
+    }
+  }
+
+  async checkNotificationPermission(): Promise<boolean> {
+    try {
+      return await NativeFRWBridge.checkNotificationPermission();
+    } catch (error) {
+      this.log(
+        'error',
+        '[PlatformImpl] Failed to check notification permission via bridge:',
+        error
+      );
+      return false;
+    }
+  }
+
+  // Screen security
+  setScreenSecurityLevel(level: 'normal' | 'secure'): void {
+    try {
+      NativeFRWBridge.setScreenSecurityLevel(level);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to set screen security level via bridge:', error);
+    }
+  }
+
+  // Native screen navigation - unified method
+  launchNativeScreen(screenName: NativeScreenName, params?: string): void {
     try {
       this.log('info', `[PlatformImpl] Launching native screen: ${screenName}`);
-      NativeFRWBridge.launchNativeScreen(screenName as any);
+      NativeFRWBridge.launchNativeScreen(screenName as any, params ?? null);
     } catch (error) {
-      this.log('error', '[PlatformImpl] Failed to launch native screen via bridge:', error);
+      this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);
     }
   }
 }

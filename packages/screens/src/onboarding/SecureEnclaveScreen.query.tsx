@@ -15,9 +15,8 @@ import {
   useTheme,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
-import React, { useState, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DeviceEventEmitter } from 'react-native';
 
 interface SecureEnclaveScreenProps {
   // React Navigation passes navigation prop, but we use the abstraction
@@ -51,26 +50,6 @@ export function SecureEnclaveScreen({
     }
   }, [showLoadingState, navProp]);
 
-  // Listen for progress events from native code (blockchain confirmation sends 100%)
-  useEffect(() => {
-    if (!showLoadingState) return;
-
-    const subscription = DeviceEventEmitter.addListener(
-      'accountCreationProgress',
-      (event: { progress: number; status: string }) => {
-        logger.debug('[SecureEnclaveScreen] Progress event received:', event);
-        // Only set progress when blockchain confirms (100%)
-        if (event.progress === 100) {
-          setProgress(100);
-        }
-      }
-    );
-
-    return () => {
-      subscription.remove();
-    };
-  }, [showLoadingState]);
-
   const handleNext = () => {
     setShowConfirmDialog(true);
   };
@@ -86,18 +65,23 @@ export function SecureEnclaveScreen({
 
       logger.info('[SecureEnclaveScreen] Registering secure type account with username:', username);
 
+      // Native handles everything: registration, tx waiting, wallet initialization
+      // RN just shows the loading animation while native completes the full flow
       const result = await bridge.registerSecureTypeAccount?.(username);
 
       if (!result?.success) {
         throw new Error(result?.error || 'Failed to register secure type account');
       }
 
-      logger.info('[SecureEnclaveScreen] Secure type account registered successfully:', {
+      logger.info('[SecureEnclaveScreen] Secure type account created successfully:', {
         address: result.address,
         username: result.username,
         accountType: result.accountType,
         txId: result.txId,
       });
+
+      // Native has completed everything, mark as complete
+      setProgress(100);
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       setShowLoadingState(false);
