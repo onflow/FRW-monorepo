@@ -382,7 +382,7 @@ class PlatformImpl implements PlatformSpec {
         success: false,
         address: null,
         username: null,
-        accountType: 'coa', // secure enclave accounts are COA (hardware-backed)
+        accountType: 'hardware', // secure enclave accounts are hardware-backed
         txId: null,
         error: error instanceof Error ? error.message : 'Unknown error',
       };

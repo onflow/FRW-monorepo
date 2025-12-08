@@ -44,7 +44,7 @@ interface CreateAccountResponse {
   success: boolean;
   address: string | null;
   username: string | null;
-  accountType: 'eoa' | 'coa' | null; // eoa = mnemonic-based account, coa = secure enclave/hardware
+  accountType: 'full' | 'hardware' | null; // full = mnemonic-based account, hardware = secure enclave
   txId: string | null;
   error: string | null;
 }
