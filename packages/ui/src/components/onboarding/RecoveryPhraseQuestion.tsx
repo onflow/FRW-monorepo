@@ -1,5 +1,5 @@
 import React from 'react';
-import { YStack, XStack, Text, View, Button } from 'tamagui';
+import { YStack, XStack, Text, View } from 'tamagui';
 
 interface RecoveryPhraseQuestionProps {
   position: number;
@@ -44,33 +44,29 @@ export function RecoveryPhraseQuestion({
             const isCorrectSelection = isSelected && word === correctAnswer;
 
             return (
-              <Button
+              <View
                 key={`${position}-${wordIndex}-${word}`}
-                variant="ghost"
                 onPress={() => onSelectWord(word)}
-                padding={0}
+                cursor="pointer"
                 flex={1}
+                width="100%"
+                minW={58}
+                height={45}
+                rounded={10}
+                bg={isSelected ? '#FFFFFF' : 'transparent'}
+                items="center"
+                justify="center"
               >
-                <View
-                  width="100%"
-                  minW={58}
-                  height={45}
-                  rounded={10}
-                  bg={isCorrectSelection ? '#FFFFFF' : isWrong ? '#FFFFFF' : 'transparent'}
-                  items="center"
-                  justify="center"
+                <Text
+                  fontSize="$4"
+                  fontWeight="500"
+                  color={isCorrectSelection ? '$success' : isWrong ? '$error' : '$text'}
+                  text="center"
+                  lineHeight={28}
                 >
-                  <Text
-                    fontSize="$4"
-                    fontWeight="500"
-                    color={isCorrectSelection ? '$success' : isWrong ? '$error' : '$text'}
-                    text="center"
-                    lineHeight={28}
-                  >
-                    {word}
-                  </Text>
-                </View>
-              </Button>
+                  {word}
+                </Text>
+              </View>
             );
           })}
         </XStack>
