@@ -75,7 +75,7 @@ export class AccountManagement {
     // This register call ALSO sets the currentId in local storage
     // In addition, it will sign us in to the new account with our auth (Firebase) on our backend
     // Note this auth is different to unlocking the wallet with the password.
-    await openapiService.register(accountKey, username);
+    await openapiService.registerV4(mnemonic, username);
 
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
     await this.createKeyringWithMnemonics(
@@ -381,8 +381,8 @@ export class AccountManagement {
       weight: DEFAULT_WEIGHT,
     };
 
-    // Register the account with the backend
-    await openapiService.register(accountKey, username);
+    // Register the account with the backend using v4 API
+    await openapiService.registerV4(pk, username, true);
 
     // Create the keyring with the private key
     await this.importPrivateKey(accountKey.public_key, accountKey.sign_algo, password, pk);
