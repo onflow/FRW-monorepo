@@ -149,25 +149,32 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   const init = useCallback(async () => {
     setLogo(icon || '');
     if (!eoaAccount) return;
-    if (isValidEthereumAddress(eoaAccount.address)) {
+
+    const accountToUse =
+      coaHasAssets && evmAccount && isValidEthereumAddress(evmAccount.address)
+        ? evmAccount
+        : eoaAccount;
+
+    if (isValidEthereumAddress(accountToUse.address)) {
       const walletInfo = {
-        name: 'evm',
-        address: eoaAccount.address,
+        name: accountToUse.name || 'evm',
+        address: accountToUse.address,
         chain_id: currentNetwork,
         coins: ['flow'],
-        id: 1,
-        icon: icon || '',
-        color: '#282828',
+        id: accountToUse.id || 1,
+        icon: accountToUse.icon || icon || '',
+        color: accountToUse.color || '#282828',
         chain: currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
       };
-      await usewallet.setActiveWallet(walletInfo, 'evm');
+      const isEvmAccount = isValidEthereumAddress(accountToUse.address);
+      await usewallet.setActiveWallet(walletInfo, isEvmAccount ? 'evm' : null);
     }
     const defaultChain = currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
 
     setDefaultChain(defaultChain);
 
     setIsLoading(false);
-  }, [usewallet, icon, currentNetwork, eoaAccount]);
+  }, [usewallet, icon, currentNetwork, eoaAccount, coaHasAssets, evmAccount]);
 
   const createCoa = async () => {
     setIsLoading(true);
@@ -199,7 +206,23 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   const handleAllow = async () => {
     // This is called when the user clicks the allow button
     // This allows the connection to the dApp
-    const selectedAddress = selectedAccount?.address || eoaAccount?.address;
+
+    // Determine the selected address with priority:
+    // 1. User-selected account (if user manually selected)
+    // 2. COA account if it has assets
+    // 3. Currently selected account
+    // 4. Fallback to EOA
+    let selectedAddress: string | undefined;
+
+    if (selectedAccount?.address) {
+      selectedAddress = selectedAccount.address;
+    } else if (coaHasAssets && evmAccount && isValidEthereumAddress(evmAccount.address)) {
+      // If COA has assets and no account is explicitly selected, use COA
+      selectedAddress = evmAccount.address;
+    } else {
+      selectedAddress = eoaAccount?.address;
+    }
+
     const approvalData = {
       defaultChain,
       signPermission: 'MAINNET_AND_TESTNET',
