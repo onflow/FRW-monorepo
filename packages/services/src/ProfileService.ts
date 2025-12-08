@@ -114,20 +114,51 @@ export class ProfileService {
         );
       }
 
-      // The generated axios wrapper already unwraps res.data, so we get controllers_UserReturn directly
-      const userReturn = await Userv3GoService.register(requestPayload);
+      // The generated axios wrapper unwraps res.data, but the API returns a wrapped response:
+      // { data: { custom_token, uid }, message, status }
+      // So we need to access the inner data object
+      const apiResponse = await Userv3GoService.register(requestPayload);
 
-      if (!userReturn?.custom_token || !userReturn?.id) {
+      // Debug: log the actual response to diagnose API issues
+      logger.info('[ProfileService] Registration API response:', {
+        responseKeys: apiResponse ? Object.keys(apiResponse) : [],
+        hasDataField: !!(apiResponse as any)?.data,
+      });
+
+      // Handle wrapped response: { data: { custom_token, uid }, message, status }
+      const userReturn =
+        (apiResponse as any)?.data?.custom_token || (apiResponse as any)?.data?.uid
+          ? (apiResponse as any).data
+          : apiResponse;
+
+      logger.info('[ProfileService] Registration data:', {
+        hasCustomToken: !!userReturn?.custom_token,
+        hasId: !!userReturn?.id || !!userReturn?.uid,
+      });
+
+      // Backend may return 'uid' instead of 'id'
+      const customToken = userReturn?.custom_token;
+      const userId = userReturn?.id || userReturn?.uid;
+
+      if (!customToken || !userId) {
+        logger.error('[ProfileService] Missing required fields in response:', {
+          response: apiResponse,
+          extractedData: userReturn,
+        });
         throw new Error(
           'Registration failed: Missing required fields (custom_token or id) in response'
         );
       }
 
       logger.info('[ProfileService] Registration successful:', {
-        userId: userReturn.id,
+        userId,
       });
 
-      return userReturn;
+      // Return normalized response
+      return {
+        custom_token: customToken,
+        id: userId,
+      };
     } catch (error: any) {
       // Enhanced error handling for Axios errors
       if (error?.response) {
