@@ -14,6 +14,7 @@ import {
 } from '@/data-model';
 import {
   FLOW_BIP44_PATH,
+  HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
   SIGN_ALGO_NUM_DEFAULT,
   HASH_ALGO_NUM_DEFAULT,
@@ -324,15 +325,24 @@ export class AccountManagement {
     const accountKeyStruct = pubKeyAccountToAccountKey(accounts[0]);
     const flowAddress = accounts[0].address;
 
-    // Import the account using v4 API (backend will handle conflicts)
-    await openapiService.importV4(
-      mnemonic,
-      username,
-      flowAddress,
-      false,
-      derivationPath,
-      passphrase
-    );
+    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
+    const importCheckResult = (await openapiService.checkImport(accountKeyStruct.public_key)) as {
+      status: number;
+    };
+    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
+      // The account has been previously imported, so just sign in with it
+      await openapiService.loginV4(mnemonic, false, derivationPath, passphrase);
+    } else {
+      // Import the account using v4 API (backend will handle conflicts)
+      await openapiService.importV4(
+        mnemonic,
+        username,
+        flowAddress,
+        false,
+        derivationPath,
+        passphrase
+      );
+    }
 
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.createKeyringWithMnemonics(
@@ -409,8 +419,15 @@ export class AccountManagement {
     const signAlgo = accounts[0].signAlgo;
     const flowAddress = accounts[0].address;
 
-    // Import the account using v4 API (backend will handle conflicts)
-    await openapiService.importV4(pk, username, flowAddress, true);
+    // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
+    const importCheckResult = (await openapiService.checkImport(publicKey)) as { status: number };
+    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
+      // The account has been previously imported, so just sign in with it
+      await openapiService.loginV4(pk, true);
+    } else {
+      // Import the account using v4 API (backend will handle conflicts)
+      await openapiService.importV4(pk, username, flowAddress, true);
+    }
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.importPrivateKey(publicKey, signAlgo, password, pk);
 
