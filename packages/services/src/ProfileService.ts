@@ -83,38 +83,29 @@ export class ProfileService {
         deviceInfo,
       };
 
-      // Single consolidated log before registration
-      logger.info('[ProfileService] Registering user:', {
-        username: requestPayload.username,
-      });
+      logger.info('[ProfileService] Registering user:', { username: requestPayload.username });
 
-      // Validate public key format and length for ECDSA secp256k1 (64 bytes = 128 hex chars)
+      // Validate public key format for ECDSA secp256k1 (64 bytes = 128 hex chars)
       const publicKeyHex = requestPayload.accountKey.public_key!;
       if (requestPayload.accountKey.sign_algo === 2 && !/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
-        logger.error('[ProfileService] Invalid public key for ECDSA secp256k1:', {
-          length: publicKeyHex.length,
-          expected: 128,
-          isHex: /^[0-9a-fA-F]+$/.test(publicKeyHex),
-        });
         throw new Error(
-          `Invalid public key for ECDSA secp256k1: expected 128 hexadecimal characters (64 bytes), got ${publicKeyHex.length}`
+          `Invalid public key for ECDSA secp256k1: expected 128 hex chars, got ${publicKeyHex.length}`
         );
       }
 
-      // The generated axios wrapper already unwraps res.data, so we get controllers_UserReturn directly
-      const userReturn = await Userv3GoService.register(requestPayload);
+      // API returns wrapped response: { data: { custom_token, uid }, message, status }
+      const apiResponse = (await Userv3GoService.register(requestPayload)) as any;
+      const customToken = apiResponse?.data?.custom_token;
+      const userId = apiResponse?.data?.uid;
 
-      if (!userReturn?.custom_token || !userReturn?.id) {
-        throw new Error(
-          'Registration failed: Missing required fields (custom_token or id) in response'
-        );
+      if (!customToken || !userId) {
+        logger.error('[ProfileService] Registration failed: missing custom_token or uid');
+        throw new Error('Registration failed: Missing required fields in response');
       }
 
-      logger.info('[ProfileService] Registration successful:', {
-        userId: userReturn.id,
-      });
+      logger.info('[ProfileService] Registration successful:', { userId });
 
-      return userReturn;
+      return { custom_token: customToken, id: userId };
     } catch (error: any) {
       // Enhanced error handling for Axios errors
       if (error?.response) {
