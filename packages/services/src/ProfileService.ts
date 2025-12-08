@@ -93,13 +93,13 @@ export class ProfileService {
         );
       }
 
-      // API returns wrapped response: { data: { custom_token, uid }, message, status }
+      // API returns wrapped response: { data: { custom_token, id }, message, status }
       const apiResponse = (await Userv3GoService.register(requestPayload)) as any;
       const customToken = apiResponse?.data?.custom_token;
-      const userId = apiResponse?.data?.uid;
+      const userId = apiResponse?.data?.id || apiResponse?.data?.uid; // API returns 'id', not 'uid'
 
       if (!customToken || !userId) {
-        logger.error('[ProfileService] Registration failed: missing custom_token or uid');
+        logger.error('[ProfileService] Registration failed: missing custom_token or id');
         throw new Error('Registration failed: Missing required fields in response');
       }
 
