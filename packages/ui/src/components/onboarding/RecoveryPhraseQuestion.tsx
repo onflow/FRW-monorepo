@@ -53,7 +53,7 @@ export function RecoveryPhraseQuestion({
                 minW={58}
                 height={45}
                 rounded={10}
-                bg={isSelected ? '#FFFFFF' : 'transparent'}
+                bg={isSelected ? '$white' : 'transparent'}
                 items="center"
                 justify="center"
               >
