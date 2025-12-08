@@ -109,7 +109,7 @@ export class ProfileService {
       // API returns wrapped response: { data: { custom_token, id }, message, status }
       const apiResponse = (await Userv3GoService.register(requestPayload)) as any;
       const customToken = apiResponse?.data?.custom_token;
-      const userId = apiResponse?.data?.id || apiResponse?.data?.uid; // API returns 'id', not 'uid'
+      const userId = apiResponse?.data?.id;
 
       if (!customToken || !userId) {
         logger.error('[ProfileService] Registration failed: missing custom_token or id');
