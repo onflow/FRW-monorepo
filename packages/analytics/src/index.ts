@@ -15,6 +15,9 @@ export type {
   AuthEvents,
   AppEvents,
   ErrorEvents,
+  NavigationEvents,
+  WebEvents,
+  BackupEvents,
 } from './types.js';
 
 // Providers
@@ -49,6 +52,12 @@ export {
   TransactionErrorSession,
   ErrorReporter,
 } from './events/error.js';
+
+export { NavigationTracker, TabSession } from './events/navigation.js';
+
+export { WebTracker, BrowserSession, AuthenticationSession } from './events/web.js';
+
+export { BackupTracker, BackupSession, MultiBackupSession } from './events/backup.js';
 
 // Utilities
 export {

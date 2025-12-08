@@ -197,7 +197,48 @@ export interface ErrorEvents {
   } & EventProperties;
 }
 
-export type AllEvents = TransactionEvents & AuthEvents & AppEvents & ErrorEvents;
+export interface NavigationEvents {
+  tabOpened: {
+    tab?: 'dashboard' | 'explore' | 'settings' | 'activity' | string;
+  } & EventProperties;
+  primaryActionSelected: {
+    action?: 'send' | 'receive' | 'swap' | 'buy';
+  } & EventProperties;
+}
+
+export interface WebEvents {
+  appAuthenticated: {
+    url?: string;
+    address?: string;
+  } & EventProperties;
+  siteVisited: {
+    url?: string;
+  } & EventProperties;
+}
+
+export interface BackupEvents {
+  recoveryPhraseBackupCreated: {
+    address?: string;
+    platform?: 'iOS' | 'Android' | 'Extension';
+  } & EventProperties;
+  deviceBackupCreated: {
+    address?: string;
+    platform?: 'iOS' | 'Android' | 'Extension';
+  } & EventProperties;
+  cloudBackupCreated: {
+    address?: string;
+    platform?: 'iOS' | 'Android' | 'Extension';
+    providers?: string[];
+  } & EventProperties;
+}
+
+export type AllEvents = TransactionEvents &
+  AuthEvents &
+  AppEvents &
+  ErrorEvents &
+  NavigationEvents &
+  WebEvents &
+  BackupEvents;
 
 export type EventName = keyof AllEvents;
 export type EventData<T extends EventName> = AllEvents[T];
