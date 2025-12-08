@@ -10,6 +10,10 @@ import {
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
+  RecoveryPhraseScreen,
+  ConfirmRecoveryPhraseScreen,
+  SecureEnclaveScreen,
+  NotificationPreferencesScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -61,6 +65,19 @@ export type RootStackParamList = {
   // Onboarding screens
   GetStarted: undefined;
   ProfileTypeSelection: undefined;
+  RecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: {
+    mnemonic: string;
+    accountKey: {
+      publicKey: string;
+      signAlgo: number;
+      hashAlgo: number;
+    };
+  };
+  SecureEnclave: undefined;
+  NotificationPreferences: {
+    accountType?: string;
+  };
 };
 
 interface AppNavigatorProps {
@@ -320,6 +337,36 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={ProfileTypeSelectionScreen}
               options={{
                 headerShown: false, // No header for profile type selection
+              }}
+            />
+            <Stack.Screen
+              name="RecoveryPhrase"
+              component={RecoveryPhraseScreen}
+              options={{
+                headerShown: true,
+                headerTitle: t('recoveryPhrase.navTitle'),
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmRecoveryPhrase"
+              component={ConfirmRecoveryPhraseScreen}
+              options={{
+                headerShown: true,
+                headerTitle: t('recoveryPhrase.navTitle'),
+              }}
+            />
+            <Stack.Screen
+              name="SecureEnclave"
+              component={SecureEnclaveScreen}
+              options={{
+                headerShown: false, // No header for secure enclave
+              }}
+            />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+              options={{
+                headerShown: false, // No header for notification preferences
               }}
             />
           </Stack.Group>
