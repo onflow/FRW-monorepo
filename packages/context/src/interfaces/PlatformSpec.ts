@@ -98,13 +98,6 @@ export interface PlatformSpec {
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
-  /**
-   * Sends Flow public key to backend to create Flow + COA addresses on-chain
-   * @returns Transaction ID (txId) if successful, or the string "COA_ALREADY_EXISTS" if account already exists
-   * @example "a1b2c3d4..." // Transaction ID
-   * @example "COA_ALREADY_EXISTS" // Account already exists
-   */
-  registerAccountWithBackend?(): Promise<string>;
 
   // Wallet initialization
   saveMnemonic?(
