@@ -368,7 +368,8 @@
       "selectWord": "#{{position}} の単語を選択",
       "finish": "完了",
       "creating": {
-        "title": "アカウントを\n作成中"
+        "title": "アカウントを\n作成中",
+        "configuring": "アカウントを設定中"
       },
       "error": {
         "title": "アカウント作成に失敗しました",

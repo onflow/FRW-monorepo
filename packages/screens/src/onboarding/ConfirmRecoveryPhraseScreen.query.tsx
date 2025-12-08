@@ -415,12 +415,8 @@ export function ConfirmRecoveryPhraseScreen({
       {/* Account Creation Loading State - matches SecureEnclaveScreen */}
       <AccountCreationLoadingState
         visible={isCreatingAccount}
-        title={t('onboarding.confirmRecoveryPhrase.creating.title', {
-          defaultValue: 'Creating\nyour account',
-        })}
-        statusText={t('onboarding.confirmRecoveryPhrase.creating.configuring', {
-          defaultValue: 'Configuring account',
-        })}
+        title={t('onboarding.confirmRecoveryPhrase.creating.title')}
+        statusText={t('onboarding.confirmRecoveryPhrase.creating.configuring')}
         progress={progress}
       />
     </>

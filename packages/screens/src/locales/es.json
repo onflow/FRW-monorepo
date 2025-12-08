@@ -367,7 +367,8 @@
       "selectWord": "Selecciona la palabra en #{{position}}",
       "finish": "Finalizar",
       "creating": {
-        "title": "Creando\ntu cuenta"
+        "title": "Creando\ntu cuenta",
+        "configuring": "Configurando cuenta"
       },
       "error": {
         "title": "Error al crear la cuenta",

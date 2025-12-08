@@ -367,7 +367,8 @@
       "selectWord": "Select the word at #{{position}}",
       "finish": "Finish",
       "creating": {
-        "title": "Creating\nyour account"
+        "title": "Creating\nyour account",
+        "configuring": "Configuring account"
       },
       "error": {
         "title": "Account Creation Failed",
