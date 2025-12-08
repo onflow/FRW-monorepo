@@ -100,7 +100,19 @@ export interface PlatformSpec {
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
 
   // Wallet initialization
-  saveMnemonic?(mnemonic: string, customToken: string, username: string): Promise<void>;
+  /**
+   * Save mnemonic and initialize wallet after account creation transaction is sealed
+   * @param mnemonic - The recovery phrase to save securely
+   * @param customToken - Firebase custom token from registration
+   * @param txId - Transaction ID from account creation (used to init native wallet SDK)
+   * @param username - Username for the account
+   */
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void>;
 
   // Firebase authentication
   signInWithCustomToken?(customToken: string): Promise<void>;

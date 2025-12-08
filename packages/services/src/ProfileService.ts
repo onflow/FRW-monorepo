@@ -21,6 +21,15 @@ interface CreateFlowAddressV2Response {
 }
 
 /**
+ * Result from createFlowAddressAndWait
+ * Contains both the created address and transaction ID for native wallet initialization
+ */
+export interface CreateFlowAddressResult {
+  address: string;
+  txId: string;
+}
+
+/**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
  *
@@ -213,20 +222,22 @@ export class ProfileService {
    * Note: FCL is configured by ServiceContext/CadenceService at app initialization.
    *
    * @param onProgress - Optional callback for progress updates (0-100)
-   * @returns Promise with the created Flow address
+   * @returns Promise with object containing created Flow address and transaction ID
    */
-  async createFlowAddressAndWait(onProgress?: (progress: number) => void): Promise<string> {
+  async createFlowAddressAndWait(
+    onProgress?: (progress: number) => void
+  ): Promise<CreateFlowAddressResult> {
     try {
       // Step 1: Initiate Flow address creation (0-20%)
       if (onProgress) onProgress(20);
-      const txid = await this.createFlowAddress();
+      const txId = await this.createFlowAddress();
 
       // Step 2: Wait for transaction to be sealed (20-90%)
       if (onProgress) onProgress(50);
-      logger.info('[ProfileService] Waiting for transaction to seal:', { txId: txid });
+      logger.info('[ProfileService] Waiting for transaction to seal:', { txId });
 
       // Use the shared transaction monitoring from cadence package
-      const txResult = await waitForTransaction(txid);
+      const txResult = await waitForTransaction(txId);
 
       if (onProgress) onProgress(90);
 
@@ -237,30 +248,31 @@ export class ProfileService {
 
       if (!accountCreatedEvent) {
         logger.error('[ProfileService] AccountCreated event not found:', {
-          txId: txid,
+          txId,
           events: txResult.events.map((e) => e.type),
         });
         throw new Error('Account creation event not found in transaction');
       }
 
-      const createdAddress = accountCreatedEvent.data.address as string;
+      const address = accountCreatedEvent.data.address as string;
 
-      if (!createdAddress) {
+      if (!address) {
         logger.error('[ProfileService] No address in AccountCreated event:', {
-          txId: txid,
+          txId,
           eventData: accountCreatedEvent.data,
         });
         throw new Error('Address not found in account creation event');
       }
 
       logger.info('[ProfileService] Flow address created successfully:', {
-        txId: txid,
-        address: createdAddress,
+        txId,
+        address,
       });
 
       if (onProgress) onProgress(100);
 
-      return createdAddress;
+      // Return both txId and address so caller can notify native to init wallet
+      return { address, txId };
     } catch (error: unknown) {
       const err = error as { message?: string; response?: { status?: number; data?: unknown } };
       logger.error('[ProfileService] Failed to create and wait for Flow address:', {

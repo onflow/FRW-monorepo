@@ -218,11 +218,12 @@ export function ConfirmRecoveryPhraseScreen({
         );
       }
 
+      // Sign in with Firebase
       try {
         if (bridge.signInWithCustomToken) {
           await bridge.signInWithCustomToken(registerResponse.custom_token);
         }
-      } catch (authError: any) {
+      } catch (authError: unknown) {
         throw new FRWError(
           ErrorCode.ACCOUNT_FIREBASE_AUTH_FAILED,
           'Failed to authenticate with Firebase',
@@ -230,33 +231,42 @@ export function ConfirmRecoveryPhraseScreen({
         );
       }
 
-      try {
-        if (bridge.saveMnemonic) {
-          await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, username);
-        }
-      } catch (saveError: any) {
-        throw new FRWError(
-          ErrorCode.ACCOUNT_MNEMONIC_SAVE_FAILED,
-          'Failed to save recovery phrase securely',
-          { originalError: saveError }
-        );
-      }
-
       // Create Flow address on-chain and wait for transaction to complete
+      // We get the txId first, wait for it to seal, then notify native to init wallet
+      let txId: string;
+      let flowAddress: string;
       try {
-        const flowAddress = await profileService().createFlowAddressAndWait((progress) => {
+        // Get txId and address from the combined method
+        const result = await profileService().createFlowAddressAndWait((progress) => {
           setProgress(progress);
         });
+        flowAddress = result.address;
+        txId = result.txId;
 
-        logger.info('[ConfirmRecoveryPhraseScreen] Flow address created:', { flowAddress });
-      } catch (flowAddressError: any) {
+        logger.info('[ConfirmRecoveryPhraseScreen] Flow address created:', { flowAddress, txId });
+      } catch (flowAddressError: unknown) {
+        const err = flowAddressError as { message?: string };
         throw new FRWError(
           ErrorCode.ACCOUNT_FLOW_ADDRESS_CREATION_FAILED,
           'Failed to create Flow address on blockchain',
           {
             originalError: flowAddressError,
-            message: flowAddressError?.message,
+            message: err?.message,
           }
+        );
+      }
+
+      // After transaction is sealed, save mnemonic and notify native to init wallet with txId
+      // This allows native Wallet SDK to properly initialize with the account
+      try {
+        if (bridge.saveMnemonic) {
+          await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, txId, username);
+        }
+      } catch (saveError: unknown) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_MNEMONIC_SAVE_FAILED,
+          'Failed to save recovery phrase securely',
+          { originalError: saveError }
         );
       }
 
