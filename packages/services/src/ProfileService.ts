@@ -4,7 +4,7 @@ import {
   type controllers_UserReturn,
   type forms_AccountKey,
 } from '@onflow/frw-api';
-import { waitForTransaction } from '@onflow/frw-cadence';
+import { configureFCL, waitForTransaction } from '@onflow/frw-cadence';
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
@@ -227,6 +227,9 @@ export class ProfileService {
     onProgress?: (progress: number) => void
   ): Promise<CreateFlowAddressResult> {
     try {
+      // Backend creates accounts on mainnet, ensure FCL is configured for mainnet
+      configureFCL('mainnet');
+
       // Step 1: Initiate Flow address creation (0-20%)
       if (onProgress) onProgress(20);
       const txId = await this.createFlowAddress();
