@@ -50,29 +50,30 @@ export function subscribeToTransaction(
  * Configure FCL for the specified network
  */
 export function configureFCL(network: 'mainnet' | 'testnet'): void {
-  if (network === 'mainnet') {
-    fcl
-      .config()
-      .put('flow.network', 'mainnet')
-      .put('accessNode.api', 'https://rest-mainnet.onflow.org')
-      .put('sdk.transport', httpSend)
-      .put('logger.level', 1);
-    const addrMap = addresses.mainnet;
-    for (const key in addrMap) {
-      fcl.config().put(key, addrMap[key as keyof typeof addrMap]);
-    }
-  } else {
-    fcl
-      .config()
-      .put('flow.network', 'testnet')
-      .put('accessNode.api', 'https://rest-testnet.onflow.org')
-      .put('sdk.transport', httpSend)
-      .put('logger.level', 1);
-    const addrMap = addresses.testnet;
-    for (const key in addrMap) {
-      fcl.config().put(key, addrMap[key as keyof typeof addrMap]);
-    }
+  const accessNode =
+    network === 'mainnet' ? 'https://rest-mainnet.onflow.org' : 'https://rest-testnet.onflow.org';
+
+  fcl
+    .config()
+    .put('flow.network', network)
+    .put('accessNode.api', accessNode)
+    .put('sdk.transport', httpSend)
+    .put('logger.level', 1);
+
+  const addrMap = network === 'mainnet' ? addresses.mainnet : addresses.testnet;
+  for (const key in addrMap) {
+    fcl.config().put(key, addrMap[key as keyof typeof addrMap]);
   }
+
+  // eslint-disable-next-line no-console
+  console.log(`[FCL] Configured for ${network}, accessNode: ${accessNode}`);
+}
+
+/**
+ * Get current FCL network configuration
+ */
+export async function getFCLNetwork(): Promise<string> {
+  return (await fcl.config().get('flow.network')) || 'unknown';
 }
 
 /**

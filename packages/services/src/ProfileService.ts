@@ -4,7 +4,7 @@ import {
   type controllers_UserReturn,
   type forms_AccountKey,
 } from '@onflow/frw-api';
-import { configureFCL, waitForTransaction } from '@onflow/frw-cadence';
+import { configureFCL, getFCLNetwork, waitForTransaction } from '@onflow/frw-cadence';
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
@@ -229,6 +229,8 @@ export class ProfileService {
     try {
       // Backend creates accounts on mainnet, ensure FCL is configured for mainnet
       configureFCL('mainnet');
+      const fclNetwork = await getFCLNetwork();
+      logger.info('[ProfileService] FCL configured for network:', { fclNetwork });
 
       // Step 1: Initiate Flow address creation (0-20%)
       if (onProgress) onProgress(20);
@@ -236,7 +238,10 @@ export class ProfileService {
 
       // Step 2: Wait for transaction to be sealed (20-90%)
       if (onProgress) onProgress(50);
-      logger.info('[ProfileService] Waiting for transaction to seal:', { txId });
+      logger.info('[ProfileService] Waiting for transaction to seal:', {
+        txId,
+        network: fclNetwork,
+      });
 
       // Use the shared transaction monitoring from cadence package
       const txResult = await waitForTransaction(txId);
