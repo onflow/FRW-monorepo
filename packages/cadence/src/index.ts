@@ -22,13 +22,57 @@ export interface TransactionResult {
 
 /**
  * Wait for a transaction to be sealed on-chain
- * This wraps FCL's transaction monitoring functionality
+ * Uses custom polling since FCL's built-in polling has issues in React Native
  *
  * @param txId - Transaction ID to monitor
+ * @param timeoutMs - Timeout in milliseconds (default: 60 seconds)
+ * @param pollIntervalMs - Polling interval in milliseconds (default: 2 seconds)
  * @returns Promise with the transaction result including events
  */
-export async function waitForTransaction(txId: string): Promise<TransactionResult> {
-  return fcl.tx(txId).onceSealed();
+export async function waitForTransaction(
+  txId: string,
+  timeoutMs = 60000,
+  pollIntervalMs = 2000
+): Promise<TransactionResult> {
+  const startTime = Date.now();
+
+  // eslint-disable-next-line no-console
+  console.log(`[FCL] Starting transaction polling for: ${txId}`);
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      // Fetch transaction result directly
+      const result = await fcl.tx(txId).snapshot();
+
+      // eslint-disable-next-line no-console
+      console.log(`[FCL] Transaction status: ${result.status} (4=sealed)`);
+
+      // Status 4 = SEALED
+      if (result.status === 4) {
+        // eslint-disable-next-line no-console
+        console.log(`[FCL] Transaction sealed successfully`);
+        return result as TransactionResult;
+      }
+
+      // Status 5 = EXPIRED (failed)
+      if (result.status === 5) {
+        throw new Error(`Transaction expired: ${result.errorMessage || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      // If it's a network error, continue polling
+      if (!error.message?.includes('expired')) {
+        // eslint-disable-next-line no-console
+        console.log(`[FCL] Polling error (will retry): ${error.message}`);
+      } else {
+        throw error;
+      }
+    }
+
+    // Wait before next poll
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+  }
+
+  throw new Error(`Transaction timeout after ${timeoutMs}ms: ${txId}`);
 }
 
 /**
