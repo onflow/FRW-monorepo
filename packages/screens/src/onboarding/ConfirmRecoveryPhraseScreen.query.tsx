@@ -12,7 +12,6 @@ import {
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DeviceEventEmitter } from 'react-native';
 
 // Helper function to generate 3 random unique positions from 1-12
 const generateRandomPositions = (): number[] => {
@@ -69,20 +68,8 @@ export function ConfirmRecoveryPhraseScreen({
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // Listen for progress events from native code
-  useEffect(() => {
-    const subscription = DeviceEventEmitter.addListener(
-      'AccountCreationProgress',
-      (event: { progress: number; status: string }) => {
-        logger.debug('[ConfirmRecoveryPhraseScreen] Progress event:', event.progress, event.status);
-        setProgress(event.progress);
-      }
-    );
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
+  // Note: Progress updates are now handled via promise callbacks in handleFinish()
+  // using profileService().createFlowAddressAndWait(onProgress) instead of DeviceEventEmitter
 
   // Theme-aware glassmorphic backgrounds
 

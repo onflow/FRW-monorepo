@@ -1,13 +1,12 @@
-import * as fcl from '@onflow/fcl';
 import {
   UserGoService,
   Userv3GoService,
   type controllers_UserReturn,
   type forms_AccountKey,
 } from '@onflow/frw-api';
+import { waitForTransaction } from '@onflow/frw-cadence';
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
-import { send as httpSend } from '@onflow/transport-http';
 
 /**
  * Response from /v2/user/address endpoint
@@ -24,36 +23,14 @@ interface CreateFlowAddressV2Response {
 /**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
+ *
+ * Note: FCL configuration is handled by ServiceContext/CadenceService
+ * when the app initializes. This service relies on that shared configuration.
  */
 export class ProfileService {
   private static instance: ProfileService;
-  private fclConfigured = false;
 
   private constructor() {}
-
-  /**
-   * Configure FCL for the current network
-   * This is called automatically when needed
-   */
-  private ensureFCLConfigured(): void {
-    if (this.fclConfigured) {
-      return;
-    }
-
-    const network = bridge.getNetwork() as 'mainnet' | 'testnet';
-    const accessNodeUrl =
-      network === 'mainnet' ? 'https://rest-mainnet.onflow.org' : 'https://rest-testnet.onflow.org';
-
-    fcl
-      .config()
-      .put('flow.network', network)
-      .put('accessNode.api', accessNodeUrl)
-      .put('sdk.transport', httpSend)
-      .put('logger.level', 1);
-
-    this.fclConfigured = true;
-    logger.info('[ProfileService] FCL configured for network:', { network, accessNodeUrl });
-  }
 
   /**
    * Get singleton instance
@@ -230,17 +207,16 @@ export class ProfileService {
 
   /**
    * Create Flow address and wait for transaction to complete.
-   * This method combines createFlowAddress() with FCL transaction monitoring.
+   * This method combines createFlowAddress() with transaction monitoring.
    * Use this for user-facing account creation flows where you need to wait for completion.
+   *
+   * Note: FCL is configured by ServiceContext/CadenceService at app initialization.
    *
    * @param onProgress - Optional callback for progress updates (0-100)
    * @returns Promise with the created Flow address
    */
   async createFlowAddressAndWait(onProgress?: (progress: number) => void): Promise<string> {
     try {
-      // Ensure FCL is configured for the current network
-      this.ensureFCLConfigured();
-
       // Step 1: Initiate Flow address creation (0-20%)
       if (onProgress) onProgress(20);
       const txid = await this.createFlowAddress();
@@ -249,24 +225,25 @@ export class ProfileService {
       if (onProgress) onProgress(50);
       logger.info('[ProfileService] Waiting for transaction to seal:', { txId: txid });
 
-      const txResult = await fcl.tx(txid).onceSealed();
+      // Use the shared transaction monitoring from cadence package
+      const txResult = await waitForTransaction(txid);
 
       if (onProgress) onProgress(90);
 
       // Step 3: Extract the created address from AccountCreated event
       const accountCreatedEvent = txResult.events.find(
-        (event: any) => event.type === 'flow.AccountCreated'
+        (event) => event.type === 'flow.AccountCreated'
       );
 
       if (!accountCreatedEvent) {
         logger.error('[ProfileService] AccountCreated event not found:', {
           txId: txid,
-          events: txResult.events.map((e: any) => e.type),
+          events: txResult.events.map((e) => e.type),
         });
         throw new Error('Account creation event not found in transaction');
       }
 
-      const createdAddress = accountCreatedEvent.data.address;
+      const createdAddress = accountCreatedEvent.data.address as string;
 
       if (!createdAddress) {
         logger.error('[ProfileService] No address in AccountCreated event:', {
@@ -284,11 +261,12 @@ export class ProfileService {
       if (onProgress) onProgress(100);
 
       return createdAddress;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string; response?: { status?: number; data?: unknown } };
       logger.error('[ProfileService] Failed to create and wait for Flow address:', {
-        message: error?.message,
-        status: error?.response?.status,
-        responseData: error?.response?.data,
+        message: err?.message,
+        status: err?.response?.status,
+        responseData: err?.response?.data,
       });
       throw error;
     }

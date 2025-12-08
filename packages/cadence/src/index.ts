@@ -5,6 +5,48 @@ import { send as httpSend } from '@onflow/transport-http';
 import { addresses, CadenceService } from './cadence.generated';
 
 /**
+ * Transaction result from FCL
+ */
+export interface TransactionResult {
+  status: number;
+  statusCode: number;
+  errorMessage: string;
+  events: Array<{
+    type: string;
+    transactionId: string;
+    transactionIndex: number;
+    eventIndex: number;
+    data: Record<string, unknown>;
+  }>;
+}
+
+/**
+ * Wait for a transaction to be sealed on-chain
+ * This wraps FCL's transaction monitoring functionality
+ *
+ * @param txId - Transaction ID to monitor
+ * @returns Promise with the transaction result including events
+ */
+export async function waitForTransaction(txId: string): Promise<TransactionResult> {
+  return fcl.tx(txId).onceSealed();
+}
+
+/**
+ * Subscribe to transaction status updates
+ * Useful for showing progress during account creation
+ *
+ * @param txId - Transaction ID to monitor
+ * @param callback - Called with each status update
+ * @returns Unsubscribe function
+ */
+export function subscribeToTransaction(
+  txId: string,
+  callback: (status: { status: number; statusCode: number; errorMessage: string }) => void
+): () => void {
+  return fcl.tx(txId).subscribe(callback);
+}
+
+/**
  * Configure FCL for the specified network
  */
 export function configureFCL(network: 'mainnet' | 'testnet'): void {
