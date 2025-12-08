@@ -332,6 +332,50 @@
         "server": "服务器错误。请稍后重试。",
         "validation": "无效的账户数据。请重试。"
       }
+    },
+    "importProfile": {
+      "title": "导入个人资料",
+      "subtitle": "使用备份导入您的个人资料。",
+      "previousProfiles": {
+        "title": "之前的个人资料",
+        "subtitle": "在此设备上发现{{count}}个之前的个人资料"
+      },
+      "deviceBackup": {
+        "title": "设备备份",
+        "subtitle": "通过物理访问另一部手机来导入您的个人资料。"
+      },
+      "cloudBackup": {
+        "title": "云多重备份",
+        "subtitle": "从Google Drive和iCloud等云服务提供商导入。"
+      },
+      "recoveryPhrase": {
+        "title": "从恢复短语",
+        "subtitle": "12个单词的恢复短语。"
+      },
+      "otherMethod": {
+        "title": "从其他方式",
+        "subtitle": "使用密钥库、私钥或恢复短语导入您的个人资料。"
+      }
+    },
+    "importOtherMethods": {
+      "title": "从其他方式",
+      "subtitle": "选择导入个人资料的方式。",
+      "keyStore": {
+        "title": "密钥库",
+        "subtitle": "密钥库文件是您以密码加密的文件形式的钱包。"
+      },
+      "privateKey": {
+        "title": "私钥",
+        "subtitle": "粘贴您的账户私钥。"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "从Google Drive导入备份。"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "从iCloud导入备份。"
+      }
     }
   }
 }

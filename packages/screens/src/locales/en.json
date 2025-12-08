@@ -253,6 +253,49 @@
       "secureEnclaveProfile": "Secure Enclave Profile",
       "next": "Next"
     },
+    "importProfile": {
+      "title": "Import profile",
+      "subtitle": "Import your profile using a backup.",
+      "previousProfiles": {
+        "title": "Previous profiles",
+        "subtitle": "Found {{count}} profiles previously on this device"
+      },
+      "deviceBackup": {
+        "title": "From Device Backup",
+        "subtitle": "Mobile or extension devices"
+      },
+      "cloudBackup": {
+        "title": "From Cloud Multi-Backup",
+        "subtitle": "Google Drive, iCloud or DropBox."
+      },
+      "recoveryPhrase": {
+        "title": "From Recovery Phrase",
+        "subtitle": "12 word recovery phrase."
+      },
+      "anotherMethod": {
+        "title": "From another method",
+        "subtitle": ""
+      }
+    },
+    "importOtherMethods": {
+      "title": "From other methods",
+      "keyStore": {
+        "title": "Key store",
+        "subtitle": "Import keystore file (Blocto Backup)"
+      },
+      "privateKey": {
+        "title": "Private key",
+        "subtitle": "Import with raw hex key"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "From legacy Google Drive backup"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "From legacy iCloud backup"
+      }
+    },
     "secureEnclave": {
       "title": "Advanced",
       "cardTitle": "Secure Profile",

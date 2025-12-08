@@ -7,6 +7,9 @@ import {
   SendTokensScreen,
   SendToScreen,
   ReceiveScreen,
+  // Onboarding screens
+  GetStartedScreen,
+  ProfileTypeSelectionScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -55,6 +58,9 @@ export type RootStackParamList = {
     token?: Record<string, unknown>;
     selectedNFTs?: Record<string, unknown>[];
   };
+  // Onboarding screens
+  GetStarted: undefined;
+  ProfileTypeSelection: undefined;
 };
 
 interface AppNavigatorProps {
@@ -287,6 +293,33 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={ReceiveScreen}
               options={{
                 headerTitle: t('navigation.receive'),
+              }}
+            />
+          </Stack.Group>
+
+          {/* Onboarding Screens Group */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '', // Ensure no back title text
+              headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
+            }}
+          >
+            <Stack.Screen
+              name="GetStarted"
+              component={GetStartedScreen}
+              options={{
+                headerShown: false, // First screen doesn't need header
+              }}
+            />
+            <Stack.Screen
+              name="ProfileTypeSelection"
+              component={ProfileTypeSelectionScreen}
+              options={{
+                headerShown: false, // No header for profile type selection
               }}
             />
           </Stack.Group>
