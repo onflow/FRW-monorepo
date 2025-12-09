@@ -19,7 +19,19 @@ import { DashboardTotal } from './dashboard-total';
 import WalletTab from './wallet-tab';
 import MoveBoard from '../MoveBoard';
 
-const DASHBOARD_POPUP_DISMISSED_KEY = 'dashboard-popup-dismissed';
+const getVersionForPopup = (): string => {
+  const version = chrome.runtime.getManifest().version || '3.1.0';
+  const versionParts = version.split('.');
+  if (versionParts.length >= 3) {
+    versionParts[2] = '0';
+  }
+  return versionParts.join('.');
+};
+
+const getDashboardPopupDismissedKey = (): string => {
+  const version = getVersionForPopup();
+  return `dashboard-popup-dismissed-v${version}`;
+};
 
 const Dashboard = () => {
   const { network, emulatorModeOn } = useNetwork();
@@ -40,11 +52,16 @@ const Dashboard = () => {
   // Use this to show the onramp drawer. Navigate to dashboard?onramp=true
   const [showOnRamp, setShowOnRamp] = useState(location.search.includes('onramp'));
   const [showMoveBoard, setShowMoveBoard] = useState(false);
-  const [showPopup, setShowPopup] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
+
+  // Get version for popup title (patch version set to 0)
+  const version = getVersionForPopup();
+  const popupTitle = `Extension Update V${version}`;
 
   // Check localStorage on mount to determine if popup should show
   useEffect(() => {
-    const dismissed = localStorage.getItem(DASHBOARD_POPUP_DISMISSED_KEY);
+    const key = getDashboardPopupDismissedKey();
+    const dismissed = localStorage.getItem(key);
     if (dismissed !== 'true') {
       setShowPopup(true);
     }
@@ -71,7 +88,8 @@ const Dashboard = () => {
   }, [userInfo, mainAddress, currentWallet?.evmAccount, currentWallet?.eoaAccount]);
 
   const handleClosePopup = () => {
-    localStorage.setItem(DASHBOARD_POPUP_DISMISSED_KEY, 'true');
+    const key = getDashboardPopupDismissedKey();
+    localStorage.setItem(key, 'true');
     setShowPopup(false);
   };
 
@@ -139,7 +157,7 @@ const Dashboard = () => {
       {/* One-time Popup Modal */}
       <UpdateDialog
         visible={showPopup}
-        title="Extension Update V3.1.0"
+        title={popupTitle}
         htmlContent={`
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">

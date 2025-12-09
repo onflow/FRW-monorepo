@@ -4,7 +4,6 @@ import { createPortal } from 'react-dom';
 import { Platform, Modal } from 'react-native';
 import { YStack, Stack, useTheme, getTokens, Text as TamaguiText } from 'tamagui';
 
-
 export interface UpdateDialogProps {
   visible: boolean;
   title: string;
@@ -147,7 +146,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
           } as any)}
         >
           {/* @ts-expect-error - Close icon type issue */}
-          <Close size={20} color={tokens.color.light80.val} style={{ alignSelf: 'center' }} />
+          <Close size={24} color={tokens.color.light80.val} style={{ alignSelf: 'center' }} />
         </YStack>
 
         {/* Title */}
@@ -167,14 +166,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
 
         {/* Content area */}
         <YStack {...({ gap: 10, mb: 12 } as any)}>
-          {htmlContent ? (
-            <YStack
-               
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
-            />
-          ) : (
-            children
-          )}
+          {htmlContent ? <YStack dangerouslySetInnerHTML={{ __html: htmlContent }} /> : children}
         </YStack>
 
         {/* Read more link */}
@@ -200,9 +192,9 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
         <YStack>
           <YStack
             {...({
-              height: 56,
-              minHeight: 56,
-              maxHeight: 56,
+              height: 50,
+              minHeight: 50,
+              maxHeight: 50,
               w: '100%',
               bg: '#FFFFFF',
               rounded: 12,
