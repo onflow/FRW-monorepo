@@ -200,6 +200,27 @@ describe('Test send strategies', () => {
     expect(configCache.name).toBe('callContract');
   });
 
+  it('Should throw when EVM token contract address is missing', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144b97a0402c0e206522c28052c1025a8aa',
+      flowIdentifier: '',
+      sender: mainAccount.evmAddr,
+      amount: '0.00001',
+      childAddrs: [],
+      ids: [],
+      decimal: 6,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await expect(SendTransaction(payload, cadenceService)).rejects.toThrow(
+      'invalid send evm transaction payload - invalid contract address'
+    );
+  });
+
   it('Test ChildToChildTokenStrategy - Child to child token transfer', async () => {
     const payload = {
       type: 'token',
