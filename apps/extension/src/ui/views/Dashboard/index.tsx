@@ -1,5 +1,6 @@
 import { Drawer } from '@mui/material';
 import Box from '@mui/material/Box';
+import { UpdateDialog } from '@onflow/frw-ui';
 import { setUser, setExtras } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -17,6 +18,8 @@ import { getSwapLink } from '@/ui/utils/url-constants';
 import { DashboardTotal } from './dashboard-total';
 import WalletTab from './wallet-tab';
 import MoveBoard from '../MoveBoard';
+
+const DASHBOARD_POPUP_DISMISSED_KEY = 'dashboard-popup-dismissed';
 
 const Dashboard = () => {
   const { network, emulatorModeOn } = useNetwork();
@@ -37,6 +40,15 @@ const Dashboard = () => {
   // Use this to show the onramp drawer. Navigate to dashboard?onramp=true
   const [showOnRamp, setShowOnRamp] = useState(location.search.includes('onramp'));
   const [showMoveBoard, setShowMoveBoard] = useState(false);
+  const [showPopup, setShowPopup] = useState(true);
+
+  // Check localStorage on mount to determine if popup should show
+  useEffect(() => {
+    const dismissed = localStorage.getItem(DASHBOARD_POPUP_DISMISSED_KEY);
+    if (dismissed !== 'true') {
+      setShowPopup(true);
+    }
+  }, []);
 
   const swapLink = getSwapLink(network, activeAccountType);
 
@@ -57,6 +69,11 @@ const Dashboard = () => {
       });
     }
   }, [userInfo, mainAddress, currentWallet?.evmAccount, currentWallet?.eoaAccount]);
+
+  const handleClosePopup = () => {
+    localStorage.setItem(DASHBOARD_POPUP_DISMISSED_KEY, 'true');
+    setShowPopup(false);
+  };
 
   return (
     <Box
@@ -119,6 +136,44 @@ const Dashboard = () => {
           />
         )}
       </div>
+      {/* One-time Popup Modal */}
+      <UpdateDialog
+        visible={showPopup}
+        title="Extension Update V3.1.0"
+        htmlContent={`
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
+              📣 What's new
+            </div>
+            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
+              If you already use an Ethereum wallet like MetaMask or Rainbow, you can import those same accounts to access everything on Flow.
+            </div>
+            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
+              🎮 Unlock Flow-native apps for your accounts
+            </div>
+            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
+              Get instant access to DeFi, marketplaces, and unique experiences on Flow.
+            </div>
+            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
+              ✨ Already using Flow Wallet?
+            </div>
+            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
+              You'll see a new "EVM" account alongside your Cadence accounts and your now-legacy "EVM Flow" account.
+            </div>
+            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
+              💡 Why this matters
+            </div>
+            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
+              Your EVM account is super-powered by Flow, unlocking gasless transactions, MEV-resilience and more.
+            </div>
+          </div>
+        `}
+        readMoreText="Read more"
+        readMoreUrl="https://wallet.flow.com/post/eoa-support-comes-to-flow-wallet-extension"
+        buttonText={chrome.i18n.getMessage('OK')}
+        onButtonClick={handleClosePopup}
+        onClose={handleClosePopup}
+      />
     </Box>
   );
 };
