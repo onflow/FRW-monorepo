@@ -963,6 +963,66 @@ export interface TransferListErrorResponse {
   message?: string;
 }
 
+/** PayerRequest */
+export interface PayerRequest {
+  /** Base64 encoded Cadence script */
+  cadence_base64: string;
+
+  /**  */
+  network?: Network;
+}
+
+/** PayerMsg */
+export interface PayerMsg {
+  /** Envelope message for payer signing */
+  envelopeMessage: string;
+}
+
+/** PayloadMsg */
+export interface PayloadMsg {
+  /** Message payload */
+  payload: string;
+}
+
+/** payerSignRequest */
+export interface payerSignRequest {
+  /**  */
+  message: PayerMsg;
+
+  /** Network identifier */
+  network?: string;
+}
+
+/** authSignRequest */
+export interface authSignRequest {
+  /**  */
+  message: PayloadMsg;
+
+  /** Network identifier */
+  network?: string;
+}
+
+/** PayerRequestHeaders */
+export interface PayerRequestHeaders {
+  /**  */
+  network?: Network;
+}
+
+/** SignedData */
+export interface SignedData {
+  /** The fee payer address */
+  address: string;
+
+  /** The key index used for signing */
+  keyId: number;
+
+  /** The transaction signature */
+  sig: string;
+}
+
+/** PayerResponse */
+export interface PayerResponse {}
+
 /** Response */
 export interface Response {
   /** Response data payload */
@@ -1488,18 +1548,6 @@ export interface PayerStatusApiResponseV1 {
   message?: string;
 }
 
-/** SignedData */
-export interface SignedData {
-  /** The fee payer address */
-  address: string;
-
-  /** The key index used for signing */
-  keyId: number;
-
-  /** The transaction signature */
-  sig: string;
-}
-
 /** SignaturePayload */
 export interface SignaturePayload {
   /**  */
@@ -1512,12 +1560,6 @@ export interface SignaturePayload {
   message?: string;
 }
 
-/** PayerMsg */
-export interface PayerMsg {
-  /**  */
-  envelopeMessage: string;
-}
-
 /** PayerSignParams */
 export interface PayerSignParams {
   /**  */
@@ -1525,12 +1567,6 @@ export interface PayerSignParams {
 
   /**  */
   network?: Network;
-}
-
-/** PayloadMsg */
-export interface PayloadMsg {
-  /**  */
-  payload: string;
 }
 
 /** AuthSignParams */
@@ -1548,12 +1584,3 @@ export enum Network {
 }
 type IPayerStatusPayloadV1StatusVersion = 1;
 type IPayerStatusApiResponseV1Status = 200 | 429 | 500 | 503;
-export enum EnumPayerSignParamsNetwork {
-  'mainnet' = 'mainnet',
-  'testnet' = 'testnet'
-}
-export enum EnumAuthSignParamsNetwork {
-  'mainnet' = 'mainnet',
-  'testnet' = 'testnet',
-  'sandboxnet' = 'sandboxnet'
-}

@@ -195,6 +195,17 @@ export function SendToScreen(): ReactElement {
     ...retryConfigs.critical, // Critical batch balance data retry config
   });
 
+  // Query for NFT counts using batch API
+  const { data: batchNFTCounts = [] } = useQuery({
+    queryKey: ['batchNFTCounts', profileAccountAddresses, network],
+    queryFn: () => tokenQueries.fetchBatchNFTCounts(profileAccountAddresses, network),
+    enabled: profileAccountAddresses.length > 0,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes (NFTs change less frequently)
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+  });
+
   // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern and retry logic
   const { data: balanceData } = useQuery({
     queryKey: tokenQueryKeys.balance(fromAddress, network),
@@ -210,23 +221,30 @@ export function SendToScreen(): ReactElement {
   const accountBalances = useMemo(() => {
     const results: { [address: string]: { balance: string; nftCount: string } } = {};
 
-    // Create a lookup map from batch results
+    // Create a lookup map from batch balance results
     const balanceLookup = new Map<string, string>();
     batchBalances.forEach(([address, balance]) => {
       balanceLookup.set(address, balance);
     });
 
+    // Create a lookup map from batch NFT count results
+    const nftCountLookup = new Map<string, number>();
+    batchNFTCounts.forEach(([address, count]) => {
+      nftCountLookup.set(address, count);
+    });
+
     // Map to expected format with both balance and NFT count for all profile accounts
     profileAccountAddresses.forEach((address) => {
       const balance = balanceLookup.get(address) || '0 FLOW';
+      const nftCount = nftCountLookup.get(address) || 0;
       results[address] = {
         balance,
-        nftCount: '0',
+        nftCount: `${nftCount}`,
       };
     });
 
     return results;
-  }, [batchBalances, profileAccountAddresses]);
+  }, [batchBalances, batchNFTCounts, profileAccountAddresses]);
 
   // Filter function for search
   const filterBySearchQuery = useCallback(
@@ -291,20 +309,59 @@ export function SendToScreen(): ReactElement {
     [existingAddresses]
   );
 
+  // Helper function to determine if an account should be hidden
+  // Hide COA/EVM accounts that have both zero balance and zero NFTs
+  const shouldHideAccount = useCallback(
+    (account: { address: string; type?: string; balance?: string; nfts?: string }): boolean => {
+      // Only apply hiding logic to COA/EVM accounts
+      const isCoa = account.type === 'evm' || isCOAAddress(account.address);
+      if (!isCoa) {
+        return false;
+      }
+
+      // Parse balance - extract numeric value from string like "0 FLOW" or "0.00 FLOW"
+      const balanceStr = account.balance || '0';
+      const balanceMatch = balanceStr.match(/^([\d,.]+)/);
+      const balanceValue = balanceMatch ? parseFloat(balanceMatch[1].replace(/,/g, '')) : 0;
+
+      // Parse NFT count
+      const nftCount = parseInt(account.nfts || '0', 10);
+
+      // Hide if both balance and NFT count are 0
+      return balanceValue === 0 && nftCount === 0;
+    },
+    []
+  );
+
   // Convert and filter profiles data for display
   const profilesData = useMemo(() => {
     const result = allProfiles.map((profile) => ({
       ...profile,
       accounts: profile.accounts
-        .map((account) => ({
-          ...account,
-          balance: accountBalances[account.address]?.balance || '0 FLOW',
-        }))
-        .filter((account) => filterBySearchQuery(account.name || '', account.address)),
+        .map((account) => {
+          const accountData = accountBalances[account.address];
+          const nftCount = parseInt(accountData?.nftCount || '0', 10);
+          return {
+            ...account,
+            balance: accountData?.balance || '0 FLOW',
+            nfts: `${nftCount}`,
+          };
+        })
+        .filter((account) => {
+          // First check search query filter
+          if (!filterBySearchQuery(account.name || '', account.address)) {
+            return false;
+          }
+          // Then check if account should be hidden (COA with zero balance and zero NFTs)
+          if (shouldHideAccount(account)) {
+            return false;
+          }
+          return true;
+        }),
     }));
     // Only return profiles that have at least one matching account
     return result.filter((profile) => profile.accounts.length > 0);
-  }, [allProfiles, accountBalances, filterBySearchQuery]);
+  }, [allProfiles, accountBalances, filterBySearchQuery, shouldHideAccount]);
 
   // Get all wallet accounts for first time send check
   const allWalletAccounts = useMemo(() => {
