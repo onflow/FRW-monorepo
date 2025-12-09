@@ -350,6 +350,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="SecureEnclave"
               component={SecureEnclaveScreen}
               options={{
+                headerShown: true,
                 headerTitle: '', // No title text
                 headerRight: () => null, // No close button
                 headerStyle: {
@@ -361,6 +362,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="NotificationPreferences"
               component={NotificationPreferencesScreen}
               options={{
+                headerShown: true,
                 headerTitle: t('onboarding.notificationPreferences.headerTitle'),
                 headerLeft: () => null, // No back button
                 headerRight: () => null, // No close button
