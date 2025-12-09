@@ -5,7 +5,6 @@ import android.widget.Toast
 import com.flow.wallet.crypto.BIP39
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
-import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -15,21 +14,21 @@ import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
+import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.cleanBackupMnemonicPreference
@@ -53,7 +52,6 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
-import org.onflow.flow.ChainId
 import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
 import java.security.MessageDigest
@@ -86,83 +84,30 @@ suspend fun registerOutblock(
                     // The service calls here should ideally just fetch the latest state if needed,
                     // not perform new registrations or key creations.
 
+                    // Clear cache before adding new account to avoid clearing the new state later
+                    clearUserCache()
+
                     val userInfo = try { service.userInfo().data } catch (e: Exception) {
                         logd(TAG, "Failed to fetch user info after registration")
                         continuation.resume(false)
                         return@ioScope
                     }
 
-                    // Use the reliable getWalletList API call that gets account info directly from server
-                    val walletListData = try {
-                        service.getWalletList().data
-                    } catch (e: Exception) {
-                        logd(TAG, "Failed to fetch wallet list after registration")
-                        continuation.resume(false)
-                        return@ioScope
-                    }
-
-                    if (walletListData == null) {
-                        logd(TAG, "No wallet data found for registered user")
-                        continuation.resume(false)
-                        return@ioScope
-                    }
-
-                    // Now that we have the wallet data with account address, use fetchAccountByAddress
-                    // to populate the wallet SDK with the account details from Flow network
-                    val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-                    val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
-                    if (keyForWalletSDK == null) {
-                        logd(TAG, "Failed to retrieve stored private key for Wallet SDK init from both new and old storage.")
-                        continuation.resume(false)
-                        return@ioScope
-                    }
-
-                    val walletForSDK = WalletFactory.createKeyWallet(
-                        keyForWalletSDK,
-                        setOf(ChainId.Mainnet, ChainId.Testnet),
-                        storage
-                    )
-
-                    when (chainNetWorkString()) {
-                        "mainnet" -> ChainId.Mainnet
-                        "testnet" -> ChainId.Testnet
-                        else -> ChainId.Mainnet
-                    }
-
-                    // Use fetchAccountByAddress to populate wallet SDK with account from Flow network
-                    walletListData.wallets?.forEach { walletData ->
-                        walletData.blockchain?.forEach { blockchain ->
-                            try {
-                                val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
-                                    "mainnet" -> ChainId.Mainnet
-                                    "testnet" -> ChainId.Testnet
-                                    else -> null
-                                }
-                                if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
-                                    val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
-                                    logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with account $address")
-                                    walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
-                                    logd(TAG, "Successfully populated wallet SDK with account from Flow network")
-                                }
-                            } catch (e: Exception) {
-                                logd(TAG, "Warning: Could not fetch account ${blockchain.address} into Wallet SDK: ${e.message}")
-                                // Continue anyway, we have the wallet data from server
-                            }
-                        }
-                    }
+                    val userId = firebaseUid() ?: ""
 
                     AccountManager.add(
                         Account(
                             userInfo = userInfo,
                             prefix = prefix, // This prefix matches the one used to store the key in registerServer
-                            wallet = walletListData
+                            wallet = WalletListData(
+                                id = userId,
+                                username = userInfo.username,
+                                wallets = null
+                            )
                         ),
-                        firebaseUid()
+                        userId
                     )
                     logd(TAG, "Account added to AccountManager.")
-
-                    // Initialize WalletManager to pick up the new account/wallet state
-                    WalletManager.init()
 
                     // Now, get the CryptoProvider. It should use the prefix and load the key stored by registerServer.
                     val currentAccount = AccountManager.get() // Should be the newly added account
@@ -172,7 +117,7 @@ suspend fun registerOutblock(
                         return@ioScope
                     }
 
-                    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(currentAccount)
+                    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
                     if (cryptoProvider == null) {
                         loge(TAG, "Failed to generate crypto provider for the registered account.")
                         continuation.resume(false)
@@ -189,7 +134,7 @@ suspend fun registerOutblock(
                         cryptoProvider.getSignatureAlgorithm().value,
                         cryptoProvider.getHashAlgorithm().algorithm
                     )
-                    clearUserCache()
+
                     continuation.resume(true)
                 } else {
                     // Registration failed in registerOutblockUserInternal (e.g., server or Firebase issue)
