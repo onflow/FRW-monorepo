@@ -322,11 +322,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           >
             <Stack.Screen name="GetStarted" component={GetStartedScreen} />
             <Stack.Screen name="ProfileTypeSelection" component={ProfileTypeSelectionScreen} />
-            <Stack.Screen name="SecureEnclave" component={SecureEnclaveScreen} />
-            <Stack.Screen
-              name="NotificationPreferences"
-              component={NotificationPreferencesScreen}
-            />
             <Stack.Screen
               name="RecoveryPhrase"
               component={RecoveryPhraseScreen}
