@@ -1,8 +1,14 @@
 {
+  "schemes": [],
   "swagger": "2.0",
   "info": {
-    "contact": {}
+    "description": "",
+    "title": "",
+    "contact": {},
+    "version": ""
   },
+  "host": "",
+  "basePath": "/",
   "paths": {
     "/crypto/exchange": {
       "get": {
@@ -1753,16 +1759,39 @@
     },
     "/v2/user/address": {
       "post": {
-        "description": "add by uid",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Creates a new Flow address for the authenticated user. This endpoint creates addresses on both mainnet and testnet networks. Rate limiting is applied per IP address (50 requests per day). Requires authentication.",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "tags": ["user"],
-        "summary": "Add an address",
+        "summary": "Create a new Flow address",
         "responses": {
           "200": {
-            "description": "JSON response with transaction ID in the data.txid field",
+            "description": "Address creation transaction initiated successfully. Returns transaction ID in data.txid field",
             "schema": {
               "$ref": "#/definitions/controllers.AccountReturnv2"
+            }
+          },
+          "404": {
+            "description": "User or wallet not found",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - Rate limit exceeded (50 requests per day per IP)",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object"
             }
           }
         }
@@ -2204,14 +2233,31 @@
         }
       }
     },
-    "/v4/register": {
+    "/v4/import": {
       "post": {
-        "description": "Register a new user with signature verification. Requires username, account key, device info, and signature. The signature is verified against the Authorization token before registration proceeds.",
+        "description": "Import a user with enhanced security including signature verification for Flow account keys. Flow account signature is required and verified against the Authorization token. EVM account signature verification is optional. Device information is optional - the server will automatically extract IP, User-Agent, and location data from the request.",
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "tags": ["userv4"],
-        "summary": "Register user V4",
+        "summary": "Import user V4",
         "parameters": [
+          {
+            "description": "Flow account information with account key and signature",
+            "name": "flow_account_info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/forms.FlowAccountInfo"
+            }
+          },
+          {
+            "description": "EVM account information with EOA address and signature (optional)",
+            "name": "evm_account_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.EvmAccountInfo"
+            }
+          },
           {
             "description": "User Name (3-20 characters, alphanumeric)",
             "name": "username",
@@ -2222,30 +2268,179 @@
             }
           },
           {
-            "description": "Account key with public key, sign algorithm, and hash algorithm",
-            "name": "account_key",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/forms.AccountKey"
-            }
-          },
-          {
-            "description": "Device information including device ID, name, type, and user agent",
-            "name": "device_info",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/forms.DeviceInfo"
-            }
-          },
-          {
-            "description": "Signature for verification (must sign the Authorization token)",
-            "name": "signature",
+            "description": "Flow mainnet address",
+            "name": "address",
             "in": "body",
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Backup information",
+            "name": "backup_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.BackupInfo"
+            }
+          },
+          {
+            "description": "Device information (optional - server extracts IP, User-Agent, and location automatically)",
+            "name": "device_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.DeviceInfo"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User imported successfully",
+            "schema": {
+              "$ref": "#/definitions/controllers.UserReturn"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Signature verification failed",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "406": {
+            "description": "Not Acceptable - Validation error",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v4/login": {
+      "post": {
+        "description": "Login an existing user with enhanced security including signature verification for Flow account keys. Flow account signature is required and verified against the Authorization token. EVM account signature verification is optional. Device information is optional - the server will automatically extract IP, User-Agent, and location data from the request.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["userv4"],
+        "summary": "Login user V4",
+        "parameters": [
+          {
+            "description": "Flow account information with account key and signature",
+            "name": "flow_account_info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/forms.FlowAccountInfo"
+            }
+          },
+          {
+            "description": "EVM account information with EOA address and signature (optional)",
+            "name": "evm_account_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.EvmAccountInfo"
+            }
+          },
+          {
+            "description": "Device information (optional - server extracts IP, User-Agent, and location automatically)",
+            "name": "device_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.DeviceInfo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User login success",
+            "schema": {
+              "$ref": "#/definitions/controllers.UserReturn"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Signature verification failed",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "Not Found - Wallet not found or verification failed",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "406": {
+            "description": "Not Acceptable - Validation error",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v4/register": {
+      "post": {
+        "description": "Register a new user with enhanced security including signature verification for Flow account keys. Flow account signature is required and verified against the Authorization token. EVM account signature verification is optional. Device information is optional - the server will automatically extract IP, User-Agent, and location data from the request. Only device_id is required if provided.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["userv4"],
+        "summary": "Register user V4",
+        "parameters": [
+          {
+            "description": "Flow account information with account key and signature",
+            "name": "flow_account_info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/forms.FlowAccountInfo"
+            }
+          },
+          {
+            "description": "EVM account information with EOA address and signature (optional)",
+            "name": "evm_account_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.EvmAccountInfo"
+            }
+          },
+          {
+            "description": "User Name (3-20 characters, alphanumeric)",
+            "name": "username",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Device information (optional - server extracts IP, User-Agent, and location automatically)",
+            "name": "device_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.DeviceInfo"
             }
           }
         ],
@@ -2254,6 +2449,82 @@
             "description": "User created successfully",
             "schema": {
               "$ref": "#/definitions/controllers.UserReturn"
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Signature verification failed",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "406": {
+            "description": "Not Acceptable - Validation error",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v4/sync": {
+      "post": {
+        "description": "Sync a new device/wallet to an existing user with enhanced security including signature verification for Flow account keys. Flow account signature is required and verified against the Authorization token. EVM account signature verification is optional. Device information is optional - the server will automatically extract IP, User-Agent, and location data from the request.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["userv4"],
+        "summary": "Sync new user device V4",
+        "parameters": [
+          {
+            "description": "Flow account information with account key and signature",
+            "name": "flow_account_info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/forms.FlowAccountInfo"
+            }
+          },
+          {
+            "description": "EVM account information with EOA address and signature (optional)",
+            "name": "evm_account_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.EvmAccountInfo"
+            }
+          },
+          {
+            "description": "Backup information",
+            "name": "backup_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.BackupInfo"
+            }
+          },
+          {
+            "description": "Device information (optional - server extracts IP, User-Agent, and location automatically)",
+            "name": "device_info",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/forms.DeviceInfo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync device finished successfully",
+            "schema": {
+              "type": "object"
             }
           },
           "400": {
@@ -2903,6 +3174,30 @@
           "type": "string"
         },
         "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "forms.EvmAccountInfo": {
+      "type": "object",
+      "required": ["eoa_address", "signature"],
+      "properties": {
+        "eoa_address": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        }
+      }
+    },
+    "forms.FlowAccountInfo": {
+      "type": "object",
+      "required": ["account_key", "signature"],
+      "properties": {
+        "account_key": {
+          "$ref": "#/definitions/forms.AccountKey"
+        },
+        "signature": {
           "type": "string"
         }
       }
