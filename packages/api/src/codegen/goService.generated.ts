@@ -1197,7 +1197,7 @@ export class UserService {
     });
   }
   /**
-   * Add an address
+   * Create a new Flow address
    */
   static address2(options: IRequestOptions = {}): Promise<controllers_AccountReturnv2> {
     return new Promise((resolve, reject) => {
@@ -1654,18 +1654,87 @@ export class Userv3Service {
 
 export class Userv4Service {
   /**
+   * Import user V4
+   */
+  static import(
+    params: {
+      /** Flow account information with account key and signature */
+      flowAccountInfo: forms_FlowAccountInfo;
+      /** EVM account information with EOA address and signature (optional) */
+      evmAccountInfo?: forms_EvmAccountInfo;
+      /** User Name (3-20 characters, alphanumeric) */
+      username: string;
+      /** Flow mainnet address */
+      address: string;
+      /** Backup information */
+      backupInfo?: forms_BackupInfo;
+      /** Device information (optional - server extracts IP, User-Agent, and location automatically) */
+      deviceInfo?: forms_DeviceInfo;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<controllers_UserReturn> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/v4/import';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = {
+        flow_account_info: params['flowAccountInfo'],
+        evm_account_info: params['evmAccountInfo'],
+        username: params['username'],
+        address: params['address'],
+        backup_info: params['backupInfo'],
+        device_info: params['deviceInfo']
+      };
+
+      configs.data = data;
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
+   * Login user V4
+   */
+  static login(
+    params: {
+      /** Flow account information with account key and signature */
+      flowAccountInfo: forms_FlowAccountInfo;
+      /** EVM account information with EOA address and signature (optional) */
+      evmAccountInfo?: forms_EvmAccountInfo;
+      /** Device information (optional - server extracts IP, User-Agent, and location automatically) */
+      deviceInfo?: forms_DeviceInfo;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<controllers_UserReturn> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/v4/login';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = {
+        flow_account_info: params['flowAccountInfo'],
+        evm_account_info: params['evmAccountInfo'],
+        device_info: params['deviceInfo']
+      };
+
+      configs.data = data;
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
    * Register user V4
    */
   static register(
     params: {
+      /** Flow account information with account key and signature */
+      flowAccountInfo: forms_FlowAccountInfo;
+      /** EVM account information with EOA address and signature (optional) */
+      evmAccountInfo?: forms_EvmAccountInfo;
       /** User Name (3-20 characters, alphanumeric) */
       username: string;
-      /** Account key with public key, sign algorithm, and hash algorithm */
-      accountKey: forms_AccountKey;
-      /** Device information including device ID, name, type, and user agent */
-      deviceInfo: forms_DeviceInfo;
-      /** Signature for verification (must sign the Authorization token) */
-      signature: string;
+      /** Device information (optional - server extracts IP, User-Agent, and location automatically) */
+      deviceInfo?: forms_DeviceInfo;
     } = {} as any,
     options: IRequestOptions = {}
   ): Promise<controllers_UserReturn> {
@@ -1675,10 +1744,43 @@ export class Userv4Service {
       const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
 
       let data = {
+        flow_account_info: params['flowAccountInfo'],
+        evm_account_info: params['evmAccountInfo'],
         username: params['username'],
-        account_key: params['accountKey'],
-        device_info: params['deviceInfo'],
-        signature: params['signature']
+        device_info: params['deviceInfo']
+      };
+
+      configs.data = data;
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
+   * Sync new user device V4
+   */
+  static sync(
+    params: {
+      /** Flow account information with account key and signature */
+      flowAccountInfo: forms_FlowAccountInfo;
+      /** EVM account information with EOA address and signature (optional) */
+      evmAccountInfo?: forms_EvmAccountInfo;
+      /** Backup information */
+      backupInfo?: forms_BackupInfo;
+      /** Device information (optional - server extracts IP, User-Agent, and location automatically) */
+      deviceInfo?: forms_DeviceInfo;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/v4/sync';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = {
+        flow_account_info: params['flowAccountInfo'],
+        evm_account_info: params['evmAccountInfo'],
+        backup_info: params['backupInfo'],
+        device_info: params['deviceInfo']
       };
 
       configs.data = data;
@@ -2217,6 +2319,24 @@ export interface forms_DeviceInfo {
 
   /**  */
   zip?: string;
+}
+
+/** forms_EvmAccountInfo */
+export interface forms_EvmAccountInfo {
+  /**  */
+  eoa_address: string;
+
+  /**  */
+  signature: string;
+}
+
+/** forms_FlowAccountInfo */
+export interface forms_FlowAccountInfo {
+  /**  */
+  account_key: forms_AccountKey;
+
+  /**  */
+  signature: string;
 }
 
 /** models_Device */
