@@ -1,7 +1,6 @@
 import { Close } from '@onflow/frw-icons';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Platform, Modal } from 'react-native';
 import { YStack, Stack, useTheme, getTokens, Text as TamaguiText } from 'tamagui';
 
 export interface UpdateDialogProps {
@@ -166,7 +165,14 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
 
         {/* Content area */}
         <YStack {...({ gap: 10, mb: 12 } as any)}>
-          {htmlContent ? <YStack dangerouslySetInnerHTML={{ __html: htmlContent }} /> : children}
+          {htmlContent ? (
+            <YStack
+               
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
+          ) : (
+            children
+          )}
         </YStack>
 
         {/* Read more link */}
@@ -222,20 +228,9 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   );
 
   // Use portal to render at document body level (only in browser)
-  if (typeof document !== 'undefined' && Platform.OS === 'web') {
+  if (typeof document !== 'undefined') {
     return createPortal(dialogContent, document.body);
   }
 
-  // For React Native, use Modal component for proper overlay
-  return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
-      statusBarTranslucent={true}
-    >
-      {dialogContent}
-    </Modal>
-  );
+  return null;
 };
