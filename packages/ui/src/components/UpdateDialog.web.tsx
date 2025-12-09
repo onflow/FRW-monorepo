@@ -1,4 +1,5 @@
 import { Close } from '@onflow/frw-icons';
+import DOMPurify from 'dompurify';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { YStack, Stack, useTheme, getTokens, Text as TamaguiText } from 'tamagui';
@@ -133,19 +134,27 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
             right: 8,
             w: 24,
             h: 24,
+            zIndex: 10,
             items: 'center',
             justify: 'center',
             bg: 'transparent',
             rounded: 12,
             hoverStyle: { bg: 'rgba(255, 255, 255, 0.1)' },
             pressStyle: { opacity: 0.7 },
-            onPress: onClose,
+            onPress: (e: any) => {
+              e.stopPropagation();
+              onClose();
+            },
             cursor: 'pointer',
             'aria-label': 'Close dialog',
           } as any)}
         >
           {/* @ts-expect-error - Close icon type issue */}
-          <Close size={24} color={tokens.color.light80.val} style={{ alignSelf: 'center' }} />
+          <Close
+            size={24}
+            color={tokens.color.light80.val}
+            style={{ alignSelf: 'center', pointerEvents: 'none' }}
+          />
         </YStack>
 
         {/* Title */}
@@ -168,7 +177,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
           {htmlContent ? (
             <YStack
                
-              dangerouslySetInnerHTML={{ __html: htmlContent }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
             />
           ) : (
             children
