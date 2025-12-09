@@ -13,6 +13,7 @@ import {
   SecureEnclaveScreen,
   NotificationPreferencesScreen,
   RecoveryPhraseScreen,
+  ConfirmRecoveryPhraseScreen,
   // Recovery screens
   ImportProfileScreen,
   ImportOtherMethodsScreen,
@@ -93,7 +94,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const theme = useTheme();
   const { address, network, initialRoute, initialProps } = props;
   const navigationRef = useRef<any>(null);
-  const theme = useTheme();
 
   // Send store actions
   const {
