@@ -326,6 +326,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="RecoveryPhrase"
               component={RecoveryPhraseScreen}
               options={{
+                headerShown: true,
                 headerTitle: t('onboarding.recoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
                 headerStyle: {
@@ -337,6 +338,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="ConfirmRecoveryPhrase"
               component={ConfirmRecoveryPhraseScreen}
               options={{
+                headerShown: true,
                 headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
                 headerStyle: {
