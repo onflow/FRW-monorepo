@@ -243,7 +243,7 @@ class PlatformImpl implements PlatformSpec {
     // Add version and platform headers to transactions
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        const platform = 'react-native'; // Platform.OS is not available here
+        const platform = RNPlatform.OS;
         const versionHeader = `// Flow Wallet - ${network} Script - ${config.name} - React Native - ${version}`;
         const platformHeader = `// Platform: ${platform} - ${version} - ${buildNumber}`;
         config.cadence = versionHeader + '\n' + platformHeader + '\n\n' + config.cadence;
