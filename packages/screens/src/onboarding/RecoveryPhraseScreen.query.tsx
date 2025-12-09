@@ -238,18 +238,19 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                       {/* Left column */}
                       {recoveryPhrase[rowIndex * 2] && (
                         <XStack gap="$2" items="center" flex={1}>
-                          <View
-                            w="$8"
-                            h="$8"
+                          <YStack
+                            width="$8"
+                            height="$8"
                             bg="$bgGlass"
                             rounded="$2"
                             items="center"
                             justify="center"
+                            shrink={0}
                           >
                             <Text fontSize="$5" color="$text">
                               {rowIndex * 2 + 1}
                             </Text>
-                          </View>
+                          </YStack>
                           <Text fontSize="$4" color="$text">
                             {recoveryPhrase[rowIndex * 2]}
                           </Text>
@@ -259,18 +260,19 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                       {/* Right column */}
                       {recoveryPhrase[rowIndex * 2 + 1] && (
                         <XStack gap="$2" items="center" flex={1}>
-                          <View
-                            w="$8"
-                            h="$8"
+                          <YStack
+                            width="$8"
+                            height="$8"
                             bg="$bgGlass"
                             rounded="$2"
                             items="center"
                             justify="center"
+                            shrink={0}
                           >
                             <Text fontSize="$5" color="$text">
                               {rowIndex * 2 + 2}
                             </Text>
-                          </View>
+                          </YStack>
                           <Text fontSize="$4" color="$text">
                             {recoveryPhrase[rowIndex * 2 + 1]}
                           </Text>

@@ -1,5 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { ShieldOff, SecureEnclave, HardwareGradeSecurity, Shield } from '@onflow/frw-icons';
+import { profileService } from '@onflow/frw-services';
 import { NativeScreenName, ScreenName } from '@onflow/frw-types';
 import {
   YStack,
@@ -15,9 +16,8 @@ import {
   useTheme,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
-import React, { useState, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DeviceEventEmitter } from 'react-native';
 
 interface SecureEnclaveScreenProps {
   // React Navigation passes navigation prop, but we use the abstraction
@@ -51,26 +51,6 @@ export function SecureEnclaveScreen({
     }
   }, [showLoadingState, navProp]);
 
-  // Listen for progress events from native code (blockchain confirmation sends 100%)
-  useEffect(() => {
-    if (!showLoadingState) return;
-
-    const subscription = DeviceEventEmitter.addListener(
-      'accountCreationProgress',
-      (event: { progress: number; status: string }) => {
-        logger.debug('[SecureEnclaveScreen] Progress event received:', event);
-        // Only set progress when blockchain confirms (100%)
-        if (event.progress === 100) {
-          setProgress(100);
-        }
-      }
-    );
-
-    return () => {
-      subscription.remove();
-    };
-  }, [showLoadingState]);
-
   const handleNext = () => {
     setShowConfirmDialog(true);
   };
@@ -78,7 +58,7 @@ export function SecureEnclaveScreen({
   const handleConfirm = async () => {
     setShowConfirmDialog(false);
     setShowLoadingState(true);
-    setProgress(undefined); // Reset progress to enable default animation
+    setProgress(0);
 
     try {
       // Auto-generate random username using word combinations
@@ -86,18 +66,49 @@ export function SecureEnclaveScreen({
 
       logger.info('[SecureEnclaveScreen] Registering secure type account with username:', username);
 
+      // Step 1: Native registers with backend and initiates on-chain account creation
+      // This returns early with txId so RN can monitor the transaction
+      setProgress(10);
       const result = await bridge.registerSecureTypeAccount?.(username);
 
-      if (!result?.success) {
+      if (!result?.success || !result?.txId) {
         throw new Error(result?.error || 'Failed to register secure type account');
       }
 
-      logger.info('[SecureEnclaveScreen] Secure type account registered successfully:', {
-        address: result.address,
+      logger.info('[SecureEnclaveScreen] Registration initiated, monitoring transaction:', {
+        txId: result.txId,
         username: result.username,
-        accountType: result.accountType,
+      });
+
+      // Step 2: Monitor transaction status until sealed (using ProfileService)
+      logger.info('[SecureEnclaveScreen] Waiting for transaction to seal:', { txId: result.txId });
+
+      const flowAddress = await profileService().waitForAccountCreationTx(
+        result.txId,
+        (progress) => {
+          // Map 0-100 from service to 20-70 for our progress
+          setProgress(20 + Math.floor(progress * 0.5));
+        }
+      );
+
+      logger.info('[SecureEnclaveScreen] Transaction sealed, address created:', { flowAddress });
+
+      // Step 4: Notify native to initialize wallet with the txId
+      setProgress(80);
+      const initResult = await bridge.initSecureEnclaveWallet?.(result.txId);
+
+      if (!initResult?.success) {
+        throw new Error(initResult?.error || 'Failed to initialize wallet');
+      }
+
+      logger.info('[SecureEnclaveScreen] Secure type account created successfully:', {
+        address: initResult.address || flowAddress,
+        username: result.username,
         txId: result.txId,
       });
+
+      // Complete!
+      setProgress(100);
     } catch (error) {
       logger.error('[SecureEnclaveScreen] Failed to register secure type account:', error);
       setShowLoadingState(false);

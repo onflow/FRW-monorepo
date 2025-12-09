@@ -376,7 +376,17 @@
       "title": "Confirm phrase",
       "description": "Please select the word one by one referring to its order.",
       "selectWord": "Select the word at #{{position}}",
-      "finish": "Finish"
+      "finish": "Finish",
+      "creating": {
+        "title": "Creating\nyour account",
+        "configuring": "Configuring account"
+      },
+      "error": {
+        "title": "Account Creation Failed",
+        "generic": "Failed to create account. Please try again.",
+        "server": "Server error occurred. Please try again later.",
+        "validation": "Invalid account data. Please try again."
+      }
     }
   }
 }

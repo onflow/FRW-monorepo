@@ -107,7 +107,7 @@ export interface CreateAccountResponse {
   success: boolean;
   address: string | null;
   username: string | null;
-  accountType: 'eoa' | 'coa' | null;
+  accountType: 'full' | 'hardware' | null;
   txId: string | null;
   error: string | null;
 }
@@ -118,7 +118,7 @@ export interface CreateEOAAccountResponse {
   username: string | null;
   mnemonic: string | null;
   phrase: string[] | null;
-  accountType: 'eoa' | 'coa' | null;
+  accountType: 'full' | 'hardware' | null;
   error: string | null;
 }
 
@@ -205,6 +205,8 @@ export enum ScreenName {
   PROFILE_TYPE_SELECTION = 'ProfileTypeSelection',
   /** Recovery phrase setup screen */
   RECOVERY_PHRASE = 'RecoveryPhrase',
+  /** Confirm recovery phrase screen - Verify user wrote down recovery phrase */
+  CONFIRM_RECOVERY_PHRASE = 'ConfirmRecoveryPhrase',
   /** Secure enclave setup screen */
   SECURE_ENCLAVE = 'SecureEnclave',
   /** Import existing profile/wallet screen */

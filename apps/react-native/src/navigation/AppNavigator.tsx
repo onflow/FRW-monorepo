@@ -90,6 +90,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { address, network, initialRoute, initialProps } = props;
   const navigationRef = useRef<any>(null);
   const theme = useTheme();
@@ -313,7 +314,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             />
           </Stack.Group>
 
-          {/* Onboarding screens - no header */}
+          {/* Onboarding screens */}
           <Stack.Group
             screenOptions={{
               headerShown: false,
@@ -326,7 +327,51 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="NotificationPreferences"
               component={NotificationPreferencesScreen}
             />
-            <Stack.Screen name="RecoveryPhrase" component={RecoveryPhraseScreen} />
+            <Stack.Screen
+              name="RecoveryPhrase"
+              component={RecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.recoveryPhrase.navTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmRecoveryPhrase"
+              component={ConfirmRecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="SecureEnclave"
+              component={SecureEnclaveScreen}
+              options={{
+                headerTitle: '', // No title text
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+              options={{
+                headerTitle: t('onboarding.notificationPreferences.headerTitle'),
+                headerLeft: () => null, // No back button
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
           </Stack.Group>
 
           {/* Recovery screens with headers */}
