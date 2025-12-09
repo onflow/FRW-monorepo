@@ -97,9 +97,33 @@ export interface PlatformSpec {
 
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
+  /**
+   * Register Secure Enclave account with backend and initiate on-chain account creation
+   * Returns early with txId so RN can monitor transaction status
+   * Does NOT wait for transaction to seal - RN will handle that
+   * @param username - Username for the account
+   * @returns Response with txId for RN to monitor (address may be null until tx seals)
+   */
   registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
 
+  /**
+   * Initialize Secure Enclave wallet after account creation transaction has sealed
+   * Called by RN after monitoring tx status confirms the transaction is sealed
+   * @param txId - Transaction ID from account creation
+   * @returns Promise that resolves when wallet is initialized
+   */
+  initSecureEnclaveWallet?(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }>;
+
   // Wallet initialization
+  /**
+   * Save mnemonic and initialize wallet after account creation transaction is sealed
+   * @param mnemonic - The recovery phrase to save securely
+   * @param customToken - Firebase custom token from registration
+   * @param txId - Transaction ID from account creation (used to init native wallet SDK)
+   * @param username - Username for the account
+   */
   saveMnemonic?(
     mnemonic: string,
     customToken: string,

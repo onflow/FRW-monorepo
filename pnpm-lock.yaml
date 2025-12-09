@@ -22,7 +22,7 @@ importers:
     dependencies:
       '@tamagui/animations-react-native':
         specifier: ^1.132.20
-        version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
+        version: 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -31,7 +31,7 @@ importers:
         version: 19.0.0(react@19.0.0)
       react-native:
         specifier: 0.79.2
-        version: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
+        version: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
     devDependencies:
       '@commitlint/cli':
         specifier: ^19.6.0
@@ -74,7 +74,7 @@ importers:
         version: 0.4.23(eslint@9.37.0(jiti@2.6.1))
       eslint-plugin-storybook:
         specifier: ^9.1.1
-        version: 9.1.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2)
+        version: 9.1.1(eslint@9.37.0(jiti@2.6.1))(storybook@9.1.10(prettier@3.6.2)(vite@7.2.2(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)))(typescript@5.7.2)
       eslint-plugin-unused-imports:
         specifier: ^4.1.4
         version: 4.2.0(@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2))(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2))(eslint@9.37.0(jiti@2.6.1))
@@ -1000,6 +1000,9 @@ importers:
       '@onflow/frw-api':
         specifier: workspace:*
         version: link:../api
+      '@onflow/frw-cadence':
+        specifier: workspace:*
+        version: link:../cadence
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context
@@ -15706,21 +15709,6 @@ snapshots:
       nullthrows: 1.1.1
       yargs: 17.7.2
 
-  '@react-native/community-cli-plugin@0.79.2':
-    dependencies:
-      '@react-native/dev-middleware': 0.79.2
-      chalk: 4.1.2
-      debug: 2.6.9
-      invariant: 2.2.4
-      metro: 0.82.5
-      metro-config: 0.82.5
-      metro-core: 0.82.5
-      semver: 7.7.3
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
   '@react-native/community-cli-plugin@0.79.2(@react-native-community/cli@19.1.2(typescript@5.7.2))':
     dependencies:
       '@react-native/dev-middleware': 0.79.2
@@ -15811,9 +15799,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
@@ -15829,13 +15815,6 @@ snapshots:
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
     optionalDependencies:
       '@types/react': 19.2.2
-
-  '@react-native/virtualized-lists@0.79.2(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      invariant: 2.2.4
-      nullthrows: 1.1.1
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
 
   '@react-navigation/core@7.12.4(react@19.0.0)':
     dependencies:
@@ -16675,16 +16654,6 @@ snapshots:
     transitivePeerDependencies:
       - react-dom
 
-  '@tamagui/animations-react-native@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/use-presence': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/web': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
-    transitivePeerDependencies:
-      - react-dom
-
   '@tamagui/avatar@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/core': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
@@ -16835,11 +16804,6 @@ snapshots:
     dependencies:
       react: 19.0.0
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
-
-  '@tamagui/constants@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
 
   '@tamagui/core@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -17034,14 +16998,6 @@ snapshots:
   '@tamagui/helpers@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
-      '@tamagui/simple-hash': 1.135.0
-      react: 19.0.0
-    transitivePeerDependencies:
-      - react-native
-
-  '@tamagui/helpers@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
       '@tamagui/simple-hash': 1.135.0
       react: 19.0.0
     transitivePeerDependencies:
@@ -17554,13 +17510,6 @@ snapshots:
     transitivePeerDependencies:
       - react-native
 
-  '@tamagui/use-event@1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      react: 19.0.0
-    transitivePeerDependencies:
-      - react-native
-
   '@tamagui/use-force-update@1.135.0(react@19.0.0)':
     dependencies:
       react: 19.0.0
@@ -17573,14 +17522,6 @@ snapshots:
   '@tamagui/use-presence@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@tamagui/web': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0))(react@19.0.0)
-      react: 19.0.0
-    transitivePeerDependencies:
-      - react-dom
-      - react-native
-
-  '@tamagui/use-presence@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/web': 1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
       react: 19.0.0
     transitivePeerDependencies:
       - react-dom
@@ -17619,22 +17560,6 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
       react-native: 0.79.2(@babel/core@7.28.4)(@react-native-community/cli@19.1.2(typescript@5.7.2))(@types/react@19.2.2)(react@19.0.0)
-
-  '@tamagui/web@1.135.0(react-dom@19.0.0(react@19.0.0))(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      '@tamagui/compose-refs': 1.135.0(react@19.0.0)
-      '@tamagui/constants': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/helpers': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/is-equal-shallow': 1.135.0(react@19.0.0)
-      '@tamagui/normalize-css-color': 1.135.0
-      '@tamagui/timer': 1.135.0
-      '@tamagui/types': 1.135.0
-      '@tamagui/use-did-finish-ssr': 1.135.0(react@19.0.0)
-      '@tamagui/use-event': 1.135.0(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      '@tamagui/use-force-update': 1.135.0(react@19.0.0)
-      react: 19.0.0
-      react-dom: 19.0.0(react@19.0.0)
-      react-native: 0.79.2(@babel/core@7.28.4)(react@19.0.0)
 
   '@tamagui/z-index-stack@1.135.0(react@19.0.0)':
     dependencies:
@@ -17930,7 +17855,7 @@ snapshots:
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.5
 
   '@types/bn.js@4.11.6':
     dependencies:
@@ -21269,14 +21194,6 @@ snapshots:
       '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2)
       eslint: 9.37.0(jiti@2.6.1)
       storybook: 9.1.10(prettier@3.6.2)(vite@7.2.2(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
-  eslint-plugin-storybook@9.1.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2):
-    dependencies:
-      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.7.2)
-      eslint: 9.37.0(jiti@2.6.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -24753,52 +24670,6 @@ snapshots:
       yargs: 17.7.2
     optionalDependencies:
       '@types/react': 19.2.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@react-native-community/cli'
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0):
-    dependencies:
-      '@jest/create-cache-key-function': 29.7.0
-      '@react-native/assets-registry': 0.79.2
-      '@react-native/codegen': 0.79.2(@babel/core@7.28.4)
-      '@react-native/community-cli-plugin': 0.79.2
-      '@react-native/gradle-plugin': 0.79.2
-      '@react-native/js-polyfills': 0.79.2
-      '@react-native/normalize-colors': 0.79.2
-      '@react-native/virtualized-lists': 0.79.2(react-native@0.79.2(@babel/core@7.28.4)(react@19.0.0))(react@19.0.0)
-      abort-controller: 3.0.0
-      anser: 1.4.10
-      ansi-regex: 5.0.1
-      babel-jest: 29.7.0(@babel/core@7.28.4)
-      babel-plugin-syntax-hermes-parser: 0.25.1
-      base64-js: 1.5.1
-      chalk: 4.1.2
-      commander: 12.1.0
-      event-target-shim: 5.0.1
-      flow-enums-runtime: 0.0.6
-      glob: 7.2.3
-      invariant: 2.2.4
-      jest-environment-node: 29.7.0
-      memoize-one: 5.2.1
-      metro-runtime: 0.82.5
-      metro-source-map: 0.82.5
-      nullthrows: 1.1.1
-      pretty-format: 29.7.0
-      promise: 8.3.0
-      react: 19.0.0
-      react-devtools-core: 6.1.5
-      react-refresh: 0.14.2
-      regenerator-runtime: 0.13.11
-      scheduler: 0.25.0
-      semver: 7.7.3
-      stacktrace-parser: 0.1.11
-      whatwg-fetch: 3.6.20
-      ws: 6.2.3
-      yargs: 17.7.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@react-native-community/cli'

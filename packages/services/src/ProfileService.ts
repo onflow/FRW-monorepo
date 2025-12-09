@@ -4,6 +4,7 @@ import {
   type controllers_UserReturn,
   type forms_AccountKey,
 } from '@onflow/frw-api';
+import { configureFCL, getFCLNetwork, waitForTransaction } from '@onflow/frw-cadence';
 import { bridge } from '@onflow/frw-context';
 import { logger } from '@onflow/frw-utils';
 
@@ -20,8 +21,20 @@ interface CreateFlowAddressV2Response {
 }
 
 /**
+ * Result from createFlowAddressAndWait
+ * Contains both the created address and transaction ID for native wallet initialization
+ */
+export interface CreateFlowAddressResult {
+  address: string;
+  txId: string;
+}
+
+/**
  * ProfileService - Wraps user registration and account creation APIs
  * Provides a clean interface for EOA (Externally Owned Account) creation
+ *
+ * Note: FCL configuration is handled by ServiceContext/CadenceService
+ * when the app initializes. This service relies on that shared configuration.
  */
 export class ProfileService {
   private static instance: ProfileService;
@@ -96,7 +109,7 @@ export class ProfileService {
       // API returns wrapped response: { data: { custom_token, id }, message, status }
       const apiResponse = (await Userv3GoService.register(requestPayload)) as any;
       const customToken = apiResponse?.data?.custom_token;
-      const userId = apiResponse?.data?.id; // API returns 'id', not 'uid'
+      const userId = apiResponse?.data?.id;
 
       if (!customToken || !userId) {
         logger.error('[ProfileService] Registration failed: missing custom_token or id');
@@ -187,6 +200,143 @@ export class ProfileService {
         url: error?.config?.url || error?.request?.responseURL,
         method: error?.config?.method,
         responseData: error?.response?.data,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create Flow address and wait for transaction to complete.
+   * This method combines createFlowAddress() with transaction monitoring.
+   * Use this for user-facing account creation flows where you need to wait for completion.
+   *
+   * Note: FCL is configured by ServiceContext/CadenceService at app initialization.
+   *
+   * @param onProgress - Optional callback for progress updates (0-100)
+   * @returns Promise with object containing created Flow address and transaction ID
+   */
+  async createFlowAddressAndWait(
+    onProgress?: (progress: number) => void
+  ): Promise<CreateFlowAddressResult> {
+    try {
+      // Backend creates accounts on mainnet, ensure FCL is configured for mainnet
+      configureFCL('mainnet');
+      const fclNetwork = await getFCLNetwork();
+      logger.info('[ProfileService] FCL configured for network:', { fclNetwork });
+
+      // Step 1: Initiate Flow address creation (0-20%)
+      if (onProgress) onProgress(20);
+      const txId = await this.createFlowAddress();
+
+      // Step 2: Wait for transaction to be sealed (20-90%)
+      if (onProgress) onProgress(50);
+      logger.info('[ProfileService] Waiting for transaction to seal:', {
+        txId,
+        network: fclNetwork,
+      });
+
+      // Use the shared transaction monitoring from cadence package
+      const txResult = await waitForTransaction(txId);
+
+      if (onProgress) onProgress(90);
+
+      // Step 3: Extract the created address from AccountCreated event
+      const accountCreatedEvent = txResult.events.find(
+        (event) => event.type === 'flow.AccountCreated'
+      );
+
+      if (!accountCreatedEvent) {
+        logger.error('[ProfileService] AccountCreated event not found:', {
+          txId,
+          events: txResult.events.map((e) => e.type),
+        });
+        throw new Error('Account creation event not found in transaction');
+      }
+
+      const address = accountCreatedEvent.data.address as string;
+
+      if (!address) {
+        logger.error('[ProfileService] No address in AccountCreated event:', {
+          txId,
+          eventData: accountCreatedEvent.data,
+        });
+        throw new Error('Address not found in account creation event');
+      }
+
+      logger.info('[ProfileService] Flow address created successfully:', {
+        txId,
+        address,
+      });
+
+      if (onProgress) onProgress(100);
+
+      // Return both txId and address so caller can notify native to init wallet
+      return { address, txId };
+    } catch (error: unknown) {
+      const err = error as { message?: string; response?: { status?: number; data?: unknown } };
+      logger.error('[ProfileService] Failed to create and wait for Flow address:', {
+        message: err?.message,
+        status: err?.response?.status,
+        responseData: err?.response?.data,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Wait for an existing transaction to seal and extract the created Flow address.
+   * Used by SecureEnclave flow where native initiates the tx and RN monitors it.
+   *
+   * @param txId - Transaction ID to monitor
+   * @param onProgress - Optional callback for progress updates (0-100)
+   * @returns Promise with the created Flow address
+   */
+  async waitForAccountCreationTx(
+    txId: string,
+    onProgress?: (progress: number) => void
+  ): Promise<string> {
+    try {
+      // Backend creates accounts on mainnet, ensure FCL is configured for mainnet
+      configureFCL('mainnet');
+
+      if (onProgress) onProgress(20);
+      logger.info('[ProfileService] Waiting for account creation transaction:', { txId });
+
+      // Wait for transaction to be sealed
+      if (onProgress) onProgress(40);
+      const txResult = await waitForTransaction(txId);
+
+      if (onProgress) onProgress(80);
+
+      // Extract the created address from AccountCreated event
+      const accountCreatedEvent = txResult.events.find(
+        (event) => event.type === 'flow.AccountCreated'
+      );
+
+      if (!accountCreatedEvent) {
+        logger.error('[ProfileService] AccountCreated event not found:', {
+          txId,
+          events: txResult.events.map((e) => e.type),
+        });
+        throw new Error('Account creation event not found in transaction');
+      }
+
+      const address = accountCreatedEvent.data.address as string;
+
+      if (!address) {
+        throw new Error('Address not found in account creation event');
+      }
+
+      logger.info('[ProfileService] Account creation transaction sealed:', { txId, address });
+
+      if (onProgress) onProgress(100);
+
+      return address;
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      logger.error('[ProfileService] Failed to wait for account creation tx:', {
+        txId,
+        message: err?.message,
       });
       throw error;
     }
