@@ -25,6 +25,7 @@ import type {
   COAOwnershipProof,
   EIP712TypedData,
   EthConnectApprovalResult,
+  Permission,
   TransactionParams,
   Web3WalletPermission,
 } from '@/shared/types/provider-types';
@@ -1131,11 +1132,69 @@ class ProviderController extends BaseController {
   // Permission Methods
   // ========================================================================
 
-  walletRequestPermissions = ({ data: { params: permissions } }) => {
-    const result: Web3WalletPermission[] = [];
-    if (permissions && 'eth_accounts' in permissions[0]) {
-      result.push({ parentCapability: 'eth_accounts' });
+  walletRequestPermissions = async ({
+    data: { params: permissions },
+    session: { origin },
+    approvalRes,
+  }) => {
+    // Check if approval was granted (if approvalRes exists, user approved)
+    if (!approvalRes) {
+      // This shouldn't happen if rpcFlow is correct, but safety check
+      throw ethErrors.provider.userRejectedRequest({
+        message: 'Permission request was rejected',
+      });
     }
+
+    // Validate permissions parameter
+    if (!permissions || !Array.isArray(permissions) || permissions.length === 0) {
+      throw ethErrors.rpc.invalidParams({
+        message: 'Invalid permissions parameter',
+      });
+    }
+
+    // Check if eth_accounts is requested
+    const hasEthAccounts = permissions.some(
+      (perm: any) => perm && typeof perm === 'object' && 'eth_accounts' in perm
+    );
+
+    if (!hasEthAccounts) {
+      // Return empty array if eth_accounts not requested (EIP-2255 behavior)
+      return [];
+    }
+
+    // Get the connected site to retrieve timestamp
+    const site = permissionService.getConnectedSite(origin);
+    const grantedDate = site?.e || Date.now(); // Use stored timestamp or current time
+
+    // Return EIP-2255 format (RequestedPermission)
+    const result: Web3WalletPermission[] = [
+      {
+        parentCapability: 'eth_accounts',
+        date: grantedDate,
+      },
+    ];
+    return result;
+  };
+
+  walletGetPermissions = async ({ session: { origin } }) => {
+    // Check if permission exists
+    const hasPermission = permissionService.hasPermission(origin);
+    if (!hasPermission) {
+      return [];
+    }
+
+    const site = permissionService.getConnectedSite(origin);
+    if (!site) {
+      return [];
+    }
+
+    // Return EIP-2255 format (Permission with invoker)
+    const result: Permission[] = [
+      {
+        invoker: origin,
+        parentCapability: 'eth_accounts',
+      },
+    ];
     return result;
   };
 
