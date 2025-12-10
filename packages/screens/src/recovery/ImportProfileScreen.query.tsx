@@ -1,8 +1,8 @@
 import { logger, navigation, bridge } from '@onflow/frw-context';
 import { UserRoundPlus, Smartphone, UploadCloud, FileText } from '@onflow/frw-icons';
-import { ScreenName, NativeScreenName } from '@onflow/frw-types';
+import { ScreenName, NativeScreenName, type WalletProfile } from '@onflow/frw-types';
 import { YStack, Text, ImportOptionCard, useTheme } from '@onflow/frw-ui';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -13,6 +13,27 @@ import { useTranslation } from 'react-i18next';
 export function ImportProfileScreen(): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
+  const [storedProfiles, setStoredProfiles] = useState<WalletProfile[]>([]);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+
+  // Fetch stored profiles from native bridge on mount
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        setIsLoadingProfiles(true);
+        const response = await bridge.getWalletProfiles();
+        setStoredProfiles(response?.profiles ?? []);
+        logger.debug('[ImportProfileScreen] Fetched profiles:', response?.profiles?.length ?? 0);
+      } catch (error) {
+        logger.error('[ImportProfileScreen] Failed to fetch profiles:', error);
+        setStoredProfiles([]);
+      } finally {
+        setIsLoadingProfiles(false);
+      }
+    };
+
+    fetchProfiles();
+  }, []);
 
   const handlePreviousProfiles = () => {
     logger.info('[ImportProfileScreen] Previous profiles selected');
@@ -54,15 +75,19 @@ export function ImportProfileScreen(): React.ReactElement {
 
         {/* Import Options List */}
         <YStack gap="$3" pt="$4">
-          {/* Previous profiles - with badge showing count */}
-          <ImportOptionCard
-            layout="vertical"
-            icon={<UserRoundPlus size={28} color={theme.primary.val} />}
-            title={t('onboarding.importProfile.previousProfiles.title')}
-            subtitle={t('onboarding.importProfile.previousProfiles.subtitle', { count: 2 })}
-            badge="2"
-            onPress={handlePreviousProfiles}
-          />
+          {/* Previous profiles - with badge showing count (only show if profiles exist) */}
+          {!isLoadingProfiles && storedProfiles.length > 0 && (
+            <ImportOptionCard
+              layout="vertical"
+              icon={<UserRoundPlus size={28} color={theme.primary.val} />}
+              title={t('onboarding.importProfile.previousProfiles.title')}
+              subtitle={t('onboarding.importProfile.previousProfiles.subtitle', {
+                count: storedProfiles.length,
+              })}
+              badge={String(storedProfiles.length)}
+              onPress={handlePreviousProfiles}
+            />
+          )}
 
           {/* From Device Backup */}
           <ImportOptionCard

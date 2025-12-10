@@ -59,6 +59,14 @@ export interface PlatformSpec {
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrentUserUid?(): Promise<string | null>;
 
+  // Profile management
+  /**
+   * Switch to a previously signed-in profile by user ID
+   * @param userId - The unique identifier of the profile to switch to
+   * @returns Promise that resolves to true if switch was successful
+   */
+  switchToProfile?(userId: string): Promise<boolean>;
+
   // Transaction monitoring
   listenTransaction?(
     txId: string,

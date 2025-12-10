@@ -272,6 +272,10 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getWalletProfiles();
   }
 
+  switchToProfile(userId: string): Promise<boolean> {
+    return NativeFRWBridge.switchToProfile(userId);
+  }
+
   configureCadenceService(cadenceService: any): void {
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();

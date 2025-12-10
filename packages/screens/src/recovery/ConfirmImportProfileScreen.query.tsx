@@ -1,7 +1,7 @@
-import { logger } from '@onflow/frw-context';
+import { logger, bridge } from '@onflow/frw-context';
 import type { WalletProfile } from '@onflow/frw-types';
 import { YStack, Text, ProfileImportList, Button } from '@onflow/frw-ui';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -9,36 +9,72 @@ import { useTranslation } from 'react-i18next';
  * Allows users to select and restore a profile from device storage
  */
 
-// TODO: Fetch profiles from device storage
-// TODO: Use a hook or query to load previously saved profiles
-const profiles: WalletProfile[] = [];
-
 export function ConfirmImportProfileScreen(): React.ReactElement {
   const { t } = useTranslation();
-  const [isLoading] = React.useState(false);
-  // Set first profile as default selected
-  const [selectedProfileUid, setSelectedProfileUid] = React.useState<string | undefined>(
-    profiles[0]?.uid
-  );
+  const [profiles, setProfiles] = useState<WalletProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isImporting, setIsImporting] = useState(false);
+  const [selectedProfileUid, setSelectedProfileUid] = useState<string | undefined>(undefined);
+
+  // Fetch profiles from native bridge on mount
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        setIsLoading(true);
+        const response = await bridge.getWalletProfiles();
+        const fetchedProfiles = response?.profiles ?? [];
+        setProfiles(fetchedProfiles);
+        // Set first profile as default selected
+        if (fetchedProfiles.length > 0) {
+          setSelectedProfileUid(fetchedProfiles[0].uid);
+        }
+        logger.debug('[ConfirmImportProfileScreen] Fetched profiles:', fetchedProfiles.length);
+      } catch (error) {
+        logger.error('[ConfirmImportProfileScreen] Failed to fetch profiles:', error);
+        setProfiles([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfiles();
+  }, []);
 
   const handleProfilePress = (profile: WalletProfile) => {
-    logger.info('[ConfirmImportProfileScreen] Profile selected:', profile);
+    logger.info('[ConfirmImportProfileScreen] Profile selected:', profile.name);
     setSelectedProfileUid(profile.uid);
-    // TODO: Implement profile restoration logic
   };
 
-  const handleAccountPress = (account: any) => {
-    logger.info('[ConfirmImportProfileScreen] Account selected:', account);
-    // When an account is pressed, we could also select its parent profile
-    // For now, just log it
-  };
+  // No action on account press per design - only profile selection is supported
+  const handleAccountPress = () => {};
 
-  const handleImportProfile = () => {
+  const handleImportProfile = async () => {
     if (!selectedProfileUid) return;
 
     const selectedProfile = profiles.find((p) => p.uid === selectedProfileUid);
-    logger.info('[ConfirmImportProfileScreen] Importing profile:', selectedProfile);
-    // TODO: Implement actual profile import/restoration logic
+    if (!selectedProfile) {
+      logger.error('[ConfirmImportProfileScreen] Selected profile not found');
+      return;
+    }
+
+    logger.info('[ConfirmImportProfileScreen] Importing profile:', selectedProfile.name);
+
+    try {
+      setIsImporting(true);
+      const success = await bridge.switchToProfile?.(selectedProfileUid);
+
+      if (success) {
+        logger.info('[ConfirmImportProfileScreen] Profile switch successful');
+        // Close the React Native screen and return to native app
+        bridge.closeRN?.();
+      } else {
+        logger.error('[ConfirmImportProfileScreen] Profile switch failed');
+      }
+    } catch (error) {
+      logger.error('[ConfirmImportProfileScreen] Error switching profile:', error);
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -77,7 +113,8 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
           variant="inverse"
           size="large"
           fullWidth
-          disabled={!selectedProfileUid}
+          disabled={!selectedProfileUid || isImporting}
+          loading={isImporting}
           onPress={handleImportProfile}
         >
           {t('onboarding.confirmImportProfile.importButton', {
