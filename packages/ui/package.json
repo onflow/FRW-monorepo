@@ -41,6 +41,7 @@
     "eslint-plugin-storybook": "9.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-native-render-html": "^6.3.4",
     "react-native-svg": "^15.13.0",
     "react-native-web": "^0.21.1",
     "rimraf": "^5.0.1",
@@ -54,6 +55,7 @@
     "lottie-react-native": "^6.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-native-render-html": "^6.3.4",
     "react-native-svg": ">=15.0.0",
     "react-native-web": ">=0.21.0"
   },

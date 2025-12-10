@@ -89,6 +89,7 @@ export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionFeeSection';
 export * from './foundation/SegmentedControl';
+export * from './components/UpdateDialog';
 
 export * from './components/TokenAmountInput';
 
