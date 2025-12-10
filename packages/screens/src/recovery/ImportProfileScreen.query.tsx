@@ -1,7 +1,7 @@
 import { logger, navigation, bridge } from '@onflow/frw-context';
 import { UserRoundPlus, Smartphone, UploadCloud, FileText } from '@onflow/frw-icons';
 import { ScreenName, NativeScreenName, type WalletProfile } from '@onflow/frw-types';
-import { YStack, Text, ImportOptionCard, useTheme } from '@onflow/frw-ui';
+import { YStack, XStack, Text, ImportOptionCard, Skeleton, useTheme } from '@onflow/frw-ui';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -80,6 +80,20 @@ export function ImportProfileScreen(): React.ReactElement {
 
         {/* Import Options List */}
         <YStack gap="$3" pt="$4">
+          {/* Previous profiles - loading skeleton */}
+          {isLoadingProfiles && (
+            <YStack bg="$bg2" rounded="$4" p="$4" gap="$2">
+              <XStack items="center" gap="$3">
+                <Skeleton width="$7" height="$7" borderRadius="$2" animationType="pulse" />
+                <YStack flex={1} gap="$2">
+                  <Skeleton height="$3" width="50%" borderRadius="$1" animationType="pulse" />
+                  <Skeleton height="$2.5" width="70%" borderRadius="$1" animationType="pulse" />
+                </YStack>
+                <Skeleton width="$6" height="$6" borderRadius="$10" animationType="pulse" />
+              </XStack>
+            </YStack>
+          )}
+
           {/* Previous profiles - with badge showing count (only show if profiles exist) */}
           {!isLoadingProfiles && storedProfiles.length > 0 && (
             <ImportOptionCard
