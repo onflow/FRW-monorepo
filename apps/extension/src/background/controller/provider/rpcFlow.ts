@@ -55,6 +55,18 @@ const flowContext = flow
     // Special case: Always show EthConnect for beezie.io when requesting accounts
     const isBeezieRequest = origin === 'https://beezie.io' && mapMethod === 'ethRequestAccounts';
 
+    if (mapMethod === 'walletRequestPermissions' && !isBeezieRequest) {
+      ctx.request.requestedApproval = true;
+      const { defaultChain } = await notificationService.requestApproval(
+        {
+          params: { origin, name, icon },
+          approvalComponent: 'EthConnect',
+        },
+        { height: 599 }
+      );
+      permissionService.addConnectedSite(origin, name, icon, defaultChain);
+    }
+
     // check connect
     // TODO: create a whitelist and list of safe methods to remove the need for Reflect.getMetadata
     if (
