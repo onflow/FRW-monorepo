@@ -1000,6 +1000,9 @@ importers:
       '@onflow/frw-api':
         specifier: workspace:*
         version: link:../api
+      '@onflow/frw-cadence':
+        specifier: workspace:*
+        version: link:../cadence
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context
@@ -15809,9 +15812,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
@@ -17867,7 +17868,7 @@ snapshots:
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.5
 
   '@types/bn.js@4.11.6':
     dependencies:
