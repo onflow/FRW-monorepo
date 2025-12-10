@@ -1,6 +1,6 @@
 import { ChevronRight } from '@onflow/frw-icons';
 import React from 'react';
-import { XStack, YStack, View, useTheme } from 'tamagui';
+import { ListItem, YStack, View, useTheme } from 'tamagui';
 
 import { Text } from '../../foundation/Text';
 
@@ -21,6 +21,7 @@ interface ImportOptionCardProps {
 
 /**
  * ImportOptionCard - Reusable card component for import options
+ * Uses Tamagui ListItem for built-in hover and press animations
  * Displays an optional icon, title, subtitle, optional badge, and chevron right arrow
  */
 export function ImportOptionCard({
@@ -34,45 +35,43 @@ export function ImportOptionCard({
   const isVertical = layout === 'vertical';
   const theme = useTheme();
 
-  return (
-    <YStack
-      bg="$bg2"
-      p="$4"
-      rounded="$3"
-      position="relative"
-      onPress={onPress}
-      cursor="pointer"
-      accessible
-      accessibilityRole="button"
-      pressStyle={{
-        opacity: 0.8,
-        scale: 0.98,
-      }}
-      animation="quick"
-    >
-      {/* Badge in top-right corner (optional) */}
-      {badge && (
-        <YStack
-          position="absolute"
-          t={16}
-          r={16}
-          width={24}
-          height={24}
-          rounded={100}
-          bg="$primary"
-          items="center"
-          justify="center"
-          z={10}
-        >
-          <Text fontSize="$3" fontWeight="600" color="$background">
-            {badge}
-          </Text>
-        </YStack>
-      )}
+  // Common ListItem props for both layouts
+  const listItemProps = {
+    bg: '$bg2',
+    borderRadius: '$3',
+    padding: '$4',
+    onPress,
+    hoverTheme: true,
+    pressTheme: true,
+    accessible: true,
+    accessibilityRole: 'button' as const,
+    animation: 'quick' as const,
+  };
 
-      {/* Content: horizontal or vertical layout */}
-      {isVertical ? (
-        // Vertical layout: icon above text
+  if (isVertical) {
+    // Vertical layout: icon above text, rendered as custom content inside ListItem
+    return (
+      <ListItem {...listItemProps} position="relative">
+        {/* Badge in top-right corner (optional) */}
+        {badge && (
+          <YStack
+            position="absolute"
+            t={16}
+            r={16}
+            width={24}
+            height={24}
+            rounded={100}
+            bg="$primary"
+            items="center"
+            justify="center"
+            z={10}
+          >
+            <Text fontSize="$3" fontWeight="600" color="$background">
+              {badge}
+            </Text>
+          </YStack>
+        )}
+
         <YStack gap="$3" items="stretch" width="100%">
           {/* Icon */}
           {icon && (
@@ -98,34 +97,49 @@ export function ImportOptionCard({
             <ChevronRight size={24} color={theme.textSecondary.val} />
           </YStack>
         </YStack>
-      ) : (
-        // Horizontal layout: icon to the left
-        <XStack gap="$3" items="center">
-          {/* Icon */}
-          {icon && (
-            <View width="$7" height="$7" items="center" justify="center" shrink={0}>
-              {icon}
-            </View>
-          )}
+      </ListItem>
+    );
+  }
 
-          {/* Text content */}
-          <YStack flex={1} gap="$1">
-            <Text fontSize="$4" fontWeight="700" color="$text">
-              {title}
-            </Text>
-            {subtitle && (
-              <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
-                {subtitle}
+  // Horizontal layout: use ListItem's built-in icon, title, subTitle props
+  return (
+    <ListItem
+      {...listItemProps}
+      icon={
+        icon ? (
+          <View width="$7" height="$7" items="center" justify="center" shrink={0}>
+            {icon}
+          </View>
+        ) : undefined
+      }
+      iconAfter={
+        badge ? (
+          <YStack flexDirection="row" items="center" gap="$2">
+            <YStack
+              width={24}
+              height={24}
+              rounded={100}
+              bg="$primary"
+              items="center"
+              justify="center"
+            >
+              <Text fontSize="$3" fontWeight="600" color="$background">
+                {badge}
               </Text>
-            )}
-          </YStack>
-
-          {/* Chevron right arrow */}
-          <YStack position="absolute" r={16} t="50%" mt={-12}>
+            </YStack>
             <ChevronRight size={24} color={theme.textSecondary.val} />
           </YStack>
-        </XStack>
-      )}
-    </YStack>
+        ) : (
+          <ChevronRight size={24} color={theme.textSecondary.val} />
+        )
+      }
+    >
+      <ListItem.Text fontSize="$4" fontWeight="700" color="$text">
+        {title}
+      </ListItem.Text>
+      <ListItem.Subtitle fontSize="$3" color="$textSecondary" lineHeight={16}>
+        {subtitle}
+      </ListItem.Subtitle>
+    </ListItem>
   );
 }

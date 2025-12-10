@@ -190,6 +190,8 @@ export enum NativeScreenName {
   PRIVATE_KEY_RESTORE = 'privateKeyRestore',
   /** Restore account from Google Drive backup */
   GOOGLE_DRIVE_RESTORE = 'googleDriveRestore',
+  /** Restore account from iCloud backup (iOS only) */
+  ICLOUD_RESTORE = 'icloudRestore',
   /** Multi-restore with cloud backup options */
   MULTI_RESTORE = 'multiRestore',
 }

@@ -32,7 +32,7 @@ export function ImportOtherMethodsScreen(): React.ReactElement {
 
   const handleICloud = () => {
     logger.info('[ImportOtherMethodsScreen] iCloud selected');
-    bridge.launchNativeScreen?.(NativeScreenName.MULTI_RESTORE);
+    bridge.launchNativeScreen?.(NativeScreenName.ICLOUD_RESTORE);
   };
 
   return (

@@ -73,6 +73,7 @@ export type RootStackParamList = {
   SecureEnclave: undefined;
   NotificationPreferences: undefined;
   RecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: undefined;
   // Recovery screens
   ImportProfile: undefined;
   ImportOtherMethods: undefined;
@@ -374,42 +375,37 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           </Stack.Group>
 
           {/* Recovery screens with headers */}
-          <Stack.Screen
-            name="ImportProfile"
-            component={ImportProfileScreen}
-            options={{
+          <Stack.Group
+            screenOptions={{
               headerShown: true,
-              headerTitle: '',
               headerBackTitle: '',
               headerBackTitleStyle: { fontSize: 0 },
               headerBackVisible: false,
               headerLeft: () => <NavigationBackButton />,
             }}
-          />
-          <Stack.Screen
-            name="ImportOtherMethods"
-            component={ImportOtherMethodsScreen}
-            options={{
-              headerShown: true,
-              headerTitle: t('onboarding.importProfile.title'),
-              headerBackTitle: '',
-              headerBackTitleStyle: { fontSize: 0 },
-              headerBackVisible: false,
-              headerLeft: () => <NavigationBackButton />,
-            }}
-          />
-          <Stack.Screen
-            name="ConfirmImportProfile"
-            component={ConfirmImportProfileScreen}
-            options={{
-              headerShown: true,
-              headerTitle: t('onboarding.importProfile.title'),
-              headerBackTitle: '',
-              headerBackTitleStyle: { fontSize: 0 },
-              headerBackVisible: false,
-              headerLeft: () => <NavigationBackButton />,
-            }}
-          />
+          >
+            <Stack.Screen
+              name="ImportProfile"
+              component={ImportProfileScreen}
+              options={{
+                headerTitle: '',
+              }}
+            />
+            <Stack.Screen
+              name="ImportOtherMethods"
+              component={ImportOtherMethodsScreen}
+              options={{
+                headerTitle: t('onboarding.importProfile.title'),
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmImportProfile"
+              component={ConfirmImportProfileScreen}
+              options={{
+                headerTitle: t('onboarding.importProfile.title'),
+              }}
+            />
+          </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
