@@ -52,19 +52,36 @@ const flowContext = flow
     } = ctx;
     consoleLog('flow - use #2 - check connect', mapMethod, origin, name, icon);
 
-    // Special case: Always show EthConnect for beezie.io when requesting accounts
+    // Special case: privy doesnt send walletRequestPermissions, so we need to show the popup manually
     const isBeezieRequest = origin === 'https://beezie.io' && mapMethod === 'ethRequestAccounts';
 
     if (mapMethod === 'walletRequestPermissions' && !isBeezieRequest) {
       ctx.request.requestedApproval = true;
-      const { defaultChain } = await notificationService.requestApproval(
+      // User rejection throws error 4001 automatically (EIP-2255 requires error 4001)
+      const approvalResult = await notificationService.requestApproval(
         {
           params: { origin, name, icon },
           approvalComponent: 'EthConnect',
         },
         { height: 599 }
       );
+
+      // Store approval result in context for controller to use
+      ctx.approvalRes = approvalResult;
+
+      const { defaultChain } = approvalResult;
+      // Store permission with current timestamp
+      const timestamp = Date.now();
       permissionService.addConnectedSite(origin, name, icon, defaultChain);
+      // Update the site with timestamp and isConnected flag (site exists since we just added it)
+      const site = permissionService.getConnectedSite(origin);
+      if (site) {
+        permissionService.updateConnectSite(
+          origin,
+          { ...site, e: timestamp, isConnected: true },
+          true
+        );
+      }
     }
 
     // check connect
