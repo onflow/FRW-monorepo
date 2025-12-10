@@ -92,6 +92,7 @@ export * from './components/TransactionFeeSection';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
+export * from './components/UpdateDialog.web';
 
 // Onboarding components
 export * from './components/onboarding';
