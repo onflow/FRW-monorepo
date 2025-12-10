@@ -56,10 +56,10 @@ export function ImportOptionCard({
         {badge && (
           <YStack
             position="absolute"
-            t={16}
-            r={16}
-            width={24}
-            height={24}
+            t="$4"
+            r="$4"
+            width="$6"
+            height="$6"
             rounded={100}
             bg="$primary"
             items="center"
@@ -86,14 +86,14 @@ export function ImportOptionCard({
               {title}
             </Text>
             {subtitle && (
-              <Text fontSize="$3" color="$textSecondary" lineHeight={16}>
+              <Text fontSize="$3" color="$textSecondary" lineHeight="$4">
                 {subtitle}
               </Text>
             )}
           </YStack>
 
           {/* Chevron right arrow - centered vertically in card */}
-          <YStack position="absolute" r={16} t="50%" mt={-12}>
+          <YStack position="absolute" r="$4" t="50%" mt="-$3">
             <ChevronRight size={24} color={theme.textSecondary.val} />
           </YStack>
         </YStack>
@@ -101,23 +101,35 @@ export function ImportOptionCard({
     );
   }
 
-  // Horizontal layout: use ListItem's built-in icon, title, subTitle props
+  // Horizontal layout: icon left, text middle, chevron right
   return (
-    <ListItem
-      {...listItemProps}
-      icon={
-        icon ? (
+    <ListItem {...listItemProps}>
+      <View flexDirection="row" items="center" gap="$3" width="100%">
+        {/* Icon */}
+        {icon && (
           <View width="$7" height="$7" items="center" justify="center" shrink={0}>
             {icon}
           </View>
-        ) : undefined
-      }
-      iconAfter={
-        badge ? (
-          <YStack flexDirection="row" items="center" gap="$2">
+        )}
+
+        {/* Text content - flex to fill space */}
+        <YStack flex={1} gap="$1" pr="$2">
+          <Text fontSize="$4" fontWeight="700" color="$text">
+            {title}
+          </Text>
+          {subtitle && (
+            <Text fontSize="$3" color="$textSecondary" lineHeight="$4">
+              {subtitle}
+            </Text>
+          )}
+        </YStack>
+
+        {/* Badge (optional) and Chevron */}
+        <View flexDirection="row" items="center" gap="$2" shrink={0}>
+          {badge && (
             <YStack
-              width={24}
-              height={24}
+              width="$6"
+              height="$6"
               rounded={100}
               bg="$primary"
               items="center"
@@ -127,19 +139,10 @@ export function ImportOptionCard({
                 {badge}
               </Text>
             </YStack>
-            <ChevronRight size={24} color={theme.textSecondary.val} />
-          </YStack>
-        ) : (
+          )}
           <ChevronRight size={24} color={theme.textSecondary.val} />
-        )
-      }
-    >
-      <ListItem.Text fontSize="$4" fontWeight="700" color="$text">
-        {title}
-      </ListItem.Text>
-      <ListItem.Subtitle fontSize="$3" color="$textSecondary" lineHeight={16}>
-        {subtitle}
-      </ListItem.Subtitle>
+        </View>
+      </View>
     </ListItem>
   );
 }
