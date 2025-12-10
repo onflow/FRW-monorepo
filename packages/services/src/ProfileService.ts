@@ -1,8 +1,12 @@
 import {
   UserGoService,
   Userv3GoService,
+  Userv4GoService,
   type controllers_UserReturn,
   type forms_AccountKey,
+  type forms_FlowAccountInfo,
+  type forms_EvmAccountInfo,
+  type forms_DeviceInfo,
 } from '@onflow/frw-api';
 import { configureFCL, getFCLNetwork, waitForTransaction } from '@onflow/frw-cadence';
 import { bridge } from '@onflow/frw-context';
@@ -49,6 +53,118 @@ export class ProfileService {
       ProfileService.instance = new ProfileService();
     }
     return ProfileService.instance;
+  }
+
+  /**
+   * Register a new user profile with the backend using v4 API
+   * This supports both Flow and EVM accounts (EOA)
+   *
+   * @param params - Registration parameters
+   * @param params.username - Username for the new profile
+   * @param params.accountKey - Account key with public key and signature/hash algorithms
+   * @param params.flowSignature - Flow signature for the registration message
+   * @param params.evmSignature - EVM signature for the registration message
+   * @param params.eoaAddress - EOA address derived from EVM key
+   * @param params.deviceInfo - Optional device info (defaults to bridge.getDeviceInfo())
+   * @returns Promise with registration response containing custom_token and user id
+   */
+  async registerV4(params: {
+    username: string;
+    accountKey: forms_AccountKey;
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+    deviceInfo?: forms_DeviceInfo;
+  }): Promise<controllers_UserReturn> {
+    try {
+      // Validate required fields
+      if (!params.accountKey.public_key) {
+        throw new Error('public_key is required in accountKey');
+      }
+      if (params.accountKey.sign_algo === undefined) {
+        throw new Error('sign_algo is required in accountKey');
+      }
+      if (params.accountKey.hash_algo === undefined) {
+        throw new Error('hash_algo is required in accountKey');
+      }
+
+      // Get device info from bridge if not provided
+      const deviceInfo: forms_DeviceInfo = params.deviceInfo ||
+        (bridge.getDeviceInfo() as forms_DeviceInfo) || {
+          device_id: '',
+          ip: '',
+          name: 'FRW',
+          type: '2',
+          user_agent: 'Unknown',
+        };
+
+      // Prepare API payload
+      const flowAccountInfo: forms_FlowAccountInfo = {
+        account_key: {
+          public_key: params.accountKey.public_key,
+          sign_algo: params.accountKey.sign_algo,
+          hash_algo: params.accountKey.hash_algo,
+          weight: params.accountKey.weight || 1000,
+        } as forms_AccountKey,
+        signature: params.flowSignature,
+      };
+
+      const evmAccountInfo: forms_EvmAccountInfo = {
+        eoa_address: params.eoaAddress,
+        signature: params.evmSignature,
+      };
+
+      const response = await Userv4GoService.register({
+        flowAccountInfo,
+        evmAccountInfo,
+        username: params.username,
+        deviceInfo,
+      });
+
+      const responseData = (response as any)?.data || response;
+      const id = responseData?.id;
+      const customToken = responseData?.custom_token;
+
+      if (!id || !customToken) {
+        logger.error('[ProfileService] Registration v4 failed: missing required fields');
+        throw new Error('Registration response missing required fields (id or custom_token)');
+      }
+
+      return { custom_token: customToken, id };
+    } catch (error: any) {
+      // Enhanced error handling for Axios errors
+      if (error?.response) {
+        const status = error.response.status;
+        const statusText = error.response.statusText;
+        const responseData = error.response.data;
+
+        logger.error('[ProfileService] Registration v4 failed with HTTP error:', {
+          status,
+          statusText,
+          responseData: responseData || 'No response data',
+          username: params.username,
+        });
+
+        const errorMessage =
+          responseData?.message ||
+          responseData?.error ||
+          `Registration failed with status ${status}: ${statusText}`;
+
+        const enhancedError = new Error(errorMessage);
+        (enhancedError as any).status = status;
+        (enhancedError as any).responseData = responseData;
+        throw enhancedError;
+      } else if (error?.request) {
+        logger.error('[ProfileService] Registration v4 failed - network error:', {
+          message: error.message,
+          code: error.code,
+        });
+        throw new Error(`Network error during registration: ${error.message}`);
+      } else {
+        logger.error('[ProfileService] Registration v4 failed:', error);
+        throw error;
+      }
+    }
   }
 
   /**

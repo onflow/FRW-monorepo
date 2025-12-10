@@ -141,6 +141,9 @@ importers:
       '@onflow/frw-screens':
         specifier: workspace:*
         version: link:../../packages/screens
+      '@onflow/frw-services':
+        specifier: workspace:*
+        version: link:../../packages/services
       '@onflow/frw-stores':
         specifier: workspace:*
         version: link:../../packages/stores
@@ -15812,7 +15815,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
