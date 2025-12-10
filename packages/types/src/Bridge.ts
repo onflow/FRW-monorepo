@@ -162,6 +162,7 @@ export interface SPResponse {
 export type InitialRoute =
   | 'GetStarted'
   | 'ProfileTypeSelection'
+  | 'ImportProfile'
   | 'SelectTokens'
   | 'SendTo'
   | 'SendTokens'

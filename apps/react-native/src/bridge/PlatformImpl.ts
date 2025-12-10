@@ -272,7 +272,11 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getWalletProfiles();
   }
 
-  switchToProfile(userId: string): Promise<boolean> {
+  getRecoverableProfiles(): Promise<WalletProfilesResponse> {
+    return NativeFRWBridge.getRecoverableProfiles();
+  }
+
+  async switchToProfile(userId: string): Promise<void> {
     return NativeFRWBridge.switchToProfile(userId);
   }
 

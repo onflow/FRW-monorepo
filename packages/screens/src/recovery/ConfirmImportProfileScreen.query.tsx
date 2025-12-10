@@ -16,19 +16,23 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
   const [isImporting, setIsImporting] = useState(false);
   const [selectedProfileUid, setSelectedProfileUid] = useState<string | undefined>(undefined);
 
-  // Fetch profiles from native bridge on mount
+  // Fetch recoverable profiles (stored locally but not logged in) from native bridge on mount
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
         setIsLoading(true);
-        const response = await bridge.getWalletProfiles();
+        // Use getRecoverableProfiles for recovery flow (profiles stored but not logged in)
+        const response = await bridge.getRecoverableProfiles?.();
         const fetchedProfiles = response?.profiles ?? [];
         setProfiles(fetchedProfiles);
         // Set first profile as default selected
         if (fetchedProfiles.length > 0) {
           setSelectedProfileUid(fetchedProfiles[0].uid);
         }
-        logger.debug('[ConfirmImportProfileScreen] Fetched profiles:', fetchedProfiles.length);
+        logger.debug(
+          '[ConfirmImportProfileScreen] Fetched recoverable profiles:',
+          fetchedProfiles.length
+        );
       } catch (error) {
         logger.error('[ConfirmImportProfileScreen] Failed to fetch profiles:', error);
         setProfiles([]);
@@ -61,15 +65,10 @@ export function ConfirmImportProfileScreen(): React.ReactElement {
 
     try {
       setIsImporting(true);
-      const success = await bridge.switchToProfile?.(selectedProfileUid);
-
-      if (success) {
-        logger.info('[ConfirmImportProfileScreen] Profile switch successful');
-        // Close the React Native screen and return to native app
-        bridge.closeRN?.();
-      } else {
-        logger.error('[ConfirmImportProfileScreen] Profile switch failed');
-      }
+      // Promise resolves on success, rejects on failure
+      // Native side will handle navigation after successful switch
+      await bridge.switchToProfile?.(selectedProfileUid);
+      logger.info('[ConfirmImportProfileScreen] Profile switch successful');
     } catch (error) {
       logger.error('[ConfirmImportProfileScreen] Error switching profile:', error);
     } finally {

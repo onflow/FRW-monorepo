@@ -118,8 +118,9 @@ export interface Spec extends TurboModule {
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
-  // Profile management
-  switchToProfile(userId: string): Promise<boolean>;
+  // Profile management - recovery flow
+  getRecoverableProfiles(): Promise<WalletProfilesResponse>;
+  switchToProfile(userId: string): Promise<void>;
   // Device info method
   getDeviceId(): string;
   // Toast methods

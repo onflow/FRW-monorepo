@@ -10,10 +10,10 @@ import {
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
-  SecureEnclaveScreen,
-  NotificationPreferencesScreen,
   RecoveryPhraseScreen,
   ConfirmRecoveryPhraseScreen,
+  SecureEnclaveScreen,
+  NotificationPreferencesScreen,
   // Recovery screens
   ImportProfileScreen,
   ImportOtherMethodsScreen,
@@ -70,10 +70,19 @@ export type RootStackParamList = {
   // Onboarding screens
   GetStarted: undefined;
   ProfileTypeSelection: undefined;
-  SecureEnclave: undefined;
-  NotificationPreferences: undefined;
   RecoveryPhrase: undefined;
-  ConfirmRecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: {
+    mnemonic: string;
+    accountKey: {
+      publicKey: string;
+      signAlgo: number;
+      hashAlgo: number;
+    };
+  };
+  SecureEnclave: undefined;
+  NotificationPreferences: {
+    accountType?: string;
+  };
   // Recovery screens
   ImportProfile: undefined;
   ImportOtherMethods: undefined;
@@ -315,19 +324,35 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             />
           </Stack.Group>
 
-          {/* Onboarding screens */}
+          {/* Onboarding Screens Group */}
           <Stack.Group
             screenOptions={{
-              headerShown: false,
+              headerShown: true,
+              headerBackTitle: '', // Ensure no back title text
+              headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
             }}
           >
-            <Stack.Screen name="GetStarted" component={GetStartedScreen} />
-            <Stack.Screen name="ProfileTypeSelection" component={ProfileTypeSelectionScreen} />
+            <Stack.Screen
+              name="GetStarted"
+              component={GetStartedScreen}
+              options={{
+                headerShown: false, // First screen doesn't need header
+              }}
+            />
+            <Stack.Screen
+              name="ProfileTypeSelection"
+              component={ProfileTypeSelectionScreen}
+              options={{
+                headerShown: false, // No header for profile type selection
+              }}
+            />
             <Stack.Screen
               name="RecoveryPhrase"
               component={RecoveryPhraseScreen}
               options={{
-                headerShown: true,
                 headerTitle: t('onboarding.recoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
                 headerStyle: {
@@ -339,7 +364,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="ConfirmRecoveryPhrase"
               component={ConfirmRecoveryPhraseScreen}
               options={{
-                headerShown: true,
                 headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
                 headerStyle: {
@@ -351,7 +375,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="SecureEnclave"
               component={SecureEnclaveScreen}
               options={{
-                headerShown: true,
                 headerTitle: '', // No title text
                 headerRight: () => null, // No close button
                 headerStyle: {
@@ -363,7 +386,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="NotificationPreferences"
               component={NotificationPreferencesScreen}
               options={{
-                headerShown: true,
                 headerTitle: t('onboarding.notificationPreferences.headerTitle'),
                 headerLeft: () => null, // No back button
                 headerRight: () => null, // No close button

@@ -16,16 +16,21 @@ export function ImportProfileScreen(): React.ReactElement {
   const [storedProfiles, setStoredProfiles] = useState<WalletProfile[]>([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
-  // Fetch stored profiles from native bridge on mount
+  // Fetch recoverable profiles (stored locally but not logged in) from native bridge on mount
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
         setIsLoadingProfiles(true);
-        const response = await bridge.getWalletProfiles();
+        // Use getRecoverableProfiles for recovery flow (profiles stored but not logged in)
+        // This is different from getWalletProfiles which returns currently logged-in profiles
+        const response = await bridge.getRecoverableProfiles?.();
         setStoredProfiles(response?.profiles ?? []);
-        logger.debug('[ImportProfileScreen] Fetched profiles:', response?.profiles?.length ?? 0);
+        logger.debug(
+          '[ImportProfileScreen] Fetched recoverable profiles:',
+          response?.profiles?.length ?? 0
+        );
       } catch (error) {
-        logger.error('[ImportProfileScreen] Failed to fetch profiles:', error);
+        logger.error('[ImportProfileScreen] Failed to fetch recoverable profiles:', error);
         setStoredProfiles([]);
       } finally {
         setIsLoadingProfiles(false);

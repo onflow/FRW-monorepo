@@ -61,11 +61,18 @@ export interface PlatformSpec {
 
   // Profile management
   /**
+   * Get profiles stored locally but not yet logged in (for recovery flow)
+   * These are different from getWalletProfiles which returns currently logged-in profiles
+   * @returns Promise with recoverable profiles response
+   */
+  getRecoverableProfiles?(): Promise<WalletProfilesResponse>;
+
+  /**
    * Switch to a previously signed-in profile by user ID
    * @param userId - The unique identifier of the profile to switch to
-   * @returns Promise that resolves to true if switch was successful
+   * @returns Promise that resolves on success, rejects on failure
    */
-  switchToProfile?(userId: string): Promise<boolean>;
+  switchToProfile?(userId: string): Promise<void>;
 
   // Transaction monitoring
   listenTransaction?(
