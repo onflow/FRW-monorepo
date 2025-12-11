@@ -432,6 +432,7 @@ const Confirmation = ({ params: { icon, origin, tabId, type } }: ConnectProps) =
                 flexDirection: 'column',
                 borderRadius: '12px',
                 height: '100%',
+                overflow: 'auto',
                 background: accountLinking
                   ? 'linear-gradient(0deg, #121212, #32484C)'
                   : 'linear-gradient(0deg, #121212, #11271D)',
