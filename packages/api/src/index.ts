@@ -9,6 +9,7 @@ export {
   ProfileService as ProfileGoService,
   UserService as UserGoService,
   Userv3Service as Userv3GoService,
+  Userv4Service as Userv4GoService,
 } from './codegen/goService.generated';
 export * from './codegen/service.generated';
 
@@ -17,6 +18,8 @@ export type {
   controllers_UserReturn,
   forms_AccountKey,
   forms_DeviceInfo,
+  forms_FlowAccountInfo,
+  forms_EvmAccountInfo,
 } from './codegen/goService.generated';
 
 // Export service options

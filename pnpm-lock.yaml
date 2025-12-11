@@ -141,6 +141,9 @@ importers:
       '@onflow/frw-screens':
         specifier: workspace:*
         version: link:../../packages/screens
+      '@onflow/frw-services':
+        specifier: workspace:*
+        version: link:../../packages/services
       '@onflow/frw-stores':
         specifier: workspace:*
         version: link:../../packages/stores
@@ -1000,6 +1003,9 @@ importers:
       '@onflow/frw-api':
         specifier: workspace:*
         version: link:../api
+      '@onflow/frw-cadence':
+        specifier: workspace:*
+        version: link:../cadence
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context
@@ -17867,7 +17873,7 @@ snapshots:
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.5
 
   '@types/bn.js@4.11.6':
     dependencies:
