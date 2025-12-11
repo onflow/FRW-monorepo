@@ -31,16 +31,22 @@ const KeyImport = ({
       const inputValue = e.target[2].value;
       setPk(pk);
       const address = flowAddressRegex.test(inputValue) ? inputValue : null;
+
       const result = await usewallet.findAddressWithPrivateKey(pk, address);
-      if (!result) {
+
+      if (!result || result.length === 0) {
         onOpen();
         return;
       }
+
       const accounts: (PublicKeyAccount & { type: string })[] = result.map((a) => ({
         ...a,
         type: KEY_TYPE.PRIVATE_KEY,
       }));
+
       onImport(accounts);
+    } catch (error) {
+      onOpen();
     } finally {
       setLoading(false);
     }
@@ -54,6 +60,7 @@ const KeyImport = ({
         style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
       >
         <PasswordTextarea
+          className="sentry-mask"
           minRows={2}
           maxRows={2}
           placeholder={chrome.i18n.getMessage('Enter_your_Private_key')}
@@ -62,6 +69,7 @@ const KeyImport = ({
           sx={{ marginBottom: '16px' }}
         />
         <TextareaAutosize
+          className="sentry-mask"
           placeholder={chrome.i18n.getMessage('Enter_your_flow_address')}
           style={{
             width: '100%',

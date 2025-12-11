@@ -15,6 +15,12 @@
     "message": "この拡張機能はベータテスト用です。自己責任で使用してください。",
     "description": "Application Descrtipion"
   },
+  "Register_New_Profile": {
+    "message": "新しいプロファイルを登録する"
+  },
+  "Create_New_Profile_Description": {
+    "message": "Flow 上で新しいプロファイルを作成するために、このシードフレーズを使用しますか？"
+  },
   "Send": {
     "message": "送信"
   },
@@ -89,6 +95,9 @@
   },
   "Developer__Mode": {
     "message": "デベロッパーモード"
+  },
+  "Feedback": {
+    "message": "フィードバック"
   },
   "Emulator_Mode": {
     "message": "エミュレータモード"
@@ -782,7 +791,7 @@
     "message": "私は同意します"
   },
   "of_Lilico_Wallet": {
-    "message": " Flow Walletの"
+    "message": " Flow Wallet の"
   },
   "Login": {
     "message": "ログイン"
@@ -902,7 +911,7 @@
     "message": " これでこの Google バックアップは削除されます。Google バックアップを経由してこのウォレットをインポートすることはできません。"
   },
   "Your_lilico_domain_will_look_like": {
-    "message": "Flow Wallet のドメインは以下のようになります:"
+    "message": "Flow Wallet のドメインは以下のようになります："
   },
   "meow": {
     "message": ".meow"
@@ -1112,7 +1121,7 @@
     "message": "チェーン上のアカウント発見"
   },
   "Support_Flow_Wallet_and_private_key": {
-    "message": "Flowウォレット、Blocto、シードフレーズ、キーストア、プライベートキーをサポート"
+    "message": "Flow ウォレット、Blocto、シードフレーズ、キーストア、プライベートキーをサポート"
   },
   "Import_Address": {
     "message": "アドレスをインポートする"
@@ -1139,13 +1148,13 @@
     "message": "プライベートキーが無効です"
   },
   "Open_your_Flow_Reference_on_Mobil": {
-    "message": "Flow Walletのモバイルアプリを開き、QRコードをスキャンしてウォレットを同期してください。Flow Walletの同期により、FlowアカウントをFlow Walletアプリで使用できるようになります。"
+    "message": "Flow Wallet のモバイルアプリを開き、QR コードをスキャンしてウォレットを同期してください。Flow Wallet の同期により、Flow アカウントを Flow Wallet アプリで使用できるようになります。"
   },
   "Sync_": {
     "message": "同期"
   },
   "Note_Your_recovery_phrase_will_not": {
-    "message": "注意: あなたのリカバリーフレーズはFlowリファレンスのサーバーを通過しません。エンドツーエンドで暗号化されており、私たちは読むことができません。"
+    "message": "注意：あなたのリカバリーフレーズは Flow リファレンスのサーバーを通過しません。エンドツーエンドで暗号化されており、私たちは読むことができません。"
   },
   "Scan_Successfully": {
     "message": "スキャン成功"
@@ -1154,7 +1163,7 @@
     "message": "同期中..."
   },
   "Scan_QR_Code_with_Mobile": {
-    "message": "モバイルアプリでQRコードをスキャンする"
+    "message": "モバイルアプリで QR コードをスキャンする"
   },
   "Sync_with_Mobile_App": {
     "message": "モバイルアプリと同期する"
@@ -1163,13 +1172,13 @@
     "message": "他のウォレットをインポートする"
   },
   "Support_Flow_Wallet_Blocto": {
-    "message": "Flowウォレット、Blocto、リカバリーフレーズ、キーストア、プライベートキーをサポート"
+    "message": "Flow ウォレット、Blocto、リカバリーフレーズ、キーストア、プライベートキーをサポート"
   },
   "Import_Profile_Subtitle": {
     "message": "以下のオプションからプロファイルをインポートしてください"
   },
   "A_crypto_wallet_on_Flow": {
-    "message": "探検家、コレクター、ゲーマー向けのFlow上の暗号ウォレット"
+    "message": "探検家、コレクター、ゲーマー向けの Flow 上の暗号ウォレット"
   },
   "Explorers_Collectors_and_Gamers": {
     "message": "探検家、コレクター、ゲーマー"
@@ -1187,19 +1196,19 @@
     "message": "モバイルアプリ"
   },
   "You_can_import_the": {
-    "message": "他のウォレット（例：Blocto）からキーストアのJSON内容を貼り付けてください"
+    "message": "キーストアの JSON 内容を別のウォレットから貼り付けてください (例: Blocto)"
   },
   "Enter_password_for_json_file": {
-    "message": "jsonファイルのパスワードを入力してください"
+    "message": "json ファイルのパスワードを入力してください"
   },
   "Enter_your_flow_address": {
-    "message": "Flowアドレスを入力してください（オプション）"
+    "message": "Flow アドレスを入力してください（オプション）"
   },
   "Enter_your_Private_key": {
     "message": "プライベートキーを入力してください"
   },
   "Import_12_or_24_words": {
-    "message": "12語または24語をスペースで区切ってインポート"
+    "message": "12 語または 24 語をスペースで区切ってインポート"
   },
   "OK": {
     "message": "OK"
@@ -1268,7 +1277,7 @@
     "message": "ウォレットをリセット"
   },
   "Confirm_to_reset_Wallet": {
-    "message": "すべてのウォレットをリセットしますか?"
+    "message": "すべてのウォレットをリセットしますか？"
   },
   "This_action_will_remove": {
     "message": "この操作により、現在のウォレットだけでなく、すべてのウォレットの秘密キーを含むすべてのローカル データが削除されます。秘密キーがバックアップされていることを確認してください。"
@@ -1289,7 +1298,7 @@
     "message": "アプリケーション"
   },
   "IP_Address": {
-    "message": "IPアドレス"
+    "message": "IP アドレス"
   },
   "Location": {
     "message": "場所"
@@ -1298,7 +1307,7 @@
     "message": "日付"
   },
   "Link_Flow_Reference_Wallet_Mobile_by_Scanning": {
-    "message": "QRコードをスキャンしてフローリファレンスウォレットモバイルをリンク"
+    "message": "QR コードをスキャンしてフローリファレンスウォレットモバイルをリンク"
   },
   "Current_Sessions": {
     "message": "現在のセッション"
@@ -1325,7 +1334,7 @@
     "message": "モバイルデバイス"
   },
   "Scan_QR_code_to_active": {
-    "message": "モバイルデバイスをアクティブにするためにQRコードをスキャンしてください"
+    "message": "モバイルデバイスをアクティブにするために QR コードをスキャンしてください"
   },
   "lease_allow_the_camera_permission": {
     "message": "右上の拡張機能ビューのウェブ権限設定からカメラの権限を許可してください。"
@@ -1343,7 +1352,7 @@
     "message": "移動"
   },
   "multi_vm": {
-    "message": "EVMアカウント"
+    "message": "EVM アカウント"
   },
   "main_wallet": {
     "message": "メインアカウント"
@@ -1367,19 +1376,19 @@
     "message": "コレクション"
   },
   "Cannot_move_more": {
-    "message": "9個以上のNFTを移動できません"
+    "message": "9 個以上の NFT を移動できません"
   },
   "manage_multi_assets_seamlessly": {
-    "message": "マルチVM資産をシームレスに管理"
+    "message": "マルチ VM 資産をシームレスに管理"
   },
   "path_to_enable": {
     "message": "有効にするパス"
   },
   "EVM_on_flow": {
-    "message": "Flow上のEVM"
+    "message": "Flow 上の EVM"
   },
   "enable_the_path_to_evm_on_flow": {
-    "message": "Flow上のEVMへのパスを有効にする"
+    "message": "Flow 上の EVM へのパスを有効にする"
   },
   "What_type_of_assets_would_you_like_to_move": {
     "message": "移動したい資産の種類は何ですか？"
@@ -1409,19 +1418,19 @@
     "message": "削除"
   },
   "Remove_profile_warning_simplified": {
-    "message": "このプロファイルを削除すると、ログアウトされます。リカバリーフレーズ、秘密鍵、またはGoogleドライブのバックアップを使用して再インポートできます。"
+    "message": "このプロファイルを削除すると、ログアウトされます。リカバリーフレーズ、秘密鍵、または Google ドライブのバックアップを使用して再インポートできます。"
   },
   "Almost_run_out_of_account_storage": {
     "message": "アカウントのストレージがほとんどありません。"
   },
   "Transaction_failed_storage_exceeded": {
-    "message": "取引が失敗しました。アカウントのストレージ使用量により、アカウントの最低FLOW残高を下回ったためです。"
+    "message": "取引が失敗しました。アカウントのストレージ使用量により、アカウントの最低 FLOW 残高を下回ったためです。"
   },
   "Must_have_minimum_flow_storage": {
-    "message": "ストレージ使用量をカバーするために、アカウントには少なくとも0.001 FLOWが必要です。"
+    "message": "ストレージ使用量をカバーするために、アカウントには少なくとも 0.001 FLOW が必要です。"
   },
   "Buy_FLOW": {
-    "message": "FLOWを購入"
+    "message": "FLOW を購入"
   },
   "Insufficient_storage_after_action": {
     "message": "この操作の後、ストレージが不足しています。"
@@ -1430,7 +1439,7 @@
     "message": "FLOW EVM ネットワークで入金していることを確認してください。他のネットワークを通じて入金した場合、資産が失われる可能性があります。"
   },
   "NFT_Not_onboarded": {
-    "message": "このNFTコレクションはまだCadenceに搭載されていません。Flow Portを使用してこのNFTコレクションからNFTを移動およびオンボードしてください"
+    "message": "この NFT コレクションはまだ Cadence に搭載されていません。Flow Port を使用してこの NFT コレクションから NFT を移動およびオンボードしてください"
   },
   "Could_not_enable_this_collection": {
     "message": "このコレクションを有効にできませんでした"
@@ -1451,13 +1460,13 @@
     "message": "アドレス作成中..."
   },
   "Google_Drive_Not_Connected": {
-    "message": "Google Driveは接続されていません"
+    "message": "Google Drive は接続されていません"
   },
   "Change_Password_No_Google_Drive_Warning": {
-    "message": "パスワードを変更すると、既存のバックアップが破損します。Google Driveバックアップを使用しない場合のみ続行してください。"
+    "message": "パスワードを変更すると、既存のバックアップが破損します。Google Drive バックアップを使用しない場合のみ続行してください。"
   },
   "Connect_Google_Drive": {
-    "message": "Google Driveを接続"
+    "message": "Google Drive を接続"
   },
   "Change_Password_Anyway": {
     "message": "パスワードを変更します 😱"
@@ -1466,7 +1475,7 @@
     "message": "バックアップのパスワードを変更"
   },
   "Change_Password_on_Backups_Description": {
-    "message": "パスワードを変更すると、既存のバックアップが破損します。Google Driveバックアップを使用しない場合のみ続行してください。"
+    "message": "パスワードを変更すると、既存のバックアップが破損します。Google Drive バックアップを使用しない場合のみ続行してください。"
   },
   "Loaded_in_wallet": {
     "message": "ロード済み"
@@ -1562,16 +1571,16 @@
     "message": "アカウントを持っています"
   },
   "Get_Started_with_Flow_wallet": {
-    "message": "Flowウォレットを使用してみる"
+    "message": "Flow ウォレットを使用してみる"
   },
   "Welcome_to_Flow_Wallet": {
-    "message": "Flowウォレットへようこそ！"
+    "message": "Flow ウォレットへようこそ！"
   },
   "Create_an_account_to_get_started": {
     "message": "アカウントを作成して開始します。"
   },
   "legal_text": {
-    "message": "Flowウォレットを使用することで、<termslink>利用規約</termslink>と<privacylink>プライバシーポリシー</privacylink>に同意します"
+    "message": "Flow ウォレットを使用することで、<termslink>利用規約</termslink>と<privacylink>プライバシーポリシー</privacylink>に同意します"
   },
   "Surge__Modal__Title": {
     "message": "サージ価格で続行してもよろしいですか？"
@@ -1583,7 +1592,7 @@
     "message": "サージ価格が有効"
   },
   "Surge__Modal__Description": {
-    "message": "ネットワーク活動が活発なため、取引手数料が上昇しており、Flow Walletは一時的にガス代を支払いません。現在のネットワーク手数料は通常の$1倍です。",
+    "message": "ネットワーク活動が活発なため、取引手数料が上昇しており、Flow Wallet は一時的にガス代を支払いません。現在のネットワーク手数料は通常の$1倍です。",
     "placeholders": {
       "multiplier": {
         "content": "$1",
@@ -1593,5 +1602,17 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "サージ価格に同意するために長押し"
+  },
+  "COA_Modal_Title": {
+    "message": "Flow 上の EVM アドレス"
+  },
+  "COA_Modal_Warning": {
+    "message": "Flow 上の EVM アドレスをコピーしました。このアドレスに Flow 上の資産のみを送信してください。そうしないと資産が失われる可能性があります。"
+  },
+  "COA_Modal_Confirm_Button": {
+    "message": "アドレスをコピーする"
+  },
+  "Scan_to_receive": {
+    "message": "受信をスキャンする"
   }
 }

@@ -15,6 +15,12 @@
     "message": "ЭТО РАСШИРЕНИЕ ДЛЯ БЕТА-ТЕСТИРОВАНИЯ. ИСПОЛЬЗУЙТЕ НА СВОЙ СТРАХ.",
     "description": "Application Descrtipion"
   },
+  "Register_New_Profile": {
+    "message": "Зарегистрировать новый профиль"
+  },
+  "Create_New_Profile_Description": {
+    "message": "Хотите использовать эту фразу для создания нового профиля в Flow?"
+  },
   "Send": {
     "message": "Отправить"
   },
@@ -89,6 +95,9 @@
   },
   "Developer__Mode": {
     "message": "Режим разработчика"
+  },
+  "Feedback": {
+    "message": "Обратная связь"
   },
   "Emulator_Mode": {
     "message": "Pежим эмулятора"
@@ -1187,7 +1196,7 @@
     "message": "Мобильное приложение"
   },
   "You_can_import_the": {
-    "message": "Вставьте содержимое JSON из хранилища ключей другого кошелька (например: Blocto)"
+    "message": "Вставьте содержимое JSON ключевого хранилища из другого кошелька (например: Blocto)"
   },
   "Enter_password_for_json_file": {
     "message": "Введите пароль для json файла"
@@ -1593,5 +1602,17 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "Удерживайте для согласия с повышенными ценами"
+  },
+  "COA_Modal_Title": {
+    "message": "Flow EVM адрес"
+  },
+  "COA_Modal_Warning": {
+    "message": "Вы скопировали EVM адрес в сети Flow. Пожалуйста, убедитесь, что вы отправляете активы только в сети Flow на этот адрес, иначе они могут быть потеряны."
+  },
+  "COA_Modal_Confirm_Button": {
+    "message": "Подтвердить копирование адреса"
+  },
+  "Scan_to_receive": {
+    "message": "Сканируйте для получения"
   }
 }

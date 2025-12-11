@@ -1,12 +1,13 @@
+import { captureException } from '@sentry/react';
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { initializeStorage } from '@/data-model';
-import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
 import { getUITypeName } from '@/ui/utils';
+import './sentry-react.config';
 
 import Views from './views';
 
@@ -27,7 +28,6 @@ function initAppMeta() {
   description.content = chrome.i18n.getMessage('appDescription');
   head?.appendChild(description);
 
-  initializeChromeLogging();
   initializeStorage({ implementation: chromeStorage });
 }
 
@@ -94,6 +94,11 @@ eventBus.addEventListener(EVENTS.broadcastToBackground, (data) => {
     params: data.data,
   });
 });
+
+window.onerror = function (message, source, lineno, colno, error) {
+  captureException(error);
+  console.error(message, source, lineno, colno, error);
+};
 
 const container = document.getElementById('root');
 const root = createRoot(container!); // createRoot(container!) if you use TypeScript

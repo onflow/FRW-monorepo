@@ -26,7 +26,6 @@ import {
   googleDriveService,
 } from '@/core/service';
 import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
-import { initializeChromeLogging } from '@/extension-shared/chrome-logger';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
 import { Message, eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
@@ -37,7 +36,6 @@ import notificationService from './controller/notification';
 import packageJson from '../../package.json';
 import { getFirbaseConfig } from './utils/firebaseConfig';
 import { getAuthTokenWrapper } from './utils/googleDriveAuthToken';
-import { logListener } from './utils/log-listener';
 import { mixpanelService } from './utils/mixpanel-analytics';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 
@@ -80,11 +78,6 @@ async function restoreAppState() {
   if (process.env.MIXPANEL_TOKEN) {
     // This will set the analytics service to mixpanel
     await mixpanelService.init(process.env.MIXPANEL_TOKEN);
-
-    // Initialize Chrome logging - has to be done after mixpanel is initialized
-    initializeChromeLogging();
-    // Listen to log events
-    await logListener.init();
   }
 
   // 5. Load keyring store
@@ -133,6 +126,17 @@ async function restoreAppState() {
   // Set the loaded flag to true so that the UI knows the app is ready
   await walletController.setLoaded(true);
 }
+
+// function produceSentryErrorFromServiceWorker(): void {
+//   try {
+//     console.error("❌ Sentry Error in produceSentryErrorFromServiceWorker");
+//     throw new Error("❌ Sentry Error in produceSentryErrorFromServiceWorker");
+//   } catch (error) {
+//     sentry.scope.captureException(error);
+//   }
+// }
+
+// produceSentryErrorFromServiceWorker();
 
 restoreAppState();
 

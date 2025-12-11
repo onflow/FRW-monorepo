@@ -1,14 +1,19 @@
 import { Interface } from '@ethersproject/abi';
+import type { BigNumberish } from '@ethersproject/bignumber';
+import { arrayify, hexlify } from '@ethersproject/bytes';
+import { keccak256 } from '@ethersproject/keccak256';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { serialize, type UnsignedTransaction } from '@ethersproject/transactions';
 import { parseUnits } from '@ethersproject/units';
 import { logger } from '@onflow/frw-utils';
 
-import type { SendPayload } from './types';
+import type { SendPayload, TransferExecutionHelpers } from './types';
 
 /**
  * Default gas limits for different transaction types
  */
 export const GAS_LIMITS = {
-  EVM_DEFAULT: 30_000_000,
+  EVM_DEFAULT: 16_777_216,
   CADENCE_DEFAULT: 9999,
 } as const;
 
@@ -106,8 +111,11 @@ export const safeConvertToUFix64 = (
  * @returns Array of bytes representing the encoded function call
  * @throws Error if receiver address is invalid
  */
-export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
-  const { type, amount = '', receiver, decimal, ids, sender } = payload;
+export const encodeEvmContractCallData = (
+  payload: SendPayload,
+  returnHex: boolean = false
+): number[] | string | string[] => {
+  const { type, amount = '', receiver, decimal, ids, sender, coaAddr } = payload;
   // const to = receiver.toLowerCase().replace(/^0x/, '');
   if (receiver.length !== 42) throw new Error('Invalid Ethereum address');
   let callData = '0x';
@@ -126,7 +134,7 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
   } else {
     // NFT transfer (ERC721 or ERC1155)
     if (ids.length === 1) {
-      if (amount === '') {
+      if (amount === '' || Number(amount) === 0) {
         // ERC721 NFT transfer (no amount parameter)
         const tokenId = ids[0];
 
@@ -154,9 +162,25 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
           '0x', // Empty data parameter
         ]);
       }
+    } else {
+      // batch nft
+      const datas: string[] = [];
+      for (const tokenId of ids) {
+        const abi = ['function safeTransferFrom(address from, address to, uint256 tokenId)'];
+        const iface = new Interface(abi);
+
+        // Encode function call data
+        callData = iface.encodeFunctionData('safeTransferFrom', [sender, receiver, tokenId]);
+        datas.push(callData);
+      }
+      if (returnHex) {
+        return datas;
+      }
     }
   }
-
+  if (returnHex) {
+    return callData;
+  }
   // Convert hex string to byte array
   const hexString = callData.slice(2); // Remove '0x' prefix
   const dataArray = new Uint8Array(hexString.length / 2);
@@ -166,4 +190,109 @@ export const encodeEvmContractCallData = (payload: SendPayload): number[] => {
   const regularArray = Array.from(dataArray);
 
   return regularArray;
+};
+
+export const convertHexToByteArray = (hexString: string): number[] => {
+  if (hexString.startsWith('0x')) {
+    hexString = hexString.slice(2);
+  }
+  const dataArray = new Uint8Array(hexString.length / 2);
+  for (let i = 0; i < hexString.length; i += 2) {
+    dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+  }
+  const regularArray = Array.from(dataArray);
+
+  return regularArray;
+};
+
+type SupportedEvmNetwork = 'mainnet' | 'testnet';
+
+const FLOW_EVM_CHAIN_IDS: Record<SupportedEvmNetwork, number> = {
+  mainnet: 747,
+  testnet: 545,
+};
+
+const FLOW_EVM_RPC_ENDPOINTS: Record<SupportedEvmNetwork, string> = {
+  mainnet: 'https://mainnet.evm.nodes.onflow.org',
+  testnet: 'https://testnet.evm.nodes.onflow.org',
+};
+
+const resolveNetworkKey = (network?: string): SupportedEvmNetwork => {
+  if (!network) return 'mainnet';
+  const normalized = network.toLowerCase();
+  return normalized.includes('test') ? 'testnet' : 'mainnet';
+};
+
+const resolveChainId = (helpers?: TransferExecutionHelpers): number => {
+  return FLOW_EVM_CHAIN_IDS[resolveNetworkKey(helpers?.network)];
+};
+
+const resolveRpcUrl = (helpers?: TransferExecutionHelpers): string => {
+  return FLOW_EVM_RPC_ENDPOINTS[resolveNetworkKey(helpers?.network)];
+};
+
+const providerCache = new Map<string, JsonRpcProvider>();
+
+const getRpcProvider = (helpers?: TransferExecutionHelpers): JsonRpcProvider => {
+  const rpcUrl = resolveRpcUrl(helpers);
+  let provider = providerCache.get(rpcUrl);
+  if (!provider) {
+    provider = new JsonRpcProvider(rpcUrl);
+    providerCache.set(rpcUrl, provider);
+  }
+  return provider;
+};
+
+const getNonce = async (address: string, helpers?: TransferExecutionHelpers): Promise<number> => {
+  const provider = getRpcProvider(helpers);
+  return await provider.getTransactionCount(address);
+};
+
+export interface LegacyTransactionRequest {
+  from: string;
+  to: string;
+  data?: string;
+  value?: BigNumberish;
+  gasLimit?: BigNumberish;
+  gasPrice?: BigNumberish;
+}
+
+export const signLegacyEvmTransaction = async (
+  tx: LegacyTransactionRequest,
+  helpers?: TransferExecutionHelpers,
+  nonceSteper?: number
+): Promise<string> => {
+  if (!helpers?.ethSign) {
+    throw new Error('ethSign helper is required for EVM transaction signing');
+  }
+
+  if (!tx.from || !tx.to) {
+    throw new Error('EVM transaction requires both from and to addresses');
+  }
+
+  const [nonce, chainId] = await Promise.all([
+    getNonce(tx.from, helpers),
+    Promise.resolve(resolveChainId(helpers)),
+  ]);
+
+  const gasLimit = tx.gasLimit ?? GAS_LIMITS.EVM_DEFAULT;
+  const gasPrice = tx.gasPrice ?? helpers?.gasPrice ?? 0;
+
+  const unsignedTx: UnsignedTransaction = {
+    type: 0,
+    chainId,
+    nonce: nonceSteper && nonceSteper > 0 ? nonce + nonceSteper : nonce,
+    gasPrice,
+    gasLimit,
+    to: tx.to,
+    value: tx.value ?? 0,
+    data: tx.data ?? '0x',
+  };
+
+  const serializedUnsigned = serialize(unsignedTx);
+  const digest = arrayify(keccak256(serializedUnsigned));
+  const signatureBytes = await helpers.ethSign(digest);
+  const signatureHex = hexlify(signatureBytes);
+
+  return serialize(unsignedTx, signatureHex);
 };

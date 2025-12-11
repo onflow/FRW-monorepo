@@ -1,4 +1,5 @@
 import fcl from '@onflow/fcl';
+import { ethers } from 'ethers';
 
 import { accounts } from './accounts';
 import { sign, signSecp256k1 } from './crypto';
@@ -6,7 +7,7 @@ import { sign, signSecp256k1 } from './crypto';
 export const child1Addr = accounts.child1.address;
 export const child2Addr = accounts.child2.address;
 
-export async function authz(account) {
+export async function authz(account, signType = 'secp256k1') {
   return {
     // there is stuff in the account that is passed in
     // you need to make sure its part of what is returned
@@ -22,7 +23,10 @@ export async function authz(account) {
     signingFunction: (signable) => ({
       addr: fcl.withPrefix(accounts.main.address), // must match the address that requested the signature, but with a prefix
       keyId: accounts.main.key.index, // must match the keyId in the account that requested the signature
-      signature: sign(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
+      signature:
+        signType === 'p256'
+          ? sign(accounts.main.key.privateKey, signable.message)
+          : signSecp256k1(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
       // if you arent in control of the transaction that is being signed we recommend constructing the
       // message from signable.voucher using the @onflow/encode module
     }),
@@ -165,3 +169,32 @@ export function test2Authz() {
   });
   return authz;
 }
+
+const DEFAULT_EVM_RPC = 'https://mainnet.evm.nodes.onflow.org';
+
+let cachedSigner: ethers.Wallet | null = null;
+
+const getTestEvmSigner = (): ethers.Wallet => {
+  if (cachedSigner) {
+    return cachedSigner;
+  }
+
+  const privateKey = process.env.TEST_MAIN_EOA_ACCOUNT_PK;
+  if (!privateKey) {
+    throw new Error('TEST_MAIN_EOA_ACCOUNT_PK is not defined');
+  }
+
+  const rpcUrl = process.env.TEST_MAIN_EVM_RPC_URL || DEFAULT_EVM_RPC;
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  cachedSigner = new ethers.Wallet(privateKey, provider);
+  return cachedSigner;
+};
+
+export const evmTrxCallback = async (digest: Uint8Array): Promise<Uint8Array> => {
+  const signer = getTestEvmSigner();
+  if (digest.length !== 32) {
+    throw new Error('ethSign expects a 32-byte digest');
+  }
+  const signature = signer.signingKey.sign(ethers.hexlify(digest));
+  return ethers.getBytes(signature.serialized ?? signature);
+};

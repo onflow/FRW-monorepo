@@ -6,12 +6,14 @@
     "selectTokens": "Select Tokens",
     "sendTokens": "Send Tokens",
     "nftDetails": "NFT Details",
-    "colorDemo": "Color Demo"
+    "colorDemo": "Color Demo",
+    "receive": "Receive Assets"
   },
   "common": {
     "cancel": "Cancel",
     "confirm": "Confirm",
     "back": "Back",
+    "goBack": "Go Back",
     "close": "Close",
     "done": "Done",
     "next": "Next",
@@ -19,7 +21,9 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
-    "Search": "Search"
+    "Search": "Search",
+    "retry": "Retry",
+    "recommended": "Recommended"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -119,7 +123,19 @@
     "failedToLoadRecipients": "Failed to load recipients",
     "copied": "Copied!",
     "addressBookAdded": "Added to address book",
-    "failedToAddToAddressBook": "Failed to add to address book"
+    "failedToAddToAddressBook": "Failed to add to address book",
+    "addressCopied": "Address copied to clipboard",
+    "failedToCopy": "Failed to copy address",
+    "failedToShare": "Failed to share QR code"
+  },
+  "receive": {
+    "title": "Receive Assets",
+    "receiveAccount": "Receive to Account",
+    "scanToReceive": "Scan to receive",
+    "shareQRCode": "Share QR Code",
+    "generatingQR": "Generating QR code...",
+    "noQRCode": "No QR code available",
+    "evmWarning": "Please ensure you only send assets to this address on the Flow EVM network. Assets sent to this address on other networks will be lost."
   },
   "buttons": {
     "retry": "Retry",
@@ -141,7 +157,25 @@
     "failedToLoadTokens": "Failed to load tokens",
     "failedToLoadNFTs": "Failed to load NFTs",
     "transactionPayloadError": "Failed to create transaction payload",
-    "transactionExecutionError": "Transaction execution failed"
+    "transactionExecutionError": "Transaction execution failed",
+    "generic": {
+      "title": "Something went wrong",
+      "message": "We encountered an unexpected error. Please try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "network": {
+      "title": "Connection Error",
+      "message": "Unable to connect to the network. Please check your connection and try again.",
+      "button": "Retry",
+      "reportBug": "Report Bug"
+    },
+    "critical": {
+      "title": "Critical Error",
+      "message": "A critical error occurred. Please restart the app.",
+      "button": "Restart",
+      "reportBug": "Report Bug"
+    }
   },
   "nft": {
     "untitled": "Untitled",
@@ -196,6 +230,99 @@
       "surgeActive": "Surge price active",
       "description": "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are {{multiplier}}× higher than usual.",
       "holdToAgree": "Hold to agree to surge pricing"
+    }
+  },
+  "onboarding": {
+    "flowWallet": "Flow Wallet",
+    "getStarted": {
+      "title": "Get started with Flow Wallet",
+      "subtitle": "Welcome to Flow Wallet\nCreate an account to get started.",
+      "createAccount": "Create a new account",
+      "signIn": "I already have an account",
+      "agreementText": "By using Flow Wallet you agree to the",
+      "termsOfService": "terms of service",
+      "and": "and",
+      "privacyPolicy": "privacy policy"
+    },
+    "profileType": {
+      "welcomeTitle": "Welcome to\nFlow Wallet",
+      "recoveryPhrase": {
+        "title": "Secured by a Recovery Phrase",
+        "description": "A recovery phrase is a series of words generated that will secure your wallet."
+      },
+      "secureEnclaveProfile": "Secure Enclave Profile",
+      "next": "Next"
+    },
+    "secureEnclave": {
+      "title": "Advanced",
+      "cardTitle": "Secure Profile",
+      "cardDescription": "Using device keys with hardware-grade security, Flow Wallet in secure mode is an ultra-secure hardware wallet you can trust. Only available for Cadence accounts on Flow.",
+      "features": {
+        "secureEnclave": "Secure enclave",
+        "hardwareSecurity": "Hardware grade security",
+        "noEvm": "No EVM Support"
+      },
+      "next": "Next",
+      "dialog": {
+        "title": "Are you an advanced user?",
+        "description": "Are you sure you want to create a Secure Profile? This will limit access to certain features and won't give you access to an EVM account on Flow.",
+        "holdToConfirm": "Hold to confirm"
+      },
+      "creating": {
+        "title": "Creating\nyour account",
+        "configuring": "Configuring account"
+      }
+    },
+    "notificationPreferences": {
+      "headerTitle": "Notifications",
+      "title": "Get push notifications",
+      "subtitle": "Get notified when your transfers, swaps and approvals complete.",
+      "enableButton": "Turn on push notifications",
+      "maybeLater": "Maybe later"
+    },
+    "backupOptions": {
+      "navTitle": "Backup",
+      "subtitle": "Select how you'd like to backup your account to finish creating your account. You can change this later in settings.",
+      "deviceBackup": {
+        "title": "Create device backup",
+        "description": "Use your device as a backup wallet to safeguard your digital assets"
+      },
+      "cloudBackup": {
+        "title": "Create cloud backup",
+        "description": "Create a cloud backup with trusted providers like google drive and icloud"
+      },
+      "recoveryPhrase": {
+        "title": "Create a recovery phrase backup",
+        "description": "Create a 12 word recovery phrase"
+      },
+      "skipWarning": {
+        "title": "Proceed without a backup?",
+        "message": "Without a backup, you may lose access to your wallet if you lose your device. Are you sure you want to continue without setting up a backup?",
+        "confirm": "Continue without backup"
+      }
+    },
+    "recoveryPhrase": {
+      "navTitle": "Create account",
+      "title": "Recovery phrase",
+      "description": "Write down these words in the right order and store them somewhere safe.",
+      "clickToReveal": "Click to reveal phrase",
+      "copy": "Copy",
+      "next": "Next",
+      "warning": {
+        "title": "Do not share your secret phrase!",
+        "description": "If someone has your secret phrase,\nThey will have full control of your wallet."
+      },
+      "error": {
+        "title": "Failed to Generate Recovery Phrase",
+        "unknown": "An unknown error occurred"
+      }
+    },
+    "confirmRecoveryPhrase": {
+      "navTitle": "Create account",
+      "title": "Confirm phrase",
+      "description": "Please select the word one by one referring to its order.",
+      "selectWord": "Select the word at #{{position}}",
+      "finish": "Finish"
     }
   }
 }

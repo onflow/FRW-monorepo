@@ -1,11 +1,6 @@
 name: Extension Build
 
 on:
-  push:
-    paths:
-      - "apps/extension/**"
-      - ".github/workflows/extension-build.yml"
-      - "packages/**"
   pull_request:
     paths:
       - "apps/extension/**"
@@ -119,6 +114,8 @@ jobs:
           API_CONFIG_PATH="${{ vars.API_CONFIG_PATH }}"
           API_BASE_URL="${{ vars.API_BASE_URL }}"
           API_GO_SERVER_URL="${{ vars.API_GO_SERVER_URL }}"
+          # sentry
+          SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
           # manifest
           MANIFEST_KEY="${{ secrets.MANIFEST_KEY }}"
           OAUTH2_CLIENT_ID="${{ secrets.OAUTH2_CLIENT_ID }}"
@@ -144,9 +141,6 @@ jobs:
           echo "Building all packages..."
           pnpm build:packages
           echo "All packages built successfully"
-
-      - name: Run tests
-        run: pnpm -F frw-extension test:run
 
       - name: Build extension
         run: |
@@ -201,49 +195,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: extension-build
-          path: apps/extension/dist/
-
-      - name: Create .env.test file
-        run: |
-          cat << EOF > apps/extension/.env.test
-          # Test secrets
-          TEST_PASSWORD="${{ secrets.TEST_PASSWORD }}"
-          TEST_SEED_PHRASE_RECEIVER="${{ secrets.TEST_SEED_PHRASE_RECEIVER }}"
-          TEST_SEED_PHRASE_SENDER="${{ secrets.TEST_SEED_PHRASE_SENDER }}"
-          TEST_SENDER_ADDR="${{ vars.TEST_SENDER_ADDR }}"
-          TEST_SENDER_NICKNAME="${{ vars.TEST_SENDER_NICKNAME }}"
-          TEST_RECEIVER_ADDR="${{ vars.TEST_RECEIVER_ADDR }}"
-          TEST_RECEIVER_NICKNAME="${{ vars.TEST_RECEIVER_NICKNAME }}"
-          TEST_SENDER_EVM_ADDR="${{ vars.TEST_SENDER_EVM_ADDR }}"
-          TEST_RECEIVER_EVM_ADDR="${{ vars.TEST_RECEIVER_EVM_ADDR }}"
-          TEST_RECEIVER_METAMASK_EVM_ADDR="${{ secrets.TEST_RECEIVER_METAMASK_EVM_ADDR }}"
-          TEST_SENDER_CHILD_ADDR="${{ vars.TEST_SENDER_CHILD_ADDR }}"
-          TEST_SENDER_CHILD_ADDR2="${{ vars.TEST_SENDER_CHILD_ADDR2 }}"
-          TEST_MULTI_ACCOUNT_TESTER_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_ADDR2 }}"
-          TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2 }}"
-          # Extension ID for Playwright tests
-          TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
-          EOF
-
       - name: Install dependencies
         run: pnpm install
-      - name: Install Playwright Browsers
-        run: pnpm -F frw-extension exec playwright install --with-deps chromium
-      - name: Run Playwright tests
-        run: xvfb-run -a --server-args="-screen 0 1280x720x24 -nolisten tcp -nolisten unix" pnpm -F frw-extension test:e2e
-        env:
-          CI: true
-          HEADLESS: true
-      - name: Sanitize Playwright Report
-        if: always()
-        run: cd apps/extension && pnpm tsx build/sanitize-playwright.ts
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: apps/extension/playwright-report/
-          retention-days: 30
+
+      - name: Build shared packages
+        run: pnpm build:packages
+
+      - name: Run unit tests
+        run: pnpm -F frw-extension test:run

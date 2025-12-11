@@ -6,12 +6,14 @@
     "selectTokens": "トークンを選択",
     "sendTokens": "トークンを送信",
     "nftDetails": "NFT詳細",
-    "colorDemo": "カラーデモ"
+    "colorDemo": "カラーデモ",
+    "receive": "資産を受け取る"
   },
   "common": {
     "cancel": "キャンセル",
     "confirm": "確認",
     "back": "戻る",
+    "goBack": "戻る",
     "close": "閉じる",
     "done": "完了",
     "next": "次へ",
@@ -19,7 +21,9 @@
     "loading": "読み込み中...",
     "error": "エラー",
     "success": "成功",
-    "Search": "検索"
+    "Search": "検索",
+    "recommended": "おすすめ",
+    "retry": "再試行"
   },
   "tabs": {
     "tokens": "トークン",
@@ -104,7 +108,10 @@
     "sendTokens": "トークンを送信",
     "confirmSend": "送信を確認",
     "holdToSend": "長押しで送信",
-    "unknownAccount": "不明なアカウント"
+    "unknownAccount": "不明なアカウント",
+    "errors": {
+      "amountExceedsBalance": "金額が利用可能残高を超えています"
+    }
   },
   "messages": {
     "loading": "読み込み中...",
@@ -116,7 +123,19 @@
     "failedToLoadRecipients": "受信者の読み込みに失敗しました",
     "copied": "コピーしました！",
     "addressBookAdded": "アドレス帳に追加しました",
-    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました"
+    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました",
+    "addressCopied": "アドレスをクリップボードにコピーしました",
+    "failedToCopy": "アドレスのコピーに失敗しました",
+    "failedToShare": "QRコードの共有に失敗しました"
+  },
+  "receive": {
+    "title": "資産を受け取る",
+    "receiveAccount": "受け取るアカウント",
+    "scanToReceive": "スキャンして受け取る",
+    "shareQRCode": "QRコードを共有",
+    "generatingQR": "QRコード生成中...",
+    "noQRCode": "QRコードが利用できません",
+    "evmWarning": "Flow EVMネットワーク上でのみ、このアドレスに資産を送信してください。他のネットワーク上でこのアドレスに送信された資産は失われます。"
   },
   "buttons": {
     "retry": "再試行",
@@ -138,7 +157,25 @@
     "failedToLoadTokens": "トークンの読み込みに失敗しました",
     "failedToLoadNFTs": "NFTの読み込みに失敗しました",
     "transactionPayloadError": "トランザクションペイロードの作成に失敗しました",
-    "transactionExecutionError": "トランザクションの実行に失敗しました"
+    "transactionExecutionError": "トランザクションの実行に失敗しました",
+    "generic": {
+      "title": "エラーが発生しました",
+      "message": "予期しないエラーが発生しました。もう一度お試しください。",
+      "button": "再試行",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "接続の問題",
+      "message": "ネットワークに接続できません。接続を確認してもう一度お試しください。",
+      "button": "再試行",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "重大なエラー",
+      "message": "重大なエラーが発生しました。アプリを再起動してください。",
+      "button": "アプリを再起動",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "無題",
@@ -158,7 +195,10 @@
     "notFound": {
       "title": "NFTが見つかりません",
       "message": "要求されたNFTが見つからないか、読み込めませんでした"
-    }
+    },
+    "confirmSelection_plural": "{{count}} 個のNFTを確認",
+    "itemCount_plural": "{{count}} 個のアイテム",
+    "selectedCount_plural": "選択された{{count}} 個のNFT"
   },
   "storage": {
     "warning": {
@@ -190,6 +230,99 @@
       "surgeActive": "サージ価格がアクティブ",
       "description": "ネットワークの高負荷により、取引手数料が上昇しています。Flowウォレットは一時的にガス料金を支払っていません。現在のネットワーク手数料は通常の{{multiplier}}倍です。",
       "holdToAgree": "サージ価格を続行するには長押ししてください"
+    }
+  },
+  "onboarding": {
+    "flowWallet": "Flow ウォレット",
+    "getStarted": {
+      "title": "Flow ウォレットを始める",
+      "subtitle": "Flow ウォレットへようこそ\nアカウントを作成して始めましょう。",
+      "createAccount": "新しいアカウントを作成",
+      "signIn": "既にアカウントをお持ちです",
+      "agreementText": "Flow ウォレットを使用することで、",
+      "termsOfService": "利用規約",
+      "and": "と",
+      "privacyPolicy": "プライバシーポリシー"
+    },
+    "profileType": {
+      "welcomeTitle": "ようこそ\nFlow ウォレット",
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズで保護",
+        "description": "リカバリーフレーズは、ウォレットを保護するために生成された一連の単語です。"
+      },
+      "secureEnclaveProfile": "セキュアエンクレーブプロファイル",
+      "next": "次へ"
+    },
+    "secureEnclave": {
+      "title": "高度な設定",
+      "cardTitle": "セキュアプロファイル",
+      "cardDescription": "ハードウェアグレードのセキュリティを備えたデバイスキーを使用し、セキュアモードのFlow ウォレットは信頼できる超セキュアなハードウェアウォレットです。Flow上のCadenceアカウントのみで利用可能です。",
+      "features": {
+        "secureEnclave": "セキュアエンクレーブ",
+        "hardwareSecurity": "ハードウェアグレードのセキュリティ",
+        "noEvm": "EVMサポートなし"
+      },
+      "next": "次へ",
+      "dialog": {
+        "title": "上級ユーザーですか?",
+        "description": "セキュアプロファイルを作成してもよろしいですか?これにより特定の機能へのアクセスが制限され、Flow上のEVMアカウントにアクセスできなくなります。",
+        "holdToConfirm": "長押しして確認"
+      },
+      "creating": {
+        "title": "アカウントを\n作成中",
+        "configuring": "アカウントを設定中"
+      }
+    },
+    "notificationPreferences": {
+      "headerTitle": "通知",
+      "title": "プッシュ通知を受け取る",
+      "subtitle": "転送、スワップ、承認が完了したときに通知を受け取ります。",
+      "enableButton": "プッシュ通知をオンにする",
+      "maybeLater": "後で"
+    },
+    "backupOptions": {
+      "navTitle": "バックアップ",
+      "subtitle": "アカウント作成を完了するために、アカウントのバックアップ方法を選択してください。これは後で設定で変更できます。",
+      "deviceBackup": {
+        "title": "デバイスバックアップを作成",
+        "description": "デバイスをバックアップウォレットとして使用し、デジタル資産を保護します"
+      },
+      "cloudBackup": {
+        "title": "クラウドバックアップを作成",
+        "description": "Google DriveやiCloudなどの信頼できるプロバイダーでクラウドバックアップを作成します"
+      },
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズバックアップを作成",
+        "description": "12単語のリカバリーフレーズを作成します"
+      },
+      "skipWarning": {
+        "title": "バックアップなしで続行しますか？",
+        "message": "バックアップがないと、デバイスを紛失した場合にウォレットにアクセスできなくなる可能性があります。バックアップを設定せずに続行してもよろしいですか？",
+        "confirm": "バックアップなしで続行"
+      }
+    },
+    "recoveryPhrase": {
+      "navTitle": "マルチチェーンアカウント",
+      "title": "リカバリーフレーズ",
+      "description": "これらの単語を正しい順序で書き留め、安全な場所に保管してください。",
+      "clickToReveal": "クリックしてフレーズを表示",
+      "copy": "コピー",
+      "next": "次へ",
+      "warning": {
+        "title": "秘密のフレーズを共有しないでください!",
+        "description": "誰かがあなたの秘密のフレーズを手に入れると、\nあなたのウォレットを完全に制御できるようになります。"
+      },
+      "error": {
+        "title": "リカバリーフレーズの生成に失敗しました",
+        "unknown": "不明なエラーが発生しました"
+      }
+    },
+    "confirmRecoveryPhrase": {
+      "navTitle": "マルチチェーンアカウント",
+      "title": "フレーズを確認",
+      "description": "順序を参照して、単語を1つずつ選択してください。",
+      "selectWord": "#{{position}} の単語を選択",
+      "finish": "完了"
     }
   }
 }

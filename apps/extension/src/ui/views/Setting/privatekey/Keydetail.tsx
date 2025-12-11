@@ -102,7 +102,7 @@ const Keydetail = () => {
   };
 
   return (
-    <Box className="page">
+    <Box className="page sentry-mask">
       <LLHeader title={chrome.i18n.getMessage('Private__Key')} help={false} />
       <Typography variant="body1" align="left" py="14px" px="20px" fontSize="17px">
         {chrome.i18n.getMessage('Private__Key')}

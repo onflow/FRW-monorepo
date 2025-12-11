@@ -1,8 +1,9 @@
-import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
+import { CheckCircle, Close, Copy, Edit, Link } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
+import { IconButton } from '../foundation/IconButton';
 import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 import type { Account, AccountCardProps } from '../types';
@@ -32,6 +33,8 @@ export function AccountCard({
   modalTitle = 'Select Account',
   enableModalSelection = false,
   showEditButton = false,
+  showCopyButton = false,
+  onCopyAddress,
   ...props
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
@@ -59,16 +62,18 @@ export function AccountCard({
       cursor={enableModalSelection ? 'pointer' : 'default'}
       {...props}
     >
-      {/* Title */}
-      <Text
-        fontSize="$3"
-        mb={isSendTokensScreen ? '$8' : '$1'}
-        fontWeight="400"
-        // color="$textSecondary"
-        lineHeight={16}
-      >
-        {title}
-      </Text>
+      {/* Title - only shown if provided */}
+      {title && (
+        <Text
+          fontSize="$3"
+          mb={isSendTokensScreen ? '$8' : '$1'}
+          fontWeight="400"
+          // color="$textSecondary"
+          lineHeight={16}
+        >
+          {title}
+        </Text>
+      )}
 
       {/* Account Container */}
       <XStack py="$2" pl="$1.25" pr={0} justify="space-between" items="center" flex={1}>
@@ -173,12 +178,27 @@ export function AccountCard({
           </YStack>
         </XStack>
 
-        {/* Edit Icon */}
-        {showEditButton && (
-          <XStack width={24} height={24} items="center" justify="center">
-            <Edit size={24} color="#767676" theme="outline" />
-          </XStack>
-        )}
+        {/* Action Icons */}
+        <XStack gap="$2" items="center">
+          {/* Copy Icon */}
+          {showCopyButton && (
+            <IconButton
+              icon={<Copy size={24} color="#767676" theme="outline" />}
+              variant="ghost"
+              size="small"
+              onPress={() => onCopyAddress?.(account.address)}
+            />
+          )}
+
+          {/* Edit Icon */}
+          {showEditButton && (
+            <IconButton
+              icon={<Edit size={24} color="#767676" theme="outline" />}
+              variant="ghost"
+              size="small"
+            />
+          )}
+        </XStack>
       </XStack>
     </YStack>
   );

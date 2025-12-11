@@ -13,7 +13,8 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
       .config()
       .put('flow.network', 'mainnet')
       .put('accessNode.api', 'https://rest-mainnet.onflow.org')
-      .put('sdk.transport', httpSend);
+      .put('sdk.transport', httpSend)
+      .put('logger.level', 1);
     const addrMap = addresses.mainnet;
     for (const key in addrMap) {
       fcl.config().put(key, addrMap[key as keyof typeof addrMap]);
@@ -23,13 +24,26 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
       .config()
       .put('flow.network', 'testnet')
       .put('accessNode.api', 'https://rest-testnet.onflow.org')
-      .put('sdk.transport', httpSend);
+      .put('sdk.transport', httpSend)
+      .put('logger.level', 1);
     const addrMap = addresses.testnet;
     for (const key in addrMap) {
       fcl.config().put(key, addrMap[key as keyof typeof addrMap]);
     }
   }
 }
+
+/**
+ * Configure EVM for the specified network
+ */
+// export function configEVMProvider(network: string) {
+//   const provider = new ethers.providers.JsonRpcProvider(
+//     network === 'mainnet'
+//       ? 'https://mainnet.evm.nodes.onflow.org'
+//       : 'https://testnet.evm.nodes.onflow.org'
+//   );
+//   return provider;
+// }
 
 /**
  * Bridge interface for CadenceService creation

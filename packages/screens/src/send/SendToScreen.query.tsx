@@ -10,7 +10,7 @@ import {
   tokenQueries,
   tokenQueryKeys,
 } from '@onflow/frw-stores';
-import type { WalletAccount } from '@onflow/frw-types';
+import { type WalletAccount, ScreenName } from '@onflow/frw-types';
 import {
   SearchableTabLayout,
   RecipientList,
@@ -23,12 +23,15 @@ import {
   Text,
   YStack,
   AddContactDialog,
+  COAAddressCopyModal,
 } from '@onflow/frw-ui';
 import {
   isValidEthereumAddress,
   isValidFlowAddress,
+  isCOAAddress,
   logger,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
@@ -72,6 +75,9 @@ export function SendToScreen(): ReactElement {
     useState<RecipientData | null>(null);
   const [isAddingToAddressBook, setIsAddingToAddressBook] = useState(false);
   const [contactNameInput, setContactNameInput] = useState('');
+  // COA copy modal state
+  const [showCOAModal, setShowCOAModal] = useState(false);
+  const [coaAddressToCopy, setCoaAddressToCopy] = useState<string>('');
 
   const pendingRecipientInitial = useMemo(() => {
     if (!pendingAddressBookRecipient) {
@@ -430,19 +436,20 @@ export function SendToScreen(): ReactElement {
             emoji: recipient.emojiInfo?.emoji,
             avatar: recipient.avatar,
           });
-        } catch (error) {
+        } catch (error: any) {
           console.warn('Failed to add recent recipient:', error);
           // Don't block navigation if this fails
+          showError(error, bridge);
         }
       }
 
       // Navigate to appropriate screen based on transaction type
       if (transactionType === 'single-nft' || transactionType === 'multiple-nfts') {
         // Use the shared SendSummary screen for both single and multiple NFTs
-        navigation.navigate('SendSummary', { address: recipient.address, recipient });
+        navigation.navigate(ScreenName.SEND_SUMMARY, { address: recipient.address, recipient });
       } else {
         // Default to tokens screen
-        navigation.navigate('SendTokens', { address: recipient.address, recipient });
+        navigation.navigate(ScreenName.SEND_TOKENS, { address: recipient.address, recipient });
       }
     },
     [setToAccount, activeTab, transactionType, fromAccount, balanceData]
@@ -543,6 +550,7 @@ export function SendToScreen(): ReactElement {
       if (error.code !== 'SCAN_CANCELLED') {
         alert(`${t('common.error')}: ${t('errors.networkError')}`);
       }
+      showError(error, bridge);
     }
   }, [handleSearchChange, t]);
 
@@ -550,32 +558,44 @@ export function SendToScreen(): ReactElement {
     // TODO: Handle edit recipient
   }, []);
 
-  const handleRecipientCopy = useCallback(async (recipient: RecipientData) => {
-    try {
-      // Check platform and use appropriate clipboard method
-      const platform = bridge.getPlatform();
-
-      // Use RN clipboard via global injected helper when not web/extension
-      if (platform !== 'extension' && typeof window === 'undefined') {
-        const rnClipboard = (globalThis as any).clipboard;
-        if (rnClipboard?.setString) {
-          rnClipboard.setString(recipient.address);
+  const handleRecipientCopy = useCallback(
+    async (recipient: RecipientData) => {
+      try {
+        // Check if the address is a COA address
+        if (isCOAAddress(recipient.address)) {
+          // Show COA modal instead of copying directly
+          setCoaAddressToCopy(recipient.address);
+          setShowCOAModal(true);
+          return;
         }
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(recipient.address);
-      }
 
-      // Set both string key and stable id to scope feedback precisely
-      setCopiedAddress(`${recipient.name}::${recipient.address}`);
-      setCopiedId(recipient.id);
-      setTimeout(() => {
-        setCopiedAddress(null);
-        setCopiedId(null);
-      }, 1000);
-    } catch (error) {
-      logger.error('Failed to copy address:', error);
-    }
-  }, []);
+        // Check platform and use appropriate clipboard method
+        const platform = bridge.getPlatform();
+
+        // Use RN clipboard via global injected helper when not web/extension
+        if (platform !== 'extension' && typeof window === 'undefined') {
+          const rnClipboard = (globalThis as any).clipboard;
+          if (rnClipboard?.setString) {
+            rnClipboard.setString(recipient.address);
+          }
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(recipient.address);
+        }
+
+        // Set both string key and stable id to scope feedback precisely
+        setCopiedAddress(`${recipient.name}::${recipient.address}`);
+        setCopiedId(recipient.id);
+        setTimeout(() => {
+          setCopiedAddress(null);
+          setCopiedId(null);
+        }, 1000);
+      } catch (error: any) {
+        logger.error('Failed to copy address:', error);
+        showError(error, bridge);
+      }
+    },
+    [t, bridge]
+  );
 
   const handleRecipientAddToAddressBook = useCallback(
     (recipient: RecipientData) => {
@@ -847,6 +867,35 @@ export function SendToScreen(): ReactElement {
           </YStack>
         </YStack>
       </InfoDialog>
+
+      {/* COA Address Copy Modal */}
+      <COAAddressCopyModal
+        visible={showCOAModal}
+        address={coaAddressToCopy}
+        onClose={() => {
+          setShowCOAModal(false);
+          setCoaAddressToCopy('');
+        }}
+        onConfirm={async () => {
+          try {
+            // Copy the address after confirmation
+            const platform = bridge.getPlatform();
+            if (platform !== 'extension' && typeof window === 'undefined') {
+              const rnClipboard = (globalThis as any).clipboard;
+              if (rnClipboard?.setString) {
+                rnClipboard.setString(coaAddressToCopy);
+              }
+            } else if (navigator.clipboard) {
+              await navigator.clipboard.writeText(coaAddressToCopy);
+            }
+            setShowCOAModal(false);
+            setCoaAddressToCopy('');
+          } catch (error: any) {
+            logger.error('Failed to copy COA address:', error);
+            showError(error, bridge);
+          }
+        }}
+      />
     </BackgroundWrapper>
   );
 }

@@ -1,12 +1,18 @@
-import { bridge, cadence, toast } from '@onflow/frw-context';
+import { bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
   type CollectionModel,
   type NFTModel,
   type TokenModel,
   addressType,
+  FRWError,
+  ErrorCode,
 } from '@onflow/frw-types';
-import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
+import {
+  getNFTResourceIdentifier,
+  getTokenResourceIdentifier,
+  logger,
+} from '@onflow/frw-utils';
 import {
   type SendPayload,
   SendTransaction,
@@ -376,6 +382,7 @@ export const useSendStore = create<SendState>((set, get) => ({
   // Create send payload for transaction execution
   createSendPayload: async (): Promise<SendPayload | null> => {
     const state = get();
+    logger.info('[SendStore] createSendPayload -- state:', state);
     const { fromAccount, toAccount, selectedToken, selectedNFTs, formData, transactionType } =
       state;
 
@@ -401,6 +408,8 @@ export const useSendStore = create<SendState>((set, get) => ({
       // Get wallet accounts for child addresses and COA
       const { accounts } = await bridge.getWalletAccounts();
       const selectedAccount = await bridge.getSelectedAccount();
+      logger.info('[SendStore] createSendPayload -- Selected account:', selectedAccount);
+      logger.info('[SendStore] createSendPayload -- Accounts:', accounts);
       const mainAccount =
         selectedAccount.type === 'main'
           ? selectedAccount
@@ -408,10 +417,23 @@ export const useSendStore = create<SendState>((set, get) => ({
               (account) =>
                 account.type === 'main' && account.address === selectedAccount.parentAddress
             );
-      const coaAddr =
+      let coaAddr: string =
         accounts.filter(
           (account) => account.type === 'evm' && account.parentAddress === mainAccount?.address
         )[0]?.address || '';
+
+      // Fallback: fetch COA via cadence if missing
+      if (!coaAddr && mainAccount?.address) {
+        try {
+          const fetched = await cadence.getAddr(mainAccount.address);
+          if (fetched) {
+            // cadence.getAddr returns without 0x; normalize
+            coaAddr = fetched.startsWith('0x') ? fetched : `0x${fetched}`;
+          }
+        } catch (err) {
+          logger.warn('[SendStore] Failed to fetch COA address from cadence', err);
+        }
+      }
       const childAddrs = accounts
         .filter(
           (account) => account.type === 'child' && account.parentAddress === mainAccount?.address
@@ -422,8 +444,15 @@ export const useSendStore = create<SendState>((set, get) => ({
         logger.error('[SendStore] No main account found');
         return null;
       }
+      const senderType = addressType(fromAccount.address);
+      const receiverType = addressType(toAccount.address);
+      const isCrossVM = senderType !== receiverType;
+
       const contractAddress = isTokenTransaction
-        ? selectedToken?.evmAddress || ''
+        ? selectedToken?.evmAddress ||
+          (selectedToken?.identifier?.includes('1654653399040a61.FlowToken')
+            ? '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52'
+            : '')
         : selectedNFTs[0]?.evmAddress || '';
 
       // For ERC1155 NFTs, we need to include the amount/quantity
@@ -473,7 +502,7 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       const payload: SendPayload = {
         type: isTokenTransaction ? 'token' : 'nft',
-        assetType: addressType(fromAccount.address),
+        assetType: senderType,
         proposer: mainAccount.address,
         receiver: toAccount.address,
         flowIdentifier,
@@ -489,6 +518,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         amount: isTokenTransaction ? formatAmount(formData.tokenAmount) : nftAmount,
         decimal: selectedToken?.decimal || 8,
         coaAddr: coaAddr,
+        isCrossVM,
         tokenContractAddr: contractAddress,
       };
 
@@ -520,8 +550,13 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
+      const helpers = {
+        ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
+        network: bridge.getNetwork ? bridge.getNetwork() : undefined,
+      };
+
       // Get cadence service and execute transaction
-      const result = await SendTransaction(payload, cadence);
+      const result = await SendTransaction(payload, cadence, helpers);
 
       logger.debug('[SendStore] Transaction result:', result);
 
@@ -533,19 +568,13 @@ export const useSendStore = create<SendState>((set, get) => ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       logger.error('[SendStore] Transaction error:', error);
-      toast.show({
-        title: 'Transaction failed',
-        message: errorMessage,
-        type: 'error',
-        duration: 4000,
-      });
 
       set({
         isLoading: false,
         error: errorMessage,
       });
 
-      throw error;
+      throw new FRWError(ErrorCode.TRANSACTION_ERROR, errorMessage);
     }
   },
 

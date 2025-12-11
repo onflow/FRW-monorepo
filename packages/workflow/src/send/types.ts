@@ -13,13 +13,23 @@ export interface SendPayload {
   amount: string; // Token amount to transfer
   decimal: number; // Token decimal places
   coaAddr: string; // User's COA (Cadence Owned Account) address
+  // Required: true when sender and receiver are different VM types (Flow <-> EVM).
+  isCrossVM: boolean;
   tokenContractAddr: string; // Token contract address (Flow or EVM format)
 }
 
 /**
  * Strategy interface for transfer operations
  */
+export type EthSignFn = (signData: Uint8Array) => Promise<Uint8Array>;
+
+export interface TransferExecutionHelpers {
+  ethSign?: EthSignFn;
+  network?: 'mainnet' | 'testnet' | string;
+  gasPrice?: number | string | bigint;
+}
+
 export interface TransferStrategy {
   canHandle(payload: SendPayload): boolean;
-  execute(payload: SendPayload): Promise<any>;
+  execute(payload: SendPayload, helpers?: TransferExecutionHelpers): Promise<any>;
 }

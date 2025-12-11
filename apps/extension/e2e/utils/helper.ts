@@ -23,7 +23,7 @@ export const closeOpenedPages = async (page: Page) => {
   }
 };
 
-export const getCurrentAddress = async (page: Page) => {
+export const getCurrentAddress = async (page: Page, isCoa = false) => {
   // Wait for the dashboard page to be fully loaded
   await page.waitForURL(/.*\/dashboard.*/);
 
@@ -33,6 +33,10 @@ export const getCurrentAddress = async (page: Page) => {
 
   // const flowAddr = await page.getByTestId('account-address').textContent();
   await copyIcon.click();
+
+  if (isCoa) {
+    await page.getByTestId('close-button').click();
+  }
 
   const flowAddr = await page.evaluate(getClipboardText);
   return flowAddr;
@@ -362,6 +366,24 @@ export const loginToSenderAccount = async ({ page, extensionId }) => {
   });
 };
 
+export const loginToEOAAccount = async ({ page, extensionId }) => {
+  if (!process.env.TEST_EOA_ADDR) {
+    throw new Error('TEST_EOA_ADDR is not set');
+  }
+
+  if (!process.env.TEST_PASSWORD) {
+    throw new Error('TEST_PASSWORD is not set');
+  }
+
+  await loginToExtensionAccount({
+    page,
+    extensionId,
+    addr: process.env.TEST_EOA_FLOW_ADDR!,
+    password: process.env.TEST_PASSWORD!,
+    nickname: process.env.TEST_EOA_NICKNAME!,
+  });
+};
+
 export const loginToReceiverAccount = async ({ page, extensionId }) => {
   if (!process.env.TEST_RECEIVER_ADDR) {
     throw new Error('TEST_RECEIVER_ADDR is not set');
@@ -387,6 +409,17 @@ export const importReceiverAccount = async ({ page, extensionId }) => {
     seedPhrase: process.env.TEST_SEED_PHRASE_RECEIVER,
     username: 'receiver',
     accountAddr: process.env.TEST_RECEIVER_ADDR,
+  };
+  await importAccountBySeedPhrase(config);
+};
+
+export const importEoaAccount = async ({ page, extensionId }) => {
+  const config = {
+    page,
+    extensionId,
+    seedPhrase: process.env.TEST_SEED_PHRASE_EOA,
+    username: 'eoatest',
+    accountAddr: process.env.TEST_EOA_FLOW_ADDR,
   };
   await importAccountBySeedPhrase(config);
 };
@@ -451,7 +484,11 @@ export const switchToEvmAddress = async ({ page, address }) => {
     .first()
     .click();
   // get address
-  await getCurrentAddress(page);
+  let isCoa = false;
+  if (address.indexOf('0x0000000000000000000') > -1) {
+    isCoa = true;
+  }
+  await getCurrentAddress(page, isCoa);
 };
 
 export const switchToMainAccount = async ({ page, address }) => {
@@ -460,6 +497,18 @@ export const switchToMainAccount = async ({ page, address }) => {
   // switch to another flow account
   await page
     .getByTestId(new RegExp(`main-account-${address}`, 'i'))
+    .first()
+    .click();
+  // get address
+  await getCurrentAddress(page);
+};
+
+export const switchToEOAAccount = async ({ page, address }) => {
+  // Assume the user is on the dashboard page
+  await page.getByTestId('account-menu-button').click();
+  // switch to another flow account
+  await page
+    .getByTestId(new RegExp(`eoa-account-${address}`, 'i'))
     .first()
     .click();
   // get address
@@ -495,7 +544,7 @@ export const checkNFTTrx = async ({ page, sealedText, collectionName, txId, isEv
       .isVisible();
     await expect(
       page.getByTestId(activityItemRegexp).getByTestId(`collection-${collectionName}`)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 60_000 });
   }
 };
 
@@ -515,7 +564,7 @@ export const checkSentAmount = async ({
   if (!isEvm) {
     await expect(
       page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 60_000 });
   }
 };
 
@@ -531,7 +580,9 @@ export const checkSentNFT = async ({
   await expect(sealedItem).toBeVisible({
     timeout: 60_000,
   });
-  await expect(page.getByTestId(activityItemRegexp).getByTestId(collectionName)).toBeVisible();
+  await expect(page.getByTestId(activityItemRegexp).getByTestId(collectionName)).toBeVisible({
+    timeout: 60_000,
+  });
 };
 
 export const waitForTransaction = async ({
@@ -578,7 +629,7 @@ export const waitForTransaction = async ({
   if (amount) {
     await expect(
       page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 60_000 });
   }
 
   return txId;

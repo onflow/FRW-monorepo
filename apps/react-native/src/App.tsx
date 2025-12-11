@@ -4,14 +4,27 @@ import { useWalletStore } from '@onflow/frw-stores';
 import { PortalProvider, TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { Clipboard, useColorScheme } from 'react-native';
+import type { ErrorUtils } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+// Declare global object for React Native environment
+declare const global: any;
 
 import 'react-native-get-random-values';
 import { version } from '../package.json';
 import { platform } from './bridge/PlatformImpl';
+import { FRWErrorBoundary } from './components/ErrorBoundary';
 import { QueryDebugger } from './components/QueryDebugger';
 import AppNavigator from './navigation/AppNavigator';
+import { handleGlobalError, handleUnhandledRejection } from './utils/errorHandling';
+
+// Set up global clipboard for React Native (used by screens that need clipboard access)
+(globalThis as any).clipboard = {
+  setString: (text: string) => {
+    Clipboard.setString(text);
+  },
+};
 
 interface AppProps {
   address?: string;
@@ -30,12 +43,49 @@ const App = (props: AppProps) => {
     platform.log('debug', '[App] Services initialized with RNBridge (sync)');
   }
 
+  const setupGlobalErrorHandlers = useCallback(() => {
+    // Global JavaScript exception handler
+    const originalHandler = ErrorUtils.getGlobalHandler();
+
+    ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+      // Handle and log the error
+      handleGlobalError(error, isFatal ?? false);
+
+      // Call original handler to maintain system behavior
+      if (originalHandler) {
+        originalHandler(error, isFatal);
+      }
+    });
+
+    // Unhandled Promise Rejection handler for React Native
+    // Use global unhandled rejection handler (standard approach for React Native)
+    if (typeof (global as any).addEventListener === 'function') {
+      (global as any).addEventListener('unhandledrejection', (event: any) => {
+        const error =
+          event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+        handleUnhandledRejection(error, event.promise || Promise.resolve());
+        event.preventDefault();
+      });
+    } else {
+      // Fallback for environments without addEventListener
+      platform.log(
+        'warn',
+        '[App] Unable to set up unhandled rejection handler - addEventListener not available'
+      );
+    }
+
+    platform.log('debug', '[App] Global error handlers initialized');
+  }, []);
+
   const initializeApp = useCallback(async () => {
     try {
       if (!ServiceContext.isInitialized()) {
         ServiceContext.initialize(platform);
       }
       platform.log('debug', '[App] Services initialized with RNBridge successfully (effect)');
+
+      // Setup global error handlers
+      setupGlobalErrorHandlers();
 
       // Initialize i18n with platform-detected language
       const language = platform.getLanguage();
@@ -50,7 +100,7 @@ const App = (props: AppProps) => {
     } catch (error) {
       platform.log('error', '[App] Failed to initialize app:', error);
     }
-  }, [loadAccountsFromBridge, props]);
+  }, [loadAccountsFromBridge, props, setupGlobalErrorHandlers]);
 
   const initializeInstabug = useCallback((appProps: AppProps) => {
     try {
@@ -89,19 +139,21 @@ const App = (props: AppProps) => {
   const colorScheme = useColorScheme();
 
   return (
-    <PortalProvider shouldAddRootHost>
-      <TamaguiProvider
-        config={tamaguiConfig}
-        defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
-      >
-        <QueryProvider>
-          <QueryDebugger />
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <AppNavigator {...props} />
-          </GestureHandlerRootView>
-        </QueryProvider>
-      </TamaguiProvider>
-    </PortalProvider>
+    <FRWErrorBoundary>
+      <PortalProvider shouldAddRootHost>
+        <TamaguiProvider
+          config={tamaguiConfig}
+          defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+        >
+          <QueryProvider>
+            <QueryDebugger />
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <AppNavigator {...props} />
+            </GestureHandlerRootView>
+          </QueryProvider>
+        </TamaguiProvider>
+      </PortalProvider>
+    </FRWErrorBoundary>
   );
 };
 

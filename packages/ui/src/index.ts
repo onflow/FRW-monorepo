@@ -47,8 +47,11 @@ export * from './components/Badge';
 export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationAnimation';
+export * from './components/ShieldAnimation';
 export * from './components/ConfirmationDrawer';
+export * from './components/COAAddressCopyModal';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/EVMBadge';
 export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
 export * from './components/ExtensionHeader';
@@ -88,6 +91,10 @@ export * from './components/TransactionFeeSection';
 export * from './foundation/SegmentedControl';
 
 export * from './components/TokenAmountInput';
+export * from './components/UpdateDialog.web';
+
+// Onboarding components
+export * from './components/onboarding';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
@@ -106,3 +113,6 @@ export * from './layout/BackgroundWrapper';
 
 // Export types
 export * from './types';
+
+// Export assets
+export * from './assets/images';

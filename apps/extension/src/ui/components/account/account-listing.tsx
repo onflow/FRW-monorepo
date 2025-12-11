@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 import React from 'react';
 
 import { type MainAccount, type WalletAccount } from '@/shared/types';
-import { isValidEthereumAddress } from '@/shared/utils';
+import { isValidEthereumAddress, isCOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
@@ -57,23 +57,28 @@ const AccountHierarchy = ({
         showCard={false}
       />
 
-      {/* EVM account */}
-      {evmAccount && evmAccount.address && isValidEthereumAddress(evmAccount.address) && (
-        <AccountCard
-          network={network}
-          key={evmAccount.address}
-          account={evmAccount}
-          parentAccount={account}
-          active={activeAccount?.address === evmAccount.address}
-          onClick={onAccountClick ? () => onAccountClick(evmAccount, account) : undefined}
-          onClickSecondary={
-            onAccountClickSecondary ? () => onAccountClickSecondary(evmAccount, account) : undefined
-          }
-          secondaryIcon={secondaryIcon}
-          showLink={true}
-          showCard={false}
-        />
-      )}
+      {/* EVM account - only render if it has assets */}
+      {evmAccount &&
+        evmAccount.address &&
+        isValidEthereumAddress(evmAccount.address) &&
+        evmAccount.hasAssets && (
+          <AccountCard
+            network={network}
+            key={evmAccount.address}
+            account={evmAccount}
+            parentAccount={account}
+            active={activeAccount?.address === evmAccount.address}
+            onClick={onAccountClick ? () => onAccountClick(evmAccount, account) : undefined}
+            onClickSecondary={
+              onAccountClickSecondary
+                ? () => onAccountClickSecondary(evmAccount, account)
+                : undefined
+            }
+            secondaryIcon={secondaryIcon}
+            showLink={true}
+            showCard={false}
+          />
+        )}
 
       {/* Child accounts */}
       {childAccounts &&
@@ -109,7 +114,7 @@ type AccountListingProps = {
   onEnableEvmClick?: (parentAddress: string) => void;
   secondaryIcon?: React.ReactNode;
   showActiveAccount?: boolean;
-  itemSx?: any;
+  itemSx?: React.CSSProperties;
   ignoreHidden?: boolean;
 };
 
@@ -129,9 +134,47 @@ export const AccountListing = ({
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
   // Check if the EVM account is not valid
-  const noEvmAccount = evmAccount && !isValidEthereumAddress(evmAccount.address);
+  const noEvmAccount = !evmAccount;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
+
+  // Get the first EOA account, prioritizing from accounts with COA
+  const uniqueEoaAccounts = React.useMemo(() => {
+    if (!accountList) return [];
+
+    let priorityEoa: { account: WalletAccount; parentAccount: MainAccount } | null = null;
+    let normalEoa: { account: WalletAccount; parentAccount: MainAccount } | null = null;
+
+    for (const account of accountList) {
+      // Check if the account has a COA EVM account
+      const hasCoa =
+        account?.evmAccount?.address &&
+        isValidEthereumAddress(account.evmAccount.address) &&
+        isCOAAddress(account.evmAccount.address);
+
+      // If account has EOA account
+      if (account?.eoaAccount?.address && isValidEthereumAddress(account.eoaAccount.address)) {
+        if (hasCoa && !priorityEoa) {
+          // If account has COA and we haven't found a priority EOA yet, use this one
+          priorityEoa = {
+            account: account.eoaAccount,
+            parentAccount: account,
+          };
+          // Early return since priority EOA takes precedence
+          return [priorityEoa];
+        } else if (!hasCoa && !normalEoa) {
+          // If no COA and we haven't found a normal EOA yet, store it
+          normalEoa = {
+            account: account.eoaAccount,
+            parentAccount: account,
+          };
+        }
+      }
+    }
+
+    // Return priority first (from account with COA), otherwise first normal one
+    return priorityEoa ? [priorityEoa] : normalEoa ? [normalEoa] : [];
+  }, [accountList]);
 
   return (
     <Box sx={{ gap: '0px', padding: '0 16px', display: 'flex', flexDirection: 'column' }}>
@@ -204,6 +247,37 @@ export const AccountListing = ({
           </Typography>
         </>
       )}
+      {/* EOA Account - Show single EOA account at the top */}
+      {uniqueEoaAccounts[0] &&
+        (() => {
+          const { account, parentAccount } = uniqueEoaAccounts[0];
+          return (
+            <Box
+              key={account.address}
+              sx={{
+                ...(itemSx || {}),
+              }}
+            >
+              <AccountCard
+                network={network}
+                account={account}
+                parentAccount={parentAccount}
+                active={activeAccount?.address === account.address}
+                onClick={onAccountClick ? () => onAccountClick(account, parentAccount) : undefined}
+                onClickSecondary={
+                  onAccountClickSecondary
+                    ? () => onAccountClickSecondary(account, parentAccount)
+                    : undefined
+                }
+                secondaryIcon={secondaryIcon}
+                showCard={false}
+                showLink={false}
+                data-testid={`eoa-account-${account.address}`}
+              />
+            </Box>
+          );
+        })()}
+
       {/* Loading state */}
       {accountList === undefined && (
         <AccountHierarchy network={network} account={undefined} activeAccount={activeAccount} />

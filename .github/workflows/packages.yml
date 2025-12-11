@@ -27,19 +27,6 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -56,6 +43,13 @@ jobs:
           TEST_CHILD_ACCOUNT_ONE_ADDR: ${{ vars.TEST_CHILD_ACCOUNT_ONE_ADDR }}
           TEST_CHILD_ACCOUNT_TWO_ADDR: ${{ vars.TEST_CHILD_ACCOUNT_TWO_ADDR }}
           TEST_MAIN_ACCOUNT_KEY_INDEX: ${{ vars.TEST_MAIN_ACCOUNT_KEY_INDEX }}
+          TEST_MAIN_EOA_ACCOUNT_ADDRESS: ${{ vars.TEST_MAIN_EOA_ACCOUNT_ADDRESS }}
+          TEST_MAIN_EOA_ACCOUNT_PUBKEY: ${{ vars.TEST_MAIN_EOA_ACCOUNT_PUBKEY }}
+          TEST_MAIN_EOA_ACCOUNT_COA: ${{ vars.TEST_MAIN_EOA_ACCOUNT_COA }}
+          TEST_MAIN_EOA_ACCOUNT_EOA: ${{ vars.TEST_MAIN_EOA_ACCOUNT_EOA }}
+          TEST_MAIN_EOA_ACCOUNT_MNEMONIC: ${{ secrets.TEST_MAIN_EOA_ACCOUNT_MNEMONIC }}
+          TEST_MAIN_EOA_ACCOUNT_KEY: ${{ secrets.TEST_MAIN_EOA_ACCOUNT_KEY }}
+          TEST_MAIN_EOA_ACCOUNT_PK: ${{ secrets.TEST_MAIN_EOA_ACCOUNT_PK }}
 
       - name: Type check packages
         run: pnpm -r --filter='./packages/*' typecheck

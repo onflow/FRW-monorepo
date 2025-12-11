@@ -1,10 +1,12 @@
-import { CheckCircle, Close, Edit, Link } from '@onflow/frw-icons';
+import { CheckCircle, Close, Edit, Link, ChevronRight, Copy } from '@onflow/frw-icons';
 import { type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { XStack, YStack, Sheet, ScrollView } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { EVMBadge } from './EVMBadge';
 import { Avatar } from '../foundation/Avatar';
+import { IconButton } from '../foundation/IconButton';
 import { Text } from '../foundation/Text';
 
 // Helper function to round balance to 5 decimal places
@@ -24,6 +26,22 @@ const formatBalance = (balance: string): string => {
   return `${rounded}${restOfString}`;
 };
 
+// Helper function to detect EOA accounts (Externally Owned Account)
+// Based on Android bridge logic: id === 'eoa' (from NativeFRWBridge.kt line 340)
+// Also supports extension logic: id === '99' || name includes 'EOA'
+// EOA = pure EVM account (shows "EVM" chip)
+// COA = Cadence Owned Account / Flow-linked EVM (shows "EVM FLOW" chip)
+const isEOAAccount = (account: WalletAccount): boolean => {
+  return (
+    account.type === 'eoa' ||
+    (account.type === 'evm' &&
+      (account.id === 'eoa' ||
+        account.id === '99' ||
+        account.name?.includes('EOA') ||
+        account.name?.includes('EVM Account (EOA)')))
+  );
+};
+
 export interface AccountSelectorProps {
   currentAccount: WalletAccount;
   accounts: WalletAccount[];
@@ -31,6 +49,9 @@ export interface AccountSelectorProps {
   title?: string;
   showEditButton?: boolean;
   onEditClick?: () => void;
+  actionIcon?: 'edit' | 'chevron'; // Icon to show when showEditButton is true
+  showCopyButton?: boolean;
+  onCopyAddress?: (address: string) => void;
 }
 
 export function AccountSelector({
@@ -40,8 +61,14 @@ export function AccountSelector({
   title = 'From Account',
   showEditButton = false,
   onEditClick,
+  actionIcon = 'edit',
+  showCopyButton = false,
+  onCopyAddress,
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
+
+  // Icon color that works in both light and dark modes
+  const iconColor = '#767676';
 
   const handleAccountSelect = (account: WalletAccount) => {
     onAccountSelect(account);
@@ -59,11 +86,13 @@ export function AccountSelector({
   return (
     <>
       {/* Current Account Display */}
-      <YStack width="100%" gap={12}>
-        {/* Title */}
-        <Text fontSize="$3" fontWeight="400" color="$textSecondary" lineHeight={16}>
-          {title}
-        </Text>
+      <YStack width="100%" gap={title ? 12 : 0}>
+        {/* Title - only render if not empty */}
+        {title && (
+          <Text fontSize="$3" fontWeight="400" color="$textSecondary" lineHeight={16}>
+            {title}
+          </Text>
+        )}
 
         {/* Account Container */}
         <XStack pb={'$2'} pl={5} pr={0} justify="space-between" items="center">
@@ -80,8 +109,8 @@ export function AccountSelector({
                 borderColor="$primary"
                 borderWidth={1}
               />
-              {/* Parent emoji overlay bubble for linked accounts */}
-              {currentAccount.parentEmoji && (
+              {/* Parent emoji overlay bubble for linked accounts (hidden for EOA accounts) */}
+              {currentAccount.parentEmoji && !isEOAAccount(currentAccount) && (
                 <YStack
                   position="absolute"
                   left={-6}
@@ -109,7 +138,7 @@ export function AccountSelector({
               <XStack items="center" gap={4}>
                 {/* Link icon for linked accounts */}
                 {(currentAccount.type === 'child' || currentAccount.parentEmoji) && (
-                  <Link size={12.8} color="#767676" theme="outline" />
+                  <Link size={12.8} color={iconColor} theme="outline" />
                 )}
                 <Text
                   color="$text"
@@ -120,25 +149,8 @@ export function AccountSelector({
                 >
                   {currentAccount.name || 'Unnamed Account'}
                 </Text>
-                {currentAccount.type === 'evm' && (
-                  <XStack
-                    bg="$accentEVM"
-                    rounded="$4"
-                    px={4}
-                    items="center"
-                    justify="center"
-                    height={16}
-                  >
-                    <Text
-                      fontSize={8}
-                      fontWeight="400"
-                      color="$white"
-                      lineHeight={9.7}
-                      letterSpacing={0.128}
-                    >
-                      EVM
-                    </Text>
-                  </XStack>
+                {(currentAccount.type === 'evm' || currentAccount.type === 'eoa') && (
+                  <EVMBadge variant={isEOAAccount(currentAccount) ? 'eoa' : 'coa'} />
                 )}
               </XStack>
 
@@ -166,20 +178,36 @@ export function AccountSelector({
             </YStack>
           </XStack>
 
-          {/* Edit Icon */}
-          {showEditButton && (
-            <XStack
-              width={24}
-              height={24}
-              items="center"
-              justify="center"
-              pressStyle={{ opacity: 0.7 }}
-              onPress={handleEditClick}
-              cursor="pointer"
-            >
-              <Edit size={24} color="#767676" theme="outline" />
-            </XStack>
-          )}
+          {/* Action Icons */}
+          <XStack gap="$2" items="center">
+            {/* Copy Icon */}
+            {showCopyButton && (
+              <XStack mr="$4">
+                <IconButton
+                  icon={<Copy size={24} color={iconColor} theme="outline" />}
+                  variant="ghost"
+                  size="small"
+                  onPress={() => onCopyAddress?.(currentAccount.address)}
+                />
+              </XStack>
+            )}
+
+            {/* Edit/Chevron Icon */}
+            {showEditButton && (
+              <IconButton
+                icon={
+                  actionIcon === 'chevron' ? (
+                    <ChevronRight size={24} color="#767676" theme="outline" />
+                  ) : (
+                    <Edit size={24} color="#767676" theme="outline" />
+                  )
+                }
+                variant="ghost"
+                size="small"
+                onPress={handleEditClick}
+              />
+            )}
+          </XStack>
         </XStack>
       </YStack>
 
@@ -210,9 +238,12 @@ export function AccountSelector({
                 Select Account
               </Text>
 
-              <XStack onPress={() => setOpen(false)} cursor="pointer" pressStyle={{ opacity: 0.7 }}>
-                <Close size={15} color="#767676" theme="outline" />
-              </XStack>
+              <IconButton
+                icon={<Close size={15} color="#767676" theme="outline" />}
+                variant="ghost"
+                size="small"
+                onPress={() => setOpen(false)}
+              />
             </XStack>
 
             {/* Account List */}
@@ -249,8 +280,8 @@ export function AccountSelector({
                             borderColor={isSelected ? '$primary' : undefined}
                             borderWidth={isSelected ? 1 : undefined}
                           />
-                          {/* Parent emoji overlay bubble for linked accounts */}
-                          {account.parentEmoji && (
+                          {/* Parent emoji overlay bubble for linked accounts (hidden for EOA accounts) */}
+                          {account.parentEmoji && !isEOAAccount(account) && (
                             <YStack
                               position="absolute"
                               style={{
@@ -279,30 +310,13 @@ export function AccountSelector({
                           <XStack items="center" gap={4}>
                             {/* Link icon for linked accounts */}
                             {(account.type === 'child' || account.parentEmoji) && (
-                              <Link size={12.8} color="#767676" theme="outline" />
+                              <Link size={12.8} color={iconColor} theme="outline" />
                             )}
                             <Text fontSize={14} fontWeight="600" color="$text" numberOfLines={1}>
                               {account.name || 'Unnamed Account'}
                             </Text>
-                            {account.type === 'evm' && (
-                              <XStack
-                                bg="$accentEVM"
-                                rounded="$4"
-                                px={4}
-                                items="center"
-                                justify="center"
-                                height={16}
-                              >
-                                <Text
-                                  fontSize={8}
-                                  fontWeight="400"
-                                  color="$white"
-                                  lineHeight={9.7}
-                                  letterSpacing={0.128}
-                                >
-                                  EVM
-                                </Text>
-                              </XStack>
+                            {(account.type === 'evm' || account.type === 'eoa') && (
+                              <EVMBadge variant={isEOAAccount(account) ? 'eoa' : 'coa'} />
                             )}
                           </XStack>
                           <AddressText

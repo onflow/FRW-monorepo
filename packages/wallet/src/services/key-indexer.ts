@@ -265,13 +265,8 @@ export class KeyIndexerService {
    * @returns Boolean indicating if accounts were found
    */
   static async hasAccounts(publicKey: string, chainId: FlowChainID): Promise<boolean> {
-    try {
-      const accounts = await this.findAccountByKey(publicKey, chainId);
-      return accounts.length > 0;
-    } catch (error) {
-      console.warn(`Failed to check accounts for public key: ${error}`);
-      return false;
-    }
+    const accounts = await this.findAccountByKey(publicKey, chainId);
+    return accounts.length > 0;
   }
 
   /**

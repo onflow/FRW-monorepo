@@ -2,6 +2,7 @@ import {
   importAccountBySeedPhrase,
   switchToEvmAddress,
   switchToMainAccount,
+  switchToEOAAccount,
 } from '../utils/helper';
 import { test, expect } from '../utils/loader';
 
@@ -44,7 +45,7 @@ test('check main account address after switching', async ({ page, extensionId })
     timeout: 60_000,
   });
   //Check main account 2 EVM address
-  await switchToEvmAddress({
+  await switchToEOAAccount({
     page,
     address: process.env.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2!,
   });

@@ -1,10 +1,6 @@
 import { useMemo } from 'react';
 
-import {
-  HASH_ALGO_NUM_DEFAULT,
-  SIGN_ALGO_NUM_DEFAULT,
-  MAINNET_CHAIN_ID,
-} from '@/shared/constant';
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT, MAINNET_CHAIN_ID } from '@/shared/constant';
 import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { getActiveAccountTypeForAddress } from '@/shared/utils';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -57,7 +53,7 @@ export const useProfiles = () => {
   const userInfo = useUserInfo(currentId);
   // The user wallet data - which public key is currently active
   const userWallets = useUserWallets();
-  // The main accounts for the current public key
+  // The main accounts for the current pubkey
   const mainAccounts = useMainAccounts(network, userWallets?.currentPubkey);
   const walletList = mainAccounts ?? [];
   // The accounts that have been selected by the user
@@ -103,15 +99,16 @@ export const useProfiles = () => {
       ),
     [activeAccounts?.currentAddress, activeAccounts?.parentAddress]
   );
-  const pendingAccountTransactions = usePendingAccountCreationTransactions(
-    network,
-    userWallets?.currentPubkey
-  );
+  const pendingAccountTransactions = usePendingAccountCreationTransactions(network, currentId);
 
   // The current wallet is the wallet that the user is currently using
   const currentWallet = useMemo(() => {
     switch (activeAccountType) {
       case 'evm':
+        // evmAccount ?? INITIAL_WALLET;
+        if (parentWallet.eoaAccount?.address === activeAccounts?.currentAddress) {
+          return parentWallet.eoaAccount;
+        }
         return evmAccount ?? INITIAL_WALLET;
       case 'child':
         return (
@@ -135,6 +132,8 @@ export const useProfiles = () => {
     activeAccountType === 'evm' ||
     activeAccountType === 'child' ||
     (activeAccountType === 'main' && (!!evmAccount || !!childAccounts?.length));
+
+  const eoaAccount = parentWallet.eoaAccount;
 
   return {
     currentWallet,
@@ -160,5 +159,6 @@ export const useProfiles = () => {
     payer,
     network,
     pendingAccountTransactions,
+    eoaAccount,
   };
 };

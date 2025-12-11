@@ -18,6 +18,12 @@
   "Send": {
     "message": "发送"
   },
+  "Register_New_Profile": {
+    "message": "注册新账户"
+  },
+  "Create_New_Profile_Description": {
+    "message": "是否使用此助记词在 Flow 上创建新账户？"
+  },
   "Swap": {
     "message": "置换"
   },
@@ -89,6 +95,9 @@
   },
   "Developer__Mode": {
     "message": "开发者模式"
+  },
+  "Feedback": {
+    "message": "反馈"
   },
   "Emulator_Mode": {
     "message": "模擬器模式"
@@ -274,7 +283,7 @@
     "message": "您确认要重置钱包吗？"
   },
   "Removing__the__wallet__from__Lilico__does__not__remove__the__wallet__from__Flow__blockchain": {
-    "message": "从 Flow Wallet 删除钱包并不意味着从Flow区块链上删除钱包。你可以使用你的助记词或云端硬盘备份再次导入你的钱包。"
+    "message": "从 Flow Wallet 删除钱包并不意味着从 Flow 区块链上删除钱包。你可以使用你的助记词或云端硬盘备份再次导入你的钱包。"
   },
   "Reset": {
     "message": "重置"
@@ -340,10 +349,10 @@
     "message": "搜索查找更多用户"
   },
   "Search_Address0x_or_Flow_domain": {
-    "message": "搜索，地址(0x)或Flow域名"
+    "message": "搜索，地址 (0x) 或 Flow 域名"
   },
   "Search_the_ID": {
-    "message": "搜索ID："
+    "message": "搜索 ID："
   },
   "Sorry_we_could_not_find_any_accounts_Please_try_again": {
     "message": "对不起，我们无法找到任何账户。请再试一次。"
@@ -373,10 +382,10 @@
     "message": "余额不足"
   },
   "Insufficient_balance_on_Flow": {
-    "message": "余额不足，Flow 上余额不能少于0.001 FLOW"
+    "message": "余额不足，Flow 上余额不能少于 0.001 FLOW"
   },
   "on_Flow_the_balance_cant_less_than_0001_FLOW": {
-    "message": "余额不能少于0.001 FLOW"
+    "message": "余额不能少于 0.001 FLOW"
   },
   "Approve": {
     "message": "通过"
@@ -746,7 +755,7 @@
     "message": "一切就绪"
   },
   "You_can_start_experiencing_Lilico_now": {
-    "message": "你现在就可以开始体验 Flow Wallet 了!"
+    "message": "你现在就可以开始体验 Flow Wallet 了！"
   },
   "Back_up": {
     "message": "备份"
@@ -773,7 +782,7 @@
     "message": "下次吧"
   },
   "Sounds_good": {
-    "message": "听起来不错!"
+    "message": "听起来不错！"
   },
   "Copy": {
     "message": "复制"
@@ -908,7 +917,7 @@
     "message": "跳转"
   },
   "Sorry": {
-    "message": "抱歉,"
+    "message": "抱歉，"
   },
   "we_couldnt_find_any_address_linked_to_your_recovery_phrase": {
     "message": "我们无法找到任何与您的助记词相关的地址。"
@@ -1112,7 +1121,7 @@
     "message": "链上找到的账户"
   },
   "Support_Flow_Wallet_and_private_key": {
-    "message": "支持 Flow 钱包、Blocto、助记词、Json和私钥"
+    "message": "支持 Flow 钱包、Blocto、助记词、Json 和私钥"
   },
   "Import_Address": {
     "message": "导入地址"
@@ -1139,7 +1148,7 @@
     "message": "私钥无效"
   },
   "Open_your_Flow_Reference_on_Mobil": {
-    "message": "打开您的Flow Wallet移动应用并扫描二维码以同步您的钱包。同步您的Flow Wallets可以使您的Flow帐户在您的Flow Wallet应用程序中使用。"
+    "message": "打开您的 Flow Wallet 移动应用并扫描二维码以同步您的钱包。同步您的 Flow Wallets 可以使您的 Flow 帐户在您的 Flow Wallet 应用程序中使用。"
   },
   "Sync_": {
     "message": "同步"
@@ -1187,7 +1196,7 @@
     "message": "移动应用"
   },
   "You_can_import_the": {
-    "message": "从另一个钱包（例如：Blocto）粘贴Json内容"
+    "message": "粘贴 JSON 或拖放 PDF/JSON 文件到此处从Blocto"
   },
   "Enter_password_for_json_file": {
     "message": "输入 json 文件的密码"
@@ -1268,7 +1277,7 @@
     "message": "重置您的钱包"
   },
   "Confirm_to_reset_Wallet": {
-    "message": "重置每个钱包?"
+    "message": "重置每个钱包？"
   },
   "This_action_will_remove": {
     "message": "此操作将删除您的所有本地数据，包括您所有钱包的私钥 - 而不仅仅是当前的钱包。请确保您已备份私钥。"
@@ -1289,7 +1298,7 @@
     "message": "应用程序"
   },
   "IP_Address": {
-    "message": "IP地址"
+    "message": "IP 地址"
   },
   "Location": {
     "message": "位置"
@@ -1367,7 +1376,7 @@
     "message": "收藏"
   },
   "Cannot_move_more": {
-    "message": "不能移动超过9个NFT"
+    "message": "不能移动超过 9 个 NFT"
   },
   "manage_multi_assets_seamlessly": {
     "message": "无缝管理复数虚拟资产"
@@ -1376,10 +1385,10 @@
     "message": "启用路径到"
   },
   "EVM_on_flow": {
-    "message": "Flow上的EVM"
+    "message": "Flow 上的 EVM"
   },
   "enable_the_path_to_evm_on_flow": {
-    "message": "启用路径到Flow上的EVM"
+    "message": "启用路径到 Flow 上的 EVM"
   },
   "What_type_of_assets_would_you_like_to_move": {
     "message": "您想要移动什么类型的资产？"
@@ -1406,7 +1415,7 @@
     "message": "帐户存储空间几乎耗尽"
   },
   "Transaction_failed_storage_exceeded": {
-    "message": "您的交易失败，因为它导致您的账户余额低于账户存储使用的最低FLOW余额。"
+    "message": "您的交易失败，因为它导致您的账户余额低于账户存储使用的最低 FLOW 余额。"
   },
   "Must_have_minimum_flow_storage": {
     "message": "您的账户必须至少有 0.001 FLOW 以覆盖存储使用。"
@@ -1421,7 +1430,7 @@
     "message": "请确保您的存款是在 FLOW EVM 网络上进行的，如果通过其他网络存款，您的资产可能会丢失。"
   },
   "NFT_Not_onboarded": {
-    "message": "此NFT集合尚未加入Cadence。请使用Flow Port移动和加入此NFT集合中的NFT。"
+    "message": "此 NFT 集合尚未加入 Cadence。请使用 Flow Port 移动和加入此 NFT 集合中的 NFT。"
   },
   "Remove__Profile": {
     "message": "删除个人资料"
@@ -1430,7 +1439,7 @@
     "message": "删除"
   },
   "Remove_profile_warning_simplified": {
-    "message": "删除此个人资料后，您将退出登录。您可以使用恢复短语、私钥或Google云端硬盘备份重新导入。"
+    "message": "删除此个人资料后，您将退出登录。您可以使用恢复短语、私钥或 Google 云端硬盘备份重新导入。"
   },
   "Could_not_enable_this_collection": {
     "message": "无法启用此收藏"
@@ -1451,13 +1460,13 @@
     "message": "地址创建中..."
   },
   "Google_Drive_Not_Connected": {
-    "message": "Google Drive未连接"
+    "message": "Google Drive 未连接"
   },
   "Change_Password_No_Google_Drive_Warning": {
-    "message": "更改密码将损坏所有现有备份。仅在您不使用Google Drive备份时继续。"
+    "message": "更改密码将损坏所有现有备份。仅在您不使用 Google Drive 备份时继续。"
   },
   "Connect_Google_Drive": {
-    "message": "连接Google Drive"
+    "message": "连接 Google Drive"
   },
   "Change_Password_Anyway": {
     "message": "更改密码 😱"
@@ -1466,7 +1475,7 @@
     "message": "更改备份密码"
   },
   "Change_Password_on_Backups_Description": {
-    "message": "更改密码将损坏所有现有备份。仅在您不使用Google Drive备份时继续。"
+    "message": "更改密码将损坏所有现有备份。仅在您不使用 Google Drive 备份时继续。"
   },
   "Loaded_in_wallet": {
     "message": "已加载"
@@ -1559,16 +1568,16 @@
     "message": "我已经有账户了"
   },
   "Get_Started_with_Flow_wallet": {
-    "message": "开始使用Flow钱包"
+    "message": "开始使用 Flow 钱包"
   },
   "Welcome_to_Flow_Wallet": {
-    "message": "欢迎使用Flow钱包！"
+    "message": "欢迎使用 Flow 钱包！"
   },
   "Create_an_account_to_get_started": {
     "message": "创建一个账户以开始使用。"
   },
   "legal_text": {
-    "message": "使用Flow钱包即表示您同意<termslink>服务条款</termslink>和<privacylink>隐私政策</privacylink>"
+    "message": "使用 Flow 钱包即表示您同意<termslink>服务条款</termslink>和<privacylink>隐私政策</privacylink>"
   },
   "Surge__Modal__Title": {
     "message": "您确定要继续使用激增定价吗？"
@@ -1590,5 +1599,17 @@
   },
   "Surge__Modal__Hold__To__Agree": {
     "message": "按住同意激增定价"
+  },
+  "COA_Modal_Title": {
+    "message": "Flow 上的 EVM 地址"
+  },
+  "COA_Modal_Warning": {
+    "message": "您已复制 Flow 网络上的 EVM 地址。请确保您只向此地址发送 Flow 网络上的资产，否则资产可能会丢失。"
+  },
+  "COA_Modal_Confirm_Button": {
+    "message": "确认复制地址"
+  },
+  "Scan_to_receive": {
+    "message": "扫描接收"
   }
 }

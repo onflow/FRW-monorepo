@@ -1,3 +1,4 @@
+import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import { useSendStore, useTokenQueryStore, fetchPayerStatusWithCache } from '@onflow/frw-stores';
 import {
@@ -9,7 +10,9 @@ import {
   type WalletProfilesResponse,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
+import { WalletCoreProvider } from '@onflow/frw-wallet';
 
+// Removed direct service imports - using walletController instead
 import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
 
 import { ExtensionCache } from './ExtensionCache';
@@ -79,6 +82,17 @@ class ExtensionPlatformImpl implements PlatformSpec {
     };
   }
 
+  getDeviceInfo(): forms_DeviceInfo {
+    // Return minimal device info for extension platform
+    // Note: Full device info with location requires async API calls,
+    // but PlatformSpec requires synchronous method
+    return {
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
+  }
+
   setCurrentAddress(address: string | null) {
     this.currentAddress = address;
   }
@@ -138,6 +152,27 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
   getSignKeyIndex(): number {
     return this.walletController.getKeyIndex() || 0;
+  }
+
+  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not initialized');
+    }
+
+    if (!(signData instanceof Uint8Array)) {
+      throw new Error('signData must be a Uint8Array');
+    }
+
+    const ethereumPrivateKey = await this.walletController.getEthereumPrivateKey();
+    const privateKeyBytes = await this.walletController.privateKeyToUint8Array(ethereumPrivateKey);
+
+    // Convert plain object back to Uint8Array if needed (cross-context serialization issue)
+    const actualPrivateKeyBytes =
+      privateKeyBytes instanceof Uint8Array
+        ? privateKeyBytes
+        : new Uint8Array(Object.values(privateKeyBytes));
+
+    return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {
@@ -323,15 +358,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
           // Use bridge fee payer function - get address from payer status
           config.authorizations.push(this.createBridgeAuthorizationFunction());
         }
-
         if (isSurge) {
-          const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
-          if (userApproved) {
-            config.payer = config.proposer;
-          } else {
-            // User rejected - stop the transaction
-            throw new Error('Transaction cancelled by user due to surge pricing');
-          }
+          config.payer = config.proposer;
         } else {
           // Check if free gas is allowed
           const allowed = await this.walletController.allowLilicoPay();
@@ -349,7 +377,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
                   ));
               if (isSurgeError) {
                 // Show surge modal and wait for user approval
-                const userApproved = await this.walletController.showSurgeModalAndWait(payerStatus);
+                const userApproved = await this.walletController.showSurgeModalAndWait();
 
                 if (userApproved) {
                   config.payer = config.proposer;
@@ -421,7 +449,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
     const self = this;
     return async (account: any) => {
       const selectedAccount = await self.getSelectedAccount();
-      const address = selectedAccount.parentAddress;
+      // Use parentAddress if available (for child accounts), otherwise use address (for main accounts)
+      const address = selectedAccount.parentAddress || selectedAccount.address;
       const keyId = await self.getSignKeyIndex();
       const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
 
@@ -506,17 +535,13 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
-    if (level === 'debug' && !this.debugMode) {
-      return;
-    }
+    const prefix = `[FW-${level.toUpperCase()}]`;
 
-    const prefix = `[FRW-Extension-${level.toUpperCase()}]`;
-    const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
-
-    // Console logging for development
     switch (level) {
       case 'debug':
-        console.log(prefix, message, ...args);
+        if (this.debugMode) {
+          console.debug(prefix, message, ...args);
+        }
         break;
       case 'info':
         console.info(prefix, message, ...args);
@@ -527,19 +552,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
       case 'error':
         console.error(prefix, message, ...args);
         break;
-    }
-
-    // Extension-specific logging (could integrate with analytics)
-    try {
-      // Could send to background script for centralized logging
-      chrome.runtime.sendMessage({
-        type: 'LOG',
-        level,
-        message: fullMessage,
-        timestamp: Date.now(),
-      });
-    } catch (error) {
-      // Ignore logging errors to prevent cascading failures
     }
   }
 

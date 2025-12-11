@@ -12,6 +12,13 @@ export {
 } from './codegen/goService.generated';
 export * from './codegen/service.generated';
 
+// Export commonly used types for ProfileService and user registration
+export type {
+  controllers_UserReturn,
+  forms_AccountKey,
+  forms_DeviceInfo,
+} from './codegen/goService.generated';
+
 // Export service options
 export { serviceOptions as goServiceOptions } from './codegen/goService.generated';
 export { serviceOptions } from './codegen/service.generated';

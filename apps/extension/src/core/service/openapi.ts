@@ -8,6 +8,7 @@ import {
   CURRENT_ID_KEY,
   type RemoteConfig,
   getValidData,
+  getCachedData,
   setCachedData,
   getLocalData,
   setLocalData,
@@ -851,7 +852,24 @@ export class OpenApiService {
         username,
       }
     );
-    await this._loginWithToken(data.data.id, data.data.custom_token);
+
+    if (!data) {
+      throw new Error('Invalid response from registration API');
+    }
+
+    // Check if the response has the expected structure
+    const responseData = data.data || data;
+
+    if (!responseData.id || !responseData.custom_token) {
+      console.error('Missing required fields in registration response:', {
+        id: responseData.id,
+        custom_token: responseData.custom_token,
+        fullResponse: data,
+      });
+      throw new Error('Registration response missing required fields (id or custom_token)');
+    }
+
+    await this._loginWithToken(responseData.id, responseData.custom_token);
 
     // Track the registration
     analyticsService.track('account_created', {
@@ -1541,10 +1559,13 @@ export class OpenApiService {
     const auditorsResponse = await fetch(`https://flix.flow.com/v1/auditors?network=${network}`);
     const auditors = (await auditorsResponse.json()) as Array<{ address: string; name?: string }>;
 
-    fcl.config().put(
-      'flow.auditors',
-      auditors.map((item) => item.address)
-    );
+    fcl
+      .config()
+      .put(
+        'flow.auditors',
+        auditors.map((item) => item.address)
+      )
+      .put('logger.level', 1);
 
     const audits = await (fcl.InteractionTemplateUtils.getInteractionTemplateAudits as any)({
       template: template as object,
@@ -2034,6 +2055,25 @@ export class OpenApiService {
     return currencies;
   };
 
+  // ** Get Coinbase onramp URL **
+  getCoinbaseOnRampURL = async (
+    address: string
+  ): Promise<{ data: { session: { onrampUrl: string } }; status: number }> => {
+    const requestData = {
+      address,
+    };
+
+    const response = await this.sendRequest(
+      'POST',
+      `/api/v4/onramp/coinbase`,
+      {},
+      requestData,
+      this.store.webNextUrl
+    );
+
+    return response;
+  };
+
   async fetchCadenceTokenInfo(
     network: string,
     address: string,
@@ -2114,6 +2154,32 @@ export class OpenApiService {
   async getUserMetadata(): Promise<any> {
     return this.sendRequest('GET', '/api/metadata/user/metadatas', {}, {}, this.store.webNextUrl);
   }
+
+  getCoaDomainsWhitelist = async (): Promise<string[]> => {
+    const CACHE_KEY = 'coa-domains-whitelist';
+
+    try {
+      const cached = await getCachedData<string[]>(CACHE_KEY);
+      if (cached && Array.isArray(cached) && cached.length > 0) {
+        return cached;
+      }
+
+      const response = await fetch(`${this.store.webNextUrl}/coa-domains.json`);
+      if (!response.ok) {
+        return [];
+      }
+      const data = await response.json();
+      const domains = Array.isArray(data) ? data : [];
+
+      if (domains.length > 0) {
+        await setCachedData(CACHE_KEY, domains, 1000 * 60 * 60); // Cache for 1 hour
+      }
+
+      return domains;
+    } catch {
+      return [];
+    }
+  };
 }
 
 const openApiService = new OpenApiService();

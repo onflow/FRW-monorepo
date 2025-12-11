@@ -1,8 +1,10 @@
 import { Copy, Link, UserRoundPlus } from '@onflow/frw-icons';
+import { isValidEthereumAddress, isCOAAddress, isEOAAddress } from '@onflow/frw-utils';
 import React from 'react';
 import { Button, Card, XStack, YStack, Text } from 'tamagui';
 
 import { AddressText } from './AddressText';
+import { EVMBadge } from './EVMBadge';
 import { Avatar } from '../foundation/Avatar';
 import { Skeleton } from '../foundation/Skeleton';
 
@@ -140,25 +142,11 @@ export function RecipientItem({
             >
               {name || emojiInfo?.name}
             </Text>
-            {isEVM && (
-              <XStack
-                bg="$accentEVM"
-                rounded="$4"
-                px={4}
-                items="center"
-                justify="center"
-                height={16}
-              >
-                <Text
-                  fontSize={8}
-                  fontWeight="400"
-                  color="$white"
-                  lineHeight={9.7}
-                  letterSpacing={0.128}
-                >
-                  EVM
-                </Text>
-              </XStack>
+            {isValidEthereumAddress(address) && (
+              <>
+                {isEOAAddress(address) && <EVMBadge variant="eoa" />}
+                {isCOAAddress(address) && <EVMBadge variant="coa" />}
+              </>
             )}
           </XStack>
 

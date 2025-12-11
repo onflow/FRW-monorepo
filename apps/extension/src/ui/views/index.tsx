@@ -1,9 +1,10 @@
 import { CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { ToastProvider } from '@onflow/frw-context';
+import { ToastProvider, type ToastRenderer } from '@onflow/frw-context';
 import { QueryProvider } from '@onflow/frw-screens';
-import { extensionTamaguiConfig, PortalProvider, SurgeModal } from '@onflow/frw-ui';
-import React, { useEffect, useState } from 'react';
+import { extensionTamaguiConfig, PortalProvider, Toast } from '@onflow/frw-ui';
+import * as Sentry from '@sentry/react';
+import React, { useEffect } from 'react';
 import { Route, HashRouter as Router, Routes, useLocation } from 'react-router';
 import { TamaguiProvider } from 'tamagui';
 
@@ -12,7 +13,6 @@ import '@tamagui/font-inter/css/400.css';
 import '@tamagui/font-inter/css/700.css';
 
 import { PlatformProvider } from '@/bridge/PlatformContext';
-import { getSurgeData } from '@/bridge/PlatformImpl';
 import PrivateRoute from '@/ui/components/PrivateRoute';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import themeOptions from '@/ui/style/LLTheme';
@@ -79,107 +79,42 @@ function Main() {
 }
 
 const App = ({ wallet }: { wallet: any }) => {
-  const [isSurgeModalVisible, setIsSurgeModalVisible] = useState(false);
-  const [hasResponded, setHasResponded] = useState(false);
-  const [surgeData, setSurgeData] = useState<{ maxFee?: string; multiplier?: number } | null>(null);
+  const feedbackCallback = async () => {
+    try {
+      const feedback = Sentry.getFeedback();
+      const form = await feedback?.createForm();
+      form!.appendToDom();
 
-  // Global surge modal for 429 errors and surge pricing
-  useEffect(() => {
-    const handleMessage = async (message: any) => {
-      if (message.type === 'API_RATE_LIMIT' && message.data?.status === 429) {
-        console.log('UI: API rate limit detected, showing global surge modal:', message.data);
-        // Store surge data if available
-        if (message.data?.surgeData) {
-          setSurgeData(message.data.surgeData);
-        } else {
-          // Fetch surge data using the exported function
-          try {
-            const surgeData = await getSurgeData('mainnet');
-            setSurgeData(surgeData);
-          } catch (error) {
-            console.log('Error fetching surge data:', error);
-            setSurgeData(null);
-          }
-        }
-        setIsSurgeModalVisible(true);
-        setHasResponded(false); // Reset response flag when showing modal
-      } else if (message.type === 'CLOSE_APPROVAL_POPUP') {
-        // Close the approval popup window
-        if (window.close) {
-          window.close();
-        } else {
-          chrome.runtime.sendMessage({ type: 'CLOSE_POPUP' });
-        }
-      }
-    };
-
-    // Add Chrome extension message listener
-    chrome.runtime.onMessage.addListener(handleMessage);
-
-    // Cleanup message listener on unmount
-    return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage);
-    };
-  }, []);
-
-  const handleSurgeModalClose = () => {
-    if (hasResponded) return; // Prevent multiple responses
-
-    setIsSurgeModalVisible(false);
-    setHasResponded(true);
-
-    // Send rejection response
-    chrome.runtime.sendMessage({
-      type: 'SURGE_APPROVAL_RESPONSE',
-      data: { approved: false },
-    });
-    setHasResponded(false);
-  };
-
-  const handleSurgeModalAgree = () => {
-    if (hasResponded) {
-      return; // Prevent multiple responses
+      form!.open();
+    } catch (error) {
+      Sentry.captureException(error);
     }
-
-    setIsSurgeModalVisible(false);
-    setHasResponded(true);
-
-    // Send approval response
-    chrome.runtime.sendMessage({
-      type: 'SURGE_APPROVAL_RESPONSE',
-      data: { approved: true },
-    });
-    setHasResponded(false);
   };
+
+  const renderToast: ToastRenderer = (toast, { hide }) => (
+    <Toast
+      key={toast.id}
+      title={toast.title}
+      visible={toast.visible}
+      message={toast.message}
+      type={toast.type}
+      duration={toast.duration}
+      onClose={() => hide(toast.id)}
+      feedbackCallback={feedbackCallback}
+    />
+  );
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <PortalProvider shouldAddRootHost>
         <TamaguiProvider config={extensionTamaguiConfig} defaultTheme="dark">
-          <ToastProvider>
+          <ToastProvider renderToast={renderToast}>
             <QueryProvider>
               <div className="t_dark" style={{ minHeight: '100vh' }}>
                 <WalletProvider wallet={wallet}>
                   <Main />
                 </WalletProvider>
-
-                <SurgeModal
-                  visible={isSurgeModalVisible}
-                  transactionFee={surgeData?.maxFee || '- 500.00'}
-                  multiplier={surgeData?.multiplier?.toString() || '4'}
-                  title={chrome.i18n.getMessage('Surge__Modal__Title')}
-                  transactionFeeLabel={chrome.i18n.getMessage('Surge__Modal__Transaction__Fee')}
-                  surgeActiveText={chrome.i18n.getMessage('Surge__Modal__Surge__Active')}
-                  description={chrome.i18n.getMessage(
-                    'Surge__Modal__Description',
-                    Number(surgeData?.multiplier || 4).toFixed(2)
-                  )}
-                  holdToAgreeText={chrome.i18n.getMessage('Surge__Modal__Hold__To__Agree')}
-                  onClose={handleSurgeModalClose}
-                  onAgree={handleSurgeModalAgree}
-                  isLoading={false}
-                />
               </div>
             </QueryProvider>
           </ToastProvider>

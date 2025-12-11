@@ -9,7 +9,12 @@ import {
   payerStatusQueryKeys,
   payerStatusQueries,
 } from '@onflow/frw-stores';
-import { Platform, type NFTTransactionDisplayData, type SendFormData } from '@onflow/frw-types';
+import {
+  Platform,
+  type NFTTransactionDisplayData,
+  type SendFormData,
+  ScreenName,
+} from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   YStack,
@@ -38,6 +43,7 @@ import {
   transformAccountForCard,
   transformAccountForDisplay,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -364,11 +370,11 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       }
     }
 
-    navigation.navigate('NFTList');
+    navigation.navigate(ScreenName.NFT_LIST);
   }, [fromAccount]);
 
   const handleEditAccountPress = useCallback(() => {
-    navigation.navigate('SendTo');
+    navigation.navigate(ScreenName.SEND_TO);
   }, []);
 
   const handleRemoveNFT = useCallback(
@@ -378,7 +384,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
       setSelectedNFTs(updatedNFTs);
 
       if (updatedNFTs.length === 0) {
-        navigation.navigate('NFTList');
+        navigation.navigate(ScreenName.NFT_LIST);
       }
     },
     [selectedNFTs, setSelectedNFTs]
@@ -443,8 +449,9 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
         const currentAddress = fromAccount.address;
         tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('[SendSummaryScreen] Transaction failed:', error);
+      showError(error, bridge, t('send.failed'));
     }
   }, [executeTransaction, selectedCollection, fromAccount]);
 

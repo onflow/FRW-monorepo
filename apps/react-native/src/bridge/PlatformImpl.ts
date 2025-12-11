@@ -9,13 +9,14 @@ import type {
 import { Platform } from '@onflow/frw-types';
 import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
+import { Buffer } from 'buffer';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 
 import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
-import { bridgeAuthorization, payer, proposer } from './signWithRole';
+import { createBridgeAuthorization, createPayer, createProposer } from './signWithRole';
 
 const CONSOLE_STYLES: Record<'debug' | 'info' | 'warn' | 'error', string> = {
   debug: 'background:#16FF99;color:#000000;padding:0 4px;border-radius:2px;',
@@ -24,27 +25,13 @@ const CONSOLE_STYLES: Record<'debug' | 'info' | 'warn' | 'error', string> = {
   error: 'background:#dc2626;color:#fef2f2;padding:0 4px;border-radius:2px;',
 };
 
+const bytesToHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString('hex');
+const hexToBytes = (hex: string): Uint8Array =>
+  new Uint8Array(Buffer.from(hex.startsWith('0x') ? hex.slice(2) : hex, 'hex'));
+
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
-
-  // Optional platform-specific logging callback using native bridge
-  logCallback?: (
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    ...args: unknown[]
-  ) => void = (level, message, ...args) => {
-    // Use native bridge for additional logging
-    try {
-      // Convert all args to strings for native bridge compatibility
-      const stringArgs = args.map(arg =>
-        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-      );
-      NativeFRWBridge.logToNative(level, message, stringArgs);
-    } catch (error) {
-      // Silently fail - don't use console here to avoid recursion
-    }
-  };
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -55,6 +42,17 @@ class PlatformImpl implements PlatformSpec {
     const fullMessage = args.length > 0 ? `${message} ${args.join(' ')}` : message;
     const formattedPrefix = `%c${prefix}`;
     const styleArgs = [CONSOLE_STYLES[level]];
+
+    // Use native bridge for additional logging
+    try {
+      // Convert all args to strings for native bridge compatibility
+      const stringArgs = args.map(arg =>
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      );
+      NativeFRWBridge.logToNative(level, message, stringArgs);
+    } catch (error) {
+      // Silently fail - don't use console here to avoid recursion
+    }
 
     // Console logging for development - always use console directly
     switch (level) {
@@ -106,6 +104,10 @@ class PlatformImpl implements PlatformSpec {
 
   setInstabugInitialized(initialized: boolean): void {
     this.instabugInitialized = initialized;
+  }
+
+  isInstabugInitialized(): boolean {
+    return this.instabugInitialized;
   }
 
   isDebug(): boolean {
@@ -223,6 +225,16 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.getSignKeyIndex();
   }
 
+  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+    if (!(signData instanceof Uint8Array)) {
+      throw new Error('signData must be a Uint8Array');
+    }
+
+    const hexPayload = `0x${bytesToHex(signData)}`;
+    const signatureHex = await NativeFRWBridge.ethSign(hexPayload);
+    return hexToBytes(signatureHex);
+  }
+
   scanQRCode(): Promise<string> {
     return NativeFRWBridge.scanQRCode();
   }
@@ -239,6 +251,19 @@ class PlatformImpl implements PlatformSpec {
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
     const network = this.getNetwork();
+
+    // Create signing context for signWithRole functions
+    const signingContext = {
+      getSelectedAccount: () => this.getSelectedAccount(),
+      getSignKeyIndex: () => this.getSignKeyIndex(),
+      sign: (hexData: string) => this.sign(hexData),
+      getNetwork: () => this.getNetwork(),
+    };
+
+    // Create signing functions
+    const proposer = createProposer(signingContext);
+    const payer = createPayer(signingContext);
+    const bridgeAuthorization = createBridgeAuthorization(signingContext);
 
     // Add version and platform headers to transactions
     cadenceService.useRequestInterceptor(async (config: any) => {

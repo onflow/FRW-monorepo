@@ -1,7 +1,11 @@
+import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
+  CreateAccountResponse,
   Currency,
+  NativeScreenName,
   Platform,
   RecentContactsResponse,
+  SeedPhraseGenerationResponse,
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
@@ -31,6 +35,7 @@ export interface PlatformSpec {
 
   getCurrency(): Currency;
   getPlatform(): Platform;
+  getDeviceInfo(): forms_DeviceInfo;
 
   // API endpoint methods
   getApiEndpoint(): string;
@@ -42,10 +47,10 @@ export interface PlatformSpec {
   cache(): Cache;
   navigation(): Navigation;
 
-  // Cryptographic operations
-  // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
+  // Cryptographic operations (hexData due to Turbo Module limitations)
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
+  ethSign(signData: Uint8Array): Promise<Uint8Array>;
 
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
@@ -54,7 +59,7 @@ export interface PlatformSpec {
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrentUserUid?(): Promise<string | null>;
 
-  // Transaction monitoring and post-transaction actions
+  // Transaction monitoring
   listenTransaction?(
     txId: string,
     showNotification: boolean,
@@ -63,27 +68,23 @@ export interface PlatformSpec {
     icon?: string
   ): void;
 
-  // CadenceService configuration using interceptor pattern
-  // This method allows the bridge to configure all FCL-related functionality
+  // CadenceService configuration (FCL interceptors)
   configureCadenceService(cadenceService: any): void;
 
-  // Logging methods - platform-specific logging implementation
+  // Logging
   log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
   isDebug(): boolean;
 
-  // Optional platform-specific logging callback for additional logging mechanisms
-  // This enables backup logging solutions (e.g., local files, Instabug API) alongside the default bridge.log
-  logCallback?: (
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    ...args: unknown[]
-  ) => void;
+  // Error reporting (Instabug)
+  isInstabugInitialized?(): boolean;
+  setInstabugInitialized?(initialized: boolean): void;
 
-  // UI interaction methods
+  // UI interactions
   scanQRCode(): Promise<string>;
+  shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
 
-  // Toast/Notification methods
+  // Toast notifications
   showToast?(
     title: string,
     message?: string,
@@ -93,4 +94,36 @@ export interface PlatformSpec {
   hideToast?(id: string): void;
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
+
+  // Account creation
+  generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
+  /**
+   * Sends Flow public key to backend to create Flow + COA addresses on-chain
+   * @returns Transaction ID (txId) if successful, or the string "COA_ALREADY_EXISTS" if account already exists
+   * @example "a1b2c3d4..." // Transaction ID
+   * @example "COA_ALREADY_EXISTS" // Account already exists
+   */
+  registerAccountWithBackend?(): Promise<string>;
+
+  // Wallet initialization
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void>;
+
+  // Firebase authentication
+  signInWithCustomToken?(customToken: string): Promise<void>;
+
+  // Permissions
+  requestNotificationPermission?(): Promise<boolean>;
+  checkNotificationPermission?(): Promise<boolean>;
+
+  // Screen security
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
+
+  // Native screen navigation
+  launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
 }
