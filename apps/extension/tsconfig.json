@@ -22,6 +22,7 @@
       "@onflow/frw-icons": ["./node_modules/@onflow/frw-icons/src/index.ts"],
       "@onflow/frw-ui": ["./node_modules/@onflow/frw-ui/src/index.ts"],
       "@onflow/frw-screens": ["./node_modules/@onflow/frw-screens/src/index.ts"],
+      "@onflow/frw-services": ["./node_modules/@onflow/frw-services/src/index.ts"],
       "@onflow/frw-stores": ["./node_modules/@onflow/frw-stores/src/index.ts"]
     },
     "lib": ["ES2021.String", "DOM", "DOM.Iterable"],
