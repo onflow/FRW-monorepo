@@ -1,16 +1,25 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
+import { type forms_DeviceInfo } from '@onflow/frw-api';
+import { ServiceContext } from '@onflow/frw-context';
+import { profileService } from '@onflow/frw-services';
+import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
+import { signInAnonymously } from 'firebase/auth/web-extension';
 
+import Wallet from '@/background/controller/wallet';
+import { initializePlatform } from '@/bridge/PlatformImpl';
 import {
   userMetadataKey,
   mainAccountsKey,
   mainAccountsKeyUid,
   registerStatusKey,
+  CURRENT_ID_KEY,
   type UserMetadataStore,
   getValidData,
   setCachedData,
+  setLocalData,
 } from '@/data-model';
 import {
   FLOW_BIP44_PATH,
@@ -33,6 +42,9 @@ import {
   consoleError,
   getErrorMessage,
   tupleToPubKey,
+  tupleToPrivateKey,
+  getStringFromSignAlgo,
+  getStringFromHashAlgo,
 } from '@/shared/utils';
 
 import { authenticationService, preferenceService } from '.';
@@ -60,8 +72,350 @@ import { getCurrentProfileId, returnCurrentProfileId } from '../utils/current-id
 import { fclEnsureNetwork } from '../utils/fclConfig';
 import { findAddressWithPK, findAddressWithSeed } from '../utils/modules/findAddressWithPK';
 import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
+import { signWithKey } from '../utils/modules/publicPrivateKey';
 
 export class AccountManagement {
+  /**
+   * Ensure ServiceContext is initialized (required for API package)
+   * ServiceContext must be initialized before using ProfileService
+   */
+  private async ensureServiceContextInitialized(): Promise<void> {
+    if (!ServiceContext.isInitialized()) {
+      const platform = initializePlatform();
+      // Set Wallet controller on platform (required for getJWT to work)
+      platform.setWalletController(Wallet);
+      // Also store in global for other initializations
+      (globalThis as any).__FLOW_WALLET_CONTROLLER__ = Wallet;
+      ServiceContext.initialize(platform);
+    }
+  }
+
+  /**
+   * Shared helper function to generate Flow and EVM signatures for v4 APIs
+   * This is used by registerV4, importV4, and loginV4
+   */
+  private async generateV4Signatures(
+    accountKey: AccountKeyRequest,
+    mnemonicOrPrivateKey: string,
+    isPrivateKey: boolean,
+    idToken: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<{
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+  }> {
+    let flowPrivateKey: string;
+    let evmPrivateKey: string;
+
+    if (isPrivateKey) {
+      flowPrivateKey = mnemonicOrPrivateKey.replace(/^0x/i, '');
+      evmPrivateKey = mnemonicOrPrivateKey.replace(/^0x/i, '');
+    } else {
+      const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        derivationPath,
+        passphrase
+      );
+      flowPrivateKey = tupleToPrivateKey(pubKTuple, accountKey.sign_algo);
+      flowPrivateKey = flowPrivateKey.replace(/^0x/i, '');
+
+      const derivedPublicKey = tupleToPubKey(pubKTuple, accountKey.sign_algo);
+      if (derivedPublicKey !== accountKey.public_key) {
+        throw new Error(
+          'Derived public key does not match account public key. The mnemonic or derivation path may be incorrect.'
+        );
+      }
+
+      const evmKeyTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+        mnemonicOrPrivateKey,
+        BIP44_PATHS.EVM,
+        ''
+      );
+      evmPrivateKey = evmKeyTuple.SECP256K1.pk;
+    }
+
+    // Generate Flow signature
+    const rightPaddedHexBuffer = (value: string, pad: number) =>
+      Buffer.from(value.padEnd(pad * 2, '0'), 'hex');
+    const USER_DOMAIN_TAG = rightPaddedHexBuffer(
+      Buffer.from('FLOW-V0.0-user').toString('hex'),
+      32
+    ).toString('hex');
+    const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
+
+    const flowSignature = await signWithKey(
+      message,
+      accountKey.sign_algo,
+      accountKey.hash_algo,
+      flowPrivateKey
+    );
+
+    // Generate EVM signature
+    const cleanHex = evmPrivateKey.replace(/^0x/i, '');
+    const privateKeyBytes = Uint8Array.from(Buffer.from(cleanHex, 'hex'));
+    const eoaAddress = await WalletCoreProvider.deriveEVMAddressFromPrivateKey(privateKeyBytes);
+
+    const messageBytes = Buffer.from(idToken, 'utf8');
+    const messageHash = ethUtil.keccak256(messageBytes);
+    const messageHashBytes = Uint8Array.from(messageHash);
+
+    const signatureBytes = await WalletCoreProvider.signEvmDigestWithPrivateKey(
+      privateKeyBytes,
+      messageHashBytes
+    );
+
+    const evmSignature = '0x' + Buffer.from(signatureBytes).toString('hex');
+
+    return {
+      flowSignature,
+      evmSignature,
+      eoaAddress: ethUtil.toChecksumAddress(eoaAddress),
+    };
+  }
+
+  /**
+   * Register profile using v4 API via ProfileService
+   * Keys are extracted from mnemonic/private key within this function - never passed as parameters
+   */
+  private async registerV4(
+    accountKey: AccountKeyRequest,
+    mnemonicOrPrivateKey: string,
+    isPrivateKey: boolean,
+    username: string
+  ): Promise<void> {
+    analyticsService.time('account_created');
+
+    // Ensure ServiceContext is initialized (configures API package axios instances)
+    await this.ensureServiceContextInitialized();
+
+    // Get Firebase auth token for signature
+    const auth = authenticationService.getAuth();
+    let idToken = await auth.currentUser?.getIdToken();
+    if (idToken === null || !idToken) {
+      const userCredential = await signInAnonymously(auth);
+      idToken = await userCredential.user.getIdToken();
+      if (idToken === null || !idToken) {
+        throw new Error('Failed to get idToken - even after signing in anonymously');
+      }
+    }
+
+    await authenticationService.waitForAuthInit();
+
+    const {
+      flowSignature,
+      evmSignature,
+      eoaAddress: checksummedEoaAddress,
+    } = await this.generateV4Signatures(accountKey, mnemonicOrPrivateKey, isPrivateKey, idToken);
+    const installationId = await authenticationService.getInstallationId();
+    const deviceInfo: forms_DeviceInfo = {
+      device_id: installationId,
+      ip: '',
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
+
+    const response = await profileService().registerV4({
+      username,
+      accountKey: {
+        public_key: accountKey.public_key,
+        sign_algo: accountKey.sign_algo,
+        hash_algo: accountKey.hash_algo,
+        weight: accountKey.weight,
+      },
+      flowSignature,
+      evmSignature,
+      eoaAddress: checksummedEoaAddress,
+      deviceInfo,
+    });
+
+    // Validate response has required fields (ProfileService should ensure this, but TypeScript needs explicit check)
+    if (!response.custom_token || !response.id) {
+      throw new Error('Registration response missing required fields (id or custom_token)');
+    }
+
+    // Login with custom token
+    await authenticationService.signInWithCustomToken(response.custom_token);
+    await setLocalData(CURRENT_ID_KEY, response.id);
+
+    analyticsService.track('account_created', {
+      public_key: accountKey.public_key,
+      sign_algo: getStringFromSignAlgo(accountKey.sign_algo),
+      hash_algo: getStringFromHashAlgo(accountKey.hash_algo),
+    });
+  }
+
+  /**
+   * Import a profile using v4 API
+   * Extracts keys and generates signatures locally, then calls ProfileService
+   */
+  async importV4(
+    accountKey: AccountKeyRequest,
+    mnemonicOrPrivateKey: string,
+    isPrivateKey: boolean,
+    username: string,
+    address: string,
+    backupInfo?: any,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<void> {
+    // Ensure ServiceContext is initialized
+    await this.ensureServiceContextInitialized();
+
+    await authenticationService.waitForAuthInit();
+
+    // Get Firebase auth token right before signing to ensure it matches Authorization header
+    const auth = authenticationService.getAuth();
+    let currentUser = auth.currentUser;
+    if (!currentUser) {
+      const userCredential = await signInAnonymously(auth);
+      currentUser = userCredential.user;
+    }
+
+    // Get token right before signing to minimize chance of token refresh
+    // Force refresh to get a fresh token that matches what we'll sign
+    const idToken = await currentUser.getIdToken(true);
+
+    let {
+      flowSignature,
+      evmSignature,
+      eoaAddress: checksummedEoaAddress,
+    } = await this.generateV4Signatures(
+      accountKey,
+      mnemonicOrPrivateKey,
+      isPrivateKey,
+      idToken,
+      derivationPath,
+      passphrase
+    );
+
+    // Immediately get token again to ensure it matches what axios interceptor will use
+    // If token changed, re-sign with the new token
+    const tokenForApiCall = await currentUser.getIdToken(false);
+    if (tokenForApiCall && tokenForApiCall !== idToken) {
+      // Re-sign with the token that will be used in Authorization header
+      const reSigned = await this.generateV4Signatures(
+        accountKey,
+        mnemonicOrPrivateKey,
+        isPrivateKey,
+        tokenForApiCall,
+        derivationPath,
+        passphrase
+      );
+      flowSignature = reSigned.flowSignature;
+      evmSignature = reSigned.evmSignature;
+      checksummedEoaAddress = reSigned.eoaAddress;
+    }
+
+    const installationId = await authenticationService.getInstallationId();
+    const deviceInfo: forms_DeviceInfo = {
+      device_id: installationId,
+      ip: '',
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
+
+    const response = await profileService().importV4({
+      username,
+      accountKey: {
+        public_key: accountKey.public_key,
+        sign_algo: accountKey.sign_algo,
+        hash_algo: accountKey.hash_algo,
+        weight: accountKey.weight,
+      },
+      flowSignature,
+      evmSignature,
+      eoaAddress: checksummedEoaAddress,
+      address,
+      backupInfo,
+      deviceInfo,
+    });
+
+    // Validate response has required fields
+    if (!response.custom_token || !response.id) {
+      throw new Error('Import response missing required fields (id or custom_token)');
+    }
+
+    // Login with custom token
+    await authenticationService.signInWithCustomToken(response.custom_token);
+    await setLocalData(CURRENT_ID_KEY, response.id);
+  }
+
+  /**
+   * Login a profile using v4 API
+   * Extracts keys and generates signatures locally, then calls ProfileService
+   */
+  async loginV4(
+    accountKey: AccountKeyRequest,
+    mnemonicOrPrivateKey: string,
+    isPrivateKey: boolean,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<void> {
+    // Ensure ServiceContext is initialized
+    await this.ensureServiceContextInitialized();
+
+    // Get Firebase auth token for signature
+    const auth = authenticationService.getAuth();
+    let idToken = await auth.currentUser?.getIdToken();
+    if (idToken === null || !idToken) {
+      const userCredential = await signInAnonymously(auth);
+      idToken = await userCredential.user.getIdToken();
+      if (idToken === null || !idToken) {
+        throw new Error('Failed to get idToken - even after signing in anonymously');
+      }
+    }
+
+    await authenticationService.waitForAuthInit();
+
+    const {
+      flowSignature,
+      evmSignature,
+      eoaAddress: checksummedEoaAddress,
+    } = await this.generateV4Signatures(
+      accountKey,
+      mnemonicOrPrivateKey,
+      isPrivateKey,
+      idToken,
+      derivationPath,
+      passphrase
+    );
+
+    const installationId = await authenticationService.getInstallationId();
+    const deviceInfo: forms_DeviceInfo = {
+      device_id: installationId,
+      ip: '',
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
+
+    const response = await profileService().loginV4({
+      accountKey: {
+        public_key: accountKey.public_key,
+        sign_algo: accountKey.sign_algo,
+        hash_algo: accountKey.hash_algo,
+        weight: accountKey.weight,
+      },
+      flowSignature,
+      evmSignature,
+      eoaAddress: checksummedEoaAddress,
+      deviceInfo,
+    });
+
+    // Validate response has required fields
+    if (!response.custom_token || !response.id) {
+      throw new Error('Login response missing required fields (id or custom_token)');
+    }
+
+    // Login with custom token
+    await authenticationService.signInWithCustomToken(response.custom_token);
+    await setLocalData(CURRENT_ID_KEY, response.id);
+  }
+
   async registerNewProfile(username: string, password: string, mnemonic: string): Promise<void> {
     // The account is the public key of the account. It's derived from the mnemonic. We do not support custom curves or passphrases for new accounts
     const accountKey: AccountKeyRequest = await getAccountKey(mnemonic);
@@ -75,7 +429,7 @@ export class AccountManagement {
     // This register call ALSO sets the currentId in local storage
     // In addition, it will sign us in to the new account with our auth (Firebase) on our backend
     // Note this auth is different to unlocking the wallet with the password.
-    await openapiService.registerV4(mnemonic, username);
+    await this.registerV4(accountKey, mnemonic, false, username);
 
     // We're creating the keyring with the mnemonic. This will encypt the private keys and store them in the keyring vault and deepVault
     await this.createKeyringWithMnemonics(
@@ -331,14 +685,16 @@ export class AccountManagement {
     };
     if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
       // The account has been previously imported, so just sign in with it
-      await openapiService.loginV4(mnemonic, false, derivationPath, passphrase);
+      await this.loginV4(accountKeyStruct, mnemonic, false, derivationPath, passphrase);
     } else {
       // Import the account using v4 API (backend will handle conflicts)
-      await openapiService.importV4(
+      await this.importV4(
+        accountKeyStruct,
         mnemonic,
+        false,
         username,
         flowAddress,
-        false,
+        undefined,
         derivationPath,
         passphrase
       );
@@ -378,7 +734,7 @@ export class AccountManagement {
     };
 
     // Register the account with the backend using v4 API
-    await openapiService.registerV4(pk, username, true);
+    await this.registerV4(accountKey, pk, true, username);
 
     // Create the keyring with the private key
     await this.importPrivateKey(accountKey.public_key, accountKey.sign_algo, password, pk);
@@ -421,12 +777,18 @@ export class AccountManagement {
 
     // Check if the account is registered on our backend (i.e. it's been created in wallet or used previously in wallet)
     const importCheckResult = (await openapiService.checkImport(publicKey)) as { status: number };
+    const accountKey: AccountKeyRequest = {
+      public_key: publicKey,
+      sign_algo: signAlgo,
+      hash_algo: HASH_ALGO_NUM_DEFAULT,
+      weight: DEFAULT_WEIGHT,
+    };
     if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
       // The account has been previously imported, so just sign in with it
-      await openapiService.loginV4(pk, true);
+      await this.loginV4(accountKey, pk, true);
     } else {
       // Import the account using v4 API (backend will handle conflicts)
-      await openapiService.importV4(pk, username, flowAddress, true);
+      await this.importV4(accountKey, pk, true, username, flowAddress);
     }
     // Now we can create the keyring with the mnemonic (and path and phrase)
     await this.importPrivateKey(publicKey, signAlgo, password, pk);
