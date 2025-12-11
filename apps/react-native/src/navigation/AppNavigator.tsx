@@ -14,6 +14,10 @@ import {
   ConfirmRecoveryPhraseScreen,
   SecureEnclaveScreen,
   NotificationPreferencesScreen,
+  // Recovery screens
+  ImportProfileScreen,
+  ImportOtherMethodsScreen,
+  ConfirmImportProfileScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -79,6 +83,10 @@ export type RootStackParamList = {
   NotificationPreferences: {
     accountType?: string;
   };
+  // Recovery screens
+  ImportProfile: undefined;
+  ImportOtherMethods: undefined;
+  ConfirmImportProfile: undefined;
 };
 
 interface AppNavigatorProps {
@@ -206,7 +214,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
 
-  // Memoize navigation themes with hardcoded colors
+  // Memoize navigation themes using Tamagui theme values
   const navigationThemes = useMemo(() => {
     const customLightTheme = {
       ...DefaultTheme,
@@ -224,16 +232,16 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       ...DarkTheme,
       colors: {
         ...DarkTheme.colors,
-        background: '#121212', // surfaceDarkDrawer color for dark mode
-        card: '#121212', // Use surfaceDarkDrawer for header background consistency
-        text: '#FFFFFF', // White text for dark mode
+        background: theme.background.val, // Use Tamagui background color
+        card: theme.background.val, // Use Tamagui background color for header
+        text: theme.text.val, // Use Tamagui text color
         border: '#B3B3B3', // Light gray border
-        primary: '#00EF8B', // Flow brand green
+        primary: theme.primary.val, // Use Tamagui primary color
       },
     };
 
     return { customLightTheme, customDarkTheme };
-  }, []);
+  }, [theme]);
 
   // Use the current theme based on dark mode state
   const currentTheme = isDarkMode
@@ -384,6 +392,39 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
+              }}
+            />
+          </Stack.Group>
+
+          {/* Recovery screens with headers */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          >
+            <Stack.Screen
+              name="ImportProfile"
+              component={ImportProfileScreen}
+              options={{
+                headerTitle: '',
+              }}
+            />
+            <Stack.Screen
+              name="ImportOtherMethods"
+              component={ImportOtherMethodsScreen}
+              options={{
+                headerTitle: t('onboarding.importProfile.title'),
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmImportProfile"
+              component={ConfirmImportProfileScreen}
+              options={{
+                headerTitle: t('onboarding.importProfile.title'),
               }}
             />
           </Stack.Group>
