@@ -7,7 +7,7 @@ Linked automatically from the branch name. If incorrect, edit:
 <!-- Fixes #456 -->
 <!-- Resolves #789 -->
 
-## Checklist
+## Self-Checklist
 - [ ] I read through my own diff
 - [ ] I ran at least one manual check
 - [ ] No mock / debug code left in production code
