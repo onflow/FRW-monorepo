@@ -144,6 +144,13 @@ export interface Spec extends TurboModule {
     txId: string
   ): Promise<{ success: boolean; address: string | null; error: string | null }>;
   generateSeedPhrase(strength?: number | null): Promise<SeedPhraseGenerationResponse>;
+  /**
+   * Get registration signature for v4 API
+   * Signs in anonymously to Firebase, gets JWT, and signs it with the key derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive the signing key from
+   * @returns Promise with signature (hex string)
+   */
+  getRegistrationSignature(mnemonic: string): Promise<string>;
   signInWithCustomToken(customToken: string): Promise<void>;
   saveMnemonic(
     mnemonic: string,

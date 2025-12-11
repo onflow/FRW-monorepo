@@ -189,6 +189,23 @@ export function ConfirmRecoveryPhraseScreen({
 
       const username = generateRandomUsername();
 
+      // Get registration signature for v4 API
+      // This signs in anonymously to Firebase, gets JWT, and signs it with the derived key
+      let signature: string;
+      try {
+        if (!bridge.getRegistrationSignature) {
+          throw new Error('getRegistrationSignature not available on bridge');
+        }
+        signature = await bridge.getRegistrationSignature(mnemonic);
+        logger.info('[ConfirmRecoveryPhraseScreen] Got registration signature');
+      } catch (signatureError: any) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_REGISTRATION_FAILED,
+          signatureError?.message || 'Failed to get registration signature',
+          { originalError: signatureError }
+        );
+      }
+
       let registerResponse;
       try {
         registerResponse = await profileService().register({
@@ -198,6 +215,7 @@ export function ConfirmRecoveryPhraseScreen({
             sign_algo: accountKey.signAlgo,
             hash_algo: accountKey.hashAlgo,
           },
+          signature,
         });
       } catch (registrationError: any) {
         throw new FRWError(

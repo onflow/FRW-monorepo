@@ -1,6 +1,5 @@
 import {
   UserGoService,
-  Userv3GoService,
   Userv4GoService,
   type controllers_UserReturn,
   type forms_AccountKey,
@@ -396,17 +395,23 @@ export class ProfileService {
 
   /**
    * Register a new user profile with the backend
-   * This is the correct API for EOA account creation (not COA)
-   * Matches extension implementation: uses /v3/register endpoint (not /v1/register)
+   * Uses /v4/register endpoint with signature verification
    *
    * @param params - Registration parameters
    * @param params.username - Username for the new profile
    * @param params.accountKey - Account key with public key and signature/hash algorithms (uses forms_AccountKey from API)
+   * @param params.signature - Flow signature for the registration message (Firebase JWT signed with private key)
+   * @param params.evmAccountInfo - Optional EVM account info (eoa_address and signature)
    * @returns Promise with registration response containing custom_token and user id
    */
   async register(params: {
     username: string;
     accountKey: Omit<forms_AccountKey, 'weight'>; // Weight is added internally
+    signature: string;
+    evmAccountInfo?: {
+      eoaAddress: string;
+      signature: string;
+    };
   }): Promise<controllers_UserReturn> {
     try {
       // Validate required fields
@@ -419,40 +424,59 @@ export class ProfileService {
       if (params.accountKey.hash_algo === undefined) {
         throw new Error('hash_algo is required in accountKey');
       }
+      if (!params.signature) {
+        throw new Error('signature is required for v4 registration');
+      }
 
       // Get device info from native platform implementation
-      const deviceInfo = bridge.getDeviceInfo();
+      const deviceInfo: forms_DeviceInfo = (bridge.getDeviceInfo() as forms_DeviceInfo) || {
+        device_id: '',
+        ip: '',
+        name: 'FRW',
+        type: '2',
+        user_agent: 'Unknown',
+      };
 
-      // Prepare request payload (v3/register takes username, account_key and device_info)
-      const requestPayload: {
-        username: string;
-        accountKey: forms_AccountKey;
-        deviceInfo: ReturnType<typeof bridge.getDeviceInfo>;
-      } = {
-        username: params.username,
-        accountKey: {
+      // Prepare Flow account info with signature
+      const flowAccountInfo: forms_FlowAccountInfo = {
+        account_key: {
           public_key: params.accountKey.public_key,
           sign_algo: params.accountKey.sign_algo,
           hash_algo: params.accountKey.hash_algo,
           weight: 1000, // Default weight for Flow accounts (required by backend)
-        },
-        deviceInfo,
+        } as forms_AccountKey,
+        signature: params.signature,
       };
 
-      logger.info('[ProfileService] Registering user:', { username: requestPayload.username });
+      logger.info('[ProfileService] Registering user with v4:', { username: params.username });
 
       // Validate public key format for ECDSA secp256k1 (64 bytes = 128 hex chars)
-      const publicKeyHex = requestPayload.accountKey.public_key!;
-      if (requestPayload.accountKey.sign_algo === 2 && !/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
+      const publicKeyHex = params.accountKey.public_key!;
+      if (params.accountKey.sign_algo === 2 && !/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
         throw new Error(
           `Invalid public key for ECDSA secp256k1: expected 128 hex chars, got ${publicKeyHex.length}`
         );
       }
 
-      // API returns wrapped response: { data: { custom_token, id }, message, status }
-      const apiResponse = (await Userv3GoService.register(requestPayload)) as any;
-      const customToken = apiResponse?.data?.custom_token;
-      const userId = apiResponse?.data?.id;
+      // Prepare optional EVM account info
+      const evmAccountInfo: forms_EvmAccountInfo | undefined = params.evmAccountInfo
+        ? {
+            eoa_address: params.evmAccountInfo.eoaAddress,
+            signature: params.evmAccountInfo.signature,
+          }
+        : undefined;
+
+      // Call v4 register endpoint
+      const response = await Userv4GoService.register({
+        flowAccountInfo,
+        evmAccountInfo,
+        username: params.username,
+        deviceInfo,
+      });
+
+      const responseData = (response as any)?.data || response;
+      const customToken = responseData?.custom_token;
+      const userId = responseData?.id;
 
       if (!customToken || !userId) {
         logger.error('[ProfileService] Registration failed: missing custom_token or id');

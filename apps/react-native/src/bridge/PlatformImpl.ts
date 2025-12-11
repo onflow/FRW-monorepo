@@ -425,6 +425,21 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  /**
+   * Get registration signature for v4 API
+   * Signs in anonymously to Firebase, gets JWT, and signs it with the key derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive the signing key from
+   * @returns Promise with signature (hex string)
+   */
+  async getRegistrationSignature(mnemonic: string): Promise<string> {
+    try {
+      return await NativeFRWBridge.getRegistrationSignature(mnemonic);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to get registration signature:', error);
+      throw error;
+    }
+  }
+
   async saveMnemonic(
     mnemonic: string,
     customToken: string,
