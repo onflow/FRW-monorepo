@@ -1,6 +1,6 @@
 import { Drawer } from '@mui/material';
 import Box from '@mui/material/Box';
-import { UpdateDialog } from '@onflow/frw-ui';
+// import { UpdateDialog } from '@onflow/frw-ui';
 import { setUser, setExtras } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -154,35 +154,14 @@ const Dashboard = () => {
           />
         )}
       </div>
-      {/* One-time Popup Modal */}
-      <UpdateDialog
+      {/* Dialog demo */}
+      {/* <UpdateDialog
         visible={showPopup}
         title={popupTitle}
         htmlContent={`
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
               📣 What's new
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              If you already use an Ethereum wallet like MetaMask or Rainbow, you can import those same accounts to access everything on Flow.
-            </div>
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              🎮 Unlock Flow-native apps for your accounts
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              Get instant access to DeFi, marketplaces, and unique experiences on Flow.
-            </div>
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              ✨ Already using Flow Wallet?
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              You'll see a new "EVM" account alongside your Cadence accounts and your now-legacy "EVM Flow" account.
-            </div>
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              💡 Why this matters
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              Your EVM account is super-powered by Flow, unlocking gasless transactions, MEV-resilience and more.
             </div>
           </div>
         `}
@@ -191,7 +170,7 @@ const Dashboard = () => {
         buttonText={chrome.i18n.getMessage('OK')}
         onButtonClick={handleClosePopup}
         onClose={handleClosePopup}
-      />
+      /> */}
     </Box>
   );
 };
