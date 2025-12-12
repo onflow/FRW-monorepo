@@ -10,6 +10,7 @@ import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.manager.account.HardwareBackedKeyException
 import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.network.ApiService
@@ -35,30 +36,29 @@ object WalletCreationHelper {
      * Create Wallet object from Account using only key-related information
      * This method focuses solely on cryptographic key data and ignores wallet/address info
      */
-    suspend fun createWalletFromAccount(account: Account, storage: StorageProtocol? = null): Wallet? {
+    suspend fun createWalletFromAccount(account: Account, isCurrentAccount: Boolean = true):
+      Wallet? {
         return try {
             logd(TAG, "Creating wallet from account: ${account.userInfo.username}")
-
-            val walletStorage = storage ?: getStorage()
 
             // Create wallet based on account's key information only
             val wallet = when {
                 // Handle keystore-based accounts
                 !account.keyStoreInfo.isNullOrBlank() -> {
                     logd(TAG, "Creating keystore-based wallet for account: ${account.userInfo.username}")
-                    createWalletFromKeystore(account.keyStoreInfo!!, walletStorage)
+                    createWalletFromKeystore(account.keyStoreInfo!!, userId = account.wallet?.id, isCurrentAccount)
                 }
 
                 // Handle prefix-based accounts
                 !account.prefix.isNullOrBlank() -> {
                     logd(TAG, "Creating prefix-based wallet for account: ${account.userInfo.username}")
-                    createWalletFromPrefix(account.prefix!!, walletStorage)
+                    createWalletFromPrefix(account.prefix!!)
                 }
 
                 // Handle HD wallet (fallback case)
                 else -> {
                     logd(TAG, "Creating HD wallet for account: ${account.userInfo.username}")
-                    createWalletFromHDMnemonic(account.wallet?.id ?: "", walletStorage)
+                    createWalletFromHDMnemonic(account.wallet?.id ?: "")
                 }
             }
 
@@ -78,13 +78,13 @@ object WalletCreationHelper {
     /**
      * Create wallet from keystore information
      */
-    private suspend fun createWalletFromKeystore(keyStoreInfo: String, storage: StorageProtocol): Wallet? {
+    private suspend fun createWalletFromKeystore(keyStoreInfo: String, userId: String?, isCurrentAccount: Boolean): Wallet {
         val ks = Gson().fromJson(keyStoreInfo, KeystoreAddress::class.java)
-
+        val storage = getStorage()
         // Check if we have an encrypted mnemonic (HD Wallet restore)
         if (!ks.encryptedMnemonic.isNullOrBlank()) {
             logd(TAG, "Found encrypted mnemonic, creating HD Wallet")
-            val uid = firebaseUid()
+            val uid = if (isCurrentAccount) firebaseUid() else userId
             if (!uid.isNullOrBlank()) {
                 val decryptedMnemonic = EncryptedMnemonicUtils.decrypt(ks.encryptedMnemonic, uid)
                 logd(TAG, "Decrypted mnemonic: $decryptedMnemonic")
@@ -96,7 +96,9 @@ object WalletCreationHelper {
                         derivationPath = DERIVATION_PATH,
                         storage = storage
                     )
-                    WalletManager.setEoaDisabled(false)
+                    if (isCurrentAccount) {
+                        WalletManager.setEoaDisabled(false)
+                    }
                     return WalletFactory.createKeyWallet(
                         seedPhraseKey,
                         setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -116,9 +118,11 @@ object WalletCreationHelper {
                 logd(TAG, "Checked user mnemonic status: ${response.data}")
                 if (response.data?.isExist == true) {
                     logd(TAG, "Mnemonic restore required. Disabling EOA and notifying UI.")
-                    WalletManager.setEoaDisabled(true)
-                    LocalBroadcastManager.getInstance(com.flowfoundation.wallet.utils.Env.getApp())
-                        .sendBroadcast(android.content.Intent("ACTION_RESTORE_MNEMONIC"))
+                    if (isCurrentAccount) {
+                        WalletManager.setEoaDisabled(true)
+                        LocalBroadcastManager.getInstance(com.flowfoundation.wallet.utils.Env.getApp())
+                            .sendBroadcast(android.content.Intent("ACTION_RESTORE_MNEMONIC"))
+                    }
                 }
             } catch (e: Exception) {
                 logd(TAG, "Error checking mnemonic status: ${e.message}")
@@ -132,7 +136,8 @@ object WalletCreationHelper {
     /**
      * Create wallet from prefix-based key
      */
-    private suspend fun createWalletFromPrefix(prefix: String, storage: StorageProtocol): Wallet? {
+    private fun createWalletFromPrefix(prefix: String): Wallet? {
+        val storage = getStorage()
         return try {
             val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
             if (privateKey != null) {
@@ -145,7 +150,7 @@ object WalletCreationHelper {
                 logd(TAG, "Private key not found for prefix: $prefix")
                 null
             }
-        } catch (e: com.flowfoundation.wallet.manager.account.HardwareBackedKeyException) {
+        } catch (e: HardwareBackedKeyException) {
             logd(TAG, "Hardware-backed key detected for prefix: $prefix")
             if (e.alias != null) {
                 val provider = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_P256, null)
@@ -164,7 +169,8 @@ object WalletCreationHelper {
     /**
      * Create wallet from HD wallet mnemonic
      */
-    private suspend fun createWalletFromHDMnemonic(accountId: String, storage: StorageProtocol): Wallet? {
+    private fun createWalletFromHDMnemonic(accountId: String): Wallet? {
+        val storage = getStorage()
         val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(accountId)
         if (mnemonic != null) {
             val seedPhraseKey = SeedPhraseKey(

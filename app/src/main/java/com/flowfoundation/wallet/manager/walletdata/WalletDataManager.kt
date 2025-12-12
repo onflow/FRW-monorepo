@@ -326,7 +326,7 @@ object WalletDataManager {
         return try {
             logd(TAG, "Updating non-current account: ${account.userInfo.username}")
 
-            val wallet = WalletCreationHelper.createWalletFromAccount(account)
+            val wallet = WalletCreationHelper.createWalletFromAccount(account, false)
             if (wallet != null) {
                 logd(TAG, "Refreshing wallet accounts for non-current account ${account.userInfo.username}...")
                 wallet.refreshAccounts()
