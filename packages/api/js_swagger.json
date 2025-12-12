@@ -1651,6 +1651,296 @@
           }
         },
         "required": ["message"]
+      },
+      "WalletConnectAppMetadata": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Flow Port is your portal to the decentralized world of Flow"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://port.onflow.org"
+          },
+          "icon": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://port.onflow.org/favicon/favicon-32x32.png"
+          },
+          "title": {
+            "type": "string",
+            "example": "Flow Port"
+          }
+        },
+        "required": ["description", "url", "icon", "title"]
+      },
+      "WalletConnectClientMetadata": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "example": "web"
+          },
+          "fclVersion": {
+            "type": "string",
+            "example": "1.22.1"
+          },
+          "fclLibrary": {
+            "type": "string",
+            "example": "https://github.com/onflow/fcl-js"
+          },
+          "hostname": {
+            "type": "string",
+            "example": "port.flow.com"
+          },
+          "network": {
+            "$ref": "#/components/schemas/Network"
+          }
+        },
+        "required": [
+          "platform",
+          "fclVersion",
+          "fclLibrary",
+          "hostname",
+          "network"
+        ]
+      },
+      "WalletConnectConfig": {
+        "type": "object",
+        "properties": {
+          "services": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "app": {
+            "$ref": "#/components/schemas/WalletConnectAppMetadata"
+          },
+          "client": {
+            "$ref": "#/components/schemas/WalletConnectClientMetadata"
+          }
+        },
+        "required": ["app", "client"]
+      },
+      "WalletConnectServiceDescriptor": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "FCL service type",
+            "example": "authz"
+          }
+        },
+        "required": ["type"]
+      },
+      "WalletConnectRoles": {
+        "type": "object",
+        "properties": {
+          "proposer": {
+            "type": "boolean"
+          },
+          "payer": {
+            "type": "boolean"
+          },
+          "authorizer": {
+            "type": "boolean"
+          }
+        },
+        "required": ["proposer", "payer", "authorizer"]
+      },
+      "WalletConnectCompositeSignature": {
+        "type": "object",
+        "properties": {
+          "f_type": {
+            "type": "string",
+            "example": "CompositeSignature"
+          },
+          "f_vsn": {
+            "type": "string",
+            "example": "1.0.0"
+          },
+          "addr": {
+            "type": "string",
+            "description": "Fee payer Flow address",
+            "example": 3575409447278580700
+          },
+          "keyId": {
+            "type": "integer",
+            "example": 0
+          },
+          "signature": {
+            "type": "string",
+            "description": "Hex encoded composite signature"
+          }
+        },
+        "required": ["f_type", "f_vsn", "addr", "keyId", "signature"]
+      },
+      "WalletConnectPollingResponse": {
+        "type": "object",
+        "properties": {
+          "f_type": {
+            "type": "string",
+            "example": "PollingResponse"
+          },
+          "f_vsn": {
+            "type": "string",
+            "example": "1.0.0"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["APPROVED", "DECLINED", "PENDING", "REJECTED", null]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional rejection explanation"
+          },
+          "data": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WalletConnectCompositeSignature"
+              },
+              {
+                "type": "object",
+                "description": "Empty object when signature data is unavailable",
+                "additionalProperties": false
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "FCL payload type",
+            "example": "FCL:VIEW:RESPONSE"
+          }
+        },
+        "required": ["f_type", "f_vsn", "status", "data", "type"]
+      },
+      "WalletConnectPayerRequest": {
+        "type": "object",
+        "properties": {
+          "fclVersion": {
+            "type": "string",
+            "example": "1.22.1"
+          },
+          "service": {
+            "$ref": "#/components/schemas/WalletConnectServiceDescriptor"
+          },
+          "config": {
+            "$ref": "#/components/schemas/WalletConnectConfig"
+          },
+          "f_type": {
+            "type": "string",
+            "example": "Signable"
+          },
+          "f_vsn": {
+            "type": "string",
+            "example": "1.0.1"
+          },
+          "message": {
+            "type": "string",
+            "description": "Domain-tagged Flow transaction payload to be signed",
+            "example": "464c4f572d56302e302d7472616e73616374696f6e..."
+          },
+          "addr": {
+            "type": "string",
+            "description": "Signer's Flow address"
+          },
+          "keyId": {
+            "type": "integer",
+            "description": "Signer's key id",
+            "example": 0
+          },
+          "roles": {
+            "$ref": "#/components/schemas/WalletConnectRoles"
+          },
+          "cadence": {
+            "type": "string",
+            "description": "Cadence transaction code"
+          },
+          "args": {
+            "type": "array",
+            "description": "Cadence arguments for the transaction",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "voucher": {
+            "type": "object",
+            "description": "Flow transaction voucher payload",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "message",
+          "config",
+          "service",
+          "f_type",
+          "f_vsn",
+          "addr",
+          "keyId",
+          "roles",
+          "cadence"
+        ]
+      },
+      "WhatsNewAction": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Action button text",
+            "example": "Read More"
+          },
+          "url": {
+            "type": "string",
+            "description": "Action URL",
+            "example": "https://raw.githubusercontent.com/caosbad/logs/refs/heads/main/1-2-0-ios-en.md"
+          },
+          "type": {
+            "type": "string",
+            "description": "Action type",
+            "example": "external"
+          },
+          "style": {
+            "type": "object",
+            "description": "Action style"
+          }
+        }
+      },
+      "WhatsNewData": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw markdown content",
+            "example": "# What's New\n\n- Feature 1\n- Bug fix 2"
+          },
+          "language": {
+            "type": "string",
+            "description": "Content language",
+            "example": "en"
+          },
+          "version": {
+            "type": "string",
+            "description": "App version",
+            "example": "1.2.0"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Platform (ios/android)",
+            "example": "ios"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WhatsNewAction"
+            },
+            "description": "Available actions for the content"
+          }
+        },
+        "required": ["content", "language", "version", "platform", "actions"]
       }
     }
   },
@@ -1679,6 +1969,46 @@
     }
   ],
   "paths": {
+    "/api/android/check": {
+      "get": {
+        "summary": "Get android recovery check result",
+        "description": "Android recovery check result",
+        "tags": ["Check"],
+        "parameters": null,
+        "responses": {
+          "200": {
+            "description": "Successful response query result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/metadata/user/{address}": {
       "get": {
         "summary": "Get user address metadata",
@@ -3587,6 +3917,157 @@
         }
       }
     },
+    "/api/v4/onramp/coinbase/buy-options": {
+      "get": {
+        "summary": "Fetch Coinbase Onramp buy options",
+        "description": "Returns Coinbase's available buy options for the configured project.",
+        "tags": ["Onramp"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "country",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "query",
+            "name": "subdivision",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "networks",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated list of network names (defaults to \"flow\" when omitted)",
+              "example": "flow"
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of buy options was fetched successfully"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "500": {
+            "description": "Coinbase buy options request failed"
+          }
+        }
+      }
+    },
+    "/api/v4/onramp/coinbase": {
+      "post": {
+        "summary": "Create a Coinbase Onramp session",
+        "description": "Creates an Onramp session and returns the hosted Coinbase URL along with the quoted fees. purchaseCurrency and destinationNetwork default to Flow so only the Flow address is required.",
+        "tags": ["Onramp"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["address"],
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "example": "0x7d9c81d84cd48e9d",
+                    "description": "Flow address where the purchased FLOW will be delivered"
+                  },
+                  "purchaseCurrency": {
+                    "type": "string",
+                    "example": "flow",
+                    "description": "Optional override for the currency to purchase (defaults to flow)"
+                  },
+                  "destinationNetwork": {
+                    "type": "string",
+                    "example": "flow",
+                    "description": "Optional override for the destination network (defaults to flow)"
+                  },
+                  "paymentAmount": {
+                    "type": "string",
+                    "example": "100.00",
+                    "description": "Optional amount the user intends to pay"
+                  },
+                  "paymentCurrency": {
+                    "type": "string",
+                    "example": "USD"
+                  },
+                  "paymentMethod": {
+                    "type": "string",
+                    "example": "CARD"
+                  },
+                  "country": {
+                    "type": "string",
+                    "example": "US"
+                  },
+                  "subdivision": {
+                    "type": "string",
+                    "example": "CA"
+                  },
+                  "redirectUrl": {
+                    "type": "string",
+                    "example": "https://link.wallet.flow.com/coinbase-onramp-return"
+                  },
+                  "partnerUserRef": {
+                    "type": "string",
+                    "example": "user-123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Coinbase Onramp session successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "session": {
+                          "type": "object",
+                          "properties": {
+                            "onrampUrl": {
+                              "type": "string",
+                              "example": "https://pay.coinbase.com/buy?sessionToken=abc123"
+                            }
+                          }
+                        },
+                        "quote": {
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/v4/prices": {
       "get": {
         "summary": "Get token prices",
@@ -3691,6 +4172,359 @@
                     "status": {
                       "type": "integer",
                       "example": 500
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wc/payer": {
+      "post": {
+        "summary": "Sign as fee payer for SDK",
+        "description": "Signs a Flow transaction as the fee payer for sdk with fcl",
+        "tags": ["WalletConnect"],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "network",
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"],
+              "default": "mainnet"
+            },
+            "description": "The Flow network to use for signing",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletConnectPayerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful signature response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletConnectPollingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - transaction verification failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests - surge pricing active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable - fee payer disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wc/pre-authz": {
+      "get": {
+        "summary": "Generate Flow pre-authorization payload",
+        "description": "Returns proposer/payer/authorization services for WalletConnect flows.",
+        "tags": ["WalletConnect"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User Flow address",
+            "example": "0x676b7ace1fbea347"
+          },
+          {
+            "in": "query",
+            "name": "keyId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "User key id",
+            "example": 0
+          },
+          {
+            "in": "query",
+            "name": "network",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Network"
+            },
+            "description": "Target Flow network (defaults to mainnet)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pre-authorization payload ready for FCL"
+          },
+          "400": {
+            "description": "Invalid request payload"
+          },
+          "405": {
+            "description": "Method not allowed"
+          },
+          "500": {
+            "description": "Service configuration error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Generate Flow pre-authorization payload",
+        "description": "Returns proposer/payer/authorization services for WalletConnect flows.",
+        "tags": ["WalletConnect"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "description": "User Flow address",
+                    "example": "0x676b7ace1fbea347"
+                  },
+                  "keyId": {
+                    "type": "integer",
+                    "description": "User key id",
+                    "example": 0
+                  },
+                  "network": {
+                    "$ref": "#/components/schemas/Network",
+                    "description": "Target Flow network (defaults to mainnet)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pre-authorization payload ready for FCL"
+          },
+          "400": {
+            "description": "Invalid request payload"
+          },
+          "405": {
+            "description": "Method not allowed"
+          },
+          "500": {
+            "description": "Service configuration error"
+          }
+        }
+      }
+    },
+    "/api/whatsnew": {
+      "get": {
+        "summary": "Get What's New content",
+        "description": "Retrieves What's New content for a specific version and platform, either from cache or from remote markdown files",
+        "tags": ["What's New"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "toVersion",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Target app version to get release notes for (e.g., \"3.1.1\")",
+            "example": "3.1.1"
+          },
+          {
+            "in": "query",
+            "name": "fromVersion",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Starting version to filter release notes from (optional)",
+            "example": "3.1.0"
+          },
+          {
+            "in": "query",
+            "name": "platform",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["ios", "android", "web"]
+            },
+            "description": "Platform type",
+            "example": "ios"
+          },
+          {
+            "in": "query",
+            "name": "language",
+            "schema": {
+              "type": "string",
+              "default": "en"
+            },
+            "description": "Content language",
+            "example": "en"
+          },
+          {
+            "in": "header",
+            "name": "toVersion",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Target app version (alternative to query parameter)"
+          },
+          {
+            "in": "header",
+            "name": "fromVersion",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Starting version (alternative to query parameter)"
+          },
+          {
+            "in": "header",
+            "name": "platform",
+            "schema": {
+              "type": "string",
+              "enum": ["ios", "android", "web"]
+            },
+            "description": "Platform type (alternative to query parameter)"
+          },
+          {
+            "in": "header",
+            "name": "language",
+            "schema": {
+              "type": "string",
+              "default": "en"
+            },
+            "description": "Content language (alternative to query parameter)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved What's New content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/WhatsNewData"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Content not found for the specified version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 204
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "3.1.1 logs not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Params toVersion and platform is required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 500
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Error message"
                     }
                   }
                 }

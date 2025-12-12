@@ -10,7 +10,7 @@
     "allowImportingTsExtensions": false,
     "noEmit": false
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "stories/UpdateDialog.stories.tsx"],
   "exclude": [
     "dist",
     "node_modules",
