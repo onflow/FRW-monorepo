@@ -1,6 +1,6 @@
 //
 //  BridgeModels.kt
-//  
+//
 //  Auto-generated from TypeScript bridge types
 //  Do not edit manually
 //
@@ -25,8 +25,8 @@ class RNBridge {
     }
 
     enum class AccountTypeType {
-        @SerializedName("eoa") EOA,
-        @SerializedName("coa") COA,
+        @SerializedName("full") FULL,
+        @SerializedName("hardware") HARDWARE,
         @SerializedName("null") NULL
     }
 

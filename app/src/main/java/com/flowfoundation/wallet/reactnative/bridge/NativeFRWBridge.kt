@@ -43,6 +43,7 @@ import com.flowfoundation.wallet.manager.walletdata.COAWallet
 import com.flowfoundation.wallet.manager.walletdata.ChildWallet
 import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.logToInstabug
@@ -384,7 +385,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getSignKeyIndex(): Double {
         return try {
             // Use the same logic as getWalletAccounts() for consistency
-            val address = WalletManager.getFlowWalletAddress()
+            val address = WalletManager.getCurrentFlowWalletAddress()
 
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
 
@@ -452,7 +453,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 logd(TAG, "getSelectedAccount() - selected address: $selectedAddress")
 
                 // Determine account type based on address using utility methods
-                val mainAddress = WalletManager.getFlowWalletAddress()
+                val mainAddress = WalletManager.getCurrentFlowWalletAddress()
 
                 val accountType = when {
                     EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
@@ -730,7 +731,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    // Toast methods
+  override fun getDeviceId(): String? {
+    TODO("Not yet implemented")
+  }
+
+  // Toast methods
     override fun showToast(title: String, message: String?, type: String?, duration: Double?) {
         try {
             // Concatenate title and message
@@ -797,7 +802,57 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun launchNativeScreen(screenName: String) {
+  override fun registerSecureTypeAccount(
+    username: String?,
+    promise: Promise?
+  ) {
+    TODO("Not yet implemented")
+  }
+
+  override fun initSecureEnclaveWallet(
+    txId: String?,
+    promise: Promise?
+  ) {
+    TODO("Not yet implemented")
+  }
+
+  override fun generateSeedPhrase(
+    strength: Double?,
+    promise: Promise?
+  ) {
+    TODO("Not yet implemented")
+  }
+
+  override fun signInWithCustomToken(
+    customToken: String?,
+    promise: Promise?
+  ) {
+    TODO("Not yet implemented")
+  }
+
+  override fun saveMnemonic(
+    mnemonic: String?,
+    customToken: String?,
+    txId: String?,
+    username: String?,
+    promise: Promise?
+  ) {
+    TODO("Not yet implemented")
+  }
+
+  override fun requestNotificationPermission(promise: Promise?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun checkNotificationPermission(promise: Promise?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun setScreenSecurityLevel(level: String?) {
+    TODO("Not yet implemented")
+  }
+
+  override fun launchNativeScreen(screenName: String, params: String?) {
         logd(TAG, "launchNativeScreen() called - screen: $screenName")
 
         try {
@@ -842,7 +897,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 RNBridge.NativeScreenName.BACKUP_OPTIONS,
                 RNBridge.NativeScreenName.WALLET_RESTORE -> {
                     logw(TAG, "launchNativeScreen() - screen $screenName not yet implemented")
-                    return
+                    Intent(currentActivity, WalletRestoreActivity::class.java)
                 }
             }
 
