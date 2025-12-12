@@ -326,7 +326,7 @@ private suspend fun resumeAccount() {
         toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
         return
     }
-    firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+    firebaseLogin(resp.data.customToken) { isSuccess ->
         if (isSuccess) {
             setRegistered()
             if (AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {
