@@ -90,11 +90,11 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             override fun onSuccess(jsonData: String, fileName: String) {
                 // Populate the JSON field with extracted data
                 binding.etJson.setText(jsonData)
-                toast("PDF imported successfully: $fileName")
+                toast(msg = "PDF imported successfully: $fileName")
             }
 
             override fun onError(error: String) {
-                toast("Error: $error")
+                toast(msg = "Error: $error")
             }
 
             override fun onCancelled() {
