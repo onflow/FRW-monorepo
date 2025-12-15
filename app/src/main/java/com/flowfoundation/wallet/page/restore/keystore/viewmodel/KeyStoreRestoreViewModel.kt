@@ -119,55 +119,77 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Error types for keystore import to determine which error message to show
+     */
+    private enum class KeystoreImportError {
+        INVALID_JSON,           // JSON parsing failed
+        INVALID_KEYSTORE,       // Valid JSON but not a valid keystore format
+        WRONG_PASSWORD,         // Password doesn't decrypt the keystore
+        IMPORT_FAILED           // Other errors during import
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.KEYSTORE
-        try {
-            logd("KeyStoreRestoreViewModel", "Starting keystore import")
-            logd("KeyStoreRestoreViewModel", "JSON length: ${json.length}, first 200 chars: ${json.take(200)}")
-            
-            // Pre-validate keystore format before passing to Trust Wallet Core
-            if (!isValidKeystoreFormat(json)) {
-                loadingLiveData.postValue(false)
-                toast(msgRes = R.string.restore_failed)
-                ErrorReporter.reportWithMixpanel(
-                    BackupError.KEYSTORE_RESTORE_FAILED, 
-                    IllegalArgumentException("Invalid keystore JSON format - missing required fields")
-                )
-                return
-            }
-            
-            ioScope {
+        
+        logd("KeyStoreRestoreViewModel", "Starting keystore import")
+        logd("KeyStoreRestoreViewModel", "JSON length: ${json.length}, first 200 chars: ${json.take(200)}")
+        
+        // Pre-validate keystore format before passing to Trust Wallet Core
+        if (!isValidKeystoreFormat(json)) {
+            logd("KeyStoreRestoreViewModel", "Pre-validation failed: invalid keystore format")
+            loadingLiveData.postValue(false)
+            toast(msgRes = R.string.pdf_parse_error_message)
+            ErrorReporter.reportWithMixpanel(
+                BackupError.KEYSTORE_RESTORE_FAILED, 
+                IllegalArgumentException("Invalid keystore JSON format - missing required fields")
+            )
+            return
+        }
+        
+        ioScope {
+            try {
                 val storage = getStorage()
                 logd("KeyStoreRestoreViewModel", "Got storage")
 
-                // Wrap JNI call in try-catch to handle potential native crashes
+                // Validate keystore with Trust Wallet Core
                 val keyStore: StoredKey
                 try {
                     val imported = StoredKey.importJSON(json.toByteArray())
                     if (imported == null) {
-                        throw IllegalArgumentException("StoredKey.importJSON returned null - unable to parse keystore")
+                        logd("KeyStoreRestoreViewModel", "StoredKey.importJSON returned null")
+                        handleKeystoreError(KeystoreImportError.INVALID_KEYSTORE, "StoredKey.importJSON returned null")
+                        return@ioScope
                     }
                     keyStore = imported
                 } catch (e: Exception) {
                     logd("KeyStoreRestoreViewModel", "StoredKey.importJSON failed: ${e.message}")
-                    throw IllegalArgumentException("Invalid keystore JSON format - unable to parse keystore: ${e.message}")
+                    handleKeystoreError(KeystoreImportError.INVALID_KEYSTORE, "StoredKey.importJSON failed: ${e.message}")
+                    return@ioScope
                 }
                 logd("KeyStoreRestoreViewModel", "Imported JSON keystore")
 
-                // Wrap decryptPrivateKey in try-catch to handle JNI issues where the object appears non-null but has invalid internal state
+                // Decrypt private key - wrong password will return null
                 val decryptedKey: ByteArray
                 try {
                     val decrypted = keyStore.decryptPrivateKey(password.toByteArray())
                     if (decrypted == null) {
-                        throw IllegalArgumentException("Failed to decrypt private key - invalid password or corrupted keystore")
+                        logd("KeyStoreRestoreViewModel", "decryptPrivateKey returned null - wrong password")
+                        handleKeystoreError(KeystoreImportError.WRONG_PASSWORD, "Invalid password")
+                        return@ioScope
                     }
                     decryptedKey = decrypted
                 } catch (e: NullPointerException) {
                     // This can happen when the StoredKey JNI wrapper has an invalid native pointer
                     logd("KeyStoreRestoreViewModel", "NullPointerException during decryptPrivateKey - JNI wrapper invalid: ${e.message}")
-                    throw IllegalArgumentException("Failed to decrypt private key - keystore format not supported or corrupted: ${e.message}")
+                    handleKeystoreError(KeystoreImportError.INVALID_KEYSTORE, "Keystore format not supported: ${e.message}")
+                    return@ioScope
+                } catch (e: Exception) {
+                    logd("KeyStoreRestoreViewModel", "decryptPrivateKey exception: ${e.message}")
+                    handleKeystoreError(KeystoreImportError.WRONG_PASSWORD, "Decryption failed: ${e.message}")
+                    return@ioScope
                 }
                 logd("KeyStoreRestoreViewModel", "Decrypted private key")
 
@@ -213,14 +235,40 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         p1PublicKey ?: ""
                     )
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                logd("KeyStoreRestoreViewModel", "Unexpected error during keystore import: ${e.message}")
+                handleKeystoreError(KeystoreImportError.IMPORT_FAILED, e.message ?: "Unknown error")
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            logd("KeyStoreRestoreViewModel", "Error during keystore import: ${e.message}")
-            ErrorReporter.reportWithMixpanel(BackupError.KEYSTORE_RESTORE_FAILED, e)
-            loadingLiveData.postValue(false)
-            toast(msgRes = R.string.restore_failed)
         }
+    }
+
+    /**
+     * Handle keystore import errors with appropriate UI feedback
+     */
+    private fun handleKeystoreError(errorType: KeystoreImportError, details: String) {
+        logd("KeyStoreRestoreViewModel", "Keystore error: $errorType - $details")
+        loadingLiveData.postValue(false)
+        
+        when (errorType) {
+            KeystoreImportError.INVALID_JSON, KeystoreImportError.INVALID_KEYSTORE -> {
+                // For invalid JSON or keystore format, show the extension download message
+                toast(msgRes = R.string.pdf_parse_error_message)
+            }
+            KeystoreImportError.WRONG_PASSWORD -> {
+                // For wrong password, show a specific error
+                toast(msgRes = R.string.wrong_password)
+            }
+            KeystoreImportError.IMPORT_FAILED -> {
+                // For other errors, show generic restore failed
+                toast(msgRes = R.string.restore_failed)
+            }
+        }
+        
+        ErrorReporter.reportWithMixpanel(
+            BackupError.KEYSTORE_RESTORE_FAILED, 
+            IllegalArgumentException("$errorType: $details")
+        )
     }
 
     @OptIn(ExperimentalStdlibApi::class)
