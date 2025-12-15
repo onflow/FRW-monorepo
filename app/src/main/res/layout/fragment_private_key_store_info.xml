@@ -83,13 +83,23 @@
         style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
+        android:minHeight="34dp"
         android:paddingStart="24dp"
+        android:paddingTop="16dp"
         android:paddingEnd="24dp"
+        android:paddingBottom="16dp"
         android:text="@string/import_from_pdf"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_json"/>
+        app:icon="@drawable/ic_import_pdf"
+        app:iconGravity="start"
+        app:iconPadding="8dp"
+        app:iconSize="18dp"
+        app:iconTint="@color/button_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/et_json"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"/>
 
     <TextView
         android:id="@+id/tv_password"
