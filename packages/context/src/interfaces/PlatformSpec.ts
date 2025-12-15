@@ -113,12 +113,16 @@ export interface PlatformSpec {
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
   /**
-   * Get registration signature for v4 API
-   * Signs in anonymously to Firebase, gets JWT, and signs it with the key derived from mnemonic
-   * @param mnemonic - The recovery phrase to derive the signing key from
-   * @returns Promise with signature (hex string)
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
    */
-  getRegistrationSignature?(mnemonic: string): Promise<string>;
+  getV4RegistrationSignatures?(mnemonic: string): Promise<{
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+  }>;
   /**
    * Register Secure Enclave account with backend and initiate on-chain account creation
    * Returns early with txId so RN can monitor transaction status
