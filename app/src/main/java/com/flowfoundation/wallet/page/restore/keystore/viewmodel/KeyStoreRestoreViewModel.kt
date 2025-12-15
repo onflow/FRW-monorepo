@@ -52,6 +52,7 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
+import org.json.JSONObject
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.ChainId
@@ -83,20 +84,91 @@ class KeyStoreRestoreViewModel : ViewModel() {
         return addressList
     }
 
+    /**
+     * Validates that a JSON string is a valid Ethereum V3 keystore format
+     * Required fields: version, id, crypto (with ciphertext, cipherparams, kdf, kdfparams, mac)
+     */
+    private fun isValidKeystoreFormat(json: String): Boolean {
+        return try {
+            val jsonObj = JSONObject(json)
+            // Check for required fields
+            val hasVersion = jsonObj.has("version") && jsonObj.getInt("version") == 3
+            val hasId = jsonObj.has("id")
+            val hasCrypto = jsonObj.has("crypto") || jsonObj.has("Crypto") // Some keystores use capital C
+            
+            if (!hasCrypto) {
+                logd("KeyStoreRestoreViewModel", "Keystore validation failed: missing 'crypto' field")
+                return false
+            }
+            
+            val crypto = if (jsonObj.has("crypto")) jsonObj.getJSONObject("crypto") else jsonObj.getJSONObject("Crypto")
+            val hasCiphertext = crypto.has("ciphertext")
+            val hasCipherparams = crypto.has("cipherparams")
+            val hasKdf = crypto.has("kdf")
+            val hasKdfparams = crypto.has("kdfparams")
+            val hasMac = crypto.has("mac")
+            
+            val isValid = hasVersion && hasId && hasCiphertext && hasCipherparams && hasKdf && hasKdfparams && hasMac
+            if (!isValid) {
+                logd("KeyStoreRestoreViewModel", "Keystore validation failed: version=$hasVersion, id=$hasId, ciphertext=$hasCiphertext, cipherparams=$hasCipherparams, kdf=$hasKdf, kdfparams=$hasKdfparams, mac=$hasMac")
+            }
+            isValid
+        } catch (e: Exception) {
+            logd("KeyStoreRestoreViewModel", "Keystore validation exception: ${e.message}")
+            false
+        }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.KEYSTORE
         try {
             logd("KeyStoreRestoreViewModel", "Starting keystore import")
+            logd("KeyStoreRestoreViewModel", "JSON length: ${json.length}, first 200 chars: ${json.take(200)}")
+            
+            // Pre-validate keystore format before passing to Trust Wallet Core
+            if (!isValidKeystoreFormat(json)) {
+                loadingLiveData.postValue(false)
+                toast(msgRes = R.string.restore_failed)
+                ErrorReporter.reportWithMixpanel(
+                    BackupError.KEYSTORE_RESTORE_FAILED, 
+                    IllegalArgumentException("Invalid keystore JSON format - missing required fields")
+                )
+                return
+            }
+            
             ioScope {
                 val storage = getStorage()
                 logd("KeyStoreRestoreViewModel", "Got storage")
 
-                val keyStore = StoredKey.importJSON(json.toByteArray())
+                // Wrap JNI call in try-catch to handle potential native crashes
+                val keyStore: StoredKey
+                try {
+                    val imported = StoredKey.importJSON(json.toByteArray())
+                    if (imported == null) {
+                        throw IllegalArgumentException("StoredKey.importJSON returned null - unable to parse keystore")
+                    }
+                    keyStore = imported
+                } catch (e: Exception) {
+                    logd("KeyStoreRestoreViewModel", "StoredKey.importJSON failed: ${e.message}")
+                    throw IllegalArgumentException("Invalid keystore JSON format - unable to parse keystore: ${e.message}")
+                }
                 logd("KeyStoreRestoreViewModel", "Imported JSON keystore")
 
-                val decryptedKey = keyStore.decryptPrivateKey(password.toByteArray())
+                // Wrap decryptPrivateKey in try-catch to handle JNI issues where the object appears non-null but has invalid internal state
+                val decryptedKey: ByteArray
+                try {
+                    val decrypted = keyStore.decryptPrivateKey(password.toByteArray())
+                    if (decrypted == null) {
+                        throw IllegalArgumentException("Failed to decrypt private key - invalid password or corrupted keystore")
+                    }
+                    decryptedKey = decrypted
+                } catch (e: NullPointerException) {
+                    // This can happen when the StoredKey JNI wrapper has an invalid native pointer
+                    logd("KeyStoreRestoreViewModel", "NullPointerException during decryptPrivateKey - JNI wrapper invalid: ${e.message}")
+                    throw IllegalArgumentException("Failed to decrypt private key - keystore format not supported or corrupted: ${e.message}")
+                }
                 logd("KeyStoreRestoreViewModel", "Decrypted private key")
 
                 val key = PrivateKey.create(storage).apply {

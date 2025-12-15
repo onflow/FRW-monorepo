@@ -89,9 +89,20 @@ class BlocktoPDFExtractor(private val context: Context) {
 
     /**
      * Extract JSON string from text using regex patterns
-     * Tries multiple patterns to find valid JSON
+     * Tries multiple patterns to find valid JSON, prioritizing keystore-like structures
      */
     private fun extractJsonString(text: String): String? {
+        Log.d(TAG, "Attempting to extract JSON from text of length ${text.length}")
+        Log.d(TAG, "Text preview (first 500 chars): ${text.take(500)}")
+        
+        // First, try to find keystore-specific patterns (more reliable for Blocto)
+        val keystoreResult = extractKeystoreJson(text)
+        if (keystoreResult != null) {
+            Log.d(TAG, "Found keystore JSON using keystore-specific extraction")
+            return keystoreResult
+        }
+        
+        // Fallback to generic JSON extraction
         // Multiple regex patterns for better JSON detection
         val patterns = listOf(
             // Complete JSON objects with nested structures
@@ -136,6 +147,95 @@ class BlocktoPDFExtractor(private val context: Context) {
         }
         Log.w(TAG, "No valid JSON found after trying all patterns")
         return null
+    }
+    
+    /**
+     * Extract keystore JSON specifically by finding the opening brace and matching braces
+     * This handles deeply nested JSON better than regex
+     */
+    private fun extractKeystoreJson(text: String): String? {
+        // Look for keystore-specific markers
+        val keystoreMarkers = listOf(
+            "\"version\"", "\"crypto\"", "\"Crypto\"", "\"ciphertext\"", "\"kdf\""
+        )
+        
+        // Find the start of potential keystore JSON
+        val startIndex = text.indexOf("{")
+        if (startIndex == -1) {
+            Log.d(TAG, "No opening brace found in text")
+            return null
+        }
+        
+        // Try to extract balanced JSON starting from each opening brace
+        var currentStart = startIndex
+        while (currentStart != -1 && currentStart < text.length) {
+            val extracted = extractBalancedJson(text, currentStart)
+            if (extracted != null) {
+                // Clean whitespace
+                val cleaned = extracted
+                    .replace(Regex("\\s+"), " ")
+                    .trim()
+                
+                // Validate it's a proper keystore
+                if (isValidJSON(cleaned) && isKeystoreJson(cleaned)) {
+                    Log.d(TAG, "Found valid keystore JSON at position $currentStart")
+                    return cleaned
+                }
+            }
+            
+            // Look for next opening brace
+            currentStart = text.indexOf("{", currentStart + 1)
+        }
+        
+        return null
+    }
+    
+    /**
+     * Extract a balanced JSON object starting from the given position
+     */
+    private fun extractBalancedJson(text: String, start: Int): String? {
+        if (start >= text.length || text[start] != '{') return null
+        
+        var braceCount = 0
+        var end = start
+        
+        for (i in start until text.length) {
+            when (text[i]) {
+                '{' -> braceCount++
+                '}' -> {
+                    braceCount--
+                    if (braceCount == 0) {
+                        end = i
+                        break
+                    }
+                }
+            }
+        }
+        
+        return if (braceCount == 0 && end > start) {
+            text.substring(start, end + 1)
+        } else {
+            null
+        }
+    }
+    
+    /**
+     * Check if a JSON string looks like a keystore (has required keystore fields)
+     */
+    private fun isKeystoreJson(jsonString: String): Boolean {
+        return try {
+            val json = JSONObject(jsonString)
+            val hasVersion = json.has("version")
+            val hasCrypto = json.has("crypto") || json.has("Crypto")
+            val hasId = json.has("id")
+            
+            val result = hasVersion && hasCrypto && hasId
+            Log.d(TAG, "Keystore check: version=$hasVersion, crypto=$hasCrypto, id=$hasId -> $result")
+            result
+        } catch (e: Exception) {
+            Log.d(TAG, "Keystore check failed with exception: ${e.message}")
+            false
+        }
     }
 
     /**
