@@ -129,7 +129,7 @@ class DocumentPickerManager(private val activity: Activity) {
 
                     // Parse PDF
                     Log.d(TAG, "Starting PDF extraction with BlocktoPDFExtractor")
-                    val extractor = BlocktoPDFExtractor()
+                    val extractor = BlocktoPDFExtractor(activity.applicationContext)
                     val result = extractor.extractJsonFromPdf(tempFile)
 
                     withContext(Dispatchers.Main) {

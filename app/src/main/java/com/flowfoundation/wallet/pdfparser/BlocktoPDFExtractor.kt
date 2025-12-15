@@ -1,6 +1,8 @@
 package com.flowfoundation.wallet.pdfparser
 
+import android.content.Context
 import android.util.Log
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import org.json.JSONArray
@@ -11,7 +13,7 @@ import java.util.regex.Pattern
 /**
  * Extract JSON data from Blocto RecoveryKit PDF files
  */
-class BlocktoPDFExtractor {
+class BlocktoPDFExtractor(private val context: Context) {
 
     companion object {
         private const val TAG = "PDF_IMPORT"
@@ -19,12 +21,13 @@ class BlocktoPDFExtractor {
 
         /**
          * Initialize PDFBox resources for Android
+         * @param context Android context required for resource loading
          */
-        private fun initializePDFBox() {
+        private fun initializePDFBox(context: Context) {
             try {
-                Log.d(TAG, "Initializing PDFBox for Android")
-                // Initialize PDFBox resources for Android
-                // PDFBox-Android handles initialization automatically
+                Log.d(TAG, "Initializing PDFBox for Android with context")
+                // Initialize PDFBox resource loader with Android context
+                PDFBoxResourceLoader.init(context)
                 isPDFBoxInitialized = true
                 Log.d(TAG, "PDFBox initialized successfully")
             } catch (e: Exception) {
@@ -46,7 +49,7 @@ class BlocktoPDFExtractor {
 
             // Initialize PDFBox for Android if not already initialized
             if (!isPDFBoxInitialized) {
-                initializePDFBox()
+                initializePDFBox(context)
             }
 
             // 1. Load PDF document
