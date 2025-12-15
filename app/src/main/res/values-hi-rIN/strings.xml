@@ -723,4 +723,7 @@
     <string name="blocked_tip">This app has been flagged as dangerous.</string>
     <string name="switch_to">Switch to %1$s</string>
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
+    <string name="import_from_pdf">PDF से आयात करें</string>
+    <string name="pdf_parse_error_message">अमान्य कीस्टोर JSON प्रारूप। कृपया अपनी कीस्टोर फ़ाइल को सही ढंग से निर्यात करने के लिए Flow Wallet Extension डाउनलोड करें।</string>
+    <string name="extension_download_url">https://chromewebstore.google.com/detail/flow-wallet/hpclkefagolihohboafpheddmmgdffjm?hl=en</string>
 </resources>
