@@ -62,11 +62,18 @@ class PrivateKeyStoreInfoFragment: Fragment() {
         with(binding) {
             etJson.addTextChangedListener(object : SimpleTextWatcher() {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                    btnImport.isEnabled = canRestore()
-                    // Hide error when user starts typing
-                    if (tvPdfError.visibility == View.VISIBLE) {
+                    val jsonText = s.toString().trim()
+
+                    // Validate JSON and show/hide error message
+                    if (jsonText.isNotEmpty() && !isValidJson(jsonText)) {
+                        // Show error for invalid JSON
+                        tvPdfError.visibility = View.VISIBLE
+                    } else {
+                        // Hide error for valid JSON or empty field
                         tvPdfError.visibility = View.GONE
                     }
+
+                    btnImport.isEnabled = canRestore()
                 }
             })
             etPassword.addTextChangedListener(object : SimpleTextWatcher() {
