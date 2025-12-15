@@ -75,6 +75,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
     val addressListLiveData = MutableLiveData<List<KeystoreAddress>>()
     val optionChangeLiveData = MutableLiveData<KeyStoreOption>()
     val loadingLiveData = MutableLiveData<Boolean>()
+    
+    /**
+     * LiveData for keystore format errors - when true, shows the red error message with Extension download link
+     * For invalid JSON or invalid keystore format only
+     */
+    val keystoreFormatErrorLiveData = MutableLiveData<Boolean>()
 
     fun changeOption(option: KeyStoreOption) {
         optionChangeLiveData.postValue(option)
@@ -141,7 +147,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
         if (!isValidKeystoreFormat(json)) {
             logd("KeyStoreRestoreViewModel", "Pre-validation failed: invalid keystore format")
             loadingLiveData.postValue(false)
-            toast(msgRes = R.string.pdf_parse_error_message)
+            // Show the red error message with Extension download link
+            keystoreFormatErrorLiveData.postValue(true)
             ErrorReporter.reportWithMixpanel(
                 BackupError.KEYSTORE_RESTORE_FAILED, 
                 IllegalArgumentException("Invalid keystore JSON format - missing required fields")
@@ -252,15 +259,15 @@ class KeyStoreRestoreViewModel : ViewModel() {
         
         when (errorType) {
             KeystoreImportError.INVALID_JSON, KeystoreImportError.INVALID_KEYSTORE -> {
-                // For invalid JSON or keystore format, show the extension download message
-                toast(msgRes = R.string.pdf_parse_error_message)
+                // For invalid JSON or keystore format, show the red error message with Extension download link
+                keystoreFormatErrorLiveData.postValue(true)
             }
             KeystoreImportError.WRONG_PASSWORD -> {
-                // For wrong password, show a specific error
+                // For wrong password, show a toast (not the Extension message)
                 toast(msgRes = R.string.wrong_password)
             }
             KeystoreImportError.IMPORT_FAILED -> {
-                // For other errors, show generic restore failed
+                // For other errors, show generic restore failed toast
                 toast(msgRes = R.string.restore_failed)
             }
         }

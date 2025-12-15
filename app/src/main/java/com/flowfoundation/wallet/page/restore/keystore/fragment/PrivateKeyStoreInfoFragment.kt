@@ -82,6 +82,8 @@ class PrivateKeyStoreInfoFragment: Fragment() {
                 }
             })
             btnImport.setOnClickListener {
+                // Hide error message before attempting import
+                tvPdfError.visibility = View.GONE
                 restoreViewModel.importKeyStore(
                     etJson.text.toString().trim(),
                     etPassword.text.toString().trim(),
@@ -100,6 +102,15 @@ class PrivateKeyStoreInfoFragment: Fragment() {
 
             Instabug.addPrivateViews(etJson)
             Instabug.addPrivateViews(etPassword)
+        }
+        
+        // Observe keystore format errors from ViewModel
+        restoreViewModel.keystoreFormatErrorLiveData.observe(viewLifecycleOwner) { showError ->
+            if (showError) {
+                binding.tvPdfError.visibility = View.VISIBLE
+                // Reset the LiveData value to allow showing the error again
+                restoreViewModel.keystoreFormatErrorLiveData.value = false
+            }
         }
     }
 
