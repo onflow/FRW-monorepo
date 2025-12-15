@@ -782,4 +782,5 @@
     <string name="my_own_address">My Own Address</string>
     <string name="custom_address">Custom Address</string>
     <string name="enter_custom_address">Enter custom address</string>
+    <string name="import_from_pdf">Import from PDF</string>
 </resources>

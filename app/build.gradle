@@ -529,6 +529,9 @@ dependencies {
 
     implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
 
+    /** PDF Processing **/
+    implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
+
     /** Dropbox **/
     implementation 'com.dropbox.core:dropbox-core-sdk:7.0.0'
     implementation 'com.dropbox.core:dropbox-android-sdk:7.0.0'
