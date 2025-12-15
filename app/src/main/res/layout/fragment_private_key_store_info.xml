@@ -80,17 +80,14 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_import_from_pdf"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:fontFamily="@font/inter"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:text="@string/import_from_pdf"
-        android:textAllCaps="false"
-        android:textSize="14sp"
-        app:icon="@android:drawable/ic_menu_upload"
-        app:iconGravity="start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/et_json"/>
 
