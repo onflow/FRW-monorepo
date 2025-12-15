@@ -86,7 +86,8 @@ class PrivateKeyStoreInfoFragment: Fragment() {
      * Open PDF file picker
      */
     private fun openPDFPicker() {
-        documentPicker.openDocumentPicker(object : DocumentPickerManager.PDFSelectionCallback {
+        android.util.Log.d("PDF_IMPORT", "openPDFPicker called in Fragment")
+        val callback = object : DocumentPickerManager.PDFSelectionCallback {
             override fun onSuccess(jsonData: String, fileName: String) {
                 // Populate the JSON field with extracted data
                 binding.etJson.setText(jsonData)
@@ -100,16 +101,33 @@ class PrivateKeyStoreInfoFragment: Fragment() {
             override fun onCancelled() {
                 // User cancelled, no action needed
             }
-        })
+        }
+
+        // Store callback for later use
+        documentPicker.setCallback(callback)
+
+        // Start activity from Fragment (not Activity) to ensure result comes back to Fragment
+        try {
+            val intent = documentPicker.createPickerIntent()
+            android.util.Log.d("PDF_IMPORT", "Starting PDF picker from Fragment with requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}")
+            startActivityForResult(intent, DocumentPickerManager.PICK_PDF_REQUEST)
+        } catch (e: Exception) {
+            android.util.Log.e("PDF_IMPORT", "Failed to start PDF picker", e)
+            callback.onError("Failed to open document picker: ${e.message}")
+        }
     }
 
     /**
      * Handle activity result from document picker
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        android.util.Log.d("PDF_IMPORT", "Fragment onActivityResult: requestCode=$requestCode, resultCode=$resultCode, data=$data")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == DocumentPickerManager.PICK_PDF_REQUEST && resultCode == Activity.RESULT_OK) {
+            android.util.Log.d("PDF_IMPORT", "Passing result to DocumentPickerManager")
             documentPicker.handleActivityResult(requestCode, resultCode, data)
+        } else {
+            android.util.Log.d("PDF_IMPORT", "Result not handled: requestCode=${DocumentPickerManager.PICK_PDF_REQUEST}, RESULT_OK=${Activity.RESULT_OK}")
         }
     }
 

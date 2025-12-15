@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.pdfparser
 
+import android.util.Log
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import org.json.JSONArray
@@ -12,6 +13,27 @@ import java.util.regex.Pattern
  */
 class BlocktoPDFExtractor {
 
+    companion object {
+        private const val TAG = "PDF_IMPORT"
+        private var isPDFBoxInitialized = false
+
+        /**
+         * Initialize PDFBox resources for Android
+         */
+        private fun initializePDFBox() {
+            try {
+                Log.d(TAG, "Initializing PDFBox for Android")
+                // Initialize PDFBox resources for Android
+                // PDFBox-Android handles initialization automatically
+                isPDFBoxInitialized = true
+                Log.d(TAG, "PDFBox initialized successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to initialize PDFBox", e)
+                e.printStackTrace()
+            }
+        }
+    }
+
     /**
      * Extract JSON string from a PDF file
      * @param file PDF file to extract from
@@ -20,28 +42,43 @@ class BlocktoPDFExtractor {
      */
     fun extractJsonFromPdf(file: File, pageIndex: Int = 0): String? {
         return try {
+            Log.d(TAG, "Starting JSON extraction from PDF: ${file.name}")
+
             // Initialize PDFBox for Android if not already initialized
             if (!isPDFBoxInitialized) {
                 initializePDFBox()
             }
 
             // 1. Load PDF document
+            Log.d(TAG, "Loading PDF document with PDFBox")
             val document = PDDocument.load(file)
+            val pageCount = document.numberOfPages
+            Log.d(TAG, "PDF loaded successfully, total pages: $pageCount")
 
             // 2. Configure text stripper for specific page
             val stripper = PDFTextStripper()
             // PDFBox uses 1-based page indexing
             stripper.startPage = pageIndex + 1
             stripper.endPage = pageIndex + 1
+            Log.d(TAG, "Extracting text from page ${pageIndex + 1} of $pageCount")
 
             // 3. Extract page text
             val pageText = stripper.getText(document)
             document.close()
+            Log.d(TAG, "Text extracted, length: ${pageText.length} characters")
 
             // 4. Extract JSON from text
-            extractJsonString(pageText)
+            Log.d(TAG, "Searching for JSON pattern in extracted text")
+            val result = extractJsonString(pageText)
+            if (result != null) {
+                Log.d(TAG, "JSON extraction successful")
+            } else {
+                Log.w(TAG, "No valid JSON found in PDF text")
+            }
+            result
 
         } catch (e: Exception) {
+            Log.e(TAG, "Exception during PDF JSON extraction", e)
             e.printStackTrace()
             null
         }
@@ -62,27 +99,39 @@ class BlocktoPDFExtractor {
             "\\{.*\\}"
         )
 
-        for (patternStr in patterns) {
+        Log.d(TAG, "Trying ${patterns.size} regex patterns to find JSON")
+        for ((index, patternStr) in patterns.withIndex()) {
             try {
+                Log.d(TAG, "Trying pattern ${index + 1}/${patterns.size}")
                 val pattern = Pattern.compile(patternStr, Pattern.DOTALL)
                 val matcher = pattern.matcher(text)
 
                 if (matcher.find()) {
                     val jsonString = matcher.group()
+                    Log.d(TAG, "Pattern ${index + 1} matched, found string of length ${jsonString.length}")
+
                     // Clean up whitespace and newlines
                     val cleanedJson = jsonString
                         .replace(Regex("\\s+"), " ")
                         .trim()
 
+                    Log.d(TAG, "Cleaned JSON length: ${cleanedJson.length}, validating...")
                     // Validate JSON structure
                     if (isValidJSON(cleanedJson)) {
+                        Log.d(TAG, "Valid JSON found with pattern ${index + 1}")
                         return cleanedJson
+                    } else {
+                        Log.d(TAG, "Pattern ${index + 1} match was not valid JSON, trying next pattern")
                     }
+                } else {
+                    Log.d(TAG, "Pattern ${index + 1} did not match")
                 }
             } catch (e: Exception) {
+                Log.w(TAG, "Exception with pattern ${index + 1}: ${e.message}")
                 continue
             }
         }
+        Log.w(TAG, "No valid JSON found after trying all patterns")
         return null
     }
 
@@ -91,31 +140,19 @@ class BlocktoPDFExtractor {
      */
     private fun isValidJSON(jsonString: String): Boolean {
         return try {
+            Log.d(TAG, "Validating JSON as JSONObject")
             JSONObject(jsonString)
+            Log.d(TAG, "Valid JSONObject")
             true
         } catch (e: org.json.JSONException) {
             try {
+                Log.d(TAG, "Not a JSONObject, trying JSONArray")
                 JSONArray(jsonString)
+                Log.d(TAG, "Valid JSONArray")
                 true
             } catch (e2: org.json.JSONException) {
+                Log.w(TAG, "Invalid JSON: ${e2.message}")
                 false
-            }
-        }
-    }
-
-    companion object {
-        private var isPDFBoxInitialized = false
-
-        /**
-         * Initialize PDFBox resources for Android
-         */
-        private fun initializePDFBox() {
-            try {
-                // Initialize PDFBox resources for Android
-                // PDFBox-Android handles initialization automatically
-                isPDFBoxInitialized = true
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
         }
     }
