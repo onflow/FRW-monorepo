@@ -50,7 +50,7 @@ class SwapProviderDialog : BottomSheetDialogFragment() {
             cvKittyPunch.setOnClickListener {
                 openBrowser(
                     requireActivity(),
-                    "https://swap.kittypunch.xyz/"
+                    "https://swap.flow.com/"
                 )
                 dismissAllowingStateLoss()
             }
