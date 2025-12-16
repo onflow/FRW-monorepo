@@ -40,6 +40,9 @@ export function BackupMnemonicScreen({
   const { copied, copy } = useCopyToClipboard();
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
 
+  // Validate seedPhrase
+  const isValidSeedPhrase = seedPhrase && seedPhrase.length === 12;
+
   // Enable screenshot protection when screen mounts
   useEffect(() => {
     logger.info('[BackupMnemonicScreen] Enabling screenshot protection');
@@ -55,6 +58,31 @@ export function BackupMnemonicScreen({
       }
     };
   }, []);
+
+  // Show error state if seedPhrase is invalid
+  if (!isValidSeedPhrase) {
+    return (
+      <OnboardingBackground>
+        <YStack flex={1} items="center" justify="center" px="$4" gap="$4">
+          <Text color="$error" text="center" fontSize="$5" fontWeight="700">
+            {t('backup.mnemonic.error.title', { defaultValue: 'Invalid Recovery Phrase' })}
+          </Text>
+          <Text color="$textSecondary" text="center" fontSize="$4">
+            {t('backup.mnemonic.error.description', {
+              defaultValue: 'The recovery phrase is missing or invalid. Please try again.',
+            })}
+          </Text>
+          <Button onPress={() => (onBack ? onBack() : navigation.goBack())}>
+            <XStack gap="$2" items="center" px="$4" py="$2">
+              <Text fontSize="$4" fontWeight="600">
+                {t('common.goBack', { defaultValue: 'Go Back' })}
+              </Text>
+            </XStack>
+          </Button>
+        </YStack>
+      </OnboardingBackground>
+    );
+  }
 
   const handleBack = () => {
     if (onBack) {

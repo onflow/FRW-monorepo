@@ -420,7 +420,11 @@
         "title": "Do not share your recovery phrase!",
         "description": "If someone has your recovery phrase, They will have full control of your wallet."
       },
-      "done": "Done"
+      "done": "Done",
+      "error": {
+        "title": "Invalid Recovery Phrase",
+        "description": "The recovery phrase is missing or invalid. Please try again."
+      }
     }
   }
 }

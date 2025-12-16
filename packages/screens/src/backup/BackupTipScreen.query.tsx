@@ -140,6 +140,9 @@ export function BackupTipScreen({
               onPress={handleSkip}
               cursor="pointer"
               pressStyle={{ opacity: 0.7 }}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t('backup.tip.notNow', { defaultValue: 'Not now' })}
             >
               {t('backup.tip.notNow', { defaultValue: 'Not now' })}
             </Text>
