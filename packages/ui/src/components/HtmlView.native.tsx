@@ -3,7 +3,7 @@ import { useWindowDimensions } from 'react-native';
 import RenderHtml from 'react-native-render-html';
 
 export interface HtmlViewProps {
-  verison?: string;
+  version?: string;
   htmlContent: string;
   styles?: Record<string, unknown>;
 }
