@@ -388,5 +388,39 @@
         "validation": "Invalid account data. Please try again."
       }
     }
+  },
+  "backup": {
+    "tip": {
+      "title": "Backup Your\nRecovery Phrase",
+      "description": "Your recovery phrase is the only way to restore your wallet. Keep it safe and secure.",
+      "writeDown": {
+        "title": "Write it down",
+        "description": "Write your recovery phrase on paper and store it in a secure location."
+      },
+      "keepSecret": {
+        "title": "Keep it secret",
+        "description": "Never share your recovery phrase with anyone or enter it on any website."
+      },
+      "noScreenshot": {
+        "title": "No screenshots",
+        "description": "Do not take screenshots or store your phrase digitally where it could be compromised."
+      },
+      "warning": {
+        "title": "Important",
+        "description": "If you lose your recovery phrase, you will not be able to recover your wallet. Flow Wallet cannot help you recover it."
+      },
+      "continue": "Continue"
+    },
+    "mnemonic": {
+      "title": "Recovery phrase",
+      "description": "Write down these words in the right order and store them somewhere safe.",
+      "clickToReveal": "Click to reveal phrase",
+      "copy": "Copy",
+      "warning": {
+        "title": "Do not share your secret phrase!",
+        "description": "If someone has your secret phrase,\nThey will have full control of your wallet."
+      },
+      "complete": "I've backed up my phrase"
+    }
   }
 }
