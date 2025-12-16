@@ -70,7 +70,6 @@ const Dashboard = () => {
   const swapLink = getSwapLink(network, activeAccountType);
 
   useEffect(() => {
-    console.log(currentWallet, 'userInfo====', mainAddress, currentWalletList);
     if (userInfo && userInfo.id && currentWallet) {
       setUser({
         id: userInfo.id,

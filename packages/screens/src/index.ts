@@ -13,6 +13,9 @@ export * from './onboarding';
 // Export recovery screens
 export * from './recovery';
 
+// Export migration screens
+export * from './migration';
+
 // Export error fallback components
 export { GenericErrorFallback } from './error/GenericErrorFallback';
 export { NetworkErrorFallback } from './error/NetworkErrorFallback';

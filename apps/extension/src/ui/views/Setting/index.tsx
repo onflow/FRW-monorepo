@@ -16,6 +16,7 @@ import { CurrencyIcon } from '@/ui/assets/icons/settings/Currency';
 import { DevicesIcon } from '@/ui/assets/icons/settings/Devices';
 import { DevmodeIcon } from '@/ui/assets/icons/settings/Devmode';
 import { EditIcon } from '@/ui/assets/icons/settings/Edit';
+import { MigrationIcon } from '@/ui/assets/icons/settings/Migration';
 import { MobileIcon } from '@/ui/assets/icons/settings/Mobile';
 import { SecurityIcon } from '@/ui/assets/icons/settings/Security';
 import { LLHeader } from '@/ui/components';
@@ -175,6 +176,13 @@ const SettingTab = () => {
             to="/dashboard/setting/changepassword"
             icon={<SecurityIcon width={24} height={24} />}
             text={chrome.i18n.getMessage('Password')}
+            endIcon={<IconEnd size={12} />}
+          />
+          <Divider sx={{ width: '90%' }} variant="middle" />
+          <SettingsListItem
+            to="/dashboard/setting/migration"
+            icon={<MigrationIcon width={24} height={24} />}
+            text={chrome.i18n.getMessage('Migration') || 'Migration'}
             endIcon={<IconEnd size={12} />}
           />
         </List>

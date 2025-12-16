@@ -40,6 +40,7 @@ import CurrencySettings from './Setting/Currency';
 import DeveloperMode from './Setting/DeveloperMode/DeveloperMode';
 import DeviceInfo from './Setting/Devices/DeviceInfo';
 import KeyList from './Setting/KeyList/KeyList';
+import MigrationPage from './Setting/Migration';
 import Keydetail from './Setting/privatekey/Keydetail';
 import PrivateKeyPassword from './Setting/privatekey/Privatekeypassword';
 import Profile from './Setting/Profile';
@@ -438,6 +439,14 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <CurrencySettings />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="setting/migration"
+              element={
+                <PrivateRoute>
+                  <MigrationPage />
                 </PrivateRoute>
               }
             />
