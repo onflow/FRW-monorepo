@@ -1,18 +1,20 @@
-import { bridge, logger, navigation, toast } from '@onflow/frw-context';
-import { Copy, Warning, RevealPhrase } from '@onflow/frw-icons';
+import { bridge, logger, navigation } from '@onflow/frw-context';
+import { Copy, Warning } from '@onflow/frw-icons';
 import {
   YStack,
   XStack,
   Text,
-  View,
   OnboardingBackground,
   Button,
   AccountCreationLoadingState,
+  MnemonicGrid,
   WarningCard,
   useTheme,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useCopyToClipboard } from '../hooks';
 
 /**
  * RecoveryPhraseScreen - Generates and displays recovery phrase
@@ -37,7 +39,7 @@ interface PhraseData {
 export function RecoveryPhraseScreen(): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
   const [isGenerating, setIsGenerating] = useState(true);
   const [phraseData, setPhraseData] = useState<PhraseData | null>(null);
@@ -52,6 +54,9 @@ export function RecoveryPhraseScreen(): React.ReactElement {
         logger.info('[RecoveryPhraseScreen] Starting mnemonic generation...');
 
         // Generate 12-word mnemonic (128-bit entropy) using native wallet-core bridge
+        if (!bridge.generateSeedPhrase) {
+          throw new Error('generateSeedPhrase not available');
+        }
         const response = await bridge.generateSeedPhrase(128);
         const phrase = response.mnemonic.trim().split(/\s+/);
 
@@ -117,40 +122,8 @@ export function RecoveryPhraseScreen(): React.ReactElement {
     navigation.goBack();
   };
 
-  const handleCopy = async () => {
-    try {
-      // Copy recovery phrase to clipboard
-      const phraseText = recoveryPhrase.join(' ');
-      const platform = bridge.getPlatform();
-
-      // Use RN clipboard via global injected helper when not web/extension
-      // Check for React Native environment by checking for the global clipboard helper
-      const rnClipboard = (globalThis as any).clipboard;
-      if (platform !== 'extension' && rnClipboard?.setString) {
-        rnClipboard.setString(phraseText);
-        logger.debug('Recovery phrase copied using RN Clipboard');
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(phraseText);
-        logger.debug('Recovery phrase copied using Web Clipboard API');
-      } else {
-        throw new Error('No clipboard API available');
-      }
-
-      setCopiedToClipboard(true);
-      setTimeout(() => setCopiedToClipboard(false), 2000);
-
-      // Show success toast
-      toast.show({
-        title: t('messages.copied'),
-        type: 'success',
-      });
-    } catch (error) {
-      logger.error('Failed to copy recovery phrase:', error);
-      toast.show({
-        title: t('messages.failedToCopy'),
-        type: 'error',
-      });
-    }
+  const handleCopy = () => {
+    copy(recoveryPhrase.join(' '));
   };
 
   const handleRevealPhrase = () => {
@@ -217,97 +190,13 @@ export function RecoveryPhraseScreen(): React.ReactElement {
               </Text>
             </YStack>
 
-            {/* Recovery phrase grid - 2 columns x 6 rows */}
-            <YStack
-              width={320}
-              bg="$bgGlass"
-              rounded="$4"
-              pt="$6"
-              pb="$6"
-              px="$4.5"
-              mb="$4"
-              self="center"
-              position="relative"
-            >
-              {/* Only render words when phrase is revealed */}
-              {isPhraseRevealed ? (
-                <YStack gap="$5">
-                  {/* Generate 6 rows with 2 columns each */}
-                  {Array.from({ length: 6 }, (_, rowIndex) => (
-                    <XStack key={rowIndex} gap="$10" justify="space-between">
-                      {/* Left column */}
-                      {recoveryPhrase[rowIndex * 2] && (
-                        <XStack gap="$2" items="center" flex={1}>
-                          <YStack
-                            width="$8"
-                            height="$8"
-                            bg="$bgGlass"
-                            rounded="$2"
-                            items="center"
-                            justify="center"
-                            shrink={0}
-                          >
-                            <Text fontSize="$5" color="$text">
-                              {rowIndex * 2 + 1}
-                            </Text>
-                          </YStack>
-                          <Text fontSize="$4" color="$text">
-                            {recoveryPhrase[rowIndex * 2]}
-                          </Text>
-                        </XStack>
-                      )}
-
-                      {/* Right column */}
-                      {recoveryPhrase[rowIndex * 2 + 1] && (
-                        <XStack gap="$2" items="center" flex={1}>
-                          <YStack
-                            width="$8"
-                            height="$8"
-                            bg="$bgGlass"
-                            rounded="$2"
-                            items="center"
-                            justify="center"
-                            shrink={0}
-                          >
-                            <Text fontSize="$5" color="$text">
-                              {rowIndex * 2 + 2}
-                            </Text>
-                          </YStack>
-                          <Text fontSize="$4" color="$text">
-                            {recoveryPhrase[rowIndex * 2 + 1]}
-                          </Text>
-                        </XStack>
-                      )}
-                    </XStack>
-                  ))}
-                </YStack>
-              ) : (
-                /* Click to reveal overlay - shown when phrase is not revealed */
-                <YStack
-                  height={340}
-                  items="center"
-                  justify="center"
-                  cursor="pointer"
-                  onPress={handleRevealPhrase}
-                >
-                  <YStack items="center" gap="$3">
-                    <View
-                      width={42}
-                      height={40}
-                      bg="$bgGlass"
-                      rounded="$2"
-                      items="center"
-                      justify="center"
-                    >
-                      <RevealPhrase size={20} color={theme.iconGlass.val} />
-                    </View>
-                    <Text fontSize="$4" fontWeight="500" color="$text" text="center">
-                      {t('onboarding.recoveryPhrase.clickToReveal')}
-                    </Text>
-                  </YStack>
-                </YStack>
-              )}
-            </YStack>
+            {/* Recovery phrase grid */}
+            <MnemonicGrid
+              words={recoveryPhrase}
+              isRevealed={isPhraseRevealed}
+              onReveal={handleRevealPhrase}
+              revealLabel={t('onboarding.recoveryPhrase.clickToReveal')}
+            />
 
             {/* Copy button */}
             <XStack justify="center" mb="$4">
@@ -315,7 +204,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
                 <XStack gap="$3" items="center">
                   <Copy size={24} color={theme.primary.val} />
                   <Text fontSize="$4" fontWeight="700" style={{ color: theme.primary.val }}>
-                    {copiedToClipboard ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
+                    {copied ? t('messages.copied') : t('onboarding.recoveryPhrase.copy')}
                   </Text>
                 </XStack>
               </Button>

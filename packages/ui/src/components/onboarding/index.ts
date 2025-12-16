@@ -3,6 +3,8 @@ export { OnboardingBackground } from './OnboardingBackground';
 export { OnboardingHeader } from './OnboardingHeader';
 export { BackupOptionCard } from './BackupOptionCard';
 export { ImportOptionCard } from './ImportOptionCard';
+export { MnemonicGrid } from './MnemonicGrid';
+export type { MnemonicGridProps } from './MnemonicGrid';
 export { RecoveryPhraseQuestion } from './RecoveryPhraseQuestion';
 export { TipCard } from './TipCard';
 export type { TipCardProps } from './TipCard';

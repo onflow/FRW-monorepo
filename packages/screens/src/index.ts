@@ -16,6 +16,9 @@ export * from './recovery';
 // Export backup screens
 export * from './backup';
 
+// Export hooks
+export * from './hooks';
+
 // Export error fallback components
 export { GenericErrorFallback } from './error/GenericErrorFallback';
 export { NetworkErrorFallback } from './error/NetworkErrorFallback';
