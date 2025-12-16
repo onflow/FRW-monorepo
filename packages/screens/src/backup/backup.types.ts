@@ -26,8 +26,10 @@ export interface BackupState {
  * Props for the BackupTipScreen
  */
 export interface BackupTipScreenProps {
-  /** Callback when user presses continue */
+  /** Callback when user presses Start to proceed to mnemonic display */
   onContinue: () => void;
+  /** Callback when user presses "Not now" to skip */
+  onSkip?: () => void;
   /** Callback when user presses back/close */
   onBack?: () => void;
 }

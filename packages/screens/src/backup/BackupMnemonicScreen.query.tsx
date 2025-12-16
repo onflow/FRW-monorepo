@@ -232,18 +232,18 @@ export function BackupMnemonicScreen({
         <WarningCard
           icon={<Warning size={24} color={theme.iconGlass.val} />}
           title={t('backup.mnemonic.warning.title', {
-            defaultValue: 'Do not share your secret phrase!',
+            defaultValue: 'Do not share your recovery phrase!',
           })}
           description={t('backup.mnemonic.warning.description', {
             defaultValue:
-              'If someone has your secret phrase,\nThey will have full control of your wallet.',
+              'If someone has your recovery phrase, They will have full control of your wallet.',
           })}
         />
 
         {/* Spacer */}
         <YStack flex={1} />
 
-        {/* Complete button - disabled until phrase is revealed */}
+        {/* Done button - disabled until phrase is revealed */}
         <YStack pb="$6">
           <Button
             variant="inverse"
@@ -252,7 +252,7 @@ export function BackupMnemonicScreen({
             disabled={!isPhraseRevealed}
             onPress={handleComplete}
           >
-            {t('backup.mnemonic.complete', { defaultValue: "I've backed up my phrase" })}
+            {t('backup.mnemonic.done', { defaultValue: 'Done' })}
           </Button>
         </YStack>
       </YStack>

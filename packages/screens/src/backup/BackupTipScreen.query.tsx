@@ -1,13 +1,12 @@
 import { navigation } from '@onflow/frw-context';
-import { Shield, Lock, ShieldOff } from '@onflow/frw-icons';
+import { Lock, Key, Pocket } from '@onflow/frw-icons';
 import {
   YStack,
-  XStack,
   Text,
   View,
   OnboardingBackground,
   Button,
-  WarningCard,
+  TipCard,
   useTheme,
 } from '@onflow/frw-ui';
 import React from 'react';
@@ -15,41 +14,23 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * BackupTipScreen - Page 1 of the backup flow
- * Provides guidance and tips before showing the seed phrase
+ * Explains the key rotation/upgrade process before showing the seed phrase
  */
 
 export interface BackupTipScreenProps {
-  /** Callback when user presses continue to proceed to mnemonic display */
+  /** Callback when user presses Start to proceed to mnemonic display */
   onContinue: () => void;
+  /** Callback when user presses "Not now" */
+  onSkip?: () => void;
   /** Callback when user presses back/close */
   onBack?: () => void;
 }
 
-interface TipItemProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-function TipItem({ icon, title, description }: TipItemProps): React.ReactElement {
-  return (
-    <XStack gap="$3" p="$4" rounded="$4" bg="$bgGlass" items="flex-start">
-      <View width={24} height={24} items="center" justify="center" mt="$0.5">
-        {icon}
-      </View>
-      <YStack flex={1} gap="$1">
-        <Text fontSize="$4" fontWeight="700" color="$text">
-          {title}
-        </Text>
-        <Text fontSize="$3" color="$textSecondary" lineHeight={17}>
-          {description}
-        </Text>
-      </YStack>
-    </XStack>
-  );
-}
-
-export function BackupTipScreen({ onContinue, onBack }: BackupTipScreenProps): React.ReactElement {
+export function BackupTipScreen({
+  onContinue,
+  onSkip,
+  onBack,
+}: BackupTipScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -61,71 +42,121 @@ export function BackupTipScreen({ onContinue, onBack }: BackupTipScreenProps): R
     }
   };
 
+  const handleSkip = () => {
+    if (onSkip) {
+      onSkip();
+    }
+  };
+
   return (
     <OnboardingBackground>
       <YStack flex={1} px="$4">
-        {/* Title and description */}
-        <YStack items="center" mb="$6" gap="$2">
+        {/* Title */}
+        <YStack items="center" mb="$4" gap="$2">
           <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight="$8">
-            {t('backup.tip.title', { defaultValue: 'Backup Your\nRecovery Phrase' })}
+            {t('backup.tip.title', { defaultValue: 'Upgrade\nyour account' })}
           </Text>
-          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$4" maxW={300}>
+        </YStack>
+
+        {/* Illustration placeholder - Lock with Flow logo */}
+        <YStack items="center" mb="$4">
+          <View
+            width={160}
+            height={140}
+            bg="$bgGlass"
+            rounded="$6"
+            items="center"
+            justify="center"
+            position="relative"
+          >
+            {/* This would be the illustration - using placeholder for now */}
+            <Lock size={48} color={theme.primary.val} />
+          </View>
+        </YStack>
+
+        {/* Description */}
+        <YStack items="center" mb="$6">
+          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$4" maxW={320}>
             {t('backup.tip.description', {
               defaultValue:
-                'Your recovery phrase is the only way to restore your wallet. Keep it safe and secure.',
+                'Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys',
             })}
+          </Text>
+        </YStack>
+
+        {/* Section title */}
+        <YStack items="center" mb="$4">
+          <Text fontSize="$5" fontWeight="700" color="$text">
+            {t('backup.tip.sectionTitle', { defaultValue: 'What does this mean?' })}
           </Text>
         </YStack>
 
         {/* Tips Section */}
-        <YStack gap="$3" mb="$6">
-          <TipItem
-            icon={<Shield size={24} color={theme.iconGlass.val} />}
-            title={t('backup.tip.writeDown.title', { defaultValue: 'Write it down' })}
-            description={t('backup.tip.writeDown.description', {
-              defaultValue:
-                'Write your recovery phrase on paper and store it in a secure location.',
-            })}
-          />
-
-          <TipItem
+        <YStack gap="$3" mb="$4">
+          <TipCard
             icon={<Lock size={24} color={theme.iconGlass.val} />}
-            title={t('backup.tip.keepSecret.title', { defaultValue: 'Keep it secret' })}
-            description={t('backup.tip.keepSecret.description', {
-              defaultValue:
-                'Never share your recovery phrase with anyone or enter it on any website.',
+            title={t('backup.tip.fullControl.title', {
+              defaultValue: "You'll have full control over your accounts and keys.",
             })}
+            description=""
           />
 
-          <TipItem
-            icon={<ShieldOff size={24} color={theme.iconGlass.val} />}
-            title={t('backup.tip.noScreenshot.title', { defaultValue: 'No screenshots' })}
-            description={t('backup.tip.noScreenshot.description', {
+          <TipCard
+            icon={<Key size={24} color={theme.iconGlass.val} />}
+            title={t('backup.tip.newKey.title', {
               defaultValue:
-                'Do not take screenshots or store your phrase digitally where it could be compromised.',
+                "We'll create a new key to secure your account, removing Blocto's access.",
             })}
+            description=""
+          />
+
+          <TipCard
+            icon={<Pocket size={24} color={theme.iconGlass.val} />}
+            title={t('backup.tip.newPhrase.title', {
+              defaultValue:
+                "We'll create a new recovery phrase which will secure your account going forward.",
+            })}
+            description=""
           />
         </YStack>
 
-        {/* Warning card */}
-        <WarningCard
-          icon={<Shield size={24} color={theme.warning.val} />}
-          title={t('backup.tip.warning.title', { defaultValue: 'Important' })}
-          description={t('backup.tip.warning.description', {
-            defaultValue:
-              'If you lose your recovery phrase, you will not be able to recover your wallet. Flow Wallet cannot help you recover it.',
-          })}
-        />
+        {/* Warning note */}
+        <YStack p="$4" rounded="$4" borderWidth={1} borderColor="$warning" bg="$warning10" mb="$6">
+          <Text fontSize="$3" color="$text" lineHeight={18}>
+            <Text fontWeight="700" color="$text">
+              {t('backup.tip.warning.prefix', { defaultValue: 'Please note: ' })}
+            </Text>
+            {t('backup.tip.warning.description', {
+              defaultValue:
+                'After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations.',
+            })}
+          </Text>
+        </YStack>
 
         {/* Spacer */}
         <YStack flex={1} />
 
-        {/* Continue button */}
-        <YStack pb="$6">
+        {/* Start button */}
+        <YStack pb="$3">
           <Button variant="inverse" size="large" fullWidth onPress={onContinue}>
-            {t('backup.tip.continue', { defaultValue: 'Continue' })}
+            {t('backup.tip.start', { defaultValue: 'Start' })}
           </Button>
         </YStack>
+
+        {/* Not now link */}
+        {onSkip && (
+          <YStack items="center" pb="$6">
+            <Text
+              fontSize="$4"
+              color="$textSecondary"
+              onPress={handleSkip}
+              cursor="pointer"
+              pressStyle={{ opacity: 0.7 }}
+            >
+              {t('backup.tip.notNow', { defaultValue: 'Not now' })}
+            </Text>
+          </YStack>
+        )}
       </YStack>
     </OnboardingBackground>
   );

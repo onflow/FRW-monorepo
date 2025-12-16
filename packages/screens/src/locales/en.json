@@ -391,36 +391,36 @@
   },
   "backup": {
     "tip": {
-      "title": "Backup Your\nRecovery Phrase",
-      "description": "Your recovery phrase is the only way to restore your wallet. Keep it safe and secure.",
-      "writeDown": {
-        "title": "Write it down",
-        "description": "Write your recovery phrase on paper and store it in a secure location."
+      "title": "Upgrade\nyour account",
+      "description": "Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys",
+      "sectionTitle": "What does this mean?",
+      "fullControl": {
+        "title": "You'll have full control over your accounts and keys."
       },
-      "keepSecret": {
-        "title": "Keep it secret",
-        "description": "Never share your recovery phrase with anyone or enter it on any website."
+      "newKey": {
+        "title": "We'll create a new key to secure your account, removing Blocto's access."
       },
-      "noScreenshot": {
-        "title": "No screenshots",
-        "description": "Do not take screenshots or store your phrase digitally where it could be compromised."
+      "newPhrase": {
+        "title": "We'll create a new recovery phrase which will secure your account going forward."
       },
       "warning": {
-        "title": "Important",
-        "description": "If you lose your recovery phrase, you will not be able to recover your wallet. Flow Wallet cannot help you recover it."
+        "prefix": "Please note: ",
+        "description": "After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations."
       },
-      "continue": "Continue"
+      "start": "Start",
+      "notNow": "Not now"
     },
     "mnemonic": {
+      "navTitle": "Create account",
       "title": "Recovery phrase",
       "description": "Write down these words in the right order and store them somewhere safe.",
       "clickToReveal": "Click to reveal phrase",
       "copy": "Copy",
       "warning": {
-        "title": "Do not share your secret phrase!",
-        "description": "If someone has your secret phrase,\nThey will have full control of your wallet."
+        "title": "Do not share your recovery phrase!",
+        "description": "If someone has your recovery phrase, They will have full control of your wallet."
       },
-      "complete": "I've backed up my phrase"
+      "done": "Done"
     }
   }
 }
