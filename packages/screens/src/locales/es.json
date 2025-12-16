@@ -6,12 +6,14 @@
     "selectTokens": "Seleccionar Tokens",
     "sendTokens": "Enviar Tokens",
     "nftDetails": "Detalles NFT",
-    "colorDemo": "Demo de Colores"
+    "colorDemo": "Demo de Colores",
+    "receive": "Recibir Activos"
   },
   "common": {
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "back": "Atrás",
+    "goBack": "Volver",
     "close": "Cerrar",
     "done": "Hecho",
     "next": "Siguiente",
@@ -19,7 +21,9 @@
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",
-    "Search": "Buscar"
+    "Search": "Buscar",
+    "recommended": "Recomendado",
+    "retry": "Reintentar"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -104,7 +108,10 @@
     "sendTokens": "Enviar Tokens",
     "confirmSend": "Confirmar envío",
     "holdToSend": "Mantener para enviar",
-    "unknownAccount": "Cuenta Desconocida"
+    "unknownAccount": "Cuenta Desconocida",
+    "errors": {
+      "amountExceedsBalance": "La cantidad excede el saldo disponible"
+    }
   },
   "messages": {
     "loading": "Cargando...",
@@ -116,7 +123,19 @@
     "failedToLoadRecipients": "Error al cargar destinatarios",
     "copied": "¡Copiado!",
     "addressBookAdded": "Añadido a la libreta de direcciones",
-    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones"
+    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones",
+    "addressCopied": "Dirección copiada al portapapeles",
+    "failedToCopy": "Error al copiar la dirección",
+    "failedToShare": "Error al compartir el código QR"
+  },
+  "receive": {
+    "title": "Recibir Activos",
+    "receiveAccount": "Recibir en la Cuenta",
+    "scanToReceive": "Escanear para recibir",
+    "shareQRCode": "Compartir Código QR",
+    "generatingQR": "Generando código QR...",
+    "noQRCode": "No hay código QR disponible",
+    "evmWarning": "Asegúrese de enviar activos solo a esta dirección en la red Flow EVM. Los activos enviados a esta dirección en otras redes se perderán."
   },
   "buttons": {
     "retry": "Reintentar",
@@ -138,7 +157,25 @@
     "failedToLoadTokens": "Error al cargar tokens",
     "failedToLoadNFTs": "Error al cargar NFTs",
     "transactionPayloadError": "Error al crear la carga de la transacción",
-    "transactionExecutionError": "Error en la ejecución de la transacción"
+    "transactionExecutionError": "Error en la ejecución de la transacción",
+    "generic": {
+      "title": "Algo salió mal",
+      "message": "Encontramos un error inesperado. Por favor, inténtalo de nuevo.",
+      "button": "Intentar de nuevo",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "Problema de conexión",
+      "message": "No se puede conectar a la red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      "button": "Reintentar",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "Error crítico",
+      "message": "Ocurrió un error crítico. Por favor, reinicia la aplicación.",
+      "button": "Reiniciar aplicación",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "Sin título",
@@ -193,6 +230,197 @@
       "surgeActive": "Precio de congestión activo",
       "description": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas, y Flow Wallet no está pagando temporalmente por tu gas. Las tarifas de red actuales son {{multiplier}}× más altas de lo habitual.",
       "holdToAgree": "Mantener para continuar con el precio de congestión"
+    }
+  },
+  "onboarding": {
+    "flowWallet": "Cartera Flow",
+    "getStarted": {
+      "title": "Comienza con Flow Wallet",
+      "subtitle": "Bienvenido a Flow Wallet\nCrea una cuenta para comenzar.",
+      "createAccount": "Crear una nueva cuenta",
+      "signIn": "Ya tengo una cuenta",
+      "agreementText": "Al usar Flow Wallet aceptas los",
+      "termsOfService": "términos de servicio",
+      "and": "y la",
+      "privacyPolicy": "política de privacidad"
+    },
+    "profileType": {
+      "welcomeTitle": "Bienvenido a\nFlow Wallet",
+      "recoveryPhrase": {
+        "title": "Asegurado por una Frase de Recuperación",
+        "description": "Una frase de recuperación es una serie de palabras generadas que protegerán tu cartera."
+      },
+      "secureEnclaveProfile": "Perfil Secure Enclave",
+      "next": "Siguiente"
+    },
+    "importProfile": {
+      "title": "Importar perfil",
+      "subtitle": "Importa tu perfil usando una copia de seguridad.",
+      "previousProfiles": {
+        "title": "Perfiles anteriores",
+        "subtitle": "Se encontraron {{count}} perfiles previamente en este dispositivo"
+      },
+      "deviceBackup": {
+        "title": "Desde Copia de Seguridad del Dispositivo",
+        "subtitle": "Dispositivos móviles o de extensión"
+      },
+      "cloudBackup": {
+        "title": "Desde Copia de Seguridad Multi-Nube",
+        "subtitle": "Google Drive, iCloud o DropBox."
+      },
+      "recoveryPhrase": {
+        "title": "Desde Frase de Recuperación",
+        "subtitle": "Frase de recuperación de 12 palabras."
+      },
+      "anotherMethod": {
+        "title": "Desde otro método",
+        "subtitle": ""
+      }
+    },
+    "importOtherMethods": {
+      "title": "Desde otros métodos",
+      "subtitle": "Importar perfil usando métodos alternativos",
+      "recoveryPhrase": {
+        "title": "Frase de recuperación",
+        "subtitle": "Frase de recuperación de 12 palabras"
+      },
+      "keyStore": {
+        "title": "Almacén de claves",
+        "subtitle": "Importar archivo keystore (Copia de Seguridad Blocto)"
+      },
+      "privateKey": {
+        "title": "Clave privada",
+        "subtitle": "Importar con clave hexadecimal sin procesar"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "Desde copia de seguridad heredada de Google Drive"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "Desde copia de seguridad heredada de iCloud"
+      }
+    },
+    "confirmImportProfile": {
+      "title": "Confirmar qué perfil importar",
+      "emptyTitle": "No se encontraron perfiles",
+      "emptyMessage": "No se encontraron perfiles anteriores en este dispositivo",
+      "importButton": "Importar perfil"
+    },
+    "secureEnclave": {
+      "title": "Avanzado",
+      "cardTitle": "Perfil Seguro",
+      "cardDescription": "Utilizando claves de dispositivo con seguridad de grado de hardware, Flow Wallet en modo seguro es una cartera de hardware ultra segura en la que puedes confiar. Solo disponible para cuentas Cadence en Flow.",
+      "features": {
+        "secureEnclave": "Secure enclave",
+        "hardwareSecurity": "Seguridad de grado de hardware",
+        "noEvm": "Sin soporte EVM"
+      },
+      "next": "Siguiente",
+      "dialog": {
+        "title": "¿Eres un usuario avanzado?",
+        "description": "¿Estás seguro de que deseas crear un Perfil Seguro? Esto limitará el acceso a ciertas funciones y no te dará acceso a una cuenta EVM en Flow.",
+        "holdToConfirm": "Mantén para confirmar"
+      },
+      "creating": {
+        "title": "Creando\ntu cuenta",
+        "configuring": "Configurando cuenta"
+      }
+    },
+    "notificationPreferences": {
+      "headerTitle": "Notificaciones",
+      "title": "Recibe notificaciones push",
+      "subtitle": "Recibe notificaciones cuando tus transferencias, intercambios y aprobaciones se completen.",
+      "enableButton": "Activar notificaciones push",
+      "maybeLater": "Quizás más tarde"
+    },
+    "backupOptions": {
+      "navTitle": "Copia de seguridad",
+      "subtitle": "Selecciona cómo te gustaría hacer una copia de seguridad de tu cuenta para terminar de crear tu cuenta. Puedes cambiar esto más tarde en configuración.",
+      "deviceBackup": {
+        "title": "Crear copia de seguridad del dispositivo",
+        "description": "Usa tu dispositivo como cartera de respaldo para proteger tus activos digitales"
+      },
+      "cloudBackup": {
+        "title": "Crear copia de seguridad en la nube",
+        "description": "Crea una copia de seguridad en la nube con proveedores de confianza como Google Drive e iCloud"
+      },
+      "recoveryPhrase": {
+        "title": "Crear copia de seguridad con frase de recuperación",
+        "description": "Crea una frase de recuperación de 12 palabras"
+      },
+      "skipWarning": {
+        "title": "¿Continuar sin copia de seguridad?",
+        "message": "Sin una copia de seguridad, puede perder el acceso a su billetera si pierde su dispositivo. ¿Está seguro de que desea continuar sin configurar una copia de seguridad?",
+        "confirm": "Continuar sin copia de seguridad"
+      }
+    },
+    "recoveryPhrase": {
+      "navTitle": "Cuenta multicadena",
+      "title": "Frase de recuperación",
+      "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
+      "clickToReveal": "Haz clic para revelar la frase",
+      "copy": "Copiar",
+      "next": "Siguiente",
+      "warning": {
+        "title": "¡No compartas tu frase secreta!",
+        "description": "Si alguien tiene tu frase secreta,\nTendrá control total de tu cartera."
+      },
+      "error": {
+        "title": "Error al generar la frase de recuperación",
+        "unknown": "Ocurrió un error desconocido"
+      }
+    },
+    "confirmRecoveryPhrase": {
+      "navTitle": "Cuenta multicadena",
+      "title": "Confirmar frase",
+      "description": "Por favor selecciona las palabras una por una según su orden.",
+      "selectWord": "Selecciona la palabra en #{{position}}",
+      "finish": "Finalizar",
+      "creating": {
+        "title": "Creando\ntu cuenta",
+        "configuring": "Configurando cuenta"
+      },
+      "error": {
+        "title": "Error al crear la cuenta",
+        "generic": "No se pudo crear la cuenta. Por favor, inténtalo de nuevo.",
+        "server": "Ocurrió un error en el servidor. Por favor, inténtalo más tarde.",
+        "validation": "Datos de cuenta inválidos. Por favor, inténtalo de nuevo."
+      }
+    }
+  },
+  "backup": {
+    "tip": {
+      "title": "Actualiza\ntu cuenta",
+      "description": "Flow Wallet necesita actualizar la seguridad de tu cuenta para eliminar tus claves anteriores de Blocto",
+      "sectionTitle": "¿Qué significa esto?",
+      "fullControl": {
+        "title": "Tendrás control total sobre tus cuentas y claves."
+      },
+      "newKey": {
+        "title": "Crearemos una nueva clave para asegurar tu cuenta, eliminando el acceso de Blocto."
+      },
+      "newPhrase": {
+        "title": "Crearemos una nueva frase de recuperación que asegurará tu cuenta en adelante."
+      },
+      "warning": {
+        "prefix": "Ten en cuenta: ",
+        "description": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
+      },
+      "start": "Comenzar",
+      "notNow": "Ahora no"
+    },
+    "mnemonic": {
+      "navTitle": "Crear cuenta",
+      "title": "Frase de recuperación",
+      "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
+      "clickToReveal": "Haz clic para revelar la frase",
+      "copy": "Copiar",
+      "warning": {
+        "title": "¡No compartas tu frase de recuperación!",
+        "description": "Si alguien tiene tu frase de recuperación, tendrá control total de tu cartera."
+      },
+      "done": "Hecho"
     }
   }
 }
