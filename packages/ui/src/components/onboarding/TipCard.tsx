@@ -10,6 +10,8 @@ export interface TipCardProps {
   title: string;
   /** Description text (optional) */
   description?: string;
+  /** Whether to show a separator line below */
+  showSeparator?: boolean;
   /** Optional margin bottom */
   mb?: string | number;
 }
@@ -18,43 +20,46 @@ export interface TipCardProps {
  * TipCard - Reusable card component for displaying tips/info with an icon
  * Used in backup flow and other informational screens
  * Supports title-only mode when description is empty or not provided
+ * Optional separator line between items
  */
-export function TipCard({ icon, title, description, mb }: TipCardProps): React.ReactElement {
+export function TipCard({
+  icon,
+  title,
+  description,
+  showSeparator = false,
+  mb,
+}: TipCardProps): React.ReactElement {
   const hasDescription = description && description.length > 0;
 
   return (
-    <XStack
-      gap="$3"
-      p="$4"
-      rounded="$4"
-      bg="$bgGlass"
-      items={hasDescription ? 'flex-start' : 'center'}
-      mb={mb}
-    >
-      <View
-        width={24}
-        height={24}
-        items="center"
-        justify="center"
-        mt={hasDescription ? '$0.5' : undefined}
-      >
-        {icon}
-      </View>
-      <YStack flex={1} gap={hasDescription ? '$1' : undefined}>
-        <Text
-          fontSize="$4"
-          fontWeight={hasDescription ? '700' : '400'}
-          color="$text"
-          lineHeight={hasDescription ? undefined : 20}
+    <YStack mb={mb as any}>
+      <XStack gap="$3" py="$3" items={hasDescription ? 'flex-start' : 'center'}>
+        <View
+          width={24}
+          height={24}
+          items="center"
+          justify="center"
+          mt={hasDescription ? '$0.5' : undefined}
         >
-          {title}
-        </Text>
-        {hasDescription && (
-          <Text fontSize="$3" color="$textSecondary" lineHeight={17}>
-            {description}
+          {icon}
+        </View>
+        <YStack flex={1} gap={hasDescription ? '$1' : undefined}>
+          <Text
+            fontSize="$4"
+            fontWeight={hasDescription ? '700' : '400'}
+            color={hasDescription ? '$text' : '$textSecondary'}
+            lineHeight={hasDescription ? undefined : 20}
+          >
+            {title}
           </Text>
-        )}
-      </YStack>
-    </XStack>
+          {hasDescription && (
+            <Text fontSize="$3" color="$textSecondary" lineHeight={17}>
+              {description}
+            </Text>
+          )}
+        </YStack>
+      </XStack>
+      {showSeparator && <View height={1} bg="$borderGlass" />}
+    </YStack>
   );
 }

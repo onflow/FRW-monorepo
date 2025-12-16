@@ -3,10 +3,10 @@ import { Lock, Key, Pocket } from '@onflow/frw-icons';
 import {
   YStack,
   Text,
-  View,
   OnboardingBackground,
   Button,
   TipCard,
+  ShieldAnimation,
   useTheme,
 } from '@onflow/frw-ui';
 import React from 'react';
@@ -58,20 +58,9 @@ export function BackupTipScreen({
           </Text>
         </YStack>
 
-        {/* Illustration placeholder - Lock with Flow logo */}
+        {/* Shield Animation - same as ProfileTypeSelectionScreen */}
         <YStack items="center" mb="$4">
-          <View
-            width={160}
-            height={140}
-            bg="$bgGlass"
-            rounded="$6"
-            items="center"
-            justify="center"
-            position="relative"
-          >
-            {/* This would be the illustration - using placeholder for now */}
-            <Lock size={48} color={theme.primary.val} />
-          </View>
+          <ShieldAnimation width={200} height={180} autoPlay={true} loop={true} />
         </YStack>
 
         {/* Description */}
@@ -92,13 +81,13 @@ export function BackupTipScreen({
         </YStack>
 
         {/* Tips Section */}
-        <YStack gap="$3" mb="$4">
+        <YStack mb="$4">
           <TipCard
             icon={<Lock size={24} color={theme.iconGlass.val} />}
             title={t('backup.tip.fullControl.title', {
               defaultValue: "You'll have full control over your accounts and keys.",
             })}
-            description=""
+            showSeparator
           />
 
           <TipCard
@@ -107,7 +96,7 @@ export function BackupTipScreen({
               defaultValue:
                 "We'll create a new key to secure your account, removing Blocto's access.",
             })}
-            description=""
+            showSeparator
           />
 
           <TipCard
@@ -116,7 +105,6 @@ export function BackupTipScreen({
               defaultValue:
                 "We'll create a new recovery phrase which will secure your account going forward.",
             })}
-            description=""
           />
         </YStack>
 
