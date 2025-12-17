@@ -56,7 +56,7 @@ export interface WalletAccountsResponse {
 
 export interface WalletProfile {
   name: string;
-  avatar: string;
+  avatar?: string;
   uid: string;
   accounts: WalletAccount[];
 }
@@ -159,14 +159,15 @@ export interface SPResponse {
  * Initial route configuration for onboarding flow
  * Determines which screen to show when launching the React Native app
  */
-export type InitialRoute =
-  | 'GetStarted'
-  | 'ProfileTypeSelection'
-  | 'ImportProfile'
-  | 'SelectTokens'
-  | 'SendTo'
-  | 'SendTokens'
-  | 'Home';
+export enum InitialRoute {
+  GET_STARTED = 'GetStarted',
+  PROFILE_TYPE_SELECTION = 'ProfileTypeSelection',
+  IMPORT_PROFILE = 'ImportProfile',
+  SELECT_TOKENS = 'SelectTokens',
+  SEND_TO = 'SendTo',
+  SEND_TOKENS = 'SendTokens',
+  HOME = 'Home',
+}
 
 /**
  * Available native screen identifiers for Android/iOS

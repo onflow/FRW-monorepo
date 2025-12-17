@@ -36,11 +36,18 @@ export const encodeContractCallData = (
     // Encode function call data
     callData = iface.encodeFunctionData('safeTransferFrom', [sender, receiver, id]);
   } else if (type === 'erc1155') {
-    // todo
-  } else {
-    // todo
+    const abi = [
+      'function safeTransferFrom(address from, address to, uint256 tokenId, uint256 amount, bytes data)',
+    ];
+    const iface = new Interface(abi);
+    callData = iface.encodeFunctionData('safeTransferFrom', [
+      sender,
+      receiver,
+      id,
+      amount,
+      '0x', // Empty data parameter
+    ]);
   }
-
   return callData;
 };
 
@@ -74,14 +81,12 @@ export const convertAssetsToCalldata = (
     if (address === '0x0000000000000000000000000000000000000000') {
       calldatas.push('0x');
       addresses.push(receiver);
-      values.push(parseUnits(amount.toString()).toString());
+      values.push(amount);
     } else {
       calldatas.push(encodeContractCallData('erc20', receiver, amount, sender));
-      values.push('0');
+      values.push('0.0');
       addresses.push(address);
     }
-
-    values.push(parseUnits(amount.toString()).toString());
   }
 
   for (const asset of erc721) {

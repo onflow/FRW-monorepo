@@ -10,8 +10,8 @@ import { convertAssetsToCalldata } from './utils';
 export const migrationTransaction = async (
   cadenceService: CadenceService,
   assets: MigrationAssetsData,
-  receiver: string,
-  sender: string
+  sender: string,
+  receiver: string
 ): Promise<any> => {
   if (!validateEvmAddress(receiver)) {
     throw new Error('Invalid receiver address');
