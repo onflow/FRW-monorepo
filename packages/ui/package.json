@@ -26,7 +26,6 @@
     "@tamagui/theme-builder": "^1.132.20",
     "@tamagui/web": "^1.132.20",
     "bignumber.js": "^9.1.2",
-    "dompurify": "^3.3.1",
     "lottie-web": "^5.12.2",
     "tamagui": "^1.132.20"
   },
@@ -39,6 +38,7 @@
     "@types/node": "^22.11.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "dompurify": "^3.3.1",
     "eslint": "^9.31.0",
     "eslint-plugin-storybook": "9.1.1",
     "react": "19.0.0",

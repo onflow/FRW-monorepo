@@ -69,6 +69,7 @@ type NativeScreenName =
   | 'keyStoreRestore'
   | 'privateKeyRestore'
   | 'googleDriveRestore'
+  | 'icloudRestore'
   | 'multiRestore';
 
 // Compile-time sync validation
@@ -117,6 +118,9 @@ export interface Spec extends TurboModule {
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
+  // Profile management - recovery flow
+  getRecoverableProfiles(): Promise<WalletProfilesResponse>;
+  switchToProfile(userId: string): Promise<void>;
   // Device info method
   getDeviceId(): string;
   // Toast methods

@@ -279,6 +279,11 @@
     },
     "importOtherMethods": {
       "title": "Desde otros métodos",
+      "subtitle": "Importar perfil usando métodos alternativos",
+      "recoveryPhrase": {
+        "title": "Frase de recuperación",
+        "subtitle": "Frase de recuperación de 12 palabras"
+      },
       "keyStore": {
         "title": "Almacén de claves",
         "subtitle": "Importar archivo keystore (Copia de Seguridad Blocto)"
@@ -295,6 +300,12 @@
         "title": "iCloud",
         "subtitle": "Desde copia de seguridad heredada de iCloud"
       }
+    },
+    "confirmImportProfile": {
+      "title": "Confirmar qué perfil importar",
+      "emptyTitle": "No se encontraron perfiles",
+      "emptyMessage": "No se encontraron perfiles anteriores en este dispositivo",
+      "importButton": "Importar perfil"
     },
     "secureEnclave": {
       "title": "Avanzado",

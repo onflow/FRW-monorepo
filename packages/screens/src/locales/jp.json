@@ -272,7 +272,7 @@
         "title": "リカバリーフレーズから",
         "subtitle": "12単語のリカバリーフレーズ。"
       },
-      "otherMethod": {
+      "anotherMethod": {
         "title": "別の方法から",
         "subtitle": "キーストア、秘密鍵、またはリカバリーフレーズを使用してプロフィールをインポートします。"
       }
@@ -280,6 +280,10 @@
     "importOtherMethods": {
       "title": "別の方法から",
       "subtitle": "プロフィールをインポートする方法を選択してください。",
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズ",
+        "subtitle": "12単語のリカバリーフレーズ"
+      },
       "keyStore": {
         "title": "キーストア",
         "subtitle": "キーストアファイルは、パスワードで暗号化されたファイル形式のウォレットです。"
@@ -296,6 +300,12 @@
         "title": "iCloud",
         "subtitle": "iCloudからバックアップをインポートします。"
       }
+    },
+    "confirmImportProfile": {
+      "title": "インポートするプロフィールを確認",
+      "emptyTitle": "プロフィールが見つかりません",
+      "emptyMessage": "このデバイスに以前のプロフィールが見つかりませんでした",
+      "importButton": "プロフィールをインポート"
     },
     "secureEnclave": {
       "title": "高度な設定",
