@@ -16,3 +16,4 @@ export * from './Platform';
 export * from './utils/string';
 export * from './query/QueryDomain';
 export * from './Errors';
+export * from './Migration';
