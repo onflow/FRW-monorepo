@@ -147,6 +147,53 @@ access(all) fun main(addr: Address): StorageInfo {
   }
 
 
+  public async addAndRevokeKeys(publicKeys: string[], revokeKeyIndexs: number[]) {
+    const code = `
+import Crypto
+
+transaction(publicKeys: [String], revokeKeyIndexs: [Int]) {
+    prepare(signer: auth(Keys) &Account) {
+
+      for publicKey in publicKeys {
+        let signatureAlgorithm = SignatureAlgorithm.ECDSA_secp256k1
+        let hashAlgorithm = HashAlgorithm.SHA3_256
+        let weight = 1000.0
+
+        let key = PublicKey(
+            publicKey: publicKey.decodeHex(),
+            signatureAlgorithm: signatureAlgorithm
+        )
+
+        signer.keys.add(
+            publicKey: key,
+            hashAlgorithm: hashAlgorithm,
+            weight: weight
+        )
+      }
+      
+      for revokeKeyIndex in revokeKeyIndexs {
+        signer.keys.revoke(keyIndex: revokeKeyIndex)
+      }
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "addAndRevokeKeys",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(publicKeys, t.Array(t.String)),
+        arg(revokeKeyIndexs, t.Array(t.Int)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
   public async checkResource(address: string, flowIdentifier: string): Promise<boolean> {
     const code = `
 import NonFungibleToken from 0xNonFungibleToken
