@@ -370,6 +370,9 @@ dependencies {
     implementation('com.trustwallet:wallet-core:4.3.2') {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
+    // Add wallet-core-proto separately to avoid conflicts
+    // Note: wallet-core-proto may require protobuf-java, so we allow it for this dependency only
+    implementation('com.trustwallet:wallet-core-proto:4.3.2')
 
     // room https://developer.android.google.cn/training/data-storage/room?hl=zh-cn
     implementation "androidx.room:room-runtime:2.6.1"

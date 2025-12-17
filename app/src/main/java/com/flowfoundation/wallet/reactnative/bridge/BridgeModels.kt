@@ -24,7 +24,7 @@ class RNBridge {
         @SerializedName("receive") RECEIVE
     }
 
-    enum class AccountTypeType {
+    enum class ProfileType {
         @SerializedName("full") FULL,
         @SerializedName("hardware") HARDWARE,
         @SerializedName("null") NULL
@@ -108,7 +108,7 @@ class RNBridge {
         @SerializedName("name")
         val name: String,
         @SerializedName("avatar")
-        val avatar: String,
+        val avatar: String?,
         @SerializedName("uid")
         val uid: String,
         @SerializedName("accounts")
@@ -175,8 +175,8 @@ class RNBridge {
         val address: String,
         @SerializedName("username")
         val username: String,
-        @SerializedName("accountType")
-        val accountType: AccountTypeType,
+        @SerializedName("profileType")
+        val profileType: ProfileType,
         @SerializedName("txId")
         val txId: String,
         @SerializedName("error")
@@ -194,8 +194,8 @@ class RNBridge {
         val mnemonic: String,
         @SerializedName("phrase")
         val phrase: String,
-        @SerializedName("accountType")
-        val accountType: AccountTypeType,
+        @SerializedName("profileType")
+        val profileType: ProfileType,
         @SerializedName("error")
         val error: String
     )
@@ -272,23 +272,35 @@ class RNBridge {
         val currency: String?
     )
 
+    enum class InitialRoute(val routeName: String) {
+        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        @SerializedName("ImportProfile") IMPORT_PROFILE("ImportProfile"),
+        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
+        @SerializedName("SendTo") SEND_TO("SendTo"),
+        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
+        @SerializedName("Home") HOME("Home")
+    }
+
     enum class NativeScreenName {
         @SerializedName("multiBackup") MULTI_BACKUP,
         @SerializedName("deviceBackup") DEVICE_BACKUP,
         @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
         @SerializedName("backupOptions") BACKUP_OPTIONS,
         @SerializedName("walletRestore") WALLET_RESTORE,
-        @SerializedName("multiRestore") MULTI_RESTORE,
         @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
         @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
         @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
-        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE
+        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE,
+        @SerializedName("icloudRestore") ICLOUD_RESTORE,
+        @SerializedName("multiRestore") MULTI_RESTORE
     }
 
     enum class ScreenName {
         @SerializedName("GetStarted") GET_STARTED,
         @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION,
         @SerializedName("RecoveryPhrase") RECOVERY_PHRASE,
+        @SerializedName("ConfirmRecoveryPhrase") CONFIRM_RECOVERY_PHRASE,
         @SerializedName("SecureEnclave") SECURE_ENCLAVE,
         @SerializedName("ImportProfile") IMPORT_PROFILE,
         @SerializedName("ImportOtherMethods") IMPORT_OTHER_METHODS,

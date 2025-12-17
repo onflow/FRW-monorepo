@@ -119,8 +119,19 @@ class MainActivity : BaseActivity() {
     override fun onRestart() {
         super.onRestart()
         uiScope {
-            if (isRegistered != isRegistered()) {
-                contentPresenter.checkAndShowContent()
+            // Only check and show content if registration status has changed
+            // This prevents re-launching onboarding when user returns from backgrounding
+            // during the registration flow
+            val currentRegistrationStatus = isRegistered()
+            if (isRegistered != currentRegistrationStatus) {
+                // Registration status changed - update UI accordingly
+                isRegistered = currentRegistrationStatus
+                if (currentRegistrationStatus) {
+                    // User completed registration - show main content
+                    contentPresenter.checkAndShowContent()
+                }
+                // If still not registered, don't re-launch onboarding
+                // The existing onboarding flow will handle it
             }
         }
     }
@@ -151,6 +162,12 @@ class MainActivity : BaseActivity() {
         BugReporting.setOnInvokeCallback(null)
         WindowFrame.release()
         super.onDestroy()
+    }
+
+    fun closeDrawer() {
+        uiScope {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
     }
 
     companion object {

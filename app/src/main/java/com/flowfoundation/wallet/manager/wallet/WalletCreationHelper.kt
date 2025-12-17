@@ -52,13 +52,13 @@ object WalletCreationHelper {
                 // Handle prefix-based accounts
                 !account.prefix.isNullOrBlank() -> {
                     logd(TAG, "Creating prefix-based wallet for account: ${account.userInfo.username}")
-                    createWalletFromPrefix(account.prefix!!)
+                    createWalletFromPrefix(account.prefix!!, isCurrentAccount)
                 }
 
                 // Handle HD wallet (fallback case)
                 else -> {
                     logd(TAG, "Creating HD wallet for account: ${account.userInfo.username}")
-                    createWalletFromHDMnemonic(account.wallet?.id ?: "")
+                    createWalletFromHDMnemonic(account.wallet?.id ?: "", isCurrentAccount)
                 }
             }
 
@@ -130,17 +130,25 @@ object WalletCreationHelper {
         }
 
         // Fallback to private key mode
-        return createWalletFromKeystorePrivateKey(ks, storage)
+        return createWalletFromKeystorePrivateKey(ks, storage, isCurrentAccount)
     }
 
     /**
      * Create wallet from prefix-based key
+     * 
+     * For Secure Enclave (hardware-backed) keys, EOA is disabled since we can't derive
+     * an EOA address from a hardware key.
      */
-    private fun createWalletFromPrefix(prefix: String): Wallet? {
+    private fun createWalletFromPrefix(prefix: String, isCurrentAccount: Boolean): Wallet? {
         val storage = getStorage()
         return try {
             val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
             if (privateKey != null) {
+                // Regular prefix-based key - cannot derive EOA (no mnemonic available)
+                logd(TAG, "Regular prefix-based key found for prefix: $prefix - EOA disabled")
+                if (isCurrentAccount) {
+                    WalletManager.setEoaDisabled(true)
+                }
                 WalletFactory.createKeyWallet(
                     privateKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -151,7 +159,11 @@ object WalletCreationHelper {
                 null
             }
         } catch (e: HardwareBackedKeyException) {
-            logd(TAG, "Hardware-backed key detected for prefix: $prefix")
+            // Secure Enclave (hardware-backed) key - cannot derive EOA
+            logd(TAG, "Hardware-backed key detected for prefix: $prefix - EOA disabled")
+            if (isCurrentAccount) {
+                WalletManager.setEoaDisabled(true)
+            }
             if (e.alias != null) {
                 val provider = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_P256, null)
                 WalletFactory.createProxyWallet(
@@ -168,8 +180,9 @@ object WalletCreationHelper {
 
     /**
      * Create wallet from HD wallet mnemonic
+     * HD wallets can derive EOA addresses.
      */
-    private fun createWalletFromHDMnemonic(accountId: String): Wallet? {
+    private fun createWalletFromHDMnemonic(accountId: String, isCurrentAccount: Boolean): Wallet? {
         val storage = getStorage()
         val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(accountId)
         if (mnemonic != null) {
@@ -179,6 +192,11 @@ object WalletCreationHelper {
                 derivationPath = DERIVATION_PATH,
                 storage = storage
             )
+            // HD wallet (mnemonic-based) - can derive EOA
+            if (isCurrentAccount) {
+                WalletManager.setEoaDisabled(false)
+            }
+            logd(TAG, "HD wallet from mnemonic - EOA enabled")
             return WalletFactory.createKeyWallet(
                 seedPhraseKey,
                 setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -192,14 +210,21 @@ object WalletCreationHelper {
 
     /**
      * Create wallet from keystore private key
+     * Private key imports cannot derive EOA addresses (no mnemonic available).
      */
-    private fun createWalletFromKeystorePrivateKey(ks: KeystoreAddress, storage: StorageProtocol): Wallet {
+    private fun createWalletFromKeystorePrivateKey(ks: KeystoreAddress, storage: StorageProtocol, isCurrentAccount: Boolean): Wallet {
         val keyHex = ks.privateKey.removePrefix("0x")
         require(keyHex.length == 64) { "Private key must be 32-byte hex" }
 
         val key = PrivateKey.create(storage).apply {
             importPrivateKey(keyHex.hexToBytes(), KeyFormat.RAW)
         }
+
+        // Keystore private key import - cannot derive EOA (no mnemonic available)
+        if (isCurrentAccount) {
+            WalletManager.setEoaDisabled(true)
+        }
+        logd(TAG, "Keystore private key import - EOA disabled")
 
         return WalletFactory.createKeyWallet(
             key,

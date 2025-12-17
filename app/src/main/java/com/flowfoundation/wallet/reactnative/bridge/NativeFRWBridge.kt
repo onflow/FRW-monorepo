@@ -3,527 +3,94 @@ package com.flowfoundation.wallet.reactnative.bridge
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.bridge.WritableNativeMap
-import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableMap
-import com.flow.wallet.errors.WalletError
-import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.cache.recentTransactionCache
-import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
-import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.utils.isDev
-import com.flowfoundation.wallet.utils.isTesting
-import com.flowfoundation.wallet.network.API_HOST
-import com.flowfoundation.wallet.network.BASE_HOST
-import com.flowfoundation.wallet.manager.config.isGasFree
-import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.transaction.TransactionState
-import com.flowfoundation.wallet.manager.price.CurrencyManager
-import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
-import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
-import org.onflow.flow.models.TransactionStatus
-import org.onflow.flow.models.hexToBytes
-import org.onflow.flow.models.FlowAddress
-import android.content.Intent
-import android.widget.Toast
-import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
-import com.google.gson.Gson
-import org.json.JSONObject
-import org.json.JSONArray
-import com.flowfoundation.wallet.manager.account.Account
-import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.walletdata.COAWallet
-import com.flowfoundation.wallet.manager.walletdata.ChildWallet
-import com.flowfoundation.wallet.manager.walletdata.EOAWallet
-import com.flowfoundation.wallet.manager.walletdata.FlowWallet
-import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
-import com.flowfoundation.wallet.utils.toast
-import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
-import com.flowfoundation.wallet.utils.logToInstabug
+import com.facebook.react.bridge.WritableNativeArray
+import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.flowfoundation.wallet.reactnative.bridge.handlers.AccountBridgeHandler
+import com.flowfoundation.wallet.reactnative.bridge.handlers.AuthBridgeHandler
+import com.flowfoundation.wallet.reactnative.bridge.handlers.UIBridgeHandler
+import com.flowfoundation.wallet.reactnative.bridge.handlers.UtilsBridgeHandler
+import com.flowfoundation.wallet.reactnative.bridge.handlers.WalletBridgeHandler
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.logw
-import org.web3j.utils.Numeric
-import java.util.Locale
-
-/**
- * Helper to convert string screen name to NativeScreenName enum.
- * Uses Gson SerializedName annotations for mapping.
- */
-private fun nativeScreenFromString(screenName: String): RNBridge.NativeScreenName? {
-    return RNBridge.NativeScreenName.entries.find { enumValue ->
-        val serializedName = enumValue.javaClass.getField(enumValue.name)
-            .getAnnotation(com.google.gson.annotations.SerializedName::class.java)
-            ?.value
-        serializedName == screenName
-    }
-}
+import com.google.gson.Gson
+import org.json.JSONArray
+import org.json.JSONObject
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
     private val TAG = "NativeFRWBridge"
+
+    // Delegate handlers for different bridge functionality domains
+    private val utilsHandler = UtilsBridgeHandler(reactContext)
+    private val accountHandler = AccountBridgeHandler(reactContext)
+    private val authHandler = AuthBridgeHandler(reactContext)
+    private val uiHandler = UIBridgeHandler(reactContext)
+    private val walletHandler = WalletBridgeHandler(reactContext)
+
+    /**
+     * Send an event to React Native JavaScript
+     * @param eventName The name of the event
+     * @param params The parameters to send with the event
+     */
+    fun sendEvent(eventName: String, params: WritableMap?) {
+        try {
+            reactApplicationContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit(eventName, params)
+        } catch (e: Exception) {
+            logd(TAG, "Failed to send event $eventName: ${e.message}")
+        }
+    }
 
     init {
         logd(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
         logd(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
     }
 
-    override fun getName(): String {
-        logd(TAG, "getName() called, returning: $NAME")
-        return NAME
-    }
+    override fun getName(): String = utilsHandler.getName()
 
-    override fun getSelectedAddress(): String? {
-        try {
-            val address = WalletManager.selectedWalletAddress()
-            logd(TAG, "getSelectedAddress() called, returning: $address")
-            return address
-        } catch (e: Exception) {
-            loge(TAG, "getSelectedAddress() error: ${e.message}")
-            return null
-        }
-    }
+    override fun getSelectedAddress(): String? = accountHandler.getSelectedAddress()
 
-    override fun getDebugAddress(): String? {
-        try {
-            val watchAddress = getWatchCollectibleAddress()
-            val resultAddress = watchAddress.ifEmpty {
-              null
-            }
+    override fun getDebugAddress(): String? = accountHandler.getDebugAddress()
 
-            logd(TAG, "getDebugAddress() called, watchAddress: '$watchAddress', returning: " +
-              "$resultAddress")
-            return resultAddress
-        } catch (e: Exception) {
-            loge(TAG, "getDebugAddress() error: ${e.message}")
-            return null
-        }
-    }
+    override fun getNetwork(): String = utilsHandler.getNetwork()
 
-    override fun getNetwork(): String {
-        try {
-            val network = chainNetWorkString()
-            logd(TAG, "getNetwork() called, returning: $network")
-            return network
-        } catch (e: Exception) {
-            loge(TAG, "getNetwork() error: ${e.message}")
-            return "mainnet"
-        }
-    }
+    override fun getJWT(promise: Promise) = authHandler.getJWT(promise)
 
-    override fun getJWT(promise: Promise) {
-        logd(TAG, "getJWT() called")
-        ioScope {
-            try {
-                logd(TAG, "getJWT() - getting Firebase JWT...")
-                val jwt = getFirebaseJwt()
-                logd(TAG, "getJWT() - JWT obtained successfully")
-                uiScope {
-                    promise.resolve(jwt)
-                }
-            } catch (e: Exception) {
-                loge(TAG, "getJWT() - error: ${e.message}")
-                uiScope {
-                    promise.reject("JWT_ERROR", "Failed to get Firebase JWT: ${e.message}", e)
-                }
-            }
-        }
-    }
+    override fun getVersion(): String = utilsHandler.getVersion()
 
-    override fun getVersion(): String {
-        return BuildConfig.VERSION_NAME
-    }
+    override fun getBuildNumber(): String = utilsHandler.getBuildNumber()
 
-    override fun getBuildNumber(): String {
-        return BuildConfig.VERSION_CODE.toString()
-    }
+    override fun getLanguage(): String? = utilsHandler.getLanguage()
 
-    override fun getLanguage(): String? {
-        return Locale.getDefault().language
-    }
+    override fun getDeviceId(): String = utilsHandler.getDeviceId()
 
-    override fun sign(hexData: String, promise: Promise) {
-        ioScope {
-            try {
-                val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw WalletError.InitHDWalletFailed
-                val signature = cryptoProvider.signData(hexData.hexToBytes())
-                if (signature.isNotEmpty()) {
-                    uiScope {
-                        promise.resolve(signature)
-                    }
-                } else {
-                    uiScope {
-                        promise.reject("SIGN_ERROR", "Failed to sign data", null)
-                    }
-                }
-            } catch (e: Exception) {
-                uiScope {
-                    promise.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
-                }
-            }
-        }
-    }
+    override fun sign(hexData: String, promise: Promise) = walletHandler.sign(hexData, promise)
 
-  override fun ethSign(hexData: String?, promise: Promise?) {
-      ioScope {
-          try {
-              logd(TAG, "ethSign() called with hexData: $hexData")
-              val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"))
-              if (signature != null && signature.isNotEmpty()) {
-                  val result = Numeric.toHexString(signature)
-                  logd(TAG, "ethSign() - signature $result")
-                  uiScope {
-                      promise?.resolve(result)
-                  }
-              } else {
-                  uiScope {
-                      promise?.reject("SIGN_ERROR", "Failed to sign data", null)
-                  }
-              }
-          } catch (e: Exception) {
-              uiScope {
-                  promise?.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
-              }
-          }
-      }
-  }
+    override fun ethSign(hexData: String?, promise: Promise?) = walletHandler.ethSign(hexData, promise)
 
-  override fun listenTransaction(txid: String) {
-        val transactionState = TransactionState(
-            transactionId = txid,
-            time = System.currentTimeMillis(),
-            state = TransactionStatus.PENDING.ordinal,
-            type = TransactionState.TYPE_SEND,
-            data = ""
-        )
-        TransactionStateManager.newTransaction(transactionState)
-        uiScope {
-            pushBubbleStack(transactionState)
-        }
-    }
+    override fun listenTransaction(txid: String) = walletHandler.listenTransaction(txid)
 
-    override fun scanQRCode(promise: Promise) {
-        try {
-            // Store the promise for later resolution
-            QRCodeScanManager.setPendingPromise(promise)
+    override fun scanQRCode(promise: Promise) = uiHandler.scanQRCode(promise)
 
-            // Create intent to launch scan activity
-            val intent = Intent(reactApplicationContext, ScanBarcodeActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    override fun getRecentContacts(promise: Promise) = accountHandler.getRecentContacts(promise, ::bridgeModelToWritableMap)
 
-            // Start the activity
-            reactApplicationContext.startActivity(intent)
-        } catch (e: Exception) {
-            uiScope {
-                promise.reject("SCAN_ERROR", "Failed to start QR scanner: ${e.message}", e)
-            }
-        }
-    }
+    override fun getWalletAccounts(promise: Promise) = accountHandler.getWalletAccounts(promise, ::bridgeModelToWritableMap)
 
-    override fun getRecentContacts(promise: Promise) {
-        ioScope {
-            try {
-                val recentData = recentTransactionCache().read()?.contacts
+    override fun closeRN(id: String?) = uiHandler.closeRN(id)
 
-                val bridgeContacts = if (!recentData.isNullOrEmpty()) {
-                    recentData.map { contact ->
-                        RNBridge.Contact(
-                            id = contact.id ?: contact.uniqueId(),
-                            name = contact.name(),
-                            address = contact.address ?: "",
-                            avatar = contact.avatar,
-                            username = contact.username,
-                            contactName = contact.contactName
-                        )
-                    }
-                } else {
-                    emptyList()
-                }
+    override fun getSignKeyIndex(): Double = accountHandler.getSignKeyIndex()
 
-                val response = RNBridge.RecentContactsResponse(contacts = bridgeContacts)
-                val result = bridgeModelToWritableMap(response)
+    override fun isFreeGasEnabled(promise: Promise) = utilsHandler.isFreeGasEnabled(promise)
 
-                uiScope {
-                    promise.resolve(result)
-                }
-            } catch (e: Exception) {
-                val emptyResponse = RNBridge.RecentContactsResponse(contacts = emptyList())
-                val result = bridgeModelToWritableMap(emptyResponse)
-                uiScope {
-                    promise.resolve(result)
-                }
-            }
-        }
-    }
+    override fun getEnv(): WritableMap = utilsHandler.getEnv(::bridgeModelToWritableMap)
 
-    override fun getWalletAccounts(promise: Promise) {
-        ioScope {
-            try {
-                val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
-                val currentAccount = AccountManager.get()
-                val selectedAddress = WalletManager.selectedWalletAddress()
+    override fun getSelectedAccount(promise: Promise) = accountHandler.getSelectedAccount(promise, ::bridgeModelToWritableMap)
 
-                fun isSelected(address: String) = selectedAddress.equals(address, ignoreCase = true)
+    override fun getCurrency(): WritableMap = utilsHandler.getCurrency(::bridgeModelToWritableMap)
 
-                currentAccount?.walletNodes?.forEach { mainWalletNode ->
-                    when (mainWalletNode) {
-                        is FlowWallet -> {
-                            // Only include FlowWallets for the current network
-                            if (mainWalletNode.chainIdString == chainNetWorkString()) {
-                                val flowEmojiInfo = createEmojiInfo(mainWalletNode.address)
-                                val flowWalletBridge = RNBridge.WalletAccount(
-                                    id = mainWalletNode.address,
-                                    name = flowEmojiInfo?.name ?: mainWalletNode.name,
-                                    address = mainWalletNode.address,
-                                    emojiInfo = flowEmojiInfo,
-                                    parentEmoji = null,
-                                    parentAddress = null,
-                                    avatar = null,
-                                    isActive = isSelected(mainWalletNode.address),
-                                    type = RNBridge.AccountType.MAIN,
-                                    balance = null,
-                                    nfts = null
-                                )
-                                bridgeAccounts.add(flowWalletBridge)
-
-                                // Add linked wallets (Child and COA)
-                                mainWalletNode.linkedWallets.forEach { linkedWallet ->
-                                    val linkedEmojiInfo = createEmojiInfo(linkedWallet.address)
-                                    val linkedWalletBridge = RNBridge.WalletAccount(
-                                        id = linkedWallet.address,
-                                        name = linkedEmojiInfo?.name ?: linkedWallet.name,
-                                        address = linkedWallet.address,
-                                        emojiInfo = linkedEmojiInfo,
-                                        parentEmoji = flowEmojiInfo,
-                                        parentAddress = mainWalletNode.address,
-                                        avatar = when (linkedWallet) {
-                                            is ChildWallet -> linkedWallet.icon
-                                            is COAWallet -> null
-                                        },
-                                        isActive = isSelected(linkedWallet.address),
-                                        type = when (linkedWallet) {
-                                            is ChildWallet -> RNBridge.AccountType.CHILD
-                                            is COAWallet -> RNBridge.AccountType.EVM
-                                        },
-                                        balance = null,
-                                        nfts = null
-                                    )
-                                    bridgeAccounts.add(linkedWalletBridge)
-                                }
-                            }
-                        }
-                        is EOAWallet -> {
-                            val eoaEmojiInfo = createEmojiInfo(mainWalletNode.address)
-                            val eoaWalletBridge = RNBridge.WalletAccount(
-                                id = mainWalletNode.address,
-                                name = eoaEmojiInfo?.name ?: mainWalletNode.name,
-                                address = mainWalletNode.address,
-                                emojiInfo = eoaEmojiInfo,
-                                parentEmoji = null,
-                                parentAddress = null,
-                                avatar = null,
-                                isActive = isSelected(mainWalletNode.address),
-                                type = RNBridge.AccountType.EOA,
-                                balance = null,
-                                nfts = null
-                            )
-                            bridgeAccounts.add(eoaWalletBridge)
-                        }
-                    }
-                }
-
-                val response = RNBridge.WalletAccountsResponse(accounts = bridgeAccounts)
-                val result = bridgeModelToWritableMap(response)
-
-                uiScope {
-                    promise.resolve(result)
-                }
-            } catch (e: Exception) {
-                loge(TAG, "getWalletAccounts() error: ${e.message}")
-                e.printStackTrace()
-                val emptyResponse = RNBridge.WalletAccountsResponse(accounts = emptyList())
-                val result = bridgeModelToWritableMap(emptyResponse)
-                uiScope {
-                    promise.resolve(result)
-                }
-            }
-        }
-    }
-
-    override fun closeRN(id: String?) {
-        try {
-            val currentActivity = reactApplicationContext.currentActivity
-            if (currentActivity != null && !currentActivity.isFinishing && !currentActivity.isDestroyed) {
-                // Use runOnUiThread to ensure activity operations run on main thread
-                currentActivity.runOnUiThread {
-                    try {
-                        if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
-                            // Use finishAndRemoveTask() to completely remove the activity from recents
-                            currentActivity.finishAndRemoveTask()
-                        }
-                    } catch (e: Exception) {
-                        println("Failed to finish activity on UI thread: ${e.message}")
-                    }
-                }
-            } else {
-                println("Activity is null, finishing, or destroyed - skipping closeRN")
-            }
-        } catch (e: Exception) {
-            // If finishing activity fails, log error but don't crash
-            println("Failed to close React Native activity: ${e.message}")
-            e.printStackTrace()
-        }
-    }
-
-    override fun getSignKeyIndex(): Double {
-        return try {
-            // Use the same logic as getWalletAccounts() for consistency
-            val address = WalletManager.getCurrentFlowWalletAddress()
-
-            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-
-            if (address.isNullOrBlank() || cryptoProvider == null) {
-                return 0.0
-            }
-
-            // This is a synchronous method, but currentKeyId is suspend
-            // We need to use a blocking call here since the interface expects a synchronous return
-            val keyId = kotlinx.coroutines.runBlocking {
-                FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
-            }
-
-            // Return 0 if no valid key found (-1), otherwise return the key index
-            if (keyId == -1) 0.0 else keyId.toDouble()
-        } catch (e: Exception) {
-            // Return 0 as default key index on any error
-            logw(TAG, "getSignKeyIndex() error: ${e.message}")
-            0.0
-        }
-    }
-
-    override fun isFreeGasEnabled(promise: Promise) {
-        ioScope {
-            try {
-                val isFreeGas = isGasFree()
-                uiScope {
-                    promise.resolve(isFreeGas)
-                }
-            } catch (e: Exception) {
-                uiScope {
-                    promise.reject("FREE_GAS_ERROR", "Failed to get free gas status: ${e.message}", e)
-                }
-            }
-        }
-    }
-
-    override fun getEnv(): WritableMap {
-        val environmentVariables = RNBridge.EnvironmentVariables(
-            NODE_API_URL = BASE_HOST,
-            GO_API_URL = API_HOST,
-            INSTABUG_TOKEN = if (isTesting() || isDev()) {
-                BuildConfig.INSTABUG_RN_TOKEN_DEV
-            } else {
-                BuildConfig.INSTABUG_RN_TOKEN_PROD
-            }
-        )
-
-        return bridgeModelToWritableMap(environmentVariables)
-    }
-
-    override fun getSelectedAccount(promise: Promise) {
-        logd(TAG, "getSelectedAccount() called")
-        ioScope {
-            try {
-                logd(TAG, "getSelectedAccount() - getting selected address...")
-                val selectedAddress = WalletManager.selectedWalletAddress()
-                if (selectedAddress.isEmpty()) {
-                    logw(TAG, "getSelectedAccount() - no selected address found")
-                    uiScope {
-                        promise.reject("NO_SELECTED_ACCOUNT", "No wallet address selected", null)
-                    }
-                    return@ioScope
-                }
-                logd(TAG, "getSelectedAccount() - selected address: $selectedAddress")
-
-                // Determine account type based on address using utility methods
-                val mainAddress = WalletManager.getCurrentFlowWalletAddress()
-
-                val accountType = when {
-                    EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
-                    WalletManager.isChildAccount(selectedAddress) -> RNBridge.AccountType.CHILD
-                    EVMWalletManager.isEOAAddress(selectedAddress) -> RNBridge.AccountType.EOA
-                    else -> RNBridge.AccountType.MAIN
-                }
-
-                val selectedEmojiInfo = createEmojiInfo(selectedAddress)
-                val selectedAccount = RNBridge.WalletAccount(
-                    id = "selected",
-                    name = selectedEmojiInfo?.name ?: "Selected Account",
-                    address = selectedAddress,
-                    emojiInfo = selectedEmojiInfo,
-                    parentEmoji = if (accountType != RNBridge.AccountType.MAIN) createEmojiInfo(mainAddress) else null,
-                    parentAddress = if (accountType != RNBridge.AccountType.MAIN) mainAddress else null,
-                    avatar = null,
-                    isActive = true,
-                    type = accountType,
-                    balance = null,
-                    nfts = null,
-                )
-
-                val result = bridgeModelToWritableMap(selectedAccount)
-                logd(TAG, "getSelectedAccount() - account mapped successfully")
-                uiScope {
-                    promise.resolve(result)
-                }
-            } catch (e: Exception) {
-                loge(TAG, "getSelectedAccount() - error: ${e.message}")
-                e.printStackTrace()
-                uiScope {
-                    promise.reject("SELECTED_ACCOUNT_ERROR", "Failed to get selected account: ${e.message}", e)
-                }
-            }
-        }
-    }
-
-    override fun getCurrency(): WritableMap {
-        return try {
-            val selectedCurrency = selectedCurrency()
-            val currentCurrencyPrice = CurrencyManager.currencyPrice()
-
-            val currency = RNBridge.Currency(
-                name = selectedCurrency.name,
-                symbol = selectedCurrency.symbol,
-                rate = currentCurrencyPrice.toString()
-            )
-
-            bridgeModelToWritableMap(currency)
-        } catch (e: Exception) {
-            // Return default USD currency on error
-            val defaultCurrency = RNBridge.Currency(
-                name = "USD",
-                symbol = "$",
-                rate = "1.0"
-            )
-            bridgeModelToWritableMap(defaultCurrency)
-        }
-    }
-
-    override fun getTokenRate(token: String): String {
-        return try {
-            val fungibleToken = FungibleTokenListManager.getTokenById(token)
-            fungibleToken?.tokenPrice()?.toString() ?: "0.0"
-        } catch (e: Exception) {
-            // Return "0.0" on error
-            "0.0"
-        }
-    }
+    override fun getTokenRate(token: String): String = utilsHandler.getTokenRate(token)
 
     private val gson = Gson()
 
@@ -599,316 +166,40 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
 
-    private suspend fun createWalletProfileFromAccount(account: Account): RNBridge.WalletProfile? {
-        return try {
-            logd(TAG, "createWalletProfileFromAccount() - creating profile for account: ${account.userInfo.username}")
+    override fun getWalletProfiles(promise: Promise) = accountHandler.getWalletProfiles(promise, ::bridgeModelToWritableMap)
 
-            val userInfo = account.userInfo
-            val userId = account.wallet?.id ?: ""
-            val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
-            val currentNetwork = chainNetWorkString()
+    override fun getRecoverableProfiles(promise: Promise) = accountHandler.getRecoverableProfiles(promise, ::bridgeModelToWritableMap)
 
-            // Iterate through wallet nodes for this account
-            account.walletNodes.forEach { node ->
-                when (node) {
-                    is FlowWallet -> {
-                        if (node.chainIdString == currentNetwork) {
-                            val mainEmojiInfo = createEmojiInfo(node.address)
-                            val mainAccount = RNBridge.WalletAccount(
-                                id = node.address,
-                                name = mainEmojiInfo?.name ?: node.name,
-                                address = node.address,
-                                emojiInfo = mainEmojiInfo,
-                                parentEmoji = null,
-                                parentAddress = null,
-                                avatar = null,
-                                isActive = isSelectedWalletAddress(node.address),
-                                type = RNBridge.AccountType.MAIN,
-                                balance = null,
-                                nfts = null,
-                            )
-                            bridgeAccounts.add(mainAccount)
+    override fun switchToProfile(userId: String, promise: Promise) = accountHandler.switchToProfile(userId, promise)
 
-                            // Process linked wallets (Child and COA)
-                            node.linkedWallets.forEach { linked ->
-                                val linkedEmojiInfo = createEmojiInfo(linked.address)
-                                val linkedAccount = RNBridge.WalletAccount(
-                                    id = linked.address,
-                                    name = linkedEmojiInfo?.name ?: linked.name,
-                                    address = linked.address,
-                                    emojiInfo = linkedEmojiInfo,
-                                    parentEmoji = mainEmojiInfo,
-                                    parentAddress = node.address,
-                                    avatar = when (linked) {
-                                        is ChildWallet -> linked.icon
-                                        is COAWallet -> null
-                                    },
-                                    isActive = isSelectedWalletAddress(linked.address),
-                                    type = if (linked is ChildWallet) RNBridge.AccountType.CHILD else RNBridge.AccountType.EVM,
-                                    balance = null,
-                                    nfts = null,
-                                )
-                                bridgeAccounts.add(linkedAccount)
-                            }
-                        }
-                    }
-                    is EOAWallet -> {
-                        val eoaEmojiInfo = createEmojiInfo(node.address)
-                        val eoaAccount = RNBridge.WalletAccount(
-                            id = node.address,
-                            name = eoaEmojiInfo?.name ?: node.name,
-                            address = node.address,
-                            emojiInfo = eoaEmojiInfo,
-                            parentEmoji = null,
-                            parentAddress = null,
-                            avatar = null,
-                            isActive = isSelectedWalletAddress(node.address),
-                            type = RNBridge.AccountType.EOA,
-                            balance = null,
-                            nfts = null,
-                        )
-                        bridgeAccounts.add(eoaAccount)
-                    }
-                }
-            }
+    override fun showToast(title: String, message: String?, type: String?, duration: Double?) = uiHandler.showToast(title, message, type, duration)
 
-            if (bridgeAccounts.isEmpty()) {
-                 logw(TAG, "createWalletProfileFromAccount() - no accounts found for profile")
-                 return null
-            }
+    override fun hideToast(id: String) = uiHandler.hideToast(id)
 
-            RNBridge.WalletProfile(
-                name = account.userInfo.nickname,
-                avatar = account.userInfo.avatar,
-                uid = userId,
-                accounts = bridgeAccounts
-            )
-        } catch (e: Exception) {
-            loge(TAG, "createWalletProfileFromAccount() - error creating profile for account: ${account.userInfo.username}, error: ${e.message}")
-            null
-        }
-    }
+    override fun clearAllToasts() = uiHandler.clearAllToasts()
 
-    override fun getWalletProfiles(promise: Promise) {
-        logd(TAG, "getWalletProfiles() called")
-        ioScope {
-            try {
-                logd(TAG, "getWalletProfiles() - getting all accounts from AccountManager...")
+    override fun registerSecureTypeAccount(username: String, promise: Promise) = authHandler.registerSecureTypeAccount(username, promise, ::sendEvent)
 
-                // Get all accounts from AccountManager
-                val accounts = AccountManager.list()
-                logd(TAG, "getWalletProfiles() - found ${accounts.size} accounts")
+    override fun initSecureEnclaveWallet(txId: String, promise: Promise) = authHandler.initSecureEnclaveWallet(txId, promise)
 
-                val profiles = mutableListOf<RNBridge.WalletProfile>()
+    override fun generateSeedPhrase(strength: Double?, promise: Promise) = authHandler.generateSeedPhrase(strength, promise, ::bridgeModelToWritableMap)
 
-                // Create wallet profile for each account
-                accounts.forEach { account ->
-                    createWalletProfileFromAccount(account)?.let { profile ->
-                        profiles.add(profile)
-                        logd(TAG, "getWalletProfiles() - added profile for account: ${account
-                          .userInfo.username}")
-                    }
-                }
+    // TODO: Add getRegistrationSignature to TypeScript spec and regenerate codegen to make this a bridge method
+    fun getRegistrationSignature(mnemonic: String, promise: Promise) = authHandler.getRegistrationSignature(mnemonic, promise)
 
-                val response = RNBridge.WalletProfilesResponse(profiles = profiles)
-                val result = bridgeModelToWritableMap(response)
+    override fun signInWithCustomToken(customToken: String, promise: Promise) = authHandler.signInWithCustomToken(customToken, promise)
 
-                logd(TAG, "getWalletProfiles() - ${profiles.size} profiles mapped successfully")
-                uiScope {
-                    promise.resolve(result)
-                }
-            } catch (e: Exception) {
-                loge(TAG, "getWalletProfiles() - error: ${e.message}")
-                e.printStackTrace()
+    override fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise) = authHandler.saveMnemonic(mnemonic, customToken, txId, username, promise, ::sendEvent)
 
-                // Return empty profiles on error to maintain consistency
-                val emptyResponse = RNBridge.WalletProfilesResponse(profiles = emptyList())
-                val result = bridgeModelToWritableMap(emptyResponse)
-                uiScope {
-                    promise.resolve(result)
-                }
-            }
-        }
-    }
+    override fun requestNotificationPermission(promise: Promise) = utilsHandler.requestNotificationPermission(promise)
 
-  override fun getDeviceId(): String? {
-    TODO("Not yet implemented")
-  }
+    override fun checkNotificationPermission(promise: Promise) = utilsHandler.checkNotificationPermission(promise)
 
-  // Toast methods
-    override fun showToast(title: String, message: String?, type: String?, duration: Double?) {
-        try {
-            // Concatenate title and message
-            val displayMessage = when {
-                title.isNotEmpty() && !message.isNullOrEmpty() -> "$title: $message"
-                title.isNotEmpty() -> title
-                !message.isNullOrEmpty() -> message
-                else -> ""
-            }
-            if (displayMessage.isEmpty()) {
-                logw(TAG, "showToast() skipped - empty message")
-                return
-            }
+    override fun logToNative(level: String, message: String, args: ReadableArray) = utilsHandler.logToNative(level, message, args)
 
-            val toastDuration = duration ?: 2000.0
+    override fun setScreenSecurityLevel(level: String) = utilsHandler.setScreenSecurityLevel(level)
 
-            logd(TAG, "showToast() called - title: $title, message: $message, type:" +
-              " ${type ?: "info"}, duration: ${toastDuration}ms")
-
-            // Convert duration from milliseconds to boolean (long or short)
-            val isLongDuration = toastDuration > 2000.0
-
-            uiScope {
-                toast(msg = displayMessage, duration = if (isLongDuration) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
-            }
-        } catch (e: Exception) {
-            loge(TAG, "showToast() error: ${e.message}")
-            e.printStackTrace()
-        }
-    }
-
-    override fun hideToast(id: String) {
-        try {
-            logd(TAG, "hideToast() called - id: $id")
-            // Android native toast typically auto-dismiss, but we can implement custom logic here
-            // For now, this is mainly for API compatibility
-        } catch (e: Exception) {
-            loge(TAG, "hideToast() error: ${e.message}")
-        }
-    }
-
-    override fun clearAllToasts() {
-        try {
-            logd(TAG, "clearAllToasts() called")
-            // Android native toast typically auto-dismiss, but we can implement custom logic here
-            // For now, this is mainly for API compatibility
-        } catch (e: Exception) {
-            loge(TAG, "clearAllToasts() error: ${e.message}")
-        }
-    }
-
-    override fun logToNative(level: String, message: String, args: ReadableArray) {
-        try {
-            // Convert ReadableArray to String array
-            val stringArgs = Array(args.size()) { i ->
-                args.getString(i) ?: ""
-            }
-
-            // Delegate to the centralized Instabug logging system in Log.kt
-            logToInstabug(level, message, *stringArgs)
-        } catch (e: Exception) {
-            // Fallback with just the message if args conversion fails
-            logToInstabug(level, message)
-        }
-    }
-
-  override fun registerSecureTypeAccount(
-    username: String?,
-    promise: Promise?
-  ) {
-    TODO("Not yet implemented")
-  }
-
-  override fun initSecureEnclaveWallet(
-    txId: String?,
-    promise: Promise?
-  ) {
-    TODO("Not yet implemented")
-  }
-
-  override fun generateSeedPhrase(
-    strength: Double?,
-    promise: Promise?
-  ) {
-    TODO("Not yet implemented")
-  }
-
-  override fun signInWithCustomToken(
-    customToken: String?,
-    promise: Promise?
-  ) {
-    TODO("Not yet implemented")
-  }
-
-  override fun saveMnemonic(
-    mnemonic: String?,
-    customToken: String?,
-    txId: String?,
-    username: String?,
-    promise: Promise?
-  ) {
-    TODO("Not yet implemented")
-  }
-
-  override fun requestNotificationPermission(promise: Promise?) {
-    TODO("Not yet implemented")
-  }
-
-  override fun checkNotificationPermission(promise: Promise?) {
-    TODO("Not yet implemented")
-  }
-
-  override fun setScreenSecurityLevel(level: String?) {
-    TODO("Not yet implemented")
-  }
-
-  override fun launchNativeScreen(screenName: String, params: String?) {
-        logd(TAG, "launchNativeScreen() called - screen: $screenName")
-
-        try {
-            val currentActivity = reactApplicationContext.currentActivity
-            if (currentActivity == null) {
-                logw(TAG, "launchNativeScreen() - no current activity")
-                return
-            }
-
-            val screen = nativeScreenFromString(screenName)
-            if (screen == null) {
-                loge(TAG, "launchNativeScreen() - unknown screen: $screenName")
-                return
-            }
-
-            val intent = when (screen) {
-                RNBridge.NativeScreenName.DEVICE_BACKUP -> {
-                    Intent(currentActivity, com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity::class.java)
-                }
-                RNBridge.NativeScreenName.RECOVERY_PHRASE_RESTORE -> {
-                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
-                        putExtra("extra_restore_seed_phrase", true)
-                    }
-                }
-                RNBridge.NativeScreenName.KEY_STORE_RESTORE -> {
-                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java)
-                }
-                RNBridge.NativeScreenName.PRIVATE_KEY_RESTORE -> {
-                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
-                        putExtra("extra_restore_private_key", true)
-                    }
-                }
-                RNBridge.NativeScreenName.GOOGLE_DRIVE_RESTORE -> {
-                    Intent(currentActivity, com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity::class.java)
-                }
-                RNBridge.NativeScreenName.MULTI_RESTORE -> {
-                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity::class.java)
-                }
-                // Backup screens - not currently used for launching but defined in the enum
-                RNBridge.NativeScreenName.MULTI_BACKUP,
-                RNBridge.NativeScreenName.SEED_PHRASE_BACKUP,
-                RNBridge.NativeScreenName.BACKUP_OPTIONS,
-                RNBridge.NativeScreenName.WALLET_RESTORE -> {
-                    logw(TAG, "launchNativeScreen() - screen $screenName not yet implemented")
-                    Intent(currentActivity, WalletRestoreActivity::class.java)
-                }
-            }
-
-            // Add flag to indicate launched from React Native
-            intent.putExtra("from_react_native", true)
-            currentActivity.startActivity(intent)
-        } catch (e: Exception) {
-            loge(TAG, "launchNativeScreen() error: ${e.message}")
-            e.printStackTrace()
-        }
-    }
+    override fun launchNativeScreen(screenName: String, params: String?) = uiHandler.launchNativeScreen(screenName, params)
 
     companion object {
         const val NAME = "NativeFRWBridge"
