@@ -8,7 +8,7 @@ export const converHexToArr = (callData: string): number[] => {
   const hexString = callData.slice(2); // Remove '0x' prefix
   const dataArray = new Uint8Array(hexString.length / 2);
   for (let i = 0; i < hexString.length; i += 2) {
-    dataArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+    dataArray[i / 2] = parseInt(hexString.substring(i, i + 2), 16);
   }
   const regularArray = Array.from(dataArray);
 
