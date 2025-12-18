@@ -411,7 +411,7 @@
       "notNow": "Not now"
     },
     "mnemonic": {
-      "navTitle": "Create account",
+      "navTitle": "Upgrade account",
       "title": "Recovery phrase",
       "description": "Write down these words in the right order and store them somewhere safe.",
       "clickToReveal": "Click to reveal phrase",
