@@ -47,6 +47,8 @@ interface ConfirmRecoveryPhraseScreenProps {
         signAlgo: number;
       };
       drivepath?: string;
+      /** Pre-derived EVM/EOA address for faster display */
+      evmAddress?: string;
     };
   };
   // React Navigation also passes navigation prop, but we use the abstraction
@@ -78,6 +80,7 @@ export function ConfirmRecoveryPhraseScreen({
   const mnemonic = route?.params?.mnemonic || '';
   const accountKey = route?.params?.accountKey;
   const drivepath = route?.params?.drivepath;
+  const evmAddress = route?.params?.evmAddress;
 
   useEffect(() => {
     logger.info('[ConfirmRecoveryPhraseScreen] Enabling screenshot protection');
@@ -99,9 +102,10 @@ export function ConfirmRecoveryPhraseScreen({
     if (navigation && typeof navigation === 'object' && 'setOptions' in navigation) {
       const nav = navigation as { setOptions: (options: Record<string, unknown>) => void };
       if (isCreatingAccount) {
-        // Hide back button during account creation
+        // Hide back button and disable swipe gesture during account creation
         nav.setOptions({
           headerLeft: () => null,
+          gestureEnabled: false,
         });
       }
       // Note: We don't restore the back button here because:
@@ -258,9 +262,16 @@ export function ConfirmRecoveryPhraseScreen({
 
       // After transaction is sealed, save mnemonic and notify native to init wallet with txId
       // This allows native Wallet SDK to properly initialize with the account
+      // Pass evmAddress if available for faster EOA display
       try {
         if (bridge.saveMnemonic) {
-          await bridge.saveMnemonic(mnemonic, registerResponse.custom_token, txId, username);
+          await bridge.saveMnemonic(
+            mnemonic,
+            registerResponse.custom_token,
+            txId,
+            username,
+            evmAddress
+          );
         }
       } catch (saveError: unknown) {
         throw new FRWError(

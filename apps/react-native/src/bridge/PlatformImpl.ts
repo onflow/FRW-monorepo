@@ -429,10 +429,11 @@ class PlatformImpl implements PlatformSpec {
     mnemonic: string,
     customToken: string,
     txId: string,
-    username: string
+    username: string,
+    evmAddress?: string
   ): Promise<void> {
     try {
-      await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId, username);
+      await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId, username, evmAddress);
     } catch (error) {
       this.log(
         'error',

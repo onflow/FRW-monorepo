@@ -137,12 +137,14 @@ export interface AccountKey {
 
 /**
  * Response from seed phrase generation
- * Contains mnemonic, derived account key, and BIP44 derivation path
+ * Contains mnemonic, derived account key, BIP44 derivation path, and optional pre-derived EVM address
  */
 export interface SeedPhraseGenerationResponse {
   mnemonic: string;
   accountKey: AccountKey;
   drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
 }
 
 /**
@@ -153,6 +155,8 @@ export interface SPResponse {
   mnemonic: string;
   accountKey: AccountKey;
   drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
 }
 
 /**
