@@ -156,17 +156,22 @@ const Dashboard = () => {
       </div>
       {/* Dialog demo */}
       {/* <UpdateDialog
-        visible={showPopup}
+        visible={true}
         title={popupTitle}
         htmlContent={`
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              📣 What's new
-            </div>
-          </div>
-        `}
-        readMoreText="Read more"
-        readMoreUrl="https://wallet.flow.com/post/eoa-support-comes-to-flow-wallet-extension"
+<h2>whats new</h2>\n<blockquote>\n<p>1345 quote</p>\n</blockquote>\n<p><strong>this is a blob text</strong></p>\n<ul>\n<li>one\n<ul>\n<li>tow\n<ul>\n<li>three</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n<table>\n    <tr>\n        <td>Foo</td>\n    </tr>\n</table>\n<div >\n123\n</div>\n<hr>\n<div>\n\t<style>\n\t\t.main-title { font-size: 24px; font-weight: bold; } .info-section { display:\n\t\tflex; align-items: flex-start; margin-bottom: 20px; } .icon { width: 40px;\n\t\theight: 40px; background-color: #333; border-radius: 8px; display: flex;\n\t\tjustify-content: center; align-items: center; margin-right: 12px; flex-shrink:\n\t\t0; } .icon-content { font-size: 20px; color: #FFFFFF; } .info-text { flex:\n\t\t1; } .info-title { font-size: 16px; font-weight: bold; margin-bottom: 4px;\n\t\t} .info-desc { font-size: 14px; line-height: 1.4; }\n\t</style>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t��\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tWhat's new\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tIf you already use an Ethereum wallet like MetaMask or Rainbow, you can\n\t\t\t\timport those same accounts to access everything on Flow.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t😈\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tFlow-native apps for your accounts\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tGet instant access to DeFi, marketplaces, and experiences on Flow.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<img class=\"icon\" src=\"https://raw.githubusercontent.com/onflow/assets/refs/heads/main/tokens/registry/0x717dae2baf7656be9a9b01dee31d571a9d4c9579/logo.png\">\n\t\t</img>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tAlready using Flow Wallet?\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tYou’ll see a new &quot;EVM&quot; account alongside your Cadence accounts\n\t\t\t\tand your now legacy &quot;EVM Flow&quot; account.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t��\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tWhy this matters\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tYour new EVM account is super-powered by Flow, unlocking gasless transactions,\n\t\t\t\tMEV-resilience and more.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n<hr>\n<ul>\n<li>ui</li>\n<li>ux</li>\n<li>dev</li>\n</ul>\n
+`}
+        actions={[
+          {
+            text: 'Read More',
+            url: 'https://raw.githubusercontent.com/caosbad/logs/refs/heads/main/template.md',
+            type: 'external',
+            style: {
+              bgColor: '#007AFF',
+              textColor: '#FFFFFF',
+            },
+          },
+        ]}
         buttonText={chrome.i18n.getMessage('OK')}
         onButtonClick={handleClosePopup}
         onClose={handleClosePopup}
