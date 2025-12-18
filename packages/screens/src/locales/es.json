@@ -388,5 +388,39 @@
         "validation": "Datos de cuenta inválidos. Por favor, inténtalo de nuevo."
       }
     }
+  },
+  "backup": {
+    "tip": {
+      "title": "Actualiza\ntu cuenta",
+      "description": "Flow Wallet necesita actualizar la seguridad de tu cuenta para eliminar tus claves anteriores de Blocto",
+      "sectionTitle": "¿Qué significa esto?",
+      "fullControl": {
+        "title": "Tendrás control total sobre tus cuentas y claves."
+      },
+      "newKey": {
+        "title": "Crearemos una nueva clave para asegurar tu cuenta, eliminando el acceso de Blocto."
+      },
+      "newPhrase": {
+        "title": "Crearemos una nueva frase de recuperación que asegurará tu cuenta en adelante."
+      },
+      "warning": {
+        "prefix": "Ten en cuenta: ",
+        "description": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
+      },
+      "start": "Comenzar",
+      "notNow": "Ahora no"
+    },
+    "mnemonic": {
+      "navTitle": "Actualizar cuenta",
+      "title": "Frase de recuperación",
+      "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
+      "clickToReveal": "Haz clic para revelar la frase",
+      "copy": "Copiar",
+      "warning": {
+        "title": "¡No compartas tu frase de recuperación!",
+        "description": "Si alguien tiene tu frase de recuperación, tendrá control total de tu cartera."
+      },
+      "done": "Hecho"
+    }
   }
 }
