@@ -1,10 +1,9 @@
 import { Interface } from '@ethersproject/abi';
-import { parseUnits } from '@ethersproject/units';
 import type { TransactionDatas, MigrationAssetsData } from '@onflow/frw-types';
 import { isValidEthereumAddress } from '@onflow/frw-utils';
 import { validateEvmAddress } from '@onflow/frw-workflow';
 
-export const converHexToArr = (callData: string): number[] => {
+export const convertHexToArr = (callData: string): number[] => {
   const hexString = callData.slice(2); // Remove '0x' prefix
   const dataArray = new Uint8Array(hexString.length / 2);
   for (let i = 0; i < hexString.length; i += 2) {
@@ -27,7 +26,7 @@ export const encodeContractCallData = (
   if (type === 'erc20') {
     const abi = ['function transfer(address to, uint256 value)'];
     const iface = new Interface(abi);
-    const valueBig = parseUnits(amount.toString());
+    const valueBig = amount.toString();
     callData = iface.encodeFunctionData('transfer', [receiver, valueBig]);
   } else if (type === 'erc721') {
     const abi = ['function safeTransferFrom(address from, address to, uint256 tokenId)'];
@@ -112,9 +111,9 @@ export const convertAssetsToCalldata = (
     calldatas.push(encodeContractCallData('erc1155', receiver, Number(amount), sender, id));
   }
 
-  // conver data to arr
+  // convert data to arr
   for (const data of calldatas) {
-    datas.push(converHexToArr(data));
+    datas.push(convertHexToArr(data));
   }
   return {
     addresses,
