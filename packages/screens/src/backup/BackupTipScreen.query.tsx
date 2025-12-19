@@ -1,5 +1,5 @@
 import { navigation } from '@onflow/frw-context';
-import { Lock, Key, Pocket } from '@onflow/frw-icons';
+import { LockBackup, LinkBackup, Settings } from '@onflow/frw-icons';
 import {
   YStack,
   Text,
@@ -8,6 +8,7 @@ import {
   TipCard,
   ShieldAnimation,
   useTheme,
+  View,
 } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -65,7 +66,7 @@ export function BackupTipScreen({
 
         {/* Description */}
         <YStack items="center" mb="$6">
-          <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$4" maxW={320}>
+          <Text fontSize="$4" color="$text" text="center" maxW={320}>
             {t('backup.tip.description', {
               defaultValue:
                 'Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys',
@@ -80,10 +81,13 @@ export function BackupTipScreen({
           </Text>
         </YStack>
 
+        {/* Separator */}
+        <View height={1} bg="$borderGlass" />
+
         {/* Tips Section */}
         <YStack mb="$4">
           <TipCard
-            icon={<Lock size={24} color={theme.iconGlass.val} />}
+            icon={<LockBackup size={20} color={theme.primary.val} />}
             title={t('backup.tip.fullControl.title', {
               defaultValue: "You'll have full control over your accounts and keys.",
             })}
@@ -91,7 +95,7 @@ export function BackupTipScreen({
           />
 
           <TipCard
-            icon={<Key size={24} color={theme.iconGlass.val} />}
+            icon={<LinkBackup size={20} color={theme.primary.val} />}
             title={t('backup.tip.newKey.title', {
               defaultValue:
                 "We'll create a new key to secure your account, removing Blocto's access.",
@@ -100,16 +104,17 @@ export function BackupTipScreen({
           />
 
           <TipCard
-            icon={<Pocket size={24} color={theme.iconGlass.val} />}
+            icon={<Settings size={20} color={theme.primary.val} />}
             title={t('backup.tip.newPhrase.title', {
               defaultValue:
                 "We'll create a new recovery phrase which will secure your account going forward.",
             })}
+            showSeparator
           />
         </YStack>
 
         {/* Warning note */}
-        <YStack p="$4" rounded="$4" borderWidth={1} borderColor="$warning" bg="$warning10" mb="$6">
+        <YStack p="$4" rounded="$4" borderWidth={1} borderColor="$primary" bg="$primary10" mb="$6">
           <Text fontSize="$3" color="$text" lineHeight={18}>
             <Text fontWeight="700" color="$text">
               {t('backup.tip.warning.prefix', { defaultValue: 'Please note: ' })}
@@ -125,7 +130,7 @@ export function BackupTipScreen({
         <YStack flex={1} />
 
         {/* Start button */}
-        <YStack pb="$3">
+        <YStack pb="$2">
           <Button variant="inverse" size="large" fullWidth onPress={onContinue}>
             {t('backup.tip.start', { defaultValue: 'Start' })}
           </Button>
