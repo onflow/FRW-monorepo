@@ -355,6 +355,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               options={{
                 headerTitle: t('onboarding.recoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
@@ -366,6 +367,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               options={{
                 headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
@@ -377,6 +379,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               options={{
                 headerTitle: '', // No title text
                 headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
