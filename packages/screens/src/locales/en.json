@@ -389,6 +389,24 @@
       }
     }
   },
+  "migration": {
+    "keystore": {
+      "title": "Upgrade\nyour account",
+      "description": "Flow Wallet needs to upgrade the security of your account. This process will take just a few seconds to complete.",
+      "sectionTitle": "What does this mean?",
+      "tip1": {
+        "title": "You'll have full control over your accounts and keys. Your backups will not be affected."
+      },
+      "tip2": {
+        "title": "We'll create a new hardware key to secure your account, improving account security."
+      },
+      "tip3": {
+        "title": "Nothing changes, you'll continue to benefit from the hardware grade security of Flow Wallet."
+      },
+      "start": "Start",
+      "notNow": "Not now"
+    }
+  },
   "backup": {
     "tip": {
       "title": "Upgrade\nyour account",
