@@ -97,7 +97,7 @@ export function ConfirmRecoveryPhraseScreen({
     };
   }, []);
 
-  // Hide back button during account creation
+  // Hide back button and prevent back navigation during account creation
   useLayoutEffect(() => {
     if (navigation && typeof navigation === 'object' && 'setOptions' in navigation) {
       const nav = navigation as { setOptions: (options: Record<string, unknown>) => void };
@@ -112,6 +112,30 @@ export function ConfirmRecoveryPhraseScreen({
       // 1. When isCreatingAccount becomes false, the user is typically navigated away
       // 2. The navigator's default/initial headerLeft configuration remains active
     }
+  }, [isCreatingAccount, navigation]);
+
+  // Prevent Android back button during account creation
+  useEffect(() => {
+    if (!navigation || typeof navigation !== 'object' || !('addListener' in navigation)) {
+      return;
+    }
+
+    const nav = navigation as {
+      addListener: (event: string, callback: (e: any) => void) => () => void;
+    };
+
+    // Only add listener when creating account
+    if (!isCreatingAccount) {
+      return;
+    }
+
+    const unsubscribe = nav.addListener('beforeRemove', (e: any) => {
+      // Prevent default behavior of leaving the screen during account creation
+      e.preventDefault();
+      logger.info('[ConfirmRecoveryPhraseScreen] Blocked back navigation during account creation');
+    });
+
+    return unsubscribe;
   }, [isCreatingAccount, navigation]);
 
   // Generate verification questions based on actual recovery phrase - memoized to prevent regeneration

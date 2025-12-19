@@ -16,7 +16,7 @@ import {
   useTheme,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface SecureEnclaveScreenProps {
@@ -49,6 +49,30 @@ export function SecureEnclaveScreen({
         });
       }
     }
+  }, [showLoadingState, navProp]);
+
+  // Prevent Android back button during account creation
+  useEffect(() => {
+    if (!navProp || typeof navProp !== 'object' || !('addListener' in navProp)) {
+      return;
+    }
+
+    const nav = navProp as {
+      addListener: (event: string, callback: (e: any) => void) => () => void;
+    };
+
+    // Only add listener when creating account
+    if (!showLoadingState) {
+      return;
+    }
+
+    const unsubscribe = nav.addListener('beforeRemove', (e: any) => {
+      // Prevent default behavior of leaving the screen during account creation
+      e.preventDefault();
+      logger.info('[SecureEnclaveScreen] Blocked back navigation during account creation');
+    });
+
+    return unsubscribe;
   }, [showLoadingState, navProp]);
 
   const handleNext = () => {
