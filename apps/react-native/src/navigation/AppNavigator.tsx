@@ -5,6 +5,22 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  SendToScreen,
+  ReceiveScreen,
+  // Onboarding screens
+  GetStartedScreen,
+  ProfileTypeSelectionScreen,
+  RecoveryPhraseScreen,
+  ConfirmRecoveryPhraseScreen,
+  SecureEnclaveScreen,
+  NotificationPreferencesScreen,
+  // Recovery screens
+  ImportProfileScreen,
+  ImportOtherMethodsScreen,
+  ConfirmImportProfileScreen,
+  // Backup screens
+  BackupTipScreen,
+  BackupMnemonicScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -52,6 +68,31 @@ export type RootStackParamList = {
     amount?: string;
     token?: Record<string, unknown>;
     selectedNFTs?: Record<string, unknown>[];
+  };
+  // Onboarding screens
+  GetStarted: undefined;
+  ProfileTypeSelection: undefined;
+  RecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: {
+    mnemonic: string;
+    accountKey: {
+      publicKey: string;
+      signAlgo: number;
+      hashAlgo: number;
+    };
+  };
+  SecureEnclave: undefined;
+  NotificationPreferences: {
+    accountType?: string;
+  };
+  // Recovery screens
+  ImportProfile: undefined;
+  ImportOtherMethods: undefined;
+  ConfirmImportProfile: undefined;
+  // Backup screens
+  BackupTip: undefined;
+  BackupMnemonic: {
+    seedPhrase: string[];
   };
 };
 
@@ -278,6 +319,77 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: t('navigation.sending'),
               }}
             />
+          </Stack.Group>
+
+          {/* Blocto Backup screens */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          >
+            <Stack.Screen
+              name="BackupTip"
+              options={{
+                headerTitle: '',
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <BackupTipScreen
+                  onContinue={() => {
+                    logger.info(
+                      '[BackupTipScreen] Continue pressed - navigating to BackupMnemonic'
+                    );
+                    // TODO: Generate or fetch actual seed phrase from native bridge
+                    const testSeedPhrase = [
+                      'abandon',
+                      'ability',
+                      'able',
+                      'about',
+                      'above',
+                      'absent',
+                      'absorb',
+                      'abstract',
+                      'absurd',
+                      'abuse',
+                      'access',
+                      'accident',
+                    ];
+                    nav.navigate('BackupMnemonic', { seedPhrase: testSeedPhrase });
+                  }}
+                  onSkip={() => {
+                    logger.info('[BackupTipScreen] Skip pressed');
+                    // TODO: Handle skip action - close the flow
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="BackupMnemonic"
+              options={{
+                headerTitle: t('backup.mnemonic.navTitle', { defaultValue: 'Recovery Phrase' }),
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <BackupMnemonicScreen
+                  seedPhrase={route.params.seedPhrase}
+                  onComplete={() => {
+                    logger.info('[BackupMnemonicScreen] Backup complete');
+                    // TODO: Handle completion - close the flow or navigate to success
+                  }}
+                  onBack={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
           </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>
