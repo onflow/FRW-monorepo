@@ -12,14 +12,21 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isFreeGasPreferenceEnable
 import com.flowfoundation.wallet.utils.isTesting
+import com.flowfoundation.wallet.utils.isWrapEOATxWithCadenceEnable
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
+import com.google.gson.reflect.TypeToken
 
 suspend fun isGasFree() = AppConfig.isFreeGas() && isFreeGasPreferenceEnable()
+
+suspend fun isWrapEOATxWithCadence() = AppConfig.wrapEOATransaction() && isWrapEOATxWithCadenceEnable()
 
 object AppConfig {
 
     private var config: Config? = null
     private var flowAddressRegistry: FlowAddressRegistry? = null
+
+    private var coaDomains: List<String> = emptyList()
 
     fun isFreeGas() = config().getFeatures().freeGas
 
@@ -41,6 +48,8 @@ object AppConfig {
 
     fun coverBridgeFee() = config().getFeatures().coverBridgeFee ?: false
 
+    fun wrapEOATransaction() = config().getFeatures().wrapEOATxWithCadence ?: false
+
     fun bridgeFeePayer() = if (isTestnet()) config().getBridgeFeePayer().testnet else config().getBridgeFeePayer().mainnet
 
     fun addressRegistry(network: Int): Map<String, String> {
@@ -54,6 +63,7 @@ object AppConfig {
         ioScope {
             reloadConfig()
             reloadNotification()
+            reloadCOADomains()
             reloadFlowAddressRegistry()
         }
     }
@@ -84,10 +94,19 @@ object AppConfig {
 
     private fun reloadConfig(): Config {
         val text = Firebase.remoteConfig.getString("a_config")
+        logd("AppConfig", "reloadConfig: $text")
         safeRun {
             config = Gson().fromJson(text, Config::class.java)
         }
         return config!!
+    }
+
+    private fun reloadCOADomains(): List<String> {
+        val text = Firebase.remoteConfig.getString("coa_domains")
+        safeRun {
+          coaDomains = Gson().fromJson(text, object : TypeToken<List<String>>() {}.type)
+        }
+        return coaDomains
     }
 
     private fun reloadFlowAddressRegistry(): FlowAddressRegistry {
@@ -101,6 +120,12 @@ object AppConfig {
     private fun config() = config ?: reloadConfig()
 
     private fun flowAddressRegistry() = flowAddressRegistry ?: reloadFlowAddressRegistry()
+
+    fun isCOADomain(url: String): Boolean {
+        return coaDomains.any { coaDomain ->
+            url.contains(coaDomain, ignoreCase = true)
+        }
+    }
 }
 
 private data class Config(
@@ -196,6 +221,8 @@ private data class Features(
     val txWarning: Boolean?,
     @SerializedName("cover_bridge_fee")
     val coverBridgeFee: Boolean?,
+    @SerializedName("wrap_eoa_tx_with_cadence")
+    val wrapEOATxWithCadence: Boolean?,
 )
 
 private data class Payer(

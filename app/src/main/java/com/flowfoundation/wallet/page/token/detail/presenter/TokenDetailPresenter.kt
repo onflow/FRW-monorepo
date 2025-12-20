@@ -63,7 +63,10 @@ class TokenDetailPresenter(
             ivVerified.setVisible(token.isVerified)
             ivVerifiedSecondary.setVisible(token.isVerified)
             clVerifiedTip.setVisible(token.isVerified.not())
-            btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
+            btnReceive.setOnClickListener {
+                // Launch React Native Receive screen
+                ReactNativeActivity.launch(activity, RNBridge.ScreenType.RECEIVE)
+            }
             btnSwap.setOnClickListener {
                 val url = if (WalletManager.isEVMAccountSelected()) {
                     "https://swap.flow.com/"

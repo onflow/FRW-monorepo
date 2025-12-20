@@ -3,6 +3,8 @@ package com.flowfoundation.wallet.page.main
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -10,6 +12,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
@@ -18,11 +21,10 @@ import com.flowfoundation.wallet.page.component.deeplinking.PendingActionHelper
 import com.flowfoundation.wallet.page.component.deeplinking.executePendingDeepLink
 import com.flowfoundation.wallet.page.dialog.common.RootDetectedDialog
 import com.flowfoundation.wallet.page.main.model.MainContentModel
-import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
-import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
-import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.page.main.presenter.setupDrawerLayoutCompose
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
+import com.flowfoundation.wallet.page.restore.mnemonic.RestoreMnemonicActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.isNewVersion
@@ -37,13 +39,18 @@ import com.instabug.library.Instabug
 class MainActivity : BaseActivity() {
 
     private lateinit var contentPresenter: MainContentPresenter
-    private lateinit var drawerLayoutPresenter: DrawerLayoutPresenter
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
 
     private var isRegistered = false
     private val targetTabIndex by lazy { intent.getIntExtra(EXTRA_TARGET_TAB, -1) }
+
+    private val restoreMnemonicReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            RestoreMnemonicActivity.launch(this@MainActivity)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,10 +68,11 @@ class MainActivity : BaseActivity() {
             windowInsets
         }
         contentPresenter = MainContentPresenter(this, binding)
-        drawerLayoutPresenter = DrawerLayoutPresenter(binding.drawerLayout, binding.drawerLayoutContent)
+        setupDrawerLayoutCompose(binding.drawerLayout)
+        binding.drawerLayout.close()
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java].apply {
             changeTabLiveData.observe(this@MainActivity) { contentPresenter.bind(MainContentModel(onChangeTab = it)) }
-            openDrawerLayoutLiveData.observe(this@MainActivity) { drawerLayoutPresenter.bind(MainDrawerLayoutModel(openDrawer = it)) }
+            openDrawerLayoutLiveData.observe(this@MainActivity) { binding.drawerLayout.open() }
         }
         uiScope {
             isRegistered = isRegistered()
@@ -72,7 +80,7 @@ class MainActivity : BaseActivity() {
                 firebaseInformationCheck()
             }
             contentPresenter.checkAndShowContent()
-            
+
             // Navigate to target tab if specified
             if (targetTabIndex >= 0) {
                 val targetTab = HomeTab.values().find { it.index == targetTabIndex }
@@ -85,6 +93,7 @@ class MainActivity : BaseActivity() {
             NotificationPermissionActivity.launch(this)
         }
         configurationInstabugBugReport()
+        LocalBroadcastManager.getInstance(this).registerReceiver(restoreMnemonicReceiver, IntentFilter("ACTION_RESTORE_MNEMONIC"))
     }
 
     private fun configurationInstabugBugReport() {
@@ -110,10 +119,20 @@ class MainActivity : BaseActivity() {
     override fun onRestart() {
         super.onRestart()
         uiScope {
-            if (isRegistered != isRegistered()) {
-                contentPresenter.checkAndShowContent()
+            // Only check and show content if registration status has changed
+            // This prevents re-launching onboarding when user returns from backgrounding
+            // during the registration flow
+            val currentRegistrationStatus = isRegistered()
+            if (isRegistered != currentRegistrationStatus) {
+                // Registration status changed - update UI accordingly
+                isRegistered = currentRegistrationStatus
+                if (currentRegistrationStatus) {
+                    // User completed registration - show main content
+                    contentPresenter.checkAndShowContent()
+                }
+                // If still not registered, don't re-launch onboarding
+                // The existing onboarding flow will handle it
             }
-            drawerLayoutPresenter.bind(MainDrawerLayoutModel(refreshData = true))
         }
     }
 
@@ -136,12 +155,19 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(restoreMnemonicReceiver)
         if (INSTANCE == this) {
             INSTANCE = null
         }
         BugReporting.setOnInvokeCallback(null)
         WindowFrame.release()
         super.onDestroy()
+    }
+
+    fun closeDrawer() {
+        uiScope {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
     }
 
     companion object {

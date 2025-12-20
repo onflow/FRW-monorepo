@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
+import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
@@ -61,7 +62,6 @@ import org.onflow.flow.models.TransactionStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 import org.onflow.flow.models.DomainTag
@@ -70,6 +70,7 @@ import com.google.gson.reflect.TypeToken
 import java.util.HashMap
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.utils.storeWalletPassword
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -198,7 +199,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
     @OptIn(ExperimentalStdlibApi::class)
     fun restoreWallet() {
-        if (WalletManager.wallet()?.walletAddress() == restoreAddress) {
+        if (WalletManager.getCurrentFlowWalletAddress() == restoreAddress) {
             logd("MultiRestore", "Wallet already logged in for address: $restoreAddress")
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity()
@@ -517,7 +518,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         if (resp.data?.customToken.isNullOrBlank()) {
                             callback.invoke(false)
                         } else {
-                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                            firebaseLogin(resp.data.customToken) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     setMultiBackupCreated()
@@ -547,14 +548,22 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                         logd("MultiRestore", "Stored multi-restore metadata for ${mnemonicList.size} mnemonics with completion time")
 
                                         // Add the account to AccountManager
-                                        AccountManager.add(
-                                            Account(
-                                                userInfo = service.userInfo().data,
-                                                prefix = storedPrefix
-                                            ),
-                                            firebaseUid()
+                                        val userInfo = service.userInfo().data
+                                        val userId = firebaseUid() ?: ""
+                                        val walletData = WalletListData(
+                                            id = userId,
+                                            username = userInfo.username,
+                                            wallets = null
                                         )
                                         clearUserCache()
+                                        AccountManager.add(
+                                            Account(
+                                                userInfo = userInfo,
+                                                prefix = storedPrefix,
+                                                wallet = walletData
+                                            ),
+                                            userId
+                                        )
                                         logd("MultiRestore", "Added account to AccountManager with prefix: $storedPrefix")
 
                                         // Complete the login process
@@ -694,18 +703,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         try {
             // Create a simple dummy KeyPair to pass the null check in sign()
             // The actual signing uses hdWallet.getKeyByCurve() internally, not this keyPair
-            val keyGenerator = java.security.KeyPairGenerator.getInstance("EC")
-            keyGenerator.initialize(256)
-            val dummyKeyPair = keyGenerator.generateKeyPair()
-
-            logd("MultiRestore", "Created dummy KeyPair for null check")
-
-            // Create SeedPhraseKey with the dummy keyPair
+            // Create SeedPhraseKey
             val seedPhraseKey = SeedPhraseKey(
                 mnemonicString = mnemonic,
                 passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",
-                keyPair = dummyKeyPair,
+                derivationPath = DERIVATION_PATH,
                 storage = storage
             )
 
