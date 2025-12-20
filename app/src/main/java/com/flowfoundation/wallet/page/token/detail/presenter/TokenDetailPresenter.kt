@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollect
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.toRNBridgeTokenModel
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel

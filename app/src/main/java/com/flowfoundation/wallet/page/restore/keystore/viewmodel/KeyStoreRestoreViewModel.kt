@@ -57,7 +57,6 @@ import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
 import org.json.JSONObject
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
