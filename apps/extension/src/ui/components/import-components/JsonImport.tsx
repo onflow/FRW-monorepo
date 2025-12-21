@@ -17,6 +17,7 @@ import { consoleError } from '@/shared/utils';
 import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
+import PdfPasswordDialog from '@/ui/components/PopupModal/pdfPasswordDialog';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
@@ -55,6 +56,14 @@ const JsonImport = ({
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isTextareaDragOver, setIsTextareaDragOver] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [pendingPdfFile, setPendingPdfFile] = useState<File | null>(null);
+  const [pendingUpdatePassword, setPendingUpdatePassword] = useState<
+    ((password: string) => void) | null
+  >(null);
+  const [pendingPdfPromise, setPendingPdfPromise] = useState<Promise<string | null> | null>(null);
+  const [isPasswordIncorrect, setIsPasswordIncorrect] = useState(false);
+  const [isPasswordProtectedPdf, setIsPasswordProtectedPdf] = useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const hasJsonStructure = (str: string): boolean => {
@@ -158,54 +167,132 @@ const JsonImport = ({
     return result;
   };
 
-  const extractJsonFromPdf = async (file: File): Promise<string | null> => {
+  const extractJsonFromPdf = async (file: File, password?: string): Promise<string | null> => {
     try {
       setIsPdfLoading(true);
       const arrayBuffer = await file.arrayBuffer();
       const typedArray = new Uint8Array(arrayBuffer);
 
-      const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
-      let extractedText = '';
+      // Create loading task with optional password
+      const loadingTask = pdfjsLib.getDocument({
+        data: typedArray,
+        ...(password && { password }),
+      });
 
-      // Extract text from all pages
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item) => ('str' in item ? item.str : '')).join(' ');
-        extractedText += pageText;
-      }
+      // Handle password-protected PDFs
+      const pdfPromise = new Promise<string | null>((resolve, reject) => {
+        let passwordCallback: ((password: string) => void) | null = null;
+        let passwordReason: number | null = null;
 
-      // Try to find JSON in the extracted text
-      // Look for JSON object pattern (starts with { and ends with })
-      const jsonMatch = extractedText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const jsonString = jsonMatch[0];
-        // Validate it's valid JSON
-        try {
-          JSON.parse(jsonString);
-          // Prettify the JSON before returning
-          return JSON.stringify(JSON.parse(jsonString), null, 2);
-        } catch {
-          // If the matched string isn't valid JSON, try the whole text
-          const trimmedText = extractedText.trim();
-          if (hasJsonStructure(trimmedText)) {
-            return JSON.stringify(JSON.parse(trimmedText), null, 2);
+        loadingTask.onPassword = (updatePassword: (password: string) => void, reason: number) => {
+          // Store the callback and reason for later use
+          passwordCallback = updatePassword;
+          passwordReason = reason;
+
+          // reason: 1 = NEED_PASSWORD, 2 = INCORRECT_PASSWORD
+          if (reason === pdfjsLib.PasswordResponses.NEED_PASSWORD) {
+            // Password required - store file, updatePassword function, and promise, show dialog
+            setPendingPdfFile(file);
+            setIsPasswordProtectedPdf(true); // Mark as password-protected
+            setPendingUpdatePassword(() => (pwd: string) => {
+              if (passwordCallback) {
+                passwordCallback(pwd);
+              }
+            });
+            setPendingPdfPromise(pdfPromise);
+            setIsPasswordIncorrect(false);
+            setShowPasswordDialog(true);
+            setIsPdfLoading(false);
+            // Don't reject here - wait for user to provide password
+          } else if (reason === pdfjsLib.PasswordResponses.INCORRECT_PASSWORD) {
+            // Incorrect password - show dialog with error, keep updatePassword function and promise
+            setPendingPdfFile(file);
+            setIsPasswordProtectedPdf(true); // Mark as password-protected
+            setPendingUpdatePassword(() => (pwd: string) => {
+              if (passwordCallback) {
+                passwordCallback(pwd);
+              }
+            });
+            setPendingPdfPromise(pdfPromise);
+            setIsPasswordIncorrect(true);
+            setShowPasswordDialog(true);
+            setIsPdfLoading(false);
+            // Don't reject here - wait for user to provide correct password
           }
-        }
-      }
+        };
 
-      // If no JSON pattern found, check if the whole text is JSON
-      const trimmedText = extractedText.trim();
-      if (hasJsonStructure(trimmedText)) {
-        return JSON.stringify(JSON.parse(trimmedText), null, 2);
-      }
+        loadingTask.promise
+          .then(async (pdf) => {
+            try {
+              let extractedText = '';
 
-      return null;
+              // Extract text from all pages
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items
+                  .map((item) => ('str' in item ? item.str : ''))
+                  .join(' ');
+                extractedText += pageText;
+              }
+
+              // Try to find JSON in the extracted text
+              // Look for JSON object pattern (starts with { and ends with })
+              const jsonMatch = extractedText.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const jsonString = jsonMatch[0];
+                // Validate it's valid JSON
+                try {
+                  JSON.parse(jsonString);
+                  // Prettify the JSON before returning
+                  const result = JSON.stringify(JSON.parse(jsonString), null, 2);
+                  setIsPdfLoading(false);
+                  resolve(result);
+                  return;
+                } catch {
+                  // If the matched string isn't valid JSON, try the whole text
+                  const trimmedText = extractedText.trim();
+                  if (hasJsonStructure(trimmedText)) {
+                    const result = JSON.stringify(JSON.parse(trimmedText), null, 2);
+                    setIsPdfLoading(false);
+                    resolve(result);
+                    return;
+                  }
+                }
+              }
+
+              // If no JSON pattern found, check if the whole text is JSON
+              const trimmedText = extractedText.trim();
+              if (hasJsonStructure(trimmedText)) {
+                const result = JSON.stringify(JSON.parse(trimmedText), null, 2);
+                setIsPdfLoading(false);
+                resolve(result);
+              } else {
+                setIsPdfLoading(false);
+                resolve(null);
+              }
+            } catch (error) {
+              setIsPdfLoading(false);
+              reject(error);
+            }
+          })
+          .catch((error) => {
+            // Password errors are handled by onPassword callback
+            if (error.name === 'PasswordException') {
+              // This will be handled by onPassword callback
+              return;
+            }
+            consoleError('Error extracting JSON from PDF:', error);
+            setIsPdfLoading(false);
+            reject(error);
+          });
+      });
+
+      return pdfPromise;
     } catch (error) {
       consoleError('Error extracting JSON from PDF:', error);
-      return null;
-    } finally {
       setIsPdfLoading(false);
+      return null;
     }
   };
 
@@ -223,19 +310,155 @@ const JsonImport = ({
     }
   };
 
-  const handlePdfFile = async (file: File) => {
+  const handlePdfFile = async (file: File, password?: string) => {
     if (file.type !== 'application/pdf') {
       setErrorMessage('Please select a valid PDF file');
       return;
     }
 
-    const extractedJson = await extractJsonFromPdf(file);
-    if (extractedJson) {
-      setJson(extractedJson);
-      checkJSONImport(extractedJson);
-    } else {
-      setErrorMessage('Could not find valid JSON in the PDF file');
+    try {
+      const extractedJson = await extractJsonFromPdf(file, password);
+      if (extractedJson) {
+        if (!isPasswordProtectedPdf) {
+          setJson(extractedJson);
+          checkJSONImport(extractedJson);
+        }
+      } else {
+        setErrorMessage('Could not find valid JSON in the PDF file');
+        setShowPasswordDialog(false);
+        setPendingPdfFile(null);
+        setPendingUpdatePassword(null);
+        setPendingPdfPromise(null);
+        setIsPasswordProtectedPdf(false);
+      }
+    } catch (error: any) {
+      // Password errors are handled by onPassword callback which shows dialog
+      // Other errors should be shown to user
+      if (error.name !== 'PasswordException') {
+        consoleError('Error processing PDF:', error);
+        setErrorMessage('Error processing PDF file');
+        setShowPasswordDialog(false);
+        setPendingPdfFile(null);
+        setPendingUpdatePassword(null);
+        setPendingPdfPromise(null);
+        setIsPasswordProtectedPdf(false);
+      }
     }
+  };
+
+  const handlePasswordSubmit = async (password: string) => {
+    if (!pendingUpdatePassword || !pendingPdfPromise) {
+      setShowPasswordDialog(false);
+      setPendingPdfFile(null);
+      setPendingUpdatePassword(null);
+      setPendingPdfPromise(null);
+      return;
+    }
+
+    setShowPasswordDialog(false);
+    setIsPdfLoading(true);
+    setIsPasswordIncorrect(false);
+
+    try {
+      pendingUpdatePassword(password);
+
+      const extractedJson = await Promise.race([
+        pendingPdfPromise,
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error('PDF processing timeout')), 30000)
+        ),
+      ]);
+      setPendingPdfFile(null);
+      setPendingUpdatePassword(null);
+      setPendingPdfPromise(null);
+      setIsPasswordIncorrect(false);
+      setIsPdfLoading(false);
+
+      if (extractedJson) {
+        try {
+          setLoading(true);
+
+          let privateKeyHex: string | null = null;
+
+          try {
+            const parsedJson = JSON.parse(extractedJson);
+
+            if (parsedJson.private_key) {
+              privateKeyHex = parsedJson.private_key;
+              if (privateKeyHex && privateKeyHex.startsWith('0x')) {
+                privateKeyHex = privateKeyHex.substring(2);
+              }
+            } else {
+              privateKeyHex = await usewallet.jsonToPrivateKeyHex(extractedJson, password);
+            }
+          } catch (parseError) {
+            privateKeyHex = await usewallet.jsonToPrivateKeyHex(extractedJson, password);
+          }
+
+          if (!privateKeyHex) {
+            setErrorMessage('Failed to extract private key. The PDF password may be incorrect.');
+            setIsPdfLoading(false);
+            setLoading(false);
+            setIsPasswordProtectedPdf(false);
+            return;
+          }
+          const foundAccounts = await usewallet.findAddressWithPrivateKey(privateKeyHex, '');
+          setPk(privateKeyHex);
+
+          if (!foundAccounts || foundAccounts.length === 0) {
+            onOpen();
+            setIsPasswordProtectedPdf(false);
+            setIsPdfLoading(false);
+            setLoading(false);
+            return;
+          }
+
+          const accounts: (PublicKeyAccount & { type: string })[] = foundAccounts.map(
+            (account) => ({
+              ...account,
+              type: KEY_TYPE.KEYSTORE,
+            })
+          );
+
+          onImport(accounts);
+          setIsPasswordProtectedPdf(false);
+        } catch (error) {
+          consoleError('Error extracting private key from PDF:', error);
+          setErrorMessage('Failed to extract private key from PDF. The password may be incorrect.');
+          setIsPasswordProtectedPdf(false);
+        } finally {
+          setIsPdfLoading(false);
+          setLoading(false);
+        }
+      } else {
+        setErrorMessage('Could not find valid JSON in the PDF file');
+        setIsPasswordProtectedPdf(false);
+      }
+    } catch (error: any) {
+      // If password is still incorrect, onPassword will be called again
+      // which will update the state and show the dialog again
+      if (error.name === 'PasswordException' || error.message?.includes('password')) {
+        // Will be handled by onPassword callback - it will show dialog again
+        // Don't clear state here, let onPassword handle it
+        setIsPdfLoading(false);
+        return;
+      }
+      consoleError('Error processing PDF:', error);
+      setErrorMessage(error.message || 'Error processing PDF file');
+      setPendingPdfFile(null);
+      setPendingUpdatePassword(null);
+      setPendingPdfPromise(null);
+      setIsPdfLoading(false);
+    }
+  };
+
+  const handlePasswordDialogClose = () => {
+    setShowPasswordDialog(false);
+    setPendingPdfFile(null);
+    setPendingUpdatePassword(null);
+    setPendingPdfPromise(null);
+    setIsPasswordIncorrect(false);
+    setIsPdfLoading(false);
   };
 
   const handleFile = async (file: File) => {
@@ -517,6 +740,12 @@ const JsonImport = ({
           errorMessage={errorMesssage}
         />
       )}
+      <PdfPasswordDialog
+        isOpen={showPasswordDialog}
+        onClose={handlePasswordDialogClose}
+        onSubmit={handlePasswordSubmit}
+        isIncorrect={isPasswordIncorrect}
+      />
     </Box>
   );
 };
