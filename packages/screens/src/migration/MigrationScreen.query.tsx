@@ -1,4 +1,5 @@
 import { logger, navigation, bridge } from '@onflow/frw-context';
+import type { WalletAccount, WalletProfilesResponse } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -6,6 +7,7 @@ import {
   Button,
   ExtensionHeader,
   BackgroundWrapper,
+  ConfirmationAnimationSection,
   MigrationAccountCard,
   MigrationProgressIndicator,
   MigrationProgressBar,
@@ -13,10 +15,11 @@ import {
   MigrationStatusMessage,
   MigrationInfoBanner,
 } from '@onflow/frw-ui';
-import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export type MigrationStage = 'in-progress' | 'completed-all' | 'completed-partial';
+export type MigrationStage = 'ready' | 'in-progress' | 'completed-all' | 'completed-partial';
 
 export interface MigrationScreenProps {
   /** Initial stage */
@@ -48,7 +51,7 @@ export interface MigrationScreenProps {
  * 3. Completed (Partial) - Shows warning when some assets failed
  */
 export function MigrationScreen({
-  initialStage = 'in-progress',
+  initialStage = 'ready',
   sourceAccount,
   destinationAccount,
   assets = [],
@@ -58,26 +61,95 @@ export function MigrationScreen({
   const isExtension = bridge.getPlatform() === 'extension';
   const [stage, setStage] = useState<MigrationStage>(initialStage);
   const [progress, setProgress] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  // Default account data if not provided
-  const defaultSourceAccount = {
-    name: 'Penguin',
-    address: '0x0c666c888d8fb259',
-    badges: ['EVM', 'FLOW'],
-    ...sourceAccount,
-  };
+  // Load current selected account and wallet profiles from bridge (same pattern as Send screens)
+  const { data: selectedAccount } = useQuery<WalletAccount | null>({
+    queryKey: ['migration', 'selectedAccount'],
+    queryFn: async () => {
+      try {
+        return await bridge.getSelectedAccount();
+      } catch (error) {
+        logger.warn('[MigrationScreen] Failed to load selected account', error);
+        return null;
+      }
+    },
+    staleTime: 10_000,
+    retry: 1,
+  });
 
-  const defaultDestinationAccount = {
-    name: 'Fox',
-    address: '0x0c666c888d8fb259',
-    badges: ['EVM'],
-    ...destinationAccount,
-  };
+  const { data: walletProfiles } = useQuery<WalletProfilesResponse | null>({
+    queryKey: ['migration', 'walletProfiles'],
+    queryFn: async () => {
+      try {
+        return await bridge.getWalletProfiles();
+      } catch (error) {
+        logger.warn('[MigrationScreen] Failed to load wallet profiles', error);
+        return null;
+      }
+    },
+    staleTime: 10_000,
+    retry: 1,
+  });
+
+  const { resolvedSourceAccount, resolvedDestinationAccount } = useMemo(() => {
+    // 1) Prefer explicit props if provided (for testing / stories)
+    if (sourceAccount || destinationAccount) {
+      return {
+        resolvedSourceAccount: {
+          name: sourceAccount?.name ?? 'COA',
+          address: sourceAccount?.address ?? '',
+          avatar: sourceAccount?.avatar,
+          badges: sourceAccount?.badges ?? ['EVM', 'FLOW'],
+        },
+        resolvedDestinationAccount: {
+          name: destinationAccount?.name ?? 'EOA',
+          address: destinationAccount?.address ?? '',
+          avatar: destinationAccount?.avatar,
+          badges: destinationAccount?.badges ?? ['EVM'],
+        },
+      };
+    }
+
+    // 2) Derive from bridge: find the profile that owns the selected account's parentAddress
+    const parentAddress = selectedAccount?.parentAddress || selectedAccount?.address || '';
+    const profile =
+      walletProfiles?.profiles?.find((p) => p.accounts?.some((a) => a.address === parentAddress)) ??
+      walletProfiles?.profiles?.[0];
+
+    const accounts = profile?.accounts ?? [];
+    const evmAccount = accounts.find((a) => a.type === 'evm');
+    const eoaAccount = accounts.find((a) => a.type === 'eoa');
+    const mainAccount = accounts.find((a) => a.type === 'main');
+
+    // COA: prefer explicit evm account; otherwise fall back to selected if it's evm, then main
+    const resolvedSource =
+      evmAccount ?? (selectedAccount?.type === 'evm' ? selectedAccount : null) ?? mainAccount;
+
+    // EOA: prefer explicit eoa account; otherwise empty (we’ll still render a card)
+    const resolvedDest = eoaAccount ?? null;
+
+    return {
+      resolvedSourceAccount: {
+        name: resolvedSource?.name ?? 'COA',
+        address: resolvedSource?.address ?? '',
+        avatar: resolvedSource?.avatar,
+        badges: ['EVM', 'FLOW'],
+      },
+      resolvedDestinationAccount: {
+        name: resolvedDest?.name ?? 'EOA',
+        address: resolvedDest?.address ?? '',
+        avatar: resolvedDest?.avatar,
+        badges: ['EVM'],
+      },
+    };
+  }, [destinationAccount, selectedAccount, sourceAccount, walletProfiles?.profiles]);
 
   // Simulate migration progress
   useEffect(() => {
     if (stage === 'in-progress') {
+      setIsAnimating(true);
+      // Use a slower tick (matching SendConfirmation cadence) to reduce JS thread contention with Lottie.
       const interval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {
@@ -89,13 +161,21 @@ export function MigrationScreen({
             }, 1000);
             return 100;
           }
-          return prev + 2;
+          return prev + 4;
         });
-      }, 100);
+      }, 200);
 
       return () => clearInterval(interval);
     }
+    // Reset progress/animation when not running
+    setIsAnimating(false);
+    setProgress(0);
   }, [stage]);
+
+  const handleStart = () => {
+    logger.info('[MigrationScreen] Start pressed');
+    setStage('in-progress');
+  };
 
   const handleDone = () => {
     logger.info('[MigrationScreen] Done pressed');
@@ -110,6 +190,7 @@ export function MigrationScreen({
 
   const getTitle = () => {
     switch (stage) {
+      case 'ready':
       case 'in-progress':
         return t('migration.screen.title.inProgress');
       case 'completed-all':
@@ -139,29 +220,16 @@ export function MigrationScreen({
           </Text>
         </YStack>
 
-        {/* Illustration Placeholder */}
-        <YStack
-          width={162}
-          height={175}
-          bg="$bg2"
-          rounded="$4"
-          items="center"
-          justify="center"
-          opacity={0.3}
-        >
-          <Text fontSize="$2" color="$textSecondary">
-            Illustration
-          </Text>
-        </YStack>
+        <ConfirmationAnimationSection isPlaying={stage === 'in-progress'} />
 
         {/* Account Cards with Progress */}
-        <XStack items="center" justify="center" gap="$4" width="100%" maxWidth={315}>
+        <XStack items="center" justify="center" gap="$4" width="100%" style={{ maxWidth: 315 }}>
           {/* Source Account */}
           <MigrationAccountCard
-            name={defaultSourceAccount.name}
-            address={defaultSourceAccount.address}
-            avatar={defaultSourceAccount.avatar}
-            badges={defaultSourceAccount.badges}
+            name={resolvedSourceAccount.name}
+            address={resolvedSourceAccount.address}
+            avatar={resolvedSourceAccount.avatar}
+            badges={resolvedSourceAccount.badges}
             isSource={true}
           />
 
@@ -174,17 +242,17 @@ export function MigrationScreen({
 
           {/* Destination Account */}
           <MigrationAccountCard
-            name={defaultDestinationAccount.name}
-            address={defaultDestinationAccount.address}
-            avatar={defaultDestinationAccount.avatar}
-            badges={defaultDestinationAccount.badges}
+            name={resolvedDestinationAccount.name}
+            address={resolvedDestinationAccount.address}
+            avatar={resolvedDestinationAccount.avatar}
+            badges={resolvedDestinationAccount.badges}
             isSource={false}
           />
         </XStack>
 
         {/* Progress Bar (only during in-progress) */}
         {stage === 'in-progress' && (
-          <YStack width="100%" maxWidth={315} gap="$4">
+          <YStack width="100%" gap="$4" style={{ maxWidth: 315 }}>
             <MigrationProgressBar
               progress={progress}
               currentStep={t('migration.screen.progress.currentStep')}
@@ -195,7 +263,7 @@ export function MigrationScreen({
 
         {/* Status Message (only when completed) */}
         {(stage === 'completed-all' || stage === 'completed-partial') && (
-          <YStack width="100%" maxWidth={328} gap="$4">
+          <YStack width="100%" gap="$4" style={{ maxWidth: 328 }}>
             <MigrationStatusMessage
               type={stage === 'completed-all' ? 'success' : 'warning'}
               title={
@@ -213,7 +281,7 @@ export function MigrationScreen({
         )}
 
         {/* Asset Drawer */}
-        <YStack width="100%" maxWidth={328} gap="$4">
+        <YStack width="100%" gap="$4" style={{ maxWidth: 328 }}>
           <MigrationAssetDrawer
             assets={stage === 'completed-partial' ? failedAssets : assets}
             defaultExpanded={stage !== 'in-progress'}
@@ -223,7 +291,7 @@ export function MigrationScreen({
 
         {/* Warning Banner (only during in-progress) */}
         {stage === 'in-progress' && (
-          <YStack width="100%" maxWidth={328}>
+          <YStack width="100%" style={{ maxWidth: 328 }}>
             <MigrationInfoBanner
               title={t('migration.screen.warning.title')}
               description={t('migration.screen.warning.description')}
@@ -231,9 +299,18 @@ export function MigrationScreen({
           </YStack>
         )}
 
+        {/* Start Button (only before starting) */}
+        {stage === 'ready' && (
+          <YStack width="100%" pt="$2" style={{ maxWidth: 328 }}>
+            <Button variant="inverse" size="large" fullWidth onPress={handleStart}>
+              {t('migration.screen.button.start')}
+            </Button>
+          </YStack>
+        )}
+
         {/* Action Button (only when completed) */}
         {(stage === 'completed-all' || stage === 'completed-partial') && (
-          <YStack width="100%" maxWidth={328} pt="$2">
+          <YStack width="100%" pt="$2" style={{ maxWidth: 328 }}>
             <Button
               variant="inverse"
               size="large"

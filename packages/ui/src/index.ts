@@ -47,6 +47,7 @@ export * from './components/Badge';
 export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationAnimation';
+export * from './components/ConfirmationAnimationSection';
 export * from './components/ShieldAnimation';
 export * from './components/ConfirmationDrawer';
 export * from './components/COAAddressCopyModal';

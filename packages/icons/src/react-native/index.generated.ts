@@ -23,6 +23,8 @@ export { default as InfoIcon } from './InfoIcon.generated';
 export { default as Key } from './Key.generated';
 export { default as Link } from './Link.generated';
 export { default as Lock } from './Lock.generated';
+export { default as LockMigrate } from './LockMigrate.generated';
+export { default as MigrateIllustrate } from './MigrateIllustrate.generated';
 export { default as Minus } from './Minus.generated';
 export { default as Plus } from './Plus.generated';
 export { default as Pocket } from './Pocket.generated';

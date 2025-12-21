@@ -393,6 +393,9 @@
     "info": {
       "title": "Migrate\nyour account",
       "description": "Your assets will move from EVM to FLOW to improve security, control, and compatibility with upcoming platform updates.",
+      "descriptionLine1Prefix": "Your assets will move from",
+      "descriptionLine1To": "to",
+      "descriptionLine2": "to improve security, control, and compatibility with upcoming platform updates.",
       "whatDoesThisMean": "What does this mean?",
       "features": {
         "control": "You'll have full control over your accounts and keys.",
@@ -432,6 +435,7 @@
         "description": "Do not close the app during migration. The process takes a few minutes."
       },
       "button": {
+        "start": "Start migration",
         "done": "Done",
         "review": "Review assets"
       }
