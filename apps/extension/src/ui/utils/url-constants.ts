@@ -11,11 +11,9 @@ export const SWAP_LINK_FLOW_MAINNET =
 export const SWAP_LINK_FLOW_TESTNET =
   process.env.SWAP_LINK_FLOW_TESTNET || 'https://demo.increment.fi/swap';
 
-export const SWAP_LINK_EVM_MAINNET =
-  process.env.SWAP_LINK_EVM_MAINNET || 'https://swap.kittypunch.xyz/swap';
+export const SWAP_LINK_EVM_MAINNET = process.env.SWAP_LINK_EVM_MAINNET || 'https://swap.flow.com/';
 
-export const SWAP_LINK_EVM_TESTNET =
-  process.env.SWAP_LINK_EVM_TESTNET || 'https://swap.kittypunch.xyz/swap';
+export const SWAP_LINK_EVM_TESTNET = process.env.SWAP_LINK_EVM_TESTNET || 'https://swap.flow.com/';
 
 export const getSwapLink = (network: string, accountType: ActiveAccountType): string => {
   if (accountType === 'evm') {
