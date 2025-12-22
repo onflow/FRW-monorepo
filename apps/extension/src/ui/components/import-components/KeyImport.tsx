@@ -1,5 +1,5 @@
 import { Box, Button, TextareaAutosize, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 import { KEY_TYPE } from '@/shared/constant';
 import { type PublicKeyAccount } from '@/shared/types';
@@ -28,6 +28,7 @@ const KeyImport = ({
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const hasPasswordErrorRef = useRef(false);
 
   const hasJsonStructure = (str: string): boolean => {
     if (typeof str !== 'string') return false;
@@ -45,8 +46,34 @@ const KeyImport = ({
     isEncrypted: boolean,
     password?: string
   ) => {
+    const isFromEncryptedPdf = isEncrypted && !!password;
+
+    if (isFromEncryptedPdf && (!extractedJson || extractedJson.trim().length === 0)) {
+      hasPasswordErrorRef.current = true;
+      setErrorMessage('Could not extract private key from PDF. The password may be incorrect.');
+      setLoading(false);
+      return;
+    }
+
+    hasPasswordErrorRef.current = false;
+
+    const safeOnOpen = () => {
+      if (!isFromEncryptedPdf) {
+        onOpen();
+      } else {
+        setErrorMessage('Could not extract private key from PDF. The password may be incorrect.');
+      }
+    };
+
     try {
       setLoading(true);
+      setErrorMessage('');
+
+      if (isEncrypted && !password) {
+        setErrorMessage('Password is required for encrypted PDF.');
+        setLoading(false);
+        return;
+      }
 
       let privateKeyHex: string | null = null;
 
@@ -60,19 +87,52 @@ const KeyImport = ({
           }
         } else if (isEncrypted && password) {
           privateKeyHex = await usewallet.jsonToPrivateKeyHex(extractedJson, password);
+          if (!privateKeyHex || privateKeyHex.trim().length === 0) {
+            setErrorMessage(
+              'Could not extract private key from PDF. The password may be incorrect.'
+            );
+            setLoading(false);
+            return;
+          }
         }
       } catch (parseError) {
         if (isEncrypted && password) {
-          privateKeyHex = await usewallet.jsonToPrivateKeyHex(extractedJson, password);
+          try {
+            privateKeyHex = await usewallet.jsonToPrivateKeyHex(extractedJson, password);
+            if (!privateKeyHex || privateKeyHex.trim().length === 0) {
+              setErrorMessage(
+                'Could not extract private key from PDF. The password may be incorrect.'
+              );
+              setLoading(false);
+              return;
+            }
+          } catch (decryptError) {
+            setErrorMessage(
+              'Could not extract private key from PDF. The password may be incorrect.'
+            );
+            setLoading(false);
+            return;
+          }
+        } else {
+          setErrorMessage('Could not extract valid JSON from PDF.');
+          setLoading(false);
+          return;
         }
       }
 
-      if (privateKeyHex) {
+      if (privateKeyHex && privateKeyHex.trim().length > 0) {
         const foundAccounts = await usewallet.findAddressWithPrivateKey(privateKeyHex, '');
         setPk(privateKeyHex);
 
         if (!foundAccounts || foundAccounts.length === 0) {
-          onOpen();
+          if (isFromEncryptedPdf) {
+            setErrorMessage(
+              'Could not extract private key from PDF. The password may be incorrect.'
+            );
+            setLoading(false);
+            return;
+          }
+          safeOnOpen();
           setLoading(false);
           return;
         }
@@ -101,7 +161,11 @@ const KeyImport = ({
       }
     } catch (error) {
       consoleError('Error processing PDF JSON:', error);
-      setErrorMessage('Failed to process PDF. Please check the file and try again.');
+      if (isEncrypted || isFromEncryptedPdf) {
+        setErrorMessage('Could not extract private key from PDF. The password may be incorrect.');
+      } else {
+        setErrorMessage('Failed to process PDF. Please check the file and try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -111,6 +175,12 @@ const KeyImport = ({
     try {
       setLoading(true);
       e.preventDefault();
+
+      if (errorMessage && errorMessage.includes('password')) {
+        setLoading(false);
+        return;
+      }
+
       const pk = e.target[0].value.replace(/^0x/, '');
       const flowAddressRegex = /^(0x)?[0-9a-fA-F]{16}$/;
       const inputValue = e.target[2].value;
@@ -120,6 +190,10 @@ const KeyImport = ({
       const result = await usewallet.findAddressWithPrivateKey(pk, address);
 
       if (!result || result.length === 0) {
+        if (hasPasswordErrorRef.current) {
+          setLoading(false);
+          return;
+        }
         onOpen();
         return;
       }
@@ -131,6 +205,10 @@ const KeyImport = ({
 
       onImport(accounts);
     } catch (error) {
+      if (hasPasswordErrorRef.current) {
+        setLoading(false);
+        return;
+      }
       onOpen();
     } finally {
       setLoading(false);
