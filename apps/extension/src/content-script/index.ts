@@ -51,11 +51,13 @@ const initListener = (channelName: string) => {
 
 initListener(channelName);
 
-// because the content script run at document start
-setTimeout(() => {
-  document.body.setAttribute('data-channel-name', channelName);
-  document.body.setAttribute('data-extension-id', extensionId);
-}, 0);
+// Security: Removed DOM attributes to prevent public identifier exposure
+// These identifiers are now only accessible through the extension's secure message channel
+// If needed for FCL compatibility, they can be accessed via localStorage with the channelPrefix
+// setTimeout(() => {
+//   document.body.setAttribute('data-channel-name', channelName);
+//   document.body.setAttribute('data-extension-id', extensionId);
+// }, 0);
 
 /**
  * Inject script
@@ -73,9 +75,67 @@ function injectScript(file_path, tag) {
 
 injectScript(chrome.runtime.getURL('script.js'), 'body');
 
+// Allowed FCL message types for security validation
+const ALLOWED_FCL_MESSAGE_TYPES = [
+  'FCL:VIEW:READY',
+  'FCL:VIEW:RESPONSE',
+  'FCL:VIEW:CLOSE',
+  'FLOW::TX',
+  'LILICO:NETWORK',
+  'FCW:CS:LOADED',
+];
+
+// Store origin for each message to respond to the correct origin
+const messageOriginMap = new Map<number, string>();
+
 // Listener for messages from window/FCL
 window.addEventListener('message', function (event) {
+  // Security: Validate origin to prevent cross-origin attacks
+  // Allow same origin (dapp page) and null origin (file:// URLs, sandboxed contexts)
+  // Block cross-origin messages from malicious extensions or websites
+  const isValidOrigin =
+    event.origin === window.location.origin || event.origin === 'null' || event.origin === '';
+
+  if (!isValidOrigin) {
+    // Log blocked attempts for security monitoring
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Flow Wallet] Blocked message from unauthorized origin:', event.origin);
+    }
+    return;
+  }
+
   if (event.data && typeof event.data === 'object') {
+    // Validate message type to only allow expected FCL message types
+    const messageType = event.data.type || event.data.f_type;
+
+    // For messages without a type, check if they have FCL service structure
+    const hasServiceStructure = event.data.f_type === 'Service' || event.data.service;
+
+    if (messageType && !hasServiceStructure) {
+      const isAllowedType = ALLOWED_FCL_MESSAGE_TYPES.some((allowed) =>
+        messageType.includes(allowed)
+      );
+
+      if (!isAllowedType) {
+        // Allow service discovery messages (no type but has service structure)
+        // Block other unauthorized message types
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('[Flow Wallet] Blocked unauthorized message type:', messageType);
+        }
+        return;
+      }
+    }
+
+    // Store origin for response routing (use current origin if event.origin is null/empty)
+    const responseOrigin =
+      event.origin && event.origin !== 'null' && event.origin !== ''
+        ? event.origin
+        : window.location.origin;
+
+    if (event.data.ident !== undefined) {
+      messageOriginMap.set(event.data.ident, responseOrigin);
+    }
+
     chrome.runtime.sendMessage(extensionId, event.data);
   }
 });
@@ -88,40 +148,44 @@ window.addEventListener('message', function (event) {
 // })
 
 const extMessageHandler = (msg, _sender) => {
-  if (msg.type === 'FCL:VIEW:READY') {
+  // Security: Determine target origin for postMessage
+  // Use stored origin if available, otherwise use current page origin
+  let targetOrigin = window.location.origin;
+  if (msg.ident !== undefined && messageOriginMap.has(msg.ident)) {
+    targetOrigin = messageOriginMap.get(msg.ident)!;
+    // Clean up after use
+    messageOriginMap.delete(msg.ident);
+  }
+
+  const sendMessage = (data: any) => {
     if (window) {
-      window.postMessage(JSON.parse(JSON.stringify(msg || {})), '*');
+      // Security: Send to specific origin instead of wildcard '*'
+      window.postMessage(JSON.parse(JSON.stringify(data || {})), targetOrigin);
     }
+  };
+
+  if (msg.type === 'FCL:VIEW:READY') {
+    sendMessage(msg);
   }
 
   if (msg.f_type && msg.f_type === 'PollingResponse') {
-    if (window) {
-      window.postMessage(JSON.parse(JSON.stringify({ ...msg, type: 'FCL:VIEW:RESPONSE' })), '*');
-    }
+    sendMessage({ ...msg, type: 'FCL:VIEW:RESPONSE' });
   }
 
   if (msg.data?.f_type && msg.data?.f_type === 'PreAuthzResponse') {
-    if (window) {
-      window.postMessage(JSON.parse(JSON.stringify({ ...msg, type: 'FCL:VIEW:RESPONSE' })), '*');
-    }
+    sendMessage({ ...msg, type: 'FCL:VIEW:RESPONSE' });
   }
 
   if (msg.type === 'FCL:VIEW:CLOSE') {
-    if (window) {
-      window.postMessage(JSON.parse(JSON.stringify(msg || {})), '*');
-    }
+    sendMessage(msg);
   }
 
   if (msg.type === 'FLOW::TX') {
-    if (window) {
-      window.postMessage(JSON.parse(JSON.stringify(msg || {})), '*');
-    }
+    sendMessage(msg);
   }
 
   if (msg.type === 'LILICO:NETWORK') {
-    if (window) {
-      window.postMessage(JSON.parse(JSON.stringify(msg || {})), '*');
-    }
+    sendMessage(msg);
   }
 };
 
