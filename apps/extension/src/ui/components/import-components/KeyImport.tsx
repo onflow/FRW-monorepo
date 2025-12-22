@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 
 import { KEY_TYPE } from '@/shared/constant';
 import { type PublicKeyAccount } from '@/shared/types';
+import { consoleError } from '@/shared/utils';
+import PdfUpload from '@/ui/components/import-components/PdfUpload';
 import { LLSpinner } from '@/ui/components/LLSpinner';
 import PasswordTextarea from '@/ui/components/password/PasswordTextarea';
 import { useWallet } from '@/ui/hooks/use-wallet';
@@ -13,14 +15,97 @@ const KeyImport = ({
   onImport,
   setPk,
   isSignLoading,
+  onSwitchToKeystoreTab,
+  onSetKeystoreJson,
 }: {
   onOpen: () => void;
   onImport: (accounts: PublicKeyAccount[]) => void;
   setPk: (pk: string) => void;
   isSignLoading: boolean;
+  onSwitchToKeystoreTab?: () => void;
+  onSetKeystoreJson?: (json: string) => void;
 }) => {
   const usewallet = useWallet();
   const [isLoading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const hasJsonStructure = (str: string): boolean => {
+    if (typeof str !== 'string') return false;
+    try {
+      const result = JSON.parse(str);
+      const type = Object.prototype.toString.call(result);
+      return type === '[object Object]' || type === '[object Array]';
+    } catch {
+      return false;
+    }
+  };
+
+  const handlePdfExtracted = async (
+    extractedJson: string,
+    isEncrypted: boolean,
+    password?: string
+  ) => {
+    try {
+      setLoading(true);
+
+      let privateKeyHex: string | null = null;
+
+      try {
+        const parsedJson = JSON.parse(extractedJson);
+
+        if (parsedJson.private_key) {
+          privateKeyHex = parsedJson.private_key;
+          if (privateKeyHex && privateKeyHex.startsWith('0x')) {
+            privateKeyHex = privateKeyHex.substring(2);
+          }
+        } else if (isEncrypted && password) {
+          privateKeyHex = await usewallet.jsonToPrivateKeyHex(extractedJson, password);
+        }
+      } catch (parseError) {
+        if (isEncrypted && password) {
+          privateKeyHex = await usewallet.jsonToPrivateKeyHex(extractedJson, password);
+        }
+      }
+
+      if (privateKeyHex) {
+        const foundAccounts = await usewallet.findAddressWithPrivateKey(privateKeyHex, '');
+        setPk(privateKeyHex);
+
+        if (!foundAccounts || foundAccounts.length === 0) {
+          onOpen();
+          setLoading(false);
+          return;
+        }
+
+        const accounts: (PublicKeyAccount & { type: string })[] = foundAccounts.map((account) => ({
+          ...account,
+          type: KEY_TYPE.PRIVATE_KEY,
+        }));
+
+        onImport(accounts);
+        setLoading(false);
+        return;
+      }
+
+      if (!isEncrypted) {
+        if (hasJsonStructure(extractedJson) && onSwitchToKeystoreTab && onSetKeystoreJson) {
+          onSetKeystoreJson(extractedJson);
+          onSwitchToKeystoreTab();
+        } else {
+          setErrorMessage(
+            'Could not extract private key from PDF. This appears to be a keystore JSON. Please use the Keystore tab to import it.'
+          );
+        }
+      } else {
+        setErrorMessage('Could not extract private key from PDF. The password may be incorrect.');
+      }
+    } catch (error) {
+      consoleError('Error processing PDF JSON:', error);
+      setErrorMessage('Failed to process PDF. Please check the file and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleImport = async (e) => {
     try {
@@ -59,6 +144,7 @@ const KeyImport = ({
         onSubmit={handleImport}
         style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
       >
+        <PdfUpload onExtracted={handlePdfExtracted} disabled={isLoading || isSignLoading} />
         <PasswordTextarea
           className="sentry-mask"
           minRows={2}
@@ -107,6 +193,11 @@ const KeyImport = ({
           </Typography>
         </Button>
       </form>
+      {errorMessage && (
+        <Typography sx={{ color: 'error.main', marginTop: '8px', fontSize: '14px' }}>
+          {errorMessage}
+        </Typography>
+      )}
     </Box>
   );
 };
