@@ -8,7 +8,6 @@ import { LLSpinner } from '@/ui/components/LLSpinner';
 import PdfPasswordDialog from '@/ui/components/PopupModal/pdfPasswordDialog';
 import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
-// Configure PDF.js worker for browser extension
 if (typeof window !== 'undefined' && typeof chrome !== 'undefined' && chrome.runtime) {
   try {
     pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('pdf.worker.min.mjs');
@@ -30,7 +29,6 @@ interface PdfUploadProps {
 const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps) => {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [pendingPdfFile, setPendingPdfFile] = useState<File | null>(null);
   const [pendingUpdatePassword, setPendingUpdatePassword] = useState<
     ((password: string) => void) | null
   >(null);
@@ -61,12 +59,14 @@ const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps
 
       const pdfPromise = new Promise<string | null>((resolve, reject) => {
         let passwordCallback: ((password: string) => void) | null = null;
+        let passwordAttempts = 0;
+        const MAX_PASSWORD_ATTEMPTS = 10;
 
         loadingTask.onPassword = (updatePassword: (password: string) => void, reason: number) => {
           passwordCallback = updatePassword;
+          passwordAttempts++;
 
           if (reason === pdfjsLib.PasswordResponses.NEED_PASSWORD) {
-            setPendingPdfFile(file);
             setPendingUpdatePassword(() => (pwd: string) => {
               if (passwordCallback) {
                 passwordCallback(pwd);
@@ -77,7 +77,12 @@ const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps
             setShowPasswordDialog(true);
             setIsPdfLoading(false);
           } else if (reason === pdfjsLib.PasswordResponses.INCORRECT_PASSWORD) {
-            setPendingPdfFile(file);
+            if (passwordAttempts > 1) {
+              setIsPdfLoading(false);
+              reject(new Error('Incorrect PDF password'));
+              return;
+            }
+
             setPendingUpdatePassword(() => (pwd: string) => {
               if (passwordCallback) {
                 passwordCallback(pwd);
@@ -87,6 +92,11 @@ const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps
             setIsPasswordIncorrect(true);
             setShowPasswordDialog(true);
             setIsPdfLoading(false);
+          }
+
+          if (passwordAttempts > MAX_PASSWORD_ATTEMPTS) {
+            setIsPdfLoading(false);
+            reject(new Error('Too many password attempts'));
           }
         };
 
@@ -159,7 +169,6 @@ const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps
   const handlePasswordSubmit = async (password: string) => {
     if (!pendingUpdatePassword || !pendingPdfPromise) {
       setShowPasswordDialog(false);
-      setPendingPdfFile(null);
       setPendingUpdatePassword(null);
       setPendingPdfPromise(null);
       return;
@@ -179,7 +188,6 @@ const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps
         ),
       ]);
 
-      setPendingPdfFile(null);
       setPendingUpdatePassword(null);
       setPendingPdfPromise(null);
       setIsPasswordIncorrect(false);
@@ -189,21 +197,25 @@ const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps
         await onExtracted(extractedJson, true, password);
       }
     } catch (error: any) {
-      if (error.name === 'PasswordException' || error.message?.includes('password')) {
-        setIsPdfLoading(false);
-        return;
-      }
-      consoleError('Error processing PDF:', error);
-      setPendingPdfFile(null);
       setPendingUpdatePassword(null);
       setPendingPdfPromise(null);
       setIsPdfLoading(false);
+
+      if (
+        error.message?.includes('password') ||
+        error.message?.includes('Incorrect') ||
+        error.name === 'PasswordException'
+      ) {
+        await onExtracted('', true, password);
+        return;
+      }
+
+      consoleError('Error processing PDF:', error);
     }
   };
 
   const handlePasswordDialogClose = () => {
     setShowPasswordDialog(false);
-    setPendingPdfFile(null);
     setPendingUpdatePassword(null);
     setPendingPdfPromise(null);
     setIsPasswordIncorrect(false);

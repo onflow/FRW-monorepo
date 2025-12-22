@@ -21,6 +21,10 @@ export const getSwapLink = (
   flowIdentifier?: string
 ): string => {
   if (accountType === 'evm') {
+    // If there's a token address (flowIdentifier), use dynamic link for EVM token detail page
+    if (flowIdentifier) {
+      return `https://swap.flow.com/aggregator?chain=flow&inputCurrency=${encodeURIComponent(flowIdentifier)}&outputCurrency=NATIVE`;
+    }
     return network === 'mainnet' ? SWAP_LINK_EVM_MAINNET : SWAP_LINK_EVM_TESTNET;
   }
 

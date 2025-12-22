@@ -264,9 +264,14 @@ const TokenInfoCard = ({
           <IconButton
             messageKey="Swap"
             onClick={() => {
-              const flowIdentifier =
-                tokenInfo && 'flowIdentifier' in tokenInfo ? tokenInfo.flowIdentifier : undefined;
-              const swapLink = getSwapLink(network, activeAccountType, flowIdentifier);
+              // For EVM tokens, use the token address; for Flow tokens, use flowIdentifier
+              const identifier =
+                activeAccountType === 'evm' && tokenInfo && 'address' in tokenInfo
+                  ? tokenInfo.address
+                  : tokenInfo && 'flowIdentifier' in tokenInfo
+                    ? tokenInfo.flowIdentifier
+                    : undefined;
+              const swapLink = getSwapLink(network, activeAccountType, identifier);
               window.open(swapLink, '_blank', 'noopener,noreferrer');
             }}
             icon={swapIcon}
