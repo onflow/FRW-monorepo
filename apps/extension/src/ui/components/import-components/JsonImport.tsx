@@ -313,12 +313,7 @@ const JsonImport = ({
         onSubmit={handleImport}
         style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        <Box
-          sx={{
-            marginBottom: '16px',
-            position: 'relative',
-          }}
-        >
+        <Box sx={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <PasswordTextarea
             className="sentry-mask"
             minRows={5}
@@ -341,17 +336,9 @@ const JsonImport = ({
                 : '1px solid #767676',
               backgroundColor: isTextareaDragOver ? `${COLOR_DARKMODE_WHITE_3pc}20` : undefined,
               transition: 'all 0.2s ease-in-out',
-              paddingBottom: '48px',
             }}
           />
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: '8px',
-              left: '8px',
-              zIndex: 1,
-            }}
-          >
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
             <PdfUpload onExtracted={handlePdfExtracted} disabled={isLoading || isSignLoading} />
           </Box>
         </Box>

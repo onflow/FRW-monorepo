@@ -144,12 +144,7 @@ const KeyImport = ({
         onSubmit={handleImport}
         style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        <Box
-          sx={{
-            marginBottom: '16px',
-            position: 'relative',
-          }}
-        >
+        <Box sx={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <PasswordTextarea
             className="sentry-mask"
             minRows={2}
@@ -157,19 +152,9 @@ const KeyImport = ({
             placeholder={chrome.i18n.getMessage('Enter_your_Private_key')}
             aria-label="Private Key"
             required
-            sx={{
-              marginBottom: '0',
-              paddingBottom: '48px',
-            }}
+            sx={{ marginBottom: '0' }}
           />
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: '8px',
-              left: '8px',
-              zIndex: 1,
-            }}
-          >
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
             <PdfUpload onExtracted={handlePdfExtracted} disabled={isLoading || isSignLoading} />
           </Box>
         </Box>
