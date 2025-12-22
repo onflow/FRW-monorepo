@@ -1,5 +1,5 @@
 import { CloudUpload } from '@mui/icons-material';
-import { Box, Button } from '@mui/material';
+import { Button } from '@mui/material';
 import * as pdfjsLib from 'pdfjs-dist';
 import React, { useState } from 'react';
 
@@ -236,39 +236,40 @@ const PdfUpload = ({ onExtracted, disabled = false, buttonText }: PdfUploadProps
 
   return (
     <>
-      <Box sx={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <input
-          accept="application/pdf"
-          style={{ display: 'none' }}
-          id="pdf-upload-input"
-          type="file"
-          onChange={handlePdfUpload}
+      <input
+        accept="application/pdf"
+        style={{ display: 'none' }}
+        id="pdf-upload-input"
+        type="file"
+        onChange={handlePdfUpload}
+        disabled={isPdfLoading || disabled}
+      />
+      <label htmlFor="pdf-upload-input">
+        <Button
+          variant="outlined"
+          component="span"
+          startIcon={isPdfLoading ? <LLSpinner size={20} /> : <CloudUpload />}
           disabled={isPdfLoading || disabled}
-        />
-        <label htmlFor="pdf-upload-input">
-          <Button
-            variant="outlined"
-            component="span"
-            startIcon={isPdfLoading ? <LLSpinner size={20} /> : <CloudUpload />}
-            disabled={isPdfLoading || disabled}
-            sx={{
-              textTransform: 'capitalize',
-              borderRadius: '12px',
+          size="small"
+          sx={{
+            textTransform: 'capitalize',
+            borderRadius: '8px',
+            borderColor: COLOR_DARKMODE_WHITE_3pc,
+            color: '#fff',
+            minWidth: 'auto',
+            padding: '4px 12px',
+            fontSize: '12px',
+            '&:hover': {
               borderColor: COLOR_DARKMODE_WHITE_3pc,
-              color: '#fff',
-              width: '100%',
-              '&:hover': {
-                borderColor: COLOR_DARKMODE_WHITE_3pc,
-                backgroundColor: COLOR_DARKMODE_WHITE_3pc,
-              },
-            }}
-          >
-            {isPdfLoading
-              ? chrome.i18n.getMessage('Processing') || 'Processing...'
-              : buttonText || chrome.i18n.getMessage('Upload_PDF') || 'Upload PDF'}
-          </Button>
-        </label>
-      </Box>
+              backgroundColor: COLOR_DARKMODE_WHITE_3pc,
+            },
+          }}
+        >
+          {isPdfLoading
+            ? chrome.i18n.getMessage('Processing') || 'Processing...'
+            : buttonText || chrome.i18n.getMessage('Upload_PDF') || 'Upload PDF'}
+        </Button>
+      </label>
       <PdfPasswordDialog
         isOpen={showPasswordDialog}
         onClose={handlePasswordDialogClose}

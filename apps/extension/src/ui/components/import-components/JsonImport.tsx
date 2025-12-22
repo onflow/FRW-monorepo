@@ -338,7 +338,9 @@ const JsonImport = ({
               transition: 'all 0.2s ease-in-out',
             }}
           />
-          <PdfUpload onExtracted={handlePdfExtracted} disabled={isLoading || isSignLoading} />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <PdfUpload onExtracted={handlePdfExtracted} disabled={isLoading || isSignLoading} />
+          </Box>
         </Box>
         <TextField
           className="sentry-mask"
