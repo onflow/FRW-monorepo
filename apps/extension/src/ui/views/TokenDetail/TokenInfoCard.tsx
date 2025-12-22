@@ -264,7 +264,9 @@ const TokenInfoCard = ({
           <IconButton
             messageKey="Swap"
             onClick={() => {
-              const swapLink = getSwapLink(network, activeAccountType);
+              const flowIdentifier =
+                tokenInfo && 'flowIdentifier' in tokenInfo ? tokenInfo.flowIdentifier : undefined;
+              const swapLink = getSwapLink(network, activeAccountType, flowIdentifier);
               window.open(swapLink, '_blank', 'noopener,noreferrer');
             }}
             icon={swapIcon}
