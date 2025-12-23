@@ -28,6 +28,7 @@
     "commitlint": "commitlint --from HEAD~1 --to HEAD --verbose"
   },
   "devDependencies": {
+    "@babel/parser": "^7.28.5",
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
     "@eslint/js": "^9.18.0",
