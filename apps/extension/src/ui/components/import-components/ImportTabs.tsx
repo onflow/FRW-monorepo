@@ -73,6 +73,7 @@ const ImportTabs = ({
   const [isSignLoading, setSignLoading] = useState(false);
   const [newKey, setKeyNew] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
+  const [keystoreJson, setKeystoreJson] = useState<string>('');
   const usewallet = useWallet();
   useEffect(() => {
     const checkIsBooted = async () => {
@@ -230,6 +231,7 @@ const ImportTabs = ({
           onImport={handleImport}
           setPk={setPk}
           isSignLoading={isSignLoading}
+          initialJson={keystoreJson}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={2}>
@@ -250,6 +252,8 @@ const ImportTabs = ({
           onImport={handleImport}
           setPk={setPk}
           isSignLoading={isSignLoading}
+          onSwitchToKeystoreTab={() => setSelectedTab(1)}
+          onSetKeystoreJson={(json) => setKeystoreJson(json)}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={4}>

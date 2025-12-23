@@ -23,7 +23,9 @@ import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
+import { getSwapLink } from '@/ui/utils/url-constants';
 
 const TokenInfoCard = ({
   tokenInfo,
@@ -38,7 +40,8 @@ const TokenInfoCard = ({
 }) => {
   const navigate = useNavigate();
   const { coins } = useCoins();
-  const { currentWallet } = useProfiles();
+  const { currentWallet, activeAccountType } = useProfiles();
+  const { network } = useNetwork();
   const currency = useCurrency();
   const setSelectedToken = useSendStore((state) => state.setSelectedToken);
   const setTransactionType = useSendStore((state) => state.setTransactionType);
@@ -260,9 +263,17 @@ const TokenInfoCard = ({
           />
           <IconButton
             messageKey="Swap"
-            onClick={() =>
-              window.open('https://app.increment.fi/swap', '_blank', 'noopener,noreferrer')
-            }
+            onClick={() => {
+              // For EVM tokens, use the token address; for Flow tokens, use flowIdentifier
+              const identifier =
+                activeAccountType === 'evm' && tokenInfo && 'address' in tokenInfo
+                  ? tokenInfo.address
+                  : tokenInfo && 'flowIdentifier' in tokenInfo
+                    ? tokenInfo.flowIdentifier
+                    : undefined;
+              const swapLink = getSwapLink(network, activeAccountType, identifier);
+              window.open(swapLink, '_blank', 'noopener,noreferrer');
+            }}
             icon={swapIcon}
             customSx={{ width: '42px', height: '42px' }}
           />
