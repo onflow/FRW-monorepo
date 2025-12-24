@@ -14,6 +14,7 @@ import {
   MigrationAssetDrawer,
   MigrationStatusMessage,
   MigrationInfoBanner,
+  Text,
 } from '@onflow/frw-ui';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
@@ -425,6 +426,26 @@ export function MigrationScreen({
     }
   };
 
+  // Calculate transferred assets count for progress display
+  const totalAssetsCount =
+    (assets?.erc20?.length ?? 0) + (assets?.erc721?.length ?? 0) + (assets?.erc1155?.length ?? 0);
+  const transferredAssetsCount =
+    stage === 'in-progress'
+      ? Math.floor((progress / 100) * totalAssetsCount)
+      : stage === 'completed-all'
+        ? totalAssetsCount
+        : 0;
+
+  // Calculate time remaining (rough estimate: 2 minutes total, based on progress)
+  const estimatedTotalSeconds = 120; // 2 minutes
+  const remainingSeconds = Math.max(0, Math.floor(estimatedTotalSeconds * (1 - progress / 100)));
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  const timeRemaining =
+    stage === 'in-progress' && remainingSeconds > 0
+      ? `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} remaining`
+      : undefined;
+
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
       {isExtension && (
@@ -437,6 +458,15 @@ export function MigrationScreen({
       )}
 
       <YStack flex={1} gap="$6" items="center" pt={isExtension ? '$4' : '$6'} px="$4" pb="$4">
+        {/* Title - "Migrating your account" */}
+        {(stage === 'in-progress' || stage === 'ready') && (
+          <YStack width="100%" items="center">
+            <Text fontSize={30} fontWeight="700" color="$text" {...({ ta: 'center' } as any)}>
+              {t('migration.screen.title.migrating', 'Migrating your account')}
+            </Text>
+          </YStack>
+        )}
+
         <ConfirmationAnimationSection isPlaying={stage === 'in-progress'} />
 
         {/* Account Cards with Progress */}
@@ -469,11 +499,11 @@ export function MigrationScreen({
 
         {/* Progress Bar (only during in-progress) */}
         {stage === 'in-progress' && (
-          <YStack width="100%" gap="$4" style={{ maxWidth: 315 }}>
+          <YStack width="100%" gap="$4" style={{ maxWidth: 328 }}>
             <MigrationProgressBar
               progress={progress}
-              currentStep={t('migration.screen.progress.currentStep')}
-              timeEstimate={t('migration.screen.progress.timeEstimate')}
+              currentStep={t('migration.screen.progress.currentStep', 'Migrating account')}
+              timeEstimate={timeRemaining}
             />
           </YStack>
         )}
@@ -528,6 +558,8 @@ export function MigrationScreen({
             }
             defaultExpanded={stage !== 'in-progress'}
             label={t('migration.screen.assets.label')}
+            transferredCount={stage === 'in-progress' ? transferredAssetsCount : undefined}
+            totalCount={stage === 'in-progress' ? totalAssetsCount : undefined}
           />
         </YStack>
 

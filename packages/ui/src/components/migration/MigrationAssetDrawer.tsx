@@ -20,6 +20,10 @@ export interface MigrationAssetDrawerProps {
   defaultExpanded?: boolean;
   /** Label for the drawer */
   label?: string;
+  /** Current count of transferred assets (for "X / Y assets transferred" format) */
+  transferredCount?: number;
+  /** Total count of assets (for "X / Y assets transferred" format) */
+  totalCount?: number;
 }
 
 /**
@@ -29,8 +33,16 @@ export function MigrationAssetDrawer({
   assets,
   defaultExpanded = false,
   label = 'Assets',
+  transferredCount,
+  totalCount,
 }: MigrationAssetDrawerProps): React.ReactElement {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  // Use "X / Y assets transferred" format if counts are provided, otherwise use label with count
+  const displayLabel =
+    transferredCount !== undefined && totalCount !== undefined
+      ? `${transferredCount} / ${totalCount} assets transferred`
+      : label;
 
   return (
     <YStack bg="$bg2" rounded="$4" borderWidth={1} borderColor="$borderGlass" overflow="hidden">
@@ -44,13 +56,29 @@ export function MigrationAssetDrawer({
         pressStyle={{ opacity: 0.8 }}
       >
         <XStack items="center" gap="$2" flex={1}>
-          <Text fontSize="$3" fontWeight="400" color="$text">
-            {label}
-          </Text>
-          {assets.length > 0 && (
-            <Text fontSize="$3" fontWeight="400" color="$textSecondary">
-              ({assets.length})
-            </Text>
+          {transferredCount !== undefined && totalCount !== undefined ? (
+            <XStack items="center" gap="$1">
+              <Text fontSize="$3" fontWeight="600" color="$text">
+                {transferredCount}
+              </Text>
+              <Text fontSize="$3" fontWeight="400" color="$textSecondary">
+                /
+              </Text>
+              <Text fontSize="$3" fontWeight="400" color="$textSecondary">
+                {totalCount} assets transferred
+              </Text>
+            </XStack>
+          ) : (
+            <>
+              <Text fontSize="$3" fontWeight="400" color="$text">
+                {displayLabel}
+              </Text>
+              {assets.length > 0 && (
+                <Text fontSize="$3" fontWeight="400" color="$textSecondary">
+                  ({assets.length})
+                </Text>
+              )}
+            </>
           )}
         </XStack>
         <View transform={[{ rotate: isExpanded ? '180deg' : '0deg' }]} animation="quick">

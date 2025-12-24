@@ -26,11 +26,11 @@ export function MigrationProgressBar({
     <YStack gap="$2" width="100%">
       {/* Progress info */}
       <XStack items="center" justify="space-between" width="100%">
-        <Text fontSize="$3" fontWeight="400" color="$text">
-          {currentStep || 'Migrating...'}
+        <Text fontSize="$4" fontWeight="600" color="$text">
+          {currentStep || 'Migrating account'}
         </Text>
         {timeEstimate && (
-          <Text fontSize="$2" fontWeight="400" color="$textSecondary">
+          <Text fontSize="$3" fontWeight="400" color="$primary">
             {timeEstimate}
           </Text>
         )}
