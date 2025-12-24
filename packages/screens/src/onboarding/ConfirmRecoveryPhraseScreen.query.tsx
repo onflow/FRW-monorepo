@@ -189,15 +189,41 @@ export function ConfirmRecoveryPhraseScreen({
 
       const username = generateRandomUsername();
 
+      // Get all v4 registration signatures (Flow + EVM)
+      // This signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys
+      let flowSignature: string;
+      let evmSignature: string;
+      let eoaAddress: string;
+      try {
+        if (!bridge.getV4RegistrationSignatures) {
+          throw new Error('getV4RegistrationSignatures not available on bridge');
+        }
+        const signatures = await bridge.getV4RegistrationSignatures(mnemonic);
+        flowSignature = signatures.flowSignature;
+        evmSignature = signatures.evmSignature;
+        eoaAddress = signatures.eoaAddress;
+        logger.info('[ConfirmRecoveryPhraseScreen] Got v4 registration signatures');
+      } catch (signatureError: any) {
+        throw new FRWError(
+          ErrorCode.ACCOUNT_REGISTRATION_FAILED,
+          signatureError?.message || 'Failed to get registration signatures',
+          { originalError: signatureError }
+        );
+      }
+
       let registerResponse;
       try {
-        registerResponse = await profileService().register({
+        registerResponse = await profileService().registerV4({
           username,
           accountKey: {
             public_key: accountKey.publicKey,
             sign_algo: accountKey.signAlgo,
             hash_algo: accountKey.hashAlgo,
+            weight: accountKey.weight,
           },
+          flowSignature,
+          evmSignature,
+          eoaAddress,
         });
       } catch (registrationError: any) {
         throw new FRWError(

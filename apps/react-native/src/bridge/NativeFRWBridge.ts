@@ -40,6 +40,15 @@ interface AccountKey {
   signAlgo: number;
 }
 
+/**
+ * Response from getV4RegistrationSignatures containing all signatures needed for v4 API
+ */
+interface V4RegistrationSignaturesResponse {
+  flowSignature: string;
+  evmSignature: string;
+  eoaAddress: string;
+}
+
 interface CreateAccountResponse {
   success: boolean;
   address: string | null;
@@ -144,6 +153,13 @@ export interface Spec extends TurboModule {
     txId: string
   ): Promise<{ success: boolean; address: string | null; error: string | null }>;
   generateSeedPhrase(strength?: number | null): Promise<SeedPhraseGenerationResponse>;
+  /**
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
+   */
+  getV4RegistrationSignatures(mnemonic: string): Promise<V4RegistrationSignaturesResponse>;
   signInWithCustomToken(customToken: string): Promise<void>;
   saveMnemonic(
     mnemonic: string,

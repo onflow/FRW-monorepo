@@ -425,6 +425,23 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  /**
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
+   */
+  async getV4RegistrationSignatures(
+    mnemonic: string
+  ): Promise<{ flowSignature: string; evmSignature: string; eoaAddress: string }> {
+    try {
+      return await NativeFRWBridge.getV4RegistrationSignatures(mnemonic);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to get v4 registration signatures:', error);
+      throw error;
+    }
+  }
+
   async saveMnemonic(
     mnemonic: string,
     customToken: string,
