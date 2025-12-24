@@ -149,12 +149,14 @@ export interface PlatformSpec {
    * @param customToken - Firebase custom token from registration
    * @param txId - Transaction ID from account creation (used to init native wallet SDK)
    * @param username - Username for the account
+   * @param evmAddress - Optional pre-derived EVM/EOA address for faster display
    */
   saveMnemonic?(
     mnemonic: string,
     customToken: string,
     txId: string,
-    username: string
+    username: string,
+    evmAddress?: string
   ): Promise<void>;
 
   // Firebase authentication

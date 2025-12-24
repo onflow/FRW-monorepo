@@ -62,6 +62,8 @@ interface SeedPhraseGenerationResponse {
   mnemonic: string;
   accountKey: AccountKey;
   drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
 }
 
 /**
@@ -165,7 +167,8 @@ export interface Spec extends TurboModule {
     mnemonic: string,
     customToken: string,
     txId: string,
-    username: string
+    username: string,
+    evmAddress?: string | null
   ): Promise<void>;
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
