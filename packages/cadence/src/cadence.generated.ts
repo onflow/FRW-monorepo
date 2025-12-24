@@ -156,7 +156,7 @@ transaction(publicKeys: [String], revokeKeyIndexs: [Int]) {
 
       for publicKey in publicKeys {
         let signatureAlgorithm = SignatureAlgorithm.ECDSA_secp256k1
-        let hashAlgorithm = HashAlgorithm.SHA3_256
+        let hashAlgorithm = HashAlgorithm.SHA2_256
         let weight = 1000.0
 
         let key = PublicKey(

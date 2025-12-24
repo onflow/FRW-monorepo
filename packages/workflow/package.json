@@ -36,6 +36,7 @@
     "@onflow/fcl": "^1.13.1",
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-context": "workspace:*",
+    "@onflow/frw-types": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "@onflow/transport-http": "^1.13.0",
     "@onflow/util-encode-key": "^1.2.4",

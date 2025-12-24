@@ -2,6 +2,8 @@ import { type Cache, type PlatformSpec, type Storage } from '@onflow/frw-context
 import { useSendStore, useTokenQueryStore, fetchPayerStatusWithCache } from '@onflow/frw-stores';
 import {
   Platform,
+  type KeyRotationDependencies,
+  type NewKeyInfo,
   type Currency,
   type RecentContactsResponse,
   type WalletAccount,
@@ -595,6 +597,25 @@ class ExtensionPlatformImpl implements PlatformSpec {
   ): void {
     // Store the callback for the platform to use
     (this as any).toastCallback = callback;
+  }
+
+  getKeyRotationDependencies(): KeyRotationDependencies {
+    return {
+      createSeedKey: (strength: number): NewKeyInfo => {
+        // Extension doesn't have synchronous seed generation yet
+        // This needs to be implemented in the wallet controller
+        throw new Error(
+          'createSeedKey not implemented in Extension - requires wallet controller extension'
+        );
+      },
+      saveNewKey: async (key: NewKeyInfo): Promise<void> => {
+        // Extension doesn't have key saving mechanism yet
+        // This needs to be implemented in the wallet controller
+        throw new Error(
+          'saveNewKey not implemented in Extension - requires wallet controller extension'
+        );
+      },
+    };
   }
 }
 

@@ -1,4 +1,6 @@
 import type {
+  KeyRotationDependencies,
+  NewKeyInfo,
   RecentContactsResponse,
   Currency as SharedCurrency,
   EnvironmentVariables as SharedEnvironmentVariables,
@@ -34,7 +36,7 @@ const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables
 const _currencySyncCheck: Currency = {} as SharedCurrency;
 const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
 
-export interface Spec extends TurboModule {
+export interface Spec extends TurboModule, KeyRotationDependencies {
   getSelectedAddress(): string | null;
   getDebugAddress(): string | null;
   getNetwork(): string;
@@ -78,6 +80,9 @@ export interface Spec extends TurboModule {
     message: string,
     args: ReadonlyArray<string>
   ): void;
+
+  createSeedKey(strength: number): Promise<NewKeyInfo>;
+  saveNewKey(key: NewKeyInfo): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

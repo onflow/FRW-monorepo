@@ -51,6 +51,9 @@ export { convertedSVGURL } from './svgtopng';
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
 
+// Seed utilities
+export { seedPhraseLengthToStrength } from './seed.util';
+
 // Query retry utilities
 export { retryConfigs, getRetryConfig, createRetryFunction } from './query-retry';
 export type { BridgeLogger } from './logger';

@@ -1,4 +1,5 @@
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
+import type { NewKeyInfo } from '@onflow/frw-types';
 import type {
   Currency,
   RecentContactsResponse,
@@ -225,6 +226,14 @@ class PlatformImpl implements PlatformSpec {
 
   scanQRCode(): Promise<string> {
     return NativeFRWBridge.scanQRCode();
+  }
+
+  createSeedKey(strength: number): Promise<NewKeyInfo> {
+    return NativeFRWBridge.createSeedKey(strength);
+  }
+
+  saveNewKey(key: NewKeyInfo): Promise<void> {
+    return NativeFRWBridge.saveNewKey(key);
   }
 
   closeRN(): void {

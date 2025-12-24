@@ -224,6 +224,8 @@ export const logger = new Proxy({} as Logger, {
   },
 });
 
+// KeyRotation is now managed at the application level to avoid circular dependencies
+
 export const toast = new Proxy({} as ToastManager, {
   get(target, prop): unknown {
     try {
