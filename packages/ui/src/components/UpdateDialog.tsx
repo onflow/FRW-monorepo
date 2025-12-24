@@ -4,6 +4,15 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { YStack, Stack, useTheme, getTokens, Text as TamaguiText } from 'tamagui';
 
+import HtmlView from './HtmlView';
+
+export interface WhatsNewAction {
+  text: string;
+  url?: string;
+  type: 'external' | 'internal' | 'deeplink';
+  style?: Record<string, unknown>;
+}
+
 export interface UpdateDialogProps {
   visible: boolean;
   title: string;
@@ -14,11 +23,7 @@ export interface UpdateDialogProps {
    */
   children?: React.ReactNode;
   htmlContent?: string;
-  /**
-   * Optional "Read more" link text and URL
-   */
-  readMoreText?: string;
-  readMoreUrl?: string;
+  actions: WhatsNewAction[];
   /**
    * Button text to show at bottom of dialog (required)
    */
@@ -38,8 +43,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   title,
   children,
   htmlContent,
-  readMoreText,
-  readMoreUrl,
+  actions,
   buttonText,
   onButtonClick,
   onClose,
@@ -81,9 +85,15 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
     onClose();
   };
 
-  const handleReadMoreClick = () => {
-    if (readMoreUrl && typeof window !== 'undefined') {
-      window.open(readMoreUrl, '_blank', 'noopener,noreferrer');
+  const handleActions = (action: WhatsNewAction) => {
+    if (action.type === 'external') {
+      if (action.url && typeof window !== 'undefined') {
+        window.open(action.url, '_blank', 'noopener,noreferrer');
+      }
+    } else if (action.type === 'internal') {
+      // todo for inner url
+      onButtonClick?.();
+      onClose();
     }
   };
 
@@ -149,7 +159,6 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
             'aria-label': 'Close dialog',
           } as any)}
         >
-          {/* @ts-expect-error - Close icon type issue */}
           <Close
             size={24}
             color={tokens.color.light80.val}
@@ -173,38 +182,43 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
         </YStack>
 
         {/* Content area */}
-        <YStack {...({ gap: 10, mb: 12 } as any)}>
-          {htmlContent ? (
-            <YStack
-               
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
-            />
-          ) : (
-            children
-          )}
+        <YStack {...({ gap: 10, mb: 12, px: 20 } as any)}>
+          {htmlContent ? <HtmlView htmlContent={DOMPurify.sanitize(htmlContent)} /> : children}
         </YStack>
 
-        {/* Read more link */}
-        {readMoreText && readMoreUrl && (
-          <YStack {...({ items: 'center', mb: 14 } as any)}>
-            <TamaguiText
-              {...({
-                fontSize: 14,
-                fontWeight: '600',
-                color: '#FFFFFF',
-                ta: 'center',
-                textDecorationLine: 'underline',
-                cursor: 'pointer',
-                onPress: handleReadMoreClick,
-              } as any)}
+        {actions.map((action, index) => {
+          const buttonStyle = action.style || {};
+
+          return (
+            <YStack
+              key={`${action.type}-${index}`}
+              width="100%"
+              height="$12"
+              justify={'center'}
+              items={'center'}
+              backgroundColor={buttonStyle.backgroundColor || '$bg'}
+              borderRadius="$3"
+              pressStyle={{ opacity: 0.8, scale: 0.98 }}
+              onPress={() => handleActions(action)}
+              cursor="pointer"
+              borderWidth={1}
+              {...buttonStyle}
             >
-              {readMoreText}
-            </TamaguiText>
-          </YStack>
-        )}
+              <TamaguiText
+                fontSize="$4"
+                fontWeight="600"
+                color={buttonStyle.color || '$text'}
+                textAlign="center"
+                lineHeight="$12"
+              >
+                {action.text}
+              </TamaguiText>
+            </YStack>
+          );
+        })}
 
         {/* Bottom button */}
-        <YStack>
+        <YStack mt="16px">
           <YStack
             {...({
               height: 50,
