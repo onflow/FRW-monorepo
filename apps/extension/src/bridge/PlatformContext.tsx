@@ -1569,6 +1569,53 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
             duplicateTokens: duplicateInfo,
           });
         }
+
+        // Comprehensive FT logging before returning
+        console.log('[PlatformBridge] ===== FINAL FT TOKENS TO BE MIGRATED =====');
+        console.log(
+          `[PlatformBridge] Total FT tokens after processing: ${migrationAssets.erc20.length}`
+        );
+        if (migrationAssets.erc20.length > 0) {
+          console.log('[PlatformBridge] Complete FT token list:');
+          migrationAssets.erc20.forEach((token, index) => {
+            const isFlow = token.address === '0x0000000000000000000000000000000000000000';
+            const symbol = isFlow ? 'FLOW' : token.address;
+            console.log(`  [${index + 1}] FT Token:`);
+            console.log(`      Symbol/Identifier: ${symbol}`);
+            console.log(`      Contract Address: ${token.address}`);
+            console.log(`      Amount: ${token.amount}`);
+            console.log(`      Amount (parsed): ${parseFloat(token.amount)}`);
+            console.log(`      Is FLOW: ${isFlow}`);
+            console.log(`      Full Token Object:`, JSON.stringify(token, null, 2));
+          });
+
+          // Summary statistics
+          const flowTokens = migrationAssets.erc20.filter(
+            (t) => t.address === '0x0000000000000000000000000000000000000000'
+          );
+          const erc20Tokens = migrationAssets.erc20.filter(
+            (t) => t.address !== '0x0000000000000000000000000000000000000000'
+          );
+
+          console.log('[PlatformBridge] FT Summary Statistics:');
+          console.log(`  - FLOW tokens: ${flowTokens.length}`);
+          if (flowTokens.length > 0) {
+            const totalFlow = flowTokens.reduce((sum, token) => {
+              return sum + parseFloat(token.amount || '0');
+            }, 0);
+            console.log(`  - Total FLOW amount: ${totalFlow}`);
+            flowTokens.forEach((token, idx) => {
+              console.log(`    FLOW ${idx + 1}: ${token.amount}`);
+            });
+          }
+          console.log(`  - ERC20 tokens: ${erc20Tokens.length}`);
+          erc20Tokens.forEach((token, idx) => {
+            console.log(`    ERC20 ${idx + 1}: ${token.address} = ${token.amount}`);
+          });
+        } else {
+          console.log('[PlatformBridge] ⚠️ WARNING: No FT tokens found to migrate!');
+        }
+        console.log('[PlatformBridge] ===== END FINAL FT TOKENS =====');
       }
 
       // Convert NFTs from EVM NFT collections (only if source address is EVM)
