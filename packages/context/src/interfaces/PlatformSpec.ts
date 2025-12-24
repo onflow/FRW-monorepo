@@ -158,4 +158,16 @@ export interface PlatformSpec {
 
   // Native screen navigation
   launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
+
+  // Migration support
+  /**
+   * Get migration assets (ERC20, ERC721, ERC1155) for a given source address
+   * @param sourceAddress - The source account address (COA/EVM address)
+   * @returns Promise with migration assets data
+   */
+  getMigrationAssets?(sourceAddress: string): Promise<{
+    erc20: Array<{ address: string; amount: string }>;
+    erc721: Array<{ address: string; id: string }>;
+    erc1155: Array<{ address: string; id: string; amount: string }>;
+  }>;
 }

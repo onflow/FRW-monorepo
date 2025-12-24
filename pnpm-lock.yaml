@@ -138,6 +138,9 @@ importers:
       '@onflow/frw-icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@onflow/frw-migration':
+        specifier: workspace:*
+        version: link:../../packages/migration
       '@onflow/frw-screens':
         specifier: workspace:*
         version: link:../../packages/screens
@@ -979,6 +982,9 @@ importers:
       '@onflow/frw-icons':
         specifier: workspace:*
         version: link:../icons
+      '@onflow/frw-migration':
+        specifier: workspace:*
+        version: link:../migration
       '@onflow/frw-services':
         specifier: workspace:*
         version: link:../services
@@ -3438,6 +3444,7 @@ packages:
   '@outblock/cadence-codegen@0.0.9':
     resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
     engines: {node: '>=14'}
+    cpu: [x64, arm64]
     os: [darwin, linux, win32]
     hasBin: true
 

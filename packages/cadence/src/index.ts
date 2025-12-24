@@ -151,6 +151,34 @@ export function createCadenceService(bridge: CadenceBridge): CadenceService {
   configureFCL(network);
   const service = new CadenceService();
 
+  // Request interceptor to ensure reference block is set for transactions
+  service.useRequestInterceptor(async (config) => {
+    if (config.type === 'transaction') {
+      try {
+        // Explicitly fetch the latest sealed block from the access node
+        // This prevents "unknown reference block" errors
+        const accessNode = await fcl.config().get('accessNode.api');
+        if (accessNode) {
+          const response = await fetch(`${accessNode}/v1/blocks?height=sealed`);
+          const data = await response.json();
+          if (data && Array.isArray(data) && data.length > 0 && data[0].id) {
+            config.refBlock = data[0].id;
+          }
+        }
+      } catch (error) {
+        // Log error but don't fail - FCL should handle this automatically
+        // If this fails, FCL's mutate() will try to fetch it automatically
+        try {
+          const logger = createLogger(bridge, 'CadenceService');
+          logger.warn('Failed to fetch reference block, FCL will handle automatically', error);
+        } catch {
+          // Fallback if logger not available
+        }
+      }
+    }
+    return config;
+  });
+
   // Basic response interceptor for logging
   service.useResponseInterceptor(async (config, response) => {
     try {
