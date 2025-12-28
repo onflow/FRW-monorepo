@@ -4,15 +4,10 @@ import {
   type CollectionModel,
   type NFTModel,
   type TokenModel,
-  addressType,
   FRWError,
   ErrorCode,
 } from '@onflow/frw-types';
-import {
-  getNFTResourceIdentifier,
-  getTokenResourceIdentifier,
-  logger,
-} from '@onflow/frw-utils';
+import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
   SendTransaction,
@@ -20,6 +15,7 @@ import {
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
+import { useTokenStore } from './tokenStore';
 import {
   type AccessibleAssetStore,
   type BalanceData,
@@ -444,16 +440,40 @@ export const useSendStore = create<SendState>((set, get) => ({
         logger.error('[SendStore] No main account found');
         return null;
       }
-      const senderType = addressType(fromAccount.address);
-      const receiverType = addressType(toAccount.address);
-      const isCrossVM = senderType !== receiverType;
+      let contractAddress = isTokenTransaction
+        ? selectedToken?.contractAddress || selectedToken?.evmAddress || ''
+        : selectedNFTs[0]?.contractAddress || selectedNFTs[0]?.evmAddress || '';
 
-      const contractAddress = isTokenTransaction
-        ? selectedToken?.evmAddress ||
-          (selectedToken?.identifier?.includes('1654653399040a61.FlowToken')
-            ? '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52'
-            : '')
-        : selectedNFTs[0]?.evmAddress || '';
+      // Fallback: resolve missing EVM token contract address from tokenStore cache
+      if (isTokenTransaction && contractAddress === '' && selectedToken) {
+        const network = bridge.getNetwork?.() || 'mainnet';
+        const tokens =
+          useTokenStore.getState().getTokensForAddress(fromAccount.address, network) || [];
+        const matched = tokens.find((token) => {
+          if (selectedToken.identifier && token.identifier === selectedToken.identifier) {
+            return true;
+          }
+          if (
+            selectedToken.contractAddress &&
+            token.contractAddress === selectedToken.contractAddress
+          ) {
+            return true;
+          }
+          if (selectedToken.symbol && token.symbol === selectedToken.symbol) {
+            return true;
+          }
+          return false;
+        });
+        if (matched) {
+          contractAddress = matched.contractAddress || matched.evmAddress || contractAddress;
+          logger.debug('[SendStore] Resolved missing token contract address from tokenStore', {
+            matchedIdentifier: matched.identifier,
+            matchedSymbol: matched.symbol,
+            matchedContract: matched.contractAddress,
+            resolvedAddress: contractAddress,
+          });
+        }
+      }
 
       // For ERC1155 NFTs, we need to include the amount/quantity
       let nftAmount = '';

@@ -1264,6 +1264,9 @@ importers:
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context
+      '@onflow/frw-types':
+        specifier: workspace:*
+        version: link:../types
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
@@ -15809,9 +15812,7 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 

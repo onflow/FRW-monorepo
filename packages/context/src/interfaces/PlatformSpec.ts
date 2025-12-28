@@ -9,6 +9,7 @@ import type {
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
+  KeyRotationDependencies,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -19,11 +20,14 @@ import type { Storage } from './storage/Storage';
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
+// Re-export KeyRotationDependencies from types package
+export type { KeyRotationDependencies, NewKeyInfo } from '@onflow/frw-types';
+
 /**
  * Platform specification interface for platform abstraction
  * This interface defines all methods that platform-specific implementations must implement
  */
-export interface PlatformSpec {
+export interface PlatformSpec extends KeyRotationDependencies {
   // Basic platform methods
   getSelectedAddress(): string | null;
   getDebugAddress(): string | null;

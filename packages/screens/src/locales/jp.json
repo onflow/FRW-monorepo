@@ -253,6 +253,60 @@
       "secureEnclaveProfile": "セキュアエンクレーブプロファイル",
       "next": "次へ"
     },
+    "importProfile": {
+      "title": "プロフィールをインポート",
+      "subtitle": "バックアップを使用してプロフィールをインポートします。",
+      "previousProfiles": {
+        "title": "以前のプロフィール",
+        "subtitle": "このデバイスで以前に{{count}}個のプロフィールが見つかりました"
+      },
+      "deviceBackup": {
+        "title": "デバイスバックアップから",
+        "subtitle": "別の携帯電話への物理的なアクセスを使用してプロフィールをインポートします。"
+      },
+      "cloudBackup": {
+        "title": "クラウドマルチバックアップから",
+        "subtitle": "Google DriveやiCloudなどのクラウドプロバイダーからインポートします。"
+      },
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズから",
+        "subtitle": "12単語のリカバリーフレーズ。"
+      },
+      "anotherMethod": {
+        "title": "別の方法から",
+        "subtitle": "キーストア、秘密鍵、またはリカバリーフレーズを使用してプロフィールをインポートします。"
+      }
+    },
+    "importOtherMethods": {
+      "title": "別の方法から",
+      "subtitle": "プロフィールをインポートする方法を選択してください。",
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズ",
+        "subtitle": "12単語のリカバリーフレーズ"
+      },
+      "keyStore": {
+        "title": "キーストア",
+        "subtitle": "キーストアファイルは、パスワードで暗号化されたファイル形式のウォレットです。"
+      },
+      "privateKey": {
+        "title": "秘密鍵",
+        "subtitle": "アカウントの秘密鍵を貼り付けます。"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "Google Driveからバックアップをインポートします。"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "iCloudからバックアップをインポートします。"
+      }
+    },
+    "confirmImportProfile": {
+      "title": "インポートするプロフィールを確認",
+      "emptyTitle": "プロフィールが見つかりません",
+      "emptyMessage": "このデバイスに以前のプロフィールが見つかりませんでした",
+      "importButton": "プロフィールをインポート"
+    },
     "secureEnclave": {
       "title": "高度な設定",
       "cardTitle": "セキュアプロファイル",
@@ -322,7 +376,51 @@
       "title": "フレーズを確認",
       "description": "順序を参照して、単語を1つずつ選択してください。",
       "selectWord": "#{{position}} の単語を選択",
-      "finish": "完了"
+      "finish": "完了",
+      "creating": {
+        "title": "アカウントを\n作成中",
+        "configuring": "アカウントを設定中"
+      },
+      "error": {
+        "title": "アカウント作成に失敗しました",
+        "generic": "アカウントの作成に失敗しました。もう一度お試しください。",
+        "server": "サーバーエラーが発生しました。後でもう一度お試しください。",
+        "validation": "無効なアカウントデータです。もう一度お試しください。"
+      }
+    }
+  },
+  "backup": {
+    "tip": {
+      "title": "アカウントを\nアップグレード",
+      "description": "Flow Walletは、以前のBloctoキーを削除するために、アカウントのセキュリティをアップグレードする必要があります",
+      "sectionTitle": "これはどういう意味ですか？",
+      "fullControl": {
+        "title": "アカウントとキーを完全に制御できるようになります。"
+      },
+      "newKey": {
+        "title": "アカウントを保護するために新しいキーを作成し、Bloctoのアクセスを削除します。"
+      },
+      "newPhrase": {
+        "title": "今後アカウントを保護する新しいリカバリーフレーズを作成します。"
+      },
+      "warning": {
+        "prefix": "注意してください: ",
+        "description": "このプロセスが完了すると、Bloctoのリカバリーキットはアカウントへのアクセスを保護しなくなります。これは、Bloctoが運営を停止したため、あなたの保護のためです。"
+      },
+      "start": "開始",
+      "notNow": "後で"
+    },
+    "mnemonic": {
+      "navTitle": "アカウントを作成",
+      "title": "リカバリーフレーズ",
+      "description": "これらの単語を正しい順序で書き留め、安全な場所に保管してください。",
+      "clickToReveal": "クリックしてフレーズを表示",
+      "copy": "コピー",
+      "warning": {
+        "title": "リカバリーフレーズを共有しないでください！",
+        "description": "誰かがあなたのリカバリーフレーズを手に入れると、あなたのウォレットを完全に制御できるようになります。"
+      },
+      "done": "完了"
     }
   }
 }

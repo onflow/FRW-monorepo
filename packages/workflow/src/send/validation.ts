@@ -1,5 +1,5 @@
 import type { SendPayload } from './types';
-import { isNFTIdentifier, isVaultIdentifier } from './utils';
+import { isFlowToken, isNFTIdentifier, isVaultIdentifier } from './utils';
 
 /**
  * Validates Flow blockchain addresses (0x + 16 hex characters)
@@ -35,6 +35,14 @@ export const validateTokenPayload = (payload: SendPayload): void => {
   }
   if (!payload.decimal) {
     throw new Error('invalid send token transaction payload');
+  }
+
+  // Non-FLOW EVM token transfers must include a valid contract address
+  if (payload.assetType === 'evm' && !isFlowToken(payload.flowIdentifier || '')) {
+    const { tokenContractAddr } = payload;
+    if (!tokenContractAddr || !validateEvmAddress(tokenContractAddr)) {
+      throw new Error('invalid send evm transaction payload - invalid contract address');
+    }
   }
 };
 
@@ -121,14 +129,6 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
   if (type === 'nft') {
     validateNftPayload(payload);
   }
-
-  // TODO: send nft from evm to flow, tokenContractAddr is not required, handle by bridge use flowIdentifier
-  // if (assetType === 'evm') {
-  //   // Skip validation if Flow token (tokenContractAddr can be null/undefined)
-  //   if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
-  //     throw new Error('invalid send evm transaction payload - invalid contract address');
-  //   }
-  // }
 
   return true;
 };

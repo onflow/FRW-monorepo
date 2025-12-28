@@ -6,7 +6,9 @@ import {
   SendSummaryScreen,
   SendTokensScreen,
   SendToScreen,
-  ReceiveScreen,
+  // Backup screens
+  BackupTipScreen,
+  BackupMnemonicScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -27,7 +29,8 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-// import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest'; // For testing error handling
+
+import { SendToScreen } from '../screens/SendToScreenWrapper';
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
@@ -47,13 +50,37 @@ export type RootStackParamList = {
   SendTo: undefined;
   SendTokens: undefined;
   SendSummary: undefined;
-  Receive: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
     amount?: string;
     token?: Record<string, unknown>;
     selectedNFTs?: Record<string, unknown>[];
+  };
+  // Onboarding screens
+  GetStarted: undefined;
+  ProfileTypeSelection: undefined;
+  RecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: {
+    mnemonic: string;
+    accountKey: {
+      publicKey: string;
+      signAlgo: number;
+      hashAlgo: number;
+    };
+  };
+  SecureEnclave: undefined;
+  NotificationPreferences: {
+    accountType?: string;
+  };
+  // Recovery screens
+  ImportProfile: undefined;
+  ImportOtherMethods: undefined;
+  ConfirmImportProfile: undefined;
+  // Backup screens
+  BackupTip: undefined;
+  BackupMnemonic: {
+    seedPhrase: string[];
   };
 };
 
@@ -241,10 +268,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             <Stack.Screen
               name="SelectTokens"
               component={SelectTokensScreen}
-              // component={ErrorHandlingTest} // Uncomment for testing error handling
               options={{
-                headerTitle: t('navigation.selectTokens'),
-                // headerTitle: 'Error Test', // Use with ErrorHandlingTest
+                headerTitle: t('navigation.send'),
               }}
             />
             <Stack.Screen
@@ -282,13 +307,77 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: t('navigation.sending'),
               }}
             />
+          </Stack.Group>
+
+          {/* Blocto Backup screens */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          >
             <Stack.Screen
-              name="Receive"
-              component={ReceiveScreen}
+              name="BackupTip"
               options={{
-                headerTitle: t('navigation.receive'),
+                headerTitle: '',
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
               }}
-            />
+            >
+              {({ navigation: nav }) => (
+                <BackupTipScreen
+                  onContinue={() => {
+                    logger.info(
+                      '[BackupTipScreen] Continue pressed - navigating to BackupMnemonic'
+                    );
+                    // TODO: Generate or fetch actual seed phrase from native bridge
+                    const testSeedPhrase = [
+                      'abandon',
+                      'ability',
+                      'able',
+                      'about',
+                      'above',
+                      'absent',
+                      'absorb',
+                      'abstract',
+                      'absurd',
+                      'abuse',
+                      'access',
+                      'accident',
+                    ];
+                    nav.navigate('BackupMnemonic', { seedPhrase: testSeedPhrase });
+                  }}
+                  onSkip={() => {
+                    logger.info('[BackupTipScreen] Skip pressed');
+                    // TODO: Handle skip action - close the flow
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="BackupMnemonic"
+              options={{
+                headerTitle: t('backup.mnemonic.navTitle', { defaultValue: 'Recovery Phrase' }),
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <BackupMnemonicScreen
+                  seedPhrase={route.params.seedPhrase}
+                  onComplete={() => {
+                    logger.info('[BackupMnemonicScreen] Backup complete');
+                    // TODO: Handle completion - close the flow or navigate to success
+                  }}
+                  onBack={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
           </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>

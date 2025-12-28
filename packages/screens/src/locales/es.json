@@ -253,6 +253,60 @@
       "secureEnclaveProfile": "Perfil Secure Enclave",
       "next": "Siguiente"
     },
+    "importProfile": {
+      "title": "Importar perfil",
+      "subtitle": "Importa tu perfil usando una copia de seguridad.",
+      "previousProfiles": {
+        "title": "Perfiles anteriores",
+        "subtitle": "Se encontraron {{count}} perfiles previamente en este dispositivo"
+      },
+      "deviceBackup": {
+        "title": "Desde Copia de Seguridad del Dispositivo",
+        "subtitle": "Dispositivos móviles o de extensión"
+      },
+      "cloudBackup": {
+        "title": "Desde Copia de Seguridad Multi-Nube",
+        "subtitle": "Google Drive, iCloud o DropBox."
+      },
+      "recoveryPhrase": {
+        "title": "Desde Frase de Recuperación",
+        "subtitle": "Frase de recuperación de 12 palabras."
+      },
+      "anotherMethod": {
+        "title": "Desde otro método",
+        "subtitle": ""
+      }
+    },
+    "importOtherMethods": {
+      "title": "Desde otros métodos",
+      "subtitle": "Importar perfil usando métodos alternativos",
+      "recoveryPhrase": {
+        "title": "Frase de recuperación",
+        "subtitle": "Frase de recuperación de 12 palabras"
+      },
+      "keyStore": {
+        "title": "Almacén de claves",
+        "subtitle": "Importar archivo keystore (Copia de Seguridad Blocto)"
+      },
+      "privateKey": {
+        "title": "Clave privada",
+        "subtitle": "Importar con clave hexadecimal sin procesar"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "Desde copia de seguridad heredada de Google Drive"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "Desde copia de seguridad heredada de iCloud"
+      }
+    },
+    "confirmImportProfile": {
+      "title": "Confirmar qué perfil importar",
+      "emptyTitle": "No se encontraron perfiles",
+      "emptyMessage": "No se encontraron perfiles anteriores en este dispositivo",
+      "importButton": "Importar perfil"
+    },
     "secureEnclave": {
       "title": "Avanzado",
       "cardTitle": "Perfil Seguro",
@@ -322,7 +376,51 @@
       "title": "Confirmar frase",
       "description": "Por favor selecciona las palabras una por una según su orden.",
       "selectWord": "Selecciona la palabra en #{{position}}",
-      "finish": "Finalizar"
+      "finish": "Finalizar",
+      "creating": {
+        "title": "Creando\ntu cuenta",
+        "configuring": "Configurando cuenta"
+      },
+      "error": {
+        "title": "Error al crear la cuenta",
+        "generic": "No se pudo crear la cuenta. Por favor, inténtalo de nuevo.",
+        "server": "Ocurrió un error en el servidor. Por favor, inténtalo más tarde.",
+        "validation": "Datos de cuenta inválidos. Por favor, inténtalo de nuevo."
+      }
+    }
+  },
+  "backup": {
+    "tip": {
+      "title": "Actualiza\ntu cuenta",
+      "description": "Flow Wallet necesita actualizar la seguridad de tu cuenta para eliminar tus claves anteriores de Blocto",
+      "sectionTitle": "¿Qué significa esto?",
+      "fullControl": {
+        "title": "Tendrás control total sobre tus cuentas y claves."
+      },
+      "newKey": {
+        "title": "Crearemos una nueva clave para asegurar tu cuenta, eliminando el acceso de Blocto."
+      },
+      "newPhrase": {
+        "title": "Crearemos una nueva frase de recuperación que asegurará tu cuenta en adelante."
+      },
+      "warning": {
+        "prefix": "Ten en cuenta: ",
+        "description": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
+      },
+      "start": "Comenzar",
+      "notNow": "Ahora no"
+    },
+    "mnemonic": {
+      "navTitle": "Crear cuenta",
+      "title": "Frase de recuperación",
+      "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
+      "clickToReveal": "Haz clic para revelar la frase",
+      "copy": "Copiar",
+      "warning": {
+        "title": "¡No compartas tu frase de recuperación!",
+        "description": "Si alguien tiene tu frase de recuperación, tendrá control total de tu cartera."
+      },
+      "done": "Hecho"
     }
   }
 }

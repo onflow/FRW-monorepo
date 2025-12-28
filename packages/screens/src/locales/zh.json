@@ -322,7 +322,105 @@
       "title": "确认短语",
       "description": "请根据顺序逐一选择单词。",
       "selectWord": "选择位置 #{{position}} 的单词",
-      "finish": "完成"
+      "finish": "完成",
+      "creating": {
+        "title": "正在创建\n您的账户",
+        "configuring": "配置账户中"
+      },
+      "error": {
+        "title": "账户创建失败",
+        "generic": "创建账户失败。请重试。",
+        "server": "服务器错误。请稍后重试。",
+        "validation": "无效的账户数据。请重试。"
+      }
+    },
+    "importProfile": {
+      "title": "导入个人资料",
+      "subtitle": "使用备份导入您的个人资料。",
+      "previousProfiles": {
+        "title": "之前的个人资料",
+        "subtitle": "在此设备上发现{{count}}个之前的个人资料"
+      },
+      "deviceBackup": {
+        "title": "设备备份",
+        "subtitle": "通过物理访问另一部手机来导入您的个人资料。"
+      },
+      "cloudBackup": {
+        "title": "云多重备份",
+        "subtitle": "从Google Drive和iCloud等云服务提供商导入。"
+      },
+      "recoveryPhrase": {
+        "title": "从恢复短语",
+        "subtitle": "12个单词的恢复短语。"
+      },
+      "otherMethod": {
+        "title": "从其他方式",
+        "subtitle": "使用密钥库、私钥或恢复短语导入您的个人资料。"
+      }
+    },
+    "importOtherMethods": {
+      "title": "从其他方式",
+      "subtitle": "选择导入个人资料的方式。",
+      "recoveryPhrase": {
+        "title": "恢复短语",
+        "subtitle": "12个单词的恢复短语"
+      },
+      "keyStore": {
+        "title": "密钥库",
+        "subtitle": "密钥库文件是您以密码加密的文件形式的钱包。"
+      },
+      "privateKey": {
+        "title": "私钥",
+        "subtitle": "粘贴您的账户私钥。"
+      },
+      "googleDrive": {
+        "title": "Google Drive",
+        "subtitle": "从Google Drive导入备份。"
+      },
+      "iCloud": {
+        "title": "iCloud",
+        "subtitle": "从iCloud导入备份。"
+      }
+    },
+    "confirmImportProfile": {
+      "title": "确认要导入的个人资料",
+      "emptyTitle": "未找到个人资料",
+      "emptyMessage": "此设备上未找到之前的个人资料",
+      "importButton": "导入个人资料"
+    }
+  },
+  "backup": {
+    "tip": {
+      "title": "升级\n您的账户",
+      "description": "Flow Wallet需要升级您账户的安全性以移除您以前的Blocto密钥",
+      "sectionTitle": "这意味着什么？",
+      "fullControl": {
+        "title": "您将完全控制您的账户和密钥。"
+      },
+      "newKey": {
+        "title": "我们将创建一个新密钥来保护您的账户，移除Blocto的访问权限。"
+      },
+      "newPhrase": {
+        "title": "我们将创建一个新的恢复短语，以便将来保护您的账户。"
+      },
+      "warning": {
+        "prefix": "请注意：",
+        "description": "此过程完成后，您来自Blocto的恢复套件将不再保护对您账户的访问。这是为了在Blocto停止运营后保护您。"
+      },
+      "start": "开始",
+      "notNow": "暂不"
+    },
+    "mnemonic": {
+      "navTitle": "创建账户",
+      "title": "恢复短语",
+      "description": "按正确顺序写下这些单词，并将其存放在安全的地方。",
+      "clickToReveal": "点击显示短语",
+      "copy": "复制",
+      "warning": {
+        "title": "不要分享您的恢复短语！",
+        "description": "如果有人获得了您的恢复短语，他们将完全控制您的钱包。"
+      },
+      "done": "完成"
     }
   }
 }
