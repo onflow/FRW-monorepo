@@ -10,6 +10,7 @@ import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import Dashboard from './Dashboard';
 import Deposit from './Deposit';
 import Enable from './Enable';
+import KeyRotationView from './KeyRotation';
 import LinkedCollection from './Linked/LinkedCollection';
 import LinkedNftDetail from './Linked/LinkedNftDetail';
 import ManageToken from './ManageToken';
@@ -150,6 +151,14 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <KeyList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="nested/keyrotation"
+              element={
+                <PrivateRoute>
+                  <KeyRotationView />
                 </PrivateRoute>
               }
             />

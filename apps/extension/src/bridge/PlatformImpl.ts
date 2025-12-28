@@ -10,12 +10,21 @@ import {
   type WalletAccount,
   type WalletAccountsResponse,
   type WalletProfilesResponse,
+  type CreateAccountResponse,
+  type NativeScreenName,
+  type SeedPhraseGenerationResponse,
+  type BloctoDetectionResult,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
 import { WalletCoreProvider } from '@onflow/frw-wallet';
+import { KeyRotation } from '@onflow/frw-workflow';
+import * as bip39 from 'bip39';
 
 // Removed direct service imports - using walletController instead
-import { HTTP_STATUS_TOO_MANY_REQUESTS } from '@/shared/constant';
+import { keyringService, accountManagementService } from '@/core/service';
+import { getAccountKey } from '@/core/utils/account-key';
+import { returnCurrentProfileId } from '@/core/utils/current-id';
+import { HTTP_STATUS_TOO_MANY_REQUESTS, FLOW_BIP44_PATH } from '@/shared/constant';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
@@ -32,6 +41,53 @@ class ExtensionPlatformImpl implements PlatformSpec {
   constructor() {
     this.storageInstance = new ExtensionStorage();
     this.cacheInstance = new ExtensionCache('screens:');
+  }
+  isInstabugInitialized?(): boolean {
+    throw new Error('Method not implemented.');
+  }
+  setInstabugInitialized?(initialized: boolean): void {
+    throw new Error('Method not implemented.');
+  }
+  shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  hideToast?(id: string): void {
+    throw new Error('Method not implemented.');
+  }
+  clearAllToasts?(): void {
+    throw new Error('Method not implemented.');
+  }
+  generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse> {
+    throw new Error('Method not implemented.');
+  }
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse> {
+    throw new Error('Method not implemented.');
+  }
+  registerAccountWithBackend?(): Promise<string> {
+    throw new Error('Method not implemented.');
+  }
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  signInWithCustomToken?(customToken: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  requestNotificationPermission?(): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+  checkNotificationPermission?(): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void {
+    throw new Error('Method not implemented.');
+  }
+  launchNativeScreen?(screenName: NativeScreenName, params?: string): void {
+    throw new Error('Method not implemented.');
   }
 
   storage(): Storage {
@@ -611,23 +667,154 @@ class ExtensionPlatformImpl implements PlatformSpec {
     (this as any).toastCallback = callback;
   }
 
+  async createSeedKey(strength: number): Promise<NewKeyInfo> {
+    try {
+      // Generate mnemonic with specified strength (128 = 12 words, 256 = 24 words)
+      const mnemonic = bip39.generateMnemonic(strength);
+
+      // Derive Flow account key from mnemonic
+      const accountKeyRequest = await getAccountKey(mnemonic);
+
+      // Convert AccountKeyRequest to AccountKey format expected by NewKeyInfo
+      // NewKeyInfo.flowKey uses AccountKey from KeyRotation.ts which has signAlgoString/hashAlgoString
+      const flowKey = {
+        publicKey: accountKeyRequest.public_key,
+        signAlgo: accountKeyRequest.sign_algo,
+        hashAlgo: accountKeyRequest.hash_algo,
+        weight: accountKeyRequest.weight,
+        signAlgoString: accountKeyRequest.sign_algo.toString(),
+        hashAlgoString: accountKeyRequest.hash_algo.toString(),
+      };
+
+      return {
+        seedphrase: mnemonic,
+        flowKey,
+      };
+    } catch (error) {
+      this.log('error', 'Failed to create seed key:', error);
+      throw new Error(
+        `Failed to create seed key: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  async saveNewKey(key: NewKeyInfo): Promise<void> {
+    try {
+      if (!key.seedphrase || !key.flowKey) {
+        throw new Error('Invalid key info: seedphrase and flowKey are required');
+      }
+
+      // Verify the wallet is unlocked
+      if (!(await keyringService.isUnlocked())) {
+        throw new Error('Wallet must be unlocked to save a new key');
+      }
+
+      // For key rotation, we need to add the new keyring to the keyring service
+      // This follows the same pattern as importProfileUsingMnemonic but for rotation keys
+      // We need to get the password - since the wallet is unlocked, we'll need to prompt for it
+      // or get it from the walletController if available
+
+      // Get the password from walletController if it has a method to retrieve it
+      // Otherwise, we'll need to use accountManagementService which handles password verification
+      let password: string | undefined;
+
+      if (this.walletController?.getPassword) {
+        password = await this.walletController.getPassword();
+      }
+
+      if (!password) {
+        // If we can't get the password automatically, we need to throw an error
+        // The caller should handle password prompting before calling this method
+        throw new Error(
+          'Password is required to save the new key. Please provide the wallet password.'
+        );
+      }
+
+      // Verify password is correct
+      await accountManagementService.verifyPasswordIfBooted(password);
+
+      // Save the current keyring state so we can switch back after adding the new one
+      const currentPublicKey = await keyringService.getCurrentPublicKey();
+      const currentKeyringId = await returnCurrentProfileId();
+
+      // Add the new keyring using the keyring service
+      // This will encrypt and store the mnemonic in the keyring vault
+      // Note: addNewKeyring will make this the current keyring
+      await keyringService.addNewKeyring(
+        key.flowKey.publicKey,
+        key.flowKey.signAlgo || 2, // Default to ECDSA_secp256k1 if not specified
+        password,
+        'HD Key Tree',
+        {
+          mnemonic: key.seedphrase,
+          activeIndexes: [0],
+          derivationPath: FLOW_BIP44_PATH,
+          passphrase: '',
+        }
+      );
+
+      // Switch back to the original keyring if it existed
+      // This ensures the user's current session isn't disrupted
+      if (currentKeyringId) {
+        try {
+          await keyringService.switchKeyring(currentKeyringId);
+        } catch (switchError) {
+          // Log but don't fail - the new keyring is saved even if we can't switch back
+          this.log('warn', 'Failed to switch back to original keyring:', switchError);
+        }
+      }
+
+      this.log('debug', 'Saved new rotation key to keyring for public key:', key.flowKey.publicKey);
+    } catch (error) {
+      this.log('error', 'Failed to save new key:', error);
+      throw new Error(
+        `Failed to save new key: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
   getKeyRotationDependencies(): KeyRotationDependencies {
+    // Return references to the existing class methods to avoid duplication
     return {
-      createSeedKey: (strength: number): NewKeyInfo => {
-        // Extension doesn't have synchronous seed generation yet
-        // This needs to be implemented in the wallet controller
-        throw new Error(
-          'createSeedKey not implemented in Extension - requires wallet controller extension'
-        );
-      },
-      saveNewKey: async (key: NewKeyInfo): Promise<void> => {
-        // Extension doesn't have key saving mechanism yet
-        // This needs to be implemented in the wallet controller
-        throw new Error(
-          'saveNewKey not implemented in Extension - requires wallet controller extension'
-        );
-      },
+      createSeedKey: this.createSeedKey.bind(this),
+      saveNewKey: this.saveNewKey.bind(this),
     };
+  }
+
+  /**
+   * Check if the current account requires key rotation
+   * @param address - Optional address to check. If not provided, uses the currently selected account address
+   * @returns Promise<BloctoDetectionResult> - Detection result indicating if rotation is needed
+   */
+  async checkKeyRotationNeeded(address?: string): Promise<BloctoDetectionResult> {
+    try {
+      // Get the address to check - use provided address or current account
+      let accountAddress = address;
+      if (!accountAddress) {
+        const selectedAccount = await this.getSelectedAccount();
+        accountAddress = selectedAccount.address;
+      }
+
+      if (!accountAddress) {
+        throw new Error('No address available to check for key rotation');
+      }
+
+      // Create KeyRotation instance with dependencies
+      const keyRotation = new KeyRotation(this.getKeyRotationDependencies());
+
+      // Detect if Blocto keys are present
+      const detection = await keyRotation.detectBloctoKey(accountAddress);
+
+      return detection;
+    } catch (error) {
+      this.log('error', 'Failed to check key rotation:', error);
+      // Return a safe default result on error
+      return {
+        isBloctoKey: false,
+        fullAccountKeys: [],
+        bloctoKeyIndexes: [],
+      };
+    }
   }
 }
 

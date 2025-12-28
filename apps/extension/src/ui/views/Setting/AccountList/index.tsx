@@ -1,26 +1,12 @@
 import { Box } from '@mui/material';
-import React from 'react';
 import { useNavigate } from 'react-router';
 
-import { type Emoji, type WalletAccount } from '@/shared/types';
+import { type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress } from '@/shared/utils';
 import { LLHeader } from '@/ui/components';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import IconEnd from '@/ui/components/iconfont/IconAVector11Stroke';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
-
-const tempEmoji: Emoji[] = [
-  {
-    emoji: '🥥',
-    name: 'Coconut',
-    bgcolor: '#FFE4C4',
-  },
-  {
-    emoji: '🥑',
-    name: 'Avocado',
-    bgcolor: '#98FB98',
-  },
-];
 
 const AccountList = () => {
   const { currentWallet, walletList, network } = useProfiles();
@@ -46,6 +32,10 @@ const AccountList = () => {
     }
   };
 
+  const handleMigrationClick = (address: string) => {
+    navigate(`/dashboard/nested/keyrotation?address=${address}`);
+  };
+
   return (
     <div className="page">
       <LLHeader
@@ -66,6 +56,7 @@ const AccountList = () => {
           activeAccount={currentWallet}
           onAccountClick={handleAccountClick}
           onAccountClickSecondary={handleAccountClick}
+          onMigrationClick={handleMigrationClick}
           showActiveAccount={false}
           itemSx={{
             display: 'flex',

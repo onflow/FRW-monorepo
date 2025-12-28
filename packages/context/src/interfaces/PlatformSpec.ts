@@ -1,5 +1,6 @@
 import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
+  BloctoDetectionResult,
   CreateAccountResponse,
   Currency,
   NativeScreenName,
@@ -130,4 +131,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
 
   // Native screen navigation
   launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
+
+  // Key rotation
+  checkKeyRotationNeeded(address?: string): Promise<BloctoDetectionResult>;
 }

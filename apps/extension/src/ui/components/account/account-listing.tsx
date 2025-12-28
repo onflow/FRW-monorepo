@@ -4,10 +4,12 @@ import React from 'react';
 import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, isCOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
+import { useKeyRotationCheck } from '@/ui/hooks/use-key-rotation-check';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
 import { AccountCard } from './account-card';
+import { AccountMigrationCard } from './account-migration-card';
 import { EnableEvmAccountCard } from './enable-evm-account-card';
 
 type AccountHierarchyProps = {
@@ -112,6 +114,7 @@ type AccountListingProps = {
   onAccountClick?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   onAccountClickSecondary?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   onEnableEvmClick?: (parentAddress: string) => void;
+  onMigrationClick?: (address: string) => void;
   secondaryIcon?: React.ReactNode;
   showActiveAccount?: boolean;
   itemSx?: React.CSSProperties;
@@ -126,6 +129,7 @@ export const AccountListing = ({
   onAccountClick,
   onAccountClickSecondary,
   onEnableEvmClick,
+  onMigrationClick,
   secondaryIcon,
   showActiveAccount = false,
   itemSx,
@@ -137,6 +141,10 @@ export const AccountListing = ({
   const noEvmAccount = !evmAccount;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
+
+  // Check if key rotation/migration is needed for the active account
+  const { detection: keyRotationDetection } = useKeyRotationCheck(activeAccount?.address);
+  const needsMigration = keyRotationDetection?.isBloctoKey === true;
 
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {
@@ -217,8 +225,19 @@ export const AccountListing = ({
             showLink={false}
             data-testid="active-account-card"
           />
-          {/* If the EVM account is not valid, show the EnableEvmAccountCard */}
-          {noEvmAccount && (
+          {/* Show migration card if migration is needed */}
+          {needsMigration && activeAccount?.address && (
+            <AccountMigrationCard
+              showCard={false}
+              onMigrationClick={() => {
+                if (onMigrationClick && activeAccount?.address) {
+                  onMigrationClick(activeAccount.address);
+                }
+              }}
+            />
+          )}
+          {/* If the EVM account is not valid and migration is not needed, show the EnableEvmAccountCard */}
+          {noEvmAccount && !needsMigration && (
             <EnableEvmAccountCard
               showCard={false}
               onEnableEvmClick={() =>
