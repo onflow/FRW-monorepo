@@ -178,7 +178,7 @@ export const NETWORKS = {
     name: 'Flow Mainnet',
     chainId: 'flow-mainnet',
     isTestnet: false,
-    rpcEndpoint: 'https://rest-mainnet.onflow.org',
+    rpcEndpoint: 'http://access-003.mainnet28.nodes.onflow.org:8070',
     flowChainId: FlowChainID.Mainnet,
     keyIndexerUrl: 'https://production.key-indexer.flow.com',
   } as FlowNetwork,

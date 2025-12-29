@@ -12,7 +12,7 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
     fcl
       .config()
       .put('flow.network', 'mainnet')
-      .put('accessNode.api', 'https://rest-mainnet.onflow.org')
+      .put('accessNode.api', 'http://access-003.mainnet28.nodes.onflow.org:8070')
       .put('sdk.transport', httpSend)
       .put('logger.level', 1);
     const addrMap = addresses.mainnet;

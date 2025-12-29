@@ -23,7 +23,7 @@ export const FlowNetworks = {
   Mainnet: {
     name: 'flow-mainnet',
     chain: Chain.Flow,
-    rpcUrl: 'https://rest-mainnet.onflow.org',
+    rpcUrl: 'http://access-003.mainnet28.nodes.onflow.org:8070',
     explorerUrl: 'https://flowscan.org',
     isTestnet: false,
   } as NetworkConfig,

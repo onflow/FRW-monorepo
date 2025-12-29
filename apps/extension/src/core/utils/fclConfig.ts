@@ -6,7 +6,7 @@ import { type FlowNetwork } from '@/shared/types';
 import { isValidNetwork } from '@/shared/utils';
 
 const HOST_TESTNET = 'https://rest-testnet.onflow.org';
-const HOST_MAINNET = 'https://rest-mainnet.onflow.org';
+const HOST_MAINNET = 'http://access-003.mainnet28.nodes.onflow.org:8070';
 
 // NOTE: These are the currently the same hosts. TODO: figure out how to run both networks simultaneously.
 export const EMULATOR_HOST_TESTNET = 'http://localhost:8888';
