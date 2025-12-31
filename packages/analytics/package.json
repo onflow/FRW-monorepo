@@ -52,8 +52,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/onflow/FRW-core.git",
-    "directory": "packages/cadence"
+    "url": "https://github.com/onflow/FRW-monorepo.git",
+    "directory": "packages/analytics"
   },
   "license": "LGPL-3.0-or-later"
 }
