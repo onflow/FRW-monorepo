@@ -64,23 +64,8 @@ export class TransactionTracker {
   }
 
   // Factory methods for transaction sessions
-  createTransactionSession(
-    strategy: string,
-    proposer: string,
-    payer: string,
-    cadenceHash?: string,
-    authorizations?: string[],
-    assetType?: string
-  ) {
-    return new TransactionSession(
-      this.analytics,
-      strategy,
-      proposer,
-      payer,
-      cadenceHash,
-      authorizations,
-      assetType
-    );
+  createTransactionSession(proposer: string, assetType?: string) {
+    return new TransactionSession(this.analytics, proposer, assetType);
   }
 
   createBridgeSession(bridgeType: string, fromNetwork: string, toNetwork: string) {
@@ -102,31 +87,30 @@ export class TransactionSession {
     success?: boolean;
   }> = [];
 
+  private strategy: string;
+  private cadenceHash?: string;
+  private txid: string;
+
   constructor(
     private analytics: Analytics,
-    private strategy: string,
-    private proposer: string,
-    private payer: string,
-    private cadenceHash?: string,
-    private authorizations?: string[],
+    proposer: string,
     private assetType?: string
-  ) {}
+  ) {
+    this.strategy = '';
+    this.cadenceHash = '';
+    this.txid = '';
+  }
 
   private getBaseProperties() {
     const base: any = {
       strategyName: this.strategy,
       sessionId: this.sessionId,
       sessionStartTime: this.startTime,
-      proposer: this.proposer,
-      payer: this.payer,
+      payer: this.txid,
     };
 
     if (this.assetType) base.assetType = this.assetType;
     if (this.cadenceHash) base.cadenceHash = this.cadenceHash;
-    if (this.authorizations && this.authorizations.length > 0) {
-      base.authorizations = this.authorizations;
-    }
-
     return base;
   }
 
@@ -158,14 +142,15 @@ export class TransactionSession {
     });
   }
 
-  async prepared(preparationTimeMs?: number, gasEstimate?: string): Promise<void> {
+  async prepared(payload: any, rest?: any, preparationTimeMs?: number): Promise<void> {
     const stepStartTime = Date.now();
     const actualPreparationTime = preparationTimeMs || stepStartTime - this.getLastStepTime();
 
     await this.analytics.track('transactionPrepared', {
       ...this.getBaseProperties(),
       preparationTimeMs: actualPreparationTime,
-      gasEstimate: gasEstimate,
+      payload: payload,
+      ...rest,
     });
 
     this.steps.push({
@@ -177,7 +162,9 @@ export class TransactionSession {
   }
 
   async signed(
-    signatureMethod?: TransactionEvents['transactionSigned']['signatureMethod']
+    cadence?: string,
+    signatureMethod?: TransactionEvents['transactionSigned']['signatureMethod'],
+    keyIndex?: number
   ): Promise<void> {
     const stepStartTime = Date.now();
     const signingTime = stepStartTime - this.getLastStepTime();
@@ -185,7 +172,9 @@ export class TransactionSession {
     await this.analytics.track('transactionSigned', {
       ...this.getBaseProperties(),
       signatureMethod: signatureMethod,
+      keyIndex: keyIndex,
       signingTimeMs: signingTime,
+      cadence,
     });
 
     this.steps.push({
@@ -215,7 +204,7 @@ export class TransactionSession {
     });
   }
 
-  async completed(success: boolean, gasUsed?: string, tix?: string): Promise<void> {
+  async completed(success: boolean, tix?: string): Promise<void> {
     const completionTime = Date.now();
     const totalTime = completionTime - this.startTime;
 
@@ -223,7 +212,6 @@ export class TransactionSession {
       ...this.getBaseProperties(),
       success,
       totalTimeMs: totalTime,
-      gasUsed: gasUsed,
       tix: tix,
     });
 
@@ -238,12 +226,11 @@ export class TransactionSession {
     await this.analytics.track('strategyPerformance', {
       ...this.getBaseProperties(),
       executionTimeMs: totalTime,
-      gasEfficiency: gasUsed ? parseFloat(gasUsed) : undefined,
     });
   }
 
   async failed(
-    errorType: TransactionEvents['transactionError']['errorType'],
+    errorMsg: string,
     errorCode?: string,
     stepFailed?: TransactionEvents['transactionError']['stepFailed']
   ): Promise<void> {
@@ -251,7 +238,7 @@ export class TransactionSession {
 
     await this.analytics.track('transactionError', {
       ...this.getBaseProperties(),
-      errorType: errorType,
+      errorMsg: errorMsg,
       errorCode: errorCode,
       stepFailed: stepFailed || this.getCurrentStep(),
     });

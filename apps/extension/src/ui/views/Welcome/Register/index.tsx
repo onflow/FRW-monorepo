@@ -1,13 +1,19 @@
 import { Box } from '@mui/material';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
-import { INITIAL_REGISTER_STATE, registerReducer, type RegisterState, STEPS } from '@/reducers';
+import {
+  INITIAL_REGISTER_STATE,
+  registerReducer,
+  type RegisterState,
+  type StepType,
+  STEPS,
+} from '@/reducers';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
-import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
 import RepeatPhrase from '@/ui/components/LandingPages/RepeatPhrase';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
@@ -17,6 +23,7 @@ export const initRegisterState = (initialState: RegisterState): RegisterState =>
   return {
     ...initialState,
     mnemonic: bip39.generateMnemonic(),
+    nickname: generateRandomUsername(),
   };
 };
 
@@ -101,7 +108,7 @@ const Register = () => {
     if (location.state?.isFromImport) {
       // Coming from import flow - go back to import page
       navigate('/welcome/importprofile');
-    } else if (activeTab === STEPS.USERNAME || activeTab === STEPS.ALL_SET) {
+    } else if (activeTab === STEPS.RECOVERY || activeTab === STEPS.ALL_SET) {
       navigate(-1);
     } else {
       dispatch({ type: 'GO_BACK' });
@@ -111,11 +118,17 @@ const Register = () => {
   // Only show the back button if there is a page to go back to
   const showBackButton =
     activeTab !== STEPS.ALL_SET &&
-    (location.state?.isFromImport || activeTab !== STEPS.USERNAME || location.key !== 'default');
+    (location.state?.isFromImport || activeTab !== STEPS.RECOVERY || location.key !== 'default');
+
+  // Calculate active index excluding USERNAME step
+  const stepValues = Object.values(STEPS).filter((step) => step !== STEPS.USERNAME) as Array<
+    Exclude<StepType, typeof STEPS.USERNAME>
+  >;
+  const activeIndex = stepValues.indexOf(activeTab as Exclude<StepType, typeof STEPS.USERNAME>);
 
   return (
     <LandingComponents
-      activeIndex={Object.values(STEPS).indexOf(activeTab)}
+      activeIndex={activeIndex}
       direction="right"
       showBackButton={showBackButton}
       onBack={goBack}
@@ -123,14 +136,6 @@ const Register = () => {
       showRegisterHeader={true}
     >
       <Box>
-        {activeTab === STEPS.USERNAME && (
-          <PickNickname
-            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.RECOVERY })}
-            nickname={nickname}
-            setNickname={(name) => dispatch({ type: 'SET_NICKNAME', payload: name })}
-          />
-        )}
-
         {activeTab === STEPS.RECOVERY && (
           <RecoveryPhrase
             handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.REPEAT })}

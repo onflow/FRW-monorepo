@@ -10,6 +10,9 @@ export { ReceiveScreen } from './receive/ReceiveScreen.query';
 // Export onboarding screens
 export * from './onboarding';
 
+// Export recovery screens
+export * from './recovery';
+
 // Export error fallback components
 export { GenericErrorFallback } from './error/GenericErrorFallback';
 export { NetworkErrorFallback } from './error/NetworkErrorFallback';

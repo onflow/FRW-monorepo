@@ -1,3 +1,4 @@
+import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import { useSendStore, useTokenQueryStore, fetchPayerStatusWithCache } from '@onflow/frw-stores';
 import {
@@ -81,6 +82,17 @@ class ExtensionPlatformImpl implements PlatformSpec {
     };
   }
 
+  getDeviceInfo(): forms_DeviceInfo {
+    // Return minimal device info for extension platform
+    // Note: Full device info with location requires async API calls,
+    // but PlatformSpec requires synchronous method
+    return {
+      name: 'FRW Chrome Extension',
+      type: '2',
+      user_agent: 'Chrome',
+    };
+  }
+
   setCurrentAddress(address: string | null) {
     this.currentAddress = address;
   }
@@ -120,6 +132,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     } catch (error) {
       throw new Error('Failed to get JWT token: ' + (error as Error).message);
     }
+  }
+
+  getMixpanelToken(): string {
+    return process.env.MIXPANEL_TOKEN || '';
   }
 
   getApiEndpoint(): string {

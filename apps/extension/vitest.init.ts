@@ -16,6 +16,13 @@ vi.stubEnv('API_CONFIG_PATH', '/config/config.test.json');
 // Mock global fetch
 global.fetch = vi.fn();
 
+// Mock navigator for environment detection (use stubGlobal for read-only properties)
+vi.stubGlobal('navigator', {
+  userAgent:
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  vendor: 'Google Inc.',
+});
+
 // Mock chrome API
 global.chrome = {
   runtime: {

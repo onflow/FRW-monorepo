@@ -1,6 +1,6 @@
 {
   "name": "frw-extension",
-  "version": "3.1.1",
+  "version": "3.1.6",
   "description": "Digital wallet created for everyone.",
   "type": "module",
   "scripts": {
@@ -52,6 +52,7 @@
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-icons": "workspace:*",
     "@onflow/frw-screens": "workspace:*",
+    "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-ui": "workspace:*",
@@ -190,7 +191,7 @@
     "rimraf": "^6.0.1",
     "shelljs": "^0.8.5",
     "sinon-chrome": "^3.0.1",
-    "storybook": "^9.0.16",
+    "storybook": "^9.1.17",
     "storybook-addon-remix-react-router": "^5.0.0",
     "style-loader": "^4.0.0",
     "table": "^6.9.0",

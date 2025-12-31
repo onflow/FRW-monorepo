@@ -68,6 +68,7 @@ export * from './components/NFTSelectionBar';
 export * from './components/NFTSendPreview';
 export * from './components/PercentageChangeBadge';
 export * from './components/ProfileList';
+export * from './components/ProfileImportList';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
 export * from './components/RefreshView';
@@ -89,7 +90,7 @@ export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionFeeSection';
 export * from './foundation/SegmentedControl';
-
+export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
 
 // Onboarding components

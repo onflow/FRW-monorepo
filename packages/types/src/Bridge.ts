@@ -56,7 +56,7 @@ export interface WalletAccountsResponse {
 
 export interface WalletProfile {
   name: string;
-  avatar: string;
+  avatar?: string;
   uid: string;
   accounts: WalletAccount[];
 }
@@ -107,7 +107,7 @@ export interface CreateAccountResponse {
   success: boolean;
   address: string | null;
   username: string | null;
-  accountType: 'eoa' | 'coa' | null;
+  accountType: 'full' | 'hardware' | null;
   txId: string | null;
   error: string | null;
 }
@@ -118,7 +118,7 @@ export interface CreateEOAAccountResponse {
   username: string | null;
   mnemonic: string | null;
   phrase: string[] | null;
-  accountType: 'eoa' | 'coa' | null;
+  accountType: 'full' | 'hardware' | null;
   error: string | null;
 }
 
@@ -137,12 +137,14 @@ export interface AccountKey {
 
 /**
  * Response from seed phrase generation
- * Contains mnemonic, derived account key, and BIP44 derivation path
+ * Contains mnemonic, derived account key, BIP44 derivation path, and optional pre-derived EVM address
  */
 export interface SeedPhraseGenerationResponse {
   mnemonic: string;
   accountKey: AccountKey;
   drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
 }
 
 /**
@@ -153,19 +155,23 @@ export interface SPResponse {
   mnemonic: string;
   accountKey: AccountKey;
   drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
 }
 
 /**
  * Initial route configuration for onboarding flow
  * Determines which screen to show when launching the React Native app
  */
-export type InitialRoute =
-  | 'GetStarted'
-  | 'ProfileTypeSelection'
-  | 'SelectTokens'
-  | 'SendTo'
-  | 'SendTokens'
-  | 'Home';
+export enum InitialRoute {
+  GET_STARTED = 'GetStarted',
+  PROFILE_TYPE_SELECTION = 'ProfileTypeSelection',
+  IMPORT_PROFILE = 'ImportProfile',
+  SELECT_TOKENS = 'SelectTokens',
+  SEND_TO = 'SendTo',
+  SEND_TOKENS = 'SendTokens',
+  HOME = 'Home',
+}
 
 /**
  * Available native screen identifiers for Android/iOS
@@ -182,6 +188,18 @@ export enum NativeScreenName {
   BACKUP_OPTIONS = 'backupOptions',
   /** Native account restore/recovery screen with multiple options */
   WALLET_RESTORE = 'walletRestore',
+  /** Restore account from 12-word recovery phrase */
+  RECOVERY_PHRASE_RESTORE = 'recoveryPhraseRestore',
+  /** Restore account from key store file */
+  KEY_STORE_RESTORE = 'keyStoreRestore',
+  /** Restore account from private key */
+  PRIVATE_KEY_RESTORE = 'privateKeyRestore',
+  /** Restore account from Google Drive backup */
+  GOOGLE_DRIVE_RESTORE = 'googleDriveRestore',
+  /** Restore account from iCloud backup (iOS only) */
+  ICLOUD_RESTORE = 'icloudRestore',
+  /** Multi-restore with cloud backup options */
+  MULTI_RESTORE = 'multiRestore',
 }
 
 /**
@@ -195,8 +213,18 @@ export enum ScreenName {
   PROFILE_TYPE_SELECTION = 'ProfileTypeSelection',
   /** Recovery phrase setup screen */
   RECOVERY_PHRASE = 'RecoveryPhrase',
+  /** Confirm recovery phrase screen - Verify user wrote down recovery phrase */
+  CONFIRM_RECOVERY_PHRASE = 'ConfirmRecoveryPhrase',
   /** Secure enclave setup screen */
   SECURE_ENCLAVE = 'SecureEnclave',
+  /** Import existing profile/wallet screen */
+  IMPORT_PROFILE = 'ImportProfile',
+  /** Import via other methods screen (recovery phrase, etc.) */
+  IMPORT_OTHER_METHODS = 'ImportOtherMethods',
+  /** Confirm import from previous profiles screen */
+  CONFIRM_IMPORT_PROFILE = 'ConfirmImportProfile',
+  /** Notification preferences screen */
+  NOTIFICATION_PREFERENCES = 'NotificationPreferences',
   /** Select tokens to send screen */
   SELECT_TOKENS = 'SelectTokens',
   /** Send to address/recipient screen */

@@ -26,14 +26,7 @@ async function demonstrateTransactionTracking() {
   // - cadenceHash: hash of the Cadence script (optional)
   // - authorizations: list of authorized accounts (optional)
   // - assetType: type of asset being transferred (optional)
-  const directSession = transactionTracker.createTransactionSession(
-    'direct_transfer',
-    '0x123proposer...',
-    '0x456payer...',
-    'cadence_hash_123',
-    ['0x123proposer...'],
-    'FLOW'
-  );
+  const directSession = transactionTracker.createTransactionSession('direct_transfer', 'FLOW');
 
   await directSession.initiated({
     assetType: 'FLOW',
@@ -47,25 +40,18 @@ async function demonstrateTransactionTracking() {
     strategyName: 'direct_transfer',
     assetType: 'FLOW',
     networkType: 'flow',
-    executionPath: 'flow_native',
+    // executionPath: 'flow_native',
   });
 
-  await directSession.prepared(1200, '0.001');
-  await directSession.signed('wallet');
-  await directSession.submitted('0x123abc...');
-  await directSession.completed(true, '0.0008');
+  // await directSession.prepared(1200, '0.001');
+  // await directSession.signed('wallet');
+  // await directSession.submitted('0x123abc...');
+  // await directSession.completed(true, '0.0008');
 
   // Example 2: Cross-VM transfer flow
   console.log('\n=== Example 2: Cross-VM Transfer ===');
 
-  const crossVmSession = transactionTracker.createTransactionSession(
-    'cross_vm_bridge',
-    '0x789proposer...',
-    '0xabcpayer...',
-    'cadence_hash_456',
-    ['0x789proposer...', '0xdefauthorizer...'],
-    'USDC'
-  );
+  const crossVmSession = transactionTracker.createTransactionSession('cross_vm_bridge', 'USDC');
   const crossVm = transactionTracker.createCrossVmSession('flow', 'evm');
 
   await crossVmSession.initiated({
@@ -78,10 +64,10 @@ async function demonstrateTransactionTracking() {
 
   await crossVm.trackTransfer('USDC', 'flow_evm_bridge');
 
-  await crossVmSession.prepared(2500, '0.015');
-  await crossVmSession.signed('wallet');
-  await crossVmSession.submitted('0x456def...');
-  await crossVmSession.completed(true, '0.012');
+  // await crossVmSession.prepared(2500, '0.015');
+  // await crossVmSession.signed('wallet');
+  // await crossVmSession.submitted('0x456def...');
+  // await crossVmSession.completed(true, '0.012');
 
   // Example 3: Bridge operation
   console.log('\n=== Example 3: Bridge Operation ===');
@@ -118,14 +104,7 @@ async function demonstrateTransactionTracking() {
   // Example 6: Transaction error
   console.log('\n=== Example 6: Transaction Error ===');
 
-  const failedSession = transactionTracker.createTransactionSession(
-    'direct_transfer',
-    '0xfailedproposer...',
-    '0xfailedpayer...',
-    'cadence_hash_failed',
-    ['0xfailedproposer...'],
-    'FLOW'
-  );
+  const failedSession = transactionTracker.createTransactionSession('direct_transfer', 'FLOW');
 
   await failedSession.initiated({
     assetType: 'FLOW',

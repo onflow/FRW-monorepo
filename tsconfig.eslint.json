@@ -12,12 +12,13 @@
       "@onflow/frw-services": ["./packages/services/src"],
       "@onflow/frw-stores": ["./packages/stores/src"],
       "@onflow/frw-types": ["./packages/types/src"],
+      "@onflow/frw-migration": ["./packages/migration/src"],
       "@onflow/frw-ui": ["./packages/ui/src"],
       "@onflow/frw-utils": ["./packages/utils/src"],
       "@onflow/frw-workflow": ["./packages/workflow/src"]
     }
   },
-  "include": ["packages/*/src/**/*"],
+  "include": ["packages/*/src/**/*", "packages/*/__tests__/**/*"],
   "exclude": [
     "node_modules",
     "dist",

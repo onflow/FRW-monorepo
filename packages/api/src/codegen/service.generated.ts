@@ -103,6 +103,21 @@ export class PagedResultDto<T = any> implements IPagedResult<T> {
 // customer definition
 // empty
 
+export class CheckService {
+  /**
+   * Get android recovery check result
+   */
+  static check(options: IRequestOptions = {}): Promise<Response> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/android/check';
+
+      const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
 export class MetadataService {
   /**
    * Get user address metadata
@@ -629,6 +644,44 @@ export class FlowEvmTokensService {
   }
 }
 
+export class OnrampService {
+  /**
+   * Fetch Coinbase Onramp buy options
+   */
+  static buyOptions(
+    params: {
+      /**  */
+      country: string;
+      /**  */
+      subdivision?: string;
+      /**  */
+      networks?: string;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/v4/onramp/coinbase/buy-options';
+
+      const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+      configs.params = { country: params['country'], subdivision: params['subdivision'], networks: params['networks'] };
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
+   * Create a Coinbase Onramp session
+   */
+  static coinbase(options: IRequestOptions = {}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/v4/onramp/coinbase';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
 export class PricesService {
   /**
    * Get token prices
@@ -645,6 +698,81 @@ export class PricesService {
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
       configs.params = { currency: params['currency'] };
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
+export class WalletConnectService {
+  /**
+   * Sign as fee payer for SDK
+   */
+  static payer(
+    params: {
+      /** requestBody */
+      body?: WalletConnectPayerRequest;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<WalletConnectPollingResponse> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/wc/payer';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      let data = params.body;
+
+      configs.data = data;
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
+   * Generate Flow pre-authorization payload
+   */
+  static preAuthz(
+    params: {
+      /** User Flow address */
+      address: string;
+      /** User key id */
+      keyId: number;
+      /** Target Flow network (defaults to mainnet) */
+      network?: Network;
+    } = {} as any,
+    options: IRequestOptions = {}
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/wc/pre-authz';
+
+      const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+      configs.params = { address: params['address'], keyId: params['keyId'], network: params['network'] };
+
+      axios(configs, resolve, reject);
+    });
+  }
+  /**
+   * Generate Flow pre-authorization payload
+   */
+  static preAuthz1(options: IRequestOptions = {}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/wc/pre-authz';
+
+      const configs: IRequestConfig = getConfigs('post', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
+export class WhatSNewService {
+  /**
+   * Get What's New content
+   */
+  static whatsnew(options: IRequestOptions = {}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/whatsnew';
+
+      const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
 
       axios(configs, resolve, reject);
     });
@@ -962,6 +1090,66 @@ export interface TransferListErrorResponse {
   /** the message of the response */
   message?: string;
 }
+
+/** PayerRequest */
+export interface PayerRequest {
+  /** Base64 encoded Cadence script */
+  cadence_base64: string;
+
+  /**  */
+  network?: Network;
+}
+
+/** PayerMsg */
+export interface PayerMsg {
+  /** Envelope message for payer signing */
+  envelopeMessage: string;
+}
+
+/** PayloadMsg */
+export interface PayloadMsg {
+  /** Message payload */
+  payload: string;
+}
+
+/** payerSignRequest */
+export interface payerSignRequest {
+  /**  */
+  message: PayerMsg;
+
+  /** Network identifier */
+  network?: string;
+}
+
+/** authSignRequest */
+export interface authSignRequest {
+  /**  */
+  message: PayloadMsg;
+
+  /** Network identifier */
+  network?: string;
+}
+
+/** PayerRequestHeaders */
+export interface PayerRequestHeaders {
+  /**  */
+  network?: Network;
+}
+
+/** SignedData */
+export interface SignedData {
+  /** The fee payer address */
+  address: string;
+
+  /** The key index used for signing */
+  keyId: number;
+
+  /** The transaction signature */
+  sig: string;
+}
+
+/** PayerResponse */
+export interface PayerResponse {}
 
 /** Response */
 export interface Response {
@@ -1488,18 +1676,6 @@ export interface PayerStatusApiResponseV1 {
   message?: string;
 }
 
-/** SignedData */
-export interface SignedData {
-  /** The fee payer address */
-  address: string;
-
-  /** The key index used for signing */
-  keyId: number;
-
-  /** The transaction signature */
-  sig: string;
-}
-
 /** SignaturePayload */
 export interface SignaturePayload {
   /**  */
@@ -1512,12 +1688,6 @@ export interface SignaturePayload {
   message?: string;
 }
 
-/** PayerMsg */
-export interface PayerMsg {
-  /**  */
-  envelopeMessage: string;
-}
-
 /** PayerSignParams */
 export interface PayerSignParams {
   /**  */
@@ -1525,12 +1695,6 @@ export interface PayerSignParams {
 
   /**  */
   network?: Network;
-}
-
-/** PayloadMsg */
-export interface PayloadMsg {
-  /**  */
-  payload: string;
 }
 
 /** AuthSignParams */
@@ -1542,18 +1706,191 @@ export interface AuthSignParams {
   network?: Network;
 }
 
+/** WalletConnectAppMetadata */
+export interface WalletConnectAppMetadata {
+  /**  */
+  description: string;
+
+  /**  */
+  url: string;
+
+  /**  */
+  icon: string;
+
+  /**  */
+  title: string;
+}
+
+/** WalletConnectClientMetadata */
+export interface WalletConnectClientMetadata {
+  /**  */
+  platform: string;
+
+  /**  */
+  fclVersion: string;
+
+  /**  */
+  fclLibrary: string;
+
+  /**  */
+  hostname: string;
+
+  /**  */
+  network: Network;
+}
+
+/** WalletConnectConfig */
+export interface WalletConnectConfig {
+  /**  */
+  services?: object;
+
+  /**  */
+  app: WalletConnectAppMetadata;
+
+  /**  */
+  client: WalletConnectClientMetadata;
+}
+
+/** WalletConnectServiceDescriptor */
+export interface WalletConnectServiceDescriptor {
+  /** FCL service type */
+  type: string;
+}
+
+/** WalletConnectRoles */
+export interface WalletConnectRoles {
+  /**  */
+  proposer: boolean;
+
+  /**  */
+  payer: boolean;
+
+  /**  */
+  authorizer: boolean;
+}
+
+/** WalletConnectCompositeSignature */
+export interface WalletConnectCompositeSignature {
+  /**  */
+  f_type: string;
+
+  /**  */
+  f_vsn: string;
+
+  /** Fee payer Flow address */
+  addr: string;
+
+  /**  */
+  keyId: number;
+
+  /** Hex encoded composite signature */
+  signature: string;
+}
+
+/** WalletConnectPollingResponse */
+export interface WalletConnectPollingResponse {
+  /**  */
+  f_type: string;
+
+  /**  */
+  f_vsn: string;
+
+  /**  */
+  status: EnumWalletConnectPollingResponseStatus;
+
+  /** Optional rejection explanation */
+  reason?: string;
+
+  /**  */
+  data: AllDataTypes;
+
+  /** FCL payload type */
+  type: string;
+}
+
+/** WalletConnectPayerRequest */
+export interface WalletConnectPayerRequest {
+  /**  */
+  fclVersion?: string;
+
+  /**  */
+  service: WalletConnectServiceDescriptor;
+
+  /**  */
+  config: WalletConnectConfig;
+
+  /**  */
+  f_type: string;
+
+  /**  */
+  f_vsn: string;
+
+  /** Domain-tagged Flow transaction payload to be signed */
+  message: string;
+
+  /** Signer's Flow address */
+  addr: string;
+
+  /** Signer's key id */
+  keyId: number;
+
+  /**  */
+  roles: WalletConnectRoles;
+
+  /** Cadence transaction code */
+  cadence: string;
+
+  /** Cadence arguments for the transaction */
+  args?: object[];
+
+  /** Flow transaction voucher payload */
+  voucher?: object;
+}
+
+/** WhatsNewAction */
+export interface WhatsNewAction {
+  /** Action button text */
+  text?: string;
+
+  /** Action URL */
+  url?: string;
+
+  /** Action type */
+  type?: string;
+
+  /** Action style */
+  style?: object;
+}
+
+/** WhatsNewData */
+export interface WhatsNewData {
+  /** Raw markdown content */
+  content: string;
+
+  /** Content language */
+  language: string;
+
+  /** App version */
+  version: string;
+
+  /** Platform (ios\/android) */
+  platform: string;
+
+  /** Available actions for the content */
+  actions: WhatsNewAction[];
+}
+
 export enum Network {
   'mainnet' = 'mainnet',
   'testnet' = 'testnet'
 }
 type IPayerStatusPayloadV1StatusVersion = 1;
 type IPayerStatusApiResponseV1Status = 200 | 429 | 500 | 503;
-export enum EnumPayerSignParamsNetwork {
-  'mainnet' = 'mainnet',
-  'testnet' = 'testnet'
+export enum EnumWalletConnectPollingResponseStatus {
+  'APPROVED' = 'APPROVED',
+  'DECLINED' = 'DECLINED',
+  'PENDING' = 'PENDING',
+  'REJECTED' = 'REJECTED',
+  'KEY_null' = 'null'
 }
-export enum EnumAuthSignParamsNetwork {
-  'mainnet' = 'mainnet',
-  'testnet' = 'testnet',
-  'sandboxnet' = 'sandboxnet'
-}
+export type AllDataTypes = WalletConnectCompositeSignature | any | null;

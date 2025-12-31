@@ -49,9 +49,7 @@ export interface TransactionEvents {
   } & EventProperties;
 
   transactionSigned: {
-    strategyName?: string;
-    signatureMethod?: 'wallet' | 'keystore' | 'hardware';
-    signingTimeMs?: number;
+    signatureMethod?: 'wallet' | 'keystore' | 'hardware' | 'unknown';
   } & EventProperties;
 
   transactionSubmitted: {
