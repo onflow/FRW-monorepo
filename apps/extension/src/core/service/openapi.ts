@@ -13,12 +13,7 @@ import {
   getLocalData,
   setLocalData,
 } from '@/data-model';
-import {
-  DEFAULT_CURRENCY,
-  Period,
-  type PeriodFrequency,
-  PriceProvider,
-} from '@/shared/constant';
+import { DEFAULT_CURRENCY, Period, type PeriodFrequency, PriceProvider } from '@/shared/constant';
 import type {
   BalanceMap,
   CadenceTokenInfo,
@@ -72,9 +67,7 @@ import {
   versionService,
 } from './index';
 import { returnCurrentProfileId } from '../utils/current-id';
-import {
-  verifySignature,
-} from '../utils/modules/publicPrivateKey';
+import { verifySignature } from '../utils/modules/publicPrivateKey';
 
 type CurrencyResponse = {
   data: {
