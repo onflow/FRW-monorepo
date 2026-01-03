@@ -226,7 +226,11 @@
         "title": "¡No compartas tu frase de recuperación!",
         "description": "Si alguien tiene tu frase de recuperación, tendrá control total de tu cartera."
       },
-      "done": "Hecho"
+      "done": "Hecho",
+      "error": {
+        "title": "Frase de recuperación inválida",
+        "description": "La frase de recuperación falta o es inválida. Por favor, inténtalo de nuevo."
+      }
     }
   }
 }
