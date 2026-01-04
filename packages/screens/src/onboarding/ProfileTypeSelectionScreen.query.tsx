@@ -13,6 +13,7 @@ import {
 } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
  * ProfileTypeSelectionScreen - Second screen in onboarding flow
@@ -26,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 export function ProfileTypeSelectionScreen(): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   const handleNext = () => {
     // Navigate to recovery phrase setup
@@ -53,16 +55,16 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
   return (
     <OnboardingBackground>
-      <YStack flex={1} px="$4" pt="$4">
-        {/* Custom back button */}
-        <YStack pt="$6">
+      <YStack flex={1} px="$4" pt={insets.top}>
+        {/* Custom back button - positioned below status bar */}
+        <YStack>
           <IconButton
             icon={<ArrowLeft color={theme.text.val} size={24} width={24} height={24} />}
             variant="ghost"
             size="medium"
             onPress={handleBack}
             ml="$-2"
-            pl="$2"
+            pl="$8"
           />
         </YStack>
 
