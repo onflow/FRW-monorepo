@@ -197,5 +197,43 @@
       "description": "Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are {{multiplier}}× higher than usual.",
       "holdToAgree": "Hold to agree to surge pricing"
     }
+  },
+  "backup": {
+    "tip": {
+      "title": "Upgrade\nyour account",
+      "description": "Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys",
+      "sectionTitle": "What does this mean?",
+      "fullControl": {
+        "title": "You'll have full control over your accounts and keys."
+      },
+      "newKey": {
+        "title": "We'll create a new key to secure your account, removing Blocto's access."
+      },
+      "newPhrase": {
+        "title": "We'll create a new recovery phrase which will secure your account going forward."
+      },
+      "warning": {
+        "prefix": "Please note: ",
+        "description": "After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations."
+      },
+      "start": "Start",
+      "notNow": "Not now"
+    },
+    "mnemonic": {
+      "navTitle": "Upgrade account",
+      "title": "Recovery phrase",
+      "description": "Write down these words in the right order and store them somewhere safe.",
+      "clickToReveal": "Click to reveal phrase",
+      "copy": "Copy",
+      "warning": {
+        "title": "Do not share your recovery phrase!",
+        "description": "If someone has your recovery phrase, They will have full control of your wallet."
+      },
+      "done": "Done",
+      "error": {
+        "title": "Invalid Recovery Phrase",
+        "description": "The recovery phrase is missing or invalid. Please try again."
+      }
+    }
   }
 }

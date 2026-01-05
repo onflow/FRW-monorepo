@@ -191,5 +191,43 @@
       "description": "由于网络活动频繁，交易费用已提高，Flow Wallet 暂时不为您支付 gas 费用。当前网络费用比平时高 {{multiplier}} 倍。",
       "holdToAgree": "按住同意激增定价"
     }
+  },
+  "backup": {
+    "tip": {
+      "title": "升级\n您的账户",
+      "description": "Flow Wallet需要升级您账户的安全性以移除您以前的Blocto密钥",
+      "sectionTitle": "这意味着什么？",
+      "fullControl": {
+        "title": "您将完全控制您的账户和密钥。"
+      },
+      "newKey": {
+        "title": "我们将创建一个新密钥来保护您的账户，移除Blocto的访问权限。"
+      },
+      "newPhrase": {
+        "title": "我们将创建一个新的恢复短语，以便将来保护您的账户。"
+      },
+      "warning": {
+        "prefix": "请注意：",
+        "description": "此过程完成后，您来自Blocto的恢复套件将不再保护对您账户的访问。这是为了在Blocto停止运营后保护您。"
+      },
+      "start": "开始",
+      "notNow": "暂不"
+    },
+    "mnemonic": {
+      "navTitle": "升级账户",
+      "title": "恢复短语",
+      "description": "按正确顺序写下这些单词，并将其存放在安全的地方。",
+      "clickToReveal": "点击显示短语",
+      "copy": "复制",
+      "warning": {
+        "title": "不要分享您的恢复短语！",
+        "description": "如果有人获得了您的恢复短语，他们将完全控制您的钱包。"
+      },
+      "done": "完成",
+      "error": {
+        "title": "无效的恢复短语",
+        "description": "恢复短语缺失或无效。请重试。"
+      }
+    }
   }
 }
