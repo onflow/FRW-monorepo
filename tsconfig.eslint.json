@@ -5,6 +5,7 @@
     "paths": {
       "@onflow/frw-api": ["./packages/api/src"],
       "@onflow/frw-cadence": ["./packages/cadence/src"],
+      "@onflow/frw-analytics": ["./packages/analytics/src"],
       "@onflow/frw-context": ["./packages/context/src"],
       "@onflow/frw-icons": ["./packages/icons/src"],
       "@onflow/frw-screens": ["./packages/screens/src"],

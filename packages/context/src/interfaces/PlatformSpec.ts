@@ -32,6 +32,8 @@ export interface PlatformSpec {
   getVersion(): string;
   getBuildNumber(): string;
   getLanguage(): string;
+  getMixpanelToken(): string;
+  getSignType(): string;
 
   getCurrency(): Currency;
   getPlatform(): Platform;

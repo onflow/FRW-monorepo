@@ -42,6 +42,7 @@
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
+    "@onflow/frw-analytics": "workspace:*",
     "@onflow/transport-http": "^1.13.0",
     "@onflow/util-encode-key": "^1.2.4",
     "elliptic": "^6.5.7",
