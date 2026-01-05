@@ -1,7 +1,7 @@
 import * as fcl from '@onflow/fcl';
+import type { BloctoDetectionResult, FlowAccountKey } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
 
-import type { BloctoDetectionResult, FlowAccountKey } from './types';
 
 const createFlowKey = (key: any): FlowAccountKey => ({
   index: key.index ?? key.keyId ?? 0,
