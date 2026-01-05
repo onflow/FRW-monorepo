@@ -96,6 +96,20 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
 
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async (): Promise<void> => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
+
   // Reset amount and error when selected token changes
   useEffect(() => {
     setAmount('');
@@ -687,7 +701,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
                   flowFee={transactionFee}
                   usdFee={usdFee}
                   isFree={isFreeGasEnabled}
-                  showCovered={true}
+                  showCovered={isFreeGasEnabled}
                   title={t('send.transactionFee')}
                   backgroundColor="transparent"
                   borderRadius={16}
