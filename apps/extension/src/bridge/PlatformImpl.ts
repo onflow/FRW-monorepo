@@ -608,6 +608,12 @@ class ExtensionPlatformImpl implements PlatformSpec {
     // Store the callback for the platform to use
     (this as any).toastCallback = callback;
   }
+
+  // Safe area insets for cross-platform layout
+  // Extension doesn't need safe area handling - browsers handle this
+  getSafeAreaInsets(): { top: number; bottom: number; left: number; right: number } {
+    return { top: 0, bottom: 0, left: 0, right: 0 };
+  }
 }
 
 let platformInstance: ExtensionPlatformImpl | null = null;

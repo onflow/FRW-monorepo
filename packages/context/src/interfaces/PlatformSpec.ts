@@ -171,4 +171,12 @@ export interface PlatformSpec {
 
   // Native screen navigation
   launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
+
+  // Safe area insets for cross-platform layout
+  /**
+   * Get device safe area insets for proper content positioning
+   * Returns the distance from the edges of the screen to the safe area
+   * @returns Object with top, bottom, left, right inset values in pixels
+   */
+  getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number };
 }
