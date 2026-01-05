@@ -16,6 +16,7 @@ import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 import { Buffer } from 'buffer';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
+import { initialWindowMetrics } from 'react-native-safe-area-context';
 
 import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
@@ -514,6 +515,17 @@ class PlatformImpl implements PlatformSpec {
     } catch (error) {
       this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);
     }
+  }
+
+  // Safe area insets for cross-platform layout
+  getSafeAreaInsets(): { top: number; bottom: number; left: number; right: number } {
+    const insets = initialWindowMetrics?.insets;
+    return {
+      top: insets?.top ?? 0,
+      bottom: insets?.bottom ?? 0,
+      left: insets?.left ?? 0,
+      right: insets?.right ?? 0,
+    };
   }
 }
 
