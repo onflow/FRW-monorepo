@@ -14,5 +14,6 @@ export * from './BridgeHandler';
 export * from './StoreTypes';
 export * from './Platform';
 export * from './KeyRotation';
+export * from './NativeEvent';
 export * from './utils/string';
 export * from './query/QueryDomain';
