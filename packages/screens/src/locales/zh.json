@@ -389,6 +389,24 @@
       "importButton": "导入个人资料"
     }
   },
+  "migration": {
+    "keystore": {
+      "title": "升级\n您的账户",
+      "description": "Flow Wallet需要升级您账户的安全性。此过程只需几秒钟即可完成。",
+      "sectionTitle": "这意味着什么？",
+      "tip1": {
+        "title": "您将完全控制您的账户和密钥。您的备份不会受到影响。"
+      },
+      "tip2": {
+        "title": "我们将创建一个新的硬件密钥来保护您的账户，提高账户安全性。"
+      },
+      "tip3": {
+        "title": "没有任何变化，您将继续享受Flow Wallet的硬件级安全保护。"
+      },
+      "start": "开始",
+      "notNow": "暂不"
+    }
+  },
   "backup": {
     "tip": {
       "title": "升级\n您的账户",

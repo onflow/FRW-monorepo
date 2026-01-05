@@ -389,6 +389,24 @@
       }
     }
   },
+  "migration": {
+    "keystore": {
+      "title": "Actualiza\ntu cuenta",
+      "description": "Flow Wallet necesita actualizar la seguridad de tu cuenta. Este proceso solo tomará unos segundos.",
+      "sectionTitle": "¿Qué significa esto?",
+      "tip1": {
+        "title": "Tendrás control total sobre tus cuentas y claves. Tus copias de seguridad no se verán afectadas."
+      },
+      "tip2": {
+        "title": "Crearemos una nueva clave de hardware para asegurar tu cuenta, mejorando la seguridad."
+      },
+      "tip3": {
+        "title": "Nada cambia, seguirás beneficiándote de la seguridad de grado hardware de Flow Wallet."
+      },
+      "start": "Comenzar",
+      "notNow": "Ahora no"
+    }
+  },
   "backup": {
     "tip": {
       "title": "Actualiza\ntu cuenta",
