@@ -6,12 +6,14 @@
     "selectTokens": "Seleccionar Tokens",
     "sendTokens": "Enviar Tokens",
     "nftDetails": "Detalles NFT",
-    "colorDemo": "Demo de Colores"
+    "colorDemo": "Demo de Colores",
+    "receive": "Recibir Activos"
   },
   "common": {
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "back": "Atrás",
+    "goBack": "Volver",
     "close": "Cerrar",
     "done": "Hecho",
     "next": "Siguiente",
@@ -19,7 +21,9 @@
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",
-    "Search": "Buscar"
+    "Search": "Buscar",
+    "recommended": "Recomendado",
+    "retry": "Reintentar"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -104,7 +108,10 @@
     "sendTokens": "Enviar Tokens",
     "confirmSend": "Confirmar envío",
     "holdToSend": "Mantener para enviar",
-    "unknownAccount": "Cuenta Desconocida"
+    "unknownAccount": "Cuenta Desconocida",
+    "errors": {
+      "amountExceedsBalance": "La cantidad excede el saldo disponible"
+    }
   },
   "messages": {
     "loading": "Cargando...",
@@ -116,7 +123,19 @@
     "failedToLoadRecipients": "Error al cargar destinatarios",
     "copied": "¡Copiado!",
     "addressBookAdded": "Añadido a la libreta de direcciones",
-    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones"
+    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones",
+    "addressCopied": "Dirección copiada al portapapeles",
+    "failedToCopy": "Error al copiar la dirección",
+    "failedToShare": "Error al compartir el código QR"
+  },
+  "receive": {
+    "title": "Recibir Activos",
+    "receiveAccount": "Recibir en la Cuenta",
+    "scanToReceive": "Escanear para recibir",
+    "shareQRCode": "Compartir Código QR",
+    "generatingQR": "Generando código QR...",
+    "noQRCode": "No hay código QR disponible",
+    "evmWarning": "Asegúrese de enviar activos solo a esta dirección en la red Flow EVM. Los activos enviados a esta dirección en otras redes se perderán."
   },
   "buttons": {
     "retry": "Reintentar",
@@ -138,7 +157,25 @@
     "failedToLoadTokens": "Error al cargar tokens",
     "failedToLoadNFTs": "Error al cargar NFTs",
     "transactionPayloadError": "Error al crear la carga de la transacción",
-    "transactionExecutionError": "Error en la ejecución de la transacción"
+    "transactionExecutionError": "Error en la ejecución de la transacción",
+    "generic": {
+      "title": "Algo salió mal",
+      "message": "Encontramos un error inesperado. Por favor, inténtalo de nuevo.",
+      "button": "Intentar de nuevo",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "Problema de conexión",
+      "message": "No se puede conectar a la red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      "button": "Reintentar",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "Error crítico",
+      "message": "Ocurrió un error crítico. Por favor, reinicia la aplicación.",
+      "button": "Reiniciar aplicación",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "Sin título",

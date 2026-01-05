@@ -10,5 +10,6 @@ export default defineConfig({
   external: ['react', 'react-i18next', 'i18next', 'react-native', 'react-native-web'],
   treeshake: true,
   minify: false,
+  silent: true, // Suppress unused import warnings
   // Keep RN/RN-web external so bundlers (RN app or web) resolve them
 });

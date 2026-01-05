@@ -9,6 +9,10 @@ export {
   ProfileService as ProfileGoService,
   UserService as UserGoService,
   Userv3Service as Userv3GoService,
+  type forms_AccountKeySignature,
+  type forms_BackupInfo,
+  type forms_AccountKey,
+  type forms_AccountKeyForm,
 } from './codegen/goService.generated';
 export * from './codegen/service.generated';
 

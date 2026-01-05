@@ -6,12 +6,14 @@
     "selectTokens": "トークンを選択",
     "sendTokens": "トークンを送信",
     "nftDetails": "NFT詳細",
-    "colorDemo": "カラーデモ"
+    "colorDemo": "カラーデモ",
+    "receive": "資産を受け取る"
   },
   "common": {
     "cancel": "キャンセル",
     "confirm": "確認",
     "back": "戻る",
+    "goBack": "戻る",
     "close": "閉じる",
     "done": "完了",
     "next": "次へ",
@@ -19,7 +21,9 @@
     "loading": "読み込み中...",
     "error": "エラー",
     "success": "成功",
-    "Search": "検索"
+    "Search": "検索",
+    "recommended": "おすすめ",
+    "retry": "再試行"
   },
   "tabs": {
     "tokens": "トークン",
@@ -104,7 +108,10 @@
     "sendTokens": "トークンを送信",
     "confirmSend": "送信を確認",
     "holdToSend": "長押しで送信",
-    "unknownAccount": "不明なアカウント"
+    "unknownAccount": "不明なアカウント",
+    "errors": {
+      "amountExceedsBalance": "金額が利用可能残高を超えています"
+    }
   },
   "messages": {
     "loading": "読み込み中...",
@@ -116,7 +123,19 @@
     "failedToLoadRecipients": "受信者の読み込みに失敗しました",
     "copied": "コピーしました！",
     "addressBookAdded": "アドレス帳に追加しました",
-    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました"
+    "failedToAddToAddressBook": "アドレス帳への追加に失敗しました",
+    "addressCopied": "アドレスをクリップボードにコピーしました",
+    "failedToCopy": "アドレスのコピーに失敗しました",
+    "failedToShare": "QRコードの共有に失敗しました"
+  },
+  "receive": {
+    "title": "資産を受け取る",
+    "receiveAccount": "受け取るアカウント",
+    "scanToReceive": "スキャンして受け取る",
+    "shareQRCode": "QRコードを共有",
+    "generatingQR": "QRコード生成中...",
+    "noQRCode": "QRコードが利用できません",
+    "evmWarning": "Flow EVMネットワーク上でのみ、このアドレスに資産を送信してください。他のネットワーク上でこのアドレスに送信された資産は失われます。"
   },
   "buttons": {
     "retry": "再試行",
@@ -138,7 +157,25 @@
     "failedToLoadTokens": "トークンの読み込みに失敗しました",
     "failedToLoadNFTs": "NFTの読み込みに失敗しました",
     "transactionPayloadError": "トランザクションペイロードの作成に失敗しました",
-    "transactionExecutionError": "トランザクションの実行に失敗しました"
+    "transactionExecutionError": "トランザクションの実行に失敗しました",
+    "generic": {
+      "title": "エラーが発生しました",
+      "message": "予期しないエラーが発生しました。もう一度お試しください。",
+      "button": "再試行",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "接続の問題",
+      "message": "ネットワークに接続できません。接続を確認してもう一度お試しください。",
+      "button": "再試行",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "重大なエラー",
+      "message": "重大なエラーが発生しました。アプリを再起動してください。",
+      "button": "アプリを再起動",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "無題",
@@ -158,7 +195,10 @@
     "notFound": {
       "title": "NFTが見つかりません",
       "message": "要求されたNFTが見つからないか、読み込めませんでした"
-    }
+    },
+    "confirmSelection_plural": "{{count}} 個のNFTを確認",
+    "itemCount_plural": "{{count}} 個のアイテム",
+    "selectedCount_plural": "選択された{{count}} 個のNFT"
   },
   "storage": {
     "warning": {
