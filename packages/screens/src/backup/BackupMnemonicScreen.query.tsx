@@ -54,7 +54,7 @@ export function BackupMnemonicScreen({
   const { t } = useTranslation();
   const theme = useTheme();
   const { copied, copy } = useCopyToClipboard();
-  const { executeRotation, isLoading, error, step } = useKeyRotation();
+  const { executeRotation, isLoading, error } = useKeyRotation();
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
 
   // Parse seed phrase into words
@@ -136,16 +136,9 @@ export function BackupMnemonicScreen({
     }
   };
 
-  // Determine button text based on state
-  const getButtonText = () => {
-    if (isLoading) {
-      if (step === 'rotating') {
-        return t('backup.mnemonic.upgrading', { defaultValue: 'Upgrading account...' });
-      }
-      return t('backup.mnemonic.processing', { defaultValue: 'Processing...' });
-    }
-    return t('backup.mnemonic.done', { defaultValue: 'Done' });
-  };
+  const buttonText = isLoading
+    ? t('backup.mnemonic.upgrading', { defaultValue: 'Upgrading account...' })
+    : t('backup.mnemonic.done', { defaultValue: 'Done' });
 
   return (
     <OnboardingBackground>
@@ -224,11 +217,11 @@ export function BackupMnemonicScreen({
               <XStack gap="$2" items="center">
                 <Spinner size="small" color="$background" />
                 <Text color="$background" fontWeight="600">
-                  {getButtonText()}
+                  {buttonText}
                 </Text>
               </XStack>
             ) : (
-              getButtonText()
+              buttonText
             )}
           </Button>
         </YStack>
