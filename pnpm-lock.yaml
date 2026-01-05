@@ -891,6 +891,9 @@ importers:
       '@onflow/frw-context':
         specifier: workspace:*
         version: link:../context
+      '@onflow/frw-icons':
+        specifier: workspace:*
+        version: link:../icons
       '@onflow/frw-services':
         specifier: workspace:*
         version: link:../services
