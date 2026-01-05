@@ -64,19 +64,15 @@ export function BackupMnemonicScreen({
   // Enable screenshot protection when screen mounts
   useEffect(() => {
     logger.info('[BackupMnemonicScreen] Enabling screenshot protection');
-    // setScreenSecurityLevel is an optional platform-specific method
-    const bridgeWithSecurity = bridge as typeof bridge & {
-      setScreenSecurityLevel?: (level: 'secure' | 'normal') => void;
-    };
-    if (bridgeWithSecurity.setScreenSecurityLevel) {
-      bridgeWithSecurity.setScreenSecurityLevel('secure');
+    if (bridge.setScreenSecurityLevel) {
+      bridge.setScreenSecurityLevel('secure');
     }
 
     // Cleanup: disable screenshot protection when unmounting
     return () => {
       logger.info('[BackupMnemonicScreen] Disabling screenshot protection');
-      if (bridgeWithSecurity.setScreenSecurityLevel) {
-        bridgeWithSecurity.setScreenSecurityLevel('normal');
+      if (bridge.setScreenSecurityLevel) {
+        bridge.setScreenSecurityLevel('normal');
       }
     };
   }, []);
