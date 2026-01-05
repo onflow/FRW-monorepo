@@ -1,17 +1,13 @@
 import { cadence } from '@onflow/frw-context';
-
-import { BloctoDetectorService } from './blocto-detector';
 import {
   RotationError,
   RotationErrorType,
   type KeyRotationResult,
   type BloctoDetectionResult,
   type KeyRotationDependencies,
-} from './types';
+} from '@onflow/frw-types';
 
-const normalizePublicKey = (publicKey: string): string =>
-  publicKey.startsWith('0x') ? publicKey.slice(2) : publicKey;
-const normalizeString = (value?: string | number): string => (value ?? '').toString().toLowerCase();
+import { BloctoDetectorService } from './bloctoDetector';
 
 export class KeyRotation {
   private bloctoDetectorService: BloctoDetectorService;
@@ -44,18 +40,6 @@ export class KeyRotation {
     }
 
     try {
-      const newKeyInfo = await this.keyService.createSeedKey(256);
-      const accountKey = newKeyInfo.flowKey;
-      const signAlgo = normalizeString(accountKey.signAlgoString ?? accountKey.signAlgo);
-      const hashAlgo = normalizeString(accountKey.hashAlgoString ?? accountKey.hashAlgo);
-
-      if (signAlgo !== 'ecdsa_secp256k1' || hashAlgo !== 'sha2_256') {
-        throw new RotationError({
-          type: RotationErrorType.KEY_DERIVATION_FAILED,
-          message: 'Provided key does not match the required algorithms.',
-        });
-      }
-
       const revokeKeyIndexes = detection.bloctoKeyIndexes;
 
       if (!revokeKeyIndexes || revokeKeyIndexes.length === 0) {
@@ -65,9 +49,41 @@ export class KeyRotation {
         });
       }
 
-      const normalizedPublicKey = normalizePublicKey(accountKey.publicKey);
+      const newKeyInfo = await this.keyService.createSeedKey(256);
+      const normalizedPublicKey = newKeyInfo.flowKey.publicKey.startsWith('0x')
+        ? newKeyInfo.flowKey.publicKey.slice(2)
+        : newKeyInfo.flowKey.publicKey;
       const txId = await cadence.addAndRevokeKeys([normalizedPublicKey], revokeKeyIndexes);
-      return { detection, txId };
+      return { detection, txId, newKeyInfo };
+    } catch (error) {
+      if (error instanceof RotationError) {
+        throw error;
+      }
+
+      throw new RotationError({
+        type: RotationErrorType.CADENCE_TRANSACTION_FAILED,
+        message: 'Failed to rotate keys',
+      });
+    }
+  }
+
+  async rotateKeysOnChain(publicKey: string, revokeKeyIndexes: number[]): Promise<string> {
+    if (!publicKey) {
+      throw new RotationError({
+        type: RotationErrorType.VALIDATION_FAILED,
+        message: 'Public key is required',
+      });
+    }
+
+    if (!revokeKeyIndexes || revokeKeyIndexes.length === 0) {
+      throw new RotationError({
+        type: RotationErrorType.VALIDATION_FAILED,
+        message: 'No revokable Blocto keys found on account.',
+      });
+    }
+
+    try {
+      return await cadence.addAndRevokeKeys([publicKey], revokeKeyIndexes);
     } catch (error) {
       if (error instanceof RotationError) {
         throw error;

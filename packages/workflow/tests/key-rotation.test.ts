@@ -5,7 +5,7 @@ import {
   KeyRotationWorkflow,
   RotationErrorType,
   type BloctoDetectionResult,
-} from '../src/key-rotation';
+} from '../src/keyRotation';
 
 const createDetectionService = (overrides: Partial<BloctoDetectionResult> = {}) => {
   const base: BloctoDetectionResult = {
