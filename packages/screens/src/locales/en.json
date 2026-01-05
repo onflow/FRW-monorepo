@@ -401,7 +401,7 @@
         "title": "We'll create a new key to secure your account, removing Blocto's access."
       },
       "newPhrase": {
-        "title": "We'll create a new recovery phrase for future securing of your account."
+        "title": "We'll create a new recovery phrase which will secure your account going forward."
       },
       "writeDown": {
         "title": "Write it down",

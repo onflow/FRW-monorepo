@@ -119,7 +119,7 @@ export function BackupTipScreen({
             <Text fontWeight="700" color="$text">
               {t('backup.tip.warning.prefix', { defaultValue: 'Please note: ' })}
             </Text>
-            {t('backup.tip.warning.description', {
+            {t('backup.tip.warning.bloctoDescription', {
               defaultValue:
                 'After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations.',
             })}

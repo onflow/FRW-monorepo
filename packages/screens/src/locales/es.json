@@ -405,7 +405,8 @@
       },
       "warning": {
         "prefix": "Ten en cuenta: ",
-        "description": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
+        "description": "Si pierdes tu frase de recuperación, no podrás recuperar tu cartera. Flow Wallet no puede ayudarte a recuperarla.",
+        "bloctoDescription": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
       },
       "start": "Comenzar",
       "notNow": "Ahora no"
