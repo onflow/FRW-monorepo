@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import type { Analytics } from '../analytics.js';
 import type { TransactionEvents } from '../types.js';
 
@@ -79,7 +81,7 @@ export class TransactionTracker {
 
 export class TransactionSession {
   private startTime = Date.now();
-  private sessionId = `tx_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `tx_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private steps: Array<{
     step: string;
     timestamp: number;
@@ -304,7 +306,7 @@ export class TransactionSession {
 }
 
 export class BridgeSession {
-  private sessionId = `bridge_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `bridge_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
 
   constructor(
     private analytics: Analytics,
@@ -333,7 +335,7 @@ export class BridgeSession {
 }
 
 export class CrossVmSession {
-  private sessionId = `crossVm_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `crossVm_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
 
   constructor(
     private analytics: Analytics,
@@ -384,7 +386,7 @@ export class ChildAccountTracker {
 }
 
 export class ChildAccountSession {
-  private sessionId = `childAccount_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `childAccount_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
 
   constructor(
     private analytics: Analytics,

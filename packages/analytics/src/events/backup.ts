@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import type { Analytics } from '../analytics.js';
 import type { BackupEvents } from '../types.js';
 
@@ -102,7 +104,7 @@ export class BackupTracker {
 }
 
 export class BackupSession {
-  private sessionId = `backup_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `backup_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private startTime = Date.now();
   private backupSteps: Array<{
     type: 'recovery_phrase' | 'device' | 'cloud';
@@ -204,7 +206,7 @@ export class BackupSession {
 }
 
 export class MultiBackupSession {
-  private sessionId = `multiBackup_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `multiBackup_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private startTime = Date.now();
   private platformBackups: Map<
     BackupEvents['recoveryPhraseBackupCreated']['platform'],

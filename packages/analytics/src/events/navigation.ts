@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import type { Analytics } from '../analytics.js';
 import type { NavigationEvents } from '../types.js';
 
@@ -52,7 +54,7 @@ export class NavigationTracker {
 }
 
 export class TabSession {
-  private sessionId = `tab_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `tab_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private startTime = Date.now();
   private currentTab?: NavigationEvents['tabOpened']['tab'];
   private tabHistory: Array<{

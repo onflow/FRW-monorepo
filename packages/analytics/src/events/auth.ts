@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import type { Analytics } from '../analytics.js';
 import type { AuthEvents } from '../types.js';
 
@@ -51,7 +53,7 @@ export class AuthTracker {
 
 export class LoginSession {
   private startTime = Date.now();
-  private sessionId = `login_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `login_${Date.now()}_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
 
   constructor(
     private analytics: Analytics,
@@ -99,7 +101,7 @@ export class LoginSession {
 
 export class WalletCreationSession {
   private startTime = Date.now();
-  private sessionId = `walletCreate_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `walletCreate_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
 
   constructor(
     private analytics: Analytics,
@@ -130,7 +132,7 @@ export class WalletCreationSession {
 
 export class WalletImportSession {
   private startTime = Date.now();
-  private sessionId = `walletImport_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `walletImport_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
 
   constructor(
     private analytics: Analytics,

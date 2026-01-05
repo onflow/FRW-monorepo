@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import type { Analytics } from '../analytics.js';
 import type { WebEvents } from '../types.js';
 
@@ -30,7 +32,7 @@ export class WebTracker {
 }
 
 export class BrowserSession {
-  private sessionId = `browser_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `browser_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private startTime = Date.now();
   private visitedSites: Array<{
     url: string;
@@ -108,7 +110,7 @@ export class BrowserSession {
 }
 
 export class AuthenticationSession {
-  private sessionId = `auth_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `auth_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private startTime = Date.now();
   private authentications: Array<{
     url: string;

@@ -809,6 +809,9 @@ importers:
       mixpanel-browser:
         specifier: ^2.50.0
         version: 2.72.0(@mixpanel/rrweb-utils@2.0.0-alpha.18.2)
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
     devDependencies:
       '@types/mixpanel-browser':
         specifier: ^2.50.0
@@ -3680,6 +3683,7 @@ packages:
   '@outblock/cadence-codegen@0.0.9':
     resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
     engines: {node: '>=14'}
+    cpu: [x64, arm64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -10664,6 +10668,7 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qr-code-styling@1.9.2:

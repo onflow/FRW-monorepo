@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import type { Analytics } from '../analytics.js';
 import type { AppEvents } from '../types.js';
 
@@ -83,7 +85,7 @@ export class AppTracker {
 
 export class AppSession {
   private startTime = Date.now();
-  private sessionId = `app_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `app_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private screens: Array<{ name: string; startTime: number; endTime?: number }> = [];
 
   constructor(private analytics: Analytics) {}
