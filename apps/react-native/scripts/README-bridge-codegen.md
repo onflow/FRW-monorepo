@@ -7,7 +7,9 @@ This directory contains scripts for generating native Swift and Kotlin data mode
 The bridge codegen system automatically generates:
 
 - **Swift structs** for iOS (`ios/FRW/Foundation/Bridge/BridgeModels.swift`)
-- **Kotlin data classes** for Android (`android/app/src/main/java/com/flowfoundation/wallet/bridge/BridgeModels.kt`)
+- **Swift structs** for iOS native events (`ios/FRW/Foundation/Bridge/NativeEventModels.swift`)
+- **Kotlin data classes** for Android (`android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/BridgeModels.kt`)
+- **Kotlin data classes** for Android native events (`android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/NativeEventModels.kt`)
 
 ## Usage
 
@@ -20,12 +22,12 @@ npm run codegen:bridge
 
 The script reads TypeScript interface definitions from:
 
-- `src/types/bridge.ts`
+- `packages/types/src/Bridge.ts`
+- `packages/types/src/NativeEvent.ts`
 
 ## Features
 
 - **Type Mapping**: Converts TypeScript types to appropriate native types
-
   - `string` → `String` (Swift/Kotlin)
   - `boolean` → `Bool` (Swift) / `Boolean` (Kotlin)
   - `number` → `Int` (Swift/Kotlin)

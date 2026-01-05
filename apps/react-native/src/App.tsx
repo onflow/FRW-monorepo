@@ -11,6 +11,7 @@ import 'react-native-get-random-values';
 import { version } from '../package.json';
 import { platform } from './bridge/PlatformImpl';
 import { QueryDebugger } from './components/QueryDebugger';
+import { setupNativeRequestBus } from './native/nativeRequestBus';
 import AppNavigator from './navigation/AppNavigator';
 
 interface AppProps {
@@ -85,6 +86,8 @@ const App = (props: AppProps) => {
   useEffect(() => {
     initializeApp();
   }, [initializeApp]);
+
+  useEffect(() => setupNativeRequestBus(), []);
 
   const colorScheme = useColorScheme();
 
