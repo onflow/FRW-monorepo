@@ -96,7 +96,17 @@ export function MnemonicGrid({
         </YStack>
       ) : (
         /* Click to reveal overlay */
-        <YStack height={340} items="center" justify="center" cursor="pointer" onPress={onReveal}>
+        <YStack
+          height={340}
+          items="center"
+          justify="center"
+          cursor="pointer"
+          onPress={onReveal}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={revealLabel}
+          accessibilityHint="Tap to reveal your recovery phrase"
+        >
           <YStack items="center" gap="$3">
             <View width={42} height={40} bg="$bgGlass" rounded="$2" items="center" justify="center">
               <RevealPhrase size={20} color={theme.iconGlass.val} />
