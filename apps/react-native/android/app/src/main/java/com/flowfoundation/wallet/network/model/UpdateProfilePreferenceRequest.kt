@@ -1,0 +1,3 @@
+package com.flowfoundation.wallet.network.model
+
+class UpdateProfilePreferenceRequest

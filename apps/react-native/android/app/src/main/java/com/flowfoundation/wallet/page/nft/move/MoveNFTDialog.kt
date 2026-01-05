@@ -1,0 +1,477 @@
+package com.flowfoundation.wallet.page.nft.move
+
+import android.annotation.SuppressLint
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.FragmentManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.databinding.DialogMoveNftBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTFromChildToParent
+import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
+import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
+import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.TransferAccountType
+import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.page.main.HomeTab
+import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
+import com.flowfoundation.wallet.page.nft.nftlist.name
+import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
+import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
+import com.flowfoundation.wallet.utils.extensions.dp2px
+import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.findActivity
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.uiScope
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import org.onflow.flow.models.TransactionStatus
+
+
+class MoveNFTDialog : BottomSheetDialogFragment() {
+    private val uniqueId by lazy { arguments?.getString(EXTRA_UNIQUE_ID) ?: "" }
+    private val contractId by lazy { arguments?.getString(EXTRA_COLLECTION_CONTRACT_ID) ?: "" }
+    private val contractName by lazy { arguments?.getString(EXTRA_COLLECTION_CONTRACT) ?: "" }
+    private val fromAddress by lazy {
+        arguments?.getString(EXTRA_FROM_ADDRESS) ?: WalletManager.selectedWalletAddress()
+    }
+
+    private val isEVMAccountSelected by lazy {
+        EVMWalletManager.isEVMWalletAddress(fromAddress)
+    }
+    private val isChildAccountSelected by lazy {
+        WalletManager.isChildAccount(fromAddress)
+    }
+    private var needMoveFee = false
+    private lateinit var binding: DialogMoveNftBinding
+    private var nft: Nft? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = DialogMoveNftBinding.inflate(inflater)
+        return binding.rootView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(
+            uniqueId,
+            contractId,
+            contractName
+        )
+        with(binding) {
+            btnMove.isEnabled = nft != null
+            btnMove.setOnClickListener {
+                moveNFT()
+            }
+            ivClose.setOnClickListener {
+                dismissAllowingStateLoss()
+            }
+
+            layoutFromAccount.setAccountInfo(fromAddress)
+            if (isChildAccountSelected) {
+                val parentAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@with
+                layoutToAccount.setAccountInfo(parentAddress)
+
+                nft?.let {
+                    val addressList =
+                        WalletManager.childAccountList(parentAddress).mapNotNull { child ->
+                            child.address.takeIf { address -> address != fromAddress }
+                        }.toMutableList()
+                    addressList.add(parentAddress)
+                    EVMWalletManager.getEVMAddress()?.let { evmAddress ->
+                        addressList.add(evmAddress)
+                    }
+                    configureToLayoutAction(addressList)
+                }
+                needMoveFee = false
+            } else if (isEVMAccountSelected) {
+                val walletAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty()
+                layoutToAccount.setAccountInfo(walletAddress)
+                val addressList =
+                    WalletManager.childAccountList(walletAddress).map { child ->
+                        child.address
+                    }.toMutableList()
+                addressList.add(0, walletAddress)
+                configureToLayoutAction(addressList)
+                needMoveFee = true
+            } else {
+                val walletAddress = WalletManager.getCurrentFlowWalletAddress()
+                nft?.let {
+                    val addressList =
+                        WalletManager.childAccountList(walletAddress).map { child ->
+                            child.address
+                        }.toMutableList()
+
+                    val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                    addressList.add(0, evmAddress)
+                    needMoveFee = true
+                    layoutToAccount.setAccountInfo(evmAddress)
+                    configureToLayoutAction(addressList)
+                }
+            }
+            configureMoveFeeLayout()
+            Glide.with(ivNftImage).load(nft?.getNFTCover())
+                .transform(RoundedCorners(16.dp2px().toInt()))
+                .placeholder(R.drawable.ic_placeholder).into(ivNftImage)
+            ivCollectionVm.setImageResource(
+                if (isEVMAccountSelected.not()) {
+                    R.drawable.ic_switch_vm_cadence
+                } else {
+                    R.drawable.ic_switch_vm_evm
+                }
+            )
+            tvNftName.text = nft?.name()
+            tvCollectionName.text = nft?.collectionName.orEmpty()
+            Glide.with(ivCollectionLogo).load(nft?.collectionSquareImage).transform(
+                CenterCrop(),
+                RoundedCorners(8.dp2px().toInt())
+            ).into(ivCollectionLogo)
+            uiScope {
+                storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
+            }
+        }
+    }
+
+    private fun configureToLayoutAction(addressList: List<String>) {
+        with(binding) {
+            if (addressList.size > 1) {
+                layoutToAccount.setSelectMoreAccount(true)
+                layoutToAccount.setOnClickListener {
+                    uiScope {
+                        SelectAccountDialog().show(
+                            layoutToAccount.getAccountAddress(),
+                            addressList,
+                            childFragmentManager
+                        )?.let { address ->
+                            configureToLayout(address)
+                        }
+                    }
+                }
+            } else {
+                layoutToAccount.setSelectMoreAccount(false)
+            }
+        }
+    }
+
+    private fun configureToLayout(address: String) {
+        with(binding) {
+            needMoveFee =
+                EVMWalletManager.isEVMWalletAddress(fromAddress) || EVMWalletManager.isEVMWalletAddress(
+                    address
+                )
+            layoutToAccount.setAccountInfo(address)
+            configureMoveFeeLayout()
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun configureMoveFeeLayout() {
+        with(binding) {
+            tvMoveFee.text = if (needMoveFee) {
+                "0.0001"
+            } else {
+                "0.00"
+            } + " FLOW"
+            tvMoveFeeTips.text =
+                (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
+            clMoveFee.setVisible(AppConfig.coverBridgeFee().not())
+        }
+    }
+
+    private fun moveNFT() {
+        nft?.let {
+            if (binding.btnMove.isProgressVisible()) {
+                return
+            }
+            binding.btnMove.setProgressVisible(true)
+
+            ioScope {
+                val toAddress = binding.layoutToAccount.getAccountAddress()
+                if (isChildAccountSelected) {
+                    if (toAddress == WalletManager.getCurrentFlowWalletAddress()) {
+                        moveNFTFromChildToParent(fromAddress, it) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                // Remove duplicate toast - TransactionStateManager will handle it
+                                if (isSuccess) {
+                                    successfulMoveNavigation(it)
+                                }
+                                // Don't show failure toast - TransactionStateManager will handle it
+                            }
+                        }
+                    } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                        EVMWalletManager.moveChildNFT(it, fromAddress, true) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
+                                }
+                                // Don't show failure toast - TransactionStateManager will handle it
+                            }
+                        }
+                    } else {
+                        sendNFTFromChildToChild(fromAddress, toAddress, it) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
+                                }
+                                // Don't show failure toast - TransactionStateManager will handle it
+                            }
+                        }
+                    }
+                } else if (isEVMAccountSelected) {
+                    if (toAddress == WalletManager.getCurrentFlowWalletAddress()) {
+                        EVMWalletManager.moveNFT(it, false) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
+                                }
+                                // Don't show failure toast - TransactionStateManager will handle it
+                            }
+                        }
+                    } else {
+                        EVMWalletManager.moveChildNFT(it, toAddress, false) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
+                                }
+                                // Don't show failure toast - TransactionStateManager will handle it
+                            }
+                        }
+                    }
+                } else {
+                    if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                        EVMWalletManager.moveNFT(it, true) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
+                                }
+                                // Don't show failure toast - TransactionStateManager will handle it
+                            }
+                        }
+                    } else {
+                        sendNFTFromParentToChild(toAddress, it) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
+                                }
+                                // Don't show failure toast - TransactionStateManager will handle it
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun trackMoveNFT(
+        fromAddress: String, toAddress: String, nftIdentifier: String, txId: String,
+        fromType: TransferAccountType, toType: TransferAccountType
+    ) {
+        MixpanelManager.transferNFT(
+            fromAddress, toAddress, nftIdentifier, txId, fromType, toType,
+            true
+        )
+    }
+
+    private suspend fun sendNFTFromChildToChild(
+        childAddress: String,
+        toAddress: String,
+        nft: Nft,
+        callback: (isSuccess: Boolean) -> Unit
+    ) {
+        try {
+            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
+            val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
+            val txId = cadenceSendNFTFromChildToChild(
+                childAddress,
+                toAddress,
+                identifier,
+                nft
+            )
+            trackMoveNFT(
+                childAddress,
+                toAddress,
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.CHILD
+            )
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
+            postTransaction(nft, txId, callback)
+        } catch (e: Exception) {
+            callback.invoke(false)
+            e.printStackTrace()
+        }
+    }
+
+    private suspend fun moveNFTFromChildToParent(
+        childAddress: String,
+        nft: Nft,
+        callback: (isSuccess: Boolean) -> Unit
+    ) {
+        try {
+            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
+            val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
+            if (identifier.isEmpty()) {
+                ErrorReporter.reportWithMixpanel(
+                    MoveError.INVALIDATE_IDENTIFIER,
+                    getCurrentCodeLocation()
+                )
+                callback.invoke(false)
+                return
+            }
+            val txId = cadenceMoveNFTFromChildToParent(
+                childAddress,
+                identifier,
+                nft
+            )
+            trackMoveNFT(
+                childAddress,
+                WalletManager.getCurrentFlowWalletAddress().orEmpty(),
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.FLOW
+            )
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
+            postTransaction(nft, txId, callback)
+        } catch (e: Exception) {
+            callback.invoke(false)
+            e.printStackTrace()
+        }
+    }
+
+    private suspend fun sendNFTFromParentToChild(
+        toAddress: String,
+        nft: Nft,
+        callback: (isSuccess: Boolean) -> Unit
+    ) {
+        try {
+            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
+            val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
+            val txId = cadenceSendNFTFromParentToChild(
+                toAddress,
+                identifier,
+                nft
+            )
+            trackMoveNFT(
+                WalletManager.getCurrentFlowWalletAddress().orEmpty(),
+                toAddress,
+                nft
+                    .getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.FLOW,
+                TransferAccountType.CHILD
+            )
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
+            postTransaction(nft, txId, callback)
+        } catch (e: Exception) {
+            callback.invoke(false)
+            e.printStackTrace()
+        }
+    }
+
+    private fun postTransaction(nft: Nft, txId: String, callback: (isSuccess: Boolean) -> Unit) {
+        // Create and register the transaction state for bubble monitoring
+        val transactionState = TransactionState(
+            transactionId = txId,
+            time = System.currentTimeMillis(),
+            state = TransactionStatus.PENDING.ordinal,
+            type = TransactionState.TYPE_MOVE_NFT,
+            data = nft.uniqueId(),
+        )
+        TransactionStateManager.newTransaction(transactionState)
+        pushBubbleStack(transactionState)
+
+        // Monitor transaction completion and call callback with actual result
+        ioScope {
+            TransactionStateWatcher(txId).watch { result ->
+                when {
+                    result.isExecuteFinished() -> {
+                        callback(true)
+                    }
+                    result.isFailed() -> {
+                        callback(false)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun successfulMoveNavigation(nft: Nft) {
+        dismissAllowingStateLoss()
+
+        // Navigate back to the main NFTs tab
+        val activity = findActivity(binding.root)
+        if (activity != null) {
+            MainActivity.launch(activity, HomeTab.NFT)
+        }
+    }
+
+    companion object {
+        private const val EXTRA_UNIQUE_ID = "extra_unique_id"
+        private const val EXTRA_FROM_ADDRESS = "extra_from_address"
+        private const val EXTRA_COLLECTION_CONTRACT_ID = "extra_collection_contract_id"
+        private const val EXTRA_COLLECTION_CONTRACT = "extra_collection_contract"
+        fun show(
+            fragmentManager: FragmentManager, uniqueId: String, contractId: String,
+            contractName: String, fromAddress: String
+        ) {
+            MoveNFTDialog().apply {
+                arguments = Bundle().apply {
+                    putString(EXTRA_UNIQUE_ID, uniqueId)
+                    putString(EXTRA_FROM_ADDRESS, fromAddress)
+                    putString(EXTRA_COLLECTION_CONTRACT_ID, contractId)
+                    putString(EXTRA_COLLECTION_CONTRACT, contractName)
+                }
+            }.show(fragmentManager, "")
+        }
+    }
+}

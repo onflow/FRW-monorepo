@@ -1,0 +1,36 @@
+package com.flowfoundation.wallet.network.model
+
+import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+
+data class UserInfoResponse(
+    @SerializedName("data")
+    val data: UserInfoData,
+
+    @SerializedName("message")
+    val message: String,
+
+    @SerializedName("status")
+    val status: Int,
+)
+
+@Serializable
+@Parcelize
+data class UserInfoData(
+    @SerializedName("nickname")
+    var nickname: String,
+    @SerializedName("username")
+    val username: String,
+    @SerializedName("avatar")
+    var avatar: String,
+    @SerializedName("address")
+    var address: String? = null,
+    @SerialName("private")  // Needed: property name "isPrivate" differs from JSON key "private"
+    @SerializedName("private")
+    var isPrivate: Int,
+    @SerializedName("created")
+    var created: String,
+) : Parcelable

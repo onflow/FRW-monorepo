@@ -1,0 +1,599 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id("kotlin-parcelize")
+    id "org.jetbrains.kotlin.plugin.serialization" version "1.9.0"
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
+//    id("instabug-apm")  // Disabled to fix ASM instrumentation issue
+    id 'com.google.devtools.ksp'
+    id 'com.google.firebase.appdistribution'
+    // id 'jacoco'
+    id 'com.facebook.react'
+    id 'org.jetbrains.kotlin.plugin.compose'
+    id 'com.github.triplet.play'
+}
+
+react {
+    autolinkLibrariesWithApp()
+}
+
+apply from: "../../node_modules/@outblock/react-native-code-push/android/codepush.gradle"
+
+def properties = new Properties()
+def inputStream = project.rootProject.file('local.properties').newDataInputStream()
+properties.load(inputStream)
+
+// Resolve service account credentials path from local.properties or -P props
+def resolveServiceCreds = {
+    def p = properties.getProperty("serviceCredentialsFile", "")
+    if (!p || p.trim().isEmpty()) {
+        def cliProp = project.findProperty("serviceCredentialsFile") ?: project.findProperty("firebaseServiceCredentialsFile")
+        p = cliProp ? cliProp.toString() : ""
+    }
+    return p
+}
+
+repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven {
+        url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
+        credentials {
+            username = System.getenv("GITHUB_USERNAME") ?: "lealobanov"
+            password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("github.token") ?: ""
+        }
+    }
+    // Flow Wallet Kit (Android) from GitHub Packages
+    maven {
+        url = uri("https://maven.pkg.github.com/onflow/Flow-Wallet-Kit")
+        credentials {
+            // Prefer Gradle properties (gpr.user/gpr.key), fallback to env vars
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+def apiKeysFile = project.rootProject.file("key.properties")
+def apiKeys = new Properties()
+if (apiKeysFile.exists()) {
+    apiKeysFile.withInputStream { input ->
+        apiKeys.load(input)
+    }
+}
+def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKey"
+def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
+def codePushKeyStaging = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_STAGING") ?: "staging-placeholder"
+def codePushKeyProduction = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_PRODUCTION") ?: "production-placeholder"
+
+// Normalize versionName prefixes per buildType
+// - debug/dev -> dX.Y.Z (development)
+// - releaseDebug -> iX.Y.Z (internal QA)
+// - release -> rX.Y.Z (production)
+def vNameRaw = vName
+def vNum = (vNameRaw ?: "0.0.0").replaceAll("^[a-zA-Z]", "")
+def verNameDev = "d${vNum}"
+def verNameInternal = "i${vNum}"
+def verNameRelease = "r${vNum}"
+
+android {
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.flowfoundation.wallet"
+        minSdk 28
+        targetSdk 35
+        versionCode vCode as Integer
+        versionName vName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Support for 16 KB memory page sizes (required for Android 15+)
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+            // Ensure 16KB page size compatibility
+            // This ensures NDK libraries are built with proper alignment
+        }
+
+        buildConfigField("String", "DRIVE_AES_IV", "\"${apiKeys.getProperty('DRIVE_AES_IV')}\"")
+        buildConfigField("String", "DRIVE_AES_KEY", "\"${apiKeys.getProperty('DRIVE_AES_KEY')}\"")
+        buildConfigField("String", "WALLET_CONNECT_PROJECT_ID", "\"${apiKeys.getProperty('WALLET_CONNECT_PROJECT_ID')}\"")
+        buildConfigField("String", "INSTABUG_TOKEN_DEV", "\"${apiKeys.getProperty('INSTABUG_TOKEN_DEV')}\"")
+        buildConfigField("String", "INSTABUG_TOKEN_PROD", "\"${apiKeys.getProperty('INSTABUG_TOKEN_PROD')}\"")
+        buildConfigField("String", "CROWDIN_PROJECT_ID", "\"${apiKeys.getProperty('CROWDIN_PROJECT_ID')}\"")
+        buildConfigField("String", "CROWDIN_API_TOKEN", "\"${apiKeys.getProperty('CROWDIN_API_TOKEN')}\"")
+        buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")
+        buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
+        buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
+        buildConfigField("String", "X_SIGNATURE_KEY", "\"${apiKeys.getProperty('X_SIGNATURE_KEY')}\"")
+        buildConfigField("String", "INSTABUG_RN_TOKEN_DEV", "\"${apiKeys.getProperty('INSTABUG_RN_TOKEN_DEV')}\"")
+        buildConfigField("String", "INSTABUG_RN_TOKEN_PROD", "\"${apiKeys.getProperty('INSTABUG_RN_TOKEN_PROD')}\"")
+        buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+        buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyProduction}\"")
+        resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
+        manifestPlaceholders = new HashMap<String, String>()
+        manifestPlaceholders.put("dropboxKey", dropboxKeyProd)
+    }
+
+    def keyAliasProperty = properties.getProperty("keyAlias", "androiddebugkey")
+    def keyPasswordProperty = properties.getProperty("keyPassword", "android")
+    def storePasswordProperty = properties.getProperty("storePassword", "android")
+    def storeFilePath = properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath)
+
+    def localTesters = properties.getProperty("testers", "")
+    def envTesters = System.getenv("FIREBASE_TESTERS") ?: ""
+    def mergedTesters = ([localTesters, envTesters]
+        .findAll { it?.trim() } // Filter out null/empty sources
+        .collectMany { it.split(",") as List<String> } // Split comma-separated strings
+        .collect { it.trim() } // Trim each entry
+        .findAll { it } // Filter out blanks
+        .toSet() // Remove duplicates
+        .join(","))
+
+    signingConfigs {
+        release {
+            storeFile = file(storeFilePath)
+            storePassword = storePasswordProperty
+            keyAlias = keyAliasProperty
+            keyPassword = keyPasswordProperty
+        }
+        dev {
+            storeFile = file(storeFilePath)
+            storePassword = storePasswordProperty
+            keyAlias = keyAliasProperty
+            keyPassword = keyPasswordProperty
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            multiDexEnabled true
+            debuggable true
+            applicationIdSuffix = ".dev"
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyStaging}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyStaging}"
+            manifestPlaceholders = [dropboxKey: dropboxKeyDev]
+            ndk {
+                debugSymbolLevel 'NONE'
+            }
+        }
+
+        releaseDebug {
+            minifyEnabled false
+            multiDexEnabled true
+            debuggable true
+            signingConfig signingConfigs.release
+            matchingFallbacks = ['debug', 'qa', 'release'] as List<String>
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
+            manifestPlaceholders = [dropboxKey: dropboxKeyProd]
+        }
+
+        dev {
+            minifyEnabled true
+            shrinkResources true
+            multiDexEnabled false
+            debuggable false
+            applicationIdSuffix = ".dev"
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            matchingFallbacks = ['debug', 'qa', 'release']
+
+            firebaseAppDistribution {
+                artifactType = "APK"
+                def rnFile = properties.getProperty("releaseNotesFile", "")
+                if (rnFile) {
+                    releaseNotesFile = file(rnFile)
+                } else {
+                    releaseNotes = "Automatic build from CI/CD pipeline."
+                }
+                serviceCredentialsFile = resolveServiceCreds()
+                testers = mergedTesters
+            }
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyStaging}"
+            manifestPlaceholders = [dropboxKey: dropboxKeyDev]
+        }
+
+        release {
+            minifyEnabled true
+            shrinkResources true
+            multiDexEnabled false
+            debuggable false
+            matchingFallbacks.add('releaseDebug')
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            firebaseAppDistribution {
+                artifactType = "APK"
+                def rnFile = properties.getProperty("releaseNotesFile", "")
+                if (rnFile) {
+                    releaseNotesFile = file(rnFile)
+                } else {
+                    releaseNotes = "Automatic build from CI/CD pipeline."
+                }
+                serviceCredentialsFile = resolveServiceCreds()
+                testers = mergedTesters
+            }
+            firebaseCrashlytics {
+                mappingFileUploadEnabled true
+            }
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            resValue "string", "CodePushDeploymentKey", "${codePushKeyProduction}"
+            manifestPlaceholders = [dropboxKey: dropboxKeyProd]
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    buildFeatures {
+        compose true
+        viewBinding true
+        dataBinding true
+        buildConfig true
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/LICENSE', 'META-INF/io.netty.versions.properties', 'META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'project.properties', 'META-INF/rxjava.properties', 'META-INF/ASL2.0', 'META-INF/atomicfu.kotlin_module']
+            pickFirsts += [
+                'lib/arm64-v8a/libTrustWalletCore.so',
+                'org/bouncycastle/x509/CertPathReviewerMessages_de.properties',
+                'org/bouncycastle/x509/CertPathReviewerMessages.properties',
+                'org/bouncycastle/x509/CertPathReviewerMessages_*.properties'
+            ]
+        }
+        // Ensure native libraries are properly aligned for 16KB page sizes
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+
+    namespace 'com.flowfoundation.wallet'
+
+    // Android App Bundle configuration for 16 KB page size support
+    bundle {
+        language {
+            // Enable per-language APKs to reduce size
+            enableSplit = true
+        }
+        density {
+            // Enable per-density APKs
+            enableSplit = true
+        }
+        abi {
+            // Enable per-ABI APKs and ensure 16KB page size support
+            enableSplit = true
+        }
+    }
+
+    lintOptions {
+        checkAllWarnings true
+        abortOnError true // stop the build if errors found
+        warningsAsErrors false // do not treat warnings as errors
+    }
+}
+
+// Set versionName per buildType using Variant API (AGP 7/8)
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def num = (vName ?: "0.0.0").replaceAll('^[a-zA-Z]', '')
+        def bt = variant.hasProperty('buildType') ? variant.buildType : variant.name
+        def prefix = 'd'
+        if (bt == 'release') {
+            prefix = 'r'
+        } else if (bt == 'releaseDebug') {
+            prefix = 'i'
+        } else if (bt == 'dev' || bt == 'debug') {
+            prefix = 'd'
+        }
+        variant.outputs.each { output ->
+            output.versionName.set(prefix + num)
+        }
+    }
+}
+
+// Google Play Publisher configuration (reads from local.properties)
+play {
+    // Use the same service account JSON if playServiceAccountFile not provided
+    def playCreds = properties.getProperty("playServiceAccountFile", "firebase-appdist.json")
+    serviceAccountCredentials.set(file(playCreds))
+    track.set("internal")
+    defaultToAppBundles.set(true)
+    // Upload as completed to make build visible to internal testers
+    releaseStatus.set(com.github.triplet.gradle.androidpublisher.ReleaseStatus.COMPLETED)
+}
+
+configurations.all {
+    exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.9.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0'
+        force 'org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1'
+        force 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
+        force 'com.google.protobuf:protobuf-javalite:3.22.3'
+        force 'com.google.api.grpc:proto-google-common-protos:2.0.1'
+        force 'org.bouncycastle:bcprov-jdk18on:1.77'
+    }
+}
+
+// Clean task to remove conflicting generated classes
+task cleanCodegenClasses {
+    doLast {
+        delete "${buildDir}/generated/source/codegen"
+        delete "${buildDir}/tmp/kotlin-classes"
+        delete "${buildDir}/intermediates/javac"
+        delete "${buildDir}/intermediates/runtime_library_classes_jar"
+    }
+}
+
+dependencies {
+    implementation("com.facebook.react:react-android")
+
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    }
+
+    api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
+
+    // Fetch Flow Wallet Kit from GitHub Packages
+    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.1'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
+    /** Android Architecture **/
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation "androidx.palette:palette-ktx:1.0.0"
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation "androidx.datastore:datastore-preferences:1.1.3"
+    implementation "androidx.dynamicanimation:dynamicanimation:1.0.0"
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.8.8'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.8.8'
+
+    // HD Wallet implementation
+    implementation('com.trustwallet:wallet-core:4.3.2') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    // Add wallet-core-proto separately to avoid conflicts
+    // Note: wallet-core-proto may require protobuf-java, so we allow it for this dependency only
+    implementation('com.trustwallet:wallet-core-proto:4.3.2')
+
+    // room https://developer.android.google.cn/training/data-storage/room?hl=zh-cn
+    implementation "androidx.room:room-runtime:2.6.1"
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.test:core-ktx:1.6.1'
+    ksp "androidx.room:room-compiler:2.6.1"
+    implementation "androidx.room:room-ktx:2.6.1"
+
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation "androidx.security:security-crypto:1.1.0-alpha06"
+    implementation "androidx.viewpager2:viewpager2:1.1.0"
+    implementation 'androidx.biometric:biometric:1.2.0-alpha05'
+    implementation("androidx.work:work-runtime-ktx:2.7.1")
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    /** Android Architecture **/
+
+    /** Compose **/
+    implementation 'androidx.activity:activity-compose:1.9.1'
+    implementation 'androidx.compose.ui:ui:1.7.8'
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.7.8'
+    implementation 'androidx.compose.foundation:foundation:1.7.8'
+    implementation 'androidx.compose.material3:material3-android:1.3.2'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.7.8'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.4'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4'
+    implementation 'androidx.compose.ui:ui-tooling:1.7.8'
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0"
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+
+    /** Google Drive **/
+    implementation('com.google.api-client:google-api-client:1.23.0') {
+        exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation 'com.google.android.gms:play-services-drive:17.0.0'
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    implementation('com.google.http-client:google-http-client:1.40.1') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation('com.google.api-client:google-api-client-android:1.32.1') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation('com.google.oauth-client:google-oauth-client-jetty:1.31.0') {
+        exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation('com.google.apis:google-api-services-drive:v3-rev110-1.23.0') {
+        exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+
+    implementation("com.ionspin.kotlin:bignum:0.3.10")
+    implementation("com.ionspin.kotlin:bignum-serialization-kotlinx:0.3.10")
+    implementation("com.ionspin.kotlin:bignum:0.3.10")
+
+    /** Google Drive **/
+
+    /** Kotlin 相关 **/
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
+    /** Kotlin 相关 **/
+
+
+    /** firebase **/
+    implementation platform('com.google.firebase:firebase-bom:30.2.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation('com.google.firebase:firebase-inappmessaging-display-ktx') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+        exclude group: 'com.google.api.grpc', module: 'proto-google-common-protos'
+        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
+    }
+    implementation('com.google.firebase:firebase-functions-ktx') {
+        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
+    }
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-storage-ktx'
+    implementation 'com.google.firebase:firebase-config-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics'
+    implementation 'com.google.firebase:firebase-appcheck-playintegrity'
+    implementation 'com.google.firebase:firebase-appcheck'
+    implementation 'com.google.firebase:firebase-appcheck-debug'
+
+    /** Instabug **/
+    implementation 'com.instabug.library:instabug:15.0.1'
+    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:15.0.1'
+    /** firebase **/
+
+    implementation "dev.chrisbanes:insetter-ktx:0.3.1"
+
+    implementation 'com.github.bumptech.glide:glide:5.0.0-rc01'
+    ksp 'com.github.bumptech.glide:ksp:5.0.0-rc01'
+    // implementation 'com.caverock:androidsvg-aar:1.4'
+
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-scalars:2.0.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
+
+    implementation 'com.gitee.zackratos:UltimateBarX:0.6.1'
+
+    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+
+    implementation 'io.github.h07000223:flycoTabLayout:3.0.0'
+    implementation 'com.github.chthai64:SwipeRevealLayout:1.4.0'
+    implementation 'jp.wasabeef:glide-transformations:4.3.0'
+
+    implementation 'com.github.varunest:sparkbutton:1.0.6'
+
+    implementation 'com.github.li-xiaojun:XPopup:2.9.4'
+    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
+    implementation 'com.google.zxing:core:3.5.1'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+    implementation 'com.github.Justson.AgentWeb:agentweb-core:v5.0.0-alpha.1-androidx'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation 'joda-time:joda-time:2.10.3'
+    implementation 'commons-validator:commons-validator:1.7'
+    implementation 'com.airbnb.android:lottie:5.2.0'
+    implementation 'androidx.browser:browser:1.8.0'
+
+    /** FLOW **/
+    implementation ("com.github.Outblock:flow-jvm-sdk:v0.5.7") {
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    }
+    implementation 'com.github.onflow.flow-kmm:flow:0.1.1'
+    implementation 'io.grpc:grpc-okhttp:1.59.0'
+
+     implementation "io.ktor:ktor-client-core:2.3.7"
+     implementation "io.ktor:ktor-client-cio:2.3.7"
+     implementation "io.ktor:ktor-client-websockets:2.3.7"
+     implementation "io.ktor:ktor-client-content-negotiation:2.3.7"
+     implementation "io.ktor:ktor-serialization-kotlinx-json:2.3.7"
+     implementation "io.ktor:ktor-client-logging:2.3.7"
+
+    implementation(platform("com.reown:android-bom:1.3.3"))
+    implementation("com.reown:android-core") {
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
+    }
+    implementation("com.reown:sign") {
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
+    }
+
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
+    implementation 'com.github.trustwallet:trust-web3-provider:3.0.0'
+    implementation 'org.web3j:core:4.8.7-android'
+    /** FLOW **/
+
+    implementation 'com.github.translized:android-SDK:1.0.2'
+
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
+
+    implementation 'com.guolindev.permissionx:permissionx:1.7.1'
+
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
+
+    /** PDF Processing **/
+    implementation('com.tom-roush:pdfbox-android:2.0.27.0') {
+        exclude group: 'org.bouncycastle'
+    }
+
+    /** Dropbox **/
+    implementation 'com.dropbox.core:dropbox-core-sdk:7.0.0'
+    implementation 'com.dropbox.core:dropbox-android-sdk:7.0.0'
+
+    /** Crowdin **/
+    implementation ('com.github.crowdin.mobile-sdk-android:sdk:1.13.1') {
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
+
+    /** Mixpanel **/
+    implementation "com.mixpanel.android:mixpanel-android:7.5.4"
+
+    /** TEST **/
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    testImplementation "io.mockk:mockk:1.13.9"
+    testImplementation "org.robolectric:robolectric:4.11.1"
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
+}
+
+// Add after android {} block
+// jacoco {
+//     toolVersion = "0.8.11"
+// }
+//
+// tasks.register('jacocoTestReport', JacocoReport) {
+//     dependsOn 'testDebugUnitTest'
+//
+//     reports {
+//         xml.required = true
+//         html.required = true
+//     }
+//
+//     def fileFilter = [
+//         '**/R.class',
+//         '**/R$*.class',
+//         '**/BuildConfig.*',
+//         '**/Manifest*.*',
+//         '**/*Test*.*',
+//         'android/**/*.*'
+//     ]
+//     def debugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
+//     def mainSrc = "${project.projectDir}/src/main/java"
+//
+//     sourceDirectories.setFrom(files([mainSrc]))
+//     classDirectories.setFrom(files([debugTree]))
+//     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
+//         'jacoco/testDebugUnitTest.exec',
+//         'outputs/code-coverage/connected/*coverage.ec'
+//     ]))
+// }

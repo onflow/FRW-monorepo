@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#242430</color>
+    <color name="colorPrimaryVariant">@color/deep_bg</color>
+    <color name="colorSecondary">#41CC5D</color>
+
+    <color name="text_sub">#D2D2D2</color>
+
+    <color name="disable">#888888</color>
+
+    <color name="bg">@color/deep_bg</color>
+    <color name="card_bg">#4d4d56</color>
+
+    <color name="border_1">#ffffff</color>
+    <color name="border_2">#454545</color>
+    <color name="border_3">#232323</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="landing_bg">#222222</color>
+    <color name="background">#121212</color>
+    <color name="select_tokens_dialog">#1E1E1F</color>
+    <color name="button">#FAFAFA</color>
+    <color name="button_text">#333333</color>
+    <color name="front_color">#111111</color>
+    <color name="mango1">#FAD157</color>
+    <color name="navy_wallet">#277FF2</color>
+    <color name="navy5">#052A59</color>
+    <color name="neutrals1">#F2F2F2</color>
+    <color name="neutrals1_a8">#14F2F2F2</color>
+    <color name="neutrals2">#E6E6E6</color>
+    <color name="neutrals3">#D9D9D9</color>
+    <color name="neutrals4">#CCCCCC</color>
+    <color name="neutrals5">#BFBFBF</color>
+    <color name="neutrals6">#B2B2B2</color>
+    <color name="neutrals7">#999999</color>
+    <color name="neutrals8">#787878</color>
+    <color name="neutrals9">#666666</color>
+    <color name="neutrals10">#313131</color>
+    <color name="neutrals11">#282828</color>
+    <color name="neutrals12">#F2F2F2</color>
+    <color name="neutrals12_background">#0D0D0D</color>
+    <color name="note">#C4C4C4</color>
+    <color name="outline">#4C4C4C</color>
+    <color name="salmon_primary">#41CC5D</color>
+    <color name="salmon5">#7D4024</color>
+    <color name="success2">#38B000</color>
+    <color name="success3">#309600</color>
+    <color name="success5">#206300</color>
+    <color name="text">#E8E8E8</color>
+    <color name="violet1">#9694FF</color>
+    <color name="violet4">#3C3A99</color>
+    <color name="violet5">#323080</color>
+    <color name="warning2">#C44536</color>
+    <color name="warning5">#261C1B</color>
+    <color name="deep_bg">#000000</color>
+
+    <color name="bg_icon">#333333</color>
+
+    <color name="primary0">#00242430</color>
+    <color name="primary10">#1a242430</color>
+    <color name="primary30">#4f242430</color>
+    <color name="primary48">#76242430</color>
+    <color name="primary80">#cc242430</color>
+    <color name="background90">#E6121212</color>
+    <color name="background60">#99121212</color>
+    <color name="brightest_text">#000000</color>
+    <color name="image_bg">@color/neutrals10</color>
+    <color name="stake">#60C293</color>
+    <color name="stake_12">#1c60C293</color>
+
+    <color name="profile_card_divider">#14FFFFFF</color>
+    <color name="welcome_page_text">#FFFFFF</color>
+    <color name="drawer_item_background">#292929</color>
+    <color name="key_card_background">#222222</color>
+
+    <color name="bg_1">#000000</color>
+    <color name="bg_2">#222222</color>
+    <color name="bg_3">#2C2C2C</color>
+    <color name="explore_chip_bg">#2A2A2A</color>
+    <color name="bottom_sheet_bg">#1E1E1F</color>
+
+    <color name="text_white">#000000</color>
+    <color name="text_light">#FFFFFF</color>
+    <color name="text_1">#FFFFFF</color>
+    <color name="text_2">#CCFFFFFF</color>
+    <color name="contrast_text">#66FFFFFF</color>
+    <color name="landing_on_flow_text">#000000</color>
+    <color name="landing_get_started_text">#FFFFFF</color>
+
+    <color name="info_text_3">#99FFFFFF</color>
+    <color name="text_3">#66FFFFFF</color>
+    <color name="text_4">#14FFFFFF</color>
+    <color name="text_5">#E6000000</color>
+
+    <color name="line_light">#0AFFFFFF</color>
+
+
+    <color name="bg_skip">#4DFFFFFF</color>
+
+    <color name="token_pricing_card_background">#121212</color>
+    <color name="token_list_item_background">#28282A</color>
+    <color name="home_page_background">#000000</color>
+    <color name="home_page_card_background">#28282A</color>
+    <color name="wallet_notification_background">#CC2C2C2C</color>
+    <color name="buy_background">#323234</color>
+    <color name="home_page_action_background">#A1000000</color>
+
+    <color name="fill_1">#4076767E</color>
+    <color name="fill_3">#3176767E</color>
+    <color name="border_line_stroke">#28FFFFFF</color>
+    <color name="border_line_stroke_token_pricing">#2A2A2A</color>
+    <color name="border_line">#0FFFFFFF</color>
+    <color name="background_2">#28282A</color>
+    <color name="disable_button_text">#40FFFFFF</color>
+    <color name="button_bg_secondary">#E5E5E6</color>
+    <color name="bg_navi">#0A0A0B</color>
+
+    <!-- Surge Pricing Dialog Colors for Dark Mode -->
+    <color name="surge_card_bg">#2A2A2A</color> <!-- Dark mode dialog background -->
+    <color name="surge_modal_bg">#2A2A2A</color>
+    <color name="surge_modal_overlay">#CC1A1A1A</color>
+    <color name="surge_error">#FF5252</color>
+    <color name="surge_warning">#FDB022</color>
+    <color name="surge_warning_bg">#26FDB022</color>
+    <color name="surge_border">#374151</color>
+    <color name="surge_text_primary">#F9FAFB</color> <!-- Light text for dark mode -->
+    <color name="surge_text_secondary">#9CA3AF</color>
+    <color name="surge_button_overlay">#33FFFFFF</color>
+    <color name="surge_button_bg">#F04438</color> <!-- Keep button red -->
+    <color name="surge_button_progress">#F97066</color> <!-- Keep progress red -->
+
+    <color name="bg_card">#1A1A1A</color>
+</resources>
+

@@ -1,0 +1,229 @@
+package com.flowfoundation.wallet.page.backup.multibackup.fragment
+
+import android.app.Activity.RESULT_OK
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.flowfoundation.wallet.databinding.FragmentBackupCompletedBinding
+import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_CHECK_FINISH
+import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
+import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_CHECK_FINISH
+import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
+import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.network.model.LocationInfo
+import com.flowfoundation.wallet.page.backup.model.BackupType
+import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupFailedDialog
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupCompletedItem
+import com.flowfoundation.wallet.page.backup.multibackup.view.BackupCompletedItemView
+import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupViewModel
+import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.visible
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.ioScope
+import org.onflow.flow.models.FlowAddress
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
+import org.onflow.flow.ChainId
+import java.io.File
+
+
+class BackupCompletedFragment : Fragment() {
+
+    private lateinit var binding: FragmentBackupCompletedBinding
+    private lateinit var backupViewModel: MultiBackupViewModel
+
+    private var isGoogleDriveBackupSuccess: Boolean? = null
+    private var isRecoveryPhraseBackupSuccess: Boolean? = null
+    private var isDropboxBackupSuccess: Boolean? = null
+    private var isDropboxCheckLoading = false
+    private var isGoogleDriveCheckLoading = false
+    private var isRecoveryPhraseCheckLoading = false
+    private var locationInfo: LocationInfo? = null
+
+    private val checkFinishReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            isGoogleDriveBackupSuccess = intent?.getBooleanExtra(EXTRA_SUCCESS, false) ?: false
+            backupViewModel.getCompletedList().firstOrNull { it.type == BackupType.GOOGLE_DRIVE }?.let {
+                binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
+                    setItemInfo(it, locationInfo, isGoogleDriveBackupSuccess)
+                }, 0)
+            }
+            isGoogleDriveCheckLoading = false
+            checkLoadingStatus()
+        }
+    }
+
+    private val checkDropboxFinishReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            isDropboxBackupSuccess = intent?.getBooleanExtra(
+                com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS,
+                false) ?: false
+            backupViewModel.getCompletedList().firstOrNull { it.type == BackupType.DROPBOX }?.let {
+                binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
+                    setItemInfo(it, locationInfo, isDropboxBackupSuccess)
+                }, 0)
+            }
+            isDropboxCheckLoading = false
+            checkLoadingStatus()
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentBackupCompletedBinding.inflate(inflater)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
+            checkFinishReceiver, IntentFilter(
+                ACTION_GOOGLE_DRIVE_CHECK_FINISH
+            )
+        )
+        LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
+            checkDropboxFinishReceiver, IntentFilter(
+                ACTION_DROPBOX_CHECK_FINISH
+            )
+        )
+        backupViewModel = ViewModelProvider(this.requireActivity())[MultiBackupViewModel::class.java].apply {
+            locationInfoLiveData.observe(viewLifecycleOwner) { info ->
+                setCompletedItemList(info)
+            }
+            getLocationInfo()
+        }
+        with(binding) {
+            val optionList = backupViewModel.getBackupOptionList()
+            optionView.setBackupOptionList(optionList)
+            lavLoading.visible()
+            btnNext.isEnabled = false
+
+            btnNext.setOnClickListener {
+                val isAllBackupSuccess = listOfNotNull(
+                    isGoogleDriveBackupSuccess,
+                    isDropboxBackupSuccess,
+                    isRecoveryPhraseBackupSuccess
+                ).all { it }
+
+                if (isAllBackupSuccess) {
+                    requireActivity().setResult(RESULT_OK)
+                    requireActivity().finish()
+                } else {
+                    BackupFailedDialog(requireActivity()).show()
+                }
+            }
+        }
+    }
+
+    private fun checkLoadingStatus() {
+        if (isGoogleDriveCheckLoading || isRecoveryPhraseCheckLoading || isDropboxCheckLoading) {
+            binding.lavLoading.visible()
+            binding.btnNext.isEnabled = false
+        } else {
+            binding.lavLoading.gone()
+            binding.btnNext.isEnabled = true
+        }
+    }
+
+    private fun checkDropboxBackup(mnemnoic: String) {
+        isDropboxCheckLoading = true
+        isDropboxBackupSuccess = false
+        DropboxAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
+    }
+
+    private fun checkGoogleDriveBackup(mnemnoic: String) {
+        isGoogleDriveCheckLoading = true
+        isGoogleDriveBackupSuccess = false
+        GoogleDriveAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
+    }
+
+    private fun setCompletedItemList(locationInfo: LocationInfo?) {
+        this.locationInfo = locationInfo
+        with(binding) {
+            tvOptionNote.gone()
+            llItemLayout.removeAllViews()
+            backupViewModel.getCompletedList().forEach {
+                when (it.type) {
+                    BackupType.GOOGLE_DRIVE -> {
+                        checkGoogleDriveBackup(it.mnemonic)
+                    }
+                    BackupType.DROPBOX -> {
+                        checkDropboxBackup(it.mnemonic)
+                    }
+                    else -> {
+                        ioScope {
+                            checkRecoveryPhrase(it)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun checkRecoveryPhrase(item: BackupCompletedItem) {
+        isRecoveryPhraseCheckLoading = true
+        isRecoveryPhraseBackupSuccess = false
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = item.mnemonic,
+            passphrase = "",
+            derivationPath = DERIVATION_PATH,
+            storage = FileSystemStorage(baseDir)
+        )
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+
+        val blockAccount = FlowAddress(WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty()).lastBlockAccount()
+
+        // Normalize public keys for comparison - remove prefixes and convert to lowercase
+        val backupPubKey = backupProvider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
+
+        isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { key ->
+            val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
+            backupPubKey == onChainPubKey
+        } != null
+
+
+        // Update UI on main thread
+        requireActivity().runOnUiThread {
+            binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
+                setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
+            })
+            isRecoveryPhraseCheckLoading = false
+            checkLoadingStatus()
+        }
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+    }
+
+    override fun onDestroyView() {
+        LocalBroadcastManager.getInstance(Env.getApp()).unregisterReceiver(checkFinishReceiver)
+        LocalBroadcastManager.getInstance(Env.getApp()).unregisterReceiver(checkDropboxFinishReceiver)
+        super.onDestroyView()
+    }
+}

@@ -1,0 +1,6 @@
+keyAlias=your_alias_name
+keyPassword=your_password
+storeFile=your_keystore_file_path
+storePassword=your_keystore_password
+gpr.user=your_github_username
+gpr.key=your_github_personal_access_token

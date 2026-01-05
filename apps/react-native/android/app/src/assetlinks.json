@@ -1,0 +1,35 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "web",
+      "site": "https://lilico.app"
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "Flow Wallet Dev",
+      "package_name": "com.flowfoundation.wallet.dev",
+      "sha256_cert_fingerprints": [
+        "38:09:EB:5D:0E:E2:92:14:44:9C:22:77:FB:EA:C6:FD:AD:12:C1:85:40:5E:06:05:23:22:59:CA:1F:9D:05:A9"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "Flow Wallet",
+      "package_name": "com.flowfoundation.wallet",
+      "sha256_cert_fingerprints": [
+        "38:09:EB:5D:0E:E2:92:14:44:9C:22:77:FB:EA:C6:FD:AD:12:C1:85:40:5E:06:05:23:22:59:CA:1F:9D:05:A9"
+      ]
+    }
+  }
+]
