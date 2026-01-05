@@ -187,7 +187,7 @@ export class ErrorSession {
 }
 
 export class TransactionErrorSession {
-  private sessionId = `txError_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  private sessionId = `txError_${Date.now()}_${uuidv4().toString().substring(2, 9)}`;
   private startTime = Date.now();
   private stages: Array<{
     stage: ErrorEvents['transactionError']['errorStage'];
