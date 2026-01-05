@@ -1,17 +1,19 @@
-import { bridge, logger, navigation, toast } from '@onflow/frw-context';
-import { Copy, Warning, RevealPhrase } from '@onflow/frw-icons';
+import { bridge, logger, navigation } from '@onflow/frw-context';
+import { Copy, Warning } from '@onflow/frw-icons';
 import {
   YStack,
   XStack,
   Text,
-  View,
   OnboardingBackground,
   Button,
+  MnemonicGrid,
   WarningCard,
   useTheme,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useCopyToClipboard } from '../hooks';
 
 /**
  * BackupMnemonicScreen - Page 2 of the backup flow
@@ -35,8 +37,11 @@ export function BackupMnemonicScreen({
 }: BackupMnemonicScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [copiedToClipboard, setCopiedToClipboard] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
+
+  // Validate seedPhrase
+  const isValidSeedPhrase = seedPhrase && seedPhrase.length === 12;
 
   // Enable screenshot protection when screen mounts
   useEffect(() => {
@@ -54,6 +59,31 @@ export function BackupMnemonicScreen({
     };
   }, []);
 
+  // Show error state if seedPhrase is invalid
+  if (!isValidSeedPhrase) {
+    return (
+      <OnboardingBackground>
+        <YStack flex={1} items="center" justify="center" px="$4" gap="$4">
+          <Text color="$error" text="center" fontSize="$5" fontWeight="700">
+            {t('backup.mnemonic.error.title', { defaultValue: 'Invalid Recovery Phrase' })}
+          </Text>
+          <Text color="$textSecondary" text="center" fontSize="$4">
+            {t('backup.mnemonic.error.description', {
+              defaultValue: 'The recovery phrase is missing or invalid. Please try again.',
+            })}
+          </Text>
+          <Button onPress={() => (onBack ? onBack() : navigation.goBack())}>
+            <XStack gap="$2" items="center" px="$4" py="$2">
+              <Text fontSize="$4" fontWeight="600">
+                {t('common.goBack', { defaultValue: 'Go Back' })}
+              </Text>
+            </XStack>
+          </Button>
+        </YStack>
+      </OnboardingBackground>
+    );
+  }
+
   const handleBack = () => {
     if (onBack) {
       onBack();
@@ -62,40 +92,8 @@ export function BackupMnemonicScreen({
     }
   };
 
-  const handleCopy = async () => {
-    try {
-      // Copy recovery phrase to clipboard
-      const phraseText = seedPhrase.join(' ');
-      const platform = bridge.getPlatform();
-
-      // Use RN clipboard via global injected helper when not web/extension
-      // Check for React Native environment by checking for the global clipboard helper
-      const rnClipboard = (globalThis as any).clipboard;
-      if (platform !== 'extension' && rnClipboard?.setString) {
-        rnClipboard.setString(phraseText);
-        logger.debug('Recovery phrase copied using RN Clipboard');
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(phraseText);
-        logger.debug('Recovery phrase copied using Web Clipboard API');
-      } else {
-        throw new Error('No clipboard API available');
-      }
-
-      setCopiedToClipboard(true);
-      setTimeout(() => setCopiedToClipboard(false), 2000);
-
-      // Show success toast
-      toast.show({
-        title: t('messages.copied'),
-        type: 'success',
-      });
-    } catch (error) {
-      logger.error('Failed to copy recovery phrase:', error);
-      toast.show({
-        title: t('messages.failedToCopy'),
-        type: 'error',
-      });
-    }
+  const handleCopy = () => {
+    copy(seedPhrase.join(' '));
   };
 
   const handleRevealPhrase = () => {
@@ -122,97 +120,15 @@ export function BackupMnemonicScreen({
           </Text>
         </YStack>
 
-        {/* Recovery phrase grid - 2 columns x 6 rows */}
-        <YStack
-          width={320}
-          bg="$bgGlass"
-          rounded="$4"
-          pt="$6"
-          pb="$6"
-          px="$4.5"
-          mb="$4"
-          self="center"
-          position="relative"
-        >
-          {/* Only render words when phrase is revealed */}
-          {isPhraseRevealed ? (
-            <YStack gap="$5">
-              {/* Generate 6 rows with 2 columns each */}
-              {Array.from({ length: 6 }, (_, rowIndex) => (
-                <XStack key={rowIndex} gap="$10" justify="space-between">
-                  {/* Left column */}
-                  {seedPhrase[rowIndex * 2] && (
-                    <XStack gap="$2" items="center" flex={1}>
-                      <YStack
-                        width="$8"
-                        height="$8"
-                        bg="$bgGlass"
-                        rounded="$2"
-                        items="center"
-                        justify="center"
-                        shrink={0}
-                      >
-                        <Text fontSize="$5" color="$text">
-                          {rowIndex * 2 + 1}
-                        </Text>
-                      </YStack>
-                      <Text fontSize="$4" color="$text">
-                        {seedPhrase[rowIndex * 2]}
-                      </Text>
-                    </XStack>
-                  )}
-
-                  {/* Right column */}
-                  {seedPhrase[rowIndex * 2 + 1] && (
-                    <XStack gap="$2" items="center" flex={1}>
-                      <YStack
-                        width="$8"
-                        height="$8"
-                        bg="$bgGlass"
-                        rounded="$2"
-                        items="center"
-                        justify="center"
-                        shrink={0}
-                      >
-                        <Text fontSize="$5" color="$text">
-                          {rowIndex * 2 + 2}
-                        </Text>
-                      </YStack>
-                      <Text fontSize="$4" color="$text">
-                        {seedPhrase[rowIndex * 2 + 1]}
-                      </Text>
-                    </XStack>
-                  )}
-                </XStack>
-              ))}
-            </YStack>
-          ) : (
-            /* Click to reveal overlay - shown when phrase is not revealed */
-            <YStack
-              height={340}
-              items="center"
-              justify="center"
-              cursor="pointer"
-              onPress={handleRevealPhrase}
-            >
-              <YStack items="center" gap="$3">
-                <View
-                  width={42}
-                  height={40}
-                  bg="$bgGlass"
-                  rounded="$2"
-                  items="center"
-                  justify="center"
-                >
-                  <RevealPhrase size={20} color={theme.iconGlass.val} />
-                </View>
-                <Text fontSize="$4" fontWeight="500" color="$text" text="center">
-                  {t('backup.mnemonic.clickToReveal', { defaultValue: 'Click to reveal phrase' })}
-                </Text>
-              </YStack>
-            </YStack>
-          )}
-        </YStack>
+        {/* Recovery phrase grid */}
+        <MnemonicGrid
+          words={seedPhrase}
+          isRevealed={isPhraseRevealed}
+          onReveal={handleRevealPhrase}
+          revealLabel={t('backup.mnemonic.clickToReveal', {
+            defaultValue: 'Click to reveal phrase',
+          })}
+        />
 
         {/* Copy button */}
         <XStack justify="center" mb="$4">
@@ -220,7 +136,7 @@ export function BackupMnemonicScreen({
             <XStack gap="$3" items="center">
               <Copy size={24} color={theme.primary.val} />
               <Text fontSize="$4" fontWeight="700" style={{ color: theme.primary.val }}>
-                {copiedToClipboard
+                {copied
                   ? t('messages.copied')
                   : t('backup.mnemonic.copy', { defaultValue: 'Copy' })}
               </Text>
@@ -232,18 +148,18 @@ export function BackupMnemonicScreen({
         <WarningCard
           icon={<Warning size={24} color={theme.iconGlass.val} />}
           title={t('backup.mnemonic.warning.title', {
-            defaultValue: 'Do not share your secret phrase!',
+            defaultValue: 'Do not share your recovery phrase!',
           })}
           description={t('backup.mnemonic.warning.description', {
             defaultValue:
-              'If someone has your secret phrase,\nThey will have full control of your wallet.',
+              'If someone has your recovery phrase, They will have full control of your wallet.',
           })}
         />
 
         {/* Spacer */}
         <YStack flex={1} />
 
-        {/* Complete button - disabled until phrase is revealed */}
+        {/* Done button - disabled until phrase is revealed */}
         <YStack pb="$6">
           <Button
             variant="inverse"
@@ -252,7 +168,7 @@ export function BackupMnemonicScreen({
             disabled={!isPhraseRevealed}
             onPress={handleComplete}
           >
-            {t('backup.mnemonic.complete', { defaultValue: "I've backed up my phrase" })}
+            {t('backup.mnemonic.done', { defaultValue: 'Done' })}
           </Button>
         </YStack>
       </YStack>

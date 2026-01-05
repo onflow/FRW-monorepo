@@ -90,6 +90,7 @@ export * from './foundation/SegmentedControl';
 
 // Export onboarding components
 export * from './components/onboarding/TipCard';
+export * from './components/onboarding/MnemonicGrid';
 export { ShieldAnimation } from './components/ShieldAnimation';
 
 export * from './components/TokenAmountInput';

@@ -13,9 +13,9 @@ export function WarningCard({ icon, title, description }: WarningCardProps): Rea
       gap="$3"
       p="$4"
       rounded="$4"
-      bg="$warning10"
+      bg="$bgGlass"
       borderWidth={1}
-      borderColor="$warning"
+      borderColor="$borderGlass"
       items="flex-start"
     >
       <View width={24} height={24} items="center" justify="center" mt="$0.5">
