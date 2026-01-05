@@ -1,5 +1,6 @@
-import { navigation } from '@onflow/frw-context';
+import { navigation, logger } from '@onflow/frw-context';
 import { LockBackup, LinkBackup, Settings } from '@onflow/frw-icons';
+import type { NewKeyInfo } from '@onflow/frw-types';
 import {
   YStack,
   Text,
@@ -9,9 +10,12 @@ import {
   ShieldAnimation,
   useTheme,
   View,
+  Spinner,
 } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useKeyRotation } from '../hooks';
 
 /**
  * BackupTipScreen - Page 1 of the backup flow
@@ -19,8 +23,8 @@ import { useTranslation } from 'react-i18next';
  */
 
 export interface BackupTipScreenProps {
-  /** Callback when user presses Start to proceed to mnemonic display */
-  onContinue: () => void;
+  /** Callback when user presses Start and seed key is generated - receives the new key info */
+  onContinue: (newKeyInfo: NewKeyInfo) => void;
   /** Callback when user presses "Not now" */
   onSkip?: () => void;
   /** Callback when user presses back/close */
@@ -34,6 +38,7 @@ export function BackupTipScreen({
 }: BackupTipScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { generateSeedKey, isLoading, error } = useKeyRotation();
 
   const handleBack = () => {
     if (onBack) {
@@ -46,6 +51,16 @@ export function BackupTipScreen({
   const handleSkip = () => {
     if (onSkip) {
       onSkip();
+    }
+  };
+
+  const handleStart = async () => {
+    logger.info('[BackupTipScreen] User pressed Start, generating seed key');
+    const newKeyInfo = await generateSeedKey();
+
+    if (newKeyInfo) {
+      logger.info('[BackupTipScreen] Seed key generated, navigating to mnemonic screen');
+      onContinue(newKeyInfo);
     }
   };
 
@@ -126,18 +141,37 @@ export function BackupTipScreen({
           </Text>
         </YStack>
 
+        {/* Error message */}
+        {error && (
+          <YStack p="$3" rounded="$4" bg="$error10" mb="$4">
+            <Text fontSize="$3" color="$error" text="center">
+              {error}
+            </Text>
+          </YStack>
+        )}
+
         {/* Spacer */}
         <YStack flex={1} />
 
         {/* Start button */}
         <YStack pb="$2">
-          <Button variant="inverse" size="large" fullWidth onPress={onContinue}>
-            {t('backup.tip.start', { defaultValue: 'Start' })}
+          <Button
+            variant="inverse"
+            size="large"
+            fullWidth
+            onPress={handleStart}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Spinner size="small" color="$background" />
+            ) : (
+              t('backup.tip.start', { defaultValue: 'Start' })
+            )}
           </Button>
         </YStack>
 
         {/* Not now link */}
-        {onSkip && (
+        {onSkip && !isLoading && (
           <YStack items="center" pb="$6">
             <Text
               fontSize="$4"

@@ -1,5 +1,6 @@
 import { bridge, logger, navigation } from '@onflow/frw-context';
 import { Copy, Warning } from '@onflow/frw-icons';
+import type { NewKeyInfo, KeyRotationServiceResult } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -9,55 +10,83 @@ import {
   MnemonicGrid,
   WarningCard,
   useTheme,
+  Spinner,
 } from '@onflow/frw-ui';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useCopyToClipboard } from '../hooks';
+import { useCopyToClipboard, useKeyRotation } from '../hooks';
 
 /**
  * BackupMnemonicScreen - Page 2 of the backup flow
  * Displays the seed phrase for the user to backup
- * UI is identical to RecoveryPhraseScreen
+ * Executes key rotation on-chain when user completes backup
  */
 
 export interface BackupMnemonicScreenProps {
-  /** The seed phrase to display (12 words) */
-  seedPhrase: string[];
-  /** Callback when backup is complete */
-  onComplete: () => void;
+  /** The new key info containing seed phrase and flow key */
+  newKeyInfo: NewKeyInfo;
+  /** The user's address for key rotation */
+  address: string;
+  /** Callback when key rotation is complete */
+  onComplete: (result: KeyRotationServiceResult) => void;
   /** Callback when user presses back */
   onBack?: () => void;
+  /** Callback when key rotation fails */
+  onError?: (error: string) => void;
+}
+
+/**
+ * Parse seed phrase string into array of words
+ */
+function parseSeedPhrase(seedphrase: string): string[] {
+  if (!seedphrase) return [];
+  return seedphrase.split(' ').filter((word) => word.length > 0);
 }
 
 export function BackupMnemonicScreen({
-  seedPhrase,
+  newKeyInfo,
+  address,
   onComplete,
   onBack,
+  onError,
 }: BackupMnemonicScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
   const { copied, copy } = useCopyToClipboard();
+  const { executeRotation, isLoading, error, step } = useKeyRotation();
   const [isPhraseRevealed, setIsPhraseRevealed] = useState(false);
 
-  // Validate seedPhrase
-  const isValidSeedPhrase = seedPhrase && seedPhrase.length === 12;
+  // Parse seed phrase into words
+  const seedPhraseWords = parseSeedPhrase(newKeyInfo?.seedphrase || '');
+  const isValidSeedPhrase = seedPhraseWords.length === 12 || seedPhraseWords.length === 24;
 
   // Enable screenshot protection when screen mounts
   useEffect(() => {
     logger.info('[BackupMnemonicScreen] Enabling screenshot protection');
-    if (bridge.setScreenSecurityLevel) {
-      bridge.setScreenSecurityLevel('secure');
+    // setScreenSecurityLevel is an optional platform-specific method
+    const bridgeWithSecurity = bridge as typeof bridge & {
+      setScreenSecurityLevel?: (level: 'secure' | 'normal') => void;
+    };
+    if (bridgeWithSecurity.setScreenSecurityLevel) {
+      bridgeWithSecurity.setScreenSecurityLevel('secure');
     }
 
     // Cleanup: disable screenshot protection when unmounting
     return () => {
       logger.info('[BackupMnemonicScreen] Disabling screenshot protection');
-      if (bridge.setScreenSecurityLevel) {
-        bridge.setScreenSecurityLevel('normal');
+      if (bridgeWithSecurity.setScreenSecurityLevel) {
+        bridgeWithSecurity.setScreenSecurityLevel('normal');
       }
     };
   }, []);
+
+  // Handle error notification
+  useEffect(() => {
+    if (error && onError) {
+      onError(error);
+    }
+  }, [error, onError]);
 
   // Show error state if seedPhrase is invalid
   if (!isValidSeedPhrase) {
@@ -93,15 +122,33 @@ export function BackupMnemonicScreen({
   };
 
   const handleCopy = () => {
-    copy(seedPhrase.join(' '));
+    copy(seedPhraseWords.join(' '));
   };
 
   const handleRevealPhrase = () => {
     setIsPhraseRevealed(true);
   };
 
-  const handleComplete = () => {
-    onComplete();
+  const handleComplete = async () => {
+    logger.info('[BackupMnemonicScreen] User confirmed backup, starting key rotation', { address });
+
+    const result = await executeRotation(address, newKeyInfo);
+
+    if (result) {
+      logger.info('[BackupMnemonicScreen] Key rotation successful', { txId: result.txId });
+      onComplete(result);
+    }
+  };
+
+  // Determine button text based on state
+  const getButtonText = () => {
+    if (isLoading) {
+      if (step === 'rotating') {
+        return t('backup.mnemonic.upgrading', { defaultValue: 'Upgrading account...' });
+      }
+      return t('backup.mnemonic.processing', { defaultValue: 'Processing...' });
+    }
+    return t('backup.mnemonic.done', { defaultValue: 'Done' });
   };
 
   return (
@@ -122,7 +169,7 @@ export function BackupMnemonicScreen({
 
         {/* Recovery phrase grid */}
         <MnemonicGrid
-          words={seedPhrase}
+          words={seedPhraseWords}
           isRevealed={isPhraseRevealed}
           onReveal={handleRevealPhrase}
           revealLabel={t('backup.mnemonic.clickToReveal', {
@@ -132,7 +179,7 @@ export function BackupMnemonicScreen({
 
         {/* Copy button */}
         <XStack justify="center" mb="$4">
-          <Button variant="ghost" onPress={handleCopy}>
+          <Button variant="ghost" onPress={handleCopy} disabled={isLoading}>
             <XStack gap="$3" items="center">
               <Copy size={24} color={theme.primary.val} />
               <Text fontSize="$4" fontWeight="700" style={{ color: theme.primary.val }}>
@@ -156,6 +203,15 @@ export function BackupMnemonicScreen({
           })}
         />
 
+        {/* Error message */}
+        {error && (
+          <YStack p="$3" rounded="$4" bg="$error10" mt="$4">
+            <Text fontSize="$3" color="$error" text="center">
+              {error}
+            </Text>
+          </YStack>
+        )}
+
         {/* Spacer */}
         <YStack flex={1} />
 
@@ -165,10 +221,19 @@ export function BackupMnemonicScreen({
             variant="inverse"
             size="large"
             fullWidth
-            disabled={!isPhraseRevealed}
+            disabled={!isPhraseRevealed || isLoading}
             onPress={handleComplete}
           >
-            {t('backup.mnemonic.done', { defaultValue: 'Done' })}
+            {isLoading ? (
+              <XStack gap="$2" items="center">
+                <Spinner size="small" color="$background" />
+                <Text color="$background" fontWeight="600">
+                  {getButtonText()}
+                </Text>
+              </XStack>
+            ) : (
+              getButtonText()
+            )}
           </Button>
         </YStack>
       </YStack>
