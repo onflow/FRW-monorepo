@@ -11,6 +11,10 @@ export interface NewKeyInfo {
 export interface KeyRotationDependencies {
   createSeedKey: (strength: number) => Promise<NewKeyInfo>;
   saveNewKey: (key: NewKeyInfo) => Promise<void>;
+  removeOldKey: (address: string, publicKey: string) => Promise<void>;
+  signRotationRequest: (publicKey: string, address: string, hash: string) => Promise<string>;
+  /** Optional: Custom logger implementation */
+  log?(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
 }
 
 // AccountKey interface for key rotation context
@@ -44,6 +48,14 @@ export interface BloctoDetectionResult {
 export interface KeyRotationResult {
   txId: string;
   detection?: BloctoDetectionResult;
+  newKeyInfo?: NewKeyInfo;
+}
+
+export interface KeyRotationServiceResult {
+  txId: string;
+  addedKey: AccountKey;
+  revokedKeyIndexes: number[];
+  apiRegistered: boolean;
 }
 
 export enum RotationErrorType {
@@ -109,9 +121,7 @@ export interface KeyRotationServiceConfig {
  * Key rotation service dependencies interface
  * Simple interface for dependency injection
  */
-export interface KeyRotationDependencies {
-  /** Sign key rotation request data for v3/signed API */
-  signKeyRotationRequest(requestData: string): Promise<string>;
-  /** Optional: Custom logger implementation */
-  log?(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
-}
+export type KeyRotationServiceDependencies = Pick<
+  KeyRotationDependencies,
+  'signRotationRequest' | 'log'
+>;

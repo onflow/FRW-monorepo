@@ -83,6 +83,8 @@ export interface Spec extends TurboModule, KeyRotationDependencies {
 
   createSeedKey(strength: number): Promise<NewKeyInfo>;
   saveNewKey(key: NewKeyInfo): Promise<void>;
+  removeOldKey(address: string, publicKey: string): Promise<void>;
+  signRotationRequest(publicKey: string, address: string, hash: string): Promise<string>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');
