@@ -405,7 +405,8 @@
       },
       "warning": {
         "prefix": "请注意：",
-        "description": "此过程完成后，您来自Blocto的恢复套件将不再保护对您账户的访问。这是为了在Blocto停止运营后保护您。"
+        "description": "如果您丢失了恢复短语，您将无法恢复您的钱包。Flow Wallet 无法帮助您恢复。",
+        "bloctoDescription": "此过程完成后，您来自Blocto的恢复套件将不再保护对您账户的访问。这是为了在Blocto停止运营后保护您。"
       },
       "start": "开始",
       "notNow": "暂不"
