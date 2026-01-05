@@ -88,6 +88,10 @@ export * from './components/TransactionFeeSection';
 export * from './components/WarningCard';
 export * from './foundation/SegmentedControl';
 
+// Export onboarding components
+export * from './components/onboarding/TipCard';
+export { ShieldAnimation } from './components/ShieldAnimation';
+
 export * from './components/TokenAmountInput';
 
 // TODO: Fix TypeScript issues in the following components:
