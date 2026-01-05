@@ -6,12 +6,14 @@
     "selectTokens": "Seleccionar Tokens",
     "sendTokens": "Enviar Tokens",
     "nftDetails": "Detalles NFT",
-    "colorDemo": "Demo de Colores"
+    "colorDemo": "Demo de Colores",
+    "receive": "Recibir Activos"
   },
   "common": {
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "back": "Atrás",
+    "goBack": "Volver",
     "close": "Cerrar",
     "done": "Hecho",
     "next": "Siguiente",
@@ -19,7 +21,9 @@
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",
-    "Search": "Buscar"
+    "Search": "Buscar",
+    "recommended": "Recomendado",
+    "retry": "Reintentar"
   },
   "tabs": {
     "tokens": "Tokens",
@@ -104,7 +108,10 @@
     "sendTokens": "Enviar Tokens",
     "confirmSend": "Confirmar envío",
     "holdToSend": "Mantener para enviar",
-    "unknownAccount": "Cuenta Desconocida"
+    "unknownAccount": "Cuenta Desconocida",
+    "errors": {
+      "amountExceedsBalance": "La cantidad excede el saldo disponible"
+    }
   },
   "messages": {
     "loading": "Cargando...",
@@ -116,7 +123,19 @@
     "failedToLoadRecipients": "Error al cargar destinatarios",
     "copied": "¡Copiado!",
     "addressBookAdded": "Añadido a la libreta de direcciones",
-    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones"
+    "failedToAddToAddressBook": "No se pudo añadir a la libreta de direcciones",
+    "addressCopied": "Dirección copiada al portapapeles",
+    "failedToCopy": "Error al copiar la dirección",
+    "failedToShare": "Error al compartir el código QR"
+  },
+  "receive": {
+    "title": "Recibir Activos",
+    "receiveAccount": "Recibir en la Cuenta",
+    "scanToReceive": "Escanear para recibir",
+    "shareQRCode": "Compartir Código QR",
+    "generatingQR": "Generando código QR...",
+    "noQRCode": "No hay código QR disponible",
+    "evmWarning": "Asegúrese de enviar activos solo a esta dirección en la red Flow EVM. Los activos enviados a esta dirección en otras redes se perderán."
   },
   "buttons": {
     "retry": "Reintentar",
@@ -138,7 +157,25 @@
     "failedToLoadTokens": "Error al cargar tokens",
     "failedToLoadNFTs": "Error al cargar NFTs",
     "transactionPayloadError": "Error al crear la carga de la transacción",
-    "transactionExecutionError": "Error en la ejecución de la transacción"
+    "transactionExecutionError": "Error en la ejecución de la transacción",
+    "generic": {
+      "title": "Algo salió mal",
+      "message": "Encontramos un error inesperado. Por favor, inténtalo de nuevo.",
+      "button": "Intentar de nuevo",
+      "reportBug": "Reportar Error"
+    },
+    "network": {
+      "title": "Problema de conexión",
+      "message": "No se puede conectar a la red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      "button": "Reintentar",
+      "reportBug": "Reportar Error"
+    },
+    "critical": {
+      "title": "Error crítico",
+      "message": "Ocurrió un error crítico. Por favor, reinicia la aplicación.",
+      "button": "Reiniciar aplicación",
+      "reportBug": "Reportar Error"
+    }
   },
   "nft": {
     "untitled": "Sin título",
@@ -193,6 +230,44 @@
       "surgeActive": "Precio de congestión activo",
       "description": "Debido a la alta actividad de la red, las tarifas de transacción están elevadas, y Flow Wallet no está pagando temporalmente por tu gas. Las tarifas de red actuales son {{multiplier}}× más altas de lo habitual.",
       "holdToAgree": "Mantener para continuar con el precio de congestión"
+    }
+  },
+  "backup": {
+    "tip": {
+      "title": "Actualiza\ntu cuenta",
+      "description": "Flow Wallet necesita actualizar la seguridad de tu cuenta para eliminar tus claves anteriores de Blocto",
+      "sectionTitle": "¿Qué significa esto?",
+      "fullControl": {
+        "title": "Tendrás control total sobre tus cuentas y claves."
+      },
+      "newKey": {
+        "title": "Crearemos una nueva clave para asegurar tu cuenta, eliminando el acceso de Blocto."
+      },
+      "newPhrase": {
+        "title": "Crearemos una nueva frase de recuperación que asegurará tu cuenta en adelante."
+      },
+      "warning": {
+        "prefix": "Ten en cuenta: ",
+        "description": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
+      },
+      "start": "Comenzar",
+      "notNow": "Ahora no"
+    },
+    "mnemonic": {
+      "navTitle": "Actualizar cuenta",
+      "title": "Frase de recuperación",
+      "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
+      "clickToReveal": "Haz clic para revelar la frase",
+      "copy": "Copiar",
+      "warning": {
+        "title": "¡No compartas tu frase de recuperación!",
+        "description": "Si alguien tiene tu frase de recuperación, tendrá control total de tu cartera."
+      },
+      "done": "Hecho",
+      "error": {
+        "title": "Frase de recuperación inválida",
+        "description": "La frase de recuperación falta o es inválida. Por favor, inténtalo de nuevo."
+      }
     }
   }
 }
