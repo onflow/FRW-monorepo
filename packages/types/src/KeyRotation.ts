@@ -70,3 +70,48 @@ export class RotationError extends Error {
     this.type = details.type;
   }
 }
+
+/**
+ * Key rotation workflow parameters
+ */
+export interface KeyRotationWorkflowParams {
+  /** The new public key */
+  newPublicKey: string;
+  /** Optional: Key weight (default: 1000) */
+  keyWeight?: number;
+  /** Optional: Revoke old keys */
+  revokeOldKeys?: boolean;
+}
+
+/**
+ * Key rotation workflow result
+ */
+export interface KeyRotationWorkflowResult {
+  /** Transaction ID of the key rotation transaction */
+  transactionId: string;
+  /** Whether the transaction was successful */
+  success: boolean;
+  /** Optional error message if failed */
+  error?: string;
+}
+
+/**
+ * Key rotation service configuration
+ */
+export interface KeyRotationServiceConfig {
+  /** Request timeout in milliseconds */
+  timeout?: number;
+  /** Maximum retry attempts */
+  maxRetries?: number;
+}
+
+/**
+ * Key rotation service dependencies interface
+ * Simple interface for dependency injection
+ */
+export interface KeyRotationDependencies {
+  /** Sign key rotation request data for v3/signed API */
+  signKeyRotationRequest(requestData: string): Promise<string>;
+  /** Optional: Custom logger implementation */
+  log?(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
+}
