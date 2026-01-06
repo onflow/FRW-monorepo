@@ -16,6 +16,7 @@ import { version } from '../package.json';
 import { platform } from './bridge/PlatformImpl';
 import { FRWErrorBoundary } from './components/ErrorBoundary';
 import { QueryDebugger } from './components/QueryDebugger';
+import { setupNativeRequestBus } from './native/nativeRequestBus';
 import AppNavigator from './navigation/AppNavigator';
 import { handleGlobalError, handleUnhandledRejection } from './utils/errorHandling';
 
@@ -135,6 +136,8 @@ const App = (props: AppProps) => {
   useEffect(() => {
     initializeApp();
   }, [initializeApp]);
+
+  useEffect(() => setupNativeRequestBus(), []);
 
   const colorScheme = useColorScheme();
 

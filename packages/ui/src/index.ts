@@ -88,7 +88,13 @@ export * from './components/Toast';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionFeeSection';
+export * from './components/WarningCard';
 export * from './foundation/SegmentedControl';
+
+// Export onboarding components
+export * from './components/onboarding/TipCard';
+export * from './components/onboarding/MnemonicGrid';
+export { ShieldAnimation } from './components/ShieldAnimation';
 
 export * from './components/TokenAmountInput';
 export * from './components/UpdateDialog.web';
@@ -110,6 +116,7 @@ export { extensionTamaguiConfig } from './theme/extension';
 
 // Export layout components
 export * from './layout/BackgroundWrapper';
+export * from './layout/OnboardingBackground';
 
 // Export types
 export * from './types';

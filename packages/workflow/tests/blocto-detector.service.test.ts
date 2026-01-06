@@ -1,7 +1,7 @@
 import { configureFCL } from '@onflow/frw-cadence';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { BloctoDetectorService } from '../src/key-rotation/blocto-detector';
+import { BloctoDetectorService } from '../src/keyRotation/bloctoDetector';
 
 beforeAll(() => {
   configureFCL('mainnet');

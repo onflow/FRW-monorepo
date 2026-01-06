@@ -38,6 +38,9 @@ export {
   isEmoji,
 } from './utils';
 
+// Key rotation utilities
+export { normalizePublicKey, resolveHashAlgo, resolveSignAlgo } from './key-rotation';
+
 // Token utilities
 export {
   extractNumericBalance,

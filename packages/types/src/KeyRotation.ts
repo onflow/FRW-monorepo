@@ -11,6 +11,10 @@ export interface NewKeyInfo {
 export interface KeyRotationDependencies {
   createSeedKey: (strength: number) => Promise<NewKeyInfo>;
   saveNewKey: (key: NewKeyInfo) => Promise<void>;
+  removeOldKey: (address: string, publicKey: string) => Promise<void>;
+  signRotationRequest: (publicKey: string, address: string, hash: string) => Promise<string>;
+  /** Optional: Custom logger implementation */
+  log?(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
 }
 
 // AccountKey interface for key rotation context
@@ -44,6 +48,14 @@ export interface BloctoDetectionResult {
 export interface KeyRotationResult {
   txId: string;
   detection?: BloctoDetectionResult;
+  newKeyInfo?: NewKeyInfo;
+}
+
+export interface KeyRotationServiceResult {
+  txId: string;
+  addedKey: AccountKey;
+  revokedKeyIndexes: number[];
+  apiRegistered: boolean;
 }
 
 export enum RotationErrorType {
@@ -70,3 +82,46 @@ export class RotationError extends Error {
     this.type = details.type;
   }
 }
+
+/**
+ * Key rotation workflow parameters
+ */
+export interface KeyRotationWorkflowParams {
+  /** The new public key */
+  newPublicKey: string;
+  /** Optional: Key weight (default: 1000) */
+  keyWeight?: number;
+  /** Optional: Revoke old keys */
+  revokeOldKeys?: boolean;
+}
+
+/**
+ * Key rotation workflow result
+ */
+export interface KeyRotationWorkflowResult {
+  /** Transaction ID of the key rotation transaction */
+  transactionId: string;
+  /** Whether the transaction was successful */
+  success: boolean;
+  /** Optional error message if failed */
+  error?: string;
+}
+
+/**
+ * Key rotation service configuration
+ */
+export interface KeyRotationServiceConfig {
+  /** Request timeout in milliseconds */
+  timeout?: number;
+  /** Maximum retry attempts */
+  maxRetries?: number;
+}
+
+/**
+ * Key rotation service dependencies interface
+ * Simple interface for dependency injection
+ */
+export type KeyRotationServiceDependencies = Pick<
+  KeyRotationDependencies,
+  'signRotationRequest' | 'log'
+>;

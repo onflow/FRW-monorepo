@@ -1,5 +1,6 @@
 import type {
   KeyRotationDependencies,
+  NativeEventName,
   NewKeyInfo,
   RecentContactsResponse,
   Currency as SharedCurrency,
@@ -84,6 +85,14 @@ export interface Spec extends TurboModule, KeyRotationDependencies {
 
   createSeedKey(strength: number): Promise<NewKeyInfo>;
   saveNewKey(key: NewKeyInfo): Promise<void>;
+  removeOldKey(address: string, publicKey: string): Promise<void>;
+  signRotationRequest(publicKey: string, address: string, hash: string): Promise<string>;
+  nativeResponse(
+    requestId: string,
+    eventName: NativeEventName | string,
+    resultJson?: string | null,
+    error?: string | null
+  ): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

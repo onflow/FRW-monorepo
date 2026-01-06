@@ -248,6 +248,14 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.saveNewKey(key);
   }
 
+  removeOldKey(address: string, publicKey: string): Promise<void> {
+    return NativeFRWBridge.removeOldKey(address, publicKey);
+  }
+
+  signRotationRequest(publicKey: string, address: string, hash: string): Promise<string> {
+    return NativeFRWBridge.signRotationRequest(publicKey, address, hash);
+  }
+
   closeRN(): void {
     NativeFRWBridge.closeRN(null);
   }
