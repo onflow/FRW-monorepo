@@ -5,19 +5,6 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
-  SendToScreen,
-  ReceiveScreen,
-  // Onboarding screens
-  GetStartedScreen,
-  ProfileTypeSelectionScreen,
-  RecoveryPhraseScreen,
-  ConfirmRecoveryPhraseScreen,
-  SecureEnclaveScreen,
-  NotificationPreferencesScreen,
-  // Recovery screens
-  ImportProfileScreen,
-  ImportOtherMethodsScreen,
-  ConfirmImportProfileScreen,
   // Backup screens
   BackupTipScreen,
   BackupMnemonicScreen,
