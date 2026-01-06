@@ -97,4 +97,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
   hideToast?(id: string): void;
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
+
+  // Screen security
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
 }

@@ -3,6 +3,8 @@
  * Used during key rotation to backup seed phrases
  */
 
+import type { NewKeyInfo, KeyRotationServiceResult } from '@onflow/frw-types';
+
 /**
  * Backup flow step enumeration
  */
@@ -18,16 +20,18 @@ export interface BackupState {
   isPhraseRevealed: boolean;
   /** Whether the user has confirmed their backup */
   isBackupConfirmed: boolean;
-  /** The seed phrase words */
-  seedPhrase: string[];
+  /** The new key info including seed phrase and flow key */
+  newKeyInfo: NewKeyInfo | null;
 }
 
 /**
  * Props for the BackupTipScreen
  */
 export interface BackupTipScreenProps {
-  /** Callback when user presses continue */
-  onContinue: () => void;
+  /** Callback when user presses continue and seed key is generated */
+  onContinue: (newKeyInfo: NewKeyInfo) => void;
+  /** Callback when user presses "Not now" */
+  onSkip?: () => void;
   /** Callback when user presses back/close */
   onBack?: () => void;
 }
@@ -36,12 +40,16 @@ export interface BackupTipScreenProps {
  * Props for the BackupMnemonicScreen
  */
 export interface BackupMnemonicScreenProps {
-  /** The seed phrase to display (12 words) */
-  seedPhrase: string[];
-  /** Callback when backup is complete */
-  onComplete: () => void;
+  /** The new key info containing seed phrase and flow key */
+  newKeyInfo: NewKeyInfo;
+  /** The user's address for key rotation */
+  address: string;
+  /** Callback when key rotation is complete */
+  onComplete: (result: KeyRotationServiceResult) => void;
   /** Callback when user presses back */
   onBack?: () => void;
+  /** Callback when key rotation fails */
+  onError?: (error: string) => void;
 }
 
 /**
