@@ -1,10 +1,12 @@
 // Address utilities
 export {
   isValidFlowAddress,
+  validateFlowAddress,
   formatFlowAddress,
   getAddressType,
   truncateAddress,
   isValidEthereumAddress,
+  validateEvmAddress,
 } from './address';
 
 // JWT utilities

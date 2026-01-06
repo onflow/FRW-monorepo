@@ -23,8 +23,7 @@ import {
   XStack,
   YStack,
 } from '@onflow/frw-ui';
-import { retryConfigs } from '@onflow/frw-utils';
-import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
+import { retryConfigs, validateEvmAddress, validateFlowAddress } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
