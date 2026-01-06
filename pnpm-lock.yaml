@@ -912,9 +912,6 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
-      '@onflow/frw-workflow':
-        specifier: workspace:*
-        version: link:../workflow
       '@tanstack/react-query':
         specifier: ^5.85.6
         version: 5.89.0(react@19.0.0)
