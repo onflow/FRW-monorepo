@@ -19,7 +19,7 @@ export interface RegisterState {
 }
 
 export const INITIAL_REGISTER_STATE: RegisterState = {
-  activeTab: STEPS.USERNAME,
+  activeTab: STEPS.RECOVERY,
   nickname: '',
   username: undefined,
   password: undefined,
@@ -32,6 +32,7 @@ export type RegisterAction =
   | { type: 'SET_NICKNAME'; payload: string }
   | { type: 'SET_USERNAME'; payload: string }
   | { type: 'SET_PASSWORD'; payload: string }
+  | { type: 'SET_MNEMONIC'; payload: string }
   | { type: 'SET_IS_ADD_WALLET'; payload: boolean }
   | { type: 'GO_BACK' };
 
@@ -45,12 +46,12 @@ export const registerReducer = (state: RegisterState, action: RegisterAction): R
       return { ...state, username: action.payload };
     case 'SET_PASSWORD':
       return { ...state, password: action.payload };
+    case 'SET_MNEMONIC':
+      return { ...state, mnemonic: action.payload };
     case 'SET_IS_ADD_WALLET':
       return { ...state, isAddWallet: action.payload };
     case 'GO_BACK': {
       switch (state.activeTab) {
-        case STEPS.RECOVERY:
-          return { ...state, activeTab: STEPS.USERNAME };
         case STEPS.REPEAT:
           return { ...state, activeTab: STEPS.RECOVERY };
         case STEPS.PASSWORD:

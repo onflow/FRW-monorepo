@@ -1,6 +1,6 @@
 import { bridge, navigation } from '@onflow/frw-context';
 import { useSendStore, sendSelectors, tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
-import { type NFTModel } from '@onflow/frw-types';
+import { type NFTModel, ScreenName } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
   NFTGrid,
@@ -297,7 +297,7 @@ export function NFTListScreen(): React.ReactElement {
       const foundNFT = (nfts || []).find((n) => getNFTId(n) === nftId);
       if (foundNFT) {
         setCurrentNFT(foundNFT);
-        navigation.navigate('NFTDetail', { nft: foundNFT });
+        navigation.navigate(ScreenName.NFT_DETAIL, { nft: foundNFT });
       } else {
         logger.warn(t('nft.nftNotFound'), nftId);
       }
@@ -341,7 +341,7 @@ export function NFTListScreen(): React.ReactElement {
 
     setSelectedNFTs(selectedNFTs);
     setCurrentStep('send-to');
-    navigation.navigate('SendTo');
+    navigation.navigate(ScreenName.SEND_TO);
   }, [selectedIds, nfts, setSelectedNFTs, setCurrentStep, nftQuantities, setNFTQuantity]);
 
   // Refresh function - TanStack Query makes this super simple!

@@ -1,4 +1,5 @@
 import { Alert, Snackbar } from '@mui/material';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -14,13 +15,13 @@ import ImportTabs from '@/ui/components/import-components/ImportTabs';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
-import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
 export const initImportProfileState = (initialState: ImportState): ImportState => {
   return {
     ...initialState,
+    nickname: generateRandomUsername(),
   };
 };
 
@@ -29,7 +30,11 @@ const ImportProfile = () => {
   const location = useLocation();
   const usewallet = useWallet();
 
-  const [state, dispatch] = useReducer(importProfileReducer, INITIAL_IMPORT_STATE);
+  const [state, dispatch] = useReducer(
+    importProfileReducer,
+    INITIAL_IMPORT_STATE,
+    initImportProfileState
+  );
   const {
     activeTab,
     mnemonic,
@@ -124,6 +129,21 @@ const ImportProfile = () => {
     dispatch({ type: 'SET_GOOGLE_IMPORT', payload: { show: true, accounts } });
   };
 
+  const handleRegisterNewProfile = (data: {
+    importData: any;
+    username: string;
+    isFromImport: boolean;
+  }) => {
+    // Navigate to the register flow with the import data and auto-generated username
+    navigate('/welcome/register', {
+      state: {
+        importData: data.importData,
+        username: data.username,
+        isFromImport: data.isFromImport,
+      },
+    });
+  };
+
   if (showGoogleImport) {
     return (
       <Google
@@ -156,6 +176,8 @@ const ImportProfile = () => {
           setMnemonic={(m) => dispatch({ type: 'SET_MNEMONIC', payload: m })}
           setPk={(k) => dispatch({ type: 'SET_PK', payload: k })}
           setAccounts={(a) => dispatch({ type: 'SET_ACCOUNTS', payload: a })}
+          pk={pk}
+          mnemonic={mnemonic}
           goPassword={() =>
             dispatch({
               type: 'SET_ACTIVE_TAB',
@@ -165,7 +187,7 @@ const ImportProfile = () => {
           handleSwitchTab={() =>
             dispatch({
               type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.PICK_USERNAME,
+              payload: IMPORT_STEPS.SET_PASSWORD,
             })
           }
           setErrorMessage={(msg) =>
@@ -180,19 +202,7 @@ const ImportProfile = () => {
           setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}
           phrase={phrase}
           setPhrase={(p) => dispatch({ type: 'SET_PASSPHRASE', payload: p })}
-        />
-      )}
-
-      {activeTab === IMPORT_STEPS.PICK_USERNAME && (
-        <PickNickname
-          handleSwitchTab={() =>
-            dispatch({
-              type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.SET_PASSWORD,
-            })
-          }
-          nickname={nickname}
-          setNickname={(u) => dispatch({ type: 'SET_NICKNAME', payload: u })}
+          onRegisterNewProfile={handleRegisterNewProfile}
         />
       )}
 

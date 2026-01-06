@@ -6,10 +6,10 @@ import {
 } from '@onflow/frw-api';
 import { type PlatformSpec, type Storage, getServiceContext } from '@onflow/frw-context';
 import type {
-  AccountKey,
   KeyRotationDependencies,
   KeyRotationServiceConfig,
   KeyRotationServiceResult,
+  KeyRotationAccountKey,
   NewKeyInfo,
 } from '@onflow/frw-types';
 import { logger, normalizePublicKey, resolveHashAlgo, resolveSignAlgo } from '@onflow/frw-utils';
@@ -191,7 +191,7 @@ export class KeyRotationService {
    */
   private async submitToSignedAPI(
     address: string,
-    accountKey: AccountKey,
+    accountKey: KeyRotationAccountKey,
     signAlgo: number,
     hashAlgo: number
   ): Promise<boolean> {

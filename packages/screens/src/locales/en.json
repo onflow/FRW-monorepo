@@ -401,7 +401,7 @@
         "title": "We'll create a new key to secure your account, removing Blocto's access."
       },
       "newPhrase": {
-        "title": "We'll create a new recovery phrase for future securing of your account."
+        "title": "We'll create a new recovery phrase which will secure your account going forward."
       },
       "writeDown": {
         "title": "Write it down",
@@ -426,7 +426,7 @@
       "notNow": "Not now"
     },
     "mnemonic": {
-      "navTitle": "Create account",
+      "navTitle": "Upgrade account",
       "title": "Recovery phrase",
       "description": "Write down these words in the right order and store them somewhere safe.",
       "clickToReveal": "Click to reveal phrase",

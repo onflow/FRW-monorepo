@@ -1,4 +1,4 @@
-import type { AccountKey } from '@onflow/frw-types';
+import type { KeyRotationAccountKey } from '@onflow/frw-types';
 
 export const normalizePublicKey = (publicKey: string): string =>
   publicKey.startsWith('0x') ? publicKey.slice(2) : publicKey;
@@ -6,7 +6,7 @@ export const normalizePublicKey = (publicKey: string): string =>
 const normalizeAlgorithm = (value?: string | number): string =>
   (value ?? '').toString().trim().toLowerCase();
 
-export const resolveSignAlgo = (accountKey: AccountKey): number | undefined => {
+export const resolveSignAlgo = (accountKey: KeyRotationAccountKey): number | undefined => {
   if (typeof accountKey.signAlgo === 'number') {
     return accountKey.signAlgo;
   }
@@ -29,7 +29,7 @@ export const resolveSignAlgo = (accountKey: AccountKey): number | undefined => {
   return undefined;
 };
 
-export const resolveHashAlgo = (accountKey: AccountKey): number | undefined => {
+export const resolveHashAlgo = (accountKey: KeyRotationAccountKey): number | undefined => {
   if (typeof accountKey.hashAlgo === 'number') {
     return accountKey.hashAlgo;
   }

@@ -1,5 +1,6 @@
 import { type TokenModel, formatCurrencyStringForDisplay } from '@onflow/frw-types';
 
+import { isValidFlowAddress } from './address';
 import { stripHexPrefix } from './utils';
 
 // Utility function to extract numeric value from token balance strings
@@ -51,6 +52,10 @@ export function getTokenResourceIdentifier(token: TokenModel | null): string | n
     }
   }
   if (!token || !token.contractAddress || !token.contractName) {
+    return null;
+  }
+  // Only generate identifier for Flow addresses
+  if (!isValidFlowAddress(token.contractAddress)) {
     return null;
   }
   const cleanAddress = stripHexPrefix(token.contractAddress);

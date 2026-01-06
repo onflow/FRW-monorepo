@@ -13,7 +13,23 @@ export * from './Send';
 export * from './BridgeHandler';
 export * from './StoreTypes';
 export * from './Platform';
-export * from './KeyRotation';
+export type {
+  NewKeyInfo,
+  KeyRotationDependencies,
+  AccountKey as KeyRotationAccountKey,
+  FlowAccountKey,
+  BloctoDetectionResult,
+  KeyRotationResult,
+  KeyRotationServiceResult,
+  RotationErrorDetails,
+  KeyRotationWorkflowParams,
+  KeyRotationWorkflowResult,
+  KeyRotationServiceConfig,
+  KeyRotationServiceDependencies,
+} from './KeyRotation';
+export { RotationError, RotationErrorType } from './KeyRotation';
 export * from './NativeEvent';
 export * from './utils/string';
 export * from './query/QueryDomain';
+export * from './Errors';
+export * from './Migration';

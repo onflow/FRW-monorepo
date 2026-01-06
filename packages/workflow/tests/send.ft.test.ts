@@ -2,8 +2,7 @@ import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { accounts } from './utils/accounts';
-import { authz } from './utils/authz';
-// import { SendTransaction } from '../src';
+import { authz, payerAuthorization } from './utils/authz';
 
 // dotenv.config();
 
@@ -19,7 +18,7 @@ describe('Test send strategies', () => {
 
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        config.payer = authz;
+        config.payer = payerAuthorization;
         config.proposer = authz;
         config.authorizations = [authz];
       }
@@ -353,6 +352,54 @@ describe('Test send strategies', () => {
   //   };
 
   //   const txid = await SendTransaction(payload);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test EoaToChildFtStrategy - Bridge FT from EOA to Child', async () => {
+  //   const payload = {
+  //     type: 'token',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: mainAccount.address,
+  //     flowIdentifier: 'A.f1ab99c82dee3526.USDCFlow.Vault',
+  //     sender: mainAccount.eoaAddr,
+  //     amount: '0.00001',
+  //     childAddrs: [],
+  //     ids: [],
+  //     decimal: 6,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService, {
+  //     ethSign: evmTrxCallback,
+  //     network: 'mainnet',
+  //   });
+  //   console.log(txid);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test bridge Flow - Bridge from EOA to Coa to Flow', async () => {
+  //   const payload = {
+  //     type: 'token',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: mainAccount.address,
+  //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+  //     sender: mainAccount.eoaAddr,
+  //     amount: '0.00001',
+  //     childAddrs: [],
+  //     ids: [],
+  //     decimal: 18,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x0000000000000000000000000000000000000000',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService, {
+  //     ethSign: evmTrxCallback,
+  //     network: 'mainnet',
+  //   });
+  //   console.log(txid, '----txid----');
   //   expect(txid.length).toBe(64);
   // });
 });

@@ -1,7 +1,11 @@
+import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
+  CreateAccountResponse,
   Currency,
+  NativeScreenName,
   Platform,
   RecentContactsResponse,
+  SeedPhraseGenerationResponse,
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
@@ -32,9 +36,12 @@ export interface PlatformSpec extends KeyRotationDependencies {
   getVersion(): string;
   getBuildNumber(): string;
   getLanguage(): string;
+  getMixpanelToken(): string;
+  getSignType(): string;
 
   getCurrency(): Currency;
   getPlatform(): Platform;
+  getDeviceInfo(): forms_DeviceInfo;
 
   // API endpoint methods
   getApiEndpoint(): string;
@@ -46,10 +53,10 @@ export interface PlatformSpec extends KeyRotationDependencies {
   cache(): Cache;
   navigation(): Navigation;
 
-  // Cryptographic operations
-  // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
+  // Cryptographic operations (hexData due to Turbo Module limitations)
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
+  ethSign(signData: Uint8Array): Promise<Uint8Array>;
 
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
@@ -58,7 +65,22 @@ export interface PlatformSpec extends KeyRotationDependencies {
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrentUserUid?(): Promise<string | null>;
 
-  // Transaction monitoring and post-transaction actions
+  // Profile management
+  /**
+   * Get profiles stored locally but not yet logged in (for recovery flow)
+   * These are different from getWalletProfiles which returns currently logged-in profiles
+   * @returns Promise with recoverable profiles response
+   */
+  getRecoverableProfiles?(): Promise<WalletProfilesResponse>;
+
+  /**
+   * Switch to a previously signed-in profile by user ID
+   * @param userId - The unique identifier of the profile to switch to
+   * @returns Promise that resolves on success, rejects on failure
+   */
+  switchToProfile?(userId: string): Promise<void>;
+
+  // Transaction monitoring
   listenTransaction?(
     txId: string,
     showNotification: boolean,
@@ -67,27 +89,23 @@ export interface PlatformSpec extends KeyRotationDependencies {
     icon?: string
   ): void;
 
-  // CadenceService configuration using interceptor pattern
-  // This method allows the bridge to configure all FCL-related functionality
+  // CadenceService configuration (FCL interceptors)
   configureCadenceService(cadenceService: any): void;
 
-  // Logging methods - platform-specific logging implementation
+  // Logging
   log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
   isDebug(): boolean;
 
-  // Optional platform-specific logging callback for additional logging mechanisms
-  // This enables backup logging solutions (e.g., local files, Instabug API) alongside the default bridge.log
-  logCallback?: (
-    level: 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    ...args: unknown[]
-  ) => void;
+  // Error reporting (Instabug)
+  isInstabugInitialized?(): boolean;
+  setInstabugInitialized?(initialized: boolean): void;
 
-  // UI interaction methods
+  // UI interactions
   scanQRCode(): Promise<string>;
+  shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
 
-  // Toast/Notification methods
+  // Toast notifications
   showToast?(
     title: string,
     message?: string,
@@ -97,4 +115,74 @@ export interface PlatformSpec extends KeyRotationDependencies {
   hideToast?(id: string): void;
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
+
+  // Account creation
+  generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
+  /**
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
+   */
+  getV4RegistrationSignatures?(mnemonic: string): Promise<{
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+  }>;
+  /**
+   * Register Secure Enclave account with backend and initiate on-chain account creation
+   * Returns early with txId so RN can monitor transaction status
+   * Does NOT wait for transaction to seal - RN will handle that
+   * @param username - Username for the account
+   * @returns Response with txId for RN to monitor (address may be null until tx seals)
+   */
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
+
+  /**
+   * Initialize Secure Enclave wallet after account creation transaction has sealed
+   * Called by RN after monitoring tx status confirms the transaction is sealed
+   * @param txId - Transaction ID from account creation
+   * @returns Promise that resolves when wallet is initialized
+   */
+  initSecureEnclaveWallet?(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }>;
+
+  // Wallet initialization
+  /**
+   * Save mnemonic and initialize wallet after account creation transaction is sealed
+   * @param mnemonic - The recovery phrase to save securely
+   * @param customToken - Firebase custom token from registration
+   * @param txId - Transaction ID from account creation (used to init native wallet SDK)
+   * @param username - Username for the account
+   * @param evmAddress - Optional pre-derived EVM/EOA address for faster display
+   */
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string,
+    evmAddress?: string
+  ): Promise<void>;
+
+  // Firebase authentication
+  signInWithCustomToken?(customToken: string): Promise<void>;
+
+  // Permissions
+  requestNotificationPermission?(): Promise<boolean>;
+  checkNotificationPermission?(): Promise<boolean>;
+
+  // Screen security
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
+
+  // Native screen navigation
+  launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
+
+  // Safe area insets for cross-platform layout
+  /**
+   * Get device safe area insets for proper content positioning
+   * Returns the distance from the edges of the screen to the safe area
+   * @returns Object with top, bottom, left, right inset values in pixels
+   */
+  getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number };
 }

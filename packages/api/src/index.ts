@@ -9,12 +9,21 @@ export {
   ProfileService as ProfileGoService,
   UserService as UserGoService,
   Userv3Service as Userv3GoService,
-  type forms_AccountKeySignature,
-  type forms_BackupInfo,
-  type forms_AccountKey,
-  type forms_AccountKeyForm,
+  Userv4Service as Userv4GoService,
 } from './codegen/goService.generated';
 export * from './codegen/service.generated';
+
+// Export commonly used types for ProfileService and user registration
+export type {
+  controllers_UserReturn,
+  forms_AccountKey,
+  forms_AccountKeyForm,
+  forms_AccountKeySignature,
+  forms_BackupInfo,
+  forms_DeviceInfo,
+  forms_FlowAccountInfo,
+  forms_EvmAccountInfo,
+} from './codegen/goService.generated';
 
 // Export service options
 export { serviceOptions as goServiceOptions } from './codegen/goService.generated';

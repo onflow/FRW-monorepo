@@ -15,7 +15,7 @@ const ToastSuccess = ({
     viewBox="0 0 24 24"
     {...props}
   >
-    <Circle cx={12} cy={12} r={10} />
+    <Circle cx={12} cy={12} r={10} stroke={color} strokeWidth="2" />
     <Path
       d="m9 12 2 2 4-4"
       stroke={color}

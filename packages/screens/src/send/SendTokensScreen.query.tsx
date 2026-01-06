@@ -36,12 +36,13 @@ import {
   transformAccountForDisplay,
   extractNumericBalance,
   retryConfigs,
+  showError,
 } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard } from 'react-native';
+import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 
 import type { ScreenAssets } from '../assets/images';
 
@@ -94,6 +95,20 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   useEffect(() => {
     setCurrentStep('send-tokens');
   }, [setCurrentStep]);
+
+  // Check free gas status
+  useEffect(() => {
+    const checkFreeGasStatus = async (): Promise<void> => {
+      try {
+        const isEnabled = await bridge.isFreeGasEnabled?.();
+        setIsFreeGasEnabled(isEnabled ?? true);
+      } catch (error) {
+        setIsFreeGasEnabled(true);
+      }
+    };
+
+    checkFreeGasStatus();
+  }, []);
 
   // Reset amount and error when selected token changes
   useEffect(() => {
@@ -350,7 +365,27 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     }
   }, [selectedToken]);
 
+  const handleDismissKeyboard = useCallback(() => {
+    // Try multiple blur approaches for Tamagui Input
+    if (inputRef.current) {
+      if (typeof inputRef.current.blur === 'function') {
+        inputRef.current.blur();
+      } else if (inputRef.current.current?.blur) {
+        inputRef.current.current.blur();
+      } else if (inputRef.current._nativeTag && inputRef.current.blur) {
+        inputRef.current.blur();
+      }
+    }
+
+    // Use Keyboard.dismiss() as backup
+    Keyboard.dismiss();
+  }, []);
+
   const handleSendPress = useCallback(() => {
+    // Ensure keyboard is dismissed before showing modal
+    if (inputRef.current?.blur) {
+      inputRef.current.blur();
+    }
     Keyboard.dismiss();
 
     if (isSurgePricingActive) {
@@ -383,56 +418,62 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
   }, []);
 
   const handleTransactionConfirm = useCallback(async () => {
-    if (!selectedToken || !fromAccount || !toAccount || !amount) {
-      throw new Error('Missing transaction data');
-    }
-
-    setSelectedToken(selectedToken);
-    setSelectedNFTs([]);
-    setTransactionType('tokens');
-    const inputAmount = new BN(amount || '0');
-    let tokenAmount: string;
-    const decimals = selectedToken.decimal || 8;
-    if (!isTokenMode) {
-      // Converting from USD to token
-      const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
-      tokenAmount = inputAmount.div(price).toFixed(decimals);
-    } else {
-      // Already in token mode
-      tokenAmount = inputAmount.toFixed(decimals);
-    }
-
-    updateFormData({ tokenAmount: tokenAmount });
-
-    const result = await executeTransaction();
-
-    // Set the recipient as a recent contact after successful transaction
-    if (result && toAccount) {
-      try {
-        // Convert WalletAccount to Contact format
-        const recentContact = {
-          id: toAccount.id || toAccount.address,
-          name: toAccount.name,
-          address: toAccount.address,
-          avatar: toAccount.avatar || '',
-          isFavorite: false,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-
-        await addressBookStore.setRecentContact(recentContact);
-      } catch (error) {
-        logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+    try {
+      if (!selectedToken || !fromAccount || !toAccount || !amount) {
+        throw new Error('Missing transaction data');
       }
 
-      // Close the React Native view after successful transaction
-      const platform = bridge.getPlatform();
-      if (platform === Platform.iOS || platform === Platform.Android) {
-        bridge.closeRN();
+      setSelectedToken(selectedToken);
+      setSelectedNFTs([]);
+      setTransactionType('tokens');
+      const inputAmount = new BN(amount || '0');
+      let tokenAmount: string;
+      const decimals = selectedToken.decimal || 8;
+      if (!isTokenMode) {
+        // Converting from USD to token
+        const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
+        tokenAmount = inputAmount.div(price).toFixed(decimals);
+      } else {
+        // Already in token mode
+        tokenAmount = inputAmount.toFixed(decimals);
       }
-    }
 
-    return result;
+      updateFormData({ tokenAmount: tokenAmount });
+
+      const result = await executeTransaction();
+
+      // Set the recipient as a recent contact after successful transaction
+      if (result && toAccount) {
+        try {
+          // Convert WalletAccount to Contact format
+          const recentContact = {
+            id: toAccount.id || toAccount.address,
+            name: toAccount.name,
+            address: toAccount.address,
+            avatar: toAccount.avatar || '',
+            isFavorite: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+
+          await addressBookStore.setRecentContact(recentContact);
+        } catch (error: any) {
+          logger.error('❌ [SendTokensScreen] Error setting recent contact:', error);
+        }
+
+        // Close the React Native view after successful transaction
+        const platform = bridge.getPlatform();
+        if (platform === Platform.iOS || platform === Platform.Android) {
+          bridge.closeRN();
+        }
+      }
+
+      return result;
+    } catch (error: any) {
+      logger.error('[SendTokensScreen] Transaction failed:', error);
+      showError(error, bridge, t('send.failed'));
+    }
+    return null;
   }, [
     transactionType,
     selectedToken,
@@ -566,198 +607,202 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         />
       )}
 
-      <YStack flex={1} {...(!isExtension && { onPress: Keyboard.dismiss })}>
-        {/* Scrollable Content */}
-        <YStack flex={1} gap="$3">
-          <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
-            {/* From Account Section */}
-            {fromAccount ? (
-              <AccountCard
-                isSendTokensScreen={!isExtension}
-                account={transformAccountForCard(fromAccount)}
-                title={t('send.fromAccount')}
-                isLoading={isBalanceLoading}
+      <TouchableWithoutFeedback onPress={handleDismissKeyboard}>
+        <YStack flex={1}>
+          {/* Scrollable Content */}
+          <YStack flex={1} gap="$3">
+            <YStack gap="$1" bg={cardBackgroundColor} rounded="$4" p="$4">
+              {/* From Account Section */}
+              {fromAccount ? (
+                <AccountCard
+                  isSendTokensScreen={!isExtension}
+                  account={transformAccountForCard(fromAccount)}
+                  title={t('send.fromAccount')}
+                  isLoading={isBalanceLoading}
+                />
+              ) : (
+                <Text>{t('errors.addressNotFound')}</Text>
+              )}
+              <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
+              <YStack gap="$4">
+                <TokenAmountInput
+                  selectedToken={
+                    selectedToken
+                      ? {
+                          type: selectedToken.type,
+                          symbol: selectedToken.symbol,
+                          name: selectedToken.name,
+                          logoURI: selectedToken.logoURI,
+                          // Use token-denominated display balance if available to avoid showing 0 on first load
+                          balance: (
+                            selectedToken.displayBalance ||
+                            selectedToken.balance ||
+                            '0'
+                          ).toString(),
+                          priceInUSD: selectedToken.priceInUSD
+                            ? new BN(selectedToken.priceInUSD)
+                                .times(new BN(currency.rate || 1))
+                                .toString()
+                            : undefined,
+                          isVerified: selectedToken.isVerified,
+                        }
+                      : undefined
+                  }
+                  amount={amount}
+                  onAmountChange={handleAmountChange}
+                  isTokenMode={isTokenMode}
+                  onToggleInputMode={handleToggleInputMode}
+                  onTokenSelectorPress={handleTokenSelectorOpen}
+                  onMaxPress={handleMaxPress}
+                  placeholder="0.00"
+                  showBalance={true}
+                  showConverter={true}
+                  disabled={false}
+                  inputRef={inputRef}
+                  currency={currency}
+                  amountError={amountError}
+                  headerText={t('send.title')}
+                />
+              </YStack>
+            </YStack>
+
+            {/* Arrow Down Indicator */}
+            <XStack position="relative" height={0} mt="$1">
+              <XStack width="100%" position="absolute" t={-40} justify="center" z={10}>
+                <SendArrowDivider variant="arrow" size={48} />
+              </XStack>
+            </XStack>
+
+            {/* To Account Section */}
+            {toAccount && (
+              <ToAccountSection
+                account={toAccount}
+                fromAccount={fromAccount || undefined}
+                isAccountIncompatible={isAccountIncompatible}
+                onEditPress={onEditAccountPress}
+                showEditButton={showEditButtons}
+                title={t('send.toAccount')}
+                isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
+                incompatibleAccountText={t('account.compatibility.incompatible')}
+                learnMoreText={t('account.compatibility.learnMore')}
+                unknownAccountText={t('account.compatibility.unknown')}
+                dialogTitle={t('account.compatibility.dialog.title')}
+                dialogButtonText={t('account.compatibility.dialog.button')}
+                dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
+                dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
               />
-            ) : (
-              <Text>{t('errors.addressNotFound')}</Text>
             )}
-            <Separator mx="$0" mt="$4" mb="$2" borderColor={separatorColor} borderWidth={0.5} />
-            <YStack gap="$4">
-              <TokenAmountInput
-                selectedToken={
-                  selectedToken
-                    ? {
-                        type: selectedToken.type,
-                        symbol: selectedToken.symbol,
-                        name: selectedToken.name,
-                        logoURI: selectedToken.logoURI,
-                        // Use token-denominated display balance if available to avoid showing 0 on first load
-                        balance: (
-                          selectedToken.displayBalance ||
-                          selectedToken.balance ||
-                          '0'
-                        ).toString(),
-                        priceInUSD: selectedToken.priceInUSD
-                          ? new BN(selectedToken.priceInUSD)
-                              .times(new BN(currency.rate || 1))
-                              .toString()
-                          : undefined,
-                        isVerified: selectedToken.isVerified,
-                      }
-                    : undefined
-                }
-                amount={amount}
-                onAmountChange={handleAmountChange}
-                isTokenMode={isTokenMode}
-                onToggleInputMode={handleToggleInputMode}
-                onTokenSelectorPress={handleTokenSelectorOpen}
-                onMaxPress={handleMaxPress}
-                placeholder="0.00"
-                showBalance={true}
-                showConverter={true}
-                disabled={false}
-                inputRef={inputRef}
-                currency={currency}
-                amountError={amountError}
-                headerText={t('send.title')}
-              />
+
+            {/* Transaction Fee and Storage Warning Section */}
+            <YStack gap="$3">
+              {/* Only show normal transaction fee when surge pricing is NOT active */}
+              {!isSurgePricingActive && (
+                <TransactionFeeSection
+                  flowFee={transactionFee}
+                  usdFee={usdFee}
+                  isFree={isFreeGasEnabled}
+                  showCovered={isFreeGasEnabled}
+                  title={t('send.transactionFee')}
+                  backgroundColor="transparent"
+                  borderRadius={16}
+                  contentPadding={0}
+                />
+              )}
+
+              {isSurgePricingActive && (
+                <SurgeFeeConfirmationSection
+                  transactionFee={transactionFee}
+                  surgeMultiplier={surgeMultiplier}
+                  transactionFeeLabel={t('surge.modal.transactionFee')}
+                  surgeTitle={t('surge.modal.surgeActive')}
+                  description={t('surge.modal.description', {
+                    multiplier: formattedSurgeMultiplier,
+                  })}
+                />
+              )}
+
+              {showStorageWarning && (
+                <StorageWarning
+                  message={storageWarningMessage}
+                  showIcon={true}
+                  title={t('storage.warning.title')}
+                  visible={true}
+                />
+              )}
             </YStack>
           </YStack>
 
-          {/* Arrow Down Indicator */}
-          <XStack position="relative" height={0} mt="$1">
-            <XStack width="100%" position="absolute" t={-40} justify="center" z={10}>
-              <SendArrowDivider variant="arrow" size={48} />
-            </XStack>
-          </XStack>
-
-          {/* To Account Section */}
-          {toAccount && (
-            <ToAccountSection
-              account={toAccount}
-              fromAccount={fromAccount || undefined}
-              isAccountIncompatible={isAccountIncompatible}
-              onEditPress={onEditAccountPress}
-              showEditButton={showEditButtons}
-              title={t('send.toAccount')}
-              isLinked={toAccount.type === 'child' || !!toAccount.parentAddress}
-              incompatibleAccountText={t('account.compatibility.incompatible')}
-              learnMoreText={t('account.compatibility.learnMore')}
-              unknownAccountText={t('account.compatibility.unknown')}
-              dialogTitle={t('account.compatibility.dialog.title')}
-              dialogButtonText={t('account.compatibility.dialog.button')}
-              dialogDescriptionMain={t('account.compatibility.dialog.descriptionMain')}
-              dialogDescriptionSecondary={t('account.compatibility.dialog.descriptionSecondary')}
-            />
-          )}
-
-          {/* Transaction Fee and Storage Warning Section */}
-          <YStack gap="$3">
-            {/* Only show normal transaction fee when surge pricing is NOT active */}
-            {!isSurgePricingActive && (
-              <TransactionFeeSection
-                flowFee={transactionFee}
-                usdFee={usdFee}
-                isFree={isFreeGasEnabled}
-                showCovered={true}
-                title={t('send.transactionFee')}
-                backgroundColor="transparent"
-                borderRadius={16}
-                contentPadding={0}
-              />
-            )}
-
-            {isSurgePricingActive && (
-              <SurgeFeeConfirmationSection
-                transactionFee={transactionFee}
-                surgeMultiplier={surgeMultiplier}
-                transactionFeeLabel={t('surge.modal.transactionFee')}
-                surgeTitle={t('surge.modal.surgeActive')}
-                description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
-              />
-            )}
-
-            {showStorageWarning && (
-              <StorageWarning
-                message={storageWarningMessage}
-                showIcon={true}
-                title={t('storage.warning.title')}
-                visible={true}
-              />
-            )}
+          {/* Send Button - Anchored to bottom */}
+          <YStack pt="$4" mb={'$10'}>
+            <YStack
+              data-testid="next"
+              width="100%"
+              height={52}
+              bg={isSendDisabled ? '#6b7280' : isSurgePricingActive ? '$warning' : '$text'}
+              rounded={16}
+              items="center"
+              justify="center"
+              borderWidth={1}
+              borderColor={isSendDisabled ? '#6b7280' : '$text'}
+              opacity={isSendDisabled ? 0.7 : 1}
+              pressStyle={{ opacity: 0.9 }}
+              onPress={isSendDisabled ? undefined : handleSendPress}
+              cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
+            >
+              <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$bg'}>
+                {t('common.next')}
+              </Text>
+            </YStack>
           </YStack>
+
+          {/* Token Selector Modal */}
+          <TokenSelectorModal
+            visible={isTokenSelectorVisible}
+            selectedToken={selectedToken}
+            tokens={tokens}
+            onTokenSelect={handleTokenSelect}
+            onClose={handleTokenSelectorClose}
+            platform="mobile"
+            title={t('tabs.tokens')}
+            currency={currency}
+            isExtension={isExtension}
+          />
+
+          <ConfirmationDrawer
+            visible={isConfirmationVisible}
+            transactionType={transactionType}
+            selectedToken={selectedToken}
+            sendStaticImage={assets?.sendStaticImage}
+            fromAccount={transformAccountForDisplay(fromAccount)}
+            toAccount={toAccount ? transformAccountForDisplay(toAccount) : null}
+            formData={formData}
+            onConfirm={handleTransactionConfirm}
+            onClose={handleConfirmationClose}
+            isExtension={isExtension}
+            summaryText={t('send.summary')}
+            sendTokensText={t('send.sendTokens')}
+            sendNFTsText={t('send.sendNFTs')}
+            sendingText={t('send.sending')}
+            confirmSendText={t('send.confirmSend')}
+            holdToSendText={t('send.holdToSend')}
+            unknownAccountText={t('send.unknownAccount')}
+          />
+
+          <SurgeModal
+            visible={isSurgeWarningVisible}
+            transactionFee={transactionFee}
+            multiplier={formattedSurgeMultiplier}
+            title={t('surge.modal.title')}
+            transactionFeeLabel={t('surge.modal.transactionFee')}
+            surgeActiveText={t('surge.modal.surgeActive')}
+            description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
+            holdToAgreeText={t('surge.modal.holdToAgree')}
+            onClose={handleSurgeModalClose}
+            onAgree={handleSurgeModalAgree}
+            isLoading={isLoading}
+          />
         </YStack>
-
-        {/* Send Button - Anchored to bottom */}
-        <YStack pt="$4" mb={'$10'}>
-          <YStack
-            data-testid="next"
-            width="100%"
-            height={52}
-            bg={isSendDisabled ? '#6b7280' : isSurgePricingActive ? '$warning' : '$text'}
-            rounded={16}
-            items="center"
-            justify="center"
-            borderWidth={1}
-            borderColor={isSendDisabled ? '#6b7280' : '$text'}
-            opacity={isSendDisabled ? 0.7 : 1}
-            pressStyle={{ opacity: 0.9 }}
-            onPress={isSendDisabled ? undefined : handleSendPress}
-            cursor={isSendDisabled ? 'not-allowed' : 'pointer'}
-          >
-            <Text fontSize="$4" fontWeight="600" color={isSendDisabled ? '$white' : '$bg'}>
-              {t('common.next')}
-            </Text>
-          </YStack>
-        </YStack>
-
-        {/* Token Selector Modal */}
-        <TokenSelectorModal
-          visible={isTokenSelectorVisible}
-          selectedToken={selectedToken}
-          tokens={tokens}
-          onTokenSelect={handleTokenSelect}
-          onClose={handleTokenSelectorClose}
-          platform="mobile"
-          title={t('tabs.tokens')}
-          currency={currency}
-          isExtension={isExtension}
-        />
-
-        <ConfirmationDrawer
-          visible={isConfirmationVisible}
-          transactionType={transactionType}
-          selectedToken={selectedToken}
-          sendStaticImage={assets?.sendStaticImage}
-          fromAccount={transformAccountForDisplay(fromAccount)}
-          toAccount={toAccount ? transformAccountForDisplay(toAccount) : null}
-          formData={formData}
-          onConfirm={handleTransactionConfirm}
-          onClose={handleConfirmationClose}
-          isExtension={isExtension}
-          summaryText={t('send.summary')}
-          sendTokensText={t('send.sendTokens')}
-          sendNFTsText={t('send.sendNFTs')}
-          sendingText={t('send.sending')}
-          confirmSendText={t('send.confirmSend')}
-          holdToSendText={t('send.holdToSend')}
-          unknownAccountText={t('send.unknownAccount')}
-        />
-
-        <SurgeModal
-          visible={isSurgeWarningVisible}
-          transactionFee={transactionFee}
-          multiplier={formattedSurgeMultiplier}
-          title={t('surge.modal.title')}
-          transactionFeeLabel={t('surge.modal.transactionFee')}
-          surgeActiveText={t('surge.modal.surgeActive')}
-          description={t('surge.modal.description', { multiplier: formattedSurgeMultiplier })}
-          holdToAgreeText={t('surge.modal.holdToAgree')}
-          onClose={handleSurgeModalClose}
-          onAgree={handleSurgeModalAgree}
-          isLoading={isLoading}
-        />
-      </YStack>
+      </TouchableWithoutFeedback>
     </BackgroundWrapper>
   );
 };

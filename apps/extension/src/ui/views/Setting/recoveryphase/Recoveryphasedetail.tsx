@@ -61,6 +61,7 @@ const RecoveryPhasesDetail = () => {
           {recoveryphases.split(' ').map((word, i) => {
             return (
               <Box
+                className="sentry-mask"
                 sx={{
                   display: 'flex',
                   flexDirection: 'row',

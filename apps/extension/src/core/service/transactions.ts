@@ -4,7 +4,7 @@ import * as ethUtil from 'ethereumjs-util';
 import { encode } from 'rlp';
 import web3, { Web3 } from 'web3';
 
-import { triggerRefresh, mainAccountsKey } from '@/data-model';
+import { triggerRefresh, mainAccountsKey, mainAccountsKeyUid } from '@/data-model';
 import { erc20Abi as erc20ABI, EVM_ENDPOINT } from '@/shared/constant';
 import {
   type NftTransactionState,
@@ -25,6 +25,7 @@ import { analyticsService } from './analytics';
 import { getScripts } from './openapi';
 import userWalletService from './userWallet';
 import { replaceNftCollectionKeywords, replaceNftKeywords } from '../utils';
+import { getCurrentProfileId } from '../utils/current-id';
 import { encodeEvmContractCallDataForNft } from '../utils/encodeEvmContractCallData';
 
 export class TransactionService {
@@ -168,7 +169,7 @@ export class TransactionService {
   async transferFlowEvm(
     recipientEVMAddressHex: string,
     amount = '1.0',
-    gasLimit = 30000000
+    gasLimit = 16777216
   ): Promise<string> {
     const script = await getScripts(
       userWalletService.getNetwork(),
@@ -214,7 +215,7 @@ export class TransactionService {
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
     const regularArray = Array.from(dataArray);
-    const gasLimit = 30000000;
+    const gasLimit = 16777216;
 
     const txID = await userWalletService.sendTransaction(script, [
       fcl.arg(tokenContractAddress, fcl.t.Address),
@@ -384,7 +385,7 @@ export class TransactionService {
     await userWalletService.getNetwork();
 
     const script = await getScripts(userWalletService.getNetwork(), 'evm', 'callContractV2');
-    const gasLimit = 30000000;
+    const gasLimit = 16777216;
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
     const regularArray = Array.from(dataArray);
@@ -431,7 +432,7 @@ export class TransactionService {
     await userWalletService.getNetwork();
 
     const script = await getScripts(userWalletService.getNetwork(), 'evm', 'callContractV2');
-    const gasLimit = gas || 30000000;
+    const gasLimit = gas || 16777216;
     const dataBuffer = Buffer.from(data.slice(2), 'hex');
     const dataArray = Uint8Array.from(dataBuffer);
     const regularArray = Array.from(dataArray);
@@ -502,8 +503,6 @@ export class TransactionService {
     const keccak256 = (data: Buffer) => {
       return ethUtil.keccak256(data);
     };
-
-    // [nonce, gasPrice, gasLimit, to.addressData, value, data, v, r, s]
 
     const directCallTxType = 255;
     const contractCallSubType = 5;
@@ -732,7 +731,7 @@ export class TransactionService {
           const dataBuffer = Buffer.from(callData.slice(2), 'hex');
           const dataArray = Uint8Array.from(dataBuffer);
           const regularArray = Array.from(dataArray);
-          const gasLimit = 30_000_000;
+          const gasLimit = 16_777_216;
           return [
             await getScripts(network, 'evm', 'callContractV2'),
             [
@@ -1427,8 +1426,11 @@ export class TransactionService {
     try {
       await fcl.tx(txID).onceSealed();
 
-      // Refresh the EVM address
-      triggerRefresh(mainAccountsKey(network, pubKey));
+      // Refresh the EVM address (refresh both pubkey and userId versions)
+      const userId = await getCurrentProfileId();
+      const pubkey = userWalletService.getCurrentPubkey();
+      triggerRefresh(mainAccountsKey(network, pubkey));
+      triggerRefresh(mainAccountsKeyUid(network, userId));
 
       // Track with success
       await this.trackCoaCreation(txID);

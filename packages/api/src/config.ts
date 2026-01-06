@@ -22,11 +22,7 @@ export function configureApiEndpoints(
   instance.interceptors.request.use(
     async (config) => {
       const token = await getJWT();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      } else {
-        // TODO: Replace with proper logger when context is available
-      }
+      config.headers.Authorization = `Bearer ${token}`;
       config.headers.network = getNetwork();
       return config;
     },
@@ -54,12 +50,7 @@ export function configureApiEndpoints(
   goInstance.interceptors.request.use(
     async (config) => {
       const token = await getJWT();
-      // TODO: Add debug logging when context is available
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      } else {
-        // TODO: Replace with proper logger when context is available
-      }
+      config.headers.Authorization = `Bearer ${token}`;
       config.headers.network = getNetwork();
       return config;
     },
@@ -67,9 +58,6 @@ export function configureApiEndpoints(
   );
 
   goServiceOptions.axios = goInstance;
-
-  // TODO: Add debug logging when context is available
-  // logger.debug('Configured API endpoints', { apiEndpoint, goApiEndpoint });
 }
 
 /**

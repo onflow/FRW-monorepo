@@ -160,6 +160,15 @@ function resolveColor(
 ): string | undefined {
   if (!value) return undefined;
 
+  // If value is not a string (e.g., a theme token object), extract .val property
+  if (typeof value !== 'string') {
+    const tokenValue = (value as any)?.val;
+    if (typeof tokenValue === 'string') {
+      return tokenValue;
+    }
+    return undefined;
+  }
+
   if (value.startsWith('$')) {
     const token = value.slice(1);
     const themeValue = (theme as any)?.[token]?.val;

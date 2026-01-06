@@ -10,6 +10,8 @@ export interface LottieViewProps {
   style?: React.CSSProperties;
   resizeMode?: 'cover' | 'contain' | 'center';
   speed?: number;
+  /** Progress of the animation (0-1). When set, overrides autoPlay and loop. */
+  progress?: number;
   onAnimationFailure?: (error: unknown) => void;
   onAnimationLoaded?: () => void;
 }
@@ -29,6 +31,7 @@ const LottieView = React.forwardRef<LottieHandle, LottieViewProps>(
       style,
       resizeMode = 'contain',
       speed = 1,
+      progress,
       onAnimationFailure,
       onAnimationLoaded,
     },
@@ -53,8 +56,8 @@ const LottieView = React.forwardRef<LottieHandle, LottieViewProps>(
         const anim = lottie.loadAnimation({
           container: containerRef.current,
           renderer: 'svg',
-          loop,
-          autoplay: autoPlay,
+          loop: progress !== undefined ? false : loop,
+          autoplay: progress !== undefined ? false : autoPlay,
           animationData: source,
         });
 
@@ -81,7 +84,16 @@ const LottieView = React.forwardRef<LottieHandle, LottieViewProps>(
       } catch (err) {
         onAnimationFailure?.(err);
       }
-    }, [source, autoPlay, loop, speed, onAnimationFailure, onAnimationLoaded]);
+    }, [source, autoPlay, loop, speed, progress, onAnimationFailure, onAnimationLoaded]);
+
+    // Control animation progress when progress prop is provided
+    useEffect(() => {
+      if (progress !== undefined && animationRef.current) {
+        const totalFrames = animationRef.current.totalFrames;
+        const frame = Math.floor(progress * totalFrames);
+        animationRef.current.goToAndStop(frame, true);
+      }
+    }, [progress]);
 
     const containerStyle: React.CSSProperties = {
       width: (style as any)?.width ?? '100%',
