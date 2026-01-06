@@ -1,6 +1,7 @@
 // Service classes (direct access)
 export { AddressBookService } from './AddressBookService';
 export { default as FlowService } from './FlowService';
+export { KeyRotationService } from './KeyRotationService';
 export { NFTService } from './NFTService';
 export { ProfileService } from './ProfileService';
 export { RecentRecipientsService } from './RecentRecipientsService';
