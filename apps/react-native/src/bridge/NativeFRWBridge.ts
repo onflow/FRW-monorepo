@@ -1,5 +1,4 @@
 import type {
-  NativeEventName,
   NewKeyInfo as SharedNewKeyInfo,
   RecentContactsResponse,
   Currency as SharedCurrency,
@@ -100,15 +99,6 @@ export interface Spec extends TurboModule {
   saveNewKey(key: NewKeyInfo): Promise<void>;
   removeOldKey(address: string, publicKey: string): Promise<void>;
   signRotationRequest(publicKey: string, address: string, hash: string): Promise<string>;
-
-  // Native event response (for event bus pattern)
-  nativeResponse(
-    requestId: string,
-    eventName: NativeEventName | string,
-    resultJson?: string | null,
-    error?: string | null
-  ): Promise<void>;
-  nativeReady(): void;
 
   // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;

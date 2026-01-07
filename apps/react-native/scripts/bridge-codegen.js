@@ -19,16 +19,6 @@ const CONFIG = {
           'android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/BridgeModels.kt',
       },
     },
-    {
-      name: 'NativeEvent',
-      moduleName: 'RNNativeEvent',
-      input: 'packages/types/src/NativeEvent.ts',
-      output: {
-        swift: 'ios/FRW/Foundation/Bridge/NativeEventModels.swift',
-        kotlin:
-          'android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/NativeEventModels.kt',
-      },
-    },
   ],
 };
 
