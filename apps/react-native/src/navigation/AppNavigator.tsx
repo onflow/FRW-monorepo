@@ -5,7 +5,6 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
-  SendToScreen,
   // Backup screens
   BackupTipScreen,
   BackupMnemonicScreen,

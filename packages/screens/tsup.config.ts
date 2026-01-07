@@ -7,7 +7,17 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  external: ['react', 'react-i18next', 'i18next', 'react-native', 'react-native-web'],
+  external: [
+    'react',
+    'react-i18next',
+    'i18next',
+    'react-native',
+    'react-native-web',
+    // Mark all workspace packages as external to avoid bundling Node.js dependencies
+    /^@onflow\//,
+    '@tanstack/react-query',
+    'bignumber.js',
+  ],
   treeshake: true,
   minify: false,
   silent: true, // Suppress unused import warnings

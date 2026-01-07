@@ -4,7 +4,7 @@ import {
   type forms_AccountKeySignature,
   type forms_BackupInfo,
 } from '@onflow/frw-api';
-import { type PlatformSpec, type Storage, getServiceContext } from '@onflow/frw-context';
+import { type Cache, type PlatformSpec, getServiceContext } from '@onflow/frw-context';
 import type {
   AccountKey,
   KeyRotationDependencies,
@@ -51,13 +51,12 @@ export class KeyRotationService {
   private dependencies: KeyRotationDependencies;
   private config: KeyRotationServiceConfig;
   private workflow: KeyRotation;
-  private storage?: Storage;
-  private bloctoCache = new Map<string, boolean>();
+  private cache?: Cache;
 
   private constructor(
     dependencies: KeyRotationDependencies,
     config?: KeyRotationServiceConfig,
-    storage?: Storage
+    cache?: Cache
   ) {
     this.dependencies = dependencies;
     this.config = {
@@ -65,8 +64,8 @@ export class KeyRotationService {
       maxRetries: 3,
       ...config,
     };
-    this.workflow = new KeyRotation(dependencies);
-    this.storage = storage;
+    this.workflow = new KeyRotation();
+    this.cache = cache;
   }
 
   /**
@@ -76,19 +75,19 @@ export class KeyRotationService {
   public static getInstance(
     bridge: PlatformSpec,
     config?: KeyRotationServiceConfig,
-    storage?: Storage
+    cache?: Cache
   ): KeyRotationService {
     if (!KeyRotationService.instance) {
       const adapter = new PlatformKeyRotationAdapter(bridge);
-      let storageToUse = storage;
-      if (!storageToUse) {
+      let cacheToUse = cache;
+      if (!cacheToUse) {
         try {
-          storageToUse = getServiceContext().storage;
+          cacheToUse = getServiceContext().cache;
         } catch {
-          storageToUse = undefined;
+          cacheToUse = undefined;
         }
       }
-      KeyRotationService.instance = new KeyRotationService(adapter, config, storageToUse);
+      KeyRotationService.instance = new KeyRotationService(adapter, config, cacheToUse);
     }
     return KeyRotationService.instance;
   }
@@ -99,9 +98,9 @@ export class KeyRotationService {
   public static createWithDependencies(
     dependencies: KeyRotationDependencies,
     config?: KeyRotationServiceConfig,
-    storage?: Storage
+    cache?: Cache
   ): KeyRotationService {
-    return new KeyRotationService(dependencies, config, storage);
+    return new KeyRotationService(dependencies, config, cache);
   }
 
   /**
@@ -252,69 +251,24 @@ export class KeyRotationService {
   }
 
   private cacheAddressKey(address: string): string {
-    return address.trim().toLowerCase();
+    return `keyRotation:blocto:${address.trim().toLowerCase()}`;
   }
 
   private async getCachedBloctoDetection(address: string): Promise<boolean | undefined> {
-    const cacheKey = this.cacheAddressKey(address);
-    if (this.bloctoCache.has(cacheKey)) {
-      return this.bloctoCache.get(cacheKey);
-    }
-
-    if (!this.storage) {
+    if (!this.cache) {
       return undefined;
     }
 
-    const cacheData = await this.storage.get('cache');
-    if (!cacheData || typeof cacheData !== 'object') {
-      return undefined;
-    }
-
-    const keyRotationCache = (cacheData as Record<string, unknown>).keyRotation;
-    if (!keyRotationCache || typeof keyRotationCache !== 'object') {
-      return undefined;
-    }
-
-    const entry = (keyRotationCache as Record<string, unknown>)[cacheKey];
-    if (!entry || typeof entry !== 'object') {
-      return undefined;
-    }
-
-    const value = (entry as { isBlocto?: unknown }).isBlocto;
-    if (typeof value !== 'boolean') {
-      return undefined;
-    }
-
-    this.bloctoCache.set(cacheKey, value);
-    return value;
+    const cached = await this.cache.get<boolean>(this.cacheAddressKey(address));
+    return typeof cached === 'boolean' ? cached : undefined;
   }
 
   private async setCachedBloctoDetection(address: string, isBlocto: boolean): Promise<void> {
-    const cacheKey = this.cacheAddressKey(address);
-    this.bloctoCache.set(cacheKey, isBlocto);
-
-    if (!this.storage) {
+    if (!this.cache) {
       return;
     }
 
-    const cacheData = await this.storage.get('cache');
-    const cacheObject =
-      cacheData && typeof cacheData === 'object' ? (cacheData as Record<string, unknown>) : {};
-    const keyRotationCache =
-      (cacheObject.keyRotation as Record<string, unknown>) &&
-      typeof cacheObject.keyRotation === 'object'
-        ? (cacheObject.keyRotation as Record<string, unknown>)
-        : {};
-
-    const nextKeyRotationCache = {
-      ...keyRotationCache,
-      [cacheKey]: { isBlocto, checkedAt: Date.now() },
-    };
-
-    await this.storage.set('cache', {
-      ...cacheObject,
-      keyRotation: nextKeyRotationCache,
-    });
+    await this.cache.set(this.cacheAddressKey(address), isBlocto);
   }
 
   /**

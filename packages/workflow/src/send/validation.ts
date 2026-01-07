@@ -1,25 +1,9 @@
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-utils';
+
 import type { SendPayload } from './types';
 import { isFlowToken, isNFTIdentifier, isVaultIdentifier } from './utils';
 
-/**
- * Validates Flow blockchain addresses (0x + 16 hex characters)
- * @param address - Address to validate
- * @returns true if valid Flow address format
- */
-export const validateFlowAddress = (address: string): boolean => {
-  const flowAddressRegex = /^0x[a-fA-F0-9]{16}$/;
-  return flowAddressRegex.test(address);
-};
-
-/**
- * Validates EVM addresses (0x + 40 hex characters)
- * @param address - Address to validate
- * @returns true if valid EVM address format
- */
-export const validateEvmAddress = (address: string): boolean => {
-  const evmAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-  return evmAddressRegex.test(address);
-};
+export { validateEvmAddress, validateFlowAddress };
 
 /**
  * Validates token-specific payload requirements

@@ -109,6 +109,7 @@ export interface Spec extends TurboModule {
     resultJson?: string | null,
     error?: string | null
   ): Promise<void>;
+  nativeReady(): void;
 
   // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;

@@ -6,7 +6,6 @@ export type {
   FlowAccountKey,
   NewKeyInfo,
   BloctoDetectionResult,
-  KeyRotationResult,
   KeyRotationDependencies,
   AccountKey,
 } from '@onflow/frw-types';

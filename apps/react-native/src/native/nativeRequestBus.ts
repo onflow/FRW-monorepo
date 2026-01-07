@@ -58,6 +58,8 @@ export const setupNativeRequestBus = (): (() => void) | undefined => {
     }
   );
 
+  NativeFRWBridge.nativeReady();
+
   return () => {
     subscription.remove();
   };
