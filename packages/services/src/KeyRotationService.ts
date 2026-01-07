@@ -65,7 +65,7 @@ export class KeyRotationService {
       maxRetries: 3,
       ...config,
     };
-    this.workflow = new KeyRotation(dependencies);
+    this.workflow = new KeyRotation();
     this.storage = storage;
   }
 

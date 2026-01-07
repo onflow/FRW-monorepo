@@ -45,12 +45,6 @@ export interface BloctoDetectionResult {
   bloctoKeyIndexes: number[];
 }
 
-export interface KeyRotationResult {
-  txId: string;
-  detection?: BloctoDetectionResult;
-  newKeyInfo?: NewKeyInfo;
-}
-
 export interface KeyRotationServiceResult {
   txId: string;
   addedKey: AccountKey;
