@@ -19,9 +19,11 @@ interface AppProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
+  headless?: boolean;
 }
 
 const App = (props: AppProps) => {
+  const isHeadless = props.headless === true;
   // Initialize walletStore when the app starts
   const { loadAccountsFromBridge } = useWalletStore();
 
@@ -84,12 +86,18 @@ const App = (props: AppProps) => {
   }, []);
 
   useEffect(() => {
-    initializeApp();
-  }, [initializeApp]);
+    if (!isHeadless) {
+      initializeApp();
+    }
+  }, [initializeApp, isHeadless]);
 
   useEffect(() => setupNativeRequestBus(), []);
 
   const colorScheme = useColorScheme();
+
+  if (isHeadless) {
+    return null;
+  }
 
   return (
     <PortalProvider shouldAddRootHost>
