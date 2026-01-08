@@ -1,4 +1,4 @@
-import { navigation, logger, bridge } from '@onflow/frw-context';
+import { navigation, logger } from '@onflow/frw-context';
 import { LockBackup, LinkBackup, Settings } from '@onflow/frw-icons';
 import type { NewKeyInfo } from '@onflow/frw-types';
 import {
@@ -51,7 +51,6 @@ export function KeyRotationTipScreen({
   const handleSkip = () => {
     if (onSkip) {
       onSkip();
-      bridge.closeRN();
     }
   };
 

@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { platform } from '@/bridge/PlatformImpl';
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
@@ -340,7 +341,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                   }}
                   onSkip={() => {
                     logger.info('[KeyRotationTipScreen] Skip pressed');
-                    // TODO: Handle skip action - close the flow
+                    platform.closeRN();
                   }}
                 />
               )}
@@ -360,6 +361,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                   address={address ?? ''}
                   onComplete={() => {
                     logger.info('[KeyRotationMnemonicScreen] Backup complete');
+                    platform.closeRN();
                   }}
                   onBack={() => nav.goBack()}
                 />

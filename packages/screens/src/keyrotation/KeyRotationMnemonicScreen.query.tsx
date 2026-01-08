@@ -135,7 +135,6 @@ export function KeyRotationMnemonicScreen({
     if (result) {
       logger.info('[KeyRotationMnemonicScreen] Key rotation successful', { txId: result.txId });
       onComplete(result);
-      bridge.closeRN();
     }
   };
 
