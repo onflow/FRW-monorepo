@@ -7,7 +7,6 @@ import {
 import { type Cache, type PlatformSpec, getServiceContext } from '@onflow/frw-context';
 import type {
   AccountKey,
-  KeyRotationDependencies,
   KeyRotationServiceConfig,
   KeyRotationServiceResult,
   NewKeyInfo,
@@ -16,49 +15,18 @@ import { logger, normalizePublicKey, resolveHashAlgo, resolveSignAlgo } from '@o
 import { KeyRotation } from '@onflow/frw-workflow';
 
 /**
- * Adapter class to make PlatformSpec compatible with KeyRotationDependencies
- */
-class PlatformKeyRotationAdapter implements KeyRotationDependencies {
-  constructor(private bridge: PlatformSpec) {}
-
-  createSeedKey(strength: number): Promise<NewKeyInfo> {
-    return this.bridge.createSeedKey(strength);
-  }
-
-  saveNewKey(key: NewKeyInfo): Promise<void> {
-    return this.bridge.saveNewKey(key);
-  }
-
-  removeOldKey(address: string, publicKey: string): Promise<void> {
-    return this.bridge.removeOldKey(address, publicKey);
-  }
-
-  signRotationRequest(publicKey: string, address: string, hash: string): Promise<string> {
-    return this.bridge.signRotationRequest(publicKey, address, hash);
-  }
-
-  log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void {
-    this.bridge.log(level, message, ...args);
-  }
-}
-
-/**
  * KeyRotationService handles key rotation operations
  * Combines on-chain workflow with off-chain API calls
  */
 export class KeyRotationService {
   private static instance: KeyRotationService;
-  private dependencies: KeyRotationDependencies;
+  private bridge: PlatformSpec;
   private config: KeyRotationServiceConfig;
   private workflow: KeyRotation;
   private cache?: Cache;
 
-  private constructor(
-    dependencies: KeyRotationDependencies,
-    config?: KeyRotationServiceConfig,
-    cache?: Cache
-  ) {
-    this.dependencies = dependencies;
+  private constructor(bridge: PlatformSpec, config?: KeyRotationServiceConfig, cache?: Cache) {
+    this.bridge = bridge;
     this.config = {
       timeout: 30000, // 30 seconds default
       maxRetries: 3,
@@ -78,7 +46,6 @@ export class KeyRotationService {
     cache?: Cache
   ): KeyRotationService {
     if (!KeyRotationService.instance) {
-      const adapter = new PlatformKeyRotationAdapter(bridge);
       let cacheToUse = cache;
       if (!cacheToUse) {
         try {
@@ -87,7 +54,7 @@ export class KeyRotationService {
           cacheToUse = undefined;
         }
       }
-      KeyRotationService.instance = new KeyRotationService(adapter, config, cacheToUse);
+      KeyRotationService.instance = new KeyRotationService(bridge, config, cacheToUse);
     }
     return KeyRotationService.instance;
   }
@@ -96,11 +63,11 @@ export class KeyRotationService {
    * Create instance with custom dependencies
    */
   public static createWithDependencies(
-    dependencies: KeyRotationDependencies,
+    bridge: PlatformSpec,
     config?: KeyRotationServiceConfig,
     cache?: Cache
   ): KeyRotationService {
-    return new KeyRotationService(dependencies, config, cache);
+    return new KeyRotationService(bridge, config, cache);
   }
 
   /**
@@ -165,7 +132,7 @@ export class KeyRotationService {
       txId,
     });
 
-    await this.dependencies.saveNewKey(newKeyInfo);
+    await this.bridge.saveNewKey(newKeyInfo);
     await this.setCachedBloctoDetection(address, false);
 
     if (apiRegistered && revokeIndexes.length > 0) {
@@ -174,7 +141,7 @@ export class KeyRotationService {
         .map((key) => key.publicKey)
         .find((key): key is string => Boolean(key));
       if (revokePublicKey) {
-        await this.dependencies.removeOldKey(address, revokePublicKey);
+        await this.bridge.removeOldKey(address, revokePublicKey);
       }
     }
 
@@ -210,20 +177,21 @@ export class KeyRotationService {
         timestamp: Date.now(),
       });
 
-      const hash = signatureData;
-      const signature = await this.dependencies.signRotationRequest(
+      const signature = await this.bridge.signRotationRequest(
         apiAccountKey.public_key ?? '',
         address,
-        hash
+        signatureData
       );
 
       // Prepare signatures array
       const signatures: forms_AccountKeySignature[] = [
         {
-          public_key: apiAccountKey.public_key,
-          hash_algo: hashAlgo,
-          sign_algo: signAlgo,
-          signature,
+          public_key: signature.public_key ?? apiAccountKey.public_key,
+          hash_algo: signature.hash_algo ?? hashAlgo,
+          sign_algo: signature.sign_algo ?? signAlgo,
+          sign_message: signature.sign_message ?? signatureData,
+          signature: signature.signature,
+          weight: signature.weight ?? apiAccountKey.weight,
         },
       ];
 
