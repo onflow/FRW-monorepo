@@ -5,11 +5,11 @@ import {
   type forms_BackupInfo,
 } from '@onflow/frw-api';
 import { type Cache, type PlatformSpec, getServiceContext } from '@onflow/frw-context';
-import type {
-  AccountKey,
-  KeyRotationServiceConfig,
-  KeyRotationServiceResult,
-  NewKeyInfo,
+import {
+  type AccountKey,
+  type KeyRotationServiceConfig,
+  type KeyRotationServiceResult,
+  type NewKeyInfo,
 } from '@onflow/frw-types';
 import { logger, normalizePublicKey, resolveHashAlgo, resolveSignAlgo } from '@onflow/frw-utils';
 import { KeyRotation } from '@onflow/frw-workflow';
@@ -160,17 +160,9 @@ export class KeyRotationService {
     };
 
     // Create signature data for the platform to sign
-    const signatureData = JSON.stringify({
-      address,
-      accountKey: apiAccountKey,
-      timestamp: Date.now(),
-    });
+    const signatureData = await this.bridge.getJWT();
 
-    const signature = await this.bridge.signRotationRequest(
-      apiAccountKey.public_key ?? '',
-      address,
-      signatureData
-    );
+    const signature = await this.bridge.signRotationRequest(address, signatureData);
 
     // Prepare signatures array
     const signatures: forms_AccountKeySignature[] = [

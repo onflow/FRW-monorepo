@@ -110,11 +110,7 @@ export interface Spec extends TurboModule {
   createSeedKey(strength: number): Promise<NewKeyInfo>;
   saveNewKey(key: NewKeyInfo): Promise<void>;
   removeOldKey(address: string, publicKey: string): Promise<void>;
-  signRotationRequest(
-    publicKey: string,
-    address: string,
-    hash: string
-  ): Promise<AccountKeySignature>;
+  signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature>;
 
   // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;

@@ -240,12 +240,8 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.removeOldKey(address, publicKey);
   }
 
-  signRotationRequest(
-    publicKey: string,
-    address: string,
-    hash: string
-  ): Promise<AccountKeySignature> {
-    return NativeFRWBridge.signRotationRequest(publicKey, address, hash);
+  signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature> {
+    return NativeFRWBridge.signRotationRequest(address, signatureData);
   }
 
   closeRN(): void {

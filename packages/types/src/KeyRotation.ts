@@ -14,11 +14,7 @@ export interface KeyRotationDependencies {
   createSeedKey: (strength: number) => Promise<NewKeyInfo>;
   saveNewKey: (key: NewKeyInfo) => Promise<void>;
   removeOldKey: (address: string, publicKey: string) => Promise<void>;
-  signRotationRequest: (
-    publicKey: string,
-    address: string,
-    hash: string
-  ) => Promise<AccountKeySignature>;
+  signRotationRequest: (address: string, signatureData: string) => Promise<AccountKeySignature>;
   /** Optional: Custom logger implementation */
   log?(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
 }
