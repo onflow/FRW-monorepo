@@ -5,7 +5,7 @@
 
 export interface NewKeyInfo {
   seedphrase: string;
-  flowKey: AccountKey;
+  flowKey: KeyRotationAccountKey;
 }
 
 import type { AccountKeySignature } from './Bridge';
@@ -20,7 +20,8 @@ export interface KeyRotationDependencies {
 }
 
 // AccountKey interface for key rotation context
-export interface AccountKey {
+// Renamed to KeyRotationAccountKey to avoid conflict with Bridge.AccountKey
+export interface KeyRotationAccountKey {
   index?: number;
   publicKey: string;
   signAlgo?: number;
@@ -50,7 +51,7 @@ export interface BloctoDetectionResult {
 
 export interface KeyRotationServiceResult {
   txId: string;
-  addedKey: AccountKey;
+  addedKey: KeyRotationAccountKey;
   revokedKeyIndexes: number[];
 }
 
