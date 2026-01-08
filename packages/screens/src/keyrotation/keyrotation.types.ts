@@ -1,33 +1,33 @@
 /**
- * Types for the simplified 2-page backup flow
- * Used during key rotation to backup seed phrases
+ * Types for the simplified 2-page key rotation flow
+ * Used during key rotation to back up seed phrases
  */
 
 import type { NewKeyInfo, KeyRotationServiceResult } from '@onflow/frw-types';
 
 /**
- * Backup flow step enumeration
+ * Key rotation flow step enumeration
  */
-export type BackupStep = 'tip' | 'mnemonic';
+export type KeyRotationStep = 'tip' | 'mnemonic';
 
 /**
- * State for the backup flow
+ * State for the key rotation flow
  */
-export interface BackupState {
-  /** Current step in the backup flow */
-  currentStep: BackupStep;
+export interface KeyRotationState {
+  /** Current step in the key rotation flow */
+  currentStep: KeyRotationStep;
   /** Whether the seed phrase has been revealed */
   isPhraseRevealed: boolean;
   /** Whether the user has confirmed their backup */
-  isBackupConfirmed: boolean;
+  isKeyRotationConfirmed: boolean;
   /** The new key info including seed phrase and flow key */
   newKeyInfo: NewKeyInfo | null;
 }
 
 /**
- * Props for the BackupTipScreen
+ * Props for the KeyRotationTipScreen
  */
-export interface BackupTipScreenProps {
+export interface KeyRotationTipScreenProps {
   /** Callback when user presses continue and seed key is generated */
   onContinue: (newKeyInfo: NewKeyInfo) => void;
   /** Callback when user presses "Not now" */
@@ -37,9 +37,9 @@ export interface BackupTipScreenProps {
 }
 
 /**
- * Props for the BackupMnemonicScreen
+ * Props for the KeyRotationMnemonicScreen
  */
-export interface BackupMnemonicScreenProps {
+export interface KeyRotationMnemonicScreenProps {
   /** The new key info containing seed phrase and flow key */
   newKeyInfo: NewKeyInfo;
   /** The user's address for key rotation */
@@ -77,9 +77,9 @@ export interface RevealOverlayProps {
 }
 
 /**
- * Backup tip item for display
+ * Key rotation tip item for display
  */
-export interface BackupTip {
+export interface KeyRotationTip {
   /** Unique identifier */
   id: string;
   /** Icon component to render */
@@ -91,9 +91,9 @@ export interface BackupTip {
 }
 
 /**
- * Props for BackupTipCard component
+ * Props for KeyRotationTipCard component
  */
-export interface BackupTipCardProps {
+export interface KeyRotationTipCardProps {
   /** Icon to display */
   icon: React.ReactNode;
   /** Tip title */

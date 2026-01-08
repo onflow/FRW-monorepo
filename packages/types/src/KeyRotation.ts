@@ -56,7 +56,6 @@ export interface KeyRotationServiceResult {
   txId: string;
   addedKey: AccountKey;
   revokedKeyIndexes: number[];
-  apiRegistered: boolean;
 }
 
 export enum RotationErrorType {

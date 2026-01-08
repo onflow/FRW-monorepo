@@ -15,8 +15,8 @@ export { GenericErrorFallback } from './error/GenericErrorFallback';
 export { NetworkErrorFallback } from './error/NetworkErrorFallback';
 export { CriticalErrorFallback } from './error/CriticalErrorFallback';
 
-// Export backup screens
-export * from './backup';
+// Export key rotation screens
+export * from './keyrotation';
 
 // Export hooks
 export * from './hooks';

@@ -18,12 +18,12 @@ import { useTranslation } from 'react-i18next';
 import { useCopyToClipboard, useKeyRotation } from '../hooks';
 
 /**
- * BackupMnemonicScreen - Page 2 of the backup flow
+ * KeyRotationMnemonicScreen - Page 2 of the key rotation flow
  * Displays the seed phrase for the user to backup
  * Executes key rotation on-chain when user completes backup
  */
 
-export interface BackupMnemonicScreenProps {
+export interface KeyRotationMnemonicScreenProps {
   /** The new key info containing seed phrase and flow key */
   newKeyInfo: NewKeyInfo;
   /** The user's address for key rotation */
@@ -44,13 +44,13 @@ function parseSeedPhrase(seedphrase: string): string[] {
   return seedphrase.split(' ').filter((word) => word.length > 0);
 }
 
-export function BackupMnemonicScreen({
+export function KeyRotationMnemonicScreen({
   newKeyInfo,
   address,
   onComplete,
   onBack,
   onError,
-}: BackupMnemonicScreenProps): React.ReactElement {
+}: KeyRotationMnemonicScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
   const { copied, copy } = useCopyToClipboard();
@@ -63,14 +63,14 @@ export function BackupMnemonicScreen({
 
   // Enable screenshot protection when screen mounts
   useEffect(() => {
-    logger.info('[BackupMnemonicScreen] Enabling screenshot protection');
+    logger.info('[KeyRotationMnemonicScreen] Enabling screenshot protection');
     if (bridge.setScreenSecurityLevel) {
       bridge.setScreenSecurityLevel('secure');
     }
 
     // Cleanup: disable screenshot protection when unmounting
     return () => {
-      logger.info('[BackupMnemonicScreen] Disabling screenshot protection');
+      logger.info('[KeyRotationMnemonicScreen] Disabling screenshot protection');
       if (bridge.setScreenSecurityLevel) {
         bridge.setScreenSecurityLevel('normal');
       }
@@ -126,12 +126,14 @@ export function BackupMnemonicScreen({
   };
 
   const handleComplete = async () => {
-    logger.info('[BackupMnemonicScreen] User confirmed backup, starting key rotation', { address });
+    logger.info('[KeyRotationMnemonicScreen] User confirmed backup, starting key rotation', {
+      address,
+    });
 
     const result = await executeRotation(address, newKeyInfo);
 
     if (result) {
-      logger.info('[BackupMnemonicScreen] Key rotation successful', { txId: result.txId });
+      logger.info('[KeyRotationMnemonicScreen] Key rotation successful', { txId: result.txId });
       onComplete(result);
     }
   };

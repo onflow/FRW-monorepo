@@ -110,18 +110,9 @@ export class KeyRotationService {
       throw new Error('Provided key does not match the required algorithms.');
     }
 
-    const apiRegistered = await this.submitToSignedAPI(
-      address,
-      newKeyInfo.flowKey,
-      signAlgo,
-      hashAlgo
-    );
+    const result = await this.submitToSignedAPI(address, newKeyInfo.flowKey, signAlgo, hashAlgo);
 
-    if (!apiRegistered) {
-      logger.warn('KeyRotationService: API submission failed before key rotation', {
-        address,
-      });
-    }
+    logger.info('KeyRotationService: API submission successful', { result });
 
     const txId = await this.workflow.rotateKeysOnChain(
       normalizePublicKey(newKeyInfo.flowKey.publicKey),
@@ -135,7 +126,7 @@ export class KeyRotationService {
     await this.bridge.saveNewKey(newKeyInfo);
     await this.setCachedBloctoDetection(address, false);
 
-    if (apiRegistered && revokeIndexes.length > 0) {
+    if (revokeIndexes.length > 0) {
       const revokePublicKey = (detection.fullAccountKeys ?? [])
         .filter((key) => revokeIndexes.includes(key.index))
         .map((key) => key.publicKey)
@@ -149,7 +140,6 @@ export class KeyRotationService {
       txId,
       addedKey: newKeyInfo.flowKey,
       revokedKeyIndexes: revokeIndexes,
-      apiRegistered,
     };
   }
 
@@ -161,62 +151,49 @@ export class KeyRotationService {
     accountKey: AccountKey,
     signAlgo: number,
     hashAlgo: number
-  ): Promise<boolean> {
-    try {
-      const apiAccountKey: forms_AccountKey = {
-        public_key: normalizePublicKey(accountKey.publicKey),
-        hash_algo: hashAlgo,
-        sign_algo: signAlgo,
-        weight: accountKey.weight ?? 1000,
-      };
+  ): Promise<unknown> {
+    const apiAccountKey: forms_AccountKey = {
+      public_key: normalizePublicKey(accountKey.publicKey),
+      hash_algo: hashAlgo,
+      sign_algo: signAlgo,
+      weight: accountKey.weight ?? 1000,
+    };
 
-      // Create signature data for the platform to sign
-      const signatureData = JSON.stringify({
-        address,
-        accountKey: apiAccountKey,
-        timestamp: Date.now(),
-      });
+    // Create signature data for the platform to sign
+    const signatureData = JSON.stringify({
+      address,
+      accountKey: apiAccountKey,
+      timestamp: Date.now(),
+    });
 
-      const signature = await this.bridge.signRotationRequest(
-        apiAccountKey.public_key ?? '',
-        address,
-        signatureData
-      );
+    const signature = await this.bridge.signRotationRequest(
+      apiAccountKey.public_key ?? '',
+      address,
+      signatureData
+    );
 
-      // Prepare signatures array
-      const signatures: forms_AccountKeySignature[] = [
-        {
-          public_key: signature.public_key ?? apiAccountKey.public_key,
-          hash_algo: signature.hash_algo ?? hashAlgo,
-          sign_algo: signature.sign_algo ?? signAlgo,
-          sign_message: signature.sign_message ?? signatureData,
-          signature: signature.signature,
-          weight: signature.weight ?? apiAccountKey.weight,
-        },
-      ];
+    // Prepare signatures array
+    const signatures: forms_AccountKeySignature[] = [
+      {
+        public_key: signature.public_key ?? apiAccountKey.public_key,
+        hash_algo: signature.hash_algo ?? hashAlgo,
+        sign_algo: signature.sign_algo ?? signAlgo,
+        sign_message: signature.sign_message ?? signatureData,
+        signature: signature.signature,
+        weight: signature.weight ?? apiAccountKey.weight,
+      },
+    ];
 
-      // Prepare backup info
-      const backupInfo: forms_BackupInfo = {
-        name: `Key rotation ${new Date().toISOString()}`,
-        type: 1, // Default backup type
-      };
+    // Prepare backup info
+    const backupInfo: forms_BackupInfo = {
+      name: `Key rotation ${new Date().toISOString()}`,
+      type: 1, // Default backup type
+    };
 
-      logger.debug('KeyRotationService: Submitting to v3/signed API via Userv3GoService');
+    logger.debug('KeyRotationService: Submitting to v3/signed API via Userv3GoService');
 
-      // Call the API using the generated service
-      const result = await Userv3GoService.signed({
-        accountKey: apiAccountKey,
-        signatures,
-        backupInfo,
-      });
-
-      logger.info('KeyRotationService: API submission successful', { result });
-      return true;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown API error';
-      logger.error('KeyRotationService: API submission failed', { error: errorMessage });
-      return false;
-    }
+    // Call the API using the generated service
+    return await Userv3GoService.signed({ accountKey: apiAccountKey, signatures, backupInfo });
   }
 
   private cacheAddressKey(address: string): string {

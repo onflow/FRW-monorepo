@@ -18,11 +18,11 @@ import { useTranslation } from 'react-i18next';
 import { useKeyRotation } from '../hooks';
 
 /**
- * BackupTipScreen - Page 1 of the backup flow
+ * KeyRotationTipScreen - Page 1 of the key rotation flow
  * Explains the key rotation/upgrade process before showing the seed phrase
  */
 
-export interface BackupTipScreenProps {
+export interface KeyRotationTipScreenProps {
   /** Callback when user presses Start and seed key is generated - receives the new key info */
   onContinue: (newKeyInfo: NewKeyInfo) => void;
   /** Callback when user presses "Not now" */
@@ -31,11 +31,11 @@ export interface BackupTipScreenProps {
   onBack?: () => void;
 }
 
-export function BackupTipScreen({
+export function KeyRotationTipScreen({
   onContinue,
   onSkip,
   onBack,
-}: BackupTipScreenProps): React.ReactElement {
+}: KeyRotationTipScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
   const { generateSeedKey, isLoading, error } = useKeyRotation();
@@ -55,11 +55,11 @@ export function BackupTipScreen({
   };
 
   const handleStart = async () => {
-    logger.info('[BackupTipScreen] User pressed Start, generating seed key');
+    logger.info('[KeyRotationTipScreen] User pressed Start, generating seed key');
     const newKeyInfo = await generateSeedKey();
 
     if (newKeyInfo) {
-      logger.info('[BackupTipScreen] Seed key generated, navigating to mnemonic screen');
+      logger.info('[KeyRotationTipScreen] Seed key generated, navigating to mnemonic screen');
       onContinue(newKeyInfo);
     }
   };
