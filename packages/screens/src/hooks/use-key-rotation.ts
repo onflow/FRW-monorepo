@@ -33,7 +33,7 @@ export interface UseKeyRotationReturn extends KeyRotationState {
   getSeedPhraseWords: () => string[];
 }
 
-const SEED_KEY_STRENGTH = 256; // 24 words, or use 128 for 12 words
+const SEED_KEY_STRENGTH = 128; // 24 words, or use 128 for 12 words
 
 /**
  * Hook for managing the key rotation flow

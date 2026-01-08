@@ -14,6 +14,7 @@ describe('BloctoDetectorService (integration)', () => {
     const result = await service.detectBloctoKey('0x4a21bdb48f1609ed');
 
     expect(typeof result.isBloctoKey).toBe('boolean');
+    expect(typeof result.needRevoke).toBe('boolean');
     expect(Array.isArray(result.fullAccountKeys)).toBe(true);
     expect(result.fullAccountKeys.length).toBeGreaterThan(14);
     expect(Array.isArray(result.bloctoKeyIndexes)).toBe(true);
@@ -26,6 +27,7 @@ describe('BloctoDetectorService (integration)', () => {
     const result = await service.detectBloctoKey('0xb13b21a06b75536d');
 
     expect(result.isBloctoKey).toBe(false);
+    expect(result.needRevoke).toBe(false);
     expect(result.fullAccountKeys.length).toBe(1);
     expect(result.bloctoKeyIndexes.length).toBe(0);
   });

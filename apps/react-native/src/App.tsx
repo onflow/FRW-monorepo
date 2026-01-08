@@ -16,7 +16,6 @@ import { version } from '../package.json';
 import { platform } from './bridge/PlatformImpl';
 import { FRWErrorBoundary } from './components/ErrorBoundary';
 import { QueryDebugger } from './components/QueryDebugger';
-import { setupNativeRequestBus } from './native/nativeRequestBus';
 import AppNavigator from './navigation/AppNavigator';
 import { handleGlobalError, handleUnhandledRejection } from './utils/errorHandling';
 
@@ -32,11 +31,9 @@ interface AppProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
-  headless?: boolean;
 }
 
 const App = (props: AppProps) => {
-  const isHeadless = props.headless === true;
   // Initialize walletStore when the app starts
   const { loadAccountsFromBridge } = useWalletStore();
 
@@ -136,18 +133,10 @@ const App = (props: AppProps) => {
   }, []);
 
   useEffect(() => {
-    if (!isHeadless) {
-      initializeApp();
-    }
-  }, [initializeApp, isHeadless]);
-
-  useEffect(() => setupNativeRequestBus(), []);
+    initializeApp();
+  }, [initializeApp]);
 
   const colorScheme = useColorScheme();
-
-  if (isHeadless) {
-    return null;
-  }
 
   return (
     <FRWErrorBoundary>

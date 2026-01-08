@@ -41,6 +41,7 @@ export class BloctoDetectorService {
     if (!keys || keys.length === 0) {
       return {
         isBloctoKey: false,
+        needRevoke: false,
         fullAccountKeys: [],
         bloctoKeyIndexes: [],
       };
@@ -50,11 +51,14 @@ export class BloctoDetectorService {
     const hasWeight999 = candidateKeys.some((key) => key.weight === 999);
     const hasWeight1 = candidateKeys.some((key) => key.weight === 1);
     const isBloctoKey = hasWeight999 && hasWeight1;
+    const bloctoKeyIndexes = isBloctoKey ? this.listRevokeIndexes(keys) : [];
+    const needRevoke = bloctoKeyIndexes.length > 0;
 
     return {
       isBloctoKey,
+      needRevoke,
       fullAccountKeys: keys,
-      bloctoKeyIndexes: isBloctoKey ? this.listRevokeIndexes(keys) : [],
+      bloctoKeyIndexes,
     };
   }
 }

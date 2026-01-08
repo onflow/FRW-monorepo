@@ -127,14 +127,15 @@ export class KeyRotationService {
       throw new Error('Account does not match Blocto key pattern.');
     }
 
+    if (!detection.needRevoke) {
+      throw new Error('No revokable Blocto keys found on account.');
+    }
+
     if (!newKeyInfo?.flowKey?.publicKey) {
       throw new Error('New key information is required for rotation.');
     }
 
     const revokeIndexes = detection.bloctoKeyIndexes ?? [];
-    if (revokeIndexes.length === 0) {
-      throw new Error('No revokable Blocto keys found on account.');
-    }
 
     const signAlgo = resolveSignAlgo(newKeyInfo.flowKey);
     const hashAlgo = resolveHashAlgo(newKeyInfo.flowKey);

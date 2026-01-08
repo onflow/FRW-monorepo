@@ -41,6 +41,7 @@ export interface FlowAccountKey {
 
 export interface BloctoDetectionResult {
   isBloctoKey: boolean;
+  needRevoke: boolean;
   fullAccountKeys: FlowAccountKey[];
   bloctoKeyIndexes: number[];
 }
