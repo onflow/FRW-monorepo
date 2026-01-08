@@ -68,6 +68,15 @@ export interface WalletProfilesResponse {
 export interface AddressBookResponse {
   contacts: AddressBookContact[];
 }
+
+export interface AccountKeySignature {
+  public_key: string;
+  hash_algo: number;
+  sign_algo: number;
+  signature: string;
+  sign_message?: string;
+  weight?: number;
+}
 /**
  * When transmitting data from the native side to react and sending resources
  */

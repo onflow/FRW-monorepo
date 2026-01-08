@@ -1,6 +1,7 @@
 import type {
   NewKeyInfo as SharedNewKeyInfo,
   RecentContactsResponse,
+  AccountKeySignature as SharedAccountKeySignature,
   Currency as SharedCurrency,
   EnvironmentVariables as SharedEnvironmentVariables,
   WalletAccount,
@@ -36,6 +37,15 @@ interface AccountKey {
   weight?: number;
 }
 
+interface AccountKeySignature {
+  public_key: string;
+  hash_algo: number;
+  sign_algo: number;
+  signature: string;
+  sign_message?: string;
+  weight?: number;
+}
+
 interface NewKeyInfo {
   seedphrase: string;
   flowKey: AccountKey;
@@ -48,6 +58,8 @@ const _currencySyncCheck: Currency = {} as SharedCurrency;
 const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
 const _newKeyInfoSyncCheck: NewKeyInfo = {} as SharedNewKeyInfo;
 const _newKeyInfoReverseSyncCheck: SharedNewKeyInfo = {} as NewKeyInfo;
+const _accountKeySignatureSyncCheck: AccountKeySignature = {} as SharedAccountKeySignature;
+const _accountKeySignatureReverseSyncCheck: SharedAccountKeySignature = {} as AccountKeySignature;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -98,7 +110,11 @@ export interface Spec extends TurboModule {
   createSeedKey(strength: number): Promise<NewKeyInfo>;
   saveNewKey(key: NewKeyInfo): Promise<void>;
   removeOldKey(address: string, publicKey: string): Promise<void>;
-  signRotationRequest(publicKey: string, address: string, hash: string): Promise<string>;
+  signRotationRequest(
+    publicKey: string,
+    address: string,
+    hash: string
+  ): Promise<AccountKeySignature>;
 
   // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;

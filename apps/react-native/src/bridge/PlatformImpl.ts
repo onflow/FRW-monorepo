@@ -1,5 +1,5 @@
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
-import type { NewKeyInfo } from '@onflow/frw-types';
+import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
 import type {
   Currency,
   RecentContactsResponse,
@@ -240,7 +240,11 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.removeOldKey(address, publicKey);
   }
 
-  signRotationRequest(publicKey: string, address: string, hash: string): Promise<string> {
+  signRotationRequest(
+    publicKey: string,
+    address: string,
+    hash: string
+  ): Promise<AccountKeySignature> {
     return NativeFRWBridge.signRotationRequest(publicKey, address, hash);
   }
 

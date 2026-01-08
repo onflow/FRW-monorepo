@@ -177,22 +177,21 @@ export class KeyRotationService {
         timestamp: Date.now(),
       });
 
-      const hash = signatureData;
       const signature = await this.bridge.signRotationRequest(
         apiAccountKey.public_key ?? '',
         address,
-        hash
+        signatureData
       );
 
-      const jwt = await this.bridge.getJWT();
       // Prepare signatures array
       const signatures: forms_AccountKeySignature[] = [
         {
-          public_key: apiAccountKey.public_key,
-          hash_algo: hashAlgo,
-          sign_algo: signAlgo,
-          sign_message: jwt,
-          signature,
+          public_key: signature.public_key ?? apiAccountKey.public_key,
+          hash_algo: signature.hash_algo ?? hashAlgo,
+          sign_algo: signature.sign_algo ?? signAlgo,
+          sign_message: signature.sign_message ?? signatureData,
+          signature: signature.signature,
+          weight: signature.weight ?? apiAccountKey.weight,
         },
       ];
 
