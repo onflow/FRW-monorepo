@@ -1,9 +1,13 @@
 import * as fcl from '@onflow/fcl';
 import type { AccountKey, Account as FclAccount } from '@onflow/fcl';
 import { type PayerStatusPayloadV1 } from '@onflow/frw-api';
+import { ServiceContext } from '@onflow/frw-context';
+import { KeyRotationService } from '@onflow/frw-services';
+import type { AccountKeySignature } from '@onflow/frw-types';
 
 import notification from '@/background/webapi/notification';
 import { openIndexPage } from '@/background/webapi/tab';
+import { getPlatform } from '@/bridge/PlatformImpl';
 import {
   addressBookService,
   transactionService,
@@ -265,6 +269,71 @@ export class WalletController extends BaseController {
    */
   switchProfile = async (profileId: string) => {
     return await accountManagementService.switchProfile(profileId);
+  };
+
+  /**
+   * Create a keyring with mnemonic
+   * Used for key rotation to create the new keyring
+   * @param publicKey - The public key of the new keyring
+   * @param signAlgo - The signing algorithm
+   * @param password - The password to encrypt the keyring
+   * @param mnemonic - The mnemonic phrase
+   * @param derivationPath - The derivation path (defaults to FLOW_BIP44_PATH)
+   * @param passphrase - Optional passphrase
+   */
+  createKeyringWithMnemonics = async (
+    publicKey: string,
+    signAlgo: number,
+    password: string,
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ) => {
+    return await accountManagementService.createKeyringWithMnemonics(
+      publicKey,
+      signAlgo,
+      password,
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+  };
+
+  /**
+   * Remove a keyring (profile) after key rotation
+   * This directly removes the keyring without switching profiles (unlike removeProfile)
+   * @param password - The password to verify before removal
+   * @param publicKey - The public key of the keyring to remove
+   */
+  removeKeyring = async (password: string, publicKey: string): Promise<void> => {
+    // Normalize the public key to match the format stored in keyrings
+    const { normalizePublicKey } = await import('@onflow/frw-utils');
+    const normalizedPublicKey = normalizePublicKey(publicKey);
+
+    console.log('[WalletController] removeKeyring called:', {
+      originalPublicKey: publicKey,
+      normalizedPublicKey,
+    });
+
+    // Get all public keys to verify the keyring exists before removal
+    const allPublicKeys = await keyringService.getAllPublicKeys();
+    console.log('[WalletController] All public keys before removal:', allPublicKeys);
+    console.log(
+      '[WalletController] Keyring exists for removal:',
+      allPublicKeys.includes(normalizedPublicKey)
+    );
+
+    // Directly remove the keyring without switching profiles
+    // This is used after key rotation when we've already switched to the new keyring
+    await keyringService.removeKeyring(password, normalizedPublicKey);
+
+    // Verify removal
+    const remainingPublicKeys = await keyringService.getAllPublicKeys();
+    console.log('[WalletController] All public keys after removal:', remainingPublicKeys);
+    console.log(
+      '[WalletController] Keyring removed successfully:',
+      !remainingPublicKeys.includes(normalizedPublicKey)
+    );
   };
   /**
    * @deprecated  Checking accounts by user id is deprecated - use the public key or addressinstead
@@ -532,6 +601,14 @@ export class WalletController extends BaseController {
 
   getPubKey = async (): Promise<PublicKeyTuple> => {
     return await keyringService.getCurrentPublicKeyTuple();
+  };
+
+  /**
+   * Get the current public key as a hex string
+   * Used for key rotation to identify the old keyring
+   */
+  getCurrentPublicKey = (): string => {
+    return keyringService.getCurrentPublicKey();
   };
 
   importPrivateKey = async (publicKey: string, signAlgo: number, password: string, pk: string) => {
@@ -1174,6 +1251,131 @@ export class WalletController extends BaseController {
     passphrase: string = ''
   ) => {
     return userWalletService.loginWithMnemonic(mnemonic, replaceUser, derivationPath, passphrase);
+  };
+
+  loginWithKeyring = async (replaceUser = true) => {
+    return userWalletService.loginWithKeyring(replaceUser);
+  };
+
+  /**
+   * Rotate keys for an account
+   * This performs the full key rotation process including on-chain transaction and API submission
+   * Runs in the background context where the keyring service is properly booted
+   * @param address - The Flow address to rotate keys for
+   * @param newKeyInfo - The new key information (mnemonic, public key, etc.)
+   * @returns Promise with rotation result including txId and API registration status
+   */
+  /**
+   * Sign a rotation request hash
+   * This runs in the background context where keyring service is properly booted
+   * @param publicKey - The new public key (not used for signing, just for reference)
+   * @param address - The Flow address
+   * @param hash - The JSON string to sign
+   * @returns AccountKeySignature with the signature from the current (old) key
+   */
+  signRotationRequest = async (
+    address: string,
+    signatureData: string
+  ): Promise<AccountKeySignature> => {
+    // Check if keyring is unlocked
+    if (!keyringService.isUnlocked()) {
+      throw new Error('Keyring must be unlocked to sign rotation request');
+    }
+
+    // Get private key and public key from keyring service (runs in background)
+    const privateKey = await keyringService.getCurrentPrivateKey();
+    const signAlgo = keyringService.getCurrentSignAlgo() || 2; // Default to secp256k1
+    const oldPublicKey = keyringService.getCurrentPublicKey();
+
+    // Import signing utilities
+    const { signWithKey } = await import('@/core/utils/modules/publicPrivateKey');
+    const { HASH_ALGO_NUM_SHA3_256 } = await import('@/shared/constant');
+
+    // The backend verification uses Flow's verify with domain separation tag "FLOW-V0.0-user"
+    // We need to prepend this tag to the message before hashing, just like login does
+    // Match the exact pattern from loginWithPublicPrivateKey
+    const rightPaddedHexBuffer = (value: string, pad: number) =>
+      Buffer.from(value.padEnd(pad * 2, 0 as any), 'hex').toString('hex');
+    const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
+    const message = USER_DOMAIN_TAG + Buffer.from(signatureData, 'utf8').toString('hex');
+
+    // Sign the message (with domain tag prepended) with SHA3_256
+    // signWithKey will hash the message with SHA3_256 internally
+    const signatureString = await signWithKey(
+      message,
+      signAlgo,
+      HASH_ALGO_NUM_SHA3_256,
+      privateKey,
+      false,
+      false // isPrehashed=false - let signWithKey hash it with SHA3_256
+    );
+
+    // Return AccountKeySignature object
+    return {
+      public_key: oldPublicKey, // Use the OLD key's public key (the one that signed)
+      hash_algo: HASH_ALGO_NUM_SHA3_256,
+      sign_algo: signAlgo,
+      signature: signatureString,
+      sign_message: signatureData,
+    };
+  };
+
+  rotateKey = async (address: string, newKeyInfo: any) => {
+    const platform = getPlatform();
+    platform.setWalletController(this);
+
+    if (!ServiceContext.isInitialized()) {
+      ServiceContext.initialize(platform);
+    }
+
+    const keyRotationService = KeyRotationService.getInstance(platform);
+    return await keyRotationService.rotateKey(address, newKeyInfo);
+  };
+
+  /**
+   * Remove an old key from the keyring after key rotation
+   * @param address - The Flow address
+   * @param publicKey - The public key of the keyring to remove
+   */
+  removeOldKey = async (address: string, publicKey: string): Promise<void> => {
+    try {
+      // Check if keyring is unlocked
+      if (!keyringService.isUnlocked()) {
+        console.warn('[WalletController] Keyring is locked, cannot remove old key');
+        return;
+      }
+
+      // Normalize the public key to match the format stored in keyrings
+      const { normalizePublicKey } = await import('@onflow/frw-utils');
+      const normalizedPublicKey = normalizePublicKey(publicKey);
+
+      // Get all public keys to verify the keyring exists
+      const allPublicKeys = await keyringService.getAllPublicKeys();
+      const keyringExists = allPublicKeys.includes(normalizedPublicKey);
+      console.log('[WalletController] Keyring exists:', keyringExists);
+      console.log('[WalletController] All public keys:', allPublicKeys);
+      console.log('[WalletController] Normalized public key:', normalizedPublicKey);
+      console.log('[WalletController] Original public key:', publicKey);
+      if (!keyringExists) {
+        console.warn(
+          `[WalletController] Keyring with public key ${normalizedPublicKey} not found, may have already been removed`,
+          { originalPublicKey: publicKey, allPublicKeys }
+        );
+        return;
+      }
+
+      // Store the normalized old public key to remove later when we have the password
+      // This will be removed in handlePasswordSubmit after the user enters their password
+      const OLD_KEY_TO_REMOVE_KEY = `keyRotation:oldKeyToRemove:${address}`;
+      await setLocalData(OLD_KEY_TO_REMOVE_KEY, normalizedPublicKey);
+
+      console.info(
+        `[WalletController] Old key ${normalizedPublicKey} marked for removal (will be removed after password entry)`
+      );
+    } catch (error) {
+      console.error('[WalletController] Failed to remove old key:', error);
+      // Don't throw - key removal is not critical for rotation success
+    }
   };
 
   loginWithPrivatekey = async (pk: string, replaceUser = true) => {

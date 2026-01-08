@@ -106,25 +106,72 @@ export class KeyRotationService {
 
     const signAlgo = resolveSignAlgo(newKeyInfo.flowKey);
     const hashAlgo = resolveHashAlgo(newKeyInfo.flowKey);
+    logger.debug('KeyRotationService: Algorithm validation', {
+      signAlgo,
+      hashAlgo,
+      flowKey: {
+        signAlgo: newKeyInfo.flowKey.signAlgo,
+        hashAlgo: newKeyInfo.flowKey.hashAlgo,
+        signAlgoString: newKeyInfo.flowKey.signAlgoString,
+        hashAlgoString: newKeyInfo.flowKey.hashAlgoString,
+      },
+    });
     if (signAlgo !== 2 || hashAlgo !== 1) {
-      throw new Error('Provided key does not match the required algorithms.');
+      throw new Error(
+        `Provided key does not match the required algorithms. Expected signAlgo=2, hashAlgo=1, but got signAlgo=${signAlgo}, hashAlgo=${hashAlgo}`
+      );
     }
 
-    const result = await this.submitToSignedAPI(address, newKeyInfo.flowKey, signAlgo, hashAlgo);
+    let result;
+    try {
+      logger.debug('KeyRotationService: Submitting to v3/signed API');
+      result = await this.submitToSignedAPI(address, newKeyInfo.flowKey, signAlgo, hashAlgo);
+      logger.info('KeyRotationService: API submission successful', { result });
+    } catch (error) {
+      logger.error('KeyRotationService: API submission failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
 
-    logger.info('KeyRotationService: API submission successful', { result });
+    let txId;
+    try {
+      logger.debug('KeyRotationService: Starting on-chain key rotation');
+      txId = await this.workflow.rotateKeysOnChain(
+        normalizePublicKey(newKeyInfo.flowKey.publicKey),
+        revokeIndexes
+      );
+      logger.info('KeyRotationService: On-chain key rotation successful', {
+        txId,
+      });
+    } catch (error) {
+      logger.error('KeyRotationService: On-chain key rotation failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
 
-    const txId = await this.workflow.rotateKeysOnChain(
-      normalizePublicKey(newKeyInfo.flowKey.publicKey),
-      revokeIndexes
-    );
+    try {
+      logger.debug('KeyRotationService: Saving new key');
+      await this.bridge.saveNewKey(newKeyInfo);
+      logger.debug('KeyRotationService: New key saved');
+    } catch (error) {
+      logger.warn('KeyRotationService: Failed to save new key (non-critical)', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      // Don't throw - saving the key is not critical for rotation success
+    }
 
-    logger.info('KeyRotationService: On-chain key rotation successful', {
-      txId,
-    });
-
-    await this.bridge.saveNewKey(newKeyInfo);
-    await this.setCachedBloctoDetection(address, false);
+    try {
+      await this.setCachedBloctoDetection(address, false);
+    } catch (error) {
+      logger.warn('KeyRotationService: Failed to update cache (non-critical)', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      // Don't throw - cache update is not critical
+    }
 
     if (revokeIndexes.length > 0) {
       const revokePublicKey = (detection.fullAccountKeys ?? [])

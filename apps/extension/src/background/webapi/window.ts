@@ -67,8 +67,47 @@ const openNotification = ({ route = '', ...rest } = {}): Promise<number | undefi
   return create({ url, ...rest });
 };
 
+const createWindow = async ({ url, ...rest }): Promise<number | undefined> => {
+  const {
+    top: cTop,
+    left: cLeft,
+    width,
+  } = await chrome.windows.getCurrent({
+    windowTypes: ['normal'],
+  });
+
+  const top = cTop! + BROWSER_HEADER;
+  const left = cLeft! + width! - WINDOW_SIZE.width;
+
+  const win = await chrome.windows.create({
+    focused: true,
+    url,
+    type: 'normal', // Use 'normal' instead of 'popup' for a full window
+    top,
+    left,
+    ...WINDOW_SIZE,
+    ...rest,
+  });
+
+  // shim firefox
+  if (win.left !== left) {
+    await chrome.windows.update(win.id!, { left, top, focused: true, drawAttention: true });
+  } else {
+    await chrome.windows.update(win.id!, { focused: true, drawAttention: true });
+  }
+
+  return win.id;
+};
+
+const openInternalPageInWindow = ({ route = '', ...rest } = {}): Promise<number | undefined> => {
+  const url = `index.html${route && `#${route}`}`;
+
+  return createWindow({ url, ...rest });
+};
+
 export default {
   openNotification,
+  openInternalPageInWindow,
   event,
   remove,
 };

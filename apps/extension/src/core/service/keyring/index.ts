@@ -469,6 +469,7 @@ class KeyringService extends EventEmitter {
   }
 
   isUnlocked() {
+    console.log('isUnlocked', this.isBooted(), this.memStore.getState().isUnlocked);
     return this.isBooted() && this.memStore.getState().isUnlocked;
   }
 
@@ -1953,6 +1954,10 @@ class KeyringService extends EventEmitter {
     const keyringIndex = this.decryptedKeyrings.findIndex(
       (keyring) => keyring.publicKey === publicKey
     );
+    console.log('[KeyringService] removeKeyring called:', {
+      publicKey,
+      keyringIndex,
+    });
     if (keyringIndex === -1) {
       throw new Error(`Keyring with public key ${publicKey} not found`);
     }

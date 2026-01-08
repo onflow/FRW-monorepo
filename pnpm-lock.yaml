@@ -141,6 +141,9 @@ importers:
       '@onflow/frw-screens':
         specifier: workspace:*
         version: link:../../packages/screens
+      '@onflow/frw-services':
+        specifier: workspace:*
+        version: link:../../packages/services
       '@onflow/frw-stores':
         specifier: workspace:*
         version: link:../../packages/stores

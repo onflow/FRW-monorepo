@@ -14,6 +14,7 @@ import {
   type NativeScreenName,
   type SeedPhraseGenerationResponse,
   type BloctoDetectionResult,
+  type AccountKeySignature,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
 import { WalletCoreProvider } from '@onflow/frw-wallet';
@@ -21,10 +22,12 @@ import { KeyRotation } from '@onflow/frw-workflow';
 import * as bip39 from 'bip39';
 
 // Removed direct service imports - using walletController instead
-import { keyringService, accountManagementService } from '@/core/service';
 import { getAccountKey } from '@/core/utils/account-key';
-import { returnCurrentProfileId } from '@/core/utils/current-id';
-import { HTTP_STATUS_TOO_MANY_REQUESTS, FLOW_BIP44_PATH } from '@/shared/constant';
+import {
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+  HASH_ALGO_NUM_DEFAULT,
+  SIGN_ALGO_NUM_DEFAULT,
+} from '@/shared/constant';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
@@ -84,7 +87,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     throw new Error('Method not implemented.');
   }
   setScreenSecurityLevel?(level: 'normal' | 'secure'): void {
-    throw new Error('Method not implemented.');
+    // Screenshot protection is a native mobile feature
+    // In the browser extension, we can't prevent screenshots
+    // This is a no-op but we log it for debugging
+    this.log('debug', `setScreenSecurityLevel called with level: ${level} (no-op in extension)`);
   }
   launchNativeScreen?(screenName: NativeScreenName, params?: string): void {
     throw new Error('Method not implemented.');
@@ -403,6 +409,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
     // Configure gas limits and authorization functions using extension's existing functions
     cadenceService.useRequestInterceptor(async (config: any) => {
+      // Skip redirect for key rotation transactions
+      if (config.type === 'transaction' && config.name === 'addAndRevokeKeys') {
+        config.skipRedirect = true;
+      }
+
       if (config.type === 'transaction') {
         config.limit = 9999;
 
@@ -474,12 +485,18 @@ class ExtensionPlatformImpl implements PlatformSpec {
             if (this.walletController && this.walletController.listenTransaction) {
               this.walletController.listenTransaction(txId);
             }
-            // Navigate to transaction complete
-            const navigation = this.navigation();
-            if (navigation && navigation.navigate) {
-              navigation.navigate('TransactionComplete', {
-                txId: txId,
-              });
+            // Redirect after transaction (default to true)
+            // Set to false in config.skipRedirect to let the page handle its own navigation
+            const redirect = config.skipRedirect !== true;
+
+            // Navigate to transaction complete (unless redirect is disabled)
+            if (redirect) {
+              const navigation = this.navigation();
+              if (navigation && navigation.navigate) {
+                navigation.navigate('TransactionComplete', {
+                  txId: txId,
+                });
+              }
             }
             const tokenStore = useTokenQueryStore.getState();
             const selectedAccount = await this.getSelectedAccount();
@@ -677,13 +694,14 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
       // Convert AccountKeyRequest to AccountKey format expected by NewKeyInfo
       // NewKeyInfo.flowKey uses AccountKey from KeyRotation.ts which has signAlgoString/hashAlgoString
+      // For newly generated keys, use default extension algorithms
       const flowKey = {
         publicKey: accountKeyRequest.public_key,
-        signAlgo: accountKeyRequest.sign_algo,
-        hashAlgo: accountKeyRequest.hash_algo,
+        signAlgo: SIGN_ALGO_NUM_DEFAULT, // Use default extension sign algorithm
+        hashAlgo: HASH_ALGO_NUM_DEFAULT, // Use default extension hash algorithm
         weight: accountKeyRequest.weight,
-        signAlgoString: accountKeyRequest.sign_algo.toString(),
-        hashAlgoString: accountKeyRequest.hash_algo.toString(),
+        signAlgoString: SIGN_ALGO_NUM_DEFAULT.toString(),
+        hashAlgoString: HASH_ALGO_NUM_DEFAULT.toString(),
       };
 
       return {
@@ -698,79 +716,46 @@ class ExtensionPlatformImpl implements PlatformSpec {
     }
   }
 
+  // Temporary storage for password during key rotation
+  private keyRotationPassword: string | null = null;
+
+  setKeyRotationPassword(password: string | null): void {
+    this.keyRotationPassword = password;
+  }
+
   async saveNewKey(key: NewKeyInfo): Promise<void> {
+    // The new key info is already stored in component state (via handleTipContinue)
+    // and will be used directly in handlePasswordSubmit to login with the new mnemonic
+    // No need to store it here - just a no-op
+    this.log('debug', 'saveNewKey: New key info will be used in UI component');
+    return Promise.resolve();
+  }
+
+  async removeOldKey(address: string, publicKey: string): Promise<void> {
+    // Remove the old key from the account
+    // This is called after successful key rotation to clean up the old key
     try {
-      if (!key.seedphrase || !key.flowKey) {
-        throw new Error('Invalid key info: seedphrase and flowKey are required');
+      if (this.walletController?.removeOldKey) {
+        await this.walletController.removeOldKey(address, publicKey);
+      } else {
+        this.log('warn', 'removeOldKey not implemented in walletController');
       }
-
-      // Verify the wallet is unlocked
-      if (!(await keyringService.isUnlocked())) {
-        throw new Error('Wallet must be unlocked to save a new key');
-      }
-
-      // For key rotation, we need to add the new keyring to the keyring service
-      // This follows the same pattern as importProfileUsingMnemonic but for rotation keys
-      // We need to get the password - since the wallet is unlocked, we'll need to prompt for it
-      // or get it from the walletController if available
-
-      // Get the password from walletController if it has a method to retrieve it
-      // Otherwise, we'll need to use accountManagementService which handles password verification
-      let password: string | undefined;
-
-      if (this.walletController?.getPassword) {
-        password = await this.walletController.getPassword();
-      }
-
-      if (!password) {
-        // If we can't get the password automatically, we need to throw an error
-        // The caller should handle password prompting before calling this method
-        throw new Error(
-          'Password is required to save the new key. Please provide the wallet password.'
-        );
-      }
-
-      // Verify password is correct
-      await accountManagementService.verifyPasswordIfBooted(password);
-
-      // Save the current keyring state so we can switch back after adding the new one
-      const currentPublicKey = await keyringService.getCurrentPublicKey();
-      const currentKeyringId = await returnCurrentProfileId();
-
-      // Add the new keyring using the keyring service
-      // This will encrypt and store the mnemonic in the keyring vault
-      // Note: addNewKeyring will make this the current keyring
-      await keyringService.addNewKeyring(
-        key.flowKey.publicKey,
-        key.flowKey.signAlgo || 2, // Default to ECDSA_secp256k1 if not specified
-        password,
-        'HD Key Tree',
-        {
-          mnemonic: key.seedphrase,
-          activeIndexes: [0],
-          derivationPath: FLOW_BIP44_PATH,
-          passphrase: '',
-        }
-      );
-
-      // Switch back to the original keyring if it existed
-      // This ensures the user's current session isn't disrupted
-      if (currentKeyringId) {
-        try {
-          await keyringService.switchKeyring(currentKeyringId);
-        } catch (switchError) {
-          // Log but don't fail - the new keyring is saved even if we can't switch back
-          this.log('warn', 'Failed to switch back to original keyring:', switchError);
-        }
-      }
-
-      this.log('debug', 'Saved new rotation key to keyring for public key:', key.flowKey.publicKey);
     } catch (error) {
-      this.log('error', 'Failed to save new key:', error);
-      throw new Error(
-        `Failed to save new key: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      this.log('error', 'Failed to remove old key:', error);
+      throw error;
     }
+  }
+
+  async signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature> {
+    if (!this.walletController) {
+      throw new Error('Wallet controller not available - cannot sign rotation request');
+    }
+
+    // Route signing to wallet controller which runs in background context
+    // where keyring service is properly booted and unlocked
+    // The wallet controller will get the public key internally from the keyring service
+    // We pass an empty string for publicKey since the wallet controller will get it from keyring
+    return await this.walletController.signRotationRequest(address, signatureData);
   }
 
   getKeyRotationDependencies(): KeyRotationDependencies {
@@ -778,6 +763,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return {
       createSeedKey: this.createSeedKey.bind(this),
       saveNewKey: this.saveNewKey.bind(this),
+      removeOldKey: this.removeOldKey.bind(this),
+      signRotationRequest: this.signRotationRequest.bind(this),
     };
   }
 
@@ -799,8 +786,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
         throw new Error('No address available to check for key rotation');
       }
 
-      // Create KeyRotation instance with dependencies
-      const keyRotation = new KeyRotation(this.getKeyRotationDependencies());
+      // Create KeyRotation instance
+      const keyRotation = new KeyRotation();
 
       // Detect if Blocto keys are present
       const detection = await keyRotation.detectBloctoKey(accountAddress);
@@ -811,6 +798,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
       // Return a safe default result on error
       return {
         isBloctoKey: false,
+        needRevoke: false,
         fullAccountKeys: [],
         bloctoKeyIndexes: [],
       };
