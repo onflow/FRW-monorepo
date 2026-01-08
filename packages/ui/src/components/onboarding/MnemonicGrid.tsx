@@ -20,7 +20,7 @@ export interface MnemonicGridProps {
 /**
  * MnemonicGrid - Displays a 2x6 grid of numbered mnemonic words
  * Reusable component for displaying seed phrases with reveal functionality
- * Used in RecoveryPhraseScreen and BackupMnemonicScreen
+ * Used in RecoveryPhraseScreen and KeyRotationMnemonicScreen
  */
 export function MnemonicGrid({
   words,

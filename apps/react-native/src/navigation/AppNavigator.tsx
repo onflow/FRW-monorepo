@@ -5,9 +5,9 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
-  // Backup screens
-  BackupTipScreen,
-  BackupMnemonicScreen,
+  // Key rotation screens
+  KeyRotationTipScreen,
+  KeyRotationMnemonicScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -15,8 +15,10 @@ import {
   createTokenModelFromConfig,
   createWalletAccountFromConfig,
   type InitialProps,
+  type NewKeyInfo,
   type NFTModel,
 } from '@onflow/frw-types';
+import { useTheme } from '@onflow/frw-ui';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -76,10 +78,10 @@ export type RootStackParamList = {
   ImportProfile: undefined;
   ImportOtherMethods: undefined;
   ConfirmImportProfile: undefined;
-  // Backup screens
-  BackupTip: undefined;
-  BackupMnemonic: {
-    seedPhrase: string[];
+  // Key rotation screens
+  KeyRotationTip: undefined;
+  KeyRotationMnemonic: {
+    newKeyInfo: NewKeyInfo;
   };
 };
 
@@ -95,6 +97,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { address, network, initialRoute, initialProps } = props;
   const navigationRef = useRef<any>(null);
 
@@ -308,7 +311,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             />
           </Stack.Group>
 
-          {/* Blocto Backup screens */}
+          {/* Blocto key rotation screens */}
           <Stack.Group
             screenOptions={{
               headerShown: true,
@@ -319,7 +322,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             }}
           >
             <Stack.Screen
-              name="BackupTip"
+              name="KeyRotationTip"
               options={{
                 headerTitle: '',
                 headerStyle: {
@@ -328,37 +331,22 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               }}
             >
               {({ navigation: nav }) => (
-                <BackupTipScreen
-                  onContinue={() => {
+                <KeyRotationTipScreen
+                  onContinue={newKeyInfo => {
                     logger.info(
-                      '[BackupTipScreen] Continue pressed - navigating to BackupMnemonic'
+                      '[KeyRotationTipScreen] Continue pressed - navigating to KeyRotationMnemonic'
                     );
-                    // TODO: Generate or fetch actual seed phrase from native bridge
-                    const testSeedPhrase = [
-                      'abandon',
-                      'ability',
-                      'able',
-                      'about',
-                      'above',
-                      'absent',
-                      'absorb',
-                      'abstract',
-                      'absurd',
-                      'abuse',
-                      'access',
-                      'accident',
-                    ];
-                    nav.navigate('BackupMnemonic', { seedPhrase: testSeedPhrase });
+                    nav.navigate('KeyRotationMnemonic', { newKeyInfo });
                   }}
                   onSkip={() => {
-                    logger.info('[BackupTipScreen] Skip pressed');
+                    logger.info('[KeyRotationTipScreen] Skip pressed');
                     // TODO: Handle skip action - close the flow
                   }}
                 />
               )}
             </Stack.Screen>
             <Stack.Screen
-              name="BackupMnemonic"
+              name="KeyRotationMnemonic"
               options={{
                 headerTitle: t('backup.mnemonic.navTitle', { defaultValue: 'Recovery Phrase' }),
                 headerStyle: {
@@ -367,11 +355,11 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               }}
             >
               {({ route, navigation: nav }) => (
-                <BackupMnemonicScreen
-                  seedPhrase={route.params.seedPhrase}
+                <KeyRotationMnemonicScreen
+                  newKeyInfo={route.params.newKeyInfo}
+                  address={address ?? ''}
                   onComplete={() => {
-                    logger.info('[BackupMnemonicScreen] Backup complete');
-                    // TODO: Handle completion - close the flow or navigate to success
+                    logger.info('[KeyRotationMnemonicScreen] Backup complete');
                   }}
                   onBack={() => nav.goBack()}
                 />
