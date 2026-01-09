@@ -20,7 +20,6 @@ export interface KeyRotationDependencies {
 }
 
 // AccountKey interface for key rotation context
-// Renamed to KeyRotationAccountKey to avoid conflict with Bridge.AccountKey
 export interface KeyRotationAccountKey {
   index?: number;
   publicKey: string;

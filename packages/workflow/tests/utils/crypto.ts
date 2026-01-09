@@ -24,7 +24,7 @@ export const hash256MsgHex = (msgHex) => {
 export function sign(privateKey, msgHex) {
   const e = new elliptic.ec('p256');
   const key = e.keyFromPrivate(Buffer.from(privateKey, 'hex'));
-  const sig = key.sign(hash3MsgHex(msgHex));
+  const sig = key.sign(hash256MsgHex(msgHex));
   const n = 32; // half of signature length?
   const r = sig.r.toArrayLike(Buffer, 'be', n);
   const s = sig.s.toArrayLike(Buffer, 'be', n);

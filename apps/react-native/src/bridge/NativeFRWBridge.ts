@@ -7,13 +7,16 @@ import type {
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
+  CreateAccountResponse as SharedCreateAccountResponse,
+  SeedPhraseGenerationResponse as SharedSeedPhraseGenerationResponse,
 } from '@onflow/frw-types';
+import { type NativeScreenName as SharedNativeScreenName } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
 
 /**
  * Local interfaces for Codegen - must be defined in the same file
- * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, and {@link SharedNewKeyInfo} in @onflow/frw-types
+ * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, {@link SharedCreateAccountResponse}, {@link SharedSeedPhraseGenerationResponse}, and {@link SharedNativeScreenName} in @onflow/frw-types
  *
  * React Native Codegen limitation: Cannot resolve imported types.
  * These must stay in sync with the source types manually.
@@ -51,6 +54,49 @@ interface NewKeyInfo {
   flowKey: AccountKey;
 }
 
+/**
+ * Response from getV4RegistrationSignatures containing all signatures needed for v4 API
+ */
+interface V4RegistrationSignaturesResponse {
+  flowSignature: string;
+  evmSignature: string;
+  eoaAddress: string;
+}
+
+interface CreateAccountResponse {
+  success: boolean;
+  address: string | null;
+  username: string | null;
+  accountType: 'full' | 'hardware' | null; // full = mnemonic-based account, hardware = secure enclave
+  txId: string | null;
+  error: string | null;
+}
+
+interface SeedPhraseGenerationResponse {
+  mnemonic: string;
+  accountKey: AccountKey;
+  drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
+}
+
+/**
+ * Local type for NativeScreenName - must match enum values from @onflow/frw-types
+ * @see {@link SharedNativeScreenName}
+ */
+type NativeScreenName =
+  | 'multiBackup'
+  | 'deviceBackup'
+  | 'seedPhraseBackup'
+  | 'backupOptions'
+  | 'walletRestore'
+  | 'recoveryPhraseRestore'
+  | 'keyStoreRestore'
+  | 'privateKeyRestore'
+  | 'googleDriveRestore'
+  | 'icloudRestore'
+  | 'multiRestore';
+
 // Compile-time sync validation
 const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
 const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables;
@@ -60,6 +106,14 @@ const _newKeyInfoSyncCheck: NewKeyInfo = {} as SharedNewKeyInfo;
 const _newKeyInfoReverseSyncCheck: SharedNewKeyInfo = {} as NewKeyInfo;
 const _accountKeySignatureSyncCheck: AccountKeySignature = {} as SharedAccountKeySignature;
 const _accountKeySignatureReverseSyncCheck: SharedAccountKeySignature = {} as AccountKeySignature;
+const _createAccountSyncCheck: CreateAccountResponse = {} as SharedCreateAccountResponse;
+const _createAccountReverseSyncCheck: SharedCreateAccountResponse = {} as CreateAccountResponse;
+const _seedPhraseSyncCheck: SeedPhraseGenerationResponse = {} as SharedSeedPhraseGenerationResponse;
+
+// NativeScreenName validation - ensures local union matches SharedNativeScreenName enum values
+type SharedNativeScreenNameValues = `${SharedNativeScreenName}`;
+const _nativeScreenNameSyncCheck: NativeScreenName = {} as SharedNativeScreenNameValues;
+const _nativeScreenNameReverseSyncCheck: SharedNativeScreenNameValues = {} as NativeScreenName;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -91,6 +145,11 @@ export interface Spec extends TurboModule {
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;
+  // Profile management - recovery flow
+  getRecoverableProfiles(): Promise<WalletProfilesResponse>;
+  switchToProfile(userId: string): Promise<void>;
+  // Device info method
+  getDeviceId(): string;
   // Toast methods
   showToast(
     title: string,
@@ -113,8 +172,32 @@ export interface Spec extends TurboModule {
   removeOldKey(address: string, publicKey: string): Promise<void>;
   signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature>;
 
-  // Screen security
+  // Onboarding methods
+  registerSecureTypeAccount(username: string): Promise<CreateAccountResponse>;
+  initSecureEnclaveWallet(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }>;
+  generateSeedPhrase(strength?: number | null): Promise<SeedPhraseGenerationResponse>;
+  /**
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
+   */
+  getV4RegistrationSignatures(mnemonic: string): Promise<V4RegistrationSignaturesResponse>;
+  signInWithCustomToken(customToken: string): Promise<void>;
+  saveMnemonic(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string,
+    evmAddress?: string | null
+  ): Promise<void>;
+  requestNotificationPermission(): Promise<boolean>;
+  checkNotificationPermission(): Promise<boolean>;
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
+  // Launch native screen method - uses local NativeScreenName type for Codegen compatibility
+  launchNativeScreen(screenName: NativeScreenName, params?: string | null): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

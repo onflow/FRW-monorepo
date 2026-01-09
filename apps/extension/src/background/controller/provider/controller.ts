@@ -268,6 +268,8 @@ class ProviderController extends BaseController {
       const platform = initializePlatform();
       // Ensure wallet controller is set on the platform
       platform.setWalletController(Wallet);
+      // Store wallet controller globally for account-management to access if needed
+      (globalThis as any).__FLOW_WALLET_CONTROLLER__ = Wallet;
       // Initialize ServiceContext with the platform
       ServiceContext.initialize(platform);
     }

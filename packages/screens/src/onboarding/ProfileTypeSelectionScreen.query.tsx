@@ -11,7 +11,7 @@ import {
   IconButton,
   useTheme,
 } from '@onflow/frw-ui';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -26,6 +26,11 @@ import { useTranslation } from 'react-i18next';
 export function ProfileTypeSelectionScreen(): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
+
+  // Get safe area insets for proper positioning across platforms
+  const safeAreaInsets = useMemo(() => {
+    return bridge.getSafeAreaInsets?.() ?? { top: 0, bottom: 0, left: 0, right: 0 };
+  }, []);
 
   const handleNext = () => {
     // Navigate to recovery phrase setup
@@ -53,22 +58,22 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
   return (
     <OnboardingBackground>
-      <YStack flex={1} px="$4" pt="$4">
-        {/* Custom back button */}
-        <YStack pt="$6">
+      <YStack flex={1} px="$4" pt="$0">
+        {/* Custom back button - uses safe area insets for proper positioning */}
+        <YStack pt={safeAreaInsets.top}>
           <IconButton
             icon={<ArrowLeft color={theme.text.val} size={24} width={24} height={24} />}
             variant="ghost"
             size="medium"
             onPress={handleBack}
-            ml="$-2"
-            pl="$2"
+            ml="$2"
+            pt="$4"
           />
         </YStack>
 
         {/* Title */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize="$7m" fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+          <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
             {t('onboarding.profileType.welcomeTitle')}
           </Text>
         </YStack>

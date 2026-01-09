@@ -17,3 +17,4 @@ export * from './KeyRotation';
 export * from './utils/string';
 export * from './query/QueryDomain';
 export * from './Errors';
+export * from './Migration';

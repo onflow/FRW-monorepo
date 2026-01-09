@@ -351,6 +351,7 @@ export default [
           alwaysTryTypes: true,
           project: './tsconfig.json',
         },
+        node: true,
       },
     },
     rules: {

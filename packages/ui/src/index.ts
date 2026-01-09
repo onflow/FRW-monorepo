@@ -68,6 +68,7 @@ export * from './components/NFTSelectionBar';
 export * from './components/NFTSendPreview';
 export * from './components/PercentageChangeBadge';
 export * from './components/ProfileList';
+export * from './components/ProfileImportList';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
 export * from './components/RefreshView';
@@ -96,8 +97,8 @@ export * from './components/onboarding/TipCard';
 export * from './components/onboarding/MnemonicGrid';
 export { ShieldAnimation } from './components/ShieldAnimation';
 
+export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
-export * from './components/UpdateDialog.web';
 
 // Onboarding components
 export * from './components/onboarding';

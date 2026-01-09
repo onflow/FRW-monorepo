@@ -6,9 +6,9 @@ export {
   getAddressType,
   truncateAddress,
   isValidEthereumAddress,
+  validateEvmAddress,
   isCOAAddress,
   isEOAAddress,
-  validateEvmAddress,
 } from './address';
 
 // JWT utilities

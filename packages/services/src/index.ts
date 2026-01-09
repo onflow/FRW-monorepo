@@ -3,7 +3,7 @@ export { AddressBookService } from './AddressBookService';
 export { default as FlowService } from './FlowService';
 export { KeyRotationService } from './KeyRotationService';
 export { NFTService } from './NFTService';
-export { ProfileService } from './ProfileService';
+export { ProfileService, type CreateFlowAddressResult } from './ProfileService';
 export { RecentRecipientsService } from './RecentRecipientsService';
 export { TokenService } from './TokenService';
 

@@ -163,10 +163,10 @@ export const registerAccount = async ({ page, extensionId, username, password })
   await page.getByText('Your username will be used to').isVisible();
 
   // Fill in the form
-  await page.getByPlaceholder('Username').fill(username);
+  // await page.getByPlaceholder('Username').fill(username);
 
   // Click on register button
-  await page.getByRole('button', { name: 'Next' }).click();
+  // await page.getByRole('button', { name: 'Next' }).click();
 
   await page
     .locator('div')

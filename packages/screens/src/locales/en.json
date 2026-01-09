@@ -403,30 +403,15 @@
       "newPhrase": {
         "title": "We'll create a new recovery phrase which will secure your account going forward."
       },
-      "writeDown": {
-        "title": "Write it down",
-        "description": "Write your recovery phrase on paper and store it in a secure location."
-      },
-      "keepSecret": {
-        "title": "Keep it secret",
-        "description": "Never share your recovery phrase with anyone or enter it on any website."
-      },
-      "noScreenshot": {
-        "title": "No screenshots",
-        "description": "Do not take screenshots or store your phrase digitally where it could be compromised."
-      },
       "warning": {
-        "title": "Important",
-        "description": "If you lose your recovery phrase, you will not be able to recover your wallet. Flow Wallet cannot help you recover it.",
         "prefix": "Please note: ",
-        "bloctoDescription": "After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations."
+        "description": "After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations."
       },
-      "continue": "Continue",
       "start": "Start",
       "notNow": "Not now"
     },
     "mnemonic": {
-      "navTitle": "Create account",
+      "navTitle": "Upgrade account",
       "title": "Recovery phrase",
       "description": "Write down these words in the right order and store them somewhere safe.",
       "clickToReveal": "Click to reveal phrase",
@@ -436,7 +421,6 @@
         "description": "If someone has your recovery phrase, They will have full control of your wallet."
       },
       "done": "Done",
-      "complete": "I've backed up my phrase",
       "error": {
         "title": "Invalid Recovery Phrase",
         "description": "The recovery phrase is missing or invalid. Please try again."

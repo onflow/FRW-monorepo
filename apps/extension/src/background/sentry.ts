@@ -29,6 +29,7 @@ const getIsolatedSentry = (): IsolatedSentry => {
     const sentryClient = new BrowserClient({
       ...SENTRY_BASIC_CONFIG,
       enableLogs: true,
+      sendDefaultPii: true,
       transport: makeFetchTransport,
       stackParser: defaultStackParser,
       integrations: [

@@ -138,7 +138,7 @@ export const Toast: React.FC<ToastProps> = ({
           </Text>
         )}
       </YStack>
-      {feedbackCallback && (
+      {feedbackCallback && type === 'error' && (
         <YStack
           onPress={feedbackCallback}
           cursor="pointer"

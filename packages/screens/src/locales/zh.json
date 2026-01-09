@@ -405,14 +405,13 @@
       },
       "warning": {
         "prefix": "请注意：",
-        "description": "如果您丢失了恢复短语，您将无法恢复您的钱包。Flow Wallet 无法帮助您恢复。",
-        "bloctoDescription": "此过程完成后，您来自Blocto的恢复套件将不再保护对您账户的访问。这是为了在Blocto停止运营后保护您。"
+        "description": "此过程完成后，您来自Blocto的恢复套件将不再保护对您账户的访问。这是为了在Blocto停止运营后保护您。"
       },
       "start": "开始",
       "notNow": "暂不"
     },
     "mnemonic": {
-      "navTitle": "创建账户",
+      "navTitle": "升级账户",
       "title": "恢复短语",
       "description": "按正确顺序写下这些单词，并将其存放在安全的地方。",
       "clickToReveal": "点击显示短语",

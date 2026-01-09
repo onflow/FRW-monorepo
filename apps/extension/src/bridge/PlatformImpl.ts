@@ -198,6 +198,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     }
   }
 
+  getMixpanelToken(): string {
+    return process.env.MIXPANEL_TOKEN || '';
+  }
+
   getApiEndpoint(): string {
     return process.env.API_BASE_URL || '';
   }

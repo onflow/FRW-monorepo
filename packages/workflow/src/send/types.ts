@@ -1,6 +1,7 @@
 /**
  * Payload interface for sending tokens or NFTs across Flow and EVM networks
  */
+import { type TransactionSession } from '@onflow/frw-analytics';
 export interface SendPayload {
   type: 'token' | 'nft'; // Asset type: token or NFT
   assetType: 'flow' | 'evm'; // Network type: Flow blockchain or EVM chain
@@ -27,6 +28,7 @@ export interface TransferExecutionHelpers {
   ethSign?: EthSignFn;
   network?: 'mainnet' | 'testnet' | string;
   gasPrice?: number | string | bigint;
+  session?: TransactionSession;
 }
 
 export interface TransferStrategy {

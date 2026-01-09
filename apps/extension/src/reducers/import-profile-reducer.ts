@@ -93,10 +93,8 @@ export const importProfileReducer = (state: ImportState, action: ImportAction): 
       return { ...state, phrase: action.payload };
     case 'GO_BACK': {
       switch (state.activeTab) {
-        case IMPORT_STEPS.PICK_USERNAME:
-          return { ...state, activeTab: IMPORT_STEPS.IMPORT };
         case IMPORT_STEPS.SET_PASSWORD:
-          return { ...state, activeTab: IMPORT_STEPS.PICK_USERNAME };
+          return { ...state, activeTab: IMPORT_STEPS.IMPORT };
         case IMPORT_STEPS.RECOVER_PASSWORD:
           return { ...state, activeTab: IMPORT_STEPS.IMPORT };
         default:

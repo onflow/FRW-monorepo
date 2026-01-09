@@ -1,9 +1,15 @@
+import {
+  createMixpanelAnalytics,
+  TransactionTracker,
+  type TransactionSession,
+} from '@onflow/frw-analytics';
 import { bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
   type CollectionModel,
   type NFTModel,
   type TokenModel,
+  addressType,
   FRWError,
   ErrorCode,
 } from '@onflow/frw-types';
@@ -375,8 +381,34 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     }),
 
+  // Create transaction tracker
+  createTransactionSession: async (config: any): Promise<TransactionSession | null> => {
+    const state = get();
+    const { transactionType } = state;
+    const analytics = await createMixpanelAnalytics(config);
+    logger.info('[SendStore] createTracker -- state:', state);
+
+    const transactionTracker = new TransactionTracker(analytics);
+
+    const { accounts } = await bridge.getWalletAccounts();
+    const selectedAccount = await bridge.getSelectedAccount();
+    const mainAccount =
+      selectedAccount.type === 'main'
+        ? selectedAccount
+        : accounts.find(
+            (account) =>
+              account.type === 'main' && account.address === selectedAccount.parentAddress
+          );
+    const session = transactionTracker?.createTransactionSession(
+      mainAccount!.address,
+      transactionType
+    );
+
+    return session;
+  },
+
   // Create send payload for transaction execution
-  createSendPayload: async (): Promise<SendPayload | null> => {
+  createSendPayload: async (session: TransactionSession | null): Promise<SendPayload | null> => {
     const state = get();
     logger.info('[SendStore] createSendPayload -- state:', state);
     const { fromAccount, toAccount, selectedToken, selectedNFTs, formData, transactionType } =
@@ -444,6 +476,10 @@ export const useSendStore = create<SendState>((set, get) => ({
         ? selectedToken?.contractAddress || selectedToken?.evmAddress || ''
         : selectedNFTs[0]?.contractAddress || selectedNFTs[0]?.evmAddress || '';
 
+      if (isTokenTransaction && selectedToken?.identifier?.includes('1654653399040a61.FlowToken')) {
+        contractAddress = '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52';
+      }
+
       // Fallback: resolve missing EVM token contract address from tokenStore cache
       if (isTokenTransaction && contractAddress === '' && selectedToken) {
         const network = bridge.getNetwork?.() || 'mainnet';
@@ -474,6 +510,10 @@ export const useSendStore = create<SendState>((set, get) => ({
           });
         }
       }
+
+      const senderType = addressType(fromAccount.address);
+      const receiverType = addressType(toAccount.address);
+      const isCrossVM = senderType !== receiverType;
 
       // For ERC1155 NFTs, we need to include the amount/quantity
       let nftAmount = '';
@@ -542,6 +582,8 @@ export const useSendStore = create<SendState>((set, get) => ({
         tokenContractAddr: contractAddress,
       };
 
+      session?.prepared(payload, { isCrossVM });
+
       logger.debug('[SendStore] Created send payload:', payload);
       return payload;
     } catch (error) {
@@ -554,10 +596,15 @@ export const useSendStore = create<SendState>((set, get) => ({
   executeTransaction: async (): Promise<any> => {
     const state = get();
     set({ isLoading: true, error: null });
+    // init mixpanel
+    const session = await state.createTransactionSession({
+      token: bridge.getMixpanelToken(),
+      debug: true,
+    });
 
     try {
       // Create payload
-      const payload = await state.createSendPayload();
+      const payload = await state.createSendPayload(session);
 
       if (!payload) {
         throw new Error('Failed to create transaction payload');
@@ -568,13 +615,36 @@ export const useSendStore = create<SendState>((set, get) => ({
         throw new Error('Invalid transaction payload');
       }
 
+      // todo tracker
+
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
       const helpers = {
         ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
+        session: session || undefined, // add session for trx
       };
 
+      // tracker interceptor
+      cadence.useRequestInterceptor(async (config: any) => {
+        console.log('tracker req interceptor', config);
+        // session?.signed(
+        //   config.cadence,
+        //   bridge.getSignType() as 'wallet' | 'keystore' | 'hardware' | 'unknown',
+        //   bridge.getSignKeyIndex()
+        // ); // todo sign type
+
+        return config;
+      });
+
+      // tracker interceptor
+      cadence.useResponseInterceptor(async (config: any, response: any) => {
+        console.log('tracker res interceptor', config, response);
+        session?.submitted(response);
+        return { config, response };
+      });
+
+      // todo tracker
       // Get cadence service and execute transaction
       const result = await SendTransaction(payload, cadence, helpers);
 
@@ -584,15 +654,23 @@ export const useSendStore = create<SendState>((set, get) => ({
       set({ isLoading: false });
       state.resetSendFlow();
 
+      // complete session
+      session?.completed(true, result);
+
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       logger.error('[SendStore] Transaction error:', error);
 
+      // failed session
+      session?.failed(errorMessage, '', 'preparation');
       set({
         isLoading: false,
         error: errorMessage,
       });
+
+      // complete session
+      session?.completed(false, '');
 
       throw new FRWError(ErrorCode.TRANSACTION_ERROR, errorMessage);
     }

@@ -552,8 +552,21 @@ enum ${moduleName} {
 
 /**
  * Generate Kotlin enum code
+ * For enums that need a routeName property (like InitialRoute), include it
  */
-function generateKotlinEnum(enumName, values) {
+function generateKotlinEnum(enumName, values, includeRouteName = false) {
+  if (includeRouteName) {
+    let code = `    enum class ${enumName}(val routeName: String) {\n`;
+    values.forEach((value, index) => {
+      // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+      const enumCase = value.toUpperCase().replace(/-/g, '_');
+      const comma = index < values.length - 1 ? ',' : '';
+      code += `        @SerializedName("${value}") ${enumCase}("${value}")${comma}\n`;
+    });
+    code += `    }\n\n`;
+    return code;
+  }
+
   let code = `    enum class ${enumName} {\n`;
   values.forEach((value, index) => {
     // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
@@ -621,15 +634,26 @@ class ${moduleName} {
   // Generate data classes and enums
   interfaces.forEach(iface => {
     if (iface.isEnum) {
-      // Generate enum
-      code += `    enum class ${iface.name} {\n`;
-      iface.enumValues.forEach((enumValue, index) => {
-        const comma = index < iface.enumValues.length - 1 ? ',' : '';
-        // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
-        const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
-        code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
-      });
-      code += `    }\n\n`;
+      // Generate enum - include routeName property for InitialRoute
+      const includeRouteName = iface.name === 'InitialRoute';
+      if (includeRouteName) {
+        code += `    enum class ${iface.name}(val routeName: String) {\n`;
+        iface.enumValues.forEach((enumValue, index) => {
+          const comma = index < iface.enumValues.length - 1 ? ',' : '';
+          const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
+          code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}("${enumValue.value}")${comma}\n`;
+        });
+        code += `    }\n\n`;
+      } else {
+        code += `    enum class ${iface.name} {\n`;
+        iface.enumValues.forEach((enumValue, index) => {
+          const comma = index < iface.enumValues.length - 1 ? ',' : '';
+          // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+          const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
+          code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
+        });
+        code += `    }\n\n`;
+      }
     } else {
       // Generate data class
       code += `    data class ${iface.name}(\n`;
