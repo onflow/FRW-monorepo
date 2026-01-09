@@ -7,7 +7,6 @@ export type {
   NewKeyInfo,
   BloctoDetectionResult,
   KeyRotationDependencies,
-  AccountKey,
 } from '@onflow/frw-types';
 import type { KeyRotationWorkflowParams, KeyRotationWorkflowResult } from '@onflow/frw-types';
 

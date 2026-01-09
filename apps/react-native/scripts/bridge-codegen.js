@@ -147,20 +147,6 @@ function parseTypeScriptInterfaces(content, filePath) {
     });
   }
 
-  // Match enum declarations in the main file
-  const enumRegex = /export\s+enum\s+(\w+)\s*\{([^}]+)\}/g;
-  while ((match = enumRegex.exec(content)) !== null) {
-    const enumName = match[1];
-    const enumBody = match[2];
-
-    const enumValues = parseEnumValues(enumBody);
-    interfaces.push({
-      name: enumName,
-      isEnum: true,
-      enumValues,
-    });
-  }
-
   // Also parse re-exported types
   const reexportedInterfaces = parseExportTypeStatements(content, filePath);
   interfaces.push(...reexportedInterfaces);
