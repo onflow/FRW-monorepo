@@ -144,7 +144,7 @@ export const AccountListing = ({
 
   // Check if key rotation/migration is needed for the active account
   const { detection: keyRotationDetection } = useKeyRotationCheck(activeAccount?.address);
-  const needsMigration = keyRotationDetection?.isBloctoKey === true;
+  const needsMigration = keyRotationDetection?.needRevoke === true;
 
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {

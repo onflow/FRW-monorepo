@@ -20,32 +20,47 @@ const KeyRotationView: React.FC = () => {
   const [newKeyInfo, setNewKeyInfo] = useState<NewKeyInfo | null>(null);
   const [rotationResult, setRotationResult] = useState<KeyRotationServiceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState<string | null>(null);
 
   const handleTipContinue = (keyInfo: NewKeyInfo) => {
     setNewKeyInfo(keyInfo);
-    setStep('mnemonic');
+    setStep('password');
   };
 
   const handleTipBack = () => {
     navigate(-1);
   };
 
+  const handlePasswordConfirm = async (confirmedPassword: string) => {
+    setPassword(confirmedPassword);
+    setStep('mnemonic');
+  };
+
+  const handlePasswordBack = () => {
+    setStep('tip');
+    setNewKeyInfo(null);
+    setPassword(null);
+  };
+
   const handleMnemonicComplete = async (result: KeyRotationServiceResult) => {
-    // Store the rotation result and move to password step
+    // Store the rotation result and complete the rotation using saved password
     setRotationResult(result);
-    setStep('password');
+    if (password) {
+      await handlePasswordSubmit(password);
+    } else {
+      setError('Password is missing');
+    }
   };
 
   const handleMnemonicBack = () => {
-    setStep('tip');
-    setNewKeyInfo(null);
+    setStep('password');
   };
 
   const handleMnemonicError = (errorMessage: string) => {
     setError(errorMessage);
   };
 
-  const handlePasswordSubmit = async (password: string) => {
+  const handlePasswordSubmit = async (passwordToUse: string) => {
     try {
       console.log('[KeyRotation] Starting password submit process');
       if (!newKeyInfo) {
@@ -116,11 +131,13 @@ const KeyRotationView: React.FC = () => {
       // Create the keyring with the new mnemonic
       // createKeyringWithMnemonics already clears the current keyring internally
       // We don't need to sign out from Firebase since we're the same user in the backend
-      console.log('[KeyRotation] Creating keyring with new mnemonic');
+      console.log(
+        '[KeyRotation] Creating keyring with new mnemonic cf8368d516d8949227092894f644c858c4db7d65142f4153dfb70e8865c7b28d'
+      );
       await wallet.createKeyringWithMnemonics(
         newKeyInfo.flowKey.publicKey,
         newKeyInfo.flowKey.signAlgo || 2,
-        password,
+        passwordToUse,
         newKeyInfo.seedphrase,
         FLOW_BIP44_PATH,
         ''
@@ -135,7 +152,7 @@ const KeyRotationView: React.FC = () => {
           });
 
           console.log('[KeyRotation] Calling removeKeyring with password and publicKey');
-          await wallet.removeKeyring(password, oldPublicKeyToRemove);
+          await wallet.removeKeyring(passwordToUse, oldPublicKeyToRemove);
           console.log('[KeyRotation] removeKeyring call completed');
 
           const OLD_KEY_TO_REMOVE_KEY = `keyRotation:oldKeyToRemove:${address}`;
@@ -153,6 +170,10 @@ const KeyRotationView: React.FC = () => {
       } else {
         console.warn('[KeyRotation] No old public key found to remove');
       }
+
+      await wallet.loginWithKeyring();
+      console.log('[KeyRotation] Refreshing wallets after keyring switch');
+      await wallet.refreshWallets();
 
       // Navigate to success or back
       console.log('[KeyRotation] Key rotation completed successfully');
@@ -175,13 +196,12 @@ const KeyRotationView: React.FC = () => {
     }
   };
 
-  const handlePasswordBack = () => {
-    setStep('mnemonic');
-    setRotationResult(null);
-  };
-
   if (step === 'tip') {
     return <KeyRotationTipScreen onContinue={handleTipContinue} onBack={handleTipBack} />;
+  }
+
+  if (step === 'password') {
+    return <SetPassword onSubmit={handlePasswordConfirm} isLogin={true} />;
   }
 
   if (step === 'mnemonic' && newKeyInfo) {
@@ -194,10 +214,6 @@ const KeyRotationView: React.FC = () => {
         onError={handleMnemonicError}
       />
     );
-  }
-
-  if (step === 'password') {
-    return <SetPassword onSubmit={handlePasswordSubmit} isLogin={true} />;
   }
 
   // Complete state - could show a success message or just navigate
