@@ -1,3 +1,5 @@
+import { Box, IconButton } from '@mui/material';
+import { ArrowBack } from '@onflow/frw-icons';
 import { KeyRotationTipScreen, KeyRotationMnemonicScreen } from '@onflow/frw-screens';
 import type { NewKeyInfo, KeyRotationServiceResult } from '@onflow/frw-types';
 import React, { useState } from 'react';
@@ -43,7 +45,6 @@ const KeyRotationView: React.FC = () => {
   };
 
   const handleMnemonicComplete = async (result: KeyRotationServiceResult) => {
-    // Store the rotation result and complete the rotation using saved password
     setRotationResult(result);
     if (password) {
       await handlePasswordSubmit(password);
@@ -62,78 +63,44 @@ const KeyRotationView: React.FC = () => {
 
   const handlePasswordSubmit = async (passwordToUse: string) => {
     try {
-      console.log('[KeyRotation] Starting password submit process');
       if (!newKeyInfo) {
         throw new Error('New key info is missing');
       }
 
-      // Get the old public key and username before signing out (needed for removal and new profile creation)
       let oldPublicKeyToRemove: string | null = null;
-      let currentUsername: string = address; // Default to address if we can't get username
+      let currentUsername: string = address;
 
-      // Get the old public key from the current keyring BEFORE any changes
-      // This is the most reliable way since we're still logged in with the old key
       try {
-        console.log('[KeyRotation] Getting current public key from keyring');
-        // Get the current public key directly as a hex string
         const currentPublicKey = await wallet.getCurrentPublicKey?.();
-        console.log('[KeyRotation] Current public key retrieved:', currentPublicKey);
 
         if (currentPublicKey && typeof currentPublicKey === 'string') {
           oldPublicKeyToRemove = currentPublicKey;
-          console.log(
-            '[KeyRotation] Retrieved current public key as old key to remove:',
-            oldPublicKeyToRemove
-          );
-        } else {
-          console.warn('[KeyRotation] Invalid public key format:', currentPublicKey);
         }
       } catch (err) {
-        console.error('[KeyRotation] Error getting current public key:', {
-          error: err,
-          message: err instanceof Error ? err.message : String(err),
-        });
+        // Empty catch block
       }
 
-      // Fallback: try to get from storage (stored during rotation)
       if (!oldPublicKeyToRemove) {
         try {
           const OLD_KEY_TO_REMOVE_KEY = `keyRotation:oldKeyToRemove:${address}`;
-          console.log('[KeyRotation] Looking for old key in storage:', OLD_KEY_TO_REMOVE_KEY);
           const storedOldKey = await getLocalData(OLD_KEY_TO_REMOVE_KEY);
           if (storedOldKey && typeof storedOldKey === 'string') {
             oldPublicKeyToRemove = storedOldKey;
-            console.log(
-              '[KeyRotation] Found old key to remove from storage:',
-              oldPublicKeyToRemove
-            );
           }
         } catch (err) {
-          console.error('[KeyRotation] Error getting old key from storage:', err);
+          // Empty catch block
         }
       }
 
-      if (!oldPublicKeyToRemove) {
-        console.warn('[KeyRotation] Could not determine old public key - removal will be skipped');
-      }
-
-      // Get the current username before signing out
       try {
         const userInfo = await wallet.getUserInfo();
         if (userInfo && userInfo.username) {
           currentUsername = userInfo.username;
-          console.log('[KeyRotation] Retrieved current username:', currentUsername);
         }
       } catch (err) {
-        console.warn('[KeyRotation] Could not get current username, using address:', err);
+        // Empty catch block
       }
 
-      // Create the keyring with the new mnemonic
-      // createKeyringWithMnemonics already clears the current keyring internally
-      // We don't need to sign out from Firebase since we're the same user in the backend
-      console.log(
-        '[KeyRotation] Creating keyring with new mnemonic cf8368d516d8949227092894f644c858c4db7d65142f4153dfb70e8865c7b28d'
-      );
       await wallet.createKeyringWithMnemonics(
         newKeyInfo.flowKey.publicKey,
         newKeyInfo.flowKey.signAlgo || 2,
@@ -143,42 +110,21 @@ const KeyRotationView: React.FC = () => {
         ''
       );
 
-      // After switching to the new key, remove the old keyring
       if (oldPublicKeyToRemove) {
         try {
-          console.log('[KeyRotation] Attempting to remove old keyring:', {
-            oldPublicKey: oldPublicKeyToRemove,
-            length: oldPublicKeyToRemove.length,
-          });
-
-          console.log('[KeyRotation] Calling removeKeyring with password and publicKey');
           await wallet.removeKeyring(passwordToUse, oldPublicKeyToRemove);
-          console.log('[KeyRotation] removeKeyring call completed');
 
           const OLD_KEY_TO_REMOVE_KEY = `keyRotation:oldKeyToRemove:${address}`;
           await removeLocalData(OLD_KEY_TO_REMOVE_KEY);
-          console.log('[KeyRotation] Old keyring removed successfully and local data cleared');
         } catch (err) {
-          console.error('[KeyRotation] Failed to remove old keyring:', {
-            error: err,
-            message: err instanceof Error ? err.message : String(err),
-            stack: err instanceof Error ? err.stack : undefined,
-            oldPublicKey: oldPublicKeyToRemove,
-          });
-          // Continue even if removal fails - the new key is already active
+          // Empty catch block
         }
-      } else {
-        console.warn('[KeyRotation] No old public key found to remove');
       }
 
       await wallet.loginWithKeyring();
-      console.log('[KeyRotation] Refreshing wallets after keyring switch');
       await wallet.refreshWallets();
 
-      // Navigate to success or back
-      console.log('[KeyRotation] Key rotation completed successfully');
       setStep('complete');
-      // Navigate back after a short delay to show success
       setTimeout(() => {
         navigate(-1);
       }, 2000);
@@ -186,37 +132,56 @@ const KeyRotationView: React.FC = () => {
       const errorMessage =
         err instanceof Error ? err.message : String(err) || 'Failed to complete key rotation';
       setError(errorMessage);
-      console.error('[KeyRotation] Error during completion:', {
-        error: err,
-        message: errorMessage,
-        stack: err instanceof Error ? err.stack : undefined,
-        errorString: String(err),
-        errorType: err?.constructor?.name,
-      });
     }
   };
 
+  const handleBackClick = () => {
+    navigate('/dashboard');
+  };
+
+  const Header = () => (
+    <Box sx={{ display: 'flex', position: 'relative', mb: '4px' }}>
+      <IconButton onClick={handleBackClick}>
+        {/* @ts-expect-error - ArrowBack type definition issue, but works at runtime */}
+        <ArrowBack color="rgba(255, 255, 255, 0.8)" />
+      </IconButton>
+      <Box sx={{ flexGrow: 1 }} />
+    </Box>
+  );
+
   if (step === 'tip') {
-    return <KeyRotationTipScreen onContinue={handleTipContinue} onBack={handleTipBack} />;
+    return (
+      <>
+        <Header />
+        <KeyRotationTipScreen onContinue={handleTipContinue} onBack={handleTipBack} />
+      </>
+    );
   }
 
   if (step === 'password') {
-    return <SetPassword onSubmit={handlePasswordConfirm} isLogin={true} />;
+    return (
+      <>
+        <Header />
+        <SetPassword onSubmit={handlePasswordConfirm} isLogin={true} />
+      </>
+    );
   }
 
   if (step === 'mnemonic' && newKeyInfo) {
     return (
-      <KeyRotationMnemonicScreen
-        newKeyInfo={newKeyInfo}
-        address={address}
-        onComplete={handleMnemonicComplete}
-        onBack={handleMnemonicBack}
-        onError={handleMnemonicError}
-      />
+      <>
+        <Header />
+        <KeyRotationMnemonicScreen
+          newKeyInfo={newKeyInfo}
+          address={address}
+          onComplete={handleMnemonicComplete}
+          onBack={handleMnemonicBack}
+          onError={handleMnemonicError}
+        />
+      </>
     );
   }
 
-  // Complete state - could show a success message or just navigate
   return null;
 };
 
