@@ -44,56 +44,55 @@ export function MnemonicGrid({
       position="relative"
     >
       {isRevealed ? (
-        <YStack gap="$5">
-          {/* Generate 6 rows with 2 columns each */}
-          {Array.from({ length: 6 }, (_, rowIndex) => (
-            <XStack key={rowIndex} gap="$10" justify="space-between">
-              {/* Left column */}
-              {words[rowIndex * 2] && (
-                <XStack gap="$2" items="center" flex={1}>
-                  <YStack
-                    width="$8"
-                    height="$8"
-                    bg="$bgGlass"
-                    rounded="$2"
-                    items="center"
-                    justify="center"
-                    shrink={0}
-                  >
-                    <Text fontSize="$5" color="$text">
-                      {rowIndex * 2 + 1}
-                    </Text>
-                  </YStack>
-                  <Text fontSize="$4" color="$text">
-                    {words[rowIndex * 2]}
+        <XStack gap="$10">
+          {/* Left column (1-6) */}
+          <YStack gap="$5" flex={1} minWidth={0}>
+            {words.slice(0, 6).map((word, index) => (
+              <XStack key={index} gap="$2" items="center" minWidth={0}>
+                <YStack
+                  width="$8"
+                  height="$8"
+                  bg="$bgGlass"
+                  rounded="$2"
+                  items="center"
+                  justify="center"
+                  shrink={0}
+                >
+                  <Text fontSize="$5" color="$text">
+                    {index + 1}
                   </Text>
-                </XStack>
-              )}
+                </YStack>
+                <Text fontSize="$4" color="$text" flexShrink={1} numberOfLines={1}>
+                  {word}
+                </Text>
+              </XStack>
+            ))}
+          </YStack>
 
-              {/* Right column */}
-              {words[rowIndex * 2 + 1] && (
-                <XStack gap="$2" items="center" flex={1}>
-                  <YStack
-                    width="$8"
-                    height="$8"
-                    bg="$bgGlass"
-                    rounded="$2"
-                    items="center"
-                    justify="center"
-                    shrink={0}
-                  >
-                    <Text fontSize="$5" color="$text">
-                      {rowIndex * 2 + 2}
-                    </Text>
-                  </YStack>
-                  <Text fontSize="$4" color="$text">
-                    {words[rowIndex * 2 + 1]}
+          {/* Right column (7-12) */}
+          <YStack gap="$5" flex={1} minWidth={0}>
+            {words.slice(6, 12).map((word, index) => (
+              <XStack key={index + 6} gap="$2" items="center" minWidth={0}>
+                <YStack
+                  width="$8"
+                  height="$8"
+                  bg="$bgGlass"
+                  rounded="$2"
+                  items="center"
+                  justify="center"
+                  shrink={0}
+                >
+                  <Text fontSize="$5" color="$text">
+                    {index + 7}
                   </Text>
-                </XStack>
-              )}
-            </XStack>
-          ))}
-        </YStack>
+                </YStack>
+                <Text fontSize="$4" color="$text" flexShrink={1} numberOfLines={1}>
+                  {word}
+                </Text>
+              </XStack>
+            ))}
+          </YStack>
+        </XStack>
       ) : (
         /* Click to reveal overlay */
         <YStack height={340} items="center" justify="center" cursor="pointer" onPress={onReveal}>
