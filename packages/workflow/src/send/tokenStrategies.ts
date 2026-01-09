@@ -521,11 +521,6 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
         );
       }
     } else {
-      // validate token contract address
-      if (!tokenContractAddr || !validateEvmAddress(tokenContractAddr)) {
-        throw new Error('invalid send evm transaction payload - invalid contract address');
-      }
-
       if (validateEvmAddress(receiver) && sender !== coaAddr) {
         // eoa as sender
         const callData = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
