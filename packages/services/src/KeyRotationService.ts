@@ -208,7 +208,6 @@ export class KeyRotationService {
 
     // Create signature data for the platform to sign
     const signatureData = await this.bridge.getJWT();
-
     const signature = await this.bridge.signRotationRequest(address, signatureData);
 
     // Prepare signatures array
