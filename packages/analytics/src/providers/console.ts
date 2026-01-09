@@ -1,5 +1,5 @@
-import { BaseAnalyticsProvider } from './base.js';
-import type { AnalyticsConfig, EventProperties, UserProperties } from '../types.js';
+import { BaseAnalyticsProvider } from './base';
+import type { AnalyticsConfig, EventProperties, UserProperties } from '../types';
 
 export class ConsoleProvider extends BaseAnalyticsProvider {
   private userId?: string;

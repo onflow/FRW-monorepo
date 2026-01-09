@@ -100,8 +100,14 @@ export { ShieldAnimation } from './components/ShieldAnimation';
 export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
 
-// Onboarding components
-export * from './components/onboarding';
+// Onboarding components (excluding WarningCard to avoid conflict with main WarningCard)
+export {
+  AccountCreationLoadingState,
+  OnboardingHeader,
+  BackupOptionCard,
+  ImportOptionCard,
+  RecoveryPhraseQuestion,
+} from './components/onboarding';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
