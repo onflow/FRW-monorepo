@@ -273,6 +273,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={SelectTokensScreen}
               options={{
                 headerTitle: t('navigation.send'),
+                headerLeft: () => null,
               }}
             />
             <Stack.Screen
@@ -326,6 +327,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="KeyRotationTip"
               options={{
                 headerTitle: '',
+                headerLeft: () => null,
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
