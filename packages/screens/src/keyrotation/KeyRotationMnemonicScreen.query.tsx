@@ -209,7 +209,7 @@ export function KeyRotationMnemonicScreen({
           <YStack flex={1} />
 
           {/* Done button - disabled until phrase is revealed */}
-          <YStack pb="$6">
+          <YStack py="$6">
             <Button
               variant="inverse"
               size="large"
