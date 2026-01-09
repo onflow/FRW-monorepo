@@ -52,7 +52,8 @@ const flowColors = {
   error10: 'rgba(240, 68, 56, 0.1)', // Error red 10%
 
   // Accent colors
-  accentEVM: '#627EEA', // EVM chip background color
+  accentEVM: '#627EEA', // EVM chip background color (COA - Cadence Owned Account)
+  accentEOA: '#FF8A00', // EOA chip background color (Externally Owned Account)
 
   // Essential grayscale (minimal set)
   white: '#ffffff', // used by surfaceLight1, textLight4, textDark1
@@ -66,6 +67,8 @@ const flowColors = {
   light25: 'rgba(255, 255, 255, 0.25)', // 25% white
   light15: 'rgba(255, 255, 255, 0.15)', // 15% white
   light10: 'rgba(255, 255, 255, 0.1)', // 10% white — same value used by darkBg1 and darkBorder1
+  light15: 'rgba(255, 255, 255, 0.15)', // 15% white
+  light50: 'rgba(255, 255, 255, 0.5)', // 50% white
   light5: 'rgba(255, 255, 255, 0.05)', // 5% white
 
   lightBg1: 'rgba(242, 242, 247, 1)',
@@ -82,6 +85,7 @@ const flowColors = {
   grayBg1: '#373737',
 
   darkBorder1: 'rgba(255, 255, 255, 0.1)',
+  light35: 'rgba(255, 255, 255, 0.35)', // 35% white
 
   // Shadow colors for light mode
   shadowLight: 'rgba(0, 0, 0, 0.1)', // alias of dark10 / lightBorder1
@@ -166,10 +170,12 @@ export const size = {
   '$3.5': 14,
   $4: 16,
   $true: 16,
+  '$4.25': 17, // For lineHeight in onboarding components
   '$4.5': 18,
   $5: 20,
   $6: 24,
   $7: 28,
+  $7m: 30, // Medium variant between $7 (28) and $8 (32) for onboarding text
   $8: 32,
   $9: 36,
   $10: 40,
@@ -202,6 +208,20 @@ export const size = {
   $47: 188,
   $48: 192,
   $49: 196,
+  $50: 200,
+  $51: 204,
+  $52: 208,
+  $53: 212,
+  $54: 216,
+  $55: 220,
+  $56: 224,
+  $57: 228,
+  $58: 232,
+  $59: 236,
+  $60: 240,
+  $61: 244,
+  $62: 248,
+  '$84.75': 339, // For AccountCreationLoadingState progress section width
 };
 
 // Space system (includes negative values)
@@ -256,12 +276,14 @@ export const radius = {
   true: 16,
   5: 20,
   6: 24,
+  '6.75': 27,
   7: 28,
   8: 32,
   9: 36,
   10: 40,
   11: 44,
   12: 48,
+  13: 54, // For BackupOptionCard recommended badge
 };
 
 // Create themes using createThemeBuilder
@@ -377,6 +399,7 @@ const themesBuilder = createThemeBuilder()
 
       // Accent colors
       accentEVM: flowColors.accentEVM, // $accentEVM
+      accentEOA: flowColors.accentEOA, // $accentEOA
 
       // Light accent shortcuts (for dark mode usage)
       light80: flowColors.light80, // $light80
@@ -391,6 +414,11 @@ const themesBuilder = createThemeBuilder()
       dark25: flowColors.dark25, // $dark25
       dark10: flowColors.dark10, // $dark10
       dark5: flowColors.dark5, // $dark5
+
+      // Theme-aware glassmorphic colors
+      bgGlass: 22, // $bgGlass -> palette[22] (light: black 25%, dark: white 10%)
+      borderGlass: 23, // $borderGlass -> palette[23] (light: black 10%, dark: white 35%)
+      iconGlass: 24, // $iconGlass -> palette[24] (light: black 80%, dark: white 50%)
 
       // Theme-aware subtle backgrounds via palette indices
       subtleBg: 13, // $subtleBg -> palette[13] (light: black 5%, dark: white 5%)

@@ -15,6 +15,8 @@ export interface LottieViewProps {
   enableMergePathsAndroidForKitKatAndAbove?: boolean;
   cacheComposition?: boolean;
   speed?: number;
+  /** Progress of the animation (0-1). When set, overrides autoPlay and loop. */
+  progress?: number;
   onAnimationFailure?: (error: unknown) => void;
   onAnimationLoaded?: () => void;
 }
@@ -30,6 +32,7 @@ const LottieView = React.forwardRef<RNAnimatedLottieView, LottieViewProps>(
       enableMergePathsAndroidForKitKatAndAbove = false,
       cacheComposition = true,
       speed = 1,
+      progress,
       onAnimationFailure,
       onAnimationLoaded,
     },
@@ -44,8 +47,9 @@ const LottieView = React.forwardRef<RNAnimatedLottieView, LottieViewProps>(
       <RNAnimatedLottieView
         ref={animationRef}
         source={source}
-        autoPlay={autoPlay}
-        loop={loop}
+        autoPlay={progress !== undefined ? false : autoPlay}
+        loop={progress !== undefined ? false : loop}
+        progress={progress}
         style={style}
         resizeMode={resizeMode}
         enableMergePathsAndroidForKitKatAndAbove={enableMergePathsAndroidForKitKatAndAbove}

@@ -98,7 +98,7 @@ export class WalletCoreProvider {
   /**
    * Restore HD wallet from mnemonic
    */
-  static async restoreHDWallet(mnemonic: string, password: string = ''): Promise<any> {
+  static async restoreHDWallet(mnemonic: string, passphrase: string = ''): Promise<HDWallet> {
     const core = await this.ensureInitialized();
 
     // Validate mnemonic first
@@ -107,7 +107,7 @@ export class WalletCoreProvider {
     }
 
     // Create wallet from mnemonic (based on HDWallet.test.ts)
-    const wallet = core.HDWallet.createWithMnemonic(mnemonic, password);
+    const wallet = core.HDWallet.createWithMnemonic(mnemonic, passphrase);
 
     return wallet;
   }

@@ -5,7 +5,7 @@ import webpack from 'webpack';
 // for extension local test, can build each time
 const config: webpack.Configuration = {
   mode: 'development',
-  devtool: 'inline-cheap-module-source-map',
+  devtool: 'cheap-module-source-map',
   watch: true,
   cache: {
     type: 'filesystem' as const,

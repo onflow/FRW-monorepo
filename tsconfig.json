@@ -16,7 +16,11 @@
       "@onflow/frw-workflow": ["./packages/workflow/src"]
     }
   },
-  "include": ["packages/*/src/**/*", "apps/*/src/**/*"],
+  "include": [
+    "packages/*/src/**/*",
+    "apps/*/src/**/*",
+    "packages/ui/stories/UpdateDialog.stories.tsx"
+  ],
   "exclude": [
     "node_modules",
     "dist",

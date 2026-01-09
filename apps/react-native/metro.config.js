@@ -1,4 +1,5 @@
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { createSerializer } = require('react-native-bundle-discovery');
 const path = require('path');
 
 /**
@@ -9,6 +10,11 @@ const path = require('path');
  */
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, '..', '..');
+
+const bundleSerializer = createSerializer({
+  includeCode: true, // Useful if you want to compare source/bundle code (but a report file will be larger)
+  projectRoot: monorepoRoot,
+});
 
 const config = {
   resolver: {
@@ -52,6 +58,9 @@ const config = {
   },
   // Watch the entire monorepo for changes
   watchFolders: [monorepoRoot],
+  serializer: {
+    customSerializer: bundleSerializer,
+  },
 };
 
 module.exports = mergeConfig(getDefaultConfig(projectRoot), config);

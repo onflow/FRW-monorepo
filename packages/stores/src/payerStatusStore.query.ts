@@ -68,8 +68,6 @@ export const payerStatusQueries = {
         throw new Error('Invalid payer status response format');
       }
 
-      logger.info('Extracted payer status data', { response });
-
       return response;
     } catch (error) {
       logger.error('Failed to fetch payer status', {

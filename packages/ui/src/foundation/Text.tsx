@@ -3,9 +3,10 @@ import { Text as TamaguiText } from 'tamagui';
 
 import type { TextProps } from '../types';
 
-interface UITextProps extends TextProps {
+export interface UITextProps extends TextProps {
   variant?: 'heading' | 'body' | 'caption' | 'label';
   weight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
+  children?: React.ReactNode;
 }
 
 export function Text({

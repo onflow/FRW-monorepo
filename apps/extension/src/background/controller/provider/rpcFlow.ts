@@ -4,6 +4,7 @@ import { permissionService } from '@/core/service';
 import { underline2Camelcase } from '@/core/utils';
 import { eventBus } from '@/extension-shared/messaging';
 import { EVENTS } from '@/shared/constant';
+import type { FlowContext, ProviderRequest } from '@/shared/types/provider-types';
 import { consoleLog } from '@/shared/utils';
 
 import notificationService from '../notification';
@@ -34,7 +35,7 @@ const flowContext = flow
       } catch (error) {
         // Catch any error and throw the custom error
         throw ethErrors.rpc.methodNotFound({
-          message: `method [${ctx.request.data.method}] doesn't have a corresponding handler`,
+          message: `method [${ctx.request.data.method}] doesn't have a corresponding handler, ${error}`,
           data: ctx.request.data,
         });
       }
@@ -51,6 +52,38 @@ const flowContext = flow
     } = ctx;
     consoleLog('flow - use #2 - check connect', mapMethod, origin, name, icon);
 
+    // Special case: privy doesnt send walletRequestPermissions, so we need to show the popup manually
+    const isBeezieRequest = origin === 'https://beezie.io' && mapMethod === 'ethRequestAccounts';
+
+    if (mapMethod === 'walletRequestPermissions' && !isBeezieRequest) {
+      ctx.request.requestedApproval = true;
+      // User rejection throws error 4001 automatically (EIP-2255 requires error 4001)
+      const approvalResult = await notificationService.requestApproval(
+        {
+          params: { origin, name, icon },
+          approvalComponent: 'EthConnect',
+        },
+        { height: 599 }
+      );
+
+      // Store approval result in context for controller to use
+      ctx.approvalRes = approvalResult;
+
+      const { defaultChain } = approvalResult;
+      // Store permission with current timestamp
+      const timestamp = Date.now();
+      permissionService.addConnectedSite(origin, name, icon, defaultChain);
+      // Update the site with timestamp and isConnected flag (site exists since we just added it)
+      const site = permissionService.getConnectedSite(origin);
+      if (site) {
+        permissionService.updateConnectSite(
+          origin,
+          { ...site, e: timestamp, isConnected: true },
+          true
+        );
+      }
+    }
+
     // check connect
     // TODO: create a whitelist and list of safe methods to remove the need for Reflect.getMetadata
     if (
@@ -64,9 +97,14 @@ const flowContext = flow
       mapMethod !== 'ethChainId' &&
       !Reflect.getMetadata('SAFE', providerController, mapMethod)
     ) {
-      if (!permissionService.hasPermission(origin) || !(await Wallet.isUnlocked())) {
+      // Always show EthConnect for beezie.io eth_requestAccounts, or if no permission/wallet locked
+      if (
+        isBeezieRequest ||
+        !permissionService.hasPermission(origin) ||
+        !(await Wallet.isUnlocked())
+      ) {
         ctx.request.requestedApproval = true;
-        const { defaultChain, signPermission } = await notificationService.requestApproval(
+        const { defaultChain } = await notificationService.requestApproval(
           {
             params: { origin, name, icon },
             approvalComponent: 'EthConnect',
@@ -88,12 +126,55 @@ const flowContext = flow
       },
       mapMethod,
     } = ctx;
-    consoleLog('flow - use #3 - check approval', mapMethod, origin, name, icon);
+    consoleLog('flow - use #3 - check approval', params, mapMethod, origin, name, icon);
 
-    const [approvalType, condition, { height = 599 } = {}] =
+    const [{ height = 599 } = {}] =
       Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
     if (mapMethod === 'ethSendTransaction' || mapMethod === 'personalSign') {
       ctx.request.requestedApproval = true;
+
+      // Check if message is too long and show special popup
+      const MAX_DATA_LENGTH = 30000;
+      let isMessageTooLong = false;
+      let rawMessage = '';
+
+      if (params && params[0]) {
+        if (typeof params[0] === 'string' && params[0].length > MAX_DATA_LENGTH) {
+          isMessageTooLong = true;
+          rawMessage = params[0];
+        } else if (
+          typeof params[0] === 'object' &&
+          params[0].data &&
+          typeof params[0].data === 'string' &&
+          params[0].data.length > MAX_DATA_LENGTH
+        ) {
+          isMessageTooLong = true;
+          rawMessage = params[0].data;
+        }
+      }
+
+      if (isMessageTooLong) {
+        const rawMessageLength = rawMessage.length;
+        const truncatedRawMessage = rawMessage.substring(0, MAX_DATA_LENGTH);
+        ctx.approvalRes = await notificationService.requestApproval(
+          {
+            approvalComponent: 'EthMessageTooLong',
+            params: {
+              method,
+              data: params,
+              session: { origin, name, icon },
+              rawMessage: truncatedRawMessage,
+              rawMessageLength: rawMessageLength,
+            },
+            origin,
+          },
+          { height }
+        );
+        // The approval will be rejected by the EthMessageTooLong component when user closes it
+        // No need to process further since message cannot be signed
+        return;
+      }
+
       ctx.approvalRes = await notificationService.requestApproval(
         {
           approvalComponent: 'EthConfirm',
@@ -146,7 +227,7 @@ const flowContext = flow
         }
         return result;
       })
-      .catch((e: any) => {
+      .catch((e) => {
         consoleLog('flow - process error', mapMethod, e);
 
         if (isSignApproval(approvalType)) {
@@ -182,8 +263,8 @@ const flowContext = flow
   })
   .callback();
 
-export default (request) => {
-  const ctx: any = { request: { ...request, requestedApproval: false } };
+export default (request: ProviderRequest) => {
+  const ctx: FlowContext = { request: { ...request, requestedApproval: false } };
   return flowContext(ctx).finally(() => {
     if (ctx.request.requestedApproval) {
       flow.requestedApproval = false;

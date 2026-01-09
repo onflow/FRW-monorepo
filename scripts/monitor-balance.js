@@ -3,268 +3,171 @@
 /**
  * Flow Account Balance Monitor Script
  *
- * Monitors multiple Flow accounts and sends Discord notifications
- * when any account balance falls below the configured threshold.
- *
- * Requires Node.js 18+ for native fetch support (using Node.js 22).
+ * Checks Flow account balances and sends a Discord notification if any fall
+ * below the configured threshold. Uses the `notify-discord` helper to send
+ * the message so the same code path works locally and in CI.
  */
 
-// Configuration
+const { spawn } = require('child_process');
+
 const FLOW_REST_API = 'https://rest-mainnet.onflow.org/v1/accounts';
 const FLOW_DECIMALS = 8;
-const FLOW_DIVISOR = Math.pow(10, FLOW_DECIMALS); // 100000000
+const FLOW_DIVISOR = 10 ** FLOW_DECIMALS;
 const DEFAULT_THRESHOLD = 500000000; // 5 FLOW
 
-/**
- * Parse addresses from environment variable
- * Supports multiple formats:
- * - Single: "0x1654653399040a61"
- * - Multiple: "0x1654653399040a61,0x2654653399040a62,0x3654653399040a63"
- * - With labels: "wallet1:0x1654653399040a61,wallet2:0x2654653399040a62,treasury:0x3654653399040a63"
- */
 function parseAddresses(addressesEnv) {
   if (!addressesEnv) {
     throw new Error('FLOW_ADDRESSES environment variable is required');
   }
 
-  const addresses = addressesEnv.split(',').map((addr) => {
-    const trimmed = addr.trim();
+  const addresses = addressesEnv.split(',').map((entry) => {
+    const trimmed = entry.trim();
+    if (!trimmed) {
+      throw new Error('Empty address entry in FLOW_ADDRESSES');
+    }
 
     if (trimmed.includes(':')) {
-      // Labeled format: "label:address"
-      const parts = trimmed.split(':');
-      if (parts.length !== 2) {
-        throw new Error(
-          `Invalid labeled address format: "${trimmed}". Expected format: "label:address"`
-        );
+      const [label, address] = trimmed.split(':').map((part) => part.trim());
+      if (!label) {
+        throw new Error(`Missing label in entry: "${trimmed}"`);
       }
-
-      const [label, address] = parts;
-      const cleanLabel = label.trim();
-      const cleanAddress = address.trim();
-
-      if (!cleanLabel) {
-        throw new Error(`Empty label in: "${trimmed}"`);
+      if (!address) {
+        throw new Error(`Missing address in entry: "${trimmed}"`);
       }
-
-      if (!cleanAddress) {
-        throw new Error(`Empty address in: "${trimmed}"`);
-      }
-
-      // Validate address format (Flow addresses should start with 0x)
-      if (!cleanAddress.startsWith('0x')) {
-        console.warn(`⚠️  Address "${cleanAddress}" doesn't start with 0x - this may cause issues`);
-      }
-
-      return { label: cleanLabel, address: cleanAddress };
-    } else {
-      // Plain address format
-      if (!trimmed) {
-        throw new Error('Empty address found in FLOW_ADDRESSES');
-      }
-
-      if (!trimmed.startsWith('0x')) {
-        console.warn(`⚠️  Address "${trimmed}" doesn't start with 0x - this may cause issues`);
-      }
-
-      return { label: trimmed, address: trimmed };
+      return { label, address };
     }
+
+    return { label: trimmed, address: trimmed };
   });
-
-  // Check for duplicate labels
-  const labels = addresses.map((addr) => addr.label);
-  const duplicateLabels = labels.filter((label, index) => labels.indexOf(label) !== index);
-  if (duplicateLabels.length > 0) {
-    throw new Error(`Duplicate labels found: ${[...new Set(duplicateLabels)].join(', ')}`);
-  }
-
-  // Check for duplicate addresses
-  const addressList = addresses.map((addr) => addr.address);
-  const duplicateAddresses = addressList.filter(
-    (address, index) => addressList.indexOf(address) !== index
-  );
-  if (duplicateAddresses.length > 0) {
-    throw new Error(`Duplicate addresses found: ${[...new Set(duplicateAddresses)].join(', ')}`);
-  }
 
   return addresses;
 }
 
-/**
- * Fetch account balance from Flow REST API
- */
 async function fetchBalance(address) {
-  try {
-    const url = `${FLOW_REST_API}/${address}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (data.balance === undefined || data.balance === null) {
-      throw new Error(`Invalid response: missing balance field`);
-    }
-
-    const rawBalance = parseInt(data.balance);
-    const flowBalance = rawBalance / FLOW_DIVISOR;
-
-    return {
-      address: data.address,
-      rawBalance,
-      flowBalance,
-      response: data,
-    };
-  } catch (error) {
-    throw new Error(`Failed to fetch balance for ${address}: ${error.message}`);
+  const response = await fetch(`${FLOW_REST_API}/${address}`);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
+  const data = await response.json();
+  if (data.balance === undefined || data.balance === null) {
+    throw new Error('Missing balance field in response');
+  }
+
+  const rawBalance = Number.parseInt(data.balance, 10);
+  return {
+    address,
+    rawBalance,
+    flowBalance: rawBalance / FLOW_DIVISOR,
+  };
 }
 
-/**
- * Send Discord notification
- */
-async function sendDiscordNotification(lowBalanceAccounts, threshold) {
-  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-
-  if (!webhookUrl) {
-    throw new Error('DISCORD_WEBHOOK_URL environment variable is required');
-  }
-
+function formatEmbed(lowAccounts, threshold) {
   const thresholdFlow = threshold / FLOW_DIVISOR;
-
-  // Create fields for each low balance account
-  const fields = lowBalanceAccounts.flatMap((account) => [
-    {
-      name: `💰 ${account.label}`,
-      value: `**${account.flowBalance.toFixed(8)} FLOW**\n[View on Flowscan](https://www.flowscan.io/account/${account.address})\n\`${account.address}\``,
-      inline: true,
-    },
-  ]);
-
-  // Add threshold field
-  fields.push({
+  const accountFields = lowAccounts.map((account) => ({
+    name: `💰 ${account.label}`,
+    value: `**${account.flowBalance.toFixed(8)} FLOW**\n[View on Flowscan](https://www.flowscan.io/account/${account.address})\n\`${account.address}\``,
+    inline: true,
+  }));
+  accountFields.push({
     name: '⚠️ Threshold',
     value: `${thresholdFlow.toFixed(2)} FLOW`,
     inline: true,
   });
-
-  const embed = {
-    title: '🚨 Flow Account Balance Alert',
-    description: `${lowBalanceAccounts.length} account(s) have balance below the configured threshold`,
-    color: 15158332, // Red color
-    fields,
-    timestamp: new Date().toISOString(),
-    footer: {
-      text: 'Flow Reference Wallet Balance Monitor',
-    },
-  };
-
-  const payload = {
-    embeds: [embed],
-  };
-
-  try {
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  return {
+    embeds: [
+      {
+        title: '🚨 Flow Account Balance Alert',
+        description: `${lowAccounts.length} account(s) are below the configured threshold of ${thresholdFlow.toFixed(
+          2
+        )} FLOW`,
+        color: 15158332,
+        fields: accountFields,
+        timestamp: new Date().toISOString(),
+        footer: { text: 'Flow Reference Wallet Balance Monitor' },
       },
-      body: JSON.stringify(payload),
+    ],
+  };
+}
+
+function sendDiscordNotification(payload, webhookUrl) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      'node',
+      [require.resolve('./notify-discord.js'), '--payload', JSON.stringify(payload)],
+      {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, DISCORD_WEBHOOK_URL: webhookUrl },
+      }
+    );
+
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
     });
 
-    if (response.status === 204) {
-      return 'Discord notification sent successfully';
-    } else {
-      const errorText = await response.text();
-      throw new Error(`Discord API returned ${response.status}: ${errorText}`);
-    }
-  } catch (error) {
-    throw new Error(`Failed to send Discord notification: ${error.message}`);
-  }
+    child.on('close', (code) => {
+      if (code === 0) {
+        if (stdout.trim()) {
+          console.log(stdout.trim());
+        }
+        resolve();
+      } else {
+        reject(
+          new Error(`notify-discord exited with code ${code}${stderr ? `\n${stderr.trim()}` : ''}`)
+        );
+      }
+    });
+  });
 }
 
-/**
- * Main monitoring function
- */
 async function monitorBalances() {
-  try {
-    console.log('🚀 Starting Flow balance monitoring...');
+  const { FLOW_ADDRESSES, BALANCE_THRESHOLD, DISCORD_WEBHOOK_URL } = process.env;
 
-    // Parse configuration
-    const addresses = parseAddresses(process.env.FLOW_ADDRESSES);
-    const threshold = parseInt(process.env.BALANCE_THRESHOLD || DEFAULT_THRESHOLD);
-    const thresholdFlow = threshold / FLOW_DIVISOR;
+  const addresses = parseAddresses(FLOW_ADDRESSES);
+  const threshold = Number.parseInt(BALANCE_THRESHOLD || DEFAULT_THRESHOLD, 10);
 
-    console.log(`📋 Monitoring ${addresses.length} addresses`);
-    console.log(`⚠️  Threshold: ${thresholdFlow} FLOW (${threshold} raw units)`);
-    console.log('');
+  console.log(`Monitoring ${addresses.length} account(s) with threshold ${threshold}`);
 
-    // Fetch all balances
-    const results = [];
+  const results = [];
 
-    for (const { label, address } of addresses) {
-      try {
-        console.log(`🔍 Checking ${label} (${address})...`);
-        const balance = await fetchBalance(address);
-
-        const result = {
-          label,
-          address: balance.address,
-          rawBalance: balance.rawBalance,
-          flowBalance: balance.flowBalance,
-          isLow: balance.rawBalance < threshold,
-        };
-
-        results.push(result);
-
-        const status = result.isLow ? '🚨 LOW' : '✅ OK';
-        console.log(`   ${status} ${result.flowBalance.toFixed(8)} FLOW`);
-      } catch (error) {
-        console.error(`❌ Error checking ${label} (${address}): ${error.message}`);
-        // Continue with other addresses even if one fails
-      }
+  for (const { label, address } of addresses) {
+    try {
+      const balance = await fetchBalance(address);
+      const isLow = balance.rawBalance < threshold;
+      console.log(
+        `${isLow ? '🚨' : '✅'} ${label} (${address}): ${balance.flowBalance.toFixed(8)} FLOW`
+      );
+      results.push({ ...balance, label, isLow });
+    } catch (error) {
+      console.error(`Failed to fetch balance for ${label} (${address}): ${error.message}`);
     }
-
-    console.log('');
-
-    // Check for low balances
-    const lowBalanceAccounts = results.filter((result) => result.isLow);
-
-    if (lowBalanceAccounts.length > 0) {
-      console.log(`🚨 Found ${lowBalanceAccounts.length} account(s) below threshold:`);
-
-      lowBalanceAccounts.forEach((account) => {
-        console.log(`   - ${account.label}: ${account.flowBalance.toFixed(8)} FLOW`);
-      });
-
-      try {
-        const message = await sendDiscordNotification(lowBalanceAccounts, threshold);
-        console.log(`✅ ${message}`);
-      } catch (error) {
-        console.error(`❌ Failed to send Discord notification: ${error.message}`);
-        process.exit(1);
-      }
-    } else {
-      console.log('✅ All accounts are above threshold - no notification needed');
-    }
-
-    // Summary
-    console.log('');
-    console.log('📊 Summary:');
-    console.log(`   Total accounts: ${results.length}`);
-    console.log(`   Above threshold: ${results.length - lowBalanceAccounts.length}`);
-    console.log(`   Below threshold: ${lowBalanceAccounts.length}`);
-  } catch (error) {
-    console.error(`❌ Monitoring failed: ${error.message}`);
-    process.exit(1);
   }
+
+  const lowAccounts = results.filter((result) => result.isLow);
+
+  if (lowAccounts.length === 0) {
+    console.log('All accounts above threshold; no notification sent.');
+    return;
+  }
+
+  if (!DISCORD_WEBHOOK_URL) {
+    throw new Error('DISCORD_WEBHOOK_URL environment variable is required to send alerts');
+  }
+
+  const payload = formatEmbed(lowAccounts, threshold);
+
+  await sendDiscordNotification(payload, DISCORD_WEBHOOK_URL);
 }
 
-// Run the monitor
 if (require.main === module) {
-  monitorBalances();
+  monitorBalances().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
 }
 
-module.exports = { monitorBalances, parseAddresses, fetchBalance };
+module.exports = { monitorBalances };

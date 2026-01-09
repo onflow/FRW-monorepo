@@ -124,6 +124,7 @@ export const PasswordInput = ({
         </Box>
       )}
       <Input
+        className="ignore-me sentry-ignore"
         type={isVisible ? 'text' : 'password'}
         value={value}
         inputProps={{

@@ -1,0 +1,53 @@
+{
+  "name": "@onflow/frw-migration",
+  "version": "0.0.1",
+  "description": "Package for flow wallet migration",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "source": "./src/index.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "pnpm build",
+    "lint": "eslint . --cache",
+    "lint:fix": "eslint . --cache --fix"
+  },
+  "exports": {
+    ".": {
+      "@onflow/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.2",
+    "@ethersproject/abi": "^5.8.0",
+    "@ethersproject/units": "^5.8.0",
+    "@onflow/frw-api": "workspace:*",
+    "@onflow/frw-types": "workspace:*",
+    "@onflow/frw-cadence": "workspace:*",
+    "@onflow/frw-utils": "workspace:*",
+    "@onflow/frw-workflow": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "vitest": "^3.2.4",
+    "dotenv": "^16.4.5",
+    "@onflow/fcl": "^1.13.1",
+    "@onflow/util-encode-key": "^1.2.4",
+    "elliptic": "^6.5.7",
+    "sha256": "^0.2.0",
+    "sha3": "^2.1.4"
+  }
+}

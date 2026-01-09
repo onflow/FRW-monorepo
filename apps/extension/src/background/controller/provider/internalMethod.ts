@@ -1,5 +1,7 @@
 import { keyringService, preferenceService } from '@/core/service';
 
+import providerController from './controller';
+
 const tabCheckin = ({
   data: {
     params: { origin, name, icon },
@@ -15,15 +17,14 @@ const getProviderState = async (req) => {
   } = req;
 
   // const chainEnum = permissionService.getWithoutUpdate(origin)?.chain;
-  const isUnlocked = keyringService.isUnlocked;
+  const isUnlocked = keyringService.isUnlocked();
 
   return {
-    chainId: 'ETH',
+    chainId: await providerController.ethChainId(req),
     isUnlocked,
-    // accounts: isUnlocked ? await providerController.ethAccounts(req) : [],
-    accounts: [],
-    // networkVersion: await providerController.netVersion(req),
-    networkVersion: [],
+    accounts: isUnlocked ? await providerController.ethAccounts(req) : [],
+    // accounts: [],
+    networkVersion: await providerController.netVersion(),
   };
 };
 

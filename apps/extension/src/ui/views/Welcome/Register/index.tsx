@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -7,12 +8,12 @@ import {
   INITIAL_REGISTER_STATE,
   registerReducer,
   type RegisterState,
+  type StepType,
   STEPS,
 } from '@/reducers';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
-import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
 import RepeatPhrase from '@/ui/components/LandingPages/RepeatPhrase';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
@@ -22,6 +23,7 @@ export const initRegisterState = (initialState: RegisterState): RegisterState =>
   return {
     ...initialState,
     mnemonic: bip39.generateMnemonic(),
+    nickname: generateRandomUsername(),
   };
 };
 
@@ -43,24 +45,70 @@ const Register = () => {
     checkWalletStatus();
   }, [usewallet]);
 
+  // Handle input data from import flow
+  useEffect(() => {
+    if (location.state?.isFromImport && location.state?.importData && location.state?.username) {
+      // Set the auto-generated username
+      dispatch({ type: 'SET_NICKNAME', payload: location.state.username });
+
+      // Skip all seed phrase steps and go directly to password
+      dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.PASSWORD });
+    }
+  }, [location.state]);
+
   const submitPassword = useCallback(
     async (newPassword: string) => {
       dispatch({ type: 'SET_PASSWORD', payload: newPassword });
-      // We're registering the new profile with the password, nickname, and mnemonic
-      await usewallet.registerNewProfile(nickname, newPassword, mnemonic);
 
-      // Get the proper username
-      const userInfo = await usewallet.getUserInfo();
-      dispatch({ type: 'SET_USERNAME', payload: userInfo.username });
+      try {
+        if (location.state?.isFromImport && location.state?.importData) {
+          // Coming from import flow - use the appropriate import method
+          const importData = location.state.importData;
 
-      // But after all this, we haven't updated loggedInAccounts so if we close the window before the account refreshes, we won't be able to login
-      dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP });
+          if (importData.type === 'mnemonic') {
+            if (!importData.mnemonic || importData.mnemonic.trim() === '') {
+              throw new Error('Mnemonic is empty or invalid');
+            }
+
+            // For "Register New Profile" flow, we should create a new account, not import an existing one
+            // The mnemonic will be used to generate a new Flow account
+            await usewallet.registerNewProfile(nickname, newPassword, importData.mnemonic);
+          } else if (importData.type === 'privateKey') {
+            // For "Register New Profile" flow with private key, create a new account
+            await usewallet.registerNewProfileUsingPrivateKey(
+              nickname,
+              newPassword,
+              importData.privateKey
+            );
+          }
+        } else {
+          // Normal registration flow - register with mnemonic
+          await usewallet.registerNewProfile(nickname, newPassword, mnemonic);
+        }
+
+        // Get the proper username
+        const userInfo = await usewallet.getUserInfo();
+        dispatch({ type: 'SET_USERNAME', payload: userInfo.username });
+
+        // But after all this, we haven't updated loggedInAccounts so if we close the window before the account refreshes, we won't be able to login
+        dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP });
+      } catch (error) {
+        console.error('Error during registration/import:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        // You might want to add error state management here
+        // For now, we'll let the error bubble up to be handled by the SetPassword component
+        throw error;
+      }
     },
-    [nickname, mnemonic, usewallet]
+    [nickname, mnemonic, usewallet, location.state]
   );
 
   const goBack = () => {
-    if (activeTab === STEPS.USERNAME || activeTab === STEPS.ALL_SET) {
+    if (location.state?.isFromImport) {
+      // Coming from import flow - go back to import page
+      navigate('/welcome/importprofile');
+    } else if (activeTab === STEPS.RECOVERY || activeTab === STEPS.ALL_SET) {
       navigate(-1);
     } else {
       dispatch({ type: 'GO_BACK' });
@@ -69,11 +117,18 @@ const Register = () => {
 
   // Only show the back button if there is a page to go back to
   const showBackButton =
-    activeTab !== STEPS.ALL_SET && (activeTab !== STEPS.USERNAME || location.key !== 'default');
+    activeTab !== STEPS.ALL_SET &&
+    (location.state?.isFromImport || activeTab !== STEPS.RECOVERY || location.key !== 'default');
+
+  // Calculate active index excluding USERNAME step
+  const stepValues = Object.values(STEPS).filter((step) => step !== STEPS.USERNAME) as Array<
+    Exclude<StepType, typeof STEPS.USERNAME>
+  >;
+  const activeIndex = stepValues.indexOf(activeTab as Exclude<StepType, typeof STEPS.USERNAME>);
 
   return (
     <LandingComponents
-      activeIndex={Object.values(STEPS).indexOf(activeTab)}
+      activeIndex={activeIndex}
       direction="right"
       showBackButton={showBackButton}
       onBack={goBack}
@@ -81,14 +136,6 @@ const Register = () => {
       showRegisterHeader={true}
     >
       <Box>
-        {activeTab === STEPS.USERNAME && (
-          <PickNickname
-            handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.RECOVERY })}
-            nickname={nickname}
-            setNickname={(name) => dispatch({ type: 'SET_NICKNAME', payload: name })}
-          />
-        )}
-
         {activeTab === STEPS.RECOVERY && (
           <RecoveryPhrase
             handleSwitchTab={() => dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.REPEAT })}

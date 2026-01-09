@@ -33,8 +33,10 @@ export {
   ToastProvider,
   useToast,
   usePlatformToast,
+  type ToastProviderProps,
   type ToastContextValue,
   type ToastState,
+  type ToastRenderer,
 } from './ToastContext';
 
 // Query Client Manager

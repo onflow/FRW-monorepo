@@ -14,6 +14,20 @@ const accounts = {
       privateKey: process.env.TEST_MAIN_ACCOUNT_KEY,
     },
   },
+  // main: {
+  //   address: process.env.TEST_MAIN_EOA_ACCOUNT_ADDRESS || '',
+  //   pub: process.env.TEST_MAIN_EOA_ACCOUNT_PUBKEY,
+  //   evmAddr: process.env.TEST_MAIN_EOA_ACCOUNT_COA,
+  //   eoaAddr: process.env.TEST_MAIN_EOA_ACCOUNT_EOA || '',
+  //   key: {
+  //     type: 'hex',
+  //     index: 0,
+  //     signatureAlgorithm: 'ECDSA_secp256k1',
+  //     hashAlgorithm: 'SHA2_256',
+  //     privateKey: process.env.TEST_MAIN_EOA_ACCOUNT_KEY,
+  //   },
+  //   mnemonic: process.env.TEST_MAIN_EOA_ACCOUNT_MNEMONIC,
+  // },
   child1: {
     address: process.env.TEST_CHILD_ACCOUNT_ONE_ADDR,
     key: process.env.CHILD_ACCOUNT_ONE_KEY || '',

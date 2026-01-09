@@ -37,14 +37,16 @@ export type UserWalletStore = {
   network: FlowNetwork;
   // The public key of the currently active profile
   currentPubkey: string;
+  // The uid of the currently active profile
+  uid: string;
 };
 
 export const getUserWalletsData = async (): Promise<UserWalletStore | undefined> => {
   return await getLocalData<UserWalletStore>(userWalletsKey);
 };
 // Profile Current Account - the user selected account on a given network
-export const activeAccountsKey = (network: string, publicKey: string) =>
-  `active-accounts-${network}-${publicKey}`;
+export const activeAccountsKey = (network: string, userId: string) =>
+  `active-accounts-${network}-${userId}`;
 
 export type ActiveAccountsStore = {
   // The main account address (Parent Flow Account)
@@ -58,20 +60,25 @@ export type ActiveAccountsStore = {
   currentAddress: WalletAddress | null;
 };
 
-export const getActiveAccountsData = async (network: string, publicKey: string) => {
+export const getActiveAccountsData = async (network: string, userId: string) => {
   const activeAccounts = await getLocalData<ActiveAccountsStore>(
-    activeAccountsKey(network, publicKey)
+    activeAccountsKey(network, userId)
   );
   return activeAccounts;
 };
 
-export const getActiveAccountsByUserWallet = async (): Promise<ActiveAccountsStore | undefined> => {
+export const getActiveAccountsByUserWallet = async (
+  userId: string
+): Promise<ActiveAccountsStore | undefined> => {
   const userWallet = await getUserWalletsData();
-  const activeAccounts = userWallet
-    ? await getLocalData<ActiveAccountsStore>(
-        activeAccountsKey(userWallet.network, userWallet.currentPubkey)
-      )
-    : undefined;
+  if (!userWallet) {
+    return undefined;
+  }
+
+  const activeAccounts = await getLocalData<ActiveAccountsStore>(
+    activeAccountsKey(userWallet.network, userId)
+  );
+  console.log('getActiveAccountsByUserWallet =====>', activeAccounts);
   return activeAccounts;
 };
 

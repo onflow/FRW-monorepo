@@ -16,6 +16,7 @@ export interface ConnectedSite {
   isTop: boolean;
   isConnected?: boolean;
   order?: number;
+  evmAddress?: string; // Selected EVM address for this connected site
 }
 
 interface OldCacheEntry {
@@ -124,16 +125,20 @@ class PermissionService {
     name: string,
     icon: string,
     defaultChain = MAINNET_CHAIN_ID,
-    isSigned = false
+    isSigned = false,
+    evmAddress?: string
   ) => {
     if (!this.lruCache) return;
+    const existingSite = this.lruCache.get(origin);
     this.lruCache.set(origin, {
       origin,
       name,
       icon,
       chain: defaultChain,
       isSigned,
-      isTop: false,
+      isTop: existingSite?.isTop || false,
+      order: existingSite?.order,
+      evmAddress, // Store the selected EVM address
     });
     this.sync();
   };

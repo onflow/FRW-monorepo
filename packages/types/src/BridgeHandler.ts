@@ -106,3 +106,22 @@ export function createTokenModelFromConfig(tokenConfig: any): TokenModel {
     website: tokenConfig.website,
   };
 }
+
+export function shouldHideAccount(account: WalletAccount): boolean {
+  if (account.type !== 'evm') {
+    // only hide COA accounts
+    return false;
+  }
+
+  const isBalanceZero =
+    !account.balance ||
+    account.balance === '0' ||
+    (!isNaN(parseFloat(account.balance)) && parseFloat(account.balance) === 0);
+
+  const isNftsZero =
+    !account.nfts ||
+    account.nfts === '0' ||
+    (!isNaN(parseFloat(account.nfts)) && parseFloat(account.nfts) === 0);
+
+  return isBalanceZero && isNftsZero;
+}

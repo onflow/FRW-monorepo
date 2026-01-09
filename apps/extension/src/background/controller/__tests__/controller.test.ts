@@ -61,6 +61,45 @@ vi.mock('../notification', () => ({
   },
 }));
 
+// Mock additional dependencies for controller
+vi.mock('@/background/controller/base', () => ({
+  default: class BaseController {},
+}));
+
+vi.mock('@/bridge/PlatformImpl', () => ({
+  initializePlatform: vi.fn().mockReturnValue({
+    setWalletController: vi.fn(),
+  }),
+}));
+
+vi.mock('@/core/service/wallet-manager', () => ({
+  default: {
+    getEOAAccountInfo: vi.fn().mockResolvedValue({
+      address: '0x000000000000000000000002433D0DD1e2D81b9F',
+      chain: '0x221', // TESTNET_CHAIN_ID
+      id: 1,
+      name: 'EVM Account',
+      icon: '🚀',
+      color: '#4CAF50',
+    }),
+  },
+}));
+
+// Mock external packages that might cause parsing issues
+vi.mock('@onflow/frw-context', () => ({
+  ServiceContext: {
+    isInitialized: vi.fn().mockReturnValue(true),
+    initialize: vi.fn(),
+  },
+}));
+
+vi.mock('@onflow/frw-wallet', () => ({
+  EthSigner: {
+    signTypedData: vi.fn(),
+    signPersonalMessage: vi.fn(),
+  },
+}));
+
 // 2. ADD THE FOLLOWING BLOCK of clean imports here:
 import * as ethUtil from 'ethereumjs-util';
 import { bufferToHex, ecrecover } from 'ethereumjs-util';
@@ -74,11 +113,7 @@ import { getAccountsByPublicKeyTuple, signWithKey } from '@/core/utils';
 // --- Other Specific Imports (ensure these remain as they were) ---
 
 // Change these imports to be named imports from '@onflow/frw-core/service'
-import {
-  HASH_ALGO_NUM_DEFAULT,
-  SIGN_ALGO_NUM_DEFAULT,
-  TESTNET_CHAIN_ID,
-} from '@/shared/constant';
+import { HASH_ALGO_NUM_DEFAULT, SIGN_ALGO_NUM_DEFAULT, TESTNET_CHAIN_ID } from '@/shared/constant';
 
 import notificationService from '../notification';
 import providerController from '../provider/controller';
@@ -311,6 +346,17 @@ describe('ProviderController - signTypeData (EIP-1271)', () => {
 
   it('should throw if EVM address does not match current wallet', async () => {
     const wrongEvmAddress = '0x1111111111111111111111111111111111111111';
+    // Import walletManager to configure the mock
+    const walletManager = (await import('@/core/service/wallet-manager')).default;
+    vi.mocked(walletManager.getEOAAccountInfo).mockResolvedValue({
+      address: mockEvmAddress, // Return the correct address so EOA check passes
+      chain: TESTNET_CHAIN_ID,
+      id: 1,
+      name: 'EVM Account',
+      icon: '🚀',
+      color: '#4CAF50',
+    });
+
     const request = {
       data: {
         method: 'eth_signTypedData_v4',
@@ -319,7 +365,7 @@ describe('ProviderController - signTypeData (EIP-1271)', () => {
       session: { origin: 'test', name: 'test', icon: '' },
     };
     await expect(providerController.signTypeData(request)).rejects.toThrow(
-      'Provided address does not match the current address'
+      'Provided address does not match the EOA address'
     );
   });
 });

@@ -1,4 +1,5 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useEffect, useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types';
@@ -35,7 +36,8 @@ const ImportTabs = ({
   setMnemonic,
   setPk,
   setAccounts,
-
+  pk,
+  mnemonic,
   goPassword,
   handleSwitchTab,
   setErrorMessage,
@@ -45,10 +47,13 @@ const ImportTabs = ({
   setPath,
   phrase,
   setPhrase,
+  onRegisterNewProfile,
 }: {
   setMnemonic: (mnemonic: string) => void;
   setPk: (pk: string) => void;
   setAccounts: (accounts: PublicKeyAccount[]) => void;
+  pk: string | null;
+  mnemonic: string | null;
   goPassword: () => void;
   handleSwitchTab: () => void;
   setErrorMessage: (errorMessage: string) => void;
@@ -58,12 +63,17 @@ const ImportTabs = ({
   setPath: (path: string) => void;
   phrase: string;
   setPhrase: (phrase: string) => void;
+  onRegisterNewProfile?: (data: {
+    importData: any;
+    username: string;
+    isFromImport: boolean;
+  }) => void;
 }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isSignLoading, setSignLoading] = useState(false);
-  const [addressFound, setAddressFound] = useState(true);
   const [newKey, setKeyNew] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
+  const [keystoreJson, setKeystoreJson] = useState<string>('');
   const usewallet = useWallet();
   useEffect(() => {
     const checkIsBooted = async () => {
@@ -78,23 +88,72 @@ const ImportTabs = ({
   };
 
   const handleImport = async (accounts: PublicKeyAccount[]) => {
+    if (!accounts || accounts.length === 0) {
+      console.error('No accounts provided to handleImport');
+      setErrorMessage('No accounts found. Please check your input and try again.');
+      setShowError(true);
+      return;
+    }
+
     setAccounts(accounts);
-    const result = await usewallet.openapi.checkImport(accounts[0].publicKey);
-    if (result.status === 409) {
-      // The account has been previously imported, so just retrieve the current user name
-      goPassword();
-    } else {
-      // The key has never been imported before, we need to set a username and confirm / create a password
-      if (!accounts[0].address) {
-        handleNotFoundPopup();
-        return;
+
+    try {
+      const result = await usewallet.openapi.checkImport(accounts[0].publicKey);
+      if (result.status === 409) {
+        // The account has been previously imported, so just retrieve the current user name
+        goPassword();
+      } else {
+        // The key has never been imported before, we need to set a username and confirm / create a password
+        if (!accounts[0].address) {
+          // No account found - directly navigate to register flow
+          handleRegisterNewProfile();
+          return;
+        }
+        handleSwitchTab();
       }
-      handleSwitchTab();
+    } catch (error) {
+      setErrorMessage('Error checking account import status. Please try again.');
+      setShowError(true);
     }
   };
 
-  const handleNotFoundPopup = async () => {
-    setAddressFound(!addressFound);
+  const handleRegisterNewProfile = () => {
+    // Generate random username (same as register flow)
+    const autoUsername = generateRandomUsername();
+
+    // Pass the import data and auto username to register page
+    let importData: any = null;
+
+    if (selectedTab === 2) {
+      // Recovery Phrase tab
+
+      importData = {
+        type: 'mnemonic',
+        mnemonic: mnemonic || '', // Use the actual mnemonic seed phrase
+        path: path,
+        passphrase: phrase, // This is the BIP39 passphrase
+      };
+    } else if (selectedTab === 3) {
+      // Private Key tab
+
+      importData = {
+        type: 'privateKey',
+        privateKey: pk || '',
+      };
+    } else if (selectedTab === 1) {
+      // Keystore tab
+
+      importData = {
+        type: 'privateKey',
+        privateKey: pk || '',
+      };
+    }
+
+    onRegisterNewProfile?.({
+      importData,
+      username: autoUsername,
+      isFromImport: true,
+    });
   };
 
   const sxStyles = {
@@ -168,15 +227,16 @@ const ImportTabs = ({
       </TabPanel>
       <TabPanel value={selectedTab} index={1}>
         <JsonImport
-          onOpen={handleNotFoundPopup}
+          onOpen={handleRegisterNewProfile}
           onImport={handleImport}
           setPk={setPk}
           isSignLoading={isSignLoading}
+          initialJson={keystoreJson}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={2}>
         <SeedPhraseImport
-          onOpen={handleNotFoundPopup}
+          onOpen={handleRegisterNewProfile}
           onImport={handleImport}
           setMnemonic={setMnemonic}
           isSignLoading={isSignLoading}
@@ -188,26 +248,20 @@ const ImportTabs = ({
       </TabPanel>
       <TabPanel value={selectedTab} index={3}>
         <KeyImport
-          onOpen={handleNotFoundPopup}
+          onOpen={handleRegisterNewProfile}
           onImport={handleImport}
           setPk={setPk}
           isSignLoading={isSignLoading}
+          onSwitchToKeystoreTab={() => setSelectedTab(1)}
+          onSetKeystoreJson={(json) => setKeystoreJson(json)}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={4}>
         <MobileAppImportSteps isLogin={isLogin} />
       </TabPanel>
-      {!addressFound && (
-        <ErrorModel
-          isOpen={setAddressFound}
-          onOpenChange={setAddressFound}
-          errorName={chrome.i18n.getMessage('No_Account_found')}
-          errorMessage={chrome.i18n.getMessage('We_cant_find')}
-        />
-      )}
       {!newKey && (
         <ErrorModel
-          isOpen={setKeyNew}
+          isOpen={!newKey}
           onOpenChange={setKeyNew}
           errorName={chrome.i18n.getMessage('Publickey_already_exist')}
           errorMessage={chrome.i18n.getMessage('Please_import_or_register_a_new_key')}

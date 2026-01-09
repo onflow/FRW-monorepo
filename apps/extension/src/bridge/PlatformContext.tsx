@@ -10,6 +10,7 @@ import { getCachedData } from '@/data-model/cache-data-access';
 import { userInfoCachekey, getCachedMainAccounts } from '@/data-model/cache-data-keys';
 import { KEYRING_STATE_V3_KEY } from '@/data-model/local-data-keys';
 import { getLocalData } from '@/data-model/storage';
+import { type KeyringStateV3, type VaultEntryV3 } from '@/shared/types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useUserWallets } from '@/ui/hooks/use-account-hooks';
@@ -317,9 +318,9 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
           const profileUserInfo = (await getCachedData(userInfoCachekey(profileId))) || {};
 
           // Get the public key for this profile from keyring
-          const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as any;
+          const keyringState = (await getLocalData(KEYRING_STATE_V3_KEY)) as KeyringStateV3 | null;
           const profileVaultEntry = keyringState?.vault?.find(
-            (entry: any) => entry.id === profileId
+            (entry: VaultEntryV3) => entry.id === profileId
           );
           const profilePublicKey = profileVaultEntry?.publicKey;
 
@@ -334,6 +335,28 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
           // Create accounts array for this profile
           const profileAccounts: any[] = [];
+
+          // Add EOA account at the top of each profile (only once per profile)
+          if (Array.isArray(profileMainAccounts) && profileMainAccounts.length > 0) {
+            const firstAccount = profileMainAccounts[0];
+            if (firstAccount.eoaAccount?.address) {
+              const eoaName = firstAccount.eoaAccount.name || 'EOA Account';
+              profileAccounts.push({
+                address: firstAccount.eoaAccount.address,
+                name: eoaName,
+                type: 'eoa',
+                balance: '0',
+                avatar: firstAccount.eoaAccount.icon || '',
+                emoji: firstAccount.eoaAccount.icon || '',
+                emojiInfo: {
+                  emoji: firstAccount.eoaAccount.icon || '',
+                  name: eoaName,
+                  color: firstAccount.eoaAccount.color || '#6B7280',
+                },
+                isActive: false,
+              });
+            }
+          }
 
           // Add main wallet accounts
           if (Array.isArray(profileMainAccounts) && profileMainAccounts.length > 0) {
@@ -353,7 +376,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
                 },
                 isActive: false, // Only current profile's main address is active
               });
-              if (account.evmAccount?.address) {
+              if (account.evmAccount?.address && account.evmAccount.hasAssets !== false) {
                 const evmName = account.evmAccount.name || 'EVM Account';
                 profileAccounts.push({
                   address: account.evmAccount.address,
@@ -606,11 +629,6 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       // Fallback: if platform doesn't have address but currentWallet does, use it
       if (!platformAddress && currentWallet?.address) {
         return currentWallet.address;
-      }
-
-      // Additional fallback: try to get from userWallets if available
-      if (!platformAddress && !currentWallet?.address && userWallets?.[0]?.address) {
-        return userWallets[0].address;
       }
 
       return platformAddress;

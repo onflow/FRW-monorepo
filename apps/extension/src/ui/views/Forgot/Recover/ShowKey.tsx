@@ -120,6 +120,7 @@ const ShowKey = ({ handleSwitchTab, mnemonic }) => {
 
           {isCoverBlur && (
             <Box
+              className="sentry-mask"
               sx={{
                 position: 'absolute',
                 top: 0,

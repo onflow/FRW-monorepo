@@ -47,8 +47,11 @@ export * from './components/Badge';
 export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationAnimation';
+export * from './components/ShieldAnimation';
 export * from './components/ConfirmationDrawer';
+export * from './components/COAAddressCopyModal';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/EVMBadge';
 export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
 export * from './components/ExtensionHeader';
@@ -65,6 +68,7 @@ export * from './components/NFTSelectionBar';
 export * from './components/NFTSendPreview';
 export * from './components/PercentageChangeBadge';
 export * from './components/ProfileList';
+export * from './components/ProfileImportList';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
 export * from './components/RefreshView';
@@ -93,7 +97,11 @@ export * from './components/onboarding/TipCard';
 export * from './components/onboarding/MnemonicGrid';
 export { ShieldAnimation } from './components/ShieldAnimation';
 
+export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
+
+// Onboarding components
+export * from './components/onboarding';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
@@ -113,3 +121,6 @@ export * from './layout/OnboardingBackground';
 
 // Export types
 export * from './types';
+
+// Export assets
+export * from './assets/images';

@@ -6,7 +6,17 @@
 // Onboarding images
 export const onboardingImages = {
   fullBackgroundLight: require('./onboarding/full_bg_light.png'),
+  getStartedBackground: require('./onboarding/get_started_background.png'),
+  getStartedBackgroundLight: require('./onboarding/get_started_background_light.png'),
+  pushNotifications: require('./onboarding/push-notifications.png'),
+  cardBackground: require('./onboarding/card_bg.png'),
 };
 
 // Re-export for easier access
-export const { fullBackgroundLight } = onboardingImages;
+export const {
+  fullBackgroundLight,
+  getStartedBackground,
+  getStartedBackgroundLight,
+  pushNotifications,
+  cardBackground,
+} = onboardingImages;

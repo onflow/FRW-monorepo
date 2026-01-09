@@ -1,14 +1,16 @@
-import { Toast, type ToastProps } from '@onflow/frw-ui';
 import React, { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
 import type { ToastMessage } from './interfaces/ToastManager';
-
-// Import Toast component from UI package
 
 export interface ToastContextValue {
   show: (toast: ToastMessage) => void;
   hide: (id: string) => void;
   clear: () => void;
+}
+
+export interface ToastProviderProps {
+  children: ReactNode;
+  renderToast?: ToastRenderer;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -17,12 +19,17 @@ export interface ToastState {
   id: string;
   title: string;
   message: string;
-  type: ToastProps['type'];
+  type: NonNullable<ToastMessage['type']>;
   duration: number;
   visible: boolean;
 }
 
-export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export type ToastRenderer = (
+  toast: ToastState,
+  helpers: { hide: (id: string) => void }
+) => ReactNode;
+
+export const ToastProvider: React.FC<ToastProviderProps> = ({ children, renderToast }) => {
   const [toasts, setToasts] = useState<ToastState[]>([]);
 
   const show = useCallback((toast: ToastMessage) => {
@@ -76,17 +83,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     <ToastContext.Provider value={contextValue}>
       {children}
       {/* Render all toasts */}
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          title={toast.title}
-          visible={toast.visible}
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => hide(toast.id)}
-        />
-      ))}
+      {renderToast && toasts.map((toast) => renderToast(toast, { hide }))}
     </ToastContext.Provider>
   );
 };

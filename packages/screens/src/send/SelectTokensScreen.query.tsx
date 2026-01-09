@@ -9,7 +9,12 @@ import {
   accessibleAssetQueries,
   accessibleAssetHelpers,
 } from '@onflow/frw-stores';
-import { type CollectionModel, type TokenModel, type WalletAccount } from '@onflow/frw-types';
+import {
+  type CollectionModel,
+  type TokenModel,
+  type WalletAccount,
+  ScreenName,
+} from '@onflow/frw-types';
 import {
   AccountSelector,
   BackgroundWrapper,
@@ -226,7 +231,7 @@ export function SelectTokensScreen(): React.ReactElement {
     }
     setTransactionType('tokens');
     setCurrentStep('send-to');
-    navigation.navigate('SendTo');
+    navigation.navigate(ScreenName.SEND_TO);
   };
 
   // Handle NFT press
@@ -244,7 +249,7 @@ export function SelectTokensScreen(): React.ReactElement {
       }
     }
     setTransactionType('multiple-nfts');
-    navigation.navigate('NFTList', { collection, address: effectiveAddress });
+    navigation.navigate(ScreenName.NFT_LIST, { collection, address: effectiveAddress });
   };
 
   // Handle account selection from modal
