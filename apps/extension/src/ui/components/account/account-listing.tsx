@@ -137,6 +137,8 @@ export const AccountListing = ({
 }: AccountListingProps) => {
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
+  // Get the EOA account for the active account provided it's a main account
+  const eoaAccount = activeParentAccount?.eoaAccount;
   // Check if the EVM account is not valid
   const noEvmAccount = !evmAccount;
   const { pendingAccountTransactions } = useProfiles();
@@ -144,7 +146,7 @@ export const AccountListing = ({
 
   // Check if key rotation/migration is needed for the active account
   const { detection: keyRotationDetection } = useKeyRotationCheck(activeAccount?.address);
-  const needsMigration = keyRotationDetection?.needRevoke === true;
+  const needsMigration = keyRotationDetection?.needRevoke === true && !eoaAccount?.hasAssets;
 
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {

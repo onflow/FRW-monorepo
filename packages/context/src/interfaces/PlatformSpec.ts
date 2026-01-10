@@ -10,6 +10,7 @@ import type {
   WalletAccountsResponse,
   WalletProfilesResponse,
   KeyRotationDependencies,
+  BloctoDetectionResult,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -185,4 +186,12 @@ export interface PlatformSpec extends KeyRotationDependencies {
    * @returns Object with top, bottom, left, right inset values in pixels
    */
   getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number };
+
+  // Key rotation detection
+  /**
+   * Check if the current account requires key rotation
+   * @param address - Optional address to check. If not provided, uses the currently selected account address
+   * @returns Promise<BloctoDetectionResult> - Detection result indicating if rotation is needed
+   */
+  checkKeyRotationNeeded(address?: string): Promise<BloctoDetectionResult>;
 }

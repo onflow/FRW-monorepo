@@ -16,6 +16,7 @@ export const useKeyRotationCheck = (address?: string | null) => {
     if (!address) {
       setDetection({
         isBloctoKey: false,
+        needRevoke: false,
         fullAccountKeys: [],
         bloctoKeyIndexes: [],
       });

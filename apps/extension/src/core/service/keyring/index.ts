@@ -469,7 +469,6 @@ class KeyringService extends EventEmitter {
   }
 
   isUnlocked() {
-    console.log('isUnlocked', this.isBooted(), this.memStore.getState().isUnlocked);
     return this.isBooted() && this.memStore.getState().isUnlocked;
   }
 
