@@ -4,12 +4,10 @@ import React from 'react';
 import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, isCOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
-import { useKeyRotationCheck } from '@/ui/hooks/use-key-rotation-check';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
 import { AccountCard } from './account-card';
-import { AccountMigrationCard } from './account-migration-card';
 import { EnableEvmAccountCard } from './enable-evm-account-card';
 
 type AccountHierarchyProps = {
@@ -144,10 +142,6 @@ export const AccountListing = ({
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
 
-  // Check if key rotation/migration is needed for the active account
-  const { detection: keyRotationDetection } = useKeyRotationCheck(activeAccount?.address);
-  const needsMigration = keyRotationDetection?.needRevoke === true && !eoaAccount?.hasAssets;
-
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {
     if (!accountList) return [];
@@ -227,19 +221,8 @@ export const AccountListing = ({
             showLink={false}
             data-testid="active-account-card"
           />
-          {/* Show migration card if migration is needed */}
-          {needsMigration && activeAccount?.address && (
-            <AccountMigrationCard
-              showCard={false}
-              onMigrationClick={() => {
-                if (onMigrationClick && activeAccount?.address) {
-                  onMigrationClick(activeAccount.address);
-                }
-              }}
-            />
-          )}
-          {/* If the EVM account is not valid and migration is not needed, show the EnableEvmAccountCard */}
-          {noEvmAccount && !needsMigration && (
+          {/* If the EVM account is not valid, show the EnableEvmAccountCard */}
+          {noEvmAccount && (
             <EnableEvmAccountCard
               showCard={false}
               onEnableEvmClick={() =>

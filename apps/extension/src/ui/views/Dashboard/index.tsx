@@ -1,4 +1,4 @@
-import { Drawer } from '@mui/material';
+import { Button, Drawer, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 // import { UpdateDialog } from '@onflow/frw-ui';
 import { setUser, setExtras } from '@sentry/react';
@@ -10,6 +10,7 @@ import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { OnRampList } from '@/ui/components/TokenLists/OnRampList';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useKeyRotationCheck } from '@/ui/hooks/use-key-rotation-check';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -46,6 +47,8 @@ const Dashboard = () => {
     mainAddress,
     currentWallet,
     currentWalletList,
+    parentWallet,
+    eoaAccount,
   } = useProfiles();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +56,10 @@ const Dashboard = () => {
   const [showOnRamp, setShowOnRamp] = useState(location.search.includes('onramp'));
   const [showMoveBoard, setShowMoveBoard] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+
+  // Check if key rotation is needed for the active account
+  const { detection: keyRotationDetection } = useKeyRotationCheck(currentWallet?.address);
+  const needKeyRotation = keyRotationDetection?.needRevoke === true && !eoaAccount?.hasAssets;
 
   // Get version for popup title (patch version set to 0)
   const version = getVersionForPopup();
@@ -112,6 +119,75 @@ const Dashboard = () => {
           noAddress={noAddress}
           addressCreationInProgress={registerStatus}
         />
+        {/* Key Rotation Banner */}
+        {needKeyRotation && currentWallet?.address && (
+          <Box
+            sx={{
+              padding: '0 16px',
+              marginBottom: '8px',
+            }}
+          >
+            <Box
+              sx={{
+                backgroundColor: '#FF980029',
+                border: '1px solid #FF9800',
+                borderRadius: '16px',
+                padding: '12px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <Typography
+                sx={{
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  lineHeight: '1.5',
+                }}
+              >
+                {chrome.i18n.getMessage('Upgrade_your_account') || 'Upgrade your account'}
+              </Typography>
+              <Typography
+                sx={{
+                  color: '#BABABA',
+                  fontSize: '12px',
+                  lineHeight: '1.5',
+                }}
+              >
+                {chrome.i18n.getMessage('Flow_Wallet_needs_to_upgrade_security') ||
+                  'Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys.'}
+              </Typography>
+              <Button
+                variant="contained"
+                color="warning"
+                onClick={() => {
+                  if (currentWallet?.address) {
+                    navigate(`/dashboard/nested/keyrotation?address=${currentWallet.address}`);
+                  }
+                }}
+                sx={{
+                  marginTop: '4px',
+                  textTransform: 'capitalize',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  height: '40px',
+                  backgroundColor: '#FF9800',
+                  color: '#FFFFFF',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                    color: '#FF9800',
+                    border: '1px solid #FF9800',
+                  },
+                }}
+              >
+                {chrome.i18n.getMessage('Start') || 'Start'}
+              </Button>
+            </Box>
+          </Box>
+        )}
         {/* Button Row */}
         <ButtonRow
           onSendClick={() => navigate('/dashboard/select-tokens')}
