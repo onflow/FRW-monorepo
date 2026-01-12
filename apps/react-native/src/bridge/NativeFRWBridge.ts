@@ -1,5 +1,7 @@
 import type {
+  NewKeyInfo as SharedNewKeyInfo,
   RecentContactsResponse,
+  AccountKeySignature as SharedAccountKeySignature,
   Currency as SharedCurrency,
   EnvironmentVariables as SharedEnvironmentVariables,
   WalletAccount,
@@ -11,7 +13,7 @@ import { TurboModuleRegistry } from 'react-native';
 
 /**
  * Local interfaces for Codegen - must be defined in the same file
- * @see {@link SharedEnvironmentVariables} and {@link SharedCurrency} in @onflow/frw-types
+ * @see {@link SharedEnvironmentVariables}, {@link SharedCurrency}, and {@link SharedNewKeyInfo} in @onflow/frw-types
  *
  * React Native Codegen limitation: Cannot resolve imported types.
  * These must stay in sync with the source types manually.
@@ -28,11 +30,36 @@ interface Currency {
   rate: string;
 }
 
+interface AccountKey {
+  publicKey: string;
+  signAlgo?: number;
+  hashAlgo?: number;
+  weight?: number;
+}
+
+interface AccountKeySignature {
+  public_key: string;
+  hash_algo: number;
+  sign_algo: number;
+  signature: string;
+  sign_message?: string;
+  weight?: number;
+}
+
+interface NewKeyInfo {
+  seedphrase: string;
+  flowKey: AccountKey;
+}
+
 // Compile-time sync validation
 const _syncCheck: EnvironmentVariables = {} as SharedEnvironmentVariables;
 const _reverseSyncCheck: SharedEnvironmentVariables = {} as EnvironmentVariables;
 const _currencySyncCheck: Currency = {} as SharedCurrency;
 const _currencyReverseSyncCheck: SharedCurrency = {} as Currency;
+const _newKeyInfoSyncCheck: NewKeyInfo = {} as SharedNewKeyInfo;
+const _newKeyInfoReverseSyncCheck: SharedNewKeyInfo = {} as NewKeyInfo;
+const _accountKeySignatureSyncCheck: AccountKeySignature = {} as SharedAccountKeySignature;
+const _accountKeySignatureReverseSyncCheck: SharedAccountKeySignature = {} as AccountKeySignature;
 
 export interface Spec extends TurboModule {
   getSelectedAddress(): string | null;
@@ -78,6 +105,15 @@ export interface Spec extends TurboModule {
     message: string,
     args: ReadonlyArray<string>
   ): void;
+
+  // Key rotation methods
+  createSeedKey(strength: number): Promise<NewKeyInfo>;
+  saveNewKey(key: NewKeyInfo): Promise<void>;
+  removeOldKey(address: string, publicKey: string): Promise<void>;
+  signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature>;
+
+  // Screen security
+  setScreenSecurityLevel(level: 'normal' | 'secure'): void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeFRWBridge');

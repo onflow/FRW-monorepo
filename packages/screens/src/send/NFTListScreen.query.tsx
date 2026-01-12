@@ -12,8 +12,7 @@ import {
   Text,
   SearchBar,
 } from '@onflow/frw-ui';
-import { getNFTId, logger } from '@onflow/frw-utils';
-import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-workflow';
+import { getNFTId, logger, validateEvmAddress, validateFlowAddress } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
