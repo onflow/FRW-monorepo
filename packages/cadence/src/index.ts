@@ -70,3 +70,4 @@ export function createCadenceService(bridge: CadenceBridge): CadenceService {
 
 // Re-export types and services from generated file
 export { CadenceService, addresses, type Result } from './cadence.generated';
+export * as fcl from '@onflow/fcl';
