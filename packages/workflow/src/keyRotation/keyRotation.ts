@@ -1,3 +1,4 @@
+import { fcl } from '@onflow/frw-cadence';
 import { cadence } from '@onflow/frw-context';
 import { RotationError, RotationErrorType, type BloctoDetectionResult } from '@onflow/frw-types';
 
@@ -30,7 +31,17 @@ export class KeyRotation {
     }
 
     try {
-      return await cadence.addAndRevokeKeys([publicKey], revokeKeyIndexes);
+      const txId = await cadence.addAndRevokeKeys([publicKey], revokeKeyIndexes);
+      const sealed = await fcl.tx(txId).onceSealed();
+
+      if (sealed?.errorMessage) {
+        throw new RotationError({
+          type: RotationErrorType.CADENCE_TRANSACTION_FAILED,
+          message: sealed.errorMessage,
+        });
+      }
+
+      return txId;
     } catch (error) {
       if (error instanceof RotationError) {
         throw error;
