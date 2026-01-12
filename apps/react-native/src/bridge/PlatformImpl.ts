@@ -184,6 +184,24 @@ class PlatformImpl implements PlatformSpec {
   getCurrency(): Currency {
     return NativeFRWBridge.getCurrency();
   }
+
+  getMixpanelToken(): string {
+    try {
+      const env = NativeFRWBridge.getEnv();
+      return env.MIXPANEL_TOKEN || '';
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to get Mixpanel token from native bridge:', error);
+      return '';
+    }
+  }
+
+  getSignType(): string {
+    // Return sign type for analytics tracking
+    // On React Native, signing is handled natively - return 'wallet' as default
+    // The actual sign type tracking is done natively by MixpanelManager
+    return 'wallet';
+  }
+
   getPlatform(): Platform {
     return RNPlatform.OS === 'ios' ? Platform.iOS : Platform.Android;
   }
