@@ -434,6 +434,42 @@ export const tokenQueries = {
       return addressList.map((address) => [address, '0 FLOW'] as [string, string]);
     }
   },
+
+  // Batch fetch NFT counts for multiple addresses
+  fetchBatchNFTCounts: async (
+    addressList: string[],
+    network: string = 'mainnet'
+  ): Promise<Array<[string, number]>> => {
+    if (!addressList || addressList.length === 0) {
+      return [];
+    }
+
+    try {
+      // Fetch NFT collections for all addresses in parallel
+      const results = await Promise.allSettled(
+        addressList.map(async (address) => {
+          const collections = await tokenQueries.fetchNFTCollections(address, network);
+          const totalCount = collections.reduce(
+            (sum, collection) => sum + (collection.count || 0),
+            0
+          );
+          return [address, totalCount] as [string, number];
+        })
+      );
+
+      // Extract successful results and default failed ones to 0
+      return results.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        }
+        logger.warn('[TokenQuery] Failed to fetch NFT count for address:', addressList[index]);
+        return [addressList[index], 0] as [string, number];
+      });
+    } catch (error) {
+      logger.error('[TokenQuery] Failed to fetch batch NFT counts:', error);
+      return addressList.map((address) => [address, 0] as [string, number]);
+    }
+  },
 };
 
 interface TokenStoreActions {

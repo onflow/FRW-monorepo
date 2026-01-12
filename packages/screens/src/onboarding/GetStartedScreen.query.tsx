@@ -1,5 +1,5 @@
-import { bridge, logger, navigation } from '@onflow/frw-context';
-import { NativeScreenName, ScreenName } from '@onflow/frw-types';
+import { logger, navigation } from '@onflow/frw-context';
+import { ScreenName } from '@onflow/frw-types';
 import { YStack, Text, Button, OnboardingBackground, OnboardingHeader } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,13 +22,8 @@ export function GetStartedScreen(): React.ReactElement {
   };
 
   const handleSignIn = () => {
-    // Launch native Android wallet restore screen
-    // This goes to the existing native account recovery flow
-    if (bridge.launchNativeScreen) {
-      bridge.launchNativeScreen(NativeScreenName.WALLET_RESTORE);
-    } else {
-      logger.warn('launchNativeScreen not available on this platform');
-    }
+    // Navigate to Import Profile screen for wallet recovery
+    navigation.navigate(ScreenName.IMPORT_PROFILE);
   };
 
   const handleOpenTerms = async () => {

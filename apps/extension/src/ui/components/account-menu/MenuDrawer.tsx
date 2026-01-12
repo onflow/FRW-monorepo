@@ -109,6 +109,14 @@ const MenuDrawer = ({
     },
     [navigate, toggleDrawer]
   );
+
+  const handleMigrationClick = useCallback(
+    (address: string) => {
+      navigate(`/dashboard/nested/keyrotation?address=${address}`);
+      toggleDrawer();
+    },
+    [navigate, toggleDrawer]
+  );
   return (
     <Drawer
       open={drawer}
@@ -167,6 +175,7 @@ const MenuDrawer = ({
             activeParentAccount={activeParentAccount}
             onAccountClick={setActiveAccount}
             onEnableEvmClick={handleEnableEvmClick}
+            onMigrationClick={handleMigrationClick}
             showActiveAccount={true}
           />
         </Box>

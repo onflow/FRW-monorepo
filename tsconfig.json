@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@onflow/frw-analytics": ["./packages/analytics/src"],
       "@onflow/frw-api": ["./packages/api/src"],
       "@onflow/frw-cadence": ["./packages/cadence/src"],
       "@onflow/frw-context": ["./packages/context/src"],
@@ -16,7 +17,11 @@
       "@onflow/frw-workflow": ["./packages/workflow/src"]
     }
   },
-  "include": ["packages/*/src/**/*", "apps/*/src/**/*"],
+  "include": [
+    "packages/*/src/**/*",
+    "apps/*/src/**/*",
+    "packages/ui/stories/UpdateDialog.stories.tsx"
+  ],
   "exclude": [
     "node_modules",
     "dist",
@@ -26,6 +31,7 @@
     "**/build"
   ],
   "references": [
+    { "path": "./packages/analytics" },
     { "path": "./packages/types" },
     { "path": "./packages/utils" },
     { "path": "./packages/api" },

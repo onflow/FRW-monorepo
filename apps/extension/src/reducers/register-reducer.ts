@@ -19,7 +19,7 @@ export interface RegisterState {
 }
 
 export const INITIAL_REGISTER_STATE: RegisterState = {
-  activeTab: STEPS.USERNAME,
+  activeTab: STEPS.RECOVERY,
   nickname: '',
   username: undefined,
   password: undefined,
@@ -52,8 +52,6 @@ export const registerReducer = (state: RegisterState, action: RegisterAction): R
       return { ...state, isAddWallet: action.payload };
     case 'GO_BACK': {
       switch (state.activeTab) {
-        case STEPS.RECOVERY:
-          return { ...state, activeTab: STEPS.USERNAME };
         case STEPS.REPEAT:
           return { ...state, activeTab: STEPS.RECOVERY };
         case STEPS.PASSWORD:

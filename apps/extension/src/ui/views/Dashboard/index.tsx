@@ -1,6 +1,6 @@
-import { Drawer } from '@mui/material';
+import { Button, Drawer, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import { UpdateDialog } from '@onflow/frw-ui';
+// import { UpdateDialog } from '@onflow/frw-ui';
 import { setUser, setExtras } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -10,6 +10,7 @@ import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { OnRampList } from '@/ui/components/TokenLists/OnRampList';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useKeyRotationCheck } from '@/ui/hooks/use-key-rotation-check';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -46,6 +47,8 @@ const Dashboard = () => {
     mainAddress,
     currentWallet,
     currentWalletList,
+    parentWallet,
+    eoaAccount,
   } = useProfiles();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +56,10 @@ const Dashboard = () => {
   const [showOnRamp, setShowOnRamp] = useState(location.search.includes('onramp'));
   const [showMoveBoard, setShowMoveBoard] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+
+  // Check if key rotation is needed for the active account
+  const { detection: keyRotationDetection } = useKeyRotationCheck(currentWallet?.address);
+  const needKeyRotation = keyRotationDetection?.needRevoke === true && !eoaAccount?.hasAssets;
 
   // Get version for popup title (patch version set to 0)
   const version = getVersionForPopup();
@@ -70,7 +77,6 @@ const Dashboard = () => {
   const swapLink = getSwapLink(network, activeAccountType);
 
   useEffect(() => {
-    console.log(currentWallet, 'userInfo====', mainAddress, currentWalletList);
     if (userInfo && userInfo.id && currentWallet) {
       setUser({
         id: userInfo.id,
@@ -113,6 +119,75 @@ const Dashboard = () => {
           noAddress={noAddress}
           addressCreationInProgress={registerStatus}
         />
+        {/* Key Rotation Banner */}
+        {needKeyRotation && currentWallet?.address && (
+          <Box
+            sx={{
+              padding: '0 16px',
+              marginBottom: '8px',
+            }}
+          >
+            <Box
+              sx={{
+                backgroundColor: '#FF980029',
+                border: '1px solid #FF9800',
+                borderRadius: '16px',
+                padding: '12px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <Typography
+                sx={{
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  lineHeight: '1.5',
+                }}
+              >
+                {chrome.i18n.getMessage('Upgrade_your_account') || 'Upgrade your account'}
+              </Typography>
+              <Typography
+                sx={{
+                  color: '#BABABA',
+                  fontSize: '12px',
+                  lineHeight: '1.5',
+                }}
+              >
+                {chrome.i18n.getMessage('Flow_Wallet_needs_to_upgrade_security') ||
+                  'Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys.'}
+              </Typography>
+              <Button
+                variant="contained"
+                color="warning"
+                onClick={() => {
+                  if (currentWallet?.address) {
+                    navigate(`/dashboard/nested/keyrotation?address=${currentWallet.address}`);
+                  }
+                }}
+                sx={{
+                  marginTop: '4px',
+                  textTransform: 'capitalize',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  height: '40px',
+                  backgroundColor: '#FF9800',
+                  color: '#FFFFFF',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                    color: '#FF9800',
+                    border: '1px solid #FF9800',
+                  },
+                }}
+              >
+                {chrome.i18n.getMessage('Start') || 'Start'}
+              </Button>
+            </Box>
+          </Box>
+        )}
         {/* Button Row */}
         <ButtonRow
           onSendClick={() => navigate('/dashboard/select-tokens')}
@@ -154,44 +229,28 @@ const Dashboard = () => {
           />
         )}
       </div>
-      {/* One-time Popup Modal */}
-      <UpdateDialog
-        visible={showPopup}
+      {/* Dialog demo */}
+      {/* <UpdateDialog
+        visible={true}
         title={popupTitle}
         htmlContent={`
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              📣 What's new
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              If you already use an Ethereum wallet like MetaMask or Rainbow, you can import those same accounts to access everything on Flow.
-            </div>
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              🎮 Unlock Flow-native apps for your accounts
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              Get instant access to DeFi, marketplaces, and unique experiences on Flow.
-            </div>
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              ✨ Already using Flow Wallet?
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              You'll see a new "EVM" account alongside your Cadence accounts and your now-legacy "EVM Flow" account.
-            </div>
-            <div style="color: #FFFFFF; font-size: 14px; line-height: 1.5; font-weight: 600;">
-              💡 Why this matters
-            </div>
-            <div style="color: #BABABA; font-size: 12px; line-height: 1.5;">
-              Your EVM account is super-powered by Flow, unlocking gasless transactions, MEV-resilience and more.
-            </div>
-          </div>
-        `}
-        readMoreText="Read more"
-        readMoreUrl="https://wallet.flow.com/post/eoa-support-comes-to-flow-wallet-extension"
+<h2>whats new</h2>\n<blockquote>\n<p>1345 quote</p>\n</blockquote>\n<p><strong>this is a blob text</strong></p>\n<ul>\n<li>one\n<ul>\n<li>tow\n<ul>\n<li>three</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n<table>\n    <tr>\n        <td>Foo</td>\n    </tr>\n</table>\n<div >\n123\n</div>\n<hr>\n<div>\n\t<style>\n\t\t.main-title { font-size: 24px; font-weight: bold; } .info-section { display:\n\t\tflex; align-items: flex-start; margin-bottom: 20px; } .icon { width: 40px;\n\t\theight: 40px; background-color: #333; border-radius: 8px; display: flex;\n\t\tjustify-content: center; align-items: center; margin-right: 12px; flex-shrink:\n\t\t0; } .icon-content { font-size: 20px; color: #FFFFFF; } .info-text { flex:\n\t\t1; } .info-title { font-size: 16px; font-weight: bold; margin-bottom: 4px;\n\t\t} .info-desc { font-size: 14px; line-height: 1.4; }\n\t</style>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t��\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tWhat's new\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tIf you already use an Ethereum wallet like MetaMask or Rainbow, you can\n\t\t\t\timport those same accounts to access everything on Flow.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t😈\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tFlow-native apps for your accounts\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tGet instant access to DeFi, marketplaces, and experiences on Flow.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<img class=\"icon\" src=\"https://raw.githubusercontent.com/onflow/assets/refs/heads/main/tokens/registry/0x717dae2baf7656be9a9b01dee31d571a9d4c9579/logo.png\">\n\t\t</img>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tAlready using Flow Wallet?\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tYou’ll see a new &quot;EVM&quot; account alongside your Cadence accounts\n\t\t\t\tand your now legacy &quot;EVM Flow&quot; account.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t��\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tWhy this matters\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tYour new EVM account is super-powered by Flow, unlocking gasless transactions,\n\t\t\t\tMEV-resilience and more.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n<hr>\n<ul>\n<li>ui</li>\n<li>ux</li>\n<li>dev</li>\n</ul>\n
+`}
+        actions={[
+          {
+            text: 'Read More',
+            url: 'https://raw.githubusercontent.com/caosbad/logs/refs/heads/main/template.md',
+            type: 'external',
+            style: {
+              bgColor: '#007AFF',
+              textColor: '#FFFFFF',
+            },
+          },
+        ]}
         buttonText={chrome.i18n.getMessage('OK')}
         onButtonClick={handleClosePopup}
         onClose={handleClosePopup}
-      />
+      /> */}
     </Box>
   );
 };

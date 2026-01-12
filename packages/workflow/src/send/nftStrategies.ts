@@ -17,6 +17,7 @@ export class ChildToChildNftStrategy implements TransferStrategy {
 
   canHandle(payload: SendPayload): boolean {
     const { childAddrs, receiver, sender, type } = payload;
+
     return (
       type === 'nft' &&
       childAddrs.length > 0 &&
@@ -26,7 +27,22 @@ export class ChildToChildNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, sender, receiver, ids } = payload;
+    const { flowIdentifier, sender, receiver, ids, type, assetType, childAddrs, proposer, amount } =
+      payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'ChildToChildNftStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      amount: amount,
+      nftIds: ids.map((id) => String(id)),
+      childAddrs: childAddrs,
+      parentAddress: proposer,
+    });
+
     return await this.cadenceService.batchSendChildNftToChild(
       flowIdentifier,
       sender,
@@ -50,7 +66,31 @@ export class ChildToOthersNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { proposer, receiver, coaAddr, flowIdentifier, sender, ids } = payload;
+    const {
+      proposer,
+      receiver,
+      coaAddr,
+      flowIdentifier,
+      sender,
+      ids,
+      type,
+      assetType,
+      childAddrs,
+      amount,
+    } = payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'ChildToOthersNftStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      amount: amount,
+      nftIds: ids.map((id) => String(id)),
+      childAddrs: childAddrs,
+      parentAddress: proposer,
+    });
 
     // Send child NFT to parent account
     if (receiver === proposer) {
@@ -99,7 +139,22 @@ export class ParentToChildNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, receiver, ids } = payload;
+    const { flowIdentifier, receiver, ids, sender, type, assetType, childAddrs, proposer, amount } =
+      payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'ParentToChildNftStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      amount: amount,
+      nftIds: ids.map((id) => String(id)),
+      childAddrs: childAddrs,
+      parentAddress: proposer,
+    });
+
     return await this.cadenceService.batchBridgeChildNftFromEvmWithPayer(
       flowIdentifier,
       receiver,
@@ -126,7 +181,33 @@ export class EoaToChildNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, ids, receiver, tokenContractAddr, sender, coaAddr } = payload;
+    const {
+      flowIdentifier,
+      ids,
+      receiver,
+      tokenContractAddr,
+      sender,
+      coaAddr,
+      type,
+      assetType,
+      childAddrs,
+      proposer,
+      amount,
+    } = payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'EoaToChildNftStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      amount: amount,
+      nftIds: ids.map((id) => String(id)),
+      childAddrs: childAddrs,
+      parentAddress: proposer,
+    });
+
     const callDatas = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
     const rlpEncodeds: number[][] = [];
 
@@ -187,7 +268,18 @@ export class TopShotNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, receiver, ids } = payload;
+    const { flowIdentifier, receiver, ids, sender, type, assetType } = payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'TopShotNftStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      ids: ids.toString(),
+    });
+
     return await this.cadenceService.batchSendNbaNftV3(flowIdentifier, receiver, ids);
   }
 }
@@ -206,7 +298,18 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, receiver, ids } = payload;
+    const { flowIdentifier, receiver, ids, sender, type, assetType } = payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'FlowToFlowNftStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      ids: ids.toString(),
+    });
+
     return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
   }
 }
@@ -223,7 +326,18 @@ export class FlowToEvmNftBridgeStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, ids, receiver } = payload;
+    const { flowIdentifier, ids, receiver, sender, type, assetType } = payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'FlowToEvmNftBridgeStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      ids: ids.toString(),
+    });
+
     return await this.cadenceService.batchBridgeNftToEvmAddressWithPayer(
       flowIdentifier,
       ids,
@@ -246,7 +360,18 @@ export class EvmToFlowNftBridgeStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, ids, receiver } = payload;
+    const { flowIdentifier, ids, receiver, sender, type, assetType } = payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'EvmToFlowNftBridgeStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      ids: ids.toString(),
+    });
+
     return await this.cadenceService.batchBridgeNftFromEvmToFlowWithPayer(
       flowIdentifier,
       ids.map((id) => `${id}`),
@@ -269,7 +394,18 @@ export class EvmToFlowNftWithEoaBridgeStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { flowIdentifier, ids, receiver, tokenContractAddr, sender, coaAddr } = payload;
+    const { flowIdentifier, ids, receiver, tokenContractAddr, sender, coaAddr, type, assetType } =
+      payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'EvmToFlowNftWithEoaBridgeStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      ids: ids.toString(),
+    });
 
     const callDatas = encodeEvmContractCallData({ ...payload, receiver: coaAddr }, true);
     const rlpEncodeds: number[][] = [];
@@ -332,7 +468,19 @@ export class EvmToEvmNftStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { tokenContractAddr, ids } = payload;
+    const { tokenContractAddr, ids, sender, receiver, type, assetType, flowIdentifier, amount } =
+      payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'EvmToEvmNftStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      ids: ids.toString(),
+      amount,
+    });
 
     if (ids.length > 1) {
       const contracts = ids.map(() => tokenContractAddr);
@@ -372,7 +520,20 @@ export class EoaToEVMStrategy implements TransferStrategy {
   }
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
-    const { receiver, tokenContractAddr, sender, ids } = payload;
+    const { receiver, tokenContractAddr, sender, ids, type, assetType, flowIdentifier, amount } =
+      payload;
+
+    _helpers?.session?.strategySelected({
+      strategyName: 'EoaToEVMStrategy',
+      assetType: type,
+      networkType: assetType,
+      sender: sender,
+      receiver: receiver,
+      flowIdentifier: flowIdentifier,
+      ids: ids.toString(),
+      amount,
+    });
+
     const callDatas = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
     if (ids.length === 1) {
       const signedTx = await signLegacyEvmTransaction(

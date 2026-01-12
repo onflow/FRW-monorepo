@@ -9,6 +9,8 @@ import type {
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
+  KeyRotationDependencies,
+  BloctoDetectionResult,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -19,11 +21,14 @@ import type { Storage } from './storage/Storage';
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
+// Re-export KeyRotationDependencies from types package
+export type { KeyRotationDependencies, NewKeyInfo } from '@onflow/frw-types';
+
 /**
  * Platform specification interface for platform abstraction
  * This interface defines all methods that platform-specific implementations must implement
  */
-export interface PlatformSpec {
+export interface PlatformSpec extends KeyRotationDependencies {
   // Basic platform methods
   getSelectedAddress(): string | null;
   getDebugAddress(): string | null;
@@ -32,6 +37,8 @@ export interface PlatformSpec {
   getVersion(): string;
   getBuildNumber(): string;
   getLanguage(): string;
+  getMixpanelToken(): string;
+  getSignType(): string;
 
   getCurrency(): Currency;
   getPlatform(): Platform;
@@ -58,6 +65,21 @@ export interface PlatformSpec {
   getWalletProfiles(): Promise<WalletProfilesResponse>;
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrentUserUid?(): Promise<string | null>;
+
+  // Profile management
+  /**
+   * Get profiles stored locally but not yet logged in (for recovery flow)
+   * These are different from getWalletProfiles which returns currently logged-in profiles
+   * @returns Promise with recoverable profiles response
+   */
+  getRecoverableProfiles?(): Promise<WalletProfilesResponse>;
+
+  /**
+   * Switch to a previously signed-in profile by user ID
+   * @param userId - The unique identifier of the profile to switch to
+   * @returns Promise that resolves on success, rejects on failure
+   */
+  switchToProfile?(userId: string): Promise<void>;
 
   // Transaction monitoring
   listenTransaction?(
@@ -97,21 +119,51 @@ export interface PlatformSpec {
 
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
-  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
   /**
-   * Sends Flow public key to backend to create Flow + COA addresses on-chain
-   * @returns Transaction ID (txId) if successful, or the string "COA_ALREADY_EXISTS" if account already exists
-   * @example "a1b2c3d4..." // Transaction ID
-   * @example "COA_ALREADY_EXISTS" // Account already exists
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
    */
-  registerAccountWithBackend?(): Promise<string>;
+  getV4RegistrationSignatures?(mnemonic: string): Promise<{
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+  }>;
+  /**
+   * Register Secure Enclave account with backend and initiate on-chain account creation
+   * Returns early with txId so RN can monitor transaction status
+   * Does NOT wait for transaction to seal - RN will handle that
+   * @param username - Username for the account
+   * @returns Response with txId for RN to monitor (address may be null until tx seals)
+   */
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
+
+  /**
+   * Initialize Secure Enclave wallet after account creation transaction has sealed
+   * Called by RN after monitoring tx status confirms the transaction is sealed
+   * @param txId - Transaction ID from account creation
+   * @returns Promise that resolves when wallet is initialized
+   */
+  initSecureEnclaveWallet?(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }>;
 
   // Wallet initialization
+  /**
+   * Save mnemonic and initialize wallet after account creation transaction is sealed
+   * @param mnemonic - The recovery phrase to save securely
+   * @param customToken - Firebase custom token from registration
+   * @param txId - Transaction ID from account creation (used to init native wallet SDK)
+   * @param username - Username for the account
+   * @param evmAddress - Optional pre-derived EVM/EOA address for faster display
+   */
   saveMnemonic?(
     mnemonic: string,
     customToken: string,
     txId: string,
-    username: string
+    username: string,
+    evmAddress?: string
   ): Promise<void>;
 
   // Firebase authentication
@@ -126,4 +178,20 @@ export interface PlatformSpec {
 
   // Native screen navigation
   launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
+
+  // Safe area insets for cross-platform layout
+  /**
+   * Get device safe area insets for proper content positioning
+   * Returns the distance from the edges of the screen to the safe area
+   * @returns Object with top, bottom, left, right inset values in pixels
+   */
+  getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number };
+
+  // Key rotation detection
+  /**
+   * Check if the current account requires key rotation
+   * @param address - Optional address to check. If not provided, uses the currently selected account address
+   * @returns Promise<BloctoDetectionResult> - Detection result indicating if rotation is needed
+   */
+  checkKeyRotationNeeded(address?: string): Promise<BloctoDetectionResult>;
 }

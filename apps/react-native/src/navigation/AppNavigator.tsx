@@ -5,8 +5,22 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  // Key rotation screens
+  KeyRotationTipScreen,
+  KeyRotationMnemonicScreen,
   SendToScreen,
   ReceiveScreen,
+  // Onboarding screens
+  GetStartedScreen,
+  ProfileTypeSelectionScreen,
+  RecoveryPhraseScreen,
+  ConfirmRecoveryPhraseScreen,
+  SecureEnclaveScreen,
+  NotificationPreferencesScreen,
+  // Recovery screens
+  ImportProfileScreen,
+  ImportOtherMethodsScreen,
+  ConfirmImportProfileScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -14,8 +28,10 @@ import {
   createTokenModelFromConfig,
   createWalletAccountFromConfig,
   type InitialProps,
+  type NewKeyInfo,
   type NFTModel,
 } from '@onflow/frw-types';
+import { useTheme } from '@onflow/frw-ui';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -23,6 +39,7 @@ import { useTranslation } from 'react-i18next';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { platform } from '@/bridge/PlatformImpl';
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
@@ -55,6 +72,31 @@ export type RootStackParamList = {
     token?: Record<string, unknown>;
     selectedNFTs?: Record<string, unknown>[];
   };
+  // Onboarding screens
+  GetStarted: undefined;
+  ProfileTypeSelection: undefined;
+  RecoveryPhrase: undefined;
+  ConfirmRecoveryPhrase: {
+    mnemonic: string;
+    accountKey: {
+      publicKey: string;
+      signAlgo: number;
+      hashAlgo: number;
+    };
+  };
+  SecureEnclave: undefined;
+  NotificationPreferences: {
+    accountType?: string;
+  };
+  // Recovery screens
+  ImportProfile: undefined;
+  ImportOtherMethods: undefined;
+  ConfirmImportProfile: undefined;
+  // Key rotation screens
+  KeyRotationTip: undefined;
+  KeyRotationMnemonic: {
+    newKeyInfo: NewKeyInfo;
+  };
 };
 
 interface AppNavigatorProps {
@@ -69,6 +111,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { address, network, initialRoute, initialProps } = props;
   const navigationRef = useRef<any>(null);
 
@@ -181,7 +224,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
 
-  // Memoize navigation themes with hardcoded colors
+  // Memoize navigation themes using Tamagui theme values
   const navigationThemes = useMemo(() => {
     const customLightTheme = {
       ...DefaultTheme,
@@ -199,16 +242,16 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
       ...DarkTheme,
       colors: {
         ...DarkTheme.colors,
-        background: '#121212', // surfaceDarkDrawer color for dark mode
-        card: '#121212', // Use surfaceDarkDrawer for header background consistency
-        text: '#FFFFFF', // White text for dark mode
+        background: theme.background.val, // Use Tamagui background color
+        card: theme.background.val, // Use Tamagui background color for header
+        text: theme.text.val, // Use Tamagui text color
         border: '#B3B3B3', // Light gray border
-        primary: '#00EF8B', // Flow brand green
+        primary: theme.primary.val, // Use Tamagui primary color
       },
     };
 
     return { customLightTheme, customDarkTheme };
-  }, []);
+  }, [theme]);
 
   // Use the current theme based on dark mode state
   const currentTheme = isDarkMode
@@ -244,6 +287,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               // component={ErrorHandlingTest} // Uncomment for testing error handling
               options={{
                 headerTitle: t('navigation.selectTokens'),
+                headerLeft: () => null,
                 // headerTitle: 'Error Test', // Use with ErrorHandlingTest
               }}
             />
@@ -289,6 +333,172 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: t('navigation.receive'),
               }}
             />
+          </Stack.Group>
+
+          {/* Onboarding Screens Group */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '', // Ensure no back title text
+              headerBackTitleStyle: { fontSize: 0 }, // Additional fallback
+              headerBackVisible: false, // Hide default back button
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
+            }}
+          >
+            <Stack.Screen
+              name="GetStarted"
+              component={GetStartedScreen}
+              options={{
+                headerShown: false, // First screen doesn't need header
+              }}
+            />
+            <Stack.Screen
+              name="ProfileTypeSelection"
+              component={ProfileTypeSelectionScreen}
+              options={{
+                headerShown: false, // No header for profile type selection
+              }}
+            />
+            <Stack.Screen
+              name="RecoveryPhrase"
+              component={RecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.recoveryPhrase.navTitle'),
+                headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmRecoveryPhrase"
+              component={ConfirmRecoveryPhraseScreen}
+              options={{
+                headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
+                headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="SecureEnclave"
+              component={SecureEnclaveScreen}
+              options={{
+                headerTitle: '', // No title text
+                headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+              options={{
+                headerTitle: t('onboarding.notificationPreferences.headerTitle'),
+                headerLeft: () => null, // No back button
+                headerRight: () => null, // No close button
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            />
+          </Stack.Group>
+
+          {/* Recovery screens with headers */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          >
+            <Stack.Screen
+              name="ImportProfile"
+              component={ImportProfileScreen}
+              options={{
+                headerTitle: '',
+              }}
+            />
+            <Stack.Screen
+              name="ImportOtherMethods"
+              component={ImportOtherMethodsScreen}
+              options={{
+                headerTitle: t('onboarding.importProfile.title'),
+              }}
+            />
+            <Stack.Screen
+              name="ConfirmImportProfile"
+              component={ConfirmImportProfileScreen}
+              options={{
+                headerTitle: t('onboarding.importProfile.title'),
+              }}
+            />
+          </Stack.Group>
+
+          {/* Blocto key rotation screens */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          >
+            <Stack.Screen
+              name="KeyRotationTip"
+              options={{
+                headerTitle: '',
+                headerLeft: () => null,
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <KeyRotationTipScreen
+                  onContinue={newKeyInfo => {
+                    logger.info(
+                      '[KeyRotationTipScreen] Continue pressed - navigating to KeyRotationMnemonic'
+                    );
+                    nav.navigate('KeyRotationMnemonic', { newKeyInfo });
+                  }}
+                  onSkip={() => {
+                    logger.info('[KeyRotationTipScreen] Skip pressed');
+                    platform.closeRN();
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="KeyRotationMnemonic"
+              options={{
+                headerTitle: t('backup.mnemonic.navTitle', { defaultValue: 'Recovery Phrase' }),
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <KeyRotationMnemonicScreen
+                  newKeyInfo={route.params.newKeyInfo}
+                  address={address ?? ''}
+                  onComplete={() => {
+                    logger.info('[KeyRotationMnemonicScreen] Backup complete');
+                    platform.closeRN();
+                  }}
+                  onBack={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
           </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>

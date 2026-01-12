@@ -3,14 +3,23 @@
 const fs = require('fs');
 const path = require('path');
 
+const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
+const APP_ROOT = path.resolve(__dirname, '..');
+
 // Configuration
 const CONFIG = {
-  input: '../../packages/types/src/Bridge.ts',
-  output: {
-    swift: 'ios/FRW/Foundation/Bridge/BridgeModels.swift',
-    kotlin:
-      'android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/BridgeModels.kt',
-  },
+  sources: [
+    {
+      name: 'Bridge',
+      moduleName: 'RNBridge',
+      input: 'packages/types/src/Bridge.ts',
+      output: {
+        swift: 'ios/FRW/Foundation/Bridge/BridgeModels.swift',
+        kotlin:
+          'android/app/src/main/java/com/flowfoundation/wallet/reactnative/bridge/BridgeModels.kt',
+      },
+    },
+  ],
 };
 
 // Type mapping for different languages
@@ -141,6 +150,21 @@ function parseTypeScriptInterfaces(content, filePath) {
   // Also parse re-exported types
   const reexportedInterfaces = parseExportTypeStatements(content, filePath);
   interfaces.push(...reexportedInterfaces);
+
+  // Match enum declarations
+  const enumRegex = /export\s+enum\s+(\w+)\s*\{([\s\S]*?)\}/g;
+  let enumMatch;
+
+  while ((enumMatch = enumRegex.exec(content)) !== null) {
+    const enumName = enumMatch[1];
+    const enumValues = parseEnumValues(enumMatch[2]);
+
+    interfaces.push({
+      name: enumName,
+      isEnum: true,
+      enumValues,
+    });
+  }
 
   return interfaces;
 }
@@ -448,9 +472,9 @@ function generateSwiftEnum(enumName, values) {
 /**
  * Generate Swift struct code
  */
-function generateSwiftCode(interfaces) {
+function generateSwiftCode(interfaces, { moduleName, fileName }) {
   let code = `//
-//  BridgeModels.swift
+//  ${fileName}
 //  FRW
 //
 //  Auto-generated from TypeScript bridge types
@@ -459,7 +483,7 @@ function generateSwiftCode(interfaces) {
 
 import Foundation
 
-enum RNBridge {
+enum ${moduleName} {
 `;
 
   // Collect all enums first
@@ -528,8 +552,21 @@ enum RNBridge {
 
 /**
  * Generate Kotlin enum code
+ * For enums that need a routeName property (like InitialRoute), include it
  */
-function generateKotlinEnum(enumName, values) {
+function generateKotlinEnum(enumName, values, includeRouteName = false) {
+  if (includeRouteName) {
+    let code = `    enum class ${enumName}(val routeName: String) {\n`;
+    values.forEach((value, index) => {
+      // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+      const enumCase = value.toUpperCase().replace(/-/g, '_');
+      const comma = index < values.length - 1 ? ',' : '';
+      code += `        @SerializedName("${value}") ${enumCase}("${value}")${comma}\n`;
+    });
+    code += `    }\n\n`;
+    return code;
+  }
+
   let code = `    enum class ${enumName} {\n`;
   values.forEach((value, index) => {
     // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
@@ -544,9 +581,9 @@ function generateKotlinEnum(enumName, values) {
 /**
  * Generate Kotlin data class code
  */
-function generateKotlinCode(interfaces) {
+function generateKotlinCode(interfaces, { moduleName, fileName }) {
   let code = `//
-//  BridgeModels.kt
+//  ${fileName}
 //  
 //  Auto-generated from TypeScript bridge types
 //  Do not edit manually
@@ -556,7 +593,7 @@ package com.flowfoundation.wallet.reactnative.bridge
 
 import com.google.gson.annotations.SerializedName
 
-class RNBridge {
+class ${moduleName} {
 `;
 
   // Collect all enums first
@@ -597,15 +634,26 @@ class RNBridge {
   // Generate data classes and enums
   interfaces.forEach(iface => {
     if (iface.isEnum) {
-      // Generate enum
-      code += `    enum class ${iface.name} {\n`;
-      iface.enumValues.forEach((enumValue, index) => {
-        const comma = index < iface.enumValues.length - 1 ? ',' : '';
-        // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
-        const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
-        code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
-      });
-      code += `    }\n\n`;
+      // Generate enum - include routeName property for InitialRoute
+      const includeRouteName = iface.name === 'InitialRoute';
+      if (includeRouteName) {
+        code += `    enum class ${iface.name}(val routeName: String) {\n`;
+        iface.enumValues.forEach((enumValue, index) => {
+          const comma = index < iface.enumValues.length - 1 ? ',' : '';
+          const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
+          code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}("${enumValue.value}")${comma}\n`;
+        });
+        code += `    }\n\n`;
+      } else {
+        code += `    enum class ${iface.name} {\n`;
+        iface.enumValues.forEach((enumValue, index) => {
+          const comma = index < iface.enumValues.length - 1 ? ',' : '';
+          // Convert kebab-case to UPPER_SNAKE_CASE for Kotlin enum constants
+          const kotlinEnumCase = enumValue.key.toUpperCase().replace(/-/g, '_');
+          code += `        @SerializedName("${enumValue.value}") ${kotlinEnumCase}${comma}\n`;
+        });
+        code += `    }\n\n`;
+      }
     } else {
       // Generate data class
       code += `    data class ${iface.name}(\n`;
@@ -636,47 +684,45 @@ function generateBridgeModels() {
   try {
     console.log('🚀 Starting bridge model code generation...');
 
-    // Read TypeScript bridge types
-    const inputPath = path.resolve(CONFIG.input);
-    if (!fs.existsSync(inputPath)) {
-      throw new Error(`Input file not found: ${inputPath}`);
-    }
+    CONFIG.sources.forEach(source => {
+      const inputPath = path.resolve(REPO_ROOT, source.input);
+      if (!fs.existsSync(inputPath)) {
+        throw new Error(`Input file not found: ${inputPath}`);
+      }
 
-    const tsContent = fs.readFileSync(inputPath, 'utf8');
-    console.log(`📖 Reading TypeScript interfaces from ${CONFIG.input}`);
+      const tsContent = fs.readFileSync(inputPath, 'utf8');
+      console.log(`📖 Reading TypeScript interfaces from ${source.input}`);
 
-    // Parse interfaces
-    const interfaces = parseTypeScriptInterfaces(tsContent, inputPath);
-    console.log(
-      `✅ Parsed ${interfaces.length} interfaces:`,
-      interfaces.map(i => i.name).join(', ')
-    );
+      const interfaces = parseTypeScriptInterfaces(tsContent, inputPath);
+      console.log(
+        `✅ Parsed ${interfaces.length} interfaces (${source.name}):`,
+        interfaces.map(i => i.name).join(', ')
+      );
 
-    // Generate Swift code
-    const swiftCode = generateSwiftCode(interfaces);
-    const swiftOutputPath = path.resolve(CONFIG.output.swift);
+      const swiftOutputPath = path.resolve(APP_ROOT, source.output.swift);
+      const swiftCode = generateSwiftCode(interfaces, {
+        moduleName: source.moduleName,
+        fileName: path.basename(swiftOutputPath),
+      });
+      const swiftDir = path.dirname(swiftOutputPath);
+      if (!fs.existsSync(swiftDir)) {
+        fs.mkdirSync(swiftDir, { recursive: true });
+      }
+      fs.writeFileSync(swiftOutputPath, swiftCode);
+      console.log(`🍎 Generated Swift models: ${source.output.swift}`);
 
-    // Ensure Swift output directory exists
-    const swiftDir = path.dirname(swiftOutputPath);
-    if (!fs.existsSync(swiftDir)) {
-      fs.mkdirSync(swiftDir, { recursive: true });
-    }
-
-    fs.writeFileSync(swiftOutputPath, swiftCode);
-    console.log(`🍎 Generated Swift models: ${CONFIG.output.swift}`);
-
-    // Generate Kotlin code
-    const kotlinCode = generateKotlinCode(interfaces);
-    const kotlinOutputPath = path.resolve(CONFIG.output.kotlin);
-
-    // Ensure Kotlin output directory exists
-    const kotlinDir = path.dirname(kotlinOutputPath);
-    if (!fs.existsSync(kotlinDir)) {
-      fs.mkdirSync(kotlinDir, { recursive: true });
-    }
-
-    fs.writeFileSync(kotlinOutputPath, kotlinCode);
-    console.log(`🤖 Generated Kotlin models: ${CONFIG.output.kotlin}`);
+      const kotlinOutputPath = path.resolve(APP_ROOT, source.output.kotlin);
+      const kotlinCode = generateKotlinCode(interfaces, {
+        moduleName: source.moduleName,
+        fileName: path.basename(kotlinOutputPath),
+      });
+      const kotlinDir = path.dirname(kotlinOutputPath);
+      if (!fs.existsSync(kotlinDir)) {
+        fs.mkdirSync(kotlinDir, { recursive: true });
+      }
+      fs.writeFileSync(kotlinOutputPath, kotlinCode);
+      console.log(`🤖 Generated Kotlin models: ${source.output.kotlin}`);
+    });
 
     console.log('✨ Code generation completed successfully!');
   } catch (error) {

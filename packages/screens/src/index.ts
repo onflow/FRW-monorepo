@@ -10,10 +10,19 @@ export { ReceiveScreen } from './receive/ReceiveScreen.query';
 // Export onboarding screens
 export * from './onboarding';
 
+// Export recovery screens
+export * from './recovery';
+
 // Export error fallback components
 export { GenericErrorFallback } from './error/GenericErrorFallback';
 export { NetworkErrorFallback } from './error/NetworkErrorFallback';
 export { CriticalErrorFallback } from './error/CriticalErrorFallback';
+
+// Export key rotation screens
+export * from './keyrotation';
+
+// Export hooks
+export * from './hooks';
 
 // Export providers
 export * from './providers/QueryProvider';

@@ -49,6 +49,8 @@ export class TransferContext {
   /**
    * Execute the appropriate strategy for the given payload
    * @param payload - SendPayload to process
+   * @param tracker - TransactionTracker to use
+   * @param helpers - TransferExecutionHelpers to use
    * @returns Transaction result or null if no strategy can handle the payload
    */
   async execute(payload: SendPayload): Promise<any> {
