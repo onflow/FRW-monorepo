@@ -223,9 +223,18 @@ export class KeyRotationService {
     ];
 
     // Prepare backup info
+    /**
+     * Backup type:
+     * 0 - Google
+     * 1 - iCloud
+     * 2 - Manual
+     * 3 - Passkey
+     * 4 - Full Weight Seed Phrase
+     * 5 - Dropbox
+     */
     const backupInfo: forms_BackupInfo = {
-      name: `Key rotation ${new Date().toISOString()}`,
-      type: 1, // Default backup type
+      name: `Blocto Key rotation`,
+      type: 4, // Default backup type
     };
 
     logger.debug('KeyRotationService: Submitting to v3/signed API via Userv3GoService');
