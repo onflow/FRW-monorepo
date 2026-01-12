@@ -472,13 +472,10 @@ export const useSendStore = create<SendState>((set, get) => ({
         logger.error('[SendStore] No main account found');
         return null;
       }
-      let contractAddress = isTokenTransaction
-        ? selectedToken?.contractAddress || selectedToken?.evmAddress || ''
-        : selectedNFTs[0]?.contractAddress || selectedNFTs[0]?.evmAddress || '';
 
-      if (isTokenTransaction && selectedToken?.identifier?.includes('1654653399040a61.FlowToken')) {
-        contractAddress = '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52';
-      }
+      let contractAddress = isTokenTransaction
+        ? selectedToken?.evmAddress || ''
+        : selectedNFTs[0]?.evmAddress || '';
 
       // Fallback: resolve missing EVM token contract address from tokenStore cache
       if (isTokenTransaction && contractAddress === '' && selectedToken) {
@@ -501,12 +498,12 @@ export const useSendStore = create<SendState>((set, get) => ({
           return false;
         });
         if (matched) {
-          contractAddress = matched.contractAddress || matched.evmAddress || contractAddress;
+          contractAddress = matched.evmAddress || matched.contractAddress || '';
           logger.debug('[SendStore] Resolved missing token contract address from tokenStore', {
             matchedIdentifier: matched.identifier,
             matchedSymbol: matched.symbol,
             matchedContract: matched.contractAddress,
-            resolvedAddress: contractAddress,
+            resolvedAddress: matched.contractAddress,
           });
         }
       }
