@@ -203,7 +203,7 @@ class MixpanelService implements AnalyticsServiceInterface {
   }
   async trackPageView(pathname: string) {
     if (!this.token) return;
-    await this.track('$mp_web_page_view', {
+    await this.track('mp_web_page_view', {
       current_page_title: 'Flow Wallet',
       current_domain: 'flow-extension',
       current_url_path: pathname,
@@ -217,7 +217,7 @@ class MixpanelService implements AnalyticsServiceInterface {
     const deviceId = ids?.$device_id;
     if (!deviceId) return;
     if (deviceId === userId) return;
-    await this.track('$identify', {
+    await this.track('identify', {
       distinct_id: userId,
       $anon_distinct_id: deviceId,
       $name: name,
