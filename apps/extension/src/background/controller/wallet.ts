@@ -310,30 +310,12 @@ export class WalletController extends BaseController {
     const { normalizePublicKey } = await import('@onflow/frw-utils');
     const normalizedPublicKey = normalizePublicKey(publicKey);
 
-    console.log('[WalletController] removeKeyring called:', {
-      originalPublicKey: publicKey,
-      normalizedPublicKey,
-    });
-
     // Get all public keys to verify the keyring exists before removal
     const allPublicKeys = await keyringService.getAllPublicKeys();
-    console.log('[WalletController] All public keys before removal:', allPublicKeys);
-    console.log(
-      '[WalletController] Keyring exists for removal:',
-      allPublicKeys.includes(normalizedPublicKey)
-    );
 
     // Directly remove the keyring without switching profiles
     // This is used after key rotation when we've already switched to the new keyring
     await keyringService.removeKeyring(password, normalizedPublicKey);
-
-    // Verify removal
-    const remainingPublicKeys = await keyringService.getAllPublicKeys();
-    console.log('[WalletController] All public keys after removal:', remainingPublicKeys);
-    console.log(
-      '[WalletController] Keyring removed successfully:',
-      !remainingPublicKeys.includes(normalizedPublicKey)
-    );
   };
   /**
    * @deprecated  Checking accounts by user id is deprecated - use the public key or addressinstead
@@ -1341,7 +1323,7 @@ export class WalletController extends BaseController {
     try {
       // Check if keyring is unlocked
       if (!keyringService.isUnlocked()) {
-        console.warn('[WalletController] Keyring is locked, cannot remove old key');
+        consoleWarn('[WalletController] Keyring is locked, cannot remove old key');
         return;
       }
 
@@ -1352,12 +1334,8 @@ export class WalletController extends BaseController {
       // Get all public keys to verify the keyring exists
       const allPublicKeys = await keyringService.getAllPublicKeys();
       const keyringExists = allPublicKeys.includes(normalizedPublicKey);
-      console.log('[WalletController] Keyring exists:', keyringExists);
-      console.log('[WalletController] All public keys:', allPublicKeys);
-      console.log('[WalletController] Normalized public key:', normalizedPublicKey);
-      console.log('[WalletController] Original public key:', publicKey);
       if (!keyringExists) {
-        console.warn(
+        consoleWarn(
           `[WalletController] Keyring with public key ${normalizedPublicKey} not found, may have already been removed`,
           { originalPublicKey: publicKey, allPublicKeys }
         );
@@ -1368,12 +1346,8 @@ export class WalletController extends BaseController {
       // This will be removed in handlePasswordSubmit after the user enters their password
       const OLD_KEY_TO_REMOVE_KEY = `keyRotation:oldKeyToRemove:${address}`;
       await setLocalData(OLD_KEY_TO_REMOVE_KEY, normalizedPublicKey);
-
-      console.info(
-        `[WalletController] Old key ${normalizedPublicKey} marked for removal (will be removed after password entry)`
-      );
     } catch (error) {
-      console.error('[WalletController] Failed to remove old key:', error);
+      consoleError('[WalletController] Failed to remove old key:', error);
       // Don't throw - key removal is not critical for rotation success
     }
   };
@@ -1921,7 +1895,7 @@ export class WalletController extends BaseController {
 
       return idToken;
     } catch (error) {
-      console.error('Failed to get JWT token:', error);
+      consoleError('Failed to get JWT token:', error);
       throw error;
     }
   };
