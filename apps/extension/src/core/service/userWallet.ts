@@ -204,7 +204,7 @@ class UserWallet {
    */
   private initializeWalletManager = () => {
     walletManager.init().catch((error) => {
-      console.error('Failed to initialize wallet manager after public key change:', error);
+      consoleError('Failed to initialize wallet manager after public key change:', error);
     });
   };
 
@@ -721,7 +721,7 @@ class UserWallet {
 
       return enhancedMainAccounts;
     } catch (error) {
-      console.error('Failed to enhance main accounts with EOA:', error);
+      consoleError('Failed to enhance main accounts with EOA:', error);
       // Return original accounts if EOA enhancement fails
       return originalMainAccounts.map((account) => ({
         ...account,
@@ -1897,13 +1897,7 @@ const loadMainAccountsWithPubKey = async (
 
   // Helper function to check if COA account has assets
   const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {
-    console.log('[checkCoaHasAssets] Starting check for COA:', {
-      evmAddress,
-      network,
-    });
-
     if (!evmAddress) {
-      console.log('[checkCoaHasAssets] No evmAddress provided, returning false');
       return false;
     }
 
@@ -1911,25 +1905,19 @@ const loadMainAccountsWithPubKey = async (
       // Check Flow balance - always fetch fresh to ensure we have latest balance
       // Don't rely on cache as it might be stale after transactions
       const balanceKey = accountBalanceKey(network, evmAddress);
-      console.log('[checkCoaHasAssets] Balance key:', balanceKey);
 
       let balance: string | null | undefined;
 
       // Always fetch fresh balance for hasAssets check to avoid stale cache
       try {
-        console.log('[checkCoaHasAssets] Fetching fresh balance...');
         balance = await loadAccountBalance(network, evmAddress);
-        console.log('[checkCoaHasAssets] Fresh balance fetched:', balance);
         // Update cache with fresh balance
         if (balance) {
           await setCachedData(balanceKey, balance, 5_000);
-          console.log('[checkCoaHasAssets] Balance cached');
         }
       } catch (error) {
-        console.log('[checkCoaHasAssets] Error fetching balance, falling back to cache:', error);
         // Fallback to cache if fetch fails
         balance = await getCachedData<string>(balanceKey);
-        console.log('[checkCoaHasAssets] Cached balance:', balance);
         if (!balance) {
           consoleError('Error fetching Flow balance for COA:', error as Error);
         }
@@ -1937,51 +1925,31 @@ const loadMainAccountsWithPubKey = async (
 
       if (balance) {
         const balanceValue = parseFloat(balance);
-        console.log('[checkCoaHasAssets] Balance parsed:', {
-          raw: balance,
-          parsed: balanceValue,
-          hasBalance: balanceValue > 0,
-        });
         if (balanceValue > 0) {
-          console.log('[checkCoaHasAssets] Has Flow balance > 0, returning true');
           return true;
         }
-      } else {
-        console.log('[checkCoaHasAssets] No balance found');
       }
 
       // Check ERC20 tokens - trigger refresh to get latest data
       const tokenListKey = coinListKey(network, evmAddress, 'usd');
-      console.log('[checkCoaHasAssets] Token list key:', tokenListKey);
       triggerRefresh(tokenListKey);
       const cachedTokens =
         await getCachedData<Array<{ balance?: string; rawBalance?: string }>>(tokenListKey);
-      console.log('[checkCoaHasAssets] Cached tokens:', {
-        count: cachedTokens?.length || 0,
-        tokens: cachedTokens,
-      });
 
       if (cachedTokens && cachedTokens.length > 0) {
         const hasTokenBalance = cachedTokens.some((token) => {
           const balance = parseFloat(token.balance || token.rawBalance || '0');
           return balance > 0;
         });
-        console.log('[checkCoaHasAssets] Has token balance:', hasTokenBalance);
         if (hasTokenBalance) {
-          console.log('[checkCoaHasAssets] Has ERC20 tokens, returning true');
           return true;
         }
       }
 
       // Check NFTs - trigger refresh to get latest data
       const nftKey = evmNftCollectionsAndIdsKey(network, evmAddress);
-      console.log('[checkCoaHasAssets] NFT key:', nftKey);
       triggerRefresh(nftKey);
       const cachedNfts = await getCachedData<Array<{ count?: number; ids?: string[] }>>(nftKey);
-      console.log('[checkCoaHasAssets] Cached NFTs:', {
-        count: cachedNfts?.length || 0,
-        nfts: cachedNfts,
-      });
 
       if (cachedNfts && cachedNfts.length > 0) {
         const hasNfts = cachedNfts.some((collection) => {
@@ -1990,19 +1958,15 @@ const loadMainAccountsWithPubKey = async (
             (collection.ids && collection.ids.length > 0)
           );
         });
-        console.log('[checkCoaHasAssets] Has NFTs:', hasNfts);
         if (hasNfts) {
-          console.log('[checkCoaHasAssets] Has NFTs, returning true');
           return true;
         }
       }
 
       // If no assets data found, return false
-      console.log('[checkCoaHasAssets] No assets found, returning false');
       return false;
     } catch (error) {
       consoleError('Error checking COA assets:', error as Error);
-      console.log('[checkCoaHasAssets] Error caught, returning false:', error);
       return false;
     }
   };
@@ -2018,10 +1982,6 @@ const loadMainAccountsWithPubKey = async (
       let evmAccount: WalletAccount | undefined = undefined;
       if (rawEvmAccount?.address) {
         const hasAssets = await checkCoaHasAssets(rawEvmAccount.address);
-        console.log('[loadMainAccountsWithPubKey] COA hasAssets result:', {
-          address: rawEvmAccount.address,
-          hasAssets,
-        });
 
         evmAccount = rawEvmAccount;
         if (hasAssets) {
@@ -2029,10 +1989,6 @@ const loadMainAccountsWithPubKey = async (
         } else {
           evmAccount.hasAssets = false;
         }
-        console.log('[loadMainAccountsWithPubKey] Final evmAccount:', {
-          address: evmAccount.address,
-          hasAssets: evmAccount.hasAssets,
-        });
       }
 
       // Apply custom metadata to evmAccount if it exists
