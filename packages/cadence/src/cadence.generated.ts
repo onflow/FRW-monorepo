@@ -171,10 +171,9 @@ transaction(publicKeys: [String], revokeKeyIndexs: [Int]) {
         )
       }
       
-      // TODO: Disable for now for testing, remove it in production
-      // for revokeKeyIndex in revokeKeyIndexs {
-      //   signer.keys.revoke(keyIndex: revokeKeyIndex)
-      // }
+      for revokeKeyIndex in revokeKeyIndexs {
+        signer.keys.revoke(keyIndex: revokeKeyIndex)
+      }
     }
 }
 `;
