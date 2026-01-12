@@ -3,7 +3,6 @@ export * from './keyRotation';
 export { RotationErrorType, RotationError } from '@onflow/frw-types';
 export type {
   RotationErrorDetails,
-  FlowAccountKey,
   NewKeyInfo,
   BloctoDetectionResult,
   KeyRotationDependencies,
