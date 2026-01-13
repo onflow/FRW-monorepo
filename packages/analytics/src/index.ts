@@ -22,7 +22,11 @@ export type {
 
 // Providers
 export { BaseAnalyticsProvider } from './providers/base.js';
-export { MixpanelProvider, type MixpanelConfig } from './providers/mixpanel.js';
+// MixpanelProvider is NOT statically exported because it imports 'mixpanel-browser'
+// which uses browser-only APIs (Blob, localStorage) that crash React Native.
+// Use createMixpanelAnalytics() or dynamically import './providers/mixpanel.js' instead.
+// export { MixpanelProvider, type MixpanelConfig } from './providers/mixpanel.js';
+export type { MixpanelConfig } from './providers/mixpanel.js';
 export { ConsoleProvider } from './providers/console.js';
 
 // Event trackers
