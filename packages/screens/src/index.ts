@@ -9,6 +9,9 @@ export { SendSummaryScreen } from './send/SendSummaryScreen.query';
 // Export key rotation screens
 export * from './keyrotation';
 
+// Export keystore migration screens
+export * from './keystoremigration';
+
 // Export hooks
 export * from './hooks';
 
