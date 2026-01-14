@@ -1565,6 +1565,10 @@ export class WalletController extends BaseController {
     });
   };
 
+  trackScreenView = async (screen: string) => {
+    analyticsService.trackScreenView(screen);
+  };
+
   // This is called from the front end, we should find a better way to track this event
   trackAccountRecovered = async () => {
     analyticsService.track('account_recovered', {

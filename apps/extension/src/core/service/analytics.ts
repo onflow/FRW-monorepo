@@ -7,6 +7,8 @@ export interface AnalyticsServiceInterface {
     properties: TrackingEvents[T]
   ) => Promise<void>;
   trackPageView: (pathname: string) => Promise<void>;
+  trackScreenView: (screen: string) => Promise<void>;
+
   identify: (userId: string, name?: string) => Promise<void>;
   reset: () => Promise<void>;
 }
@@ -44,6 +46,12 @@ class AnalyticsService implements AnalyticsServiceInterface {
     if (!this.initialized) return;
 
     return AnalyticsService.instance.trackPageView(pathname);
+  }
+
+  async trackScreenView(screenName: string) {
+    if (!this.initialized) return;
+
+    return AnalyticsService.instance.trackScreenView(screenName);
   }
 
   async identify(userId: string, name?: string) {
