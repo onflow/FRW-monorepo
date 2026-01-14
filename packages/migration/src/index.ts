@@ -1,3 +1,4 @@
+import { Interface } from '@ethersproject/abi';
 import { type CadenceService } from '@onflow/frw-cadence';
 import { type MigrationAssetsData } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
@@ -209,7 +210,6 @@ export const migrationTransaction = async (
       assets.erc20[index].address !== '0x0000000000000000000000000000000000000000'
     ) {
       try {
-        const { Interface } = require('@ethersproject/abi');
         const abi = ['function transfer(address to, uint256 value)'];
         const iface = new Interface(abi);
         const decoded = iface.decodeFunctionData('transfer', reconstructedHex);
