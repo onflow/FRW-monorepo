@@ -68,6 +68,15 @@ export interface WalletProfilesResponse {
 export interface AddressBookResponse {
   contacts: AddressBookContact[];
 }
+
+export interface AccountKeySignature {
+  public_key: string;
+  hash_algo: number;
+  sign_algo: number;
+  signature: string;
+  sign_message?: string;
+  weight?: number;
+}
 /**
  * When transmitting data from the native side to react and sending resources
  */
@@ -82,7 +91,7 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'send-asset' | 'token-detail' | 'onboarding' | 'receive';
+  screen: 'send-asset' | 'backup-tip' | 'token-detail' | 'onboarding' | 'receive';
   sendToConfig?: string;
 }
 
@@ -137,12 +146,14 @@ export interface AccountKey {
 
 /**
  * Response from seed phrase generation
- * Contains mnemonic, derived account key, and BIP44 derivation path
+ * Contains mnemonic, derived account key, BIP44 derivation path, and optional pre-derived EVM address
  */
 export interface SeedPhraseGenerationResponse {
   mnemonic: string;
   accountKey: AccountKey;
   drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
 }
 
 /**
@@ -153,6 +164,8 @@ export interface SPResponse {
   mnemonic: string;
   accountKey: AccountKey;
   drivepath: string;
+  /** Pre-derived EVM/EOA address from BIP44 path m/44'/60'/0'/0/0 for faster display */
+  evmAddress?: string;
 }
 
 /**

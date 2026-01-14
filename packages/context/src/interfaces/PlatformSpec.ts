@@ -9,6 +9,8 @@ import type {
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
+  KeyRotationDependencies,
+  BloctoDetectionResult,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -19,11 +21,14 @@ import type { Storage } from './storage/Storage';
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
+// Re-export KeyRotationDependencies from types package
+export type { KeyRotationDependencies, NewKeyInfo } from '@onflow/frw-types';
+
 /**
  * Platform specification interface for platform abstraction
  * This interface defines all methods that platform-specific implementations must implement
  */
-export interface PlatformSpec {
+export interface PlatformSpec extends KeyRotationDependencies {
   // Basic platform methods
   getSelectedAddress(): string | null;
   getDebugAddress(): string | null;
@@ -32,6 +37,8 @@ export interface PlatformSpec {
   getVersion(): string;
   getBuildNumber(): string;
   getLanguage(): string;
+  getMixpanelToken(): string;
+  getSignType(): string;
 
   getCurrency(): Currency;
   getPlatform(): Platform;
@@ -113,6 +120,17 @@ export interface PlatformSpec {
   // Account creation
   generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
   /**
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
+   */
+  getV4RegistrationSignatures?(mnemonic: string): Promise<{
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+  }>;
+  /**
    * Register Secure Enclave account with backend and initiate on-chain account creation
    * Returns early with txId so RN can monitor transaction status
    * Does NOT wait for transaction to seal - RN will handle that
@@ -138,12 +156,14 @@ export interface PlatformSpec {
    * @param customToken - Firebase custom token from registration
    * @param txId - Transaction ID from account creation (used to init native wallet SDK)
    * @param username - Username for the account
+   * @param evmAddress - Optional pre-derived EVM/EOA address for faster display
    */
   saveMnemonic?(
     mnemonic: string,
     customToken: string,
     txId: string,
-    username: string
+    username: string,
+    evmAddress?: string
   ): Promise<void>;
 
   // Firebase authentication
@@ -170,4 +190,19 @@ export interface PlatformSpec {
     erc721: Array<{ address: string; id: string }>;
     erc1155: Array<{ address: string; id: string; amount: string }>;
   }>;
+  // Safe area insets for cross-platform layout
+  /**
+   * Get device safe area insets for proper content positioning
+   * Returns the distance from the edges of the screen to the safe area
+   * @returns Object with top, bottom, left, right inset values in pixels
+   */
+  getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number };
+
+  // Key rotation detection
+  /**
+   * Check if the current account requires key rotation
+   * @param address - Optional address to check. If not provided, uses the currently selected account address
+   * @returns Promise<BloctoDetectionResult> - Detection result indicating if rotation is needed
+   */
+  checkKeyRotationNeeded(address?: string): Promise<BloctoDetectionResult>;
 }

@@ -1,13 +1,15 @@
+import { parseUnits } from '@ethersproject/units';
 import { configureFCL, CadenceService } from '@onflow/frw-cadence';
+import { isValidSendTransactionPayload } from '@onflow/frw-workflow';
 import * as t from '@onflow/types';
 import dotenv from 'dotenv';
-import { parseUnits } from 'ethers';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { makeArgument, getIX, setCrossVM } from './utils';
-import { SendTransaction, isValidSendTransactionPayload, convertToUFix64 } from '../src';
+import { SendTransaction } from '../src';
+import { makeArgument, getIX } from './utils';
 import { accounts } from './utils/accounts';
 import { authz } from './utils/authz';
+import { convertToUFix64 } from '../src/send/utils';
 
 dotenv.config();
 
@@ -16,7 +18,6 @@ const child1Account = accounts.child1;
 const child2Account = accounts.child2;
 
 const cadenceService = new CadenceService();
-
 let configCache: any;
 
 describe('Test send strategies', () => {
@@ -39,7 +40,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test send FLow from main account to main account', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token', // Asset type: token or NFT
       assetType: 'flow', // Network type: Flow blockchain or EVM chain
       proposer: mainAccount.address, // Flow address of the transaction proposer/signer
@@ -52,14 +53,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('transferTokensV3');
   });
 
   it('Test send USDC from main account to main account', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token', // Asset type: token or NFT
       assetType: 'flow', // Network type: Flow blockchain or EVM chain
       proposer: mainAccount.address, // Flow address of the transaction proposer/signer
@@ -72,7 +73,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -80,7 +81,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test FlowToEvmTokenStrategy - Bridge USDC token to EVM address', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -93,14 +94,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('bridgeTokensToEvmAddressV2');
   });
 
   it('Test FlowTokenBridgeToEvmStrategy - FLOW tokens to CoA address', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -113,14 +114,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('transferFlowToEvmAddress');
   });
 
   it('Test FlowTokenBridgeToEvmStrategy - FLOW tokens to EVM address', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -133,14 +134,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('transferFlowToEvmAddress');
   });
 
   it('Test EvmToFlowCoaWithdrawalStrategy - COA withdrawal to Flow address', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -153,14 +154,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('withdrawCoa');
   });
 
   it('Test EvmToFlowTokenBridgeStrategy - Bridge USDC from EVM to Flow', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -173,14 +174,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x1234567890123456789012345678901234567890',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('bridgeTokensFromEvmToFlowV3');
   });
 
   it('Test EvmToEvmTokenStrategy - EVM to EVM token transfer', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -193,14 +194,35 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('callContract');
   });
 
+  it('Should throw when EVM token contract address is missing', async () => {
+    const payload = {
+      type: 'token',
+      assetType: 'evm',
+      proposer: mainAccount.address,
+      receiver: '0x3b44f144b97a0402c0e206522c28052c1025a8aa',
+      flowIdentifier: '',
+      sender: mainAccount.evmAddr,
+      amount: '0.00001',
+      childAddrs: [],
+      ids: [],
+      decimal: 6,
+      coaAddr: mainAccount.evmAddr,
+      tokenContractAddr: '',
+    };
+
+    await expect(SendTransaction(payload, cadenceService)).rejects.toThrow(
+      'invalid send evm transaction payload - invalid contract address'
+    );
+  });
+
   it('Test ChildToChildTokenStrategy - Child to child token transfer', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -213,14 +235,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('sendChildFtToChild');
   });
 
   it('Test ChildToOthersTokenStrategy - Child to parent transfer', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -233,14 +255,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('transferChildFt');
   });
 
   it('Test ChildToOthersTokenStrategy - Bridge child to COA', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -253,14 +275,14 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('bridgeChildFtToEvm');
   });
 
   it('Test ChildToOthersTokenStrategy - Bridge child to EVM address', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -273,14 +295,14 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('bridgeChildFtToEvmAddress');
   });
 
   it('Test ChildToOthersTokenStrategy - Child to Flow address', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -293,14 +315,14 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('sendChildFt');
   });
 
   it('Test ParentToChildTokenStrategy - Bridge from EVM to child', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -313,14 +335,14 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     expect(configCache.name).toBe('bridgeChildFtFromEvm');
   });
 
   it('Test ParentToChildTokenStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -333,7 +355,7 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
     // check args funcs
@@ -357,7 +379,7 @@ describe('Test send strategies', () => {
 
   describe('Validation failure tests', () => {
     it('Should throw error for invalid proposer address format', async () => {
-      const payload = setCrossVM({
+      const payload = {
         type: 'token',
         assetType: 'flow',
         proposer: '0x123', // Invalid format - too short
@@ -370,13 +392,13 @@ describe('Test send strategies', () => {
         decimal: 8,
         coaAddr: mainAccount.evmAddr,
         tokenContractAddr: '',
-      });
+      };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow('invalid proposer address');
     });
 
     it('Should throw error for missing proposer field', async () => {
-      const payload = setCrossVM({
+      const payload = {
         type: 'token',
         assetType: 'flow',
         proposer: mainAccount.address,
@@ -389,7 +411,7 @@ describe('Test send strategies', () => {
         decimal: 8,
         coaAddr: mainAccount.evmAddr,
         tokenContractAddr: '',
-      });
+      };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow(
         'flowIdentifier of transaction payload is missing'
@@ -397,7 +419,7 @@ describe('Test send strategies', () => {
     });
 
     it('Should throw error for missing receiver field', async () => {
-      const payload = setCrossVM({
+      const payload = {
         type: 'token',
         assetType: 'flow',
         proposer: mainAccount.address,
@@ -410,7 +432,7 @@ describe('Test send strategies', () => {
         decimal: 8,
         coaAddr: mainAccount.evmAddr,
         tokenContractAddr: '',
-      });
+      };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow(
         'invalid send transaction payload'
@@ -418,7 +440,7 @@ describe('Test send strategies', () => {
     });
 
     it('Should throw error for invalid token amount (zero)', async () => {
-      const payload = setCrossVM({
+      const payload = {
         type: 'token',
         assetType: 'flow',
         proposer: mainAccount.address,
@@ -431,7 +453,7 @@ describe('Test send strategies', () => {
         decimal: 8,
         coaAddr: mainAccount.evmAddr,
         tokenContractAddr: '',
-      });
+      };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow(
         'invalid send token transaction payload'
@@ -439,7 +461,7 @@ describe('Test send strategies', () => {
     });
 
     it('Should throw error for invalid token amount (negative)', async () => {
-      const payload = setCrossVM({
+      const payload = {
         type: 'token',
         assetType: 'flow',
         proposer: mainAccount.address,
@@ -452,7 +474,7 @@ describe('Test send strategies', () => {
         decimal: 8,
         coaAddr: mainAccount.evmAddr,
         tokenContractAddr: '',
-      });
+      };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow(
         'invalid send token transaction payload'
@@ -460,7 +482,7 @@ describe('Test send strategies', () => {
     });
 
     it('Should throw error for missing decimal field in token transaction', async () => {
-      const payload = setCrossVM({
+      const payload = {
         type: 'token',
         assetType: 'flow',
         proposer: mainAccount.address,
@@ -473,7 +495,7 @@ describe('Test send strategies', () => {
         decimal: null, // Missing decimal
         coaAddr: mainAccount.evmAddr,
         tokenContractAddr: '',
-      });
+      };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow(
         'invalid send token transaction payload'
@@ -481,7 +503,7 @@ describe('Test send strategies', () => {
     });
 
     it('Should throw error for empty NFT IDs in NFT transaction', async () => {
-      const payload = setCrossVM({
+      const payload = {
         type: 'nft',
         assetType: 'flow',
         proposer: mainAccount.address,
@@ -494,36 +516,14 @@ describe('Test send strategies', () => {
         decimal: 0,
         coaAddr: mainAccount.evmAddr,
         tokenContractAddr: '',
-      });
+      };
 
       expect(() => isValidSendTransactionPayload(payload)).toThrow('invalid send nft identifier');
-    });
-
-    it('Should throw error when cross-VM transfer is missing COA address', () => {
-      const payload = setCrossVM({
-        type: 'token',
-        assetType: 'flow',
-        proposer: mainAccount.address,
-        receiver: mainAccount.evmAddr, // Flow to EVM => cross-VM
-        flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
-        sender: mainAccount.address,
-        amount: '0.001',
-        childAddrs: [],
-        ids: [],
-        decimal: 8,
-        coaAddr: '',
-        isCrossVM: true,
-        tokenContractAddr: '',
-      });
-
-      expect(() => isValidSendTransactionPayload(payload)).toThrow(
-        'invalid COA address of payload'
-      );
     });
   });
 
   it('Test ChildToChildTokenStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -536,7 +536,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -572,7 +572,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test ChildToOthersTokenStrategy - Parent receiver args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -585,7 +585,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -618,7 +618,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test ChildToOthersTokenStrategy - COA receiver args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -631,7 +631,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -664,7 +664,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test ChildToOthersTokenStrategy - EVM address receiver args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -677,7 +677,7 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -713,7 +713,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test ChildToOthersTokenStrategy - Flow address receiver args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -726,7 +726,7 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -762,7 +762,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test ParentToChildTokenStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -775,7 +775,7 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -809,7 +809,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test FlowToFlowTokenStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -822,7 +822,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -855,7 +855,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test FlowToEvmTokenStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -868,7 +868,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -901,7 +901,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test FlowTokenBridgeToEvmStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'flow',
       proposer: mainAccount.address,
@@ -914,7 +914,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -947,7 +947,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test EvmToFlowCoaWithdrawalStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -960,7 +960,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -990,7 +990,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test EvmToFlowTokenBridgeStrategy args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -1003,7 +1003,7 @@ describe('Test send strategies', () => {
       decimal: 8,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x1234567890123456789012345678901234567890',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -1036,7 +1036,7 @@ describe('Test send strategies', () => {
   });
 
   it('Test EvmToEvmTokenStrategy - Non-Flow token args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -1049,7 +1049,7 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -1080,13 +1080,13 @@ describe('Test send strategies', () => {
         expect(typeof value).toBe('object');
       }
       if (idx === 3) {
-        expect(value).toBe(16777216); // Gas limit
+        expect(value).toBe(16_777_216); // Gas limit
       }
     }
   });
 
   it('Test EvmToEvmTokenStrategy - Flow token args', async () => {
-    const payload = setCrossVM({
+    const payload = {
       type: 'token',
       assetType: 'evm',
       proposer: mainAccount.address,
@@ -1099,7 +1099,7 @@ describe('Test send strategies', () => {
       decimal: 6,
       coaAddr: mainAccount.evmAddr,
       tokenContractAddr: '0x0000000000000000000000000000000000000000',
-    });
+    };
 
     await SendTransaction(payload, cadenceService);
 
@@ -1129,7 +1129,7 @@ describe('Test send strategies', () => {
         expect(value).toStrictEqual([]);
       }
       if (idx === 3) {
-        expect(value).toBe(16777216); // Gas limit
+        expect(value).toBe(16_777_216); // Gas limit
       }
     }
   });

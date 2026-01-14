@@ -90,13 +90,25 @@ export * from './components/Toast';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionFeeSection';
+export * from './components/WarningCard';
 export * from './foundation/SegmentedControl';
 
-export * from './components/TokenAmountInput';
-export * from './components/UpdateDialog.web';
+// Export onboarding components
+export * from './components/onboarding/TipCard';
+export * from './components/onboarding/MnemonicGrid';
+export { ShieldAnimation } from './components/ShieldAnimation';
 
-// Onboarding components
-export * from './components/onboarding';
+export * from './components/UpdateDialog';
+export * from './components/TokenAmountInput';
+
+// Onboarding components (excluding WarningCard to avoid conflict with main WarningCard)
+export {
+  AccountCreationLoadingState,
+  OnboardingHeader,
+  BackupOptionCard,
+  ImportOptionCard,
+  RecoveryPhraseQuestion,
+} from './components/onboarding';
 
 // Migration components
 export * from './components/migration';
@@ -115,6 +127,7 @@ export { extensionTamaguiConfig } from './theme/extension';
 
 // Export layout components
 export * from './layout/BackgroundWrapper';
+export * from './layout/OnboardingBackground';
 
 // Export types
 export * from './types';

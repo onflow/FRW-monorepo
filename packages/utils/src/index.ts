@@ -1,10 +1,12 @@
 // Address utilities
 export {
   isValidFlowAddress,
+  validateFlowAddress,
   formatFlowAddress,
   getAddressType,
   truncateAddress,
   isValidEthereumAddress,
+  validateEvmAddress,
   isCOAAddress,
   isEOAAddress,
 } from './address';
@@ -38,6 +40,9 @@ export {
   isEmoji,
 } from './utils';
 
+// Key rotation utilities
+export { normalizePublicKey, resolveHashAlgo, resolveSignAlgo } from './key-rotation';
+
 // Token utilities
 export {
   extractNumericBalance,
@@ -54,6 +59,9 @@ export { convertedSVGURL } from './svgtopng';
 
 // Logger utilities
 export { createLogger, Logger, logger, setGlobalLogger } from './logger';
+
+// Seed utilities
+export { seedPhraseLengthToStrength } from './seed.util';
 
 // Query retry utilities
 export { retryConfigs, getRetryConfig, createRetryFunction } from './query-retry';

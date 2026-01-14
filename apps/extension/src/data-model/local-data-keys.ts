@@ -78,7 +78,6 @@ export const getActiveAccountsByUserWallet = async (
   const activeAccounts = await getLocalData<ActiveAccountsStore>(
     activeAccountsKey(userWallet.network, userId)
   );
-  console.log('getActiveAccountsByUserWallet =====>', activeAccounts);
   return activeAccounts;
 };
 

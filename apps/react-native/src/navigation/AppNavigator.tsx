@@ -5,6 +5,9 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  // Key rotation screens
+  KeyRotationTipScreen,
+  KeyRotationMnemonicScreen,
   SendToScreen,
   ReceiveScreen,
   // Onboarding screens
@@ -25,6 +28,7 @@ import {
   createTokenModelFromConfig,
   createWalletAccountFromConfig,
   type InitialProps,
+  type NewKeyInfo,
   type NFTModel,
 } from '@onflow/frw-types';
 import { useTheme } from '@onflow/frw-ui';
@@ -35,6 +39,7 @@ import { useTranslation } from 'react-i18next';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { platform } from '@/bridge/PlatformImpl';
 import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
@@ -87,6 +92,11 @@ export type RootStackParamList = {
   ImportProfile: undefined;
   ImportOtherMethods: undefined;
   ConfirmImportProfile: undefined;
+  // Key rotation screens
+  KeyRotationTip: undefined;
+  KeyRotationMnemonic: {
+    newKeyInfo: NewKeyInfo;
+  };
 };
 
 interface AppNavigatorProps {
@@ -277,6 +287,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               // component={ErrorHandlingTest} // Uncomment for testing error handling
               options={{
                 headerTitle: t('navigation.selectTokens'),
+                headerLeft: () => null,
                 // headerTitle: 'Error Test', // Use with ErrorHandlingTest
               }}
             />
@@ -355,6 +366,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               options={{
                 headerTitle: t('onboarding.recoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
@@ -366,6 +378,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               options={{
                 headerTitle: t('onboarding.confirmRecoveryPhrase.navTitle'),
                 headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
@@ -377,6 +390,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               options={{
                 headerTitle: '', // No title text
                 headerRight: () => null, // No close button
+                gestureEnabled: false, // Disable swipe-back to prevent state corruption
                 headerStyle: {
                   backgroundColor: theme.bg.val,
                 },
@@ -427,6 +441,64 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerTitle: t('onboarding.importProfile.title'),
               }}
             />
+          </Stack.Group>
+
+          {/* Blocto key rotation screens */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+            }}
+          >
+            <Stack.Screen
+              name="KeyRotationTip"
+              options={{
+                headerTitle: '',
+                headerLeft: () => null,
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <KeyRotationTipScreen
+                  onContinue={newKeyInfo => {
+                    logger.info(
+                      '[KeyRotationTipScreen] Continue pressed - navigating to KeyRotationMnemonic'
+                    );
+                    nav.navigate('KeyRotationMnemonic', { newKeyInfo });
+                  }}
+                  onSkip={() => {
+                    logger.info('[KeyRotationTipScreen] Skip pressed');
+                    platform.closeRN();
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="KeyRotationMnemonic"
+              options={{
+                headerTitle: t('backup.mnemonic.navTitle', { defaultValue: 'Recovery Phrase' }),
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <KeyRotationMnemonicScreen
+                  newKeyInfo={route.params.newKeyInfo}
+                  address={address ?? ''}
+                  onComplete={() => {
+                    logger.info('[KeyRotationMnemonicScreen] Backup complete');
+                    platform.closeRN();
+                  }}
+                  onBack={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
           </Stack.Group>
         </Stack.Navigator>
       </NavigationContainer>

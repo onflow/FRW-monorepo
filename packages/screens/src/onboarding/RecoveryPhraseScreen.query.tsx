@@ -32,6 +32,8 @@ interface PhraseData {
     signAlgo: number;
   };
   drivepath: string;
+  /** Pre-derived EVM/EOA address for faster display */
+  evmAddress?: string;
 }
 
 export function RecoveryPhraseScreen(): React.ReactElement {
@@ -67,6 +69,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
             mnemonic: response.mnemonic,
             accountKey: response.accountKey,
             drivepath: response.drivepath,
+            evmAddress: response.evmAddress,
           });
         }
       } catch (error) {
@@ -165,6 +168,7 @@ export function RecoveryPhraseScreen(): React.ReactElement {
       mnemonic,
       accountKey: phraseData?.accountKey,
       drivepath: phraseData?.drivepath,
+      evmAddress: phraseData?.evmAddress,
     });
   };
 

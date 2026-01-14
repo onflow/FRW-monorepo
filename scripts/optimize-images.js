@@ -5,11 +5,47 @@ const { execSync } = require('child_process');
 const path = require('path');
 const os = require('os');
 
+let cachedHasImageOptim = null;
+let imageOptimDisabled = false;
+
 async function checkImageOptimCLI() {
+  if (cachedHasImageOptim !== null) {
+    return cachedHasImageOptim;
+  }
+
   try {
     execSync('which imageoptim', { stdio: 'ignore' });
-    return true;
+    cachedHasImageOptim = true;
+    return cachedHasImageOptim;
   } catch {
+    cachedHasImageOptim = false;
+    return cachedHasImageOptim;
+  }
+}
+
+async function runOptimization(filePath, cmd, label, originalSize) {
+  try {
+    execSync(cmd, { stdio: 'ignore' });
+
+    const optimizedStats = await stat(filePath);
+    const optimizedSize = optimizedStats.size;
+
+    if (optimizedSize < originalSize) {
+      const savings = (((originalSize - optimizedSize) / originalSize) * 100).toFixed(1);
+      console.log(
+        `Optimized (${label}): ${filePath} (${originalSize} → ${optimizedSize} bytes, ${savings}% savings)`
+      );
+    } else {
+      console.log(
+        `Processed (${label}): ${filePath} (${originalSize} bytes) - no optimization needed`
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.warn(
+      `Warning: ${label} failed for ${filePath}; skipping optimization (${error.message})`
+    );
     return false;
   }
 }
@@ -20,48 +56,36 @@ async function optimizeWithImageOptimCLI(filePath) {
   const originalSize = originalStats.size;
 
   try {
-    let cmd;
-
-    // Use different optimization strategy based on file type
     switch (ext) {
       case '.png':
-        // Use ImageAlpha for PNG files (better compression)
-        cmd = `imageoptim --imagealpha "${filePath}"`;
-        break;
+        // Try ImageAlpha first for better PNG compression, then fallback to ImageOptim.
+        if (
+          await runOptimization(
+            filePath,
+            `imageoptim --imagealpha "${filePath}"`,
+            'ImageAlpha',
+            originalSize
+          )
+        ) {
+          return true;
+        }
+        await runOptimization(filePath, `imageoptim "${filePath}"`, 'ImageOptim', originalSize);
+        return true;
       case '.jpg':
       case '.jpeg':
-        // Use default ImageOptim for JPEG
-        cmd = `imageoptim "${filePath}"`;
-        break;
       case '.gif':
       case '.webp':
-        // Use ImageOptim for other formats
-        cmd = `imageoptim "${filePath}"`;
-        break;
+        await runOptimization(filePath, `imageoptim "${filePath}"`, 'ImageOptim', originalSize);
+        return true;
       default:
         console.log(`Skipped: ${filePath} (unsupported format)`);
         return true;
     }
-
-    // Execute optimization
-    execSync(cmd, { stdio: 'ignore' });
-
-    const optimizedStats = await stat(filePath);
-    const optimizedSize = optimizedStats.size;
-
-    if (optimizedSize < originalSize) {
-      const savings = (((originalSize - optimizedSize) / originalSize) * 100).toFixed(1);
-      console.log(
-        `Optimized: ${filePath} (${originalSize} → ${optimizedSize} bytes, ${savings}% savings)`
-      );
-    } else {
-      console.log(`Processed: ${filePath} (${originalSize} bytes) - no optimization needed`);
-    }
-
-    return true;
   } catch (error) {
-    console.error(`Error optimizing ${filePath} with ImageOptim-CLI:`, error.message);
-    return false;
+    console.warn(
+      `Warning: ImageOptim-CLI failed for ${filePath}; skipping optimization (${error.message})`
+    );
+    return true;
   }
 }
 
@@ -95,13 +119,25 @@ async function optimizeImage(filePath) {
       return true;
     }
 
-    // Check if we're on macOS and have ImageOptim-CLI available
-    if (os.platform() === 'darwin' && (await checkImageOptimCLI())) {
-      return await optimizeWithImageOptimCLI(filePath);
-    } else {
-      // Fallback for non-macOS platforms or when ImageOptim-CLI is not available
+    if (imageOptimDisabled) {
       return await fallbackOptimization(filePath);
     }
+
+    // Check if we're on macOS and have ImageOptim-CLI available
+    if (os.platform() === 'darwin' && (await checkImageOptimCLI())) {
+      const optimized = await optimizeWithImageOptimCLI(filePath);
+      if (optimized) {
+        return true;
+      }
+      imageOptimDisabled = true;
+      console.warn(
+        'Warning: ImageOptim-CLI failed; disabling optimization for the rest of this run.'
+      );
+      return await fallbackOptimization(filePath);
+    }
+
+    // Fallback for non-macOS platforms or when ImageOptim-CLI is not available
+    return await fallbackOptimization(filePath);
   } catch (error) {
     console.error(`Error processing ${filePath}:`, error.message);
     return false;

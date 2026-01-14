@@ -14,6 +14,7 @@ import { SENTRY_BASIC_CONFIG, SENTRY_NETWORK_ALLOW_URLS } from '../shared/consta
 init({
   ...SENTRY_BASIC_CONFIG,
   enableLogs: true,
+  sendDefaultPii: true,
   integrations: [
     browserTracingIntegration(),
     browserProfilingIntegration(),

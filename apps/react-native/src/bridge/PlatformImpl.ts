@@ -1,5 +1,6 @@
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
+import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
 import type {
   CreateAccountResponse,
   Currency,
@@ -16,6 +17,7 @@ import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 import { Buffer } from 'buffer';
 import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
+import { initialWindowMetrics } from 'react-native-safe-area-context';
 
 import { cache, storage } from '../storage';
 import NativeFRWBridge from './NativeFRWBridge';
@@ -264,6 +266,22 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.scanQRCode();
   }
 
+  createSeedKey(strength: number): Promise<NewKeyInfo> {
+    return NativeFRWBridge.createSeedKey(strength);
+  }
+
+  saveNewKey(key: NewKeyInfo): Promise<void> {
+    return NativeFRWBridge.saveNewKey(key);
+  }
+
+  removeOldKey(address: string, publicKey: string): Promise<void> {
+    return NativeFRWBridge.removeOldKey(address, publicKey);
+  }
+
+  signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature> {
+    return NativeFRWBridge.signRotationRequest(address, signatureData);
+  }
+
   closeRN(): void {
     NativeFRWBridge.closeRN(null);
   }
@@ -301,7 +319,7 @@ class PlatformImpl implements PlatformSpec {
     // Add version and platform headers to transactions
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        const platform = 'react-native'; // Platform.OS is not available here
+        const platform = RNPlatform.OS;
         const versionHeader = `// Flow Wallet - ${network} Script - ${config.name} - React Native - ${version}`;
         const platformHeader = `// Platform: ${platform} - ${version} - ${buildNumber}`;
         config.cadence = versionHeader + '\n' + platformHeader + '\n\n' + config.cadence;
@@ -425,14 +443,32 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  /**
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
+   */
+  async getV4RegistrationSignatures(
+    mnemonic: string
+  ): Promise<{ flowSignature: string; evmSignature: string; eoaAddress: string }> {
+    try {
+      return await NativeFRWBridge.getV4RegistrationSignatures(mnemonic);
+    } catch (error) {
+      this.log('error', '[PlatformImpl] Failed to get v4 registration signatures:', error);
+      throw error;
+    }
+  }
+
   async saveMnemonic(
     mnemonic: string,
     customToken: string,
     txId: string,
-    username: string
+    username: string,
+    evmAddress?: string
   ): Promise<void> {
     try {
-      await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId, username);
+      await NativeFRWBridge.saveMnemonic(mnemonic, customToken, txId, username, evmAddress);
     } catch (error) {
       this.log(
         'error',
@@ -496,6 +532,17 @@ class PlatformImpl implements PlatformSpec {
     } catch (error) {
       this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);
     }
+  }
+
+  // Safe area insets for cross-platform layout
+  getSafeAreaInsets(): { top: number; bottom: number; left: number; right: number } {
+    const insets = initialWindowMetrics?.insets;
+    return {
+      top: insets?.top ?? 0,
+      bottom: insets?.bottom ?? 0,
+      left: insets?.left ?? 0,
+      right: insets?.right ?? 0,
+    };
   }
 }
 
