@@ -37,12 +37,10 @@ export function NFTSelectionBar({
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
   if (selectedNFTs.length === 0) {
-    console.log('🔍 NFTSelectionBar: No selected NFTs, returning null');
     return null;
   }
 
   const handleToggleExpanded = () => {
-    console.log('🔄 Toggling selection bar expanded:', !isExpanded);
     setIsExpanded(!isExpanded);
   };
 

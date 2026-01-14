@@ -41,10 +41,8 @@ const NFTSendButton: React.FC<NFTSendButtonProps> = ({
       }
 
       // Check for contract name in different possible locations
-      const contractName = nftDetail?.collectionContractName || nftDetail?.contractName;
-      if (!contractName) {
-        throw new Error('Collection contract name is required');
-      }
+      // Contract name can be empty, so we allow it to be undefined/empty
+      const contractName = nftDetail?.collectionContractName || nftDetail?.contractName || '';
 
       // Create NFT data with proper fallbacks for both Flow and EVM NFTs
       const nftData: NFTModel = {
@@ -83,10 +81,12 @@ const NFTSendButton: React.FC<NFTSendButtonProps> = ({
           };
         } else {
           // For EVM NFTs, use a generic path structure
+          // If contractName is empty, use empty paths
+          const pathSuffix = contractName || '';
           return {
-            private_path: `/storage/${contractName}`,
-            public_path: `/public/${contractName}`,
-            storage_path: `/storage/${contractName}`,
+            private_path: pathSuffix ? `/storage/${pathSuffix}` : '',
+            public_path: pathSuffix ? `/public/${pathSuffix}` : '',
+            storage_path: pathSuffix ? `/storage/${pathSuffix}` : '',
           };
         }
       };
