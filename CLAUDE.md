@@ -41,6 +41,23 @@ separation between View, ViewModel, Network, and Model layers.
 - `pnpm typecheck` - TypeScript validation
 - `pnpm test` - Run unit tests (excluding React Native)
 
+### Claude Code Setup
+
+**⚠️ First-time setup required for new team members:**
+
+This project uses [Claude Code](https://claude.ai/code) with custom plugins and
+commands. Before using Claude Code on this project:
+
+1. **Install Claude Code CLI** from https://claude.ai/code
+2. **Install project plugins** (one-time setup):
+   ```bash
+   bash .claude/install-plugins.sh
+   ```
+   Or manually install plugins listed in `.claude/README.md`
+
+The project configuration (`.claude/settings.json`) will automatically enable
+these plugins once they're installed. See `.claude/README.md` for full details.
+
 ### Custom Claude Commands
 
 - `/create-issue` - Automated GitHub issue creation with intelligent formatting

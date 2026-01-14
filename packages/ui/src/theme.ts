@@ -61,8 +61,11 @@ const flowColors = {
 
   // Light accent colors (for use with opacity in dark mode)
   light80: 'rgba(255, 255, 255, 0.8)', // 80% white
+  light50: 'rgba(255, 255, 255, 0.5)', // 50% white
   light40: 'rgba(255, 255, 255, 0.4)', // 40% white
+  light35: 'rgba(255, 255, 255, 0.35)', // 35% white
   light25: 'rgba(255, 255, 255, 0.25)', // 25% white
+  light15: 'rgba(255, 255, 255, 0.15)', // 15% white
   light10: 'rgba(255, 255, 255, 0.1)', // 10% white — same value used by darkBg1 and darkBorder1
   light15: 'rgba(255, 255, 255, 0.15)', // 15% white
   light50: 'rgba(255, 255, 255, 0.5)', // 50% white
@@ -420,6 +423,11 @@ const themesBuilder = createThemeBuilder()
       // Theme-aware subtle backgrounds via palette indices
       subtleBg: 13, // $subtleBg -> palette[13] (light: black 5%, dark: white 5%)
       subtleBg10: 14, // $subtleBg10 -> palette[14] (light: black 10%, dark: white 10%)
+
+      // Theme-aware glassmorphic colors
+      bgGlass: 22, // $bgGlass -> palette[22] (light: black 5%, dark: white 10%)
+      borderGlass: 23, // $borderGlass -> palette[23] (light: black 10%, dark: white 15%)
+      iconGlass: 24, // $iconGlass -> palette[24] (light: black 40%, dark: white 50%)
 
       // Inverse button tokens (theme-aware via palette indexes)
       // Use text1 as bg (index 6): black in light, white in dark

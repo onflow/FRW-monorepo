@@ -20,9 +20,6 @@ export function getFirbaseConfig(): FirebaseOptions {
       key.length > 10
         ? `${key.substring(0, 10)}...${key.substring(key.length - 4)} (length: ${key.length})`
         : 'Key too short';
-    console.log('[Firebase Config] API Key:', masked);
-    console.log('[Firebase Config] Project ID:', firebaseConfig.projectId || 'NOT SET');
-    console.log('[Firebase Config] Auth Domain:', firebaseConfig.authDomain || 'NOT SET');
   } else {
     console.error('[Firebase Config] ❌ API Key is missing or undefined!');
     console.error('[Firebase Config] Build env:', process.env.BUILD_ENV);

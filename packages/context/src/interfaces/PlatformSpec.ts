@@ -9,6 +9,8 @@ import type {
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
+  KeyRotationDependencies,
+  BloctoDetectionResult,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -19,11 +21,14 @@ import type { Storage } from './storage/Storage';
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
+// Re-export KeyRotationDependencies from types package
+export type { KeyRotationDependencies, NewKeyInfo } from '@onflow/frw-types';
+
 /**
  * Platform specification interface for platform abstraction
  * This interface defines all methods that platform-specific implementations must implement
  */
-export interface PlatformSpec {
+export interface PlatformSpec extends KeyRotationDependencies {
   // Basic platform methods
   getSelectedAddress(): string | null;
   getDebugAddress(): string | null;
@@ -181,4 +186,12 @@ export interface PlatformSpec {
    * @returns Object with top, bottom, left, right inset values in pixels
    */
   getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number };
+
+  // Key rotation detection
+  /**
+   * Check if the current account requires key rotation
+   * @param address - Optional address to check. If not provided, uses the currently selected account address
+   * @returns Promise<BloctoDetectionResult> - Detection result indicating if rotation is needed
+   */
+  checkKeyRotationNeeded(address?: string): Promise<BloctoDetectionResult>;
 }

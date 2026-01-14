@@ -20,6 +20,9 @@ export type {
   forms_DeviceInfo,
   forms_FlowAccountInfo,
   forms_EvmAccountInfo,
+  forms_AccountKeySignature,
+  forms_BackupInfo,
+  forms_AccountKeyForm,  
 } from './codegen/goService.generated';
 
 // Export service options

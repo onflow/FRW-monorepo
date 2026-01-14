@@ -1,7 +1,7 @@
 import mixpanel from 'mixpanel-browser';
 
-import { BaseAnalyticsProvider } from './base.js';
-import type { AnalyticsConfig, EventProperties, UserProperties } from '../types.js';
+import { BaseAnalyticsProvider } from './base';
+import type { AnalyticsConfig, EventProperties, UserProperties } from '../types';
 
 export interface MixpanelConfig extends AnalyticsConfig {
   token: string;
