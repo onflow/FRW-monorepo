@@ -1,5 +1,6 @@
 import React from 'react';
-import { XStack, View } from 'tamagui';
+
+import { LoadingIndicator } from '../LoadingIndicator';
 
 export interface MigrationProgressIndicatorProps {
   /** Number of dots */
@@ -10,31 +11,29 @@ export interface MigrationProgressIndicatorProps {
   dotSize?: number;
   /** Gap between dots */
   gap?: number;
+  /** Width of the indicator */
+  width?: number;
 }
 
 /**
  * MigrationProgressIndicator - Animated dots showing migration in progress
+ * Uses the shared LoadingIndicator component from ConfirmationDrawer
  */
 export function MigrationProgressIndicator({
   count = 6,
   isAnimating = true,
-  dotSize = 6,
-  gap = 10.35,
+  dotSize = 8,
+  gap = 17.8,
+  width = 117,
 }: MigrationProgressIndicatorProps): React.ReactElement {
   return (
-    <XStack items="center" justify="center" gap={gap} width={87.75} height={6}>
-      {Array.from({ length: count }).map((_, index) => (
-        <View
-          key={index}
-          width={dotSize}
-          height={dotSize}
-          bg="$primary"
-          rounded={dotSize / 2}
-          opacity={isAnimating ? 0.3 : 1}
-          animation={isAnimating ? 'pulse' : undefined}
-          animationDelay={isAnimating ? index * 100 : undefined}
-        />
-      ))}
-    </XStack>
+    <LoadingIndicator
+      isAnimating={isAnimating}
+      width={width}
+      height={dotSize}
+      count={count}
+      dotSize={dotSize}
+      gap={gap}
+    />
   );
 }

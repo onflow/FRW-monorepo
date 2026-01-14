@@ -77,6 +77,7 @@ export function MigrationScreen({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [migrationError, setMigrationError] = useState<Error | null>(null);
+  const [startTime, setStartTime] = useState<number | null>(null);
 
   // Ensure migration never runs automatically - only via button press
   useEffect(() => {
@@ -210,26 +211,13 @@ export function MigrationScreen({
     }
   }, [assets, resolvedSourceAccount.address]);
 
-  // Handle migration progress animation (does NOT trigger migration - only visual)
+  // Handle migration progress animation (only visual, real progress comes from callback)
   useEffect(() => {
     console.log('[MigrationScreen] Progress effect triggered', { stage, isProcessing });
-    if (stage === 'in-progress' && !isProcessing) {
+    if (stage === 'in-progress') {
       setIsAnimating(true);
-      // Simulate progress while transaction is being processed
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 90) {
-            // Don't go to 100% until transaction completes
-            return 90;
-          }
-          return prev + 2;
-        });
-      }, 200);
-
-      return () => clearInterval(interval);
-    }
-    // Reset progress/animation when not running
-    if (stage !== 'in-progress') {
+    } else {
+      // Reset progress/animation when not running
       setIsAnimating(false);
       setProgress(0);
     }
@@ -269,6 +257,7 @@ export function MigrationScreen({
     setIsProcessing(true);
     setProgress(0);
     setMigrationError(null);
+    setStartTime(Date.now()); // Track start time for time-based progress
 
     try {
       console.log('[MigrationScreen] Getting CadenceService...');
@@ -361,13 +350,23 @@ export function MigrationScreen({
       console.log(`[MigrationScreen] Total assets to migrate: ${totalAssets}`);
       console.log('[MigrationScreen] ===== END MIGRATION ASSETS =====');
 
-      // Execute migration transaction
+      // Calculate estimated time per transaction (distribute 2 minutes across all transactions)
+      const estimatedTotalSeconds = 120; // 2 minutes
+      const estimatedSecondsPerTransaction = estimatedTotalSeconds / totalAssets;
+
+      // Execute migration transaction with progress callback
       console.log('[MigrationScreen] ===== CALLING migrationTransaction =====');
       const result = await migrationTransaction(
         cadenceService,
         assets,
         senderEvmAddr,
-        receiverEvmAddr
+        receiverEvmAddr,
+        (progress, current, total) => {
+          console.log(`[MigrationScreen] Progress update: ${progress}% (${current}/${total})`);
+          // Jump progress to estimated time for completed transactions
+          setProgress(progress);
+        },
+        estimatedSecondsPerTransaction
       );
 
       console.log('[MigrationScreen] ===== migrationTransaction COMPLETED =====', result);
@@ -436,15 +435,34 @@ export function MigrationScreen({
         ? totalAssetsCount
         : 0;
 
-  // Calculate time remaining (rough estimate: 2 minutes total, based on progress)
-  const estimatedTotalSeconds = 120; // 2 minutes
-  const remainingSeconds = Math.max(0, Math.floor(estimatedTotalSeconds * (1 - progress / 100)));
+  // Calculate estimated elapsed time based on progress (not actual elapsed time)
+  // Progress is updated by transaction callbacks to jump to estimated time slots
+  const estimatedTotalSeconds = 120; // 2 minutes total estimate
+  const estimatedElapsedSeconds = Math.floor((progress / 100) * estimatedTotalSeconds);
+  const remainingSeconds = Math.max(0, estimatedTotalSeconds - estimatedElapsedSeconds);
   const minutes = Math.floor(remainingSeconds / 60);
-  const seconds = remainingSeconds % 60;
+  const secs = remainingSeconds % 60;
   const timeRemaining =
     stage === 'in-progress' && remainingSeconds > 0
-      ? `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} remaining`
+      ? `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} remaining`
       : undefined;
+
+  // Smooth progress animation - gradually fill between transaction completion jumps
+  // Progress jumps when transactions complete, then smoothly animates until next jump
+  useEffect(() => {
+    if (stage === 'in-progress' && isProcessing) {
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          // Gradually increase progress, but don't exceed 99% until all complete
+          // The transaction callbacks will jump it forward when transactions complete
+          const increment = 0.05; // Small increment for smooth animation
+          return Math.min(99, prev + increment);
+        });
+      }, 100); // Update every 100ms for smooth animation
+
+      return () => clearInterval(interval);
+    }
+  }, [stage, isProcessing]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">

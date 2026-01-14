@@ -12,7 +12,9 @@ export const migrationTransaction = async (
   cadenceService: CadenceService,
   assets: MigrationAssetsData,
   sender: string,
-  receiver: string
+  receiver: string,
+  onProgress?: (progress: number, current: number, total: number) => void,
+  estimatedSecondsPerTransaction?: number
 ): Promise<any> => {
   if (!validateEvmAddress(receiver)) {
     throw new Error('Invalid receiver address');
@@ -186,11 +188,14 @@ export const migrationTransaction = async (
   }
 
   console.log('[migrationTransaction] ===== END FINAL SUMMARY =====');
-  console.log('[migrationTransaction] ===== CALLING batchCallContract =====');
+  console.log(
+    '[migrationTransaction] ===== TESTING MODE: PROCESSING 1 ASSET PER TRANSACTION ====='
+  );
   console.log('[migrationTransaction] Gas limit: 16777216');
 
   // CRITICAL: Verify what we're passing to batchCallContract
   console.log('[migrationTransaction] ===== PRE-CALL VERIFICATION =====');
+  console.log(`[migrationTransaction] Total assets to process: ${trxs.addresses.length}`);
   console.log(`[migrationTransaction] Addresses count: ${trxs.addresses.length}`);
   console.log(`[migrationTransaction] Values count: ${trxs.values.length}`);
   console.log(`[migrationTransaction] Datas count: ${trxs.datas.length}`);
@@ -374,129 +379,129 @@ export const migrationTransaction = async (
     console.error('[migrationTransaction] Error details:', error?.message, error?.stack);
   }
 
-  const res = await cadenceService.batchCallContract(
-    trxs.addresses,
-    trxs.values,
-    trxs.datas,
-    16_777_216 // evm default gas limit
+  // TESTING MODE: Process one asset per transaction instead of batching
+  console.log('[migrationTransaction] ===== STARTING INDIVIDUAL TRANSACTION PROCESSING =====');
+  const transactionResults: string[] = [];
+  const totalTransactions = trxs.addresses.length;
+  const estimatedMsPerTransaction = estimatedSecondsPerTransaction
+    ? estimatedSecondsPerTransaction * 1000
+    : null;
+
+  // Initialize progress to 0%
+  if (onProgress) {
+    onProgress(0, 0, totalTransactions);
+  }
+
+  for (let i = 0; i < totalTransactions; i++) {
+    console.log(
+      `[migrationTransaction] ===== Processing asset ${i + 1}/${totalTransactions} =====`
+    );
+    console.log(`[migrationTransaction] Address: ${trxs.addresses[i]}`);
+    console.log(`[migrationTransaction] Value: ${trxs.values[i]}`);
+    console.log(`[migrationTransaction] Data length: ${trxs.datas[i].length} bytes`);
+
+    try {
+      // Process single asset transaction
+      const singleAssetRes = await cadenceService.batchCallContract(
+        [trxs.addresses[i]], // Single address
+        [trxs.values[i]], // Single value
+        [trxs.datas[i]], // Single data array
+        16_777_216 // evm default gas limit
+      );
+
+      console.log(
+        `[migrationTransaction] ✅ Asset ${i + 1}/${totalTransactions} transaction submitted: ${singleAssetRes}`
+      );
+      transactionResults.push(singleAssetRes);
+
+      // Wait for transaction to be sealed before proceeding to next
+      const { waitForTransaction } = await import('@onflow/frw-cadence');
+      console.log(`[migrationTransaction] Waiting for asset ${i + 1} transaction to be sealed...`);
+      const txResult = await waitForTransaction(singleAssetRes, 120000, 2000);
+      console.log(
+        `[migrationTransaction] Asset ${i + 1} transaction sealed - Status: ${txResult.status}`
+      );
+
+      if (txResult.status === 5) {
+        console.error(`[migrationTransaction] ⚠️ Asset ${i + 1} transaction expired`);
+      }
+
+      // Update progress callback - jump to estimated time for this transaction
+      // If transaction 1 completes in 10s, progress jumps to show 30s elapsed (estimated time for transaction 1)
+      if (onProgress && estimatedSecondsPerTransaction) {
+        const estimatedTotalSeconds = estimatedSecondsPerTransaction * totalTransactions;
+        const estimatedElapsedSeconds = (i + 1) * estimatedSecondsPerTransaction;
+        const estimatedProgress = Math.min(
+          99,
+          Math.floor((estimatedElapsedSeconds / estimatedTotalSeconds) * 100)
+        );
+        console.log(
+          `[migrationTransaction] Jumping progress to estimated time: ${estimatedElapsedSeconds}s / ${estimatedTotalSeconds}s (${estimatedProgress}%)`
+        );
+        onProgress(estimatedProgress, i + 1, totalTransactions);
+      } else {
+        // Fallback: use transaction count if no timing estimate
+        const progressPercent = Math.round(((i + 1) / totalTransactions) * 100);
+        if (onProgress) {
+          onProgress(progressPercent, i + 1, totalTransactions);
+        }
+      }
+
+      // Small delay between transactions
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    } catch (error: any) {
+      console.error(
+        `[migrationTransaction] ❌ Failed to process asset ${i + 1}/${totalTransactions}:`,
+        error
+      );
+      // Continue with next asset even if one fails
+      logger.error(`[migrationTransaction] Asset ${i + 1} transaction failed`, error);
+
+      // Update progress even on failure - jump to estimated time
+      if (onProgress && estimatedSecondsPerTransaction) {
+        const estimatedTotalSeconds = estimatedSecondsPerTransaction * totalTransactions;
+        const estimatedElapsedSeconds = (i + 1) * estimatedSecondsPerTransaction;
+        const estimatedProgress = Math.min(
+          99,
+          Math.floor((estimatedElapsedSeconds / estimatedTotalSeconds) * 100)
+        );
+        onProgress(estimatedProgress, i + 1, totalTransactions);
+      } else {
+        const progressPercent = Math.round(((i + 1) / totalTransactions) * 100);
+        if (onProgress) {
+          onProgress(progressPercent, i + 1, totalTransactions);
+        }
+      }
+
+      // Small delay between transactions
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+
+  console.log('[migrationTransaction] ===== ALL INDIVIDUAL TRANSACTIONS COMPLETED =====');
+  console.log(
+    `[migrationTransaction] Total transactions: ${transactionResults.length}/${totalTransactions}`
   );
 
-  logger.info('Migration transaction result:', res);
-
-  // Wait for transaction to be sealed and log events
-  try {
-    const { waitForTransaction } = await import('@onflow/frw-cadence');
-    console.log('[migrationTransaction] Waiting for transaction to be sealed...');
-    const txResult = await waitForTransaction(res, 120000, 2000);
-    console.log('[migrationTransaction] ===== TRANSACTION RESULT =====');
-    console.log(`[migrationTransaction] Status: ${txResult.status} (4=sealed, 5=expired)`);
-    console.log(`[migrationTransaction] Status Code: ${txResult.statusCode}`);
-    if (txResult.errorMessage) {
-      console.log(`[migrationTransaction] Error Message: ${txResult.errorMessage}`);
-    }
-    console.log(`[migrationTransaction] Events count: ${txResult.events?.length || 0}`);
-
-    // Parse EVM.TransactionExecuted events to show which transfers succeeded/failed
-    const evmEvents =
-      txResult.events?.filter((e) => e.type.includes('EVM.TransactionExecuted')) || [];
-    if (evmEvents.length > 0) {
-      console.log('[migrationTransaction] ===== EVM TRANSFER RESULTS =====');
-      // Use the addresses from the transaction data to match with events
-      // Events are in the same order as the addresses array
-      const transactionAddresses = trxs.addresses || [];
-      console.log(`[migrationTransaction] Total EVM events: ${evmEvents.length}`);
-      console.log(
-        `[migrationTransaction] Total transaction addresses: ${transactionAddresses.length}`
-      );
-      console.log(`[migrationTransaction] Receiver address: ${receiver}`);
-
-      // Debug: Log all events first to see their error codes
-      console.log('[migrationTransaction] Raw EVM events (for debugging):');
-      evmEvents.forEach((event, idx) => {
-        const data = event.data as any;
-        const errorCode = data?.errorCode;
-        console.log(
-          `  Event [${idx + 1}]: errorCode=${JSON.stringify(errorCode)} (type: ${typeof errorCode}), isZero=${errorCode === 0 || errorCode === '0'}`
-        );
-      });
-
-      evmEvents.forEach((event, idx) => {
-        const data = event.data as any;
-        const errorCode = data?.errorCode;
-        const errorMessage = data?.errorMessage || '';
-
-        // Use the address from the transaction data (events are in the same order)
-        const contractAddr = transactionAddresses[idx] || 'unknown';
-        const originalAmount =
-          assets.erc20?.[idx]?.amount ||
-          assets.erc721?.[idx - (assets.erc20?.length || 0)]?.id ||
-          'N/A';
-        const isNFT = idx >= (assets.erc20?.length || 0);
-
-        // Check success: errorCode should be 0 (number) or "0" (string)
-        // Also handle null/undefined as failure
-        const isSuccess = errorCode === 0 || errorCode === '0';
-        const status = isSuccess ? '✅ SUCCESS' : '❌ FAILED';
-        console.log(
-          `  [${idx + 1}] ${status} - ${isNFT ? 'NFT' : 'ERC20'} Contract: ${contractAddr}`
-        );
-        if (!isNFT) {
-          console.log(`      Amount: ${originalAmount}`);
-        } else {
-          console.log(`      Token ID: ${originalAmount}`);
-        }
-        console.log(`      Receiver: ${receiver}`);
-        console.log(
-          `      ⚠️  NOTE: Actual COA address is from signer's Flow account /storage/evm`
-        );
-        console.log(
-          `      ⚠️  Sender param (${sender}) may differ from actual COA executing transfers`
-        );
-        if (!isSuccess) {
-          console.log(`      Error Code: ${errorCode}`);
-          console.log(`      Error Message: ${errorMessage}`);
-          // Common causes of "execution reverted":
-          if (errorMessage.includes('execution reverted')) {
-            console.log(`      ⚠️  Possible causes:`);
-            console.log(
-              `         - COA address mismatch: tokens in different COA than signer's Flow account`
-            );
-            console.log(`         - Insufficient balance in COA EVM account`);
-            console.log(`         - Token contract paused or restricted`);
-            console.log(`         - Receiver address blacklisted or invalid`);
-            console.log(`         - Amount exceeds token contract limits`);
-            if (errorMessage.includes('arithmetic')) {
-              console.log(
-                `         - ⚠️  ARITHMETIC ERROR: Amount calculation issue in token contract`
-              );
-            }
-          }
-        } else {
-          console.log(`      Gas Used: ${data?.gasConsumed || 'N/A'}`);
-        }
-      });
-      console.log('[migrationTransaction] ===== END EVM TRANSFER RESULTS =====');
-    }
-
-    if (txResult.events && txResult.events.length > 0) {
-      console.log('[migrationTransaction] All transaction events:');
-      txResult.events.forEach((event, idx) => {
-        console.log(`  [${idx + 1}] Type: ${event.type}`);
-        console.log(`      Transaction ID: ${event.transactionId}`);
-        console.log(`      Transaction Index: ${event.transactionIndex}`);
-        if (event.type.includes('EVM.TransactionExecuted')) {
-          const data = event.data as any;
-          console.log(`      Error Code: ${data?.errorCode || 'N/A'}`);
-          console.log(`      Error Message: ${data?.errorMessage || 'N/A'}`);
-        } else {
-          console.log(`      Data:`, JSON.stringify(event.data, null, 2));
-        }
-      });
-    }
-    console.log('[migrationTransaction] ===== END TRANSACTION RESULT =====');
-  } catch (error) {
-    console.error('[migrationTransaction] Error waiting for transaction:', error);
+  // Ensure progress is at 100% after all transactions complete
+  if (onProgress) {
+    onProgress(100, totalTransactions, totalTransactions);
   }
+
+  // Return the last transaction ID (or first if available) for compatibility
+  const res =
+    transactionResults.length > 0 ? transactionResults[transactionResults.length - 1] : '';
+  logger.info('Migration transaction results:', {
+    total: transactionResults.length,
+    results: transactionResults,
+  });
+
+  // Summary of all transactions
+  console.log('[migrationTransaction] ===== FINAL MIGRATION SUMMARY =====');
+  console.log(`[migrationTransaction] Total assets processed: ${totalTransactions}`);
+  console.log(`[migrationTransaction] Successful transactions: ${transactionResults.length}`);
+  console.log(`[migrationTransaction] Transaction IDs:`, transactionResults);
+  console.log('[migrationTransaction] ===== END FINAL SUMMARY =====');
 
   return res;
 };
