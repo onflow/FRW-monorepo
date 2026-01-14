@@ -1,25 +1,9 @@
+import { validateEvmAddress, validateFlowAddress } from '@onflow/frw-utils';
+
 import type { SendPayload } from './types';
-import { isNFTIdentifier, isVaultIdentifier } from './utils';
+import { isFlowToken, isNFTIdentifier, isVaultIdentifier } from './utils';
 
-/**
- * Validates Flow blockchain addresses (0x + 16 hex characters)
- * @param address - Address to validate
- * @returns true if valid Flow address format
- */
-export const validateFlowAddress = (address: string): boolean => {
-  const flowAddressRegex = /^0x[a-fA-F0-9]{16}$/;
-  return flowAddressRegex.test(address);
-};
-
-/**
- * Validates EVM addresses (0x + 40 hex characters)
- * @param address - Address to validate
- * @returns true if valid EVM address format
- */
-export const validateEvmAddress = (address: string): boolean => {
-  const evmAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-  return evmAddressRegex.test(address);
-};
+export { validateEvmAddress, validateFlowAddress };
 
 /**
  * Validates token-specific payload requirements
@@ -35,6 +19,14 @@ export const validateTokenPayload = (payload: SendPayload): void => {
   }
   if (!payload.decimal) {
     throw new Error('invalid send token transaction payload');
+  }
+
+  // Non-FLOW EVM token transfers must include a valid contract address
+  if (payload.assetType === 'evm' && !isFlowToken(payload.flowIdentifier || '')) {
+    const { tokenContractAddr } = payload;
+    if (!tokenContractAddr || !validateEvmAddress(tokenContractAddr)) {
+      throw new Error('invalid send evm transaction payload - invalid contract address');
+    }
   }
 };
 
@@ -121,14 +113,6 @@ export const isValidSendTransactionPayload = (payload: SendPayload): boolean => 
   if (type === 'nft') {
     validateNftPayload(payload);
   }
-
-  // TODO: send nft from evm to flow, tokenContractAddr is not required, handle by bridge use flowIdentifier
-  // if (assetType === 'evm') {
-  //   // Skip validation if Flow token (tokenContractAddr can be null/undefined)
-  //   if (!isFlowToken(flowIdentifier) && !validateEvmAddress(tokenContractAddr)) {
-  //     throw new Error('invalid send evm transaction payload - invalid contract address');
-  //   }
-  // }
 
   return true;
 };

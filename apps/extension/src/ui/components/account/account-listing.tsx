@@ -112,6 +112,7 @@ type AccountListingProps = {
   onAccountClick?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   onAccountClickSecondary?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   onEnableEvmClick?: (parentAddress: string) => void;
+  onMigrationClick?: (address: string) => void;
   secondaryIcon?: React.ReactNode;
   showActiveAccount?: boolean;
   itemSx?: React.CSSProperties;
@@ -126,6 +127,7 @@ export const AccountListing = ({
   onAccountClick,
   onAccountClickSecondary,
   onEnableEvmClick,
+  onMigrationClick,
   secondaryIcon,
   showActiveAccount = false,
   itemSx,
@@ -133,6 +135,8 @@ export const AccountListing = ({
 }: AccountListingProps) => {
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
+  // Get the EOA account for the active account provided it's a main account
+  const eoaAccount = activeParentAccount?.eoaAccount;
   // Check if the EVM account is not valid
   const noEvmAccount = !evmAccount;
   const { pendingAccountTransactions } = useProfiles();
