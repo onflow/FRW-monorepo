@@ -16,8 +16,9 @@ import {
   BackgroundWrapper,
   MigrationFeatureItem,
   MigrationInfoBanner,
+  Spinner,
 } from '@onflow/frw-ui';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export interface InfoScreenProps {
@@ -31,6 +32,7 @@ export interface InfoScreenProps {
  */
 export function InfoScreen({ onStartMigration }: InfoScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const ChainPill = ({
     label,
@@ -80,13 +82,18 @@ export function InfoScreen({ onStartMigration }: InfoScreenProps = {}): React.Re
     );
   };
 
-  const handleStartMigration = () => {
+  const handleStartMigration = async () => {
     logger.info('[InfoScreen] Start migration pressed');
-    if (onStartMigration) {
-      onStartMigration();
-    } else {
-      // Fallback: use navigation if no callback provided
-      // navigation.navigate(ScreenName.MIGRATION_START);
+    setIsLoading(true);
+    try {
+      if (onStartMigration) {
+        await onStartMigration();
+      } else {
+        // Fallback: use navigation if no callback provided
+        // navigation.navigate(ScreenName.MIGRATION_START);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -242,8 +249,18 @@ export function InfoScreen({ onStartMigration }: InfoScreenProps = {}): React.Re
 
         {/* Action Buttons */}
         <YStack gap="$3" items="center" width="100%" style={{ maxWidth: 338 }}>
-          <Button variant="inverse" size="large" fullWidth onPress={handleStartMigration}>
-            {t('migration.info.startMigration')}
+          <Button
+            variant="inverse"
+            size="large"
+            fullWidth
+            onPress={handleStartMigration}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Spinner size="small" color="$background" />
+            ) : (
+              t('migration.info.startMigration')
+            )}
           </Button>
 
           <YStack items="center" width="100%">

@@ -112,7 +112,7 @@ const MenuDrawer = ({
 
   const handleMigrationClick = useCallback(
     (address: string) => {
-      navigate(`/dashboard/nested/keyrotation?address=${address}`);
+      navigate(`/dashboard/setting/migration?address=${address}`);
       toggleDrawer();
     },
     [navigate, toggleDrawer]

@@ -33,6 +33,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.2",
     "@ethersproject/abi": "^5.8.0",
+    "@ethersproject/bignumber": "^5.8.0",
     "@ethersproject/units": "^5.8.0",
     "@onflow/frw-api": "workspace:*",
     "@onflow/frw-types": "workspace:*",
