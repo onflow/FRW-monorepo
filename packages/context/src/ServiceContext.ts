@@ -2,6 +2,7 @@ import { configureApiEndpoints } from '@onflow/frw-api';
 import { createCadenceService, type CadenceService } from '@onflow/frw-cadence';
 import { createLogger, setGlobalLogger, type Logger } from '@onflow/frw-utils';
 
+import type { AnalyticsService } from './interfaces/Analytics';
 import type { Cache } from './interfaces/caching/Cache';
 import type { Navigation } from './interfaces/Navigation';
 import type { PlatformSpec } from './interfaces/PlatformSpec';
@@ -20,6 +21,7 @@ export class ServiceContext {
   private _cache: Cache | null = null;
   private _navigation: Navigation | null = null;
   private _logger: Logger | null = null;
+  private _analytics: AnalyticsService | null = null;
 
   private constructor() {}
 
@@ -159,6 +161,23 @@ export class ServiceContext {
   }
 
   /**
+   * Get the analytics instance (may be null if not configured)
+   */
+  get analytics(): AnalyticsService | null {
+    return this._analytics;
+  }
+
+  /**
+   * Set the analytics service
+   * Should be called at app initialization after ServiceContext.initialize()
+   * @param analytics The analytics service implementation, or null for platforms without analytics
+   */
+  setAnalytics(analytics: AnalyticsService | null): void {
+    this._analytics = analytics;
+    this.logger.debug('Analytics service configured', analytics ? 'enabled' : 'disabled');
+  }
+
+  /**
    * Get the logger instance
    */
   getLogger(): Logger {
@@ -285,6 +304,26 @@ export const toast = new Proxy({} as ToastManager, {
     } catch (error) {
       // Return no-op functions if ServiceContext not available
       return (): void => {};
+    }
+  },
+});
+
+export const analytics = new Proxy({} as AnalyticsService, {
+  get(target, prop): unknown {
+    try {
+      const analyticsService = ServiceContext.current().analytics;
+      if (!analyticsService) {
+        // Return no-op/null values if analytics not configured
+        if (prop === 'isEnabled') return () => false;
+        if (prop === 'getTransactionTracker') return () => null;
+        return () => null;
+      }
+      return analyticsService[prop as keyof AnalyticsService];
+    } catch {
+      // Return no-op functions if ServiceContext not available
+      if (prop === 'isEnabled') return () => false;
+      if (prop === 'getTransactionTracker') return () => null;
+      return () => null;
     }
   },
 });
