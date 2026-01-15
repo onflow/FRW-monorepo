@@ -967,6 +967,9 @@ importers:
       '@ethersproject/abi':
         specifier: ^5.8.0
         version: 5.8.0
+      '@ethersproject/bignumber':
+        specifier: ^5.8.0
+        version: 5.8.0
       '@ethersproject/units':
         specifier: ^5.8.0
         version: 5.8.0
@@ -18384,12 +18387,12 @@ snapshots:
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.28.4
+      '@babel/types': 7.28.5
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.28.4
-      '@babel/types': 7.28.4
+      '@babel/parser': 7.28.5
+      '@babel/types': 7.28.5
 
   '@types/babel__traverse@7.28.0':
     dependencies:
