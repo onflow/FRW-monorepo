@@ -1,4 +1,5 @@
-import { analytics, bridge, cadence, type TransactionSession } from '@onflow/frw-context';
+import type { TransactionSession } from '@onflow/frw-analytics';
+import { analytics, bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
   type CollectionModel,
@@ -408,10 +409,11 @@ export const useSendStore = create<SendState>((set, get) => ({
         return null;
       }
 
+      // Cast to TransactionSession since TransactionTracker returns unknown to avoid type conflicts
       const session = transactionTracker.createTransactionSession(
         mainAccount.address,
         transactionType
-      );
+      ) as TransactionSession;
 
       logger.debug('[SendStore] Transaction session created for analytics');
       return session;
