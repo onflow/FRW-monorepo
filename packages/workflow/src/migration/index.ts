@@ -1,8 +1,8 @@
 import { type CadenceService } from '@onflow/frw-cadence';
 import { type MigrationAssetsData } from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
-import { validateEvmAddress } from '@onflow/frw-workflow';
 
+import { validateEvmAddress } from '../index';
 import { convertAssetsToCalldata } from './utils';
 
 // export * from './migration';

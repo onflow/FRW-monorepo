@@ -1,7 +1,8 @@
 import { Interface } from '@ethersproject/abi';
 import type { TransactionDatas, MigrationAssetsData } from '@onflow/frw-types';
 import { isValidEthereumAddress } from '@onflow/frw-utils';
-import { validateEvmAddress } from '@onflow/frw-workflow';
+
+import { validateEvmAddress } from '../../index';
 
 export const convertHexToArr = (callData: string): number[] => {
   const hexString = callData.slice(2); // Remove '0x' prefix
