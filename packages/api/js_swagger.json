@@ -2009,6 +2009,38 @@
         }
       }
     },
+    "/api/evm/soulBound": {
+      "get": {
+        "summary": "Get soul bound token addresses",
+        "description": "Returns a list of soul bound token contract addresses",
+        "tags": ["EVM"],
+        "responses": {
+          "200": {
+            "description": "Successful response with soul bound token addresses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": ["0x38861c69e9a9ddd0cb37b833e93ccb9042f5e5f7"]
+                    },
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/metadata/user/{address}": {
       "get": {
         "summary": "Get user address metadata",

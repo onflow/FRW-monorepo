@@ -118,6 +118,21 @@ export class CheckService {
   }
 }
 
+export class EvmService {
+  /**
+   * Get soul bound token addresses
+   */
+  static soulBound(options: IRequestOptions = {}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let url = basePath + '/api/evm/soulBound';
+
+      const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+
+      axios(configs, resolve, reject);
+    });
+  }
+}
+
 export class MetadataService {
   /**
    * Get user address metadata

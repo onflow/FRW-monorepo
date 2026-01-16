@@ -1,8 +1,6 @@
 import { Interface } from '@ethersproject/abi';
 import type { TransactionDatas, MigrationAssetsData } from '@onflow/frw-types';
-import { isValidEthereumAddress } from '@onflow/frw-utils';
-
-import { validateEvmAddress } from '../../index';
+import { isValidEthereumAddress, validateEvmAddress, logger } from '@onflow/frw-utils';
 
 export const convertHexToArr = (callData: string): number[] => {
   const hexString = callData.slice(2); // Remove '0x' prefix
@@ -59,66 +57,70 @@ export const convertAssetsToCalldata = (
   if (!isValidEthereumAddress(receiver)) {
     throw new Error('Invalid receiver address');
   }
+  try {
+    const { erc20 = [], erc721 = [], erc1155 = [] } = assets;
 
-  const { erc20 = [], erc721 = [], erc1155 = [] } = assets;
+    const addresses: string[] = [];
+    const values: string[] = [];
+    const calldatas: string[] = []; // call data strings
 
-  const addresses: string[] = [];
-  const values: string[] = [];
-  const calldatas: string[] = []; // call data strings
+    const datas: number[][] = []; // call datas arr
 
-  const datas: number[][] = []; // call datas arr
+    for (const asset of erc20) {
+      const { address, amount } = asset;
 
-  for (const asset of erc20) {
-    const { address, amount } = asset;
-
-    if (!validateEvmAddress(address)) {
-      throw new Error('Invalid erc20 EVM address');
+      if (!validateEvmAddress(address)) {
+        throw new Error('Invalid erc20 EVM address');
+      }
+      if (Number(amount) <= 0) {
+        throw new Error('Invalid erc20 amount');
+      }
+      // Flow token todo as gas fee token, need remain the
+      if (address === '0x0000000000000000000000000000000000000000') {
+        calldatas.push('0x');
+        addresses.push(receiver);
+        values.push(amount);
+      } else {
+        calldatas.push(encodeContractCallData('erc20', receiver, amount, sender));
+        values.push('0.0');
+        addresses.push(address);
+      }
     }
-    if (Number(amount) <= 0) {
-      throw new Error('Invalid erc20 amount');
-    }
-    // Flow token todo as gas fee token, need remain the
-    if (address === '0x0000000000000000000000000000000000000000') {
-      calldatas.push('0x');
-      addresses.push(receiver);
-      values.push(amount);
-    } else {
-      calldatas.push(encodeContractCallData('erc20', receiver, amount, sender));
-      values.push('0.0');
+
+    for (const asset of erc721) {
+      const { address, id } = asset;
+      if (!validateEvmAddress(address)) {
+        throw new Error('Invalid EVM address');
+      }
       addresses.push(address);
+      values.push('0.0');
+      calldatas.push(encodeContractCallData('erc721', receiver, 0, sender, id));
     }
-  }
 
-  for (const asset of erc721) {
-    const { address, id } = asset;
-    if (!validateEvmAddress(address)) {
-      throw new Error('Invalid EVM address');
+    for (const asset of erc1155) {
+      const { address, id, amount } = asset;
+      if (!validateEvmAddress(asset.address)) {
+        throw new Error('Invalid erc1155 address');
+      }
+      if (Number(amount) <= 0) {
+        throw new Error('Invalid erc1155 amount');
+      }
+      addresses.push(address);
+      values.push('0.0');
+      calldatas.push(encodeContractCallData('erc1155', receiver, Number(amount), sender, id));
     }
-    addresses.push(address);
-    values.push('0.0');
-    calldatas.push(encodeContractCallData('erc721', receiver, 0, sender, id));
-  }
 
-  for (const asset of erc1155) {
-    const { address, id, amount } = asset;
-    if (!validateEvmAddress(asset.address)) {
-      throw new Error('Invalid erc1155 address');
+    // convert data to arr
+    for (const data of calldatas) {
+      datas.push(convertHexToArr(data));
     }
-    if (Number(amount) <= 0) {
-      throw new Error('Invalid erc1155 amount');
-    }
-    addresses.push(address);
-    values.push('0.0');
-    calldatas.push(encodeContractCallData('erc1155', receiver, Number(amount), sender, id));
+    return {
+      addresses,
+      values,
+      datas,
+    };
+  } catch (error) {
+    logger.error('[MigrationUtils] Failed to fetch soul bound:', error);
+    return { addresses: [], values: [], datas: [] };
   }
-
-  // convert data to arr
-  for (const data of calldatas) {
-    datas.push(convertHexToArr(data));
-  }
-  return {
-    addresses,
-    values,
-    datas,
-  };
 };
