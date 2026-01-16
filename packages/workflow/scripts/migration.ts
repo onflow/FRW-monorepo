@@ -1,5 +1,5 @@
-import { accounts } from '../__tests__/utils/accounts';
-import { convertAssetsToCalldata } from '../src/utils';
+import { convertAssetsToCalldata } from '../src/migration/utils';
+import { accounts } from '../tests/utils/accounts';
 
 const main = async () => {
   const assets = {
@@ -130,8 +130,8 @@ const main = async () => {
     ],
   };
 
-  const sender = accounts.tester.coaAddr;
-  const receiver = accounts.tester.eoaAddr;
+  const sender = accounts.main.evmAddr || '';
+  const receiver = accounts.main.eoaAddr;
 
   const callDatas = convertAssetsToCalldata(assets, sender, receiver);
 
