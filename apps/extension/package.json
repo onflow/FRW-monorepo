@@ -51,7 +51,6 @@
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-context": "workspace:*",
     "@onflow/frw-icons": "workspace:*",
-    "@onflow/frw-migration": "workspace:*",
     "@onflow/frw-screens": "workspace:*",
     "@onflow/frw-services": "workspace:*",
     "@onflow/frw-stores": "workspace:*",
