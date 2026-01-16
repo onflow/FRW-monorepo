@@ -4,8 +4,9 @@ dotenv.config();
 const accounts = {
   main: {
     address: process.env.TEST_MAIN_ACCOUNT_ADDRESS || '',
-    pub: process.env.TEST_MAIN_ACCOUNT_PUBKEY,
-    evmAddr: process.env.TEST_MAIN_ACCOUNT_COA,
+    pub: process.env.TEST_MAIN_ACCOUNT_PUBKEY || '',
+    evmAddr: process.env.TEST_MAIN_ACCOUNT_COA || '',
+    eoaAddr: process.env.TEST_MAIN_ACCOUNT_EOA || '',
     key: {
       type: 'hex',
       index: process.env.TEST_MAIN_ACCOUNT_KEY_INDEX,

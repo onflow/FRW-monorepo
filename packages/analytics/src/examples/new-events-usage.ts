@@ -147,7 +147,7 @@ async function demonstrateNewTrackingEvents() {
   console.log('\n=== Combined Usage Scenarios ===');
 
   // Scenario: User opens app, navigates to settings, creates backup
-  await navigationTracker.trackAppOpened({ source: 'direct', coldStart: true });
+  // await navigationTracker.trackAppOpened({ source: 'direct', coldStart: true });
   await navigationTracker.trackTabOpened({ tab: 'settings' });
 
   const settingsBackupSession = backupTracker.createBackupSession(userAddress, 'Extension');

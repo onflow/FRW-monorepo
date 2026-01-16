@@ -1,8 +1,7 @@
 import { Interface } from '@ethersproject/abi';
 import { type CadenceService } from '@onflow/frw-cadence';
 import { type MigrationAssetsData } from '@onflow/frw-types';
-import { logger } from '@onflow/frw-utils';
-import { validateEvmAddress } from '@onflow/frw-workflow';
+import { logger, validateEvmAddress } from '@onflow/frw-utils';
 
 import { convertAssetsToCalldata } from './utils';
 
