@@ -91,7 +91,7 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'send-asset' | 'backup-tip';
+  screen: 'send-asset' | 'backup-tip' | 'keystore-migration';
   sendToConfig?: string;
 }
 

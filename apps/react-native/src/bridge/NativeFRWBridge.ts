@@ -112,6 +112,9 @@ export interface Spec extends TurboModule {
   removeOldKey(address: string, publicKey: string): Promise<void>;
   signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature>;
 
+  // Keystore migration
+  keystoreMigration?(): Promise<void>;
+
   // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
 }
