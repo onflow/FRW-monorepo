@@ -1,3 +1,4 @@
+import { EvmService } from '@onflow/frw-api';
 import { ServiceContext, type PlatformSpec, logger } from '@onflow/frw-context';
 import { initializeI18n } from '@onflow/frw-screens';
 import { useSendStore, sendSelectors, tokenQueries } from '@onflow/frw-stores';
@@ -224,10 +225,29 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
         erc1155: [],
       };
 
+      // Fetch soul bound NFT contract addresses to filter them out
+      let soulBoundAddresses: string[] = [];
+      try {
+        const soulBoundResponse = await EvmService.soulBound();
+        soulBoundAddresses = (soulBoundResponse?.data || []).map((addr: string) =>
+          addr.toLowerCase()
+        );
+        logger.debug('[PlatformBridge] Fetched soul bound addresses', {
+          count: soulBoundAddresses.length,
+          addresses: soulBoundAddresses,
+        });
+      } catch (error) {
+        logger.warn(
+          '[PlatformBridge] Failed to fetch soul bound addresses, continuing without filter',
+          error
+        );
+      }
+
       logger.debug('[PlatformBridge] getMigrationAssets called', {
         sourceAddress,
         coinsCount: coins?.length || 0,
         nftCollectionsCount: evmNftCollections?.length || 0,
+        soulBoundAddressesCount: soulBoundAddresses.length,
       });
 
       // Log all coins for debugging
@@ -669,24 +689,38 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
               });
 
               if (nftIds.length > 0) {
-                if (isERC1155) {
-                  // For ERC1155, we need amount per ID
-                  // Get amount from NFT model if available, otherwise default to 1
-                  migrationAssets.erc1155.push(
-                    ...nftIds.map((id) => ({
-                      address: contractAddress,
-                      id: id,
-                      amount: nfts.find((nft) => nft.id === id)?.amount || '1',
-                    }))
-                  );
+                // Filter out soul bound NFTs - check if contract address is in soul bound list
+                const isSoulBound = soulBoundAddresses.includes(contractAddress.toLowerCase());
+
+                if (isSoulBound) {
+                  console.log('[PlatformBridge] Skipping soul bound NFT collection:', {
+                    contractAddress,
+                    nftCount: nftIds.length,
+                  });
+                  logger.debug('[PlatformBridge] Filtered out soul bound NFT collection', {
+                    contractAddress,
+                    nftCount: nftIds.length,
+                  });
                 } else {
-                  // For ERC721, just IDs
-                  migrationAssets.erc721.push(
-                    ...nftIds.map((id) => ({
-                      address: contractAddress,
-                      id: id,
-                    }))
-                  );
+                  if (isERC1155) {
+                    // For ERC1155, we need amount per ID
+                    // Get amount from NFT model if available, otherwise default to 1
+                    migrationAssets.erc1155.push(
+                      ...nftIds.map((id) => ({
+                        address: contractAddress,
+                        id: id,
+                        amount: nfts.find((nft) => nft.id === id)?.amount || '1',
+                      }))
+                    );
+                  } else {
+                    // For ERC721, just IDs
+                    migrationAssets.erc721.push(
+                      ...nftIds.map((id) => ({
+                        address: contractAddress,
+                        id: id,
+                      }))
+                    );
+                  }
                 }
               } else {
                 console.warn('[PlatformBridge] No valid IDs extracted from fetched NFTs', {

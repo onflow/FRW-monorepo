@@ -1,5 +1,4 @@
 import { logger, navigation, bridge, getCadenceService } from '@onflow/frw-context';
-import { migrationTransaction } from '@onflow/frw-migration';
 import type { WalletAccount, WalletProfilesResponse, MigrationAssetsData } from '@onflow/frw-types';
 import {
   YStack,
@@ -18,6 +17,7 @@ import {
   EVMBadge,
 } from '@onflow/frw-ui';
 import { transformAccountForDisplay } from '@onflow/frw-utils';
+import { migrationTransaction } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
