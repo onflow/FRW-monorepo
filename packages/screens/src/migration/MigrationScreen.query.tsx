@@ -325,10 +325,10 @@ export function MigrationScreen({
   const totalAssetsCount =
     (assets?.erc20?.length ?? 0) + (assets?.erc721?.length ?? 0) + (assets?.erc1155?.length ?? 0);
 
-  // Each batch of 200 assets takes approximately 30 seconds
+  // Each batch of 200 assets takes approximately 10 seconds
   const BATCH_SIZE = 200;
   const totalBatches = Math.ceil(totalAssetsCount / BATCH_SIZE);
-  const estimatedSecondsPerBatch = 15;
+  const estimatedSecondsPerBatch = 10;
   const estimatedTotalSeconds = totalBatches * estimatedSecondsPerBatch;
 
   // Track completed batches directly from callback
