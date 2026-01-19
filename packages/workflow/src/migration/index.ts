@@ -378,8 +378,8 @@ export const migrationTransaction = async (
     logger.error('[migrationTransaction] Error details:', error?.message, error?.stack);
   }
 
-  // Process assets in batches of 30 per transaction
-  const BATCH_SIZE = 30;
+  // Process assets in batches of 50 per transaction
+  const BATCH_SIZE = 50;
   logger.debug('[migrationTransaction] ===== STARTING BATCHED TRANSACTION PROCESSING =====');
   logger.debug(`[migrationTransaction] Batch size: ${BATCH_SIZE} assets per transaction`);
   const transactionResults: string[] = [];
@@ -391,7 +391,7 @@ export const migrationTransaction = async (
 
   // Initialize progress to 0%
   if (onProgress) {
-    onProgress(0, 0, totalAssetsToProcess);
+    onProgress(0, 0, totalBatches);
   }
 
   for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
@@ -442,26 +442,14 @@ export const migrationTransaction = async (
         logger.error(`[migrationTransaction] ⚠️ Batch ${batchNumber} transaction expired`);
       }
 
-      // Update progress callback - jump to estimated time for this batch
-      // Each batch processes up to 30 assets, so progress is based on assets processed
-      const assetsProcessed = endIndex; // Total assets processed so far
-      if (onProgress && estimatedSecondsPerTransaction) {
-        const estimatedTotalSeconds = estimatedSecondsPerTransaction * totalAssetsToProcess;
-        const estimatedElapsedSeconds = assetsProcessed * estimatedSecondsPerTransaction;
-        const estimatedProgress = Math.min(
-          99,
-          Math.floor((estimatedElapsedSeconds / estimatedTotalSeconds) * 100)
-        );
-        logger.debug(
-          `[migrationTransaction] Jumping progress to estimated time: ${estimatedElapsedSeconds}s / ${estimatedTotalSeconds}s (${estimatedProgress}%) - ${assetsProcessed}/${totalAssetsToProcess} assets`
-        );
-        onProgress(estimatedProgress, assetsProcessed, totalAssetsToProcess);
-      } else {
-        // Fallback: use asset count if no timing estimate
-        const progressPercent = Math.round((assetsProcessed / totalAssetsToProcess) * 100);
-        if (onProgress) {
-          onProgress(progressPercent, assetsProcessed, totalAssetsToProcess);
-        }
+      // Update progress callback based on completed batches
+      const batchesCompleted = batchNumber; // batchNumber is 1-indexed
+      const progressPercent = Math.min(99, Math.round((batchesCompleted / totalBatches) * 100));
+      logger.debug(
+        `[migrationTransaction] Progress: ${batchesCompleted}/${totalBatches} batches completed (${progressPercent}%)`
+      );
+      if (onProgress) {
+        onProgress(progressPercent, batchesCompleted, totalBatches);
       }
 
       // Small delay between batches
@@ -474,21 +462,11 @@ export const migrationTransaction = async (
       // Continue with next batch even if one fails
       logger.error(`[migrationTransaction] Batch ${batchNumber} transaction failed`, error);
 
-      // Update progress even on failure - jump to estimated time
-      const assetsProcessed = endIndex; // Total assets processed so far (including failed batch)
-      if (onProgress && estimatedSecondsPerTransaction) {
-        const estimatedTotalSeconds = estimatedSecondsPerTransaction * totalAssetsToProcess;
-        const estimatedElapsedSeconds = assetsProcessed * estimatedSecondsPerTransaction;
-        const estimatedProgress = Math.min(
-          99,
-          Math.floor((estimatedElapsedSeconds / estimatedTotalSeconds) * 100)
-        );
-        onProgress(estimatedProgress, assetsProcessed, totalAssetsToProcess);
-      } else {
-        const progressPercent = Math.round((assetsProcessed / totalAssetsToProcess) * 100);
-        if (onProgress) {
-          onProgress(progressPercent, assetsProcessed, totalAssetsToProcess);
-        }
+      // Update progress even on failure based on completed batches
+      const batchesCompleted = batchNumber; // batchNumber is 1-indexed
+      const progressPercent = Math.min(99, Math.round((batchesCompleted / totalBatches) * 100));
+      if (onProgress) {
+        onProgress(progressPercent, batchesCompleted, totalBatches);
       }
 
       // Small delay between batches
@@ -496,13 +474,15 @@ export const migrationTransaction = async (
     }
   }
 
-  console.log('[migrationTransaction] ===== ALL BATCHED TRANSACTIONS COMPLETED =====');
-  console.log(`[migrationTransaction] Total batches: ${transactionResults.length}/${totalBatches}`);
-  console.log(`[migrationTransaction] Total assets processed: ${totalAssetsToProcess}`);
+  logger.debug('[migrationTransaction] ===== ALL BATCHED TRANSACTIONS COMPLETED =====');
+  logger.debug(
+    `[migrationTransaction] Total batches: ${transactionResults.length}/${totalBatches}`
+  );
+  logger.debug(`[migrationTransaction] Total assets processed: ${totalAssetsToProcess}`);
 
   // Ensure progress is at 100% after all transactions complete
   if (onProgress) {
-    onProgress(100, totalAssetsToProcess, totalAssetsToProcess);
+    onProgress(100, totalBatches, totalBatches);
   }
 
   // Return the last transaction ID (or first if available) for compatibility
