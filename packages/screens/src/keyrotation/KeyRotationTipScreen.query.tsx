@@ -72,7 +72,7 @@ export function KeyRotationTipScreen({
           {/* Title */}
           <YStack items="center" mb="$4" gap="$2">
             <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight="$8">
-              {t('backup.tip.title', { defaultValue: 'Upgrade\nyour account' })}
+              {t('keyrotation.tip.title', { defaultValue: 'Upgrade\nyour account' })}
             </Text>
           </YStack>
 
@@ -84,7 +84,7 @@ export function KeyRotationTipScreen({
           {/* Description */}
           <YStack items="center" mb="$6">
             <Text fontSize="$4" color="$text" text="center" maxW={320}>
-              {t('backup.tip.description', {
+              {t('keyrotation.tip.description', {
                 defaultValue:
                   'Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys',
               })}
@@ -94,7 +94,7 @@ export function KeyRotationTipScreen({
           {/* Section title */}
           <YStack items="center" mb="$4">
             <Text fontSize="$5" fontWeight="700" color="$text">
-              {t('backup.tip.sectionTitle', { defaultValue: 'What does this mean?' })}
+              {t('keyrotation.tip.sectionTitle', { defaultValue: 'What does this mean?' })}
             </Text>
           </YStack>
 
@@ -105,7 +105,7 @@ export function KeyRotationTipScreen({
           <YStack mb="$4">
             <TipCard
               icon={<LockBackup size={20} color={theme.primary.val} />}
-              title={t('backup.tip.fullControl.title', {
+              title={t('keyrotation.tip.fullControl.title', {
                 defaultValue: "You'll have full control over your accounts and keys.",
               })}
               showSeparator
@@ -113,7 +113,7 @@ export function KeyRotationTipScreen({
 
             <TipCard
               icon={<LinkBackup size={20} color={theme.primary.val} />}
-              title={t('backup.tip.newKey.title', {
+              title={t('keyrotation.tip.newKey.title', {
                 defaultValue:
                   "We'll create a new key to secure your account, removing Blocto's access.",
               })}
@@ -122,7 +122,7 @@ export function KeyRotationTipScreen({
 
             <TipCard
               icon={<Settings size={20} color={theme.primary.val} />}
-              title={t('backup.tip.newPhrase.title', {
+              title={t('keyrotation.tip.newPhrase.title', {
                 defaultValue:
                   "We'll create a new recovery phrase which will secure your account going forward.",
               })}
@@ -141,9 +141,9 @@ export function KeyRotationTipScreen({
           >
             <Text fontSize="$3" color="$text" lineHeight={18}>
               <Text fontWeight="700" color="$text">
-                {t('backup.tip.warning.prefix', { defaultValue: 'Please note: ' })}
+                {t('keyrotation.tip.warning.prefix', { defaultValue: 'Please note: ' })}
               </Text>
-              {t('backup.tip.warning.bloctoDescription', {
+              {t('keyrotation.tip.warning.bloctoDescription', {
                 defaultValue:
                   'After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations.',
               })}
@@ -174,7 +174,7 @@ export function KeyRotationTipScreen({
               {isLoading ? (
                 <Spinner size="small" color="$background" />
               ) : (
-                t('backup.tip.start', { defaultValue: 'Start' })
+                t('keyrotation.tip.start', { defaultValue: 'Start' })
               )}
             </Button>
           </YStack>
@@ -189,7 +189,7 @@ export function KeyRotationTipScreen({
                 cursor="pointer"
                 pressStyle={{ opacity: 0.7 }}
               >
-                {t('backup.tip.notNow', { defaultValue: 'Not now' })}
+                {t('keyrotation.tip.notNow', { defaultValue: 'Not now' })}
               </Text>
             </YStack>
           )}
