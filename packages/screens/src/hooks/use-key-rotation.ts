@@ -100,7 +100,7 @@ export function useKeyRotation(): UseKeyRotationReturn {
       }));
 
       toast.show({
-        title: t('backup.error.seedGeneration', {
+        title: t('keyrotation.error.seedGeneration', {
           defaultValue: 'Failed to generate recovery phrase',
         }),
         type: 'error',
@@ -136,7 +136,9 @@ export function useKeyRotation(): UseKeyRotationReturn {
         }));
 
         toast.show({
-          title: t('backup.success.rotation', { defaultValue: 'Account upgraded successfully!' }),
+          title: t('keyrotation.success.rotation', {
+            defaultValue: 'Account upgraded successfully!',
+          }),
           type: 'success',
         });
 
@@ -154,7 +156,7 @@ export function useKeyRotation(): UseKeyRotationReturn {
         }));
 
         toast.show({
-          title: t('backup.error.rotation', { defaultValue: 'Failed to upgrade account' }),
+          title: t('keyrotation.error.rotation', { defaultValue: 'Failed to upgrade account' }),
           message: errorMessage,
           type: 'error',
         });
