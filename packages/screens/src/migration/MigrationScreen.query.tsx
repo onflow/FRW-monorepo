@@ -483,7 +483,9 @@ export function MigrationScreen({
   const secs = remainingSeconds % 60;
   const timeRemaining =
     stage === 'in-progress' && remainingSeconds > 0
-      ? `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} remaining`
+      ? minutes > 0
+        ? `${minutes} min ${secs} sec remaining`
+        : `${secs} sec remaining`
       : undefined;
 
   // Smooth progress animation - gradually fill between transaction completion jumps

@@ -113,7 +113,6 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
   // eslint-disable-next-line no-console
   console.log(`[FCL] Configured for ${network}, accessNode: ${accessNode}`);
 }
-
 /**
  * Get current FCL network configuration
  */
