@@ -20,7 +20,7 @@
     "prepublishOnly": "pnpm build",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",
-    "migrate": "tsup ./scripts/migration.ts"
+    "migrate": "tsx ./scripts/migration.ts"
   },
   "exports": {
     ".": {
@@ -57,6 +57,7 @@
     "add": "^2.0.6",
     "dotenv": "^16.4.5",
     "tsup": "^8.5.0",
+    "tsx": "^4.19.2",
     "vitest": "^3.2.4",
     "ethers": "^6.15.0"
   }

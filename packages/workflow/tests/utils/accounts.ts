@@ -15,6 +15,12 @@ const accounts = {
       privateKey: process.env.TEST_MAIN_ACCOUNT_KEY,
     },
   },
+  test: {
+    address: process.env.TEST_ACCOUNT_ADDRESS || '',
+    evmAddr: process.env.TEST_ACCOUNT_COA || '',
+    eoaAddr: process.env.TEST_ACCOUNT_EOA || '',
+    key: process.env.TEST_ACCOUNT_KEY || '',
+  },
   // main: {
   //   address: process.env.TEST_MAIN_EOA_ACCOUNT_ADDRESS || '',
   //   pub: process.env.TEST_MAIN_EOA_ACCOUNT_PUBKEY,

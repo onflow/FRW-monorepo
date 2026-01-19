@@ -7,7 +7,9 @@ import { sign, signSecp256k1 } from './crypto';
 export const child1Addr = accounts.child1.address;
 export const child2Addr = accounts.child2.address;
 
-export async function authz(account, signType = 'secp256k1') {
+export async function authz(account, signType = 'p256') {
+  // console.log(account, 'account===');
+  // console.log(signType, 'signType===');
   return {
     // there is stuff in the account that is passed in
     // you need to make sure its part of what is returned
@@ -21,12 +23,12 @@ export async function authz(account, signType = 'secp256k1') {
     addr: fcl.sansPrefix(accounts.main.address), // eventually it wont matter if this address has a prefix or not, sadly :'( currently it does matter.
     keyId: Number(accounts.main.key.index), // must be a number
     signingFunction: (signable) => ({
-      addr: fcl.withPrefix(accounts.main.address), // must match the address that requested the signature, but with a prefix
-      keyId: accounts.main.key.index, // must match the keyId in the account that requested the signature
-      signature:
-        signType === 'p256'
-          ? sign(accounts.main.key.privateKey, signable.message)
-          : signSecp256k1(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
+      addr: fcl.withPrefix('0xf380b22ef386ac7e'), // must match the address that requested the signature, but with a prefix
+      keyId: 6, // must match the keyId in the account that requested the signature
+      signature: sign(accounts.main.key.privateKey, signable.message),
+      // signType === 'p256'
+      //   ? sign(accounts.main.key.privateKey, signable.message)
+      //   : signSecp256k1(accounts.main.key.privateKey, signable.message), // signable.message |> hexToBinArray |> hash |> sign |> binArrayToHex
       // if you arent in control of the transaction that is being signed we recommend constructing the
       // message from signable.voucher using the @onflow/encode module
     }),
