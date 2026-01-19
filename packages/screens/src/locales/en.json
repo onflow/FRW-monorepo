@@ -443,6 +443,32 @@
   },
   "backup": {
     "tip": {
+      "writeDown": {
+        "title": "Write it down",
+        "description": "Write your recovery phrase on paper and store it in a secure location."
+      },
+      "keepSecret": {
+        "title": "Keep it secret",
+        "description": "Never share your recovery phrase with anyone or enter it on any website."
+      },
+      "noScreenshot": {
+        "title": "No screenshots",
+        "description": "Do not take screenshots or store your phrase digitally where it could be compromised."
+      },
+      "warning": {
+        "title": "Important",
+        "description": "If you lose your recovery phrase, you will not be able to recover your wallet. Flow Wallet cannot help you recover it."
+      },
+      "continue": "Continue"
+    },
+    "mnemonic": {
+      "navTitle": "Create account",
+      "done": "Done",
+      "complete": "I've backed up my phrase"
+    }
+  },
+  "keyrotation": {
+    "tip": {
       "title": "Upgrade\nyour account",
       "description": "Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys",
       "sectionTitle": "What does this mean?",
@@ -457,26 +483,32 @@
       },
       "warning": {
         "prefix": "Please note: ",
-        "description": "After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations."
+        "bloctoDescription": "After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations."
       },
       "start": "Start",
       "notNow": "Not now"
     },
     "mnemonic": {
-      "navTitle": "Upgrade account",
       "title": "Recovery phrase",
       "description": "Write down these words in the right order and store them somewhere safe.",
       "clickToReveal": "Click to reveal phrase",
       "copy": "Copy",
+      "upgrading": "Upgrading account...",
       "warning": {
         "title": "Do not share your recovery phrase!",
         "description": "If someone has your recovery phrase, They will have full control of your wallet."
       },
-      "done": "Done",
       "error": {
         "title": "Invalid Recovery Phrase",
         "description": "The recovery phrase is missing or invalid. Please try again."
       }
+    },
+    "error": {
+      "seedGeneration": "Failed to generate recovery phrase",
+      "rotation": "Failed to upgrade account"
+    },
+    "success": {
+      "rotation": "Account upgraded successfully!"
     }
   }
 }
