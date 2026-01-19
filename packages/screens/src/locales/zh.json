@@ -391,6 +391,32 @@
   },
   "backup": {
     "tip": {
+      "writeDown": {
+        "title": "写下来",
+        "description": "将您的恢复短语写在纸上并存放在安全的地方。"
+      },
+      "keepSecret": {
+        "title": "保密",
+        "description": "永远不要与任何人分享您的恢复短语或在任何网站上输入它。"
+      },
+      "noScreenshot": {
+        "title": "不要截图",
+        "description": "不要截图或以数字方式存储您的短语，因为它可能会被泄露。"
+      },
+      "warning": {
+        "title": "重要",
+        "description": "如果您丢失了恢复短语，您将无法恢复您的钱包。Flow Wallet 无法帮助您恢复。"
+      },
+      "continue": "继续"
+    },
+    "mnemonic": {
+      "navTitle": "创建账户",
+      "done": "完成",
+      "complete": "我已备份我的短语"
+    }
+  },
+  "keyrotation": {
+    "tip": {
       "title": "升级\n您的账户",
       "description": "Flow Wallet需要升级您账户的安全性以移除您以前的Blocto密钥",
       "sectionTitle": "这意味着什么？",
@@ -405,23 +431,32 @@
       },
       "warning": {
         "prefix": "请注意：",
-        "description": "如果您丢失了恢复短语，您将无法恢复您的钱包。Flow Wallet 无法帮助您恢复。",
         "bloctoDescription": "此过程完成后，您来自Blocto的恢复套件将不再保护对您账户的访问。这是为了在Blocto停止运营后保护您。"
       },
       "start": "开始",
       "notNow": "暂不"
     },
     "mnemonic": {
-      "navTitle": "创建账户",
       "title": "恢复短语",
       "description": "按正确顺序写下这些单词，并将其存放在安全的地方。",
       "clickToReveal": "点击显示短语",
       "copy": "复制",
+      "upgrading": "正在升级账户...",
       "warning": {
         "title": "不要分享您的恢复短语！",
         "description": "如果有人获得了您的恢复短语，他们将完全控制您的钱包。"
       },
-      "done": "完成"
+      "error": {
+        "title": "无效的恢复短语",
+        "description": "恢复短语缺失或无效。请重试。"
+      }
+    },
+    "error": {
+      "seedGeneration": "生成恢复短语失败",
+      "rotation": "升级账户失败"
+    },
+    "success": {
+      "rotation": "账户升级成功！"
     }
   }
 }

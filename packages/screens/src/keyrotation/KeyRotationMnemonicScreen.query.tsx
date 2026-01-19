@@ -91,10 +91,10 @@ export function KeyRotationMnemonicScreen({
       <OnboardingBackground>
         <YStack flex={1} items="center" justify="center" px="$4" gap="$4">
           <Text color="$error" text="center" fontSize="$5" fontWeight="700">
-            {t('backup.mnemonic.error.title', { defaultValue: 'Invalid Recovery Phrase' })}
+            {t('keyrotation.mnemonic.error.title', { defaultValue: 'Invalid Recovery Phrase' })}
           </Text>
           <Text color="$textSecondary" text="center" fontSize="$4">
-            {t('backup.mnemonic.error.description', {
+            {t('keyrotation.mnemonic.error.description', {
               defaultValue: 'The recovery phrase is missing or invalid. Please try again.',
             })}
           </Text>
@@ -140,8 +140,8 @@ export function KeyRotationMnemonicScreen({
   };
 
   const buttonText = isLoading
-    ? t('backup.mnemonic.upgrading', { defaultValue: 'Upgrading account...' })
-    : t('backup.mnemonic.done', { defaultValue: 'Done' });
+    ? t('keyrotation.mnemonic.upgrading', { defaultValue: 'Upgrading account...' })
+    : t('keyrotation.tip.start', { defaultValue: 'Start' });
 
   return (
     <OnboardingBackground>
@@ -150,10 +150,10 @@ export function KeyRotationMnemonicScreen({
           {/* Title and description */}
           <YStack items="center" mb="$6" gap="$2">
             <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight="$8">
-              {t('backup.mnemonic.title', { defaultValue: 'Recovery phrase' })}
+              {t('keyrotation.mnemonic.title', { defaultValue: 'Recovery phrase' })}
             </Text>
             <Text fontSize="$4" color="$textSecondary" text="center" lineHeight="$4" maxW={280}>
-              {t('backup.mnemonic.description', {
+              {t('keyrotation.mnemonic.description', {
                 defaultValue:
                   'Write down these words in the right order and store them somewhere safe.',
               })}
@@ -165,7 +165,7 @@ export function KeyRotationMnemonicScreen({
             words={seedPhraseWords}
             isRevealed={isPhraseRevealed}
             onReveal={handleRevealPhrase}
-            revealLabel={t('backup.mnemonic.clickToReveal', {
+            revealLabel={t('keyrotation.mnemonic.clickToReveal', {
               defaultValue: 'Click to reveal phrase',
             })}
           />
@@ -178,7 +178,7 @@ export function KeyRotationMnemonicScreen({
                 <Text fontSize="$4" fontWeight="700" style={{ color: theme.primary.val }}>
                   {copied
                     ? t('messages.copied')
-                    : t('backup.mnemonic.copy', { defaultValue: 'Copy' })}
+                    : t('keyrotation.mnemonic.copy', { defaultValue: 'Copy' })}
                 </Text>
               </XStack>
             </Button>
@@ -187,10 +187,10 @@ export function KeyRotationMnemonicScreen({
           {/* Warning card */}
           <WarningCard
             icon={<Warning size={24} color={theme.iconGlass.val} />}
-            title={t('backup.mnemonic.warning.title', {
+            title={t('keyrotation.mnemonic.warning.title', {
               defaultValue: 'Do not share your recovery phrase!',
             })}
-            description={t('backup.mnemonic.warning.description', {
+            description={t('keyrotation.mnemonic.warning.description', {
               defaultValue:
                 'If someone has your recovery phrase, They will have full control of your wallet.',
             })}
