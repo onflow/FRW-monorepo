@@ -60,18 +60,6 @@ export function MigrationScreen({
   assets,
   failedAssets = [],
 }: MigrationScreenProps): React.ReactElement {
-  console.log('[MigrationScreen] Component rendered', {
-    initialStage,
-    hasAssets: !!assets,
-    assetsProvided: !!assets,
-    assetsDetails: assets
-      ? {
-          erc20: assets.erc20?.length ?? 0,
-          erc721: assets.erc721?.length ?? 0,
-          erc1155: assets.erc1155?.length ?? 0,
-        }
-      : null,
-  });
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
   const [stage, setStage] = useState<MigrationStage>(initialStage);
@@ -83,12 +71,7 @@ export function MigrationScreen({
 
   // Ensure migration never runs automatically - only via button press
   useEffect(() => {
-    console.log('[MigrationScreen] Mount effect - ensuring stage is ready', {
-      initialStage,
-      stage,
-    });
     if (initialStage === 'in-progress' && stage === 'in-progress' && !isProcessing) {
-      console.warn('[MigrationScreen] Detected auto-start, resetting to ready');
       setStage('ready');
     }
   }, []); // Only run on mount
@@ -210,47 +193,8 @@ export function MigrationScreen({
     };
   }, [destinationAccount, selectedAccount, sourceAccount, walletProfiles?.profiles]);
 
-  // Log resolved accounts for debugging
-  useEffect(() => {
-    console.log('[MigrationScreen] Resolved accounts', {
-      source: {
-        name: resolvedSourceAccount.name,
-        address: resolvedSourceAccount.address,
-        hasAddress: !!resolvedSourceAccount.address,
-      },
-      destination: {
-        name: resolvedDestinationAccount.name,
-        address: resolvedDestinationAccount.address,
-        hasAddress: !!resolvedDestinationAccount.address,
-      },
-    });
-  }, [resolvedSourceAccount, resolvedDestinationAccount]);
-
-  // Log assets status
-  useEffect(() => {
-    if (!assets) {
-      console.warn(
-        '[MigrationScreen] ⚠️ NO ASSETS PROVIDED - MigrationScreen requires assets prop to be passed',
-        {
-          sourceAddress: resolvedSourceAccount.address,
-          note: 'Assets need to be fetched from the source account and passed as props',
-        }
-      );
-    } else {
-      const totalAssets =
-        (assets.erc20?.length ?? 0) + (assets.erc721?.length ?? 0) + (assets.erc1155?.length ?? 0);
-      console.log('[MigrationScreen] Assets provided', {
-        totalAssets,
-        erc20: assets.erc20?.length ?? 0,
-        erc721: assets.erc721?.length ?? 0,
-        erc1155: assets.erc1155?.length ?? 0,
-      });
-    }
-  }, [assets, resolvedSourceAccount.address]);
-
   // Handle migration progress animation (only visual, real progress comes from callback)
   useEffect(() => {
-    console.log('[MigrationScreen] Progress effect triggered', { stage, isProcessing });
     if (stage === 'in-progress') {
       setIsAnimating(true);
     } else {
@@ -261,34 +205,18 @@ export function MigrationScreen({
   }, [stage, isProcessing]);
 
   const handleStart = useCallback(async () => {
-    console.log('[MigrationScreen] ===== START BUTTON PRESSED =====');
     logger.info('[MigrationScreen] Start button pressed');
 
     if (!assets || (!assets.erc20?.length && !assets.erc721?.length && !assets.erc1155?.length)) {
-      console.warn('[MigrationScreen] No assets to migrate', assets);
       logger.warn('[MigrationScreen] No assets to migrate');
       return;
     }
 
     if (!resolvedSourceAccount.address || !resolvedDestinationAccount.address) {
-      console.error('[MigrationScreen] Missing account addresses', {
-        source: resolvedSourceAccount.address,
-        destination: resolvedDestinationAccount.address,
-      });
       logger.error('[MigrationScreen] Missing source or destination address');
       setMigrationError(new Error('Missing account addresses'));
       return;
     }
-
-    console.log('[MigrationScreen] Starting migration process', {
-      sourceAddress: resolvedSourceAccount.address,
-      destinationAddress: resolvedDestinationAccount.address,
-      assetsCount: {
-        erc20: assets.erc20?.length ?? 0,
-        erc721: assets.erc721?.length ?? 0,
-        erc1155: assets.erc1155?.length ?? 0,
-      },
-    });
 
     setStage('in-progress');
     setIsProcessing(true);
@@ -297,9 +225,7 @@ export function MigrationScreen({
     setStartTime(Date.now()); // Track start time for time-based progress
 
     try {
-      console.log('[MigrationScreen] Getting CadenceService...');
       const cadenceService = getCadenceService();
-      console.log('[MigrationScreen] CadenceService obtained');
 
       // Get EVM addresses for sender and receiver
       // For COA (type='evm'), address is already EVM address
@@ -309,21 +235,13 @@ export function MigrationScreen({
       let receiverEvmAddr = resolvedDestinationAccount.address;
 
       // If source account is not already an EVM address, try to get it
-      console.log('[MigrationScreen] Checking sender address format', { senderEvmAddr });
       if (!senderEvmAddr.startsWith('0x')) {
-        console.log('[MigrationScreen] Sender address is not EVM format, fetching COA address...');
         try {
           const coaAddr = await cadenceService.getAddr(senderEvmAddr);
-          console.log('[MigrationScreen] COA address fetched', { coaAddr });
           if (coaAddr) {
             senderEvmAddr = `0x${coaAddr}`;
-            console.log('[MigrationScreen] Updated sender address', { senderEvmAddr });
           }
         } catch (error) {
-          console.warn(
-            '[MigrationScreen] Failed to get COA address, using provided address',
-            error
-          );
           logger.warn('[MigrationScreen] Failed to get COA address, using provided address', error);
         }
       }
@@ -336,104 +254,45 @@ export function MigrationScreen({
         receiverEvmAddr = `0x${receiverEvmAddr}`;
       }
 
-      console.log('[MigrationScreen] Final addresses prepared', {
-        sender: senderEvmAddr,
-        receiver: receiverEvmAddr,
-      });
       logger.info('[MigrationScreen] Starting migration transaction', {
         sender: senderEvmAddr,
         receiver: receiverEvmAddr,
         assets,
       });
 
-      // Log all assets and amounts before transaction
-      console.log('[MigrationScreen] ===== MIGRATION ASSETS AND AMOUNTS =====');
-      console.log('[MigrationScreen] Sender:', senderEvmAddr);
-      console.log('[MigrationScreen] Receiver:', receiverEvmAddr);
-
-      if (assets.erc20 && assets.erc20.length > 0) {
-        console.log('[MigrationScreen] ERC20 Tokens:');
-        assets.erc20.forEach((token, index) => {
-          const symbol =
-            token.address === '0x0000000000000000000000000000000000000000' ? 'FLOW' : token.address;
-          console.log(`  [${index + 1}] ${symbol}: ${token.amount}`);
-        });
-      } else {
-        console.log('[MigrationScreen] ERC20 Tokens: None');
-      }
-
-      if (assets.erc721 && assets.erc721.length > 0) {
-        console.log('[MigrationScreen] ERC721 NFTs:');
-        assets.erc721.forEach((nft, index) => {
-          console.log(`  [${index + 1}] Contract: ${nft.address}, Token ID: ${nft.id}`);
-        });
-      } else {
-        console.log('[MigrationScreen] ERC721 NFTs: None');
-      }
-
-      if (assets.erc1155 && assets.erc1155.length > 0) {
-        console.log('[MigrationScreen] ERC1155 Tokens:');
-        assets.erc1155.forEach((token, index) => {
-          console.log(
-            `  [${index + 1}] Contract: ${token.address}, Token ID: ${token.id}, Amount: ${token.amount}`
-          );
-        });
-      } else {
-        console.log('[MigrationScreen] ERC1155 Tokens: None');
-      }
-
-      const totalAssets =
-        (assets.erc20?.length ?? 0) + (assets.erc721?.length ?? 0) + (assets.erc1155?.length ?? 0);
-      console.log(`[MigrationScreen] Total assets to migrate: ${totalAssets}`);
-      console.log('[MigrationScreen] ===== END MIGRATION ASSETS =====');
-
-      // Calculate estimated time: 30 seconds per transaction
-      const estimatedSecondsPerTransaction = 30;
-      const estimatedTotalSeconds = totalAssets * estimatedSecondsPerTransaction;
-
       // Execute migration transaction with progress callback
-      console.log('[MigrationScreen] ===== CALLING migrationTransaction =====');
       const result = await migrationTransaction(
         cadenceService,
         assets,
         senderEvmAddr,
         receiverEvmAddr,
-        (progress, current, total) => {
-          console.log(`[MigrationScreen] Progress update: ${progress}% (${current}/${total})`);
-          // Jump progress to estimated time for completed transactions
+        (progress, completedBatches, totalBatches) => {
           setProgress(progress);
-        },
-        estimatedSecondsPerTransaction
+          setCompletedBatchCount(completedBatches);
+        }
       );
 
-      console.log('[MigrationScreen] ===== migrationTransaction COMPLETED =====', result);
       logger.info('[MigrationScreen] Migration transaction completed', result);
 
       // Update progress to 100%
-      console.log('[MigrationScreen] Setting progress to 100%');
       setProgress(100);
 
       // Check if there were any failures (this would need to be determined from the result)
       // For now, assume success if no error
-      console.log('[MigrationScreen] Migration successful, transitioning to completed-all');
       setTimeout(() => {
         setStage('completed-all');
         setIsProcessing(false);
-        console.log('[MigrationScreen] Stage set to completed-all');
       }, 1000);
     } catch (error: any) {
-      console.error('[MigrationScreen] ===== migrationTransaction FAILED =====', error);
       logger.error('[MigrationScreen] Migration transaction failed', error);
       setMigrationError(error);
       setProgress(0);
 
       // Determine if it's a partial failure or complete failure
       // For now, treat all errors as partial completion (some assets may have succeeded)
-      console.log('[MigrationScreen] Migration failed, transitioning to completed-partial');
       setTimeout(() => {
         setStage('completed-partial');
         setIsProcessing(false);
-        console.log('[MigrationScreen] Stage set to completed-partial');
       }, 1000);
     }
   }, [assets, resolvedSourceAccount.address, resolvedDestinationAccount.address]);
@@ -465,20 +324,48 @@ export function MigrationScreen({
   // Calculate transferred assets count for progress display
   const totalAssetsCount =
     (assets?.erc20?.length ?? 0) + (assets?.erc721?.length ?? 0) + (assets?.erc1155?.length ?? 0);
+
+  // Each batch of 200 assets takes approximately 30 seconds
+  const BATCH_SIZE = 200;
+  const totalBatches = Math.ceil(totalAssetsCount / BATCH_SIZE);
+  const estimatedSecondsPerBatch = 30;
+  const estimatedTotalSeconds = totalBatches * estimatedSecondsPerBatch;
+
+  // Track completed batches directly from callback
+  const [completedBatchCount, setCompletedBatchCount] = useState(0);
+
+  // Calculate transferred assets based on completed batches (jumps by BATCH_SIZE)
   const transferredAssetsCount =
     stage === 'in-progress'
-      ? Math.floor((progress / 100) * totalAssetsCount)
+      ? Math.min(completedBatchCount * BATCH_SIZE, totalAssetsCount)
       : stage === 'completed-all'
         ? totalAssetsCount
         : 0;
 
-  // Calculate estimated elapsed time based on progress (not actual elapsed time)
-  // Progress is updated by transaction callbacks to jump to estimated time slots
-  // 30 seconds per transaction
-  const estimatedSecondsPerTransaction = 30;
-  const estimatedTotalSeconds = totalAssetsCount * estimatedSecondsPerTransaction;
-  const estimatedElapsedSeconds = Math.floor((progress / 100) * estimatedTotalSeconds);
-  const remainingSeconds = Math.max(0, estimatedTotalSeconds - estimatedElapsedSeconds);
+  // Track elapsed time for countdown
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Update elapsed time every second when processing
+  useEffect(() => {
+    if (stage === 'in-progress' && isProcessing) {
+      const interval = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [stage, isProcessing]);
+
+  // Reset elapsed time and batch count when starting new migration
+  useEffect(() => {
+    if (stage === 'ready') {
+      setElapsedSeconds(0);
+      setCompletedBatchCount(0);
+    }
+  }, [stage]);
+
+  // Calculate remaining time based on actual elapsed time and completed batches
+  const remainingSeconds = Math.max(0, estimatedTotalSeconds - elapsedSeconds);
   const minutes = Math.floor(remainingSeconds / 60);
   const secs = remainingSeconds % 60;
   const timeRemaining =
@@ -487,23 +374,6 @@ export function MigrationScreen({
         ? `${minutes} min ${secs} sec remaining`
         : `${secs} sec remaining`
       : undefined;
-
-  // Smooth progress animation - gradually fill between transaction completion jumps
-  // Progress jumps when transactions complete, then smoothly animates until next jump
-  useEffect(() => {
-    if (stage === 'in-progress' && isProcessing) {
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          // Gradually increase progress, but don't exceed 99% until all complete
-          // The transaction callbacks will jump it forward when transactions complete
-          const increment = 0.05; // Small increment for smooth animation
-          return Math.min(99, prev + increment);
-        });
-      }, 100); // Update every 100ms for smooth animation
-
-      return () => clearInterval(interval);
-    }
-  }, [stage, isProcessing]);
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">

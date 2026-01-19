@@ -378,8 +378,8 @@ export const migrationTransaction = async (
     logger.error('[migrationTransaction] Error details:', error?.message, error?.stack);
   }
 
-  // Process assets in batches of 50 per transaction
-  const BATCH_SIZE = 50;
+  // Process assets in batches of 200 per transaction
+  const BATCH_SIZE = 200;
   logger.debug('[migrationTransaction] ===== STARTING BATCHED TRANSACTION PROCESSING =====');
   logger.debug(`[migrationTransaction] Batch size: ${BATCH_SIZE} assets per transaction`);
   const transactionResults: string[] = [];
@@ -409,11 +409,6 @@ export const migrationTransaction = async (
     const batchValues = trxs.values.slice(startIndex, endIndex);
     const batchDatas = trxs.datas.slice(startIndex, endIndex);
 
-    logger.debug(`[migrationTransaction] Batch ${batchNumber} contains ${batchSize} assets`);
-    logger.debug(`[migrationTransaction] Batch addresses: ${batchAddresses.length}`);
-    logger.debug(`[migrationTransaction] Batch values: ${batchValues.length}`);
-    logger.debug(`[migrationTransaction] Batch datas: ${batchDatas.length}`);
-
     try {
       // Process batch transaction (up to 30 assets in one transaction)
       const batchResult = await cadenceService.batchCallContract(
@@ -430,13 +425,8 @@ export const migrationTransaction = async (
 
       // Wait for transaction to be sealed before proceeding to next batch
       const { waitForTransaction } = await import('@onflow/frw-cadence');
-      logger.debug(
-        `[migrationTransaction] Waiting for batch ${batchNumber} transaction to be sealed...`
-      );
+
       const txResult = await waitForTransaction(batchResult, 120000, 2000);
-      logger.debug(
-        `[migrationTransaction] Batch ${batchNumber} transaction sealed - Status: ${txResult.status}`
-      );
 
       if (txResult.status === 5) {
         logger.error(`[migrationTransaction] ⚠️ Batch ${batchNumber} transaction expired`);
@@ -474,7 +464,6 @@ export const migrationTransaction = async (
     }
   }
 
-  logger.debug('[migrationTransaction] ===== ALL BATCHED TRANSACTIONS COMPLETED =====');
   logger.debug(
     `[migrationTransaction] Total batches: ${transactionResults.length}/${totalBatches}`
   );
@@ -492,16 +481,6 @@ export const migrationTransaction = async (
     total: transactionResults.length,
     results: transactionResults,
   });
-
-  // Summary of all transactions
-  logger.debug('[migrationTransaction] ===== FINAL MIGRATION SUMMARY =====');
-  logger.debug(`[migrationTransaction] Total assets processed: ${totalAssetsToProcess}`);
-  logger.debug(`[migrationTransaction] Total batches: ${totalBatches}`);
-  logger.debug(
-    `[migrationTransaction] Successful batch transactions: ${transactionResults.length}`
-  );
-  logger.debug(`[migrationTransaction] Transaction IDs:`, transactionResults);
-  logger.debug('[migrationTransaction] ===== END FINAL SUMMARY =====');
 
   return res;
 };
