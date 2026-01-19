@@ -328,7 +328,7 @@ export function MigrationScreen({
   // Each batch of 200 assets takes approximately 30 seconds
   const BATCH_SIZE = 200;
   const totalBatches = Math.ceil(totalAssetsCount / BATCH_SIZE);
-  const estimatedSecondsPerBatch = 30;
+  const estimatedSecondsPerBatch = 15;
   const estimatedTotalSeconds = totalBatches * estimatedSecondsPerBatch;
 
   // Track completed batches directly from callback
