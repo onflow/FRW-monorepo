@@ -1,6 +1,7 @@
-import { fcl } from '@onflow/frw-cadence';
+import { waitForExecuted } from '@onflow/frw-cadence';
 import { cadence } from '@onflow/frw-context';
 import { RotationError, RotationErrorType, type BloctoDetectionResult } from '@onflow/frw-types';
+import { logger } from '@onflow/frw-utils';
 
 import { BloctoDetectorService } from './bloctoDetector';
 
@@ -32,12 +33,34 @@ export class KeyRotation {
 
     try {
       const txId = await cadence.addAndRevokeKeys([publicKey], revokeKeyIndexes);
-      const sealed = await fcl.tx(txId).onceSealed();
+      logger.info('[KeyRotation] Transaction submitted', { txId });
 
-      if (sealed?.errorMessage) {
+      // Use custom polling with snapshot() instead of FCL's onceExecuted()
+      // FCL's subscribe-based polling doesn't work properly in React Native
+      const executed = await waitForExecuted(txId, {
+        timeout: 60000, // 60 seconds
+        pollInterval: 2000, // Poll every 2 seconds
+        onStatusChange: (status) => {
+          logger.info('[KeyRotation] Status update', {
+            txId,
+            status: status.status,
+            statusCode: status.statusCode,
+            statusString: status.statusString,
+          });
+        },
+      });
+
+      logger.info('[KeyRotation] Transaction executed', {
+        txId,
+        status: executed.status,
+        statusCode: executed.statusCode,
+        events: executed.events?.length ?? 0,
+      });
+
+      if (executed?.errorMessage) {
         throw new RotationError({
           type: RotationErrorType.CADENCE_TRANSACTION_FAILED,
-          message: sealed.errorMessage,
+          message: executed.errorMessage,
         });
       }
 
@@ -47,9 +70,14 @@ export class KeyRotation {
         throw error;
       }
 
+      logger.error('[KeyRotation] Failed to rotate keys on-chain', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+
       throw new RotationError({
         type: RotationErrorType.CADENCE_TRANSACTION_FAILED,
-        message: 'Failed to rotate keys',
+        message: error instanceof Error ? error.message : 'Failed to rotate keys',
       });
     }
   }
