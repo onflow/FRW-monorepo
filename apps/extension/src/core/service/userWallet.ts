@@ -1115,6 +1115,9 @@ class UserWallet {
         errorCode,
       });
 
+      // Update the pending transaction to show error state
+      await transactionActivityService.updatePendingError(network, address, txId, errorMessage);
+
       // Track the transaction error
       analyticsService.track('transaction_result', {
         tx_id: txId,

@@ -271,6 +271,55 @@ class TransactionActivity {
     return combinedTxHash;
   };
 
+  /**
+   * Update a pending transaction to show error state
+   * This is called when a evm transaction fails on the cadence side
+   * @param network - The network
+   * @param address - The address (can be Flow or EVM address)
+   * @param txId - The transaction ID
+   * @param errorMessage - The error message to display
+   */
+  updatePendingError = async (
+    network: string,
+    address: string,
+    txId: string,
+    errorMessage?: string
+  ): Promise<void> => {
+    const txList = this.getPendingList(network, address);
+
+    const txItemIndex = txList.findIndex((item) => item.hash.includes(txId));
+    if (txItemIndex === -1) {
+      // txItem not found, return
+      return;
+    }
+    const txItem = txList[txItemIndex];
+
+    // Mark the transaction as failed
+    txItem.status = 'Error';
+    txItem.error = true;
+    if (errorMessage) {
+      txItem.additionalMessage = errorMessage;
+    }
+
+    txList[txItemIndex] = txItem;
+    this.setPendingList(network, address, txList);
+
+    // Get the existing indexed transaction list and update it
+    const existingTxStore = await getInvalidData<TransferListStore>(
+      transferListKey(network, address, '0', '15')
+    );
+    if (existingTxStore) {
+      const storeItemIndex = existingTxStore.list.findIndex((item) => item.hash.includes(txId));
+      if (storeItemIndex !== -1) {
+        existingTxStore.list[storeItemIndex] = txItem;
+        existingTxStore.pendingCount = existingTxStore.list.filter(
+          (item) => item.status.toUpperCase() === 'PENDING'
+        ).length;
+        await setCachedData(transferListKey(network, address, '0', '15'), existingTxStore);
+      }
+    }
+  };
+
   removePending = async (network: string, address: string, txId: string) => {
     // Get the flow transactions
     const txList = await this.getPendingList(network, address);
