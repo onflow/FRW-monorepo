@@ -59,6 +59,25 @@ export const test = base.extend<{
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     await call(context);
+    context.on('page', async (page) => {
+      const url = page.url();
+      console.log(`新页面打开：${url}`);
+
+      // 检查是否是你的扩展页面
+      if (url.startsWith('chrome-extension://')) {
+        console.log('捕获到扩展新页面！');
+        // 可以通过 page.evaluate() 在扩展页面中执行代码
+        // 或者使用 page.goto() 导航到扩展内部的另一个页面 (如果需要)
+        // await page.goto('chrome-extension://<your-extension-id>/popup.html');
+        const changeAccBtn = await page.getByTestId('account-card-chevron');
+        expect(changeAccBtn).toBeVisible();
+
+        //   changeAccBtn.click();
+        // 演示：打印页面标题
+        // const title = await page.title();
+        // console.log(`扩展页面标题：${title}`);
+      }
+    });
     await context.close();
   },
   extensionId: async ({ context }, call) => {
@@ -203,6 +222,68 @@ export const test = base.extend<{
     await call(extensionId);
   },
 });
+
+export async function captureExtensionPage() {
+  // 替换成你的扩展路径
+  const extensionPath = path.join(import.meta.dirname, '../../dist');
+
+  const browser = await chromium.launch({
+    headless: false, // 方便观察
+    args: [
+      `--load-extension=${extensionPath}`,
+      '--disable-extensions-except=' + extensionPath, // 加载特定扩展
+    ],
+  });
+
+  // 创建一个新的浏览器上下文，以便隔离扩展运行
+  const context = await browser.newContext();
+
+  // 监听所有新页面创建事件
+  context.on('page', async (page) => {
+    const url = page.url();
+    console.log(`新页面打开：${url}`);
+
+    // 检查是否是你的扩展页面
+    if (url.startsWith('chrome-extension://')) {
+      console.log('捕获到扩展新页面！');
+      // 可以通过 page.evaluate() 在扩展页面中执行代码
+      // 或者使用 page.goto() 导航到扩展内部的另一个页面 (如果需要)
+      // await page.goto('chrome-extension://<your-extension-id>/popup.html');
+
+      // 演示：打印页面标题
+      const title = await page.title();
+      console.log(`扩展页面标题：${title}`);
+    }
+  });
+
+  // 在这里触发扩展的动作，例如点击按钮，或者让扩展本身打开一个新窗口/tab
+  // (这取决于你的扩展是如何工作的)
+  const mainPage = await context.newPage(); // 创建一个主页面，用于交互
+  await mainPage.goto('https://www.google.com'); // 示例：一个可以交互的页面
+
+  // 假设你的扩展有一个按钮会打开一个新页面
+  // 这里需要具体逻辑来触发，例如通过 `page.evaluate()`
+  await mainPage.evaluate(() => {
+    // 模拟点击扩展的某个按钮，这个按钮会打开一个新页面
+    // 实际操作需要根据你的扩展代码来编写
+    // 比如：document.getElementById('my-extension-button').click();
+  });
+
+  // 等待一段时间，让扩展的 new page 有机会出现
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
+  await browser.close();
+}
+
+export const connectToApps = async ({ page, extensionId, url, testId, idx = -1 }) => {
+  await page.goto(url);
+
+  let connectBtn = await page.getByTestId(testId);
+  if (idx !== -1) {
+    connectBtn = connectBtn.nth(idx);
+  }
+  await connectBtn.click();
+};
 
 export const cleanExtension = async (projectName: string) => {
   console.log(

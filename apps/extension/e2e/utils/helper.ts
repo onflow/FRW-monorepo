@@ -348,10 +348,13 @@ export const importSenderAccount = async ({ page, extensionId }) => {
   });
 };
 
-export const connectToApps = async ({ page, extensionId, url, testId }) => {
+export const connectToApps = async ({ page, extensionId, url, testId, idx = -1 }) => {
   await page.goto(url);
 
-  const connectBtn = await page.getByTestId(testId);
+  let connectBtn = await page.getByTestId(testId);
+  if (idx !== -1) {
+    connectBtn = connectBtn.nth(idx);
+  }
   await connectBtn.click();
 };
 
