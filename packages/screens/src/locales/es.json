@@ -391,6 +391,32 @@
   },
   "backup": {
     "tip": {
+      "writeDown": {
+        "title": "Escríbelo",
+        "description": "Escribe tu frase de recuperación en papel y guárdala en un lugar seguro."
+      },
+      "keepSecret": {
+        "title": "Mantenlo en secreto",
+        "description": "Nunca compartas tu frase de recuperación con nadie ni la ingreses en ningún sitio web."
+      },
+      "noScreenshot": {
+        "title": "Sin capturas de pantalla",
+        "description": "No tomes capturas de pantalla ni almacenes tu frase digitalmente donde pueda ser comprometida."
+      },
+      "warning": {
+        "title": "Importante",
+        "description": "Si pierdes tu frase de recuperación, no podrás recuperar tu cartera. Flow Wallet no puede ayudarte a recuperarla."
+      },
+      "continue": "Continuar"
+    },
+    "mnemonic": {
+      "navTitle": "Crear cuenta",
+      "done": "Hecho",
+      "complete": "He respaldado mi frase"
+    }
+  },
+  "keyrotation": {
+    "tip": {
       "title": "Actualiza\ntu cuenta",
       "description": "Flow Wallet necesita actualizar la seguridad de tu cuenta para eliminar tus claves anteriores de Blocto",
       "sectionTitle": "¿Qué significa esto?",
@@ -405,22 +431,32 @@
       },
       "warning": {
         "prefix": "Ten en cuenta: ",
-        "description": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
+        "bloctoDescription": "Después de que este proceso se complete, tu kit de recuperación de Blocto ya no asegurará el acceso a tu cuenta. Esto es para tu protección ahora que Blocto ha cesado operaciones."
       },
       "start": "Comenzar",
       "notNow": "Ahora no"
     },
     "mnemonic": {
-      "navTitle": "Actualizar cuenta",
       "title": "Frase de recuperación",
       "description": "Escribe estas palabras en el orden correcto y guárdalas en un lugar seguro.",
       "clickToReveal": "Haz clic para revelar la frase",
       "copy": "Copiar",
+      "upgrading": "Actualizando cuenta...",
       "warning": {
         "title": "¡No compartas tu frase de recuperación!",
         "description": "Si alguien tiene tu frase de recuperación, tendrá control total de tu cartera."
       },
-      "done": "Hecho"
+      "error": {
+        "title": "Frase de Recuperación Inválida",
+        "description": "La frase de recuperación falta o es inválida. Por favor, inténtalo de nuevo."
+      }
+    },
+    "error": {
+      "seedGeneration": "Error al generar la frase de recuperación",
+      "rotation": "Error al actualizar la cuenta"
+    },
+    "success": {
+      "rotation": "¡Cuenta actualizada exitosamente!"
     }
   }
 }
