@@ -6,7 +6,8 @@ export type FeatureFlagKey =
   | 'emulator_mode'
   | 'cover_bridge_fee'
   | 'create_new_account'
-  | 'import_existing_account';
+  | 'import_existing_account'
+  | 'vault_entrance';
 
 // Feature flags
 export type FeatureFlags = {

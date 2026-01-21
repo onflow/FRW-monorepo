@@ -83,6 +83,7 @@ export * from './components/Surge/SurgeWarning';
 export * from './components/Surge/SurgeModal';
 export * from './components/Surge/SurgeFeeSection';
 export * from './components/Surge/SurgeFeeConfirmationSection';
+export * from './components/Vault';
 export * from './components/Tag';
 export * from './components/ToAccountSection';
 export * from './components/Toast';

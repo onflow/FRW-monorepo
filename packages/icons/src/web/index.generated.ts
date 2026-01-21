@@ -12,6 +12,7 @@ export { default as CloudBackup } from './CloudBackup.generated';
 export { default as ConfirmDialogBg } from './ConfirmDialogBg.generated';
 export { default as Copy } from './Copy.generated';
 export { default as DeviceBackup } from './DeviceBackup.generated';
+export { default as Earn } from './Earn.generated';
 export { default as Edit } from './Edit.generated';
 export { default as FileText } from './FileText.generated';
 export { default as FlowLogo } from './FlowLogo.generated';

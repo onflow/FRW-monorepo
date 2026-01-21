@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
+import { EarnButton } from '@onflow/frw-ui';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -22,15 +23,25 @@ import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
-const ActionButtons = ({ managePath, createPath }) => {
+const ActionButtons = ({
+  managePath,
+  createPath,
+  showEarn,
+}: {
+  managePath: string;
+  createPath: string;
+  showEarn?: boolean;
+}) => {
   const navigate = useNavigate();
 
   return (
     <Box sx={{ display: 'flex', px: '12px', pt: '4px', gap: '12px' }}>
       <Box sx={{ flexGrow: 1 }} />
+      {showEarn && <EarnButton onPress={() => {}} />}
       <IconButton
         onClick={() => navigate(managePath)}
         sx={{
@@ -84,6 +95,7 @@ const CoinList = ({
   const currency = useCurrency();
   const currencyCode = currency?.code;
   const currencySymbol = currency?.symbol;
+  const isVaultEnabled = useFeatureFlag('vault_entrance');
   const navigate = useNavigate();
 
   const isLoading = coins === undefined;
@@ -263,10 +275,18 @@ const CoinList = ({
   return (
     <>
       {activeAccountType === 'main' && (
-        <ActionButtons managePath="/dashboard/managetoken" createPath="/dashboard/tokenList" />
+        <ActionButtons
+          managePath="/dashboard/managetoken"
+          createPath="/dashboard/tokenList"
+          showEarn={isVaultEnabled}
+        />
       )}
       {activeAccountType === 'evm' && (
-        <ActionButtons managePath="/dashboard/managetoken" createPath="/dashboard/addcustomevm" />
+        <ActionButtons
+          managePath="/dashboard/managetoken"
+          createPath="/dashboard/addcustomevm"
+          showEarn={isVaultEnabled}
+        />
       )}
 
       <List sx={{ paddingTop: '0px', paddingBottom: '0px' }}>
