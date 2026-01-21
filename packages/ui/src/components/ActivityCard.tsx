@@ -1,4 +1,4 @@
-import { Link } from '@onflow/frw-icons';
+import { ArrowDownLeft, ArrowUpRight, Link } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React from 'react';
 import { Stack, Text, XStack, YStack } from 'tamagui';
@@ -135,13 +135,19 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
                   items="center"
                   justify="center"
                 >
-                  <Text
-                    fontSize={11}
-                    color={status === 'pending' ? '#8E8E93' : '#41CC5D'}
-                    fontWeight="700"
-                  >
-                    {transferType === 'sent' ? '↗' : '↙'}
-                  </Text>
+                  {transferType === 'sent' ? (
+                    <ArrowUpRight
+                      size={12}
+                      color={status === 'pending' ? '#8E8E93' : '#41CC5D'}
+                      theme="outline"
+                    />
+                  ) : (
+                    <ArrowDownLeft
+                      size={12}
+                      color={status === 'pending' ? '#8E8E93' : '#41CC5D'}
+                      theme="outline"
+                    />
+                  )}
                 </Stack>
               )}
               <Text
