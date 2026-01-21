@@ -56,9 +56,7 @@ export const test = base.extend<{
     });
 
     // Give the extension time to initialize
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    await call(context);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     context.on('page', async (page) => {
       const url = page.url();
       console.log(`新页面打开：${url}`);
@@ -69,15 +67,25 @@ export const test = base.extend<{
         // 可以通过 page.evaluate() 在扩展页面中执行代码
         // 或者使用 page.goto() 导航到扩展内部的另一个页面 (如果需要)
         // await page.goto('chrome-extension://<your-extension-id>/popup.html');
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
         const changeAccBtn = await page.getByTestId('account-card-chevron');
         expect(changeAccBtn).toBeVisible();
 
-        //   changeAccBtn.click();
+        await changeAccBtn.click();
+
+        const eoaAccount = await page.getByTestId('0x53143927cD4ac37826eD85962ad0450442E556Fa'); // test 1 eoa addr
+        expect(eoaAccount).toBeVisible();
+        await eoaAccount.click();
+
+        await page.getByTestId('connect-button').click();
         // 演示：打印页面标题
         // const title = await page.title();
         // console.log(`扩展页面标题：${title}`);
       }
     });
+    await call(context);
+
     await context.close();
   },
   extensionId: async ({ context }, call) => {
