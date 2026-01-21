@@ -9,9 +9,7 @@ export type ChainType = 'evm' | 'flow';
 
 export interface ChainBadgeProps {
   /**
-   * The chain type to display
-   * - 'evm': Green badge with link icon (Flow-EVM)
-   * - 'flow': Green badge with link icon (Flow native)
+   * The chain type to display (currently visual is the same for all chains)
    */
   chain: ChainType;
   /**
@@ -21,18 +19,10 @@ export interface ChainBadgeProps {
 }
 
 /**
- * Chain badge colors by type
- */
-const CHAIN_COLORS: Record<ChainType, string> = {
-  evm: '#41CC5D',
-  flow: '#41CC5D',
-};
-
-/**
  * ChainBadge - Circular overlay badge for showing chain/network type on avatars
  *
- * Used as an overlay on token/NFT avatars to indicate the chain type.
- * Positioned absolutely - parent must have position="relative".
+ * Displays a white circle with a black link icon to indicate cross-chain activity.
+ * Positioned absolutely at bottom-left - parent must have position="relative".
  *
  * @example
  * ```tsx
@@ -42,8 +32,7 @@ const CHAIN_COLORS: Record<ChainType, string> = {
  * </Stack>
  * ```
  */
-export function ChainBadge({ chain, size = 20 }: ChainBadgeProps): React.ReactElement {
-  const color = CHAIN_COLORS[chain];
+export function ChainBadge({ size = 20 }: ChainBadgeProps): React.ReactElement {
   const iconSize = Math.round(size / 2);
   const borderRadius = size / 2;
 
@@ -55,13 +44,13 @@ export function ChainBadge({ chain, size = 20 }: ChainBadgeProps): React.ReactEl
       width={size}
       height={size}
       rounded={borderRadius}
-      bg={color}
+      bg="#FFFFFF"
       items="center"
       justify="center"
       borderWidth={2}
       borderColor="$bg"
     >
-      <Link size={iconSize} color="#FFFFFF" theme="outline" />
+      <Link size={iconSize} color="#000000" theme="outline" />
     </YStack>
   );
 }
