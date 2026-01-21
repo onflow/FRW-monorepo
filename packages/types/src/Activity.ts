@@ -1,3 +1,5 @@
+import { type WalletType } from './Wallet';
+
 /**
  * Activity types for transaction history display
  * Supports both Flow (Cadence) and Flow-EVM transactions
@@ -48,6 +50,8 @@ export interface ActivityItem {
   time: number;
   type: ActivityType;
   transferType: TransferDirection;
+  /** Wallet type (flow or evm) for chain badge display */
+  walletType?: WalletType;
 }
 
 /**

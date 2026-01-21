@@ -58,12 +58,12 @@ function getStatusText(item: ActivityItem): string {
  */
 function EVMChainBadge() {
   return (
-    <Stack
-      pos="absolute"
-      bottom={-2}
-      left={-2}
-      w={20}
-      h={20}
+    <YStack
+      position="absolute"
+      l={-2}
+      t={28}
+      width={20}
+      height={20}
       rounded={10}
       bg="#41CC5D"
       items="center"
@@ -72,7 +72,7 @@ function EVMChainBadge() {
       borderColor="$bg"
     >
       <Link size={10} color="#FFFFFF" theme="outline" />
-    </Stack>
+    </YStack>
   );
 }
 
@@ -83,8 +83,8 @@ function EVMChainBadge() {
 export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
   const { title, token, image, amount, sender, receiver, transferType, type, status } = item;
 
-  // Check if this is an EVM transaction
-  const isEvm = item.evmTxIds && item.evmTxIds.length > 0;
+  // Check if this is an EVM wallet transaction (show chain badge)
+  const isEvm = item.walletType === 'evm';
 
   // Check if this is an app interaction (no transfer direction shown)
   const isInteraction = type === 'interaction';
@@ -115,7 +115,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
     >
       <XStack items="center" gap="$3" width="100%">
         {/* Icon with optional EVM chain badge */}
-        <Stack pos="relative">
+        <Stack position="relative">
           <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={48} />
           {isEvm && <EVMChainBadge />}
         </Stack>
