@@ -4,10 +4,12 @@ import React from 'react';
 import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, isCOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
 import { AccountCard } from './account-card';
+import { AccountMigrationCard } from './account-migration-card';
 import { EnableEvmAccountCard } from './enable-evm-account-card';
 
 type AccountHierarchyProps = {
@@ -139,8 +141,16 @@ export const AccountListing = ({
   const eoaAccount = activeParentAccount?.eoaAccount;
   // Check if the EVM account is not valid
   const noEvmAccount = !evmAccount;
+  // Check if EVM COA account exists and has balance
+  const hasEvmCoaWithBalance =
+    evmAccount?.address &&
+    isValidEthereumAddress(evmAccount.address) &&
+    isCOAAddress(evmAccount.address) &&
+    evmAccount.hasAssets &&
+    activeAccount?.address === evmAccount.address;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
+  const isCoaMigrationEnabled = useFeatureFlag('coa_migration');
 
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {
@@ -228,6 +238,17 @@ export const AccountListing = ({
               onEnableEvmClick={() =>
                 activeParentAccount?.address
                   ? onEnableEvmClick?.(activeParentAccount?.address)
+                  : undefined
+              }
+            />
+          )}
+          {/* If EVM COA account exists and has balance, show the AccountMigrationCard */}
+          {isCoaMigrationEnabled && hasEvmCoaWithBalance && (
+            <AccountMigrationCard
+              showCard={false}
+              onMigrationClick={() =>
+                activeParentAccount?.address
+                  ? onMigrationClick?.(activeParentAccount?.address)
                   : undefined
               }
             />

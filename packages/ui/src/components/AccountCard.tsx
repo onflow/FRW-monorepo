@@ -39,6 +39,30 @@ export function AccountCard({
 }: AccountCardProps): React.ReactElement {
   const [modalOpen, setModalOpen] = useState(false);
 
+  const EvmPill = (): React.ReactElement => {
+    // Match Figma pill: bg #627EEA, 34w x 16h, rounded 16, px=4, 8px Medium text
+    return (
+      <XStack
+        bg="$accentEVM"
+        rounded={16}
+        px={4}
+        items="center"
+        justify="center"
+        height={16}
+        width={34}
+      >
+        <Text
+          fontSize={8}
+          fontWeight="500"
+          color="#FFFFFF"
+          style={{ lineHeight: 'normal', whiteSpace: 'nowrap' }}
+        >
+          EVM
+        </Text>
+      </XStack>
+    );
+  };
+
   // Early return if no account data
   if (!account) {
     return (
@@ -124,26 +148,7 @@ export function AccountCard({
                 {account.name || 'Unnamed Account'}
               </Text>
               {/* EVM Badge - inline with name */}
-              {account.type === 'evm' && (
-                <XStack
-                  bg="$accentEVM"
-                  rounded="$4"
-                  px={4}
-                  items="center"
-                  justify="center"
-                  height={16}
-                >
-                  <Text
-                    fontSize={8}
-                    fontWeight="400"
-                    color="#FFFFFF"
-                    lineHeight={9.7}
-                    letterSpacing={0.128}
-                  >
-                    EVM
-                  </Text>
-                </XStack>
-              )}
+              {account.type === 'evm' && <EvmPill />}
             </XStack>
 
             {/* Account Address */}
@@ -336,26 +341,7 @@ export function AccountCard({
                                     {acc.name || 'Unnamed Account'}
                                   </Text>
                                   {/* EVM Badge - inline with name */}
-                                  {acc.type === 'evm' && (
-                                    <XStack
-                                      bg="$accentEVM"
-                                      rounded="$4"
-                                      px={4}
-                                      items="center"
-                                      justify="center"
-                                      height={16}
-                                    >
-                                      <Text
-                                        fontSize={8}
-                                        fontWeight="400"
-                                        color="#FFFFFF"
-                                        lineHeight={9.7}
-                                        letterSpacing={0.128}
-                                      >
-                                        EVM
-                                      </Text>
-                                    </XStack>
-                                  )}
+                                  {acc.type === 'evm' && <EvmPill />}
                                 </XStack>
 
                                 <AddressText

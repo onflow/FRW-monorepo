@@ -102,7 +102,7 @@ export class KeyRotationService {
       throw new Error('New key information is required for rotation.');
     }
 
-    const revokeIndexes = detection.bloctoKeyIndexes ?? [];
+    const revokeIndexes: number[] = detection.bloctoKeyIndexes ?? [];
 
     const signAlgo = resolveSignAlgo(newKeyInfo.flowKey);
     const hashAlgo = resolveHashAlgo(newKeyInfo.flowKey);
@@ -174,12 +174,13 @@ export class KeyRotationService {
     }
 
     if (revokeIndexes.length > 0) {
-      const revokePublicKey = (detection.fullAccountKeys ?? [])
-        .filter((key) => revokeIndexes.includes(key.index))
+      const revokePublicKeys = (detection.fullAccountKeys ?? [])
+        .filter((key) => revokeIndexes.indexOf(key.index) !== -1)
         .map((key) => key.publicKey)
-        .find((key): key is string => Boolean(key));
-      if (revokePublicKey) {
-        await this.bridge.removeOldKey(address, revokePublicKey);
+        .filter((key): key is string => Boolean(key));
+
+      for (const publicKey of revokePublicKeys) {
+        await this.bridge.removeOldKey(address, publicKey);
       }
     }
 

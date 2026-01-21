@@ -11,6 +11,7 @@ import { Sheet, Spinner, View, XStack, YStack, useTheme } from 'tamagui';
 import { AddressText } from './AddressText';
 import { ConfirmationAnimation } from './ConfirmationAnimation';
 import { HoldToSendButton } from './HoldToSendButton';
+import { LoadingIndicator } from './LoadingIndicator';
 import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
@@ -45,88 +46,6 @@ export interface ConfirmationDrawerProps {
   holdToSendText?: string;
   unknownAccountText?: string;
 }
-
-interface LoadingIndicatorProps {
-  isAnimating?: boolean;
-  width?: number;
-  height?: number;
-}
-
-const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
-  isAnimating = false,
-  width = 117,
-  height = 8,
-}) => {
-  const [activeIndex, setActiveIndex] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!isAnimating) {
-      setActiveIndex(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % 6);
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, [isAnimating]);
-
-  const getDotStyle = (index: number) => {
-    if (!isAnimating) {
-      const opacities = [0.1, 0.2, 0.3, 1, 1, 1];
-      const colors = ['#00EF8B', '#00EF8B', '#00EF8B', '#009154', '#00EF8B', '#00EF8B'];
-      return {
-        bg: colors[index],
-        opacity: opacities[index],
-      };
-    }
-
-    if (index === activeIndex) {
-      return {
-        bg: '#00EF8B',
-        opacity: 1,
-      };
-    } else if (index === (activeIndex - 1 + 6) % 6) {
-      return {
-        bg: '#00EF8B',
-        opacity: 0.6,
-      };
-    } else {
-      return {
-        bg: '#00EF8B',
-        opacity: 0.2,
-      };
-    }
-  };
-
-  return (
-    <View flex={1} items="center" justify="center">
-      <View
-        width={width}
-        height={height}
-        flexDirection="row"
-        items="center"
-        justify="center"
-        gap={17.8}
-      >
-        {Array.from({ length: 6 }, (_, index) => {
-          const style = getDotStyle(index);
-          return (
-            <View
-              key={index}
-              width={8}
-              height={8}
-              borderRadius={4}
-              backgroundColor={style.bg}
-              opacity={style.opacity}
-            />
-          );
-        })}
-      </View>
-    </View>
-  );
-};
 
 export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
   visible,

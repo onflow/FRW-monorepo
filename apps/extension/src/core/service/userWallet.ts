@@ -1115,6 +1115,9 @@ class UserWallet {
         errorCode,
       });
 
+      // Update the pending transaction to show error state
+      await transactionActivityService.updatePendingError(network, address, txId, errorMessage);
+
       // Track the transaction error
       analyticsService.track('transaction_result', {
         tx_id: txId,
@@ -1314,7 +1317,7 @@ class UserWallet {
     }
     // Add the user domain tag
     const rightPaddedHexBuffer = (value, pad) =>
-      Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
+      Buffer.from(value.padEnd(pad * 2, '0'), 'hex').toString('hex');
     const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
     const message = USER_DOMAIN_TAG + Buffer.from(idToken, 'utf8').toString('hex');
 
@@ -1458,7 +1461,7 @@ class UserWallet {
     }
 
     const rightPaddedHexBuffer = (value, pad) =>
-      Buffer.from(value.padEnd(pad * 2, 0), 'hex').toString('hex');
+      Buffer.from(value.padEnd(pad * 2, '0'), 'hex').toString('hex');
     const USER_DOMAIN_TAG = rightPaddedHexBuffer(Buffer.from('FLOW-V0.0-user').toString('hex'), 32);
 
     const hex = secp.utils.bytesToHex;

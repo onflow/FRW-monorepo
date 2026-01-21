@@ -28,6 +28,7 @@ import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
 } from '@/shared/constant';
+import { isValidFlowAddress } from '@/shared/utils';
 
 import { ExtensionCache } from './ExtensionCache';
 import { extensionNavigation } from './ExtensionNavigation';
@@ -44,6 +45,35 @@ class ExtensionPlatformImpl implements PlatformSpec {
   constructor() {
     this.storageInstance = new ExtensionStorage();
     this.cacheInstance = new ExtensionCache('screens:');
+  }
+  getSignType(): string {
+    throw new Error('Method not implemented.');
+  }
+  getRecoverableProfiles?(): Promise<WalletProfilesResponse> {
+    throw new Error('Method not implemented.');
+  }
+  switchToProfile?(userId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getV4RegistrationSignatures?(
+    mnemonic: string
+  ): Promise<{ flowSignature: string; evmSignature: string; eoaAddress: string }> {
+    throw new Error('Method not implemented.');
+  }
+  initSecureEnclaveWallet?(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }> {
+    throw new Error('Method not implemented.');
+  }
+  getMigrationAssets?(sourceAddress: string): Promise<{
+    erc20: Array<{ address: string; amount: string }>;
+    erc721: Array<{ address: string; id: string }>;
+    erc1155: Array<{ address: string; id: string; amount: string }>;
+  }> {
+    throw new Error('Method not implemented.');
+  }
+  getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number } {
+    throw new Error('Method not implemented.');
   }
   isInstabugInitialized?(): boolean {
     throw new Error('Method not implemented.');
@@ -417,6 +447,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
       if (config.type === 'transaction' && config.name === 'addAndRevokeKeys') {
         config.skipRedirect = true;
       }
+      // Skip redirect for batch call contract transactions (used in migration and NFT sends)
+      // These operations have their own progress UI and should handle navigation themselves
+      if (config.type === 'transaction' && config.name === 'batchCallContract') {
+        config.skipRedirect = true;
+      }
 
       if (config.type === 'transaction') {
         config.limit = 9999;
@@ -788,6 +823,15 @@ class ExtensionPlatformImpl implements PlatformSpec {
 
       if (!accountAddress) {
         throw new Error('No address available to check for key rotation');
+      }
+
+      if (!isValidFlowAddress(accountAddress)) {
+        return {
+          isBloctoKey: false,
+          needRevoke: false,
+          fullAccountKeys: [],
+          bloctoKeyIndexes: [],
+        };
       }
 
       // Create KeyRotation instance

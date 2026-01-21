@@ -10,6 +10,7 @@ import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { OnRampList } from '@/ui/components/TokenLists/OnRampList';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useKeyRotationCheck } from '@/ui/hooks/use-key-rotation-check';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -58,8 +59,12 @@ const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
 
   // Check if key rotation is needed for the active account
+  const isBloctoKeyRotationEnabled = useFeatureFlag('blocto_key_rotation');
   const { detection: keyRotationDetection } = useKeyRotationCheck(currentWallet?.address);
-  const needKeyRotation = keyRotationDetection?.needRevoke === true && !eoaAccount?.hasAssets;
+  const needKeyRotation =
+    isBloctoKeyRotationEnabled &&
+    keyRotationDetection?.needRevoke === true &&
+    !eoaAccount?.hasAssets;
 
   // Get version for popup title (patch version set to 0)
   const version = getVersionForPopup();
