@@ -55,6 +55,7 @@ export * from './components/ShieldAnimation';
 export * from './components/ConfirmationDrawer';
 export * from './components/COAAddressCopyModal';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/ChainBadge';
 export * from './components/EVMBadge';
 export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';

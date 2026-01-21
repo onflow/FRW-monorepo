@@ -1,10 +1,11 @@
-import { ArrowDownLeft, ArrowUpRight, Link } from '@onflow/frw-icons';
+import { ArrowDownLeft, ArrowUpRight } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React from 'react';
 import { Stack, Text, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { ActivityCardProps } from '../types';
+import { ChainBadge } from './ChainBadge';
 
 /**
  * Truncates an address for display
@@ -54,29 +55,6 @@ function getStatusText(item: ActivityItem): string {
 }
 
 /**
- * EVM chain badge overlay component - circular badge with link icon
- */
-function EVMChainBadge() {
-  return (
-    <YStack
-      position="absolute"
-      l={-2}
-      t={28}
-      width={20}
-      height={20}
-      rounded={10}
-      bg="#41CC5D"
-      items="center"
-      justify="center"
-      borderWidth={2}
-      borderColor="$bg"
-    >
-      <Link size={10} color="#FFFFFF" theme="outline" />
-    </YStack>
-  );
-}
-
-/**
  * ActivityCard displays a single transaction/activity item
  * Follows the Figma design with icon, title, address, amount, and status
  */
@@ -117,7 +95,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
         {/* Icon with optional EVM chain badge */}
         <Stack position="relative">
           <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={48} />
-          {isEvm && <EVMChainBadge />}
+          {isEvm && <ChainBadge chain="evm" />}
         </Stack>
 
         {/* Content */}
