@@ -1,5 +1,6 @@
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
+import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
 import type {
   CreateAccountResponse,
   Currency,
@@ -283,6 +284,22 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.scanQRCode();
   }
 
+  createSeedKey(strength: number): Promise<NewKeyInfo> {
+    return NativeFRWBridge.createSeedKey(strength);
+  }
+
+  saveNewKey(key: NewKeyInfo): Promise<void> {
+    return NativeFRWBridge.saveNewKey(key);
+  }
+
+  removeOldKey(address: string, publicKey: string): Promise<void> {
+    return NativeFRWBridge.removeOldKey(address, publicKey);
+  }
+
+  signRotationRequest(address: string, signatureData: string): Promise<AccountKeySignature> {
+    return NativeFRWBridge.signRotationRequest(address, signatureData);
+  }
+
   closeRN(): void {
     NativeFRWBridge.closeRN(null);
   }
@@ -320,7 +337,7 @@ class PlatformImpl implements PlatformSpec {
     // Add version and platform headers to transactions
     cadenceService.useRequestInterceptor(async (config: any) => {
       if (config.type === 'transaction') {
-        const platform = 'react-native'; // Platform.OS is not available here
+        const platform = RNPlatform.OS;
         const versionHeader = `// Flow Wallet - ${network} Script - ${config.name} - React Native - ${version}`;
         const platformHeader = `// Platform: ${platform} - ${version} - ${buildNumber}`;
         config.cadence = versionHeader + '\n' + platformHeader + '\n\n' + config.cadence;

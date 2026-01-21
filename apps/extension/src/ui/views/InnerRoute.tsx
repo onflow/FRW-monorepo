@@ -1,6 +1,6 @@
 import { SendSummaryScreen } from '@onflow/frw-screens';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Route, Routes } from 'react-router';
+import { Route, Routes, useLocation } from 'react-router';
 
 import Header from '@/ui/components/header';
 import PrivateRoute from '@/ui/components/PrivateRoute';
@@ -10,6 +10,7 @@ import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 import Dashboard from './Dashboard';
 import Deposit from './Deposit';
 import Enable from './Enable';
+import KeyRotationView from './KeyRotation';
 import LinkedCollection from './Linked/LinkedCollection';
 import LinkedNftDetail from './Linked/LinkedNftDetail';
 import ManageToken from './ManageToken';
@@ -52,10 +53,9 @@ import TokenList from './TokenList';
 
 const InnerRoute = () => {
   const [value, setValue] = useState(0);
-
   const usewallet = useWallet();
   const walletLoaded = useWalletLoaded();
-
+  const { pathname } = useLocation();
   const initRef = useRef(false);
 
   const fetch = useCallback(async () => {
@@ -76,6 +76,17 @@ const InnerRoute = () => {
       initRef.current = false;
     }
   }, [usewallet, walletLoaded]);
+
+  useEffect(() => {
+    if (walletLoaded) {
+      const pathArr = pathname.split('/');
+      if (pathname.indexOf('nested') > -1) {
+        usewallet.trackScreenView(pathArr[3]);
+      } else {
+        usewallet.trackScreenView(pathArr[2]);
+      }
+    }
+  }, [pathname, walletLoaded]);
 
   useEffect(() => {
     if (walletLoaded) {
@@ -150,6 +161,14 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <KeyList />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="nested/keyrotation"
+              element={
+                <PrivateRoute>
+                  <KeyRotationView />
                 </PrivateRoute>
               }
             />

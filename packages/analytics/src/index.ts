@@ -1,5 +1,5 @@
 // Main exports
-export { Analytics, ScopedAnalytics, createAnalytics } from './analytics.js';
+export { Analytics, ScopedAnalytics, createAnalytics } from './analytics';
 
 // Types
 export type {
@@ -18,7 +18,7 @@ export type {
   NavigationEvents,
   WebEvents,
   BackupEvents,
-} from './types.js';
+} from './types';
 
 // Providers
 export { BaseAnalyticsProvider } from './providers/base.js';
@@ -38,7 +38,7 @@ export {
   ChildAccountTracker,
   ChildAccountSession,
   ValidationTracker,
-} from './events/send.js';
+} from './events/send';
 
 export {
   AuthTracker,
@@ -46,22 +46,17 @@ export {
   WalletCreationSession,
   WalletImportSession,
   BiometricTracker,
-} from './events/auth.js';
+} from './events/auth';
 
-export { AppTracker, AppSession, ScreenSession, NotificationTracker } from './events/app.js';
+export { AppTracker, AppSession, ScreenSession, NotificationTracker } from './events/app';
 
-export {
-  ErrorTracker,
-  ErrorSession,
-  TransactionErrorSession,
-  ErrorReporter,
-} from './events/error.js';
+export { ErrorTracker, ErrorSession, TransactionErrorSession, ErrorReporter } from './events/error';
 
-export { NavigationTracker, TabSession } from './events/navigation.js';
+export { NavigationTracker, TabSession } from './events/navigation';
 
-export { WebTracker, BrowserSession, AuthenticationSession } from './events/web.js';
+export { WebTracker, BrowserSession, AuthenticationSession } from './events/web';
 
-export { BackupTracker, BackupSession, MultiBackupSession } from './events/backup.js';
+export { BackupTracker, BackupSession, MultiBackupSession } from './events/backup';
 
 // Utilities
 export {
@@ -74,7 +69,7 @@ export {
   sanitizeUserProperties,
   createCustomSanitizer,
   type SanitizationRules,
-} from './utils/sanitizer.js';
+} from './utils/sanitizer';
 
 export {
   EventFormatter,
@@ -84,16 +79,16 @@ export {
   formatEventForDebug,
   createCustomFormatter,
   type FormattingRules,
-} from './utils/formatter.js';
+} from './utils/formatter';
 
 // Convenience factory functions
 export async function createMixpanelAnalytics(config: {
   token: string;
   debug?: boolean;
-  context?: Partial<import('./types.js').AnalyticsContext>;
-}): Promise<import('./analytics.js').Analytics> {
-  const { createAnalytics } = await import('./analytics.js');
-  const { MixpanelProvider } = await import('./providers/mixpanel.js');
+  context?: Partial<import('./types').AnalyticsContext>;
+}): Promise<import('./analytics').Analytics> {
+  const { createAnalytics } = await import('./analytics');
+  const { MixpanelProvider } = await import('./providers/mixpanel');
 
   const analytics = createAnalytics(config.context);
   const provider = new MixpanelProvider();
@@ -104,10 +99,10 @@ export async function createMixpanelAnalytics(config: {
 
 export async function createConsoleAnalytics(config?: {
   debug?: boolean;
-  context?: Partial<import('./types.js').AnalyticsContext>;
-}): Promise<import('./analytics.js').Analytics> {
-  const { createAnalytics } = await import('./analytics.js');
-  const { ConsoleProvider } = await import('./providers/console.js');
+  context?: Partial<import('./types').AnalyticsContext>;
+}): Promise<import('./analytics').Analytics> {
+  const { createAnalytics } = await import('./analytics');
+  const { ConsoleProvider } = await import('./providers/console');
 
   const analytics = createAnalytics(config?.context);
   const provider = new ConsoleProvider();
@@ -124,20 +119,20 @@ export async function createMultiProviderAnalytics(config: {
   console?: {
     debug?: boolean;
   };
-  context?: Partial<import('./types.js').AnalyticsContext>;
-}): Promise<import('./analytics.js').Analytics> {
-  const { createAnalytics } = await import('./analytics.js');
+  context?: Partial<import('./types').AnalyticsContext>;
+}): Promise<import('./analytics').Analytics> {
+  const { createAnalytics } = await import('./analytics');
 
   const analytics = createAnalytics(config.context);
 
   if (config.mixpanel) {
-    const { MixpanelProvider } = await import('./providers/mixpanel.js');
+    const { MixpanelProvider } = await import('./providers/mixpanel');
     const mixpanelProvider = new MixpanelProvider();
     await analytics.addProvider(mixpanelProvider, config.mixpanel);
   }
 
   if (config.console) {
-    const { ConsoleProvider } = await import('./providers/console.js');
+    const { ConsoleProvider } = await import('./providers/console');
     const consoleProvider = new ConsoleProvider();
     await analytics.addProvider(consoleProvider, config.console);
   }

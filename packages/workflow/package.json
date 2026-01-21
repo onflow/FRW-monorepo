@@ -19,7 +19,8 @@
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "pnpm build",
     "lint": "eslint . --cache",
-    "lint:fix": "eslint . --cache --fix"
+    "lint:fix": "eslint . --cache --fix",
+    "migrate": "tsup ./scripts/migration.ts"
   },
   "exports": {
     ".": {
@@ -41,8 +42,10 @@
     "@onflow/fcl": "^1.13.1",
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-context": "workspace:*",
+    "@onflow/frw-types": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "@onflow/frw-analytics": "workspace:*",
+    "@onflow/frw-api": "workspace:*",
     "@onflow/transport-http": "^1.13.0",
     "@onflow/util-encode-key": "^1.2.4",
     "elliptic": "^6.5.7",

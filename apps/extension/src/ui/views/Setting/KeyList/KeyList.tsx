@@ -163,241 +163,254 @@ const KeyList = () => {
   return (
     <div className="page">
       <LLHeader title={'Account Keys'} help={false} />
-      {publickeys.map((item) => (
-        <Box key={item.index} sx={{ width: '100%', margin: '8px 0' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              position: 'relative',
-              zIndex: '6',
-              justifyContent: ' space-between',
-              height: '54px',
-              padding: '0 20px',
-              alignItems: 'center',
-              margin: '0 18px',
-              borderRadius: '16px',
-              backgroundColor: '#2C2C2C',
-            }}
-          >
-            <Typography
-              sx={{ fontWeight: 400, color: '#E6E6E6', fontSize: '14px', marginRight: '8px' }}
-            >
-              Key {item.index + 1}{' '}
-            </Typography>
-
-            {item.current_device ? (
-              <Typography
-                color="#579AF2"
-                sx={{
-                  padding: '4px 12px',
-                  fontSize: '10px',
-                  backgroundColor: '#579AF229',
-                  borderRadius: '20px',
-                }}
-              >
-                Current Device
-              </Typography>
-            ) : item.revoked ? (
-              <Typography
-                color="error.main"
-                sx={{
-                  padding: '4px 12px',
-                  fontSize: '10px',
-                  backgroundColor: 'error.light',
-                  borderRadius: '20px',
-                }}
-              >
-                Revoked
-              </Typography>
-            ) : (
-              item.device && (
-                <Typography
-                  color="#FFFFFF66"
-                  sx={{
-                    padding: '4px 12px',
-                    fontSize: '10px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.16)',
-                    borderRadius: '20px',
-                  }}
-                >
-                  {item.device[0].device_name}
-                </Typography>
-              )
-            )}
-
-            <Box sx={{ flex: '1' }}></Box>
-            <img src={weight} style={{ width: '16px', height: '16px', marginRight: '4px' }} />
-            <Box
-              sx={{
-                display: 'flex',
-                width: '72px',
-                position: 'relative',
-                zIndex: '5',
-                overflow: 'hidden',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                backgroundColor: '#FFFFFF1A',
-                borderRadius: '2px',
-              }}
-            >
+      {publickeys.map(
+        (item) => (
+          console.log('item', item),
+          (
+            <Box key={item.index} sx={{ width: '100%', margin: '8px 0' }}>
               <Box
                 sx={{
-                  background: '#FFFFFF33',
-                  width: `${(item.weight / 1000) * 100}%`, // Calculates the width as a percentage
-                  height: '16px',
-                  borderRadius: '2px',
+                  display: 'flex',
+                  position: 'relative',
+                  zIndex: '6',
+                  justifyContent: ' space-between',
+                  height: '54px',
+                  padding: '0 20px',
+                  alignItems: 'center',
+                  margin: '0 18px',
+                  borderRadius: '16px',
+                  backgroundColor: '#2C2C2C',
                 }}
               >
                 <Typography
+                  sx={{ fontWeight: 400, color: '#E6E6E6', fontSize: '14px', marginRight: '8px' }}
+                >
+                  Key {item.index + 1}{' '}
+                </Typography>
+
+                {item.revoked ? (
+                  <Typography
+                    color="error.main"
+                    sx={{
+                      padding: '4px 12px',
+                      fontSize: '10px',
+                      backgroundColor: 'error.light',
+                      borderRadius: '20px',
+                    }}
+                  >
+                    Revoked
+                  </Typography>
+                ) : item.current_device ? (
+                  <Typography
+                    color="#579AF2"
+                    sx={{
+                      padding: '4px 12px',
+                      fontSize: '10px',
+                      backgroundColor: '#579AF229',
+                      borderRadius: '20px',
+                    }}
+                  >
+                    Current Device
+                  </Typography>
+                ) : (
+                  item.device && (
+                    <Typography
+                      color="#FFFFFF66"
+                      sx={{
+                        padding: '4px 12px',
+                        fontSize: '10px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.16)',
+                        borderRadius: '20px',
+                      }}
+                    >
+                      {item.device[0].device_name}
+                    </Typography>
+                  )
+                )}
+
+                <Box sx={{ flex: '1' }}></Box>
+                <img src={weight} style={{ width: '16px', height: '16px', marginRight: '4px' }} />
+                <Box
                   sx={{
-                    color: '#FFFFFF',
-                    fontSize: '9px',
-                    fontWeight: 400,
-                    textAlign: 'center',
-                    display: 'absolute',
-                    lineHeight: '16px',
-                    height: '16px',
+                    display: 'flex',
                     width: '72px',
+                    position: 'relative',
+                    zIndex: '5',
+                    overflow: 'hidden',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    backgroundColor: '#FFFFFF1A',
+                    borderRadius: '2px',
                   }}
                 >
-                  {item.weight}/1000
-                </Typography>
-              </Box>
-            </Box>
-            <IconButton
-              sx={{ marginLeft: '14px', height: '26px' }}
-              onClick={() => toggleKey(item.index)}
-            >
-              <img
-                src={toggle}
-                style={{
-                  transform: showKey === item.index ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 0.3s',
-                }}
-              />
-            </IconButton>
-          </Box>
-          <Box
-            sx={{
-              display: showKey === item.index ? 'flex' : 'none',
-              maxHeight: showKey === item.index ? '308px' : '0',
-              height: 'auto',
-              position: 'relative',
-              zIndex: '5',
-              overflow: 'hidden',
-              transition: 'max-height 0.3s ease-in-out',
-              flexDirection: 'column',
-              padding: '31px 12px 12px',
-              margin: '-19px 26px 0',
-              backgroundColor: 'rgba(34, 34, 34, 0.75)',
-              borderRadius: '16px',
-            }}
-          >
-            <CredentialBox data={item.publicKey} />
-
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '8px',
-                alignItems: 'center',
-              }}
-            >
-              <img src={curve} style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-              <Typography
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.80)',
-                  fontSize: '12px',
-                  fontWeight: 400,
-                }}
-              >
-                Curve
-              </Typography>
-              <Box sx={{ flex: '1' }}></Box>
-              <Typography
-                sx={{
-                  color: '#FFFFFF66',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                }}
-              >
-                {item.signAlgoString}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '8px',
-                alignItems: 'center',
-              }}
-            >
-              <img src={hash} style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-              <Typography
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.80)',
-                  fontSize: '12px',
-                  fontWeight: 400,
-                }}
-              >
-                Hash
-              </Typography>
-              <Box sx={{ flex: '1' }}></Box>
-              <Typography
-                sx={{
-                  color: '#FFFFFF66',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                }}
-              >
-                {item.hashAlgoString}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '8px',
-                alignItems: 'center',
-              }}
-            >
-              <img src={sequence} style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-              <Typography
-                sx={{
-                  color: 'rgba(255, 255, 255, 0.80)',
-                  fontSize: '12px',
-                  fontWeight: 400,
-                }}
-              >
-                Sequence Number
-              </Typography>
-              <Box sx={{ flex: '1' }}></Box>
-              <Typography
-                sx={{
-                  color: '#FFFFFF66',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                }}
-              >
-                {item.sequenceNumber}
-              </Typography>
-            </Box>
-            {!item.current_device && !item.revoked && (
-              <Box
-                sx={{ backgroundColor: 'rgba(44, 44, 44, 0.75)', borderRadius: '2px' }}
-                onClick={() => toggleRevoke(item)}
-              >
-                <Typography
-                  color="error.main"
-                  sx={{ textAlign: 'center', fontSize: '12px', fontWeight: 600, padding: '8px 0' }}
+                  <Box
+                    sx={{
+                      background: '#FFFFFF33',
+                      width: `${(item.weight / 1000) * 100}%`, // Calculates the width as a percentage
+                      height: '16px',
+                      borderRadius: '2px',
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color: '#FFFFFF',
+                        fontSize: '9px',
+                        fontWeight: 400,
+                        textAlign: 'center',
+                        display: 'absolute',
+                        lineHeight: '16px',
+                        height: '16px',
+                        width: '72px',
+                      }}
+                    >
+                      {item.weight}/1000
+                    </Typography>
+                  </Box>
+                </Box>
+                <IconButton
+                  sx={{ marginLeft: '14px', height: '26px' }}
+                  onClick={() => toggleKey(item.index)}
                 >
-                  Revoke
-                </Typography>
+                  <img
+                    src={toggle}
+                    style={{
+                      transform: showKey === item.index ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.3s',
+                    }}
+                  />
+                </IconButton>
               </Box>
-            )}
-          </Box>
-        </Box>
-      ))}
+              <Box
+                sx={{
+                  display: showKey === item.index ? 'flex' : 'none',
+                  maxHeight: showKey === item.index ? '308px' : '0',
+                  height: 'auto',
+                  position: 'relative',
+                  zIndex: '5',
+                  overflow: 'hidden',
+                  transition: 'max-height 0.3s ease-in-out',
+                  flexDirection: 'column',
+                  padding: '31px 12px 12px',
+                  margin: '-19px 26px 0',
+                  backgroundColor: 'rgba(34, 34, 34, 0.75)',
+                  borderRadius: '16px',
+                }}
+              >
+                <CredentialBox data={item.publicKey} />
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '8px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <img src={curve} style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+                  <Typography
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.80)',
+                      fontSize: '12px',
+                      fontWeight: 400,
+                    }}
+                  >
+                    Curve
+                  </Typography>
+                  <Box sx={{ flex: '1' }}></Box>
+                  <Typography
+                    sx={{
+                      color: '#FFFFFF66',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {item.signAlgoString}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '8px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <img src={hash} style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+                  <Typography
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.80)',
+                      fontSize: '12px',
+                      fontWeight: 400,
+                    }}
+                  >
+                    Hash
+                  </Typography>
+                  <Box sx={{ flex: '1' }}></Box>
+                  <Typography
+                    sx={{
+                      color: '#FFFFFF66',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {item.hashAlgoString}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '8px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <img
+                    src={sequence}
+                    style={{ width: '16px', height: '16px', marginRight: '8px' }}
+                  />
+                  <Typography
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.80)',
+                      fontSize: '12px',
+                      fontWeight: 400,
+                    }}
+                  >
+                    Sequence Number
+                  </Typography>
+                  <Box sx={{ flex: '1' }}></Box>
+                  <Typography
+                    sx={{
+                      color: '#FFFFFF66',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {item.sequenceNumber}
+                  </Typography>
+                </Box>
+                {!item.current_device && !item.revoked && (
+                  <Box
+                    sx={{ backgroundColor: 'rgba(44, 44, 44, 0.75)', borderRadius: '2px' }}
+                    onClick={() => toggleRevoke(item)}
+                  >
+                    <Typography
+                      color="error.main"
+                      sx={{
+                        textAlign: 'center',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        padding: '8px 0',
+                      }}
+                    >
+                      Revoke
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          )
+        )
+      )}
 
       <RevokePage
         isAddAddressOpen={showRevoke}

@@ -89,12 +89,25 @@ export * from './components/Toast';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionFeeSection';
+export * from './components/WarningCard';
 export * from './foundation/SegmentedControl';
+
+// Export onboarding components
+export * from './components/onboarding/TipCard';
+export * from './components/onboarding/MnemonicGrid';
+export { ShieldAnimation } from './components/ShieldAnimation';
+
 export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
 
-// Onboarding components
-export * from './components/onboarding';
+// Onboarding components (excluding WarningCard to avoid conflict with main WarningCard)
+export {
+  AccountCreationLoadingState,
+  OnboardingHeader,
+  BackupOptionCard,
+  ImportOptionCard,
+  RecoveryPhraseQuestion,
+} from './components/onboarding';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
@@ -110,6 +123,7 @@ export { extensionTamaguiConfig } from './theme/extension';
 
 // Export layout components
 export * from './layout/BackgroundWrapper';
+export * from './layout/OnboardingBackground';
 
 // Export types
 export * from './types';
