@@ -137,6 +137,23 @@
     "noQRCode": "No QR code available",
     "evmWarning": "Please ensure you only send assets to this address on the Flow EVM network. Assets sent to this address on other networks will be lost."
   },
+  "activity": {
+    "title": "Activity",
+    "empty": "No activity yet",
+    "emptyMessage": "Your transaction history will appear here",
+    "error": "Failed to load activity",
+    "errorMessage": "Please try again",
+    "status": {
+      "pending": "Pending",
+      "success": "Success",
+      "failed": "Failed",
+      "expired": "Expired"
+    },
+    "sent": "Sent",
+    "received": "Received",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
   "buttons": {
     "retry": "Retry",
     "refresh": "Refresh",

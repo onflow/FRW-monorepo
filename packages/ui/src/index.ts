@@ -38,6 +38,9 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
+export * from './components/ActivityCard';
+export * from './components/ActivityGroupHeader';
+export * from './components/ActivitySkeleton';
 export * from './components/AddContactDialog';
 
 export * from './components/AddressBookSection';

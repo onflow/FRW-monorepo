@@ -10,6 +10,8 @@ import {
   KeyRotationMnemonicScreen,
   SendToScreen,
   ReceiveScreen,
+  // Activity screen
+  ActivityScreen,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -65,6 +67,7 @@ export type RootStackParamList = {
   SendTokens: undefined;
   SendSummary: undefined;
   Receive: undefined;
+  Activity: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -331,6 +334,14 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={ReceiveScreen}
               options={{
                 headerTitle: t('navigation.receive'),
+              }}
+            />
+            <Stack.Screen
+              name="Activity"
+              component={ActivityScreen}
+              options={{
+                headerTitle: t('activity.title'),
+                headerLeft: () => null,
               }}
             />
           </Stack.Group>
