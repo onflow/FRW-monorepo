@@ -5,6 +5,7 @@ import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, isCOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
@@ -29,6 +30,7 @@ const AccountHierarchy = ({
   onAccountClickSecondary,
   secondaryIcon,
 }: AccountHierarchyProps) => {
+  const { developerMode } = useNetwork();
   const childAccounts = account?.childAccounts;
   const evmAccount = account?.evmAccount;
   const loading = network === undefined || account === undefined;
@@ -59,11 +61,11 @@ const AccountHierarchy = ({
         showCard={false}
       />
 
-      {/* EVM account - only render if it has assets */}
+      {/* EVM account - render if it has assets OR developer mode is on */}
       {evmAccount &&
         evmAccount.address &&
         isValidEthereumAddress(evmAccount.address) &&
-        evmAccount.hasAssets && (
+        (evmAccount.hasAssets || developerMode) && (
           <AccountCard
             network={network}
             key={evmAccount.address}
