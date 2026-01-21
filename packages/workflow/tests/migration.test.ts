@@ -2,7 +2,6 @@ import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import dotenv from 'dotenv';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-
 // import { getTrx } from '../src/utils';
 import { accounts } from './utils/accounts';
 import {
