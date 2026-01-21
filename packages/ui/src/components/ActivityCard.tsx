@@ -1,10 +1,10 @@
+import { Link } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React from 'react';
 import { Stack, Text, XStack, YStack } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { ActivityCardProps } from '../types';
-import { Badge } from './Badge';
 
 /**
  * Truncates an address for display
@@ -17,19 +17,17 @@ function truncateAddress(address: string, startLength = 6, endLength = 4): strin
 }
 
 /**
- * Gets the status badge variant based on activity status
+ * Gets the status color based on activity status
  */
-function getStatusBadgeVariant(item: ActivityItem): 'success' | 'warning' | 'error' | 'default' {
+function getStatusColor(item: ActivityItem): string {
   if (item.error || item.status === 'failed' || item.status === 'expired') {
-    return 'error';
+    return '#FF6B6B'; // Red for failed/error
   }
   if (item.status === 'pending') {
-    return 'warning';
+    return '#8E8E93'; // Gray for pending
   }
-  if (item.status === 'sealed' || item.status === 'finalized' || item.status === 'executed') {
-    return 'success';
-  }
-  return 'default';
+  // Success states
+  return '#41CC5D'; // Green for success
 }
 
 /**
@@ -56,39 +54,40 @@ function getStatusText(item: ActivityItem): string {
 }
 
 /**
- * Direction indicator badge component
+ * EVM chain badge overlay component - circular badge with link icon
  */
-function DirectionBadge({ direction }: { direction: 'sent' | 'received' | 'self' }) {
-  const isSent = direction === 'sent';
-  const bgColor = '#41CC5D'; // Green for both sent and received
-
+function EVMChainBadge() {
   return (
     <Stack
       pos="absolute"
       bottom={-2}
-      right={-2}
-      w={18}
-      h={18}
-      rounded={9}
-      bg={bgColor}
+      left={-2}
+      w={20}
+      h={20}
+      rounded={10}
+      bg="#41CC5D"
       items="center"
       justify="center"
       borderWidth={2}
       borderColor="$bg"
     >
-      <Text fontSize={10} color="white" fontWeight="700">
-        {isSent ? '↗' : '↙'}
-      </Text>
+      <Link size={10} color="#FFFFFF" theme="outline" />
     </Stack>
   );
 }
 
 /**
  * ActivityCard displays a single transaction/activity item
- * Follows the design pattern with icon, title, address, amount, and status
+ * Follows the Figma design with icon, title, address, amount, and status
  */
 export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
-  const { title, token, image, amount, sender, receiver, transferType, status } = item;
+  const { title, token, image, amount, sender, receiver, transferType, type, status } = item;
+
+  // Check if this is an EVM transaction
+  const isEvm = item.evmTxIds && item.evmTxIds.length > 0;
+
+  // Check if this is an app interaction (no transfer direction shown)
+  const isInteraction = type === 'interaction';
 
   // Determine the address to show based on transfer direction
   const addressLabel = transferType === 'sent' ? 'To' : 'From';
@@ -96,6 +95,9 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
 
   // Format amount with sign
   const displayAmount = amount ? `${transferType === 'sent' ? '-' : '+'}${amount} ${token}` : '';
+
+  // Subtitle for interaction type
+  const subtitle = isInteraction ? 'Flow' : `${addressLabel}: ${truncateAddress(addressValue)}`;
 
   return (
     <Stack
@@ -112,10 +114,10 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
       px="$4"
     >
       <XStack items="center" gap="$3" width="100%">
-        {/* Icon with direction badge */}
+        {/* Icon with optional EVM chain badge */}
         <Stack pos="relative">
           <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={48} />
-          {transferType !== 'self' && <DirectionBadge direction={transferType} />}
+          {isEvm && <EVMChainBadge />}
         </Stack>
 
         {/* Content */}
@@ -123,19 +125,19 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
           {/* Top row: Title + Amount */}
           <XStack justify="space-between" items="center" gap="$2">
             <XStack items="center" gap="$1.5" flex={1} shrink={1}>
-              {/* Direction icon inline with title */}
-              {transferType !== 'self' && (
+              {/* Direction icon inline with title (not for interactions or self transfers) */}
+              {!isInteraction && transferType !== 'self' && (
                 <Stack
-                  w={16}
-                  h={16}
-                  rounded={8}
-                  bg={status === 'pending' ? '$warning10' : '#41CC5D20'}
+                  w={18}
+                  h={18}
+                  rounded={9}
+                  bg={status === 'pending' ? 'rgba(142, 142, 147, 0.2)' : 'rgba(65, 204, 93, 0.15)'}
                   items="center"
                   justify="center"
                 >
                   <Text
-                    fontSize={10}
-                    color={status === 'pending' ? '$warning' : '#41CC5D'}
+                    fontSize={11}
+                    color={status === 'pending' ? '#8E8E93' : '#41CC5D'}
                     fontWeight="700"
                   >
                     {transferType === 'sent' ? '↗' : '↙'}
@@ -144,7 +146,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
               )}
               <Text
                 fontWeight="600"
-                fontSize={14}
+                fontSize={15}
                 color="$text1"
                 numberOfLines={1}
                 lineHeight="$1"
@@ -168,15 +170,15 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
             )}
           </XStack>
 
-          {/* Bottom row: Address + Status */}
+          {/* Bottom row: Address/Subtitle + Status */}
           <XStack items="center" gap="$1" justify="space-between">
             <Text color="$text2" fontSize={13} fontWeight="400" numberOfLines={1} lineHeight="$1">
-              {addressLabel}: {truncateAddress(addressValue)}
+              {subtitle}
             </Text>
 
-            <Badge variant={getStatusBadgeVariant(item)} size="small">
+            <Text fontSize={13} fontWeight="500" color={getStatusColor(item)}>
               {getStatusText(item)}
-            </Badge>
+            </Text>
           </XStack>
         </YStack>
       </XStack>
