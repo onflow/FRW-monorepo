@@ -1,7 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React from 'react';
-import { Stack, Text, XStack, YStack } from 'tamagui';
+import { Stack, Text, XStack, YStack, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import type { ActivityCardProps } from '../types';
@@ -18,17 +18,35 @@ function truncateAddress(address: string, startLength = 6, endLength = 4): strin
 }
 
 /**
- * Gets the status color based on activity status
+ * Status type for color mapping
  */
-function getStatusColor(item: ActivityItem): string {
+type StatusType = 'error' | 'pending' | 'success';
+
+/**
+ * Gets the status type for an activity item
+ */
+function getStatusType(item: ActivityItem): StatusType {
   if (item.error || item.status === 'failed' || item.status === 'expired') {
-    return '#FF6B6B'; // Red for failed/error
+    return 'error';
   }
   if (item.status === 'pending') {
-    return '#8E8E93'; // Gray for pending
+    return 'pending';
   }
-  // Success states
-  return '#41CC5D'; // Green for success
+  return 'success';
+}
+
+/**
+ * Maps status type to theme token for text color
+ */
+function getStatusColor(statusType: StatusType): string {
+  switch (statusType) {
+    case 'error':
+      return '$error';
+    case 'pending':
+      return '$text2';
+    case 'success':
+      return '$success';
+  }
 }
 
 /**
@@ -59,7 +77,15 @@ function getStatusText(item: ActivityItem): string {
  * Follows the Figma design with icon, title, address, amount, and status
  */
 export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
-  const { title, token, image, amount, sender, receiver, transferType, type, status } = item;
+  const theme = useTheme();
+  const { title, token, image, amount, sender, receiver, transferType, type } = item;
+
+  // Get status type for color theming
+  const statusType = getStatusType(item);
+  const isPending = statusType === 'pending';
+
+  // Get resolved colors for icon components (they need actual color values)
+  const directionIconColor = isPending ? theme.text2?.val : theme.success?.val;
 
   // Check if this is an EVM wallet transaction (show chain badge)
   const isEvm = item.walletType === 'evm';
@@ -105,28 +131,20 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
             <XStack items="center" gap="$1.5" flex={1} shrink={1}>
               {/* Direction icon inline with title (not for interactions or self transfers) */}
               {!isInteraction && transferType !== 'self' && (
-                <Stack
-                  w={18}
-                  h={18}
+                <YStack
+                  width={18}
+                  height={18}
                   rounded={9}
-                  bg={status === 'pending' ? 'rgba(142, 142, 147, 0.2)' : 'rgba(65, 204, 93, 0.15)'}
+                  bg={isPending ? '$subtleBg10' : '$success10'}
                   items="center"
                   justify="center"
                 >
                   {transferType === 'sent' ? (
-                    <ArrowUpRight
-                      size={12}
-                      color={status === 'pending' ? '#8E8E93' : '#41CC5D'}
-                      theme="outline"
-                    />
+                    <ArrowUpRight size={12} color={directionIconColor} theme="outline" />
                   ) : (
-                    <ArrowDownLeft
-                      size={12}
-                      color={status === 'pending' ? '#8E8E93' : '#41CC5D'}
-                      theme="outline"
-                    />
+                    <ArrowDownLeft size={12} color={directionIconColor} theme="outline" />
                   )}
-                </Stack>
+                </YStack>
               )}
               <Text
                 fontWeight="600"
@@ -160,7 +178,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
               {subtitle}
             </Text>
 
-            <Text fontSize={13} fontWeight="500" color={getStatusColor(item)}>
+            <Text fontSize={13} fontWeight="500" color={getStatusColor(statusType) as any}>
               {getStatusText(item)}
             </Text>
           </XStack>

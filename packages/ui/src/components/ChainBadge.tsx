@@ -44,13 +44,13 @@ export function ChainBadge({ size = 20 }: ChainBadgeProps): React.ReactElement {
       width={size}
       height={size}
       rounded={borderRadius}
-      bg="#FFFFFF"
+      bg="$white"
       items="center"
       justify="center"
       borderWidth={2}
       borderColor="$bg"
     >
-      <Link size={iconSize} color="#000000" theme="outline" />
+      <Link size={iconSize} color="$black" theme="outline" />
     </YStack>
   );
 }
