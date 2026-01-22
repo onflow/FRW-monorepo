@@ -167,12 +167,12 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
         </YStack>
 
         {/* Title */}
-        <YStack {...({ items: 'center', mb: 12 } as any)}>
+        <YStack {...({ items: 'center', mb: 24, mt: 8 } as any)}>
           <TamaguiText
             {...({
               id: 'update-dialog-title',
               fontSize: 18,
-              fontWeight: '700',
+              fontWeight: '900',
               color: '#00EF8B',
               ta: 'center',
             } as any)}
@@ -183,7 +183,33 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
 
         {/* Content area */}
         <YStack {...({ gap: 10, mb: 12, px: 20 } as any)}>
-          {htmlContent ? <HtmlView htmlContent={DOMPurify.sanitize(htmlContent)} /> : children}
+          {htmlContent ? (
+            <div
+              style={{
+                color: '#E6E6E6',
+              }}
+            >
+              <style>
+                {`
+                  .update-dialog-content h1,
+                  .update-dialog-content h2 {
+                    margin-top: 16px;
+                    margin-bottom: 8px;
+                  }
+                  .update-dialog-content ul,
+                  .update-dialog-content ol {
+                    margin-top: 8px;
+                    margin-bottom: 8px;
+                  }
+                `}
+              </style>
+              <div className="update-dialog-content">
+                <HtmlView htmlContent={DOMPurify.sanitize(htmlContent)} />
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </YStack>
 
         {actions.map((action, index) => {

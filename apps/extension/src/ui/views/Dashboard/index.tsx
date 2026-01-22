@@ -1,10 +1,12 @@
 import { Button, Drawer, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-// import { UpdateDialog } from '@onflow/frw-ui';
+import { WhatSNewService, configureApiEndpoints } from '@onflow/frw-api';
+import { UpdateDialog } from '@onflow/frw-ui';
 import { setUser, setExtras } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
+import { consoleError } from '@/shared/utils';
 import { ButtonRow } from '@/ui/components';
 import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
@@ -12,6 +14,7 @@ import { OnRampList } from '@/ui/components/TokenLists/OnRampList';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useKeyRotationCheck } from '@/ui/hooks/use-key-rotation-check';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -30,6 +33,10 @@ const getVersionForPopup = (): string => {
   return versionParts.join('.');
 };
 
+const getCurrentVersion = (): string => {
+  return chrome.runtime.getManifest().version || '3.1.0';
+};
+
 const getDashboardPopupDismissedKey = (): string => {
   const version = getVersionForPopup();
   return `dashboard-popup-dismissed-v${version}`;
@@ -39,6 +46,7 @@ const Dashboard = () => {
   const { network, emulatorModeOn } = useNetwork();
   const { balance, coinsLoaded } = useCoins();
   const currency = useCurrency();
+  const wallet = useWallet();
   const {
     noAddress,
     registerStatus,
@@ -57,6 +65,8 @@ const Dashboard = () => {
   const [showOnRamp, setShowOnRamp] = useState(location.search.includes('onramp'));
   const [showMoveBoard, setShowMoveBoard] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [whatsNewData, setWhatsNewData] = useState<any>(null);
+  const [isLoadingWhatsNew, setIsLoadingWhatsNew] = useState(false);
 
   // Check if key rotation is needed for the active account
   const isBloctoKeyRotationEnabled = useFeatureFlag('blocto_key_rotation');
@@ -68,16 +78,71 @@ const Dashboard = () => {
 
   // Get version for popup title (patch version set to 0)
   const version = getVersionForPopup();
+  const currentVersion = getCurrentVersion();
   const popupTitle = `Extension Update V${version}`;
 
-  // Check localStorage on mount to determine if popup should show
+  // Fetch whats new data
   useEffect(() => {
-    const key = getDashboardPopupDismissedKey();
-    const dismissed = localStorage.getItem(key);
-    if (dismissed !== 'true') {
-      setShowPopup(true);
-    }
-  }, []);
+    const fetchWhatsNew = async () => {
+      if (!wallet || isLoadingWhatsNew) return;
+
+      setIsLoadingWhatsNew(true);
+      try {
+        // Get base URL - use environment variable or default
+        // In production, this should be set at build time
+        // For extension, API_BASE_URL should be available at build time
+        // @ts-ignore - process.env is available at build time
+        const baseURL =
+          (typeof process !== 'undefined' && process.env?.API_BASE_URL) || 'https://api.flow.com';
+
+        // Configure API endpoints with authentication
+        configureApiEndpoints(
+          baseURL, // apiEndpoint
+          baseURL, // goApiEndpoint (using same for now)
+          async () => {
+            // getJWT function - get token through wallet proxy
+            // Since we can't access Firebase auth directly in UI,
+            // we'll make a request that includes auth headers
+            // The actual token will be added by the axios interceptor
+            // For now, return empty string and let the interceptor handle it
+            return '';
+          },
+          () => network || 'mainnet' // getNetwork function
+        );
+
+        // Use WhatSNewService from frw-api directly
+        const response = await WhatSNewService.whatsnew(
+          {
+            toVersion: currentVersion,
+            fromVersion: currentVersion,
+            platform: 'ext',
+            language: 'en',
+          },
+          {}
+        );
+
+        console.log('whats new data:', response, currentVersion);
+        // Extract data from response (response.data.data or response.data)
+        const data = response?.data?.data || response?.data || response;
+        if (data && data.content) {
+          setWhatsNewData(data);
+          // Check if current version has been dismissed (use currentVersion, not API version)
+          const versionKey = `dashboard-popup-dismissed-v${currentVersion}`;
+          const dismissed = localStorage.getItem(versionKey);
+          if (dismissed !== 'true') {
+            setShowPopup(true);
+          }
+        }
+      } catch (error) {
+        consoleError('Error fetching whats new:', error);
+      } finally {
+        setIsLoadingWhatsNew(false);
+      }
+    };
+
+    fetchWhatsNew();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet, currentVersion, network]);
 
   const swapLink = getSwapLink(network, activeAccountType);
 
@@ -99,7 +164,8 @@ const Dashboard = () => {
   }, [userInfo, mainAddress, currentWallet?.evmAccount, currentWallet?.eoaAccount]);
 
   const handleClosePopup = () => {
-    const key = getDashboardPopupDismissedKey();
+    // Use current extension version for localStorage key
+    const key = `dashboard-popup-dismissed-v${currentVersion}`;
     localStorage.setItem(key, 'true');
     setShowPopup(false);
   };
@@ -234,28 +300,27 @@ const Dashboard = () => {
           />
         )}
       </div>
-      {/* Dialog demo */}
-      {/* <UpdateDialog
-        visible={true}
-        title={popupTitle}
-        htmlContent={`
-<h2>whats new</h2>\n<blockquote>\n<p>1345 quote</p>\n</blockquote>\n<p><strong>this is a blob text</strong></p>\n<ul>\n<li>one\n<ul>\n<li>tow\n<ul>\n<li>three</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n<table>\n    <tr>\n        <td>Foo</td>\n    </tr>\n</table>\n<div >\n123\n</div>\n<hr>\n<div>\n\t<style>\n\t\t.main-title { font-size: 24px; font-weight: bold; } .info-section { display:\n\t\tflex; align-items: flex-start; margin-bottom: 20px; } .icon { width: 40px;\n\t\theight: 40px; background-color: #333; border-radius: 8px; display: flex;\n\t\tjustify-content: center; align-items: center; margin-right: 12px; flex-shrink:\n\t\t0; } .icon-content { font-size: 20px; color: #FFFFFF; } .info-text { flex:\n\t\t1; } .info-title { font-size: 16px; font-weight: bold; margin-bottom: 4px;\n\t\t} .info-desc { font-size: 14px; line-height: 1.4; }\n\t</style>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t��\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tWhat's new\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tIf you already use an Ethereum wallet like MetaMask or Rainbow, you can\n\t\t\t\timport those same accounts to access everything on Flow.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t😈\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tFlow-native apps for your accounts\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tGet instant access to DeFi, marketplaces, and experiences on Flow.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<img class=\"icon\" src=\"https://raw.githubusercontent.com/onflow/assets/refs/heads/main/tokens/registry/0x717dae2baf7656be9a9b01dee31d571a9d4c9579/logo.png\">\n\t\t</img>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tAlready using Flow Wallet?\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tYou’ll see a new &quot;EVM&quot; account alongside your Cadence accounts\n\t\t\t\tand your now legacy &quot;EVM Flow&quot; account.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n\t<div class=\"info-section\">\n\t\t<div class=\"icon\">\n\t\t\t<span class=\"icon-content\">\n\t\t\t\t��\n\t\t\t</span>\n\t\t</div>\n\t\t<div class=\"info-text\">\n\t\t\t<div class=\"info-title\">\n\t\t\t\tWhy this matters\n\t\t\t</div>\n\t\t\t<div class=\"info-desc\">\n\t\t\t\tYour new EVM account is super-powered by Flow, unlocking gasless transactions,\n\t\t\t\tMEV-resilience and more.\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>\n<hr>\n<ul>\n<li>ui</li>\n<li>ux</li>\n<li>dev</li>\n</ul>\n
-`}
-        actions={[
-          {
-            text: 'Read More',
-            url: 'https://raw.githubusercontent.com/caosbad/logs/refs/heads/main/template.md',
-            type: 'external',
-            style: {
-              bgColor: '#007AFF',
-              textColor: '#FFFFFF',
-            },
-          },
-        ]}
-        buttonText={chrome.i18n.getMessage('OK')}
-        onButtonClick={handleClosePopup}
-        onClose={handleClosePopup}
-      /> */}
+      {/* Update Dialog - Shows what's new from API */}
+      {whatsNewData && (
+        <UpdateDialog
+          visible={showPopup}
+          title={
+            whatsNewData.title || `Extension Update V${whatsNewData.version || currentVersion}`
+          }
+          htmlContent={whatsNewData.content || ''}
+          actions={
+            whatsNewData.actions?.map((action: any) => ({
+              text: action.text || action.label,
+              url: action.url,
+              type: action.type || 'external',
+              style: action.style || {},
+            })) || []
+          }
+          buttonText={whatsNewData.buttonText || chrome.i18n.getMessage('OK') || 'OK'}
+          onButtonClick={handleClosePopup}
+          onClose={handleClosePopup}
+        />
+      )}
     </Box>
   );
 };
