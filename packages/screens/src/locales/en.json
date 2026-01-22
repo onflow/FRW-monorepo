@@ -391,18 +391,6 @@
   },
   "backup": {
     "tip": {
-      "title": "Upgrade\nyour account",
-      "description": "Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys",
-      "sectionTitle": "What does this mean?",
-      "fullControl": {
-        "title": "You'll have full control over your accounts and keys."
-      },
-      "newKey": {
-        "title": "We'll create a new key to secure your account, removing Blocto's access."
-      },
-      "newPhrase": {
-        "title": "We'll create a new recovery phrase which will secure your account going forward."
-      },
       "writeDown": {
         "title": "Write it down",
         "description": "Write your recovery phrase on paper and store it in a secure location."
@@ -417,30 +405,58 @@
       },
       "warning": {
         "title": "Important",
-        "description": "If you lose your recovery phrase, you will not be able to recover your wallet. Flow Wallet cannot help you recover it.",
+        "description": "If you lose your recovery phrase, you will not be able to recover your wallet. Flow Wallet cannot help you recover it."
+      },
+      "continue": "Continue"
+    },
+    "mnemonic": {
+      "navTitle": "Create account",
+      "done": "Done",
+      "complete": "I've backed up my phrase"
+    }
+  },
+  "keyrotation": {
+    "tip": {
+      "title": "Upgrade\nyour account",
+      "description": "Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys",
+      "sectionTitle": "What does this mean?",
+      "fullControl": {
+        "title": "You'll have full control over your accounts and keys."
+      },
+      "newKey": {
+        "title": "We'll create a new key to secure your account, removing Blocto's access."
+      },
+      "newPhrase": {
+        "title": "We'll create a new recovery phrase which will secure your account going forward."
+      },
+      "warning": {
         "prefix": "Please note: ",
         "bloctoDescription": "After this process completes, your recovery kit from Blocto will no longer secure access to your account. This is for your protection now that Blocto has ceased operations."
       },
-      "continue": "Continue",
       "start": "Start",
       "notNow": "Not now"
     },
     "mnemonic": {
-      "navTitle": "Create account",
       "title": "Recovery phrase",
       "description": "Write down these words in the right order and store them somewhere safe.",
       "clickToReveal": "Click to reveal phrase",
       "copy": "Copy",
+      "upgrading": "Upgrading account...",
       "warning": {
         "title": "Do not share your recovery phrase!",
         "description": "If someone has your recovery phrase, They will have full control of your wallet."
       },
-      "done": "Done",
-      "complete": "I've backed up my phrase",
       "error": {
         "title": "Invalid Recovery Phrase",
         "description": "The recovery phrase is missing or invalid. Please try again."
       }
+    },
+    "error": {
+      "seedGeneration": "Failed to generate recovery phrase",
+      "rotation": "Failed to upgrade account"
+    },
+    "success": {
+      "rotation": "Account upgraded successfully!"
     }
   },
   "keystoreMigration": {
