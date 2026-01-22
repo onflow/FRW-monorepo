@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 
 import { LLHeader } from '@/ui/components';
 
-
 const MigrationPage = () => {
   const [showMigration, setShowMigration] = useState(false);
   const [migrationAssets, setMigrationAssets] = useState<MigrationAssetsData | undefined>(
