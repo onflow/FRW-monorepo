@@ -2,7 +2,6 @@ import { connectToApps, loginToSenderAccount } from '../utils/helper';
 import { test, expect } from '../utils/loader';
 
 test.beforeEach(async ({ page, extensionId }) => {
-  // Login to our sender account
   await loginToSenderAccount({ page, extensionId });
   await connectToApps({
     page,
@@ -27,34 +26,9 @@ test('Verify connect with wallet', async ({ page, extensionId }) => {
   const eoaAddress = process.env.TEST_SENDER_EOA_ADDR || 'Unknown EVM Address';
   console.log(`Starting balance check for Sender: ${nickname} (${address})`);
 
-  // Login to sender account
-
-  // page.on('popup', async (popupPage) => {
-
-  //   console.log(popupPage);
-  //   const changeAccBtn = await popupPage.getByTestId('account-card-chevron');
-  //   expect(changeAccBtn).toBeVisible();
-
-  //   changeAccBtn.click();
-  // });
-
-  // await captureExtensionPage();
-
-  // await page.getByText('Flow Wallet').click();
-
-  // await page.getByTestId('connect-button').click();
-
-  // await new Promise((resolve) => setTimeout(resolve, 7000));
-
   const flowEoaAddr = await page.getByText(eoaAddress);
 
   expect(flowEoaAddr).toBeVisible();
-
-  // // Assert based on the overall result
-  // expect(
-  //   overallSufficient,
-  //   `One or more token balances are insufficient for ${nickname} (${address}). See attached report.`
-  // ).toBeTruthy();
 });
 
 test('Verify connect with EIP6963 (EVM)', async ({ page, extensionId }) => {
