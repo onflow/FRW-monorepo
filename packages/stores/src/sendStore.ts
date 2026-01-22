@@ -1,9 +1,5 @@
-import {
-  createMixpanelAnalytics,
-  TransactionTracker,
-  type TransactionSession,
-} from '@onflow/frw-analytics';
-import { bridge, cadence } from '@onflow/frw-context';
+import type { TransactionSession } from '@onflow/frw-analytics';
+import { analytics, bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
   type CollectionModel,
@@ -381,30 +377,55 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     }),
 
-  // Create transaction tracker
-  createTransactionSession: async (config: any): Promise<TransactionSession | null> => {
-    const state = get();
-    const { transactionType } = state;
-    const analytics = await createMixpanelAnalytics(config);
-    logger.info('[SendStore] createTracker -- state:', state);
+  // Create transaction session using analytics from context (initialized at app startup)
+  createTransactionSession: async (): Promise<TransactionSession | null> => {
+    try {
+      // Check if analytics is available (may be null on React Native where native MixpanelManager handles tracking)
+      if (!analytics.isEnabled()) {
+        logger.debug('[SendStore] Analytics not enabled, skipping transaction tracking');
+        return null;
+      }
 
-    const transactionTracker = new TransactionTracker(analytics);
+      const transactionTracker = analytics.getTransactionTracker();
+      if (!transactionTracker) {
+        logger.debug('[SendStore] No transaction tracker available');
+        return null;
+      }
 
-    const { accounts } = await bridge.getWalletAccounts();
-    const selectedAccount = await bridge.getSelectedAccount();
-    const mainAccount =
-      selectedAccount.type === 'main'
-        ? selectedAccount
-        : accounts.find(
-            (account) =>
-              account.type === 'main' && account.address === selectedAccount.parentAddress
-          );
-    const session = transactionTracker?.createTransactionSession(
-      mainAccount!.address,
-      transactionType
-    );
+      const state = get();
+      const { transactionType } = state;
 
-    return session;
+      const { accounts } = await bridge.getWalletAccounts();
+      const selectedAccount = await bridge.getSelectedAccount();
+      const mainAccount =
+        selectedAccount.type === 'main'
+          ? selectedAccount
+          : accounts.find(
+              (account) =>
+                account.type === 'main' && account.address === selectedAccount.parentAddress
+            );
+
+      if (!mainAccount) {
+        logger.warn('[SendStore] No main account found for analytics session');
+        return null;
+      }
+
+      // Cast to TransactionSession since TransactionTracker returns unknown to avoid type conflicts
+      const session = transactionTracker.createTransactionSession(
+        mainAccount.address,
+        transactionType
+      ) as TransactionSession;
+
+      logger.debug('[SendStore] Transaction session created for analytics');
+      return session;
+    } catch (error) {
+      // Analytics session creation failed - continue without tracking
+      logger.warn(
+        '[SendStore] Analytics session creation failed, continuing without tracking:',
+        error
+      );
+      return null;
+    }
   },
 
   // Create send payload for transaction execution
@@ -593,11 +614,9 @@ export const useSendStore = create<SendState>((set, get) => ({
   executeTransaction: async (): Promise<any> => {
     const state = get();
     set({ isLoading: true, error: null });
-    // init mixpanel
-    const session = await state.createTransactionSession({
-      token: bridge.getMixpanelToken(),
-      debug: true,
-    });
+
+    // Create analytics session (uses pre-initialized analytics from context)
+    const session = await state.createTransactionSession();
 
     try {
       // Create payload
