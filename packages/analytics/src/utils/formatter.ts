@@ -1,9 +1,4 @@
-import type {
-  EventProperties,
-  AnalyticsContext,
-  EventName,
-  EventData,
-} from '../types.js';
+import type { EventProperties, AnalyticsContext, EventName, EventData } from '../types.js';
 
 export interface FormattingRules {
   timestampFormat?: 'unix' | 'iso' | 'relative';

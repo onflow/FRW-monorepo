@@ -6,7 +6,9 @@ export type FeatureFlagKey =
   | 'emulator_mode'
   | 'cover_bridge_fee'
   | 'create_new_account'
-  | 'import_existing_account';
+  | 'import_existing_account'
+  | 'blocto_key_rotation'
+  | 'coa_migration';
 
 // Feature flags
 export type FeatureFlags = {

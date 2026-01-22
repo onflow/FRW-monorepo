@@ -10,7 +10,7 @@ import { useNetwork } from './useNetworkHook';
 export const useTransferList = () => {
   const wallet = useWallet();
   const { network } = useNetwork();
-  const { currentWallet } = useProfiles();
+  const { currentWallet, activeAccountType } = useProfiles();
 
   const currentAddress = currentWallet?.address;
 
@@ -37,7 +37,7 @@ export const useTransferList = () => {
     return () => {
       mounted = false;
     };
-  }, [wallet]);
+  }, [wallet, network, activeAccountType]);
 
   return {
     occupied: !!transferListStore?.pendingCount,
