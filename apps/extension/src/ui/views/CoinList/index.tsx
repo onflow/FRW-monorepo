@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { EarnButton } from '@onflow/frw-ui';
+import { EarnButton, VaultTag } from '@onflow/frw-ui';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -324,42 +324,51 @@ const CoinList = ({
               ) {
                 return null;
               }
+              const isFlowToken =
+                coin.contractName === 'FlowToken' || coin.unit.toLowerCase() === 'flow';
+
               return (
-                <ListItem
-                  sx={{ minHeight: '62px' }}
-                  key={coin.id}
-                  data-testid={`token-${coin.unit.toLowerCase()}`}
-                  secondaryAction={
-                    <CoinBalance
-                      balance={coin.availableBalance || coin.balance}
-                      decimals={coin.decimals || 18}
-                      fiatBalance={coin.total}
-                      unit={coin.unit}
-                    />
-                  }
-                  disablePadding
-                  onClick={() =>
-                    navigate(`/dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
-                  }
-                >
-                  <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
-                    <ListItemIcon>
-                      <TokenAvatar
-                        symbol={isLoading ? undefined : coin.symbol}
-                        src={coin.logoURI}
-                        width={36}
-                        height={36}
+                <Box key={coin.id}>
+                  <ListItem
+                    sx={{ minHeight: '62px' }}
+                    data-testid={`token-${coin.unit.toLowerCase()}`}
+                    secondaryAction={
+                      <CoinBalance
+                        balance={coin.availableBalance || coin.balance}
+                        decimals={coin.decimals || 18}
+                        fiatBalance={coin.total}
+                        unit={coin.unit}
                       />
-                    </ListItemIcon>
-                    <StartListItemText
-                      name={coin.coin}
-                      price={coin.price}
-                      change={parseFloat(coin.change24h?.toFixed(2) || '0')}
-                      isVerified={coin.isVerified || false}
-                      id={coin.id}
-                    />
-                  </ListItemButton>
-                </ListItem>
+                    }
+                    disablePadding
+                    onClick={() =>
+                      navigate(`/dashboard/tokendetail/${coin.unit.toLowerCase()}/${coin.id}`)
+                    }
+                  >
+                    <ListItemButton sx={{ paddingRight: '0px' }} dense={true}>
+                      <ListItemIcon>
+                        <TokenAvatar
+                          symbol={isLoading ? undefined : coin.symbol}
+                          src={coin.logoURI}
+                          width={36}
+                          height={36}
+                        />
+                      </ListItemIcon>
+                      <StartListItemText
+                        name={coin.coin}
+                        price={coin.price}
+                        change={parseFloat(coin.change24h?.toFixed(2) || '0')}
+                        isVerified={coin.isVerified || false}
+                        id={coin.id}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  {isFlowToken && isVaultEnabled && (
+                    <Box sx={{ pl: '52px', pb: '8px', pt: '4px' }}>
+                      <VaultTag amount="114.14" apy="10" />
+                    </Box>
+                  )}
+                </Box>
               );
             })
         ) : (
