@@ -192,18 +192,21 @@ class TransactionActivity {
     txList.unshift(txItem);
     this.setPendingList(network, address, txList);
 
-    // Get the existing indexed transaction list
+    // Get the existing indexed transaction list or create a new one
     const existingTxStore = await getInvalidData<TransferListStore>(
       transferListKey(network, address, '0', '15')
     );
-    if (existingTxStore) {
-      existingTxStore.list.unshift(txItem);
-      existingTxStore.pendingCount = existingTxStore.list.filter(
-        (item) => item.status.toUpperCase() === 'PENDING'
-      ).length;
-      existingTxStore.count = existingTxStore.count + 1;
-      await setCachedData(transferListKey(network, address, '0', '15'), existingTxStore);
-    }
+    const txStore: TransferListStore = existingTxStore || {
+      count: 0,
+      pendingCount: 0,
+      list: [],
+    };
+    txStore.list.unshift(txItem);
+    txStore.pendingCount = txStore.list.filter(
+      (item) => item.status.toUpperCase() === 'PENDING'
+    ).length;
+    txStore.count = txStore.count + 1;
+    await setCachedData(transferListKey(network, address, '0', '15'), txStore);
   };
 
   updatePending = async (
@@ -252,23 +255,96 @@ class TransactionActivity {
     // Always set pending transactions to 120 seconds
     this.setPendingList(network, address, txList);
 
-    // Get the existing indexed transaction list
+    // Get the existing indexed transaction list and update it, or create new one
     const existingTxStore = await getInvalidData<TransferListStore>(
       transferListKey(network, address, '0', '15')
     );
-    if (existingTxStore) {
-      const storeItemIndex = existingTxStore.list.findIndex((item) => item.hash.includes(txId));
-      if (storeItemIndex !== -1) {
-        existingTxStore.list[storeItemIndex] = txItem;
-        existingTxStore.pendingCount = existingTxStore.list.filter(
-          (item) => item.status.toUpperCase() === 'PENDING'
-        ).length;
-        await setCachedData(transferListKey(network, address, '0', '15'), existingTxStore);
-      }
+    const txStore: TransferListStore = existingTxStore || {
+      count: 0,
+      pendingCount: 0,
+      list: [],
+    };
+    const storeItemIndex = txStore.list.findIndex(
+      (item) =>
+        item.hash.includes(txId) ||
+        item.cadenceTxId?.includes(txId) ||
+        item.evmTxIds?.includes(txId)
+    );
+    if (storeItemIndex !== -1) {
+      txStore.list[storeItemIndex] = txItem;
+    } else {
+      // Item not found in store, add it (could happen if cache was cleared)
+      txStore.list.unshift(txItem);
+      txStore.count = txStore.count + 1;
     }
+    txStore.pendingCount = txStore.list.filter(
+      (item) => item.status.toUpperCase() === 'PENDING'
+    ).length;
+    await setCachedData(transferListKey(network, address, '0', '15'), txStore);
 
     // Return the hash of the transaction
     return combinedTxHash;
+  };
+
+  /**
+   * Update a pending transaction to show error state
+   * This is called when a evm transaction fails on the cadence side
+   * @param network - The network
+   * @param address - The address (can be Flow or EVM address)
+   * @param txId - The transaction ID
+   * @param errorMessage - The error message to display
+   */
+  updatePendingError = async (
+    network: string,
+    address: string,
+    txId: string,
+    errorMessage?: string
+  ): Promise<void> => {
+    const txList = this.getPendingList(network, address);
+
+    const txItemIndex = txList.findIndex((item) => item.hash.includes(txId));
+    if (txItemIndex === -1) {
+      // txItem not found, return
+      return;
+    }
+    const txItem = txList[txItemIndex];
+
+    // Mark the transaction as failed
+    txItem.status = 'Error';
+    txItem.error = true;
+    if (errorMessage) {
+      txItem.additionalMessage = errorMessage;
+    }
+
+    txList[txItemIndex] = txItem;
+    this.setPendingList(network, address, txList);
+
+    // Get the existing indexed transaction list and update it, or create new one
+    const existingTxStore = await getInvalidData<TransferListStore>(
+      transferListKey(network, address, '0', '15')
+    );
+    const txStore: TransferListStore = existingTxStore || {
+      count: 0,
+      pendingCount: 0,
+      list: [],
+    };
+    const storeItemIndex = txStore.list.findIndex(
+      (item) =>
+        item.hash.includes(txId) ||
+        item.cadenceTxId?.includes(txId) ||
+        item.evmTxIds?.includes(txId)
+    );
+    if (storeItemIndex !== -1) {
+      txStore.list[storeItemIndex] = txItem;
+    } else {
+      // Item not found in store, add it
+      txStore.list.unshift(txItem);
+      txStore.count = txStore.count + 1;
+    }
+    txStore.pendingCount = txStore.list.filter(
+      (item) => item.status.toUpperCase() === 'PENDING'
+    ).length;
+    await setCachedData(transferListKey(network, address, '0', '15'), txStore);
   };
 
   removePending = async (network: string, address: string, txId: string) => {
