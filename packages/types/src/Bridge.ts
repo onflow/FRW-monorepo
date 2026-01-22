@@ -91,7 +91,7 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'send-asset' | 'backup-tip'| 'token-detail' | 'onboarding' | 'receive';
+  screen: 'send-asset' | 'backup-tip' | 'token-detail' | 'onboarding' | 'receive';
   sendToConfig?: string;
 }
 
@@ -99,6 +99,7 @@ export interface EnvironmentVariables {
   NODE_API_URL: string;
   GO_API_URL: string;
   INSTABUG_TOKEN: string;
+  MIXPANEL_TOKEN?: string; // Optional - Android provides this, extension uses env var
 }
 
 export interface Currency {

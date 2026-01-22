@@ -9,9 +9,11 @@ export type {
   StorageData,
   RecentRecipient,
 } from './interfaces/storage/StorageKeyMap';
+export type { AnalyticsService, TransactionTracker } from './interfaces/Analytics';
 
 // Service Context
 export {
+  analytics,
   bridge,
   cache,
   cadence,

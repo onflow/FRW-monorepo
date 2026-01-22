@@ -36,12 +36,16 @@ async function runOptimization(filePath, cmd, label, originalSize) {
         `Optimized (${label}): ${filePath} (${originalSize} → ${optimizedSize} bytes, ${savings}% savings)`
       );
     } else {
-      console.log(`Processed (${label}): ${filePath} (${originalSize} bytes) - no optimization needed`);
+      console.log(
+        `Processed (${label}): ${filePath} (${originalSize} bytes) - no optimization needed`
+      );
     }
 
     return true;
   } catch (error) {
-    console.warn(`Warning: ${label} failed for ${filePath}; skipping optimization (${error.message})`);
+    console.warn(
+      `Warning: ${label} failed for ${filePath}; skipping optimization (${error.message})`
+    );
     return false;
   }
 }
@@ -126,7 +130,9 @@ async function optimizeImage(filePath) {
         return true;
       }
       imageOptimDisabled = true;
-      console.warn('Warning: ImageOptim-CLI failed; disabling optimization for the rest of this run.');
+      console.warn(
+        'Warning: ImageOptim-CLI failed; disabling optimization for the rest of this run.'
+      );
       return await fallbackOptimization(filePath);
     }
 

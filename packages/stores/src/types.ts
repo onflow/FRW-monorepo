@@ -152,11 +152,11 @@ export interface SendState {
   clearAccessibleAssetStore: (address: string) => void;
   clearAllAccessibleAssetStores: () => void;
 
-  // create transaction tracker
-  createTransactionSession: (config: any) => Promise<TransactionSession | null>;
+  // create transaction tracker (uses pre-initialized analytics from context)
+  createTransactionSession: () => Promise<TransactionSession | null>;
 
   // Transaction payload creation
-  createSendPayload: (traccker: TransactionSession | null) => Promise<SendPayload | null>;
+  createSendPayload: (session: TransactionSession | null) => Promise<SendPayload | null>;
 
   // Transaction execution
   executeTransaction: () => Promise<any>;
