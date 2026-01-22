@@ -36,6 +36,10 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
 }) => {
   // Unified ref; concrete type differs per platform implementation
   const animationRef = useRef<any>(null);
+  // Track if component is still mounted to prevent state updates on unmounted component
+  const isMountedRef = useRef(true);
+  // Track timeout to cancel on unmount
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [currentAnimationSource, setCurrentAnimationSource] = useState<any>(null);
   const [isAnimationReady, setIsAnimationReady] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
@@ -45,12 +49,15 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
     const prepareAnimation = async () => {
       try {
         logger.debug('[ConfirmationAnimation] 🚀 Preparing animation with imageUri:', imageUri);
+
+        // Check if still mounted before updating state
+        if (!isMountedRef.current) return;
         setIsAnimationReady(false);
 
         // Validate animation data
         if (!sendConfirmationAnimation || typeof sendConfirmationAnimation !== 'object') {
           logger.warn('[ConfirmationAnimation] ❌ Invalid animation data');
-          setIsAnimationReady(true);
+          if (isMountedRef.current) setIsAnimationReady(true);
           return;
         }
 
@@ -63,6 +70,9 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
           'image_0', // Standard Lottie image layer ID
           '' // Empty string will trigger base64 placeholder
         );
+
+        // Check if still mounted before updating state
+        if (!isMountedRef.current) return;
 
         if (placeholderResult.success && placeholderResult.animationData) {
           setCurrentAnimationSource(placeholderResult.animationData);
@@ -94,13 +104,20 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
           }
 
           // Delay slightly to ensure placeholder is visible first
-          setTimeout(async () => {
+          // Store timeout ref so we can cancel on unmount
+          timeoutRef.current = setTimeout(async () => {
+            // Check if still mounted before proceeding
+            if (!isMountedRef.current) return;
+
             try {
               const realImageResult = await injectImageWithFallbacks(
                 sendConfirmationAnimation,
                 'image_0',
                 imageUri
               );
+
+              // Check if still mounted before updating state
+              if (!isMountedRef.current) return;
 
               logger.debug('[ConfirmationAnimation] 🎯 Image injection result:', {
                 success: realImageResult.success,
@@ -117,7 +134,7 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
               }
             } catch (error) {
               logger.error('[ConfirmationAnimation] 💥 Real image injection failed:', error);
-              setImageLoadError(true);
+              if (isMountedRef.current) setImageLoadError(true);
             }
           }, 100); // Small delay to ensure placeholder shows first
         } else {
@@ -126,9 +143,11 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
       } catch (error) {
         logger.error('[ConfirmationAnimation] 💥 Animation preparation failed:', error);
         // Fallback to original animation without any injection
-        setCurrentAnimationSource(sendConfirmationAnimation);
-        setIsAnimationReady(true);
-        setImageLoadError(true);
+        if (isMountedRef.current) {
+          setCurrentAnimationSource(sendConfirmationAnimation);
+          setIsAnimationReady(true);
+          setImageLoadError(true);
+        }
       }
     };
 
@@ -145,9 +164,20 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
     onAnimationReady?.(isAnimationReady);
   }, [isAnimationReady, onAnimationReady]);
 
-  // Cleanup animation when component unmounts to prevent IllegalStateException on Android
+  // Track mounted state and cleanup animation when component unmounts to prevent IllegalStateException on Android
   useEffect(() => {
+    isMountedRef.current = true;
+
     return () => {
+      // Mark as unmounted first to prevent any pending async operations from updating state
+      isMountedRef.current = false;
+
+      // Cancel any pending timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+
       if (Platform.OS === 'android' && animationRef.current) {
         try {
           // Pause and reset animation before unmounting
@@ -194,16 +224,21 @@ export const ConfirmationAnimation: React.FC<ConfirmationAnimationProps> = ({
         speed={1.0}
         onAnimationFailure={(error) => {
           logger.warn('[ConfirmationAnimation] Animation failed:', error);
-          setImageLoadError(true);
+          if (isMountedRef.current) {
+            setImageLoadError(true);
 
-          // Additional safety: Reset to placeholder animation on failure
-          if (Platform.OS === 'android') {
-            logger.warn(
-              '[ConfirmationAnimation] Resetting to safe placeholder animation after failure'
-            );
-            setTimeout(() => {
-              setCurrentAnimationSource(sendConfirmationAnimation);
-            }, 50);
+            // Additional safety: Reset to placeholder animation on failure
+            if (Platform.OS === 'android') {
+              logger.warn(
+                '[ConfirmationAnimation] Resetting to safe placeholder animation after failure'
+              );
+              // Use a timeout but check mounted state before updating
+              setTimeout(() => {
+                if (isMountedRef.current) {
+                  setCurrentAnimationSource(sendConfirmationAnimation);
+                }
+              }, 50);
+            }
           }
         }}
         onAnimationLoaded={() => {

@@ -22,7 +22,7 @@ export type {
   forms_EvmAccountInfo,
   forms_AccountKeySignature,
   forms_BackupInfo,
-  forms_AccountKeyForm,  
+  forms_AccountKeyForm,
 } from './codegen/goService.generated';
 
 // Export service options

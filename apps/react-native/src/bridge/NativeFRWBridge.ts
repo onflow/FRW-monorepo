@@ -25,6 +25,7 @@ interface EnvironmentVariables {
   NODE_API_URL: string;
   GO_API_URL: string;
   INSTABUG_TOKEN: string;
+  MIXPANEL_TOKEN?: string;
 }
 
 interface Currency {
