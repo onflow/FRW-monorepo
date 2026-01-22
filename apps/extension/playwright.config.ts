@@ -97,6 +97,25 @@ export default defineConfig({
       fullyParallel: false,
     },
 
+    // apps
+
+    {
+      name: 'apps-setup',
+      testMatch: /.*apps\.setup\.ts/,
+      teardown: 'apps-teardown',
+      fullyParallel: false,
+    },
+    {
+      name: 'apps-test',
+      testMatch: /apps\/.*\.test\.ts/,
+      dependencies: ['apps-setup'],
+      fullyParallel: false,
+    },
+    {
+      name: 'apps-teardown',
+      testMatch: /.*apps\.teardown\.ts/,
+      fullyParallel: false,
+    },
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
