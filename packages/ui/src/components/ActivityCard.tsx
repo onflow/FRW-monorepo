@@ -159,7 +159,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
             )}
             <Text
               fontWeight="600"
-              fontSize={16}
+              fontSize="$4"
               color="$text1"
               numberOfLines={1}
               lineHeight={22}
@@ -171,7 +171,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
           </XStack>
 
           {displayAmount && (
-            <Text fontSize={16} fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
+            <Text fontSize="$4" fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
               {displayAmount}
             </Text>
           )}
