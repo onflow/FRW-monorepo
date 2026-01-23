@@ -4,7 +4,6 @@ import React from 'react';
 import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, isCOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
-import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
@@ -152,7 +151,7 @@ export const AccountListing = ({
     activeAccount?.address === evmAccount.address;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
-  const isCoaMigrationEnabled = useFeatureFlag('coa_migration');
+  const isCoaMigrationEnabled = true;
 
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {
