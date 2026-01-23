@@ -13,6 +13,7 @@ import {
   ActivitySkeleton,
   RefreshView,
   ScrollView,
+  Separator,
 } from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
@@ -173,10 +174,16 @@ export function ActivityScreen(): ReactElement {
               {/* Date header */}
               <ActivityGroupHeader title={group.date} />
 
-              {/* Activity items in this group */}
-              {group.items.map((item) => (
-                <ActivityCard key={item.id} item={item} onPress={() => handleActivityPress(item)} />
-              ))}
+              {/* Activity cards container with shared background */}
+              <YStack mx="$4" bg="$bg1" rounded="$4" px="$3">
+                {group.items.map((item, index) => (
+                  <YStack key={item.id}>
+                    <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
+                    {/* Separator between cards, not after last card */}
+                    {index < group.items.length - 1 && <Separator borderColor="$bg2" />}
+                  </YStack>
+                ))}
+              </YStack>
             </YStack>
           ))}
         </YStack>

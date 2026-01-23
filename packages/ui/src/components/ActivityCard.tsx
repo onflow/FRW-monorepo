@@ -128,7 +128,8 @@ function DirectionBadge({
 
 /**
  * ActivityCard displays a single transaction/activity item
- * Follows the Figma design with card background, icon with status badge, title with direction indicator
+ * Designed to be used within an ActivityCardGroup - no individual card background
+ * The group container provides the shared background and separators
  */
 export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
   const { title, token, image, amount, sender, receiver, transferType, type } = item;
@@ -153,75 +154,70 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
   const subtitle = isInteraction ? 'Flow' : `${addressLabel}: ${truncateAddress(addressValue)}`;
 
   return (
-    <Stack px="$4" py="$1.5">
-      <XStack
-        {...(onPress && {
-          pressStyle: { opacity: 0.7 },
-          hoverStyle: { bg: '$bg2' },
-          onPress: onPress,
-          cursor: 'pointer',
-        })}
-        items="center"
-        gap="$3"
-        width="100%"
-        bg="$bg1"
-        rounded="$4"
-        p="$3"
-      >
-        {/* Icon with status badge and optional chain badge */}
-        <Stack position="relative">
-          <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={44} />
-          {isEvm && <ChainBadge chain="evm" size={18} />}
-          {/* Status badge - checkmark for success */}
-          {!isInteraction && <StatusBadge statusType={statusType} />}
-        </Stack>
+    <XStack
+      {...(onPress && {
+        pressStyle: { opacity: 0.7 },
+        onPress: onPress,
+        cursor: 'pointer',
+      })}
+      items="center"
+      gap="$3"
+      width="100%"
+      py="$3"
+    >
+      {/* Icon with status badge and optional chain badge */}
+      <Stack position="relative">
+        <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={44} />
+        {isEvm && <ChainBadge chain="evm" size={18} />}
+        {/* Status badge - checkmark for success */}
+        {!isInteraction && <StatusBadge statusType={statusType} />}
+      </Stack>
 
-        {/* Content */}
-        <YStack flex={1} gap="$1">
-          {/* Top row: Direction badge + Title + Amount */}
-          <XStack justify="space-between" items="center" gap="$2">
-            <XStack items="center" gap="$2" flex={1} shrink={1}>
-              {/* Direction indicator inline with title */}
-              {!isInteraction && transferType !== 'self' && (
-                <DirectionBadge transferType={transferType} statusType={statusType} />
-              )}
-              <Text
-                fontWeight="600"
-                fontSize={16}
-                color="$text1"
-                numberOfLines={1}
-                lineHeight={22}
-                flex={1}
-                shrink={1}
-              >
-                {title || (transferType === 'sent' ? `Sent ${token}` : `Received ${token}`)}
-              </Text>
-            </XStack>
-
-            {displayAmount && (
-              <Text fontSize={16} fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
-                {displayAmount}
-              </Text>
+      {/* Content */}
+      <YStack flex={1} gap="$1">
+        {/* Top row: Direction badge + Title + Amount */}
+        <XStack justify="space-between" items="center" gap="$2">
+          <XStack items="center" gap="$2" flex={1} shrink={1}>
+            {/* Direction indicator inline with title */}
+            {!isInteraction && transferType !== 'self' && (
+              <DirectionBadge transferType={transferType} statusType={statusType} />
             )}
-          </XStack>
-
-          {/* Bottom row: Address/Subtitle + Status */}
-          <XStack items="center" gap="$1" justify="space-between">
-            <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight={20}>
-              {subtitle}
-            </Text>
-
             <Text
-              fontSize={14}
-              fontWeight="500"
-              color={getStatusColor(statusType) as any}
-              lineHeight={20}
+              fontWeight="600"
+              fontSize={16}
+              color="$text1"
+              numberOfLines={1}
+              lineHeight={22}
+              flex={1}
+              shrink={1}
             >
-              {getStatusText(item)}
+              {title || (transferType === 'sent' ? `Sent ${token}` : `Received ${token}`)}
             </Text>
           </XStack>
-        </YStack>
-      </XStack>
-    </Stack>
+
+          {displayAmount && (
+            <Text fontSize={16} fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
+              {displayAmount}
+            </Text>
+          )}
+        </XStack>
+
+        {/* Bottom row: Address/Subtitle + Status */}
+        <XStack items="center" gap="$1" justify="space-between">
+          <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight={20}>
+            {subtitle}
+          </Text>
+
+          <Text
+            fontSize={14}
+            fontWeight="500"
+            color={getStatusColor(statusType) as any}
+            lineHeight={20}
+          >
+            {getStatusText(item)}
+          </Text>
+        </XStack>
+      </YStack>
+    </XStack>
   );
 }
