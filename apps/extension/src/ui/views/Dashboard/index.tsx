@@ -25,7 +25,13 @@ import WalletTab from './wallet-tab';
 import MoveBoard from '../MoveBoard';
 
 const getVersionForPopup = (): string => {
-  const version = chrome.runtime.getManifest().version || '3.1.0';
+  // Prioritize build-time version from package.json (set by webpack DefinePlugin)
+  // @ts-ignore - process.env.release is set at build time by webpack DefinePlugin
+  const buildVersion = typeof process !== 'undefined' ? process.env?.release : undefined;
+  const manifestVersion = chrome.runtime.getManifest().version;
+
+  // Use buildVersion first (from package.json), then manifest, then fallback
+  const version = buildVersion || manifestVersion || '3.1.10';
   const versionParts = version.split('.');
   if (versionParts.length >= 3) {
     versionParts[2] = '0';
@@ -34,7 +40,30 @@ const getVersionForPopup = (): string => {
 };
 
 const getCurrentVersion = (): string => {
-  return chrome.runtime.getManifest().version || '3.1.0';
+  // Prioritize build-time version from package.json (set by webpack DefinePlugin)
+  // This is more reliable than manifest version which may be stale if extension wasn't reloaded
+  // @ts-ignore - process.env.release is set at build time by webpack DefinePlugin
+  const buildVersion = typeof process !== 'undefined' ? process.env?.release : undefined;
+  const manifestVersion = chrome.runtime.getManifest().version;
+
+  // Use buildVersion first (from package.json), then manifest, then fallback
+  const version = buildVersion || manifestVersion || '3.1.10';
+
+  // Debug logging to help identify version source
+  if (version !== '3.1.10' || manifestVersion !== buildVersion) {
+    console.log('[Dashboard] Version check:', {
+      manifestVersion,
+      buildVersion,
+      finalVersion: version,
+      note: buildVersion
+        ? 'Using build version (from package.json)'
+        : manifestVersion
+          ? 'Using manifest version'
+          : 'Using fallback',
+    });
+  }
+
+  return version;
 };
 
 const getDashboardPopupDismissedKey = (): string => {
@@ -77,14 +106,18 @@ const Dashboard = () => {
     !eoaAccount?.hasAssets;
 
   // Get version for popup title (patch version set to 0)
-  const version = getVersionForPopup();
   const currentVersion = getCurrentVersion();
-  const popupTitle = `Extension Update V${version}`;
 
-  // Fetch whats new data
   useEffect(() => {
     const fetchWhatsNew = async () => {
       if (!wallet || isLoadingWhatsNew) return;
+
+      const versionKey = `dashboard-popup-dismissed-v${currentVersion}`;
+      const dismissed = localStorage.getItem(versionKey);
+      if (dismissed === 'true') {
+        // Already dismissed for this version, skip API call
+        return;
+      }
 
       setIsLoadingWhatsNew(true);
       try {
@@ -126,12 +159,8 @@ const Dashboard = () => {
         const data = response?.data?.data || response?.data || response;
         if (data && data.content) {
           setWhatsNewData(data);
-          // Check if current version has been dismissed (use currentVersion, not API version)
-          const versionKey = `dashboard-popup-dismissed-v${currentVersion}`;
-          const dismissed = localStorage.getItem(versionKey);
-          if (dismissed !== 'true') {
-            setShowPopup(true);
-          }
+          // Show popup if we have content (dismissal check already done above)
+          setShowPopup(true);
         }
       } catch (error) {
         consoleError('Error fetching whats new:', error);
@@ -307,7 +336,7 @@ const Dashboard = () => {
           title={
             whatsNewData.title || `Extension Update V${whatsNewData.version || currentVersion}`
           }
-          htmlContent={whatsNewData.content || ''}
+          updateContent={whatsNewData.content || ''}
           actions={
             whatsNewData.actions?.map((action: any) => ({
               text: action.text || action.label,
