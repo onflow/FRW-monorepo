@@ -19,9 +19,9 @@ export interface ChainBadgeProps {
 }
 
 /**
- * ChainBadge - Circular overlay badge for showing chain/network type on avatars
+ * ChainBadge - Rounded square overlay badge for showing chain/network type on avatars
  *
- * Displays a white circle with a black link icon to indicate cross-chain activity.
+ * Displays a white rounded square with a black link icon to indicate cross-chain activity.
  * Positioned absolutely at bottom-left - parent must have position="relative".
  *
  * @example
@@ -34,7 +34,8 @@ export interface ChainBadgeProps {
  */
 export function ChainBadge({ size = 20 }: ChainBadgeProps): React.ReactElement {
   const iconSize = Math.round(size / 2);
-  const borderRadius = size / 2;
+  // Use a smaller border radius for rounded square (not circle)
+  const borderRadius = Math.round(size / 4);
 
   return (
     <YStack
