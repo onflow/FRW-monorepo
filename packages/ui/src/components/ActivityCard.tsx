@@ -73,74 +73,50 @@ function getStatusText(item: ActivityItem): string {
 }
 
 /**
- * Status badge component - overlays on the token icon
+ * Status badge component - simple checkmark overlay on the token icon
  */
-function StatusBadge({
-  statusType,
+function StatusBadge({ statusType }: { statusType: StatusType }): React.ReactElement | null {
+  const theme = useTheme();
+
+  // Only show badge for success (green checkmark)
+  if (statusType !== 'success') {
+    return null;
+  }
+
+  return (
+    <YStack
+      position="absolute"
+      r={-4}
+      b={-4}
+      width={20}
+      height={20}
+      items="center"
+      justify="center"
+    >
+      <CheckCircleFill size={20} color={theme.success?.val} theme="filled" />
+    </YStack>
+  );
+}
+
+/**
+ * Direction indicator - inline with title text
+ */
+function DirectionBadge({
   transferType,
+  statusType,
 }: {
-  statusType: StatusType;
   transferType: 'sent' | 'received' | 'self';
+  statusType: StatusType;
 }): React.ReactElement {
   const theme = useTheme();
 
-  // Get colors based on status
+  // Get background color based on status
   const bgColor =
     statusType === 'success' ? '$success' : statusType === 'error' ? '$error' : '$text2';
   const iconColor = theme.white?.val || '#FFFFFF';
 
-  // For success, show checkmark with small direction arrow
-  if (statusType === 'success') {
-    return (
-      <YStack
-        position="absolute"
-        r={-2}
-        b={-2}
-        width={20}
-        height={20}
-        items="center"
-        justify="center"
-      >
-        <CheckCircleFill size={20} color={theme.success?.val} theme="filled" />
-        {/* Small direction arrow overlay */}
-        <YStack
-          position="absolute"
-          r={-4}
-          t={-4}
-          width={14}
-          height={14}
-          rounded={7}
-          bg="$bg"
-          items="center"
-          justify="center"
-        >
-          <YStack width={12} height={12} rounded={6} bg={bgColor} items="center" justify="center">
-            {transferType === 'sent' ? (
-              <ArrowUpRight size={8} color={iconColor} theme="outline" />
-            ) : (
-              <ArrowDownLeft size={8} color={iconColor} theme="outline" />
-            )}
-          </YStack>
-        </YStack>
-      </YStack>
-    );
-  }
-
-  // For pending/error, just show direction arrow in appropriate color
   return (
-    <YStack
-      position="absolute"
-      r={-2}
-      b={-2}
-      width={20}
-      height={20}
-      rounded={10}
-      bg={bgColor}
-      items="center"
-      justify="center"
-      borderWidth={2}
-      borderColor="$bg"
-    >
+    <YStack width={18} height={18} rounded={9} bg={bgColor} items="center" justify="center">
       {transferType === 'sent' ? (
         <ArrowUpRight size={12} color={iconColor} theme="outline" />
       ) : (
@@ -152,7 +128,7 @@ function StatusBadge({
 
 /**
  * ActivityCard displays a single transaction/activity item
- * Follows the Figma design with card background, icon with status badge, title, address, amount, and status
+ * Follows the Figma design with card background, icon with status badge, title with direction indicator
  */
 export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
   const { title, token, image, amount, sender, receiver, transferType, type } = item;
@@ -196,27 +172,31 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
         <Stack position="relative">
           <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={44} />
           {isEvm && <ChainBadge chain="evm" size={18} />}
-          {/* Status badge - only show for transfers, not interactions */}
-          {!isInteraction && transferType !== 'self' && (
-            <StatusBadge statusType={statusType} transferType={transferType} />
-          )}
+          {/* Status badge - checkmark for success */}
+          {!isInteraction && <StatusBadge statusType={statusType} />}
         </Stack>
 
         {/* Content */}
         <YStack flex={1} gap="$1">
-          {/* Top row: Title + Amount */}
+          {/* Top row: Direction badge + Title + Amount */}
           <XStack justify="space-between" items="center" gap="$2">
-            <Text
-              fontWeight="600"
-              fontSize={16}
-              color="$text1"
-              numberOfLines={1}
-              lineHeight={22}
-              flex={1}
-              shrink={1}
-            >
-              {title || (transferType === 'sent' ? `Sent ${token}` : `Received ${token}`)}
-            </Text>
+            <XStack items="center" gap="$2" flex={1} shrink={1}>
+              {/* Direction indicator inline with title */}
+              {!isInteraction && transferType !== 'self' && (
+                <DirectionBadge transferType={transferType} statusType={statusType} />
+              )}
+              <Text
+                fontWeight="600"
+                fontSize={16}
+                color="$text1"
+                numberOfLines={1}
+                lineHeight={22}
+                flex={1}
+                shrink={1}
+              >
+                {title || (transferType === 'sent' ? `Sent ${token}` : `Received ${token}`)}
+              </Text>
+            </XStack>
 
             {displayAmount && (
               <Text fontSize={16} fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
