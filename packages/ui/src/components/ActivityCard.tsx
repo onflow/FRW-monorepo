@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight } from '@onflow/frw-icons';
+import { ArrowDownLeft, ArrowUpRight, CheckCircleFill } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React from 'react';
 import { Stack, Text, XStack, YStack, useTheme } from 'tamagui';
@@ -73,19 +73,92 @@ function getStatusText(item: ActivityItem): string {
 }
 
 /**
+ * Status badge component - overlays on the token icon
+ */
+function StatusBadge({
+  statusType,
+  transferType,
+}: {
+  statusType: StatusType;
+  transferType: 'sent' | 'received' | 'self';
+}): React.ReactElement {
+  const theme = useTheme();
+
+  // Get colors based on status
+  const bgColor =
+    statusType === 'success' ? '$success' : statusType === 'error' ? '$error' : '$text2';
+  const iconColor = theme.white?.val || '#FFFFFF';
+
+  // For success, show checkmark with small direction arrow
+  if (statusType === 'success') {
+    return (
+      <YStack
+        position="absolute"
+        r={-2}
+        b={-2}
+        width={20}
+        height={20}
+        items="center"
+        justify="center"
+      >
+        <CheckCircleFill size={20} color={theme.success?.val} theme="filled" />
+        {/* Small direction arrow overlay */}
+        <YStack
+          position="absolute"
+          r={-4}
+          t={-4}
+          width={14}
+          height={14}
+          rounded={7}
+          bg="$bg"
+          items="center"
+          justify="center"
+        >
+          <YStack width={12} height={12} rounded={6} bg={bgColor} items="center" justify="center">
+            {transferType === 'sent' ? (
+              <ArrowUpRight size={8} color={iconColor} theme="outline" />
+            ) : (
+              <ArrowDownLeft size={8} color={iconColor} theme="outline" />
+            )}
+          </YStack>
+        </YStack>
+      </YStack>
+    );
+  }
+
+  // For pending/error, just show direction arrow in appropriate color
+  return (
+    <YStack
+      position="absolute"
+      r={-2}
+      b={-2}
+      width={20}
+      height={20}
+      rounded={10}
+      bg={bgColor}
+      items="center"
+      justify="center"
+      borderWidth={2}
+      borderColor="$bg"
+    >
+      {transferType === 'sent' ? (
+        <ArrowUpRight size={12} color={iconColor} theme="outline" />
+      ) : (
+        <ArrowDownLeft size={12} color={iconColor} theme="outline" />
+      )}
+    </YStack>
+  );
+}
+
+/**
  * ActivityCard displays a single transaction/activity item
- * Follows the Figma design with icon, title, address, amount, and status
+ * Follows the Figma design with card background, icon with status badge, title, address, amount, and status
  */
 export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
-  const theme = useTheme();
   const { title, token, image, amount, sender, receiver, transferType, type } = item;
 
   // Get status type for color theming
   const statusType = getStatusType(item);
-  const isPending = statusType === 'pending';
-
-  // Get resolved colors for icon components (they need actual color values)
-  const directionIconColor = isPending ? theme.text2?.val : theme.success?.val;
 
   // Check if this is an EVM wallet transaction (show chain badge)
   const isEvm = item.walletType === 'evm';
@@ -104,69 +177,49 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
   const subtitle = isInteraction ? 'Flow' : `${addressLabel}: ${truncateAddress(addressValue)}`;
 
   return (
-    <Stack
-      {...(onPress && {
-        pressStyle: { opacity: 0.7 },
-        hoverStyle: { bg: '$bg1' },
-        onPress: onPress,
-        cursor: 'pointer',
-      })}
-      items="center"
-      justify="center"
-      width="100%"
-      py="$3"
-      px="$4"
-    >
-      <XStack items="center" gap="$3" width="100%">
-        {/* Icon with optional EVM chain badge */}
+    <Stack px="$4" py="$1.5">
+      <XStack
+        {...(onPress && {
+          pressStyle: { opacity: 0.7 },
+          hoverStyle: { bg: '$bg2' },
+          onPress: onPress,
+          cursor: 'pointer',
+        })}
+        items="center"
+        gap="$3"
+        width="100%"
+        bg="$bg1"
+        rounded="$4"
+        p="$3"
+      >
+        {/* Icon with status badge and optional chain badge */}
         <Stack position="relative">
-          <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={48} />
-          {isEvm && <ChainBadge chain="evm" />}
+          <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={44} />
+          {isEvm && <ChainBadge chain="evm" size={18} />}
+          {/* Status badge - only show for transfers, not interactions */}
+          {!isInteraction && transferType !== 'self' && (
+            <StatusBadge statusType={statusType} transferType={transferType} />
+          )}
         </Stack>
 
         {/* Content */}
         <YStack flex={1} gap="$1">
           {/* Top row: Title + Amount */}
           <XStack justify="space-between" items="center" gap="$2">
-            <XStack items="center" gap="$1.5" flex={1} shrink={1}>
-              {/* Direction icon inline with title (not for interactions or self transfers) */}
-              {!isInteraction && transferType !== 'self' && (
-                <YStack
-                  width={18}
-                  height={18}
-                  rounded={9}
-                  bg={isPending ? '$subtleBg10' : '$success10'}
-                  items="center"
-                  justify="center"
-                >
-                  {transferType === 'sent' ? (
-                    <ArrowUpRight size={12} color={directionIconColor} theme="outline" />
-                  ) : (
-                    <ArrowDownLeft size={12} color={directionIconColor} theme="outline" />
-                  )}
-                </YStack>
-              )}
-              <Text
-                fontWeight="600"
-                fontSize={15}
-                color="$text1"
-                numberOfLines={1}
-                lineHeight="$1"
-                shrink={1}
-              >
-                {title || (transferType === 'sent' ? `Sent ${token}` : `Received ${token}`)}
-              </Text>
-            </XStack>
+            <Text
+              fontWeight="600"
+              fontSize={16}
+              color="$text1"
+              numberOfLines={1}
+              lineHeight={22}
+              flex={1}
+              shrink={1}
+            >
+              {title || (transferType === 'sent' ? `Sent ${token}` : `Received ${token}`)}
+            </Text>
 
             {displayAmount && (
-              <Text
-                fontSize={14}
-                fontWeight="500"
-                color="$text1"
-                numberOfLines={1}
-                text="right"
-                lineHeight="$1"
-              >
+              <Text fontSize={16} fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
                 {displayAmount}
               </Text>
             )}
@@ -174,11 +227,16 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
 
           {/* Bottom row: Address/Subtitle + Status */}
           <XStack items="center" gap="$1" justify="space-between">
-            <Text color="$text2" fontSize={13} fontWeight="400" numberOfLines={1} lineHeight="$1">
+            <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight={20}>
               {subtitle}
             </Text>
 
-            <Text fontSize={13} fontWeight="500" color={getStatusColor(statusType) as any}>
+            <Text
+              fontSize={14}
+              fontWeight="500"
+              color={getStatusColor(statusType) as any}
+              lineHeight={20}
+            >
               {getStatusText(item)}
             </Text>
           </XStack>

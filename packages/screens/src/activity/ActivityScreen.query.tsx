@@ -158,10 +158,10 @@ export function ActivityScreen(): ReactElement {
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
       >
         <YStack flex={1} pb="$4">
-          {/* Screen title for non-extension */}
+          {/* Screen title for non-extension - centered */}
           {!isExtension && (
-            <XStack px="$4" py="$3">
-              <Text fontSize={24} fontWeight="700" color="$text1">
+            <XStack px="$4" pt="$4" pb="$2" justify="center">
+              <Text fontSize={20} fontWeight="600" color="$text1">
                 {t('activity.title', 'Activity')}
               </Text>
             </XStack>

@@ -40,7 +40,7 @@ export function ChainBadge({ size = 20 }: ChainBadgeProps): React.ReactElement {
     <YStack
       position="absolute"
       l={-2}
-      t={28}
+      b={-2}
       width={size}
       height={size}
       rounded={borderRadius}
