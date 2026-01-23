@@ -9,8 +9,8 @@ import type { ActivityGroupHeaderProps } from '../types';
  */
 export function ActivityGroupHeader({ title }: ActivityGroupHeaderProps): React.ReactElement {
   return (
-    <XStack pt="$3" pb="$1" px="$4">
-      <Text fontSize={12} fontWeight="400" color="$text2">
+    <XStack pt="$4" pb="$2" px="$4">
+      <Text fontSize="$4" fontWeight="700" color="$text1">
         {title}
       </Text>
     </XStack>
