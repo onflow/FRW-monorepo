@@ -1,6 +1,6 @@
 import { Button, Drawer, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import { WhatSNewService, configureApiEndpoints } from '@onflow/frw-api';
+import { WhatSNewService } from '@onflow/frw-api';
 import { UpdateDialog } from '@onflow/frw-ui';
 import { setUser, setExtras } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
@@ -24,22 +24,15 @@ import { DashboardTotal } from './dashboard-total';
 import WalletTab from './wallet-tab';
 import MoveBoard from '../MoveBoard';
 
-const getVersionForPopup = (): string => {
-  const version = chrome.runtime.getManifest().version || '3.1.0';
-  const versionParts = version.split('.');
-  if (versionParts.length >= 3) {
-    versionParts[2] = '0';
-  }
-  return versionParts.join('.');
-};
-
 const getCurrentVersion = (): string => {
-  return chrome.runtime.getManifest().version || '3.1.0';
-};
+  // build-time version from package.json
+  // @ts-ignore - process.env.release is set at build time by webpack DefinePlugin
+  const buildVersion = typeof process !== 'undefined' ? process.env?.release : undefined;
+  const manifestVersion = chrome.runtime.getManifest().version;
 
-const getDashboardPopupDismissedKey = (): string => {
-  const version = getVersionForPopup();
-  return `dashboard-popup-dismissed-v${version}`;
+  const version = buildVersion || manifestVersion || '3.1.10';
+
+  return version;
 };
 
 const Dashboard = () => {
@@ -55,8 +48,6 @@ const Dashboard = () => {
     userInfo,
     mainAddress,
     currentWallet,
-    currentWalletList,
-    parentWallet,
     eoaAccount,
   } = useProfiles();
   const navigate = useNavigate();
@@ -77,40 +68,21 @@ const Dashboard = () => {
     !eoaAccount?.hasAssets;
 
   // Get version for popup title (patch version set to 0)
-  const version = getVersionForPopup();
   const currentVersion = getCurrentVersion();
-  const popupTitle = `Extension Update V${version}`;
 
-  // Fetch whats new data
   useEffect(() => {
     const fetchWhatsNew = async () => {
       if (!wallet || isLoadingWhatsNew) return;
 
+      const versionKey = `dashboard-popup-dismissed-v${currentVersion}`;
+      const dismissed = localStorage.getItem(versionKey);
+      if (dismissed === 'true') {
+        // Already dismissed for this version, skip API call
+        return;
+      }
+
       setIsLoadingWhatsNew(true);
       try {
-        // Get base URL - use environment variable or default
-        // In production, this should be set at build time
-        // For extension, API_BASE_URL should be available at build time
-        // @ts-ignore - process.env is available at build time
-        const baseURL =
-          (typeof process !== 'undefined' && process.env?.API_BASE_URL) || 'https://api.flow.com';
-
-        // Configure API endpoints with authentication
-        configureApiEndpoints(
-          baseURL, // apiEndpoint
-          baseURL, // goApiEndpoint (using same for now)
-          async () => {
-            // getJWT function - get token through wallet proxy
-            // Since we can't access Firebase auth directly in UI,
-            // we'll make a request that includes auth headers
-            // The actual token will be added by the axios interceptor
-            // For now, return empty string and let the interceptor handle it
-            return '';
-          },
-          () => network || 'mainnet' // getNetwork function
-        );
-
-        // Use WhatSNewService from frw-api directly
         const response = await WhatSNewService.whatsnew(
           {
             toVersion: currentVersion,
@@ -121,17 +93,12 @@ const Dashboard = () => {
           {}
         );
 
-        console.log('whats new data:', response, currentVersion);
         // Extract data from response (response.data.data or response.data)
         const data = response?.data?.data || response?.data || response;
         if (data && data.content) {
           setWhatsNewData(data);
-          // Check if current version has been dismissed (use currentVersion, not API version)
-          const versionKey = `dashboard-popup-dismissed-v${currentVersion}`;
-          const dismissed = localStorage.getItem(versionKey);
-          if (dismissed !== 'true') {
-            setShowPopup(true);
-          }
+          // Show popup if we have content (dismissal check already done above)
+          setShowPopup(true);
         }
       } catch (error) {
         consoleError('Error fetching whats new:', error);
@@ -307,7 +274,7 @@ const Dashboard = () => {
           title={
             whatsNewData.title || `Extension Update V${whatsNewData.version || currentVersion}`
           }
-          htmlContent={whatsNewData.content || ''}
+          updateContent={whatsNewData.content || ''}
           actions={
             whatsNewData.actions?.map((action: any) => ({
               text: action.text || action.label,
