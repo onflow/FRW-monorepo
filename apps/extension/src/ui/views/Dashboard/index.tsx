@@ -1,6 +1,6 @@
 import { Button, Drawer, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import { WhatSNewService, configureApiEndpoints } from '@onflow/frw-api';
+import { WhatSNewService } from '@onflow/frw-api';
 import { UpdateDialog } from '@onflow/frw-ui';
 import { setUser, setExtras } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
@@ -24,51 +24,15 @@ import { DashboardTotal } from './dashboard-total';
 import WalletTab from './wallet-tab';
 import MoveBoard from '../MoveBoard';
 
-const getVersionForPopup = (): string => {
-  // Prioritize build-time version from package.json (set by webpack DefinePlugin)
-  // @ts-ignore - process.env.release is set at build time by webpack DefinePlugin
-  const buildVersion = typeof process !== 'undefined' ? process.env?.release : undefined;
-  const manifestVersion = chrome.runtime.getManifest().version;
-
-  // Use buildVersion first (from package.json), then manifest, then fallback
-  const version = buildVersion || manifestVersion || '3.1.10';
-  const versionParts = version.split('.');
-  if (versionParts.length >= 3) {
-    versionParts[2] = '0';
-  }
-  return versionParts.join('.');
-};
-
 const getCurrentVersion = (): string => {
-  // Prioritize build-time version from package.json (set by webpack DefinePlugin)
-  // This is more reliable than manifest version which may be stale if extension wasn't reloaded
+  // build-time version from package.json
   // @ts-ignore - process.env.release is set at build time by webpack DefinePlugin
   const buildVersion = typeof process !== 'undefined' ? process.env?.release : undefined;
   const manifestVersion = chrome.runtime.getManifest().version;
 
-  // Use buildVersion first (from package.json), then manifest, then fallback
   const version = buildVersion || manifestVersion || '3.1.10';
-
-  // Debug logging to help identify version source
-  if (version !== '3.1.10' || manifestVersion !== buildVersion) {
-    console.log('[Dashboard] Version check:', {
-      manifestVersion,
-      buildVersion,
-      finalVersion: version,
-      note: buildVersion
-        ? 'Using build version (from package.json)'
-        : manifestVersion
-          ? 'Using manifest version'
-          : 'Using fallback',
-    });
-  }
 
   return version;
-};
-
-const getDashboardPopupDismissedKey = (): string => {
-  const version = getVersionForPopup();
-  return `dashboard-popup-dismissed-v${version}`;
 };
 
 const Dashboard = () => {
@@ -84,8 +48,6 @@ const Dashboard = () => {
     userInfo,
     mainAddress,
     currentWallet,
-    currentWalletList,
-    parentWallet,
     eoaAccount,
   } = useProfiles();
   const navigate = useNavigate();
@@ -121,29 +83,6 @@ const Dashboard = () => {
 
       setIsLoadingWhatsNew(true);
       try {
-        // Get base URL - use environment variable or default
-        // In production, this should be set at build time
-        // For extension, API_BASE_URL should be available at build time
-        // @ts-ignore - process.env is available at build time
-        const baseURL =
-          (typeof process !== 'undefined' && process.env?.API_BASE_URL) || 'https://api.flow.com';
-
-        // Configure API endpoints with authentication
-        configureApiEndpoints(
-          baseURL, // apiEndpoint
-          baseURL, // goApiEndpoint (using same for now)
-          async () => {
-            // getJWT function - get token through wallet proxy
-            // Since we can't access Firebase auth directly in UI,
-            // we'll make a request that includes auth headers
-            // The actual token will be added by the axios interceptor
-            // For now, return empty string and let the interceptor handle it
-            return '';
-          },
-          () => network || 'mainnet' // getNetwork function
-        );
-
-        // Use WhatSNewService from frw-api directly
         const response = await WhatSNewService.whatsnew(
           {
             toVersion: currentVersion,
@@ -154,7 +93,6 @@ const Dashboard = () => {
           {}
         );
 
-        console.log('whats new data:', response, currentVersion);
         // Extract data from response (response.data.data or response.data)
         const data = response?.data?.data || response?.data || response;
         if (data && data.content) {
