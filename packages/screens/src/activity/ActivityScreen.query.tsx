@@ -161,7 +161,7 @@ export function ActivityScreen(): ReactElement {
           {/* Screen title for non-extension - centered */}
           {!isExtension && (
             <XStack px="$4" pt="$4" pb="$2" justify="center">
-              <Text fontSize={20} fontWeight="600" color="$text1">
+              <Text fontSize="$4" fontWeight="700" color="$text1">
                 {t('activity.title', 'Activity')}
               </Text>
             </XStack>
