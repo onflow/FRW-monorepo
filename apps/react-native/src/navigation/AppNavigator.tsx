@@ -340,8 +340,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="Activity"
               component={ActivityScreen}
               options={{
-                headerTitle: t('activity.title'),
-                headerLeft: () => null,
+                headerShown: false, // No header for embedded tab view
               }}
             />
           </Stack.Group>
