@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, CheckCircleFill } from '@onflow/frw-icons';
+import { ArrowDownLeft, ArrowUpRight } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React from 'react';
 import { Stack, Text, XStack, YStack, useTheme } from 'tamagui';
@@ -74,33 +74,6 @@ function getStatusText(item: ActivityItem): string {
 }
 
 /**
- * Status badge component - simple checkmark overlay on the token icon
- * Uses $primary color for the checkmark to match Flow brand green
- */
-function StatusBadge({ statusType }: { statusType: StatusType }): React.ReactElement | null {
-  const theme = useTheme();
-
-  // Only show badge for success (green checkmark)
-  if (statusType !== 'success') {
-    return null;
-  }
-
-  return (
-    <YStack
-      position="absolute"
-      r={-4}
-      b={-4}
-      width={20}
-      height={20}
-      items="center"
-      justify="center"
-    >
-      <CheckCircleFill size={20} color={theme.primary?.val} theme="filled" />
-    </YStack>
-  );
-}
-
-/**
  * Direction indicator - inline with title text
  * Uses $primary for success to match Flow brand green
  */
@@ -168,12 +141,10 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
       width="100%"
       py="$3"
     >
-      {/* Icon with status badge and optional chain badge */}
+      {/* Icon with optional chain badge */}
       <Stack position="relative">
         <Avatar src={image} alt={token} fallback={token?.[0] || title?.[0] || '?'} size={44} />
         {isEvm && <ChainBadge chain="evm" size={18} />}
-        {/* Status badge - checkmark for success */}
-        {!isInteraction && <StatusBadge statusType={statusType} />}
       </Stack>
 
       {/* Content */}
