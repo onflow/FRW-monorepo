@@ -89,7 +89,8 @@ function DirectionBadge({
   // Get background color based on status - use $primary for success
   const bgColor =
     statusType === 'success' ? '$primary' : statusType === 'error' ? '$error' : '$text2';
-  const iconColor = theme.white?.val || '#FFFFFF';
+  // Use dark gray for the arrow icon
+  const iconColor = theme.black?.val || '#000000';
 
   return (
     <YStack width={18} height={18} rounded={9} bg={bgColor} items="center" justify="center">
