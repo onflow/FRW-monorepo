@@ -180,7 +180,7 @@ export function ActivityScreen(): ReactElement {
                   <YStack key={item.id}>
                     <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
                     {/* Separator between cards, not after last card */}
-                    {index < group.items.length - 1 && <Separator borderColor="$bg2" />}
+                    {index < group.items.length - 1 && <Separator borderColor="$light25" />}
                   </YStack>
                 ))}
               </YStack>

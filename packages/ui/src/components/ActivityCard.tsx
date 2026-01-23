@@ -37,6 +37,7 @@ function getStatusType(item: ActivityItem): StatusType {
 
 /**
  * Maps status type to theme token for text color
+ * Uses $primary for success to match Flow brand green
  */
 function getStatusColor(statusType: StatusType): string {
   switch (statusType) {
@@ -45,7 +46,7 @@ function getStatusColor(statusType: StatusType): string {
     case 'pending':
       return '$text2';
     case 'success':
-      return '$success';
+      return '$primary';
   }
 }
 
@@ -74,6 +75,7 @@ function getStatusText(item: ActivityItem): string {
 
 /**
  * Status badge component - simple checkmark overlay on the token icon
+ * Uses $primary color for the checkmark to match Flow brand green
  */
 function StatusBadge({ statusType }: { statusType: StatusType }): React.ReactElement | null {
   const theme = useTheme();
@@ -93,13 +95,14 @@ function StatusBadge({ statusType }: { statusType: StatusType }): React.ReactEle
       items="center"
       justify="center"
     >
-      <CheckCircleFill size={20} color={theme.success?.val} theme="filled" />
+      <CheckCircleFill size={20} color={theme.primary?.val} theme="filled" />
     </YStack>
   );
 }
 
 /**
  * Direction indicator - inline with title text
+ * Uses $primary for success to match Flow brand green
  */
 function DirectionBadge({
   transferType,
@@ -110,9 +113,9 @@ function DirectionBadge({
 }): React.ReactElement {
   const theme = useTheme();
 
-  // Get background color based on status
+  // Get background color based on status - use $primary for success
   const bgColor =
-    statusType === 'success' ? '$success' : statusType === 'error' ? '$error' : '$text2';
+    statusType === 'success' ? '$primary' : statusType === 'error' ? '$error' : '$text2';
   const iconColor = theme.white?.val || '#FFFFFF';
 
   return (
