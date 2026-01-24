@@ -161,8 +161,8 @@ export function createMockActivityItems(count: number = 5): ActivityItem[] {
       sender: isSent ? '0x1234...5678' : '0xabcd...efgh',
       receiver: isSent ? '0xabcd...efgh' : '0x1234...5678',
 
-      status: i === 0 ? 'pending' : 'sealed',
-      error: false,
+      status: i === 0 ? 'pending' : i === 1 ? 'failed' : 'sealed',
+      error: i === 1,
       indexed: true,
 
       time: now - dayOffset * day - Math.random() * day * 0.5,
