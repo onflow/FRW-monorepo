@@ -138,6 +138,7 @@ export function createMockActivityItems(count: number = 5): ActivityItem[] {
   for (let i = 0; i < count; i++) {
     const isSent = i % 2 === 0;
     const isNft = i % 3 === 0;
+    const isInteraction = i === 2; // Add dApp interaction example
     const dayOffset = Math.floor(i / 2);
 
     mockItems.push({
@@ -146,16 +147,18 @@ export function createMockActivityItems(count: number = 5): ActivityItem[] {
       cadenceTxId: `mock-cadence-${i}`,
       evmTxIds: undefined,
 
-      title: isNft
-        ? isSent
-          ? 'Sent NFT'
-          : 'Received NFT'
-        : isSent
-          ? 'Sent FLOW'
-          : 'Received FLOW',
-      token: isNft ? `NFT Collection #${i}` : 'FLOW',
+      title: isInteraction
+        ? 'Contract Interaction'
+        : isNft
+          ? isSent
+            ? 'Sent NFT'
+            : 'Received NFT'
+          : isSent
+            ? 'Sent FLOW'
+            : 'Received FLOW',
+      token: isInteraction ? '' : isNft ? `NFT Collection #${i}` : 'FLOW',
       image: '',
-      amount: isNft ? '' : `${(Math.random() * 100).toFixed(2)}`,
+      amount: isInteraction ? '' : isNft ? '' : `${(Math.random() * 100).toFixed(2)}`,
       additionalMessage: undefined,
 
       sender: isSent ? '0x1234...5678' : '0xabcd...efgh',
@@ -166,8 +169,8 @@ export function createMockActivityItems(count: number = 5): ActivityItem[] {
       indexed: true,
 
       time: now - dayOffset * day - Math.random() * day * 0.5,
-      type: isNft ? 'nft' : 'ft',
-      transferType: isSent ? 'sent' : 'received',
+      type: isInteraction ? 'interaction' : isNft ? 'nft' : 'ft',
+      transferType: isInteraction ? 'self' : isSent ? 'sent' : 'received',
     });
   }
 
