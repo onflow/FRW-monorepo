@@ -155,11 +155,9 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
 
   return (
     <XStack
-      {...(onPress && {
-        pressStyle: { opacity: 0.7 },
-        onPress: onPress,
-        cursor: 'pointer',
-      })}
+      onPress={onPress}
+      pressStyle={onPress ? { opacity: 0.7 } : undefined}
+      cursor={onPress ? 'pointer' : undefined}
       items="center"
       gap="$3"
       width="100%"
