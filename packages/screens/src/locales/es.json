@@ -152,7 +152,22 @@
     "sent": "Enviado",
     "received": "Recibido",
     "today": "Hoy",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "detail": {
+      "appInteraction": "Interacción con App",
+      "youSent": "Enviaste",
+      "from": "De",
+      "to": "Para",
+      "date": "Fecha",
+      "status": "Estado",
+      "network": "Red",
+      "transactionFee": "Tarifa de Transacción",
+      "networkFee": "Tarifa de Red",
+      "coveredByFlowWallet": "Cubierto por Flow Wallet",
+      "viewOnExplorer": "Ver en el explorador de bloques",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM"
+    }
   },
   "buttons": {
     "retry": "Reintentar",

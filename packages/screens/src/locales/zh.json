@@ -152,7 +152,22 @@
     "sent": "已发送",
     "received": "已接收",
     "today": "今天",
-    "yesterday": "昨天"
+    "yesterday": "昨天",
+    "detail": {
+      "appInteraction": "应用交互",
+      "youSent": "您发送了",
+      "from": "从",
+      "to": "至",
+      "date": "日期",
+      "status": "状态",
+      "network": "网络",
+      "transactionFee": "交易费用",
+      "networkFee": "网络费用",
+      "coveredByFlowWallet": "由Flow钱包支付",
+      "viewOnExplorer": "在区块浏览器中查看",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM"
+    }
   },
   "buttons": {
     "retry": "重试",

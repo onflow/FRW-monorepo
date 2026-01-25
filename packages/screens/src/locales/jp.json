@@ -152,7 +152,22 @@
     "sent": "送信済み",
     "received": "受信済み",
     "today": "今日",
-    "yesterday": "昨日"
+    "yesterday": "昨日",
+    "detail": {
+      "appInteraction": "アプリ操作",
+      "youSent": "送信額",
+      "from": "送信元",
+      "to": "送信先",
+      "date": "日付",
+      "status": "ステータス",
+      "network": "ネットワーク",
+      "transactionFee": "取引手数料",
+      "networkFee": "ネットワーク手数料",
+      "coveredByFlowWallet": "Flow Walletが負担",
+      "viewOnExplorer": "ブロックエクスプローラーで表示",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM"
+    }
   },
   "buttons": {
     "retry": "再試行",

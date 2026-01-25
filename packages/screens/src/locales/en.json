@@ -152,7 +152,22 @@
     "sent": "Sent",
     "received": "Received",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "detail": {
+      "appInteraction": "App Interaction",
+      "youSent": "You Sent",
+      "from": "From",
+      "to": "To",
+      "date": "Date",
+      "status": "Status",
+      "network": "Network",
+      "transactionFee": "Transaction Fee",
+      "networkFee": "Network Fee",
+      "coveredByFlowWallet": "Covered by Flow Wallet",
+      "viewOnExplorer": "View on block explorer",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM"
+    }
   },
   "buttons": {
     "retry": "Retry",

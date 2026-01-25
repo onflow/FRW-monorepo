@@ -39,6 +39,8 @@ export * from './utils/clipboard';
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
 export * from './components/ActivityCard';
+export * from './components/ActivityDetailRow';
+export * from './components/ActivityDetailSheet';
 export * from './components/ActivityGroupHeader';
 export * from './components/ActivitySkeleton';
 export * from './components/AddContactDialog';

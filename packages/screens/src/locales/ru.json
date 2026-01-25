@@ -152,7 +152,22 @@
     "sent": "Отправлено",
     "received": "Получено",
     "today": "Сегодня",
-    "yesterday": "Вчера"
+    "yesterday": "Вчера",
+    "detail": {
+      "appInteraction": "Взаимодействие с приложением",
+      "youSent": "Вы отправили",
+      "from": "От",
+      "to": "Кому",
+      "date": "Дата",
+      "status": "Статус",
+      "network": "Сеть",
+      "transactionFee": "Комиссия за транзакцию",
+      "networkFee": "Сетевая комиссия",
+      "coveredByFlowWallet": "Оплачено Flow Wallet",
+      "viewOnExplorer": "Посмотреть в обозревателе блоков",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM"
+    }
   },
   "buttons": {
     "retry": "Повторить",

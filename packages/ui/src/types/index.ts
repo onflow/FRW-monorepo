@@ -187,3 +187,20 @@ export interface ActivityGroupHeaderProps {
 export interface ActivitySkeletonProps {
   count?: number;
 }
+
+export interface ActivityDetailRowProps {
+  /** Label on the left side */
+  label: string;
+  /** Value on the right side */
+  value: string;
+  /** Optional color for the value text */
+  valueColor?: string;
+  /** Optional secondary text below the value (e.g., "Covered by Flow Wallet") */
+  secondaryText?: string;
+  /** Show strikethrough on original value (for free fees) */
+  showStrikethrough?: boolean;
+  /** Original value to show with strikethrough */
+  originalValue?: string;
+  /** Show Flow logo after value */
+  showFlowLogo?: boolean;
+}
