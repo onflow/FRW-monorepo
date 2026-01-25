@@ -85,7 +85,17 @@ export function ActivityScreen(): ReactElement {
   // Handle view on block explorer
   const handleViewExplorer = useCallback(
     (item: ActivityItem) => {
-      const baseUrl = network === 'mainnet' ? 'https://flowscan.io' : 'https://testnet.flowscan.io';
+      // Use EVM explorer for EVM transactions, Flow explorer for Cadence
+      const isEvm = item.walletType === 'evm';
+      let baseUrl: string;
+
+      if (isEvm) {
+        baseUrl =
+          network === 'mainnet' ? 'https://evm.flowscan.io' : 'https://evm-testnet.flowscan.io';
+      } else {
+        baseUrl = network === 'mainnet' ? 'https://flowscan.io' : 'https://testnet.flowscan.io';
+      }
+
       const txUrl = `${baseUrl}/tx/${item.hash}`;
       logger.debug('[ActivityScreen] Opening block explorer:', txUrl);
       Linking.openURL(txUrl);
