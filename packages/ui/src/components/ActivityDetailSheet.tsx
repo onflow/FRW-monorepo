@@ -144,15 +144,17 @@ export function ActivityDetailSheet({
       }
 
       // Amount display and color
+      // Note: Large amount display uses neutral color for sent, green for received
+      // The "You Sent" row below uses red for sent amounts
       let aDisplay = '';
       let aColor = '$text1';
       if (item.amount && item.token) {
         if (item.transferType === 'sent') {
           aDisplay = `-${item.amount} ${item.token}`;
-          aColor = '$error';
+          aColor = '$text1'; // Neutral color for large display (red shown in "You Sent" row)
         } else {
           aDisplay = `+${item.amount} ${item.token}`;
-          aColor = '$primary';
+          aColor = '$primary'; // Green for received
         }
       }
 
@@ -278,9 +280,13 @@ export function ActivityDetailSheet({
 
           {/* Details Card */}
           <YStack bg="$bg1" rounded="$4" px="$4">
-            {/* Date */}
-            <ActivityDetailRow label={dateLabel} value={formatDate(item.time)} />
-            <Separator borderColor="$border1" />
+            {/* Date - only shown for transfers, not for app interactions */}
+            {!isInteraction && (
+              <>
+                <ActivityDetailRow label={dateLabel} value={formatDate(item.time)} />
+                <Separator borderColor="$border1" />
+              </>
+            )}
 
             {/* Status */}
             <ActivityDetailRow label={statusLabel} value={statusText} valueColor={statusColor} />
