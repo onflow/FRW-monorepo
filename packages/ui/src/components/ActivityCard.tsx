@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight } from '@onflow/frw-icons';
+import { ArrowDownLeft, ArrowRight, ArrowUpRight } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React from 'react';
 import { Stack, Text, XStack, YStack, useTheme } from 'tamagui';
@@ -110,6 +110,7 @@ function DirectionBadge({
  */
 export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
   const { title, token, image, amount, sender, receiver, transferType, type } = item;
+  const theme = useTheme();
 
   // Get status type for color theming
   const statusType = getStatusType(item);
@@ -121,14 +122,22 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
   const isInteraction = type === 'interaction';
 
   // Determine the address to show based on transfer direction
+  // For 'sent' transfers, show the receiver (destination)
+  // For 'received' transfers, show the sender (source)
   const addressLabel = transferType === 'sent' ? 'To' : 'From';
   const addressValue = transferType === 'sent' ? receiver : sender;
 
   // Format amount with sign
   const displayAmount = amount ? `${transferType === 'sent' ? '-' : '+'}${amount} ${token}` : '';
 
-  // Subtitle for interaction type
-  const subtitle = isInteraction ? 'Flow' : `${addressLabel}: ${truncateAddress(addressValue)}`;
+  // Check if this is a self-transfer with both profile avatars
+  const hasBothProfiles = item.senderProfile && item.receiverProfile;
+
+  // Subtitle text for non-self transfers
+  const getSubtitleText = (): string => {
+    if (isInteraction) return 'Flow';
+    return `${addressLabel}: ${truncateAddress(addressValue)}`;
+  };
 
   return (
     <XStack
@@ -179,9 +188,26 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
 
         {/* Bottom row: Address/Subtitle + Status */}
         <XStack items="center" gap="$1" justify="space-between">
-          <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight={20}>
-            {subtitle}
-          </Text>
+          {/* For self-transfers, show sender → receiver emoji avatars */}
+          {hasBothProfiles ? (
+            <XStack items="center" gap="$1.5">
+              <Avatar
+                fallback={item.senderProfile!.emoji}
+                bgColor={item.senderProfile!.color}
+                size={20}
+              />
+              <ArrowRight size={12} color={theme.text2?.val} theme="outline" />
+              <Avatar
+                fallback={item.receiverProfile!.emoji}
+                bgColor={item.receiverProfile!.color}
+                size={20}
+              />
+            </XStack>
+          ) : (
+            <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight={20}>
+              {getSubtitleText()}
+            </Text>
+          )}
 
           <Text
             fontSize={14}

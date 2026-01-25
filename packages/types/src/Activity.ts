@@ -21,6 +21,19 @@ export type ActivityType = 'ft' | 'nft' | 'interaction';
 export type TransferDirection = 'sent' | 'received' | 'self';
 
 /**
+ * Profile info for sender/receiver when they are the user's own accounts
+ * Matches the emojiInfo format used in AccountDisplayData and RecipientItem
+ */
+export interface ActivityProfile {
+  /** Emoji identifier for the account */
+  emoji: string;
+  /** Display name for the account */
+  name: string;
+  /** Background color for the avatar */
+  color: string;
+}
+
+/**
  * Represents a single activity/transaction item
  */
 export interface ActivityItem {
@@ -40,6 +53,10 @@ export interface ActivityItem {
   // Addresses
   sender: string;
   receiver: string;
+  /** Profile info when sender is user's own account */
+  senderProfile?: ActivityProfile;
+  /** Profile info when receiver is user's own account */
+  receiverProfile?: ActivityProfile;
 
   // Status
   status: ActivityStatus;

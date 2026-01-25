@@ -139,6 +139,7 @@ export function createMockActivityItems(count: number = 5): ActivityItem[] {
     const isSent = i % 2 === 0;
     const isNft = i % 3 === 0;
     const isInteraction = i === 2; // Add dApp interaction example
+    const isSelfTransfer = i === 4; // Add self transfer example (between own accounts)
     const dayOffset = Math.floor(i / 2);
 
     mockItems.push({
@@ -149,20 +150,30 @@ export function createMockActivityItems(count: number = 5): ActivityItem[] {
 
       title: isInteraction
         ? 'Contract Interaction'
-        : isNft
-          ? isSent
-            ? 'Sent NFT'
-            : 'Received NFT'
-          : isSent
-            ? 'Sent FLOW'
-            : 'Received FLOW',
+        : isSelfTransfer
+          ? 'Transferred FLOW'
+          : isNft
+            ? isSent
+              ? 'Sent NFT'
+              : 'Received NFT'
+            : isSent
+              ? 'Sent FLOW'
+              : 'Received FLOW',
       token: isInteraction ? '' : isNft ? `NFT Collection #${i}` : 'FLOW',
       image: '',
       amount: isInteraction ? '' : isNft ? '' : `${(Math.random() * 100).toFixed(2)}`,
       additionalMessage: undefined,
 
-      sender: isSent ? '0x1234...5678' : '0xabcd...efgh',
-      receiver: isSent ? '0xabcd...efgh' : '0x1234...5678',
+      sender: isSelfTransfer ? '0x1234...5678' : isSent ? '0x1234...5678' : '0xabcd...efgh',
+      receiver: isSelfTransfer ? '0x1234...5678' : isSent ? '0xabcd...efgh' : '0x1234...5678',
+      // Include profile info for self transfers (between own accounts)
+      // Format matches emojiInfo used in AccountDisplayData and RecipientItem
+      senderProfile: isSelfTransfer
+        ? { emoji: '🦊', name: 'Main Wallet', color: '#FFB347' }
+        : undefined,
+      receiverProfile: isSelfTransfer
+        ? { emoji: '🐸', name: 'Savings', color: '#77DD77' }
+        : undefined,
 
       status: i === 0 ? 'pending' : i === 1 ? 'failed' : 'sealed',
       error: i === 1,
@@ -170,7 +181,7 @@ export function createMockActivityItems(count: number = 5): ActivityItem[] {
 
       time: now - dayOffset * day - Math.random() * day * 0.5,
       type: isInteraction ? 'interaction' : isNft ? 'nft' : 'ft',
-      transferType: isInteraction ? 'self' : isSent ? 'sent' : 'received',
+      transferType: isInteraction ? 'self' : isSelfTransfer ? 'self' : isSent ? 'sent' : 'received',
     });
   }
 
