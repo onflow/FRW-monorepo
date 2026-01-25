@@ -1,8 +1,9 @@
-import { Close, FlowLogo } from '@onflow/frw-icons';
+import { Close } from '@onflow/frw-icons';
 import type { ActivityItem } from '@onflow/frw-types';
 import React, { useMemo } from 'react';
 import { Sheet, Stack, View, XStack, YStack, useTheme } from 'tamagui';
 
+import { ActivityDetailRow } from './ActivityDetailRow';
 import { ChainBadge } from './ChainBadge';
 import { Avatar } from '../foundation/Avatar';
 import { Separator } from '../foundation/Separator';
@@ -61,64 +62,6 @@ function formatDate(timestamp: number): string {
     day: 'numeric',
     year: 'numeric',
   });
-}
-
-/**
- * Detail row component for displaying label-value pairs
- */
-function DetailRow({
-  label,
-  value,
-  valueColor = '$text2',
-  secondaryText,
-  showStrikethrough = false,
-  originalValue,
-  showFlowLogo = false,
-}: {
-  label: string;
-  value: string;
-  valueColor?: string;
-  secondaryText?: string;
-  showStrikethrough?: boolean;
-  originalValue?: string;
-  showFlowLogo?: boolean;
-}): React.ReactElement {
-  return (
-    <YStack>
-      <XStack justify="space-between" items="center" py="$3">
-        <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
-          {label}
-        </Text>
-
-        <XStack items="center" gap="$2">
-          {showStrikethrough && originalValue && (
-            <Text
-              fontSize={14}
-              fontWeight="400"
-              color="$text2"
-              lineHeight={20}
-              textDecorationLine="line-through"
-              opacity={0.6}
-            >
-              {originalValue}
-            </Text>
-          )}
-          <Text fontSize={14} fontWeight="400" color={valueColor as any} lineHeight={20}>
-            {value}
-          </Text>
-          {showFlowLogo && <FlowLogo size={16} theme="multicolor" />}
-        </XStack>
-      </XStack>
-
-      {secondaryText && (
-        <XStack justify="flex-end" mt={-8} mb="$1">
-          <Text fontSize={12} fontWeight="400" color="$text2" opacity={0.6} lineHeight={16}>
-            {secondaryText}
-          </Text>
-        </XStack>
-      )}
-    </YStack>
-  );
 }
 
 /**
@@ -336,19 +279,19 @@ export function ActivityDetailSheet({
           {/* Details Card */}
           <YStack bg="$bg1" rounded="$4" px="$4">
             {/* Date */}
-            <DetailRow label={dateLabel} value={formatDate(item.time)} />
+            <ActivityDetailRow label={dateLabel} value={formatDate(item.time)} />
             <Separator borderColor="$border1" />
 
             {/* Status */}
-            <DetailRow label={statusLabel} value={statusText} valueColor={statusColor} />
+            <ActivityDetailRow label={statusLabel} value={statusText} valueColor={statusColor} />
             <Separator borderColor="$border1" />
 
             {/* Network */}
-            <DetailRow label={networkLabel} value={isEvm ? networkEvm : networkFlow} />
+            <ActivityDetailRow label={networkLabel} value={isEvm ? networkEvm : networkFlow} />
             <Separator borderColor="$border1" />
 
             {/* Transaction Fee */}
-            <DetailRow
+            <ActivityDetailRow
               label={transactionFeeLabel}
               value="0.00"
               showStrikethrough
@@ -359,7 +302,7 @@ export function ActivityDetailSheet({
             <Separator borderColor="$border1" />
 
             {/* Network Fee */}
-            <DetailRow label={networkFeeLabel} value="$0.15 FLOW" />
+            <ActivityDetailRow label={networkFeeLabel} value="$0.15 FLOW" />
           </YStack>
 
           {/* View on block explorer button */}
