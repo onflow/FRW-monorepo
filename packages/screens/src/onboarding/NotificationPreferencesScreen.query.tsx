@@ -10,7 +10,7 @@ import {
   pushNotifications,
 } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -66,7 +66,9 @@ export function NotificationPreferencesScreen({
 }: NotificationPreferencesScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [isCheckingPermission, setIsCheckingPermission] = React.useState(true);
-
+  const safeAreaInsets = useMemo(() => {
+    return bridge.getSafeAreaInsets?.() ?? { top: 0, bottom: 0, left: 0, right: 0 };
+  }, []);
   // Get account type from route params (defaults to secure-enclave if not specified)
   const accountType = route?.params?.accountType || 'secure-enclave';
 
@@ -182,10 +184,10 @@ export function NotificationPreferencesScreen({
 
   return (
     <OnboardingBackground>
-      <YStack flex={1} px="$4" justify="space-between">
+      <YStack flex={1} px="$4" pt={safeAreaInsets.top + 20} justify="space-between">
         {/* Title and description */}
         <YStack mt="$6" mb="$6">
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" mb="$3">
+          <Text fontSize={28} fontWeight="700" color="$text" text="center">
             {t('onboarding.notificationPreferences.title')}
           </Text>
 
