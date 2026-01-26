@@ -8,7 +8,7 @@ export type FeatureFlagKey =
   | 'create_new_account'
   | 'import_existing_account'
   | 'blocto_key_rotation'
-  | 'coa_migration';
+  | 'coa_migration_v2';
 
 // Feature flags
 export type FeatureFlags = {
