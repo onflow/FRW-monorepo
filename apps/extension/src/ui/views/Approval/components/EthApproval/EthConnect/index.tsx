@@ -488,7 +488,11 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
                   onClick={() => setShowAccountDrawer(true)}
                   onClickSecondary={() => setShowAccountDrawer(true)}
                   secondaryIcon={
-                    <IconChevronRight size={24} color={COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80} />
+                    <IconChevronRight
+                      data-testid="account-card-chevron"
+                      size={24}
+                      color={COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80}
+                    />
                   }
                 />
               </Box>
@@ -523,6 +527,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
                 label={chrome.i18n.getMessage('Connect')}
                 type="submit"
                 onClick={handleAllow}
+                data-testid="connect-button"
                 sx={{
                   flex: 1,
                   height: '52px',
@@ -534,6 +539,7 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
                 label={chrome.i18n.getMessage('Enable')}
                 type="submit"
                 onClick={createCoa}
+                data-testid="connect-button"
                 sx={{
                   flex: 1,
                   height: '52px',

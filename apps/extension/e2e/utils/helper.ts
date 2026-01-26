@@ -348,6 +348,16 @@ export const importSenderAccount = async ({ page, extensionId }) => {
   });
 };
 
+export const connectToApps = async ({ page, extensionId, url, testId, idx = -1 }) => {
+  await page.goto(url);
+
+  let connectBtn = await page.getByTestId(testId);
+  if (idx !== -1) {
+    connectBtn = connectBtn.nth(idx);
+  }
+  await connectBtn.click();
+};
+
 export const loginToSenderAccount = async ({ page, extensionId }) => {
   if (!process.env.TEST_SENDER_ADDR) {
     throw new Error('TEST_SENDER_ADDR is not set');

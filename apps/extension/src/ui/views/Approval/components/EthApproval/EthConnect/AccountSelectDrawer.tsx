@@ -111,6 +111,7 @@ export const AccountSelectDrawer = ({
           {availableAccounts.map(({ account, parentAccount }) => (
             <AccountCard
               key={account.address}
+              data-testid={account.address}
               network={network}
               account={account}
               parentAccount={parentAccount}
