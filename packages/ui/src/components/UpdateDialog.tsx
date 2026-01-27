@@ -1,10 +1,22 @@
 import { Close } from '@onflow/frw-icons';
-import DOMPurify from 'dompurify';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { YStack, Stack, useTheme, getTokens, Text as TamaguiText } from 'tamagui';
-
-import HtmlView from './HtmlView';
+import Markdown from 'react-markdown';
+import {
+  Anchor,
+  H1,
+  H2,
+  H3,
+  Paragraph,
+  Text,
+  YStack,
+  XStack,
+  Stack,
+  ScrollView,
+  useTheme,
+  getTokens,
+  Text as TamaguiText,
+} from 'tamagui';
 
 export interface WhatsNewAction {
   text: string;
@@ -17,12 +29,12 @@ export interface UpdateDialogProps {
   visible: boolean;
   title: string;
   /**
-   * Content to display in the dialog. Can be React nodes or HTML string.
-   * If htmlContent is provided, it will be rendered using dangerouslySetInnerHTML.
+   * Content to display in the dialog. Can be React nodes or markdown string.
+   * If updateContent is provided, it will be rendered as markdown.
    * Otherwise, children will be rendered normally.
    */
   children?: React.ReactNode;
-  htmlContent?: string;
+  updateContent?: string;
   actions: WhatsNewAction[];
   /**
    * Button text to show at bottom of dialog (required)
@@ -42,7 +54,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   visible,
   title,
   children,
-  htmlContent,
+  updateContent,
   actions,
   buttonText,
   onButtonClick,
@@ -167,12 +179,12 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
         </YStack>
 
         {/* Title */}
-        <YStack {...({ items: 'center', mb: 12 } as any)}>
+        <YStack {...({ items: 'center', mb: 24, mt: 8 } as any)}>
           <TamaguiText
             {...({
               id: 'update-dialog-title',
-              fontSize: 18,
-              fontWeight: '700',
+              fontSize: 20,
+              fontWeight: '900',
               color: '#00EF8B',
               ta: 'center',
             } as any)}
@@ -182,70 +194,109 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
         </YStack>
 
         {/* Content area */}
-        <YStack {...({ gap: 10, mb: 12, px: 20 } as any)}>
-          {htmlContent ? <HtmlView htmlContent={DOMPurify.sanitize(htmlContent)} /> : children}
-        </YStack>
+        <ScrollView
+          {...({
+            maxHeight: '60vh',
+            mb: 12,
+            px: 20,
+            showsVerticalScrollIndicator: true,
+          } as any)}
+        >
+          {updateContent ? (
+            <YStack gap="$3">
+              <Markdown
+                components={{
+                  h1: ({ children }) => (
+                    <H1 size="$9" mt="$2" mb="$1">
+                      {children}
+                    </H1>
+                  ),
+                  h2: ({ children }) => (
+                    <H2 size="$8" mt="$2" mb="$1">
+                      {children}
+                    </H2>
+                  ),
+                  h3: ({ children }) => (
+                    <H3 size="$7" mt="$2" mb="$1">
+                      {children}
+                    </H3>
+                  ),
+
+                  p: ({ children }) => (
+                    <Paragraph size="$4" lineHeight={22}>
+                      {children}
+                    </Paragraph>
+                  ),
+
+                  strong: ({ children }) => <Text fontWeight="800">{children}</Text>,
+                  em: ({ children }) => <Text fontStyle="italic">{children}</Text>,
+
+                  a: ({ children, href }) => (
+                    <Anchor
+                      href={href}
+                      color="$color10"
+                      textDecorationLine="underline"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {children}
+                    </Anchor>
+                  ),
+
+                  blockquote: ({ children }) => (
+                    <YStack borderLeftWidth={3} borderLeftColor="$color6" pl="$3" opacity={0.9}>
+                      {children}
+                    </YStack>
+                  ),
+
+                  ul: ({ children }) => <YStack gap="$2">{children}</YStack>,
+                  ol: ({ children }) => <YStack gap="$2">{children}</YStack>,
+
+                  li: ({ children }) => (
+                    <XStack gap="$2" alignItems="flex-start">
+                      <Text mt={2} opacity={0.7}>
+                        •
+                      </Text>
+                      <Paragraph size="$4" lineHeight={22} flex={1}>
+                        {children}
+                      </Paragraph>
+                    </XStack>
+                  ),
+
+                  hr: () => <YStack height={1} backgroundColor="$color5" opacity={0.6} my="$2" />,
+                }}
+              >
+                {updateContent}
+              </Markdown>
+            </YStack>
+          ) : (
+            children
+          )}
+        </ScrollView>
 
         {actions.map((action, index) => {
-          const buttonStyle = action.style || {};
-
           return (
             <YStack
               key={`${action.type}-${index}`}
               width="100%"
-              height="$12"
               justify={'center'}
               items={'center'}
-              backgroundColor={buttonStyle.backgroundColor || '$bg'}
-              borderRadius="$3"
-              pressStyle={{ opacity: 0.8, scale: 0.98 }}
+              pressStyle={{ opacity: 0.8 }}
               onPress={() => handleActions(action)}
               cursor="pointer"
-              borderWidth={1}
-              {...buttonStyle}
             >
               <TamaguiText
-                fontSize="$4"
+                fontSize="$3"
                 fontWeight="600"
-                color={buttonStyle.color || '$text'}
+                color="#00EF8B"
                 textAlign="center"
-                lineHeight="$12"
+                textDecorationLine="underline"
               >
                 {action.text}
               </TamaguiText>
             </YStack>
           );
         })}
-
-        {/* Bottom button */}
-        <YStack mt="16px">
-          <YStack
-            {...({
-              height: 50,
-              minHeight: 50,
-              maxHeight: 50,
-              w: '100%',
-              bg: '#FFFFFF',
-              rounded: 12,
-              items: 'center',
-              justify: 'center',
-              hoverStyle: { opacity: 0.9, bg: '#F5F5F5' },
-              pressStyle: { opacity: 0.8 },
-              onPress: handleButtonClick,
-              cursor: 'pointer',
-            } as any)}
-          >
-            <TamaguiText
-              {...({
-                fontSize: 14,
-                fontWeight: '700',
-                color: '#000000',
-              } as any)}
-            >
-              {buttonText}
-            </TamaguiText>
-          </YStack>
-        </YStack>
       </YStack>
     </Stack>
   );

@@ -7,8 +7,9 @@ export type FeatureFlagKey =
   | 'cover_bridge_fee'
   | 'create_new_account'
   | 'import_existing_account'
+  | 'vault_entrance'
   | 'blocto_key_rotation'
-  | 'coa_migration';
+  | 'coa_migration_v2';
 
 // Feature flags
 export type FeatureFlags = {
