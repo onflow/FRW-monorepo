@@ -378,15 +378,15 @@ export const migrationTransaction = async (
     logger.error('[migrationTransaction] Error details:', error?.message, error?.stack);
   }
 
-  // Process assets in batches of 200 per transaction
-  const BATCH_SIZE = 200;
+  // Process assets in batches of 50 per transaction (larger batches exceed signing service limits)
+  const BATCH_SIZE = 100;
   logger.debug('[migrationTransaction] ===== STARTING BATCHED TRANSACTION PROCESSING =====');
   logger.debug(`[migrationTransaction] Batch size: ${BATCH_SIZE} assets per transaction`);
   const transactionResults: string[] = [];
   const totalAssetsToProcess = trxs.addresses.length;
   const totalBatches = Math.ceil(totalAssetsToProcess / BATCH_SIZE);
   const estimatedMsPerTransaction = estimatedSecondsPerTransaction
-    ? estimatedSecondsPerTransaction * 1000
+    ? estimatedSecondsPerTransaction * 2000
     : null;
 
   // Initialize progress to 0%
