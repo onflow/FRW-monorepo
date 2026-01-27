@@ -1,5 +1,5 @@
 // Service classes (direct access)
-export { ActivityService, createMockActivityItems } from './ActivityService';
+export { ActivityService } from './ActivityService';
 export { AddressBookService } from './AddressBookService';
 export { default as FlowService } from './FlowService';
 export { KeyRotationService } from './KeyRotationService';
