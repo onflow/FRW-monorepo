@@ -42,7 +42,7 @@ function mapTransferDirection(transferType: number | undefined): TransferDirecti
 
 /**
  * ActivityProvider interface for fetching activity data
- * Note: Actual API implementation will be added in a separate ticket
+ * Implemented by FlowActivityProvider and EvmActivityProvider
  */
 interface ActivityProvider {
   getData(
