@@ -1,6 +1,44 @@
+import { AccountService } from '@onflow/frw-api';
 import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
-import { type ActivityItem, type ActivityListResponse, WalletType } from '@onflow/frw-types';
+import {
+  type ActivityItem,
+  type ActivityListResponse,
+  type ActivityType,
+  mapActivityStatus,
+  type TransferDirection,
+  WalletType,
+} from '@onflow/frw-types';
 import { logger } from '@onflow/frw-utils';
+
+/**
+ * Maps API type number to ActivityType
+ * 0 = ft (fungible token), 1 = nft, 2 = interaction
+ */
+function mapActivityType(type: number | undefined): ActivityType {
+  switch (type) {
+    case 1:
+      return 'nft';
+    case 2:
+      return 'interaction';
+    default:
+      return 'ft';
+  }
+}
+
+/**
+ * Maps API transfer_type number to TransferDirection
+ * 0 = sent, 1 = received, 2 = self
+ */
+function mapTransferDirection(transferType: number | undefined): TransferDirection {
+  switch (transferType) {
+    case 1:
+      return 'received';
+    case 2:
+      return 'self';
+    default:
+      return 'sent';
+  }
+}
 
 /**
  * ActivityProvider interface for fetching activity data
@@ -17,45 +55,157 @@ interface ActivityProvider {
 
 /**
  * Flow (Cadence) activity provider
- * TODO: Implement actual API calls in separate ticket
+ * Fetches transaction history for Flow addresses
  */
 class FlowActivityProvider implements ActivityProvider {
   async getData(
-    _address: string,
+    address: string,
     _network: string,
-    _offset: number,
-    _limit: number
+    offset: number,
+    limit: number
   ): Promise<ActivityListResponse> {
-    // Stub: Return empty data for now
-    // Actual implementation will use AccountService.transfers()
-    logger.debug('[FlowActivityProvider] getData called - returning stub data');
-    return {
-      items: [],
-      total: 0,
-      hasMore: false,
-    };
+    logger.debug('[FlowActivityProvider] getData called', { address, offset, limit });
+
+    try {
+      const response = await AccountService.transfers({
+        address,
+        limit,
+        after: offset,
+      });
+
+      const transactions = response?.transactions ?? [];
+      const items: ActivityItem[] = transactions.map(
+        (tx: {
+          txid?: string;
+          title?: string;
+          token?: string;
+          image?: string;
+          amount?: string;
+          additional_message?: string;
+          sender?: string;
+          receiver?: string;
+          status?: string;
+          time?: string;
+          type?: number;
+          transfer_type?: number;
+          error?: boolean;
+        }) => ({
+          id: tx.txid ?? '',
+          hash: tx.txid ?? '',
+          cadenceTxId: tx.txid,
+          evmTxIds: undefined,
+          title: tx.title ?? '',
+          token: tx.token ?? '',
+          image: tx.image ?? '',
+          amount: tx.amount ?? '',
+          additionalMessage: tx.additional_message,
+          sender: tx.sender ?? '',
+          receiver: tx.receiver ?? '',
+          senderProfile: undefined,
+          receiverProfile: undefined,
+          status: mapActivityStatus(tx.status ?? 'PENDING'),
+          error: tx.error ?? false,
+          indexed: true,
+          time: tx.time ? new Date(tx.time).getTime() : Date.now(),
+          type: mapActivityType(tx.type),
+          transferType: mapTransferDirection(tx.transfer_type),
+          walletType: WalletType.Flow,
+        })
+      );
+
+      logger.debug('[FlowActivityProvider] fetched items', { count: items.length });
+
+      return {
+        items,
+        total: response?.total ?? items.length,
+        hasMore: response?.next ?? false,
+      };
+    } catch (error) {
+      logger.error('[FlowActivityProvider] failed to fetch activity', error);
+      return {
+        items: [],
+        total: 0,
+        hasMore: false,
+      };
+    }
   }
 }
 
 /**
  * EVM activity provider
- * TODO: Implement actual API calls in separate ticket
+ * Fetches transaction history for EVM addresses
  */
 class EvmActivityProvider implements ActivityProvider {
   async getData(
-    _address: string,
+    address: string,
     _network: string,
-    _offset: number,
-    _limit: number
+    offset: number,
+    limit: number
   ): Promise<ActivityListResponse> {
-    // Stub: Return empty data for now
-    // Actual implementation will use /api/evm/{address}/transactions
-    logger.debug('[EvmActivityProvider] getData called - returning stub data');
-    return {
-      items: [],
-      total: 0,
-      hasMore: false,
-    };
+    logger.debug('[EvmActivityProvider] getData called', { address, offset, limit });
+
+    try {
+      const response = await AccountService.transfers({
+        address,
+        limit,
+        after: offset,
+      });
+
+      const transactions = response?.transactions ?? [];
+      const items: ActivityItem[] = transactions.map(
+        (tx: {
+          txid?: string;
+          title?: string;
+          token?: string;
+          image?: string;
+          amount?: string;
+          additional_message?: string;
+          sender?: string;
+          receiver?: string;
+          status?: string;
+          time?: string;
+          type?: number;
+          transfer_type?: number;
+          error?: boolean;
+        }) => ({
+          id: tx.txid ?? '',
+          hash: tx.txid ?? '',
+          cadenceTxId: undefined,
+          evmTxIds: tx.txid ? [tx.txid] : undefined,
+          title: tx.title ?? '',
+          token: tx.token ?? '',
+          image: tx.image ?? '',
+          amount: tx.amount ?? '',
+          additionalMessage: tx.additional_message,
+          sender: tx.sender ?? '',
+          receiver: tx.receiver ?? '',
+          senderProfile: undefined,
+          receiverProfile: undefined,
+          status: mapActivityStatus(tx.status ?? 'PENDING'),
+          error: tx.error ?? false,
+          indexed: true,
+          time: tx.time ? new Date(tx.time).getTime() : Date.now(),
+          type: mapActivityType(tx.type),
+          transferType: mapTransferDirection(tx.transfer_type),
+          walletType: WalletType.EVM,
+        })
+      );
+
+      logger.debug('[EvmActivityProvider] fetched items', { count: items.length });
+
+      return {
+        items,
+        total: response?.total ?? items.length,
+        hasMore: response?.next ?? false,
+      };
+    } catch (error) {
+      logger.error('[EvmActivityProvider] failed to fetch activity', error);
+      return {
+        items: [],
+        total: 0,
+        hasMore: false,
+      };
+    }
   }
 }
 

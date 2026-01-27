@@ -1,5 +1,4 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { createMockActivityItems } from '@onflow/frw-services';
 import { activityQueryKeys, activityQueries, groupActivityByDate } from '@onflow/frw-stores';
 import type { ActivityItem, ActivityGroup } from '@onflow/frw-types';
 import {
@@ -54,14 +53,7 @@ export function ActivityScreen(): ReactElement {
 
   // Group activity items by date
   const groupedActivity = useMemo((): ActivityGroup[] => {
-    // TODO: Remove mock data when API is implemented
-    // For now, use mock data if no real data is available
     const items = activityData?.items ?? [];
-    if (items.length === 0) {
-      // Return mock data for development - will be removed when API is connected
-      const mockItems = createMockActivityItems(10);
-      return groupActivityByDate(mockItems);
-    }
     return groupActivityByDate(items);
   }, [activityData]);
 
