@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Svg, { type SvgProps, Circle, Path } from 'react-native-svg';
+import Svg, { type SvgProps, Path } from 'react-native-svg';
 const Lock = ({
   color = '#000',
   size = 24,
@@ -12,7 +12,7 @@ const Lock = ({
     width={width ?? size}
     height={height ?? size}
     fill="none"
-    viewBox="0 0 46 45"
+    viewBox="0 0 20 20"
     {...props}
   >
     <Circle cx={22.848} cy={22.773} r={22.218} fill="#00EF8B" />

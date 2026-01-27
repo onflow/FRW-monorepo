@@ -389,6 +389,58 @@
       }
     }
   },
+  "migration": {
+    "info": {
+      "title": "Migrate\nyour account",
+      "description": "Your assets will move from EVM to FLOW to improve security, control, and compatibility with upcoming platform updates.",
+      "descriptionLine1Prefix": "Your assets will move from",
+      "descriptionLine1To": "to",
+      "descriptionLine2": "to improve security, control, and compatibility with upcoming platform updates.",
+      "whatDoesThisMean": "What does this mean?",
+      "features": {
+        "control": "You'll have full control over your accounts and keys.",
+        "security": "Greater cross-chain account security.",
+        "compatibility": "Improved compatibility with future updates and integrations.",
+        "performance": "Smoother transactions and faster on-chain actions."
+      },
+      "note": {
+        "title": "Please note: ",
+        "description": "The process takes about 2–3 minutes and your funds will remain secure throughout. Once migrated, your new EOA will replace your existing COA."
+      },
+      "startMigration": "Start migration"
+    },
+    "screen": {
+      "title": {
+        "inProgress": "Migrating\nyour account",
+        "completed": "Migration complete"
+      },
+      "progress": {
+        "currentStep": "Transferring assets...",
+        "timeEstimate": "~2 min remaining"
+      },
+      "status": {
+        "allComplete": {
+          "title": "Asset transfer complete"
+        },
+        "partialComplete": {
+          "title": "Some assets could not be transferred",
+          "description": "Review the list and confirm the transfer of the remaining assets."
+        }
+      },
+      "assets": {
+        "label": "Assets"
+      },
+      "warning": {
+        "title": "Important: ",
+        "description": "Do not close the app during migration. The process takes a few minutes."
+      },
+      "button": {
+        "start": "Start migration",
+        "done": "Done",
+        "review": "Review assets"
+      }
+    }
+  },
   "backup": {
     "tip": {
       "writeDown": {
