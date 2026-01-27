@@ -98,7 +98,7 @@
     "hdkey": "0.8.0",
     "history": "^4.10.1",
     "koa-compose": "^4.1.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "loglevel": "^1.9.2",
     "pdfjs-dist": "^4.0.379",
     "lottie-react-native": "^7.3.4",
