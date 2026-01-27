@@ -783,11 +783,29 @@ export class WhatSNewService {
   /**
    * Get What's New content
    */
-  static whatsnew(options: IRequestOptions = {}): Promise<any> {
+  static whatsnew(
+    params: {
+      /** Target app version to get release notes for (e.g., "3.1.1") */
+      toVersion: string;
+      /** Starting version to filter release notes from (optional) */
+      fromVersion?: string;
+      /** Platform type */
+      platform: string;
+      /** Content language (default: "en") */
+      language?: string;
+    },
+    options: IRequestOptions = {}
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       let url = basePath + '/api/whatsnew';
 
       const configs: IRequestConfig = getConfigs('get', 'application/json', url, options);
+      configs.params = {
+        toVersion: params['toVersion'],
+        fromVersion: params['fromVersion'],
+        platform: params['platform'],
+        language: params['language'] || 'en',
+      };
 
       axios(configs, resolve, reject);
     });
