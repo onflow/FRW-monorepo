@@ -152,7 +152,7 @@ export const AccountListing = ({
     activeAccount?.address === evmAccount.address;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
-  const isCoaMigrationEnabled = useFeatureFlag('coa_migration');
+  const isCoaMigrationEnabled = useFeatureFlag('coa_migration_v2');
 
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {
