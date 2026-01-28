@@ -134,8 +134,12 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
   const hasBothProfiles = item.senderProfile && item.receiverProfile;
 
   // Subtitle text for non-self transfers
+  // Don't show subtitle for errored transactions
   const getSubtitleText = (): string => {
+    if (item.error) return '';
     if (isInteraction) return 'Flow';
+    // If address is empty/missing, show the token name instead
+    if (!addressValue) return token || 'Flow';
     return `${addressLabel}: ${truncateAddress(addressValue)}`;
   };
 
@@ -163,7 +167,8 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
         <XStack justify="space-between" items="center" gap="$2">
           <XStack items="center" gap="$2" flex={1} shrink={1}>
             {/* Direction indicator inline with title */}
-            {!isInteraction && transferType !== 'self' && (
+            {/* Show for non-interactions, or errored transactions (API may report errored sends as interactions) */}
+            {(!isInteraction || item.error) && transferType !== 'self' && (
               <DirectionBadge transferType={transferType} statusType={statusType} />
             )}
             <Text
@@ -175,7 +180,11 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
               flex={1}
               shrink={1}
             >
-              {title || (transferType === 'sent' ? `Sent ${token}` : `Received ${token}`)}
+              {isInteraction
+                ? title || 'Flow'
+                : transferType === 'sent'
+                  ? `Sent ${token}`
+                  : `Received ${token}`}
             </Text>
           </XStack>
 

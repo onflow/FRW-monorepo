@@ -1,4 +1,4 @@
-import { AccountService } from '@onflow/frw-api';
+import { AccountService, EvmService } from '@onflow/frw-api';
 import { getServiceContext, type PlatformSpec } from '@onflow/frw-context';
 import {
   type ActivityItem,
@@ -12,31 +12,37 @@ import { logger } from '@onflow/frw-utils';
 
 /**
  * Maps API type number to ActivityType
- * 0 = ft (fungible token), 1 = nft, 2 = interaction
+ * Based on actual API data:
+ * 0 = interaction (default/unknown)
+ * 1 = ft (fungible token, e.g., FlowToken)
+ * 2 = nft (e.g., TopShot, NBA Top Shot)
  */
 function mapActivityType(type: number | undefined): ActivityType {
   switch (type) {
     case 1:
-      return 'nft';
-    case 2:
-      return 'interaction';
-    default:
       return 'ft';
+    case 2:
+      return 'nft';
+    default:
+      return 'interaction';
   }
 }
 
 /**
  * Maps API transfer_type number to TransferDirection
- * 0 = sent, 1 = received, 2 = self
+ * Based on actual user testing:
+ * 0 = interaction/unknown (default to sent for UI)
+ * 1 = sent
+ * 2 = received
  */
 function mapTransferDirection(transferType: number | undefined): TransferDirection {
   switch (transferType) {
     case 1:
-      return 'received';
-    case 2:
-      return 'self';
-    default:
       return 'sent';
+    case 2:
+      return 'received';
+    default:
+      return 'sent'; // interactions/unknown default to sent
   }
 }
 
@@ -64,8 +70,6 @@ class FlowActivityProvider implements ActivityProvider {
     offset: number,
     limit: number
   ): Promise<ActivityListResponse> {
-    logger.debug('[FlowActivityProvider] getData called', { address, offset, limit });
-
     try {
       const response = await AccountService.transfers({
         address,
@@ -73,7 +77,11 @@ class FlowActivityProvider implements ActivityProvider {
         after: offset,
       });
 
-      const transactions = response?.transactions ?? [];
+      // API response structure: { status, message, data: { total, transactions, next } }
+      // The generated API returns res.data, so we need to access response.data for the actual data
+      const data = response?.data ?? response;
+      const transactions = data?.transactions ?? [];
+
       const items: ActivityItem[] = transactions.map(
         (tx: {
           txid?: string;
@@ -113,12 +121,10 @@ class FlowActivityProvider implements ActivityProvider {
         })
       );
 
-      logger.debug('[FlowActivityProvider] fetched items', { count: items.length });
-
       return {
         items,
-        total: response?.total ?? items.length,
-        hasMore: response?.next ?? false,
+        total: data?.total ?? items.length,
+        hasMore: data?.next ?? false,
       };
     } catch (error) {
       logger.error('[FlowActivityProvider] failed to fetch activity', error);
@@ -133,7 +139,7 @@ class FlowActivityProvider implements ActivityProvider {
 
 /**
  * EVM activity provider
- * Fetches transaction history for EVM addresses
+ * Fetches transaction history for EVM addresses using the EVM-specific API endpoint
  */
 class EvmActivityProvider implements ActivityProvider {
   async getData(
@@ -142,61 +148,41 @@ class EvmActivityProvider implements ActivityProvider {
     offset: number,
     limit: number
   ): Promise<ActivityListResponse> {
-    logger.debug('[EvmActivityProvider] getData called', { address, offset, limit });
-
     try {
-      const response = await AccountService.transfers({
-        address,
-        limit,
-        after: offset,
-      });
+      const response = await EvmService.getTransactions(address, offset, limit);
 
-      const transactions = response?.transactions ?? [];
-      const items: ActivityItem[] = transactions.map(
-        (tx: {
-          txid?: string;
-          title?: string;
-          token?: string;
-          image?: string;
-          amount?: string;
-          additional_message?: string;
-          sender?: string;
-          receiver?: string;
-          status?: string;
-          time?: string;
-          type?: number;
-          transfer_type?: number;
-          error?: boolean;
-        }) => ({
-          id: tx.txid ?? '',
-          hash: tx.txid ?? '',
-          cadenceTxId: undefined,
-          evmTxIds: tx.txid ? [tx.txid] : undefined,
-          title: tx.title ?? '',
-          token: tx.token ?? '',
-          image: tx.image ?? '',
-          amount: tx.amount ?? '',
-          additionalMessage: tx.additional_message,
-          sender: tx.sender ?? '',
-          receiver: tx.receiver ?? '',
-          senderProfile: undefined,
-          receiverProfile: undefined,
-          status: mapActivityStatus(tx.status ?? 'PENDING'),
-          error: tx.error ?? false,
-          indexed: true,
-          time: tx.time ? new Date(tx.time).getTime() : Date.now(),
-          type: mapActivityType(tx.type),
-          transferType: mapTransferDirection(tx.transfer_type),
-          walletType: WalletType.EVM,
-        })
-      );
+      const transactions = response?.trxs ?? [];
+      const items: ActivityItem[] = transactions.map((tx) => ({
+        id: tx.txid ?? '',
+        hash: tx.txid ?? '',
+        cadenceTxId: undefined,
+        evmTxIds: tx.txid ? [tx.txid] : undefined,
+        title: tx.title ?? '',
+        token: tx.token ?? '',
+        image: tx.image ?? '',
+        amount: tx.amount ?? '',
+        additionalMessage: tx.additional_message,
+        sender: tx.sender ?? '',
+        receiver: tx.receiver ?? '',
+        senderProfile: undefined,
+        receiverProfile: undefined,
+        status: mapActivityStatus(tx.status ?? 'PENDING'),
+        error: tx.error ?? false,
+        indexed: true,
+        time: tx.time ? new Date(tx.time).getTime() : Date.now(),
+        type: mapActivityType(tx.type),
+        transferType: mapTransferDirection(tx.transfer_type),
+        walletType: WalletType.EVM,
+      }));
 
-      logger.debug('[EvmActivityProvider] fetched items', { count: items.length });
+      // EVM API uses next_page_params for pagination
+      const hasMore = !!response?.next_page_params;
+      const total = response?.next_page_params?.items_count ?? items.length;
 
       return {
         items,
-        total: response?.total ?? items.length,
-        hasMore: response?.next ?? false,
+        total,
+        hasMore,
       };
     } catch (error) {
       logger.error('[EvmActivityProvider] failed to fetch activity', error);
@@ -248,7 +234,6 @@ export class ActivityService {
 
   /**
    * Get activity items for an address
-   * TODO: Actual API implementation will be added in separate ticket
    */
   async getActivity(
     address: string,
@@ -256,14 +241,6 @@ export class ActivityService {
     offset: number = 0,
     limit: number = 15
   ): Promise<ActivityListResponse> {
-    logger.debug('[ActivityService] getActivity called', {
-      address,
-      network,
-      offset,
-      limit,
-      walletType: this.walletType,
-    });
-
     return this.activityProvider.getData(address, network, offset, limit);
   }
 

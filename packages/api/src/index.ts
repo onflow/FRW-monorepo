@@ -31,3 +31,6 @@ export { serviceOptions } from './codegen/service.generated';
 
 // Export dynamic configuration functions
 export { configureApiEndpoints, isApiConfigured } from './config';
+
+// Export EVM-specific services
+export { EvmService, type EvmTransactionsResponse, type EvmTransactionItem } from './evm';

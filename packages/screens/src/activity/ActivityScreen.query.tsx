@@ -169,7 +169,7 @@ export function ActivityScreen(): ReactElement {
               {/* Activity cards container with shared background */}
               <YStack mx="$4" bg="$bg1" rounded="$4" px="$3">
                 {group.items.map((item, index) => (
-                  <YStack key={item.id}>
+                  <YStack key={`${item.id}-${index}`}>
                     <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
                     {/* Separator between cards, not after last card */}
                     {index < group.items.length - 1 && (
