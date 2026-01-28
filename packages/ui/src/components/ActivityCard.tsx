@@ -18,6 +18,16 @@ function truncateAddress(address: string, startLength = 6, endLength = 4): strin
 }
 
 /**
+ * Truncates a token name for display (max 12 chars)
+ */
+function truncateToken(token: string, maxLength = 12): string {
+  if (!token || token.length <= maxLength) {
+    return token;
+  }
+  return `${token.slice(0, maxLength)}...`;
+}
+
+/**
  * Status type for color mapping
  */
 type StatusType = 'error' | 'pending' | 'success';
@@ -127,8 +137,8 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
   const addressLabel = transferType === 'sent' ? 'To' : 'From';
   const addressValue = transferType === 'sent' ? receiver : sender;
 
-  // Format amount with sign
-  const displayAmount = amount ? `${transferType === 'sent' ? '-' : '+'}${amount} ${token}` : '';
+  // Format amount with sign (token name is already shown in title, so no need to repeat)
+  const displayAmount = amount ? `${transferType === 'sent' ? '-' : '+'}${amount}` : '';
 
   // Check if this is a self-transfer with both profile avatars
   const hasBothProfiles = item.senderProfile && item.receiverProfile;
@@ -139,7 +149,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
     if (item.error) return '';
     if (isInteraction) return 'Flow';
     // If address is empty/missing, show the token name instead
-    if (!addressValue) return token || 'Flow';
+    if (!addressValue) return truncateToken(token) || 'Flow';
     return `${addressLabel}: ${truncateAddress(addressValue)}`;
   };
 
@@ -183,15 +193,17 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
               {isInteraction
                 ? title || 'Flow'
                 : transferType === 'sent'
-                  ? `Sent ${token}`
-                  : `Received ${token}`}
+                  ? `Sent ${truncateToken(token)}`
+                  : `Received ${truncateToken(token)}`}
             </Text>
           </XStack>
 
           {displayAmount && (
-            <Text fontSize="$4" fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
-              {displayAmount}
-            </Text>
+            <Stack shrink={1} maxW="50%">
+              <Text fontSize="$4" fontWeight="500" color="$text1" numberOfLines={1} lineHeight={22}>
+                {displayAmount}
+              </Text>
+            </Stack>
           )}
         </XStack>
 
@@ -213,7 +225,15 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
               />
             </XStack>
           ) : (
-            <Text color="$text2" fontSize={14} fontWeight="400" numberOfLines={1} lineHeight={20}>
+            <Text
+              color="$text2"
+              fontSize={14}
+              fontWeight="400"
+              numberOfLines={1}
+              lineHeight={20}
+              flex={1}
+              shrink={1}
+            >
               {getSubtitleText()}
             </Text>
           )}

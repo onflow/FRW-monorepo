@@ -22,7 +22,7 @@ export interface ChainBadgeProps {
  * ChainBadge - Rounded square overlay badge for showing chain/network type on avatars
  *
  * Displays a white rounded square with a black link icon to indicate cross-chain activity.
- * Positioned absolutely at bottom-left - parent must have position="relative".
+ * Positioned absolutely at bottom-right - parent must have position="relative".
  *
  * @example
  * ```tsx
@@ -40,7 +40,7 @@ export function ChainBadge({ size = 20 }: ChainBadgeProps): React.ReactElement {
   return (
     <YStack
       position="absolute"
-      l={-2}
+      r={-2}
       b={-2}
       width={size}
       height={size}
