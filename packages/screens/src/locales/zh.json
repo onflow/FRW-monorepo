@@ -137,6 +137,23 @@
     "noQRCode": "二维码不可用",
     "evmWarning": "请确保仅在Flow EVM网络上向此地址发送资产。发送到其他网络上此地址的资产将会丢失。"
   },
+  "activity": {
+    "title": "活动",
+    "empty": "暂无活动",
+    "emptyMessage": "您的交易历史将显示在这里",
+    "error": "加载活动失败",
+    "errorMessage": "请重试",
+    "status": {
+      "pending": "处理中",
+      "success": "成功",
+      "failed": "失败",
+      "expired": "已过期"
+    },
+    "sent": "已发送",
+    "received": "已接收",
+    "today": "今天",
+    "yesterday": "昨天"
+  },
   "buttons": {
     "retry": "重试",
     "refresh": "刷新",

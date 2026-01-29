@@ -1,9 +1,15 @@
-import type { TokenModel, WalletAccount, Currency, NFTModel } from '@onflow/frw-types';
+import type {
+  TokenModel,
+  WalletAccount,
+  Currency,
+  NFTModel,
+  ActivityItem,
+} from '@onflow/frw-types';
 import type { ComponentProps } from 'react';
 import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiText } from 'tamagui';
 
 // Re-export from frw-types
-export type { NFTModel };
+export type { NFTModel, ActivityItem };
 
 // Base component props
 export type ButtonProps = ComponentProps<typeof TamaguiButton>;
@@ -166,4 +172,18 @@ export interface EnhancedSegmentedControlProps {
   onChange: (value: string) => void;
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
+}
+
+// Activity components props
+export interface ActivityCardProps {
+  item: ActivityItem;
+  onPress?: () => void;
+}
+
+export interface ActivityGroupHeaderProps {
+  title: string;
+}
+
+export interface ActivitySkeletonProps {
+  count?: number;
 }
