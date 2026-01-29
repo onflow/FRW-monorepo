@@ -2,12 +2,12 @@ import { isDarkMode, logger } from '@onflow/frw-utils';
 import React, { useEffect, useState } from 'react';
 import { YStack, Text, View, useTheme } from 'tamagui';
 
-import LottieView from '../LottieView';
-import { OnboardingBackground } from './OnboardingBackground';
 import creatingAccountDark from '../../assets/animations/creating-account-dark.json';
 import creatingAccountLight from '../../assets/animations/creating-account-light.json';
 import loadingBarDark from '../../assets/animations/loading-bar-dark.json';
 import loadingBarLight from '../../assets/animations/loading-bar-light.json';
+import { OnboardingBackground } from '../../layout/OnboardingBackground';
+import LottieView from '../LottieView';
 
 interface AccountCreationLoadingStateProps {
   visible: boolean;
