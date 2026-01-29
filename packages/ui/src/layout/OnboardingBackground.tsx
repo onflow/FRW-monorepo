@@ -24,6 +24,7 @@ export function OnboardingBackground({
       {useBackgroundImage && (
         <Image
           source={backgroundSource}
+          objectFit="cover"
           style={{
             position: 'absolute',
             top: 0,
@@ -32,7 +33,6 @@ export function OnboardingBackground({
             bottom: 0,
             width: '100%',
             height: '100%',
-            objectFit: 'cover',
             zIndex: 0,
           }}
         />
