@@ -1,4 +1,5 @@
 // Service classes (direct access)
+export { ActivityService } from './ActivityService';
 export { AddressBookService } from './AddressBookService';
 export { default as FlowService } from './FlowService';
 export { KeyRotationService } from './KeyRotationService';
@@ -9,6 +10,7 @@ export { TokenService } from './TokenService';
 
 // Convenience functions for accessing services through context
 export {
+  activityService,
   addressBookService,
   flowService,
   nftService,

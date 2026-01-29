@@ -137,6 +137,23 @@
     "noQRCode": "No hay código QR disponible",
     "evmWarning": "Asegúrese de enviar activos solo a esta dirección en la red Flow EVM. Los activos enviados a esta dirección en otras redes se perderán."
   },
+  "activity": {
+    "title": "Actividad",
+    "empty": "Sin actividad aún",
+    "emptyMessage": "Tu historial de transacciones aparecerá aquí",
+    "error": "Error al cargar la actividad",
+    "errorMessage": "Por favor, inténtalo de nuevo",
+    "status": {
+      "pending": "Pendiente",
+      "success": "Éxito",
+      "failed": "Fallido",
+      "expired": "Expirado"
+    },
+    "sent": "Enviado",
+    "received": "Recibido",
+    "today": "Hoy",
+    "yesterday": "Ayer"
+  },
   "buttons": {
     "retry": "Reintentar",
     "refresh": "Actualizar",

@@ -31,6 +31,7 @@ interface AppProps {
   network?: string;
   initialRoute?: string;
   embedded?: boolean;
+  isDarkMode?: boolean;
 }
 
 const App = (props: AppProps) => {
@@ -136,15 +137,14 @@ const App = (props: AppProps) => {
     initializeApp();
   }, [initializeApp]);
 
-  const colorScheme = useColorScheme();
+  const systemColorScheme = useColorScheme();
+  // Use passed isDarkMode prop (from native Android) if available, otherwise fall back to system color scheme
+  const isDark = props.isDarkMode !== undefined ? props.isDarkMode : systemColorScheme === 'dark';
 
   return (
     <FRWErrorBoundary>
       <PortalProvider shouldAddRootHost>
-        <TamaguiProvider
-          config={tamaguiConfig}
-          defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
-        >
+        <TamaguiProvider config={tamaguiConfig} defaultTheme={isDark ? 'dark' : 'light'}>
           <QueryProvider>
             <QueryDebugger />
             <GestureHandlerRootView style={{ flex: 1 }}>

@@ -137,6 +137,23 @@
     "noQRCode": "QRコードが利用できません",
     "evmWarning": "Flow EVMネットワーク上でのみ、このアドレスに資産を送信してください。他のネットワーク上でこのアドレスに送信された資産は失われます。"
   },
+  "activity": {
+    "title": "アクティビティ",
+    "empty": "アクティビティがありません",
+    "emptyMessage": "取引履歴がここに表示されます",
+    "error": "アクティビティの読み込みに失敗しました",
+    "errorMessage": "もう一度お試しください",
+    "status": {
+      "pending": "処理中",
+      "success": "成功",
+      "failed": "失敗",
+      "expired": "期限切れ"
+    },
+    "sent": "送信済み",
+    "received": "受信済み",
+    "today": "今日",
+    "yesterday": "昨日"
+  },
   "buttons": {
     "retry": "再試行",
     "refresh": "更新",

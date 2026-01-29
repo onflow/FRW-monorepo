@@ -1,0 +1,57 @@
+import { Link } from '@onflow/frw-icons';
+import React from 'react';
+import { YStack } from 'tamagui';
+
+/**
+ * Chain types for badge display
+ */
+export type ChainType = 'evm' | 'flow';
+
+export interface ChainBadgeProps {
+  /**
+   * The chain type to display (currently visual is the same for all chains)
+   */
+  chain: ChainType;
+  /**
+   * Size of the badge (default: 20)
+   */
+  size?: number;
+}
+
+/**
+ * ChainBadge - Rounded square overlay badge for showing chain/network type on avatars
+ *
+ * Displays a white rounded square with a black link icon to indicate cross-chain activity.
+ * Positioned absolutely at bottom-right - parent must have position="relative".
+ *
+ * @example
+ * ```tsx
+ * <Stack position="relative">
+ *   <Avatar src={tokenImage} size={48} />
+ *   <ChainBadge chain="evm" />
+ * </Stack>
+ * ```
+ */
+export function ChainBadge({ size = 20 }: ChainBadgeProps): React.ReactElement {
+  const iconSize = Math.round(size / 2);
+  // Use a smaller border radius for rounded square (not circle)
+  const borderRadius = Math.round(size / 4);
+
+  return (
+    <YStack
+      position="absolute"
+      r={-2}
+      b={-2}
+      width={size}
+      height={size}
+      rounded={borderRadius}
+      bg="$white"
+      items="center"
+      justify="center"
+      borderWidth={2}
+      borderColor="$bg"
+    >
+      <Link size={iconSize} color="$black" theme="outline" />
+    </YStack>
+  );
+}

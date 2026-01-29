@@ -38,6 +38,9 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
+export * from './components/ActivityCard';
+export * from './components/ActivityGroupHeader';
+export * from './components/ActivitySkeleton';
 export * from './components/AddContactDialog';
 
 export * from './components/AddressBookSection';
@@ -52,6 +55,7 @@ export * from './components/ShieldAnimation';
 export * from './components/ConfirmationDrawer';
 export * from './components/COAAddressCopyModal';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/ChainBadge';
 export * from './components/EVMBadge';
 export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';

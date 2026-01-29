@@ -2,6 +2,7 @@
 
 export * from './Account';
 export * from './AccountDisplay';
+export * from './Activity';
 export * from './Bridge';
 export * from './NFTListTypes';
 export * from './NFTModel';
