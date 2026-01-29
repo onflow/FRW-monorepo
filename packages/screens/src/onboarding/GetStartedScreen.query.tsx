@@ -1,6 +1,13 @@
 import { logger, navigation } from '@onflow/frw-context';
 import { ScreenName } from '@onflow/frw-types';
-import { YStack, Text, Button, OnboardingBackground, OnboardingHeader } from '@onflow/frw-ui';
+import {
+  YStack,
+  Text,
+  Button,
+  OnboardingBackground,
+  OnboardingHeader,
+  useResponsive,
+} from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking } from 'react-native';
@@ -15,6 +22,7 @@ const PRIVACY_POLICY_URL = 'https://wallet.flow.com/privacy-policy';
 
 export function GetStartedScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const { contentMaxWidth } = useResponsive();
 
   const handleCreateAccount = () => {
     // Navigate to profile type selection for create account flow
@@ -54,61 +62,64 @@ export function GetStartedScreen(): React.ReactElement {
 
   return (
     <OnboardingBackground variant="getStarted">
-      <YStack flex={1} paddingHorizontal="$4">
-        {/* Top spacer to position title in upper third */}
-        <YStack flex={1} />
+      <YStack flex={1} px="$4" items="center">
+        {/* Responsive content container - constrained width on iPad */}
+        <YStack flex={1} w="100%" maxWidth={contentMaxWidth}>
+          {/* Top spacer to position title in upper third */}
+          <YStack flex={1} />
 
-        {/* Main content */}
-        <YStack alignItems="center" gap="$4">
-          <OnboardingHeader
-            title={t('onboarding.getStarted.title')}
-            subtitle={t('onboarding.getStarted.subtitle')}
-            logoText={t('onboarding.flowWallet')}
-          />
-        </YStack>
+          {/* Main content */}
+          <YStack items="center" gap="$4">
+            <OnboardingHeader
+              title={t('onboarding.getStarted.title')}
+              subtitle={t('onboarding.getStarted.subtitle')}
+              logoText={t('onboarding.flowWallet')}
+            />
+          </YStack>
 
-        {/* Larger spacer to push buttons to bottom */}
-        <YStack flex={2} />
+          {/* Larger spacer to push buttons to bottom */}
+          <YStack flex={2} />
 
-        {/* Bottom buttons */}
-        <YStack paddingBottom="$6" gap="$3">
-          {/* Create Account Button - Primary */}
-          <Button variant="inverse" size="large" fullWidth onPress={handleCreateAccount}>
-            {t('onboarding.getStarted.createAccount')}
-          </Button>
+          {/* Bottom buttons */}
+          <YStack pb="$6" gap="$3">
+            {/* Create Account Button - Primary */}
+            <Button variant="inverse" size="large" fullWidth onPress={handleCreateAccount}>
+              {t('onboarding.getStarted.createAccount')}
+            </Button>
 
-          {/* Sign In Button - Outline */}
-          <Button variant="outline" size="large" fullWidth onPress={handleSignIn}>
-            {t('onboarding.getStarted.signIn')}
-          </Button>
+            {/* Sign In Button - Outline */}
+            <Button variant="outline" size="large" fullWidth onPress={handleSignIn}>
+              {t('onboarding.getStarted.signIn')}
+            </Button>
 
-          <YStack marginTop="$2" alignItems="center" paddingHorizontal="$4">
-            <Text fontSize="$3" color="$textSecondary" lineHeight={17} textAlign="center">
-              {t('onboarding.getStarted.agreementText')}{' '}
-              <Text
-                fontSize="$3"
-                color="$textSecondary"
-                lineHeight={17}
-                textDecorationLine="underline"
-                onPress={handleOpenTerms}
-                cursor="pointer"
-                pressStyle={{ opacity: 0.7 }}
-              >
-                {t('onboarding.getStarted.termsOfService')}
-              </Text>{' '}
-              {t('onboarding.getStarted.and')}{' '}
-              <Text
-                fontSize="$3"
-                color="$textSecondary"
-                lineHeight={17}
-                textDecorationLine="underline"
-                onPress={handleOpenPrivacy}
-                cursor="pointer"
-                pressStyle={{ opacity: 0.7 }}
-              >
-                {t('onboarding.getStarted.privacyPolicy')}
+            <YStack mt="$2" items="center" px="$4">
+              <Text fontSize="$3" color="$textSecondary" lineHeight={17} text="center">
+                {t('onboarding.getStarted.agreementText')}{' '}
+                <Text
+                  fontSize="$3"
+                  color="$textSecondary"
+                  lineHeight={17}
+                  textDecorationLine="underline"
+                  onPress={handleOpenTerms}
+                  cursor="pointer"
+                  pressStyle={{ opacity: 0.7 }}
+                >
+                  {t('onboarding.getStarted.termsOfService')}
+                </Text>{' '}
+                {t('onboarding.getStarted.and')}{' '}
+                <Text
+                  fontSize="$3"
+                  color="$textSecondary"
+                  lineHeight={17}
+                  textDecorationLine="underline"
+                  onPress={handleOpenPrivacy}
+                  cursor="pointer"
+                  pressStyle={{ opacity: 0.7 }}
+                >
+                  {t('onboarding.getStarted.privacyPolicy')}
+                </Text>
               </Text>
-            </Text>
+            </YStack>
           </YStack>
         </YStack>
       </YStack>

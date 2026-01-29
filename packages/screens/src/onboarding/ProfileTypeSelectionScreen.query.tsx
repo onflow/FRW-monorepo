@@ -10,6 +10,7 @@ import {
   ShieldAnimation,
   IconButton,
   useTheme,
+  useResponsive,
 } from '@onflow/frw-ui';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 export function ProfileTypeSelectionScreen(): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { contentMaxWidth, animationScale } = useResponsive();
 
   // Get safe area insets for proper positioning across platforms
   const safeAreaInsets = useMemo(() => {
@@ -58,61 +60,69 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
 
   return (
     <OnboardingBackground>
-      <YStack flex={1} px="$4" pt="$0">
-        {/* Custom back button - uses safe area insets for proper positioning */}
-        <YStack pt={safeAreaInsets.top}>
-          <IconButton
-            icon={<ArrowLeft color={theme.text.val} size={24} width={24} height={24} />}
-            variant="ghost"
-            size="medium"
-            onPress={handleBack}
-            ml="$2"
-            pt="$4"
-          />
-        </YStack>
+      <YStack flex={1} px="$4" pt="$0" items="center">
+        {/* Responsive content container - constrained width on iPad */}
+        <YStack flex={1} w="100%" maxWidth={contentMaxWidth}>
+          {/* Custom back button - uses safe area insets for proper positioning */}
+          <YStack pt={safeAreaInsets.top}>
+            <IconButton
+              icon={<ArrowLeft color={theme.text.val} size={24} width={24} height={24} />}
+              variant="ghost"
+              size="medium"
+              onPress={handleBack}
+              ml="$2"
+              pt="$4"
+            />
+          </YStack>
 
-        {/* Title */}
-        <YStack mt="$6" mb="$6">
-          <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
-            {t('onboarding.profileType.welcomeTitle')}
-          </Text>
-        </YStack>
-
-        {/* Shield Animation */}
-        <YStack alignItems="center" mb="$8">
-          <ShieldAnimation width={300} height={375} autoPlay={true} loop={true} />
-        </YStack>
-
-        {/* Recovery phrase description */}
-        <YStack alignItems="center" mb="$8">
-          <YStack maxWidth={307} px="$4" alignItems="center" gap="$2">
-            <Text fontSize="$5" fontWeight="700" color="$text" textAlign="center" mb="$2">
-              {t('onboarding.profileType.recoveryPhrase.title')}
-            </Text>
-            <Text fontSize="$4" color="$textSecondary" textAlign="center" lineHeight={17}>
-              {t('onboarding.profileType.recoveryPhrase.description')}
+          {/* Title */}
+          <YStack mt="$6" mb="$6">
+            <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+              {t('onboarding.profileType.welcomeTitle')}
             </Text>
           </YStack>
+
+          {/* Shield Animation - scaled for iPad */}
+          <YStack items="center" mb="$8">
+            <ShieldAnimation
+              width={Math.round(300 * animationScale)}
+              height={Math.round(375 * animationScale)}
+              autoPlay={true}
+              loop={true}
+            />
+          </YStack>
+
+          {/* Recovery phrase description */}
+          <YStack items="center" mb="$8">
+            <YStack maxWidth={307} px="$4" items="center" gap="$2">
+              <Text fontSize="$5" fontWeight="700" color="$text" text="center" mb="$2">
+                {t('onboarding.profileType.recoveryPhrase.title')}
+              </Text>
+              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17}>
+                {t('onboarding.profileType.recoveryPhrase.description')}
+              </Text>
+            </YStack>
+          </YStack>
+
+          {/* Spacer */}
+          <YStack flex={1} />
+
+          {/* Next button */}
+          <YStack mb="$3">
+            <Button variant="inverse" size="large" fullWidth onPress={handleNext}>
+              {t('onboarding.profileType.next')}
+            </Button>
+          </YStack>
+
+          {/* Secure enclave link */}
+          <XStack justify="center" pb="$8">
+            <Button variant="ghost" onPress={handleSecureEnclave}>
+              <Text fontSize="$4" fontWeight="600" color="$textSecondary">
+                {t('onboarding.profileType.secureEnclaveProfile')}
+              </Text>
+            </Button>
+          </XStack>
         </YStack>
-
-        {/* Spacer */}
-        <YStack flex={1} />
-
-        {/* Next button */}
-        <YStack mb="$3">
-          <Button variant="inverse" size="large" fullWidth onPress={handleNext}>
-            {t('onboarding.profileType.next')}
-          </Button>
-        </YStack>
-
-        {/* Secure enclave link */}
-        <XStack justifyContent="center" pb="$8">
-          <Button variant="ghost" onPress={handleSecureEnclave}>
-            <Text fontSize="$4" fontWeight="600" color="$textSecondary">
-              {t('onboarding.profileType.secureEnclaveProfile')}
-            </Text>
-          </Button>
-        </XStack>
       </YStack>
     </OnboardingBackground>
   );

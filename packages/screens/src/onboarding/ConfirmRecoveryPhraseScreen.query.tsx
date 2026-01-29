@@ -8,6 +8,7 @@ import {
   ScrollView,
   AccountCreationLoadingState,
   RecoveryPhraseQuestion,
+  useResponsive,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useMemo, useEffect, useLayoutEffect } from 'react';
@@ -66,6 +67,7 @@ export function ConfirmRecoveryPhraseScreen({
   navigation,
 }: ConfirmRecoveryPhraseScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
+  const { contentMaxWidth } = useResponsive();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -413,61 +415,70 @@ export function ConfirmRecoveryPhraseScreen({
   return (
     <>
       <OnboardingBackground>
-        <YStack flex={1}>
-          <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-            <YStack px="$4" pt="$4">
-              {/* Title and description */}
-              <YStack items="center" mb="$8" gap="$2">
-                <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
-                  {t('onboarding.confirmRecoveryPhrase.title')}
-                </Text>
-                <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
-                  {t('onboarding.confirmRecoveryPhrase.description')}
-                </Text>
-              </YStack>
+        <YStack flex={1} items="center">
+          {/* Responsive content container - constrained width on iPad */}
+          <YStack flex={1} w="100%" maxWidth={contentMaxWidth}>
+            <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+              <YStack px="$4" pt="$4">
+                {/* Title and description */}
+                <YStack items="center" mb="$8" gap="$2">
+                  <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+                    {t('onboarding.confirmRecoveryPhrase.title')}
+                  </Text>
+                  <Text
+                    fontSize="$4"
+                    color="$textSecondary"
+                    text="center"
+                    lineHeight={16}
+                    maxW={280}
+                  >
+                    {t('onboarding.confirmRecoveryPhrase.description')}
+                  </Text>
+                </YStack>
 
-              {/* All questions */}
-              <YStack gap="$8">
-                {questions.map((question, index) => (
-                  <RecoveryPhraseQuestion
-                    key={index}
-                    position={question.position}
-                    options={question.options}
-                    selectedAnswer={selectedAnswers[index]}
-                    correctAnswer={question.correctAnswer}
-                    onSelectWord={handleSelectWord(index)}
-                    questionLabel={t('onboarding.confirmRecoveryPhrase.selectWord', {
-                      position: question.position,
-                    })}
-                  />
-                ))}
+                {/* All questions */}
+                <YStack gap="$8">
+                  {questions.map((question, index) => (
+                    <RecoveryPhraseQuestion
+                      key={index}
+                      position={question.position}
+                      options={question.options}
+                      selectedAnswer={selectedAnswers[index]}
+                      correctAnswer={question.correctAnswer}
+                      onSelectWord={handleSelectWord(index)}
+                      questionLabel={t('onboarding.confirmRecoveryPhrase.selectWord', {
+                        position: question.position,
+                      })}
+                    />
+                  ))}
+                </YStack>
               </YStack>
-            </YStack>
-          </ScrollView>
+            </ScrollView>
 
-          {/* Finish button - matching other screens style */}
-          <YStack px="$4" pb="$6">
-            <YStack
-              width="100%"
-              height={52}
-              bg={!allAnswersCorrect ? '$bg3' : '$text'}
-              rounded={16}
-              items="center"
-              justify="center"
-              borderWidth={1}
-              borderColor={!allAnswersCorrect ? '$bg3' : '$text'}
-              opacity={!allAnswersCorrect ? 0.7 : 1}
-              pressStyle={{ opacity: 0.9 }}
-              onPress={!allAnswersCorrect ? undefined : handleFinish}
-              cursor={!allAnswersCorrect ? 'not-allowed' : 'pointer'}
-            >
-              <Text
-                fontSize="$4"
-                fontWeight="700"
-                color={!allAnswersCorrect ? '$textSecondary' : '$bg'}
+            {/* Finish button - matching other screens style */}
+            <YStack px="$4" pb="$6">
+              <YStack
+                width="100%"
+                height={52}
+                bg={!allAnswersCorrect ? '$bg3' : '$text'}
+                rounded={16}
+                items="center"
+                justify="center"
+                borderWidth={1}
+                borderColor={!allAnswersCorrect ? '$bg3' : '$text'}
+                opacity={!allAnswersCorrect ? 0.7 : 1}
+                pressStyle={{ opacity: 0.9 }}
+                onPress={!allAnswersCorrect ? undefined : handleFinish}
+                cursor={!allAnswersCorrect ? 'not-allowed' : 'pointer'}
               >
-                {t('onboarding.confirmRecoveryPhrase.finish')}
-              </Text>
+                <Text
+                  fontSize="$4"
+                  fontWeight="700"
+                  color={!allAnswersCorrect ? '$textSecondary' : '$bg'}
+                >
+                  {t('onboarding.confirmRecoveryPhrase.finish')}
+                </Text>
+              </YStack>
             </YStack>
           </YStack>
         </YStack>

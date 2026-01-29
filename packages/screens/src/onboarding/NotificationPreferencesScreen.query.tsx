@@ -8,6 +8,7 @@ import {
   OnboardingBackground,
   Image,
   pushNotifications,
+  useResponsive,
 } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
 import React, { useMemo } from 'react';
@@ -65,6 +66,7 @@ export function NotificationPreferencesScreen({
   route,
 }: NotificationPreferencesScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
+  const { contentMaxWidth, animationScale } = useResponsive();
   const [isCheckingPermission, setIsCheckingPermission] = React.useState(true);
   const safeAreaInsets = useMemo(() => {
     return bridge.getSafeAreaInsets?.() ?? { top: 0, bottom: 0, left: 0, right: 0 };
@@ -184,40 +186,48 @@ export function NotificationPreferencesScreen({
 
   return (
     <OnboardingBackground>
-      <YStack flex={1} px="$4" pt={safeAreaInsets.top + 20} justify="space-between">
-        {/* Title and description */}
-        <YStack mt="$6" mb="$6">
-          <Text fontSize={28} fontWeight="700" color="$text" text="center">
-            {t('onboarding.notificationPreferences.title')}
-          </Text>
+      <YStack flex={1} px="$4" pt={safeAreaInsets.top + 20} items="center" justify="space-between">
+        {/* Responsive content container - constrained width on iPad */}
+        <YStack flex={1} w="100%" maxWidth={contentMaxWidth} justify="space-between">
+          {/* Title and description */}
+          <YStack mt="$6" mb="$6">
+            <Text fontSize={28} fontWeight="700" color="$text" text="center">
+              {t('onboarding.notificationPreferences.title')}
+            </Text>
 
-          <Text fontSize="$4" color="$textSecondary" text="center" px="$2">
-            {t('onboarding.notificationPreferences.subtitle')}
-          </Text>
-        </YStack>
-
-        {/* Notification Preview Image - centered */}
-        <YStack flex={1} items="center" justify="center">
-          <Image source={pushNotifications} width={375} height={492} objectFit="contain" />
-        </YStack>
-
-        {/* Action buttons */}
-        <YStack>
-          {/* Turn on notifications button - Primary style */}
-          <YStack mb="$3">
-            <Button variant="inverse" size="large" fullWidth onPress={handleEnableNotifications}>
-              {t('onboarding.notificationPreferences.enableButton')}
-            </Button>
+            <Text fontSize="$4" color="$textSecondary" text="center" px="$2">
+              {t('onboarding.notificationPreferences.subtitle')}
+            </Text>
           </YStack>
 
-          {/* Maybe later button - Ghost style, centered like secure enclave profile */}
-          <XStack justify="center" pb="$8">
-            <Button variant="ghost" onPress={handleMaybeLater}>
-              <Text fontSize="$4" fontWeight="600" color="$textSecondary">
-                {t('onboarding.notificationPreferences.maybeLater')}
-              </Text>
-            </Button>
-          </XStack>
+          {/* Notification Preview Image - centered and scaled for iPad */}
+          <YStack flex={1} items="center" justify="center">
+            <Image
+              source={pushNotifications}
+              width={Math.round(375 * animationScale)}
+              height={Math.round(492 * animationScale)}
+              objectFit="contain"
+            />
+          </YStack>
+
+          {/* Action buttons */}
+          <YStack>
+            {/* Turn on notifications button - Primary style */}
+            <YStack mb="$3">
+              <Button variant="inverse" size="large" fullWidth onPress={handleEnableNotifications}>
+                {t('onboarding.notificationPreferences.enableButton')}
+              </Button>
+            </YStack>
+
+            {/* Maybe later button - Ghost style, centered like secure enclave profile */}
+            <XStack justify="center" pb="$8">
+              <Button variant="ghost" onPress={handleMaybeLater}>
+                <Text fontSize="$4" fontWeight="600" color="$textSecondary">
+                  {t('onboarding.notificationPreferences.maybeLater')}
+                </Text>
+              </Button>
+            </XStack>
+          </YStack>
         </YStack>
       </YStack>
     </OnboardingBackground>
