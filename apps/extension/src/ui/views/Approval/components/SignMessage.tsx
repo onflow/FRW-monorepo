@@ -272,6 +272,7 @@ const SignMessage = ({ params: { icon, origin, tabId, type } }: ConnectProps) =>
             <LLPrimaryButton
               label={chrome.i18n.getMessage('Approve')}
               fullWidth
+              data-testid="approve-button"
               type="submit"
               onClick={sendAuthzToFCL}
             />
