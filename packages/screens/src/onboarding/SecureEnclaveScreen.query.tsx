@@ -14,6 +14,7 @@ import {
   AccountCreationLoadingState,
   ShieldAnimation,
   useTheme,
+  ScrollView,
 } from '@onflow/frw-ui';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useState, useLayoutEffect, useEffect } from 'react';
@@ -167,68 +168,67 @@ export function SecureEnclaveScreen({
   return (
     <>
       <OnboardingBackground>
-        <YStack flex={1} px="$4">
-          {/* Advanced text */}
-          <YStack mb="$6">
-            <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
-              {t('onboarding.secureEnclave.title')}
-            </Text>
-          </YStack>
-
-          {/* Shield Animation */}
-          <YStack alignItems="center" mb="$8">
-            <ShieldAnimation width={300} height={375} autoPlay={true} loop={true} />
-          </YStack>
-
-          {/* Card with profile description */}
-          <YStack items="center" mb="$8">
-            <YStack w="100%" maxW={320} items="center" gap="$2">
-              <Text fontSize="$5" fontWeight="700" color="$text" text="center" mb="$2">
-                {t('onboarding.secureEnclave.cardTitle')}
+        <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+          <YStack px="$4" pt="$4">
+            {/* Advanced text */}
+            <YStack mb="$6">
+              <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+                {t('onboarding.secureEnclave.title')}
               </Text>
-              <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17} px="$2">
-                {t('onboarding.secureEnclave.cardDescription')}
-              </Text>
+            </YStack>
+
+            {/* Shield Animation */}
+            <YStack alignItems="center" mb="$8">
+              <ShieldAnimation width={300} height={375} autoPlay={true} loop={true} />
+            </YStack>
+
+            {/* Card with profile description */}
+            <YStack items="center" mb="$8">
+              <YStack w="100%" maxW={320} items="center" gap="$2">
+                <Text fontSize="$5" fontWeight="700" color="$text" text="center" mb="$2">
+                  {t('onboarding.secureEnclave.cardTitle')}
+                </Text>
+                <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={17} px="$2">
+                  {t('onboarding.secureEnclave.cardDescription')}
+                </Text>
+              </YStack>
+            </YStack>
+
+            {/* Feature items */}
+            <YStack gap="$2" items="center" mb="$6">
+              {/* Secure enclave */}
+              <XStack gap="$2" items="center">
+                <SecureEnclave size={16} color={theme.primary.val} />
+                <Text fontSize="$4" color="$primary">
+                  {t('onboarding.secureEnclave.features.secureEnclave')}
+                </Text>
+              </XStack>
+
+              {/* Hardware security */}
+              <XStack gap="$2" items="center">
+                <HardwareGradeSecurity size={16} color={theme.primary.val} />
+                <Text fontSize="$4" color="$primary">
+                  {t('onboarding.secureEnclave.features.hardwareSecurity')}
+                </Text>
+              </XStack>
+
+              {/* No EVM support */}
+              <XStack gap="$2" items="center">
+                <ShieldOff size={16} color={theme.error.val} />
+                <Text fontSize="$4" color="$error">
+                  {t('onboarding.secureEnclave.features.noEvm')}
+                </Text>
+              </XStack>
             </YStack>
           </YStack>
 
-          {/* Feature items */}
-          <YStack gap="$2" items="center" mb="$6">
-            {/* Secure enclave */}
-            <XStack gap="$2" items="center">
-              <SecureEnclave size={16} color={theme.primary.val} />
-              <Text fontSize="$4" color="$primary">
-                {t('onboarding.secureEnclave.features.secureEnclave')}
-              </Text>
-            </XStack>
-
-            {/* Hardware security */}
-            <XStack gap="$2" items="center">
-              <HardwareGradeSecurity size={16} color={theme.primary.val} />
-              <Text fontSize="$4" color="$primary">
-                {t('onboarding.secureEnclave.features.hardwareSecurity')}
-              </Text>
-            </XStack>
-
-            {/* No EVM support */}
-            <XStack gap="$2" items="center">
-              <ShieldOff size={16} color={theme.error.val} />
-              <Text fontSize="$4" color="$error">
-                {t('onboarding.secureEnclave.features.noEvm')}
-              </Text>
-            </XStack>
-          </YStack>
-
-          {/* Spacer */}
-          <YStack flex={1} />
-
-          {/* Next button */}
-          <YStack pb="$6">
+          {/* Fixed bottom button */}
+          <YStack px="$4" pb="$6">
             <Button variant="inverse" size="large" fullWidth onPress={handleNext}>
               {t('onboarding.secureEnclave.next')}
             </Button>
           </YStack>
-        </YStack>
+        </ScrollView>
       </OnboardingBackground>
 
       {/* Confirmation Dialog */}

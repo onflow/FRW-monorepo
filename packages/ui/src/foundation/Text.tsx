@@ -6,6 +6,7 @@ import type { TextProps } from '../types';
 export interface UITextProps extends TextProps {
   variant?: 'heading' | 'body' | 'caption' | 'label';
   weight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
+  textAlign?: 'left' | 'center' | 'right' | 'justify' | string;
   children?: React.ReactNode;
 }
 

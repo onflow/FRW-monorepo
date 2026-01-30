@@ -367,7 +367,12 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               name="ProfileTypeSelection"
               component={ProfileTypeSelectionScreen}
               options={{
-                headerShown: false, // No header for profile type selection
+                headerTitle: '', // Empty title, show back button only
+                headerRight: () => null, // No close button
+                headerTransparent: true, // Transparent header for background image
+                headerStyle: {
+                  backgroundColor: 'transparent',
+                },
               }}
             />
             <Stack.Screen
