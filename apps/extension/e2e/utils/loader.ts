@@ -63,16 +63,25 @@ export const test = base.extend<{
       if (url.startsWith('chrome-extension://')) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
-        const changeAccBtn = await page.getByTestId('account-card-chevron');
-        expect(changeAccBtn).toBeVisible();
+        const signType = await page.getByText('SIGN MESSAGE').isVisible();
 
-        await changeAccBtn.click();
+        if (signType) {
+          // sign msg
+          await wait(2500);
+          const approveBtn = await page.getByRole('button', { name: 'Approve' });
+          await approveBtn.click();
+        } else {
+          // connect
+          await wait(500);
+          const changeAccBtn = await page.getByTestId('account-card-chevron');
+          expect(changeAccBtn).toBeVisible();
+          await changeAccBtn.click();
+          const eoaAccount = await page.getByTestId('0x53143927cD4ac37826eD85962ad0450442E556Fa'); // test 1 eoa addr
+          expect(eoaAccount).toBeVisible();
+          await eoaAccount.click();
 
-        const eoaAccount = await page.getByTestId('0x53143927cD4ac37826eD85962ad0450442E556Fa'); // test 1 eoa addr
-        expect(eoaAccount).toBeVisible();
-        await eoaAccount.click();
-
-        await page.getByTestId('connect-button').click();
+          await page.getByTestId('connect-button').click();
+        }
       }
     });
     await call(context);
@@ -286,6 +295,10 @@ export const getAuth = async () => {
 
 export const cleanAuth = async () => {
   await saveAuth(null);
+};
+
+export const wait = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 export const expect = test.expect;
