@@ -67,7 +67,6 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
   const statusLabel = t('activity.detail.status', 'Status');
   const networkLabel = t('activity.detail.network', 'Network');
   const transactionFeeLabel = t('activity.detail.transactionFee', 'Transaction Fee');
-  const networkFeeLabel = t('activity.detail.networkFee', 'Network Fee');
   const coveredByFlowWallet = t('activity.detail.coveredByFlowWallet', 'Covered by Flow Wallet');
   const viewOnExplorerText = t('activity.detail.viewOnExplorer', 'View on block explorer');
   const statusPending = t('activity.status.pending', 'Pending');
@@ -250,10 +249,6 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
               showFlowLogo
               secondaryText={coveredByFlowWallet}
             />
-            <Separator borderColor="$border1" />
-
-            {/* Network Fee */}
-            <ActivityDetailRow label={networkFeeLabel} value="$0.15 FLOW" />
           </YStack>
 
           {/* View on block explorer button */}
