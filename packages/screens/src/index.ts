@@ -1,5 +1,6 @@
 // Export screen components
-export { ActivityScreen } from './activity';
+export { ActivityScreen, ActivityDetailScreen } from './activity';
+export type { ActivityDetailScreenProps } from './activity';
 export { SelectTokensScreen } from './send/SelectTokensScreen.query';
 export { SendToScreen } from './send/SendToScreen.query';
 export * from './send/NFTListScreen.query';

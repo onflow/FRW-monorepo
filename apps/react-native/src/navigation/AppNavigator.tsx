@@ -10,8 +10,9 @@ import {
   KeyRotationMnemonicScreen,
   SendToScreen,
   ReceiveScreen,
-  // Activity screen
+  // Activity screens
   ActivityScreen,
+  ActivityDetailScreen,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -29,6 +30,7 @@ import {
   createNFTModelsFromConfig,
   createTokenModelFromConfig,
   createWalletAccountFromConfig,
+  type ActivityItem,
   type InitialProps,
   type NewKeyInfo,
   type NFTModel,
@@ -68,6 +70,7 @@ export type RootStackParamList = {
   SendSummary: undefined;
   Receive: undefined;
   Activity: undefined;
+  ActivityDetail: { item: ActivityItem };
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -345,6 +348,26 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 headerShown: false, // No header for embedded tab view
               }}
             />
+            <Stack.Screen
+              name="ActivityDetail"
+              options={({ route }) => {
+                // Determine header title based on transaction type
+                const { item } = route.params;
+                let headerTitle = t('activity.detail.title', 'Details');
+                if (item.type === 'interaction') {
+                  headerTitle = t('activity.detail.appInteraction', 'App Interaction');
+                } else if (item.transferType === 'sent') {
+                  headerTitle = t('activity.sent', 'Sent');
+                } else if (item.transferType === 'received') {
+                  headerTitle = t('activity.received', 'Received');
+                }
+                return {
+                  headerTitle,
+                };
+              }}
+            >
+              {({ route }) => <ActivityDetailScreen item={route.params.item} />}
+            </Stack.Screen>
           </Stack.Group>
 
           {/* Onboarding Screens Group */}

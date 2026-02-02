@@ -8,7 +8,6 @@ import {
   YStack,
   XStack,
   ActivityCard,
-  ActivityDetailSheet,
   ActivityGroupHeader,
   ActivitySkeleton,
   RefreshView,
@@ -17,9 +16,9 @@ import {
 } from '@onflow/frw-ui';
 import { logger, retryConfigs } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, useState, type ReactElement } from 'react';
+import { useCallback, useMemo, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, RefreshControl } from 'react-native';
+import { RefreshControl } from 'react-native';
 
 /**
  * Activity Screen - displays transaction history grouped by date
@@ -34,10 +33,6 @@ export function ActivityScreen(): ReactElement {
   // Get current address and network from bridge
   const address = bridge.getSelectedAddress() || '';
   const network = bridge.getNetwork() || 'mainnet';
-
-  // State for detail sheet
-  const [selectedItem, setSelectedItem] = useState<ActivityItem | null>(null);
-  const [isDetailSheetVisible, setIsDetailSheetVisible] = useState(false);
 
   // Fetch activity data using TanStack Query
   const {
@@ -68,40 +63,11 @@ export function ActivityScreen(): ReactElement {
     refetch();
   }, [refetch]);
 
-  // Handle activity item press - open detail sheet
+  // Handle activity item press - navigate to detail screen
   const handleActivityPress = useCallback((item: ActivityItem) => {
     logger.debug('[ActivityScreen] Activity item pressed:', item.id);
-    setSelectedItem(item);
-    setIsDetailSheetVisible(true);
+    navigation.navigate('ActivityDetail', { item });
   }, []);
-
-  // Handle detail sheet close
-  const handleDetailSheetClose = useCallback(() => {
-    setIsDetailSheetVisible(false);
-    // Delay clearing selected item to allow sheet animation to complete
-    setTimeout(() => setSelectedItem(null), 300);
-  }, []);
-
-  // Handle view on block explorer
-  const handleViewExplorer = useCallback(
-    (item: ActivityItem) => {
-      // Use EVM explorer for EVM transactions, Flow explorer for Cadence
-      const isEvm = item.walletType === 'evm';
-      let baseUrl: string;
-
-      if (isEvm) {
-        baseUrl =
-          network === 'mainnet' ? 'https://evm.flowscan.io' : 'https://evm-testnet.flowscan.io';
-      } else {
-        baseUrl = network === 'mainnet' ? 'https://flowscan.io' : 'https://testnet.flowscan.io';
-      }
-
-      const txUrl = `${baseUrl}/tx/${item.hash}`;
-      logger.debug('[ActivityScreen] Opening block explorer:', txUrl);
-      Linking.openURL(txUrl);
-    },
-    [network]
-  );
 
   // Render loading state
   if (isLoading && !activityData) {
@@ -214,34 +180,6 @@ export function ActivityScreen(): ReactElement {
           ))}
         </YStack>
       </ScrollView>
-
-      {/* Activity Detail Sheet */}
-      <ActivityDetailSheet
-        visible={isDetailSheetVisible}
-        item={selectedItem}
-        onClose={handleDetailSheetClose}
-        onViewExplorer={handleViewExplorer}
-        isExtension={isExtension}
-        sentTitle={t('activity.sent', 'Sent')}
-        receivedTitle={t('activity.received', 'Received')}
-        interactionTitle={t('activity.detail.appInteraction', 'App Interaction')}
-        youSentLabel={t('activity.detail.youSent', 'You Sent')}
-        fromLabel={t('activity.detail.from', 'From')}
-        toLabel={t('activity.detail.to', 'To')}
-        dateLabel={t('activity.detail.date', 'Date')}
-        statusLabel={t('activity.detail.status', 'Status')}
-        networkLabel={t('activity.detail.network', 'Network')}
-        transactionFeeLabel={t('activity.detail.transactionFee', 'Transaction Fee')}
-        networkFeeLabel={t('activity.detail.networkFee', 'Network Fee')}
-        coveredByFlowWallet={t('activity.detail.coveredByFlowWallet', 'Covered by Flow Wallet')}
-        viewOnExplorerText={t('activity.detail.viewOnExplorer', 'View on block explorer')}
-        statusPending={t('activity.status.pending', 'Pending')}
-        statusSuccess={t('activity.status.success', 'Success')}
-        statusFailed={t('activity.status.failed', 'Failed')}
-        statusExpired={t('activity.status.expired', 'Expired')}
-        networkFlow={t('activity.detail.networkFlow', 'Flow')}
-        networkEvm={t('activity.detail.networkEvm', 'Flow EVM')}
-      />
     </BackgroundWrapper>
   );
 }
