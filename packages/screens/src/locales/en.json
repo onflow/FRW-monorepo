@@ -156,17 +156,21 @@
     "detail": {
       "appInteraction": "App Interaction",
       "youSent": "You Sent",
+      "youReceived": "You Received",
       "from": "From",
       "to": "To",
       "date": "Date",
       "status": "Status",
       "network": "Network",
+      "account": "Account",
       "transactionFee": "Transaction Fee",
       "networkFee": "Network Fee",
       "coveredByFlowWallet": "Covered by Flow Wallet",
       "viewOnExplorer": "View on block explorer",
       "networkFlow": "Flow",
-      "networkEvm": "Flow EVM"
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "NFTS from {{collection}}",
+      "nftCount": "{{count}} NFTS"
     }
   },
   "buttons": {

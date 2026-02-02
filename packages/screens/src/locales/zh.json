@@ -156,17 +156,21 @@
     "detail": {
       "appInteraction": "应用交互",
       "youSent": "您发送了",
+      "youReceived": "您收到了",
       "from": "从",
       "to": "至",
       "date": "日期",
       "status": "状态",
       "network": "网络",
+      "account": "账户",
       "transactionFee": "交易费用",
       "networkFee": "网络费用",
       "coveredByFlowWallet": "由Flow钱包支付",
       "viewOnExplorer": "在区块浏览器中查看",
       "networkFlow": "Flow",
-      "networkEvm": "Flow EVM"
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "来自{{collection}}的NFTS",
+      "nftCount": "{{count}} NFTS"
     }
   },
   "buttons": {

@@ -76,71 +76,106 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
   const networkFlow = t('activity.detail.networkFlow', 'Flow');
   const networkEvm = t('activity.detail.networkEvm', 'Flow EVM');
 
+  // NFT-specific translations
+  const youReceivedLabel = t('activity.detail.youReceived', 'You Received');
+  const nftsFromLabel = t('activity.detail.nftsFrom', 'NFTS from {{collection}}');
+  const nftCountLabel = t('activity.detail.nftCount', '{{count}} NFTS');
+  const accountLabel = t('activity.detail.account', 'Account');
+
   // Derive display values from item
-  const { title, statusColor, statusText, amountDisplay, amountColor, isInteraction, isEvm } =
-    useMemo(() => {
-      const isInteractionType = item.type === 'interaction';
-      const isEvmWallet = item.walletType === 'evm';
+  const {
+    title,
+    statusColor,
+    statusText,
+    amountDisplay,
+    amountColor,
+    isInteraction,
+    isNft,
+    isEvm,
+    nftTitle,
+    nftCountDisplay,
+  } = useMemo(() => {
+    const isInteractionType = item.type === 'interaction';
+    const isNftType = item.type === 'nft';
+    const isEvmWallet = item.walletType === 'evm';
 
-      // Determine title based on type
-      let headerTitle = '';
-      if (isInteractionType) {
-        headerTitle = interactionTitle;
-      } else if (item.transferType === 'sent') {
-        headerTitle = sentTitle;
+    // Determine title based on type
+    let headerTitle = '';
+    if (isInteractionType) {
+      headerTitle = interactionTitle;
+    } else if (item.transferType === 'sent') {
+      headerTitle = sentTitle;
+    } else {
+      headerTitle = receivedTitle;
+    }
+
+    // Status color and text
+    let sColor = '$text2';
+    let sText = statusPending;
+    if (item.error || item.status === 'failed') {
+      sColor = '$error';
+      sText = statusFailed;
+    } else if (item.status === 'expired') {
+      sColor = '$error';
+      sText = statusExpired;
+    } else if (item.status === 'pending') {
+      sColor = '$text2';
+      sText = statusPending;
+    } else {
+      sColor = '$primary';
+      sText = statusSuccess;
+    }
+
+    // Amount display and color
+    let aDisplay = '';
+    let aColor = '$text1';
+    if (item.amount && item.token) {
+      if (item.transferType === 'sent') {
+        aDisplay = `-${item.amount} ${item.token}`;
+        aColor = '$text1';
       } else {
-        headerTitle = receivedTitle;
+        aDisplay = `+${item.amount} ${item.token}`;
+        aColor = '$primary';
       }
+    }
 
-      // Status color and text
-      let sColor = '$text2';
-      let sText = statusPending;
-      if (item.error || item.status === 'failed') {
-        sColor = '$error';
-        sText = statusFailed;
-      } else if (item.status === 'expired') {
-        sColor = '$error';
-        sText = statusExpired;
-      } else if (item.status === 'pending') {
-        sColor = '$text2';
-        sText = statusPending;
-      } else {
-        sColor = '$primary';
-        sText = statusSuccess;
-      }
+    // NFT-specific display values
+    let nftTitleText = '';
+    let nftCount = '';
+    if (isNftType) {
+      // Use token as collection name, or title if token is empty
+      const collectionName = item.token || item.title || 'NFT';
+      nftTitleText = nftsFromLabel.replace('{{collection}}', collectionName);
 
-      // Amount display and color
-      let aDisplay = '';
-      let aColor = '$text1';
-      if (item.amount && item.token) {
-        if (item.transferType === 'sent') {
-          aDisplay = `-${item.amount} ${item.token}`;
-          aColor = '$text1';
-        } else {
-          aDisplay = `+${item.amount} ${item.token}`;
-          aColor = '$primary';
-        }
-      }
+      // Parse amount as NFT count
+      const count = parseInt(item.amount, 10) || 1;
+      const prefix = item.transferType === 'sent' ? '-' : '+';
+      nftCount = `${prefix}${count} ${count === 1 ? 'NFT' : 'NFTS'}`;
+    }
 
-      return {
-        title: headerTitle,
-        statusColor: sColor,
-        statusText: sText,
-        amountDisplay: aDisplay,
-        amountColor: aColor,
-        isInteraction: isInteractionType,
-        isEvm: isEvmWallet,
-      };
-    }, [
-      item,
-      sentTitle,
-      receivedTitle,
-      interactionTitle,
-      statusPending,
-      statusSuccess,
-      statusFailed,
-      statusExpired,
-    ]);
+    return {
+      title: headerTitle,
+      statusColor: sColor,
+      statusText: sText,
+      amountDisplay: aDisplay,
+      amountColor: aColor,
+      isInteraction: isInteractionType,
+      isNft: isNftType,
+      isEvm: isEvmWallet,
+      nftTitle: nftTitleText,
+      nftCountDisplay: nftCount,
+    };
+  }, [
+    item,
+    sentTitle,
+    receivedTitle,
+    interactionTitle,
+    statusPending,
+    statusSuccess,
+    statusFailed,
+    statusExpired,
+    nftsFromLabel,
+  ]);
 
   // Handle view on block explorer
   const handleViewExplorer = useCallback(() => {
@@ -172,7 +207,7 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
 
       <ScrollView flex={1}>
         <YStack p="$4" gap="$4">
-          {/* Token Icon */}
+          {/* Token/NFT Icon */}
           <YStack items="center" gap="$3" py="$2">
             <Stack position="relative">
               <Avatar
@@ -184,10 +219,14 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
               {isEvm && <ChainBadge chain="evm" size={24} />}
             </Stack>
 
-            {/* Amount or Title for interactions */}
+            {/* Title display based on transaction type */}
             {isInteraction ? (
               <Text fontSize={24} fontWeight="600" color="$text1" text="center">
                 {item.title || 'Flow'}
+              </Text>
+            ) : isNft ? (
+              <Text fontSize={24} fontWeight="600" color="$text1" text="center">
+                {nftTitle}
               </Text>
             ) : (
               amountDisplay && (
@@ -198,8 +237,38 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             )}
           </YStack>
 
-          {/* Amount row for sent transactions */}
-          {!isInteraction && item.transferType === 'sent' && amountDisplay && (
+          {/* NFT: You Sent/Received row with count */}
+          {isNft && (
+            <XStack justify="space-between" items="center" px="$2">
+              <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
+                {item.transferType === 'sent' ? youSentLabel : youReceivedLabel}
+              </Text>
+              <Text
+                fontSize={14}
+                fontWeight="500"
+                color={item.transferType === 'sent' ? '$error' : '$primary'}
+                lineHeight={20}
+              >
+                {nftCountDisplay}
+              </Text>
+            </XStack>
+          )}
+
+          {/* NFT: Single image preview */}
+          {isNft && item.image && (
+            <XStack justify="center" px="$2">
+              <Avatar
+                src={item.image}
+                alt={item.token || 'NFT'}
+                fallback="?"
+                size={100}
+                rounded="$3"
+              />
+            </XStack>
+          )}
+
+          {/* FT: Amount row for sent transactions */}
+          {!isInteraction && !isNft && item.transferType === 'sent' && amountDisplay && (
             <XStack justify="space-between" items="center" px="$2">
               <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
                 {youSentLabel}
@@ -238,6 +307,31 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
 
             {/* Network */}
             <ActivityDetailRow label={networkLabel} value={isEvm ? networkEvm : networkFlow} />
+
+            {/* Account row - show when receiver has profile info (user's own account) */}
+            {item.receiverProfile && item.transferType === 'received' && (
+              <>
+                <Separator borderColor="$border1" />
+                <ActivityDetailRow
+                  label={accountLabel}
+                  value={item.receiverProfile.name}
+                  valueColor="$text1"
+                />
+              </>
+            )}
+
+            {/* Account row for sent - show sender profile if available */}
+            {item.senderProfile && item.transferType === 'sent' && (
+              <>
+                <Separator borderColor="$border1" />
+                <ActivityDetailRow
+                  label={accountLabel}
+                  value={item.senderProfile.name}
+                  valueColor="$text1"
+                />
+              </>
+            )}
+
             <Separator borderColor="$border1" />
 
             {/* Transaction Fee */}

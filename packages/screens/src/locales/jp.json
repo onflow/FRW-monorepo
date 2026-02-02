@@ -156,17 +156,21 @@
     "detail": {
       "appInteraction": "アプリ操作",
       "youSent": "送信額",
+      "youReceived": "受信額",
       "from": "送信元",
       "to": "送信先",
       "date": "日付",
       "status": "ステータス",
       "network": "ネットワーク",
+      "account": "アカウント",
       "transactionFee": "取引手数料",
       "networkFee": "ネットワーク手数料",
       "coveredByFlowWallet": "Flow Walletが負担",
       "viewOnExplorer": "ブロックエクスプローラーで表示",
       "networkFlow": "Flow",
-      "networkEvm": "Flow EVM"
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "{{collection}}のNFTS",
+      "nftCount": "{{count}} NFTS"
     }
   },
   "buttons": {

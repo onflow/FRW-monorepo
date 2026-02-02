@@ -156,17 +156,21 @@
     "detail": {
       "appInteraction": "Взаимодействие с приложением",
       "youSent": "Вы отправили",
+      "youReceived": "Вы получили",
       "from": "От",
       "to": "Кому",
       "date": "Дата",
       "status": "Статус",
       "network": "Сеть",
+      "account": "Аккаунт",
       "transactionFee": "Комиссия за транзакцию",
       "networkFee": "Сетевая комиссия",
       "coveredByFlowWallet": "Оплачено Flow Wallet",
       "viewOnExplorer": "Посмотреть в обозревателе блоков",
       "networkFlow": "Flow",
-      "networkEvm": "Flow EVM"
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "NFTS из {{collection}}",
+      "nftCount": "{{count}} NFTS"
     }
   },
   "buttons": {

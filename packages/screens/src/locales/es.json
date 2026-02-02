@@ -156,17 +156,21 @@
     "detail": {
       "appInteraction": "Interacción con App",
       "youSent": "Enviaste",
+      "youReceived": "Recibiste",
       "from": "De",
       "to": "Para",
       "date": "Fecha",
       "status": "Estado",
       "network": "Red",
+      "account": "Cuenta",
       "transactionFee": "Tarifa de Transacción",
       "networkFee": "Tarifa de Red",
       "coveredByFlowWallet": "Cubierto por Flow Wallet",
       "viewOnExplorer": "Ver en el explorador de bloques",
       "networkFlow": "Flow",
-      "networkEvm": "Flow EVM"
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "NFTS de {{collection}}",
+      "nftCount": "{{count}} NFTS"
     }
   },
   "buttons": {
