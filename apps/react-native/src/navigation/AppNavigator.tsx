@@ -274,6 +274,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
         >
           <Stack.Screen name="Home" component={HomeScreen} initialParams={{ address, network }} />
 
+          {/* Send Workflow Screens Group */}
           <Stack.Group
             screenOptions={{
               headerShown: true,
@@ -282,6 +283,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               headerBackVisible: false, // Hide default back button
               headerLeft: () => <NavigationBackButton />,
               headerRight: () => <NavigationCloseButton />,
+              headerStyle: { backgroundColor: theme.bgDrawer.val },
             }}
           >
             <Stack.Screen
