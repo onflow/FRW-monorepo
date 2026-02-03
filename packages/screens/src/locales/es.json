@@ -164,7 +164,6 @@
       "network": "Red",
       "account": "Cuenta",
       "transactionFee": "Tarifa de Transacción",
-      "networkFee": "Tarifa de Red",
       "coveredByFlowWallet": "Cubierto por Flow Wallet",
       "viewOnExplorer": "Ver en el explorador de bloques",
       "networkFlow": "Flow",

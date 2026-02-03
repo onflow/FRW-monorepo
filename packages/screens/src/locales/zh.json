@@ -164,7 +164,6 @@
       "network": "网络",
       "account": "账户",
       "transactionFee": "交易费用",
-      "networkFee": "网络费用",
       "coveredByFlowWallet": "由Flow钱包支付",
       "viewOnExplorer": "在区块浏览器中查看",
       "networkFlow": "Flow",

@@ -332,7 +332,13 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
               </>
             )}
 
-            {/* Transaction Fee - only shown for sent transactions */}
+            {/* Transaction Fee - only shown for sent transactions
+                Note: Values are hardcoded because:
+                1. The activity API doesn't currently return fee data
+                2. Flow Wallet covers transaction fees for users (free transactions)
+                The display shows original cost (0.001) struck through with actual cost (0.00)
+                to communicate the fee subsidy. If API adds fee field, update ActivityItem type
+                and use item.fee here. */}
             {item.transferType === 'sent' && (
               <>
                 <Separator borderColor="$light25" borderWidth={0.5} />

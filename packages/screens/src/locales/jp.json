@@ -164,7 +164,6 @@
       "network": "ネットワーク",
       "account": "アカウント",
       "transactionFee": "取引手数料",
-      "networkFee": "ネットワーク手数料",
       "coveredByFlowWallet": "Flow Walletが負担",
       "viewOnExplorer": "ブロックエクスプローラーで表示",
       "networkFlow": "Flow",

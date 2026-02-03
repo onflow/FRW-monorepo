@@ -164,7 +164,6 @@
       "network": "Сеть",
       "account": "Аккаунт",
       "transactionFee": "Комиссия за транзакцию",
-      "networkFee": "Сетевая комиссия",
       "coveredByFlowWallet": "Оплачено Flow Wallet",
       "viewOnExplorer": "Посмотреть в обозревателе блоков",
       "networkFlow": "Flow",
