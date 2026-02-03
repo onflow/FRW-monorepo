@@ -418,7 +418,7 @@ export function ConfirmRecoveryPhraseScreen({
             <YStack px="$4" pt="$4">
               {/* Title and description */}
               <YStack items="center" mb="$8" gap="$2">
-                <Text fontSize={30} fontWeight="700" color="$text" text="center" lineHeight={36}>
+                <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight="$8">
                   {t('onboarding.confirmRecoveryPhrase.title')}
                 </Text>
                 <Text fontSize="$4" color="$textSecondary" text="center" lineHeight={16} maxW={280}>
