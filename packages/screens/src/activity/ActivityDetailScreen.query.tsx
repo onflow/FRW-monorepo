@@ -297,13 +297,13 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             {!isInteraction && (
               <>
                 <ActivityDetailRow label={dateLabel} value={formatDate(item.time)} />
-                <Separator borderColor="$border1" />
+                <Separator borderColor="$light25" borderWidth={0.5} />
               </>
             )}
 
             {/* Status */}
             <ActivityDetailRow label={statusLabel} value={statusText} valueColor={statusColor} />
-            <Separator borderColor="$border1" />
+            <Separator borderColor="$light25" borderWidth={0.5} />
 
             {/* Network */}
             <ActivityDetailRow label={networkLabel} value={isEvm ? networkEvm : networkFlow} />
@@ -311,7 +311,7 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             {/* Account row - show when receiver has profile info (user's own account) */}
             {item.receiverProfile && item.transferType === 'received' && (
               <>
-                <Separator borderColor="$border1" />
+                <Separator borderColor="$light25" borderWidth={0.5} />
                 <ActivityDetailRow
                   label={accountLabel}
                   value={item.receiverProfile.name}
@@ -323,7 +323,7 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             {/* Account row for sent - show sender profile if available */}
             {item.senderProfile && item.transferType === 'sent' && (
               <>
-                <Separator borderColor="$border1" />
+                <Separator borderColor="$light25" borderWidth={0.5} />
                 <ActivityDetailRow
                   label={accountLabel}
                   value={item.senderProfile.name}
@@ -332,37 +332,41 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
               </>
             )}
 
-            <Separator borderColor="$border1" />
-
-            {/* Transaction Fee */}
-            <ActivityDetailRow
-              label={transactionFeeLabel}
-              value="0.00"
-              showStrikethrough
-              originalValue="0.001"
-              showFlowLogo
-              secondaryText={coveredByFlowWallet}
-            />
-          </YStack>
-
-          {/* View on block explorer button */}
-          <YStack
-            bg="$white"
-            rounded="$4"
-            height={52}
-            items="center"
-            justify="center"
-            pressStyle={{ opacity: 0.9 }}
-            onPress={handleViewExplorer}
-            cursor="pointer"
-            mb="$6"
-          >
-            <Text fontSize="$4" fontWeight="600" color="$black">
-              {viewOnExplorerText}
-            </Text>
+            {/* Transaction Fee - only shown for sent transactions */}
+            {item.transferType === 'sent' && (
+              <>
+                <Separator borderColor="$light25" borderWidth={0.5} />
+                <ActivityDetailRow
+                  label={transactionFeeLabel}
+                  value="0.00"
+                  showStrikethrough
+                  originalValue="0.001"
+                  showFlowLogo
+                  secondaryText={coveredByFlowWallet}
+                />
+              </>
+            )}
           </YStack>
         </YStack>
       </ScrollView>
+
+      {/* View on block explorer button - anchored to bottom */}
+      <YStack px="$4" pb="$6" pt="$2">
+        <YStack
+          bg="$white"
+          rounded="$4"
+          height={52}
+          items="center"
+          justify="center"
+          pressStyle={{ opacity: 0.9 }}
+          onPress={handleViewExplorer}
+          cursor="pointer"
+        >
+          <Text fontSize="$4" fontWeight="600" color="$black">
+            {viewOnExplorerText}
+          </Text>
+        </YStack>
+      </YStack>
     </BackgroundWrapper>
   );
 }

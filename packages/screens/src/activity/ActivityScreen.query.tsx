@@ -1,5 +1,5 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { activityQueryKeys, activityQueries, groupActivityByDate } from '@onflow/frw-stores';
+import { groupActivityByDate } from '@onflow/frw-stores';
 import type { ActivityItem, ActivityGroup } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -9,16 +9,20 @@ import {
   XStack,
   ActivityCard,
   ActivityGroupHeader,
-  ActivitySkeleton,
-  RefreshView,
   ScrollView,
   Separator,
 } from '@onflow/frw-ui';
-import { logger, retryConfigs } from '@onflow/frw-utils';
-import { useQuery } from '@tanstack/react-query';
+import { logger } from '@onflow/frw-utils';
 import { useCallback, useMemo, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl } from 'react-native';
+
+// TEMP: Import mock data for previewing
+import { allMockActivityItems } from './ActivityDetailScreen.mock';
+
+export interface ActivityScreenProps {
+  /** Optional callback when an activity item is pressed (used when embedded as tab) */
+  onActivityPress?: (item: ActivityItem) => void;
+}
 
 /**
  * Activity Screen - displays transaction history grouped by date
@@ -26,113 +30,32 @@ import { RefreshControl } from 'react-native';
  *
  * Supports both Flow (Cadence) and Flow-EVM transactions
  */
-export function ActivityScreen(): ReactElement {
+export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
 
-  // Get current address and network from bridge
-  const address = bridge.getSelectedAddress() || '';
-  const network = bridge.getNetwork() || 'mainnet';
-
-  // Fetch activity data using TanStack Query
-  const {
-    data: activityData,
-    isLoading,
-    error,
-    refetch,
-    isRefetching,
-  } = useQuery({
-    queryKey: activityQueryKeys.list(address, network, 0, 50),
-    queryFn: () => activityQueries.fetchActivity(address, network, 0, 50),
-    enabled: !!address,
-    staleTime: 0, // Always fresh for financial data
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    ...retryConfigs.critical,
-  });
+  // TEMP: Use mock data for previewing detail screens
+  const mockItems = useMemo(() => allMockActivityItems.map((mock) => mock.item), []);
 
   // Group activity items by date
   const groupedActivity = useMemo((): ActivityGroup[] => {
-    const items = activityData?.items ?? [];
-    return groupActivityByDate(items);
-  }, [activityData]);
-
-  // Handle refresh
-  const handleRefresh = useCallback(() => {
-    logger.debug('[ActivityScreen] Refreshing activity data');
-    refetch();
-  }, [refetch]);
+    return groupActivityByDate(mockItems);
+  }, [mockItems]);
 
   // Handle activity item press - navigate to detail screen
-  const handleActivityPress = useCallback((item: ActivityItem) => {
-    logger.debug('[ActivityScreen] Activity item pressed:', item.id);
-    navigation.navigate('ActivityDetail', { item });
-  }, []);
+  const handleActivityPress = useCallback(
+    (item: ActivityItem) => {
+      logger.debug('[ActivityScreen] Activity item pressed:', item.id);
+      if (onActivityPress) {
+        onActivityPress(item);
+      } else {
+        navigation.navigate('ActivityDetail', { item });
+      }
+    },
+    [onActivityPress]
+  );
 
-  // Render loading state
-  if (isLoading && !activityData) {
-    return (
-      <BackgroundWrapper backgroundColor="$bg">
-        {isExtension && (
-          <ExtensionHeader
-            title={t('activity.title', 'Activity')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
-        <ActivitySkeleton count={5} />
-      </BackgroundWrapper>
-    );
-  }
-
-  // Render error state
-  if (error && !activityData) {
-    return (
-      <BackgroundWrapper backgroundColor="$bg">
-        {isExtension && (
-          <ExtensionHeader
-            title={t('activity.title', 'Activity')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
-        <RefreshView
-          type="error"
-          title={t('activity.error', 'Failed to load activity')}
-          message={t('activity.errorMessage', 'Please try again')}
-          onRefresh={handleRefresh}
-          refreshText={t('common.retry', 'Retry')}
-        />
-      </BackgroundWrapper>
-    );
-  }
-
-  // Render empty state
-  if (groupedActivity.length === 0) {
-    return (
-      <BackgroundWrapper backgroundColor="$bg">
-        {isExtension && (
-          <ExtensionHeader
-            title={t('activity.title', 'Activity')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
-        <RefreshView
-          type="empty"
-          title={t('activity.empty', 'No activity yet')}
-          message={t('activity.emptyMessage', 'Your transaction history will appear here')}
-          onRefresh={handleRefresh}
-          refreshText={t('common.refresh', 'Refresh')}
-        />
-      </BackgroundWrapper>
-    );
-  }
-
-  // Render activity list
+  // Render activity list with mock data
   return (
     <BackgroundWrapper backgroundColor="$bg">
       {isExtension && (
@@ -144,10 +67,7 @@ export function ActivityScreen(): ReactElement {
         />
       )}
 
-      <ScrollView
-        flex={1}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
-      >
+      <ScrollView flex={1}>
         <YStack flex={1} pb="$4">
           {/* Screen title for non-extension - centered */}
           {!isExtension && (

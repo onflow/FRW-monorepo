@@ -343,11 +343,16 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             />
             <Stack.Screen
               name="Activity"
-              component={ActivityScreen}
               options={{
                 headerShown: false, // No header for embedded tab view
               }}
-            />
+            >
+              {({ navigation: nav }) => (
+                <ActivityScreen
+                  onActivityPress={item => nav.navigate('ActivityDetail', { item })}
+                />
+              )}
+            </Stack.Screen>
             <Stack.Screen
               name="ActivityDetail"
               options={({ route }) => {
@@ -363,6 +368,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 }
                 return {
                   headerTitle,
+                  headerRight: () => null, // No close button, just back arrow
                 };
               }}
             >
