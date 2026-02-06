@@ -42,7 +42,7 @@ import { useQuery } from '@tanstack/react-query';
 import BN from 'bignumber.js';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { Keyboard, Pressable } from 'react-native';
 
 import type { ScreenAssets } from '../assets/images';
 
@@ -808,9 +808,9 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       {isExtension ? (
         content
       ) : (
-        <TouchableWithoutFeedback onPress={handleDismissKeyboard}>
+        <Pressable onPress={handleDismissKeyboard} accessible={false} style={{ flex: 1 }}>
           {content}
-        </TouchableWithoutFeedback>
+        </Pressable>
       )}
     </BackgroundWrapper>
   );
