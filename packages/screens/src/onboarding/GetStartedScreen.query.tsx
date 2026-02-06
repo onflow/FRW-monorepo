@@ -93,7 +93,13 @@ export function GetStartedScreen(): React.ReactElement {
           </Button>
 
           {/* Sign In Button - Outline */}
-          <Button variant="outline" size="large" fullWidth onPress={handleSignIn}>
+          <Button
+            variant="outline"
+            size="large"
+            fullWidth
+            borderColor="$primary"
+            onPress={handleSignIn}
+          >
             {t('onboarding.getStarted.signIn')}
           </Button>
 
