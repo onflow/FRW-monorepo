@@ -10,10 +10,12 @@ import { logger } from '@onflow/frw-utils';
 import type { SendPayload, TransferExecutionHelpers } from './types';
 
 /**
- * Default gas limits for different transaction types
+ * Default gas limits and minimum gas price for different transaction types
  */
 export const GAS_LIMITS = {
   EVM_DEFAULT: 16_777_216,
+  /** Flow EVM minimum gas price (wei). Chain rejects txs below this. */
+  EVM_MIN_GAS_PRICE: 16_038_000_000,
   CADENCE_DEFAULT: 9999,
 } as const;
 
@@ -276,7 +278,7 @@ export const signLegacyEvmTransaction = async (
   ]);
 
   const gasLimit = tx.gasLimit ?? GAS_LIMITS.EVM_DEFAULT;
-  const gasPrice = tx.gasPrice ?? helpers?.gasPrice ?? 0;
+  const gasPrice = tx.gasPrice ?? helpers?.gasPrice ?? GAS_LIMITS.EVM_MIN_GAS_PRICE;
 
   const unsignedTx: UnsignedTransaction = {
     type: 0,

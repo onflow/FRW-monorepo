@@ -96,6 +96,9 @@
   "Developer__Mode": {
     "message": "デベロッパーモード"
   },
+  "Wrap_EOA_Tx_With_Cadence": {
+    "message": "Cadence で EOA トランザクションをラップする"
+  },
   "Feedback": {
     "message": "フィードバック"
   },

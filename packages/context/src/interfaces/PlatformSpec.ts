@@ -59,6 +59,14 @@ export interface PlatformSpec extends KeyRotationDependencies {
   getSignKeyIndex(): number;
   ethSign(signData: Uint8Array): Promise<Uint8Array>;
 
+  /**
+   * When false, EOA EVM transactions are sent via RLP (sendRawEvmTransaction) instead of Cadence.
+   * Only used when sendRawEvmTransaction is also provided.
+   */
+  getWrapEOATxWithCadence?(): Promise<boolean>;
+  /** Send signed EOA tx RLP hex to EVM RPC. Used when getWrapEOATxWithCadence() is false. */
+  sendRawEvmTransaction?(signedTxHex: string): Promise<string>;
+
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;

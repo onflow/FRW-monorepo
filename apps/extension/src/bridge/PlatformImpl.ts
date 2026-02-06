@@ -17,17 +17,19 @@ import {
   type AccountKeySignature,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
-import { WalletCoreProvider } from '@onflow/frw-wallet';
+import { EthProvider, WalletCoreProvider } from '@onflow/frw-wallet';
 import { KeyRotation } from '@onflow/frw-workflow';
 import * as bip39 from 'bip39';
 
 // Removed direct service imports - using walletController instead
 import { getAccountKey } from '@/core/utils/account-key';
+import { getLocalData } from '@/data-model';
 import {
   HTTP_STATUS_TOO_MANY_REQUESTS,
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
 } from '@/shared/constant';
+import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { isValidFlowAddress } from '@/shared/utils';
 
 import { ExtensionCache } from './ExtensionCache';
@@ -271,6 +273,18 @@ class ExtensionPlatformImpl implements PlatformSpec {
         : new Uint8Array(Object.values(privateKeyBytes));
 
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
+  }
+
+  async getWrapEOATxWithCadence(): Promise<boolean> {
+    const val = await getLocalData<boolean>('wrapEOATxWithCadence');
+    return val ?? true;
+  }
+
+  async sendRawEvmTransaction(signedTxHex: string): Promise<string> {
+    const rpcUrl =
+      EVM_ENDPOINT[this.currentNetwork as keyof typeof EVM_ENDPOINT] ?? EVM_ENDPOINT.mainnet;
+    const provider = new EthProvider(rpcUrl);
+    return await provider.sendRawTransaction(signedTxHex);
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {
