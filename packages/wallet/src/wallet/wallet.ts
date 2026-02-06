@@ -2,6 +2,8 @@
  * Wallet class - exact match to Flow Wallet Kit iOS Wallet.swift
  */
 
+import { logger } from '@onflow/frw-utils';
+
 import { WalletTypeUtils } from './utils';
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { EthProvider } from '../services/eth-provider';
@@ -480,6 +482,10 @@ export class Wallet {
     }
 
     const address = await this.derivePrimaryEvmAddress();
+    logger.info('[frw-wallet] EOA address discovered in wallet', {
+      address,
+      source: 'Wallet.discoverEVMAccounts',
+    });
     this.upsertEvmAccounts(address, evmNetworks, false);
   }
 

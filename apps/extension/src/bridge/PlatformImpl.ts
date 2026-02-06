@@ -17,7 +17,7 @@ import {
   type AccountKeySignature,
 } from '@onflow/frw-types';
 import { extractUidFromJwt } from '@onflow/frw-utils';
-import { EthProvider, WalletCoreProvider } from '@onflow/frw-wallet';
+import { WalletCoreProvider } from '@onflow/frw-wallet';
 import { KeyRotation } from '@onflow/frw-workflow';
 import * as bip39 from 'bip39';
 
@@ -29,7 +29,6 @@ import {
   HASH_ALGO_NUM_DEFAULT,
   SIGN_ALGO_NUM_DEFAULT,
 } from '@/shared/constant';
-import { EVM_ENDPOINT } from '@/shared/constant/domain-constants';
 import { isValidFlowAddress } from '@/shared/utils';
 
 import { ExtensionCache } from './ExtensionCache';
@@ -278,13 +277,6 @@ class ExtensionPlatformImpl implements PlatformSpec {
   async getWrapEOATxWithCadence(): Promise<boolean> {
     const val = await getLocalData<boolean>('wrapEOATxWithCadence');
     return val ?? true;
-  }
-
-  async sendRawEvmTransaction(signedTxHex: string): Promise<string> {
-    const rpcUrl =
-      EVM_ENDPOINT[this.currentNetwork as keyof typeof EVM_ENDPOINT] ?? EVM_ENDPOINT.mainnet;
-    const provider = new EthProvider(rpcUrl);
-    return await provider.sendRawTransaction(signedTxHex);
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {

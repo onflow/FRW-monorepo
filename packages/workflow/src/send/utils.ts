@@ -20,6 +20,38 @@ export const GAS_LIMITS = {
 } as const;
 
 /**
+ * Send signed RLP hex to Flow EVM RPC (eth_sendRawTransaction).
+ * Used by packages when wrap-with-Cadence is disabled; bridge only provides the toggle.
+ */
+export async function sendRawTransactionToEvmRpc(
+  signedTxHex: string,
+  network: string
+): Promise<string> {
+  const rpcUrl = FLOW_EVM_RPC_ENDPOINTS[resolveNetworkKey(network)];
+  const res = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'eth_sendRawTransaction',
+      params: [signedTxHex],
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`EVM RPC request failed: ${res.status} ${res.statusText}`);
+  }
+  const data = (await res.json()) as { result?: string; error?: { message?: string } };
+  if (data.error) {
+    throw new Error(data.error.message ?? 'EVM RPC error');
+  }
+  if (typeof data.result !== 'string') {
+    throw new Error('EVM RPC: missing or invalid result');
+  }
+  return data.result;
+}
+
+/**
  * Flow token contract addresses for different networks
  */
 const FLOW_TOKEN_VAULT = {

@@ -18,6 +18,7 @@ import {
   type SendPayload,
   SendTransaction,
   isValidSendTransactionPayload,
+  sendRawTransactionToEvmRpc,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
@@ -616,24 +617,17 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
-      const bridgeWithEvm = bridge as typeof bridge & {
-        getWrapEOATxWithCadence?(): Promise<boolean>;
-        sendRawEvmTransaction?(signedTxHex: string): Promise<string>;
-      };
-      const wrapWithCadence =
-        typeof bridgeWithEvm.getWrapEOATxWithCadence === 'function'
-          ? await bridgeWithEvm.getWrapEOATxWithCadence()
-          : true;
-      const useDirectEvm =
-        !wrapWithCadence && typeof bridgeWithEvm.sendRawEvmTransaction === 'function';
+      const wrapWithCadence = (await bridge.getWrapEOATxWithCadence?.()) ?? true;
+      const useDirectEvm = !wrapWithCadence;
 
+      const network = bridge.getNetwork?.() ?? 'mainnet';
       const helpers = {
         ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
         session: session || undefined, // add session for trx
         ...(useDirectEvm && {
           sendRawEvmTransaction: (signedTxHex: string) =>
-            bridgeWithEvm.sendRawEvmTransaction!(signedTxHex),
+            sendRawTransactionToEvmRpc(signedTxHex, network),
         }),
       };
 
