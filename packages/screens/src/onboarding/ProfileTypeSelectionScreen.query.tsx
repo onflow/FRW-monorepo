@@ -42,7 +42,7 @@ export function ProfileTypeSelectionScreen(): React.ReactElement {
         {/* Title */}
         <YStack mt="$15" mb="$6">
           <Text
-            fontSize={30}
+            fontSize="$9"
             fontWeight="700"
             color="$text"
             style={{ textAlign: 'center' }}

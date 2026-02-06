@@ -173,7 +173,7 @@ export function SecureEnclaveScreen({
         <YStack flex={1} px="$4" pt="$4">
           {/* Advanced text */}
           <YStack mb="$6">
-            <Text fontSize={30} fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
+            <Text fontSize="$9" fontWeight="700" color="$text" textAlign="center" lineHeight={36}>
               {t('onboarding.secureEnclave.title')}
             </Text>
           </YStack>
