@@ -440,7 +440,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
       updateFormData({ tokenAmount: tokenAmount });
 
-      const result = await executeTransaction();
+      const rawResult = await executeTransaction();
+      const isDirectEvm =
+        rawResult &&
+        typeof rawResult === 'object' &&
+        'directEvm' in rawResult &&
+        (rawResult as { directEvm?: boolean }).directEvm === true;
+      const result =
+        isDirectEvm && rawResult && typeof rawResult === 'object' && 'result' in rawResult
+          ? (rawResult as { result: string }).result
+          : rawResult;
 
       // Set the recipient as a recent contact after successful transaction
       if (result && toAccount) {
@@ -466,6 +475,11 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         if (platform === Platform.iOS || platform === Platform.Android) {
           bridge.closeRN();
         }
+
+        // Redirect to dashboard after direct RLP (EVM) submission in extension
+        if (isDirectEvm && isExtension) {
+          navigation.navigate('');
+        }
       }
 
       return result;
@@ -486,6 +500,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     updateFormData,
     executeTransaction,
     addressBookStore,
+    isExtension,
+    navigation,
   ]);
 
   // Calculate if send button should be disabled and set amount error
