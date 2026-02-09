@@ -435,25 +435,39 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
 
   const handleTransactionConfirm = useCallback(async () => {
     try {
-      const result = await executeTransaction();
+      const rawResult = await executeTransaction();
+      const isDirectEvm =
+        rawResult &&
+        typeof rawResult === 'object' &&
+        'directEvm' in rawResult &&
+        (rawResult as { directEvm?: boolean }).directEvm === true;
+      const result =
+        isDirectEvm && rawResult && typeof rawResult === 'object' && 'result' in rawResult
+          ? (rawResult as { result: string }).result
+          : rawResult;
 
       const platform = bridge.getPlatform();
       if (result && (platform === Platform.iOS || platform === Platform.Android)) {
         bridge.closeRN();
       }
 
+      // Redirect to dashboard after direct RLP (EVM) submission in extension
+      if (result && isDirectEvm && isExtension) {
+        navigation.navigate('');
+      }
+
       // Invalidate NFT caches after successful transaction
       const tokenStore = useTokenQueryStore.getState();
-      if (selectedCollection && fromAccount) {
-        const network = bridge.getNetwork();
+      if (selectedCollection && fromAccount && result) {
+        const net = bridge.getNetwork();
         const currentAddress = fromAccount.address;
-        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, network);
+        tokenStore.invalidateNFTCollection(currentAddress, selectedCollection, net);
       }
     } catch (error: any) {
       logger.error('[SendSummaryScreen] Transaction failed:', error);
       showError(error, bridge, t('send.failed'));
     }
-  }, [executeTransaction, selectedCollection, fromAccount]);
+  }, [executeTransaction, selectedCollection, fromAccount, isExtension, navigation]);
 
   // Early return if essential data is missing
   if (!selectedNFTs || selectedNFTs.length === 0) {

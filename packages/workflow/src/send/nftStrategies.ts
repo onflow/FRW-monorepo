@@ -546,6 +546,9 @@ export class EoaToEVMStrategy implements TransferStrategy {
         _helpers
       );
 
+      if (_helpers?.sendRawEvmTransaction) {
+        return await _helpers.sendRawEvmTransaction(signedTx);
+      }
       const rlpEncoded = convertHexToByteArray(signedTx);
       return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
     } else {

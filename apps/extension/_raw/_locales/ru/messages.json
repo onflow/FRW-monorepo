@@ -96,6 +96,9 @@
   "Developer__Mode": {
     "message": "Режим разработчика"
   },
+  "Wrap_EOA_Tx_With_Cadence": {
+    "message": "Обернуть EOA транзакцию с Cadence"
+  },
   "Feedback": {
     "message": "Обратная связь"
   },

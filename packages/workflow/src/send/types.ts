@@ -24,8 +24,13 @@ export interface SendPayload {
  */
 export type EthSignFn = (signData: Uint8Array) => Promise<Uint8Array>;
 
+/** Send signed RLP hex to EVM RPC (eth_sendRawTransaction). When set, EOA EVM strategies use this instead of Cadence eoaCallContract. */
+export type SendRawEvmTxFn = (signedTxHex: string) => Promise<string>;
+
 export interface TransferExecutionHelpers {
   ethSign?: EthSignFn;
+  /** When provided, EOA EVM transactions are sent via RLP to EVM RPC instead of through Cadence. */
+  sendRawEvmTransaction?: SendRawEvmTxFn;
   network?: 'mainnet' | 'testnet' | string;
   gasPrice?: number | string | bigint;
   session?: TransactionSession;

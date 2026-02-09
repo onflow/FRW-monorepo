@@ -15,35 +15,42 @@ import { getLocalData, setLocalData } from '@/data-model';
 import { LLHeader } from '@/ui/components';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
+const WRAP_EOA_TX_CADENCE_KEY = 'wrapEOATxWithCadence';
+
 const DeveloperMode = () => {
   const usewallet = useWallet();
   const [developerModeOn, setDeveloperModeOn] = useState(false);
   const [emulatorFeatureEnabled, setEmulatorFeatureEnabled] = useState(false);
   const [emulatorModeOn, setEmulatorModeOn] = useState(false);
+  const [wrapEOATxWithCadence, setWrapEOATxWithCadence] = useState(true);
   const [currentNetwork, setNetwork] = useState('mainnet');
   const [currentMonitor, setMonitor] = useState('flowscan');
 
   const loadStuff = useCallback(async () => {
     const network = await usewallet.getNetwork();
     const developerMode = await getLocalData<boolean>('developerMode');
+    const wrapCadence = await getLocalData<boolean>(WRAP_EOA_TX_CADENCE_KEY);
     const enableEmulatorMode = await usewallet.getFeatureFlag('emulator_mode');
     const emulatorMode = enableEmulatorMode ? await usewallet.getEmulatorMode() : false;
     const monitor = await usewallet.getMonitor();
 
-    return { network, developerMode, enableEmulatorMode, emulatorMode, monitor };
+    return { network, developerMode, wrapCadence, enableEmulatorMode, emulatorMode, monitor };
   }, [usewallet]);
 
   useEffect(() => {
     let mounted = true;
 
-    loadStuff().then(({ network, developerMode, enableEmulatorMode, emulatorMode, monitor }) => {
-      if (!mounted) return;
-      setNetwork(network);
-      setDeveloperModeOn(developerMode ?? false);
-      setEmulatorFeatureEnabled(enableEmulatorMode);
-      setEmulatorModeOn(emulatorMode);
-      setMonitor(monitor);
-    });
+    loadStuff().then(
+      ({ network, developerMode, wrapCadence, enableEmulatorMode, emulatorMode, monitor }) => {
+        if (!mounted) return;
+        setNetwork(network);
+        setDeveloperModeOn(developerMode ?? false);
+        setWrapEOATxWithCadence(wrapCadence ?? true);
+        setEmulatorFeatureEnabled(enableEmulatorMode);
+        setEmulatorModeOn(emulatorMode);
+        setMonitor(monitor);
+      }
+    );
 
     return () => {
       mounted = false;
@@ -87,6 +94,14 @@ const DeveloperMode = () => {
     });
   };
 
+  const switchWrapEOATxWithCadence = async () => {
+    setWrapEOATxWithCadence((prev) => {
+      const newVal = !prev;
+      setLocalData(WRAP_EOA_TX_CADENCE_KEY, newVal);
+      return newVal;
+    });
+  };
+
   return (
     <Box sx={{ padding: '0', height: '100%' }}>
       <LLHeader
@@ -121,6 +136,30 @@ const DeveloperMode = () => {
       </Box>
       {developerModeOn && (
         <Box sx={{ pb: '20px' }}>
+          <Box
+            sx={{
+              width: 'auto',
+              height: 'auto',
+              margin: '10px 20px',
+              backgroundColor: '#282828',
+              padding: '24px 20px',
+              display: 'flex',
+              flexDirection: 'row',
+              borderRadius: '16px',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Typography variant="body1" color="neutral.contrastText" style={{ weight: 600 }}>
+              {chrome.i18n.getMessage('Wrap_EOA_Tx_With_Cadence')}
+            </Typography>
+            <Switch
+              checked={wrapEOATxWithCadence}
+              onChange={() => {
+                switchWrapEOATxWithCadence();
+              }}
+            />
+          </Box>
           {emulatorFeatureEnabled && (
             <Box
               sx={{
