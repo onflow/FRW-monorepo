@@ -190,18 +190,25 @@ export function NotificationPreferencesScreen({
         >
           <YStack flex={1} px="$4" pt="$4">
             {/* Title and description */}
-            <YStack mt="$6" mb="$6">
-              <Text fontSize={28} fontWeight="700" color="$text" text="center">
+            <YStack mt="$6" mb="$6" gap="$2">
+              <Text fontSize={28} fontWeight="700" color="$text" text="center" pt="$1">
                 {t('onboarding.notificationPreferences.title')}
               </Text>
 
-              <Text fontSize="$4" lineHeight={17} color="$textSecondary" text="center" px="$2">
+              <Text
+                fontSize="$4"
+                lineHeight={17}
+                color="$textSecondary"
+                text="center"
+                px="$2"
+                pb="$1"
+              >
                 {t('onboarding.notificationPreferences.subtitle')}
               </Text>
             </YStack>
 
-            {/* Notification Preview Image - centered with flex spacer */}
-            <YStack flex={1} items="center" justify="center">
+            {/* Notification Preview Image - centered, shrinks to fit available space */}
+            <YStack flex={1} items="center" justify="center" minH={0} maxW={375} self="center">
               <Image source={pushNotifications} width={375} height={492} objectFit="contain" />
             </YStack>
 

@@ -47,7 +47,7 @@ export function SecureEnclaveScreen({
       const nav = navProp as { setOptions: (options: Record<string, unknown>) => void };
       if (showLoadingState) {
         nav.setOptions({
-          headerLeft: () => null,
+          headerShown: false,
           gestureEnabled: false,
         });
       }
