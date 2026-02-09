@@ -17,7 +17,7 @@ const UploadCloud = ({
   >
     <G clipPath="url(#upload-cloud_svg__a)">
       <Path
-        stroke="#00EF8B"
+        stroke={color}
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={2}
