@@ -29,7 +29,7 @@ export function ImportOptionCard({
   title,
   subtitle,
   badge,
-  layout = 'horizontal',
+  layout = 'vertical',
   onPress,
 }: ImportOptionCardProps): React.ReactElement {
   const isVertical = layout === 'vertical';
@@ -51,19 +51,20 @@ export function ImportOptionCard({
   if (isVertical) {
     // Vertical layout: icon above text, rendered as custom content inside ListItem
     return (
-      <ListItem {...listItemProps} position="relative">
+      <ListItem {...listItemProps} {...(icon ? { pt: '$2.5' } : {})} position="relative">
         {/* Badge in top-right corner (optional) */}
         {badge && (
           <YStack
             position="absolute"
-            t="$4"
-            r="$4"
-            width="$6"
-            height="$6"
+            t="$2.5"
+            r="$2.5"
+            minW="$7"
+            height="$7"
             rounded={100}
             bg="$primary"
             items="center"
             justify="center"
+            px="$1.5"
             z={10}
           >
             <Text fontSize="$3" fontWeight="600" color="$background">
@@ -72,7 +73,12 @@ export function ImportOptionCard({
           </YStack>
         )}
 
-        <YStack gap="$3" items="stretch" width="100%">
+        {/* Chevron right arrow - centered vertically relative to card */}
+        <YStack position="absolute" r="$4" t={0} b={0} justify="center">
+          <ChevronRight size={24} color={theme.textSecondary.val} />
+        </YStack>
+
+        <YStack items="stretch" width="100%">
           {/* Icon */}
           {icon && (
             <View width="$7" height="$7" items="center" justify="center" self="flex-start">
@@ -81,20 +87,15 @@ export function ImportOptionCard({
           )}
 
           {/* Text content */}
-          <YStack gap="$1" pr="$8">
+          <YStack pr="$8">
             <Text fontSize="$4" fontWeight="700" color="$text">
               {title}
             </Text>
             {subtitle && (
-              <Text fontSize="$3" color="$textSecondary" lineHeight="$4">
+              <Text fontSize="$3" color="$textSecondary" lineHeight={17}>
                 {subtitle}
               </Text>
             )}
-          </YStack>
-
-          {/* Chevron right arrow - centered vertically in card */}
-          <YStack position="absolute" r="$4" t="50%" mt="-$3">
-            <ChevronRight size={24} color={theme.textSecondary.val} />
           </YStack>
         </YStack>
       </ListItem>
@@ -103,45 +104,43 @@ export function ImportOptionCard({
 
   // Horizontal layout: icon left, text middle, chevron right
   return (
-    <ListItem {...listItemProps}>
-      <View flexDirection="row" items="center" gap="$3" width="100%">
-        {/* Icon */}
-        {icon && (
-          <View width="$7" height="$7" items="center" justify="center" shrink={0}>
-            {icon}
-          </View>
-        )}
-
-        {/* Text content - flex to fill space */}
-        <YStack flex={1} gap="$1" pr="$2">
-          <Text fontSize="$4" fontWeight="700" color="$text">
-            {title}
-          </Text>
-          {subtitle && (
-            <Text fontSize="$3" color="$textSecondary" lineHeight="$4">
-              {subtitle}
-            </Text>
-          )}
-        </YStack>
-
-        {/* Badge (optional) and Chevron */}
-        <View flexDirection="row" items="center" gap="$2" shrink={0}>
-          {badge && (
-            <YStack
-              width="$6"
-              height="$6"
-              rounded={100}
-              bg="$primary"
-              items="center"
-              justify="center"
-            >
-              <Text fontSize="$3" fontWeight="600" color="$background">
-                {badge}
-              </Text>
-            </YStack>
-          )}
-          <ChevronRight size={24} color={theme.textSecondary.val} />
+    <ListItem {...listItemProps} flexDirection="row" items="center" gap="$3">
+      {/* Icon */}
+      {icon && (
+        <View width="$7" height="$7" items="center" justify="center" shrink={0}>
+          {icon}
         </View>
+      )}
+
+      {/* Text content - flex to fill space */}
+      <YStack flex={1} gap="$1" pr="$2">
+        <Text fontSize="$4" fontWeight="700" color="$text">
+          {title}
+        </Text>
+        {subtitle && (
+          <Text fontSize="$3" color="$textSecondary" lineHeight="$4">
+            {subtitle}
+          </Text>
+        )}
+      </YStack>
+
+      {/* Badge (optional) and Chevron */}
+      <View flexDirection="row" items="center" gap="$2" shrink={0}>
+        {badge && (
+          <YStack
+            width="$6"
+            height="$6"
+            rounded={100}
+            bg="$primary"
+            items="center"
+            justify="center"
+          >
+            <Text fontSize="$3" fontWeight="600" color="$background">
+              {badge}
+            </Text>
+          </YStack>
+        )}
+        <ChevronRight size={24} color={theme.textSecondary.val} />
       </View>
     </ListItem>
   );
