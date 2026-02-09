@@ -23,6 +23,7 @@ import * as bip39 from 'bip39';
 
 // Removed direct service imports - using walletController instead
 import { getAccountKey } from '@/core/utils/account-key';
+import { getLocalData } from '@/data-model';
 import {
   HTTP_STATUS_TOO_MANY_REQUESTS,
   HASH_ALGO_NUM_DEFAULT,
@@ -271,6 +272,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
         : new Uint8Array(Object.values(privateKeyBytes));
 
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
+  }
+
+  async getWrapEOATxWithCadence(): Promise<boolean> {
+    const val = await getLocalData<boolean>('wrapEOATxWithCadence');
+    return val ?? true;
   }
 
   async getRecentContacts(): Promise<RecentContactsResponse> {

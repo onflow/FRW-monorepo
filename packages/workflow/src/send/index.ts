@@ -5,7 +5,7 @@ export type { SendPayload, TransferStrategy } from './types';
 export * from './validation';
 
 // Export utility functions
-export { encodeEvmContractCallData } from './utils';
+export { encodeEvmContractCallData, sendRawTransactionToEvmRpc } from './utils';
 
 // Export context and main function
 export { createTransferContext, TransferContext } from './context';
