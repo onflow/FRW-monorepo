@@ -6,7 +6,7 @@ const isValidEthereumAddress = (address: string): boolean => {
   return regex.test(address);
 };
 
-import { expect, getAuth, saveAuth } from './loader';
+import { expect, getAuth, saveAuth, wait } from './loader';
 export const getClipboardText = async () => {
   const text = await navigator.clipboard.readText();
   return text;
@@ -26,7 +26,12 @@ export const closeOpenedPages = async (page: Page) => {
 export const getCurrentAddress = async (page: Page, isCoa = false) => {
   // Wait for the dashboard page to be fully loaded
   await page.waitForURL(/.*\/dashboard.*/);
+  await wait(2000);
+  const whatsNewPopup = page.getByTestId('popup-close-button');
 
+  if (await whatsNewPopup.isVisible()) {
+    await whatsNewPopup.click();
+  }
   //await expect(page.getByLabel('Copy Address')).toBeVisible({ timeout: 120_000 });
   const copyIcon = page.getByTestId('copy-address-button');
   await expect(copyIcon).toBeEnabled({ timeout: 120_000 });
