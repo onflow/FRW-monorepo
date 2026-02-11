@@ -3,6 +3,7 @@
  * Manages Wallet lifecycle and subscribes to account changes
  */
 
+import { logger } from '@onflow/frw-context';
 import {
   Wallet,
   WalletFactory,
@@ -230,6 +231,10 @@ export class WalletManager {
       if (targetPublicKey) {
         const cachedEOA = await this.getEOAAddressFromStorage(targetPublicKey);
         if (cachedEOA?.address) {
+          logger.info('[extension] EOA address from cache (getEOAAccountInfo)', {
+            address: cachedEOA.address,
+            source: 'cache',
+          });
           return cachedEOA;
         }
       }
@@ -250,6 +255,11 @@ export class WalletManager {
           address: firstEVMAccount.address,
           balance: firstEVMAccount.balance || '0',
         };
+
+        logger.info('[extension] EOA address from wallet (getEOAAccountInfo)', {
+          address: eoaInfo.address,
+          source: 'wallet.getEVMAccounts',
+        });
 
         // Save to localStorage if we have a public key
         if (targetPublicKey) {

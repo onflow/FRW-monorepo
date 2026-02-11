@@ -88,6 +88,7 @@ export function TokenAmountInput({
               </Text>
             )}
             <Input
+              accessibilityLabel="Amount"
               ref={inputRef}
               value={displayAmount}
               onChangeText={onAmountChange}

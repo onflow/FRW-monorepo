@@ -96,6 +96,9 @@
   "Developer__Mode": {
     "message": "开发者模式"
   },
+  "Wrap_EOA_Tx_With_Cadence": {
+    "message": "用 Cadence 包装 EOA 交易"
+  },
   "Feedback": {
     "message": "反馈"
   },

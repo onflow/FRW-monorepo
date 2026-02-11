@@ -34,6 +34,7 @@
     "@babel/runtime": "^7.28.2",
     "@onflow/fcl": "^1.12.4",
     "@onflow/frw-cadence": "workspace:*",
+    "@onflow/frw-utils": "workspace:*",
     "@trustwallet/wallet-core": "^4.0.50",
     "buffer": "^6.0.3"
   },

@@ -113,7 +113,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
 
   return (
     <Sheet
-      modal
+      // modal
       open={visible}
       onOpenChange={onClose}
       snapPointsMode={!isExtension ? 'fit' : undefined}
@@ -132,7 +132,7 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
         bg="$bgDrawer"
         borderTopLeftRadius={isExtension ? 0 : '$6'}
         borderTopRightRadius={isExtension ? 0 : '$6'}
-        animation={isExtension ? 'quick' : 'lazy'}
+        // animation={isExtension ? 'quick' : 'lazy'}
         enterStyle={{ y: 1000 }}
         exitStyle={{ y: 1000 }}
         overflow="scroll"

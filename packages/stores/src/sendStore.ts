@@ -14,6 +14,7 @@ import {
   type SendPayload,
   SendTransaction,
   isValidSendTransactionPayload,
+  sendRawTransactionToEvmRpc,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
@@ -635,10 +636,18 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
+      const wrapWithCadence = (await bridge.getWrapEOATxWithCadence?.()) ?? true;
+      const useDirectEvm = !wrapWithCadence;
+
+      const network = bridge.getNetwork?.() ?? 'mainnet';
       const helpers = {
         ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
         session: session || undefined, // add session for trx
+        ...(useDirectEvm && {
+          sendRawEvmTransaction: (signedTxHex: string) =>
+            sendRawTransactionToEvmRpc(signedTxHex, network),
+        }),
       };
 
       // tracker interceptor
@@ -673,6 +682,9 @@ export const useSendStore = create<SendState>((set, get) => ({
       // complete session
       session?.completed(true, result);
 
+      if (useDirectEvm) {
+        return { result, directEvm: true as const };
+      }
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
