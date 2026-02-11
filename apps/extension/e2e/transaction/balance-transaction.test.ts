@@ -8,14 +8,12 @@ import { test, expect } from '../utils/loader';
 const REQUIRED_BALANCES_CADENCE = {
   flow: '0.01', // Sum of Flow transactions in Cadence (0.00123456 * 3) plus buffer
   stFlow: '0.002', // stFlow requirement (0.00123456) plus buffer
-  'usdc.e': '0.002', // USDC requirement (0.00123456) plus buffer
   beta: '0.002', // BETA requirement (0.00123456) plus buffer
 };
 
 const REQUIRED_BALANCES_EVM = {
   flow: '0.15', // Sum of Flow transactions in EVM (0.12345678 + 0.00123456 * 2) plus buffer
   stFlow: '0.000002', // stFlow requirement (0.00000112134354678) plus buffer
-  'usdc.e': '0.003', // Bridged USDC requirement (0.002468) plus buffer
   beta: '0.002', // BETA requirement (0.001234567890123456) plus buffer
 };
 
