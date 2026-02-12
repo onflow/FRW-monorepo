@@ -552,6 +552,14 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
+  getMigrationAssets(sourceAddress: string): Promise<{
+    erc20: Array<{ address: string; amount: string }>;
+    erc721: Array<{ address: string; id: string }>;
+    erc1155: Array<{ address: string; id: string; amount: string }>;
+  }> {
+    return NativeFRWBridge.getMigrationAssets(sourceAddress);
+  }
+
   // Safe area insets for cross-platform layout
   getSafeAreaInsets(): { top: number; bottom: number; left: number; right: number } {
     const insets = initialWindowMetrics?.insets;
