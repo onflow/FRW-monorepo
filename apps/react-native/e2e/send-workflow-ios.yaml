@@ -1,0 +1,135 @@
+appId: com.flowfoundation.wallet.dev
+---
+# import receiver
+- launchApp:
+    clearState: true
+- tapOn: I already have an account
+- tapOn: From Raw Key
+- tapOn: Seed Phrase
+- tapOn: 12 or 24 words split with whitespace
+- inputText: ${receiverKey}
+- tapOn: Import
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: Send
+    timeout: 10000
+
+# import sender ====
+- launchApp:
+    clearState: true
+- tapOn: I already have an account
+- tapOn: From Raw Key
+- tapOn: Seed Phrase
+- tapOn: 12 or 24 words split with whitespace
+- inputText: ${senderKey}
+- tapOn: Import
+- waitForAnimationToEnd
+# change sender
+- launchApp:
+    clearState: true
+- tapOn: ${senderName}
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: Send
+    timeout: 10000
+- tapOn:
+    point: 10%,12%
+
+- tapOn: ${senderFlowAddr}
+- tapOn:
+    text: flow-line
+    index: 27
+- assertVisible: ${senderFlowAddr}
+- tapOn: icon_token_send
+- tapOn:
+    text: FLOW
+    index: 1
+- tapOn: Search / Paste address
+- inputText: ${receiverFlowAddr}
+- tapOn: '0.00'
+- inputText: '0.0001'
+- tapOn: Transaction Fee
+- tapOn: Next
+- longPressOn: Hold to send
+- tapOn: Activity
+- assertVisible: '0.0001'
+# nft
+- tapOn: Home
+- tapOn: icon_token_send
+- tapOn: NFTs
+- tapOn:
+    text: FLOAT
+    index: 1
+- tapOn:
+    point: 89%,34%
+- tapOn: Confirm 1 NFT
+- tapOn: Search / Paste address
+- inputText: ${senderFlowAddr}
+- tapOn: Next
+- longPressOn: Hold to send
+- tapOn: Activity
+# - scrollUntilVisible:
+#     element:
+#       id: ".*seq-0" # or any other selector
+#     direction: UP
+- assertVisible: FLOAT
+# change receiver
+- launchApp:
+    clearState: true
+- tapOn: ${receiverName}
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: Send
+    timeout: 5000
+- tapOn:
+    point: 10%,12%
+- tapOn: ${receiverFlowAddr}
+- tapOn:
+    text: flow-line
+    index: 27
+- assertVisible: ${receiverFlowAddr}
+# send nft back
+- tapOn: Home
+- tapOn: icon_token_send
+- tapOn: NFTs
+- tapOn:
+    text: FLOAT
+    index: 1
+- tapOn:
+    point: 89%,34%
+- tapOn: Confirm 1 NFT
+- tapOn: Search / Paste address
+- inputText: ${receiverCOA}
+- tapOn:
+    text: Confirm address
+    index: 1
+- tapOn:
+    point: 5%,12%
+- tapOn: 0x0000...d37e
+- tapOn: Next
+- longPressOn: Hold to send
+- tapOn: Activity
+- assertVisible: FLOAT
+
+# change to coa
+- tapOn: Home
+- tapOn:
+    point: 10%,12%
+- tapOn: ${receiverCOA}
+- tapOn: icon_copy
+- longPressOn: Confirm to copy address
+- assertVisible: ${receiverCOA}
+- tapOn: icon_token_send
+- tapOn: NFTs
+- tapOn:
+    text: FLOAT
+    index: 1
+- tapOn:
+    point: 89%,34%
+- tapOn: Confirm 1 NFT
+- tapOn: Search / Paste address
+- inputText: ${senderFlowAddr}
+- tapOn: Next
+- longPressOn: Hold to send
+- tapOn: Activity
+- assertVisible: Send FLOAT

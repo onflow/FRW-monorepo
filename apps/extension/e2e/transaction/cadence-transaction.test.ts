@@ -90,7 +90,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
     page,
     tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_ADDR,
-    amount: '0.00123456',
+    amount: '0.00000123',
   });
   txList.push(tx1);
 
@@ -99,7 +99,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
     page,
     tokenname: 'stFlow',
     receiver: process.env.TEST_RECEIVER_ADDR,
-    amount: '0.00123456',
+    amount: '0.00000123',
   });
   txList.push(tx2);
 
@@ -109,7 +109,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
     page,
     tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_EVM_ADDR,
-    amount: '0.00123456',
+    amount: '0.00000123',
   });
   txList.push(tx3);
 
@@ -119,7 +119,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
     tokenname: 'usdc.e',
     receiver: process.env.TEST_RECEIVER_EVM_ADDR,
     ingoreFlowCharge: true,
-    amount: '0.00123456',
+    amount: '0.00000123',
   });
   txList.push(tx4);
 
@@ -129,7 +129,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   //   page,
   //   tokenname: 'flow',
   //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-  //   amount: '0.00123456',
+  //   amount: '0.00000123',
   // });
   // txList.push(tx5);
 
@@ -139,7 +139,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
   //   tokenname: 'beta',
   //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
   //   ingoreFlowCharge: true,
-  //   amount: '0.00123456',
+  //   amount: '0.00000123',
   // });
   // txList.push(tx6);
 
