@@ -571,6 +571,18 @@ class PlatformImpl implements PlatformSpec {
     );
   }
 
+  async refreshCoaAfterMigration(): Promise<void> {
+    try {
+      await NativeFRWBridge.refreshCoaAfterMigration();
+    } catch (error) {
+      this.log(
+        'warn',
+        '[PlatformImpl] Failed to refresh COA data after migration via bridge:',
+        error
+      );
+    }
+  }
+
   // Safe area insets for cross-platform layout
   getSafeAreaInsets(): { top: number; bottom: number; left: number; right: number } {
     const insets = initialWindowMetrics?.insets;

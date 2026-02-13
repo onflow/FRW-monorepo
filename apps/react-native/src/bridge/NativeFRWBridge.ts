@@ -153,6 +153,7 @@ export interface Spec extends TurboModule {
   // Get selected account
   getSelectedAccount(): Promise<WalletAccount>;
   getMigrationAssets(sourceAddress: string): Promise<MigrationAssetsData>;
+  refreshCoaAfterMigration(): Promise<void>;
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;

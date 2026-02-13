@@ -19,7 +19,7 @@ import {
 import { transformAccountForDisplay } from '@onflow/frw-utils';
 import { migrationTransaction } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export type MigrationStage = 'ready' | 'in-progress' | 'completed-all' | 'completed-partial';
@@ -68,6 +68,7 @@ export function MigrationScreen({
   const [isProcessing, setIsProcessing] = useState(false);
   const [migrationError, setMigrationError] = useState<Error | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const refreshDoneRef = useRef(false);
 
   // Ensure migration never runs automatically - only via button press
   useEffect(() => {
@@ -203,6 +204,16 @@ export function MigrationScreen({
       setProgress(0);
     }
   }, [stage, isProcessing]);
+
+  useEffect(() => {
+    if (stage === 'ready') {
+      refreshDoneRef.current = false;
+    }
+    if ((stage === 'completed-all' || stage === 'completed-partial') && !refreshDoneRef.current) {
+      refreshDoneRef.current = true;
+      bridge.refreshCoaAfterMigration?.();
+    }
+  }, [stage]);
 
   const handleStart = useCallback(async () => {
     logger.info('[MigrationScreen] Start button pressed');
