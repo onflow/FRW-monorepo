@@ -624,11 +624,15 @@ export const useSendStore = create<SendState>((set, get) => ({
       const helpers = {
         ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
-        session: session || undefined, // add session for trx
-        ...(useDirectEvm && {
-          sendRawEvmTransaction: (signedTxHex: string) =>
-            sendRawTransactionToEvmRpc(signedTxHex, network),
-        }),
+        // Direct RPC path uses workflow/default gas settings.
+        gasPrice: useDirectEvm ? undefined : 0,
+        session: session || undefined,
+        ...(useDirectEvm
+          ? {
+              sendRawEvmTransaction: (signedTxHex: string) =>
+                sendRawTransactionToEvmRpc(signedTxHex, network),
+            }
+          : {}),
       };
 
       // tracker interceptor
