@@ -20,6 +20,7 @@ import { Platform as RNPlatform } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 
 import { cache, storage } from '../storage';
+import { MigrationAssetsService } from './MigrationAssetsService';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { createBridgeAuthorization, createPayer, createProposer } from './signWithRole';
@@ -38,6 +39,14 @@ const hexToBytes = (hex: string): Uint8Array =>
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
+  private migrationAssetsService: MigrationAssetsService;
+
+  constructor() {
+    this.migrationAssetsService = new MigrationAssetsService({
+      getNetwork: () => this.getNetwork(),
+      log: this.log.bind(this),
+    });
+  }
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -557,7 +566,9 @@ class PlatformImpl implements PlatformSpec {
     erc721: Array<{ address: string; id: string }>;
     erc1155: Array<{ address: string; id: string; amount: string }>;
   }> {
-    return NativeFRWBridge.getMigrationAssets(sourceAddress);
+    return this.migrationAssetsService.getMigrationAssets(sourceAddress, () =>
+      NativeFRWBridge.getMigrationAssets(sourceAddress)
+    );
   }
 
   // Safe area insets for cross-platform layout
