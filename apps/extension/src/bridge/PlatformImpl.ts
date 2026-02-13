@@ -271,6 +271,25 @@ class ExtensionPlatformImpl implements PlatformSpec {
         ? privateKeyBytes
         : new Uint8Array(Object.values(privateKeyBytes));
 
+    try {
+      const derivedSigner =
+        await WalletCoreProvider.deriveEVMAddressFromPrivateKey(actualPrivateKeyBytes);
+      const normalize = (addr: string) => `0x${addr.replace(/^0x/i, '').toLowerCase()}`;
+      const selected = this.currentAddress;
+      if (selected && /^0x[0-9a-fA-F]{40}$/.test(selected)) {
+        const expected = normalize(selected);
+        const actual = normalize(derivedSigner);
+        if (expected !== actual) {
+          throw new Error(
+            `ethSign signer mismatch: selected EVM ${expected}, signing key derives ${actual}`
+          );
+        }
+      }
+    } catch (error) {
+      this.log('error', '[PlatformImpl] ethSign signer validation failed', error);
+      throw error;
+    }
+
     return await WalletCoreProvider.signEvmDigestWithPrivateKey(actualPrivateKeyBytes, signData);
   }
 
