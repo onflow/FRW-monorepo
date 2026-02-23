@@ -294,19 +294,6 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             </XStack>
           )}
 
-          {/* NFT: Single image preview - only when a real image URL exists */}
-          {isNft && displayImage && displayImage.startsWith('http') && (
-            <XStack justify="center" px="$2">
-              <Avatar
-                src={displayImage}
-                alt={item.token || 'NFT'}
-                fallback="?"
-                size={100}
-                rounded="$3"
-              />
-            </XStack>
-          )}
-
           {/* FT: Multi-asset rows when detail returns multiple assets */}
           {!isInteraction && !isNft && assets.length > 1 && (
             <YStack gap="$2">
