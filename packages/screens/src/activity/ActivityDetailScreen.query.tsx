@@ -1,5 +1,11 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import type { ActivityItem } from '@onflow/frw-types';
+import {
+  activityQueries,
+  activityQueryKeys,
+  useWalletStore,
+  walletSelectors,
+} from '@onflow/frw-stores';
+import { mapActivityStatus, type ActivityItem } from '@onflow/frw-types';
 import {
   ActivityDetailRow,
   Avatar,
@@ -14,6 +20,7 @@ import {
   ScrollView,
 } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking } from 'react-native';
@@ -34,10 +41,10 @@ function truncateAddress(address: string, startLength = 6, endLength = 4): strin
 }
 
 /**
- * Formats a timestamp to a readable date string
+ * Formats a timestamp or ISO date string to a readable date string
  */
-function formatDate(timestamp: number): string {
-  const date = new Date(timestamp);
+function formatDate(time: number | string): string {
+  const date = typeof time === 'string' ? new Date(time) : new Date(time);
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -55,6 +62,16 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
   const network = bridge.getNetwork() || 'mainnet';
+
+  const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
+  const address = activeAccount?.address ?? item.sender;
+
+  const { data: detail } = useQuery({
+    queryKey: activityQueryKeys.detail(item.hash, network),
+    queryFn: () => activityQueries.fetchActivityDetail(item.hash, address, network),
+    enabled: !!item.hash,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Translation strings
   const sentTitle = t('activity.sent', 'Sent');
@@ -82,7 +99,7 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
   const nftCountLabel = t('activity.detail.nftCount', '{{count}} NFTS');
   const accountLabel = t('activity.detail.account', 'Account');
 
-  // Derive display values from item
+  // Derive display values — prefer detail API data where available, fall back to list item
   const {
     title,
     statusColor,
@@ -94,10 +111,24 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
     isEvm,
     nftTitle,
     nftCountDisplay,
+    displayImage,
+    displayTime,
+    assets,
   } = useMemo(() => {
     const isInteractionType = item.type === 'interaction';
     const isNftType = item.type === 'nft';
     const isEvmWallet = item.walletType === 'evm';
+
+    // Prefer detail assets — richer image and per-asset amounts
+    const detailAssets = detail?.assets ?? [];
+    const primaryAsset = detailAssets[0];
+
+    const effectiveImage = primaryAsset?.thumbnail || item.image;
+    const effectiveTime = detail?.time ?? item.time;
+
+    // Prefer detail status/error — more authoritative than list response
+    const effectiveStatus = detail ? mapActivityStatus(detail.status) : item.status;
+    const effectiveError = detail ? detail.error : item.error;
 
     // Determine title based on type
     let headerTitle = '';
@@ -112,13 +143,13 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
     // Status color and text
     let sColor = '$text2';
     let sText = statusPending;
-    if (item.error || item.status === 'failed') {
+    if (effectiveError || effectiveStatus === 'failed') {
       sColor = '$error';
       sText = statusFailed;
-    } else if (item.status === 'expired') {
+    } else if (effectiveStatus === 'expired') {
       sColor = '$error';
       sText = statusExpired;
-    } else if (item.status === 'pending') {
+    } else if (effectiveStatus === 'pending') {
       sColor = '$text2';
       sText = statusPending;
     } else {
@@ -126,15 +157,19 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
       sText = statusSuccess;
     }
 
-    // Amount display and color
+    // Amount display — use detail total amount + list token name for FT
+    // For multi-asset, the hero display shows detail.amount (total)
+    const effectiveAmount = detail?.amount || item.amount;
+    const effectiveToken = primaryAsset?.id || item.token;
+
     let aDisplay = '';
     let aColor = '$text1';
-    if (item.amount && item.token) {
+    if (effectiveAmount && effectiveToken) {
       if (item.transferType === 'sent') {
-        aDisplay = `-${item.amount} ${item.token}`;
+        aDisplay = `-${effectiveAmount} ${effectiveToken}`;
         aColor = '$text1';
       } else {
-        aDisplay = `+${item.amount} ${item.token}`;
+        aDisplay = `+${effectiveAmount} ${effectiveToken}`;
         aColor = '$primary';
       }
     }
@@ -143,12 +178,10 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
     let nftTitleText = '';
     let nftCount = '';
     if (isNftType) {
-      // Use token as collection name, or title if token is empty
-      const collectionName = item.token || item.title || 'NFT';
+      const collectionName = effectiveToken || item.title || 'NFT';
       nftTitleText = nftsFromLabel.replace('{{collection}}', collectionName);
 
-      // Parse amount as NFT count
-      const count = parseInt(item.amount, 10) || 1;
+      const count = parseInt(effectiveAmount, 10) || 1;
       const prefix = item.transferType === 'sent' ? '-' : '+';
       nftCount = `${prefix}${count} ${count === 1 ? 'NFT' : 'NFTS'}`;
     }
@@ -164,9 +197,13 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
       isEvm: isEvmWallet,
       nftTitle: nftTitleText,
       nftCountDisplay: nftCount,
+      displayImage: effectiveImage,
+      displayTime: effectiveTime,
+      assets: detailAssets,
     };
   }, [
     item,
+    detail,
     sentTitle,
     receivedTitle,
     interactionTitle,
@@ -211,7 +248,7 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
           <YStack items="center" gap="$3" py="$2">
             <Stack position="relative">
               <Avatar
-                src={item.image}
+                src={displayImage}
                 alt={item.token || item.title}
                 fallback={item.token?.[0] || item.title?.[0] || '?'}
                 size={80}
@@ -255,10 +292,10 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
           )}
 
           {/* NFT: Single image preview */}
-          {isNft && item.image && (
+          {isNft && displayImage && (
             <XStack justify="center" px="$2">
               <Avatar
-                src={item.image}
+                src={displayImage}
                 alt={item.token || 'NFT'}
                 fallback="?"
                 size={100}
@@ -267,17 +304,50 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             </XStack>
           )}
 
-          {/* FT: Amount row for sent transactions */}
-          {!isInteraction && !isNft && item.transferType === 'sent' && amountDisplay && (
-            <XStack justify="space-between" items="center" px="$2">
-              <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
-                {youSentLabel}
-              </Text>
-              <Text fontSize={14} fontWeight="500" color="$error" lineHeight={20}>
-                {amountDisplay}
-              </Text>
-            </XStack>
+          {/* FT: Multi-asset rows when detail returns multiple assets */}
+          {!isInteraction && !isNft && assets.length > 1 && (
+            <YStack gap="$2">
+              {assets.map((asset) => (
+                <XStack key={asset.id} justify="space-between" items="center" px="$2">
+                  <XStack items="center" gap="$2">
+                    <Avatar
+                      src={asset.thumbnail}
+                      alt={asset.id}
+                      fallback={asset.id?.[0] || '?'}
+                      size={24}
+                    />
+                    <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
+                      {asset.id}
+                    </Text>
+                  </XStack>
+                  <Text
+                    fontSize={14}
+                    fontWeight="500"
+                    color={item.transferType === 'sent' ? '$error' : '$primary'}
+                    lineHeight={20}
+                  >
+                    {item.transferType === 'sent' ? `-${asset.amount}` : `+${asset.amount}`}
+                  </Text>
+                </XStack>
+              ))}
+            </YStack>
           )}
+
+          {/* FT: Single asset amount row for sent transactions */}
+          {!isInteraction &&
+            !isNft &&
+            assets.length <= 1 &&
+            item.transferType === 'sent' &&
+            amountDisplay && (
+              <XStack justify="space-between" items="center" px="$2">
+                <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
+                  {youSentLabel}
+                </Text>
+                <Text fontSize={14} fontWeight="500" color="$error" lineHeight={20}>
+                  {amountDisplay}
+                </Text>
+              </XStack>
+            )}
 
           {/* Address row */}
           {!isInteraction && (
@@ -296,7 +366,7 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             {/* Date - only shown for transfers, not for app interactions */}
             {!isInteraction && (
               <>
-                <ActivityDetailRow label={dateLabel} value={formatDate(item.time)} />
+                <ActivityDetailRow label={dateLabel} value={formatDate(displayTime)} />
                 <Separator borderColor="$light25" borderWidth={0.5} />
               </>
             )}
@@ -332,23 +402,17 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
               </>
             )}
 
-            {/* Transaction Fee - only shown for sent transactions
-                Note: Values are hardcoded because:
-                1. The activity API doesn't currently return fee data
-                2. Flow Wallet covers transaction fees for users (free transactions)
-                The display shows original cost (0.001) struck through with actual cost (0.00)
-                to communicate the fee subsidy. If API adds fee field, update ActivityItem type
-                and use item.fee here. */}
+            {/* Transaction Fee */}
             {item.transferType === 'sent' && (
               <>
                 <Separator borderColor="$light25" borderWidth={0.5} />
                 <ActivityDetailRow
                   label={transactionFeeLabel}
-                  value="0.00"
-                  showStrikethrough
-                  originalValue="0.001"
+                  value={detail?.fee || '0.00'}
+                  showStrikethrough={!detail?.fee}
+                  originalValue={!detail?.fee ? '0.001' : undefined}
                   showFlowLogo
-                  secondaryText={coveredByFlowWallet}
+                  secondaryText={!detail?.fee ? coveredByFlowWallet : undefined}
                 />
               </>
             )}

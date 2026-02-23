@@ -93,6 +93,30 @@ export interface ActivityListResponse {
 }
 
 /**
+ * Asset entry in the activity detail response
+ */
+export interface ActivityDetailAsset {
+  id: string;
+  type: 'ft' | 'nft';
+  thumbnail: string;
+  amount: string;
+}
+
+/**
+ * Response from GET /api/activityDetail
+ */
+export interface ActivityDetailResponse {
+  time: string;
+  type: number;
+  status: string;
+  error: boolean;
+  txid: string;
+  amount: string;
+  fee: string;
+  assets: ActivityDetailAsset[];
+}
+
+/**
  * Maps raw API status string to ActivityStatus
  */
 export function mapActivityStatus(statusString: string): ActivityStatus {

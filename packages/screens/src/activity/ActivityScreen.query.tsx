@@ -1,5 +1,11 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { groupActivityByDate } from '@onflow/frw-stores';
+import {
+  activityQueries,
+  activityQueryKeys,
+  groupActivityByDate,
+  useWalletStore,
+  walletSelectors,
+} from '@onflow/frw-stores';
 import type { ActivityItem, ActivityGroup } from '@onflow/frw-types';
 import {
   BackgroundWrapper,
@@ -13,11 +19,9 @@ import {
   Separator,
 } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-
-// TEMP: Import mock data for previewing
-import { allMockActivityItems } from './ActivityDetailScreen.mock';
 
 export interface ActivityScreenProps {
   /** Optional callback when an activity item is pressed (used when embedded as tab) */
@@ -33,14 +37,21 @@ export interface ActivityScreenProps {
 export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
+  const network = bridge.getNetwork() || 'mainnet';
 
-  // TEMP: Use mock data for previewing detail screens
-  const mockItems = useMemo(() => allMockActivityItems.map((mock) => mock.item), []);
+  const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
+  const address = activeAccount?.address ?? '';
+
+  const { data: activityResponse } = useQuery({
+    queryKey: activityQueryKeys.list(address, network),
+    queryFn: () => activityQueries.fetchActivity(address, network),
+    enabled: !!address,
+  });
 
   // Group activity items by date
   const groupedActivity = useMemo((): ActivityGroup[] => {
-    return groupActivityByDate(mockItems);
-  }, [mockItems]);
+    return groupActivityByDate(activityResponse?.items ?? []);
+  }, [activityResponse]);
 
   // Handle activity item press - navigate to detail screen
   const handleActivityPress = useCallback(
@@ -55,7 +66,6 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
     [onActivityPress]
   );
 
-  // Render activity list with mock data
   return (
     <BackgroundWrapper backgroundColor="$bg">
       {isExtension && (
