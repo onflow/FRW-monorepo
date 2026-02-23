@@ -174,9 +174,9 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
 
           {/* Load more */}
           {!isLoading && !isError && hasMore && (
-            <YStack items="center" pt="$4" pb="$2">
+            <YStack pt="$4" pb="$2" px="$4">
               {isFetching ? (
-                <YStack gap="$2" flex={1} px="$4">
+                <YStack gap="$2">
                   <Skeleton height={64} borderRadius={12} />
                   <Skeleton height={64} borderRadius={12} />
                 </YStack>
@@ -184,8 +184,6 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
                 <YStack
                   bg="$bg1"
                   rounded="$4"
-                  mx="$4"
-                  flex={1}
                   height={48}
                   items="center"
                   justify="center"
