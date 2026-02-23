@@ -8,6 +8,7 @@ import {
 } from '@onflow/frw-stores';
 import type { ActivityItem, ActivityGroup } from '@onflow/frw-types';
 import {
+  ActivitySkeleton,
   BackgroundWrapper,
   ExtensionHeader,
   Text,
@@ -42,7 +43,7 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
   const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
   const address = activeAccount?.address ?? '';
 
-  const { data: activityResponse } = useQuery({
+  const { data: activityResponse, isLoading } = useQuery({
     queryKey: activityQueryKeys.list(address, network),
     queryFn: () => activityQueries.fetchActivity(address, network),
     enabled: !!address,
@@ -88,26 +89,26 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
             </XStack>
           )}
 
-          {/* Activity groups */}
-          {groupedActivity.map((group) => (
-            <YStack key={group.date}>
-              {/* Date header */}
-              <ActivityGroupHeader title={group.date} />
+          {/* Activity skeleton while loading */}
+          {isLoading && <ActivitySkeleton count={6} />}
 
-              {/* Activity cards container with shared background */}
-              <YStack mx="$4" bg="$bg1" rounded="$4" px="$3">
-                {group.items.map((item, index) => (
-                  <YStack key={`${item.id}-${index}`}>
-                    <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
-                    {/* Separator between cards, not after last card */}
-                    {index < group.items.length - 1 && (
-                      <Separator borderColor="$light25" borderWidth={0.5} />
-                    )}
-                  </YStack>
-                ))}
+          {/* Activity groups */}
+          {!isLoading &&
+            groupedActivity.map((group) => (
+              <YStack key={group.date}>
+                <ActivityGroupHeader title={group.date} />
+                <YStack mx="$4" bg="$bg1" rounded="$4" px="$3">
+                  {group.items.map((item, index) => (
+                    <YStack key={`${item.id}-${index}`}>
+                      <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
+                      {index < group.items.length - 1 && (
+                        <Separator borderColor="$light25" borderWidth={0.5} />
+                      )}
+                    </YStack>
+                  ))}
+                </YStack>
               </YStack>
-            </YStack>
-          ))}
+            ))}
         </YStack>
       </ScrollView>
     </BackgroundWrapper>
