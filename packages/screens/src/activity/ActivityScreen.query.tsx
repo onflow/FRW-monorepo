@@ -93,10 +93,15 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
   }, []);
 
   const handleRefresh = useCallback(() => {
-    setOffset(0);
-    setAllItems([]);
-    refetch();
-  }, [refetch]);
+    if (offset === 0) {
+      // offset unchanged so queryKey won't change — force a refetch manually
+      refetch();
+    } else {
+      // changing offset to 0 automatically triggers a new query
+      setOffset(0);
+      setAllItems([]);
+    }
+  }, [offset, refetch]);
 
   const handleRetry = handleRefresh;
 
