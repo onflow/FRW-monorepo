@@ -203,4 +203,6 @@ export interface ActivityDetailRowProps {
   originalValue?: string;
   /** Show Flow logo after value */
   showFlowLogo?: boolean;
+  /** Show skeleton placeholder instead of value while loading */
+  skeleton?: boolean;
 }

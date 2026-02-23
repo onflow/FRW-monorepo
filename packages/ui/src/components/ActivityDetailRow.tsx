@@ -2,6 +2,7 @@ import { FlowLogo } from '@onflow/frw-icons';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
+import { Skeleton } from '../foundation/Skeleton';
 import { Text } from '../foundation/Text';
 import type { ActivityDetailRowProps } from '../types';
 
@@ -28,6 +29,7 @@ export function ActivityDetailRow({
   showStrikethrough = false,
   originalValue,
   showFlowLogo = false,
+  skeleton = false,
 }: ActivityDetailRowProps): React.ReactElement {
   return (
     <YStack gap="$1">
@@ -37,29 +39,33 @@ export function ActivityDetailRow({
           {label}
         </Text>
 
-        {/* Right side - Value with optional elements */}
-        <XStack items="center" gap="$2">
-          {showStrikethrough && originalValue && (
-            <Text
-              fontSize={14}
-              fontWeight="400"
-              color="$text2"
-              lineHeight={20}
-              textDecorationLine="line-through"
-              opacity={0.6}
-            >
-              {originalValue}
+        {/* Right side - Skeleton or value */}
+        {skeleton ? (
+          <Skeleton width={80} height={14} borderRadius={4} />
+        ) : (
+          <XStack items="center" gap="$2">
+            {showStrikethrough && originalValue && (
+              <Text
+                fontSize={14}
+                fontWeight="400"
+                color="$text2"
+                lineHeight={20}
+                textDecorationLine="line-through"
+                opacity={0.6}
+              >
+                {originalValue}
+              </Text>
+            )}
+            <Text fontSize={14} fontWeight="400" color={valueColor as any} lineHeight={20}>
+              {value}
             </Text>
-          )}
-          <Text fontSize={14} fontWeight="400" color={valueColor as any} lineHeight={20}>
-            {value}
-          </Text>
-          {showFlowLogo && <FlowLogo size={16} theme="multicolor" />}
-        </XStack>
+            {showFlowLogo && <FlowLogo size={16} theme="multicolor" />}
+          </XStack>
+        )}
       </XStack>
 
       {/* Secondary text (e.g., "Covered by Flow Wallet") */}
-      {secondaryText && (
+      {!skeleton && secondaryText && (
         <XStack justify="flex-end" mt={-8} mb="$2">
           <Text fontSize={12} fontWeight="400" color="$text2" opacity={0.6} lineHeight={16}>
             {secondaryText}

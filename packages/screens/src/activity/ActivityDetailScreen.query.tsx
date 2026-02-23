@@ -13,6 +13,7 @@ import {
   ChainBadge,
   ExtensionHeader,
   Separator,
+  Skeleton,
   Stack,
   Text,
   YStack,
@@ -66,7 +67,7 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
   const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
   const address = activeAccount?.address ?? item.sender;
 
-  const { data: detail } = useQuery({
+  const { data: detail, isLoading: isDetailLoading } = useQuery({
     queryKey: activityQueryKeys.detail(item.hash, network),
     queryFn: () => activityQueries.fetchActivityDetail(item.hash, address, network),
     enabled: !!item.hash,
@@ -265,6 +266,8 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
               <Text fontSize={24} fontWeight="600" color="$text1" text="center">
                 {nftTitle}
               </Text>
+            ) : isDetailLoading ? (
+              <Skeleton width={140} height={32} borderRadius={8} />
             ) : (
               amountDisplay && (
                 <Text fontSize={24} fontWeight="600" color={amountColor as any} text="center">
@@ -334,20 +337,20 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
           )}
 
           {/* FT: Single asset amount row for sent transactions */}
-          {!isInteraction &&
-            !isNft &&
-            assets.length <= 1 &&
-            item.transferType === 'sent' &&
-            amountDisplay && (
-              <XStack justify="space-between" items="center" px="$2">
-                <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
-                  {youSentLabel}
-                </Text>
+          {!isInteraction && !isNft && assets.length <= 1 && item.transferType === 'sent' && (
+            <XStack justify="space-between" items="center" px="$2">
+              <Text fontSize={14} fontWeight="400" color="$text2" lineHeight={20}>
+                {youSentLabel}
+              </Text>
+              {isDetailLoading ? (
+                <Skeleton width={80} height={16} borderRadius={4} />
+              ) : (
                 <Text fontSize={14} fontWeight="500" color="$error" lineHeight={20}>
                   {amountDisplay}
                 </Text>
-              </XStack>
-            )}
+              )}
+            </XStack>
+          )}
 
           {/* Address row */}
           {!isInteraction && (
@@ -366,13 +369,22 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             {/* Date - only shown for transfers, not for app interactions */}
             {!isInteraction && (
               <>
-                <ActivityDetailRow label={dateLabel} value={formatDate(displayTime)} />
+                <ActivityDetailRow
+                  label={dateLabel}
+                  value={isDetailLoading ? '' : formatDate(displayTime)}
+                  skeleton={isDetailLoading}
+                />
                 <Separator borderColor="$light25" borderWidth={0.5} />
               </>
             )}
 
             {/* Status */}
-            <ActivityDetailRow label={statusLabel} value={statusText} valueColor={statusColor} />
+            <ActivityDetailRow
+              label={statusLabel}
+              value={isDetailLoading ? '' : statusText}
+              valueColor={isDetailLoading ? undefined : statusColor}
+              skeleton={isDetailLoading}
+            />
             <Separator borderColor="$light25" borderWidth={0.5} />
 
             {/* Network */}
@@ -408,11 +420,12 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
                 <Separator borderColor="$light25" borderWidth={0.5} />
                 <ActivityDetailRow
                   label={transactionFeeLabel}
-                  value={detail?.fee || '0.00'}
-                  showStrikethrough={!detail?.fee}
-                  originalValue={!detail?.fee ? '0.001' : undefined}
-                  showFlowLogo
-                  secondaryText={!detail?.fee ? coveredByFlowWallet : undefined}
+                  value={isDetailLoading ? '' : detail?.fee || '0.00'}
+                  showStrikethrough={!isDetailLoading && !detail?.fee}
+                  originalValue={!isDetailLoading && !detail?.fee ? '0.001' : undefined}
+                  showFlowLogo={!isDetailLoading}
+                  secondaryText={!isDetailLoading && !detail?.fee ? coveredByFlowWallet : undefined}
+                  skeleton={isDetailLoading}
                 />
               </>
             )}

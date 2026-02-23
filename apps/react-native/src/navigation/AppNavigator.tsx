@@ -368,7 +368,8 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 }
                 return {
                   headerTitle,
-                  headerRight: () => null, // No close button, just back arrow
+                  headerRight: () => null,
+                  headerStyle: { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' },
                 };
               }}
             >
