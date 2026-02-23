@@ -300,6 +300,14 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.signRotationRequest(address, signatureData);
   }
 
+  async keystoreMigration(): Promise<void> {
+    if (this.getPlatform() === Platform.Android && NativeFRWBridge.keystoreMigration) {
+      return NativeFRWBridge.keystoreMigration();
+    }
+    this.log('warn', '[PlatformImpl] keystoreMigration not implemented or not Android');
+    return Promise.resolve();
+  }
+
   closeRN(): void {
     NativeFRWBridge.closeRN(null);
   }
