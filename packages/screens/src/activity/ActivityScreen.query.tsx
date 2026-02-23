@@ -25,6 +25,7 @@ import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
+import { RefreshControl } from 'react-native';
 
 const PAGE_SIZE = 15;
 
@@ -91,9 +92,13 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
     setOffset((prev) => prev + PAGE_SIZE);
   }, []);
 
-  const handleRetry = useCallback(() => {
+  const handleRefresh = useCallback(() => {
+    setOffset(0);
+    setAllItems([]);
     refetch();
   }, [refetch]);
+
+  const handleRetry = handleRefresh;
 
   return (
     <BackgroundWrapper backgroundColor="$bg">
@@ -106,7 +111,12 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
         />
       )}
 
-      <ScrollView flex={1}>
+      <ScrollView
+        flex={1}
+        refreshControl={
+          <RefreshControl refreshing={isFetching && offset === 0} onRefresh={handleRefresh} />
+        }
+      >
         <YStack flex={1} pb="$4">
           {/* Screen title for non-extension - centered */}
           {!isExtension && (
@@ -166,7 +176,7 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
           {!isLoading && !isError && hasMore && (
             <YStack items="center" pt="$4" pb="$2">
               {isFetching ? (
-                <YStack gap="$2" w="100%" px="$4">
+                <YStack gap="$2" flex={1} px="$4">
                   <Skeleton height={64} borderRadius={12} />
                   <Skeleton height={64} borderRadius={12} />
                 </YStack>
@@ -175,7 +185,7 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
                   bg="$bg1"
                   rounded="$4"
                   mx="$4"
-                  w="100%"
+                  flex={1}
                   height={48}
                   items="center"
                   justify="center"

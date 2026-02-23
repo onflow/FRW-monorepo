@@ -421,8 +421,6 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
                 <ActivityDetailRow
                   label={transactionFeeLabel}
                   value={isDetailLoading ? '' : detail?.fee || '0.00'}
-                  showStrikethrough={!isDetailLoading && !detail?.fee}
-                  originalValue={!isDetailLoading && !detail?.fee ? '0.001' : undefined}
                   showFlowLogo={!isDetailLoading}
                   secondaryText={!isDetailLoading && !detail?.fee ? coveredByFlowWallet : undefined}
                   skeleton={isDetailLoading}
