@@ -294,8 +294,8 @@ export function ActivityDetailScreen({ item }: ActivityDetailScreenProps): React
             </XStack>
           )}
 
-          {/* NFT: Single image preview */}
-          {isNft && displayImage && (
+          {/* NFT: Single image preview - only when a real image URL exists */}
+          {isNft && displayImage && displayImage.startsWith('http') && (
             <XStack justify="center" px="$2">
               <Avatar
                 src={displayImage}
