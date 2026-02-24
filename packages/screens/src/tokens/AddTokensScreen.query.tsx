@@ -1,4 +1,5 @@
 import { bridge } from '@onflow/frw-context';
+import { ChevronRight, Plus, VerifiedToken } from '@onflow/frw-icons';
 import {
   enableToken,
   tokenQueries,
@@ -17,6 +18,7 @@ import {
   Text,
   XStack,
   YStack,
+  useTheme,
 } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -44,6 +46,7 @@ function groupByLetter(tokens: FungibleTokenCatalogItem[]): TokenGroup[] {
 
 export function AddTokensScreen(): React.ReactElement {
   const { t } = useTranslation();
+  const theme = useTheme();
   const network = bridge.getNetwork() || 'mainnet';
   const queryClient = useQueryClient();
 
@@ -94,7 +97,6 @@ export function AddTokensScreen(): React.ReactElement {
   const groups = useMemo(() => groupByLetter(filteredTokens), [filteredTokens]);
   const letters = useMemo(() => groups.map((g) => g.letter), [groups]);
 
-  // Flatten for FlatList: section headers + items
   const flatData = useMemo(() => {
     const rows: (string | FungibleTokenCatalogItem)[] = [];
     for (const group of groups) {
@@ -117,7 +119,7 @@ export function AddTokensScreen(): React.ReactElement {
 
   const handleEnable = useCallback(async () => {
     if (!confirmToken?.flowIdentifier) return;
-    setEnablingSymbol(confirmToken.symbol);
+    setEnablingSymbol(confirmToken.symbol ?? null);
     setEnableError(null);
     try {
       logger.debug('[AddTokensScreen] Enabling token:', confirmToken.flowIdentifier);
@@ -134,12 +136,12 @@ export function AddTokensScreen(): React.ReactElement {
   }, [confirmToken, queryClient, address, network, t]);
 
   const renderRow = useCallback(
-    ({ item }: { item: string | FungibleTokenCatalogItem }) => {
-      // Section header
+    ({ item, index }: { item: string | FungibleTokenCatalogItem; index: number }) => {
+      // Section letter header
       if (typeof item === 'string') {
         return (
-          <XStack px="$4" pt="$3" pb="$1">
-            <Text fontSize={13} fontWeight="600" color="$text2">
+          <XStack px="$4" pt="$4" pb="$2">
+            <Text fontSize={12} fontWeight="500" color="$text2" letterSpacing={0.5}>
               {item}
             </Text>
           </XStack>
@@ -147,39 +149,58 @@ export function AddTokensScreen(): React.ReactElement {
       }
 
       const isEnabled = enabledSet.has(item.symbol?.toLowerCase() ?? '');
+      const isLastInGroup = (() => {
+        const next = flatData[index + 1];
+        return next === undefined || typeof next === 'string';
+      })();
 
       return (
-        <XStack mx="$4" bg="$bg1" rounded="$3" mb="$1" px="$3" py="$3" items="center" gap="$3">
-          <Avatar src={item.logoURI} alt={item.name} fallback={item.symbol?.[0] ?? '?'} size={40} />
-          <YStack flex={1} gap="$0.5">
-            <XStack items="center" gap="$1.5">
-              <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1}>
-                {item.name}
+        <YStack px="$4">
+          <XStack py="$3" items="center" gap="$3">
+            <Avatar
+              src={item.logoURI}
+              alt={item.name}
+              fallback={item.symbol?.[0] ?? '?'}
+              size={44}
+            />
+            <YStack flex={1} gap="$0.5">
+              <XStack items="center" gap="$1.5">
+                <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1} flex={1}>
+                  {item.name}
+                </Text>
+                {item.isVerified && <VerifiedToken size={14} />}
+              </XStack>
+              <Text fontSize={13} color="$text2">
+                {item.symbol}
               </Text>
-            </XStack>
-            <Text fontSize={13} color="$text2">
-              {item.symbol}
-            </Text>
-          </YStack>
-          {isEnabled ? (
-            <XStack w={32} h={32} rounded="$10" bg="$primary" items="center" justify="center">
-              <Text fontSize={18} color="$black" fontWeight="700">
-                ✓
-              </Text>
-            </XStack>
-          ) : (
-            <TouchableOpacity onPress={() => setConfirmToken(item)}>
-              <XStack w={32} h={32} rounded="$10" bg="$bg3" items="center" justify="center">
-                <Text fontSize={20} color="$text1" fontWeight="400">
-                  +
+            </YStack>
+            {isEnabled ? (
+              <XStack w={32} h={32} rounded="$10" bg="$primary" items="center" justify="center">
+                <Text fontSize={16} color="$black" fontWeight="700">
+                  ✓
                 </Text>
               </XStack>
-            </TouchableOpacity>
-          )}
-        </XStack>
+            ) : (
+              <TouchableOpacity onPress={() => setConfirmToken(item)}>
+                <XStack
+                  w={32}
+                  h={32}
+                  rounded="$10"
+                  borderWidth={1.5}
+                  borderColor="$primary"
+                  items="center"
+                  justify="center"
+                >
+                  <Plus size={16} color={theme.primary?.val ?? '#00EF8B'} theme="outline" />
+                </XStack>
+              </TouchableOpacity>
+            )}
+          </XStack>
+          {!isLastInGroup && <Separator borderColor="$border1" borderWidth={0.5} />}
+        </YStack>
       );
     },
-    [enabledSet]
+    [enabledSet, flatData, theme]
   );
 
   const keyExtractor = useCallback(
@@ -194,7 +215,7 @@ export function AddTokensScreen(): React.ReactElement {
         {/* Claim received tokens banner */}
         <XStack
           mx="$4"
-          mt="$2"
+          mt="$3"
           mb="$3"
           bg="$bg1"
           rounded="$4"
@@ -202,22 +223,15 @@ export function AddTokensScreen(): React.ReactElement {
           py="$3"
           items="center"
           gap="$3"
-          pressStyle={{ opacity: 0.8 }}
+          pressStyle={{ opacity: 0.75 }}
         >
-          <XStack w={40} h={40} rounded="$3" bg="$green2" items="center" justify="center">
-            <Text fontSize={20}>📥</Text>
+          <XStack w={36} h={36} rounded="$3" bg="$primary" items="center" justify="center">
+            <Text fontSize={18}>📥</Text>
           </XStack>
-          <YStack flex={1}>
-            <Text fontSize={14} fontWeight="600" color="$text1">
-              {t('addTokens.claimBannerTitle', 'Claim received tokens')}
-            </Text>
-            <Text fontSize={12} color="$text2">
-              {t('addTokens.claimBannerSubtitle', 'You may have tokens waiting')}
-            </Text>
-          </YStack>
-          <Text fontSize={18} color="$text2">
-            ›
+          <Text flex={1} fontSize={14} fontWeight="600" color="$text1">
+            {t('addTokens.claimBannerTitle', 'Claim received tokens')}
           </Text>
+          <ChevronRight size={18} color={theme.text2?.val ?? '#767676'} theme="outline" />
         </XStack>
 
         {/* Search bar */}
@@ -230,26 +244,29 @@ export function AddTokensScreen(): React.ReactElement {
         </YStack>
 
         {/* Verified toggle */}
-        <XStack px="$4" mb="$3" items="center" justify="space-between">
+        <XStack px="$4" mb="$2" items="center" justify="space-between">
           <Text fontSize={14} fontWeight="500" color="$text1">
             {t('addTokens.verifiedOnly', 'Only show verified tokens')}
           </Text>
           <Switch
             value={verifiedOnly}
             onValueChange={setVerifiedOnly}
-            trackColor={{ false: '#3e3e3e', true: '#00EF8B' }}
-            thumbColor="#ffffff"
+            trackColor={{
+              false: theme.bg3?.val ?? '#3e3e3e',
+              true: theme.primary?.val ?? '#00EF8B',
+            }}
+            thumbColor={theme.white?.val ?? '#ffffff'}
           />
         </XStack>
 
-        <Separator borderColor="$light25" borderWidth={0.5} mb="$2" />
+        <Separator borderColor="$border1" borderWidth={0.5} mb="$1" />
 
         {/* Token list with alphabet index */}
         <View style={{ flex: 1, position: 'relative' }}>
           {isCatalogLoading ? (
-            <YStack px="$4" gap="$2">
+            <YStack px="$4" gap="$3" pt="$2">
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} height={64} borderRadius={12} />
+                <Skeleton key={i} height={56} borderRadius={8} />
               ))}
             </YStack>
           ) : (
@@ -258,7 +275,7 @@ export function AddTokensScreen(): React.ReactElement {
               data={flatData}
               keyExtractor={keyExtractor}
               renderItem={renderRow}
-              contentContainerStyle={{ paddingBottom: 32, paddingRight: 32 }}
+              contentContainerStyle={{ paddingBottom: 32, paddingRight: 28 }}
               onScrollToIndexFailed={() => {}}
               initialNumToRender={20}
               maxToRenderPerBatch={15}
@@ -312,7 +329,7 @@ export function AddTokensScreen(): React.ReactElement {
           exitStyle={{ opacity: 0 }}
           bg="rgba(0,0,0,0.5)"
         />
-        <Sheet.Handle bg="$gray8" />
+        <Sheet.Handle bg="$border1" />
         <Sheet.Frame bg="$bgDrawer" borderTopLeftRadius="$6" borderTopRightRadius="$6">
           {confirmToken && (
             <YStack p="$5" gap="$4" pb="$8">
@@ -320,22 +337,25 @@ export function AddTokensScreen(): React.ReactElement {
                 {t('addTokens.enableTitle', 'Enable Token')}
               </Text>
 
-              <YStack items="center" gap="$3">
+              <YStack items="center" gap="$2">
                 <Avatar
                   src={confirmToken.logoURI}
                   alt={confirmToken.name}
                   fallback={confirmToken.symbol?.[0] ?? '?'}
                   size={64}
                 />
-                <Text fontSize={20} fontWeight="600" color="$text1">
-                  {confirmToken.name}
-                </Text>
-                <Text fontSize={15} color="$text2">
+                <XStack items="center" gap="$1.5" mt="$1">
+                  <Text fontSize={20} fontWeight="600" color="$text1">
+                    {confirmToken.name}
+                  </Text>
+                  {confirmToken.isVerified && <VerifiedToken size={16} />}
+                </XStack>
+                <Text fontSize={14} color="$text2">
                   {confirmToken.symbol}
                 </Text>
               </YStack>
 
-              <Text fontSize={13} color="$text2" text="center">
+              <Text fontSize={13} color="$text2" text="center" lineHeight={20}>
                 {t(
                   'addTokens.enableDescription',
                   'Adding this token will create a vault in your Flow account to hold {{symbol}} tokens.',
