@@ -150,7 +150,9 @@ export function AddTokensScreen(): React.ReactElement {
                 <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1} shrink={1}>
                   {item.name}
                 </Text>
-                {item.isVerified && <VerifiedToken size={14} color="#41CC5D" />}
+                {item.isVerified && (
+                  <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />
+                )}
               </XStack>
               <Text fontSize={13} color="$text2">
                 {item.symbol}
@@ -182,7 +184,7 @@ export function AddTokensScreen(): React.ReactElement {
               </XStack>
             )}
           </XStack>
-          {!isLastInGroup && <Separator borderColor="rgba(255,255,255,0.15)" borderWidth={0.5} />}
+          {!isLastInGroup && <Separator borderColor="$borderGlass" borderWidth={0.5} />}
         </YStack>
       );
     },
@@ -196,7 +198,7 @@ export function AddTokensScreen(): React.ReactElement {
   );
 
   return (
-    <BackgroundWrapper backgroundColor="$bg">
+    <BackgroundWrapper backgroundColor="$bg" px={0}>
       <YStack flex={1}>
         {/* Claim received tokens banner */}
         <XStack
@@ -233,7 +235,7 @@ export function AddTokensScreen(): React.ReactElement {
             <Text fontSize={14} fontWeight="500" color="$text1">
               {t('addTokens.verifiedOnly', 'Only show verified tokens')}
             </Text>
-            <VerifiedToken size={16} color="#41CC5D" />
+            <VerifiedToken size={16} color={theme.success?.val ?? '#41CC5D'} />
           </XStack>
           <Switch
             value={verifiedOnly}
@@ -246,7 +248,7 @@ export function AddTokensScreen(): React.ReactElement {
           />
         </XStack>
 
-        <Separator borderColor="rgba(255,255,255,0.15)" borderWidth={0.5} mb="$1" />
+        <Separator borderColor="$borderGlass" borderWidth={0.5} mb="$1" />
 
         {/* Token list with alphabet index */}
         <View style={{ flex: 1, position: 'relative' }}>
