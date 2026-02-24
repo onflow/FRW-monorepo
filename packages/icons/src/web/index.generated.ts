@@ -23,6 +23,7 @@ export { default as GoogleDrive } from './GoogleDrive.generated';
 export { default as GreenCircleBlur } from './GreenCircleBlur.generated';
 export { default as HardwareGradeSecurity } from './HardwareGradeSecurity.generated';
 export { default as Icloud } from './Icloud.generated';
+export { default as Inbox } from './Inbox.generated';
 export { default as InfoIcon } from './InfoIcon.generated';
 export { default as Key } from './Key.generated';
 export { default as Link } from './Link.generated';

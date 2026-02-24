@@ -349,7 +349,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={AddTokensScreen}
               options={{
                 headerTitle: t('navigation.addTokens', 'Add Tokens'),
-                headerStyle: { backgroundColor: theme.bgDrawer.val },
+                headerStyle: { backgroundColor: theme.bg.val },
               }}
             />
             <Stack.Screen

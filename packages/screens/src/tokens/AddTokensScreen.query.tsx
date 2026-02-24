@@ -1,5 +1,5 @@
 import { bridge } from '@onflow/frw-context';
-import { ChevronRight, Plus, VerifiedToken } from '@onflow/frw-icons';
+import { CheckCircleFill, ChevronRight, Inbox, Plus, VerifiedToken } from '@onflow/frw-icons';
 import {
   enableToken,
   tokenQueries,
@@ -140,7 +140,7 @@ export function AddTokensScreen(): React.ReactElement {
       // Section letter header
       if (typeof item === 'string') {
         return (
-          <XStack px="$4" pt="$4" pb="$2">
+          <XStack px="$3" pt="$4" pb="$2">
             <Text fontSize={12} fontWeight="500" color="$text2" letterSpacing={0.5}>
               {item}
             </Text>
@@ -155,7 +155,7 @@ export function AddTokensScreen(): React.ReactElement {
       })();
 
       return (
-        <YStack px="$4">
+        <YStack px="$3">
           <XStack py="$3" items="center" gap="$3">
             <Avatar
               src={item.logoURI}
@@ -165,21 +165,17 @@ export function AddTokensScreen(): React.ReactElement {
             />
             <YStack flex={1} gap="$0.5">
               <XStack items="center" gap="$1.5">
-                <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1} flex={1}>
+                <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1} shrink={1}>
                   {item.name}
                 </Text>
-                {item.isVerified && <VerifiedToken size={14} />}
+                {item.isVerified && <VerifiedToken size={14} color="#41CC5D" />}
               </XStack>
               <Text fontSize={13} color="$text2">
                 {item.symbol}
               </Text>
             </YStack>
             {isEnabled ? (
-              <XStack w={32} h={32} rounded="$10" bg="$primary" items="center" justify="center">
-                <Text fontSize={16} color="$black" fontWeight="700">
-                  ✓
-                </Text>
-              </XStack>
+              <CheckCircleFill size={28} color={theme.primary?.val ?? '#00EF8B'} />
             ) : (
               <TouchableOpacity onPress={() => setConfirmToken(item)}>
                 <XStack
@@ -196,7 +192,7 @@ export function AddTokensScreen(): React.ReactElement {
               </TouchableOpacity>
             )}
           </XStack>
-          {!isLastInGroup && <Separator borderColor="$border1" borderWidth={0.5} />}
+          {!isLastInGroup && <Separator borderColor="rgba(255,255,255,0.15)" borderWidth={0.5} />}
         </YStack>
       );
     },
@@ -225,9 +221,7 @@ export function AddTokensScreen(): React.ReactElement {
           gap="$3"
           pressStyle={{ opacity: 0.75 }}
         >
-          <XStack w={36} h={36} rounded="$3" bg="$primary" items="center" justify="center">
-            <Text fontSize={18}>📥</Text>
-          </XStack>
+          <Inbox size={24} color={theme.primary?.val ?? '#00EF8B'} theme="outline" />
           <Text flex={1} fontSize={14} fontWeight="600" color="$text1">
             {t('addTokens.claimBannerTitle', 'Claim received tokens')}
           </Text>
@@ -245,9 +239,12 @@ export function AddTokensScreen(): React.ReactElement {
 
         {/* Verified toggle */}
         <XStack px="$4" mb="$2" items="center" justify="space-between">
-          <Text fontSize={14} fontWeight="500" color="$text1">
-            {t('addTokens.verifiedOnly', 'Only show verified tokens')}
-          </Text>
+          <XStack items="center" gap="$1.5">
+            <Text fontSize={14} fontWeight="500" color="$text1">
+              {t('addTokens.verifiedOnly', 'Only show verified tokens')}
+            </Text>
+            <VerifiedToken size={16} color="#41CC5D" />
+          </XStack>
           <Switch
             value={verifiedOnly}
             onValueChange={setVerifiedOnly}
@@ -259,7 +256,7 @@ export function AddTokensScreen(): React.ReactElement {
           />
         </XStack>
 
-        <Separator borderColor="$border1" borderWidth={0.5} mb="$1" />
+        <Separator borderColor="rgba(255,255,255,0.15)" borderWidth={0.5} mb="$1" />
 
         {/* Token list with alphabet index */}
         <View style={{ flex: 1, position: 'relative' }}>
@@ -348,7 +345,7 @@ export function AddTokensScreen(): React.ReactElement {
                   <Text fontSize={20} fontWeight="600" color="$text1">
                     {confirmToken.name}
                   </Text>
-                  {confirmToken.isVerified && <VerifiedToken size={16} />}
+                  {confirmToken.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
                 </XStack>
                 <Text fontSize={14} color="$text2">
                   {confirmToken.symbol}
