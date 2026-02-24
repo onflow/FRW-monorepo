@@ -28,7 +28,6 @@ export { default as InfoIcon } from './InfoIcon.generated';
 export { default as Key } from './Key.generated';
 export { default as Link } from './Link.generated';
 export { default as LinkBackup } from './LinkBackup.generated';
-export { default as Lock } from './Lock.generated';
 export { default as LockBackup } from './LockBackup.generated';
 export { default as LockMigrate } from './LockMigrate.generated';
 export { default as MigrateIllustrate } from './MigrateIllustrate.generated';
