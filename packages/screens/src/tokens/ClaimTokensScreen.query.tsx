@@ -1,11 +1,12 @@
-import { ArrowDownWideNarrow, ChevronDown, ChevronUp } from '@onflow/frw-icons';
+import { ArrowDownWideNarrow } from '@onflow/frw-icons';
 import { addressBookQueryKeys, addressBookQueries } from '@onflow/frw-stores';
 import {
-  Avatar,
   BackgroundWrapper,
+  ClaimDateHeader,
+  ClaimItemRow,
+  ClaimSenderRow,
   SearchBar,
   SegmentedControl,
-  Separator,
   Skeleton,
   Text,
   XStack,
@@ -106,44 +107,6 @@ const MOCK_ITEMS: ClaimItem[] = [
 function truncateAddress(address: string): string {
   if (address.length <= 12) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
-function formatPrice(price: number): string {
-  if (price >= 1) return `$${price.toFixed(2)}`;
-  if (price >= 0.01) return `$${price.toFixed(4)}`;
-  return `$${price.toPrecision(2)}`;
-}
-
-function formatAmount(amount: string, symbol: string): string {
-  const n = parseFloat(amount);
-  const formatted = n >= 1000 ? n.toLocaleString() : amount;
-  return `${formatted} ${symbol}`;
-}
-
-function formatUsd(value: number): string {
-  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-
-interface PriceChangeBadgeProps {
-  value: number;
-}
-
-function PriceChangeBadge({ value }: PriceChangeBadgeProps) {
-  const isPositive = value >= 0;
-  const bg = isPositive ? 'rgba(65, 204, 93, 0.15)' : 'rgba(255, 77, 77, 0.15)';
-  const color = isPositive ? '#41CC5D' : '#FF4D4D';
-  return (
-    <XStack bg={bg} rounded="$10" px="$1.5" py="$0.5" items="center">
-      <Text fontSize={10} fontWeight="600" color={color}>
-        {isPositive ? '+' : ''}
-        {value.toFixed(1)}%
-      </Text>
-    </XStack>
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -279,94 +242,35 @@ export function ClaimTokensScreen(): React.ReactElement {
   const renderRow = useCallback(
     ({ item: row }: { item: Row }) => {
       if (row.kind === 'sender') {
-        const isCollapsed = collapsedSenders.has(row.sender.id);
-        const initial = row.sender.name !== '—' ? row.sender.name[0].toUpperCase() : '?';
-
         return (
-          <XStack
-            px="$4"
-            py="$3.5"
-            items="center"
-            gap="$3"
-            bg="$bg1"
+          <ClaimSenderRow
+            name={row.sender.name}
+            address={row.sender.address}
+            avatar={row.sender.avatar}
+            isCollapsed={collapsedSenders.has(row.sender.id)}
             onPress={() => toggleCollapse(row.sender.id)}
-            pressStyle={{ opacity: 0.7 }}
-          >
-            <Avatar
-              src={row.sender.avatar}
-              alt={row.sender.name}
-              fallback={initial}
-              size={24}
-              fallbackStyle={{ backgroundColor: '#3D3D3D' }}
-            />
-            <XStack flex={1} items="center" gap="$2" shrink={1}>
-              <Text fontSize={16} fontWeight="700" color="$text1">
-                {row.sender.name}
-              </Text>
-              <Text fontSize={13} color="$text2" numberOfLines={1} shrink={1}>
-                {row.sender.address}
-              </Text>
-            </XStack>
-            {isCollapsed ? (
-              <ChevronDown size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
-            ) : (
-              <ChevronUp size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
-            )}
-          </XStack>
+          />
         );
       }
 
       if (row.kind === 'date') {
-        return (
-          <XStack px="$4" pt="$3" pb="$1">
-            <Text fontSize={12} color="$text2">
-              {row.date}
-            </Text>
-          </XStack>
-        );
+        return <ClaimDateHeader date={row.date} />;
       }
 
-      const { item, isLast } = row;
       return (
-        <YStack>
-          <XStack px="$4" py="$3" items="center" gap="$3">
-            <Avatar src={item.logoURI} alt={item.name} fallback={item.symbol[0]} size={48} />
-            {/* Center + right: two-line layout */}
-            <YStack flex={1} gap="$1">
-              {/* Line 1: name (left) — amount symbol (right) */}
-              <XStack items="center" justify="space-between">
-                <Text fontSize={15} fontWeight="600" color="$text1">
-                  {item.name}
-                </Text>
-                <Text fontSize={15} fontWeight="600" color="$text1">
-                  {formatAmount(item.amount, item.symbol)}
-                </Text>
-              </XStack>
-              {/* Line 2: price + badge (left) — usd value (right) */}
-              <XStack items="center" justify="space-between">
-                <XStack items="center" gap="$1.5">
-                  {item.price !== undefined && (
-                    <Text fontSize={13} color="$text2">
-                      {formatPrice(item.price)}
-                    </Text>
-                  )}
-                  {item.priceChange24h !== undefined && (
-                    <PriceChangeBadge value={item.priceChange24h} />
-                  )}
-                </XStack>
-                {item.usdValue !== undefined && (
-                  <Text fontSize={13} color="$text2">
-                    {formatUsd(item.usdValue)}
-                  </Text>
-                )}
-              </XStack>
-            </YStack>
-          </XStack>
-          {!isLast && <Separator mx="$4" borderColor="rgba(255,255,255,0.2)" borderWidth={0.5} />}
-        </YStack>
+        <ClaimItemRow
+          name={row.item.name}
+          symbol={row.item.symbol}
+          logoURI={row.item.logoURI}
+          amount={row.item.amount}
+          price={row.item.price}
+          priceChange24h={row.item.priceChange24h}
+          usdValue={row.item.usdValue}
+          isLast={row.isLast}
+        />
       );
     },
-    [collapsedSenders, toggleCollapse, theme]
+    [collapsedSenders, toggleCollapse]
   );
 
   const keyExtractor = useCallback((item: Row, index: number) => {
