@@ -13,4 +13,6 @@ export interface FungibleTokenCatalogItem {
   flowIdentifier?: string;
   tags?: string[];
   extensions?: Record<string, unknown>;
+  /** Whether the token is on the official verified list */
+  isVerified?: boolean;
 }

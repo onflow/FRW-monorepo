@@ -80,7 +80,7 @@ export function AddTokensScreen(): React.ReactElement {
   const filteredTokens = useMemo(() => {
     let tokens = catalog;
     if (verifiedOnly) {
-      tokens = tokens.filter((t) => t.tags && t.tags.length > 0);
+      tokens = tokens.filter((t) => t.isVerified === true);
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
