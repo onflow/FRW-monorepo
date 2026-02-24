@@ -280,30 +280,36 @@ export function ClaimTokensScreen(): React.ReactElement {
         const initial = row.sender.name !== '—' ? row.sender.name[0].toUpperCase() : '?';
 
         return (
-          <Pressable onPress={() => toggleCollapse(row.sender.id)}>
-            <XStack px="$4" py="$3.5" items="center" gap="$3" bg="$bg1">
-              <Avatar
-                src={row.sender.avatar}
-                alt={row.sender.name}
-                fallback={initial}
-                size={24}
-                fallbackStyle={{ backgroundColor: '#3D3D3D' }}
-              />
-              <XStack flex={1} items="center" gap="$2" shrink={1}>
-                <Text fontSize={16} fontWeight="700" color="$text1">
-                  {row.sender.name}
-                </Text>
-                <Text fontSize={13} color="$text2" numberOfLines={1} shrink={1}>
-                  {row.sender.address}
-                </Text>
-              </XStack>
-              {isCollapsed ? (
-                <ChevronRight size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
-              ) : (
-                <ChevronDown size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
-              )}
+          <XStack
+            px="$4"
+            py="$3.5"
+            items="center"
+            gap="$3"
+            bg="$bg1"
+            onPress={() => toggleCollapse(row.sender.id)}
+            pressStyle={{ opacity: 0.7 }}
+          >
+            <Avatar
+              src={row.sender.avatar}
+              alt={row.sender.name}
+              fallback={initial}
+              size={24}
+              fallbackStyle={{ backgroundColor: '#3D3D3D' }}
+            />
+            <XStack flex={1} items="center" gap="$2" shrink={1}>
+              <Text fontSize={16} fontWeight="700" color="$text1">
+                {row.sender.name}
+              </Text>
+              <Text fontSize={13} color="$text2" numberOfLines={1} shrink={1}>
+                {row.sender.address}
+              </Text>
             </XStack>
-          </Pressable>
+            {isCollapsed ? (
+              <ChevronRight size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
+            ) : (
+              <ChevronDown size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
+            )}
+          </XStack>
         );
       }
 
