@@ -6,6 +6,7 @@ import {
   SearchBar,
   SegmentedControl,
   Separator,
+  Skeleton,
   Text,
   XStack,
   YStack,
@@ -161,7 +162,7 @@ export function ClaimTokensScreen(): React.ReactElement {
 
   // ── Address book queries (same pattern as SendToScreen) ──────────────────
 
-  const { data: userUid } = useQuery({
+  const { data: userUid, isLoading: isUidLoading } = useQuery({
     queryKey: addressBookQueryKeys.currentUserUid(),
     queryFn: () => addressBookQueries.fetchCurrentUserUid(),
     staleTime: 0,
@@ -172,13 +173,15 @@ export function ClaimTokensScreen(): React.ReactElement {
   const isUidResolved = userUid !== undefined;
   const scopedUid = userUid ?? null;
 
-  const { data: contacts = [] } = useQuery({
+  const { data: contacts = [], isLoading: isContactsLoading } = useQuery({
     queryKey: addressBookQueryKeys.contacts(scopedUid),
     queryFn: () => addressBookQueries.fetchContacts(),
     enabled: isUidResolved,
     staleTime: 30_000,
     refetchOnMount: 'always',
   });
+
+  const isLoading = isUidLoading || isContactsLoading;
 
   // Map contacts to ClaimSender; fall back to placeholder if address book is empty
   const senders: ClaimSender[] = useMemo(() => {
@@ -281,6 +284,7 @@ export function ClaimTokensScreen(): React.ReactElement {
 
         return (
           <XStack
+            mx="-$4"
             px="$4"
             py="$3.5"
             items="center"
@@ -400,22 +404,38 @@ export function ClaimTokensScreen(): React.ReactElement {
         </XStack>
 
         {/* Claim list */}
-        <FlatList
-          data={rows}
-          keyExtractor={keyExtractor}
-          renderItem={renderRow}
-          contentContainerStyle={{ paddingBottom: 32 }}
-          initialNumToRender={20}
-          maxToRenderPerBatch={15}
-          windowSize={10}
-          ListEmptyComponent={
-            <YStack flex={1} items="center" justify="center" pt="$10">
-              <Text color="$text2" fontSize={14}>
-                {t('claim.empty', 'No items to claim')}
-              </Text>
-            </YStack>
-          }
-        />
+        {isLoading ? (
+          <YStack gap="$3" pt="$2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <YStack key={i}>
+                <Skeleton height={52} borderRadius={0} />
+                {i < 4 && (
+                  <YStack pt="$3" gap="$3" px="$4">
+                    <Skeleton height={56} borderRadius={8} />
+                    <Skeleton height={56} borderRadius={8} />
+                  </YStack>
+                )}
+              </YStack>
+            ))}
+          </YStack>
+        ) : (
+          <FlatList
+            data={rows}
+            keyExtractor={keyExtractor}
+            renderItem={renderRow}
+            contentContainerStyle={{ paddingBottom: 32 }}
+            initialNumToRender={20}
+            maxToRenderPerBatch={15}
+            windowSize={10}
+            ListEmptyComponent={
+              <YStack flex={1} items="center" justify="center" pt="$10">
+                <Text color="$text2" fontSize={14}>
+                  {t('claim.empty', 'No items to claim')}
+                </Text>
+              </YStack>
+            }
+          />
+        )}
       </YStack>
     </BackgroundWrapper>
   );
