@@ -396,13 +396,7 @@ export function ClaimTokensScreen(): React.ReactElement {
           />
           <XStack flex={1} />
           <Pressable>
-            <XStack w={36} h={36} rounded="$4" bg="$bg1" items="center" justify="center">
-              <ArrowDownWideNarrow
-                size={18}
-                color={theme.text2?.val ?? '#767676'}
-                theme="outline"
-              />
-            </XStack>
+            <ArrowDownWideNarrow size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
           </Pressable>
         </XStack>
 
