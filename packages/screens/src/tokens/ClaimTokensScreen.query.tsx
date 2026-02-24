@@ -286,7 +286,7 @@ export function ClaimTokensScreen(): React.ReactElement {
                 src={row.sender.avatar}
                 alt={row.sender.name}
                 fallback={initial}
-                size={36}
+                size={24}
                 fallbackStyle={{ backgroundColor: '#3D3D3D' }}
               />
               <XStack flex={1} items="center" gap="$2" shrink={1}>
