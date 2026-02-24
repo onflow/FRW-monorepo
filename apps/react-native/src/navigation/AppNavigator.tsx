@@ -13,6 +13,8 @@ import {
   // Activity screens
   ActivityScreen,
   ActivityDetailScreen,
+  // Token screens
+  AddTokensScreen,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -71,6 +73,7 @@ export type RootStackParamList = {
   Receive: undefined;
   Activity: undefined;
   ActivityDetail: { item: ActivityItem };
+  AddTokens: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -339,6 +342,14 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={ReceiveScreen}
               options={{
                 headerTitle: t('navigation.receive'),
+              }}
+            />
+            <Stack.Screen
+              name="AddTokens"
+              component={AddTokensScreen}
+              options={{
+                headerTitle: t('navigation.addTokens', 'Add Tokens'),
+                headerStyle: { backgroundColor: theme.bgDrawer.val },
               }}
             />
             <Stack.Screen

@@ -13,6 +13,7 @@ export {
 export {
   tokenQueryKeys,
   tokenQueries,
+  enableToken,
   useTokenStore as useTokenQueryStore,
 } from './tokenStore.query';
 export {

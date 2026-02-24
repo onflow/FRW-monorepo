@@ -1,10 +1,11 @@
 import { cadence, context, queryClient } from '@onflow/frw-context';
-import { tokenService, nftService } from '@onflow/frw-services';
+import { TokenService, tokenService, nftService } from '@onflow/frw-services';
 import {
   FlatQueryDomain,
   addressType,
   formatCurrencyStringForDisplay,
   type CollectionModel,
+  type FungibleTokenCatalogItem,
   type TokenModel,
   type NFTModel,
 } from '@onflow/frw-types';
@@ -44,6 +45,8 @@ export const tokenQueryKeys = {
       'all',
       collection.id || collection.contractName || collection.name,
     ] as const,
+  catalog: (network: string = 'mainnet', chainType: string = 'flow') =>
+    [...tokenQueryKeys.all, 'catalog', network, chainType] as const,
 };
 
 // Token Store State - Minimal UI state, queries handle data
@@ -435,6 +438,19 @@ export const tokenQueries = {
     }
   },
 
+  // Fetch full token catalog (all available tokens, not just user's)
+  fetchAllTokens: async (
+    network: string = 'mainnet',
+    chainType: string = 'flow'
+  ): Promise<FungibleTokenCatalogItem[]> => {
+    try {
+      return await TokenService.getAllTokenCatalog(network, chainType);
+    } catch (error) {
+      logger.error('[TokenQuery] Error fetching token catalog:', error);
+      return [];
+    }
+  },
+
   // Batch fetch NFT counts for multiple addresses
   fetchBatchNFTCounts: async (
     addressList: string[],
@@ -748,5 +764,18 @@ export const tokenHelpers = {
     return await tokenHelpers.initializeAccount(address, accountType, network);
   },
 };
+
+/**
+ * Enables a token vault in the user's Flow account via Cadence transaction.
+ * @param flowIdentifier - The Flow contract identifier (e.g. A.1654653399040a61.FlowToken).
+ *   Automatically appends ".Vault" if not already a 4-part identifier.
+ * @returns Transaction ID string
+ */
+export async function enableToken(flowIdentifier: string): Promise<string> {
+  const parts = flowIdentifier.split('.');
+  const vaultIdentifier = parts.length === 3 ? `${flowIdentifier}.Vault` : flowIdentifier;
+  logger.debug('[enableToken] Enabling token vault:', vaultIdentifier);
+  return cadence.enableTokenStorageV2(vaultIdentifier);
+}
 
 // Query keys and queries are already exported above

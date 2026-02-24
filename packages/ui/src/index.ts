@@ -9,6 +9,7 @@ export {
   Image,
   Paragraph,
   ScrollView,
+  Sheet,
   Spinner,
   Stack,
   TamaguiProvider,
