@@ -1,30 +1,22 @@
 import { bridge } from '@onflow/frw-context';
 import { CheckCircleFill, ChevronRight, Inbox, Plus, VerifiedToken } from '@onflow/frw-icons';
-import {
-  enableToken,
-  tokenQueries,
-  tokenQueryKeys,
-  useWalletStore,
-  walletSelectors,
-} from '@onflow/frw-stores';
+import { tokenQueries, tokenQueryKeys, useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import type { FungibleTokenCatalogItem } from '@onflow/frw-types';
 import {
   Avatar,
   BackgroundWrapper,
   SearchBar,
   Separator,
-  Sheet,
   Skeleton,
   Text,
   XStack,
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Switch, TouchableOpacity, View } from 'react-native';
+import { FlatList, Pressable, Switch, View } from 'react-native';
 
 interface TokenGroup {
   letter: string;
@@ -48,16 +40,12 @@ export function AddTokensScreen(): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
   const network = bridge.getNetwork() || 'mainnet';
-  const queryClient = useQueryClient();
 
   const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
   const address = activeAccount?.address ?? '';
 
   const [search, setSearch] = useState('');
   const [verifiedOnly, setVerifiedOnly] = useState(true);
-  const [confirmToken, setConfirmToken] = useState<FungibleTokenCatalogItem | null>(null);
-  const [enablingSymbol, setEnablingSymbol] = useState<string | null>(null);
-  const [enableError, setEnableError] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
 
   const listRef = useRef<FlatList>(null);
@@ -117,30 +105,17 @@ export function AddTokensScreen(): React.ReactElement {
     [flatData]
   );
 
-  const handleEnable = useCallback(async () => {
-    if (!confirmToken?.flowIdentifier) return;
-    setEnablingSymbol(confirmToken.symbol ?? null);
-    setEnableError(null);
-    try {
-      logger.debug('[AddTokensScreen] Enabling token:', confirmToken.flowIdentifier);
-      await enableToken(confirmToken.flowIdentifier);
-      await queryClient.invalidateQueries({ queryKey: tokenQueryKeys.tokens(address, network) });
-      setConfirmToken(null);
-    } catch (err: unknown) {
-      logger.error('[AddTokensScreen] Failed to enable token:', err);
-      const message = err instanceof Error ? err.message : undefined;
-      setEnableError(message ?? t('addTokens.enableError', 'Failed to enable token'));
-    } finally {
-      setEnablingSymbol(null);
-    }
-  }, [confirmToken, queryClient, address, network, t]);
+  const handleAddToken = useCallback((flowIdentifier: string | undefined) => {
+    if (!flowIdentifier) return;
+    bridge.closeRN(flowIdentifier);
+  }, []);
 
   const renderRow = useCallback(
     ({ item, index }: { item: string | FungibleTokenCatalogItem; index: number }) => {
       // Section letter header
       if (typeof item === 'string') {
         return (
-          <XStack px="$3" pt="$4" pb="$2">
+          <XStack px="$2" pt="$4" pb="$2">
             <Text fontSize={12} fontWeight="500" color="$text2" letterSpacing={0.5}>
               {item}
             </Text>
@@ -155,7 +130,7 @@ export function AddTokensScreen(): React.ReactElement {
       })();
 
       return (
-        <YStack px="$3">
+        <YStack>
           <XStack py="$3" items="center" gap="$3">
             <Avatar
               src={item.logoURI}
@@ -175,28 +150,29 @@ export function AddTokensScreen(): React.ReactElement {
               </Text>
             </YStack>
             {isEnabled ? (
-              <CheckCircleFill size={28} color={theme.primary?.val ?? '#00EF8B'} />
+              <CheckCircleFill size={24} color={theme.primary?.val ?? '#00EF8B'} />
             ) : (
-              <TouchableOpacity onPress={() => setConfirmToken(item)}>
-                <XStack
-                  w={32}
-                  h={32}
-                  rounded="$10"
-                  borderWidth={1.5}
-                  borderColor="$primary"
-                  items="center"
-                  justify="center"
-                >
-                  <Plus size={16} color={theme.primary?.val ?? '#00EF8B'} theme="outline" />
-                </XStack>
-              </TouchableOpacity>
+              <XStack
+                w={32}
+                h={32}
+                rounded="$10"
+                borderWidth={1.5}
+                borderColor="$primary"
+                items="center"
+                justify="center"
+                onPress={() => handleAddToken(item.flowIdentifier)}
+                pressStyle={{ opacity: 0.7 }}
+                cursor="pointer"
+              >
+                <Plus size={16} color={theme.primary?.val ?? '#00EF8B'} theme="outline" />
+              </XStack>
             )}
           </XStack>
           {!isLastInGroup && <Separator borderColor="rgba(255,255,255,0.15)" borderWidth={0.5} />}
         </YStack>
       );
     },
-    [enabledSet, flatData, theme]
+    [enabledSet, flatData, theme, handleAddToken]
   );
 
   const keyExtractor = useCallback(
@@ -293,7 +269,7 @@ export function AddTokensScreen(): React.ReactElement {
               }}
             >
               {letters.map((letter) => (
-                <TouchableOpacity
+                <Pressable
                   key={letter}
                   onPress={() => handleLetterPress(letter)}
                   style={{ paddingVertical: 2, paddingHorizontal: 4 }}
@@ -305,88 +281,12 @@ export function AddTokensScreen(): React.ReactElement {
                   >
                     {letter}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
           )}
         </View>
       </YStack>
-
-      {/* Enable token confirmation sheet */}
-      <Sheet
-        modal
-        open={!!confirmToken}
-        onOpenChange={(open) => !open && setConfirmToken(null)}
-        snapPointsMode="fit"
-        dismissOnSnapToBottom
-      >
-        <Sheet.Overlay
-          animation="lazy"
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-          bg="rgba(0,0,0,0.5)"
-        />
-        <Sheet.Handle bg="$border1" />
-        <Sheet.Frame bg="$bgDrawer" borderTopLeftRadius="$6" borderTopRightRadius="$6">
-          {confirmToken && (
-            <YStack p="$5" gap="$4" pb="$8">
-              <Text fontSize={18} fontWeight="700" color="$text1" text="center">
-                {t('addTokens.enableTitle', 'Enable Token')}
-              </Text>
-
-              <YStack items="center" gap="$2">
-                <Avatar
-                  src={confirmToken.logoURI}
-                  alt={confirmToken.name}
-                  fallback={confirmToken.symbol?.[0] ?? '?'}
-                  size={64}
-                />
-                <XStack items="center" gap="$1.5" mt="$1">
-                  <Text fontSize={20} fontWeight="600" color="$text1">
-                    {confirmToken.name}
-                  </Text>
-                  {confirmToken.isVerified && <VerifiedToken size={16} color="#41CC5D" />}
-                </XStack>
-                <Text fontSize={14} color="$text2">
-                  {confirmToken.symbol}
-                </Text>
-              </YStack>
-
-              <Text fontSize={13} color="$text2" text="center" lineHeight={20}>
-                {t(
-                  'addTokens.enableDescription',
-                  'Adding this token will create a vault in your Flow account to hold {{symbol}} tokens.',
-                  { symbol: confirmToken.symbol }
-                )}
-              </Text>
-
-              {enableError && (
-                <Text fontSize={13} color="$error" text="center">
-                  {enableError}
-                </Text>
-              )}
-
-              <YStack
-                bg="$primary"
-                rounded="$4"
-                height={52}
-                items="center"
-                justify="center"
-                opacity={enablingSymbol ? 0.6 : 1}
-                pressStyle={{ opacity: 0.8 }}
-                onPress={enablingSymbol ? undefined : handleEnable}
-                cursor="pointer"
-              >
-                <Text fontSize={16} fontWeight="600" color="$black">
-                  {enablingSymbol
-                    ? t('addTokens.enabling', 'Enabling...')
-                    : t('addTokens.enableButton', 'Enable')}
-                </Text>
-              </YStack>
-            </YStack>
-          )}
-        </Sheet.Frame>
-      </Sheet>
     </BackgroundWrapper>
   );
 }
