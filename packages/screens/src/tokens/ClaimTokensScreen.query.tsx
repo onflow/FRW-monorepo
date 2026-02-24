@@ -284,7 +284,6 @@ export function ClaimTokensScreen(): React.ReactElement {
 
         return (
           <XStack
-            mx="-$4"
             px="$4"
             py="$3.5"
             items="center"
@@ -377,7 +376,7 @@ export function ClaimTokensScreen(): React.ReactElement {
   }, []);
 
   return (
-    <BackgroundWrapper backgroundColor="$bg">
+    <BackgroundWrapper backgroundColor="$bg" px={0}>
       <YStack flex={1}>
         {/* Search */}
         <YStack px="$4" pt="$2" pb="$3">
