@@ -320,8 +320,8 @@ export function ClaimTokensScreen(): React.ReactElement {
 
       if (row.kind === 'date') {
         return (
-          <XStack px="$4" pt="$2" pb="$1">
-            <Text fontSize={12} color="$text3">
+          <XStack px="$4" pt="$3" pb="$1">
+            <Text fontSize={12} color="$text2">
               {row.date}
             </Text>
           </XStack>
@@ -332,31 +332,36 @@ export function ClaimTokensScreen(): React.ReactElement {
       return (
         <YStack>
           <XStack px="$4" py="$3" items="center" gap="$3">
-            <Avatar src={item.logoURI} alt={item.name} fallback={item.symbol[0]} size={40} />
-            <YStack flex={1} gap="$0.5">
-              <XStack items="center" gap="$1.5">
-                <Text fontSize={14} fontWeight="600" color="$text1">
+            <Avatar src={item.logoURI} alt={item.name} fallback={item.symbol[0]} size={48} />
+            {/* Center + right: two-line layout */}
+            <YStack flex={1} gap="$1">
+              {/* Line 1: name (left) — amount symbol (right) */}
+              <XStack items="center" justify="space-between">
+                <Text fontSize={15} fontWeight="600" color="$text1">
                   {item.name}
                 </Text>
-                {item.priceChange24h !== undefined && (
-                  <PriceChangeBadge value={item.priceChange24h} />
+                <Text fontSize={15} fontWeight="600" color="$text1">
+                  {formatAmount(item.amount, item.symbol)}
+                </Text>
+              </XStack>
+              {/* Line 2: price + badge (left) — usd value (right) */}
+              <XStack items="center" justify="space-between">
+                <XStack items="center" gap="$1.5">
+                  {item.price !== undefined && (
+                    <Text fontSize={13} color="$text2">
+                      {formatPrice(item.price)}
+                    </Text>
+                  )}
+                  {item.priceChange24h !== undefined && (
+                    <PriceChangeBadge value={item.priceChange24h} />
+                  )}
+                </XStack>
+                {item.usdValue !== undefined && (
+                  <Text fontSize={13} color="$text2">
+                    {formatUsd(item.usdValue)}
+                  </Text>
                 )}
               </XStack>
-              {item.price !== undefined && (
-                <Text fontSize={12} color="$text2">
-                  {formatPrice(item.price)}
-                </Text>
-              )}
-            </YStack>
-            <YStack items="flex-end" gap="$0.5">
-              <Text fontSize={14} fontWeight="600" color="$text1">
-                {formatAmount(item.amount, item.symbol)}
-              </Text>
-              {item.usdValue !== undefined && (
-                <Text fontSize={12} color="$text2">
-                  {formatUsd(item.usdValue)}
-                </Text>
-              )}
             </YStack>
           </XStack>
           {!isLast && <Separator mx="$4" borderColor="rgba(255,255,255,0.08)" borderWidth={0.5} />}
