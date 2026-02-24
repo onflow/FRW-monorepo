@@ -300,8 +300,8 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.signRotationRequest(address, signatureData);
   }
 
-  closeRN(): void {
-    NativeFRWBridge.closeRN(null);
+  closeRN(id?: string | null): void {
+    NativeFRWBridge.closeRN(id ?? null);
   }
 
   getWalletProfiles(): Promise<WalletProfilesResponse> {
