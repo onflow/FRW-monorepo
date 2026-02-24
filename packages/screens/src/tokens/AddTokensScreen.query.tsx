@@ -13,6 +13,7 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
+import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -106,8 +107,14 @@ export function AddTokensScreen(): React.ReactElement {
   );
 
   const handleAddToken = useCallback((flowIdentifier: string | undefined) => {
-    if (!flowIdentifier) return;
+    logger.info('[AddTokensScreen] handleAddToken called, flowIdentifier:', flowIdentifier);
+    if (!flowIdentifier) {
+      logger.warn('[AddTokensScreen] flowIdentifier is undefined, aborting');
+      return;
+    }
+    logger.info('[AddTokensScreen] calling bridge.closeRN with:', flowIdentifier);
     bridge.closeRN(flowIdentifier);
+    logger.info('[AddTokensScreen] bridge.closeRN called');
   }, []);
 
   const renderRow = useCallback(
@@ -160,7 +167,14 @@ export function AddTokensScreen(): React.ReactElement {
                 borderColor="$primary"
                 items="center"
                 justify="center"
-                onPress={() => handleAddToken(item.flowIdentifier)}
+                onPress={() => {
+                  logger.info(
+                    '[AddTokensScreen] + button pressed for:',
+                    item.symbol,
+                    item.flowIdentifier
+                  );
+                  handleAddToken(item.flowIdentifier);
+                }}
                 pressStyle={{ opacity: 0.7 }}
                 cursor="pointer"
               >
