@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, SwitchVertical } from '@onflow/frw-icons';
+import { ChevronDown, ChevronUp, SwitchVertical } from '@onflow/frw-icons';
 import { addressBookQueryKeys, addressBookQueries } from '@onflow/frw-stores';
 import {
   Avatar,
@@ -305,9 +305,9 @@ export function ClaimTokensScreen(): React.ReactElement {
               </Text>
             </XStack>
             {isCollapsed ? (
-              <ChevronRight size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
+              <ChevronDown size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
             ) : (
-              <ChevronDown size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
+              <ChevronUp size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
             )}
           </XStack>
         );
