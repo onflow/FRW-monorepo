@@ -201,7 +201,7 @@ export function AddTokensScreen(): React.ReactElement {
           <Text flex={1} fontSize={14} fontWeight="600" color="$text1">
             {t('addTokens.claimBannerTitle', 'Claim received tokens')}
           </Text>
-          <ChevronRight size={18} color={theme.text2?.val ?? '#767676'} theme="outline" />
+          <ChevronRight size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
         </XStack>
 
         {/* Search bar */}
