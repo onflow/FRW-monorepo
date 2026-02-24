@@ -155,7 +155,15 @@ export class TokenService {
   ): Promise<FungibleTokenCatalogItem[]> {
     try {
       const result = await FtService.full({ network: network as Network, chainType });
-      return (result?.tokens ?? []) as unknown as FungibleTokenCatalogItem[];
+      return (result?.tokens ?? []).map((token) => {
+        // Derive flowIdentifier from address + contractName if not provided by API
+        const flowIdentifier =
+          token.flowIdentifier ??
+          (token.address && token.contractName
+            ? `A.${token.address.replace(/^0x/, '')}.${token.contractName}`
+            : undefined);
+        return { ...token, flowIdentifier } as unknown as FungibleTokenCatalogItem;
+      });
     } catch (error) {
       logger.error('[TokenService] Failed to fetch token catalog:', error);
       return [];
