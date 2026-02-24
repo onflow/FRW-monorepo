@@ -364,7 +364,7 @@ export function ClaimTokensScreen(): React.ReactElement {
               </XStack>
             </YStack>
           </XStack>
-          {!isLast && <Separator mx="$4" borderColor="rgba(255,255,255,0.08)" borderWidth={0.5} />}
+          {!isLast && <Separator mx="$4" borderColor="rgba(255,255,255,0.2)" borderWidth={0.5} />}
         </YStack>
       );
     },
