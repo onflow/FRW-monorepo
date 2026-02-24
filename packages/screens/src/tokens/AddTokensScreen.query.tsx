@@ -1,14 +1,17 @@
 import { bridge } from '@onflow/frw-context';
-import { CheckCircleFill, ChevronRight, Inbox, Plus, VerifiedToken } from '@onflow/frw-icons';
+import { VerifiedToken } from '@onflow/frw-icons';
 import { tokenQueries, tokenQueryKeys, useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import type { FungibleTokenCatalogItem } from '@onflow/frw-types';
 import {
-  Avatar,
+  AddTokenListItem,
+  AlphabetIndex,
   BackgroundWrapper,
+  ClaimBanner,
   SearchBar,
   Separator,
   Skeleton,
   Text,
+  TokenSectionHeader,
   XStack,
   YStack,
   useTheme,
@@ -17,7 +20,7 @@ import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Pressable, Switch, View } from 'react-native';
+import { FlatList, Switch, View } from 'react-native';
 
 interface TokenGroup {
   letter: string;
@@ -119,76 +122,33 @@ export function AddTokensScreen(): React.ReactElement {
 
   const renderRow = useCallback(
     ({ item, index }: { item: string | FungibleTokenCatalogItem; index: number }) => {
-      // Section letter header
       if (typeof item === 'string') {
-        return (
-          <XStack px="$2" pt="$4" pb="$2">
-            <Text fontSize={12} fontWeight="500" color="$text2" letterSpacing={0.5}>
-              {item}
-            </Text>
-          </XStack>
-        );
+        return <TokenSectionHeader letter={item} />;
       }
 
       const isEnabled = enabledSet.has(item.symbol?.toLowerCase() ?? '');
-      const isLastInGroup = (() => {
+      const isLast = (() => {
         const next = flatData[index + 1];
         return next === undefined || typeof next === 'string';
       })();
 
       return (
-        <YStack>
-          <XStack py="$3" items="center" gap="$3">
-            <Avatar
-              src={item.logoURI}
-              alt={item.name}
-              fallback={item.symbol?.[0] ?? '?'}
-              size={44}
-            />
-            <YStack flex={1} gap="$0.5">
-              <XStack items="center" gap="$1.5">
-                <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1} shrink={1}>
-                  {item.name}
-                </Text>
-                {item.isVerified && (
-                  <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />
-                )}
-              </XStack>
-              <Text fontSize={13} color="$text2">
-                {item.symbol}
-              </Text>
-            </YStack>
-            {isEnabled ? (
-              <CheckCircleFill size={24} color={theme.primary?.val ?? '#00EF8B'} />
-            ) : (
-              <XStack
-                w={32}
-                h={32}
-                rounded="$10"
-                borderWidth={1.5}
-                borderColor="$primary"
-                items="center"
-                justify="center"
-                onPress={() => {
-                  logger.info(
-                    '[AddTokensScreen] + button pressed for:',
-                    item.symbol,
-                    item.flowIdentifier
-                  );
-                  handleAddToken(item.flowIdentifier);
-                }}
-                pressStyle={{ opacity: 0.7 }}
-                cursor="pointer"
-              >
-                <Plus size={16} color={theme.primary?.val ?? '#00EF8B'} theme="outline" />
-              </XStack>
-            )}
-          </XStack>
-          {!isLastInGroup && <Separator borderColor="$borderGlass" borderWidth={0.5} />}
-        </YStack>
+        <AddTokenListItem
+          token={item}
+          isEnabled={isEnabled}
+          isLast={isLast}
+          onAdd={() => {
+            logger.info(
+              '[AddTokensScreen] + button pressed for:',
+              item.symbol,
+              item.flowIdentifier
+            );
+            handleAddToken(item.flowIdentifier);
+          }}
+        />
       );
     },
-    [enabledSet, flatData, theme, handleAddToken]
+    [enabledSet, flatData, handleAddToken]
   );
 
   const keyExtractor = useCallback(
@@ -200,25 +160,7 @@ export function AddTokensScreen(): React.ReactElement {
   return (
     <BackgroundWrapper backgroundColor="$bg" px={0}>
       <YStack flex={1}>
-        {/* Claim received tokens banner */}
-        <XStack
-          mx="$4"
-          mt="$3"
-          mb="$3"
-          bg="$bg1"
-          rounded="$4"
-          px="$3"
-          py="$3"
-          items="center"
-          gap="$3"
-          pressStyle={{ opacity: 0.75 }}
-        >
-          <Inbox size={24} color={theme.primary?.val ?? '#00EF8B'} theme="outline" />
-          <Text flex={1} fontSize={14} fontWeight="600" color="$text1">
-            {t('addTokens.claimBannerTitle', 'Claim received tokens')}
-          </Text>
-          <ChevronRight size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
-        </XStack>
+        <ClaimBanner title={t('addTokens.claimBannerTitle', 'Claim received tokens')} />
 
         {/* Search bar */}
         <YStack px="$4" mb="$3">
@@ -272,34 +214,12 @@ export function AddTokensScreen(): React.ReactElement {
             />
           )}
 
-          {/* Alphabet sidebar */}
-          {!isCatalogLoading && letters.length > 0 && (
-            <View
-              style={{
-                position: 'absolute',
-                right: 4,
-                top: 0,
-                bottom: 0,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {letters.map((letter) => (
-                <Pressable
-                  key={letter}
-                  onPress={() => handleLetterPress(letter)}
-                  style={{ paddingVertical: 2, paddingHorizontal: 4 }}
-                >
-                  <Text
-                    fontSize={11}
-                    fontWeight={activeIndex === letter ? '700' : '500'}
-                    color={activeIndex === letter ? '$primary' : '$text2'}
-                  >
-                    {letter}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+          {!isCatalogLoading && (
+            <AlphabetIndex
+              letters={letters}
+              activeIndex={activeIndex}
+              onLetterPress={handleLetterPress}
+            />
           )}
         </View>
       </YStack>

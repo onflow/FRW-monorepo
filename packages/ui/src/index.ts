@@ -38,6 +38,10 @@ export * from './utils/clipboard';
 
 // Export specialized components
 export * from './components/AccountCard';
+export * from './components/AddTokenListItem';
+export * from './components/AlphabetIndex';
+export * from './components/ClaimBanner';
+export * from './components/TokenSectionHeader';
 export * from './components/AccountSelector';
 export * from './components/ActivityCard';
 export * from './components/ActivityDetailRow';

@@ -4,6 +4,7 @@ import type {
   Currency,
   NFTModel,
   ActivityItem,
+  FungibleTokenCatalogItem,
 } from '@onflow/frw-types';
 import type { ComponentProps } from 'react';
 import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiText } from 'tamagui';
@@ -172,6 +173,23 @@ export interface EnhancedSegmentedControlProps {
   onChange: (value: string) => void;
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
+}
+
+// Token list components props
+export interface AddTokenListItemProps {
+  token: FungibleTokenCatalogItem;
+  isEnabled: boolean;
+  isLast: boolean;
+  onAdd: () => void;
+}
+
+export interface TokenSectionHeaderProps {
+  letter: string;
+}
+
+export interface ClaimBannerProps {
+  title: string;
+  onPress?: () => void;
 }
 
 // Activity components props
