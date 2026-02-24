@@ -3,6 +3,7 @@ import {
   Avatar,
   BackgroundWrapper,
   SearchBar,
+  SegmentedControl,
   Separator,
   Text,
   XStack,
@@ -140,35 +141,6 @@ function PriceChangeBadge({ value }: PriceChangeBadgeProps) {
   );
 }
 
-interface FilterPillProps {
-  label: string;
-  count: number;
-  active: boolean;
-  onPress: () => void;
-}
-
-function FilterPill({ label, count, active, onPress }: FilterPillProps) {
-  return (
-    <Pressable onPress={onPress}>
-      <XStack
-        bg={active ? '$primary' : '$bg1'}
-        rounded="$10"
-        px="$3"
-        py="$1.5"
-        items="center"
-        gap="$1"
-      >
-        <Text fontSize={13} fontWeight="600" color={active ? '$bg' : '$text2'}>
-          {label}
-        </Text>
-        <Text fontSize={13} fontWeight="600" color={active ? '$bg' : '$text3'}>
-          {count}
-        </Text>
-      </XStack>
-    </Pressable>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Main screen
 // ---------------------------------------------------------------------------
@@ -185,6 +157,9 @@ export function ClaimTokensScreen(): React.ReactElement {
 
   const tokenCount = MOCK_ITEMS.filter((i) => i.type === 'token').length;
   const nftCount = MOCK_ITEMS.filter((i) => i.type === 'nft').length;
+
+  const segments = [`Tokens ${tokenCount}`, `NFTs ${nftCount}`] as const;
+  const segmentValue = activeTab === 'token' ? segments[0] : segments[1];
 
   const filteredItems = useMemo(() => {
     let items = MOCK_ITEMS.filter((i) => i.type === activeTab);
@@ -359,19 +334,11 @@ export function ClaimTokensScreen(): React.ReactElement {
 
         {/* Filter row */}
         <XStack px="$4" pb="$3" items="center" gap="$2">
-          <FilterPill
-            label={t('claim.tokens', 'Tokens')}
-            count={tokenCount}
-            active={activeTab === 'token'}
-            onPress={() => setActiveTab('token')}
+          <SegmentedControl
+            segments={segments as unknown as string[]}
+            value={segmentValue}
+            onChange={(value) => setActiveTab(value === segments[0] ? 'token' : 'nft')}
           />
-          <FilterPill
-            label={t('claim.nfts', 'NFTs')}
-            count={nftCount}
-            active={activeTab === 'nft'}
-            onPress={() => setActiveTab('nft')}
-          />
-          {/* Spacer */}
           <XStack flex={1} />
           {/* Sort button */}
           <Pressable>
