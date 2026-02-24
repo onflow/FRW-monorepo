@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronRight, SwitchVertical } from '@onflow/frw-icons';
+import { addressBookQueryKeys, addressBookQueries } from '@onflow/frw-stores';
 import {
   Avatar,
   BackgroundWrapper,
@@ -10,22 +11,24 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
+import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable } from 'react-native';
 
 // ---------------------------------------------------------------------------
-// Mock data types (replace with real API types when backend is ready)
+// Types
 // ---------------------------------------------------------------------------
 
 interface ClaimSender {
   id: string;
   name: string;
   address: string;
-  avatarColor: string;
+  avatar?: string;
 }
 
-interface ClaimToken {
+// Stub item type — senderIndex maps to the first/second contact in the address book
+interface ClaimItem {
   id: string;
   type: 'token' | 'nft';
   name: string;
@@ -36,19 +39,15 @@ interface ClaimToken {
   priceChange24h?: number;
   usdValue?: number;
   date: string;
-  senderId: string;
+  senderIndex: number; // 0 = first contact, 1 = second contact
 }
 
 // ---------------------------------------------------------------------------
-// Mock data (stubbed until backend is implemented)
+// Mock item data (amounts/prices stubbed until backend is ready)
+// Senders are resolved from the real address book at runtime
 // ---------------------------------------------------------------------------
 
-const MOCK_SENDERS: ClaimSender[] = [
-  { id: 's1', name: 'Panda', address: '0x0c6664...a3', avatarColor: '#FF6B35' },
-  { id: 's2', name: 'Fox', address: '0x0c6163...b3', avatarColor: '#9B59B6' },
-];
-
-const MOCK_ITEMS: ClaimToken[] = [
+const MOCK_ITEMS: ClaimItem[] = [
   {
     id: 't1',
     type: 'token',
@@ -60,7 +59,7 @@ const MOCK_ITEMS: ClaimToken[] = [
     priceChange24h: 2.3,
     usdValue: 75,
     date: '2025/09/15',
-    senderId: 's1',
+    senderIndex: 0,
   },
   {
     id: 't2',
@@ -72,7 +71,7 @@ const MOCK_ITEMS: ClaimToken[] = [
     priceChange24h: -1.2,
     usdValue: 0.5,
     date: '2025/09/15',
-    senderId: 's1',
+    senderIndex: 0,
   },
   {
     id: 't3',
@@ -86,7 +85,7 @@ const MOCK_ITEMS: ClaimToken[] = [
     priceChange24h: 0.01,
     usdValue: 25,
     date: '2025/09/15',
-    senderId: 's2',
+    senderIndex: 1,
   },
   {
     id: 'n1',
@@ -95,13 +94,28 @@ const MOCK_ITEMS: ClaimToken[] = [
     symbol: 'FLOVATAR',
     amount: '1',
     date: '2025/09/14',
-    senderId: 's1',
+    senderIndex: 0,
   },
 ];
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+const AVATAR_COLORS = ['#FF6B35', '#9B59B6', '#3498DB', '#27AE60', '#E67E22', '#E74C3C'];
+
+function avatarColorForAddress(address: string): string {
+  let hash = 0;
+  for (let i = 0; i < address.length; i++) {
+    hash = (hash * 31 + address.charCodeAt(i)) & 0xffffffff;
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function truncateAddress(address: string): string {
+  if (address.length <= 12) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
 
 function formatPrice(price: number): string {
   if (price >= 1) return `$${price.toFixed(2)}`;
@@ -155,6 +169,46 @@ export function ClaimTokensScreen(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<FilterTab>('token');
   const [collapsedSenders, setCollapsedSenders] = useState<Set<string>>(new Set());
 
+  // ── Address book queries (same pattern as SendToScreen) ──────────────────
+
+  const { data: userUid } = useQuery({
+    queryKey: addressBookQueryKeys.currentUserUid(),
+    queryFn: () => addressBookQueries.fetchCurrentUserUid(),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+  });
+
+  const isUidResolved = userUid !== undefined;
+  const scopedUid = userUid ?? null;
+
+  const { data: contacts = [] } = useQuery({
+    queryKey: addressBookQueryKeys.contacts(scopedUid),
+    queryFn: () => addressBookQueries.fetchContacts(),
+    enabled: isUidResolved,
+    staleTime: 30_000,
+    refetchOnMount: 'always',
+  });
+
+  // Map contacts to ClaimSender; fall back to placeholder if address book is empty
+  const senders: ClaimSender[] = useMemo(() => {
+    if (contacts.length > 0) {
+      return contacts.slice(0, 5).map((c) => ({
+        id: c.id,
+        name: c.name || truncateAddress(c.address),
+        address: c.address,
+        avatar: c.avatar,
+      }));
+    }
+    // Placeholder senders shown while contacts load or if address book is empty
+    return [
+      { id: 'placeholder-0', name: '—', address: '—', avatar: undefined },
+      { id: 'placeholder-1', name: '—', address: '—', avatar: undefined },
+    ];
+  }, [contacts]);
+
+  // ── Filter and group items ───────────────────────────────────────────────
+
   const tokenCount = MOCK_ITEMS.filter((i) => i.type === 'token').length;
   const nftCount = MOCK_ITEMS.filter((i) => i.type === 'nft').length;
 
@@ -172,18 +226,20 @@ export function ClaimTokensScreen(): React.ReactElement {
     return items;
   }, [activeTab, search]);
 
-  // Group items by sender
+  // Group by sender (resolved from real contacts)
   const senderGroups = useMemo(() => {
-    const map = new Map<string, ClaimToken[]>();
+    const map = new Map<string, ClaimItem[]>();
     for (const item of filteredItems) {
-      if (!map.has(item.senderId)) map.set(item.senderId, []);
-      map.get(item.senderId)!.push(item);
+      const sender = senders[item.senderIndex] ?? senders[0];
+      if (!sender) continue;
+      if (!map.has(sender.id)) map.set(sender.id, []);
+      map.get(sender.id)!.push(item);
     }
     return Array.from(map.entries()).map(([senderId, items]) => ({
-      sender: MOCK_SENDERS.find((s) => s.id === senderId)!,
+      sender: senders.find((s) => s.id === senderId)!,
       items,
     }));
-  }, [filteredItems]);
+  }, [filteredItems, senders]);
 
   const toggleCollapse = useCallback((senderId: string) => {
     setCollapsedSenders((prev) => {
@@ -197,19 +253,19 @@ export function ClaimTokensScreen(): React.ReactElement {
     });
   }, []);
 
-  // Build flat list rows: sender header | date header | token row
+  // ── Flat list rows ───────────────────────────────────────────────────────
+
   type Row =
     | { kind: 'sender'; sender: ClaimSender; itemCount: number }
     | { kind: 'date'; date: string; senderId: string }
-    | { kind: 'token'; item: ClaimToken; isLast: boolean };
+    | { kind: 'token'; item: ClaimItem; isLast: boolean };
 
   const rows = useMemo<Row[]>(() => {
     const result: Row[] = [];
     for (const { sender, items } of senderGroups) {
       result.push({ kind: 'sender', sender, itemCount: items.length });
       if (!collapsedSenders.has(sender.id)) {
-        // Group by date within sender
-        const byDate = new Map<string, ClaimToken[]>();
+        const byDate = new Map<string, ClaimItem[]>();
         for (const item of items) {
           if (!byDate.has(item.date)) byDate.set(item.date, []);
           byDate.get(item.date)!.push(item);
@@ -225,36 +281,33 @@ export function ClaimTokensScreen(): React.ReactElement {
     return result;
   }, [senderGroups, collapsedSenders]);
 
+  // ── Render ───────────────────────────────────────────────────────────────
+
   const renderRow = useCallback(
     ({ item: row }: { item: Row }) => {
       if (row.kind === 'sender') {
         const isCollapsed = collapsedSenders.has(row.sender.id);
+        const avatarColor = avatarColorForAddress(row.sender.address);
+        const initial = row.sender.name !== '—' ? row.sender.name[0].toUpperCase() : '?';
+
         return (
           <Pressable onPress={() => toggleCollapse(row.sender.id)}>
             <XStack px="$4" py="$3" items="center" gap="$3" bg="$bg">
-              {/* Sender avatar */}
-              <XStack
-                w={36}
-                h={36}
-                rounded="$10"
-                bg={row.sender.avatarColor}
-                items="center"
-                justify="center"
-              >
-                <Text fontSize={14} fontWeight="700" color="white">
-                  {row.sender.name[0].toUpperCase()}
-                </Text>
-              </XStack>
-
+              <Avatar
+                src={row.sender.avatar}
+                alt={row.sender.name}
+                fallback={initial}
+                size={36}
+                fallbackStyle={{ backgroundColor: avatarColor }}
+              />
               <YStack flex={1} gap="$0.5">
                 <Text fontSize={14} fontWeight="600" color="$text1">
                   {row.sender.name}
                 </Text>
                 <Text fontSize={12} color="$text2">
-                  {row.sender.address}
+                  {truncateAddress(row.sender.address)}
                 </Text>
               </YStack>
-
               {isCollapsed ? (
                 <ChevronRight size={18} color={theme.text2?.val ?? '#767676'} theme="outline" />
               ) : (
@@ -275,7 +328,6 @@ export function ClaimTokensScreen(): React.ReactElement {
         );
       }
 
-      // Token row
       const { item, isLast } = row;
       return (
         <YStack>
@@ -340,7 +392,6 @@ export function ClaimTokensScreen(): React.ReactElement {
             onChange={(value) => setActiveTab(value === segments[0] ? 'token' : 'nft')}
           />
           <XStack flex={1} />
-          {/* Sort button */}
           <Pressable>
             <XStack w={36} h={36} rounded="$4" bg="$bg1" items="center" justify="center">
               <SwitchVertical size={18} color={theme.text2?.val ?? '#767676'} theme="outline" />
