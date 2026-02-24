@@ -292,26 +292,26 @@ export function ClaimTokensScreen(): React.ReactElement {
 
         return (
           <Pressable onPress={() => toggleCollapse(row.sender.id)}>
-            <XStack px="$4" py="$3" items="center" gap="$3" bg="$bg">
+            <XStack px="$4" py="$3.5" items="center" gap="$3" bg="$bg">
               <Avatar
                 src={row.sender.avatar}
                 alt={row.sender.name}
                 fallback={initial}
-                size={36}
+                size={44}
                 fallbackStyle={{ backgroundColor: avatarColor }}
               />
-              <YStack flex={1} gap="$0.5">
-                <Text fontSize={14} fontWeight="600" color="$text1">
+              <XStack flex={1} items="center" gap="$2" shrink={1}>
+                <Text fontSize={16} fontWeight="700" color="$text1">
                   {row.sender.name}
                 </Text>
-                <Text fontSize={12} color="$text2">
-                  {truncateAddress(row.sender.address)}
+                <Text fontSize={13} color="$text2" numberOfLines={1} shrink={1}>
+                  {row.sender.address}
                 </Text>
-              </YStack>
+              </XStack>
               {isCollapsed ? (
-                <ChevronRight size={18} color={theme.text2?.val ?? '#767676'} theme="outline" />
+                <ChevronRight size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
               ) : (
-                <ChevronDown size={18} color={theme.text2?.val ?? '#767676'} theme="outline" />
+                <ChevronDown size={20} color={theme.text2?.val ?? '#767676'} theme="outline" />
               )}
             </XStack>
           </Pressable>
