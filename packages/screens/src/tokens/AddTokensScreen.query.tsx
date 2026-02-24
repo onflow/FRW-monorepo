@@ -20,7 +20,7 @@ import {
 } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Switch, TouchableOpacity, View } from 'react-native';
 
