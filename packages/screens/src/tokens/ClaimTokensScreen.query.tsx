@@ -102,16 +102,6 @@ const MOCK_ITEMS: ClaimItem[] = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-const AVATAR_COLORS = ['#FF6B35', '#9B59B6', '#3498DB', '#27AE60', '#E67E22', '#E74C3C'];
-
-function avatarColorForAddress(address: string): string {
-  let hash = 0;
-  for (let i = 0; i < address.length; i++) {
-    hash = (hash * 31 + address.charCodeAt(i)) & 0xffffffff;
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
 function truncateAddress(address: string): string {
   if (address.length <= 12) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -287,7 +277,6 @@ export function ClaimTokensScreen(): React.ReactElement {
     ({ item: row }: { item: Row }) => {
       if (row.kind === 'sender') {
         const isCollapsed = collapsedSenders.has(row.sender.id);
-        const avatarColor = avatarColorForAddress(row.sender.address);
         const initial = row.sender.name !== '—' ? row.sender.name[0].toUpperCase() : '?';
 
         return (
@@ -297,8 +286,8 @@ export function ClaimTokensScreen(): React.ReactElement {
                 src={row.sender.avatar}
                 alt={row.sender.name}
                 fallback={initial}
-                size={44}
-                fallbackStyle={{ backgroundColor: avatarColor }}
+                size={36}
+                fallbackStyle={{ backgroundColor: '#3D3D3D' }}
               />
               <XStack flex={1} items="center" gap="$2" shrink={1}>
                 <Text fontSize={16} fontWeight="700" color="$text1">
