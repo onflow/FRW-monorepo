@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, SwitchVertical } from '@onflow/frw-icons';
+import { ArrowDownWideNarrow, ChevronDown, ChevronUp } from '@onflow/frw-icons';
 import { addressBookQueryKeys, addressBookQueries } from '@onflow/frw-stores';
 import {
   Avatar,
@@ -397,7 +397,11 @@ export function ClaimTokensScreen(): React.ReactElement {
           <XStack flex={1} />
           <Pressable>
             <XStack w={36} h={36} rounded="$4" bg="$bg1" items="center" justify="center">
-              <SwitchVertical size={18} color={theme.text2?.val ?? '#767676'} theme="outline" />
+              <ArrowDownWideNarrow
+                size={18}
+                color={theme.text2?.val ?? '#767676'}
+                theme="outline"
+              />
             </XStack>
           </Pressable>
         </XStack>
