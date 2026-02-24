@@ -399,8 +399,6 @@ export function ClaimTokensScreen(): React.ReactElement {
           </Pressable>
         </XStack>
 
-        <Separator borderColor="rgba(255,255,255,0.15)" borderWidth={0.5} />
-
         {/* Claim list */}
         <FlatList
           data={rows}
