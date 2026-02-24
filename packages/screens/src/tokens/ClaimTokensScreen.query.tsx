@@ -309,7 +309,7 @@ export function ClaimTokensScreen(): React.ReactElement {
 
       if (row.kind === 'date') {
         return (
-          <XStack px="$4" pt="$3" pb="$1">
+          <XStack px="$4" pt="$3" pb="$1" bg="$bg1">
             <Text fontSize={12} color="$text2">
               {row.date}
             </Text>
@@ -319,7 +319,7 @@ export function ClaimTokensScreen(): React.ReactElement {
 
       const { item, isLast } = row;
       return (
-        <YStack>
+        <YStack bg="$bg1">
           <XStack px="$4" py="$3" items="center" gap="$3">
             <Avatar src={item.logoURI} alt={item.name} fallback={item.symbol[0]} size={48} />
             {/* Center + right: two-line layout */}
