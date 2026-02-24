@@ -16,7 +16,7 @@ export function AddTokenListItem({
 
   return (
     <YStack>
-      <XStack py="$3" items="center" gap="$3">
+      <XStack py="$3" pl="$4" items="center" gap="$3">
         <Avatar
           src={token.logoURI}
           alt={token.name}
