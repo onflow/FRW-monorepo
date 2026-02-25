@@ -18,34 +18,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable } from 'react-native';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface ClaimSender {
-  id: string;
-  name: string;
-  address: string;
-  avatar?: string;
-  emojiInfo?: { emoji: string; name: string; color: string };
-  parentEmoji?: { emoji: string; name: string; color: string };
-  type?: 'main' | 'child' | 'evm' | 'eoa';
-}
-
-// Stub item type — senderIndex maps to the first/second contact in the address book
-interface ClaimItem {
-  id: string;
-  type: 'token' | 'nft';
-  name: string;
-  symbol: string;
-  logoURI?: string;
-  amount: string;
-  price?: number;
-  priceChange24h?: number;
-  usdValue?: number;
-  date: string;
-  senderIndex: number; // 0 = first contact, 1 = second contact
-}
+import type { ClaimItem, ClaimSender } from './claim-types';
 
 type SortOption = 'date' | 'name' | 'amount';
 
@@ -136,7 +109,11 @@ function sortItems(items: ClaimItem[], sort: SortOption): ClaimItem[] {
 
 type FilterTab = 'token' | 'nft';
 
-export function ClaimTokensScreen(): React.ReactElement {
+interface ClaimTokensScreenProps {
+  onItemPress?: (item: ClaimItem) => void;
+}
+
+export function ClaimTokensScreen({ onItemPress }: ClaimTokensScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -258,19 +235,21 @@ export function ClaimTokensScreen(): React.ReactElement {
       }
 
       return (
-        <ClaimItemRow
-          name={row.item.name}
-          symbol={row.item.symbol}
-          logoURI={row.item.logoURI}
-          amount={row.item.amount}
-          price={row.item.price}
-          priceChange24h={row.item.priceChange24h}
-          usdValue={row.item.usdValue}
-          isLast={row.isLast}
-        />
+        <Pressable onPress={() => onItemPress?.(row.item)}>
+          <ClaimItemRow
+            name={row.item.name}
+            symbol={row.item.symbol}
+            logoURI={row.item.logoURI}
+            amount={row.item.amount}
+            price={row.item.price}
+            priceChange24h={row.item.priceChange24h}
+            usdValue={row.item.usdValue}
+            isLast={row.isLast}
+          />
+        </Pressable>
       );
     },
-    [collapsedAccounts, toggleCollapse]
+    [collapsedAccounts, onItemPress, toggleCollapse]
   );
 
   const keyExtractor = useCallback((item: Row, index: number) => {

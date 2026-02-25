@@ -45,6 +45,7 @@ export * from './components/ClaimDateHeader';
 export * from './components/ClaimItemRow';
 export * from './components/ClaimSenderRow';
 export * from './components/PriceChangeBadge';
+export * from './components/PriceChart';
 export * from './components/TokenSectionHeader';
 export * from './components/AccountSelector';
 export * from './components/ActivityCard';

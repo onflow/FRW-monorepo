@@ -1,6 +1,7 @@
 // Export screen components
 export { ActivityScreen, ActivityDetailScreen } from './activity';
-export { AddTokensScreen, ClaimTokensScreen } from './tokens';
+export { AddTokensScreen, ClaimTokensScreen, ClaimTokenDetailScreen } from './tokens';
+export type { ClaimItem, ClaimSender, ClaimTokenDetailScreenProps } from './tokens';
 export type { ActivityDetailScreenProps } from './activity';
 export { SelectTokensScreen } from './send/SelectTokensScreen.query';
 export { SendToScreen } from './send/SendToScreen.query';
