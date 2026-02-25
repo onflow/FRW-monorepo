@@ -1,5 +1,10 @@
 import { logger, navigation, bridge, getCadenceService } from '@onflow/frw-context';
-import type { WalletAccount, WalletProfilesResponse, MigrationAssetsData } from '@onflow/frw-types';
+import {
+  Platform,
+  type WalletAccount,
+  type WalletProfilesResponse,
+  type MigrationAssetsData,
+} from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -311,7 +316,13 @@ export function MigrationScreen({
   const handleDone = () => {
     logger.info('[MigrationScreen] Done pressed');
     // Navigate back or to home
-    navigation.goBack();
+
+    const platform = bridge.getPlatform();
+    if (platform === Platform.iOS || platform === Platform.Android) {
+      bridge.closeRN();
+    } else {
+      navigation.goBack();
+    }
   };
 
   const handleReviewAssets = () => {

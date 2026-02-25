@@ -1,4 +1,4 @@
-import { logger, navigation } from '@onflow/frw-context';
+import { logger, navigation, bridge } from '@onflow/frw-context';
 import {
   GreenCircleBlur,
   LockMigrate,
@@ -8,6 +8,7 @@ import {
   TealCircleBlur,
   Zap,
 } from '@onflow/frw-icons';
+import { Platform } from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -100,7 +101,12 @@ export function InfoScreen({ onStartMigration }: InfoScreenProps = {}): React.Re
 
   const handleCancel = () => {
     logger.info('[InfoScreen] Cancel pressed');
-    navigation.goBack();
+    const platform = bridge.getPlatform();
+    if (platform === Platform.iOS || platform === Platform.Android) {
+      bridge.closeRN();
+    } else {
+      navigation.goBack();
+    }
   };
 
   // Create icon elements with type assertion to work around icon type issues
