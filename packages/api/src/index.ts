@@ -34,3 +34,12 @@ export { configureApiEndpoints, isApiConfigured } from './config';
 
 // Export EVM-specific services
 export { EvmService, type EvmTransactionsResponse, type EvmTransactionItem } from './evm';
+
+// Export crypto price history services
+export {
+  CryptoService,
+  parsePriceHistory,
+  type CryptoOhlcResponse,
+  type CryptowatchSummaryResponse,
+  type OhlcCandle,
+} from './crypto';

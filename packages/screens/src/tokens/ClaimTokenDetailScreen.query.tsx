@@ -1,3 +1,4 @@
+import { coinPairFromSymbol, cryptoQueries, cryptoQueryKeys } from '@onflow/frw-stores';
 import {
   Avatar,
   Button,
@@ -10,34 +11,12 @@ import {
   YStack,
   type PriceChartPeriod,
 } from '@onflow/frw-ui';
+import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions } from 'react-native';
 
 import type { ClaimItem } from './claim-types';
-
-// ---------------------------------------------------------------------------
-// Mock price history data per period
-// ---------------------------------------------------------------------------
-
-const MOCK_PRICE_DATA: Record<PriceChartPeriod, number[]> = {
-  '1D': [
-    0.00095, 0.00092, 0.00098, 0.00105, 0.00101, 0.00108, 0.00112, 0.00109, 0.00115, 0.00118,
-    0.00122, 0.00119, 0.00125, 0.00128,
-  ],
-  '1W': [
-    0.00078, 0.00082, 0.00079, 0.00086, 0.00091, 0.00088, 0.00095, 0.00099, 0.00103, 0.00108,
-    0.00112, 0.00116, 0.00121, 0.00128,
-  ],
-  '1M': [
-    0.00055, 0.00062, 0.00058, 0.00071, 0.00075, 0.00069, 0.00081, 0.00088, 0.00079, 0.00094,
-    0.00101, 0.00096, 0.0011, 0.00128,
-  ],
-  '1Y': [
-    0.00021, 0.00035, 0.00028, 0.00044, 0.00051, 0.00039, 0.00062, 0.00071, 0.00058, 0.00085,
-    0.00092, 0.00078, 0.00105, 0.00128,
-  ],
-};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -94,7 +73,15 @@ export function ClaimTokenDetailScreen({
   const chartWidth = screenWidth - 32; // account for horizontal padding
 
   const [period, setPeriod] = useState<PriceChartPeriod>('1D');
-  const chartData = MOCK_PRICE_DATA[period];
+
+  const coinPair = coinPairFromSymbol(item.symbol);
+  const { data: chartData = [], isFetching: isChartLoading } = useQuery({
+    queryKey: cryptoQueryKeys.priceHistory(coinPair, 'binance', period),
+    queryFn: () => cryptoQueries.fetchPriceHistory(coinPair, 'binance', period),
+    enabled: !!coinPair,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
 
   const currentPrice = item.price;
   const priceChange = item.priceChange24h;
@@ -158,7 +145,7 @@ export function ClaimTokenDetailScreen({
           </YStack>
 
           {/* Price chart */}
-          <YStack px="$4" pb="$4">
+          <YStack px="$4" pb="$4" opacity={isChartLoading ? 0.5 : 1}>
             <PriceChart
               data={chartData}
               width={chartWidth}
