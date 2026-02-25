@@ -2,7 +2,7 @@ import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { ServiceContext } from '@onflow/frw-context';
-import { profileService } from '@onflow/frw-services';
+import { keystoreService, profileService, validateKeystoreStructure } from '@onflow/frw-services';
 import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
 import * as bip39 from 'bip39';
 import * as ethUtil from 'ethereumjs-util';
@@ -26,7 +26,10 @@ import {
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
   SIGN_ALGO_NUM_DEFAULT,
+  SIGN_ALGO_NUM_ECDSA_P256,
+  SIGN_ALGO_NUM_ECDSA_secp256k1,
   HASH_ALGO_NUM_DEFAULT,
+  HASH_ALGO_NUM_SHA2_256,
   DEFAULT_WEIGHT,
 } from '@/shared/constant';
 import type {
@@ -51,7 +54,7 @@ import { authenticationService, preferenceService } from '.';
 import { analyticsService } from './analytics';
 import googleDriveService from './googleDrive';
 import keyringService, { type Keyring } from './keyring';
-import openapiService from './openapi';
+import openapiService, { getScripts } from './openapi';
 import userInfoService from './user';
 import userWalletService, {
   addPendingAccountCreationTransaction,
@@ -63,6 +66,7 @@ import {
   pubKeyAccountToAccountKey,
   pubKeySignAlgoToAccountKey,
   formPubKeyTuple,
+  fetchAccountsByPublicKeyRaw,
   jsonToKey,
   pk2PubKeyTuple,
   seedWithPathAndPhrase2PublicPrivateKey,
@@ -75,6 +79,75 @@ import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddress
 import { signWithKey } from '../utils/modules/publicPrivateKey';
 
 export class AccountManagement {
+  private pendingMultiBackupNewKey: {
+    mnemonic: string;
+    publicKey: string;
+    privateKey: string;
+    signAlgo: number;
+    hashAlgo: number;
+  } | null = null;
+
+  private async createMultiBackupNewKey(
+    signAlgo: number,
+    hashAlgo: number,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<{
+    mnemonic: string;
+    publicKey: string;
+    privateKey: string;
+    signAlgo: number;
+    hashAlgo: number;
+  }> {
+    // Multi-backup restore should produce a new copyable seed phrase for users.
+    // Use 12 words for secp256k1 and 15 words for P256 to match mobile heuristics.
+    const entropy = signAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? 160 : 128;
+    const mnemonic = bip39.generateMnemonic(entropy);
+    const tuple = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+    const primary = signAlgo === SIGN_ALGO_NUM_ECDSA_P256 ? tuple.P256 : tuple.SECP256K1;
+    return {
+      mnemonic,
+      publicKey: primary.pubK,
+      privateKey: primary.pk,
+      signAlgo,
+      hashAlgo,
+    };
+  }
+
+  /**
+   * Prepare and cache a new 1000-weight key for multi-backup restore.
+   * Used by UI to display the key before final password submission.
+   */
+  async prepareMultiBackupNewKeyPreview(mnemonic: string): Promise<{
+    mnemonic: string;
+    publicKey: string;
+    signAlgo: number;
+    hashAlgo: number;
+  }> {
+    const words = mnemonic.trim().split(/\s+/g).filter(Boolean).length;
+    const signAlgo = words === 12 ? SIGN_ALGO_NUM_ECDSA_secp256k1 : SIGN_ALGO_NUM_ECDSA_P256;
+    const hashAlgo = HASH_ALGO_NUM_SHA2_256;
+
+    if (
+      !this.pendingMultiBackupNewKey ||
+      this.pendingMultiBackupNewKey.signAlgo !== signAlgo ||
+      this.pendingMultiBackupNewKey.hashAlgo !== hashAlgo
+    ) {
+      this.pendingMultiBackupNewKey = await this.createMultiBackupNewKey(signAlgo, hashAlgo);
+    }
+
+    return {
+      mnemonic: this.pendingMultiBackupNewKey.mnemonic,
+      publicKey: this.pendingMultiBackupNewKey.publicKey,
+      signAlgo: this.pendingMultiBackupNewKey.signAlgo,
+      hashAlgo: this.pendingMultiBackupNewKey.hashAlgo,
+    };
+  }
+
   /**
    * Ensure ServiceContext is initialized (required for API package)
    * ServiceContext must be initialized before using ProfileService
@@ -714,6 +787,273 @@ export class AccountManagement {
     userWalletService.setCurrentPubkey(accountKeyStruct.public_key);
   }
 
+  /**
+   * Multi-backup import: allow split-weight accounts (e.g. 500 + 500).
+   * Instead of requiring a single key weight >= 1000, we:
+   * - locate candidate address via raw key-indexer lookup (no weight filter)
+   * - validate that the account's total active key weight on-chain is >= 1000
+   * - then proceed with import/login using the derived key
+   */
+  async importProfileUsingMnemonicMultiBackup(
+    username: string,
+    password: string,
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = '',
+    requiredTotalWeight: number = 1000
+  ): Promise<void> {
+    // Validate mnemonic first
+    if (!mnemonic || mnemonic.trim() === '') {
+      throw new Error('Mnemonic is required');
+    }
+    if (!bip39.validateMnemonic(mnemonic)) {
+      throw new Error('Invalid mnemonic format');
+    }
+
+    await this.verifyPasswordIfBooted(password);
+
+    const publicPrivateKey = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+    const pubKTuple = formPubKeyTuple(publicPrivateKey);
+
+    // Multi-backup (iOS behavior): 12 words -> secp256k1, otherwise P256.
+    const words = mnemonic.trim().split(/\s+/g).filter(Boolean).length;
+    const primaryPubKey = words === 12 ? pubKTuple.SECP256K1.pubK : pubKTuple.P256.pubK;
+
+    const raw = await fetchAccountsByPublicKeyRaw(primaryPubKey, 'mainnet');
+    if (raw.length === 0) {
+      throw new Error(
+        'No Flow accounts found for this seed phrase. Please ensure this mnemonic has been used to create Flow accounts, or use a different mnemonic.'
+      );
+    }
+
+    // Pick the first candidate address, then validate on-chain total active key weight.
+    const flowAddress = raw[0].address;
+    const account = await fcl.account(flowAddress);
+    const totalWeight = (account.keys ?? [])
+      .filter((k) => !k.revoked)
+      .reduce((sum, k) => sum + (k.weight ?? 0), 0);
+
+    if (totalWeight < requiredTotalWeight) {
+      throw new Error(
+        `Not enough key weight to restore. Total active key weight on ${flowAddress} is ${totalWeight}, require ${requiredTotalWeight}.`
+      );
+    }
+
+    // Use the derived key info from key-indexer response for backend import/login.
+    const accountKeyStruct = pubKeyAccountToAccountKey(raw[0]);
+
+    const importCheckResult = (await openapiService.checkImport(accountKeyStruct.public_key)) as {
+      status: number;
+    };
+    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
+      await this.loginV4(accountKeyStruct, mnemonic, false, derivationPath, passphrase);
+    } else {
+      await this.importV4(
+        accountKeyStruct,
+        mnemonic,
+        false,
+        username,
+        flowAddress,
+        undefined,
+        derivationPath,
+        passphrase
+      );
+    }
+
+    await this.createKeyringWithMnemonics(
+      accountKeyStruct.public_key,
+      accountKeyStruct.sign_algo,
+      password,
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+
+    userWalletService.setCurrentPubkey(accountKeyStruct.public_key);
+  }
+
+  /**
+   * Multi-backup import with two source keys (e.g. Google + Seed / Dropbox + Seed):
+   * - Keep normal import logic unchanged for other paths
+   * - Use the two restored keys ONLY in-memory to authorize an on-chain add-key transaction
+   * - Create a new 1000-weight key and login/import with ONLY the new key
+   */
+  async importProfileUsingMnemonicMultiBackupTwoKeys(
+    username: string,
+    password: string,
+    firstMnemonic: string,
+    secondMnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = '',
+    requiredTotalWeight: number = 1000
+  ): Promise<void> {
+    const normalizeMnemonic = (v: string) => v.trim().split(/\s+/g).join(' ');
+    const normalizeHex = (v: string) => v.replace(/^0x/i, '').toLowerCase();
+
+    const m1 = normalizeMnemonic(firstMnemonic);
+    const m2 = normalizeMnemonic(secondMnemonic);
+    if (!m1 || !m2) throw new Error('Both mnemonics are required');
+    if (!bip39.validateMnemonic(m1) || !bip39.validateMnemonic(m2)) {
+      throw new Error('Invalid mnemonic format');
+    }
+
+    await this.verifyPasswordIfBooted(password);
+
+    // Derive both key tuples (includes private keys)
+    const [tuple1, tuple2] = await Promise.all([
+      seedWithPathAndPhrase2PublicPrivateKey(m1, derivationPath, passphrase),
+      seedWithPathAndPhrase2PublicPrivateKey(m2, derivationPath, passphrase),
+    ]);
+
+    // Match iOS/Android heuristic: 12 words -> secp256k1, else P256
+    const primary1 = m1.split(' ').length === 12 ? tuple1.SECP256K1 : tuple1.P256;
+    const primary2 = m2.split(' ').length === 12 ? tuple2.SECP256K1 : tuple2.P256;
+
+    // Find a shared address between the two source keys
+    const [raw1, raw2] = await Promise.all([
+      fetchAccountsByPublicKeyRaw(primary1.pubK, 'mainnet'),
+      fetchAccountsByPublicKeyRaw(primary2.pubK, 'mainnet'),
+    ]);
+    if (raw1.length === 0 || raw2.length === 0) {
+      throw new Error('No Flow accounts found for one or both backup keys.');
+    }
+
+    const addrSet1 = new Set(raw1.map((a) => a.address));
+    const sharedAddresses = Array.from(new Set(raw2.map((a) => a.address))).filter((a) =>
+      addrSet1.has(a)
+    );
+    if (sharedAddresses.length === 0) {
+      throw new Error('Selected backup keys do not belong to the same Flow account.');
+    }
+    const flowAddress = sharedAddresses[0];
+
+    // Validate on-chain total active weight >= 1000
+    const account = await this.getAccountInfo(flowAddress);
+    const totalWeight = (account.keys ?? [])
+      .filter((k) => !k.revoked)
+      .reduce((sum, k) => sum + (k.weight ?? 0), 0);
+    if (totalWeight < requiredTotalWeight) {
+      throw new Error(
+        `Not enough key weight to restore. Total active key weight on ${flowAddress} is ${totalWeight}, require ${requiredTotalWeight}.`
+      );
+    }
+
+    // Resolve the exact on-chain keys for both source public keys
+    const k1 = account.keys.find((k) => normalizeHex(k.publicKey) === normalizeHex(primary1.pubK));
+    const k2 = account.keys.find((k) => normalizeHex(k.publicKey) === normalizeHex(primary2.pubK));
+    if (!k1 || !k2) {
+      throw new Error('Failed to resolve key indexes from on-chain account keys.');
+    }
+
+    // New key algorithm follows the first backup key algorithm.
+    const newSignAlgo = k1.signAlgo;
+    const newHashAlgo = k1.hashAlgo;
+    // Use prepared key if available (shown to user before final password), otherwise create now.
+    if (
+      !this.pendingMultiBackupNewKey ||
+      this.pendingMultiBackupNewKey.signAlgo !== newSignAlgo ||
+      this.pendingMultiBackupNewKey.hashAlgo !== newHashAlgo
+    ) {
+      this.pendingMultiBackupNewKey = await this.createMultiBackupNewKey(newSignAlgo, newHashAlgo);
+    }
+    const newMnemonic = this.pendingMultiBackupNewKey.mnemonic;
+    const newPrivateHex = this.pendingMultiBackupNewKey.privateKey;
+    const newPublicKey = this.pendingMultiBackupNewKey.publicKey;
+
+    const makeAuthz =
+      (key: { index: number; signAlgo: number; hashAlgo: number }, privateKeyHex: string) =>
+      async (accountData: any) => {
+        const ADDRESS = fcl.sansPrefix(flowAddress);
+        const KEY_ID = Number(key.index);
+        return {
+          ...accountData,
+          tempId: `${ADDRESS}-${KEY_ID}`,
+          addr: ADDRESS,
+          keyId: KEY_ID,
+          signingFunction: async (signable: { message: string }) => ({
+            addr: fcl.withPrefix(flowAddress),
+            keyId: KEY_ID,
+            signature: await signWithKey(
+              signable.message,
+              key.signAlgo,
+              key.hashAlgo,
+              privateKeyHex
+            ),
+          }),
+        };
+      };
+
+    const auth1 = makeAuthz(k1 as any, primary1.pk);
+    const auth2 = makeAuthz(k2 as any, primary2.pk);
+
+    // Reuse the shared cadence transaction script used by app flows (basic/addKey).
+    const addKeyCadence = await getScripts(userWalletService.getNetwork(), 'basic', 'addKey');
+
+    // Add the new 1000-weight key using the two backup keys for authorization.
+    const txId = await fcl.mutate({
+      cadence: addKeyCadence,
+      args: (arg, t) => [
+        arg(newPublicKey, t.String),
+        arg(newSignAlgo, t.UInt8),
+        arg(newHashAlgo, t.UInt8),
+        arg('1000.0', t.UFix64),
+      ],
+      proposer: auth1 as any,
+      authorizations: [auth1 as any, auth2 as any],
+      payer: userWalletService.payerAuthFunction as any,
+      limit: 9999,
+    });
+
+    const sealed = await fcl.tx(txId).onceSealed();
+    const flowStatus = Number((sealed as any)?.status ?? 0); // 4 = SEALED
+    const statusCode = Number((sealed as any)?.statusCode ?? 0); // 0 = success
+    if (!sealed || flowStatus < 4 || statusCode !== 0) {
+      throw new Error('Failed to add new 1000-weight key on-chain.');
+    }
+
+    // Login/register with ONLY the new key (the two backup keys are never used for login).
+    const newAccountKey: AccountKeyRequest = {
+      public_key: newPublicKey,
+      sign_algo: newSignAlgo,
+      hash_algo: newHashAlgo,
+      weight: 1000,
+    };
+
+    const importCheckResult = (await openapiService.checkImport(newAccountKey.public_key)) as {
+      status: number;
+    };
+    if (importCheckResult.status === HTTP_STATUS_CONFLICT) {
+      await this.loginV4(newAccountKey, newMnemonic, false, derivationPath, passphrase);
+    } else {
+      await this.importV4(
+        newAccountKey,
+        newMnemonic,
+        false,
+        username,
+        flowAddress,
+        undefined,
+        derivationPath,
+        passphrase
+      );
+    }
+
+    await this.createKeyringWithMnemonics(
+      newPublicKey,
+      newSignAlgo,
+      password,
+      newMnemonic,
+      derivationPath,
+      passphrase
+    );
+    userWalletService.setCurrentPubkey(newPublicKey);
+    // Key has been persisted; clear in-memory pending key.
+    this.pendingMultiBackupNewKey = null;
+  }
+
   async registerNewProfileUsingPrivateKey(
     username: string,
     password: string,
@@ -806,11 +1146,74 @@ export class AccountManagement {
     return await findAddressWithSeed(seed, address, derivationPath, passphrase);
   }
 
+  /**
+   * Derive the Flow public key from a mnemonic (for verification only, e.g. Google restore + seed phrase match).
+   */
+  async getPublicKeyFromMnemonic(
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<string> {
+    const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+    return tupleToPubKey(formPubKeyTuple(pubKTuple), SIGN_ALGO_NUM_DEFAULT);
+  }
+
+  /**
+   * Derive both Flow public keys (P256 + secp256k1) from a mnemonic for debug/verification.
+   * This avoids confusion when comparing against on-chain keys (often P256) while the extension defaults to secp256k1.
+   */
+  async getPublicKeyTupleFromMnemonic(
+    mnemonic: string,
+    derivationPath: string = FLOW_BIP44_PATH,
+    passphrase: string = ''
+  ): Promise<{ P256: string; SECP256K1: string }> {
+    const pubKTuple = await seedWithPathAndPhrase2PublicPrivateKey(
+      mnemonic,
+      derivationPath,
+      passphrase
+    );
+    return {
+      P256: pubKTuple.P256.pubK,
+      SECP256K1: pubKTuple.SECP256K1.pubK,
+    };
+  }
+
+  /**
+   * Debug helper: query key-indexer without filtering out weight < 1000 keys.
+   * (Some accounts use two keys with weight 500 each.)
+   */
+  async fetchAccountsByPublicKeyRawForDebug(
+    publicKey: string,
+    network: 'mainnet' | 'testnet' = 'mainnet'
+  ) {
+    return await fetchAccountsByPublicKeyRaw(publicKey, network);
+  }
+
   async findAddressWithPrivateKey(pk: string, address: string) {
     return await findAddressWithPK(pk, address);
   }
 
   async jsonToPrivateKeyHex(json: string, password: string): Promise<string | null> {
+    try {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(json);
+      } catch {
+        parsed = null;
+      }
+      if (parsed && validateKeystoreStructure(parsed)) {
+        const hex = await keystoreService().restorePrivateKeyFromKeystore(json, password);
+        if (hex && /^[0-9a-fA-F]{64}$/.test(hex.replace(/^0x/, ''))) {
+          return hex.replace(/^0x/, '');
+        }
+      }
+    } catch (_) {
+      // Fall through to TrustWallet path (e.g. wrong password or other format)
+    }
     const pk = await jsonToKey(json, password);
     return pk ? Buffer.from(pk.data()).toString('hex') : null;
   }

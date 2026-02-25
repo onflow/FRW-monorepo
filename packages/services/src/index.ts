@@ -3,6 +3,12 @@ export { ActivityService } from './ActivityService';
 export { AddressBookService } from './AddressBookService';
 export { default as FlowService } from './FlowService';
 export { KeyRotationService } from './KeyRotationService';
+export {
+  KeystoreService,
+  type KeystoreUnlockResult,
+  type KeystoreV3,
+  validateKeystoreStructure,
+} from './KeystoreService';
 export { NFTService } from './NFTService';
 export { ProfileService, type CreateFlowAddressResult } from './ProfileService';
 export { RecentRecipientsService } from './RecentRecipientsService';
@@ -13,6 +19,7 @@ export {
   activityService,
   addressBookService,
   flowService,
+  keystoreService,
   nftService,
   profileService,
   recentRecipientsService,

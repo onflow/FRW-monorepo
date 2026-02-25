@@ -1213,6 +1213,48 @@
   "Import_12_or_24_words": {
     "message": "Импортируйте 12 или 24 слова, разделенные пробелами"
   },
+  "Multi_Backup": {
+    "message": "Мульти-бэкап"
+  },
+  "Select_Backup_Method": {
+    "message": "Выберите способ резервного копирования"
+  },
+  "Select_Two_Options": {
+    "message": "Выберите два варианта"
+  },
+  "Dropbox": {
+    "message": "Dropbox"
+  },
+  "Backup_Method_Not_Supported": {
+    "message": "Этот метод резервного копирования пока не поддерживается."
+  },
+  "Google_Drive_and_Recovery_Phrase": {
+    "message": "Облачная резервная копия + фраза восстановления"
+  },
+  "Multi_Backup_Restore_Title": {
+    "message": "Восстановление с резервной копией и фразой восстановления"
+  },
+  "Multi_Backup_Restore_Subtitle": {
+    "message": "Выберите способ резервного копирования, затем подтвердите 12 или 24-словной фразой восстановления."
+  },
+  "Enter_Recovery_Phrase": {
+    "message": "Введите фразу восстановления"
+  },
+  "Enter_seed_phrase_to_verify_backup": {
+    "message": "Введите 12 или 24-словную фразу восстановления, чтобы подтвердить соответствие резервной копии."
+  },
+  "Seed_phrase_does_not_match_backup": {
+    "message": "Фраза восстановления не совпадает с резервной копией. Проверьте и попробуйте снова."
+  },
+  "Decrypting_backup_with_app_key": {
+    "message": "Будет расшифрована мульти-резервная копия."
+  },
+  "Verify_and_Continue": {
+    "message": "Проверить и продолжить"
+  },
+  "Invalid_mnemonic_format": {
+    "message": "Недействительная фраза восстановления. Пожалуйста, введите корректную фразу из 12 или 24 слов."
+  },
   "OK": {
     "message": "OK"
   },

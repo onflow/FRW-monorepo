@@ -1,5 +1,9 @@
-import type { TransactionSession } from '@onflow/frw-analytics';
-import { analytics, bridge, cadence } from '@onflow/frw-context';
+import {
+  createMixpanelAnalytics,
+  TransactionTracker,
+  type TransactionSession,
+} from '@onflow/frw-analytics';
+import { bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
   type CollectionModel,
@@ -378,55 +382,30 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     }),
 
-  // Create transaction session using analytics from context (initialized at app startup)
-  createTransactionSession: async (): Promise<TransactionSession | null> => {
-    try {
-      // Check if analytics is available (may be null on React Native where native MixpanelManager handles tracking)
-      if (!analytics.isEnabled()) {
-        logger.debug('[SendStore] Analytics not enabled, skipping transaction tracking');
-        return null;
-      }
+  // Create transaction tracker
+  createTransactionSession: async (config: any): Promise<TransactionSession | null> => {
+    const state = get();
+    const { transactionType } = state;
+    const analytics = await createMixpanelAnalytics(config);
+    logger.info('[SendStore] createTracker -- state:', state);
 
-      const transactionTracker = analytics.getTransactionTracker();
-      if (!transactionTracker) {
-        logger.debug('[SendStore] No transaction tracker available');
-        return null;
-      }
+    const transactionTracker = new TransactionTracker(analytics);
 
-      const state = get();
-      const { transactionType } = state;
+    const { accounts } = await bridge.getWalletAccounts();
+    const selectedAccount = await bridge.getSelectedAccount();
+    const mainAccount =
+      selectedAccount.type === 'main'
+        ? selectedAccount
+        : accounts.find(
+            (account) =>
+              account.type === 'main' && account.address === selectedAccount.parentAddress
+          );
+    const session = transactionTracker?.createTransactionSession(
+      mainAccount!.address,
+      transactionType
+    );
 
-      const { accounts } = await bridge.getWalletAccounts();
-      const selectedAccount = await bridge.getSelectedAccount();
-      const mainAccount =
-        selectedAccount.type === 'main'
-          ? selectedAccount
-          : accounts.find(
-              (account) =>
-                account.type === 'main' && account.address === selectedAccount.parentAddress
-            );
-
-      if (!mainAccount) {
-        logger.warn('[SendStore] No main account found for analytics session');
-        return null;
-      }
-
-      // Cast to TransactionSession since TransactionTracker returns unknown to avoid type conflicts
-      const session = transactionTracker.createTransactionSession(
-        mainAccount.address,
-        transactionType
-      ) as TransactionSession;
-
-      logger.debug('[SendStore] Transaction session created for analytics');
-      return session;
-    } catch (error) {
-      // Analytics session creation failed - continue without tracking
-      logger.warn(
-        '[SendStore] Analytics session creation failed, continuing without tracking:',
-        error
-      );
-      return null;
-    }
+    return session;
   },
 
   // Create send payload for transaction execution
@@ -615,9 +594,11 @@ export const useSendStore = create<SendState>((set, get) => ({
   executeTransaction: async (): Promise<any> => {
     const state = get();
     set({ isLoading: true, error: null });
-
-    // Create analytics session (uses pre-initialized analytics from context)
-    const session = await state.createTransactionSession();
+    // init mixpanel
+    const session = await state.createTransactionSession({
+      token: bridge.getMixpanelToken(),
+      debug: true,
+    });
 
     try {
       // Create payload
@@ -636,7 +617,10 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
-      const wrapWithCadence = (await bridge.getWrapEOATxWithCadence?.()) ?? true;
+      const wrapWithCadence =
+        (await (
+          bridge as { getWrapEOATxWithCadence?: () => Promise<boolean> }
+        ).getWrapEOATxWithCadence?.()) ?? true;
       const useDirectEvm = !wrapWithCadence;
 
       const network = bridge.getNetwork?.() ?? 'mainnet';

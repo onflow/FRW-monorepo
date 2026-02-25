@@ -37,7 +37,14 @@ const BpCheckedIcon = styled(BpIcon)({
   },
 });
 
-const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPassword }) => {
+const GoogleRecoverPassword = ({
+  handleSwitchTab,
+  mnemonic,
+  verifiedSeedPhrase,
+  username,
+  lastPassword,
+  isMultiBackup = false,
+}) => {
   const usewallet = useWallet();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
@@ -102,13 +109,42 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
   const [helperMatch, setHelperMatch] = useState(<div />);
   const [showDialog, setShowDialog] = useState(false);
   const [isCheck, setCheck] = useState(true);
+  const [newKeyPreview, setNewKeyPreview] = useState<{
+    mnemonic: string;
+    publicKey: string;
+    signAlgo: number;
+    hashAlgo: number;
+  } | null>(null);
+  const [isPreviewLoading, setPreviewLoading] = useState(false);
+  const [copiedPhrase, setCopiedPhrase] = useState(false);
 
   const login = async () => {
     setLoading(true);
 
     await usewallet.saveIndex(username);
     try {
-      await usewallet.importProfileUsingMnemonic(username, password, mnemonic);
+      // Backend import accepts only alphanumeric username.
+      const sanitizedUsername = (username || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      const usernameForImport = sanitizedUsername || `user${Date.now().toString(36)}`;
+
+      if (isMultiBackup) {
+        if (verifiedSeedPhrase && verifiedSeedPhrase.trim()) {
+          await usewallet.importProfileUsingMnemonicMultiBackupTwoKeys(
+            usernameForImport,
+            password,
+            mnemonic,
+            verifiedSeedPhrase
+          );
+        } else {
+          await usewallet.importProfileUsingMnemonicMultiBackup(
+            usernameForImport,
+            password,
+            mnemonic
+          );
+        }
+      } else {
+        await usewallet.importProfileUsingMnemonic(usernameForImport, password, mnemonic);
+      }
       setLoading(false);
       handleSwitchTab();
     } catch (e) {
@@ -132,6 +168,48 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
     }
   }, [isCheck, lastPassword]);
 
+  useEffect(() => {
+    if (!isMultiBackup || !mnemonic) {
+      setNewKeyPreview(null);
+      return;
+    }
+    let cancelled = false;
+    const loadPreview = async () => {
+      try {
+        setPreviewLoading(true);
+        const preview = await usewallet.prepareMultiBackupNewKeyPreview(mnemonic);
+        if (!cancelled) {
+          setNewKeyPreview(preview);
+        }
+      } catch {
+        if (!cancelled) {
+          setNewKeyPreview(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setPreviewLoading(false);
+        }
+      }
+    };
+    loadPreview();
+    return () => {
+      cancelled = true;
+    };
+  }, [isMultiBackup, mnemonic, usewallet]);
+
+  const copySeedPhrase = async () => {
+    if (!newKeyPreview?.mnemonic) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(newKeyPreview.mnemonic);
+      setCopiedPhrase(true);
+      setTimeout(() => setCopiedPhrase(false), 1500);
+    } catch {
+      // ignore clipboard write errors
+    }
+  };
+
   return (
     <>
       {!showDialog ? (
@@ -147,6 +225,45 @@ const GoogleRecoverPassword = ({ handleSwitchTab, mnemonic, username, lastPasswo
               'Lilico__uses__this__password__to__protect__your__recovery__phrase'
             )}
           </Typography>
+
+          {isMultiBackup && (
+            <Box
+              sx={{
+                mt: 2,
+                p: 1.5,
+                width: 640,
+                maxWidth: '100%',
+                borderRadius: '12px',
+                bgcolor: 'action.hover',
+              }}
+            >
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                New recovery phrase for the new 1000-weight key:
+              </Typography>
+              <Typography
+                variant="caption"
+                component="div"
+                sx={{ fontFamily: 'monospace', wordBreak: 'break-word' }}
+              >
+                {isPreviewLoading ? 'Generating...' : newKeyPreview?.mnemonic || '(unavailable)'}
+              </Typography>
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={copySeedPhrase}
+                  disabled={!newKeyPreview?.mnemonic}
+                >
+                  Copy Phrase
+                </Button>
+                {copiedPhrase && (
+                  <Typography variant="caption" color="success.main">
+                    Copied
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          )}
 
           <Box
             sx={{

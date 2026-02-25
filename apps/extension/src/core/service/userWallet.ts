@@ -89,7 +89,7 @@ import { HTTP_STATUS_TOO_MANY_REQUESTS } from '../../shared/constant/domain-cons
 import { defaultAccountKey, pubKeyAccountToAccountKey } from '../utils/account-key';
 import { getCurrentProfileId } from '../utils/current-id';
 import { fclConfig, fclEnsureNetwork, getFlowClient } from '../utils/fclConfig';
-import { fetchAccountsByPublicKey } from '../utils/key-indexer';
+import { fetchAccountsByPublicKey, fetchAccountsByPublicKeyRaw } from '../utils/key-indexer';
 import { getAccountsByPublicKeyTuple } from '../utils/modules/findAddressWithPubKey';
 import {
   pk2PubKeyTuple,
@@ -1844,8 +1844,14 @@ const loadMainAccountsWithPubKey = async (
   // Get current user ID
   const userId = await getCurrentProfileId();
 
-  // Get the accounts for the current public key
-  const accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
+  // Get the accounts for the current public key.
+  // Default path filters out keys with weight < 1000 (single-sig capable).
+  // Multi-backup can restore split-weight setups (e.g. 500 + 500), so fall back to raw results
+  // to at least resolve/display the account address.
+  let accounts: PublicKeyAccount[] = await fetchAccountsByPublicKey(pubKey, network);
+  if (accounts.length === 0) {
+    accounts = await fetchAccountsByPublicKeyRaw(pubKey, network);
+  }
 
   // Get the placeholder accounts for the current user
   const placeholderAccounts = await getPlaceholderAccounts(network, userId);

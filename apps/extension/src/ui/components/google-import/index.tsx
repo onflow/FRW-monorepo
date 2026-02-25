@@ -3,17 +3,17 @@ import React, { useState } from 'react';
 
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
-import RecoveryPhrase from '@/ui/components/LandingPages/RecoveryPhrase';
 import { DEFAULT_PASSWORD } from '@/ui/utils/default-password';
 
 import DecryptWallet from './DecryptWallet';
+import EnterSeedPhrase from './EnterSeedPhrase';
 import GoogleAccounts from './GoogleAccounts';
 import GoogleRecoverPassword from './GoogleRecoverPassword';
 
 const STEPS = {
   ACCOUNTS: 'accounts',
   DECRYPT: 'decrypt',
-  RECOVERY: 'recovery',
+  ENTER_SEED_PHRASE: 'enter_seed_phrase',
   PASSWORD: 'password',
   ALL_SET: 'all_set',
 } as const;
@@ -27,24 +27,42 @@ interface AccountsState {
 interface GoogleProps {
   accounts: string[];
   onBack: () => void;
+  isMultiBackup?: boolean;
+  /** Only used when isMultiBackup=true. */
+  multiBackupProvider?: 'google' | 'dropbox';
+  /** Selected multi-backup sources (2-of-3): google, dropbox, seed. */
+  multiBackupSources?: Array<'google' | 'dropbox' | 'seed'>;
 }
 
-const Google: React.FC<GoogleProps> = ({ accounts, onBack }) => {
+const Google: React.FC<GoogleProps> = ({
+  accounts,
+  onBack,
+  isMultiBackup = false,
+  multiBackupProvider = 'google',
+  multiBackupSources = [],
+}) => {
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.ACCOUNTS);
   const [mnemonic, setMnemonic] = useState('');
+  const [verifiedSeedPhrase, setVerifiedSeedPhrase] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState(DEFAULT_PASSWORD);
+
+  // Seed phrase is one independent multi-backup source; only verify if user selected it.
+  const needsSeedVerify = isMultiBackup && multiBackupSources.includes('seed');
+  const stepOrder: StepType[] = needsSeedVerify
+    ? [STEPS.ACCOUNTS, STEPS.DECRYPT, STEPS.ENTER_SEED_PHRASE, STEPS.PASSWORD, STEPS.ALL_SET]
+    : [STEPS.ACCOUNTS, STEPS.DECRYPT, STEPS.PASSWORD, STEPS.ALL_SET];
 
   const goBack = () => {
     switch (activeTab) {
       case STEPS.DECRYPT:
         setActiveTab(STEPS.ACCOUNTS);
         break;
-      case STEPS.RECOVERY:
+      case STEPS.ENTER_SEED_PHRASE:
         setActiveTab(STEPS.DECRYPT);
         break;
       case STEPS.PASSWORD:
-        setActiveTab(STEPS.RECOVERY);
+        setActiveTab(needsSeedVerify ? STEPS.ENTER_SEED_PHRASE : STEPS.DECRYPT);
         break;
       case STEPS.ALL_SET:
         setActiveTab(STEPS.PASSWORD);
@@ -56,7 +74,7 @@ const Google: React.FC<GoogleProps> = ({ accounts, onBack }) => {
 
   return (
     <LandingComponents
-      activeIndex={Object.values(STEPS).indexOf(activeTab)}
+      activeIndex={Math.max(0, stepOrder.indexOf(activeTab))}
       direction="right"
       showBackButton={activeTab !== STEPS.ALL_SET}
       onBack={goBack}
@@ -74,16 +92,23 @@ const Google: React.FC<GoogleProps> = ({ accounts, onBack }) => {
 
         {activeTab === STEPS.DECRYPT && (
           <DecryptWallet
-            handleSwitchTab={() => setActiveTab(STEPS.RECOVERY)}
+            handleSwitchTab={() =>
+              setActiveTab(needsSeedVerify ? STEPS.ENTER_SEED_PHRASE : STEPS.PASSWORD)
+            }
             setMnemonic={setMnemonic}
             username={username}
+            isMultiBackup={isMultiBackup}
+            multiBackupProvider={multiBackupProvider}
+            multiBackupSources={multiBackupSources}
+            onDecryptedPassword={setPassword}
           />
         )}
 
-        {activeTab === STEPS.RECOVERY && (
-          <RecoveryPhrase
+        {needsSeedVerify && activeTab === STEPS.ENTER_SEED_PHRASE && (
+          <EnterSeedPhrase
+            mnemonicFromGoogle={mnemonic}
+            onVerifiedPhrase={setVerifiedSeedPhrase}
             handleSwitchTab={() => setActiveTab(STEPS.PASSWORD)}
-            mnemonic={mnemonic}
           />
         )}
 
@@ -91,8 +116,10 @@ const Google: React.FC<GoogleProps> = ({ accounts, onBack }) => {
           <GoogleRecoverPassword
             handleSwitchTab={() => setActiveTab(STEPS.ALL_SET)}
             mnemonic={mnemonic}
+            verifiedSeedPhrase={verifiedSeedPhrase}
             username={username}
             lastPassword={password}
+            isMultiBackup={isMultiBackup}
           />
         )}
 

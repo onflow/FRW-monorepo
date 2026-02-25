@@ -1213,6 +1213,48 @@
   "Import_12_or_24_words": {
     "message": "12 語または 24 語をスペースで区切ってインポート"
   },
+  "Multi_Backup": {
+    "message": "マルチバックアップ"
+  },
+  "Select_Backup_Method": {
+    "message": "バックアップ方法を選択"
+  },
+  "Select_Two_Options": {
+    "message": "2つ選択してください"
+  },
+  "Dropbox": {
+    "message": "Dropbox"
+  },
+  "Backup_Method_Not_Supported": {
+    "message": "このバックアップ方法はまだサポートされていません。"
+  },
+  "Google_Drive_and_Recovery_Phrase": {
+    "message": "クラウドバックアップ + リカバリーフレーズ"
+  },
+  "Multi_Backup_Restore_Title": {
+    "message": "バックアップとリカバリーフレーズで復元"
+  },
+  "Multi_Backup_Restore_Subtitle": {
+    "message": "バックアップ方法を選択し、12 または 24 語のリカバリーフレーズで確認してください。"
+  },
+  "Enter_Recovery_Phrase": {
+    "message": "リカバリーフレーズを入力"
+  },
+  "Enter_seed_phrase_to_verify_backup": {
+    "message": "バックアップと一致するか確認するため、12 または 24 語のリカバリーフレーズを入力してください。"
+  },
+  "Seed_phrase_does_not_match_backup": {
+    "message": "リカバリーフレーズがバックアップと一致しません。確認して再度お試しください。"
+  },
+  "Decrypting_backup_with_app_key": {
+    "message": "マルチバックアップを復号します。"
+  },
+  "Verify_and_Continue": {
+    "message": "確認して続行"
+  },
+  "Invalid_mnemonic_format": {
+    "message": "無効なリカバリーフレーズです。12 または 24 語の有効なフレーズを入力してください。"
+  },
   "OK": {
     "message": "OK"
   },

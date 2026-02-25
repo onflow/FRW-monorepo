@@ -24,6 +24,7 @@ import {
   userWalletService,
   versionService,
   googleDriveService,
+  dropboxService,
 } from '@/core/service';
 import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
@@ -35,7 +36,10 @@ import { isValidFlowAddress, consoleError, consoleLog } from '@/shared/utils';
 import notificationService from './controller/notification';
 import packageJson from '../../package.json';
 import { getFirbaseConfig } from './utils/firebaseConfig';
-import { getAuthTokenWrapper } from './utils/googleDriveAuthToken';
+import {
+  getAuthTokenWrapper,
+  getAuthTokenWrapperWithDriveReadonly,
+} from './utils/googleDriveAuthToken';
 import { mixpanelService } from './utils/mixpanel-analytics';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 
@@ -111,7 +115,15 @@ async function restoreAppState() {
     AES_KEY: process.env.GD_AES_KEY!,
     IV: process.env.GD_IV!,
     getAuthTokenWrapper,
+    getAuthTokenWrapperWithDriveReadonly, // only used when loading Multi Backup from Drive root
   });
+  // Optional: Multi Backup via Dropbox (OAuth in extension)
+  if (process.env.DROPBOX_APP_KEY) {
+    await dropboxService.init({
+      appKey: process.env.DROPBOX_APP_KEY,
+      backupAESKey: process.env.GD_AES_KEY!,
+    });
+  }
   await googleSafeHostService.init({
     baseURL: 'https://safebrowsing.googleapis.com/',
     key: process.env.GOOGLE_API!,

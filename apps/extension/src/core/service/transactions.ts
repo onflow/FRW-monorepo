@@ -1317,30 +1317,13 @@ export class TransactionService {
     hashAlgorithm: number,
     weight: number
   ): Promise<string> {
-    return await userWalletService.sendTransaction(
-      `
-      import Crypto
-      transaction(publicKey: String, signatureAlgorithm: UInt8, hashAlgorithm: UInt8, weight: UFix64) {
-          prepare(signer: AuthAccount) {
-              let key = PublicKey(
-                  publicKey: publicKey.decodeHex(),
-                  signatureAlgorithm: SignatureAlgorithm(rawValue: signatureAlgorithm)!
-              )
-              signer.keys.add(
-                  publicKey: key,
-                  hashAlgorithm: HashAlgorithm(rawValue: hashAlgorithm)!,
-                  weight: weight
-              )
-          }
-      }
-      `,
-      [
-        fcl.arg(publicKey, fcl.t.String),
-        fcl.arg(signatureAlgorithm, fcl.t.UInt8),
-        fcl.arg(hashAlgorithm, fcl.t.UInt8),
-        fcl.arg(weight.toFixed(1), fcl.t.UFix64),
-      ]
-    );
+    const script = await getScripts(userWalletService.getNetwork(), 'basic', 'addKey');
+    return await userWalletService.sendTransaction(script, [
+      fcl.arg(publicKey, fcl.t.String),
+      fcl.arg(signatureAlgorithm, fcl.t.UInt8),
+      fcl.arg(hashAlgorithm, fcl.t.UInt8),
+      fcl.arg(weight.toFixed(1), fcl.t.UFix64),
+    ]);
   }
 
   async enableTokenStorage(symbol: string): Promise<string | undefined> {

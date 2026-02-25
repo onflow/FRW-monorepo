@@ -8,7 +8,7 @@ import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
-const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound }) => {
+const Googledrive = ({ setErrorMessage, setShowError, handleBackupAccountsFound }) => {
   const wallets = useWallet();
 
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
       localStorage.setItem('backupAccounts', JSON.stringify(accounts));
 
       if (accounts.length > 0) {
-        handleGoogleAccountsFound(accounts);
+        handleBackupAccountsFound(accounts, { kind: 'legacy_google' });
       } else {
         setShowError(true);
         setErrorMessage(chrome.i18n.getMessage('No__backup__found'));
