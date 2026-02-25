@@ -1,12 +1,14 @@
 import NonFungibleToken from 0xNonFungibleToken
-import StorageRent from 0xStorageRent
 import ViewResolver from 0xMetadataViews
 import MetadataViews from 0xMetadataViews
+import LostAndFound from 0xLostAndFound
+import FungibleToken from 0xf233dcee88fe0abe
+import FlowToken from 0xFlowToken
 
 
 
-transaction(identifier: String, recipientAddr: Address, ids: [UInt64]) {
-    prepare(signer: auth(Storage, BorrowValue) &Account) {
+transaction(identifier: String, recipient: Address, ids: [UInt64]) {
+    prepare(acct: auth(Storage, BorrowValue, Capabilities) &Account) {
         let type = CompositeType(identifier)
         let identifierSplit = identifier.split(separator: ".")
         let address = Address.fromString("0x".concat(identifierSplit[1]))!
@@ -19,25 +21,58 @@ transaction(identifier: String, recipientAddr: Address, ids: [UInt64]) {
         viewType: Type<MetadataViews.NFTCollectionData>()
         ) as! MetadataViews.NFTCollectionData? ?? panic("Could not resolve NFTCollectionData view")
         // get the recipients public account object
-        let recipient = getAccount(recipientAddr)
+        // let recipient = getAccount(recipientAddr)
         // borrow a reference to the signer''s NFT collection
-        let collectionRef = signer.storage
+        let collectionRef = acct.storage
         .borrow<auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Collection}>(from: /storage/MomentCollection)
         ?? panic("Could not borrow a reference to the owner''s collection")
-        let senderRef = signer
-        .capabilities
-        .borrow<&{NonFungibleToken.CollectionPublic}>(/public/MomentCollection)
+        // let senderRef = signer
+        // .capabilities
+        // .borrow<&{NonFungibleToken.CollectionPublic}>(/public/MomentCollection)
         // borrow a public reference to the receivers collection
-        let recipientRef = recipient
-        .capabilities
-        .borrow<&{NonFungibleToken.CollectionPublic}>(/public/MomentCollection) ?? panic("Unable to borrow receiver reference")
+        // let recipientRef = recipient
+        // .capabilities
+        // .borrow<&{NonFungibleToken.CollectionPublic}>(/public/MomentCollection) ?? panic("Unable to borrow receiver reference")
         
-        for withdrawID in ids {
-            // withdraw the NFT from the owner''s collection
-            let nft <- collectionRef.withdraw(withdrawID: withdrawID)
-            // Deposit the NFT in the recipient''s collection
-            recipientRef!.deposit(token: <-nft)
+        var provider: Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>? = nil
+        acct.capabilities.storage.forEachController(forPath: /storage/flowTokenVault, fun(c: &StorageCapabilityController): Bool {
+            if c.borrowType == Type<auth(FungibleToken.Withdraw) &FlowToken.Vault>() {
+                provider = c.capability as! Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>
+            }
+            return true
+        })
+
+        if provider == nil {
+            provider = acct.capabilities.storage.issue<auth(FungibleToken.Withdraw) &FlowToken.Vault>(/storage/flowTokenVault)
         }
-        StorageRent.tryRefill(recipientAddr)
+
+        let flowReceiver = acct.capabilities.get<&FlowToken.Vault>(/public/flowTokenReceiver)!
+        let receiverCap = getAccount(recipient).capabilities.get<&{NonFungibleToken.CollectionPublic}>(collectionData.publicPath)!
+        let flowProvider = provider!
+
+        for withdrawID in ids {
+            let nft <- collectionRef.withdraw(withdrawID: withdrawID)
+            let display = nft.resolveView(Type<MetadataViews.Display>()) as! MetadataViews.Display?
+
+            let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <- nft, memo: "Send NFTs backup", display: display)
+            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+            let item <- depositEstimate.withdraw()
+            // withdraw the NFT from the owner''s collection
+            // let nft <- collectionRef.withdraw(withdrawID: withdrawID)
+            // Deposit the NFT in the recipient''s collection
+            // recipientRef!.deposit(token: <-nft)
+            LostAndFound.trySendResource(
+                item: <-item,
+                cap: receiverCap,
+                memo: "Send NFTs Backup",
+                display: display,
+                storagePayment: &storageFee as auth(FungibleToken.Withdraw) &{FungibleToken.Vault},
+                flowTokenRepayment: flowReceiver
+            )
+            flowReceiver.borrow()!.deposit(from: <-storageFee)
+            destroy depositEstimate
+
+        }
+        // StorageRent.tryRefill(recipientAddr)
     }
 }

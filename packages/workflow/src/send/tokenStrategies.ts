@@ -198,7 +198,12 @@ export class FlowToFlowTokenStrategy implements TransferStrategy {
       amount: formattedAmount,
     });
 
-    return await this.cadenceService.transferTokensV3(flowIdentifier, receiver, formattedAmount);
+    return await this.cadenceService.transferTokensV3(
+      flowIdentifier,
+      receiver,
+      formattedAmount,
+      ''
+    );
   }
 }
 
