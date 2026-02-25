@@ -3638,68 +3638,6 @@ transaction(identifier: String, recipientAddr: Address, withdrawID: UInt64) {
     return result.response;
   }
 
-
-  public async sendNft(identifier: string, recipientAddr: string, withdrawID: number) {
-    const code = `
-import NonFungibleToken from 0xNonFungibleToken
-import MetadataViews from 0xMetadataViews
-import ViewResolver from 0xMetadataViews
-// This transaction is for transferring and NFT from
-// one account to another
-
-transaction(identifier: String, recipientAddr: Address, withdrawID: UInt64) {
-
-    prepare(signer: auth(Storage, BorrowValue) &Account) {
-        let type = CompositeType(identifier)
-        let identifierSplit = identifier.split(separator: ".")
-        let address = Address.fromString("0x".concat(identifierSplit[1]))!
-        let name = identifierSplit[2]!
-
-        let viewResolver = getAccount(address).contracts.borrow<&{ViewResolver}>(name: name)
-        ?? panic("Could not borrow ViewResolver from NFT contract")
-        let collectionData = viewResolver.resolveContractView(
-        resourceType: nil,
-        viewType: Type<MetadataViews.NFTCollectionData>()
-        ) as! MetadataViews.NFTCollectionData? ?? panic("Could not resolve NFTCollectionData view")
-        // get the recipients public account object
-        let recipient = getAccount(recipientAddr)
-
-        // borrow a reference to the signer's NFT collection
-        let collectionRef = signer.storage.borrow<auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Provider}>(from: collectionData.storagePath)
-            ?? panic("Could not borrow a reference to the owner's collection")
-
-        // borrow a public reference to the receivers collection
-        let depositRef = recipient
-            .capabilities
-            .borrow<&{NonFungibleToken.Collection}>(collectionData.publicPath)
-            ?? panic("Could not borrow a reference to the receiver's collection")
-
-        // withdraw the NFT from the owner's collection
-        let nft <- collectionRef.withdraw(withdrawID: withdrawID)
-
-        // Deposit the NFT in the recipient's collection
-        depositRef.deposit(token: <-nft)
-
-    }
-}
-`;
-    let config = {
-      cadence: code.trim(),
-      name: "sendNft",
-      type: "transaction",
-      args: (arg: any, t: any) => [
-        arg(identifier, t.String),
-        arg(recipientAddr, t.Address),
-        arg(withdrawID, t.UInt64),
-      ],
-      limit: 9999,
-    };
-    config = await this.runRequestInterceptors(config);
-    let txId = await fcl.mutate(config);
-    const result = await this.runResponseInterceptors(config, txId);
-    return result.response;
-  }
-
   // Tag: SrcCadenceEvmScripts
   public async getAddr(flowAddress: string): Promise<string| undefined> {
     const code = `
@@ -7023,6 +6961,447 @@ transaction(vaultIdentifier:String, sender: Address, amount: UFix64 ) {
         arg(vaultIdentifier, t.String),
         arg(sender, t.Address),
         arg(amount, t.UFix64),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+  // Tag: SrcCadenceLostandfoundQuery
+  public async queryUnclaimedFts(addr: string): Promise<any | undefined[]> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+import MetadataViews from 0xMetadataViews
+import FungibleToken from 0xFungibleToken
+
+access(all) fun main(addr: Address): [AnyStruct?] {
+    let tickets = LostAndFound.borrowAllTickets(addr: addr)
+    
+    let displayArr: [AnyStruct?]  = []
+    for ticket in tickets {
+        if ticket.type.isSubtype(of: Type<@{FungibleToken.Vault}>()) { 
+            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance()})
+        }
+    }
+    return displayArr
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "queryUnclaimedFts",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addr, t.Address),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
+  public async queryUnclaimedNfts(addr: string): Promise<&MetadataViewsDisplay | undefined[]> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+import MetadataViews from 0xMetadataViews
+import NonFungibleToken from 0xNonFungibleToken
+
+access(all) fun main(addr: Address): [&MetadataViews.Display?] {
+    let tickets = LostAndFound.borrowAllTickets(addr: addr)
+    
+    let displayArr: [&MetadataViews.Display?]  = []
+    for ticket in tickets {
+        if ticket.type.isSubtype(of: Type<@{NonFungibleToken.NFT}>()) { 
+            displayArr.append(ticket.display)
+        }
+    }
+    
+    return displayArr
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "queryUnclaimedNfts",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addr, t.Address),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
+  public async queryUnclaimedNumber(addr: string): Promise<number> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+
+access(all) fun main(addr: Address): Int {
+    let shelfManager = LostAndFound.borrowShelfManager()
+    let shelf = shelfManager.borrowShelf(redeemer: addr)
+    if shelf == nil {
+        return 0
+    }
+    
+    return shelf!.getRedeemableTypes().length
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "queryUnclaimedNumber",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addr, t.Address),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+  // Tag: SrcCadenceLostandfoundTransaction
+  public async claimFt(vaultIdentifier: string) {
+    const code = `
+import FlowToken from 0xFlowToken
+import FungibleToken from 0xFungibleToken
+import LostAndFound from 0xLostAndFound
+import ViewResolver from 0xMetadataViews
+import FungibleTokenMetadataViews from 0xFungibleToken
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+
+transaction(vaultIdentifier: String) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
+        let vaultType = CompositeType(vaultIdentifier)
+            ?? panic("Could not construct Vault type from identifier: ".concat(vaultIdentifier))
+        let tokenContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: vaultType)
+            ?? panic("Could not get contract address from identifier: ".concat(vaultIdentifier))
+        let tokenContractName = FlowEVMBridgeUtils.getContractName(fromType: vaultType)
+            ?? panic("Could not get contract name from identifier: ".concat(vaultIdentifier))
+        
+        let viewResolver = getAccount(tokenContractAddress).contracts.borrow<&{ViewResolver}>(name: tokenContractName)
+            ?? panic("Could not borrow ViewResolver from FungibleToken contract")
+        let vaultData = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<FungibleTokenMetadataViews.FTVaultData>()
+            ) as! FungibleTokenMetadataViews.FTVaultData? ?? panic("Could not resolve FTVaultData view")
+
+
+       
+
+        if acct.storage.borrow<&{FungibleToken.Vault}>(from: vaultData.storagePath) == nil {
+            acct.storage.save(
+                <- vaultData.createEmptyVault(),
+                to: vaultData.storagePath
+            )
+        }
+
+        acct.capabilities.unpublish(vaultData.receiverPath)
+        acct.capabilities.publish(
+            acct.capabilities.storage.issue<&{FungibleToken.Receiver, FungibleToken.Balance}>(vaultData.storagePath),
+            at: vaultData.receiverPath
+        )
+                
+        let cap = acct.capabilities.get<&{FungibleToken.Receiver}>(vaultData.receiverPath)
+
+        LostAndFound.redeemAll(type: vaultType, max: nil, receiver: cap)
+        acct.capabilities.storage.getController(byCapabilityID: cap.id)!.delete()
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "claimFt",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(vaultIdentifier, t.String),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
+  public async claimNft(nftIdentifier: string) {
+    const code = `
+import NonFungibleToken from 0xNonFungibleToken
+import LostAndFound from 0xLostAndFound
+import MetadataViews from 0xMetadataViews
+import ViewResolver from 0xMetadataViews
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+
+
+transaction(nftIdentifier: String) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
+        let nftType = CompositeType(nftIdentifier)
+            ?? panic("Could not construct NFT type from identifier: ".concat(nftIdentifier))
+        let nftContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: nftType)
+            ?? panic("Could not get contract address from identifier: ".concat(nftIdentifier))
+        let nftContractName = FlowEVMBridgeUtils.getContractName(fromType: nftType)
+            ?? panic("Could not get contract name from identifier: ".concat(nftIdentifier))
+
+        let viewResolver = getAccount(nftContractAddress).contracts.borrow<&{ViewResolver}>(name: nftContractName)
+            ?? panic("Could not borrow ViewResolver from NFT contract")
+        let collectionData = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<MetadataViews.NFTCollectionData>()
+            ) as! MetadataViews.NFTCollectionData? ?? panic("Could not resolve NFTCollectionData view")
+        
+       
+
+        if acct.storage.borrow<&{NonFungibleToken.Collection}>(from: collectionData.storagePath) == nil {
+            acct.storage.save(
+                <- collectionData.createEmptyCollection(),
+                to: collectionData.storagePath
+            )
+        }
+
+        acct.capabilities.unpublish(collectionData.publicPath)
+        acct.capabilities.publish(
+            acct.capabilities.storage.issue<&{NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic}>(collectionData.storagePath),
+            at: collectionData.publicPath
+        )
+                
+        let cap = acct.capabilities.get<&{NonFungibleToken.CollectionPublic}>(collectionData.publicPath)
+
+        LostAndFound.redeemAll(type: nftType, max: nil, receiver: cap)
+        acct.capabilities.storage.getController(byCapabilityID: cap.id)!.delete()
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "claimNft",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(nftIdentifier, t.String),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
+  public async sendFt(vaultIdentifier: string, recipient: string, amount: string, memo: string) {
+    const code = `
+import FlowToken from 0xFlowToken
+import FungibleToken from 0xFungibleToken
+import LostAndFound from 0xLostAndFound
+import MetadataViews from 0xMetadataViews
+import ViewResolver from 0xMetadataViews
+import FungibleTokenMetadataViews from 0xFungibleToken
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+
+
+transaction(vaultIdentifier: String, recipient: Address, amount: UFix64, memo: String) {
+    let sentVault: @{FungibleToken.Vault}
+    let flowProvider: Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>
+    let flowReceiver: Capability<&FlowToken.Vault>
+    let receiverCap: Capability<&{FungibleToken.Receiver}>
+    let display: MetadataViews.Display?
+
+
+    prepare(acct: auth(Storage, Capabilities) &Account) {
+         let vaultType = CompositeType(vaultIdentifier)
+            ?? panic("Could not construct Vault type from identifier: ".concat(vaultIdentifier))
+        // Parse the Vault identifier into its components
+        let tokenContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: vaultType)
+            ?? panic("Could not get contract address from identifier: ".concat(vaultIdentifier))
+        let tokenContractName = FlowEVMBridgeUtils.getContractName(fromType: vaultType)
+            ?? panic("Could not get contract name from identifier: ".concat(vaultIdentifier))
+        
+        /* --- Retrieve the funds --- */
+        //
+        // Borrow a reference to the FungibleToken Vault
+        let viewResolver = getAccount(tokenContractAddress).contracts.borrow<&{ViewResolver}>(name: tokenContractName)
+            ?? panic("Could not borrow ViewResolver from FungibleToken contract")
+        let vaultData = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<FungibleTokenMetadataViews.FTVaultData>()
+            ) as! FungibleTokenMetadataViews.FTVaultData? ?? panic("Could not resolve FTVaultData view")
+
+
+        let vaultDisplay = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<FungibleTokenMetadataViews.FTDisplay>()
+            ) as! FungibleTokenMetadataViews.FTDisplay? ?? panic("Could not resolve FTVaultData view")
+
+        self.display = MetadataViews.Display(
+            name: vaultDisplay.name,
+            description: vaultDisplay.description,
+            thumbnail: vaultDisplay.logos.items[0].file
+        )
+
+        let vault = acct.storage.borrow<auth(FungibleToken.Withdraw) &{FungibleToken.Vault}>(
+                from: vaultData.storagePath
+            ) ?? panic("Could not access signer's FungibleToken Vault")
+
+        self.sentVault <- vault.withdraw(amount: amount)
+
+        var provider: Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>? = nil
+        acct.capabilities.storage.forEachController(forPath: /storage/flowTokenVault, fun(c: &StorageCapabilityController): Bool {
+            if c.borrowType == Type<auth(FungibleToken.Withdraw) &FlowToken.Vault>() {
+                provider = c.capability as! Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>
+            }
+            return true
+        })
+
+        if provider == nil {
+            provider = acct.capabilities.storage.issue<auth(FungibleToken.Withdraw) &FlowToken.Vault>(/storage/flowTokenVault)
+        }
+        self.flowProvider = provider!
+        self.flowReceiver = acct.capabilities.get<&FlowToken.Vault>(/public/flowTokenReceiver)!
+        self.receiverCap = getAccount(recipient).capabilities.get<&{FungibleToken.Receiver}>(vaultData.receiverPath)!
+    }
+
+    execute {
+
+        
+        let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <-self.sentVault, memo: memo, display: self.display)
+        let storageFee <- self.flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+        let item <- depositEstimate.withdraw()
+
+        LostAndFound.trySendResource(
+            item: <-item,
+            cap: self.receiverCap,
+            memo: memo,
+            display: self.display,
+            storagePayment: &storageFee as auth(FungibleToken.Withdraw) &{FungibleToken.Vault},
+            flowTokenRepayment: self.flowReceiver
+        )
+
+        self.flowReceiver.borrow()!.deposit(from: <-storageFee)
+        destroy depositEstimate
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "sendFt",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(vaultIdentifier, t.String),
+        arg(recipient, t.Address),
+        arg(amount, t.UFix64),
+        arg(memo, t.String),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
+  public async sendNft(nftIdentifier: string, recipient: string, id: number, memo: string) {
+    const code = `
+import FlowToken from 0xFlowToken
+import NonFungibleToken from 0xNonFungibleToken
+import FungibleToken from 0xFungibleToken
+import LostAndFound from 0xLostAndFound
+import MetadataViews from 0xMetadataViews
+import ViewResolver from 0xMetadataViews
+import FungibleTokenMetadataViews from 0xFungibleToken
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+
+
+transaction(nftIdentifier: String, recipient: Address, id: UInt64, memo: String) {
+    let nft: @{NonFungibleToken.NFT}
+    let flowProvider: Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>
+    let flowReceiver: Capability<&FlowToken.Vault>
+    let receiverCap: Capability<&{NonFungibleToken.CollectionPublic}>
+
+
+    prepare(acct: auth(Storage, Capabilities) &Account) {
+        let nftType = CompositeType(nftIdentifier)
+            ?? panic("Could not construct NFT type from identifier: ".concat(nftIdentifier))
+        let nftContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: nftType)
+            ?? panic("Could not get contract address from identifier: ".concat(nftIdentifier))
+        let nftContractName = FlowEVMBridgeUtils.getContractName(fromType: nftType)
+            ?? panic("Could not get contract name from identifier: ".concat(nftIdentifier))
+
+        /* --- Retrieve the funds --- */
+        //
+        // Borrow a reference to the FungibleToken Vault
+       
+        let viewResolver = getAccount(nftContractAddress).contracts.borrow<&{ViewResolver}>(name: nftContractName)
+            ?? panic("Could not borrow ViewResolver from NFT contract")
+        let collectionData = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<MetadataViews.NFTCollectionData>()
+            ) as! MetadataViews.NFTCollectionData? ?? panic("Could not resolve NFTCollectionData view")
+        
+        
+
+        let collection = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Collection}>(
+                from: collectionData.storagePath
+            ) ?? panic("Could not access signer's FungibleToken Vault")
+
+        self.nft <- collection.withdraw(withdrawID: id)
+
+        var provider: Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>? = nil
+        acct.capabilities.storage.forEachController(forPath: /storage/flowTokenVault, fun(c: &StorageCapabilityController): Bool {
+            if c.borrowType == Type<auth(FungibleToken.Withdraw) &FlowToken.Vault>() {
+                provider = c.capability as! Capability<auth(FungibleToken.Withdraw) &FlowToken.Vault>
+            }
+            return true
+        })
+
+        if provider == nil {
+            provider = acct.capabilities.storage.issue<auth(FungibleToken.Withdraw) &FlowToken.Vault>(/storage/flowTokenVault)
+        }
+        self.flowProvider = provider!
+        self.flowReceiver = acct.capabilities.get<&FlowToken.Vault>(/public/flowTokenReceiver)!
+        self.receiverCap = getAccount(recipient).capabilities.get<&{NonFungibleToken.CollectionPublic}>(collectionData.publicPath)!
+    }
+
+    execute {
+        
+        let display = self.nft.resolveView(Type<MetadataViews.Display>()) as! MetadataViews.Display?
+
+        let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <-self.nft, memo: memo, display: display)
+        let storageFee <- self.flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+        let item <- depositEstimate.withdraw()
+
+        LostAndFound.trySendResource(
+            item: <-item,
+            cap: self.receiverCap,
+            memo: memo,
+            display: display,
+            storagePayment: &storageFee as auth(FungibleToken.Withdraw) &{FungibleToken.Vault},
+            flowTokenRepayment: self.flowReceiver
+        )
+
+        self.flowReceiver.borrow()!.deposit(from: <-storageFee)
+        destroy depositEstimate
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "sendNft",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(nftIdentifier, t.String),
+        arg(recipient, t.Address),
+        arg(id, t.UInt64),
+        arg(memo, t.String),
       ],
       limit: 9999,
     };
