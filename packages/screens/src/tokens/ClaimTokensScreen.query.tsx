@@ -40,6 +40,8 @@ const MOCK_ITEMS: ClaimItem[] = [
     usdValue: 75,
     date: '2025/09/15',
     senderIndex: 0,
+    isVerified: true,
+    contractAddress: 'A.1654653399040a61.FlowToken',
   },
   {
     id: 't2',
@@ -52,6 +54,7 @@ const MOCK_ITEMS: ClaimItem[] = [
     usdValue: 0.5,
     date: '2025/09/15',
     senderIndex: 0,
+    isVerified: false,
   },
   {
     id: 't3',
@@ -66,6 +69,8 @@ const MOCK_ITEMS: ClaimItem[] = [
     usdValue: 25,
     date: '2025/09/15',
     senderIndex: 1,
+    isVerified: true,
+    contractAddress: 'A.b19436aae4d94622.FiatToken',
   },
   {
     id: 'n1',
@@ -75,6 +80,7 @@ const MOCK_ITEMS: ClaimItem[] = [
     amount: '1',
     date: '2025/09/14',
     senderIndex: 0,
+    isVerified: true,
   },
 ];
 
@@ -245,6 +251,7 @@ export function ClaimTokensScreen({ onItemPress }: ClaimTokensScreenProps): Reac
             priceChange24h={row.item.priceChange24h}
             usdValue={row.item.usdValue}
             isLast={row.isLast}
+            isVerified={row.item.isVerified}
           />
         </Pressable>
       );

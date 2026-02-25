@@ -24,4 +24,6 @@ export interface ClaimItem {
   date: string;
   /** Index into the resolved senders array */
   senderIndex: number;
+  isVerified?: boolean;
+  contractAddress?: string;
 }

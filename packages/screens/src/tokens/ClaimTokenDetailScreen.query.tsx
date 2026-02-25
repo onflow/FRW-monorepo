@@ -49,10 +49,6 @@ function truncateAddress(address: string): string {
 
 export interface ClaimTokenDetailScreenProps {
   item: ClaimItem;
-  /** Mock contract address shown in the Security section */
-  contractAddress?: string;
-  /** Whether the token is verified */
-  isVerified?: boolean;
   onClaim?: () => void;
   onReject?: () => void;
 }
@@ -63,8 +59,6 @@ export interface ClaimTokenDetailScreenProps {
 
 export function ClaimTokenDetailScreen({
   item,
-  contractAddress = 'TSLv1809kXYZABCD',
-  isVerified = true,
   onClaim,
   onReject,
 }: ClaimTokenDetailScreenProps): React.ReactElement {
@@ -168,21 +162,25 @@ export function ClaimTokenDetailScreen({
               <Text fontSize={14} color="$text1">
                 {t('claim.detail.verified', 'Verified')}
               </Text>
-              <Text fontSize={14} color={isVerified ? '$success' : '$error'}>
-                {isVerified ? t('claim.detail.yes', 'Yes') : t('claim.detail.no', 'No')}
+              <Text fontSize={14} color={item.isVerified ? '$success' : '$error'}>
+                {item.isVerified ? t('claim.detail.yes', 'Yes') : t('claim.detail.no', 'No')}
               </Text>
             </XStack>
 
-            <Separator mx="$4" borderColor="$borderGlass" borderWidth={0.5} />
+            {item.contractAddress !== undefined && (
+              <>
+                <Separator mx="$4" borderColor="$borderGlass" borderWidth={0.5} />
 
-            <XStack px="$4" py="$3" items="center" justify="space-between">
-              <Text fontSize={14} color="$text1">
-                {t('claim.detail.contractAddress', 'Contract address')}
-              </Text>
-              <Text fontSize={14} color="$text2">
-                {truncateAddress(contractAddress)}
-              </Text>
-            </XStack>
+                <XStack px="$4" py="$3" items="center" justify="space-between">
+                  <Text fontSize={14} color="$text1">
+                    {t('claim.detail.contractAddress', 'Contract address')}
+                  </Text>
+                  <Text fontSize={14} color="$text2">
+                    {truncateAddress(item.contractAddress)}
+                  </Text>
+                </XStack>
+              </>
+            )}
           </YStack>
 
           {/* Spacer so content clears the fixed bottom bar */}

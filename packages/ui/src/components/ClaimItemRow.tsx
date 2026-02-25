@@ -1,5 +1,6 @@
+import { VerifiedToken } from '@onflow/frw-icons';
 import React from 'react';
-import { Text, XStack, YStack } from 'tamagui';
+import { Text, XStack, YStack, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
 import { Separator } from '../foundation/Separator';
@@ -31,16 +32,22 @@ export function ClaimItemRow({
   priceChange24h,
   usdValue,
   isLast,
+  isVerified,
 }: ClaimItemRowProps): React.ReactElement {
+  const theme = useTheme();
+
   return (
     <YStack>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Avatar src={logoURI} alt={name} fallback={symbol[0]} size={48} />
         <YStack flex={1} gap="$1">
           <XStack items="center" justify="space-between">
-            <Text fontSize={15} fontWeight="600" color="$text1">
-              {name}
-            </Text>
+            <XStack items="center" gap="$1.5">
+              <Text fontSize={15} fontWeight="600" color="$text1">
+                {name}
+              </Text>
+              {isVerified && <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />}
+            </XStack>
             <Text fontSize={15} fontWeight="600" color="$text1">
               {formatAmount(amount, symbol)}
             </Text>

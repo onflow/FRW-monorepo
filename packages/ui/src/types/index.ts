@@ -204,6 +204,7 @@ export interface ClaimItemRowProps {
   priceChange24h?: number;
   usdValue?: number;
   isLast: boolean;
+  isVerified?: boolean;
 }
 
 // Token list components props
