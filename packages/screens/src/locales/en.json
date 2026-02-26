@@ -555,8 +555,8 @@
     "sort": {
       "title": "Sort by",
       "date": "Date received",
-      "account": "Account",
-      "amount": "Amount"
+      "amount": "Amount",
+      "name": "Token name"
     },
     "detail": {
       "security": "Security",

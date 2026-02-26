@@ -47,7 +47,7 @@ interface ClaimItem {
   senderIndex: number; // 0 = first contact, 1 = second contact
 }
 
-type SortOption = 'date' | 'account' | 'amount';
+type SortOption = 'date' | 'name' | 'amount';
 
 // ---------------------------------------------------------------------------
 // Mock item data (amounts/prices stubbed until backend is ready)
@@ -118,8 +118,8 @@ function sortItems(items: ClaimItem[], sort: SortOption): ClaimItem[] {
   const sorted = [...items];
   if (sort === 'date') {
     sorted.sort((a, b) => b.date.localeCompare(a.date));
-  } else if (sort === 'account') {
-    sorted.sort((a, b) => a.senderIndex - b.senderIndex);
+  } else if (sort === 'name') {
+    sorted.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sort === 'amount') {
     sorted.sort((a, b) => {
       const aVal = a.usdValue ?? parseFloat(a.amount);
@@ -281,7 +281,7 @@ export function ClaimTokensScreen(): React.ReactElement {
 
   const SORT_OPTIONS: { value: SortOption; label: string }[] = [
     { value: 'date', label: t('claim.sort.date', 'Date received') },
-    { value: 'account', label: t('claim.sort.account', 'Account') },
+    { value: 'name', label: t('claim.sort.name', 'Token name') },
     { value: 'amount', label: t('claim.sort.amount', 'Amount') },
   ];
 
@@ -306,15 +306,7 @@ export function ClaimTokensScreen(): React.ReactElement {
           />
           <XStack flex={1} />
           <Pressable onPress={() => setSortSheetOpen(true)}>
-            <ArrowDownWideNarrow
-              size={24}
-              color={
-                sortOption !== 'date'
-                  ? (theme.primary?.val ?? '#00EF8B')
-                  : (theme.text2?.val ?? '#767676')
-              }
-              theme="outline"
-            />
+            <ArrowDownWideNarrow size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
           </Pressable>
         </XStack>
 

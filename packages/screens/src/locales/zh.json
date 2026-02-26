@@ -503,8 +503,8 @@
     "sort": {
       "title": "排序方式",
       "date": "收到日期",
-      "account": "账户",
-      "amount": "金额"
+      "amount": "金额",
+      "name": "代币名称"
     },
     "detail": {
       "security": "安全",

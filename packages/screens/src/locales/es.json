@@ -503,8 +503,8 @@
     "sort": {
       "title": "Ordenar por",
       "date": "Fecha de recepción",
-      "account": "Cuenta",
-      "amount": "Cantidad"
+      "amount": "Cantidad",
+      "name": "Nombre del token"
     },
     "detail": {
       "security": "Seguridad",

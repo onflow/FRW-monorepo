@@ -503,8 +503,8 @@
     "sort": {
       "title": "並び替え",
       "date": "受取日",
-      "account": "アカウント",
-      "amount": "金額"
+      "amount": "金額",
+      "name": "トークン名"
     },
     "detail": {
       "security": "セキュリティ",
