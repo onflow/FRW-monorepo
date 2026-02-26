@@ -519,7 +519,8 @@
       "title": "Reclamar activo",
       "token": "Token",
       "from": "De",
-      "cta": "Reclamar"
+      "cta": "Reclamar",
+      "to": "A"
     }
   },
   "addTokens": {

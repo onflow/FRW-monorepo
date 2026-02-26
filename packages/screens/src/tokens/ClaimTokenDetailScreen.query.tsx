@@ -1,4 +1,10 @@
-import { coinPairFromSymbol, cryptoQueries, cryptoQueryKeys } from '@onflow/frw-stores';
+import {
+  coinPairFromSymbol,
+  cryptoQueries,
+  cryptoQueryKeys,
+  useWalletStore,
+  walletSelectors,
+} from '@onflow/frw-stores';
 import {
   Avatar,
   Button,
@@ -72,6 +78,9 @@ export function ClaimTokenDetailScreen({
 
   const [period, setPeriod] = useState<PriceChartPeriod>('1D');
   const [claimDrawerVisible, setClaimDrawerVisible] = useState(false);
+
+  const allAccounts = useWalletStore(walletSelectors.getAllAccounts);
+  const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
 
   const coinPair = coinPairFromSymbol(item.symbol);
   const { data: chartData = [], isFetching: isChartLoading } = useQuery({
@@ -233,7 +242,7 @@ export function ClaimTokenDetailScreen({
         </YStack>
       </XStack>
 
-      {sender && (
+      {activeAccount && (
         <ClaimAssetDrawer
           visible={claimDrawerVisible}
           item={{
@@ -246,15 +255,15 @@ export function ClaimTokenDetailScreen({
             priceChange24h: item.priceChange24h,
             isVerified: item.isVerified,
           }}
-          sender={sender}
+          receiver={activeAccount}
+          allReceivers={allAccounts}
           onConfirm={() => {
             setClaimDrawerVisible(false);
             onClaim?.();
           }}
           onClose={() => setClaimDrawerVisible(false)}
           titleText={t('claim.drawer.title', 'Claim asset')}
-          tokenSectionText={t('claim.drawer.token', 'Token')}
-          fromText={t('claim.drawer.from', 'From')}
+          receiverSectionText={t('claim.drawer.to', 'To')}
           claimText={t('claim.drawer.cta', 'Claim')}
         />
       )}

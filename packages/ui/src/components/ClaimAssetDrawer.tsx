@@ -1,18 +1,14 @@
 import { Close, VerifiedToken } from '@onflow/frw-icons';
+import type { WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { Sheet, View, XStack, YStack, useTheme } from 'tamagui';
 
+import { AccountSelector } from './AccountSelector';
 import { ConfirmationAnimationSection } from './ConfirmationAnimationSection';
 import { HoldToSendButton } from './HoldToSendButton';
 import { PriceChangeBadge } from './PriceChangeBadge';
 import { Avatar } from '../foundation/Avatar';
 import { Text } from '../foundation/Text';
-
-export interface ClaimAssetSender {
-  name: string;
-  address: string;
-  avatar?: string;
-}
 
 export interface ClaimAssetItem {
   name: string;
@@ -28,13 +24,14 @@ export interface ClaimAssetItem {
 export interface ClaimAssetDrawerProps {
   visible: boolean;
   item: ClaimAssetItem;
-  sender: ClaimAssetSender;
+  receiver: WalletAccount;
+  allReceivers: WalletAccount[];
+  onReceiverChange?: (account: WalletAccount) => void;
   onConfirm?: () => void;
   onClose: () => void;
   // Translation props
   titleText?: string;
-  tokenSectionText?: string;
-  fromText?: string;
+  receiverSectionText?: string;
   claimText?: string;
   warningText?: string;
 }
@@ -49,26 +46,28 @@ function formatUsd(value: number): string {
   return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function truncateAddress(address: string): string {
-  if (address.length <= 12) return address;
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
 export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
   visible,
   item,
-  sender,
+  receiver,
+  allReceivers,
+  onReceiverChange,
   onConfirm,
   onClose,
   titleText = 'Claim asset',
-  tokenSectionText = 'Receive',
-  fromText = 'From',
+  receiverSectionText = 'To',
   claimText = 'Claim',
   warningText = 'By accepting this token you will automatically accept future deposits into this account',
 }) => {
   const theme = useTheme();
   const [errorSignal, setErrorSignal] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
+  const [selectedReceiver, setSelectedReceiver] = useState<WalletAccount>(receiver);
+
+  const handleAccountSelect = (account: WalletAccount) => {
+    setSelectedReceiver(account);
+    onReceiverChange?.(account);
+  };
 
   const handleConfirm = async () => {
     try {
@@ -167,19 +166,16 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
             </XStack>
           </YStack>
 
-          {/* Sender card */}
-          <YStack bg="$bg1" rounded="$4" px="$4" py="$3" gap="$2">
-            <XStack items="center" gap="$3">
-              <Avatar src={sender.avatar} fallback={sender.name[0]} size={40} />
-              <YStack flex={1} gap="$1">
-                <Text fontSize={15} fontWeight="600" color="$text1">
-                  {sender.name}
-                </Text>
-                <Text fontSize={13} color="$text2">
-                  {truncateAddress(sender.address)}
-                </Text>
-              </YStack>
-            </XStack>
+          {/* Receiver card — selectable like send workflow */}
+          <YStack bg="$bg1" rounded="$4" px="$4" py="$3">
+            <AccountSelector
+              currentAccount={selectedReceiver}
+              accounts={allReceivers}
+              onAccountSelect={handleAccountSelect}
+              title={receiverSectionText}
+              showEditButton={allReceivers.length > 1}
+              actionIcon="chevron"
+            />
           </YStack>
 
           {/* Warning text */}

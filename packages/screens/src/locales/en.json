@@ -571,7 +571,8 @@
       "title": "Claim asset",
       "token": "Token",
       "from": "From",
-      "cta": "Claim"
+      "cta": "Claim",
+      "to": "To"
     }
   },
   "addTokens": {
