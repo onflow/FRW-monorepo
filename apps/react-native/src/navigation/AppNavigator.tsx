@@ -18,6 +18,7 @@ import {
   ClaimTokensScreen,
   ClaimTokenDetailScreen,
   type ClaimItem,
+  type ClaimSender,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -78,7 +79,7 @@ export type RootStackParamList = {
   ActivityDetail: { item: ActivityItem };
   AddTokens: undefined;
   ClaimTokens: undefined;
-  ClaimTokenDetail: { item: ClaimItem };
+  ClaimTokenDetail: { item: ClaimItem; sender?: ClaimSender };
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -369,7 +370,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             >
               {({ navigation: nav }) => (
                 <ClaimTokensScreen
-                  onItemPress={item => nav.navigate('ClaimTokenDetail', { item })}
+                  onItemPress={(item, sender) => nav.navigate('ClaimTokenDetail', { item, sender })}
                 />
               )}
             </Stack.Screen>
@@ -383,6 +384,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               {({ route, navigation: nav }) => (
                 <ClaimTokenDetailScreen
                   item={route.params.item}
+                  sender={route.params.sender}
                   onClaim={() => nav.goBack()}
                   onReject={() => nav.goBack()}
                 />

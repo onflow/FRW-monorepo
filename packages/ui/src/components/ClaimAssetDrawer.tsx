@@ -1,9 +1,11 @@
-import { Close } from '@onflow/frw-icons';
-import React from 'react';
-import { Sheet, View, XStack, YStack } from 'tamagui';
+import { Close, VerifiedToken } from '@onflow/frw-icons';
+import React, { useState } from 'react';
+import { Sheet, View, XStack, YStack, useTheme } from 'tamagui';
 
+import { ConfirmationAnimationSection } from './ConfirmationAnimationSection';
+import { HoldToSendButton } from './HoldToSendButton';
+import { PriceChangeBadge } from './PriceChangeBadge';
 import { Avatar } from '../foundation/Avatar';
-import { Button } from '../foundation/Button';
 import { Text } from '../foundation/Text';
 
 export interface ClaimAssetSender {
@@ -18,6 +20,9 @@ export interface ClaimAssetItem {
   logoURI?: string;
   amount: string;
   usdValue?: number;
+  price?: number;
+  priceChange24h?: number;
+  isVerified?: boolean;
 }
 
 export interface ClaimAssetDrawerProps {
@@ -31,6 +36,13 @@ export interface ClaimAssetDrawerProps {
   tokenSectionText?: string;
   fromText?: string;
   claimText?: string;
+  warningText?: string;
+}
+
+function formatPrice(price: number): string {
+  if (price >= 1) return `$${price.toFixed(2)}`;
+  if (price >= 0.01) return `$${price.toFixed(4)}`;
+  return `$${price.toPrecision(7)}`;
 }
 
 function formatUsd(value: number): string {
@@ -49,11 +61,26 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
   onConfirm,
   onClose,
   titleText = 'Claim asset',
-  tokenSectionText = 'Token',
+  tokenSectionText = 'Receive',
   fromText = 'From',
-  claimText,
+  claimText = 'Claim',
+  warningText = 'By accepting this token you will automatically accept future deposits into this account',
 }) => {
-  const ctaLabel = claimText ?? `Claim ${item.symbol}`;
+  const theme = useTheme();
+  const [errorSignal, setErrorSignal] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  const handleConfirm = async () => {
+    try {
+      setIsClaiming(true);
+      await onConfirm?.();
+    } catch {
+      setErrorSignal(true);
+      setTimeout(() => setErrorSignal(false), 50);
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   return (
     <Sheet modal open={visible} onOpenChange={onClose} snapPointsMode="fit" dismissOnSnapToBottom>
@@ -71,8 +98,9 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
         animation="lazy"
         enterStyle={{ y: 1000 }}
         exitStyle={{ y: 1000 }}
+        overflow="hidden"
       >
-        <YStack p="$4" gap="$4">
+        <YStack p="$4" gap="$3" style={{ zIndex: 1 }}>
           {/* Header */}
           <XStack items="center" width="100%">
             <View w={32} h={32} />
@@ -95,16 +123,40 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
             </XStack>
           </XStack>
 
-          {/* Token section */}
-          <YStack bg="$bg1" rounded="$4" p="$4" gap="$3">
-            <Text fontSize={13} color="$text2" fontWeight="400">
-              {tokenSectionText}
-            </Text>
+          {/* Animation */}
+          <ConfirmationAnimationSection imageUri={item.logoURI} transactionType="tokens" />
+
+          {/* Token card */}
+          <YStack bg="$bg1" rounded="$4" px="$4" py="$3" gap="$2">
             <XStack items="center" gap="$3">
               <Avatar src={item.logoURI} fallback={item.symbol[0]} size={40} />
-              <YStack flex={1} gap="$0.5">
+
+              {/* Name + price row */}
+              <YStack flex={1} gap="$1">
+                <XStack items="center" gap="$1.5">
+                  <Text fontSize={15} fontWeight="600" color="$text1">
+                    {item.name}
+                  </Text>
+                  {item.isVerified && (
+                    <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />
+                  )}
+                </XStack>
+                <XStack items="center" gap="$1.5">
+                  {item.price !== undefined && (
+                    <Text fontSize={13} color="$text2">
+                      {formatPrice(item.price)}
+                    </Text>
+                  )}
+                  {item.priceChange24h !== undefined && (
+                    <PriceChangeBadge value={item.priceChange24h} />
+                  )}
+                </XStack>
+              </YStack>
+
+              {/* Amount + USD */}
+              <YStack items="flex-end" gap="$1">
                 <Text fontSize={15} fontWeight="600" color="$text1">
-                  {item.name}
+                  {item.amount} {item.symbol}
                 </Text>
                 {item.usdValue !== undefined && (
                   <Text fontSize={13} color="$text2">
@@ -112,20 +164,14 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
                   </Text>
                 )}
               </YStack>
-              <Text fontSize={15} fontWeight="600" color="$text1">
-                {item.amount} {item.symbol}
-              </Text>
             </XStack>
           </YStack>
 
-          {/* Sender section */}
-          <YStack bg="$bg1" rounded="$4" p="$4" gap="$3">
-            <Text fontSize={13} color="$text2" fontWeight="400">
-              {fromText}
-            </Text>
+          {/* Sender card */}
+          <YStack bg="$bg1" rounded="$4" px="$4" py="$3" gap="$2">
             <XStack items="center" gap="$3">
               <Avatar src={sender.avatar} fallback={sender.name[0]} size={40} />
-              <YStack flex={1} gap="$0.5">
+              <YStack flex={1} gap="$1">
                 <Text fontSize={15} fontWeight="600" color="$text1">
                   {sender.name}
                 </Text>
@@ -136,12 +182,20 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
             </XStack>
           </YStack>
 
+          {/* Warning text */}
+          <Text fontSize={14} color="$text2" text="center" px="$2" lineHeight={20}>
+            {warningText}
+          </Text>
+
           {/* CTA */}
-          <YStack mb="$6">
-            <Button variant="inverse" size="large" fullWidth onPress={onConfirm}>
-              {ctaLabel}
-            </Button>
-          </YStack>
+          <View pb="$8">
+            <HoldToSendButton
+              onPress={handleConfirm}
+              stopSignal={isClaiming}
+              errorSignal={errorSignal}
+              holdToSendText={claimText}
+            />
+          </View>
         </YStack>
       </Sheet.Frame>
     </Sheet>

@@ -242,6 +242,9 @@ export function ClaimTokenDetailScreen({
             logoURI: item.logoURI,
             amount: item.amount,
             usdValue: item.usdValue,
+            price: item.price,
+            priceChange24h: item.priceChange24h,
+            isVerified: item.isVerified,
           }}
           sender={sender}
           onConfirm={() => {
@@ -252,7 +255,7 @@ export function ClaimTokenDetailScreen({
           titleText={t('claim.drawer.title', 'Claim asset')}
           tokenSectionText={t('claim.drawer.token', 'Token')}
           fromText={t('claim.drawer.from', 'From')}
-          claimText={t('claim.drawer.cta', 'Claim {{symbol}}', { symbol: item.symbol })}
+          claimText={t('claim.drawer.cta', 'Claim')}
         />
       )}
     </YStack>
