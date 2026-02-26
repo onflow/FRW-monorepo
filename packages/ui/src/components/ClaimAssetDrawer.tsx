@@ -123,7 +123,9 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
           </XStack>
 
           {/* Animation */}
-          <ConfirmationAnimationSection imageUri={item.logoURI} transactionType="tokens" />
+          <YStack mb="$2">
+            <ConfirmationAnimationSection imageUri={item.logoURI} transactionType="tokens" />
+          </YStack>
 
           {/* Token card */}
           <YStack bg="$bg1" rounded="$4" px="$4" py="$3" gap="$2">
@@ -172,9 +174,9 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
               currentAccount={selectedReceiver}
               accounts={allReceivers}
               onAccountSelect={handleAccountSelect}
-              title={receiverSectionText}
+              title=""
               showEditButton={allReceivers.length > 1}
-              actionIcon="chevron"
+              actionIcon="edit"
             />
           </YStack>
 
