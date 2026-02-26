@@ -1,5 +1,5 @@
 import { ArrowDownWideNarrow } from '@onflow/frw-icons';
-import { addressBookQueryKeys, addressBookQueries } from '@onflow/frw-stores';
+import { useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import {
   BackgroundWrapper,
   ClaimDateHeader,
@@ -13,7 +13,6 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable } from 'react-native';
@@ -121,47 +120,30 @@ export function ClaimTokensScreen(): React.ReactElement {
 
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<FilterTab>('token');
-  const [collapsedSenders, setCollapsedSenders] = useState<Set<string>>(new Set());
+  const [collapsedAccounts, setCollapsedAccounts] = useState<Set<string>>(new Set());
 
-  // ── Address book queries (same pattern as SendToScreen) ──────────────────
+  // ── All receivable accounts (same source as send workflow) ───────────────
+  const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
+  const isLoading = useWalletStore((state) => state.isLoading);
 
-  const { data: userUid, isLoading: isUidLoading } = useQuery({
-    queryKey: addressBookQueryKeys.currentUserUid(),
-    queryFn: () => addressBookQueries.fetchCurrentUserUid(),
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: 'always',
-  });
+  React.useEffect(() => {
+    if (accounts.length === 0 && !isLoading) {
+      loadAccountsFromBridge();
+    }
+  }, [loadAccountsFromBridge, accounts.length, isLoading]);
 
-  const isUidResolved = userUid !== undefined;
-  const scopedUid = userUid ?? null;
-
-  const { data: contacts = [], isLoading: isContactsLoading } = useQuery({
-    queryKey: addressBookQueryKeys.contacts(scopedUid),
-    queryFn: () => addressBookQueries.fetchContacts(),
-    enabled: isUidResolved,
-    staleTime: 30_000,
-    refetchOnMount: 'always',
-  });
-
-  const isLoading = isUidLoading || isContactsLoading;
-
-  // Map contacts to ClaimSender; fall back to placeholder if address book is empty
-  const senders: ClaimSender[] = useMemo(() => {
-    if (contacts.length > 0) {
-      return contacts.slice(0, 5).map((c) => ({
-        id: c.id,
-        name: c.name || truncateAddress(c.address),
-        address: c.address,
-        avatar: c.avatar,
+  const receivingAccounts: ClaimSender[] = useMemo(() => {
+    if (accounts.length > 0) {
+      return accounts.map((a) => ({
+        id: a.address,
+        name: a.name || truncateAddress(a.address),
+        address: a.address,
+        avatar: a.avatar,
       }));
     }
-    // Placeholder senders shown while contacts load or if address book is empty
-    return [
-      { id: 'placeholder-0', name: '—', address: '—', avatar: undefined },
-      { id: 'placeholder-1', name: '—', address: '—', avatar: undefined },
-    ];
-  }, [contacts]);
+    return [{ id: 'loading', name: '—', address: '—', avatar: undefined }];
+  }, [accounts]);
 
   // ── Filter and group items ───────────────────────────────────────────────
 
@@ -182,28 +164,13 @@ export function ClaimTokensScreen(): React.ReactElement {
     return items;
   }, [activeTab, search]);
 
-  // Group by sender (resolved from real contacts)
-  const senderGroups = useMemo(() => {
-    const map = new Map<string, ClaimItem[]>();
-    for (const item of filteredItems) {
-      const sender = senders[item.senderIndex] ?? senders[0];
-      if (!sender) continue;
-      if (!map.has(sender.id)) map.set(sender.id, []);
-      map.get(sender.id)!.push(item);
-    }
-    return Array.from(map.entries()).map(([senderId, items]) => ({
-      sender: senders.find((s) => s.id === senderId)!,
-      items,
-    }));
-  }, [filteredItems, senders]);
-
-  const toggleCollapse = useCallback((senderId: string) => {
-    setCollapsedSenders((prev) => {
+  const toggleCollapse = useCallback((accountId: string) => {
+    setCollapsedAccounts((prev) => {
       const next = new Set(prev);
-      if (next.has(senderId)) {
-        next.delete(senderId);
+      if (next.has(accountId)) {
+        next.delete(accountId);
       } else {
-        next.add(senderId);
+        next.add(accountId);
       }
       return next;
     });
@@ -212,22 +179,22 @@ export function ClaimTokensScreen(): React.ReactElement {
   // ── Flat list rows ───────────────────────────────────────────────────────
 
   type Row =
-    | { kind: 'sender'; sender: ClaimSender; itemCount: number }
-    | { kind: 'date'; date: string; senderId: string }
+    | { kind: 'account'; account: ClaimSender; itemCount: number }
+    | { kind: 'date'; date: string; accountId: string }
     | { kind: 'token'; item: ClaimItem; isLast: boolean };
 
   const rows = useMemo<Row[]>(() => {
     const result: Row[] = [];
-    for (const { sender, items } of senderGroups) {
-      result.push({ kind: 'sender', sender, itemCount: items.length });
-      if (!collapsedSenders.has(sender.id)) {
+    for (const account of receivingAccounts) {
+      result.push({ kind: 'account', account, itemCount: filteredItems.length });
+      if (!collapsedAccounts.has(account.id)) {
         const byDate = new Map<string, ClaimItem[]>();
-        for (const item of items) {
+        for (const item of filteredItems) {
           if (!byDate.has(item.date)) byDate.set(item.date, []);
           byDate.get(item.date)!.push(item);
         }
         for (const [date, dateItems] of byDate.entries()) {
-          result.push({ kind: 'date', date, senderId: sender.id });
+          result.push({ kind: 'date', date, accountId: account.id });
           dateItems.forEach((item, idx) => {
             result.push({ kind: 'token', item, isLast: idx === dateItems.length - 1 });
           });
@@ -235,20 +202,20 @@ export function ClaimTokensScreen(): React.ReactElement {
       }
     }
     return result;
-  }, [senderGroups, collapsedSenders]);
+  }, [filteredItems, receivingAccounts, collapsedAccounts]);
 
   // ── Render ───────────────────────────────────────────────────────────────
 
   const renderRow = useCallback(
     ({ item: row }: { item: Row }) => {
-      if (row.kind === 'sender') {
+      if (row.kind === 'account') {
         return (
           <ClaimSenderRow
-            name={row.sender.name}
-            address={row.sender.address}
-            avatar={row.sender.avatar}
-            isCollapsed={collapsedSenders.has(row.sender.id)}
-            onPress={() => toggleCollapse(row.sender.id)}
+            name={row.account.name}
+            address={row.account.address}
+            avatar={row.account.avatar}
+            isCollapsed={collapsedAccounts.has(row.account.id)}
+            onPress={() => toggleCollapse(row.account.id)}
           />
         );
       }
@@ -270,12 +237,12 @@ export function ClaimTokensScreen(): React.ReactElement {
         />
       );
     },
-    [collapsedSenders, toggleCollapse]
+    [collapsedAccounts, toggleCollapse]
   );
 
   const keyExtractor = useCallback((item: Row, index: number) => {
-    if (item.kind === 'sender') return `sender-${item.sender.id}`;
-    if (item.kind === 'date') return `date-${item.senderId}-${item.date}`;
+    if (item.kind === 'account') return `account-${item.account.id}`;
+    if (item.kind === 'date') return `date-${item.accountId}-${item.date}`;
     return `token-${item.item.id}-${index}`;
   }, []);
 
