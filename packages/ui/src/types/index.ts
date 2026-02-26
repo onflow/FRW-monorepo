@@ -221,6 +221,7 @@ export interface TokenSectionHeaderProps {
 
 export interface ClaimBannerProps {
   title: string;
+  count?: number;
   onPress?: () => void;
 }
 

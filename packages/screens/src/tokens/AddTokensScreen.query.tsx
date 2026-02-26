@@ -166,6 +166,7 @@ export function AddTokensScreen({ onClaimPress }: AddTokensScreenProps): React.R
       <YStack flex={1}>
         <ClaimBanner
           title={t('addTokens.claimBannerTitle', 'Claim received tokens')}
+          count={3}
           onPress={onClaimPress}
         />
 
