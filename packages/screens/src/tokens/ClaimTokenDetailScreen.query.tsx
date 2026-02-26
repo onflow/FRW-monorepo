@@ -2,6 +2,7 @@ import { coinPairFromSymbol, cryptoQueries, cryptoQueryKeys } from '@onflow/frw-
 import {
   Avatar,
   Button,
+  ClaimAssetDrawer,
   PriceChangeBadge,
   PriceChart,
   ScrollView,
@@ -17,7 +18,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions } from 'react-native';
 
-import type { ClaimItem } from './claim-types';
+import type { ClaimItem, ClaimSender } from './claim-types';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -50,6 +51,7 @@ function truncateAddress(address: string): string {
 
 export interface ClaimTokenDetailScreenProps {
   item: ClaimItem;
+  sender?: ClaimSender;
   onClaim?: () => void;
   onReject?: () => void;
 }
@@ -60,6 +62,7 @@ export interface ClaimTokenDetailScreenProps {
 
 export function ClaimTokenDetailScreen({
   item,
+  sender,
   onClaim,
   onReject,
 }: ClaimTokenDetailScreenProps): React.ReactElement {
@@ -68,6 +71,7 @@ export function ClaimTokenDetailScreen({
   const chartWidth = screenWidth - 48; // account for horizontal padding
 
   const [period, setPeriod] = useState<PriceChartPeriod>('1D');
+  const [claimDrawerVisible, setClaimDrawerVisible] = useState(false);
 
   const coinPair = coinPairFromSymbol(item.symbol);
   const { data: chartData = [], isFetching: isChartLoading } = useQuery({
@@ -218,11 +222,39 @@ export function ClaimTokenDetailScreen({
           </Button>
         </YStack>
         <YStack flex={1}>
-          <Button variant="inverse" size="large" fullWidth onPress={onClaim}>
+          <Button
+            variant="inverse"
+            size="large"
+            fullWidth
+            onPress={() => setClaimDrawerVisible(true)}
+          >
             {t('claim.detail.claim', 'Claim')}
           </Button>
         </YStack>
       </XStack>
+
+      {sender && (
+        <ClaimAssetDrawer
+          visible={claimDrawerVisible}
+          item={{
+            name: item.name,
+            symbol: item.symbol,
+            logoURI: item.logoURI,
+            amount: item.amount,
+            usdValue: item.usdValue,
+          }}
+          sender={sender}
+          onConfirm={() => {
+            setClaimDrawerVisible(false);
+            onClaim?.();
+          }}
+          onClose={() => setClaimDrawerVisible(false)}
+          titleText={t('claim.drawer.title', 'Claim asset')}
+          tokenSectionText={t('claim.drawer.token', 'Token')}
+          fromText={t('claim.drawer.from', 'From')}
+          claimText={t('claim.drawer.cta', 'Claim {{symbol}}', { symbol: item.symbol })}
+        />
+      )}
     </YStack>
   );
 }

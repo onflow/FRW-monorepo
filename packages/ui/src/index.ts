@@ -40,6 +40,7 @@ export * from './utils/clipboard';
 export * from './components/AccountCard';
 export * from './components/AddTokenListItem';
 export * from './components/AlphabetIndex';
+export * from './components/ClaimAssetDrawer';
 export * from './components/ClaimBanner';
 export * from './components/ClaimDateHeader';
 export * from './components/ClaimItemRow';
