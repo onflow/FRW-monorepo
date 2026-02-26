@@ -7,7 +7,10 @@
     "sendTokens": "トークンを送信",
     "nftDetails": "NFT詳細",
     "colorDemo": "カラーデモ",
-    "receive": "資産を受け取る"
+    "receive": "資産を受け取る",
+    "addTokens": "トークンを追加",
+    "claimTokens": "クレーム",
+    "token": "トークン"
   },
   "common": {
     "cancel": "キャンセル",
@@ -493,5 +496,35 @@
     "success": {
       "rotation": "アカウントのアップグレードに成功しました！"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "検索",
+    "empty": "請求するアイテムがありません",
+    "sort": {
+      "title": "並び替え",
+      "date": "受取日",
+      "account": "アカウント",
+      "amount": "金額"
+    },
+    "detail": {
+      "security": "セキュリティ",
+      "verified": "認証済み",
+      "yes": "はい",
+      "no": "いいえ",
+      "contractAddress": "コントラクトアドレス",
+      "claim": "請求する",
+      "reject": "拒否する"
+    },
+    "drawer": {
+      "title": "資産を請求する",
+      "token": "トークン",
+      "from": "送信元",
+      "cta": "請求する"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "受け取ったトークンを請求する",
+    "searchPlaceholder": "トークンを検索",
+    "verifiedOnly": "認証済みトークンのみ表示"
   }
 }

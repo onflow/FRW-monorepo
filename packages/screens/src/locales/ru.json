@@ -7,7 +7,10 @@
     "sendTokens": "Отправить токены",
     "nftDetails": "Детали NFT",
     "colorDemo": "Демо цветов",
-    "receive": "Получить активы"
+    "receive": "Получить активы",
+    "addTokens": "Добавить токены",
+    "claimTokens": "Получить",
+    "token": "Токен"
   },
   "common": {
     "cancel": "Отмена",
@@ -505,5 +508,35 @@
     "success": {
       "rotation": "Аккаунт успешно обновлен!"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "Поиск",
+    "empty": "Нет элементов для получения",
+    "sort": {
+      "title": "Сортировать по",
+      "date": "Дата получения",
+      "account": "Аккаунт",
+      "amount": "Сумма"
+    },
+    "detail": {
+      "security": "Безопасность",
+      "verified": "Проверено",
+      "yes": "Да",
+      "no": "Нет",
+      "contractAddress": "Адрес контракта",
+      "claim": "Получить",
+      "reject": "Отклонить"
+    },
+    "drawer": {
+      "title": "Получить актив",
+      "token": "Токен",
+      "from": "От",
+      "cta": "Получить"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "Получить полученные токены",
+    "searchPlaceholder": "Поиск токена",
+    "verifiedOnly": "Показывать только проверенные токены"
   }
 }

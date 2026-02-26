@@ -7,7 +7,10 @@
     "sendTokens": "发送代币",
     "nftDetails": "NFT详情",
     "colorDemo": "颜色演示",
-    "receive": "接收资产"
+    "receive": "接收资产",
+    "addTokens": "添加代币",
+    "claimTokens": "领取",
+    "token": "代币"
   },
   "common": {
     "cancel": "取消",
@@ -493,5 +496,35 @@
     "success": {
       "rotation": "账户升级成功！"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "搜索",
+    "empty": "没有可领取的项目",
+    "sort": {
+      "title": "排序方式",
+      "date": "收到日期",
+      "account": "账户",
+      "amount": "金额"
+    },
+    "detail": {
+      "security": "安全",
+      "verified": "已验证",
+      "yes": "是",
+      "no": "否",
+      "contractAddress": "合约地址",
+      "claim": "领取",
+      "reject": "拒绝"
+    },
+    "drawer": {
+      "title": "领取资产",
+      "token": "代币",
+      "from": "来自",
+      "cta": "领取"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "领取已收到的代币",
+    "searchPlaceholder": "搜索代币",
+    "verifiedOnly": "仅显示已验证的代币"
   }
 }

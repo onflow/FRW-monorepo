@@ -1,4 +1,4 @@
-import { ArrowDownWideNarrow } from '@onflow/frw-icons';
+import { ArrowDownWideNarrow, CheckCircle } from '@onflow/frw-icons';
 import { useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import {
   BackgroundWrapper,
@@ -7,6 +7,7 @@ import {
   ClaimSenderRow,
   SearchBar,
   SegmentedControl,
+  Sheet,
   Skeleton,
   Text,
   XStack,
@@ -45,6 +46,8 @@ interface ClaimItem {
   date: string;
   senderIndex: number; // 0 = first contact, 1 = second contact
 }
+
+type SortOption = 'date' | 'account' | 'amount';
 
 // ---------------------------------------------------------------------------
 // Mock item data (amounts/prices stubbed until backend is ready)
@@ -111,6 +114,22 @@ function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
+function sortItems(items: ClaimItem[], sort: SortOption): ClaimItem[] {
+  const sorted = [...items];
+  if (sort === 'date') {
+    sorted.sort((a, b) => b.date.localeCompare(a.date));
+  } else if (sort === 'account') {
+    sorted.sort((a, b) => a.senderIndex - b.senderIndex);
+  } else if (sort === 'amount') {
+    sorted.sort((a, b) => {
+      const aVal = a.usdValue ?? parseFloat(a.amount);
+      const bVal = b.usdValue ?? parseFloat(b.amount);
+      return bVal - aVal;
+    });
+  }
+  return sorted;
+}
+
 // ---------------------------------------------------------------------------
 // Main screen
 // ---------------------------------------------------------------------------
@@ -124,6 +143,8 @@ export function ClaimTokensScreen(): React.ReactElement {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<FilterTab>('token');
   const [collapsedAccounts, setCollapsedAccounts] = useState<Set<string>>(new Set());
+  const [sortOption, setSortOption] = useState<SortOption>('date');
+  const [sortSheetOpen, setSortSheetOpen] = useState(false);
 
   // ── All receivable accounts (same source as send workflow) ───────────────
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
@@ -151,13 +172,7 @@ export function ClaimTokensScreen(): React.ReactElement {
     return [{ id: 'loading', name: '—', address: '—', avatar: undefined }];
   }, [accounts]);
 
-  // ── Filter and group items ───────────────────────────────────────────────
-
-  const tokenCount = searchedItems.filter((i) => i.type === 'token').length;
-  const nftCount = searchedItems.filter((i) => i.type === 'nft').length;
-
-  const segments = [`Tokens ${tokenCount}`, `NFTs ${nftCount}`] as const;
-  const segmentValue = activeTab === 'token' ? segments[0] : segments[1];
+  // ── Filter, search and sort items ────────────────────────────────────────
 
   // Search across both tabs; tab filter applied separately in the rows builder
   const searchedItems = useMemo(() => {
@@ -168,10 +183,16 @@ export function ClaimTokensScreen(): React.ReactElement {
     );
   }, [search]);
 
-  const filteredItems = useMemo(
-    () => searchedItems.filter((i) => i.type === activeTab),
-    [searchedItems, activeTab]
-  );
+  const tokenCount = searchedItems.filter((i) => i.type === 'token').length;
+  const nftCount = searchedItems.filter((i) => i.type === 'nft').length;
+
+  const segments = [`Tokens ${tokenCount}`, `NFTs ${nftCount}`] as const;
+  const segmentValue = activeTab === 'token' ? segments[0] : segments[1];
+
+  const filteredItems = useMemo(() => {
+    const byTab = searchedItems.filter((i) => i.type === activeTab);
+    return sortItems(byTab, sortOption);
+  }, [searchedItems, activeTab, sortOption]);
 
   const toggleCollapse = useCallback((accountId: string) => {
     setCollapsedAccounts((prev) => {
@@ -258,6 +279,12 @@ export function ClaimTokensScreen(): React.ReactElement {
     return `token-${item.item.id}-${index}`;
   }, []);
 
+  const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+    { value: 'date', label: t('claim.sort.date', 'Date received') },
+    { value: 'account', label: t('claim.sort.account', 'Account') },
+    { value: 'amount', label: t('claim.sort.amount', 'Amount') },
+  ];
+
   return (
     <BackgroundWrapper backgroundColor="$bg" px={0}>
       <YStack flex={1}>
@@ -278,8 +305,16 @@ export function ClaimTokensScreen(): React.ReactElement {
             onChange={(value) => setActiveTab(value === segments[0] ? 'token' : 'nft')}
           />
           <XStack flex={1} />
-          <Pressable>
-            <ArrowDownWideNarrow size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
+          <Pressable onPress={() => setSortSheetOpen(true)}>
+            <ArrowDownWideNarrow
+              size={24}
+              color={
+                sortOption !== 'date'
+                  ? (theme.primary?.val ?? '#00EF8B')
+                  : (theme.text2?.val ?? '#767676')
+              }
+              theme="outline"
+            />
           </Pressable>
         </XStack>
 
@@ -317,6 +352,48 @@ export function ClaimTokensScreen(): React.ReactElement {
           />
         )}
       </YStack>
+
+      {/* Sort sheet */}
+      <Sheet
+        modal
+        open={sortSheetOpen}
+        onOpenChange={setSortSheetOpen}
+        snapPointsMode="fit"
+        dismissOnSnapToBottom
+        zIndex={100_000}
+      >
+        <Sheet.Overlay animation="lazy" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} />
+        <Sheet.Handle />
+        <Sheet.Frame bg="$bgDrawer" borderTopLeftRadius={16} borderTopRightRadius={16} pb="$6">
+          <YStack pt="$4" pb="$2" px="$4">
+            <Text fontSize={16} fontWeight="600" color="$text1">
+              {t('claim.sort.title', 'Sort by')}
+            </Text>
+          </YStack>
+          {SORT_OPTIONS.map((opt) => (
+            <Pressable
+              key={opt.value}
+              onPress={() => {
+                setSortOption(opt.value);
+                setSortSheetOpen(false);
+              }}
+            >
+              <XStack px="$4" py="$4" items="center" justify="space-between">
+                <Text
+                  fontSize={16}
+                  color={sortOption === opt.value ? '$primary' : '$text1'}
+                  fontWeight={sortOption === opt.value ? '600' : '400'}
+                >
+                  {opt.label}
+                </Text>
+                {sortOption === opt.value && (
+                  <CheckCircle size={20} color={theme.primary?.val ?? '#00EF8B'} theme="filled" />
+                )}
+              </XStack>
+            </Pressable>
+          ))}
+        </Sheet.Frame>
+      </Sheet>
     </BackgroundWrapper>
   );
 }
