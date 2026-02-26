@@ -6,6 +6,7 @@ import {
   PriceChart,
   ScrollView,
   Separator,
+  Skeleton,
   Text,
   XStack,
   YStack,
@@ -64,7 +65,7 @@ export function ClaimTokenDetailScreen({
 }: ClaimTokenDetailScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const { width: screenWidth } = useWindowDimensions();
-  const chartWidth = screenWidth - 32; // account for horizontal padding
+  const chartWidth = screenWidth - 48; // account for horizontal padding
 
   const [period, setPeriod] = useState<PriceChartPeriod>('1D');
 
@@ -123,7 +124,7 @@ export function ClaimTokenDetailScreen({
           <Separator borderColor="$borderGlass" borderWidth={0.5} />
 
           {/* Large price display */}
-          <YStack px="$4" pt="$5" pb="$2" items="center" gap="$1.5">
+          <YStack px="$4" pt="$7" pb="$2" items="center" gap="$1.5">
             <Text fontSize={32} fontWeight="700" color="$text1" letterSpacing={-0.5}>
               {currentPrice !== undefined ? formatPrice(currentPrice) : '—'}
             </Text>
@@ -139,47 +140,58 @@ export function ClaimTokenDetailScreen({
           </YStack>
 
           {/* Price chart */}
-          <YStack px="$4" pb="$4" opacity={isChartLoading ? 0.5 : 1}>
-            <PriceChart
-              data={chartData}
-              width={chartWidth}
-              height={120}
-              color="#00C853"
-              period={period}
-              onPeriodChange={setPeriod}
-            />
+          <YStack px="$6" pb="$4">
+            {isChartLoading ? (
+              <YStack gap="$2">
+                <Skeleton width={chartWidth} height={120} borderRadius={8} />
+                <XStack justify="center" gap="$4">
+                  {(['1D', '1W', '1M', '1Y'] as PriceChartPeriod[]).map((p) => (
+                    <Skeleton key={p} width={36} height={24} borderRadius={12} />
+                  ))}
+                </XStack>
+              </YStack>
+            ) : (
+              <PriceChart
+                data={chartData}
+                width={chartWidth}
+                height={120}
+                color="#00C853"
+                period={period}
+                onPeriodChange={setPeriod}
+              />
+            )}
           </YStack>
 
+          <Separator borderColor="$borderGlass" borderWidth={0.5} />
+
           {/* Security section */}
-          <YStack mx="$4" rounded="$4" bg="$bg2" overflow="hidden">
+          <YStack mx="$4" mt="$3" rounded="$4" bg="$bg2" overflow="hidden">
             <YStack px="$4" pt="$4" pb="$2">
               <Text fontSize={16} fontWeight="600" color="$text1">
                 {t('claim.detail.security', 'Security')}
               </Text>
             </YStack>
 
+            <Separator mx="$4" borderColor="$borderGlass" borderWidth={0.5} />
+
             <XStack px="$4" py="$3" items="center" justify="space-between">
-              <Text fontSize={14} color="$text1">
+              <Text fontSize={14} fontWeight="600" color="$text1">
                 {t('claim.detail.verified', 'Verified')}
               </Text>
-              <Text fontSize={14} color={item.isVerified ? '$success' : '$error'}>
+              <Text fontSize={14} color="$text2">
                 {item.isVerified ? t('claim.detail.yes', 'Yes') : t('claim.detail.no', 'No')}
               </Text>
             </XStack>
 
             {item.contractAddress !== undefined && (
-              <>
-                <Separator mx="$4" borderColor="$borderGlass" borderWidth={0.5} />
-
-                <XStack px="$4" py="$3" items="center" justify="space-between">
-                  <Text fontSize={14} color="$text1">
-                    {t('claim.detail.contractAddress', 'Contract address')}
-                  </Text>
-                  <Text fontSize={14} color="$text2">
-                    {truncateAddress(item.contractAddress)}
-                  </Text>
-                </XStack>
-              </>
+              <XStack px="$4" py="$3" items="center" justify="space-between">
+                <Text fontSize={14} fontWeight="600" color="$text1">
+                  {t('claim.detail.contractAddress', 'Contract address')}
+                </Text>
+                <Text fontSize={14} color="$text2">
+                  {truncateAddress(item.contractAddress)}
+                </Text>
+              </XStack>
             )}
           </YStack>
 

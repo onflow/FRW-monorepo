@@ -1,4 +1,4 @@
-import { serviceOptions } from './codegen/service.generated';
+import { serviceOptions as goServiceOptions } from './codegen/goService.generated';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,9 +52,9 @@ export class CryptoService {
     after?: number,
     periodFreq?: number
   ): Promise<CryptoOhlcResponse> {
-    const axios = serviceOptions.axios;
+    const axios = goServiceOptions.axios;
     if (!axios) {
-      throw new Error('API not configured. Call configureApiEndpoints first.');
+      throw new Error('Go API not configured. Call configureApiEndpoints first.');
     }
 
     const params: Record<string, string | number> = {
@@ -79,9 +79,9 @@ export class CryptoService {
    * @param pair   - Trading pair, e.g. "flowusdt"
    */
   static async summary(market: string, pair: string): Promise<CryptowatchSummaryResponse> {
-    const axios = serviceOptions.axios;
+    const axios = goServiceOptions.axios;
     if (!axios) {
-      throw new Error('API not configured. Call configureApiEndpoints first.');
+      throw new Error('Go API not configured. Call configureApiEndpoints first.');
     }
 
     const params = { provider: market, pair };

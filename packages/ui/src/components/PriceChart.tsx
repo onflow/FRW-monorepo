@@ -126,14 +126,14 @@ export function PriceChart({
                 px="$3"
                 py="$1"
                 rounded="$10"
-                bg={isActive ? '$text1' : 'transparent'}
+                bg={isActive ? '$bg3' : 'transparent'}
                 items="center"
                 justify="center"
               >
                 <Text
                   fontSize={12}
                   fontWeight={isActive ? '600' : '400'}
-                  color={isActive ? '$bg' : '$text2'}
+                  color={isActive ? '$text1' : '$text2'}
                 >
                   {p}
                 </Text>
