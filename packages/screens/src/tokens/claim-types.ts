@@ -1,7 +1,7 @@
 // Shared claim types used by ClaimTokensScreen and ClaimTokenDetailScreen.
 // These are stub types until the backend integration is ready.
 
-export interface ClaimSender {
+export interface ClaimReceiver {
   id: string;
   name: string;
   address: string;

@@ -180,7 +180,7 @@ export interface PriceChangeBadgeProps {
   value: number;
 }
 
-export interface ClaimSenderRowProps {
+export interface ClaimReceiverRowProps {
   name: string;
   address: string;
   avatar?: string;

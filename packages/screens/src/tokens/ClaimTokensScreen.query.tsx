@@ -4,7 +4,7 @@ import {
   BackgroundWrapper,
   ClaimDateHeader,
   ClaimItemRow,
-  ClaimSenderRow,
+  ClaimReceiverRow,
   SearchBar,
   SegmentedControl,
   Sheet,
@@ -18,7 +18,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable } from 'react-native';
 
-import type { ClaimItem, ClaimSender } from './claim-types';
+import type { ClaimItem, ClaimReceiver } from './claim-types';
 
 type SortOption = 'date' | 'name' | 'amount';
 
@@ -140,7 +140,7 @@ export function ClaimTokensScreen({ onItemPress }: ClaimTokensScreenProps): Reac
     }
   }, [loadAccountsFromBridge, accounts.length, isLoading]);
 
-  const receivingAccounts: ClaimSender[] = useMemo(() => {
+  const receivingAccounts: ClaimReceiver[] = useMemo(() => {
     if (accounts.length > 0) {
       return accounts.map((a) => ({
         id: a.address,
@@ -192,7 +192,7 @@ export function ClaimTokensScreen({ onItemPress }: ClaimTokensScreenProps): Reac
   // ── Flat list rows ───────────────────────────────────────────────────────
 
   type Row =
-    | { kind: 'account'; account: ClaimSender; itemCount: number }
+    | { kind: 'account'; account: ClaimReceiver; itemCount: number }
     | { kind: 'date'; date: string; accountId: string }
     | { kind: 'token'; item: ClaimItem; isLast: boolean };
 
@@ -223,7 +223,7 @@ export function ClaimTokensScreen({ onItemPress }: ClaimTokensScreenProps): Reac
     ({ item: row }: { item: Row }) => {
       if (row.kind === 'account') {
         return (
-          <ClaimSenderRow
+          <ClaimReceiverRow
             name={row.account.name}
             address={row.account.address}
             avatar={row.account.avatar}
