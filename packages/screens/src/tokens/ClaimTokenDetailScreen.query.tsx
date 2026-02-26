@@ -152,30 +152,34 @@ export function ClaimTokenDetailScreen({
             </XStack>
           </YStack>
 
-          {/* Price chart */}
-          <YStack px="$6" pb="$4">
-            {isChartLoading ? (
-              <YStack gap="$2">
-                <Skeleton width={chartWidth} height={120} borderRadius={8} />
-                <XStack justify="center" gap="$4">
-                  {(['1D', '1W', '1M', '1Y'] as PriceChartPeriod[]).map((p) => (
-                    <Skeleton key={p} width={36} height={24} borderRadius={12} />
-                  ))}
-                </XStack>
+          {/* Price chart — hidden when no data is available */}
+          {(isChartLoading || chartData.length > 0) && (
+            <>
+              <YStack px="$6" pb="$4">
+                {isChartLoading ? (
+                  <YStack gap="$2">
+                    <Skeleton width={chartWidth} height={120} borderRadius={8} />
+                    <XStack justify="center" gap="$4">
+                      {(['1D', '1W', '1M', '1Y'] as PriceChartPeriod[]).map((p) => (
+                        <Skeleton key={p} width={36} height={24} borderRadius={12} />
+                      ))}
+                    </XStack>
+                  </YStack>
+                ) : (
+                  <PriceChart
+                    data={chartData}
+                    width={chartWidth}
+                    height={120}
+                    color="#00C853"
+                    period={period}
+                    onPeriodChange={setPeriod}
+                  />
+                )}
               </YStack>
-            ) : (
-              <PriceChart
-                data={chartData}
-                width={chartWidth}
-                height={120}
-                color="#00C853"
-                period={period}
-                onPeriodChange={setPeriod}
-              />
-            )}
-          </YStack>
 
-          <Separator borderColor="$borderGlass" borderWidth={0.5} />
+              <Separator borderColor="$borderGlass" borderWidth={0.5} />
+            </>
+          )}
 
           {/* Security section */}
           <YStack mx="$4" mt="$3" rounded="$4" bg="$bg2" overflow="hidden">
