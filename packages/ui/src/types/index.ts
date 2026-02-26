@@ -186,6 +186,7 @@ export interface ClaimSenderRowProps {
   avatar?: string;
   emojiInfo?: { emoji: string; name: string; color: string };
   parentEmoji?: { emoji: string; name: string; color: string };
+  type?: 'main' | 'child' | 'evm' | 'eoa';
   isCollapsed: boolean;
   onPress: () => void;
 }

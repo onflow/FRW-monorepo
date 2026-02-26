@@ -28,6 +28,7 @@ interface ClaimSender {
   avatar?: string;
   emojiInfo?: { emoji: string; name: string; color: string };
   parentEmoji?: { emoji: string; name: string; color: string };
+  type?: 'main' | 'child' | 'evm' | 'eoa';
 }
 
 // Stub item type — senderIndex maps to the first/second contact in the address book
@@ -144,6 +145,7 @@ export function ClaimTokensScreen(): React.ReactElement {
         avatar: a.emojiInfo ? undefined : a.avatar,
         emojiInfo: a.emojiInfo,
         parentEmoji: a.parentEmoji,
+        type: a.type,
       }));
     }
     return [{ id: 'loading', name: '—', address: '—', avatar: undefined }];
@@ -220,6 +222,7 @@ export function ClaimTokensScreen(): React.ReactElement {
             avatar={row.account.avatar}
             emojiInfo={row.account.emojiInfo}
             parentEmoji={row.account.parentEmoji}
+            type={row.account.type}
             isCollapsed={collapsedAccounts.has(row.account.id)}
             onPress={() => toggleCollapse(row.account.id)}
           />

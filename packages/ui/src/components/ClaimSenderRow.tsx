@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp } from '@onflow/frw-icons';
 import React from 'react';
 import { Text, XStack, YStack, useTheme } from 'tamagui';
 
+import { EVMBadge } from './EVMBadge';
 import { Avatar } from '../foundation/Avatar';
 import type { ClaimSenderRowProps } from '../types';
 
@@ -16,6 +17,7 @@ export function ClaimSenderRow({
   avatar,
   emojiInfo,
   parentEmoji,
+  type,
   isCollapsed,
   onPress,
 }: ClaimSenderRowProps): React.ReactElement {
@@ -64,9 +66,12 @@ export function ClaimSenderRow({
       </XStack>
 
       <XStack flex={1} items="center" gap="$2" shrink={1}>
-        <Text fontSize={16} fontWeight="700" color="$text1">
+        <Text fontSize={16} fontWeight="700" color="$text1" numberOfLines={1}>
           {name}
         </Text>
+        {(type === 'evm' || type === 'eoa') && (
+          <EVMBadge variant={type === 'eoa' ? 'eoa' : 'coa'} />
+        )}
         <Text fontSize={13} color="$text2" numberOfLines={1} shrink={1}>
           {truncateAddress(address)}
         </Text>
