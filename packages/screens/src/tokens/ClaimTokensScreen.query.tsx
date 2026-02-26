@@ -358,7 +358,7 @@ export function ClaimTokensScreen(): React.ReactElement {
         <Sheet.Handle />
         <Sheet.Frame bg="$bgDrawer" borderTopLeftRadius={16} borderTopRightRadius={16} pb="$6">
           <YStack pt="$4" pb="$2" px="$4">
-            <Text fontSize={16} fontWeight="600" color="$text1">
+            <Text fontSize={16} fontWeight="700" color="$text1">
               {t('claim.sort.title', 'Sort by')}
             </Text>
           </YStack>
