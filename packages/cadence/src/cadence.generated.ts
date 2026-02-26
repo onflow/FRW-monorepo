@@ -7005,13 +7005,13 @@ access(all) fun main(addr: Address): [AnyStruct?] {
   }
 
 
-  public async queryUnclaimedNfts(addr: string): Promise<&MetadataViewsDisplay | undefined[]> {
+  public async queryUnclaimedNfts(addr: string): Promise<any | undefined[]> {
     const code = `
 import LostAndFound from 0xLostAndFound
 import MetadataViews from 0xMetadataViews
 import NonFungibleToken from 0xNonFungibleToken
 
-access(all) fun main(addr: Address): [&MetadataViews.Display?] {
+access(all) fun main(addr: Address): [AnyStruct?] {
     let tickets = LostAndFound.borrowAllTickets(addr: addr)
     
     let displayArr: [&MetadataViews.Display?]  = []
