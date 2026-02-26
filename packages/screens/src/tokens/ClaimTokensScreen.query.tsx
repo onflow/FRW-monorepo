@@ -153,22 +153,25 @@ export function ClaimTokensScreen(): React.ReactElement {
 
   // ── Filter and group items ───────────────────────────────────────────────
 
-  const tokenCount = MOCK_ITEMS.filter((i) => i.type === 'token').length;
-  const nftCount = MOCK_ITEMS.filter((i) => i.type === 'nft').length;
+  const tokenCount = searchedItems.filter((i) => i.type === 'token').length;
+  const nftCount = searchedItems.filter((i) => i.type === 'nft').length;
 
   const segments = [`Tokens ${tokenCount}`, `NFTs ${nftCount}`] as const;
   const segmentValue = activeTab === 'token' ? segments[0] : segments[1];
 
-  const filteredItems = useMemo(() => {
-    let items = MOCK_ITEMS.filter((i) => i.type === activeTab);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      items = items.filter(
-        (i) => i.name.toLowerCase().includes(q) || i.symbol.toLowerCase().includes(q)
-      );
-    }
-    return items;
-  }, [activeTab, search]);
+  // Search across both tabs; tab filter applied separately in the rows builder
+  const searchedItems = useMemo(() => {
+    if (!search.trim()) return MOCK_ITEMS;
+    const q = search.trim().toLowerCase();
+    return MOCK_ITEMS.filter(
+      (i) => i.name.toLowerCase().includes(q) || i.symbol.toLowerCase().includes(q)
+    );
+  }, [search]);
+
+  const filteredItems = useMemo(
+    () => searchedItems.filter((i) => i.type === activeTab),
+    [searchedItems, activeTab]
+  );
 
   const toggleCollapse = useCallback((accountId: string) => {
     setCollapsedAccounts((prev) => {
