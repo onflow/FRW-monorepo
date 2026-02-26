@@ -3450,7 +3450,7 @@ import NonFungibleToken from 0xNonFungibleToken
 import ViewResolver from 0xMetadataViews
 import MetadataViews from 0xMetadataViews
 import LostAndFound from 0xLostAndFound
-import FungibleToken from 0xf233dcee88fe0abe
+import FungibleToken from 0xFungibleToken
 import FlowToken from 0xFlowToken
 
 
