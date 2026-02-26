@@ -7030,6 +7030,105 @@ transaction(vaultIdentifier:String, sender: Address, amount: UFix64 ) {
   }
 
   // Tag: SrcCadenceLostandfoundQuery
+  public async queryUnclaimedFts(addr: string): Promise<any | undefined[]> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+import MetadataViews from 0xMetadataViews
+import FungibleToken from 0xFungibleToken
+
+access(all) fun main(addr: Address): [AnyStruct?] {
+    let tickets = LostAndFound.borrowAllTickets(addr: addr)
+    
+    let displayArr: [AnyStruct?]  = []
+    for ticket in tickets {
+        if ticket.type.isSubtype(of: Type<@{FungibleToken.Vault}>()) { 
+            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance()})
+        }
+    }
+    return displayArr
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "queryUnclaimedFts",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addr, t.Address),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
+  public async queryUnclaimedNfts(addr: string): Promise<any | undefined[]> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+import MetadataViews from 0xMetadataViews
+import NonFungibleToken from 0xNonFungibleToken
+
+access(all) fun main(addr: Address): [AnyStruct?] {
+    let tickets = LostAndFound.borrowAllTickets(addr: addr)
+    
+    let displayArr: [&MetadataViews.Display?]  = []
+    for ticket in tickets {
+        if ticket.type.isSubtype(of: Type<@{NonFungibleToken.NFT}>()) { 
+            displayArr.append(ticket.display)
+        }
+    }
+    
+    return displayArr
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "queryUnclaimedNfts",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addr, t.Address),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
+  public async queryUnclaimedNumber(addr: string): Promise<number> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+
+access(all) fun main(addr: Address): Int {
+    let shelfManager = LostAndFound.borrowShelfManager()
+    let shelf = shelfManager.borrowShelf(redeemer: addr)
+    if shelf == nil {
+        return 0
+    }
+    
+    return shelf!.getRedeemableTypes().length
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "queryUnclaimedNumber",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addr, t.Address),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+  // Tag: SrcCadenceLostandfoundTransaction
   public async claimFt(vaultIdentifier: string) {
     const code = `
 import FlowToken from 0xFlowToken
@@ -7157,105 +7256,6 @@ transaction(nftIdentifier: String) {
   }
 
 
-  public async queryUnclaimedFts(addr: string): Promise<any | undefined[]> {
-    const code = `
-import LostAndFound from 0xLostAndFound
-import MetadataViews from 0xMetadataViews
-import FungibleToken from 0xFungibleToken
-
-access(all) fun main(addr: Address): [AnyStruct?] {
-    let tickets = LostAndFound.borrowAllTickets(addr: addr)
-    
-    let displayArr: [AnyStruct?]  = []
-    for ticket in tickets {
-        if ticket.type.isSubtype(of: Type<@{FungibleToken.Vault}>()) { 
-            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance()})
-        }
-    }
-    return displayArr
-}
-`;
-    let config = {
-      cadence: code.trim(),
-      name: "queryUnclaimedFts",
-      type: "script",
-      args: (arg: any, t: any) => [
-        arg(addr, t.Address),
-      ],
-      limit: 9999,
-    };
-    config = await this.runRequestInterceptors(config);
-    let response = await fcl.query(config);
-    const result = await this.runResponseInterceptors(config, response);
-    return result.response;
-  }
-
-
-  public async queryUnclaimedNfts(addr: string): Promise<&MetadataViewsDisplay | undefined[]> {
-    const code = `
-import LostAndFound from 0xLostAndFound
-import MetadataViews from 0xMetadataViews
-import NonFungibleToken from 0xNonFungibleToken
-
-access(all) fun main(addr: Address): [&MetadataViews.Display?] {
-    let tickets = LostAndFound.borrowAllTickets(addr: addr)
-    
-    let displayArr: [&MetadataViews.Display?]  = []
-    for ticket in tickets {
-        if ticket.type.isSubtype(of: Type<@{NonFungibleToken.NFT}>()) { 
-            displayArr.append(ticket.display)
-        }
-    }
-    
-    return displayArr
-}
-`;
-    let config = {
-      cadence: code.trim(),
-      name: "queryUnclaimedNfts",
-      type: "script",
-      args: (arg: any, t: any) => [
-        arg(addr, t.Address),
-      ],
-      limit: 9999,
-    };
-    config = await this.runRequestInterceptors(config);
-    let response = await fcl.query(config);
-    const result = await this.runResponseInterceptors(config, response);
-    return result.response;
-  }
-
-
-  public async queryUnclaimedNumber(addr: string): Promise<number> {
-    const code = `
-import LostAndFound from 0xLostAndFound
-
-access(all) fun main(addr: Address): Int {
-    let shelfManager = LostAndFound.borrowShelfManager()
-    let shelf = shelfManager.borrowShelf(redeemer: addr)
-    if shelf == nil {
-        return 0
-    }
-    
-    return shelf!.getRedeemableTypes().length
-}
-`;
-    let config = {
-      cadence: code.trim(),
-      name: "queryUnclaimedNumber",
-      type: "script",
-      args: (arg: any, t: any) => [
-        arg(addr, t.Address),
-      ],
-      limit: 9999,
-    };
-    config = await this.runRequestInterceptors(config);
-    let response = await fcl.query(config);
-    const result = await this.runResponseInterceptors(config, response);
-    return result.response;
-  }
-
-  // Tag: SrcCadenceLostandfoundTransaction
   public async sendFt(vaultIdentifier: string, recipient: string, amount: string, memo: string) {
     const code = `
 import FlowToken from 0xFlowToken
