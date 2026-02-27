@@ -537,6 +537,7 @@
     "items": "Elementos",
     "showMore": "ver más",
     "showLess": "ver menos",
-    "empty": "Sin NFTs"
+    "empty": "Sin NFTs",
+    "warningText": "Al aceptar esta colección de NFT, aceptarás automáticamente futuros depósitos de la misma"
   }
 }

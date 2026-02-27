@@ -1,7 +1,9 @@
 import { VerifiedToken } from '@onflow/frw-icons';
+import { useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import {
   Avatar,
   Button,
+  ClaimNFTAssetDrawer,
   NFTGrid,
   ScrollView,
   Separator,
@@ -38,6 +40,10 @@ export function ClaimNFTDetailScreen({
   const { t } = useTranslation();
   const theme = useTheme();
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [claimDrawerVisible, setClaimDrawerVisible] = useState(false);
+
+  const allAccounts = useWalletStore(walletSelectors.getAllAccounts);
+  const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
 
   const nftItems = (item.nftItems ?? []).map((n) => ({
     id: n.id,
@@ -151,11 +157,41 @@ export function ClaimNFTDetailScreen({
           </Button>
         </YStack>
         <YStack flex={1}>
-          <Button variant="inverse" size="large" fullWidth onPress={onClaim}>
+          <Button
+            variant="inverse"
+            size="large"
+            fullWidth
+            onPress={() => setClaimDrawerVisible(true)}
+          >
             {t('claim.detail.claim', 'Claim')}
           </Button>
         </YStack>
       </XStack>
+
+      {activeAccount && (
+        <ClaimNFTAssetDrawer
+          visible={claimDrawerVisible}
+          collectionName={item.name}
+          collectionSymbol={item.symbol}
+          collectionLogoURI={item.logoURI}
+          isVerified={item.isVerified}
+          nftItems={nftItems}
+          totalCount={itemCount}
+          receiver={activeAccount}
+          allReceivers={allAccounts}
+          onConfirm={() => {
+            setClaimDrawerVisible(false);
+            onClaim?.();
+          }}
+          onClose={() => setClaimDrawerVisible(false)}
+          titleText={t('claim.drawer.title', 'Claim assets')}
+          claimText={t('claim.drawer.cta', 'Claim')}
+          warningText={t(
+            'claimNFTDetail.warningText',
+            'By accepting this NFT collection you will automatically accept future deposits of it as well'
+          )}
+        />
+      )}
     </YStack>
   );
 }

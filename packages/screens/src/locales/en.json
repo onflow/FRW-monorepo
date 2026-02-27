@@ -589,6 +589,7 @@
     "items": "Items",
     "showMore": "show more",
     "showLess": "show less",
-    "empty": "No NFTs"
+    "empty": "No NFTs",
+    "warningText": "By accepting this NFT collection you will automatically accept future deposits of it as well"
   }
 }
