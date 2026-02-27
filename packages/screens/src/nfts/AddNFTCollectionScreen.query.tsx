@@ -62,11 +62,11 @@ export function AddNFTCollectionScreen({
 
   const { data: catalog = [], isLoading: isCatalogLoading } = useQuery({
     queryKey: tokenQueryKeys.nftCatalog(network),
-    queryFn: () => tokenQueries.fetchNFTCatalog(),
+    queryFn: () => tokenQueries.fetchNFTCatalog(network),
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: userCollections = [] } = useQuery({
+  const { data: userCollections = [], isLoading: isUserCollectionsLoading } = useQuery({
     queryKey: tokenQueryKeys.nfts(address, network),
     queryFn: () => tokenQueries.fetchNFTCollections(address, network),
     enabled: !!address,
@@ -221,7 +221,7 @@ export function AddNFTCollectionScreen({
         <Separator borderColor="$borderGlass" borderWidth={0.5} mb="$1" />
 
         <View style={{ flex: 1, position: 'relative' }}>
-          {isCatalogLoading ? (
+          {isCatalogLoading || isUserCollectionsLoading ? (
             <YStack px="$4" gap="$3" pt="$2">
               {Array.from({ length: 8 }).map((_, i) => (
                 <Skeleton key={i} height={56} borderRadius={8} />

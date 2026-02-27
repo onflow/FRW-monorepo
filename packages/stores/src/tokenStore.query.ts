@@ -14,6 +14,9 @@ import { logger } from '@onflow/frw-utils';
 import { getFlowTokenVault } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
+import nftCatalogMainnet from './assets/nft_collections_mainnet.json';
+import nftCatalogTestnet from './assets/nft_collections_testnet.json';
+
 // Balance data interface
 interface BalanceData {
   balance: string;
@@ -455,36 +458,35 @@ export const tokenQueries = {
   },
 
   // Fetch full NFT collection catalog (all available collections on the network)
-  fetchNFTCatalog: async (): Promise<NFTCollection[]> => {
+  fetchNFTCatalog: async (network: string = 'mainnet'): Promise<NFTCollection[]> => {
     try {
       const response = await NftService.collections();
-      // Log raw response shape to understand the API structure
-      const firstItem = Array.isArray(response?.data)
-        ? response.data[0]
-        : Array.isArray(response)
-          ? response[0]
-          : undefined;
-      logger.debug('[TokenQuery] NFT catalog raw first item:', {
-        keys: firstItem ? Object.keys(firstItem) : 'no items',
-        firstItem,
-      });
 
-      // The catalog endpoint may return data as a flat array or wrapped in { data: [] }
+      // The catalog endpoint returns { data: [...], status: N }
       const items: any[] = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response)
           ? response
           : [];
 
-      return items.map((item: any) => {
-        // Construct flowIdentifier from address+contractName if not provided by API
-        const contractName = item.contractName ?? item.contract_name;
-        const derivedIdentifier =
-          item.address && contractName ? `A.${item.address}.${contractName}` : undefined;
-        const flowIdentifier = item.flowIdentifier ?? item.id ?? derivedIdentifier;
+      // Build a logo lookup from bundled local assets (API does not return logo URLs)
+      const bundledCatalog: any[] =
+        network === 'testnet' ? (nftCatalogTestnet as any[]) : (nftCatalogMainnet as any[]);
+      const logoByContractId = new Map<string, string>();
+      for (const entry of bundledCatalog) {
+        if (entry.id && entry.logo) {
+          logoByContractId.set(entry.id, entry.logo);
+        }
+      }
 
-        // Convert SVG logos to PNG — React Native cannot render SVGs
-        const rawLogo = item.logo ?? item.logoURI;
+      return items.map((item: any) => {
+        // Construct flowIdentifier as A.<address>.<contractName> — API never provides it directly
+        const contractName: string | undefined = item.contract_name ?? item.contractName;
+        const flowIdentifier =
+          item.address && contractName ? `A.${item.address}.${contractName}` : undefined;
+
+        // Look up logo from bundled asset; convert SVG to PNG (React Native cannot render SVGs)
+        const rawLogo = logoByContractId.get(item.id) ?? item.logo ?? item.logoURI;
         const logo = rawLogo ? rawLogo.replace('.svg', '.png') : undefined;
 
         return {
