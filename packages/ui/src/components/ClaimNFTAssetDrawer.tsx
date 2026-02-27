@@ -1,7 +1,7 @@
-import { Close, VerifiedToken } from '@onflow/frw-icons';
+import { Close } from '@onflow/frw-icons';
 import { WalletType, type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
-import { Sheet, View, XStack, YStack, useTheme } from 'tamagui';
+import { Sheet, View, XStack, YStack } from 'tamagui';
 
 import { AccountSelector } from './AccountSelector';
 import { ConfirmationAnimationSection } from './ConfirmationAnimationSection';
@@ -32,7 +32,7 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
   collectionName,
   collectionSymbol,
   collectionLogoURI,
-  isVerified,
+  isVerified: _isVerified,
   nftItems,
   totalCount: _totalCount,
   receiver,
@@ -44,7 +44,6 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
   claimText = 'Claim',
   warningText = 'By accepting this NFT collection you will automatically accept future deposits of it as well',
 }) => {
-  const theme = useTheme();
   const [errorSignal, setErrorSignal] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [selectedReceiver, setSelectedReceiver] = useState<WalletAccount>(receiver);
@@ -122,12 +121,9 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
           <YStack bg="$bg1" rounded="$4" px="$4" py="$3">
             {/* Name row */}
             <XStack items="center" justify="space-between">
-              <XStack items="center" gap="$1.5">
-                <Text fontSize={15} fontWeight="600" color="$text1">
-                  {collectionName}
-                </Text>
-                {isVerified && <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />}
-              </XStack>
+              <Text fontSize={15} fontWeight="600" color="$text1">
+                {collectionName}
+              </Text>
               <Text fontSize={13} color="$text2">
                 {collectionSymbol}
               </Text>
@@ -137,7 +133,7 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
             <MultipleNFTsPreview
               nfts={nftTransactionItems}
               showEditButton={false}
-              expandable={true}
+              expandable={false}
               contentPadding="$0"
             />
           </YStack>
