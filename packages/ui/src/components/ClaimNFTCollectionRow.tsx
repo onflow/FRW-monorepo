@@ -26,7 +26,7 @@ export function ClaimNFTCollectionRow({
         </YStack>
         <ChevronRight size={24} color="#767676" theme="outline" />
       </XStack>
-      {!isLast && <Separator borderColor="$borderGlass" borderWidth={0.5} />}
+      {!isLast && <Separator mx="$4" borderColor="$borderGlass" borderWidth={0.5} />}
     </YStack>
   );
 }
