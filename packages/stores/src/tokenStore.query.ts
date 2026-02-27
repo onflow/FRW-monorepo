@@ -457,8 +457,43 @@ export const tokenQueries = {
   // Fetch full NFT collection catalog (all available collections on the network)
   fetchNFTCatalog: async (): Promise<NFTCollection[]> => {
     try {
-      const response = (await NftService.collections()) as { data?: NFTCollection[] };
-      return response?.data ?? [];
+      const response = await NftService.collections();
+      // Log raw response shape to understand the API structure
+      const firstItem = Array.isArray(response?.data)
+        ? response.data[0]
+        : Array.isArray(response)
+          ? response[0]
+          : undefined;
+      logger.debug('[TokenQuery] NFT catalog raw first item:', {
+        keys: firstItem ? Object.keys(firstItem) : 'no items',
+        firstItem,
+      });
+
+      // The catalog endpoint may return data as a flat array or wrapped in { data: [] }
+      const items: any[] = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : [];
+
+      return items.map((item: any) => {
+        // Construct flowIdentifier from address+contractName if not provided by API
+        const contractName = item.contractName ?? item.contract_name;
+        const derivedIdentifier =
+          item.address && contractName ? `A.${item.address}.${contractName}` : undefined;
+        const flowIdentifier = item.flowIdentifier ?? item.id ?? derivedIdentifier;
+
+        // Convert SVG logos to PNG — React Native cannot render SVGs
+        const rawLogo = item.logo ?? item.logoURI;
+        const logo = rawLogo ? rawLogo.replace('.svg', '.png') : undefined;
+
+        return {
+          ...item,
+          flowIdentifier,
+          logo,
+          logoURI: logo,
+        };
+      }) as NFTCollection[];
     } catch (error) {
       logger.error('[TokenQuery] Error fetching NFT collection catalog:', error);
       return [];
