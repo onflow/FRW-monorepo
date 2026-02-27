@@ -149,7 +149,7 @@ export function ClaimNFTDetailScreen({
             fullWidth
             onPress={() => setClaimDrawerVisible(true)}
           >
-            {t('claim.detail.claim', 'Claim')}
+            {t('claimNFTDetail.claimButton', 'Claim assets')}
           </Button>
         </YStack>
       </XStack>

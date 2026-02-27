@@ -588,6 +588,7 @@
     "website": "Website",
     "items": "Items",
     "about": "About",
+    "claimButton": "Claim assets",
     "empty": "No NFTs",
     "warningText": "By accepting this NFT collection you will automatically accept future deposits of it as well"
   }

@@ -536,6 +536,7 @@
     "website": "网站",
     "items": "数量",
     "about": "关于",
+    "claimButton": "领取资产",
     "empty": "暂无 NFT",
     "warningText": "接受此 NFT 收藏后，将自动接受未来的存入"
   }

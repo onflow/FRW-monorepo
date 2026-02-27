@@ -1,12 +1,12 @@
 import { Close, VerifiedToken } from '@onflow/frw-icons';
-import type { WalletAccount } from '@onflow/frw-types';
+import { WalletType, type WalletAccount } from '@onflow/frw-types';
 import React, { useState } from 'react';
 import { Sheet, View, XStack, YStack, useTheme } from 'tamagui';
 
 import { AccountSelector } from './AccountSelector';
 import { ConfirmationAnimationSection } from './ConfirmationAnimationSection';
 import { HoldToSendButton } from './HoldToSendButton';
-import { Avatar } from '../foundation/Avatar';
+import { MultipleNFTsPreview } from './MultipleNFTsPreview';
 import { Text } from '../foundation/Text';
 
 export interface ClaimNFTAssetDrawerProps {
@@ -27,10 +27,6 @@ export interface ClaimNFTAssetDrawerProps {
   warningText?: string;
 }
 
-const NFT_THUMB_SIZE = 48;
-const NFT_THUMB_OVERLAP = 12;
-const MAX_VISIBLE_THUMBS = 3;
-
 export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
   visible,
   collectionName,
@@ -38,7 +34,7 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
   collectionLogoURI,
   isVerified,
   nftItems,
-  totalCount,
+  totalCount: _totalCount,
   receiver,
   allReceivers,
   onReceiverChange,
@@ -70,12 +66,11 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
     }
   };
 
-  const visibleThumbs = nftItems.slice(0, MAX_VISIBLE_THUMBS);
-  const overflowCount = totalCount - MAX_VISIBLE_THUMBS;
-  const thumbStripWidth =
-    visibleThumbs.length * NFT_THUMB_SIZE -
-    (visibleThumbs.length - 1) * NFT_THUMB_OVERLAP +
-    (overflowCount > 0 ? NFT_THUMB_SIZE - NFT_THUMB_OVERLAP + 8 : 0);
+  const nftTransactionItems = nftItems.map((n) => ({
+    ...n,
+    collectionName,
+    type: WalletType.Flow,
+  }));
 
   return (
     <Sheet modal open={visible} onOpenChange={onClose} snapPointsMode="fit" dismissOnSnapToBottom>
@@ -124,7 +119,7 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
           </YStack>
 
           {/* Collection card */}
-          <YStack bg="$bg1" rounded="$4" px="$4" py="$3" gap="$3">
+          <YStack bg="$bg1" rounded="$4" px="$4" py="$3">
             {/* Name row */}
             <XStack items="center" justify="space-between">
               <XStack items="center" gap="$1.5">
@@ -138,49 +133,13 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
               </Text>
             </XStack>
 
-            {/* NFT thumbnail strip */}
-            <XStack items="center">
-              <View
-                style={{ width: thumbStripWidth, height: NFT_THUMB_SIZE, position: 'relative' }}
-              >
-                {visibleThumbs.map((nft, idx) => (
-                  <View
-                    key={nft.id}
-                    style={{
-                      position: 'absolute',
-                      left: idx * (NFT_THUMB_SIZE - NFT_THUMB_OVERLAP),
-                      zIndex: idx,
-                    }}
-                  >
-                    <Avatar
-                      src={nft.thumbnail || nft.image}
-                      fallback={nft.name[0]}
-                      size={NFT_THUMB_SIZE}
-                      style={{ borderRadius: 8, borderWidth: 2, borderColor: '#1A1A1A' }}
-                    />
-                  </View>
-                ))}
-                {overflowCount > 0 && (
-                  <XStack
-                    style={{
-                      position: 'absolute',
-                      left: visibleThumbs.length * (NFT_THUMB_SIZE - NFT_THUMB_OVERLAP) + 8,
-                      zIndex: visibleThumbs.length,
-                    }}
-                    w={NFT_THUMB_SIZE}
-                    h={NFT_THUMB_SIZE}
-                    rounded="$2"
-                    bg="$bg2"
-                    items="center"
-                    justify="center"
-                  >
-                    <Text fontSize={13} fontWeight="600" color="$text2">
-                      +{overflowCount}
-                    </Text>
-                  </XStack>
-                )}
-              </View>
-            </XStack>
+            {/* NFT preview - same style as send workflow */}
+            <MultipleNFTsPreview
+              nfts={nftTransactionItems}
+              showEditButton={false}
+              expandable={true}
+              contentPadding="$0"
+            />
           </YStack>
 
           {/* Receiver card */}

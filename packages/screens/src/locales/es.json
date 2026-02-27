@@ -536,6 +536,7 @@
     "website": "Sitio web",
     "items": "Elementos",
     "about": "Acerca de",
+    "claimButton": "Reclamar activos",
     "empty": "Sin NFTs",
     "warningText": "Al aceptar esta colección de NFT, aceptarás automáticamente futuros depósitos de la misma"
   }
