@@ -135,6 +135,7 @@ export const ClaimNFTAssetDrawer: React.FC<ClaimNFTAssetDrawerProps> = ({
               showEditButton={false}
               expandable={false}
               contentPadding="$0"
+              bottomPadding="$2"
             />
           </YStack>
 
