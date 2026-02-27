@@ -1,3 +1,4 @@
+import { NftService, type NFTCollection } from '@onflow/frw-api';
 import { cadence, context, queryClient } from '@onflow/frw-context';
 import { TokenService, tokenService, nftService } from '@onflow/frw-services';
 import {
@@ -47,6 +48,8 @@ export const tokenQueryKeys = {
     ] as const,
   catalog: (network: string = 'mainnet', chainType: string = 'flow') =>
     [...tokenQueryKeys.all, 'catalog', network, chainType] as const,
+  nftCatalog: (network: string = 'mainnet') =>
+    [...tokenQueryKeys.all, 'nftCatalog', network] as const,
 };
 
 // Token Store State - Minimal UI state, queries handle data
@@ -447,6 +450,17 @@ export const tokenQueries = {
       return await TokenService.getAllTokenCatalog(network, chainType);
     } catch (error) {
       logger.error('[TokenQuery] Error fetching token catalog:', error);
+      return [];
+    }
+  },
+
+  // Fetch full NFT collection catalog (all available collections on the network)
+  fetchNFTCatalog: async (): Promise<NFTCollection[]> => {
+    try {
+      const response = (await NftService.collections()) as { data?: NFTCollection[] };
+      return response?.data ?? [];
+    } catch (error) {
+      logger.error('[TokenQuery] Error fetching NFT collection catalog:', error);
       return [];
     }
   },

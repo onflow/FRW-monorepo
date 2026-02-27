@@ -4,6 +4,7 @@ import {
   BackgroundWrapper,
   ClaimDateHeader,
   ClaimItemRow,
+  ClaimNFTCollectionRow,
   ClaimReceiverRow,
   SearchBar,
   SegmentedControl,
@@ -75,10 +76,31 @@ const MOCK_ITEMS: ClaimItem[] = [
   {
     id: 'n1',
     type: 'nft',
-    name: 'Flovatar #1234',
-    symbol: 'FLOVATAR',
-    amount: '1',
-    date: '2025/09/14',
+    name: 'NBA Top Shot',
+    symbol: 'NBATS',
+    logoURI: 'https://assets.nbatopshot.com/img/top_shot_logo_black_on_white.jpg',
+    amount: '14',
+    date: '2025/09/15',
+    senderIndex: 0,
+    isVerified: true,
+  },
+  {
+    id: 'n2',
+    type: 'nft',
+    name: 'Kanpai Pandas',
+    symbol: 'KPANDA',
+    amount: '14',
+    date: '2025/09/13',
+    senderIndex: 0,
+    isVerified: true,
+  },
+  {
+    id: 'n3',
+    type: 'nft',
+    name: 'Deadfellaz',
+    symbol: 'DFZ',
+    amount: '14',
+    date: '2025/09/12',
     senderIndex: 0,
     isVerified: true,
   },
@@ -117,14 +139,18 @@ type FilterTab = 'token' | 'nft';
 
 interface ClaimTokensScreenProps {
   onItemPress?: (item: ClaimItem) => void;
+  initialTab?: FilterTab;
 }
 
-export function ClaimTokensScreen({ onItemPress }: ClaimTokensScreenProps): React.ReactElement {
+export function ClaimTokensScreen({
+  onItemPress,
+  initialTab = 'token',
+}: ClaimTokensScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<FilterTab>('token');
+  const [activeTab, setActiveTab] = useState<FilterTab>(initialTab);
   const [collapsedAccounts, setCollapsedAccounts] = useState<Set<string>>(new Set());
   const [sortOption, setSortOption] = useState<SortOption>('date');
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
@@ -238,6 +264,19 @@ export function ClaimTokensScreen({ onItemPress }: ClaimTokensScreenProps): Reac
 
       if (row.kind === 'date') {
         return <ClaimDateHeader date={row.date} />;
+      }
+
+      if (row.item.type === 'nft') {
+        return (
+          <Pressable onPress={() => onItemPress?.(row.item)}>
+            <ClaimNFTCollectionRow
+              name={row.item.name}
+              logoURI={row.item.logoURI}
+              itemCount={parseInt(row.item.amount, 10)}
+              isLast={row.isLast}
+            />
+          </Pressable>
+        );
       }
 
       return (

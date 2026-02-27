@@ -17,6 +17,8 @@ import {
   AddTokensScreen,
   ClaimTokensScreen,
   ClaimTokenDetailScreen,
+  // NFT screens
+  AddNFTCollectionScreen,
   type ClaimItem,
   type ClaimSender,
   // Onboarding screens
@@ -78,7 +80,8 @@ export type RootStackParamList = {
   Activity: undefined;
   ActivityDetail: { item: ActivityItem };
   AddTokens: undefined;
-  ClaimTokens: undefined;
+  AddNFTCollection: undefined;
+  ClaimTokens: { initialTab?: 'token' | 'nft' } | undefined;
   ClaimTokenDetail: { item: ClaimItem; sender?: ClaimSender };
   Confirmation: {
     fromAccount: Record<string, unknown>;
@@ -362,14 +365,28 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               )}
             </Stack.Screen>
             <Stack.Screen
+              name="AddNFTCollection"
+              options={{
+                headerTitle: t('navigation.addNFTCollection', 'Add Collection'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <AddNFTCollectionScreen
+                  onClaimPress={() => nav.navigate('ClaimTokens', { initialTab: 'nft' })}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
               name="ClaimTokens"
               options={{
                 headerTitle: t('navigation.claimTokens', 'Claim'),
                 headerStyle: { backgroundColor: theme.bg.val },
               }}
             >
-              {({ navigation: nav }) => (
+              {({ route, navigation: nav }) => (
                 <ClaimTokensScreen
+                  initialTab={route.params?.initialTab}
                   onItemPress={(item, sender) => nav.navigate('ClaimTokenDetail', { item, sender })}
                 />
               )}

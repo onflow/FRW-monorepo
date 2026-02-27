@@ -111,6 +111,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
   scanQRCode(): Promise<string>;
   shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
+  closeRNWithNFT(id?: string | null): void;
 
   // Toast notifications
   showToast?(
