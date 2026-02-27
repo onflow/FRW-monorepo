@@ -535,8 +535,7 @@
   "claimNFTDetail": {
     "website": "ウェブサイト",
     "items": "アイテム数",
-    "showMore": "もっと見る",
-    "showLess": "閉じる",
+    "about": "概要",
     "empty": "NFT なし",
     "warningText": "この NFT コレクションを受け入れると、今後の入金も自動的に受け入れます"
   }

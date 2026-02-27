@@ -535,8 +535,7 @@
   "claimNFTDetail": {
     "website": "网站",
     "items": "数量",
-    "showMore": "展开",
-    "showLess": "收起",
+    "about": "关于",
     "empty": "暂无 NFT",
     "warningText": "接受此 NFT 收藏后，将自动接受未来的存入"
   }

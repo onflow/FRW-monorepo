@@ -39,7 +39,6 @@ export function ClaimNFTDetailScreen({
 }: ClaimNFTDetailScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [claimDrawerVisible, setClaimDrawerVisible] = useState(false);
 
   const allAccounts = useWalletStore(walletSelectors.getAllAccounts);
@@ -98,26 +97,12 @@ export function ClaimNFTDetailScreen({
 
           {/* Description */}
           {item.description && (
-            <YStack px="$4" pb="$3">
-              <Text
-                fontSize={14}
-                color="$text2"
-                lineHeight={20}
-                numberOfLines={descriptionExpanded ? undefined : 2}
-              >
-                {item.description}
+            <YStack px="$4" pb="$3" gap="$1">
+              <Text fontSize={16} fontWeight="600" color="$text1">
+                {t('claimNFTDetail.about', 'About')}
               </Text>
-              <Text
-                fontSize={13}
-                color="$primary"
-                fontWeight="500"
-                mt="$1"
-                onPress={() => setDescriptionExpanded((v) => !v)}
-                pressStyle={{ opacity: 0.7 }}
-              >
-                {descriptionExpanded
-                  ? t('claimNFTDetail.showLess', 'show less')
-                  : t('claimNFTDetail.showMore', 'show more')}
+              <Text fontSize={14} color="$text2" lineHeight={20}>
+                {item.description}
               </Text>
             </YStack>
           )}
@@ -128,7 +113,8 @@ export function ClaimNFTDetailScreen({
           <YStack px="$4" pt="$3" flex={1} minHeight={300}>
             <NFTGrid
               data={nftItems}
-              isLoading={false}
+              isLoading={nftItems.length === 0 && itemCount > 0}
+              selectable={false}
               onNFTPress={() => {}}
               emptyTitle={t('claimNFTDetail.empty', 'No NFTs')}
             />

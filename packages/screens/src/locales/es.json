@@ -535,8 +535,7 @@
   "claimNFTDetail": {
     "website": "Sitio web",
     "items": "Elementos",
-    "showMore": "ver más",
-    "showLess": "ver menos",
+    "about": "Acerca de",
     "empty": "Sin NFTs",
     "warningText": "Al aceptar esta colección de NFT, aceptarás automáticamente futuros depósitos de la misma"
   }

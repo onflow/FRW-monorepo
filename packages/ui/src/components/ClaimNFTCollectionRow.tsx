@@ -15,7 +15,7 @@ export function ClaimNFTCollectionRow({
   return (
     <YStack>
       <XStack px="$4" py="$3" items="center" gap="$3">
-        <Avatar src={logoURI} alt={name} fallback={name[0]} size={64} />
+        <Avatar src={logoURI} alt={name} fallback={name[0]} size={48} />
         <YStack flex={1} gap="$1">
           <Text fontSize={17} fontWeight="600" color="$text1" numberOfLines={1}>
             {name}
