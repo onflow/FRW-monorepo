@@ -470,14 +470,18 @@ export const tokenQueries = {
           : [];
 
       // Build a logo lookup from bundled local assets (API does not return logo URLs)
-      const bundledCatalog: any[] =
-        network === 'testnet' ? (nftCatalogTestnet as any[]) : (nftCatalogMainnet as any[]);
-      const logoByContractId = new Map<string, string>();
-      for (const entry of bundledCatalog) {
-        if (entry.id && entry.logo) {
-          logoByContractId.set(entry.id, entry.logo);
-        }
-      }
+      // Use reduce + plain object instead of Map/for-of for Hermes compatibility
+      const rawCatalog = network === 'testnet' ? nftCatalogTestnet : nftCatalogMainnet;
+      const bundledCatalog: any[] = Array.isArray(rawCatalog)
+        ? rawCatalog
+        : ((rawCatalog as any).default ?? []);
+      const logoByContractId: Record<string, string> = bundledCatalog.reduce(
+        (acc: Record<string, string>, entry: any) => {
+          if (entry.id && entry.logo) acc[entry.id] = entry.logo;
+          return acc;
+        },
+        {}
+      );
 
       return items.map((item: any) => {
         // Construct flowIdentifier as A.<address>.<contractName> — API never provides it directly
@@ -486,7 +490,7 @@ export const tokenQueries = {
           item.address && contractName ? `A.${item.address}.${contractName}` : undefined;
 
         // Look up logo from bundled asset; convert SVG to PNG (React Native cannot render SVGs)
-        const rawLogo = logoByContractId.get(item.id) ?? item.logo ?? item.logoURI;
+        const rawLogo = logoByContractId[item.id] ?? item.logo ?? item.logoURI;
         const logo = rawLogo ? rawLogo.replace('.svg', '.png') : undefined;
 
         return {
