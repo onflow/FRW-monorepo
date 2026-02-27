@@ -527,5 +527,16 @@
     "claimBannerTitle": "领取已收到的代币",
     "searchPlaceholder": "搜索代币",
     "verifiedOnly": "仅显示已验证的代币"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "领取已收到的 NFT",
+    "searchPlaceholder": "搜索 NFT 收藏"
+  },
+  "claimNFTDetail": {
+    "website": "网站",
+    "items": "数量",
+    "showMore": "展开",
+    "showLess": "收起",
+    "empty": "暂无 NFT"
   }
 }

@@ -539,5 +539,16 @@
     "claimBannerTitle": "Получить полученные токены",
     "searchPlaceholder": "Поиск токена",
     "verifiedOnly": "Показывать только проверенные токены"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "Получить полученные NFT",
+    "searchPlaceholder": "Поиск коллекции NFT"
+  },
+  "claimNFTDetail": {
+    "website": "Сайт",
+    "items": "Элементы",
+    "showMore": "показать больше",
+    "showLess": "скрыть",
+    "empty": "Нет NFT"
   }
 }

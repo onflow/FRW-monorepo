@@ -579,5 +579,16 @@
     "claimBannerTitle": "Claim received tokens",
     "searchPlaceholder": "Search Token",
     "verifiedOnly": "Only show verified tokens"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "Claim received NFTs",
+    "searchPlaceholder": "Search NFT Collection"
+  },
+  "claimNFTDetail": {
+    "website": "Website",
+    "items": "Items",
+    "showMore": "show more",
+    "showLess": "show less",
+    "empty": "No NFTs"
   }
 }
