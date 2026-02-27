@@ -1,7 +1,8 @@
 // Export screen components
 export { ActivityScreen, ActivityDetailScreen } from './activity';
 export { AddTokensScreen, ClaimTokensScreen, ClaimTokenDetailScreen } from './tokens';
-export { AddNFTCollectionScreen } from './nfts';
+export { AddNFTCollectionScreen, ClaimNFTDetailScreen } from './nfts';
+export type { ClaimNFTDetailScreenProps } from './nfts';
 export type { ClaimItem, ClaimReceiver, ClaimTokenDetailScreenProps } from './tokens';
 export type { ActivityDetailScreenProps } from './activity';
 export { SelectTokensScreen } from './send/SelectTokensScreen.query';

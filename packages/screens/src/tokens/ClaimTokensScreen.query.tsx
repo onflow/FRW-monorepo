@@ -83,6 +83,15 @@ const MOCK_ITEMS: ClaimItem[] = [
     date: '2025/09/15',
     senderIndex: 0,
     isVerified: true,
+    website: 'nbatopshot.com',
+    description:
+      'NBA Top Shot is an officially licensed digital collectibles platform where fans can buy, sell, and trade video highlights from the NBA.',
+    nftItems: Array.from({ length: 12 }, (_, i) => ({
+      id: `nts-${i}`,
+      name: `Moment #${1000 + i}`,
+      image: '',
+      thumbnail: '',
+    })),
   },
   {
     id: 'n2',
@@ -93,6 +102,15 @@ const MOCK_ITEMS: ClaimItem[] = [
     date: '2025/09/13',
     senderIndex: 0,
     isVerified: true,
+    website: 'kanpaipandas.com',
+    description:
+      'Kanpai Pandas is a collection of 10,000 unique panda NFTs living on the Flow blockchain.',
+    nftItems: Array.from({ length: 14 }, (_, i) => ({
+      id: `kp-${i}`,
+      name: `Panda #${200 + i}`,
+      image: '',
+      thumbnail: '',
+    })),
   },
   {
     id: 'n3',
@@ -103,6 +121,14 @@ const MOCK_ITEMS: ClaimItem[] = [
     date: '2025/09/12',
     senderIndex: 0,
     isVerified: true,
+    website: 'deadfellaz.io',
+    description: 'Deadfellaz is a collection of 10,000 zombie NFTs. Reanimate your wallet.',
+    nftItems: Array.from({ length: 14 }, (_, i) => ({
+      id: `dfz-${i}`,
+      name: `Deadfella #${500 + i}`,
+      image: '',
+      thumbnail: '',
+    })),
   },
 ];
 
