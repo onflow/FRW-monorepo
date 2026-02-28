@@ -138,11 +138,7 @@ export function InfoScreen({ onStartMigration }: InfoScreenProps = {}): React.Re
 
   return (
     <BackgroundWrapper backgroundColor="$bgDrawer">
-      <ScrollView
-        flex={1}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
-      >
+      <ScrollView flex={1} showsVerticalScrollIndicator={false}>
         <YStack flex={1} gap="$8" items="center" pt="$6">
           {/* Title Section */}
           <YStack gap="$10" items="center" width="100%">
