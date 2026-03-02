@@ -348,8 +348,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       }
 
       // Validate that we have a valid number
-      const parsedBalance = parseFloat(numericBalance);
-      if (!isNaN(parsedBalance) && parsedBalance > 0) {
+      const parsedBalance = new BN(numericBalance);
+      if (!parsedBalance.isNaN() && parsedBalance.gt(0)) {
         setAmount(numericBalance);
         // Switch to token mode when MAX is pressed (disable $ mode)
         setIsTokenMode(true);

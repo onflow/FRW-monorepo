@@ -377,7 +377,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
     const { flowIdentifier, amount, receiver, decimal, sender, type, assetType } = payload;
-    const formattedAmount = safeConvertToUFix64(amount);
+    // const formattedAmount = safeConvertToUFix64(amount);
 
     _helpers?.session?.strategySelected({
       strategyName: 'EvmToFlowTokenBridgeStrategy',
@@ -386,10 +386,11 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
       sender: sender,
       receiver: receiver,
       flowIdentifier: flowIdentifier,
-      amount: formattedAmount,
+      amount: amount,
     });
 
-    const valueBig = parseUnits(formattedAmount, decimal);
+    const valueBig = parseUnits(amount, decimal);
+    console.log(valueBig.toString());
     return await this.cadenceService.bridgeTokensFromEvmToFlowV3(
       flowIdentifier,
       valueBig.toString(),
