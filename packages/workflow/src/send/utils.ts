@@ -108,16 +108,29 @@ export const getFlowTokenVault = (network: 'mainnet' | 'testnet'): string => {
  * @throws Error if the amount doesn't meet UFix64 requirements
  */
 export const convertToUFix64 = (amount: number | string): string => {
-  // Convert to number first
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  // Use String() to preserve human-readable decimal representation
+  // (String(0.29) → "0.29", avoids floating-point artifacts like "0.28999...")
+  let strAmount = typeof amount === 'string' ? amount : String(amount);
 
-  // Check if it's a valid number
-  if (isNaN(numAmount)) {
+  if (isNaN(Number(strAmount))) {
     throw new Error('Invalid number for UFix64 conversion');
   }
 
-  // Use toFixed(8) to ensure exactly 8 decimal places
-  return numAmount.toFixed(8);
+  // Expand scientific notation (e.g. 1e-7 → "0.0000001")
+  if (/[eE]/.test(strAmount)) {
+    strAmount = Number(strAmount).toFixed(20);
+  }
+
+  const dotIndex = strAmount.indexOf('.');
+  if (dotIndex === -1) {
+    return strAmount + '.00000000';
+  }
+
+  const intPart = strAmount.slice(0, dotIndex) || '0';
+  const decPart = strAmount.slice(dotIndex + 1);
+
+  // Truncate to 8 decimal places (no rounding) to prevent exceeding actual balance
+  return intPart + '.' + decPart.slice(0, 8).padEnd(8, '0');
 };
 
 /**

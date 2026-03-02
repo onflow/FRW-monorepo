@@ -428,7 +428,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       setTransactionType('tokens');
       const inputAmount = new BN(amount || '0');
       let tokenAmount: string;
-      const decimals = selectedToken.decimal || 8;
+      const decimals = Number(selectedToken.decimal) || 8;
       if (!isTokenMode) {
         // Converting from USD to token
         const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
