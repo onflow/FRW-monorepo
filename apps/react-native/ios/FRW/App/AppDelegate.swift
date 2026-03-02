@@ -110,6 +110,7 @@ class AppDelegate: RCTDefaultReactNativeFactoryDelegate, UIApplicationDelegate {
         }
         FlowLog.logEnv()
         InstallInfoManager.recordInstallInfoIfNeeded()
+        fetchWhatsNew()
         return true
     }
 
