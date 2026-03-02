@@ -1,6 +1,6 @@
 import type { NFTCollection } from '@onflow/frw-api';
 import { bridge } from '@onflow/frw-context';
-import { CheckCircleFill, Plus, VerifiedToken } from '@onflow/frw-icons';
+import { CheckCircleFill, Plus } from '@onflow/frw-icons';
 import { tokenQueries, tokenQueryKeys, useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import type { CollectionModel } from '@onflow/frw-types';
 import {
@@ -17,7 +17,6 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,6 +56,7 @@ export function AddNFTCollectionScreen({
 
   const [search, setSearch] = useState('');
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
+  const [optimisticallyAdded, setOptimisticallyAdded] = useState<Set<string>>(new Set());
 
   const listRef = useRef<FlatList>(null);
 
@@ -66,20 +66,6 @@ export function AddNFTCollectionScreen({
     staleTime: 5 * 60 * 1000,
   });
 
-  React.useEffect(() => {
-    logger.debug('[AddNFTCollectionScreen] catalog count:', catalog.length);
-    if (catalog.length > 0) {
-      logger.debug(
-        '[AddNFTCollectionScreen] sample items (first 3):',
-        JSON.stringify(
-          catalog
-            .slice(0, 3)
-            .map((c) => ({ id: c.id, name: c.name, logo: c.logo, logoURI: c.logoURI }))
-        )
-      );
-    }
-  }, [catalog]);
-
   const { data: userCollections = [], isLoading: isUserCollectionsLoading } = useQuery({
     queryKey: tokenQueryKeys.nfts(address, network),
     queryFn: () => tokenQueries.fetchNFTCollections(address, network),
@@ -87,15 +73,12 @@ export function AddNFTCollectionScreen({
     staleTime: 30_000,
   });
 
-  const enabledSet = useMemo<Set<string>>(
-    () =>
-      new Set(
-        (userCollections as CollectionModel[])
-          .map((c) => c.flowIdentifier)
-          .filter((id): id is string => !!id)
-      ),
-    [userCollections]
-  );
+  const enabledSet = useMemo<Set<string>>(() => {
+    const confirmed = (userCollections as CollectionModel[])
+      .map((c) => c.flowIdentifier)
+      .filter((id): id is string => !!id);
+    return new Set([...confirmed, ...optimisticallyAdded]);
+  }, [userCollections, optimisticallyAdded]);
 
   const filteredCollections = useMemo(() => {
     if (!search.trim()) return catalog;
@@ -129,17 +112,12 @@ export function AddNFTCollectionScreen({
   );
 
   const handleAddCollection = useCallback((flowIdentifier: string | undefined) => {
-    logger.info(
-      '[AddNFTCollectionScreen] handleAddCollection called, flowIdentifier:',
-      flowIdentifier
-    );
-    if (!flowIdentifier) {
-      logger.warn('[AddNFTCollectionScreen] flowIdentifier is undefined, aborting');
-      return;
-    }
-    logger.info('[AddNFTCollectionScreen] calling bridge.closeRNWithNFT with:', flowIdentifier);
+    if (!flowIdentifier) return;
+    // Optimistically mark as added so the checkmark shows immediately —
+    // Android closes this activity and runs the tx in the background, so the
+    // API won't reflect the new state when the screen re-opens.
+    setOptimisticallyAdded((prev) => new Set([...prev, flowIdentifier]));
     bridge.closeRNWithNFT(flowIdentifier);
-    logger.info('[AddNFTCollectionScreen] bridge.closeRNWithNFT called');
   }, []);
 
   const renderRow = useCallback(
@@ -164,12 +142,9 @@ export function AddNFTCollectionScreen({
               size={44}
             />
             <YStack flex={1} gap="$0.5">
-              <XStack items="center" gap="$1.5">
-                <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1} shrink={1}>
-                  {item.name}
-                </Text>
-                <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />
-              </XStack>
+              <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1}>
+                {item.name}
+              </Text>
               <Text fontSize={13} color="$text2" numberOfLines={1}>
                 {item.contractName}
               </Text>
@@ -185,14 +160,7 @@ export function AddNFTCollectionScreen({
                 borderColor="$primary"
                 items="center"
                 justify="center"
-                onPress={() => {
-                  logger.info(
-                    '[AddNFTCollectionScreen] + button pressed for:',
-                    item.name,
-                    item.flowIdentifier
-                  );
-                  handleAddCollection(item.flowIdentifier);
-                }}
+                onPress={() => handleAddCollection(item.flowIdentifier)}
                 pressStyle={{ opacity: 0.7 }}
                 cursor="pointer"
               >
@@ -220,7 +188,6 @@ export function AddNFTCollectionScreen({
       <YStack flex={1}>
         <ClaimBanner
           title={t('addNFTCollection.claimBannerTitle', 'Claim received NFTs')}
-          count={3}
           onPress={onClaimPress}
         />
 
