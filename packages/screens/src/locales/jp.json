@@ -527,5 +527,17 @@
     "claimBannerTitle": "受け取ったトークンを請求する",
     "searchPlaceholder": "トークンを検索",
     "verifiedOnly": "認証済みトークンのみ表示"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "受け取った NFT を請求する",
+    "searchPlaceholder": "NFT コレクションを検索"
+  },
+  "claimNFTDetail": {
+    "website": "ウェブサイト",
+    "items": "アイテム数",
+    "about": "概要",
+    "claimButton": "資産を受け取る",
+    "empty": "NFT なし",
+    "warningText": "この NFT コレクションを受け入れると、今後の入金も自動的に受け入れます"
   }
 }

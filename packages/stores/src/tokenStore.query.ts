@@ -1,3 +1,4 @@
+import { NftService, type NFTCollection } from '@onflow/frw-api';
 import { cadence, context, queryClient } from '@onflow/frw-context';
 import { TokenService, tokenService, nftService } from '@onflow/frw-services';
 import {
@@ -12,6 +13,9 @@ import {
 import { logger } from '@onflow/frw-utils';
 import { getFlowTokenVault } from '@onflow/frw-workflow';
 import { create } from 'zustand';
+
+import nftCatalogMainnet from './assets/nft_collections_mainnet.json';
+import nftCatalogTestnet from './assets/nft_collections_testnet.json';
 
 // Balance data interface
 interface BalanceData {
@@ -47,6 +51,8 @@ export const tokenQueryKeys = {
     ] as const,
   catalog: (network: string = 'mainnet', chainType: string = 'flow') =>
     [...tokenQueryKeys.all, 'catalog', network, chainType] as const,
+  nftCatalog: (network: string = 'mainnet') =>
+    [...tokenQueryKeys.all, 'nftCatalog', network] as const,
 };
 
 // Token Store State - Minimal UI state, queries handle data
@@ -447,6 +453,55 @@ export const tokenQueries = {
       return await TokenService.getAllTokenCatalog(network, chainType);
     } catch (error) {
       logger.error('[TokenQuery] Error fetching token catalog:', error);
+      return [];
+    }
+  },
+
+  // Fetch full NFT collection catalog (all available collections on the network)
+  fetchNFTCatalog: async (network: string = 'mainnet'): Promise<NFTCollection[]> => {
+    try {
+      const response = await NftService.collections();
+
+      // The catalog endpoint returns { data: [...], status: N }
+      const items: any[] = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+          ? response
+          : [];
+
+      // Build a logo lookup from bundled local assets (API does not return logo URLs)
+      // Use reduce + plain object instead of Map/for-of for Hermes compatibility
+      const rawCatalog = network === 'testnet' ? nftCatalogTestnet : nftCatalogMainnet;
+      const bundledCatalog: any[] = Array.isArray(rawCatalog)
+        ? rawCatalog
+        : ((rawCatalog as any).default ?? []);
+      const logoByContractId: Record<string, string> = bundledCatalog.reduce(
+        (acc: Record<string, string>, entry: any) => {
+          if (entry.id && entry.logo) acc[entry.id] = entry.logo;
+          return acc;
+        },
+        {}
+      );
+
+      return items.map((item: any) => {
+        // Construct flowIdentifier as A.<address>.<contractName> — API never provides it directly
+        const contractName: string | undefined = item.contract_name ?? item.contractName;
+        const flowIdentifier =
+          item.address && contractName ? `A.${item.address}.${contractName}` : undefined;
+
+        // Look up logo from bundled asset; convert SVG to PNG (React Native cannot render SVGs)
+        const rawLogo = logoByContractId[item.id] ?? item.logo ?? item.logoURI;
+        const logo = rawLogo ? rawLogo.replace('.svg', '.png') : undefined;
+
+        return {
+          ...item,
+          flowIdentifier,
+          logo,
+          logoURI: logo,
+        };
+      }) as NFTCollection[];
+    } catch (error) {
+      logger.error('[TokenQuery] Error fetching NFT collection catalog:', error);
       return [];
     }
   },

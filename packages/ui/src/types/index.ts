@@ -207,6 +207,13 @@ export interface ClaimItemRowProps {
   isVerified?: boolean;
 }
 
+export interface ClaimNFTCollectionRowProps {
+  name: string;
+  logoURI?: string;
+  itemCount: number;
+  isLast: boolean;
+}
+
 // Token list components props
 export interface AddTokenListItemProps {
   token: FungibleTokenCatalogItem;
