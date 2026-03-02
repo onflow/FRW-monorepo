@@ -1,5 +1,10 @@
 import { logger, navigation, bridge, getCadenceService } from '@onflow/frw-context';
-import type { WalletAccount, WalletProfilesResponse, MigrationAssetsData } from '@onflow/frw-types';
+import {
+  Platform,
+  type WalletAccount,
+  type WalletProfilesResponse,
+  type MigrationAssetsData,
+} from '@onflow/frw-types';
 import {
   YStack,
   XStack,
@@ -19,7 +24,7 @@ import {
 import { transformAccountForDisplay } from '@onflow/frw-utils';
 import { migrationTransaction } from '@onflow/frw-workflow';
 import { useQuery } from '@tanstack/react-query';
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export type MigrationStage = 'ready' | 'in-progress' | 'completed-all' | 'completed-partial';
@@ -68,6 +73,7 @@ export function MigrationScreen({
   const [isProcessing, setIsProcessing] = useState(false);
   const [migrationError, setMigrationError] = useState<Error | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const refreshDoneRef = useRef(false);
 
   // Ensure migration never runs automatically - only via button press
   useEffect(() => {
@@ -204,6 +210,16 @@ export function MigrationScreen({
     }
   }, [stage, isProcessing]);
 
+  useEffect(() => {
+    if (stage === 'ready') {
+      refreshDoneRef.current = false;
+    }
+    if ((stage === 'completed-all' || stage === 'completed-partial') && !refreshDoneRef.current) {
+      refreshDoneRef.current = true;
+      bridge.refreshCoaAfterMigration?.();
+    }
+  }, [stage]);
+
   const handleStart = useCallback(async () => {
     logger.info('[MigrationScreen] Start button pressed');
 
@@ -300,7 +316,13 @@ export function MigrationScreen({
   const handleDone = () => {
     logger.info('[MigrationScreen] Done pressed');
     // Navigate back or to home
-    navigation.goBack();
+
+    const platform = bridge.getPlatform();
+    if (platform === Platform.iOS || platform === Platform.Android) {
+      bridge.closeRN();
+    } else {
+      navigation.goBack();
+    }
   };
 
   const handleReviewAssets = () => {

@@ -91,7 +91,14 @@ export interface SendToConfig {
  * Initial props for the app
  */
 export interface InitialProps {
-  screen: 'send-asset' | 'backup-tip' | 'token-detail' | 'onboarding' | 'receive' | 'activity';
+  screen:
+    | 'send-asset'
+    | 'backup-tip'
+    | 'token-detail'
+    | 'onboarding'
+    | 'receive'
+    | 'activity'
+    | 'migration';
   sendToConfig?: string;
 }
 

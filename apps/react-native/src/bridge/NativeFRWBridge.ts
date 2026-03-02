@@ -9,6 +9,7 @@ import type {
   WalletProfilesResponse,
   CreateAccountResponse as SharedCreateAccountResponse,
   SeedPhraseGenerationResponse as SharedSeedPhraseGenerationResponse,
+  MigrationAssetsData as SharedMigrationAssetsData,
 } from '@onflow/frw-types';
 import { type NativeScreenName as SharedNativeScreenName } from '@onflow/frw-types';
 import type { TurboModule } from 'react-native';
@@ -81,6 +82,12 @@ interface SeedPhraseGenerationResponse {
   evmAddress?: string;
 }
 
+interface MigrationAssetsData {
+  erc20: Array<{ address: string; amount: string }>;
+  erc721: Array<{ address: string; id: string }>;
+  erc1155: Array<{ address: string; id: string; amount: string }>;
+}
+
 /**
  * Local type for NativeScreenName - must match enum values from @onflow/frw-types
  * @see {@link SharedNativeScreenName}
@@ -110,6 +117,8 @@ const _accountKeySignatureReverseSyncCheck: SharedAccountKeySignature = {} as Ac
 const _createAccountSyncCheck: CreateAccountResponse = {} as SharedCreateAccountResponse;
 const _createAccountReverseSyncCheck: SharedCreateAccountResponse = {} as CreateAccountResponse;
 const _seedPhraseSyncCheck: SeedPhraseGenerationResponse = {} as SharedSeedPhraseGenerationResponse;
+const _migrationAssetsSyncCheck: MigrationAssetsData = {} as SharedMigrationAssetsData;
+const _migrationAssetsReverseSyncCheck: SharedMigrationAssetsData = {} as MigrationAssetsData;
 
 // NativeScreenName validation - ensures local union matches SharedNativeScreenName enum values
 type SharedNativeScreenNameValues = `${SharedNativeScreenName}`;
@@ -143,6 +152,8 @@ export interface Spec extends TurboModule {
   getEnv(): EnvironmentVariables;
   // Get selected account
   getSelectedAccount(): Promise<WalletAccount>;
+  getMigrationAssets(sourceAddress: string): Promise<MigrationAssetsData>;
+  refreshCoaAfterMigration(): Promise<void>;
   getCurrency(): Currency;
   getTokenRate(token: string): string;
   getWalletProfiles(): Promise<WalletProfilesResponse>;

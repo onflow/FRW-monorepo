@@ -196,6 +196,10 @@ export interface PlatformSpec extends KeyRotationDependencies {
     erc721: Array<{ address: string; id: string }>;
     erc1155: Array<{ address: string; id: string; amount: string }>;
   }>;
+  /**
+   * Refresh COA-related data after migration (native-side refresh for home + side menu)
+   */
+  refreshCoaAfterMigration?(): Promise<void>;
   // Safe area insets for cross-platform layout
   /**
    * Get device safe area insets for proper content positioning
