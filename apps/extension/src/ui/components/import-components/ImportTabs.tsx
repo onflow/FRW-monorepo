@@ -80,16 +80,6 @@ const ImportTabs = ({
   const [newKey, setKeyNew] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
   const [keystoreJson, setKeystoreJson] = useState<string>('');
-  const [gdDebug, setGdDebug] = useState<{
-    config: {
-      defaultBackupName: string;
-      multiBackupName: string;
-      multiBackupId: string;
-    } | null;
-    fileNames: string[] | null;
-    filesWithIds: { id: string; name: string }[] | null;
-    error: string | null;
-  }>({ config: null, fileNames: null, filesWithIds: null, error: null });
   const usewallet = useWallet();
 
   useEffect(() => {
@@ -99,41 +89,6 @@ const ImportTabs = ({
     };
     checkIsBooted();
   }, [usewallet]);
-
-  useEffect(() => {
-    if (selectedTab !== 0 && selectedTab !== 1) {
-      setGdDebug({ config: null, fileNames: null, filesWithIds: null, error: null });
-      return;
-    }
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const [config, filesWithIds] = await Promise.all([
-          usewallet.getGoogleDriveBackupConfigForDebug(),
-          usewallet
-            .listGoogleDriveAppDataFilesForDebug()
-            .catch(() => [] as { id: string; name: string }[]),
-        ]);
-        const fileNames = filesWithIds.map((f) => f.name);
-        if (!cancelled) {
-          setGdDebug({ config, fileNames, filesWithIds, error: null });
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setGdDebug({
-            config: null,
-            fileNames: null,
-            filesWithIds: null,
-            error: e instanceof Error ? e.message : String(e),
-          });
-        }
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedTab, usewallet]);
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -319,74 +274,6 @@ const ImportTabs = ({
       <TabPanel value={selectedTab} index={5}>
         <MobileAppImportSteps isLogin={isLogin} />
       </TabPanel>
-      {(selectedTab === 0 || selectedTab === 1) && (
-        <Box
-          sx={{
-            mt: 2,
-            p: 1.5,
-            borderRadius: 1,
-            bgcolor: 'action.hover',
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-            Google Drive debug
-          </Typography>
-          {gdDebug.error && (
-            <Typography variant="caption" display="block" color="error" sx={{ mt: 0.5 }}>
-              {gdDebug.error}
-            </Typography>
-          )}
-          {gdDebug.config && (
-            <Typography variant="caption" component="div" sx={{ mt: 0.5, fontFamily: 'monospace' }}>
-              Legacy (Google Drive tab): first file named "
-              {gdDebug.config.defaultBackupName || '(not set)'}" (no id)
-              <br />
-              Multi Backup tab:{' '}
-              {gdDebug.config.multiBackupId
-                ? `id: ${gdDebug.config.multiBackupId}`
-                : `name "${gdDebug.config.multiBackupName || '(not set)'}" or, when two files share the legacy name, the second file. Set GD_MULTI_BACKUP_ID to force a specific file.`}
-            </Typography>
-          )}
-          {gdDebug.filesWithIds && gdDebug.filesWithIds.length > 0 && (
-            <Typography variant="caption" component="div" sx={{ mt: 0.5, fontFamily: 'monospace' }}>
-              Files in app data folder:
-              {gdDebug.filesWithIds.map((f, i) => {
-                const defaultName = gdDebug.config?.defaultBackupName ?? '';
-                const sameNameIndices = gdDebug
-                  .filesWithIds!.map((x, idx) => (x.name === defaultName ? idx : -1))
-                  .filter((idx) => idx >= 0);
-                const isFirstWithLegacyName =
-                  defaultName && f.name === defaultName && sameNameIndices[0] === i;
-                const isSecondWithLegacyName =
-                  defaultName &&
-                  sameNameIndices.length >= 2 &&
-                  f.name === defaultName &&
-                  sameNameIndices[1] === i;
-                const legacyHint = isFirstWithLegacyName ? ' ← Legacy uses this' : '';
-                const multiHint =
-                  isSecondWithLegacyName ||
-                  (gdDebug.config?.multiBackupId && f.id === gdDebug.config.multiBackupId)
-                    ? ' ← Multi Backup uses this'
-                    : '';
-                return (
-                  <Box key={f.id} component="span" display="block" sx={{ ml: 1 }}>
-                    • [{i + 1}] name: "{f.name}" → id: {f.id}
-                    {legacyHint}
-                    {multiHint}
-                  </Box>
-                );
-              })}
-            </Typography>
-          )}
-          {gdDebug.filesWithIds && gdDebug.filesWithIds.length === 0 && !gdDebug.error && (
-            <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 0.5 }}>
-              No files in app data folder (or not signed in to Google)
-            </Typography>
-          )}
-        </Box>
-      )}
       {!newKey && (
         <ErrorModel
           isOpen={!newKey}

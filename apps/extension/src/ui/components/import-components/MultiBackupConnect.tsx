@@ -1,10 +1,10 @@
 import { Box, Button, Typography } from '@mui/material';
 import { logger } from '@onflow/frw-context';
+import { GoogleDrive, SeedPhrase, Dropbox } from '@onflow/frw-icons';
 import React, { useState } from 'react';
 
 import { LLSpinner } from '@/ui/components';
 import BrowserWarning from '@/ui/components/BrowserWarning';
-import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
@@ -123,45 +123,42 @@ const MultiBackupConnect: React.FC<MultiBackupConnectProps> = ({
           alignItems: 'center',
           backgroundColor: COLOR_DARKMODE_WHITE_3pc,
           borderRadius: '16px',
-          py: '40px',
+          py: '28px',
+          px: '20px',
         }}
       >
-        <IconGoogleDrive
-          style={{
-            backgroundColor: '#fff',
-            width: '73px',
-            height: '73px',
-            padding: '8px',
-            borderRadius: '73px',
-          }}
-        />
         <Typography
           variant="body1"
           color="text.primary"
-          sx={{ fontSize: '18px', paddingTop: '18px', fontWeight: '700' }}
+          sx={{ fontSize: '18px', pt: '16px', fontWeight: '700', textAlign: 'center' }}
         >
           {chrome.i18n.getMessage('Multi_Backup_Restore_Title')}
         </Typography>
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: '14px', paddingTop: '8px', px: 2, textAlign: 'center' }}
+          sx={{ fontSize: '14px', pt: '8px', px: 1, textAlign: 'center', maxWidth: '520px' }}
         >
-          {chrome.i18n.getMessage('Multi_Backup_Restore_Subtitle')}
+          Choose any two methods to restore your profile: Google Drive, Dropbox, or Recovery phrase.
         </Typography>
-        <Box sx={{ width: '404px', mt: '24px' }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {chrome.i18n.getMessage('Select_Backup_Method')}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-            {chrome.i18n.getMessage('Select_Two_Options')}
-          </Typography>
+        <Box sx={{ width: '404px', mt: '20px' }}>
           <Button
             variant={selectedOptions.includes('google') ? 'contained' : 'outlined'}
             color="success"
             size="large"
-            sx={{ width: '100%', textTransform: 'none', borderRadius: '12px' }}
+            sx={{
+              width: '100%',
+              textTransform: 'none',
+              borderRadius: '12px',
+              justifyContent: 'flex-start',
+              px: 2,
+              gap: 1,
+            }}
             onClick={() => toggleOption('google')}
+            startIcon={React.createElement(GoogleDrive as unknown as React.ElementType, {
+              size: 18,
+              theme: 'multicolor',
+            })}
           >
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {chrome.i18n.getMessage('Google__Drive')}
@@ -171,8 +168,20 @@ const MultiBackupConnect: React.FC<MultiBackupConnectProps> = ({
             variant={selectedOptions.includes('dropbox') ? 'contained' : 'outlined'}
             color="success"
             size="large"
-            sx={{ width: '100%', textTransform: 'none', borderRadius: '12px', mt: 1.5 }}
+            sx={{
+              width: '100%',
+              textTransform: 'none',
+              borderRadius: '12px',
+              mt: 1.5,
+              justifyContent: 'flex-start',
+              px: 2,
+              gap: 1,
+            }}
             onClick={() => toggleOption('dropbox')}
+            startIcon={React.createElement(Dropbox as unknown as React.ElementType, {
+              size: 18,
+              theme: 'multicolor',
+            })}
           >
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {chrome.i18n.getMessage('Dropbox')}
@@ -182,8 +191,20 @@ const MultiBackupConnect: React.FC<MultiBackupConnectProps> = ({
             variant={selectedOptions.includes('seed') ? 'contained' : 'outlined'}
             color="success"
             size="large"
-            sx={{ width: '100%', textTransform: 'none', borderRadius: '12px', mt: 1.5 }}
+            sx={{
+              width: '100%',
+              textTransform: 'none',
+              borderRadius: '12px',
+              mt: 1.5,
+              justifyContent: 'flex-start',
+              px: 2,
+              gap: 1,
+            }}
             onClick={() => toggleOption('seed')}
+            startIcon={React.createElement(SeedPhrase as unknown as React.ElementType, {
+              size: 18,
+              theme: 'multicolor',
+            })}
           >
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {chrome.i18n.getMessage('Recovery_Phrase')}
@@ -202,7 +223,7 @@ const MultiBackupConnect: React.FC<MultiBackupConnectProps> = ({
             borderRadius: '12px',
             textTransform: 'none',
             boxShadow: '0px 24px 24px rgba(0,0,0,0.36)',
-            mt: '36px',
+            mt: '24px',
             width: '404px',
           }}
           onClick={getMultiBackup}

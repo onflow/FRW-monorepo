@@ -32,18 +32,6 @@ const EnterSeedPhrase: React.FC<EnterSeedPhraseProps> = ({
   const [enteredPhrase, setEnteredPhrase] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [debugDetails, setDebugDetails] = useState<{
-    pubKeyGoogleP256: string;
-    pubKeyGoogleSecp256k1: string;
-    pubKeyEnteredP256: string;
-    pubKeyEnteredSecp256k1: string;
-    accountsGoogle: PublicKeyAccount[];
-    accountsEntered: PublicKeyAccount[];
-    matchedAddress: string | null;
-    totalWeight: number;
-    requiredWeight: number;
-  } | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
 
   const normalizeMnemonic = (v: string) => v.trim().split(/\s+/g).join(' ');
   const wordCount = (v: string) => (v ? normalizeMnemonic(v).split(' ').length : 0);
@@ -63,8 +51,6 @@ const EnterSeedPhrase: React.FC<EnterSeedPhraseProps> = ({
       return;
     }
     setErrorMessage(null);
-    setDebugDetails(null);
-    setShowDebug(false);
     setLoading(true);
     try {
       const [tupleGoogle, tupleEntered] = await Promise.all([
@@ -157,18 +143,6 @@ const EnterSeedPhrase: React.FC<EnterSeedPhraseProps> = ({
         requiredWeight,
       });
 
-      setDebugDetails({
-        pubKeyGoogleP256: tupleGoogle.P256,
-        pubKeyGoogleSecp256k1: tupleGoogle.SECP256K1,
-        pubKeyEnteredP256: tupleEntered.P256,
-        pubKeyEnteredSecp256k1: tupleEntered.SECP256K1,
-        accountsGoogle,
-        accountsEntered,
-        matchedAddress,
-        totalWeight,
-        requiredWeight,
-      });
-
       if (!matchedAddress) {
         setErrorMessage(
           chrome.i18n.getMessage('Seed_phrase_does_not_match_backup') ||
@@ -200,95 +174,27 @@ const EnterSeedPhrase: React.FC<EnterSeedPhraseProps> = ({
           'Enter your 12 or 24 word recovery phrase to verify it matches your Google Drive backup.'}
       </Typography>
 
-      <PasswordTextarea
-        className="sentry-mask"
-        minRows={4}
-        placeholder={chrome.i18n.getMessage('Import_12_or_24_words')}
-        value={enteredPhrase}
-        onChange={(e) => {
-          setEnteredPhrase(e.target.value);
-          setErrorMessage(null);
-        }}
-        sx={{ marginBottom: '16px' }}
-      />
+      <Box sx={{ width: '100%', maxWidth: '640px' }}>
+        <PasswordTextarea
+          className="sentry-mask"
+          minRows={4}
+          placeholder={chrome.i18n.getMessage('Import_12_or_24_words')}
+          value={enteredPhrase}
+          onChange={(e) => {
+            setEnteredPhrase(e.target.value);
+            setErrorMessage(null);
+          }}
+          sx={{ marginBottom: '16px', width: '100%' }}
+        />
 
-      {errorMessage && (
-        <Box sx={{ mb: 2, width: '100%', maxWidth: '640px' }}>
-          <Typography variant="body2" color="error">
-            {errorMessage}
-          </Typography>
-          {debugDetails && (
-            <>
-              <Button
-                variant="text"
-                size="small"
-                onClick={() => setShowDebug((v) => !v)}
-                sx={{ mt: 1, textTransform: 'none' }}
-              >
-                {showDebug ? 'Hide debug details' : 'Show debug details'}
-              </Button>
-              {showDebug && (
-                <Box sx={{ mt: 1, p: 1.5, borderRadius: 1, bgcolor: 'action.hover' }}>
-                  <Typography variant="caption" component="div" sx={{ fontFamily: 'monospace' }}>
-                    pubKeyFromGoogleP256: {debugDetails.pubKeyGoogleP256}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="div"
-                    sx={{ fontFamily: 'monospace', mt: 0.5 }}
-                  >
-                    pubKeyFromGoogleSecp256k1: {debugDetails.pubKeyGoogleSecp256k1}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="div"
-                    sx={{ fontFamily: 'monospace', mt: 1 }}
-                  >
-                    pubKeyFromEnteredP256: {debugDetails.pubKeyEnteredP256}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="div"
-                    sx={{ fontFamily: 'monospace', mt: 0.5 }}
-                  >
-                    pubKeyFromEnteredSecp256k1: {debugDetails.pubKeyEnteredSecp256k1}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="div"
-                    sx={{ fontFamily: 'monospace', mt: 1 }}
-                  >
-                    accountsFromGoogle:{' '}
-                    {debugDetails.accountsGoogle.map((a) => a.address).join(', ') || '(none)'}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="div"
-                    sx={{ fontFamily: 'monospace', mt: 0.5 }}
-                  >
-                    accountsFromEntered:{' '}
-                    {debugDetails.accountsEntered.map((a) => a.address).join(', ') || '(none)'}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="div"
-                    sx={{ fontFamily: 'monospace', mt: 1 }}
-                  >
-                    matchedAddress: {debugDetails.matchedAddress || '(none)'}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="div"
-                    sx={{ fontFamily: 'monospace', mt: 0.5 }}
-                  >
-                    totalWeight: {debugDetails.totalWeight} / {debugDetails.requiredWeight}
-                  </Typography>
-                </Box>
-              )}
-            </>
-          )}
-        </Box>
-      )}
+        {errorMessage && (
+          <Box sx={{ mb: 2, width: '100%' }}>
+            <Typography variant="body2" color="error">
+              {errorMessage}
+            </Typography>
+          </Box>
+        )}
+      </Box>
 
       <Box sx={{ flexGrow: 1 }} />
       <Button
