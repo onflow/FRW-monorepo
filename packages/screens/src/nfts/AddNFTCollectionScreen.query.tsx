@@ -56,7 +56,6 @@ export function AddNFTCollectionScreen({
 
   const [search, setSearch] = useState('');
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
-  const [optimisticallyAdded, setOptimisticallyAdded] = useState<Set<string>>(new Set());
 
   const listRef = useRef<FlatList>(null);
 
@@ -73,12 +72,15 @@ export function AddNFTCollectionScreen({
     staleTime: 30_000,
   });
 
-  const enabledSet = useMemo<Set<string>>(() => {
-    const confirmed = (userCollections as CollectionModel[])
-      .map((c) => c.flowIdentifier)
-      .filter((id): id is string => !!id);
-    return new Set([...confirmed, ...optimisticallyAdded]);
-  }, [userCollections, optimisticallyAdded]);
+  const enabledSet = useMemo<Set<string>>(
+    () =>
+      new Set(
+        (userCollections as CollectionModel[])
+          .map((c) => c.flowIdentifier)
+          .filter((id): id is string => !!id)
+      ),
+    [userCollections]
+  );
 
   const filteredCollections = useMemo(() => {
     if (!search.trim()) return catalog;
@@ -113,10 +115,6 @@ export function AddNFTCollectionScreen({
 
   const handleAddCollection = useCallback((flowIdentifier: string | undefined) => {
     if (!flowIdentifier) return;
-    // Optimistically mark as added so the checkmark shows immediately —
-    // Android closes this activity and runs the tx in the background, so the
-    // API won't reflect the new state when the screen re-opens.
-    setOptimisticallyAdded((prev) => new Set([...prev, flowIdentifier]));
     bridge.closeRNWithNFT(flowIdentifier);
   }, []);
 
