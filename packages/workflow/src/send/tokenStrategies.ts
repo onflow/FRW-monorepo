@@ -390,7 +390,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
     });
 
     const valueBig = parseUnits(amount, decimal);
-    console.log(valueBig.toString());
+
     return await this.cadenceService.bridgeTokensFromEvmToFlowV3(
       flowIdentifier,
       valueBig.toString(),
