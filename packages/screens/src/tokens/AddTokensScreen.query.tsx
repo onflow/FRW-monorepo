@@ -16,7 +16,6 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -114,14 +113,8 @@ export function AddTokensScreen({ onClaimPress }: AddTokensScreenProps): React.R
   );
 
   const handleAddToken = useCallback((flowIdentifier: string | undefined) => {
-    logger.info('[AddTokensScreen] handleAddToken called, flowIdentifier:', flowIdentifier);
-    if (!flowIdentifier) {
-      logger.warn('[AddTokensScreen] flowIdentifier is undefined, aborting');
-      return;
-    }
-    logger.info('[AddTokensScreen] calling bridge.closeRN with:', flowIdentifier);
+    if (!flowIdentifier) return;
     bridge.closeRN(flowIdentifier);
-    logger.info('[AddTokensScreen] bridge.closeRN called');
   }, []);
 
   const renderRow = useCallback(
@@ -141,14 +134,7 @@ export function AddTokensScreen({ onClaimPress }: AddTokensScreenProps): React.R
           token={item}
           isEnabled={isEnabled}
           isLast={isLast}
-          onAdd={() => {
-            logger.info(
-              '[AddTokensScreen] + button pressed for:',
-              item.symbol,
-              item.flowIdentifier
-            );
-            handleAddToken(item.flowIdentifier);
-          }}
+          onAdd={() => handleAddToken(item.flowIdentifier)}
         />
       );
     },
@@ -166,7 +152,6 @@ export function AddTokensScreen({ onClaimPress }: AddTokensScreenProps): React.R
       <YStack flex={1}>
         <ClaimBanner
           title={t('addTokens.claimBannerTitle', 'Claim received tokens')}
-          count={3}
           onPress={onClaimPress}
         />
 
