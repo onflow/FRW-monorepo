@@ -631,6 +631,9 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@onflow/frw-workflow':
+        specifier: workspace:*
+        version: link:../../packages/workflow
       '@outblock/react-native-code-push':
         specifier: ^1.2.3
         version: 1.2.3(@types/node@22.18.8)
@@ -982,6 +985,9 @@ importers:
       '@onflow/frw-utils':
         specifier: workspace:*
         version: link:../utils
+      '@onflow/frw-workflow':
+        specifier: workspace:*
+        version: link:../workflow
       '@tanstack/react-query':
         specifier: ^5.85.6
         version: 5.90.2(react@19.0.0)
@@ -3667,6 +3673,7 @@ packages:
   '@outblock/cadence-codegen@0.0.9':
     resolution: {integrity: sha512-PfUl0UWCH8Q94hRNo1twzpfwqySvBpFeqS1Nod7WHNwTJ9gcR0QUT15U7BEXSG3E0APmv7Nf2VJqb9G8+mschQ==}
     engines: {node: '>=14'}
+    cpu: [x64, arm64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -16571,7 +16578,9 @@ snapshots:
       metro-runtime: 0.82.5
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-color@2.1.0': {}
 
