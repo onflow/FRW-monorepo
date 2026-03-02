@@ -105,13 +105,13 @@ export const ErrorHandlingTest: React.FC = () => {
           • Buttons 1, 4, 5: Show error fallback UI with retry button
         </Text>
         <Text fontSize="$2" color="$gray10">
-          • Buttons 2, 3: Log error to console and Instabug (no UI change)
+          • Buttons 2, 3: Log error to console and Luciq (no UI change)
         </Text>
         <Text fontSize="$2" color="$gray10">
           • All errors: Logged via platform.log() with full context
         </Text>
         <Text fontSize="$2" color="$gray10">
-          • All errors: Reported to Instabug if available
+          • All errors: Reported to Luciq if available
         </Text>
       </YStack>
 

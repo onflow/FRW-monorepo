@@ -14,7 +14,6 @@ PODS:
   - hermes-engine (0.79.2):
     - hermes-engine/Pre-built (= 0.79.2)
   - hermes-engine/Pre-built (0.79.2)
-  - Instabug (16.0.3)
   - JWT (3.0.0-beta.14):
     - Base64 (~> 1.1.2)
   - lottie-ios (4.5.0)
@@ -43,6 +42,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - Luciq (19.4.1)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1864,8 +1864,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNInstabug (16.0.3):
-    - Instabug (= 16.0.3)
+  - RNLuciq (19.2.2):
+    - Luciq (= 19.4.1)
     - React-Core
   - RNReanimated (3.19.2):
     - DoubleConversion
@@ -2200,7 +2200,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
-  - RNInstabug (from `../node_modules/instabug-reactnative`)
+  - "RNLuciq (from `../node_modules/@luciq/react-native`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNShare (from `../node_modules/react-native-share`)
@@ -2210,9 +2210,9 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - Base64
-    - Instabug
     - JWT
     - lottie-ios
+    - Luciq
     - SocketRocket
     - SSZipArchive
 
@@ -2374,8 +2374,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
-  RNInstabug:
-    :path: "../node_modules/instabug-reactnative"
+  RNLuciq:
+    :path: "../node_modules/@luciq/react-native"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2397,10 +2397,10 @@ SPEC CHECKSUMS:
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 314be5250afa5692b57b4dd1705959e1973a8ebe
-  Instabug: b6290ceceb5d98966aa6f10fbd7970026a916f65
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 0992f59b1bbf07c523d3a86a359ce4aa1b49dd2e
+  Luciq: f29a09180b9b23f74f249b88176c73141643f271
   RCT-Folly: 36fe2295e44b10d831836cc0d1daec5f8abcf809
   RCTDeprecation: 83ffb90c23ee5cea353bd32008a7bca100908f8c
   RCTRequired: eb7c0aba998009f47a540bec9e9d69a54f68136e
@@ -2470,7 +2470,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 2cf7d05f5b1bc38680b6c83971e535a6ae9c5bc7
   RNCClipboard: b202bc12352f3e213f94f6d9bf2e8c5a2739192e
   RNGestureHandler: f8d0f8c032ba1209eb370bcc29e1138788208673
-  RNInstabug: 0b04c724acc081f0da864470f4f296dfc5c933ca
+  RNLuciq: 80b04ba70be93d88930ad7213be430d82ec9c2ce
   RNReanimated: b4284b991f94336eee8bf913866eaa8608b94f9c
   RNScreens: 5ec356ebbf743eafa3d263eda1f15d03299a9f64
   RNShare: 54d9a98353fe21fdbcf0ade081ce823ea1154a4e

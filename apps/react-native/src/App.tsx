@@ -1,8 +1,8 @@
+import Luciq, { InvocationEvent } from '@luciq/react-native';
 import { ServiceContext } from '@onflow/frw-context';
 import { QueryProvider, initializeI18n } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
 import { PortalProvider, TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
-import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
 import { Clipboard, useColorScheme } from 'react-native';
 import type { ErrorUtils } from 'react-native';
@@ -93,8 +93,8 @@ const App = (props: AppProps) => {
       await initializeI18n(language);
       platform.log('debug', '[App] i18n initialized with language:', language);
 
-      // Initialize Instabug after ServiceContext is ready
-      initializeInstabug(props);
+      // Initialize Luciq after ServiceContext is ready
+      initializeLuciq(props);
 
       // Initialize walletStore when app starts to have account data ready
       await loadAccountsFromBridge();
@@ -103,33 +103,33 @@ const App = (props: AppProps) => {
     }
   }, [loadAccountsFromBridge, props, setupGlobalErrorHandlers]);
 
-  const initializeInstabug = useCallback((appProps: AppProps) => {
+  const initializeLuciq = useCallback((appProps: AppProps) => {
     try {
-      const instabugToken = platform.getInstabugToken();
+      const luciqToken = platform.getLuciqToken();
 
       // Skip initialization if token is empty or invalid
-      if (!instabugToken || instabugToken.trim() === '') {
-        platform.log('debug', '[App] Instabug token not available, skipping initialization');
+      if (!luciqToken || luciqToken.trim() === '') {
+        platform.log('debug', '[App] Luciq token not available, skipping initialization');
         return;
       }
 
-      Instabug.init({
-        token: instabugToken,
+      Luciq.init({
+        token: luciqToken,
         invocationEvents: [InvocationEvent.none],
       });
 
       // Set user attributes for debugging
-      Instabug.setUserAttribute('SelectedAccount', appProps.address ?? '');
-      Instabug.setUserAttribute('Network', appProps.network ?? '');
-      Instabug.setUserAttribute('Version', version);
+      Luciq.setUserAttribute('SelectedAccount', appProps.address ?? '');
+      Luciq.setUserAttribute('Network', appProps.network ?? '');
+      Luciq.setUserAttribute('Version', version);
 
-      // Mark Instabug as initialized in platform
-      platform.setInstabugInitialized(true);
-      platform.log('debug', '[App] Instabug initialized with token');
+      // Mark Luciq as initialized in platform
+      platform.setLuciqInitialized(true);
+      platform.log('debug', '[App] Luciq initialized with token');
     } catch (error) {
-      platform.log('error', '[App] Failed to initialize Instabug:', error);
+      platform.log('error', '[App] Failed to initialize Luciq:', error);
       // Don't mark as initialized if it failed
-      platform.setInstabugInitialized(false);
+      platform.setLuciqInitialized(false);
     }
   }, []);
 

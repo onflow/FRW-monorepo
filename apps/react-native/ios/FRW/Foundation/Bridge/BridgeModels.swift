@@ -117,7 +117,7 @@ enum RNBridge {
     struct EnvironmentVariables: Codable {
         let NODE_API_URL: String
         let GO_API_URL: String
-        let INSTABUG_TOKEN: String
+        let LUCIQ_TOKEN: String
         let MIXPANEL_TOKEN: String?
     }
 

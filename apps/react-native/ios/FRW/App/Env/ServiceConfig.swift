@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import InstabugSDK
+import LuciqSDK
 import SwiftyDropbox
 import FlowWalletKit
 // MARK: - ServiceConfig
@@ -25,7 +25,7 @@ class ServiceConfig {
 
   static let shared = ServiceConfig()
 
-  static var instabugRNToken: String {
+  static var luciqRNToken: String {
     ServiceConfig.shared.dict["INSTABUG_RN_TOKEN"] ?? ""
   }
   
@@ -34,7 +34,7 @@ class ServiceConfig {
   }
 
   static func configure() {
-    ServiceConfig.shared.setupInstabug()
+    ServiceConfig.shared.setupLuciq()
     ServiceConfig.shared.setupMixPanel()
     ServiceConfig.shared.setupDropbox()
   }
@@ -47,13 +47,13 @@ class ServiceConfig {
 // MARK: config
 
 extension ServiceConfig {
-  private func setupInstabug() {
+  private func setupLuciq() {
     guard let token = dict["instabug-key"] else {
-      fatalError("fatalError ===> Can't find instabug key at ServiceConfig.plist")
+      fatalError("fatalError ===> Can't find luciq key at ServiceConfig.plist")
     }
 
-    InstabugConfig.start(token: token)
-    Instabug.willSendReportHandler = { report in
+    LuciqConfig.start(token: token)
+    Luciq.willSendReportHandler = { report in
       if let uid = UserManager.shared.activatedUID {
         report.setUserAttribute(uid, withKey: "uid")
       }

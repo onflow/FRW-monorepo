@@ -1,3 +1,4 @@
+import Luciq from '@luciq/react-native';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
@@ -15,7 +16,6 @@ import { Platform } from '@onflow/frw-types';
 import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import { Buffer } from 'buffer';
-import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 
@@ -38,7 +38,7 @@ const hexToBytes = (hex: string): Uint8Array =>
 
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
-  private instabugInitialized: boolean = false;
+  private luciqInitialized: boolean = false;
   private migrationAssetsService: MigrationAssetsService;
 
   constructor() {
@@ -89,26 +89,26 @@ class PlatformImpl implements PlatformSpec {
         break;
     }
 
-    // Instabug logging only if initialized
-    if (this.instabugInitialized) {
+    // Luciq logging only if initialized
+    if (this.luciqInitialized) {
       try {
-        const instabugMessage = `${prefix} ${fullMessage}`;
+        const luciqMessage = `${prefix} ${fullMessage}`;
 
         switch (level) {
           case 'debug':
             // Only send debug logs in debug mode to avoid spam
             if (this.debugMode) {
-              Instabug.logDebug(instabugMessage);
+              Luciq.logDebug(luciqMessage);
             }
             break;
           case 'info':
-            Instabug.logInfo(instabugMessage);
+            Luciq.logInfo(luciqMessage);
             break;
           case 'warn':
-            Instabug.logWarn(instabugMessage);
+            Luciq.logWarn(luciqMessage);
             break;
           case 'error':
-            Instabug.logError(instabugMessage);
+            Luciq.logError(luciqMessage);
             break;
         }
       } catch (error) {
@@ -117,12 +117,12 @@ class PlatformImpl implements PlatformSpec {
     }
   }
 
-  setInstabugInitialized(initialized: boolean): void {
-    this.instabugInitialized = initialized;
+  setLuciqInitialized(initialized: boolean): void {
+    this.luciqInitialized = initialized;
   }
 
-  isInstabugInitialized(): boolean {
-    return this.instabugInitialized;
+  isLuciqInitialized(): boolean {
+    return this.luciqInitialized;
   }
 
   isDebug(): boolean {
@@ -245,12 +245,12 @@ class PlatformImpl implements PlatformSpec {
     return env.GO_API_URL;
   }
 
-  getInstabugToken(): string {
+  getLuciqToken(): string {
     try {
       const env = NativeFRWBridge.getEnv();
-      return env.INSTABUG_TOKEN || '';
+      return env.LUCIQ_TOKEN || '';
     } catch (error) {
-      this.log('warn', '[PlatformImpl] Failed to get Instabug token from native bridge:', error);
+      this.log('warn', '[PlatformImpl] Failed to get Luciq token from native bridge:', error);
       return '';
     }
   }

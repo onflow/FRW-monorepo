@@ -283,7 +283,7 @@ extension TurboModuleSwift {
     return [
       "NODE_API_URL": Config.get(.lilicoWeb).removeSuffix("/api/"),
       "GO_API_URL": Config.get(.lilico),
-      "INSTABUG_TOKEN": ServiceConfig.instabugRNToken,
+      "LUCIQ_TOKEN": ServiceConfig.luciqRNToken,
       "MIXPANEL_TOKEN": ServiceConfig.mixpanelRNToken,
     ]
   }

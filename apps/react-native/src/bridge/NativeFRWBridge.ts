@@ -25,7 +25,7 @@ import { TurboModuleRegistry } from 'react-native';
 interface EnvironmentVariables {
   NODE_API_URL: string;
   GO_API_URL: string;
-  INSTABUG_TOKEN: string;
+  LUCIQ_TOKEN: string;
   MIXPANEL_TOKEN?: string;
 }
 

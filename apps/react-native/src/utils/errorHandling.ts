@@ -91,15 +91,15 @@ export function logErrorWithContext(error: Error, additionalInfo?: Record<string
 }
 
 /**
- * Reports error to Instabug if available
+ * Reports error to Luciq if available
  */
-export function reportErrorToInstabug(error: Error): void {
+export function reportErrorToLuciq(error: Error): void {
   try {
-    if (!platform.isInstabugInitialized?.()) {
+    if (!platform.isLuciqInitialized?.()) {
       return;
     }
 
-    const { CrashReporting, NonFatalErrorLevel } = require('instabug-reactnative');
+    const { CrashReporting, NonFatalErrorLevel } = require('@luciq/react-native');
     if (CrashReporting?.reportError) {
       const errorType = classifyError(error);
       const level =
@@ -111,8 +111,8 @@ export function reportErrorToInstabug(error: Error): void {
 
       CrashReporting.reportError(error, { level });
     }
-  } catch (instabugError) {
-    platform.log('warn', '[Error Handler] Failed to report to Instabug:', instabugError);
+  } catch (luciqError) {
+    platform.log('warn', '[Error Handler] Failed to report to Luciq:', luciqError);
   }
 }
 
@@ -121,7 +121,7 @@ export function reportErrorToInstabug(error: Error): void {
  */
 export function handleReactError(error: Error, stackTrace: string): void {
   logErrorWithContext(error, { stackTrace, source: 'react-error-boundary' });
-  reportErrorToInstabug(error);
+  reportErrorToLuciq(error);
 }
 
 /**
@@ -129,7 +129,7 @@ export function handleReactError(error: Error, stackTrace: string): void {
  */
 export function handleGlobalError(error: Error, isFatal: boolean): void {
   logErrorWithContext(error, { isFatal, source: 'global-js-exception' });
-  reportErrorToInstabug(error);
+  reportErrorToLuciq(error);
 }
 
 /**
@@ -141,21 +141,21 @@ export function handleUnhandledRejection(reason: unknown, promise: Promise<unkno
     source: 'unhandled-promise-rejection',
     promise: promise.toString(),
   });
-  reportErrorToInstabug(error);
+  reportErrorToLuciq(error);
 }
 
 /**
  * Manually trigger bug report UI
- * Note: Instabug UI may not appear in debug mode with remote debugging enabled
+ * Note: Luciq UI may not appear in debug mode with remote debugging enabled
  */
 export function showBugReportUI(error?: Error): void {
   try {
-    if (!platform.isInstabugInitialized?.()) {
-      platform.log('warn', '[Error Handler] Instabug not initialized');
+    if (!platform.isLuciqInitialized?.()) {
+      platform.log('warn', '[Error Handler] Luciq not initialized');
       return;
     }
 
-    const { BugReporting, ReportType } = require('instabug-reactnative');
+    const { BugReporting, ReportType } = require('@luciq/react-native');
     if (!BugReporting?.show) {
       platform.log('warn', '[Error Handler] BugReporting.show not available');
       return;
@@ -163,11 +163,11 @@ export function showBugReportUI(error?: Error): void {
 
     // Report error first if provided
     if (error) {
-      reportErrorToInstabug(error);
+      reportErrorToLuciq(error);
     }
 
     // Show bug report UI
-    // Note: In debug mode with remote debugging, UI may not appear (Instabug limitation)
+    // Note: In debug mode with remote debugging, UI may not appear (Luciq limitation)
     BugReporting.show(ReportType.bug, []);
   } catch (err) {
     platform.log('error', '[Error Handler] Failed to show bug report UI:', err);
