@@ -2,7 +2,6 @@ export { default as AlertTriangle } from './AlertTriangle.generated';
 export { default as ArrowBack } from './ArrowBack.generated';
 export { default as ArrowDown } from './ArrowDown.generated';
 export { default as ArrowDownLeft } from './ArrowDownLeft.generated';
-export { default as ArrowDownWideNarrow } from './ArrowDownWideNarrow.generated';
 export { default as ArrowLeft } from './ArrowLeft.generated';
 export { default as ArrowRight } from './ArrowRight.generated';
 export { default as ArrowUpRight } from './ArrowUpRight.generated';

@@ -27,3 +27,7 @@ export interface ClaimItem {
   isVerified?: boolean;
   contractAddress?: string;
 }
+
+export interface ClaimSender {
+  address: string;
+}
