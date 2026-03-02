@@ -469,29 +469,61 @@ export const tokenQueries = {
           ? response
           : [];
 
-      // Build a logo lookup from bundled local assets (API does not return logo URLs)
-      // Use reduce + plain object instead of Map/for-of for Hermes compatibility
+      logger.debug('[TokenQuery] fetchNFTCatalog: raw API response type:', typeof response);
+      logger.debug('[TokenQuery] fetchNFTCatalog: items count:', items.length);
+      if (items.length > 0) {
+        logger.debug('[TokenQuery] fetchNFTCatalog: first API item keys:', Object.keys(items[0]));
+        logger.debug('[TokenQuery] fetchNFTCatalog: first API item:', JSON.stringify(items[0]));
+      }
+
+      // Build a logo fallback lookup from bundled local assets, mirroring Android's
+      // NftCollectionConfig which loads the same JSON as an offline fallback when the
+      // API is unavailable. API logo fields take priority; JSON is the fallback.
+      // Use reduce + plain object instead of Map/for-of for Hermes compatibility.
       const rawCatalog = network === 'testnet' ? nftCatalogTestnet : nftCatalogMainnet;
+      logger.debug(
+        '[TokenQuery] fetchNFTCatalog: rawCatalog type:',
+        typeof rawCatalog,
+        'isArray:',
+        Array.isArray(rawCatalog),
+        'keys:',
+        Object.keys(rawCatalog as any)
+      );
       const bundledCatalog: any[] = Array.isArray(rawCatalog)
         ? rawCatalog
-        : ((rawCatalog as any).default ?? []);
-      const logoByContractId: Record<string, string> = bundledCatalog.reduce(
+        : Array.isArray((rawCatalog as any).data)
+          ? (rawCatalog as any).data
+          : [];
+      logger.debug('[TokenQuery] fetchNFTCatalog: bundledCatalog count:', bundledCatalog.length);
+      if (bundledCatalog.length > 0) {
+        logger.debug(
+          '[TokenQuery] fetchNFTCatalog: first bundled item:',
+          JSON.stringify(bundledCatalog[0])
+        );
+      }
+
+      const fallbackLogoByContractId: Record<string, string> = bundledCatalog.reduce(
         (acc: Record<string, string>, entry: any) => {
           if (entry.id && entry.logo) acc[entry.id] = entry.logo;
           return acc;
         },
         {}
       );
+      logger.debug(
+        '[TokenQuery] fetchNFTCatalog: fallback logo lookup size:',
+        Object.keys(fallbackLogoByContractId).length
+      );
 
-      return items.map((item: any) => {
+      const mapped = items.map((item: any) => {
         // Construct flowIdentifier as A.<address>.<contractName> — API never provides it directly
         const contractName: string | undefined = item.contract_name ?? item.contractName;
         const flowIdentifier =
           item.address && contractName ? `A.${item.address}.${contractName}` : undefined;
 
-        // Look up logo from bundled asset; convert SVG to PNG (React Native cannot render SVGs)
-        const rawLogo = logoByContractId[item.id] ?? item.logo ?? item.logoURI;
-        const logo = rawLogo ? rawLogo.replace('.svg', '.png') : undefined;
+        // Use the API logo first (matching Android's NftCollection.logo field), fall back to
+        // bundled JSON. Pass raw URL (including SVGs) so Avatar's convertedSVGURL() can
+        // proxy-convert via lilico.app/api/svg2png at render time, same as Android's svgToPng().
+        const logo = item.logo ?? item.logoURI ?? fallbackLogoByContractId[item.id] ?? undefined;
 
         return {
           ...item,
@@ -499,7 +531,15 @@ export const tokenQueries = {
           logo,
           logoURI: logo,
         };
-      }) as NFTCollection[];
+      });
+
+      logger.debug(
+        '[TokenQuery] fetchNFTCatalog: sample mapped logos (first 3):',
+        JSON.stringify(
+          mapped.slice(0, 3).map((i: any) => ({ id: i.id, name: i.name, logo: i.logo }))
+        )
+      );
+      return mapped as NFTCollection[];
     } catch (error) {
       logger.error('[TokenQuery] Error fetching NFT collection catalog:', error);
       return [];

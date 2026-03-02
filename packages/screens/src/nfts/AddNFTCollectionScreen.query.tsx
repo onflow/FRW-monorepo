@@ -66,6 +66,20 @@ export function AddNFTCollectionScreen({
     staleTime: 5 * 60 * 1000,
   });
 
+  React.useEffect(() => {
+    logger.debug('[AddNFTCollectionScreen] catalog count:', catalog.length);
+    if (catalog.length > 0) {
+      logger.debug(
+        '[AddNFTCollectionScreen] sample items (first 3):',
+        JSON.stringify(
+          catalog
+            .slice(0, 3)
+            .map((c) => ({ id: c.id, name: c.name, logo: c.logo, logoURI: c.logoURI }))
+        )
+      );
+    }
+  }, [catalog]);
+
   const { data: userCollections = [], isLoading: isUserCollectionsLoading } = useQuery({
     queryKey: tokenQueryKeys.nfts(address, network),
     queryFn: () => tokenQueries.fetchNFTCollections(address, network),
