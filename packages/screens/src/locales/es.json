@@ -7,7 +7,10 @@
     "sendTokens": "Enviar Tokens",
     "nftDetails": "Detalles NFT",
     "colorDemo": "Demo de Colores",
-    "receive": "Recibir Activos"
+    "receive": "Recibir Activos",
+    "addTokens": "Agregar tokens",
+    "claimTokens": "Reclamar",
+    "token": "Token"
   },
   "common": {
     "cancel": "Cancelar",
@@ -493,5 +496,35 @@
     "success": {
       "rotation": "¡Cuenta actualizada exitosamente!"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "Buscar",
+    "empty": "No hay elementos para reclamar",
+    "sort": {
+      "title": "Ordenar por",
+      "date": "Fecha de recepción",
+      "amount": "Cantidad",
+      "name": "Nombre del token"
+    },
+    "detail": {
+      "security": "Seguridad",
+      "verified": "Verificado",
+      "yes": "Sí",
+      "no": "No",
+      "contractAddress": "Dirección del contrato",
+      "claim": "Reclamar",
+      "reject": "Rechazar"
+    },
+    "drawer": {
+      "title": "Reclamar activo",
+      "token": "Token",
+      "from": "De",
+      "cta": "Reclamar"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "Reclamar tokens recibidos",
+    "searchPlaceholder": "Buscar token",
+    "verifiedOnly": "Mostrar solo tokens verificados"
   }
 }

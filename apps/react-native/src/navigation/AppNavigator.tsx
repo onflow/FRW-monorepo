@@ -15,6 +15,7 @@ import {
   ActivityDetailScreen,
   // Token screens
   AddTokensScreen,
+  ClaimTokensScreen,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -74,6 +75,7 @@ export type RootStackParamList = {
   Activity: undefined;
   ActivityDetail: { item: ActivityItem };
   AddTokens: undefined;
+  ClaimTokens: undefined;
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -346,9 +348,20 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             />
             <Stack.Screen
               name="AddTokens"
-              component={AddTokensScreen}
               options={{
                 headerTitle: t('navigation.addTokens', 'Add Tokens'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <AddTokensScreen onClaimPress={() => nav.navigate('ClaimTokens')} />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ClaimTokens"
+              component={ClaimTokensScreen}
+              options={{
+                headerTitle: t('navigation.claimTokens', 'Claim'),
                 headerStyle: { backgroundColor: theme.bg.val },
               }}
             />

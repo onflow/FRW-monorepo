@@ -7,7 +7,10 @@
     "sendTokens": "Send Tokens",
     "nftDetails": "NFT Details",
     "colorDemo": "Color Demo",
-    "receive": "Receive Assets"
+    "receive": "Receive Assets",
+    "addTokens": "Add Tokens",
+    "claimTokens": "Claim",
+    "token": "Token"
   },
   "common": {
     "cancel": "Cancel",
@@ -545,5 +548,35 @@
     "success": {
       "rotation": "Account upgraded successfully!"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "Search",
+    "empty": "No items to claim",
+    "sort": {
+      "title": "Sort by",
+      "date": "Date received",
+      "amount": "Amount",
+      "name": "Token name"
+    },
+    "detail": {
+      "security": "Security",
+      "verified": "Verified",
+      "yes": "Yes",
+      "no": "No",
+      "contractAddress": "Contract address",
+      "claim": "Claim",
+      "reject": "Reject"
+    },
+    "drawer": {
+      "title": "Claim asset",
+      "token": "Token",
+      "from": "From",
+      "cta": "Claim"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "Claim received tokens",
+    "searchPlaceholder": "Search Token",
+    "verifiedOnly": "Only show verified tokens"
   }
 }

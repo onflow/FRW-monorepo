@@ -175,6 +175,37 @@ export interface EnhancedSegmentedControlProps {
   fullWidth?: boolean;
 }
 
+// Claim screen components props
+export interface PriceChangeBadgeProps {
+  value: number;
+}
+
+export interface ClaimSenderRowProps {
+  name: string;
+  address: string;
+  avatar?: string;
+  emojiInfo?: { emoji: string; name: string; color: string };
+  parentEmoji?: { emoji: string; name: string; color: string };
+  type?: 'main' | 'child' | 'evm' | 'eoa';
+  isCollapsed: boolean;
+  onPress: () => void;
+}
+
+export interface ClaimDateHeaderProps {
+  date: string;
+}
+
+export interface ClaimItemRowProps {
+  name: string;
+  symbol: string;
+  logoURI?: string;
+  amount: string;
+  price?: number;
+  priceChange24h?: number;
+  usdValue?: number;
+  isLast: boolean;
+}
+
 // Token list components props
 export interface AddTokenListItemProps {
   token: FungibleTokenCatalogItem;

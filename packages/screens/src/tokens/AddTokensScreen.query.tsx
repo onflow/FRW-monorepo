@@ -40,7 +40,11 @@ function groupByLetter(tokens: FungibleTokenCatalogItem[]): TokenGroup[] {
     .map(([letter, data]) => ({ letter, data }));
 }
 
-export function AddTokensScreen(): React.ReactElement {
+interface AddTokensScreenProps {
+  onClaimPress?: () => void;
+}
+
+export function AddTokensScreen({ onClaimPress }: AddTokensScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
   const network = bridge.getNetwork() || 'mainnet';
@@ -160,7 +164,10 @@ export function AddTokensScreen(): React.ReactElement {
   return (
     <BackgroundWrapper backgroundColor="$bg" px={0}>
       <YStack flex={1}>
-        <ClaimBanner title={t('addTokens.claimBannerTitle', 'Claim received tokens')} />
+        <ClaimBanner
+          title={t('addTokens.claimBannerTitle', 'Claim received tokens')}
+          onPress={onClaimPress}
+        />
 
         {/* Search bar */}
         <YStack px="$4" mb="$3">
