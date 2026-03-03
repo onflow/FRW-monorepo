@@ -26,6 +26,7 @@ import { useTokenStore } from './tokenStore';
 import {
   type AccessibleAssetStore,
   type BalanceData,
+  type SendAnalyticsConfig,
   type SendFormData,
   type SendState,
   type TransactionType,
@@ -383,10 +384,16 @@ export const useSendStore = create<SendState>((set, get) => ({
     }),
 
   // Create transaction tracker
-  createTransactionSession: async (config: any): Promise<TransactionSession | null> => {
+  createTransactionSession: async (
+    config?: SendAnalyticsConfig
+  ): Promise<TransactionSession | null> => {
     const state = get();
     const { transactionType } = state;
-    const analytics = await createMixpanelAnalytics(config);
+    const mixpanelConfig: SendAnalyticsConfig = config ?? {
+      token: bridge.getMixpanelToken(),
+      debug: true,
+    };
+    const analytics = await createMixpanelAnalytics(mixpanelConfig);
     logger.info('[SendStore] createTracker -- state:', state);
 
     const transactionTracker = new TransactionTracker(analytics);
