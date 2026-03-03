@@ -125,8 +125,14 @@ jobs:
           SCRIPTS_PUBLIC_KEY="${{ vars.SCRIPTS_PUBLIC_KEY }}"
           BETA_MANIFEST_KEY="${{ secrets.BETA_MANIFEST_KEY }}"
           BETA_OAUTH2_CLIENT_ID="${{ secrets.BETA_OAUTH2_CLIENT_ID }}"
+          DROPBOX_APP_KEY="${{ secrets.DROPBOX_APP_KEY }}"
           EOF
           }
+
+          if [[ -n "${{ secrets.DROPBOX_APP_KEY }}" && -z "${{ secrets.GD_AES_KEY }}" ]]; then
+            echo "DROPBOX_APP_KEY is set but GD_AES_KEY is missing for this environment."
+            exit 1
+          fi
 
           # Always create .env.pro in extension directory
           create_env_file "apps/extension/.env.pro"
