@@ -155,8 +155,8 @@ export const safeConvertToUFix64WithoutRounding = (
       strAmount = expandScientificNotation(strAmount);
     }
 
-    // Validate numeric format
-    if (!/^\d*\.?\d*$/.test(strAmount)) {
+    // Validate numeric format (no backtracking-prone quantifiers)
+    if (/[^\d.]/.test(strAmount) || strAmount.indexOf('.') !== strAmount.lastIndexOf('.')) {
       throw new Error('Invalid number format for UFix64 conversion');
     }
 
