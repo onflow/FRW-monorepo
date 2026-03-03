@@ -1,5 +1,6 @@
 import { ServiceContext } from '@onflow/frw-context';
 import { QueryProvider, initializeI18n } from '@onflow/frw-screens';
+import type { WhatsNewData } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
 import { PortalProvider, TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import Instabug, { InvocationEvent } from 'instabug-reactnative';
@@ -17,7 +18,6 @@ import { platform } from './bridge/PlatformImpl';
 import { FRWErrorBoundary } from './components/ErrorBoundary';
 import { QueryDebugger } from './components/QueryDebugger';
 import AppNavigator from './navigation/AppNavigator';
-import type { WhatsNewData } from './screens/WhatsNewScreen';
 import { handleGlobalError, handleUnhandledRejection } from './utils/errorHandling';
 
 // Set up global clipboard for React Native (used by screens that need clipboard access)

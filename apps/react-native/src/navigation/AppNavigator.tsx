@@ -26,6 +26,9 @@ import {
   ImportProfileScreen,
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
+  // What's new screen
+  WhatsNewScreen,
+  type WhatsNewData,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -49,7 +52,6 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
-import WhatsNewScreen, { type WhatsNewData } from '@/screens/WhatsNewScreen';
 // import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest'; // For testing error handling
 
 export type RootStackParamList = {

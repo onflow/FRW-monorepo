@@ -1,7 +1,6 @@
+import { bridge } from '@onflow/frw-context';
 import { UpdateDialog, type WhatsNewAction } from '@onflow/frw-ui';
 import React, { useMemo } from 'react';
-
-import { platform } from '@/bridge/PlatformImpl';
 
 export interface WhatsNewData {
   title?: string;
@@ -34,8 +33,8 @@ const WhatsNewScreen: React.FC<WhatsNewScreenProps> = ({ data }) => {
     const sourceActions = Array.isArray(data?.actions) ? data.actions : [];
 
     return sourceActions
-      .filter(action => Boolean(action?.text?.trim()))
-      .map(action => ({
+      .filter((action) => Boolean(action?.text?.trim()))
+      .map((action) => ({
         text: action.text.trim(),
         url: action.url,
         type: action.type === 'internal' || action.type === 'deeplink' ? action.type : 'external',
@@ -44,7 +43,7 @@ const WhatsNewScreen: React.FC<WhatsNewScreenProps> = ({ data }) => {
   }, [data?.actions]);
 
   const onClose = () => {
-    platform.closeRN();
+    bridge.closeRN();
   };
 
   return (
