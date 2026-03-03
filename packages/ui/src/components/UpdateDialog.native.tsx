@@ -1,7 +1,7 @@
 import { Close } from '@onflow/frw-icons';
-import React from 'react';
+import React, { useCallback } from 'react';
 import Markdown from 'react-markdown';
-import { Linking, Modal, useWindowDimensions } from 'react-native';
+import { Linking, useWindowDimensions } from 'react-native';
 import {
   H1,
   H2,
@@ -100,6 +100,10 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   onActionPress,
   onClose,
 }) => {
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   const normalizeMarkdownViewChildren = (
     nodes: React.ReactNode,
     keyPrefix = 'markdown'
@@ -131,12 +135,8 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
       if (action.url) {
         Linking.openURL(action.url).catch(() => {});
       }
-    } else if (action.type === 'internal') {
-      onButtonClick?.();
-      onClose();
-    } else if (action.type === 'deeplink') {
-      onClose();
     }
+    handleClose();
   };
 
   const dialogContent = (
@@ -165,7 +165,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
           bottom: 0,
           bg: 'rgba(0, 0, 0, 0.5)',
           pressStyle: { opacity: 1 },
-          onPress: onClose,
+          onPress: handleClose,
         } as any)}
       />
 
@@ -206,7 +206,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
             rounded: 12,
             hoverStyle: { bg: 'rgba(255, 255, 255, 0.1)' },
             pressStyle: { opacity: 0.7 },
-            onPress: onClose,
+            onPress: handleClose,
             cursor: 'pointer',
             'aria-label': 'Close dialog',
           } as any)}
@@ -348,7 +348,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
 
                   // Inline code
                   code: ({ children }) => (
-                    <Text fontSize={13} backgroundColor="rgba(255,255,255,0.1)">
+                    <Text fontSize={13} bg="rgba(255,255,255,0.1)">
                       {children}
                     </Text>
                   ),
@@ -406,15 +406,5 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
     </Stack>
   );
 
-  return (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={onClose}
-      statusBarTranslucent={true}
-    >
-      {dialogContent}
-    </Modal>
-  );
+  return dialogContent;
 };

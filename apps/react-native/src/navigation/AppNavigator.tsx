@@ -288,19 +288,6 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             headerShown: true,
           }}
         >
-          <Stack.Screen
-            name="WhatsNew"
-            options={{
-              headerShown: false,
-              presentation: 'transparentModal',
-              animation: 'fade',
-              contentStyle: { backgroundColor: 'transparent' },
-              gestureEnabled: false,
-            }}
-          >
-            {({ route }) => <WhatsNewScreen data={route.params ?? whatsNewData} />}
-          </Stack.Screen>
-
           <Stack.Screen name="Home" component={HomeScreen} initialParams={{ address, network }} />
 
           {/* Send Workflow Screens Group */}
@@ -630,6 +617,27 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                   onBack={() => nav.goBack()}
                 />
               )}
+            </Stack.Screen>
+          </Stack.Group>
+
+          <Stack.Group
+            screenOptions={{
+              headerShown: false,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => null,
+            }}
+          >
+            <Stack.Screen
+              name="WhatsNew"
+              options={{
+                headerShown: false,
+                animation: 'fade',
+                contentStyle: { backgroundColor: 'transparent' },
+              }}
+            >
+              {({ route }) => <WhatsNewScreen data={route.params ?? whatsNewData} />}
             </Stack.Screen>
           </Stack.Group>
         </Stack.Navigator>
