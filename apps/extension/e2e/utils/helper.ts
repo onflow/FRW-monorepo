@@ -572,14 +572,14 @@ export const checkSentAmount = async ({
   isEvm = false,
 }) => {
   const activityItemRegexp = getActivityItemRegexp(txId, ingoreFlowCharge);
-  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
+  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText }).first();
   await expect(sealedItem).toBeVisible({
     timeout: 60_000,
   });
   if (!isEvm) {
-    await expect(
-      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
-    ).toBeVisible({ timeout: 60_000 });
+    await expect(sealedItem.getByTestId(`token-balance-${amount}`)).toBeVisible({
+      timeout: 60_000,
+    });
   }
 };
 

@@ -10,6 +10,7 @@ import {
   safeConvertToUFix64,
   convertHexToByteArray,
   signLegacyEvmTransaction,
+  safeConvertToUFix64WithoutRounding,
 } from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
 
@@ -378,7 +379,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
     const { flowIdentifier, amount, receiver, decimal, sender, type, assetType } = payload;
     // const formattedAmount = safeConvertToUFix64(amount);
-
+    const formattedAmount = safeConvertToUFix64WithoutRounding(amount);
     _helpers?.session?.strategySelected({
       strategyName: 'EvmToFlowTokenBridgeStrategy',
       assetType: type,
@@ -386,10 +387,10 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
       sender: sender,
       receiver: receiver,
       flowIdentifier: flowIdentifier,
-      amount: amount,
+      amount: formattedAmount,
     });
 
-    const valueBig = parseUnits(amount, decimal);
+    const valueBig = parseUnits(formattedAmount, decimal);
 
     return await this.cadenceService.bridgeTokensFromEvmToFlowV3(
       flowIdentifier,

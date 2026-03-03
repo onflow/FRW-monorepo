@@ -138,6 +138,66 @@ export const safeConvertToUFix64 = (
   }
 };
 
+export const safeConvertToUFix64WithoutRounding = (
+  amount: number | string,
+  defaultValue: string = '0.000000000000000000'
+): string => {
+  try {
+    let strAmount = String(amount).trim();
+
+    if (!strAmount || strAmount === '0' || strAmount === '') {
+      return '0.00000000';
+    }
+
+    // Handle scientific notation by converting to decimal string WITHOUT Number()
+    if (/[eE]/.test(strAmount)) {
+      // Use BigInt-based expansion to avoid precision loss
+      strAmount = expandScientificNotation(strAmount);
+    }
+
+    // Validate numeric format
+    if (!/^\d*\.?\d*$/.test(strAmount)) {
+      throw new Error('Invalid number format for UFix64 conversion');
+    }
+
+    const dotIndex = strAmount.indexOf('.');
+    if (dotIndex === -1) {
+      return strAmount + '.00000000';
+    }
+
+    const intPart = strAmount.slice(0, dotIndex) || '0';
+    const decPart = strAmount.slice(dotIndex + 1);
+
+    // Truncate to 8 decimal places (no rounding) - preserves precision
+    return intPart + '.' + decPart.slice(0, 8).padEnd(8, '0');
+  } catch (error) {
+    logger.warn('Failed to convert amount to UFix64', error);
+    return defaultValue;
+  }
+};
+
+const expandScientificNotation = (str: string): string => {
+  const [base, exponent] = str.toLowerCase().split('e');
+  const exp = parseInt(exponent, 10);
+
+  if (exp === 0) return base;
+
+  const [intPart, fracPart = ''] = base.split('.');
+  const digits = intPart + fracPart;
+  const decimalPos = intPart.length + exp;
+
+  if (decimalPos <= 0) {
+    // Very small numbers: add leading zeros
+    return '0.' + '0'.repeat(-decimalPos) + digits;
+  } else if (decimalPos >= digits.length) {
+    // Large numbers: add trailing zeros
+    return digits + '0'.repeat(decimalPos - digits.length);
+  } else {
+    // Insert decimal point
+    return digits.slice(0, decimalPos) + '.' + digits.slice(decimalPos);
+  }
+};
+
 /**
  * Encodes EVM contract call data for token and NFT transfers
  * Supports ERC20, ERC721, and ERC1155 standards
