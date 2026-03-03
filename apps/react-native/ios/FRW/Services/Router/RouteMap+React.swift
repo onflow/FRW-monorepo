@@ -15,6 +15,7 @@ extension RouteMap {
     case getStarted
     case backupTip
     case migration
+    case updatePopup([String: Any])
   }
 }
 
@@ -42,6 +43,12 @@ extension RouteMap.ReactNative: RouterTarget {
       let vc = ReactNativeViewController()
       vc.route = .migration
       navi.pushViewController(vc, animated: true)
+    case .updatePopup(let data):
+      let vc = ReactNativeViewController(additionalProps: ["whatsNewData": data])
+      vc.route = .updatePopup
+      vc.modalPresentationStyle = .overFullScreen
+      vc.modalTransitionStyle = .crossDissolve
+      navi.present(vc)
     }
   }
 }

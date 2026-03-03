@@ -49,10 +49,12 @@ import { reactNativeNavigation } from '@/bridge/ReactNativeNavigation';
 import { NavigationBackButton } from '@/components/NavigationBackButton';
 import { NavigationCloseButton } from '@/components/NavigationCloseButton';
 import { HomeScreen } from '@/screens';
+import WhatsNewScreen, { type WhatsNewData } from '@/screens/WhatsNewScreen';
 // import { ErrorHandlingTest } from '@/screens/ErrorHandlingTest'; // For testing error handling
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
+  UpdatePopup: WhatsNewData | undefined;
   ColorDemo: undefined;
   NFTDetail: {
     nft: NFTModel;
@@ -114,6 +116,7 @@ interface AppNavigatorProps {
   initialRoute?: string;
   embedded?: boolean;
   initialProps?: InitialProps;
+  whatsNewData?: WhatsNewData;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -121,7 +124,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { address, network, initialRoute, initialProps } = props;
+  const { address, network, initialRoute, initialProps, whatsNewData } = props;
   const navigationRef = useRef<any>(null);
 
   // Send store actions
@@ -283,6 +286,19 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             headerShown: true,
           }}
         >
+          <Stack.Screen
+            name="UpdatePopup"
+            options={{
+              headerShown: false,
+              presentation: 'transparentModal',
+              animation: 'fade',
+              contentStyle: { backgroundColor: 'transparent' },
+              gestureEnabled: false,
+            }}
+          >
+            {({ route }) => <WhatsNewScreen data={route.params ?? whatsNewData} />}
+          </Stack.Screen>
+
           <Stack.Screen name="Home" component={HomeScreen} initialParams={{ address, network }} />
 
           {/* Send Workflow Screens Group */}

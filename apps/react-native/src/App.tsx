@@ -17,6 +17,7 @@ import { platform } from './bridge/PlatformImpl';
 import { FRWErrorBoundary } from './components/ErrorBoundary';
 import { QueryDebugger } from './components/QueryDebugger';
 import AppNavigator from './navigation/AppNavigator';
+import type { WhatsNewData } from './screens/WhatsNewScreen';
 import { handleGlobalError, handleUnhandledRejection } from './utils/errorHandling';
 
 // Set up global clipboard for React Native (used by screens that need clipboard access)
@@ -32,6 +33,7 @@ interface AppProps {
   initialRoute?: string;
   embedded?: boolean;
   isDarkMode?: boolean;
+  whatsNewData?: WhatsNewData;
 }
 
 const App = (props: AppProps) => {

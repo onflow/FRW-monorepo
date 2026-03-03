@@ -13,7 +13,16 @@ extension AppDelegate {
       do {
         let response = try await WhatsNewService.fetchWhatsNewForIOS()
         if let response {
-          log.info(response)
+          let trimmedContent = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+          guard !trimmedContent.isEmpty || !response.actions.isEmpty else {
+            log.info("[WhatsNew] Empty payload, skip popup")
+            return
+          }
+
+          log.info("[WhatsNew] payload received for version: \(response.version)")
+
+          let popupData = try response.toDictionary()
+          Router.route(to: RouteMap.ReactNative.updatePopup(popupData))
         }
       } catch {
         log.error(error)
