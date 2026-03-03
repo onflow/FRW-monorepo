@@ -86,6 +86,7 @@ export interface UpdateDialogProps {
   actions: WhatsNewAction[];
   buttonText: string;
   onButtonClick?: () => void;
+  onActionPress?: (action: WhatsNewAction) => void;
   onClose: () => void;
 }
 
@@ -96,6 +97,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   updateContent,
   actions,
   onButtonClick,
+  onActionPress,
   onClose,
 }) => {
   const normalizeMarkdownViewChildren = (
@@ -123,12 +125,16 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   const dialogMaxHeight = Math.floor(screenHeight * 0.85);
 
   const handleActions = (action: WhatsNewAction) => {
+    onActionPress?.(action);
+
     if (action.type === 'external') {
       if (action.url) {
         Linking.openURL(action.url).catch(() => {});
       }
     } else if (action.type === 'internal') {
       onButtonClick?.();
+      onClose();
+    } else if (action.type === 'deeplink') {
       onClose();
     }
   };
@@ -375,6 +381,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
             <YStack
               key={`${action.type}-${index}`}
               width="100%"
+              height={30}
               justify={'center'}
               items={'center'}
               pressStyle={{ opacity: 0.8 }}

@@ -313,6 +313,18 @@ class PlatformImpl implements PlatformSpec {
     NativeFRWBridge.closeRN(null);
   }
 
+  onUpdateDialogActionPress(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void {
+    try {
+      NativeFRWBridge.onUpdateDialogActionPress(actionType, actionUrl ?? null, actionText ?? null);
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to pass update dialog action to native:', error);
+    }
+  }
+
   getWalletProfiles(): Promise<WalletProfilesResponse> {
     return NativeFRWBridge.getWalletProfiles();
   }

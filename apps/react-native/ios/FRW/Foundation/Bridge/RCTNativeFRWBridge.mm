@@ -160,6 +160,14 @@
   [TurboModuleSwift closeRNWithId:id];
 }
 
+- (void)onUpdateDialogActionPress:(NSString *)actionType
+                         actionUrl:(NSString * _Nullable)actionUrl
+                        actionText:(NSString * _Nullable)actionText {
+  [TurboModuleSwift onUpdateDialogActionPressWithActionType:actionType
+                                                  actionUrl:actionUrl
+                                                 actionText:actionText];
+}
+
 - (void)isFreeGasEnabled:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
   resolve(@([TurboModuleSwift isFreeGasEnabled]));
 }

@@ -46,6 +46,10 @@ const WhatsNewScreen: React.FC<WhatsNewScreenProps> = ({ data }) => {
     bridge.closeRN();
   };
 
+  const onActionPress = (action: WhatsNewAction) => {
+    bridge.onUpdateDialogActionPress?.(action.type, action.url ?? null, action.text);
+  };
+
   return (
     <UpdateDialog
       visible
@@ -54,6 +58,7 @@ const WhatsNewScreen: React.FC<WhatsNewScreenProps> = ({ data }) => {
       actions={actions}
       buttonText="OK"
       onButtonClick={onClose}
+      onActionPress={onActionPress}
       onClose={onClose}
     />
   );
