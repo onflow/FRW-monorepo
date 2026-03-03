@@ -19,7 +19,7 @@ extension ReactNativeViewController {
     case keyRotationTip = "KeyRotationTip"
     case activity = "Activity"
     case migration = "Migration"
-    case whatsNew = "whatsNew"
+    case whatsNew = "WhatsNew"
 
     var isTransparentPopup: Bool {
       switch self {

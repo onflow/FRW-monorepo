@@ -189,8 +189,8 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
           data-testid="popup-close-button"
           {...({
             pos: 'absolute',
-            top: 8,
-            right: 8,
+            top: 16,
+            right: 16,
             w: 24,
             h: 24,
             zIndex: 10,
