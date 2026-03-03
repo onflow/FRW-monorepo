@@ -1,14 +1,7 @@
-import { UpdateDialog, type WhatsNewAction as UpdateDialogAction } from '@onflow/frw-ui';
+import { UpdateDialog, type WhatsNewAction } from '@onflow/frw-ui';
 import React, { useMemo } from 'react';
 
 import { platform } from '@/bridge/PlatformImpl';
-
-export interface WhatsNewAction {
-  text: string;
-  url?: string;
-  type?: 'external' | 'internal' | 'deeplink' | string;
-  style?: Record<string, unknown>;
-}
 
 export interface WhatsNewData {
   title?: string;
@@ -37,7 +30,7 @@ const WhatsNewScreen: React.FC<WhatsNewScreenProps> = ({ data }) => {
   }, [data?.title, data?.version]);
 
   const content = data?.content ?? '';
-  const actions = useMemo<UpdateDialogAction[]>(() => {
+  const actions = useMemo<WhatsNewAction[]>(() => {
     const sourceActions = Array.isArray(data?.actions) ? data.actions : [];
 
     return sourceActions

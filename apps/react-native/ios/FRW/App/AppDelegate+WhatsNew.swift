@@ -22,7 +22,7 @@ extension AppDelegate {
           log.info("[WhatsNew] payload received for version: \(response.version)")
 
           let popupData = try response.toDictionary()
-          Router.route(to: RouteMap.ReactNative.updatePopup(popupData))
+          Router.route(to: RouteMap.ReactNative.whatsNew(popupData))
         }
       } catch {
         log.error(error)

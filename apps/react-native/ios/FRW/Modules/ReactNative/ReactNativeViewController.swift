@@ -19,7 +19,16 @@ extension ReactNativeViewController {
     case keyRotationTip = "KeyRotationTip"
     case activity = "Activity"
     case migration = "Migration"
-    case updatePopup = "UpdatePopup"
+    case whatsNew = "whatsNew"
+
+    var isTransparentPopup: Bool {
+      switch self {
+      case .whatsNew:
+        return true
+      default:
+        return false
+      }
+    }
   }
 }
 
@@ -222,7 +231,8 @@ class ReactNativeViewController: UIViewController {
         )
 
         // Create RCTSurfaceHostingView
-        let isTransparentPopup = routeName == Route.updatePopup.rawValue
+
+        let isTransparentPopup = routeName == Route.whatsNew.rawValue
         surfaceView.backgroundColor = isTransparentPopup ? .clear : UIColor.systemBackground
         surfaceView.isOpaque = !isTransparentPopup
         view.backgroundColor = isTransparentPopup ? .clear : UIColor.systemBackground
@@ -293,6 +303,8 @@ extension RNBridge.InitialProps {
       return .activity
     case .migration:
       return .migration
+    case .whatsNew:
+      return .whatsNew
     }
   }
 }

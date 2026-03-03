@@ -54,7 +54,7 @@ import WhatsNewScreen, { type WhatsNewData } from '@/screens/WhatsNewScreen';
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
-  UpdatePopup: WhatsNewData | undefined;
+  WhatsNew: WhatsNewData | undefined;
   ColorDemo: undefined;
   NFTDetail: {
     nft: NFTModel;
@@ -287,7 +287,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           }}
         >
           <Stack.Screen
-            name="UpdatePopup"
+            name="WhatsNew"
             options={{
               headerShown: false,
               presentation: 'transparentModal',
