@@ -16,6 +16,61 @@ import {
   getTokens,
 } from 'tamagui';
 
+/**
+ * Rehype plugin: strip whitespace-only text nodes and wrap any remaining bare
+ * text in `<span>` so the component overrides can render them inside `<Text>`.
+ *
+ * react-markdown v10 renders the hast root as a React Fragment.  Newline text
+ * nodes between block elements (`\n`) dissolve into the parent View and crash
+ * React Native with "Text strings must be rendered within a <Text> component".
+ */
+const rehypeSanitizeTextForRN = () => (tree: any) => {
+  // View-like elements whose children must not contain bare strings
+  const viewTags = new Set([
+    'div',
+    'section',
+    'article',
+    'nav',
+    'aside',
+    'figure',
+    'figcaption',
+    'details',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+  ]);
+
+  const process = (node: any) => {
+    if (!Array.isArray(node.children)) return;
+
+    for (const child of node.children) {
+      if (child.type === 'element' || child.type === 'root') process(child);
+    }
+
+    const needsSanitize =
+      node.type === 'root' || (node.type === 'element' && viewTags.has(node.tagName));
+
+    if (!needsSanitize) return;
+
+    node.children = node.children
+      .map((child: any) => {
+        if (child.type !== 'text') return child;
+        if (child.value.trim() === '') return null;
+        // Wrap non-empty text in <span> → our span override renders <Text>
+        return {
+          type: 'element',
+          tagName: 'span',
+          properties: {},
+          children: [child],
+        };
+      })
+      .filter(Boolean);
+  };
+
+  process(tree);
+};
+
 export interface WhatsNewAction {
   text: string;
   url?: string;
@@ -191,6 +246,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
           {updateContent ? (
             <YStack gap="$3">
               <Markdown
+                rehypePlugins={[rehypeSanitizeTextForRN]}
                 components={{
                   h1: ({ children }) => (
                     <H1 size="$9" mt="$2" mb="$1">
@@ -269,6 +325,37 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
                       } as any)}
                     />
                   ),
+
+                  // Code blocks
+                  pre: ({ children }) => (
+                    <YStack
+                      {...({
+                        bg: 'rgba(255,255,255,0.05)',
+                        p: '$3',
+                        rounded: 8,
+                        overflow: 'hidden',
+                      } as any)}
+                    >
+                      {normalizeMarkdownViewChildren(children, 'pre')}
+                    </YStack>
+                  ),
+
+                  // Inline code
+                  code: ({ children }) => (
+                    <Text fontSize={13} backgroundColor="rgba(255,255,255,0.1)">
+                      {children}
+                    </Text>
+                  ),
+
+                  // Line break
+                  br: () => <Text>{'\n'}</Text>,
+
+                  // Catch-all for stray HTML containers the rehype plugin
+                  // may leave or that raw markdown HTML can produce.
+                  div: ({ children }) => (
+                    <YStack>{normalizeMarkdownViewChildren(children, 'div')}</YStack>
+                  ),
+                  span: ({ children }) => <Text>{children}</Text>,
                 }}
               >
                 {updateContent}
