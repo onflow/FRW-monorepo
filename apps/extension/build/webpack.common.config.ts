@@ -208,6 +208,13 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
       alias: {
         // Map RN imports to RN Web on extension
         'react-native': 'react-native-web',
+        // Stub out react-native internal paths used by react-native-svg's Fabric
+        // components — these are not available in react-native-web and are never
+        // rendered in the extension (SVG uses the web path at runtime).
+        'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(
+          __dirname,
+          'stubs/codegenNativeComponent.js'
+        ),
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
