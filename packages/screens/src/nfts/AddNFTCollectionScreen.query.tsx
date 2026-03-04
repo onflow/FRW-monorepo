@@ -1,6 +1,6 @@
 import type { NFTCollection } from '@onflow/frw-api';
 import { bridge } from '@onflow/frw-context';
-import { CheckCircleFill, Plus, VerifiedToken } from '@onflow/frw-icons';
+import { CheckCircleFill, Plus } from '@onflow/frw-icons';
 import { tokenQueries, tokenQueryKeys, useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import type { CollectionModel } from '@onflow/frw-types';
 import {
@@ -17,7 +17,6 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -115,17 +114,8 @@ export function AddNFTCollectionScreen({
   );
 
   const handleAddCollection = useCallback((flowIdentifier: string | undefined) => {
-    logger.info(
-      '[AddNFTCollectionScreen] handleAddCollection called, flowIdentifier:',
-      flowIdentifier
-    );
-    if (!flowIdentifier) {
-      logger.warn('[AddNFTCollectionScreen] flowIdentifier is undefined, aborting');
-      return;
-    }
-    logger.info('[AddNFTCollectionScreen] calling bridge.closeRNWithNFT with:', flowIdentifier);
+    if (!flowIdentifier) return;
     bridge.closeRNWithNFT(flowIdentifier);
-    logger.info('[AddNFTCollectionScreen] bridge.closeRNWithNFT called');
   }, []);
 
   const renderRow = useCallback(
@@ -150,12 +140,9 @@ export function AddNFTCollectionScreen({
               size={44}
             />
             <YStack flex={1} gap="$0.5">
-              <XStack items="center" gap="$1.5">
-                <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1} shrink={1}>
-                  {item.name}
-                </Text>
-                <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />
-              </XStack>
+              <Text fontSize={15} fontWeight="600" color="$text1" numberOfLines={1}>
+                {item.name}
+              </Text>
               <Text fontSize={13} color="$text2" numberOfLines={1}>
                 {item.contractName}
               </Text>
@@ -171,14 +158,7 @@ export function AddNFTCollectionScreen({
                 borderColor="$primary"
                 items="center"
                 justify="center"
-                onPress={() => {
-                  logger.info(
-                    '[AddNFTCollectionScreen] + button pressed for:',
-                    item.name,
-                    item.flowIdentifier
-                  );
-                  handleAddCollection(item.flowIdentifier);
-                }}
+                onPress={() => handleAddCollection(item.flowIdentifier)}
                 pressStyle={{ opacity: 0.7 }}
                 cursor="pointer"
               >
@@ -206,7 +186,6 @@ export function AddNFTCollectionScreen({
       <YStack flex={1}>
         <ClaimBanner
           title={t('addNFTCollection.claimBannerTitle', 'Claim received NFTs')}
-          count={3}
           onPress={onClaimPress}
         />
 
