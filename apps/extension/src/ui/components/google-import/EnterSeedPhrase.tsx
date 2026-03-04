@@ -74,10 +74,10 @@ const EnterSeedPhrase: React.FC<EnterSeedPhraseProps> = ({
 
       const [accountsGoogle, accountsEntered] = await Promise.all([
         usewallet
-          .fetchAccountsByPublicKeyRawForDebug(pubKeyGooglePrimary, 'mainnet')
+          .fetchAccountsByPublicKeyRaw(pubKeyGooglePrimary, 'mainnet')
           .catch(() => [] as PublicKeyAccount[]),
         usewallet
-          .fetchAccountsByPublicKeyRawForDebug(pubKeyEnteredPrimary, 'mainnet')
+          .fetchAccountsByPublicKeyRaw(pubKeyEnteredPrimary, 'mainnet')
           .catch(() => [] as PublicKeyAccount[]),
       ]);
 

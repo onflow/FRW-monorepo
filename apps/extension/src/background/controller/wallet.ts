@@ -680,12 +680,22 @@ export class WalletController extends BaseController {
     );
   };
 
-  /** Debug only: key-indexer lookup without weight >= 1000 filter. */
+  /** Key-indexer lookup without weight >= 1000 filter. */
+  fetchAccountsByPublicKeyRaw = async (
+    publicKey: string,
+    network: 'mainnet' | 'testnet' = 'mainnet'
+  ) => {
+    return await accountManagementService.fetchAccountsByPublicKeyRaw(publicKey, network);
+  };
+
+  /**
+   * @deprecated Use fetchAccountsByPublicKeyRaw instead.
+   */
   fetchAccountsByPublicKeyRawForDebug = async (
     publicKey: string,
     network: 'mainnet' | 'testnet' = 'mainnet'
   ) => {
-    return await accountManagementService.fetchAccountsByPublicKeyRawForDebug(publicKey, network);
+    return await this.fetchAccountsByPublicKeyRaw(publicKey, network);
   };
 
   /**

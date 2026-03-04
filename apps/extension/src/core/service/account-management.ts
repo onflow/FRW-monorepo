@@ -1183,14 +1183,21 @@ export class AccountManagement {
   }
 
   /**
-   * Debug helper: query key-indexer without filtering out weight < 1000 keys.
+   * Query key-indexer without filtering out weight < 1000 keys.
    * (Some accounts use two keys with weight 500 each.)
+   */
+  async fetchAccountsByPublicKeyRaw(publicKey: string, network: 'mainnet' | 'testnet' = 'mainnet') {
+    return await fetchAccountsByPublicKeyRaw(publicKey, network);
+  }
+
+  /**
+   * @deprecated Use fetchAccountsByPublicKeyRaw instead.
    */
   async fetchAccountsByPublicKeyRawForDebug(
     publicKey: string,
     network: 'mainnet' | 'testnet' = 'mainnet'
   ) {
-    return await fetchAccountsByPublicKeyRaw(publicKey, network);
+    return await this.fetchAccountsByPublicKeyRaw(publicKey, network);
   }
 
   async findAddressWithPrivateKey(pk: string, address: string) {
