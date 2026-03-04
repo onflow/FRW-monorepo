@@ -13,6 +13,7 @@ import { logger } from '@onflow/frw-utils';
 import { getFlowTokenVault } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
+
 // Balance data interface
 interface BalanceData {
   balance: string;
@@ -54,12 +55,6 @@ export const tokenQueryKeys = {
     ] as const,
   catalog: (network: string = 'mainnet', chainType: string = 'flow') =>
     [...tokenQueryKeys.all, 'catalog', network, chainType] as const,
-  inboxData: (address: string, network: string) => [
-    ...tokenQueryKeys.all,
-    'inbox',
-    address,
-    network,
-  ],
 };
 
 // Token Store State - Minimal UI state, queries handle data
@@ -461,39 +456,6 @@ export const tokenQueries = {
     } catch (error) {
       logger.error('[TokenQuery] Error fetching token catalog:', error);
       return [];
-    }
-  },
-
-  // Fetch unclaimed inbox assets (LostAndFound) for an address
-  fetchInboxData: async (address: string, network: string = 'mainnet'): Promise<InboxData> => {
-    if (!address) {
-      return { fts: [], nfts: [], totalCount: 0 };
-    }
-
-    try {
-      const [fts, nfts] = await Promise.all([
-        cadence.queryUnclaimedFts(address),
-        cadence.queryUnclaimedNfts(address),
-      ]);
-
-      const ftList = Array.isArray(fts) ? fts.filter(Boolean) : [];
-      const nftList = Array.isArray(nfts) ? nfts.filter(Boolean) : [];
-
-      logger.debug('[TokenQuery] Fetched inbox data:', {
-        address,
-        network,
-        ftCount: ftList.length,
-        nftCount: nftList.length,
-      });
-
-      return {
-        fts: ftList,
-        nfts: nftList,
-        totalCount: ftList.length + nftList.length,
-      };
-    } catch (error: any) {
-      logger.error('[TokenQuery] Error fetching inbox data:', error);
-      throw error;
     }
   },
 

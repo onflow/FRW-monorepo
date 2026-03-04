@@ -313,6 +313,10 @@ class PlatformImpl implements PlatformSpec {
     NativeFRWBridge.closeRN(id ?? null);
   }
 
+  closeRNWithNFT(id?: string | null): void {
+    NativeFRWBridge.closeRNWithNFT(id ?? null);
+  }
+
   getWalletProfiles(): Promise<WalletProfilesResponse> {
     return NativeFRWBridge.getWalletProfiles();
   }

@@ -11,6 +11,16 @@ export interface ClaimReceiver {
   type?: 'main' | 'child' | 'evm' | 'eoa';
 }
 
+/** Alias kept for navigation param types */
+export type ClaimSender = ClaimReceiver;
+
+export interface ClaimNFTItem {
+  id: string;
+  name: string;
+  image: string;
+  thumbnail?: string;
+}
+
 export interface ClaimItem {
   id: string;
   type: 'token' | 'nft';
@@ -26,6 +36,10 @@ export interface ClaimItem {
   senderIndex: number;
   isVerified?: boolean;
   contractAddress?: string;
+  /** NFT-specific fields */
+  description?: string;
+  website?: string;
+  nftItems?: ClaimNFTItem[];
 }
 
 export interface ClaimSender {

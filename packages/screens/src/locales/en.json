@@ -568,7 +568,7 @@
       "reject": "Reject"
     },
     "drawer": {
-      "title": "Claim asset",
+      "title": "Claim assets",
       "token": "Token",
       "from": "From",
       "cta": "Claim",
@@ -579,5 +579,17 @@
     "claimBannerTitle": "Claim received tokens",
     "searchPlaceholder": "Search Token",
     "verifiedOnly": "Only show verified tokens"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "Claim received NFTs",
+    "searchPlaceholder": "Search NFT Collection"
+  },
+  "claimNFTDetail": {
+    "website": "Website",
+    "items": "Items",
+    "about": "About",
+    "claimButton": "Claim assets",
+    "empty": "No NFTs",
+    "warningText": "By accepting this NFT collection you will automatically accept future deposits of it as well"
   }
 }

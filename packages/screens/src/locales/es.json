@@ -527,5 +527,17 @@
     "claimBannerTitle": "Reclamar tokens recibidos",
     "searchPlaceholder": "Buscar token",
     "verifiedOnly": "Mostrar solo tokens verificados"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "Reclamar NFTs recibidos",
+    "searchPlaceholder": "Buscar colección de NFT"
+  },
+  "claimNFTDetail": {
+    "website": "Sitio web",
+    "items": "Elementos",
+    "about": "Acerca de",
+    "claimButton": "Reclamar activos",
+    "empty": "Sin NFTs",
+    "warningText": "Al aceptar esta colección de NFT, aceptarás automáticamente futuros depósitos de la misma"
   }
 }
