@@ -22,6 +22,13 @@ interface BalanceData {
   lastUpdated: number;
 }
 
+// Inbox (unclaimed LostAndFound assets) data interface
+export interface InboxData {
+  fts: any[];
+  nfts: any[];
+  totalCount: number;
+}
+
 // Query Keys Factory - Using optimized domain structure
 export const tokenQueryKeys = {
   all: [FlatQueryDomain.TOKENS] as const, // Uses FINANCIAL domain
@@ -47,6 +54,12 @@ export const tokenQueryKeys = {
     ] as const,
   catalog: (network: string = 'mainnet', chainType: string = 'flow') =>
     [...tokenQueryKeys.all, 'catalog', network, chainType] as const,
+  inboxData: (address: string, network: string) => [
+    ...tokenQueryKeys.all,
+    'inbox',
+    address,
+    network,
+  ],
 };
 
 // Token Store State - Minimal UI state, queries handle data
@@ -451,6 +464,39 @@ export const tokenQueries = {
     }
   },
 
+  // Fetch unclaimed inbox assets (LostAndFound) for an address
+  fetchInboxData: async (address: string, network: string = 'mainnet'): Promise<InboxData> => {
+    if (!address) {
+      return { fts: [], nfts: [], totalCount: 0 };
+    }
+
+    try {
+      const [fts, nfts] = await Promise.all([
+        cadence.queryUnclaimedFts(address),
+        cadence.queryUnclaimedNfts(address),
+      ]);
+
+      const ftList = Array.isArray(fts) ? fts.filter(Boolean) : [];
+      const nftList = Array.isArray(nfts) ? nfts.filter(Boolean) : [];
+
+      logger.debug('[TokenQuery] Fetched inbox data:', {
+        address,
+        network,
+        ftCount: ftList.length,
+        nftCount: nftList.length,
+      });
+
+      return {
+        fts: ftList,
+        nfts: nftList,
+        totalCount: ftList.length + nftList.length,
+      };
+    } catch (error: any) {
+      logger.error('[TokenQuery] Error fetching inbox data:', error);
+      throw error;
+    }
+  },
+
   // Batch fetch NFT counts for multiple addresses
   fetchBatchNFTCounts: async (
     addressList: string[],
@@ -506,6 +552,7 @@ interface TokenStoreActions {
     network?: string,
     signal?: AbortSignal
   ) => Promise<NFTModel[]>;
+  fetchInboxData: (address: string, network?: string) => Promise<InboxData>;
 
   // Batch operations
   fetchBatchFlowBalances: (addressList: string[]) => Promise<Array<[string, string]>>;
@@ -514,6 +561,7 @@ interface TokenStoreActions {
   invalidateTokens: (address: string, network?: string) => void;
   invalidateBalance: (address: string, network?: string) => void;
   invalidateNFTCollection: (address: string, collection: CollectionModel, network?: string) => void;
+  invalidateInbox: (address: string, network?: string) => void;
   invalidateAll: (address?: string) => void;
 
   // Getters with query data
@@ -525,6 +573,7 @@ interface TokenStoreActions {
     network?: string
   ) => NFTModel[] | undefined;
   getBalanceForAddress: (address: string, network?: string) => BalanceData | undefined;
+  getInboxData: (address: string, network?: string) => InboxData | undefined;
 
   // Loading states
   isTokensLoading: (address: string, network?: string) => boolean;
@@ -617,6 +666,15 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
     });
   },
 
+  // Fetch inbox (unclaimed LostAndFound) data
+  fetchInboxData: async (address: string, network: string = 'mainnet'): Promise<InboxData> => {
+    return await queryClient.fetchQuery({
+      queryKey: tokenQueryKeys.inboxData(address, network),
+      queryFn: () => tokenQueries.fetchInboxData(address, network),
+      staleTime: 60 * 1000, // 1 minute — inbox data doesn't change frequently
+    });
+  },
+
   // Batch fetch Flow balances
   fetchBatchFlowBalances: async (addressList: string[]): Promise<Array<[string, string]>> => {
     return await tokenQueries.fetchBatchFlowBalances(addressList);
@@ -642,6 +700,12 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
   ): void => {
     queryClient.invalidateQueries({
       queryKey: tokenQueryKeys.nftCollection(address, collection, network),
+    });
+  },
+
+  invalidateInbox: (address: string, network: string = 'mainnet'): void => {
+    queryClient.invalidateQueries({
+      queryKey: tokenQueryKeys.inboxData(address, network),
     });
   },
 
@@ -681,6 +745,10 @@ export const useTokenStore = create<TokenStore>((_set, _get) => ({
 
   getBalanceForAddress: (address: string, network: string = 'mainnet'): BalanceData | undefined => {
     return queryClient.getQueryData<BalanceData>(tokenQueryKeys.balance(address, network));
+  },
+
+  getInboxData: (address: string, network: string = 'mainnet'): InboxData | undefined => {
+    return queryClient.getQueryData<InboxData>(tokenQueryKeys.inboxData(address, network));
   },
 
   // Loading states

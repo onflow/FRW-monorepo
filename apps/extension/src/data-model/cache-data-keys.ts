@@ -327,6 +327,16 @@ export const cadenceTokenInfoKey = (network: string, address: string, currency: 
 export const cadenceTokenInfoRefreshRegex = refreshKey(cadenceTokenInfoKey);
 export type CadenceTokenInfoStore = CadenceTokenInfo[];
 
+// Inbox (unclaimed LostAndFound assets)
+export const inboxDataKey = (network: string, address: string) =>
+  `inbox-data-${network}-${address}`;
+export const inboxDataRefreshRegex = refreshKey(inboxDataKey);
+export interface InboxDataStore {
+  fts: any[];
+  nfts: any[];
+  totalCount: number;
+}
+
 export const childAccountFtKey = (network: string, parentAddress: string, childAccount: string) =>
   `child-account-ft-${network}-${parentAddress}-${childAccount}`;
 

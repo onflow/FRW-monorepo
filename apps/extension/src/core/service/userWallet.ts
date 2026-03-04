@@ -15,6 +15,7 @@ import {
   accountBalanceKey,
   accountBalanceRefreshRegex,
   coinListKey,
+  inboxDataKey,
   evmNftCollectionsAndIdsKey,
   mainAccountsKey,
   mainAccountsRefreshRegex,
@@ -1089,6 +1090,8 @@ class UserWallet {
 
       // Refresh the account balance after sealed status - just to be sure
       triggerRefresh(coinListKey(network, address, currency));
+      // Refresh inbox data (unclaimed assets may have changed)
+      triggerRefresh(inboxDataKey(network, address));
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
       let errorMessage = 'unknown error';

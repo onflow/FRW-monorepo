@@ -11,11 +11,11 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { EarnButton, VaultTag } from '@onflow/frw-ui';
-import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { type ChildAccountFtStore } from '@/data-model';
 import { type ActiveAccountType, type CoinItem } from '@/shared/types';
+import inbox from '@/ui/assets/svg/inbox.svg';
 import plus from '@/ui/assets/svg/plus.svg';
 import slider from '@/ui/assets/svg/slider.svg';
 import VerifiedIcon from '@/ui/assets/svg/verfied-check.svg';
@@ -23,21 +23,25 @@ import { CurrencyValue } from '@/ui/components/TokenLists/CurrencyValue';
 import TokenAvatar from '@/ui/components/TokenLists/TokenAvatar';
 import { TokenBalance } from '@/ui/components/TokenLists/TokenBalance';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useInboxData } from '@/ui/hooks/use-coin-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useCoins } from '@/ui/hooks/useCoinHook';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 const ActionButtons = ({
   managePath,
   createPath,
   showEarn,
+  claimCount,
 }: {
   managePath: string;
   createPath: string;
   showEarn?: boolean;
+  claimCount?: number;
 }) => {
   const navigate = useNavigate();
-
+  const showInbox = claimCount !== undefined && claimCount > 0;
   return (
     <Box sx={{ display: 'flex', px: '12px', pt: '4px', gap: '12px' }}>
       <Box sx={{ flexGrow: 1 }} />
@@ -76,6 +80,54 @@ const ActionButtons = ({
       >
         <img src={plus} alt="Add" style={{ width: '20px', height: '20px' }} />
       </IconButton>
+      {showInbox && (
+        <Box sx={{ position: 'relative' }}>
+          <IconButton
+            onClick={() => navigate('/dashboard/claimtokens')}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px',
+              flexShrink: 0,
+              borderRadius: '100px',
+              background: 'rgba(255, 255, 255, 0.10)',
+              '&:hover': {
+                opacity: 0.8,
+              },
+            }}
+          >
+            <img src={inbox} alt="Inbox" style={{ width: '20px', height: '20px' }} />
+          </IconButton>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              minWidth: '16px',
+              height: '16px',
+              borderRadius: '8px',
+              backgroundColor: '#00B877',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              px: '4px',
+              pointerEvents: 'none',
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: '10px',
+                fontWeight: 600,
+                color: '#FFFFFF',
+                lineHeight: 1,
+              }}
+            >
+              {claimCount! > 99 ? '99+' : claimCount}
+            </Typography>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };
@@ -90,13 +142,17 @@ const CoinList = ({
   activeAccountType: ActiveAccountType;
 }) => {
   // const wallet = useWallet();
-  const { noAddress } = useProfiles();
+  const { noAddress, currentWallet } = useProfiles();
   const { coins, tokenFilter } = useCoins();
+  const { network } = useNetwork();
   const currency = useCurrency();
   const currencyCode = currency?.code;
   const currencySymbol = currency?.symbol;
   const isVaultEnabled = useFeatureFlag('vault_entrance');
   const navigate = useNavigate();
+  const inboxData = useInboxData(network, currentWallet?.address);
+
+  const inboxCount = inboxData?.totalCount ?? 0;
 
   const isLoading = coins === undefined;
 
@@ -275,11 +331,14 @@ const CoinList = ({
   return (
     <>
       {activeAccountType === 'main' && (
-        <ActionButtons
-          managePath="/dashboard/managetoken"
-          createPath="/dashboard/tokenList"
-          showEarn={isVaultEnabled}
-        />
+        <>
+          <ActionButtons
+            managePath="/dashboard/managetoken"
+            createPath="/dashboard/tokenList"
+            showEarn={isVaultEnabled}
+            claimCount={inboxCount}
+          />
+        </>
       )}
       {activeAccountType === 'evm' && (
         <ActionButtons

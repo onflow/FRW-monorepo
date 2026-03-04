@@ -1,3 +1,5 @@
+import { configureFCL, CadenceService } from '@onflow/frw-cadence';
+
 import {
   cadenceTokenInfoKey,
   cadenceTokenInfoRefreshRegex,
@@ -7,6 +9,9 @@ import {
   coinListRefreshRegex,
   evmTokenInfoKey,
   evmTokenInfoRefreshRegex,
+  inboxDataKey,
+  inboxDataRefreshRegex,
+  type InboxDataStore,
   supportedCurrenciesKey,
   supportedCurrenciesRefreshRegex,
   type ChildAccountFtStore,
@@ -18,6 +23,8 @@ import {
 import { type CadenceTokenInfo, type EvmTokenInfo, type ExtendedTokenInfo } from '@/shared/types';
 import { isValidEthereumAddress, isValidFlowAddress, consoleError } from '@/shared/utils';
 
+const cadenceService = new CadenceService();
+configureFCL('mainnet');
 import openapiService from './openapi';
 
 class CoinList {
@@ -27,12 +34,15 @@ class CoinList {
     registerRefreshListener(cadenceTokenInfoRefreshRegex, this.loadCadenceTokenInfo);
     registerRefreshListener(supportedCurrenciesRefreshRegex, this.loadSupportedCurrencies);
     registerRefreshListener(childAccountFtRefreshRegex, this.loadChildAccountFt);
+    registerRefreshListener(inboxDataRefreshRegex, this.loadInboxData);
   };
 
   clear = async () => {};
 
   initCoinList = async (network: string, address: string, currency: string = 'USD') => {
     const coinList = await this.loadCoinList(network, address, currency);
+    // Load inbox data alongside coinList (fire-and-forget)
+    this.loadInboxData(network, address).catch(() => {});
     if (!coinList || coinList.length === 0) {
       return null;
     }
@@ -268,6 +278,34 @@ class CoinList {
       return this.loadChildAccountFt(network, parentAddress, childAccount);
     }
     return childAccountFt;
+  };
+
+  // Inbox (unclaimed LostAndFound assets)
+  loadInboxData = async (network: string, address: string): Promise<InboxDataStore> => {
+    // const [fts, nfts] = await Promise.all([
+    //   cadence.queryUnclaimedFts(address),
+    //   cadence.queryUnclaimedNfts(address),
+    // ]);
+    const fts = await cadenceService.queryUnclaimedFts(address);
+    const nfts = await cadenceService.queryUnclaimedNfts(address);
+
+    const ftList = Array.isArray(fts) ? fts.filter(Boolean) : [];
+    const nftList = Array.isArray(nfts) ? nfts.filter(Boolean) : [];
+    const data: InboxDataStore = {
+      fts: ftList,
+      nfts: nftList,
+      totalCount: ftList.length + nftList.length,
+    };
+    setCachedData(inboxDataKey(network, address), data);
+    return data;
+  };
+
+  getInboxData = async (network: string, address: string) => {
+    const cached = await getValidData<InboxDataStore>(inboxDataKey(network, address));
+    if (!cached) {
+      return this.loadInboxData(network, address);
+    }
+    return cached;
   };
 }
 

@@ -7,7 +7,7 @@ import PrivateRoute from '@/ui/components/PrivateRoute';
 import AddCustomEvmToken from '@/ui/components/TokenLists/AddCustomEvmToken';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 
-import ClaimTokensScreenView from './ClaimTokensScreen';
+import ClaimTokensScreenView from './ClaimTokensScreenView';
 import Dashboard from './Dashboard';
 import Deposit from './Deposit';
 import Enable from './Enable';

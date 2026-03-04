@@ -752,6 +752,11 @@ export class WalletController extends BaseController {
     await coinListService.initCoinList(network, address, currency);
   };
 
+  getInboxData = async (address: string) => {
+    const network = await this.getNetwork();
+    return await coinListService.getInboxData(network, address);
+  };
+
   reqeustEvmNft = async () => {
     const address = await this.getEvmAddress();
     const network = await this.getNetwork();

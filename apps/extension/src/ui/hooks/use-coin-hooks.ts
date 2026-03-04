@@ -1,5 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
+
 import {
   type ChildAccountFtStore,
+  type InboxDataStore,
   childAccountFtKey,
   coinListKey,
   tokenFilterKey,
@@ -16,6 +19,7 @@ import {
 } from '@/shared/types';
 
 import { useCachedData, useUserData } from './use-data';
+import { useWallet } from './use-wallet';
 
 export const useCoinList = (
   network: string | undefined | null,
@@ -65,4 +69,30 @@ export const refreshEvmToken = (network: string) => {
 
 export const useEvmCustomTokens = (network: string) => {
   return useUserData<EvmCustomTokenInfo[]>(evmCustomTokenKey(network));
+};
+
+export const useInboxData = (
+  network: string | undefined | null,
+  address: string | undefined | null
+) => {
+  const wallet = useWallet();
+  const [data, setData] = useState<InboxDataStore | undefined>(undefined);
+  const fetchedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!address || !network) return;
+    const cacheKey = `${network}-${address}`;
+    if (cacheKey === fetchedRef.current) return;
+    fetchedRef.current = cacheKey;
+
+    let cancelled = false;
+    wallet.getInboxData(address).then((result: InboxDataStore) => {
+      if (!cancelled) setData(result);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [wallet, network, address]);
+
+  return data;
 };

@@ -15,6 +15,7 @@ export {
   tokenQueries,
   enableToken,
   useTokenStore as useTokenQueryStore,
+  type InboxData,
 } from './tokenStore.query';
 export {
   addressBookQueryKeys,
