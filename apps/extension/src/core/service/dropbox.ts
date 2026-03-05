@@ -1,5 +1,4 @@
-import aesjs from 'aes-js';
-import * as bip39 from 'bip39';
+import { MultiBackupService, type MultiBackupDriveItem } from '@onflow/frw-services';
 
 import { seedWithPathAndPhrase2PublicPrivateKey } from '@/core/utils/modules/publicPrivateKey';
 import {
@@ -8,8 +7,6 @@ import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
 } from '@/shared/constant';
 import { consoleWarn, getErrorMessage } from '@/shared/utils';
-
-import type { MultiBackupStoreItem } from './googleDrive';
 
 type DropboxToken = {
   accessToken: string;
@@ -56,31 +53,11 @@ function randomPkceVerifier(byteLength = 32): string {
   return base64UrlEncodeBytes(bytes);
 }
 
-/** First 16 chars of SHA256(password) hex as UTF-8 bytes (16 bytes). Matches iOS toPassword() for IV. */
-async function toPasswordIOS(password: string): Promise<Uint8Array> {
-  const input = new TextEncoder().encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', input);
-  const hashHex = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  const ivString = hashHex.slice(0, 16);
-  return new TextEncoder().encode(ivString);
-}
-
-/** First 16 chars of SHA256(password) hex as string (matches iOS toPassword()). */
-async function toPasswordString(password: string): Promise<string> {
-  const input = new TextEncoder().encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', input);
-  const hashHex = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  return hashHex.slice(0, 16);
-}
-
 class DropboxService {
   appKey?: string;
   /** Same key used for iOS multi-backup file-level encryption (GD_AES_KEY). */
   backupAESKey?: string;
+  multiBackupService: MultiBackupService | null = null;
 
   token: DropboxToken | null = null;
 
@@ -106,14 +83,46 @@ class DropboxService {
     if (!this.token?.accessToken) throw new Error('Dropbox not authorized');
   };
 
+  private getMultiBackupService = (): MultiBackupService => {
+    if (!this.backupAESKey) {
+      throw new Error('Dropbox multi-backup failed, missing backupAESKey');
+    }
+
+    if (!this.multiBackupService) {
+      this.multiBackupService = new MultiBackupService({
+        appBackupKey: this.backupAESKey,
+        mnemonicMetadataMatcher: async (mnemonic: string, item: MultiBackupDriveItem) => {
+          const normalizeHex = (value?: string) => (value || '').replace(/^0x/i, '').toLowerCase();
+          const expectedPublicKey = normalizeHex(item.publicKey);
+          const expectedSignAlgo = item.signAlgo;
+
+          // If the backup item didn't carry key metadata, fall back to "valid mnemonic" only.
+          if (!expectedPublicKey || !expectedSignAlgo) return true;
+
+          // Mobile multi-backup uses Flow derivation path with empty passphrase.
+          const tuple = await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, FLOW_BIP44_PATH, '');
+          const derived =
+            expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_P256
+              ? tuple.P256.pubK
+              : expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1
+                ? tuple.SECP256K1.pubK
+                : '';
+
+          if (!derived) return false;
+          return normalizeHex(derived) === expectedPublicKey;
+        },
+      });
+    }
+
+    return this.multiBackupService;
+  };
+
   /**
    * Multi-backup file name is the same as iOS: "outblock_multi_backup"
    * File content is UTF-8 hex string (sometimes wrapped in quotes), AES-CBC encrypted JSON list.
    */
   loadBackupMultiBackup = async (fileName: string): Promise<DriveItemLike[]> => {
-    if (!this.backupAESKey) {
-      throw new Error('Dropbox multi-backup load failed, missing backupAESKey');
-    }
+    const multiBackupService = this.getMultiBackupService();
     await this.loginCloud(true);
 
     // iOS reads from "/" + backupFileName, and also has a fallback "/appDataFolder/<name>".
@@ -139,30 +148,12 @@ class DropboxService {
       return [];
     }
 
-    const fixedHexString = rawText.trim().replace(/^"+|"+$/g, '');
-    if (!fixedHexString) {
+    if (!rawText.trim()) {
       this.fileList = [];
       return [];
     }
 
-    const ivIOS = await toPasswordIOS(this.backupAESKey);
-    const decryptedJson = this.decrypt(fixedHexString, this.backupAESKey, ivIOS);
-    const parsed = JSON.parse(decryptedJson) as MultiBackupStoreItem[];
-
-    const mapped: DriveItemLike[] = (parsed ?? []).map((item) => ({
-      username: item.userName,
-      uid: item.userId ?? null,
-      data: item.data,
-      version: '1.0',
-      time: item.updatedTime ? String(item.updatedTime) : null,
-      code: item.code,
-      publicKey: item.publicKey,
-      address: item.address,
-      keyIndex: item.keyIndex,
-      signAlgo: item.signAlgo,
-      hashAlgo: item.hashAlgo,
-    }));
-
+    const mapped = await multiBackupService.decodeMultiBackupPayload(rawText);
     this.fileList = mapped;
     return mapped;
   };
@@ -179,83 +170,12 @@ class DropboxService {
     uid: string | null = null,
     passwordOverride?: string
   ): Promise<string | null> => {
-    if (!this.backupAESKey) {
-      throw new Error('Restore Dropbox multi-backup failed, missing backupAESKey');
-    }
+    const multiBackupService = this.getMultiBackupService();
     const files = await this.fileList;
     if (!files || files.length === 0) {
       return null;
     }
-    let result: DriveItemLike | undefined;
-    if (uid) {
-      result = files.find((file) => file.uid === uid);
-    }
-    if (!result) {
-      result = files.find((file) => file.username === username);
-    }
-    if (!result) {
-      return null;
-    }
-
-    const normalizeHex = (v?: string) => (v || '').replace(/^0x/i, '').toLowerCase();
-    const expectedPublicKey = normalizeHex(result.publicKey);
-    const expectedSignAlgo = result.signAlgo;
-
-    const matchesExpectedKey = async (mnemonic: string): Promise<boolean> => {
-      // If the backup item didn't carry key metadata, fall back to "valid mnemonic" only.
-      if (!expectedPublicKey || !expectedSignAlgo) return true;
-
-      // Mobile multi-backup uses Flow derivation path with empty passphrase.
-      const tuple = await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, FLOW_BIP44_PATH, '');
-      const derived =
-        expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_P256
-          ? tuple.P256.pubK
-          : expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1
-            ? tuple.SECP256K1.pubK
-            : '';
-      if (!derived) return false;
-      return normalizeHex(derived) === expectedPublicKey;
-    };
-
-    const tryDecrypt = async (password: string) => {
-      const mnemonic = await this.decryptMnemonicIOS(result.data, password);
-      if (!bip39.validateMnemonic(mnemonic)) return null;
-      return (await matchesExpectedKey(mnemonic)) ? mnemonic : null;
-    };
-
-    const candidates: string[] = [];
-    const push = (v?: string) => {
-      if (!v) return;
-      if (!candidates.includes(v)) candidates.push(v);
-    };
-
-    // 1) User-entered password first (backup key or PIN)
-    push(passwordOverride);
-    if (passwordOverride) {
-      push(await toPasswordString(passwordOverride));
-    }
-
-    // 2) App backup key next (common case)
-    push(this.backupAESKey);
-
-    // 3) If the item is PIN-protected, try item.code fallbacks.
-    if (result.code) {
-      push(await toPasswordString(result.code));
-      push(result.code);
-    }
-
-    for (const candidate of candidates) {
-      try {
-        const ok = await tryDecrypt(candidate);
-        if (ok) return ok;
-      } catch {
-        continue;
-      }
-    }
-
-    throw new Error(
-      'Failed to decrypt Multi Backup mnemonic from Dropbox. Check backup password/PIN or GD_AES_KEY.'
-    );
+    return await multiBackupService.restoreMnemonic(files, { username, uid, passwordOverride });
   };
 
   // ---- OAuth + Dropbox API ----
@@ -435,26 +355,6 @@ class DropboxService {
     } catch (e) {
       consoleWarn('Dropbox token storage clear failed', getErrorMessage(e));
     }
-  }
-
-  // ---- Crypto helpers (same as googleDrive service) ----
-
-  private pad_array(arr: Uint8Array, len = 16, fill = 0) {
-    return new Uint8Array([...arr, ...Array(16).fill(fill)]).slice(0, len);
-  }
-
-  private decrypt(encryptedHex: string, password: string, iv: Uint8Array): string {
-    const key = this.pad_array(aesjs.utils.utf8.toBytes(password));
-    const encryptedBytes = aesjs.utils.hex.toBytes(encryptedHex);
-    const aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
-    const decryptedBytes = aesjs.padding.pkcs7.strip(aesCbc.decrypt(encryptedBytes));
-    const decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
-    return decryptedText.trim();
-  }
-
-  private async decryptMnemonicIOS(encryptedHex: string, password: string): Promise<string> {
-    const ivIOS = await toPasswordIOS(password);
-    return this.decrypt(encryptedHex, password, ivIOS);
   }
 }
 

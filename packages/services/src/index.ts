@@ -10,6 +10,17 @@ export {
   validateKeystoreStructure,
 } from './KeystoreService';
 export { NFTService } from './NFTService';
+export {
+  MultiBackupService,
+  parseEncryptedHexPayload,
+  toPasswordIOS,
+  toPasswordString,
+  type MultiBackupDriveItem,
+  type MultiBackupRestoreInput,
+  type MultiBackupServiceConfig,
+  type MultiBackupStoreItem,
+  type MnemonicMetadataMatcher,
+} from './multi-backup';
 export { ProfileService, type CreateFlowAddressResult } from './ProfileService';
 export { RecentRecipientsService } from './RecentRecipientsService';
 export { TokenService } from './TokenService';

@@ -1,3 +1,9 @@
+import {
+  MultiBackupService,
+  parseEncryptedHexPayload,
+  toPasswordIOS,
+  type MultiBackupDriveItem,
+} from '@onflow/frw-services';
 import aesjs from 'aes-js';
 import * as bip39 from 'bip39';
 
@@ -30,48 +36,6 @@ interface DriveItem {
   hashAlgo?: number;
 }
 
-/**
- * iOS MultiBackupManager.StoreItem format (Google Drive multi-backup file).
- * File content is AES-encrypted JSON array of these items; IV = first 16 chars of SHA256(key) hex.
- */
-export interface MultiBackupStoreItem {
-  address: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  publicKey: string;
-  data: string;
-  keyIndex: number;
-  signAlgo: number;
-  hashAlgo: number;
-  weight?: number;
-  updatedTime?: number;
-  deviceInfo?: unknown;
-  code?: string;
-  backupType?: string;
-}
-
-/** First 16 chars of SHA256(password) hex as UTF-8 bytes (16 bytes). Matches iOS toPassword() for IV. */
-async function toPasswordIOS(password: string): Promise<Uint8Array> {
-  const input = new TextEncoder().encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', input);
-  const hashHex = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  const ivString = hashHex.slice(0, 16);
-  return new TextEncoder().encode(ivString);
-}
-
-/** First 16 chars of SHA256(password) hex as string (matches iOS toPassword()). */
-async function toPasswordString(password: string): Promise<string> {
-  const input = new TextEncoder().encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', input);
-  const hashHex = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-  return hashHex.slice(0, 16);
-}
-
 // https://developers.google.com/drive/api/v3/reference/files/list
 class GoogleDriveService {
   baseURL?: string;
@@ -86,6 +50,7 @@ class GoogleDriveService {
   };
   /** Optional. When set, used only for listFilesInDriveRoot (Multi Backup from mobile). */
   getAuthTokenWrapperWithDriveReadonly?: (interactive?: boolean) => Promise<string>;
+  multiBackupService: MultiBackupService | null = null;
 
   fileList: DriveItem[] | null = null;
   fileId: string | null = null;
@@ -173,23 +138,41 @@ class GoogleDriveService {
   };
 
   parseGoogleText = (encryptedData: string) => {
-    // Match iOS: trim whitespace and surrounding double quotes (iOS "Compatible extension problem")
-    const trimmed = encryptedData.trim().replace(/^"+|"+$/g, '');
-    let encryptedHex: string;
+    return parseEncryptedHexPayload(encryptedData);
+  };
 
-    try {
-      const sanitizedData = trimmed.replace(/\s+/g, '');
-      const parsedData = JSON.parse(sanitizedData);
-      encryptedHex = parsedData?.hex || parsedData;
-    } catch {
-      const rawHex = trimmed.replace(/\s+/g, '');
-      if (/^[0-9a-fA-F]+$/.test(rawHex)) {
-        encryptedHex = rawHex;
-      } else {
-        throw new Error('Invalid input: not JSON and not a valid hex string');
-      }
+  private getMultiBackupService = (): MultiBackupService => {
+    if (!this.AES_KEY) {
+      throw new Error('Multi-backup failed, missing AES_KEY');
     }
-    return encryptedHex;
+
+    if (!this.multiBackupService) {
+      this.multiBackupService = new MultiBackupService({
+        appBackupKey: this.AES_KEY,
+        mnemonicMetadataMatcher: async (mnemonic: string, item: MultiBackupDriveItem) => {
+          const normalizeHex = (value?: string) => (value || '').replace(/^0x/i, '').toLowerCase();
+          const expectedPublicKey = normalizeHex(item.publicKey);
+          const expectedSignAlgo = item.signAlgo;
+
+          // If the backup item didn't carry key metadata, fall back to "valid mnemonic" only.
+          if (!expectedPublicKey || !expectedSignAlgo) return true;
+
+          // Mobile multi-backup uses Flow derivation path with empty passphrase.
+          const tuple = await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, FLOW_BIP44_PATH, '');
+          const derived =
+            expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_P256
+              ? tuple.P256.pubK
+              : expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1
+                ? tuple.SECP256K1.pubK
+                : '';
+
+          if (!derived) return false;
+          return normalizeHex(derived) === expectedPublicKey;
+        },
+      });
+    }
+
+    return this.multiBackupService;
   };
 
   uploadMnemonicToGoogleDrive = async (
@@ -248,7 +231,6 @@ class GoogleDriveService {
     if (!this.AES_KEY) {
       throw new Error('Load backup failed, missing AES_KEY');
     }
-    const ivIOS = await toPasswordIOS(this.AES_KEY);
     if (backupIdOverride) {
       this.fileId = backupIdOverride;
     } else {
@@ -258,7 +240,7 @@ class GoogleDriveService {
         this.fileId = files.id;
       } else {
         // No file named outblock_multi_backup: try each file in appDataFolder and use the first that decrypts as multi-backup (StoreItem list).
-        const found = await this.tryLoadMultiBackupFromAnyAppDataFile(ivIOS);
+        const found = await this.tryLoadMultiBackupFromAnyAppDataFile();
         if (found) return found;
         this.fileList = [];
         this.fileListIsMultiBackup = true;
@@ -268,20 +250,18 @@ class GoogleDriveService {
     if (!this.fileId) {
       throw new Error('Load backup failed, missing file id');
     }
-    const content = await this.fetchAndDecryptMultiBackup(this.fileId, ivIOS);
+    const content = await this.fetchAndDecryptMultiBackup(this.fileId);
     this.fileList = content;
     this.fileListIsMultiBackup = true;
     return content;
   };
 
   /** Try each file in appDataFolder; return first that decrypts as multi-backup (StoreItem list). */
-  private tryLoadMultiBackupFromAnyAppDataFile = async (
-    ivIOS: Uint8Array
-  ): Promise<DriveItem[] | null> => {
+  private tryLoadMultiBackupFromAnyAppDataFile = async (): Promise<DriveItem[] | null> => {
     const all = await this.listAppDataFilesForDebug();
     for (const f of all) {
       try {
-        const content = await this.fetchAndDecryptMultiBackup(f.id, ivIOS);
+        const content = await this.fetchAndDecryptMultiBackup(f.id);
         if (content.length > 0) {
           this.fileId = f.id;
           this.fileList = content;
@@ -295,41 +275,10 @@ class GoogleDriveService {
     return null;
   };
 
-  private fetchAndDecryptMultiBackup = async (
-    fileId: string,
-    ivIOS: Uint8Array
-  ): Promise<DriveItem[]> => {
-    if (!this.AES_KEY) {
-      throw new Error('Load backup failed, missing AES_KEY');
-    }
+  private fetchAndDecryptMultiBackup = async (fileId: string): Promise<DriveItem[]> => {
+    const multiBackupService = this.getMultiBackupService();
     const text = await this.getFile(fileId);
-    const parsedText = this.parseGoogleText(text);
-    const decodeContent = this.decrypt(parsedText, this.AES_KEY, ivIOS);
-    const rawList: MultiBackupStoreItem[] = JSON.parse(decodeContent);
-    if (!Array.isArray(rawList) || rawList.length === 0) throw new Error('Not multi-backup format');
-    if (
-      (rawList[0].userName === null || rawList[0].userName === undefined) &&
-      (rawList[0] as unknown as { username?: string }).username !== null &&
-      (rawList[0] as unknown as { username?: string }).username !== undefined
-    ) {
-      throw new Error('Legacy backup format');
-    }
-    return rawList.map((item) => ({
-      username: item.userName,
-      uid: item.userId ?? null,
-      data: item.data,
-      version: '1.0',
-      time:
-        item.updatedTime !== null && item.updatedTime !== undefined
-          ? String(item.updatedTime)
-          : null,
-      code: item.code,
-      publicKey: item.publicKey,
-      address: item.address,
-      keyIndex: item.keyIndex,
-      signAlgo: item.signAlgo,
-      hashAlgo: item.hashAlgo,
-    }));
+    return await multiBackupService.decodeMultiBackupPayload(text);
   };
 
   /**
@@ -409,85 +358,12 @@ class GoogleDriveService {
     uid: string | null = null,
     passwordOverride?: string
   ): Promise<string | null> => {
-    if (!this.AES_KEY) {
-      throw new Error('Restore multi-backup failed, missing AES_KEY');
-    }
+    const multiBackupService = this.getMultiBackupService();
     const files = await this.fileList;
     if (!files || files.length === 0) {
       return null;
     }
-    let result: DriveItem | undefined;
-    if (uid) {
-      result = files.find((file) => file.uid === uid);
-    }
-    if (!result) {
-      result = files.find((file) => file.username === username);
-    }
-    if (!result) {
-      return null;
-    }
-
-    const normalizeHex = (v?: string) => (v || '').replace(/^0x/i, '').toLowerCase();
-    const expectedPublicKey = normalizeHex(result.publicKey);
-    const expectedSignAlgo = result.signAlgo;
-
-    const matchesExpectedKey = async (mnemonic: string): Promise<boolean> => {
-      // If the backup item didn't carry key metadata, fall back to "valid mnemonic" only.
-      if (!expectedPublicKey || !expectedSignAlgo) return true;
-
-      // Mobile multi-backup uses Flow derivation path with empty passphrase.
-      const tuple = await seedWithPathAndPhrase2PublicPrivateKey(mnemonic, FLOW_BIP44_PATH, '');
-      const derived =
-        expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_P256
-          ? tuple.P256.pubK
-          : expectedSignAlgo === SIGN_ALGO_NUM_ECDSA_secp256k1
-            ? tuple.SECP256K1.pubK
-            : '';
-      if (!derived) return false;
-      return normalizeHex(derived) === expectedPublicKey;
-    };
-
-    const tryDecrypt = async (password: string) => {
-      const mnemonic = await this.decryptMnemonicIOS(result.data, password);
-      if (!bip39.validateMnemonic(mnemonic)) return null;
-      // Stronger check: ensure the mnemonic matches the StoreItem key metadata.
-      return (await matchesExpectedKey(mnemonic)) ? mnemonic : null;
-    };
-
-    const candidates: string[] = [];
-    const push = (v?: string) => {
-      if (!v) return;
-      if (!candidates.includes(v)) candidates.push(v);
-    };
-
-    // 1) User-entered password first (backup key or PIN)
-    push(passwordOverride);
-    if (passwordOverride) {
-      // If user entered a raw PIN, iOS derives a 16-char key via toPassword().
-      push(await toPasswordString(passwordOverride));
-    }
-
-    // 2) App backup key next (common case)
-    push(this.AES_KEY);
-
-    // 3) If the item is PIN-protected (iOS "needPin"), try item.code fallbacks.
-    if (result.code) {
-      push(await toPasswordString(result.code));
-      push(result.code);
-    }
-
-    for (const candidate of candidates) {
-      try {
-        const ok = await tryDecrypt(candidate);
-        if (ok) return ok;
-      } catch {
-        continue;
-      }
-    }
-
-    throw new Error(
-      'Failed to decrypt Multi Backup mnemonic. Check backup password/PIN or GD_AES_KEY.'
-    );
+    return await multiBackupService.restoreMnemonic(files, { username, uid, passwordOverride });
   };
 
   restoreAccount = async (
