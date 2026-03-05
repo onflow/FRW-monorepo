@@ -314,6 +314,14 @@
         "subtitle": ""
       }
     },
+    "importCloudMultiBackup": {
+      "subtitle": "リカバリーフレーズをバックアップするクラウドプロバイダーを選択",
+      "providers": {
+        "googleDrive": "Google Drive",
+        "iCloud": "iCloud",
+        "dropbox": "Dropbox"
+      }
+    },
     "importOtherMethods": {
       "title": "別の方法から",
       "subtitle": "プロフィールをインポートする方法を選択してください。",

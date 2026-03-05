@@ -407,6 +407,14 @@
         "subtitle": ""
       }
     },
+    "importCloudMultiBackup": {
+      "subtitle": "Выберите облачные сервисы для резервного копирования фразы восстановления",
+      "providers": {
+        "googleDrive": "Google Drive",
+        "iCloud": "iCloud",
+        "dropbox": "Dropbox"
+      }
+    },
     "importOtherMethods": {
       "title": "С другого метода",
       "subtitle": "Выберите способ импорта вашего профиля.",

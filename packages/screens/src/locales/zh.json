@@ -395,6 +395,14 @@
         "subtitle": ""
       }
     },
+    "importCloudMultiBackup": {
+      "subtitle": "选择云服务提供商来备份您的恢复短语",
+      "providers": {
+        "googleDrive": "Google Drive",
+        "iCloud": "iCloud",
+        "dropbox": "Dropbox"
+      }
+    },
     "importOtherMethods": {
       "title": "从其他方式",
       "subtitle": "选择导入个人资料的方式。",

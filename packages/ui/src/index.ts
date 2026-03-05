@@ -111,6 +111,7 @@ export {
   AccountCreationLoadingState,
   OnboardingHeader,
   BackupOptionCard,
+  CloudProviderCard,
   ImportAccountOptionCard,
   ImportOptionCard,
   RecoveryPhraseQuestion,

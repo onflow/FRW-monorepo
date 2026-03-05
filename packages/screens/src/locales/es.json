@@ -314,6 +314,14 @@
         "subtitle": ""
       }
     },
+    "importCloudMultiBackup": {
+      "subtitle": "Selecciona proveedores de nube para respaldar tu frase de recuperación",
+      "providers": {
+        "googleDrive": "Google Drive",
+        "iCloud": "iCloud",
+        "dropbox": "Dropbox"
+      }
+    },
     "importOtherMethods": {
       "title": "Desde otros métodos",
       "subtitle": "Importar perfil usando métodos alternativos",

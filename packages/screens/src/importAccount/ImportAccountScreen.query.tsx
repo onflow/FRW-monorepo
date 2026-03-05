@@ -16,7 +16,7 @@ export function ImportAccountScreen(): React.ReactElement {
 
   const handleCloudBackup = () => {
     logger.info('[ImportAccountScreen] Cloud backup selected');
-    bridge.launchNativeScreen?.(NativeScreenName.MULTI_RESTORE);
+    navigation.navigate('ImportCloudMultiBackup');
   };
 
   const handleRecoveryPhrase = () => {
@@ -46,7 +46,6 @@ export function ImportAccountScreen(): React.ReactElement {
             icon={<Smartphone size={28} color={theme.primary.val} />}
             title={t('onboarding.importAccount.deviceBackup.title')}
             subtitle={t('onboarding.importAccount.deviceBackup.subtitle')}
-            badge="1"
             onPress={handleDeviceBackup}
           />
 
