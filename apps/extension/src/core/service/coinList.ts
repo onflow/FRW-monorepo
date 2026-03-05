@@ -11,7 +11,7 @@ import {
   evmTokenInfoRefreshRegex,
   inboxDataKey,
   inboxDataRefreshRegex,
-  type InboxDataStore,
+  type InboxAddressData,
   supportedCurrenciesKey,
   supportedCurrenciesRefreshRegex,
   type ChildAccountFtStore,
@@ -280,28 +280,20 @@ class CoinList {
     return childAccountFt;
   };
 
-  // Inbox (unclaimed LostAndFound assets)
-  loadInboxData = async (network: string, address: string): Promise<InboxDataStore> => {
-    // const [fts, nfts] = await Promise.all([
-    //   cadence.queryUnclaimedFts(address),
-    //   cadence.queryUnclaimedNfts(address),
-    // ]);
+  // Inbox (unclaimed LostAndFound assets) — per address
+  loadInboxData = async (network: string, address: string): Promise<InboxAddressData> => {
     const fts = await cadenceService.queryUnclaimedFts(address);
     const nfts = await cadenceService.queryUnclaimedNfts(address);
 
     const ftList = Array.isArray(fts) ? fts.filter(Boolean) : [];
     const nftList = Array.isArray(nfts) ? nfts.filter(Boolean) : [];
-    const data: InboxDataStore = {
-      fts: ftList,
-      nfts: nftList,
-      totalCount: ftList.length + nftList.length,
-    };
+    const data: InboxAddressData = { fts: ftList, nfts: nftList };
     setCachedData(inboxDataKey(network, address), data);
     return data;
   };
 
-  getInboxData = async (network: string, address: string) => {
-    const cached = await getValidData<InboxDataStore>(inboxDataKey(network, address));
+  getInboxData = async (network: string, address: string): Promise<InboxAddressData> => {
+    const cached = await getValidData<InboxAddressData>(inboxDataKey(network, address));
     if (!cached) {
       return this.loadInboxData(network, address);
     }

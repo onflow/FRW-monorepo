@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   type ChildAccountFtStore,
@@ -73,26 +73,23 @@ export const useEvmCustomTokens = (network: string) => {
 
 export const useInboxData = (
   network: string | undefined | null,
-  address: string | undefined | null
+  address?: string | undefined | null
 ) => {
   const wallet = useWallet();
   const [data, setData] = useState<InboxDataStore | undefined>(undefined);
-  const fetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!address || !network) return;
-    const cacheKey = `${network}-${address}`;
-    if (cacheKey === fetchedRef.current) return;
-    fetchedRef.current = cacheKey;
+    if (!network) return;
 
     let cancelled = false;
-    wallet.getInboxData(address).then((result: InboxDataStore) => {
+    wallet.getAllProfilesInboxData().then((result: InboxDataStore) => {
       if (!cancelled) setData(result);
     });
     return () => {
       cancelled = true;
     };
-  }, [wallet, network, address]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [network]);
 
   return data;
 };

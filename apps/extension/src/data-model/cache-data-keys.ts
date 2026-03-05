@@ -331,9 +331,13 @@ export type CadenceTokenInfoStore = CadenceTokenInfo[];
 export const inboxDataKey = (network: string, address: string) =>
   `inbox-data-${network}-${address}`;
 export const inboxDataRefreshRegex = refreshKey(inboxDataKey);
-export interface InboxDataStore {
+export interface InboxAddressData {
   fts: any[];
   nfts: any[];
+}
+
+export interface InboxDataStore {
+  accounts: Record<string, InboxAddressData>;
   totalCount: number;
 }
 
