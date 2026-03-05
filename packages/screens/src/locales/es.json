@@ -294,6 +294,26 @@
         "subtitle": ""
       }
     },
+    "importAccount": {
+      "title": "Importar cuenta",
+      "subtitle": "Importa tu cuenta usando una copia de seguridad.",
+      "deviceBackup": {
+        "title": "Desde Copia de Seguridad del Dispositivo",
+        "subtitle": "Dispositivos móviles o de extensión"
+      },
+      "cloudBackup": {
+        "title": "Desde Copia de Seguridad Multi-Nube",
+        "subtitle": "Google Drive, iCloud o DropBox."
+      },
+      "recoveryPhrase": {
+        "title": "Desde Frase de Recuperación",
+        "subtitle": "Frase de recuperación de 12 palabras."
+      },
+      "anotherMethod": {
+        "title": "Desde otro método",
+        "subtitle": ""
+      }
+    },
     "importOtherMethods": {
       "title": "Desde otros métodos",
       "subtitle": "Importar perfil usando métodos alternativos",

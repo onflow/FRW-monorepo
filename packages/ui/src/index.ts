@@ -111,6 +111,7 @@ export {
   AccountCreationLoadingState,
   OnboardingHeader,
   BackupOptionCard,
+  ImportAccountOptionCard,
   ImportOptionCard,
   RecoveryPhraseQuestion,
 } from './components/onboarding';

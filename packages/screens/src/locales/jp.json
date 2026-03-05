@@ -294,6 +294,26 @@
         "subtitle": "キーストア、秘密鍵、またはリカバリーフレーズを使用してプロフィールをインポートします。"
       }
     },
+    "importAccount": {
+      "title": "アカウントをインポート",
+      "subtitle": "バックアップを使用してアカウントをインポートします。",
+      "deviceBackup": {
+        "title": "デバイスバックアップから",
+        "subtitle": "モバイルまたは拡張機能デバイス"
+      },
+      "cloudBackup": {
+        "title": "クラウドマルチバックアップから",
+        "subtitle": "Google Drive、iCloud、またはDropBox。"
+      },
+      "recoveryPhrase": {
+        "title": "リカバリーフレーズから",
+        "subtitle": "12単語のリカバリーフレーズ。"
+      },
+      "anotherMethod": {
+        "title": "別の方法から",
+        "subtitle": ""
+      }
+    },
     "importOtherMethods": {
       "title": "別の方法から",
       "subtitle": "プロフィールをインポートする方法を選択してください。",

@@ -23,7 +23,7 @@ import {
   SecureEnclaveScreen,
   NotificationPreferencesScreen,
   // Recovery screens
-  ImportProfileScreen,
+  ImportAccountScreen,
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
 } from '@onflow/frw-screens';
@@ -536,7 +536,7 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           >
             <Stack.Screen
               name="ImportProfile"
-              component={ImportProfileScreen}
+              component={ImportAccountScreen}
               options={{
                 headerTitle: '',
               }}
