@@ -1,5 +1,6 @@
-import { ArrowDownWideNarrow, CheckCircle } from '@onflow/frw-icons';
-import { useWalletStore, walletSelectors } from '@onflow/frw-stores';
+import { bridge } from '@onflow/frw-context';
+import { CheckCircle } from '@onflow/frw-icons';
+import { tokenQueryKeys, tokenQueries, useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import {
   BackgroundWrapper,
   ClaimDateHeader,
@@ -15,122 +16,15 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
+import { useQueries } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable } from 'react-native';
 
 import type { ClaimItem, ClaimReceiver } from './claim-types';
+import { transformFtToClaimItem, transformNftToClaimItem } from './claim-utils';
 
 type SortOption = 'date' | 'name' | 'amount';
-
-// ---------------------------------------------------------------------------
-// Mock item data (amounts/prices stubbed until backend is ready)
-// Senders are resolved from the real address book at runtime
-// ---------------------------------------------------------------------------
-
-const MOCK_ITEMS: ClaimItem[] = [
-  {
-    id: 't1',
-    type: 'token',
-    name: 'Flow',
-    symbol: 'FLOW',
-    logoURI: 'https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/src/tokens/FLOW/logo.png',
-    amount: '100',
-    price: 0.75,
-    priceChange24h: 2.3,
-    usdValue: 75,
-    date: '2025/09/15',
-    senderIndex: 0,
-    isVerified: true,
-    contractAddress: 'A.1654653399040a61.FlowToken',
-  },
-  {
-    id: 't2',
-    type: 'token',
-    name: 'BLC Token',
-    symbol: 'BLC',
-    amount: '50000',
-    price: 0.00001,
-    priceChange24h: -1.2,
-    usdValue: 0.5,
-    date: '2025/09/15',
-    senderIndex: 0,
-    isVerified: false,
-  },
-  {
-    id: 't3',
-    type: 'token',
-    name: 'USD Coin',
-    symbol: 'USDC',
-    logoURI:
-      'https://raw.githubusercontent.com/Uniswap/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
-    amount: '25',
-    price: 1.0,
-    priceChange24h: 0.01,
-    usdValue: 25,
-    date: '2025/09/15',
-    senderIndex: 1,
-    isVerified: true,
-    contractAddress: 'A.b19436aae4d94622.FiatToken',
-  },
-  {
-    id: 'n1',
-    type: 'nft',
-    name: 'NBA Top Shot',
-    symbol: 'NBATS',
-    logoURI: 'https://assets.nbatopshot.com/img/top_shot_logo_black_on_white.jpg',
-    amount: '14',
-    date: '2025/09/15',
-    senderIndex: 0,
-    isVerified: true,
-    website: 'nbatopshot.com',
-    description:
-      'NBA Top Shot is an officially licensed digital collectibles platform where fans can buy, sell, and trade video highlights from the NBA.',
-    nftItems: Array.from({ length: 12 }, (_, i) => ({
-      id: `nts-${i}`,
-      name: `Moment #${1000 + i}`,
-      image: '',
-      thumbnail: '',
-    })),
-  },
-  {
-    id: 'n2',
-    type: 'nft',
-    name: 'Kanpai Pandas',
-    symbol: 'KPANDA',
-    amount: '14',
-    date: '2025/09/13',
-    senderIndex: 0,
-    isVerified: true,
-    website: 'kanpaipandas.com',
-    description:
-      'Kanpai Pandas is a collection of 10,000 unique panda NFTs living on the Flow blockchain.',
-    nftItems: Array.from({ length: 14 }, (_, i) => ({
-      id: `kp-${i}`,
-      name: `Panda #${200 + i}`,
-      image: '',
-      thumbnail: '',
-    })),
-  },
-  {
-    id: 'n3',
-    type: 'nft',
-    name: 'Deadfellaz',
-    symbol: 'DFZ',
-    amount: '14',
-    date: '2025/09/12',
-    senderIndex: 0,
-    isVerified: true,
-    website: 'deadfellaz.io',
-    description: 'Deadfellaz is a collection of 10,000 zombie NFTs. Reanimate your wallet.',
-    nftItems: Array.from({ length: 14 }, (_, i) => ({
-      id: `dfz-${i}`,
-      name: `Deadfella #${500 + i}`,
-      image: '',
-      thumbnail: '',
-    })),
-  },
-];
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -157,6 +51,11 @@ function sortItems(items: ClaimItem[], sort: SortOption): ClaimItem[] {
   return sorted;
 }
 
+/** LostAndFound is a Cadence contract — only Flow addresses have inbox data */
+function isFlowAddress(account: ClaimReceiver): boolean {
+  return account.type === 'main' || account.type === 'child';
+}
+
 // ---------------------------------------------------------------------------
 // Main screen
 // ---------------------------------------------------------------------------
@@ -174,6 +73,7 @@ export function ClaimTokensScreen({
 }: ClaimTokensScreenProps): React.ReactElement {
   const { t } = useTranslation();
   const theme = useTheme();
+  const network = bridge.getNetwork() || 'mainnet';
 
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<FilterTab>(initialTab);
@@ -183,18 +83,22 @@ export function ClaimTokensScreen({
 
   // ── All receivable accounts (same source as send workflow) ───────────────
   const accounts = useWalletStore(walletSelectors.getAllAccounts);
+  const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
   const loadAccountsFromBridge = useWalletStore((state) => state.loadAccountsFromBridge);
-  const isLoading = useWalletStore((state) => state.isLoading);
+  const isAccountsLoading = useWalletStore((state) => state.isLoading);
 
   React.useEffect(() => {
-    if (accounts.length === 0 && !isLoading) {
+    if (accounts.length === 0 && !isAccountsLoading) {
       loadAccountsFromBridge();
     }
-  }, [loadAccountsFromBridge, accounts.length, isLoading]);
+  }, [loadAccountsFromBridge, accounts.length, isAccountsLoading]);
 
   const receivingAccounts: ClaimReceiver[] = useMemo(() => {
-    if (accounts.length > 0) {
-      return accounts.map((a) => ({
+    if (accounts.length === 0) return [];
+
+    const flowAccts = accounts
+      .filter((a) => a.type === 'main' || a.type === 'child')
+      .map((a) => ({
         id: a.address,
         name: a.name || truncateAddress(a.address),
         address: a.address,
@@ -203,31 +107,67 @@ export function ClaimTokensScreen({
         parentEmoji: a.parentEmoji,
         type: a.type,
       }));
+
+    // Sort active account first
+    const activeAddr = activeAccount?.address;
+    if (activeAddr) {
+      flowAccts.sort((a, b) => {
+        if (a.address === activeAddr) return -1;
+        if (b.address === activeAddr) return 1;
+        return 0;
+      });
     }
-    return [{ id: 'loading', name: '—', address: '—', avatar: undefined }];
-  }, [accounts]);
 
-  // ── Filter, search and sort items ────────────────────────────────────────
+    return flowAccts;
+  }, [accounts, activeAccount]);
 
-  // Search across both tabs; tab filter applied separately in the rows builder
-  const searchedItems = useMemo(() => {
-    if (!search.trim()) return MOCK_ITEMS;
+  // ── Fetch inbox data per Flow account ───────────────────────────────────
+  const flowAccounts = useMemo(() => receivingAccounts.filter(isFlowAddress), [receivingAccounts]);
+
+  const inboxQueries = useQueries({
+    queries: flowAccounts.map((account) => ({
+      queryKey: tokenQueryKeys.inbox(account.address, network),
+      queryFn: () => tokenQueries.fetchInbox(account.address, network),
+      enabled: !!account.address,
+      staleTime: 60_000,
+    })),
+  });
+
+  const isInboxLoading = inboxQueries.some((q) => q.isLoading);
+
+  // ── Build per-account ClaimItem[] from real data ────────────────────────
+  const accountItemsMap = useMemo(() => {
+    const map: Record<string, ClaimItem[]> = {};
+    flowAccounts.forEach((account, idx) => {
+      const result = inboxQueries[idx]?.data;
+      if (!result) {
+        map[account.address] = [];
+        return;
+      }
+      const ftItems = result.fts.map((ft: any, i: number) => transformFtToClaimItem(ft, i));
+      const nftItems = result.nfts.map((nft: any, i: number) => transformNftToClaimItem(nft, i));
+      map[account.address] = [...ftItems, ...nftItems];
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flowAccounts, inboxQueries.map((q) => q.dataUpdatedAt).join(',')]);
+
+  // ── All items flattened for counts and search ───────────────────────────
+  const allItems = useMemo(() => Object.values(accountItemsMap).flat(), [accountItemsMap]);
+
+  const searchedAllItems = useMemo(() => {
+    if (!search.trim()) return allItems;
     const q = search.trim().toLowerCase();
-    return MOCK_ITEMS.filter(
+    return allItems.filter(
       (i) => i.name.toLowerCase().includes(q) || i.symbol.toLowerCase().includes(q)
     );
-  }, [search]);
+  }, [search, allItems]);
 
-  const tokenCount = searchedItems.filter((i) => i.type === 'token').length;
-  const nftCount = searchedItems.filter((i) => i.type === 'nft').length;
+  const tokenCount = searchedAllItems.filter((i) => i.type === 'token').length;
+  const nftCount = searchedAllItems.filter((i) => i.type === 'nft').length;
 
   const segments = [`Tokens ${tokenCount}`, `NFTs ${nftCount}`] as const;
   const segmentValue = activeTab === 'token' ? segments[0] : segments[1];
-
-  const filteredItems = useMemo(() => {
-    const byTab = searchedItems.filter((i) => i.type === activeTab);
-    return sortItems(byTab, sortOption);
-  }, [searchedItems, activeTab, sortOption]);
 
   const toggleCollapse = useCallback((accountId: string) => {
     setCollapsedAccounts((prev) => {
@@ -241,33 +181,61 @@ export function ClaimTokensScreen({
     });
   }, []);
 
-  // ── Flat list rows ───────────────────────────────────────────────────────
+  // ── Flat list rows (per-account) ──────────────────────────────────────
 
   type Row =
     | { kind: 'account'; account: ClaimReceiver; itemCount: number }
     | { kind: 'date'; date: string; accountId: string }
-    | { kind: 'token'; item: ClaimItem; isLast: boolean };
+    | { kind: 'token'; item: ClaimItem; isLast: boolean; accountAddress: string };
 
   const rows = useMemo<Row[]>(() => {
     const result: Row[] = [];
-    for (const account of receivingAccounts) {
-      result.push({ kind: 'account', account, itemCount: filteredItems.length });
+    const q = search.trim().toLowerCase();
+
+    for (const account of flowAccounts) {
+      let items = accountItemsMap[account.address] ?? [];
+
+      // Apply search filter
+      if (q) {
+        items = items.filter(
+          (i) => i.name.toLowerCase().includes(q) || i.symbol.toLowerCase().includes(q)
+        );
+      }
+
+      // Apply tab filter
+      const byTab = items.filter((i) => i.type === activeTab);
+      const sorted = sortItems(byTab, sortOption);
+
+      // Skip accounts with no items for current tab
+      if (sorted.length === 0) continue;
+
+      result.push({ kind: 'account', account, itemCount: sorted.length });
+
       if (!collapsedAccounts.has(account.id)) {
+        // Group by date
         const byDate = new Map<string, ClaimItem[]>();
-        for (const item of filteredItems) {
-          if (!byDate.has(item.date)) byDate.set(item.date, []);
-          byDate.get(item.date)!.push(item);
+        for (const item of sorted) {
+          const dateKey = item.date || '';
+          if (!byDate.has(dateKey)) byDate.set(dateKey, []);
+          byDate.get(dateKey)!.push(item);
         }
         for (const [date, dateItems] of byDate.entries()) {
-          result.push({ kind: 'date', date, accountId: account.id });
+          if (date) {
+            result.push({ kind: 'date', date, accountId: account.id });
+          }
           dateItems.forEach((item, idx) => {
-            result.push({ kind: 'token', item, isLast: idx === dateItems.length - 1 });
+            result.push({
+              kind: 'token',
+              item,
+              isLast: idx === dateItems.length - 1,
+              accountAddress: account.address,
+            });
           });
         }
       }
     }
     return result;
-  }, [filteredItems, receivingAccounts, collapsedAccounts]);
+  }, [flowAccounts, accountItemsMap, search, activeTab, sortOption, collapsedAccounts]);
 
   // ── Render ───────────────────────────────────────────────────────────────
 
@@ -292,9 +260,16 @@ export function ClaimTokensScreen({
         return <ClaimDateHeader date={row.date} />;
       }
 
+      const isActiveItem = row.accountAddress === activeAccount?.address;
+      const disabled = !isActiveItem;
+
       if (row.item.type === 'nft') {
         return (
-          <Pressable onPress={() => onItemPress?.(row.item)}>
+          <Pressable
+            onPress={() => !disabled && onItemPress?.(row.item)}
+            disabled={disabled}
+            style={{ opacity: disabled ? 0.4 : 1 }}
+          >
             <ClaimNFTCollectionRow
               name={row.item.name}
               logoURI={row.item.logoURI}
@@ -306,7 +281,11 @@ export function ClaimTokensScreen({
       }
 
       return (
-        <Pressable onPress={() => onItemPress?.(row.item)}>
+        <Pressable
+          onPress={() => !disabled && onItemPress?.(row.item)}
+          disabled={disabled}
+          style={{ opacity: disabled ? 0.4 : 1 }}
+        >
           <ClaimItemRow
             name={row.item.name}
             symbol={row.item.symbol}
@@ -321,7 +300,7 @@ export function ClaimTokensScreen({
         </Pressable>
       );
     },
-    [collapsedAccounts, onItemPress, toggleCollapse]
+    [activeAccount, collapsedAccounts, onItemPress, toggleCollapse]
   );
 
   const keyExtractor = useCallback((item: Row, index: number) => {
@@ -335,6 +314,8 @@ export function ClaimTokensScreen({
     { value: 'name', label: t('claim.sort.name', 'Token name') },
     { value: 'amount', label: t('claim.sort.amount', 'Amount') },
   ];
+
+  const isLoading = isAccountsLoading || isInboxLoading;
 
   return (
     <BackgroundWrapper backgroundColor="$bg" px={0}>
@@ -356,9 +337,6 @@ export function ClaimTokensScreen({
             onChange={(value) => setActiveTab(value === segments[0] ? 'token' : 'nft')}
           />
           <XStack flex={1} />
-          <Pressable onPress={() => setSortSheetOpen(true)}>
-            <ArrowDownWideNarrow size={24} color={theme.text2?.val ?? '#767676'} theme="outline" />
-          </Pressable>
         </XStack>
 
         {/* Claim list */}

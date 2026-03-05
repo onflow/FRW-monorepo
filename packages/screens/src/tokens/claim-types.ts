@@ -36,6 +36,8 @@ export interface ClaimItem {
   senderIndex: number;
   isVerified?: boolean;
   contractAddress?: string;
+  /** Cadence type identifier from LostAndFound ticket (e.g. "A.1654653399040a61.FlowToken.Vault") */
+  identifier?: string;
   /** NFT-specific fields */
   description?: string;
   website?: string;

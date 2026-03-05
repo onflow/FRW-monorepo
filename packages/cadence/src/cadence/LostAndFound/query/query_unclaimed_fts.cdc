@@ -8,7 +8,7 @@ access(all) fun main(addr: Address): [AnyStruct?] {
     let displayArr: [AnyStruct?]  = []
     for ticket in tickets {
         if ticket.type.isSubtype(of: Type<@{FungibleToken.Vault}>()) { 
-            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance()})
+            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance(), "identifier": ticket.type.identifier})
         }
     }
     return displayArr

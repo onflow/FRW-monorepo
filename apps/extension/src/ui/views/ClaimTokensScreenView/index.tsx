@@ -1,6 +1,17 @@
-import { ClaimTokensScreen } from '@onflow/frw-screens';
+import { ClaimTokensScreen, type ClaimItem } from '@onflow/frw-screens';
+import { useNavigate } from 'react-router';
+
+import { saveClaimItem } from '../ClaimTokenDetailScreenView';
 
 const ClaimTokensScreenView = () => {
+  const navigate = useNavigate();
+
+  const handleItemPress = (item: ClaimItem) => {
+    console.log('item', item);
+    saveClaimItem(item);
+    navigate('/dashboard/claimDetail');
+  };
+
   return (
     <div
       style={{
@@ -11,7 +22,7 @@ const ClaimTokensScreenView = () => {
         minHeight: '100%',
       }}
     >
-      <ClaimTokensScreen />
+      <ClaimTokensScreen onItemPress={handleItemPress} />
     </div>
   );
 };

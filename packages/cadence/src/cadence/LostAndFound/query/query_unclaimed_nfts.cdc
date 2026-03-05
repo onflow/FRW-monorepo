@@ -5,10 +5,10 @@ import NonFungibleToken from 0xNonFungibleToken
 access(all) fun main(addr: Address): [AnyStruct?] {
     let tickets = LostAndFound.borrowAllTickets(addr: addr)
     
-    let displayArr: [&MetadataViews.Display?]  = []
+    let displayArr: [AnyStruct?]  = []
     for ticket in tickets {
         if ticket.type.isSubtype(of: Type<@{NonFungibleToken.NFT}>()) { 
-            displayArr.append(ticket.display)
+            displayArr.append({"display":ticket.display, "identifier": ticket.type.identifier})
         }
     }
     

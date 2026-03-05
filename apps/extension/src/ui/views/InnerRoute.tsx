@@ -7,6 +7,7 @@ import PrivateRoute from '@/ui/components/PrivateRoute';
 import AddCustomEvmToken from '@/ui/components/TokenLists/AddCustomEvmToken';
 import { useWallet, useWalletLoaded } from '@/ui/hooks/use-wallet';
 
+import ClaimTokenDetailScreenView from './ClaimTokenDetailScreenView';
 import ClaimTokensScreenView from './ClaimTokensScreenView';
 import Dashboard from './Dashboard';
 import Deposit from './Deposit';
@@ -355,6 +356,14 @@ const InnerRoute = () => {
               element={
                 <PrivateRoute>
                   <ClaimTokensScreenView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="claimDetail"
+              element={
+                <PrivateRoute>
+                  <ClaimTokenDetailScreenView />
                 </PrivateRoute>
               }
             />
