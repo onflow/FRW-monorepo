@@ -312,7 +312,8 @@
       "anotherMethod": {
         "title": "Desde otro método",
         "subtitle": ""
-      }
+      },
+      "legacyMethodsSubtitle": "Selecciona un método de respaldo heredado"
     },
     "importCloudMultiBackup": {
       "subtitle": "Selecciona proveedores de nube para respaldar tu frase de recuperación",

@@ -393,7 +393,8 @@
       "anotherMethod": {
         "title": "从其他方式",
         "subtitle": ""
-      }
+      },
+      "legacyMethodsSubtitle": "选择旧版备份方式"
     },
     "importCloudMultiBackup": {
       "subtitle": "选择云服务提供商来备份您的恢复短语",

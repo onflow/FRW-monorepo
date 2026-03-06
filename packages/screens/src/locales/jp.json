@@ -312,7 +312,8 @@
       "anotherMethod": {
         "title": "別の方法から",
         "subtitle": ""
-      }
+      },
+      "legacyMethodsSubtitle": "従来のバックアップ方法を選択"
     },
     "importCloudMultiBackup": {
       "subtitle": "リカバリーフレーズをバックアップするクラウドプロバイダーを選択",

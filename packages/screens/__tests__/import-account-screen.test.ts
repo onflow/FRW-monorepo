@@ -27,6 +27,18 @@ describe('ImportAccount screen integration', () => {
     expect(importAccountIndexContent).toContain('ImportCloudMultiBackupScreen');
   });
 
+  it('exports ImportLegacyMethodsScreen from importAccount module', () => {
+    const importAccountIndexPath = path.resolve(
+      __dirname,
+      '..',
+      'src',
+      'importAccount',
+      'index.ts'
+    );
+    const importAccountIndexContent = fs.readFileSync(importAccountIndexPath, 'utf-8');
+    expect(importAccountIndexContent).toContain('ImportLegacyMethodsScreen');
+  });
+
   it('contains onboarding.importAccount locale keys in en', () => {
     const enLocalePath = path.resolve(__dirname, '..', 'src', 'locales', 'en.json');
     const enLocale = JSON.parse(fs.readFileSync(enLocalePath, 'utf-8'));
@@ -47,5 +59,12 @@ describe('ImportAccount screen integration', () => {
     expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.providers.googleDrive');
     expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.providers.iCloud');
     expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.providers.dropbox');
+  });
+
+  it('contains onboarding.importAccount.legacyMethodsSubtitle locale key in en', () => {
+    const enLocalePath = path.resolve(__dirname, '..', 'src', 'locales', 'en.json');
+    const enLocale = JSON.parse(fs.readFileSync(enLocalePath, 'utf-8'));
+
+    expect(enLocale).toHaveProperty('onboarding.importAccount.legacyMethodsSubtitle');
   });
 });

@@ -26,7 +26,7 @@ export function ImportAccountScreen(): React.ReactElement {
 
   const handleAnotherMethod = () => {
     logger.info('[ImportAccountScreen] Another method selected');
-    navigation.navigate(ScreenName.IMPORT_OTHER_METHODS);
+    navigation.navigate(ScreenName.IMPORT_LEGACY_METHODS);
   };
 
   return (

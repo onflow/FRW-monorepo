@@ -312,7 +312,8 @@
       "anotherMethod": {
         "title": "From another method",
         "subtitle": ""
-      }
+      },
+      "legacyMethodsSubtitle": "Select a legacy backup method"
     },
     "importCloudMultiBackup": {
       "subtitle": "Select cloud providers to backup your recovery phrase",

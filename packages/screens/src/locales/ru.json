@@ -405,7 +405,8 @@
       "anotherMethod": {
         "title": "С другого метода",
         "subtitle": ""
-      }
+      },
+      "legacyMethodsSubtitle": "Выберите устаревший метод резервного копирования"
     },
     "importCloudMultiBackup": {
       "subtitle": "Выберите облачные сервисы для резервного копирования фразы восстановления",

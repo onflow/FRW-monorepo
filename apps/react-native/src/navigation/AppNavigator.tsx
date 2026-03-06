@@ -24,6 +24,7 @@ import {
   NotificationPreferencesScreen,
   ImportAccountScreen,
   ImportCloudMultiBackupScreen,
+  ImportLegacyMethodsScreen,
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
 } from '@onflow/frw-screens';
@@ -97,6 +98,7 @@ export type RootStackParamList = {
   // Recovery screens
   ImportProfile: undefined;
   ImportCloudMultiBackup: undefined;
+  ImportLegacyMethods: undefined;
   ImportOtherMethods: undefined;
   ConfirmImportProfile: undefined;
   // Key rotation screens
@@ -545,6 +547,13 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
             <Stack.Screen
               name="ImportCloudMultiBackup"
               component={ImportCloudMultiBackupScreen}
+              options={{
+                headerTitle: t('onboarding.importAccount.title'),
+              }}
+            />
+            <Stack.Screen
+              name="ImportLegacyMethods"
+              component={ImportLegacyMethodsScreen}
               options={{
                 headerTitle: t('onboarding.importAccount.title'),
               }}

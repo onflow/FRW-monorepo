@@ -238,6 +238,8 @@ export enum ScreenName {
   IMPORT_PROFILE = 'ImportProfile',
   /** Import via other methods screen (recovery phrase, etc.) */
   IMPORT_OTHER_METHODS = 'ImportOtherMethods',
+  /** Import via legacy methods from import account flow */
+  IMPORT_LEGACY_METHODS = 'ImportLegacyMethods',
   /** Confirm import from previous profiles screen */
   CONFIRM_IMPORT_PROFILE = 'ConfirmImportProfile',
   /** Notification preferences screen */

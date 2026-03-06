@@ -61,6 +61,7 @@ export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
 export * from './components/ExtensionHeader';
 export * from './components/InfoDialog';
+export * from './components/LegacyImportMethodCard';
 export * from './components/MultipleNFTsPreview';
 export * from './components/NFTCard';
 export * from './components/NFTCollectionRow';
