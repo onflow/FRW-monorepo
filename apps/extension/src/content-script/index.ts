@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { v4 as uuid } from 'uuid';
 
 import { Message } from '@/extension-shared/messaging';
+import '@/shared/polyfills/runtime';
 
 const channelName = nanoid();
 const extensionId = chrome.runtime.id;

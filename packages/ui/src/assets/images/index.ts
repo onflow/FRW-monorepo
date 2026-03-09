@@ -4,12 +4,18 @@
  */
 
 // Onboarding images
+import cardBackgroundImage from './onboarding/card_bg.png';
+import fullBackgroundLightImage from './onboarding/full_bg_light.png';
+import getStartedBackgroundImage from './onboarding/get_started_background.png';
+import getStartedBackgroundLightImage from './onboarding/get_started_background_light.png';
+import pushNotificationsImage from './onboarding/push-notifications.png';
+
 export const onboardingImages = {
-  fullBackgroundLight: require('./onboarding/full_bg_light.png'),
-  getStartedBackground: require('./onboarding/get_started_background.png'),
-  getStartedBackgroundLight: require('./onboarding/get_started_background_light.png'),
-  pushNotifications: require('./onboarding/push-notifications.png'),
-  cardBackground: require('./onboarding/card_bg.png'),
+  fullBackgroundLight: fullBackgroundLightImage,
+  getStartedBackground: getStartedBackgroundImage,
+  getStartedBackgroundLight: getStartedBackgroundLightImage,
+  pushNotifications: pushNotificationsImage,
+  cardBackground: cardBackgroundImage,
 };
 
 // Re-export for easier access

@@ -3,7 +3,7 @@ import { Box, IconButton, Input, InputAdornment } from '@mui/material';
 import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { type Nft } from '@/shared/types';
-import { ReactComponent as SearchIcon } from '@/ui/assets/svg/searchIcon.svg';
+import SearchIcon from '@/ui/assets/svg/searchIcon.svg?react';
 
 interface NftSearchProps {
   items: Nft[];

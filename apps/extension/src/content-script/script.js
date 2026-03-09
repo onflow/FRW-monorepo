@@ -1,4 +1,6 @@
 // @ts-nocheck
+import '@/shared/polyfills/runtime';
+
 const service = {
   f_type: 'Service',
   f_vsn: '1.0.0',

@@ -69,6 +69,12 @@ async function prepare() {
 
   const manifest = JSON.parse(fs.readFileSync(destinationManifestPath, 'utf-8'));
 
+  // Vite outputs ESM for extension entries, so service worker must be loaded as module.
+  manifest.background = {
+    service_worker: 'background.js',
+    type: 'module',
+  };
+
   manifest.oauth2 = {
     client_id: process.env.OAUTH2_CLIENT_ID,
     scopes: OAUTH2_SCOPES.split(','),

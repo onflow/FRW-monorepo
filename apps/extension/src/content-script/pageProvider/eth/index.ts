@@ -2,6 +2,7 @@
 import { ethErrors, serializeError } from 'eth-rpc-errors';
 import { EventEmitter } from 'events';
 
+import '@/shared/polyfills/runtime';
 import { consoleError, consoleLog } from '@/shared/utils';
 
 import DedupePromise from './pageProvider/dedupePromise';

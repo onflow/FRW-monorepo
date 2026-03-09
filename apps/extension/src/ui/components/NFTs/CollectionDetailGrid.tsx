@@ -18,7 +18,7 @@ import Grid from '@mui/material/Grid';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { ReactComponent as SearchIcon } from '@/ui/assets/svg/searchIcon.svg';
+import SearchIcon from '@/ui/assets/svg/searchIcon.svg?react';
 import { truncate } from '@/ui/utils';
 
 import SearchDialog from './SearchDialog';

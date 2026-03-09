@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { ethErrors } from 'eth-rpc-errors';
 
+import '@/shared/polyfills/runtime';
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
@@ -40,8 +41,6 @@ import { mixpanelService } from './utils/mixpanel-analytics';
 import { setEnvironmentBadge } from './utils/setEnvironmentBadge';
 
 const { PortMessage } = Message;
-
-const chromeWindow = await chrome.windows.getCurrent();
 
 let appStoreLoaded = false;
 
@@ -138,7 +137,9 @@ async function restoreAppState() {
 
 // produceSentryErrorFromServiceWorker();
 
-restoreAppState();
+restoreAppState().catch((error) => {
+  consoleError('Failed to restore app state', error);
+});
 
 chrome.runtime.onInstalled.addListener(({ reason }: chrome.runtime.InstalledDetails) => {
   // chrome.runtime.OnInstalledReason.Install
@@ -256,8 +257,11 @@ declare global {
   }
 }
 
-// for popup operate
-chromeWindow['wallet'] = new Proxy(walletController, {
+// for popup operate (debug fallback in MV3 worker global scope)
+const workerGlobal = globalThis as typeof globalThis & {
+  wallet?: WalletController;
+};
+workerGlobal.wallet = new Proxy(walletController, {
   get(target, propKey, receiver) {
     if (!appStoreLoaded) {
       throw ethErrors.provider.disconnected();
