@@ -31,7 +31,7 @@ const ClaimTokenDetailScreenView = () => {
     >
       <ClaimTokenDetailScreen
         item={item}
-        onClaim={() => navigate(-1)}
+        onClaim={() => navigate('/dashboard')}
         onReject={() => navigate(-1)}
       />
     </div>

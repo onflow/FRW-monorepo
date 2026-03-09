@@ -44,7 +44,7 @@ export function ClaimItemRow({
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$1.5">
               <Text fontSize={15} fontWeight="600" color="$text1">
-                {name}
+                {symbol}
               </Text>
               {isVerified && <VerifiedToken size={14} color={theme.success?.val ?? '#41CC5D'} />}
             </XStack>
@@ -54,18 +54,14 @@ export function ClaimItemRow({
           </XStack>
           <XStack items="center" justify="space-between">
             <XStack items="center" gap="$1.5">
-              {price !== undefined && (
-                <Text fontSize={13} color="$text2">
-                  {formatPrice(price)}
-                </Text>
-              )}
+              <Text fontSize={13} color="$text2">
+                {price !== undefined ? formatPrice(price) : '--'}
+              </Text>
               {priceChange24h !== undefined && <PriceChangeBadge value={priceChange24h} />}
             </XStack>
-            {usdValue !== undefined && (
-              <Text fontSize={13} color="$text2">
-                {formatUsd(usdValue)}
-              </Text>
-            )}
+            <Text fontSize={13} color="$text2">
+              {usdValue !== undefined ? formatUsd(usdValue) : '--'}
+            </Text>
           </XStack>
         </YStack>
       </XStack>

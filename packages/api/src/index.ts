@@ -43,3 +43,11 @@ export {
   type CryptowatchSummaryResponse,
   type OhlcCandle,
 } from './crypto';
+
+// Export FlowIndex FT price services
+export {
+  FlowIndexService,
+  type FlowIndexTokenPrice,
+  type FlowIndexPricesData,
+  type FlowIndexPricesResponse,
+} from './flowindex';

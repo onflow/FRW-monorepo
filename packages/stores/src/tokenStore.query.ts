@@ -1,3 +1,4 @@
+import { FlowIndexService, type FlowIndexPricesData } from '@onflow/frw-api';
 import { cadence, context, queryClient } from '@onflow/frw-context';
 import { TokenService, tokenService, nftService } from '@onflow/frw-services';
 import {
@@ -56,6 +57,7 @@ export const tokenQueryKeys = {
     [...tokenQueryKeys.all, 'catalog', network, chainType] as const,
   inbox: (address: string, network: string = 'mainnet') =>
     [...tokenQueryKeys.address(address, network), 'inbox'] as const,
+  flowIndexPrices: () => [...tokenQueryKeys.all, 'flowindex-prices'] as const,
 };
 
 // Token Store State - Minimal UI state, queries handle data
@@ -483,6 +485,20 @@ export const tokenQueries = {
     }
   },
 
+  // Fetch FT prices from FlowIndex API (keyed by symbol)
+  fetchFlowIndexPrices: async (days: number = 90): Promise<FlowIndexPricesData> => {
+    try {
+      const prices = await FlowIndexService.fetchFtPrices(days);
+      logger.debug('[TokenQuery] Fetched FlowIndex prices:', {
+        tokenCount: Object.keys(prices).length,
+      });
+      return prices;
+    } catch (error) {
+      logger.error('[TokenQuery] Error fetching FlowIndex prices:', error);
+      return {};
+    }
+  },
+
   // Batch fetch NFT counts for multiple addresses
   fetchBatchNFTCounts: async (
     addressList: string[],
@@ -832,6 +848,26 @@ export async function enableToken(flowIdentifier: string): Promise<string> {
   const vaultIdentifier = parts.length === 3 ? `${flowIdentifier}.Vault` : flowIdentifier;
   logger.debug('[enableToken] Enabling token vault:', vaultIdentifier);
   return cadence.enableTokenStorageV2(vaultIdentifier);
+}
+
+/**
+ * Claims unclaimed fungible tokens from LostAndFound.
+ * @param identifier - The Cadence type identifier (e.g. "A.1654653399040a61.FlowToken.Vault")
+ * @returns Transaction ID string
+ */
+export async function claimFt(identifier: string): Promise<string> {
+  logger.debug('[claimFt] Claiming FT:', identifier);
+  return cadence.claimFt(identifier);
+}
+
+/**
+ * Claims unclaimed NFTs from LostAndFound.
+ * @param identifier - The Cadence type identifier (e.g. "A.xxx.TopShot.NFT")
+ * @returns Transaction ID string
+ */
+export async function claimNft(identifier: string): Promise<string> {
+  logger.debug('[claimNft] Claiming NFT:', identifier);
+  return cadence.claimNft(identifier);
 }
 
 // Query keys and queries are already exported above

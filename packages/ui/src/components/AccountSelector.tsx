@@ -165,16 +165,18 @@ export function AccountSelector({
                 fontWeight="400"
               />
 
-              {/* Balance */}
-              <Text
-                color="$textMuted"
-                fontWeight="400"
-                fontSize={12}
-                lineHeight={17}
-                numberOfLines={1}
-              >
-                {formatBalance(currentAccount.balance || '0')}
-              </Text>
+              {/* Balance — only show when available */}
+              {currentAccount.balance ? (
+                <Text
+                  color="$textMuted"
+                  fontWeight="400"
+                  fontSize={12}
+                  lineHeight={17}
+                  numberOfLines={1}
+                >
+                  {formatBalance(currentAccount.balance)}
+                </Text>
+              ) : null}
             </YStack>
           </XStack>
 

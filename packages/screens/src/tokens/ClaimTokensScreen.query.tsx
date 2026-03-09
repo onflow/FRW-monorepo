@@ -16,13 +16,17 @@ import {
   YStack,
   useTheme,
 } from '@onflow/frw-ui';
-import { useQueries } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable } from 'react-native';
 
 import type { ClaimItem, ClaimReceiver } from './claim-types';
-import { transformFtToClaimItem, transformNftToClaimItem } from './claim-utils';
+import {
+  transformFtToClaimItem,
+  groupNftsByCollection,
+  enrichClaimItemsWithPrices,
+} from './claim-utils';
 
 type SortOption = 'date' | 'name' | 'amount';
 
@@ -135,6 +139,31 @@ export function ClaimTokensScreen({
 
   const isInboxLoading = inboxQueries.some((q) => q.isLoading);
 
+  // ── Fetch FT prices from FlowIndex ────────────────────────────────────
+  const { data: flowIndexPrices } = useQuery({
+    queryKey: tokenQueryKeys.flowIndexPrices(),
+    queryFn: () => tokenQueries.fetchFlowIndexPrices(90),
+    staleTime: 5 * 60_000,
+  });
+
+  // ── Fetch token catalog for verified status ─────────────────────────────
+  const { data: catalog = [] } = useQuery({
+    queryKey: tokenQueryKeys.catalog(network, 'flow'),
+    queryFn: () => tokenQueries.fetchAllTokens(network, 'flow'),
+    staleTime: 5 * 60_000,
+  });
+
+  // Set of verified identifiers (3-part: A.address.ContractName)
+  const verifiedIdentifiers = useMemo(() => {
+    const set = new Set<string>();
+    for (const t of catalog) {
+      if (t.isVerified && t.flowIdentifier) {
+        set.add(t.flowIdentifier);
+      }
+    }
+    return set;
+  }, [catalog]);
+
   // ── Build per-account ClaimItem[] from real data ────────────────────────
   const accountItemsMap = useMemo(() => {
     const map: Record<string, ClaimItem[]> = {};
@@ -144,13 +173,30 @@ export function ClaimTokensScreen({
         map[account.address] = [];
         return;
       }
-      const ftItems = result.fts.map((ft: any, i: number) => transformFtToClaimItem(ft, i));
-      const nftItems = result.nfts.map((nft: any, i: number) => transformNftToClaimItem(nft, i));
-      map[account.address] = [...ftItems, ...nftItems];
+      let ftItems = result.fts.map((ft: any, i: number) => transformFtToClaimItem(ft, i));
+      if (flowIndexPrices) {
+        ftItems = enrichClaimItemsWithPrices(ftItems, flowIndexPrices);
+      }
+      // Enrich with verified status from token catalog
+      ftItems = ftItems.map((item) => {
+        if (!item.identifier) return item;
+        const prefix = item.identifier.split('.').slice(0, 3).join('.');
+        if (verifiedIdentifiers.has(prefix)) {
+          return { ...item, isVerified: true };
+        }
+        return item;
+      });
+      const nftCollections = groupNftsByCollection(result.nfts);
+      map[account.address] = [...ftItems, ...nftCollections];
     });
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flowAccounts, inboxQueries.map((q) => q.dataUpdatedAt).join(',')]);
+  }, [
+    flowAccounts,
+    flowIndexPrices,
+    verifiedIdentifiers,
+    inboxQueries.map((q) => q.dataUpdatedAt).join(','),
+  ]);
 
   // ── All items flattened for counts and search ───────────────────────────
   const allItems = useMemo(() => Object.values(accountItemsMap).flat(), [accountItemsMap]);
@@ -164,7 +210,9 @@ export function ClaimTokensScreen({
   }, [search, allItems]);
 
   const tokenCount = searchedAllItems.filter((i) => i.type === 'token').length;
-  const nftCount = searchedAllItems.filter((i) => i.type === 'nft').length;
+  const nftCount = searchedAllItems
+    .filter((i) => i.type === 'nft')
+    .reduce((sum, i) => sum + (parseInt(i.amount, 10) || 0), 0);
 
   const segments = [`Tokens ${tokenCount}`, `NFTs ${nftCount}`] as const;
   const segmentValue = activeTab === 'token' ? segments[0] : segments[1];
