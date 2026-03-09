@@ -22,7 +22,7 @@ export async function toPasswordString(password: string): Promise<string> {
 }
 
 export function parseEncryptedHexPayload(payload: string): string {
-  const trimmed = payload.trim().replace(/^"+|"+$/g, '');
+  const trimmed = stripEdgeDoubleQuotes(payload.trim());
 
   try {
     const sanitized = trimmed.replace(/\s+/g, '');
@@ -35,6 +35,21 @@ export function parseEncryptedHexPayload(payload: string): string {
     }
     throw new Error('Invalid input: not JSON and not a valid hex string');
   }
+}
+
+function stripEdgeDoubleQuotes(value: string): string {
+  let start = 0;
+  let end = value.length;
+
+  while (start < end && value.charCodeAt(start) === 34) {
+    start += 1;
+  }
+
+  while (end > start && value.charCodeAt(end - 1) === 34) {
+    end -= 1;
+  }
+
+  return value.slice(start, end);
 }
 
 function padArray(arr: Uint8Array, len = 16, fill = 0): Uint8Array {
