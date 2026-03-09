@@ -38,6 +38,9 @@ export * from './utils/clipboard';
 // Export specialized components
 export * from './components/AccountCard';
 export * from './components/AccountSelector';
+export * from './components/ActivityCard';
+export * from './components/ActivityGroupHeader';
+export * from './components/ActivitySkeleton';
 export * from './components/AddContactDialog';
 
 export * from './components/AddressBookSection';
@@ -47,9 +50,12 @@ export * from './components/Badge';
 export * from './components/CollectionHeader';
 export * from './components/ConfirmAddressDialog';
 export * from './components/ConfirmationAnimation';
+export * from './components/ConfirmationAnimationSection';
+export * from './components/ShieldAnimation';
 export * from './components/ConfirmationDrawer';
 export * from './components/COAAddressCopyModal';
 export * from './components/ERC1155QuantitySelector';
+export * from './components/ChainBadge';
 export * from './components/EVMBadge';
 export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
@@ -67,6 +73,7 @@ export * from './components/NFTSelectionBar';
 export * from './components/NFTSendPreview';
 export * from './components/PercentageChangeBadge';
 export * from './components/ProfileList';
+export * from './components/ProfileImportList';
 export * from './components/RecipientItem';
 export * from './components/RecipientList';
 export * from './components/RefreshView';
@@ -81,15 +88,35 @@ export * from './components/Surge/SurgeWarning';
 export * from './components/Surge/SurgeModal';
 export * from './components/Surge/SurgeFeeSection';
 export * from './components/Surge/SurgeFeeConfirmationSection';
+export * from './components/Vault';
 export * from './components/Tag';
 export * from './components/ToAccountSection';
 export * from './components/Toast';
 export * from './components/TokenCard';
 export * from './components/TokenSelectorModal';
 export * from './components/TransactionFeeSection';
+export * from './components/WarningCard';
 export * from './foundation/SegmentedControl';
 
+// Export onboarding components
+export * from './components/onboarding/TipCard';
+export * from './components/onboarding/MnemonicGrid';
+export { ShieldAnimation } from './components/ShieldAnimation';
+
+export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
+
+// Onboarding components (excluding WarningCard to avoid conflict with main WarningCard)
+export {
+  AccountCreationLoadingState,
+  OnboardingHeader,
+  BackupOptionCard,
+  ImportOptionCard,
+  RecoveryPhraseQuestion,
+} from './components/onboarding';
+
+// Migration components
+export * from './components/migration';
 
 // TODO: Fix TypeScript issues in the following components:
 // export * from './components/Chip';
@@ -105,6 +132,10 @@ export { extensionTamaguiConfig } from './theme/extension';
 
 // Export layout components
 export * from './layout/BackgroundWrapper';
+export * from './layout/OnboardingBackground';
 
 // Export types
 export * from './types';
+
+// Export assets
+export * from './assets/images';

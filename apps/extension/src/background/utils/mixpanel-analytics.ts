@@ -210,6 +210,16 @@ class MixpanelService implements AnalyticsServiceInterface {
       current_url_protocol: 'chrome-extension:',
     });
   }
+
+  async trackScreenView(pathname: string) {
+    if (!this.token) return;
+    await this.track('$mp_web_page_view', {
+      current_page_title: 'Flow Wallet',
+      current_domain: 'flow-extension',
+      current_url_path: pathname,
+      current_url_protocol: 'chrome-extension:',
+    });
+  }
   async identify(userId: string, name?: string) {
     if (!this.token) return;
     // get previous id.

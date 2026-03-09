@@ -138,6 +138,7 @@ export const COAAddressCopyModal: React.FC<COAAddressCopyModalProps> = ({
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
         >
           <Button
+            data-testid="close-button"
             width={24}
             height={24}
             pressStyle={{ opacity: 0.7 }}

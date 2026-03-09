@@ -1,4 +1,5 @@
 import { Box, Tab, Tabs, Typography } from '@mui/material';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useEffect, useState } from 'react';
 
 import { type PublicKeyAccount } from '@/shared/types';
@@ -70,9 +71,9 @@ const ImportTabs = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [isSignLoading, setSignLoading] = useState(false);
-  const [addressFound, setAddressFound] = useState(true);
   const [newKey, setKeyNew] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
+  const [keystoreJson, setKeystoreJson] = useState<string>('');
   const usewallet = useWallet();
   useEffect(() => {
     const checkIsBooted = async () => {
@@ -104,7 +105,8 @@ const ImportTabs = ({
       } else {
         // The key has never been imported before, we need to set a username and confirm / create a password
         if (!accounts[0].address) {
-          handleNotFoundPopup();
+          // No account found - directly navigate to register flow
+          handleRegisterNewProfile();
           return;
         }
         handleSwitchTab();
@@ -116,9 +118,8 @@ const ImportTabs = ({
   };
 
   const handleRegisterNewProfile = () => {
-    // Generate auto username with timestamp (max 15 characters)
-    const timestamp = Math.floor(Date.now() / 1000);
-    const autoUsername = `ext${timestamp}`.substring(0, 15);
+    // Generate random username (same as register flow)
+    const autoUsername = generateRandomUsername();
 
     // Pass the import data and auto username to register page
     let importData: any = null;
@@ -153,10 +154,6 @@ const ImportTabs = ({
       username: autoUsername,
       isFromImport: true,
     });
-  };
-
-  const handleNotFoundPopup = async () => {
-    setAddressFound(!addressFound);
   };
 
   const sxStyles = {
@@ -230,15 +227,16 @@ const ImportTabs = ({
       </TabPanel>
       <TabPanel value={selectedTab} index={1}>
         <JsonImport
-          onOpen={handleNotFoundPopup}
+          onOpen={handleRegisterNewProfile}
           onImport={handleImport}
           setPk={setPk}
           isSignLoading={isSignLoading}
+          initialJson={keystoreJson}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={2}>
         <SeedPhraseImport
-          onOpen={handleNotFoundPopup}
+          onOpen={handleRegisterNewProfile}
           onImport={handleImport}
           setMnemonic={setMnemonic}
           isSignLoading={isSignLoading}
@@ -250,33 +248,17 @@ const ImportTabs = ({
       </TabPanel>
       <TabPanel value={selectedTab} index={3}>
         <KeyImport
-          onOpen={handleNotFoundPopup}
+          onOpen={handleRegisterNewProfile}
           onImport={handleImport}
           setPk={setPk}
           isSignLoading={isSignLoading}
+          onSwitchToKeystoreTab={() => setSelectedTab(1)}
+          onSetKeystoreJson={(json) => setKeystoreJson(json)}
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={4}>
         <MobileAppImportSteps isLogin={isLogin} />
       </TabPanel>
-      {!addressFound && (
-        <ErrorModel
-          isOpen={!addressFound}
-          onOpenChange={setAddressFound}
-          errorName={chrome.i18n.getMessage('No_Account_found')}
-          errorMessage={chrome.i18n.getMessage('Create_New_Profile_Description')}
-          customAction={onRegisterNewProfile ? true : undefined}
-          customActionText={chrome.i18n.getMessage('Register_New_Profile')}
-          onCustomAction={
-            onRegisterNewProfile
-              ? () => {
-                  setAddressFound(true);
-                  handleRegisterNewProfile();
-                }
-              : undefined
-          }
-        />
-      )}
       {!newKey && (
         <ErrorModel
           isOpen={!newKey}

@@ -63,6 +63,19 @@ export interface Web3WalletPermission {
 }
 
 /**
+ * Permission structure for wallet_getPermissions
+ * EIP-2255: Permission
+ */
+export interface Permission {
+  // URI identifying the dapp
+  invoker: string;
+  // The name of the method corresponding to the permission
+  parentCapability: string;
+  // Optional restrictions
+  caveats?: unknown[];
+}
+
+/**
  * COA (Contract-Owned Account) ownership proof structure
  * Used for encoding ownership proofs in COA transactions
  */

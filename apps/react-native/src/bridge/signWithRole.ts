@@ -1,12 +1,18 @@
 import { type Network, PayerService } from '@onflow/frw-api';
+import type { WalletAccount } from '@onflow/frw-types';
 
-import { platform } from './PlatformImpl';
+interface SigningContext {
+  getSelectedAccount(): Promise<WalletAccount>;
+  getSignKeyIndex(): number;
+  sign(hexData: string): Promise<string>;
+  getNetwork(): string;
+}
 
-export const proposer = async (account: any) => {
-  const selectedAccount = await platform.getSelectedAccount();
+export const createProposer = (context: SigningContext) => async (account: any) => {
+  const selectedAccount = await context.getSelectedAccount();
   const address = selectedAccount.parentAddress || selectedAccount.address;
   const ADDRESS = address?.startsWith('0x') ? address : `0x${address}`;
-  const KEY_ID = platform.getSignKeyIndex();
+  const KEY_ID = context.getSignKeyIndex();
   return {
     ...account,
     tempId: `${ADDRESS}-${KEY_ID}`,
@@ -16,21 +22,21 @@ export const proposer = async (account: any) => {
       return {
         addr: ADDRESS,
         keyId: Number(KEY_ID),
-        signature: await platform.sign(signable.message),
+        signature: await context.sign(signable.message),
       };
     },
   };
 };
 
-export const payer = async (account: any) => {
-  const network = platform.getNetwork() as Network;
+export const createPayer = (context: SigningContext) => async (account: any) => {
+  const network = context.getNetwork() as Network;
   const { data: payerStatus } = await PayerService.status({
     network: network,
   });
 
   // If the payer is surge active, use the proposer as the payer
   if (payerStatus.surge.active) {
-    return proposer(account);
+    return createProposer(context)(account);
   }
 
   const ADDRESS = payerStatus.feePayer.address ?? '0x319e67f2ef9d937f';
@@ -59,11 +65,11 @@ export const payer = async (account: any) => {
   };
 };
 
-export const bridgeAuthorization = async (account: any) => {
+export const createBridgeAuthorization = (context: SigningContext) => async (account: any) => {
   // TODO: get bridge address and key id from config
   let ADDRESS = '0xc33b4f1884ae1ea4'; // Fixed bridge address
   const KEY_ID = 0;
-  const network = platform.getNetwork() as Network;
+  const network = context.getNetwork() as Network;
   if (network === 'testnet') {
     ADDRESS = '0xb8028ddb6592deec';
   }

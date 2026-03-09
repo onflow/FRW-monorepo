@@ -1,14 +1,20 @@
-import { Drawer } from '@mui/material';
+import { Button, Drawer, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import { setUser, setExtras } from '@sentry/react';
+import { WhatSNewService } from '@onflow/frw-api';
+import { UpdateDialog } from '@onflow/frw-ui';
+import { setUser, setExtras, setTag } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
+import { consoleError } from '@/shared/utils';
 import { ButtonRow } from '@/ui/components';
 import { BuildIndicator } from '@/ui/components/build-indicator';
 import { NetworkIndicator } from '@/ui/components/NetworkIndicator';
 import { OnRampList } from '@/ui/components/TokenLists/OnRampList';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import { useKeyRotationCheck } from '@/ui/hooks/use-key-rotation-check';
+import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -18,10 +24,22 @@ import { DashboardTotal } from './dashboard-total';
 import WalletTab from './wallet-tab';
 import MoveBoard from '../MoveBoard';
 
+const getCurrentVersion = (): string => {
+  // build-time version from package.json
+  // @ts-ignore - process.env.release is set at build time by webpack DefinePlugin
+  const buildVersion = typeof process !== 'undefined' ? process.env?.release : undefined;
+  const manifestVersion = chrome.runtime.getManifest().version;
+
+  const version = buildVersion || manifestVersion || '3.1.10';
+
+  return version;
+};
+
 const Dashboard = () => {
   const { network, emulatorModeOn } = useNetwork();
   const { balance, coinsLoaded } = useCoins();
   const currency = useCurrency();
+  const wallet = useWallet();
   const {
     noAddress,
     registerStatus,
@@ -30,33 +48,98 @@ const Dashboard = () => {
     userInfo,
     mainAddress,
     currentWallet,
-    currentWalletList,
+    eoaAccount,
   } = useProfiles();
   const navigate = useNavigate();
   const location = useLocation();
   // Use this to show the onramp drawer. Navigate to dashboard?onramp=true
   const [showOnRamp, setShowOnRamp] = useState(location.search.includes('onramp'));
   const [showMoveBoard, setShowMoveBoard] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [whatsNewData, setWhatsNewData] = useState<any>(null);
+  const [isLoadingWhatsNew, setIsLoadingWhatsNew] = useState(false);
+
+  // Check if key rotation is needed for the active account
+  const isBloctoKeyRotationEnabled = useFeatureFlag('blocto_key_rotation');
+  const { detection: keyRotationDetection } = useKeyRotationCheck(currentWallet?.address);
+  const needKeyRotation =
+    isBloctoKeyRotationEnabled &&
+    keyRotationDetection?.needRevoke === true &&
+    !eoaAccount?.hasAssets;
+
+  // Get version for popup title (patch version set to 0)
+  const currentVersion = getCurrentVersion();
+
+  useEffect(() => {
+    const fetchWhatsNew = async () => {
+      if (!wallet || isLoadingWhatsNew) return;
+
+      const versionKey = `dashboard-popup-dismissed-v${currentVersion}`;
+      const dismissed = localStorage.getItem(versionKey);
+      if (dismissed === 'true') {
+        // Already dismissed for this version, skip API call
+        return;
+      }
+
+      setIsLoadingWhatsNew(true);
+      try {
+        const response = await WhatSNewService.whatsnew(
+          {
+            toVersion: currentVersion,
+            fromVersion: currentVersion,
+            platform: 'ext',
+            language: 'en',
+          },
+          {}
+        );
+
+        // Extract data from response (response.data.data or response.data)
+        const data = response?.data?.data || response?.data || response;
+        if (data && data.content) {
+          setWhatsNewData(data);
+          // Show popup if we have content (dismissal check already done above)
+          setShowPopup(true);
+        }
+      } catch (error) {
+        consoleError('Error fetching whats new:', error);
+      } finally {
+        setIsLoadingWhatsNew(false);
+      }
+    };
+
+    fetchWhatsNew();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet, currentVersion, network]);
 
   const swapLink = getSwapLink(network, activeAccountType);
 
   useEffect(() => {
-    console.log(currentWallet, 'userInfo====', mainAddress, currentWalletList);
     if (userInfo && userInfo.id && currentWallet) {
       setUser({
         id: userInfo.id,
         username: userInfo.username,
       });
       const { eoaAccount = null, childAccounts = [], evmAccount = null } = currentWallet;
+      const flowAddress = currentWallet.address || '';
+      const evmAddress = evmAccount?.address || eoaAccount?.address || '';
+      setTag('flow_address', flowAddress);
+      setTag('evm_address', evmAddress);
       setExtras({
-        COA: eoaAccount ? eoaAccount.address : '',
-        EOA: evmAccount ? evmAccount.address : '',
+        EOA: eoaAccount ? eoaAccount.address : '',
+        COA: evmAccount ? evmAccount.address : '',
         selectedAccount: currentWallet.address,
         flowAccount: currentWallet?.address,
         childs: childAccounts.map((item) => item.address).join(','),
       });
     }
-  }, [userInfo, mainAddress, currentWallet]);
+  }, [userInfo, mainAddress, currentWallet?.evmAccount, currentWallet?.eoaAccount]);
+
+  const handleClosePopup = () => {
+    // Use current extension version for localStorage key
+    const key = `dashboard-popup-dismissed-v${currentVersion}`;
+    localStorage.setItem(key, 'true');
+    setShowPopup(false);
+  };
 
   return (
     <Box
@@ -78,6 +161,75 @@ const Dashboard = () => {
           noAddress={noAddress}
           addressCreationInProgress={registerStatus}
         />
+        {/* Key Rotation Banner */}
+        {needKeyRotation && currentWallet?.address && (
+          <Box
+            sx={{
+              padding: '0 16px',
+              marginBottom: '8px',
+            }}
+          >
+            <Box
+              sx={{
+                backgroundColor: '#FF980029',
+                border: '1px solid #FF9800',
+                borderRadius: '16px',
+                padding: '12px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              <Typography
+                sx={{
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  lineHeight: '1.5',
+                }}
+              >
+                {chrome.i18n.getMessage('Upgrade_your_account') || 'Upgrade your account'}
+              </Typography>
+              <Typography
+                sx={{
+                  color: '#BABABA',
+                  fontSize: '12px',
+                  lineHeight: '1.5',
+                }}
+              >
+                {chrome.i18n.getMessage('Flow_Wallet_needs_to_upgrade_security') ||
+                  'Flow Wallet needs to upgrade the security of your account to remove your previous Blocto keys.'}
+              </Typography>
+              <Button
+                variant="contained"
+                color="warning"
+                onClick={() => {
+                  if (currentWallet?.address) {
+                    navigate(`/dashboard/nested/keyrotation?address=${currentWallet.address}`);
+                  }
+                }}
+                sx={{
+                  marginTop: '4px',
+                  textTransform: 'capitalize',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  height: '40px',
+                  backgroundColor: '#FF9800',
+                  color: '#FFFFFF',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                    color: '#FF9800',
+                    border: '1px solid #FF9800',
+                  },
+                }}
+              >
+                {chrome.i18n.getMessage('Start') || 'Start'}
+              </Button>
+            </Box>
+          </Box>
+        )}
         {/* Button Row */}
         <ButtonRow
           onSendClick={() => navigate('/dashboard/select-tokens')}
@@ -119,6 +271,27 @@ const Dashboard = () => {
           />
         )}
       </div>
+      {/* Update Dialog - Shows what's new from API */}
+      {whatsNewData && (
+        <UpdateDialog
+          visible={showPopup}
+          title={
+            whatsNewData.title || `Extension Update V${whatsNewData.version || currentVersion}`
+          }
+          updateContent={whatsNewData.content || ''}
+          actions={
+            whatsNewData.actions?.map((action: any) => ({
+              text: action.text || action.label,
+              url: action.url,
+              type: action.type || 'external',
+              style: action.style || {},
+            })) || []
+          }
+          buttonText={whatsNewData.buttonText || chrome.i18n.getMessage('OK') || 'OK'}
+          onButtonClick={handleClosePopup}
+          onClose={handleClosePopup}
+        />
+      )}
     </Box>
   );
 };

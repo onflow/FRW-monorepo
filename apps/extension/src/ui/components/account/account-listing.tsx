@@ -4,10 +4,13 @@ import React from 'react';
 import { type MainAccount, type WalletAccount } from '@/shared/types';
 import { isValidEthereumAddress, isCOAAddress } from '@/shared/utils';
 import { useHiddenAccounts } from '@/ui/hooks/preference-hooks';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
+import { useNetwork } from '@/ui/hooks/useNetworkHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 import { COLOR_DARKMODE_TEXT_PRIMARY_80_FFFFFF80 } from '@/ui/style/color';
 
 import { AccountCard } from './account-card';
+import { AccountMigrationCard } from './account-migration-card';
 import { EnableEvmAccountCard } from './enable-evm-account-card';
 
 type AccountHierarchyProps = {
@@ -27,6 +30,7 @@ const AccountHierarchy = ({
   onAccountClickSecondary,
   secondaryIcon,
 }: AccountHierarchyProps) => {
+  const { developerMode } = useNetwork();
   const childAccounts = account?.childAccounts;
   const evmAccount = account?.evmAccount;
   const loading = network === undefined || account === undefined;
@@ -57,11 +61,11 @@ const AccountHierarchy = ({
         showCard={false}
       />
 
-      {/* EVM account - only render if it has assets */}
+      {/* EVM account - render if it has assets OR developer mode is on */}
       {evmAccount &&
         evmAccount.address &&
         isValidEthereumAddress(evmAccount.address) &&
-        evmAccount.hasAssets && (
+        (evmAccount.hasAssets || developerMode) && (
           <AccountCard
             network={network}
             key={evmAccount.address}
@@ -112,6 +116,7 @@ type AccountListingProps = {
   onAccountClick?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   onAccountClickSecondary?: (address: WalletAccount, parentAddress?: WalletAccount) => void;
   onEnableEvmClick?: (parentAddress: string) => void;
+  onMigrationClick?: (address: string) => void;
   secondaryIcon?: React.ReactNode;
   showActiveAccount?: boolean;
   itemSx?: React.CSSProperties;
@@ -126,6 +131,7 @@ export const AccountListing = ({
   onAccountClick,
   onAccountClickSecondary,
   onEnableEvmClick,
+  onMigrationClick,
   secondaryIcon,
   showActiveAccount = false,
   itemSx,
@@ -133,10 +139,20 @@ export const AccountListing = ({
 }: AccountListingProps) => {
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
+  // Get the EOA account for the active account provided it's a main account
+  const eoaAccount = activeParentAccount?.eoaAccount;
   // Check if the EVM account is not valid
   const noEvmAccount = !evmAccount;
+  // Check if EVM COA account exists and has balance
+  const hasEvmCoaWithBalance =
+    evmAccount?.address &&
+    isValidEthereumAddress(evmAccount.address) &&
+    isCOAAddress(evmAccount.address) &&
+    evmAccount.hasAssets &&
+    activeAccount?.address === evmAccount.address;
   const { pendingAccountTransactions } = useProfiles();
   const hiddenAccounts = useHiddenAccounts();
+  const isCoaMigrationEnabled = useFeatureFlag('coa_migration_v2');
 
   // Get the first EOA account, prioritizing from accounts with COA
   const uniqueEoaAccounts = React.useMemo(() => {
@@ -228,6 +244,17 @@ export const AccountListing = ({
               }
             />
           )}
+          {/* If EVM COA account exists and has balance, show the AccountMigrationCard */}
+          {isCoaMigrationEnabled && hasEvmCoaWithBalance && (
+            <AccountMigrationCard
+              showCard={false}
+              onMigrationClick={() =>
+                activeParentAccount?.address
+                  ? onMigrationClick?.(activeParentAccount?.address)
+                  : undefined
+              }
+            />
+          )}
 
           <Typography
             variant="body1"
@@ -272,6 +299,7 @@ export const AccountListing = ({
                 secondaryIcon={secondaryIcon}
                 showCard={false}
                 showLink={false}
+                data-testid={`eoa-account-${account.address}`}
               />
             </Box>
           );

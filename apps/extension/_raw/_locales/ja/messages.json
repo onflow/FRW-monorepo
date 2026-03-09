@@ -96,6 +96,9 @@
   "Developer__Mode": {
     "message": "デベロッパーモード"
   },
+  "Wrap_EOA_Tx_With_Cadence": {
+    "message": "Cadence で EOA トランザクションをラップする"
+  },
   "Feedback": {
     "message": "フィードバック"
   },
@@ -1196,7 +1199,7 @@
     "message": "モバイルアプリ"
   },
   "You_can_import_the": {
-    "message": "他のウォレット（例：Blocto）からキーストアの JSON 内容を貼り付けてください"
+    "message": "キーストアの JSON 内容を別のウォレットから貼り付けてください (例: Blocto)"
   },
   "Enter_password_for_json_file": {
     "message": "json ファイルのパスワードを入力してください"

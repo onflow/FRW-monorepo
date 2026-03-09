@@ -1,10 +1,16 @@
+import type { forms_DeviceInfo } from '@onflow/frw-api';
 import type {
+  CreateAccountResponse,
   Currency,
+  NativeScreenName,
   Platform,
   RecentContactsResponse,
+  SeedPhraseGenerationResponse,
   WalletAccount,
   WalletAccountsResponse,
   WalletProfilesResponse,
+  KeyRotationDependencies,
+  BloctoDetectionResult,
 } from '@onflow/frw-types';
 
 import type { Cache } from './caching/Cache';
@@ -15,11 +21,14 @@ import type { Storage } from './storage/Storage';
 export type CadenceRequestInterceptor = (config: any) => any | Promise<any>;
 export type CadenceResponseInterceptor = (response: any) => any | Promise<any>;
 
+// Re-export KeyRotationDependencies from types package
+export type { KeyRotationDependencies, NewKeyInfo } from '@onflow/frw-types';
+
 /**
  * Platform specification interface for platform abstraction
  * This interface defines all methods that platform-specific implementations must implement
  */
-export interface PlatformSpec {
+export interface PlatformSpec extends KeyRotationDependencies {
   // Basic platform methods
   getSelectedAddress(): string | null;
   getDebugAddress(): string | null;
@@ -28,9 +37,12 @@ export interface PlatformSpec {
   getVersion(): string;
   getBuildNumber(): string;
   getLanguage(): string;
+  getMixpanelToken(): string;
+  getSignType(): string;
 
   getCurrency(): Currency;
   getPlatform(): Platform;
+  getDeviceInfo(): forms_DeviceInfo;
 
   // API endpoint methods
   getApiEndpoint(): string;
@@ -42,13 +54,16 @@ export interface PlatformSpec {
   cache(): Cache;
   navigation(): Navigation;
 
-  // Cryptographic operations
-  // Turbo Modules do not support Uint8Array or ArrayBuffer, so we need to convert to hex string instead
+  // Cryptographic operations (hexData due to Turbo Module limitations)
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
-
-  // EVM transaction signing for pre-encoded payloads
   ethSign(signData: Uint8Array): Promise<Uint8Array>;
+
+  /**
+   * When false, EOA EVM transactions are sent via RLP directly to EVM RPC (by the package).
+   * When true or unset, EOA txs go through Cadence (eoaCallContract).
+   */
+  getWrapEOATxWithCadence?(): Promise<boolean>;
 
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
@@ -57,7 +72,22 @@ export interface PlatformSpec {
   getSelectedAccount(): Promise<WalletAccount>;
   getCurrentUserUid?(): Promise<string | null>;
 
-  // Transaction monitoring and post-transaction actions
+  // Profile management
+  /**
+   * Get profiles stored locally but not yet logged in (for recovery flow)
+   * These are different from getWalletProfiles which returns currently logged-in profiles
+   * @returns Promise with recoverable profiles response
+   */
+  getRecoverableProfiles?(): Promise<WalletProfilesResponse>;
+
+  /**
+   * Switch to a previously signed-in profile by user ID
+   * @param userId - The unique identifier of the profile to switch to
+   * @returns Promise that resolves on success, rejects on failure
+   */
+  switchToProfile?(userId: string): Promise<void>;
+
+  // Transaction monitoring
   listenTransaction?(
     txId: string,
     showNotification: boolean,
@@ -66,24 +96,23 @@ export interface PlatformSpec {
     icon?: string
   ): void;
 
-  // CadenceService configuration using interceptor pattern
-  // This method allows the bridge to configure all FCL-related functionality
+  // CadenceService configuration (FCL interceptors)
   configureCadenceService(cadenceService: any): void;
 
-  // Logging methods - platform-specific logging implementation
+  // Logging
   log(level: 'debug' | 'info' | 'warn' | 'error', message: string, ...args: unknown[]): void;
   isDebug(): boolean;
 
-  // Error reporting methods - for checking Instabug availability
+  // Error reporting (Instabug)
   isInstabugInitialized?(): boolean;
   setInstabugInitialized?(initialized: boolean): void;
 
-  // UI interaction methods
+  // UI interactions
   scanQRCode(): Promise<string>;
   shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
 
-  // Toast/Notification methods
+  // Toast notifications
   showToast?(
     title: string,
     message?: string,
@@ -93,4 +122,97 @@ export interface PlatformSpec {
   hideToast?(id: string): void;
   clearAllToasts?(): void;
   setToastCallback?(callback: (toast: any) => void): void;
+
+  // Account creation
+  generateSeedPhrase?(strength?: number): Promise<SeedPhraseGenerationResponse>;
+  /**
+   * Get all signatures needed for v4 API registration
+   * Signs in anonymously to Firebase, gets JWT, and signs it with both Flow and EVM keys derived from mnemonic
+   * @param mnemonic - The recovery phrase to derive signing keys from
+   * @returns Promise with flowSignature, evmSignature, and eoaAddress
+   */
+  getV4RegistrationSignatures?(mnemonic: string): Promise<{
+    flowSignature: string;
+    evmSignature: string;
+    eoaAddress: string;
+  }>;
+  /**
+   * Register Secure Enclave account with backend and initiate on-chain account creation
+   * Returns early with txId so RN can monitor transaction status
+   * Does NOT wait for transaction to seal - RN will handle that
+   * @param username - Username for the account
+   * @returns Response with txId for RN to monitor (address may be null until tx seals)
+   */
+  registerSecureTypeAccount?(username: string): Promise<CreateAccountResponse>; // Secure Enclave (hardware-backed)
+
+  /**
+   * Initialize Secure Enclave wallet after account creation transaction has sealed
+   * Called by RN after monitoring tx status confirms the transaction is sealed
+   * @param txId - Transaction ID from account creation
+   * @returns Promise that resolves when wallet is initialized
+   */
+  initSecureEnclaveWallet?(
+    txId: string
+  ): Promise<{ success: boolean; address: string | null; error: string | null }>;
+
+  // Wallet initialization
+  /**
+   * Save mnemonic and initialize wallet after account creation transaction is sealed
+   * @param mnemonic - The recovery phrase to save securely
+   * @param customToken - Firebase custom token from registration
+   * @param txId - Transaction ID from account creation (used to init native wallet SDK)
+   * @param username - Username for the account
+   * @param evmAddress - Optional pre-derived EVM/EOA address for faster display
+   */
+  saveMnemonic?(
+    mnemonic: string,
+    customToken: string,
+    txId: string,
+    username: string,
+    evmAddress?: string
+  ): Promise<void>;
+
+  // Firebase authentication
+  signInWithCustomToken?(customToken: string): Promise<void>;
+
+  // Permissions
+  requestNotificationPermission?(): Promise<boolean>;
+  checkNotificationPermission?(): Promise<boolean>;
+
+  // Screen security
+  setScreenSecurityLevel?(level: 'normal' | 'secure'): void;
+
+  // Native screen navigation
+  launchNativeScreen?(screenName: NativeScreenName, params?: string): void;
+
+  // Migration support
+  /**
+   * Get migration assets (ERC20, ERC721, ERC1155) for a given source address
+   * @param sourceAddress - The source account address (COA/EVM address)
+   * @returns Promise with migration assets data
+   */
+  getMigrationAssets?(sourceAddress: string): Promise<{
+    erc20: Array<{ address: string; amount: string }>;
+    erc721: Array<{ address: string; id: string }>;
+    erc1155: Array<{ address: string; id: string; amount: string }>;
+  }>;
+  /**
+   * Refresh COA-related data after migration (native-side refresh for home + side menu)
+   */
+  refreshCoaAfterMigration?(): Promise<void>;
+  // Safe area insets for cross-platform layout
+  /**
+   * Get device safe area insets for proper content positioning
+   * Returns the distance from the edges of the screen to the safe area
+   * @returns Object with top, bottom, left, right inset values in pixels
+   */
+  getSafeAreaInsets?(): { top: number; bottom: number; left: number; right: number };
+
+  // Key rotation detection
+  /**
+   * Check if the current account requires key rotation
+   * @param address - Optional address to check. If not provided, uses the currently selected account address
+   * @returns Promise<BloctoDetectionResult> - Detection result indicating if rotation is needed
+   */
+  checkKeyRotationNeeded(address?: string): Promise<BloctoDetectionResult>;
 }

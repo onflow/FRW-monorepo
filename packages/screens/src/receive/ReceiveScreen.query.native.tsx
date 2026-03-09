@@ -8,8 +8,9 @@ import {
   YStack,
   AccountSelector,
   Button,
+  COAAddressCopyModal,
 } from '@onflow/frw-ui';
-import { logger, retryConfigs } from '@onflow/frw-utils';
+import { logger, retryConfigs, isCOAAddress } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +30,10 @@ export function ReceiveScreen(): ReactElement {
 
   // Local state for selected account - no need for store
   const [selectedAccount, setSelectedAccount] = useState<WalletAccount | null>(null);
+
+  // COA copy modal state
+  const [showCOAModal, setShowCOAModal] = useState(false);
+  const [coaAddressToCopy, setCoaAddressToCopy] = useState<string>('');
 
   // Profile hooks
   const allProfiles = useAllProfiles();
@@ -132,6 +137,14 @@ export function ReceiveScreen(): ReactElement {
   const handleCopyAddress = useCallback(
     async (address: string) => {
       try {
+        // Check if the address is a COA address
+        if (isCOAAddress(address)) {
+          // Show COA modal instead of copying directly
+          setCoaAddressToCopy(address);
+          setShowCOAModal(true);
+          return;
+        }
+
         // Check platform and use appropriate clipboard method (same as SendToScreen)
         const platform = bridge.getPlatform();
 
@@ -343,6 +356,46 @@ export function ReceiveScreen(): ReactElement {
           </Button>
         </YStack>
       </YStack>
+
+      {/* COA Address Copy Modal */}
+      <COAAddressCopyModal
+        visible={showCOAModal}
+        address={coaAddressToCopy}
+        onClose={() => {
+          setShowCOAModal(false);
+          setCoaAddressToCopy('');
+        }}
+        onConfirm={async () => {
+          try {
+            // Copy the address after confirmation
+            const platform = bridge.getPlatform();
+            if (platform !== 'extension' && typeof window === 'undefined') {
+              const rnClipboard = (globalThis as any).clipboard;
+              if (rnClipboard?.setString) {
+                rnClipboard.setString(coaAddressToCopy);
+              }
+            } else if (navigator.clipboard) {
+              await navigator.clipboard.writeText(coaAddressToCopy);
+            }
+
+            // Show success toast
+            toast.show({
+              title: t('messages.addressCopied'),
+              type: 'success',
+            });
+            logger.debug('COA address copied to clipboard:', coaAddressToCopy);
+
+            setShowCOAModal(false);
+            setCoaAddressToCopy('');
+          } catch (error: any) {
+            logger.error('Failed to copy COA address:', error);
+            toast.show({
+              title: t('messages.failedToCopy'),
+              type: 'error',
+            });
+          }
+        }}
+      />
     </BackgroundWrapper>
   );
 }

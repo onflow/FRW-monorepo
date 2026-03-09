@@ -2,19 +2,27 @@ import {
   getCurrentAddress,
   waitForTransaction,
   switchToEvmAddress,
-  getSenderEvmAccount,
   switchToMainAccount,
   checkSentAmount,
   loginToSenderAccount,
   loginToSenderOrReceiver,
+  switchToEOAAccount,
+  loginToEOAAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 
 // const senderChildAddr = process.env.TEST_SENDER_CHILD_ADDR!;
 
-export const sendFT = async ({ page, tokenName, receiver, amount, ingoreFlowCharge = false }) => {
+export const sendFT = async ({
+  page,
+  tokenName,
+  receiver,
+  amount,
+  ingoreFlowCharge = false,
+  isCoa = false,
+}) => {
   // Wait for the EVM account to be loaded
-  await getCurrentAddress(page);
+  await getCurrentAddress(page, isCoa);
   // send Ft token from COA
   await page.getByTestId(`send-button`).click();
 
@@ -84,13 +92,50 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
     [];
   await switchToEvmAddress({
     page,
-    address: getSenderEvmAccount({ parallelIndex: test.info().parallelIndex }),
+    address: process.env.TEST_SENDER_EVM_ADDR,
   });
 
   const tx1 = await sendFT({
     page,
     tokenName: 'USDC.e',
-    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
+    receiver: process.env.TEST_SENDER_EVM_ADDR,
+    amount: '0.000001',
+    isCoa: true,
+  });
+  txList.push(tx1);
+
+  await Promise.all(
+    txList.map(async (tx) => {
+      await checkSentAmount({
+        page,
+        txId: tx.txId,
+        amount: tx.amount,
+        sealedText: 'sealed',
+        ingoreFlowCharge: tx.ingoreFlowCharge,
+        isEvm: true,
+      });
+    })
+  );
+});
+
+test('send FTs with EOA ', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  await loginToEOAAccount({
+    page,
+    extensionId,
+  });
+  const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
+    [];
+
+  await switchToEOAAccount({
+    page,
+    address: process.env.TEST_EOA_ADDR,
+  });
+
+  const tx1 = await sendFT({
+    page,
+    tokenName: 'USDC.e',
+    receiver: process.env.TEST_SENDER_ADDR,
     amount: '0.000001',
   });
   txList.push(tx1);

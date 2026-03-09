@@ -1,4 +1,5 @@
-import { bridge, cadence } from '@onflow/frw-context';
+import type { TransactionSession } from '@onflow/frw-analytics';
+import { analytics, bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
   type CollectionModel,
@@ -8,18 +9,16 @@ import {
   FRWError,
   ErrorCode,
 } from '@onflow/frw-types';
-import {
-  getNFTResourceIdentifier,
-  getTokenResourceIdentifier,
-  logger,
-} from '@onflow/frw-utils';
+import { getNFTResourceIdentifier, getTokenResourceIdentifier, logger } from '@onflow/frw-utils';
 import {
   type SendPayload,
   SendTransaction,
   isValidSendTransactionPayload,
+  sendRawTransactionToEvmRpc,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
+import { useTokenStore } from './tokenStore';
 import {
   type AccessibleAssetStore,
   type BalanceData,
@@ -32,8 +31,12 @@ import {
 // Helper function to format amount
 function formatAmount(val: string | number | undefined | null): string {
   if (val === null || val === undefined || val === '') return '0';
-  const num = typeof val === 'string' ? parseFloat(val) : val;
-  return isNaN(num) ? '0' : num.toString();
+  if (typeof val === 'number') {
+    return isNaN(val) ? '0' : String(val);
+  }
+  // Validate without parseFloat to preserve full decimal precision (e.g. 18 decimals)
+  const trimmed = val.trim();
+  return trimmed === '' || isNaN(Number(trimmed)) ? '0' : trimmed;
 }
 
 // Default form data
@@ -379,8 +382,59 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     }),
 
+  // Create transaction session using analytics from context (initialized at app startup)
+  createTransactionSession: async (): Promise<TransactionSession | null> => {
+    try {
+      // Check if analytics is available (may be null on React Native where native MixpanelManager handles tracking)
+      if (!analytics.isEnabled()) {
+        logger.debug('[SendStore] Analytics not enabled, skipping transaction tracking');
+        return null;
+      }
+
+      const transactionTracker = analytics.getTransactionTracker();
+      if (!transactionTracker) {
+        logger.debug('[SendStore] No transaction tracker available');
+        return null;
+      }
+
+      const state = get();
+      const { transactionType } = state;
+
+      const { accounts } = await bridge.getWalletAccounts();
+      const selectedAccount = await bridge.getSelectedAccount();
+      const mainAccount =
+        selectedAccount.type === 'main'
+          ? selectedAccount
+          : accounts.find(
+              (account) =>
+                account.type === 'main' && account.address === selectedAccount.parentAddress
+            );
+
+      if (!mainAccount) {
+        logger.warn('[SendStore] No main account found for analytics session');
+        return null;
+      }
+
+      // Cast to TransactionSession since TransactionTracker returns unknown to avoid type conflicts
+      const session = transactionTracker.createTransactionSession(
+        mainAccount.address,
+        transactionType
+      ) as TransactionSession;
+
+      logger.debug('[SendStore] Transaction session created for analytics');
+      return session;
+    } catch (error) {
+      // Analytics session creation failed - continue without tracking
+      logger.warn(
+        '[SendStore] Analytics session creation failed, continuing without tracking:',
+        error
+      );
+      return null;
+    }
+  },
+
   // Create send payload for transaction execution
-  createSendPayload: async (): Promise<SendPayload | null> => {
+  createSendPayload: async (session: TransactionSession | null): Promise<SendPayload | null> => {
     const state = get();
     logger.info('[SendStore] createSendPayload -- state:', state);
     const { fromAccount, toAccount, selectedToken, selectedNFTs, formData, transactionType } =
@@ -444,16 +498,45 @@ export const useSendStore = create<SendState>((set, get) => ({
         logger.error('[SendStore] No main account found');
         return null;
       }
+
+      let contractAddress = isTokenTransaction
+        ? selectedToken?.evmAddress || ''
+        : selectedNFTs[0]?.evmAddress || '';
+
+      // Fallback: resolve missing EVM token contract address from tokenStore cache
+      if (isTokenTransaction && contractAddress === '' && selectedToken) {
+        const network = bridge.getNetwork?.() || 'mainnet';
+        const tokens =
+          useTokenStore.getState().getTokensForAddress(fromAccount.address, network) || [];
+        const matched = tokens.find((token) => {
+          if (selectedToken.identifier && token.identifier === selectedToken.identifier) {
+            return true;
+          }
+          if (
+            selectedToken.contractAddress &&
+            token.contractAddress === selectedToken.contractAddress
+          ) {
+            return true;
+          }
+          if (selectedToken.symbol && token.symbol === selectedToken.symbol) {
+            return true;
+          }
+          return false;
+        });
+        if (matched) {
+          contractAddress = matched.evmAddress || matched.contractAddress || '';
+          logger.debug('[SendStore] Resolved missing token contract address from tokenStore', {
+            matchedIdentifier: matched.identifier,
+            matchedSymbol: matched.symbol,
+            matchedContract: matched.contractAddress,
+            resolvedAddress: matched.contractAddress,
+          });
+        }
+      }
+
       const senderType = addressType(fromAccount.address);
       const receiverType = addressType(toAccount.address);
       const isCrossVM = senderType !== receiverType;
-
-      const contractAddress = isTokenTransaction
-        ? selectedToken?.evmAddress ||
-          (selectedToken?.identifier?.includes('1654653399040a61.FlowToken')
-            ? '0x7f27352D5F83Db87a5A3E00f4B07Cc2138D8ee52'
-            : '')
-        : selectedNFTs[0]?.evmAddress || '';
 
       // For ERC1155 NFTs, we need to include the amount/quantity
       let nftAmount = '';
@@ -522,6 +605,8 @@ export const useSendStore = create<SendState>((set, get) => ({
         tokenContractAddr: contractAddress,
       };
 
+      session?.prepared(payload, { isCrossVM });
+
       logger.debug('[SendStore] Created send payload:', payload);
       return payload;
     } catch (error) {
@@ -535,9 +620,12 @@ export const useSendStore = create<SendState>((set, get) => ({
     const state = get();
     set({ isLoading: true, error: null });
 
+    // Create analytics session (uses pre-initialized analytics from context)
+    const session = await state.createTransactionSession();
+
     try {
       // Create payload
-      const payload = await state.createSendPayload();
+      const payload = await state.createSendPayload(session);
 
       if (!payload) {
         throw new Error('Failed to create transaction payload');
@@ -548,13 +636,48 @@ export const useSendStore = create<SendState>((set, get) => ({
         throw new Error('Invalid transaction payload');
       }
 
+      // todo tracker
+
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
+      const wrapWithCadence = (await bridge.getWrapEOATxWithCadence?.()) ?? true;
+      const useDirectEvm = !wrapWithCadence;
+
+      const network = bridge.getNetwork?.() ?? 'mainnet';
       const helpers = {
         ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
+        // Direct RPC path uses workflow/default gas settings.
+        gasPrice: useDirectEvm ? undefined : 0,
+        session: session || undefined,
+        ...(useDirectEvm
+          ? {
+              sendRawEvmTransaction: (signedTxHex: string) =>
+                sendRawTransactionToEvmRpc(signedTxHex, network),
+            }
+          : {}),
       };
 
+      // tracker interceptor
+      cadence.useRequestInterceptor(async (config: any) => {
+        console.log('tracker req interceptor', config);
+        // session?.signed(
+        //   config.cadence,
+        //   bridge.getSignType() as 'wallet' | 'keystore' | 'hardware' | 'unknown',
+        //   bridge.getSignKeyIndex()
+        // ); // todo sign type
+
+        return config;
+      });
+
+      // tracker interceptor
+      cadence.useResponseInterceptor(async (config: any, response: any) => {
+        console.log('tracker res interceptor', config, response);
+        session?.submitted(response);
+        return { config, response };
+      });
+
+      // todo tracker
       // Get cadence service and execute transaction
       const result = await SendTransaction(payload, cadence, helpers);
 
@@ -564,15 +687,26 @@ export const useSendStore = create<SendState>((set, get) => ({
       set({ isLoading: false });
       state.resetSendFlow();
 
+      // complete session
+      session?.completed(true, result);
+
+      if (useDirectEvm) {
+        return { result, directEvm: true as const };
+      }
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       logger.error('[SendStore] Transaction error:', error);
 
+      // failed session
+      session?.failed(errorMessage, '', 'preparation');
       set({
         isLoading: false,
         error: errorMessage,
       });
+
+      // complete session
+      session?.completed(false, '');
 
       throw new FRWError(ErrorCode.TRANSACTION_ERROR, errorMessage);
     }

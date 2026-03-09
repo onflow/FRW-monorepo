@@ -114,8 +114,6 @@ export function TokenAmountInput({
               disabled={disabled}
               selectTextOnFocus
               textAlign="left"
-              as
-              any
             />
           </XStack>
         </XStack>
@@ -189,8 +187,6 @@ export function TokenAmountInput({
               lineHeight={16}
               text="right"
               flexShrink={0}
-              as
-              any
             >
               {formatBalance(tokenBalance)} {tokenSymbol}
             </Text>

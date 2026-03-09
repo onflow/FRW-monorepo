@@ -10,12 +10,46 @@ import { logger } from '@onflow/frw-utils';
 import type { SendPayload, TransferExecutionHelpers } from './types';
 
 /**
- * Default gas limits for different transaction types
+ * Default gas limits and minimum gas price for different transaction types
  */
 export const GAS_LIMITS = {
-  EVM_DEFAULT: 16_000_000,
+  EVM_DEFAULT: 16_777_216,
+  /** Flow EVM minimum gas price (wei). Chain rejects txs below this. */
+  EVM_MIN_GAS_PRICE: 16_038_000_000,
   CADENCE_DEFAULT: 9999,
 } as const;
+
+/**
+ * Send signed RLP hex to Flow EVM RPC (eth_sendRawTransaction).
+ * Used by packages when wrap-with-Cadence is disabled; bridge only provides the toggle.
+ */
+export async function sendRawTransactionToEvmRpc(
+  signedTxHex: string,
+  network: string
+): Promise<string> {
+  const rpcUrl = FLOW_EVM_RPC_ENDPOINTS[resolveNetworkKey(network)];
+  const res = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'eth_sendRawTransaction',
+      params: [signedTxHex],
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`EVM RPC request failed: ${res.status} ${res.statusText}`);
+  }
+  const data = (await res.json()) as { result?: string; error?: { message?: string } };
+  if (data.error) {
+    throw new Error(data.error.message ?? 'EVM RPC error');
+  }
+  if (typeof data.result !== 'string') {
+    throw new Error('EVM RPC: missing or invalid result');
+  }
+  return data.result;
+}
 
 /**
  * Flow token contract addresses for different networks
@@ -104,6 +138,66 @@ export const safeConvertToUFix64 = (
   }
 };
 
+export const safeConvertToUFix64WithoutRounding = (
+  amount: number | string,
+  defaultValue: string = '0.000000000000000000'
+): string => {
+  try {
+    let strAmount = String(amount).trim();
+
+    if (!strAmount || strAmount === '0' || strAmount === '') {
+      return '0.00000000';
+    }
+
+    // Handle scientific notation by converting to decimal string WITHOUT Number()
+    if (/[eE]/.test(strAmount)) {
+      // Use BigInt-based expansion to avoid precision loss
+      strAmount = expandScientificNotation(strAmount);
+    }
+
+    // Validate numeric format (no backtracking-prone quantifiers)
+    if (/[^\d.]/.test(strAmount) || strAmount.indexOf('.') !== strAmount.lastIndexOf('.')) {
+      throw new Error('Invalid number format for UFix64 conversion');
+    }
+
+    const dotIndex = strAmount.indexOf('.');
+    if (dotIndex === -1) {
+      return strAmount + '.00000000';
+    }
+
+    const intPart = strAmount.slice(0, dotIndex) || '0';
+    const decPart = strAmount.slice(dotIndex + 1);
+
+    // Truncate to 8 decimal places (no rounding) - preserves precision
+    return intPart + '.' + decPart.slice(0, 8).padEnd(8, '0');
+  } catch (error) {
+    logger.warn('Failed to convert amount to UFix64', error);
+    return defaultValue;
+  }
+};
+
+const expandScientificNotation = (str: string): string => {
+  const [base, exponent] = str.toLowerCase().split('e');
+  const exp = parseInt(exponent, 10);
+
+  if (exp === 0) return base;
+
+  const [intPart, fracPart = ''] = base.split('.');
+  const digits = intPart + fracPart;
+  const decimalPos = intPart.length + exp;
+
+  if (decimalPos <= 0) {
+    // Very small numbers: add leading zeros
+    return '0.' + '0'.repeat(-decimalPos) + digits;
+  } else if (decimalPos >= digits.length) {
+    // Large numbers: add trailing zeros
+    return digits + '0'.repeat(decimalPos - digits.length);
+  } else {
+    // Insert decimal point
+    return digits.slice(0, decimalPos) + '.' + digits.slice(decimalPos);
+  }
+};
+
 /**
  * Encodes EVM contract call data for token and NFT transfers
  * Supports ERC20, ERC721, and ERC1155 standards
@@ -114,8 +208,8 @@ export const safeConvertToUFix64 = (
 export const encodeEvmContractCallData = (
   payload: SendPayload,
   returnHex: boolean = false
-): number[] | string => {
-  const { type, amount = '', receiver, decimal, ids, sender } = payload;
+): number[] | string | string[] => {
+  const { type, amount = '', receiver, decimal, ids, sender, coaAddr } = payload;
   // const to = receiver.toLowerCase().replace(/^0x/, '');
   if (receiver.length !== 42) throw new Error('Invalid Ethereum address');
   let callData = '0x';
@@ -161,6 +255,20 @@ export const encodeEvmContractCallData = (
           nftAmount,
           '0x', // Empty data parameter
         ]);
+      }
+    } else {
+      // batch nft
+      const datas: string[] = [];
+      for (const tokenId of ids) {
+        const abi = ['function safeTransferFrom(address from, address to, uint256 tokenId)'];
+        const iface = new Interface(abi);
+
+        // Encode function call data
+        callData = iface.encodeFunctionData('safeTransferFrom', [sender, receiver, tokenId]);
+        datas.push(callData);
+      }
+      if (returnHex) {
+        return datas;
       }
     }
   }
@@ -245,7 +353,8 @@ export interface LegacyTransactionRequest {
 
 export const signLegacyEvmTransaction = async (
   tx: LegacyTransactionRequest,
-  helpers?: TransferExecutionHelpers
+  helpers?: TransferExecutionHelpers,
+  nonceSteper?: number
 ): Promise<string> => {
   if (!helpers?.ethSign) {
     throw new Error('ethSign helper is required for EVM transaction signing');
@@ -261,12 +370,12 @@ export const signLegacyEvmTransaction = async (
   ]);
 
   const gasLimit = tx.gasLimit ?? GAS_LIMITS.EVM_DEFAULT;
-  const gasPrice = tx.gasPrice ?? helpers?.gasPrice ?? 0;
+  const gasPrice = tx.gasPrice ?? helpers?.gasPrice ?? GAS_LIMITS.EVM_MIN_GAS_PRICE;
 
   const unsignedTx: UnsignedTransaction = {
     type: 0,
     chainId,
-    nonce,
+    nonce: nonceSteper && nonceSteper > 0 ? nonce + nonceSteper : nonce,
     gasPrice,
     gasLimit,
     to: tx.to,

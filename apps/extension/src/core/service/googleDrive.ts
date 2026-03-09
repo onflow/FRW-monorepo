@@ -367,12 +367,10 @@ class GoogleDriveService {
     const key = this.pad_array(aesjs.utils.utf8.toBytes(password));
     // When ready to decrypt the hex string, convert it back to bytes
     const encryptedBytes = aesjs.utils.hex.toBytes(encryptedHex);
-    // console.log('encryptedBytes ->', encryptedBytes)
     // The cipher-block chaining mode of operation maintains internal
     // state, so to decrypt a new instance must be instantiated.
     const aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
     const decryptedBytes = aesjs.padding.pkcs7.strip(aesCbc.decrypt(encryptedBytes));
-    // console.log('decryptedBytes ->', decryptedBytes)
     // Convert our bytes back into text
     const decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
     return decryptedText.trim();

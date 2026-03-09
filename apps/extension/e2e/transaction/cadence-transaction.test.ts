@@ -4,6 +4,7 @@ import {
   checkSentAmount,
   switchToMainAccount,
   loginToSenderAccount,
+  switchToEOAAccount,
 } from '../utils/helper';
 import { test } from '../utils/loader';
 export const sendTokenFlow = async ({
@@ -74,7 +75,7 @@ test.beforeEach(async ({ page, extensionId }) => {
   await loginToSenderAccount({ page, extensionId });
 });
 
-const txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharge: boolean }[] = [];
+let txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharge: boolean }[] = [];
 
 //Send FLOW token from Flow to Flow
 test('send Cadence transactions', async ({ page, extensionId }) => {
@@ -90,7 +91,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
     page,
     tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_ADDR,
-    amount: '0.00123456',
+    amount: '0.00000123',
   });
   txList.push(tx1);
 
@@ -99,51 +100,11 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
     page,
     tokenname: 'stFlow',
     receiver: process.env.TEST_RECEIVER_ADDR,
-    amount: '0.00123456',
+    amount: '0.00000123',
   });
   txList.push(tx2);
 
-  //Send FLOW token from Flow to COA
-  // This can take a while
-  const tx3 = await sendTokenFlow({
-    page,
-    tokenname: 'flow',
-    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
-    amount: '0.00123456',
-  });
-  txList.push(tx3);
-
-  //Send USDC from Flow to Flow
-  const tx4 = await sendTokenFlow({
-    page,
-    tokenname: 'usdc.e',
-    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
-    ingoreFlowCharge: true,
-    amount: '0.00123456',
-  });
-  txList.push(tx4);
-
-  //Send FLOW token from Flow to EOA
-  // This can take a while
-  // const tx5 = await sendTokenFlow({
-  //   page,
-  //   tokenname: 'flow',
-  //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-  //   amount: '0.00123456',
-  // });
-  // txList.push(tx5);
-
-  //Send BETA from Flow to EOA
-  // const tx6 = await sendTokenFlow({
-  //   page,
-  //   tokenname: 'beta',
-  //   receiver: process.env.TEST_RECEIVER_METAMASK_EVM_ADDR!,
-  //   ingoreFlowCharge: true,
-  //   amount: '0.00123456',
-  // });
-  // txList.push(tx6);
-
-  //Check all sealed transactions
+  // Check all sealed transactions
   // Check the amounts that were sent for each transaction
   // Go to the activity page
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
@@ -160,4 +121,90 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
       });
     })
   );
+  txList = [];
+});
+
+//Send FLOW token to evm
+test('send Cadence transactions to evm', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  await loginToSenderAccount({ page, extensionId });
+
+  await switchToMainAccount({
+    page,
+    address: process.env.TEST_SENDER_ADDR,
+  });
+  // This can take a while
+  const tx3 = await sendTokenFlow({
+    page,
+    tokenname: 'flow',
+    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
+    amount: '0.00000123',
+  });
+  txList.push(tx3);
+
+  //Send USDC from Flow to Flow
+  const tx4 = await sendTokenFlow({
+    page,
+    tokenname: 'usdc.e',
+    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
+    ingoreFlowCharge: true,
+    amount: '0.00000123',
+  });
+  txList.push(tx4);
+  // Check all sealed transactions
+  // Check the amounts that were sent for each transaction
+  // Go to the activity page
+  await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
+  await page.waitForURL(/.*\/dashboard.*/);
+
+  await Promise.all(
+    txList.map(async (tx) => {
+      await checkSentAmount({
+        page,
+        txId: tx.txId,
+        amount: tx.amount,
+        sealedText: 'sealed',
+        ingoreFlowCharge: tx.ingoreFlowCharge,
+      });
+    })
+  );
+  txList = [];
+});
+
+test('send from evm to Flow', async ({ page, extensionId }) => {
+  test.setTimeout(120_000);
+  await loginToSenderAccount({ page, extensionId });
+
+  await switchToEOAAccount({
+    page,
+    address: process.env.TEST_SENDER_EOA_ADDR,
+  });
+  // This can take a while
+  const tx1 = await sendTokenFlow({
+    page,
+    tokenname: 'flow',
+    receiver: process.env.TEST_SENDER_ADDR,
+    amount: '0.018013559282605914',
+  });
+  txList.push(tx1);
+
+  // Check all sealed transactions
+  // Check the amounts that were sent for each transaction
+  // Go to the activity page
+  await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
+  await page.waitForURL(/.*\/dashboard.*/);
+
+  await Promise.all(
+    txList.map(async (tx) => {
+      await checkSentAmount({
+        page,
+        txId: tx.txId,
+        amount: '0.01801355', // make sure the amount is correct
+        sealedText: 'sealed',
+        ingoreFlowCharge: tx.ingoreFlowCharge,
+        isEvm: true,
+      });
+    })
+  );
+  txList = [];
 });

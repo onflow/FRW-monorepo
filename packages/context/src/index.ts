@@ -9,9 +9,11 @@ export type {
   StorageData,
   RecentRecipient,
 } from './interfaces/storage/StorageKeyMap';
+export type { AnalyticsService, TransactionTracker } from './interfaces/Analytics';
 
 // Service Context
 export {
+  analytics,
   bridge,
   cache,
   cadence,
@@ -33,8 +35,10 @@ export {
   ToastProvider,
   useToast,
   usePlatformToast,
+  type ToastProviderProps,
   type ToastContextValue,
   type ToastState,
+  type ToastRenderer,
 } from './ToastContext';
 
 // Query Client Manager

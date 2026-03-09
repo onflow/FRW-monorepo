@@ -1,4 +1,5 @@
 import { Alert, Snackbar } from '@mui/material';
+import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -14,13 +15,13 @@ import ImportTabs from '@/ui/components/import-components/ImportTabs';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import GoogleBackup from '@/ui/components/LandingPages/GoogleBackup';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
-import PickNickname from '@/ui/components/LandingPages/PickNickname';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
 import { useWallet } from '@/ui/hooks/use-wallet';
 
 export const initImportProfileState = (initialState: ImportState): ImportState => {
   return {
     ...initialState,
+    nickname: generateRandomUsername(),
   };
 };
 
@@ -29,7 +30,11 @@ const ImportProfile = () => {
   const location = useLocation();
   const usewallet = useWallet();
 
-  const [state, dispatch] = useReducer(importProfileReducer, INITIAL_IMPORT_STATE);
+  const [state, dispatch] = useReducer(
+    importProfileReducer,
+    INITIAL_IMPORT_STATE,
+    initImportProfileState
+  );
   const {
     activeTab,
     mnemonic,
@@ -182,7 +187,7 @@ const ImportProfile = () => {
           handleSwitchTab={() =>
             dispatch({
               type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.PICK_USERNAME,
+              payload: IMPORT_STEPS.SET_PASSWORD,
             })
           }
           setErrorMessage={(msg) =>
@@ -198,19 +203,6 @@ const ImportProfile = () => {
           phrase={phrase}
           setPhrase={(p) => dispatch({ type: 'SET_PASSPHRASE', payload: p })}
           onRegisterNewProfile={handleRegisterNewProfile}
-        />
-      )}
-
-      {activeTab === IMPORT_STEPS.PICK_USERNAME && (
-        <PickNickname
-          handleSwitchTab={() =>
-            dispatch({
-              type: 'SET_ACTIVE_TAB',
-              payload: IMPORT_STEPS.SET_PASSWORD,
-            })
-          }
-          nickname={nickname}
-          setNickname={(u) => dispatch({ type: 'SET_NICKNAME', payload: u })}
         />
       )}
 

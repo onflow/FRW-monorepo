@@ -3,6 +3,7 @@
  * Based on analysis of Trust Wallet Core WASM tests and examples
  */
 
+import { logger } from '@onflow/frw-utils';
 import { type WalletCore } from '@trustwallet/wallet-core';
 import {
   type HDWallet,
@@ -456,7 +457,12 @@ export class WalletCoreProvider {
       const address = core.AnyAddress.createWithPublicKey(publicKey, core.CoinType.ethereum);
 
       try {
-        return address.description();
+        const derivedAddress = address.description();
+        logger.info('[frw-wallet] EOA address derived from private key', {
+          address: derivedAddress,
+          source: 'WalletCoreProvider.deriveEVMAddressFromPrivateKey',
+        });
+        return derivedAddress;
       } finally {
         if (address && typeof address.delete === 'function') {
           address.delete();

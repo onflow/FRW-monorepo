@@ -104,33 +104,17 @@ function injectImageIntoLottie(
       return;
     }
 
-    // Check for image assets - log what we find
-    if (node.id) {
-      if (node.id === targetImageId) {
-        logger.debug(`[LottieInjection] 🎯 MATCH! Found target image "${targetImageId}"`);
-
-        if (node.p) {
-          // Standard Lottie image asset
-          const oldValue = node.p;
-          node.p = imageSource;
-          node.u = ''; // Clear base path
-          foundAndReplaced = true;
-          logger.debug(
-            `[LottieInjection] ✅ Replaced node.p from "${oldValue}" to "${imageSource.substring(0, 50)}..."`
-          );
-        } else if (node.src) {
-          // Alternative image format
-          const oldValue = node.src;
-          node.src = imageSource;
-          foundAndReplaced = true;
-          logger.debug(
-            `[LottieInjection] ✅ Replaced node.src from "${oldValue}" to "${imageSource.substring(0, 50)}..."`
-          );
-        } else {
-          logger.debug(
-            `[LottieInjection] ⚠️ Found target image but no 'p' or 'src' property to replace!`
-          );
-        }
+    // Check for image assets
+    if (node.id && node.id === targetImageId) {
+      if (node.p) {
+        // Standard Lottie image asset
+        node.p = imageSource;
+        node.u = ''; // Clear base path
+        foundAndReplaced = true;
+      } else if (node.src) {
+        // Alternative image format
+        node.src = imageSource;
+        foundAndReplaced = true;
       }
     }
 
@@ -145,26 +129,8 @@ function injectImageIntoLottie(
 
   processNode(clonedData, 'root');
 
-  if (foundAndReplaced) {
-    logger.debug(`[LottieInjection] 🎉 Successfully found and replaced image "${targetImageId}"`);
-  } else {
-    logger.debug(`[LottieInjection] ❌ Could not find image "${targetImageId}" in animation data`);
-
-    // Debug: Let's log the assets structure
-    if (clonedData.assets) {
-      logger.debug(
-        `[LottieInjection] 📋 Available assets:`,
-        clonedData.assets.map((asset: any) => ({
-          id: asset.id,
-          p: asset.p,
-          u: asset.u,
-          w: asset.w,
-          h: asset.h,
-        }))
-      );
-    } else {
-      logger.debug(`[LottieInjection] ❌ No assets array found in animation data`);
-    }
+  if (!foundAndReplaced) {
+    logger.warn(`[LottieInjection] Could not find image "${targetImageId}" in animation data`);
   }
 
   return clonedData;
@@ -189,7 +155,6 @@ export async function injectImageWithFallbacks(
 
   // If empty imageUrl provided, use base64 placeholder immediately
   if (!imageUrl || imageUrl.trim() === '') {
-    logger.debug('[LottieInjection] 📍 Using base64 placeholder for empty imageUrl');
     try {
       const placeholderData = injectImageIntoLottie(
         animationData,
@@ -213,9 +178,6 @@ export async function injectImageWithFallbacks(
 
   // Android: Check for SVG content early and use placeholder to prevent crashes
   if (Platform.OS === 'android' && isSVGContent(imageUrl)) {
-    logger.debug(
-      '[LottieInjection] 🛡️ Android + SVG detected, using safe placeholder to prevent crash'
-    );
     try {
       const placeholderData = injectImageIntoLottie(
         animationData,
@@ -243,7 +205,6 @@ export async function injectImageWithFallbacks(
       const base64Image = await imageUrlToBase64(imageUrl);
       if (base64Image) {
         const injectedData = injectImageIntoLottie(animationData, targetImageId, base64Image);
-        logger.debug('[LottieInjection] ✅ Successfully injected via base64');
         return {
           success: true,
           method: 'base64',
@@ -251,7 +212,7 @@ export async function injectImageWithFallbacks(
         };
       }
     } catch (error) {
-      logger.debug('[LottieInjection] Base64 conversion failed:', error);
+      logger.warn('[LottieInjection] Base64 conversion failed:', error);
     }
   }
 
@@ -260,21 +221,19 @@ export async function injectImageWithFallbacks(
   if (Platform.OS !== 'android') {
     try {
       const injectedData = injectImageIntoLottie(animationData, targetImageId, imageUrl);
-      logger.debug('[LottieInjection] ✅ Successfully injected via URL');
       return {
         success: true,
         method: 'url',
         animationData: injectedData,
       };
     } catch (error) {
-      logger.debug('[LottieInjection] URL injection failed:', error);
+      logger.warn('[LottieInjection] URL injection failed:', error);
     }
   }
 
   // Strategy 3: Use base64 placeholder as final fallback
   try {
     const placeholderData = injectImageIntoLottie(animationData, targetImageId, BASE64_PLACEHOLDER);
-    logger.debug('[LottieInjection] ⚠️ Using placeholder fallback');
     return {
       success: true, // Mark as success since we provided a safe fallback
       method: 'base64',

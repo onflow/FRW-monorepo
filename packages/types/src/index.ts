@@ -2,6 +2,7 @@
 
 export * from './Account';
 export * from './AccountDisplay';
+export * from './Activity';
 export * from './Bridge';
 export * from './NFTListTypes';
 export * from './NFTModel';
@@ -13,6 +14,8 @@ export * from './Send';
 export * from './BridgeHandler';
 export * from './StoreTypes';
 export * from './Platform';
+export * from './KeyRotation';
 export * from './utils/string';
 export * from './query/QueryDomain';
 export * from './Errors';
+export * from './Migration';

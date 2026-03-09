@@ -84,6 +84,11 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
               options: {
                 transpileOnly: true,
                 onlyCompileBundledFiles: true,
+                configFile: path.resolve(__dirname, '../tsconfig.json'),
+                compilerOptions: {
+                  jsx: 'react-jsx',
+                  jsxImportSource: 'react',
+                },
               },
             },
           ],
@@ -141,6 +146,11 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
             from: path.resolve(__dirname, '../node_modules/@trustwallet/wallet-core/dist/lib/wallet-core.wasm'),
             to: 'wallet-core.wasm',
           },
+          // Copy PDF.js worker for browser extension compatibility
+          {
+            from: path.resolve(__dirname, '../node_modules/pdfjs-dist/build/pdf.worker.min.mjs'),
+            to: 'pdf.worker.min.mjs',
+          },
           // Add this pattern to copy the manifest.json from _raw to dist
           {
             from: '_raw/_locales',
@@ -184,6 +194,7 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         Buffer: ['buffer', 'Buffer'],
         process: 'process',
         dayjs: 'dayjs',
+        React: 'react',
       }),
       new webpack.DefinePlugin({
         'process.env.version': JSON.stringify(`version: ${version}`),
@@ -200,12 +211,13 @@ const config = (env: { config: 'dev' | 'pro' | 'none' }): webpack.Configuration 
         moment: 'dayjs',
         'cross-fetch': 'cross-fetch',
         '@': paths.rootResolve('src'),
+        '@onflow/frw-analytics': path.resolve(__dirname, '../../../packages/analytics/src/index.ts'),
         '@onflow/frw-api': path.resolve(__dirname, '../../../packages/api/src/index.ts'),
         '@onflow/frw-cadence': path.resolve(__dirname, '../../../packages/cadence/src/index.ts'),
         '@onflow/frw-ui': path.resolve(__dirname, '../../../packages/ui/src/index.ts'),
         '@onflow/frw-screens': path.resolve(__dirname, '../../../packages/screens/src/index.ts'),
-        '@onflow/frw-stores': path.resolve(__dirname, '../../../packages/stores/src/index.ts'),
         '@onflow/frw-services': path.resolve(__dirname, '../../../packages/services/src/index.ts'),
+        '@onflow/frw-stores': path.resolve(__dirname, '../../../packages/stores/src/index.ts'),
         '@onflow/frw-types': path.resolve(__dirname, '../../../packages/types/src/index.ts'),
         '@onflow/frw-utils': path.resolve(__dirname, '../../../packages/utils/src/index.ts'),
         '@onflow/frw-workflow': path.resolve(__dirname, '../../../packages/workflow/src/index.ts'),

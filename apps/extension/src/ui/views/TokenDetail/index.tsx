@@ -1,6 +1,7 @@
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Box, Drawer, IconButton, MenuItem, Typography } from '@mui/material';
 import { ArrowBack } from '@onflow/frw-icons';
+import { VaultBanner } from '@onflow/frw-ui';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
@@ -13,6 +14,7 @@ import StorageUsageCard from '@/ui/components/StorageUsageCard';
 import { OnRampList } from '@/ui/components/TokenLists/OnRampList';
 import PriceCard from '@/ui/components/TokenLists/PriceCard';
 import { useAllTokenInfo, useEvmCustomTokens } from '@/ui/hooks/use-coin-hooks';
+import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
@@ -106,6 +108,7 @@ const TokenDetail = () => {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [isOnRamp, setIsOnRamp] = useState(false);
+  const isVaultEnabled = useFeatureFlag('vault_entrance');
 
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
@@ -254,6 +257,15 @@ const TokenDetail = () => {
               </Typography>
             </Typography>
           </Box>
+        )}
+        {token === 'flow' && isVaultEnabled && (
+          <VaultBanner
+            message="Don't miss out on $1,203 this year"
+            highlight="Earn 15% APY on Flow Vaults"
+            onPress={() => {
+              window.open('https://app.increment.fi/earn', '_blank');
+            }}
+          />
         )}
         {token === 'flow' && <StackingCard />}
         {network === 'testnet' && token === 'flow' && <ClaimTokenCard token={token} />}

@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.2",
-    "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-api": "workspace:*",
     "@onflow/frw-cadence": "workspace:*",
     "@onflow/frw-types": "workspace:*",
