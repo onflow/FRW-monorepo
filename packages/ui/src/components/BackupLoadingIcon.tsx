@@ -47,7 +47,7 @@ export function BackupLoadingIcon({
         r={layout.badge.right}
         b={layout.badge.bottom}
       >
-        <FlowLogo width={96} height={96} showWhiteBackground />;
+        <FlowLogo width={96} height={96} showWhiteBackground />
       </View>
     </View>
   );
