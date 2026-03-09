@@ -23,10 +23,12 @@ import {
   SecureEnclaveScreen,
   NotificationPreferencesScreen,
   ImportAccountScreen,
+  ImportCloudBackupLoadingScreen,
   ImportCloudMultiBackupScreen,
   ImportLegacyMethodsScreen,
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
+  type ImportCloudBackupLoadingParams,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -98,6 +100,7 @@ export type RootStackParamList = {
   // Recovery screens
   ImportProfile: undefined;
   ImportCloudMultiBackup: undefined;
+  ImportCloudBackupLoading: ImportCloudBackupLoadingParams | undefined;
   ImportLegacyMethods: undefined;
   ImportOtherMethods: undefined;
   ConfirmImportProfile: undefined;
@@ -549,6 +552,13 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               component={ImportCloudMultiBackupScreen}
               options={{
                 headerTitle: t('onboarding.importAccount.title'),
+              }}
+            />
+            <Stack.Screen
+              name="ImportCloudBackupLoading"
+              component={ImportCloudBackupLoadingScreen}
+              options={{
+                headerShown: false,
               }}
             />
             <Stack.Screen

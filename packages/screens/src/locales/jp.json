@@ -321,6 +321,11 @@
         "googleDrive": "Google Drive",
         "iCloud": "iCloud",
         "dropbox": "Dropbox"
+      },
+      "loading": {
+        "title": "バックアップを読み込み中",
+        "status": "{{provider}} のバックアップを読み込み中",
+        "defaultProvider": "クラウド"
       }
     },
     "importOtherMethods": {

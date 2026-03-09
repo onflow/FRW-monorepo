@@ -414,6 +414,11 @@
         "googleDrive": "Google Drive",
         "iCloud": "iCloud",
         "dropbox": "Dropbox"
+      },
+      "loading": {
+        "title": "Загрузка резервной копии",
+        "status": "Загрузка вашей резервной копии из {{provider}}",
+        "defaultProvider": "облака"
       }
     },
     "importOtherMethods": {

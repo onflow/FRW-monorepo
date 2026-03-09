@@ -402,6 +402,11 @@
         "googleDrive": "Google Drive",
         "iCloud": "iCloud",
         "dropbox": "Dropbox"
+      },
+      "loading": {
+        "title": "正在加载备份",
+        "status": "正在加载您的{{provider}}备份",
+        "defaultProvider": "云端"
       }
     },
     "importOtherMethods": {

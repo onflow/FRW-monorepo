@@ -321,6 +321,11 @@
         "googleDrive": "Google Drive",
         "iCloud": "iCloud",
         "dropbox": "Dropbox"
+      },
+      "loading": {
+        "title": "Backup loading",
+        "status": "Loading your {{provider}} backup",
+        "defaultProvider": "cloud"
       }
     },
     "importOtherMethods": {

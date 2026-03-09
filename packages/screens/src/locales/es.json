@@ -321,6 +321,11 @@
         "googleDrive": "Google Drive",
         "iCloud": "iCloud",
         "dropbox": "Dropbox"
+      },
+      "loading": {
+        "title": "Cargando respaldo",
+        "status": "Cargando tu respaldo de {{provider}}",
+        "defaultProvider": "nube"
       }
     },
     "importOtherMethods": {

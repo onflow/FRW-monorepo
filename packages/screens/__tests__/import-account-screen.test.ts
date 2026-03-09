@@ -39,6 +39,18 @@ describe('ImportAccount screen integration', () => {
     expect(importAccountIndexContent).toContain('ImportLegacyMethodsScreen');
   });
 
+  it('exports ImportCloudBackupLoadingScreen from importAccount module', () => {
+    const importAccountIndexPath = path.resolve(
+      __dirname,
+      '..',
+      'src',
+      'importAccount',
+      'index.ts'
+    );
+    const importAccountIndexContent = fs.readFileSync(importAccountIndexPath, 'utf-8');
+    expect(importAccountIndexContent).toContain('ImportCloudBackupLoadingScreen');
+  });
+
   it('contains onboarding.importAccount locale keys in en', () => {
     const enLocalePath = path.resolve(__dirname, '..', 'src', 'locales', 'en.json');
     const enLocale = JSON.parse(fs.readFileSync(enLocalePath, 'utf-8'));
@@ -59,6 +71,8 @@ describe('ImportAccount screen integration', () => {
     expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.providers.googleDrive');
     expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.providers.iCloud');
     expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.providers.dropbox');
+    expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.loading.title');
+    expect(enLocale).toHaveProperty('onboarding.importCloudMultiBackup.loading.status');
   });
 
   it('contains onboarding.importAccount.legacyMethodsSubtitle locale key in en', () => {

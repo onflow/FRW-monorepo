@@ -1,31 +1,36 @@
-import { bridge, logger } from '@onflow/frw-context';
+import { logger, navigation } from '@onflow/frw-context';
 import { Dropbox, GoogleDrive, Icloud } from '@onflow/frw-icons';
-import { NativeScreenName } from '@onflow/frw-types';
-import { CloudProviderCard, Text, YStack, useTheme } from '@onflow/frw-ui';
+import { NativeScreenName, ScreenName } from '@onflow/frw-types';
+import { CloudProviderCard, Text, YStack } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 export function ImportCloudMultiBackupScreen(): React.ReactElement {
   const { t } = useTranslation();
-  const theme = useTheme();
 
   const handleGoogleDrive = () => {
     logger.info('[ImportCloudMultiBackupScreen] Google Drive selected');
-    //TODO: #six add new
-    bridge.launchNativeScreen?.(NativeScreenName.GOOGLE_DRIVE_RESTORE);
+    navigation.navigate(ScreenName.IMPORT_CLOUD_BACKUP_LOADING, {
+      provider: 'googleDrive',
+      nativeScreen: NativeScreenName.GOOGLE_DRIVE_RESTORE,
+    });
   };
 
   const handleICloud = () => {
     logger.info('[ImportCloudMultiBackupScreen] iCloud selected');
-    //TODO: #six add new
-    bridge.launchNativeScreen?.(NativeScreenName.ICLOUD_RESTORE);
+    navigation.navigate(ScreenName.IMPORT_CLOUD_BACKUP_LOADING, {
+      provider: 'iCloud',
+      nativeScreen: NativeScreenName.ICLOUD_RESTORE,
+    });
   };
 
   const handleDropbox = () => {
     logger.info('[ImportCloudMultiBackupScreen] Dropbox selected');
-    //TODO: #six add new
-    bridge.launchNativeScreen?.(NativeScreenName.MULTI_RESTORE);
+    navigation.navigate(ScreenName.IMPORT_CLOUD_BACKUP_LOADING, {
+      provider: 'dropbox',
+      nativeScreen: NativeScreenName.MULTI_RESTORE,
+    });
   };
 
   return (

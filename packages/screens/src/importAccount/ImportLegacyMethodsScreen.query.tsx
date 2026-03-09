@@ -1,6 +1,6 @@
-import { bridge, logger } from '@onflow/frw-context';
+import { bridge, logger, navigation } from '@onflow/frw-context';
 import { GoogleDrive, Key, Pocket } from '@onflow/frw-icons';
-import { NativeScreenName } from '@onflow/frw-types';
+import { NativeScreenName, ScreenName } from '@onflow/frw-types';
 import { LegacyImportMethodCard, Text, YStack, useTheme } from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,10 @@ export function ImportLegacyMethodsScreen(): React.ReactElement {
 
   const handleGoogleDrive = () => {
     logger.info('[ImportLegacyMethodsScreen] Google Drive selected');
-    bridge.launchNativeScreen?.(NativeScreenName.GOOGLE_DRIVE_RESTORE);
+    navigation.navigate(ScreenName.IMPORT_CLOUD_BACKUP_LOADING, {
+      provider: 'googleDrive',
+      nativeScreen: NativeScreenName.GOOGLE_DRIVE_RESTORE,
+    });
   };
 
   const handleKeyStore = () => {
@@ -32,7 +35,7 @@ export function ImportLegacyMethodsScreen(): React.ReactElement {
             {t('onboarding.importAccount.recoveryPhrase.title')}
           </Text>
           <Text
-            maxW={339}
+            maxW={300}
             fontSize={14}
             lineHeight={17}
             fontWeight="400"
