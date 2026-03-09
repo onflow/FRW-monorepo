@@ -1,10 +1,11 @@
 import { bridge, logger } from '@onflow/frw-context';
-import { Dropbox, GoogleDrive, Icloud, MigrateIllustrate, UploadCloud } from '@onflow/frw-icons';
+import { BackupLoadingGlow, Dropbox, GoogleDrive, Icloud, UploadCloud } from '@onflow/frw-icons';
 import { NativeScreenName } from '@onflow/frw-types';
-import { Text, View, XStack, YStack, useTheme } from '@onflow/frw-ui';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { BackupLoadingIcon, Text, View, XStack, YStack, useTheme } from '@onflow/frw-ui';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Easing, StyleSheet } from 'react-native';
+
+import { ImportCloudBackupLoadingProgress } from './ImportCloudBackupLoadingProgress';
 
 export type ImportCloudBackupProvider = 'googleDrive' | 'iCloud' | 'dropbox' | 'custom';
 
@@ -21,8 +22,8 @@ interface ImportCloudBackupLoadingScreenProps {
 }
 
 const DEFAULT_PROVIDER: ImportCloudBackupProvider = 'googleDrive';
-const MIN_PROGRESS = 72;
-const MAX_PROGRESS = 86;
+const MIN_PROGRESS = 0;
+const MAX_PROGRESS = 98;
 
 const DEFAULT_NATIVE_SCREEN_BY_PROVIDER: Record<
   Exclude<ImportCloudBackupProvider, 'custom'>,
@@ -56,7 +57,7 @@ export function ImportCloudBackupLoadingScreen({
   const { t } = useTranslation();
   const theme = useTheme();
   const [progress, setProgress] = useState(80);
-  const glowValue = useRef(new Animated.Value(0)).current;
+  const [glowProgress, setGlowProgress] = useState(0);
 
   const provider = route?.params?.provider ?? DEFAULT_PROVIDER;
   const providerName = route?.params?.providerName?.trim();
@@ -95,26 +96,24 @@ export function ImportCloudBackupLoadingScreen({
   }, []);
 
   useEffect(() => {
-    const glowAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowValue, {
-          toValue: 1,
-          duration: 1200,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowValue, {
-          toValue: 0,
-          duration: 1200,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ])
-    );
+    let frameId: number;
+    const cycleDuration = 2400;
+    const startAt = Date.now();
 
-    glowAnimation.start();
-    return () => glowAnimation.stop();
-  }, [glowValue]);
+    const tick = () => {
+      const elapsed = (Date.now() - startAt) % cycleDuration;
+      const half = cycleDuration / 2;
+      const next = elapsed <= half ? elapsed / half : (cycleDuration - elapsed) / half;
+      setGlowProgress(next);
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   useEffect(() => {
     if (!nativeScreen) {
@@ -132,18 +131,34 @@ export function ImportCloudBackupLoadingScreen({
     return () => clearTimeout(timer);
   }, [nativeScreen, provider]);
 
-  const glowTranslateX = glowValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [28, 246],
-  });
+  const glowTranslateX = 28 + (246 - 28) * glowProgress;
 
   const statusText = t('onboarding.importCloudMultiBackup.loading.status', {
     provider: providerLabel.toLocaleLowerCase(),
   });
 
   return (
-    <YStack flex={1} bg="$background" px="$4.5" pt={120} pb={60} justify="space-between">
-      <View pointerEvents="none" style={styles.backgroundGlow} />
+    <YStack
+      flex={1}
+      bg="$background"
+      px="$4.5"
+      pt={120}
+      pb={60}
+      justify="space-between"
+      position="relative"
+    >
+      <View
+        pointerEvents="none"
+        position="absolute"
+        t={0}
+        l={0}
+        r={0}
+        b={0}
+        items="center"
+        justify="center"
+      >
+        <BackupLoadingGlow width="120%" height="100%" />
+      </View>
 
       <YStack gap={74} items="center">
         <YStack gap={20} items="center">
@@ -161,70 +176,16 @@ export function ImportCloudBackupLoadingScreen({
           </Text>
         </YStack>
 
-        <View width={176} height={210} items="center" justify="flex-end" overflow="hidden">
-          <MigrateIllustrate width={176} height={252} style={styles.illustration} />
+        <View width={176} height={210} items="center" justify="center">
+          <BackupLoadingIcon width={176} height={210} />
         </View>
       </YStack>
 
-      <YStack gap="$4" width="100%" maxW={339} self="center">
-        <Text fontSize={16} lineHeight={19} fontWeight="600" color="$primary" text="center">
-          {statusText}
-        </Text>
-
-        <View
-          width="100%"
-          height={12}
-          rounded={6}
-          bg="rgba(255,255,255,0.18)"
-          overflow="hidden"
-          position="relative"
-        >
-          <View
-            position="absolute"
-            l={0}
-            t={0}
-            b={0}
-            width={`${progress}%`}
-            bg="$primary"
-            rounded={6}
-          />
-          <Animated.View
-            pointerEvents="none"
-            style={[styles.progressGlow, { transform: [{ translateX: glowTranslateX }] }]}
-          />
-        </View>
-      </YStack>
+      <ImportCloudBackupLoadingProgress
+        statusText={statusText}
+        progress={progress}
+        glowTranslateX={glowTranslateX}
+      />
     </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  backgroundGlow: {
-    position: 'absolute',
-    width: 467,
-    height: 467,
-    borderRadius: 999,
-    top: 130,
-    left: '50%',
-    marginLeft: -233.5,
-    backgroundColor: '#00EF8B',
-    opacity: 0.12,
-  },
-  illustration: {
-    marginTop: -42,
-  },
-  progressGlow: {
-    position: 'absolute',
-    top: -8,
-    left: -56,
-    width: 76,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#D5FFE8',
-    opacity: 0.9,
-    shadowColor: '#D5FFE8',
-    shadowOpacity: 0.85,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 0 },
-  },
-});

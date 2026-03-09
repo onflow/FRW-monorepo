@@ -8,6 +8,7 @@ export {
   H6,
   Image,
   Paragraph,
+  Progress,
   ScrollView,
   Spinner,
   Stack,
@@ -106,6 +107,7 @@ export { ShieldAnimation } from './components/ShieldAnimation';
 
 export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
+export * from './components/BackupLoadingIcon';
 
 // Onboarding components (excluding WarningCard to avoid conflict with main WarningCard)
 export {

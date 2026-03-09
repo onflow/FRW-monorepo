@@ -5,6 +5,7 @@ export { default as ArrowDownLeft } from './ArrowDownLeft.generated';
 export { default as ArrowLeft } from './ArrowLeft.generated';
 export { default as ArrowRight } from './ArrowRight.generated';
 export { default as ArrowUpRight } from './ArrowUpRight.generated';
+export { default as BackupLoadingGlow } from './BackupLoadingGlow.generated';
 export { default as CheckCircle } from './CheckCircle.generated';
 export { default as CheckCircleFill } from './CheckCircleFill.generated';
 export { default as ChevronDown } from './ChevronDown.generated';
