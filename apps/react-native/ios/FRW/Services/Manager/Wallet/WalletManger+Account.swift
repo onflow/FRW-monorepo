@@ -77,8 +77,24 @@ extension WalletManager {
         }
         let txId = Flow.ID(hex: txid)
         _ = try await txId.onceExecuted()
-        await ProfileManager.shared.refreshCurrentProfileAccounts()
+        if let profile = ProfileManager.shared.currentProfile {
+            await ProfileManager.shared.addAccount(byTxId: txid, to: profile)
+        }
         isAddingAccount = false
+    }
+
+    func canAddNewAccount() -> Bool {
+        var isFlag = RemoteConfigManager.shared.config?.features.createNewAccount ?? false
+#if DEBUG
+        isFlag = RemoteConfigManager.shared.config?.features.createNewAccount ?? true
+#endif
+        guard isFlag else {
+            return false
+        }
+        guard keyProvider?.keyType != .secureEnclave else {
+            return false
+        }
+        return currentNetworkAccounts.count < 5
     }
 }
 

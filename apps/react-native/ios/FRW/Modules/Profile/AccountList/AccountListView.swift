@@ -18,7 +18,7 @@ struct AccountListView: RouteableView {
     var body: some View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
-                if WalletManager.shared.isAddingAccount {
+                if viewModel.isAddingAccount {
                     SideMenuView.LoadingRow()
                         .padding(.horizontal, 18)
                 }
@@ -38,13 +38,14 @@ struct AccountListView: RouteableView {
             }
         }
         .toolbar {
-            if viewModel.allAccounts.count < 5 {
+            if viewModel.shouldShowAddingAccount {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.addNewAccount()
                     } label: {
-                        Image("plus.circle")
+                        Image(systemName: "plus.circle")
                             .resizable()
+                            .tint(Color.Theme.Text.black8)
                             .frame(width: 24, height: 24)
                             .padding(2)
                     }

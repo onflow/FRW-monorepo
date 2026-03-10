@@ -31,9 +31,7 @@ class SideMenuViewModel: ObservableObject {
     @Published var currentAccount: SideMenuItem? = nil
     @Published var allAccounts: [[SideMenuItem]] = [[.mock()],[.mock()],[.mock()]] {
         didSet {
-            if currentAccount != nil {
-                shouldShowAddingAccount = (allAccounts.count < 5)
-            }
+            shouldShowAddingAccount = wallet.canAddNewAccount()
         }
     }
     @Published var shouldShowMigrationCard: Bool = false
