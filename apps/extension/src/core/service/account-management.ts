@@ -75,6 +75,10 @@ import { getOrCheckAccountsByPublicKeyTuple } from '../utils/modules/findAddress
 import { signWithKey } from '../utils/modules/publicPrivateKey';
 
 export class AccountManagement {
+  private static readonly ACCOUNT_CREATION_SEAL_TIMEOUT_MS = 90_000;
+  private static readonly ACCOUNT_CREATION_POLL_INTERVAL_MS = 2_000;
+  private static readonly ACCOUNT_QUERY_MAX_RETRIES = 10;
+
   /**
    * Ensure ServiceContext is initialized (required for API package)
    * ServiceContext must be initialized before using ProfileService
@@ -502,24 +506,14 @@ export class AccountManagement {
     txid: string
   ): Promise<FclAccount | null> {
     try {
-      const txResult = await fcl.tx(txid).onceSealed();
+      const txResult = await this.waitForSealedTransactionResult(network, txid);
+      const newAddress = this.extractCreatedAddressFromTxResult(txResult);
 
-      // Find the AccountCreated event and extract the address
-      const accountCreatedEvent = txResult.events.find(
-        (event) => event.type === 'flow.AccountCreated'
-      );
-
-      if (!accountCreatedEvent) {
+      if (!newAddress) {
         throw new Error('Account creation event not found in transaction');
       }
 
-      const newAddress = accountCreatedEvent.data.address;
-
-      // Get the account from the new address
-      const account = await fcl.account(newAddress);
-      if (!account) {
-        throw new Error('Fcl account not found');
-      }
+      const account = await this.fetchAccountWithRetry(newAddress);
       // Add the placeholder account to the user wallet
       await addPlaceholderAccount(network, pubKey, txid, account);
 
@@ -530,6 +524,134 @@ export class AccountManagement {
 
       throw new Error(`Account creation failed: ${(error as Error).message || 'Unknown error'}`);
     }
+  }
+
+  private async waitForSealedTransactionResult(
+    network: string,
+    txid: string
+  ): Promise<{ events?: Array<{ type?: string; data?: Record<string, unknown> }> }> {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(
+          new Error(
+            `Timed out waiting for sealed transaction from FCL after ${AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS}ms`
+          )
+        );
+      }, AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS);
+    });
+
+    try {
+      return await Promise.race([fcl.tx(txid).onceSealed(), timeoutPromise]);
+    } catch {
+      return await this.pollSealedTransactionResultFromRest(network, txid);
+    }
+  }
+
+  private async pollSealedTransactionResultFromRest(
+    network: string,
+    txid: string
+  ): Promise<{ events?: Array<{ type?: string; data?: Record<string, unknown> }> }> {
+    const startedAt = Date.now();
+    const normalizedTxId = txid.replace(/^0x/i, '');
+
+    while (Date.now() - startedAt < AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS) {
+      const response = await fetch(
+        `https://rest-${network}.onflow.org/v1/transaction_results/${normalizedTxId}`
+      );
+
+      if (response.ok) {
+        const result = (await response.json()) as {
+          status?: string;
+          status_code?: number;
+          events?: Array<{ type: string; payload: string }>;
+          error_message?: string;
+        };
+
+        if (result.status === 'Sealed') {
+          if (result.status_code && result.status_code !== 0) {
+            throw new Error(
+              result.error_message || `Transaction failed with status code ${result.status_code}`
+            );
+          }
+
+          const events = (result.events || []).map((event) => {
+            const decoded = this.decodeFlowEventPayload(event.payload);
+            return {
+              type: event.type,
+              data: decoded,
+            };
+          });
+
+          return { events };
+        }
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, AccountManagement.ACCOUNT_CREATION_POLL_INTERVAL_MS)
+      );
+    }
+
+    throw new Error('Timed out waiting for sealed transaction from REST API');
+  }
+
+  private decodeFlowEventPayload(payloadBase64: string): Record<string, unknown> | undefined {
+    try {
+      const decoded = Buffer.from(payloadBase64, 'base64').toString('utf-8');
+      const parsed = JSON.parse(decoded) as {
+        value?: { fields?: Array<{ name?: string; value?: { value?: unknown } }> };
+      };
+      const fields = parsed?.value?.fields;
+      if (!Array.isArray(fields)) {
+        return undefined;
+      }
+
+      const result: Record<string, unknown> = {};
+      for (const field of fields) {
+        if (field?.name) {
+          result[field.name] = field.value?.value;
+        }
+      }
+      return result;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private extractCreatedAddressFromTxResult(txResult: {
+    events?: Array<{ type?: string; data?: Record<string, unknown> }>;
+  }): string | null {
+    const accountCreatedEvent = txResult.events?.find(
+      (event) => event.type === 'flow.AccountCreated'
+    );
+    const eventAddress = accountCreatedEvent?.data?.address;
+    if (typeof eventAddress === 'string' && eventAddress.length > 0) {
+      return eventAddress.startsWith('0x') ? eventAddress : `0x${eventAddress}`;
+    }
+    return null;
+  }
+
+  private async fetchAccountWithRetry(address: string): Promise<FclAccount> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt < AccountManagement.ACCOUNT_QUERY_MAX_RETRIES; attempt += 1) {
+      try {
+        const account = await fcl.account(address);
+        if (account) {
+          return account;
+        }
+      } catch (error) {
+        lastError = error;
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, AccountManagement.ACCOUNT_CREATION_POLL_INTERVAL_MS)
+      );
+    }
+
+    throw new Error(
+      `FCL account not found after ${AccountManagement.ACCOUNT_QUERY_MAX_RETRIES} retries${
+        lastError ? `: ${(lastError as Error).message}` : ''
+      }`
+    );
   }
 
   async importAccountFromMobile(
