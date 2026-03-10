@@ -21,6 +21,8 @@ export interface PriceChartProps {
   period?: PriceChartPeriod;
   /** Called when the user selects a different period. */
   onPeriodChange?: (period: PriceChartPeriod) => void;
+  /** Override which period tabs to show. Defaults to all four. */
+  periods?: PriceChartPeriod[];
 }
 
 const PERIODS: PriceChartPeriod[] = ['1D', '1W', '1M', '1Y'];
@@ -77,6 +79,7 @@ export function PriceChart({
   color = '#00C853',
   period: externalPeriod,
   onPeriodChange,
+  periods: customPeriods,
 }: PriceChartProps): React.ReactElement {
   const [internalPeriod, setInternalPeriod] = useState<PriceChartPeriod>('1D');
   const activePeriod = externalPeriod ?? internalPeriod;
@@ -117,7 +120,7 @@ export function PriceChart({
 
       {/* Period selector */}
       <XStack justify="center" gap="$4">
-        {PERIODS.map((p) => {
+        {(customPeriods ?? PERIODS).map((p) => {
           const isActive = p === activePeriod;
           return (
             <Pressable key={p} onPress={() => handlePeriodPress(p)}>

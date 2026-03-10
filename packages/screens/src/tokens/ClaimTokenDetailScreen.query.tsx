@@ -179,8 +179,16 @@ export function ClaimTokenDetailScreen({
 
   const flowIndexChartData = useMemo(() => {
     if (coinPair || !flowIndexPrices) return [];
-    const symbolKey = item.symbol.toUpperCase();
-    const tokenData = flowIndexPrices[symbolKey];
+
+    // Match by identifier first, then fall back to symbol
+    let tokenData = item.identifier
+      ? Object.values(flowIndexPrices).find((d) =>
+          d.identifiers?.some((id) => id === item.identifier?.split('.').slice(0, 3).join('.'))
+        )
+      : undefined;
+    if (!tokenData) {
+      tokenData = flowIndexPrices[item.symbol.toUpperCase()];
+    }
     if (!tokenData?.history?.length) return [];
 
     // Filter history by period
@@ -193,8 +201,13 @@ export function ClaimTokenDetailScreen({
     };
     const cutoff = now - periodMs[period];
     const filtered = tokenData.history.filter((h) => new Date(h.date).getTime() >= cutoff);
+    // FlowIndex has daily granularity — 1D may yield < 2 points.
+    // Fall back to the most recent entries so the chart isn't empty.
+    if (filtered.length < 2) {
+      return tokenData.history.slice(-7).map((h) => h.price);
+    }
     return filtered.map((h) => h.price);
-  }, [coinPair, flowIndexPrices, item.symbol, period]);
+  }, [coinPair, flowIndexPrices, item.identifier, item.symbol, period]);
 
   const chartData = binanceData.length > 0 ? binanceData : flowIndexChartData;
   const isChartLoading = coinPair ? isBinanceLoading : false;
@@ -286,7 +299,7 @@ export function ClaimTokenDetailScreen({
                   <YStack gap="$2">
                     <Skeleton width={chartWidth} height={120} borderRadius={8} />
                     <XStack justify="center" gap="$4">
-                      {(['1D', '1W', '1M', '1Y'] as PriceChartPeriod[]).map((p) => (
+                      {(['1W', '1M', '1Y'] as PriceChartPeriod[]).map((p) => (
                         <Skeleton key={p} width={36} height={24} borderRadius={12} />
                       ))}
                     </XStack>
@@ -299,6 +312,7 @@ export function ClaimTokenDetailScreen({
                     color="#00C853"
                     period={period}
                     onPeriodChange={setPeriod}
+                    periods={['1D', '1W', '1M', '1Y']}
                   />
                 )}
               </YStack>

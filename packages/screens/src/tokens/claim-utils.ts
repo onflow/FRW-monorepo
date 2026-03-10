@@ -217,21 +217,30 @@ function compute24hChange(
 }
 
 /**
- * Build a case-insensitive lookup map from FlowIndex price data.
- * Keys are uppercased symbol names.
+ * Build lookup maps from FlowIndex price data.
+ * - bySymbol: uppercased symbol → price info
+ * - byIdentifier: 3-part Cadence identifier (A.addr.Contract) → price info
  */
-function buildPriceLookup(
-  prices: FlowIndexPricesData
-): Map<string, { current: number; change24h: number }> {
-  const map = new Map<string, { current: number; change24h: number }>();
+function buildPriceLookup(prices: FlowIndexPricesData): {
+  bySymbol: Map<string, { current: number; change24h: number }>;
+  byIdentifier: Map<string, { current: number; change24h: number }>;
+} {
+  const bySymbol = new Map<string, { current: number; change24h: number }>();
+  const byIdentifier = new Map<string, { current: number; change24h: number }>();
   for (const [symbol, data] of Object.entries(prices)) {
     if (!data?.current) continue;
-    map.set(symbol.toUpperCase(), {
+    const info = {
       current: data.current,
       change24h: compute24hChange(data.current, data.history ?? []),
-    });
+    };
+    bySymbol.set(symbol.toUpperCase(), info);
+    if (data.identifiers) {
+      for (const id of data.identifiers) {
+        byIdentifier.set(id, info);
+      }
+    }
   }
-  return map;
+  return { bySymbol, byIdentifier };
 }
 
 /**
@@ -245,19 +254,28 @@ export function enrichClaimItemsWithPrices(
 ): ClaimItem[] {
   if (!prices || Object.keys(prices).length === 0) return items;
 
-  const lookup = buildPriceLookup(prices);
+  const { bySymbol, byIdentifier } = buildPriceLookup(prices);
 
   return items.map((item) => {
     if (item.type !== 'token') return item;
 
-    // Try matching by symbol (uppercased), then by contract name from identifier
-    const symbolKey = item.symbol.toUpperCase();
-    let priceInfo = lookup.get(symbolKey);
+    // 1. Prefer matching by Cadence identifier (3-part: A.addr.Contract)
+    let priceInfo: { current: number; change24h: number } | undefined;
+    if (item.identifier) {
+      const prefix = item.identifier.split('.').slice(0, 3).join('.');
+      priceInfo = byIdentifier.get(prefix);
+    }
 
+    // 2. Fall back to symbol match
+    if (!priceInfo) {
+      priceInfo = bySymbol.get(item.symbol.toUpperCase());
+    }
+
+    // 3. Fall back to contract name match
     if (!priceInfo && item.identifier) {
       const contractName = extractContractName(item.identifier).toUpperCase();
       if (contractName) {
-        priceInfo = lookup.get(contractName);
+        priceInfo = bySymbol.get(contractName);
       }
     }
 

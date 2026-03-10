@@ -5,6 +5,7 @@
 export interface FlowIndexTokenPrice {
   current: number;
   history: Array<{ date: string; price: number }>;
+  identifiers?: string[];
 }
 
 export type FlowIndexPricesData = Record<string, FlowIndexTokenPrice>;
