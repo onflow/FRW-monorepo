@@ -15,6 +15,7 @@ extension RouteMap {
     case getStarted
     case backupTip
     case migration
+    case backup
   }
 }
 
@@ -41,6 +42,10 @@ extension RouteMap.ReactNative: RouterTarget {
     case .migration:
       let vc = ReactNativeViewController()
       vc.route = .migration
+      navi.pushViewController(vc, animated: true)
+    case .backup:
+      let vc = ReactNativeViewController()
+      vc.route = .backup
       navi.pushViewController(vc, animated: true)
     }
   }

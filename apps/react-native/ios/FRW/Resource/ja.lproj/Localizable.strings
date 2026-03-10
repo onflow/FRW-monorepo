@@ -972,3 +972,4 @@
 "wallet_key_invalid_restore" = "ウォレットを復元";
 "deep_link_hint_title" = "注意して続行";
 "deep_link_hint_desc" = "Flow Walletではなく第三者からここに誘導されています。続行するとDappが開きます。";
+"add_account" = "アカウントを追加";

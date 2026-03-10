@@ -254,10 +254,13 @@ struct SideMenuView: View {
                     Image(systemName: "arrow.trianglehead.2.clockwise")
                         .foregroundStyle(Color.Theme.Text.black8)
                         .font(.system(size: 14).bold())
-                        .frame(width: 24, height: 24)
                         .rotationEffect(.degrees(360 * reloadCount ))
                         .animation(.linear(duration: 0.5), value: reloadCount)
-                    
+                        .frame(width: 14, height: 14)
+                        .padding(13)
+                        .background(Color.Brain.Light.lines10)
+                        .clipShape(Circle())
+
                     Text("Refresh Accounts".localized)
                         .font(.inter(size: 14, weight: .semibold))
                         .foregroundStyle(Color.Theme.Text.black8)
@@ -273,9 +276,10 @@ struct SideMenuView: View {
                     Image("icon_side_link")
                         .resizable()
                         .renderingMode(.template)
-//                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundColor(Color.Theme.Text.black8)
+                        .frame(width: 14, height: 14)
+                        .padding(13)
+                        .background(Color.Brain.Light.lines10)
+                        .clipShape(Circle())
                     Text("Network::message".localized)
                         .lineLimit(1)
                         .font(.inter(size: 14, weight: .semibold))
@@ -322,16 +326,20 @@ struct SideMenuView: View {
             }
 
             Button {
-                Router.route(to: RouteMap.RestoreLogin.restoreList)
+              Router.route(to: RouteMap.ReactNative.backup)
+//                Router.route(to: RouteMap.RestoreLogin.restoreList)
             } label: {
                 HStack {
-                    Image("icon_side_import")
+                    Image("icon-nft-add")
                         .resizable()
                         .renderingMode(.template)
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .foregroundColor(Color.Theme.Text.black8)
-                    Text("import_wallet".localized)
+                        .frame(width: 14, height: 14)
+                        .padding(13)
+                        .background(Color.Brain.Light.lines10)
+                        .clipShape(Circle())
+
+                    Text("add_account".localized)
                         .font(.inter(size: 14, weight: .semibold))
                         .foregroundStyle(Color.Theme.Text.black8)
 

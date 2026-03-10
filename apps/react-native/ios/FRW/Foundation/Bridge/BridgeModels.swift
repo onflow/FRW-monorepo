@@ -24,6 +24,7 @@ enum RNBridge {
         case receive = "receive"
         case activity = "activity"
         case migration = "migration"
+        case backup = "backup"
     }
 
     enum AccountTypeType: String, Codable {
@@ -296,6 +297,8 @@ enum RNBridge {
         case secure_enclave = "SecureEnclave"
         case import_profile = "ImportProfile"
         case import_other_methods = "ImportOtherMethods"
+        case import_legacy_methods = "ImportLegacyMethods"
+        case import_cloud_backup_loading = "ImportCloudBackupLoading"
         case confirm_import_profile = "ConfirmImportProfile"
         case notification_preferences = "NotificationPreferences"
         case select_tokens = "SelectTokens"
