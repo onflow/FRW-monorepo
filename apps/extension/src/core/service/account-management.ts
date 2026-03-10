@@ -1,6 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
+import { waitForExecuted } from '@onflow/frw-cadence';
 import { ServiceContext } from '@onflow/frw-context';
 import { profileService } from '@onflow/frw-services';
 import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
@@ -25,6 +26,7 @@ import {
   FLOW_BIP44_PATH,
   HTTP_STATUS_CONFLICT,
   HTTP_STATUS_TOO_MANY_REQUESTS,
+  MAX_MAIN_ACCOUNTS_PER_PROFILE,
   SIGN_ALGO_NUM_DEFAULT,
   HASH_ALGO_NUM_DEFAULT,
   DEFAULT_WEIGHT,
@@ -38,6 +40,7 @@ import type {
 } from '@/shared/types';
 import {
   isValidFlowAddress,
+  hasReachedFlowAddressLimit,
   isValidEthereumAddress,
   consoleError,
   getErrorMessage,
@@ -506,7 +509,11 @@ export class AccountManagement {
     txid: string
   ): Promise<FclAccount | null> {
     try {
-      const txResult = await this.waitForSealedTransactionResult(network, txid);
+      const txResult = (await waitForExecuted(txid, {
+        timeout: AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS,
+        pollInterval: AccountManagement.ACCOUNT_CREATION_POLL_INTERVAL_MS,
+        sealedOnly: true,
+      })) as { events?: Array<{ type?: string; data?: Record<string, unknown> }> };
       const newAddress = this.extractCreatedAddressFromTxResult(txResult);
 
       if (!newAddress) {
@@ -523,97 +530,6 @@ export class AccountManagement {
       await removePendingAccountCreationTransaction(network, pubKey, txid);
 
       throw new Error(`Account creation failed: ${(error as Error).message || 'Unknown error'}`);
-    }
-  }
-
-  private async waitForSealedTransactionResult(
-    network: string,
-    txid: string
-  ): Promise<{ events?: Array<{ type?: string; data?: Record<string, unknown> }> }> {
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => {
-        reject(
-          new Error(
-            `Timed out waiting for sealed transaction from FCL after ${AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS}ms`
-          )
-        );
-      }, AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS);
-    });
-
-    try {
-      return await Promise.race([fcl.tx(txid).onceSealed(), timeoutPromise]);
-    } catch {
-      return await this.pollSealedTransactionResultFromRest(network, txid);
-    }
-  }
-
-  private async pollSealedTransactionResultFromRest(
-    network: string,
-    txid: string
-  ): Promise<{ events?: Array<{ type?: string; data?: Record<string, unknown> }> }> {
-    const startedAt = Date.now();
-    const normalizedTxId = txid.replace(/^0x/i, '');
-
-    while (Date.now() - startedAt < AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS) {
-      const response = await fetch(
-        `https://rest-${network}.onflow.org/v1/transaction_results/${normalizedTxId}`
-      );
-
-      if (response.ok) {
-        const result = (await response.json()) as {
-          status?: string;
-          status_code?: number;
-          events?: Array<{ type: string; payload: string }>;
-          error_message?: string;
-        };
-
-        if (result.status === 'Sealed') {
-          if (result.status_code && result.status_code !== 0) {
-            throw new Error(
-              result.error_message || `Transaction failed with status code ${result.status_code}`
-            );
-          }
-
-          const events = (result.events || []).map((event) => {
-            const decoded = this.decodeFlowEventPayload(event.payload);
-            return {
-              type: event.type,
-              data: decoded,
-            };
-          });
-
-          return { events };
-        }
-      }
-
-      await new Promise((resolve) =>
-        setTimeout(resolve, AccountManagement.ACCOUNT_CREATION_POLL_INTERVAL_MS)
-      );
-    }
-
-    throw new Error('Timed out waiting for sealed transaction from REST API');
-  }
-
-  private decodeFlowEventPayload(payloadBase64: string): Record<string, unknown> | undefined {
-    try {
-      const decoded = Buffer.from(payloadBase64, 'base64').toString('utf-8');
-      const parsed = JSON.parse(decoded) as {
-        value?: { fields?: Array<{ name?: string; value?: { value?: unknown } }> };
-      };
-      const fields = parsed?.value?.fields;
-      if (!Array.isArray(fields)) {
-        return undefined;
-      }
-
-      const result: Record<string, unknown> = {};
-      for (const field of fields) {
-        if (field?.name) {
-          result[field.name] = field.value?.value;
-        }
-      }
-      return result;
-    } catch {
-      return undefined;
     }
   }
 
@@ -706,6 +622,11 @@ export class AccountManagement {
   }
 
   async createNewAccount(network: string): Promise<void> {
+    const existingMainAccounts = await userWalletService.getMainAccounts();
+    if (hasReachedFlowAddressLimit(existingMainAccounts, MAX_MAIN_ACCOUNTS_PER_PROFILE)) {
+      throw new Error(`Maximum ${MAX_MAIN_ACCOUNTS_PER_PROFILE} accounts allowed per profile.`);
+    }
+
     const publickey = await keyringService.getCurrentPublicKey();
     const signAlgo = await keyringService.getCurrentSignAlgo();
     const accountKey = pubKeySignAlgoToAccountKey(publickey, signAlgo);
