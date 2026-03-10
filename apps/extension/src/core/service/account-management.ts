@@ -2,7 +2,7 @@ import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { waitForExecuted } from '@onflow/frw-cadence';
-import { ServiceContext } from '@onflow/frw-context';
+import { logger, ServiceContext } from '@onflow/frw-context';
 import { profileService } from '@onflow/frw-services';
 import { BIP44_PATHS, WalletCoreProvider } from '@onflow/frw-wallet';
 import * as bip39 from 'bip39';
@@ -513,6 +513,18 @@ export class AccountManagement {
         timeout: AccountManagement.ACCOUNT_CREATION_SEAL_TIMEOUT_MS,
         pollInterval: AccountManagement.ACCOUNT_CREATION_POLL_INTERVAL_MS,
         sealedOnly: true,
+        onStatusChange: (status: {
+          status?: number;
+          statusCode?: number;
+          statusString?: string;
+        }) => {
+          logger.info('[AccountCreation] Status update', {
+            txId: txid,
+            status: status.status,
+            statusCode: status.statusCode,
+            statusString: status.statusString,
+          });
+        },
       })) as { events?: Array<{ type?: string; data?: Record<string, unknown> }> };
       const newAddress = this.extractCreatedAddressFromTxResult(txResult);
 
