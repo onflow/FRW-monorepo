@@ -52,6 +52,8 @@ export interface AccountSelectorProps {
   actionIcon?: 'edit' | 'chevron'; // Icon to show when showEditButton is true
   showCopyButton?: boolean;
   onCopyAddress?: (address: string) => void;
+  /** Hide the balance line below the address */
+  hideBalance?: boolean;
 }
 
 export function AccountSelector({
@@ -64,6 +66,7 @@ export function AccountSelector({
   actionIcon = 'edit',
   showCopyButton = false,
   onCopyAddress,
+  hideBalance = false,
 }: AccountSelectorProps): React.ReactElement {
   const [open, setOpen] = useState(false);
 
@@ -165,8 +168,8 @@ export function AccountSelector({
                 fontWeight="400"
               />
 
-              {/* Balance — only show when available */}
-              {currentAccount.balance ? (
+              {/* Balance — only show when available and not hidden */}
+              {!hideBalance && currentAccount.balance ? (
                 <Text
                   color="$textMuted"
                   fontWeight="400"

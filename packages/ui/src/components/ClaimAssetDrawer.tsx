@@ -189,8 +189,9 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
                 accounts={allReceivers}
                 onAccountSelect={handleAccountSelect}
                 title=""
-                showEditButton={allReceivers.length > 1}
+                showEditButton={false}
                 actionIcon="edit"
+                hideBalance
               />
             </YStack>
           )}

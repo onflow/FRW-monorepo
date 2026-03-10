@@ -24,7 +24,6 @@ import { type CadenceTokenInfo, type EvmTokenInfo, type ExtendedTokenInfo } from
 import { isValidEthereumAddress, isValidFlowAddress, consoleError } from '@/shared/utils';
 
 const cadenceService = new CadenceService();
-configureFCL('mainnet');
 import openapiService from './openapi';
 
 class CoinList {
@@ -282,6 +281,8 @@ class CoinList {
 
   // Inbox (unclaimed LostAndFound assets) — per address
   loadInboxData = async (network: string, address: string): Promise<InboxAddressData> => {
+    configureFCL(network as 'testnet' | 'mainnet');
+
     const fts = await cadenceService.queryUnclaimedFts(address);
     const nfts = await cadenceService.queryUnclaimedNfts(address);
 

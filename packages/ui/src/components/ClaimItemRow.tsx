@@ -15,7 +15,9 @@ function formatPrice(price: number): string {
 
 function formatAmount(amount: string, symbol: string): string {
   const n = parseFloat(amount);
-  const formatted = n >= 1000 ? n.toLocaleString() : amount;
+  if (isNaN(n)) return `${amount} ${symbol}`;
+  // Remove trailing zeros: parseFloat('0.00100000') → '0.001'
+  const formatted = n >= 1000 ? n.toLocaleString() : String(n);
   return `${formatted} ${symbol}`;
 }
 
