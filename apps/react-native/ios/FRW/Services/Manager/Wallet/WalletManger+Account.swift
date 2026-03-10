@@ -57,6 +57,9 @@ extension WalletManager {
             log.debug("is adding account")
             return
         }
+        defer {
+            isAddingAccount = false
+        }
         guard let fullKey = mainAccount?.fullWeightKey else {
             throw WalletError.invalidPublicKey
         }
@@ -72,7 +75,6 @@ extension WalletManager {
         guard let txid = response.txid else {
             HUD.error(title: "add failed", message: "add account failed. please try after")
             log.error("add account failed. empty txid")
-            isAddingAccount = false
             return
         }
         let txId = Flow.ID(hex: txid)
@@ -80,7 +82,6 @@ extension WalletManager {
         if let profile = ProfileManager.shared.currentProfile {
             await ProfileManager.shared.addAccount(byTxId: txid, to: profile)
         }
-        isAddingAccount = false
     }
 
     func canAddNewAccount() -> Bool {

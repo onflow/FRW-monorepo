@@ -363,7 +363,7 @@ struct SideMenuView: View {
                         do {
                             try await wallet.addNewAccount()
                         } catch {
-                            log.error("add account faild: \(error)")
+                            log.error("add account failed: \(error)")
                         }
                     }
 
