@@ -2,7 +2,7 @@ import { Button, Drawer, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { WhatSNewService } from '@onflow/frw-api';
 import { UpdateDialog } from '@onflow/frw-ui';
-import { setUser, setExtras } from '@sentry/react';
+import { setUser, setExtras, setTag } from '@sentry/react';
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -120,6 +120,10 @@ const Dashboard = () => {
         username: userInfo.username,
       });
       const { eoaAccount = null, childAccounts = [], evmAccount = null } = currentWallet;
+      const flowAddress = currentWallet.address || '';
+      const evmAddress = evmAccount?.address || eoaAccount?.address || '';
+      setTag('flow_address', flowAddress);
+      setTag('evm_address', evmAddress);
       setExtras({
         EOA: eoaAccount ? eoaAccount.address : '',
         COA: evmAccount ? evmAccount.address : '',

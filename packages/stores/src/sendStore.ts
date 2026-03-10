@@ -31,8 +31,12 @@ import {
 // Helper function to format amount
 function formatAmount(val: string | number | undefined | null): string {
   if (val === null || val === undefined || val === '') return '0';
-  const num = typeof val === 'string' ? parseFloat(val) : val;
-  return isNaN(num) ? '0' : num.toString();
+  if (typeof val === 'number') {
+    return isNaN(val) ? '0' : String(val);
+  }
+  // Validate without parseFloat to preserve full decimal precision (e.g. 18 decimals)
+  const trimmed = val.trim();
+  return trimmed === '' || isNaN(Number(trimmed)) ? '0' : trimmed;
 }
 
 // Default form data
