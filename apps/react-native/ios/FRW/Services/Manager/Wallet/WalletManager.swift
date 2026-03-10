@@ -142,6 +142,10 @@ class WalletManager: ObservableObject {
     mainAccount?.childs
   }
 
+    @MainActor
+    @Published var isAddingAccount: Bool = false
+
+
   func start() {
     UserManager.shared.$activatedUID
       .receive(on: DispatchQueue.main)

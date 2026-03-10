@@ -74,4 +74,14 @@ class AccountListViewModel: ObservableObject {
     objectWillChange.send()
   }
 
+    func addNewAccount() {
+        Task {
+            do  {
+                try await WalletManager.shared.addNewAccount()
+            } catch {
+                log.error(error)
+            }
+        }
+    }
+
 }

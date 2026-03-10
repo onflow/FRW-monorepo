@@ -101,6 +101,10 @@ struct UserSearchResponse: Codable {
     let users: [UserInfo]?
 }
 
+struct AddAccountResponse: Codable {
+    let txid: String?
+}
+
 // struct CoinsResponse: Codable {
 //    let decimal: Int
 //    let isToken: Bool

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 55;
+	objectVersion = 90;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -2470,45 +2470,37 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		158CEFBE277DB3FF004EF2C7 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 10;
+			dstSubfolder = Frameworks;
 			files = (
 			);
 			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4ED06E412ABABB9400F49A1A /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 10;
+			dstSubfolder = Frameworks;
 			files = (
 			);
 			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A0C6E2C29542DFE005F0EF6 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstSubfolder = PlugIns;
 			files = (
 				6A0B10602A6675A600023767 /* FRWDevNotificationServiceExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A9DFBD329519D9A00E10EAC /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstSubfolder = PlugIns;
 			files = (
 				6A0B10682A6676B200023767 /* FRWNotificationServiceExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -3705,15 +3697,12 @@
 /* Begin PBXFrameworksBuildPhase section */
 		15007838286830EF00A00109 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				AA21D24AFC39168F1133008C /* libPods-FRWTests.a in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		154B8919276A1EEB00780E93 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				150D3E392A58719A00F7F2DC /* QRCode in Frameworks */,
 				4E2FA6B62CF4177C00D46EA7 /* WalletConnectPush in Frameworks */,
@@ -3778,11 +3767,9 @@
 				4EE090AA2DB0ADB5001515FE /* ZIPFoundation in Frameworks */,
 				6EA3389FC62684EFDC3DEEB7 /* libPods-FRW-dev.a in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		15C58C3C2868A4EE00BD4FC6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				15C58C3D2868A4EE00BD4FC6 /* GoogleAPIClientForREST_Drive in Frameworks */,
 				15C58C3E2868A4EE00BD4FC6 /* Flow in Frameworks */,
@@ -3849,25 +3836,20 @@
 				4EE090AC2DB0ADBD001515FE /* ZIPFoundation in Frameworks */,
 				DEA0F471FF364FC32FFF178C /* libPods-FRW.a in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A0B10462A66679100023767 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				4E2FA69E2CF40FF500D46EA7 /* ReownWalletKit in Frameworks */,
 				4E2FA6A02CF40FF500D46EA7 /* WalletConnectNotify in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A0B10562A6675A600023767 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				4E2FA6A22CF40FFE00D46EA7 /* ReownWalletKit in Frameworks */,
 				4E2FA6A42CF40FFE00D46EA7 /* WalletConnectNotify in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -7850,8 +7832,6 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			name = FRWNotificationServiceExtension;
 			packageProductDependencies = (
 				4E2FA69D2CF40FF500D46EA7 /* ReownWalletKit */,
@@ -7870,8 +7850,6 @@
 				6A0B10572A6675A600023767 /* Resources */,
 			);
 			buildRules = (
-			);
-			dependencies = (
 			);
 			name = FRWDevNotificationServiceExtension;
 			packageProductDependencies = (
@@ -7905,7 +7883,6 @@
 				};
 			};
 			buildConfigurationList = 15EC9DE9274FD1FC00F70CD9 /* Build configuration list for PBXProject "FRW" */;
-			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -7959,6 +7936,7 @@
 				156875432DCD17A200850E58 /* XCRemoteSwiftPackageReference "flow-wallet-kit" */,
 				15C195222DCDB6CA0010978B /* XCRemoteSwiftPackageReference "mobile-sdk-ios" */,
 			);
+			preferredProjectObjectVersion = 90;
 			productRefGroup = 15EC9DEF274FD1FC00F70CD9 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -7975,14 +7953,11 @@
 /* Begin PBXResourcesBuildPhase section */
 		15007839286830EF00A00109 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		154B8921276A1EEB00780E93 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				1565FB6A28B14F140086A652 /* Notification.json in Resources */,
 				158C9CAD2787F7490062E0C6 /* Montserrat-Regular.ttf in Resources */,
@@ -8031,11 +8006,9 @@
 				158C9CA92787F7490062E0C6 /* Montserrat-Bold.ttf in Resources */,
 				1A26387BA2A1E67025983257 /* PrivacyInfo.xcprivacy in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		15C58C5A2868A4EE00BD4FC6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				1565FB6928B14F140086A652 /* Notification.json in Resources */,
 				15C58C5B2868A4EE00BD4FC6 /* Montserrat-Regular.ttf in Resources */,
@@ -8084,30 +8057,22 @@
 				1565FB9B28B1681F0086A652 /* Coin.json in Resources */,
 				15C58C662868A4EE00BD4FC6 /* Montserrat-Bold.ttf in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A0B10472A66679100023767 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A0B10572A6675A600023767 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		07872F7BB26D4561983D1151 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
@@ -8115,55 +8080,60 @@
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-resources.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-resources.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		154B88FE276A1EEB00780E93 /* R swift */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
 			name = "R swift";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 				$SRCROOT/R.generated.swift,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n# Not workimg well with SwiftUI\n#if [ `uname -m` == 'arm64' ] && [ -d /opt/homebrew/bin/ ]; then\n#  export PATH=/opt/homebrew/bin:$PATH\n#fi\n\n#if which rswift >/dev/null; then\n#    rswift generate \"$SRCROOT/R.generated.swift\"\n#else\n#  echo \"warning: Rswift not installed, download from https://github.com/mac-cain13/R.swift/releases/tag/v6.0.0\"\n#fi\n";
+			shellScript = (
+				"# Type a script or drag a script file from your workspace to insert its path.",
+				"",
+				"# Not workimg well with SwiftUI",
+				"#if [ `uname -m` == 'arm64' ] && [ -d /opt/homebrew/bin/ ]; then",
+				"#  export PATH=/opt/homebrew/bin:$PATH",
+				"#fi",
+				"",
+				"#if which rswift >/dev/null; then",
+				"#    rswift generate \"$SRCROOT/R.generated.swift\"",
+				"#else",
+				"#  echo \"warning: Rswift not installed, download from https://github.com/mac-cain13/R.swift/releases/tag/v6.0.0\"",
+				"#fi",
+				"",
+			);
 		};
 		15C58AAD2868A4EE00BD4FC6 /* R swift */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
 			name = "R swift";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\n# Not workimg well with SwiftUI\n#if [ `uname -m` == 'arm64' ] && [ -d /opt/homebrew/bin/ ]; then\n#  export PATH=/opt/homebrew/bin:$PATH\n#fi\n\n#if which rswift >/dev/null; then\n#    rswift generate \"$SRCROOT/R.generated.swift\"\n#else\n#  echo \"warning: Rswift not installed, download from https://github.com/mac-cain13/R.swift/releases/tag/v6.0.0\"\n#fi\n";
+			shellScript = (
+				"# Type a script or drag a script file from your workspace to insert its path.",
+				"",
+				"# Not workimg well with SwiftUI",
+				"#if [ `uname -m` == 'arm64' ] && [ -d /opt/homebrew/bin/ ]; then",
+				"#  export PATH=/opt/homebrew/bin:$PATH",
+				"#fi",
+				"",
+				"#if which rswift >/dev/null; then",
+				"#    rswift generate \"$SRCROOT/R.generated.swift\"",
+				"#else",
+				"#  echo \"warning: Rswift not installed, download from https://github.com/mac-cain13/R.swift/releases/tag/v6.0.0\"",
+				"#fi",
+				"",
+			);
 		};
 		1B472C77AF2C5428C0D3EDF3 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
@@ -8171,16 +8141,15 @@
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-resources.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-resources.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		445431B06935B314117EDEC9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
@@ -8188,34 +8157,28 @@
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-frameworks.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-frameworks.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		4ECF45322BB258AC00F5B3B7 /* Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
 			name = "Swift Lint";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			shellScript = (
+				"if which swiftlint >/dev/null; then",
+				"  swiftlint",
+				"else",
+				"  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"",
+				"fi",
+				"",
+			);
 		};
 		5A2D859248ED300097A9335B /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
@@ -8223,78 +8186,65 @@
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-resources.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-resources.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		6A04A4722961A5A900F069C4 /* dSYM Upload */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
 				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
 			);
 			name = "dSYM Upload";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+			shellScript = (
+				"\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"",
+				"",
+			);
 		};
 		6A04A4732961A71000F069C4 /* dSYM Upload */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
 				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
 			);
 			name = "dSYM Upload";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+			shellScript = (
+				"\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"",
+				"",
+			);
 		};
 		8287B02BA3D35CDBF9661556 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-FRWTests-checkManifestLockResult.txt",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = (
+				"diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null",
+				"if [ $? != 0 ] ; then",
+				"    # print error to STDERR",
+				"    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2",
+				"    exit 1",
+				"fi",
+				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
+				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		88C59F23559EA45992DAF9FB /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
@@ -8302,57 +8252,60 @@
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-frameworks.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-frameworks.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		9F6D7B1C5C8D4F3E9C5E7A1B /* Copy RN Assets Folder */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
 			name = "Copy RN Assets Folder";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nASSETS_SRC=\"${SRCROOT}/assets\"\nASSETS_DST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/assets\"\n\nif [ -d \"${ASSETS_SRC}\" ]; then\n  echo \"[Copy RN Assets Folder] Copying ${ASSETS_SRC} -> ${ASSETS_DST}\"\n  mkdir -p \"${ASSETS_DST}\"\n  rsync -a --delete \"${ASSETS_SRC}/\" \"${ASSETS_DST}/\"\nelse\n  echo \"warning: [Copy RN Assets Folder] assets dir not found at ${ASSETS_SRC}\"\nfi\n";
+			shellScript = (
+				"set -e",
+				"",
+				"ASSETS_SRC=\"${SRCROOT}/assets\"",
+				"ASSETS_DST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/assets\"",
+				"",
+				"if [ -d \"${ASSETS_SRC}\" ]; then",
+				"  echo \"[Copy RN Assets Folder] Copying ${ASSETS_SRC} -> ${ASSETS_DST}\"",
+				"  mkdir -p \"${ASSETS_DST}\"",
+				"  rsync -a --delete \"${ASSETS_SRC}/\" \"${ASSETS_DST}/\"",
+				"else",
+				"  echo \"warning: [Copy RN Assets Folder] assets dir not found at ${ASSETS_SRC}\"",
+				"fi",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		A627629BDE8562BC1440F50B /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-FRW-dev-checkManifestLockResult.txt",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = (
+				"diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null",
+				"if [ $? != 0 ] ; then",
+				"    # print error to STDERR",
+				"    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2",
+				"    exit 1",
+				"fi",
+				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
+				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		A664B2A58A01BD6C43CF1994 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
@@ -8360,31 +8313,35 @@
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-frameworks.sh\"\n";
+			shellScript = (
+				"\"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-frameworks.sh\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 		C0EBE9E7C6780E1FE47D01E8 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
 				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/Pods-FRW-checkManifestLockResult.txt",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = (
+				"diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null",
+				"if [ $? != 0 ] ; then",
+				"    # print error to STDERR",
+				"    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2",
+				"    exit 1",
+				"fi",
+				"# This output is used by Xcode 'outputs' to avoid re-running this script phase.",
+				"echo \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"",
+				"",
+			);
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -8392,18 +8349,15 @@
 /* Begin PBXSourcesBuildPhase section */
 		15007837286830EF00A00109 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				4E49B7302DDDAD0D00BC0D46 /* CurrencyFormattingTests.swift in Sources */,
 				4E617FB82ED58BA100BF7D2C /* UsernameGeneratorTests.swift in Sources */,
 				6A19E61E2A25DE4800392206 /* SymmetricEncryptionTests.swift in Sources */,
 				6AC62B03286AEFB5000876D9 /* FlowReferenceWalletTests.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		154B88FF276A1EEB00780E93 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				4E09FF822DBA016C00F2E527 /* FlowLog+Add.swift in Sources */,
 				15DC21CF27819C56000B187A /* BasicAnimation.swift in Sources */,
@@ -9504,11 +9458,9 @@
 				4EDEA7692C9044E800DE76B6 /* PKWallet+Add.swift in Sources */,
 				154866ED28D0ECE400D012B8 /* FlixAuditEndpoint.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		15C58AAE2868A4EE00BD4FC6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				15C58AAF2868A4EE00BD4FC6 /* BasicAnimation.swift in Sources */,
 				15C58AB02868A4EE00BD4FC6 /* VBaseHeaderFooterType.swift in Sources */,
@@ -10609,23 +10561,18 @@
 				4EDEA7682C9044E800DE76B6 /* PKWallet+Add.swift in Sources */,
 				154866EC28D0ECE400D012B8 /* FlixAuditEndpoint.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A0B10452A66679100023767 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				6A0B104C2A66679100023767 /* NotificationService.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6A0B10552A6675A600023767 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				6A0B10672A66763C00023767 /* NotificationService.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -10667,7 +10614,7 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		15007842286830EF00A00109 /* Debug */ = {
+		15007842286830EF00A00109 /* Debug configuration for PBXNativeTarget "FRWTests" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 568CAE22530AC072F522A96C /* Pods-FRWTests.debug.xcconfig */;
 			buildSettings = {
@@ -10691,7 +10638,7 @@
 			};
 			name = Debug;
 		};
-		15007843286830EF00A00109 /* Release */ = {
+		15007843286830EF00A00109 /* Release configuration for PBXNativeTarget "FRWTests" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 566E8F3E8FBA00241BE4E067 /* Pods-FRWTests.release.xcconfig */;
 			buildSettings = {
@@ -10715,7 +10662,7 @@
 			};
 			name = Release;
 		};
-		154B8926276A1EEB00780E93 /* Debug */ = {
+		154B8926276A1EEB00780E93 /* Debug configuration for PBXNativeTarget "FRW-dev" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E335EC49770BF49C651A8F56 /* Pods-FRW-dev.debug.xcconfig */;
 			buildSettings = {
@@ -10765,7 +10712,7 @@
 			};
 			name = Debug;
 		};
-		154B8927276A1EEB00780E93 /* Release */ = {
+		154B8927276A1EEB00780E93 /* Release configuration for PBXNativeTarget "FRW-dev" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B7074F77EDC150C860131391 /* Pods-FRW-dev.release.xcconfig */;
 			buildSettings = {
@@ -10814,7 +10761,7 @@
 			};
 			name = Release;
 		};
-		15C58C6B2868A4EE00BD4FC6 /* Debug */ = {
+		15C58C6B2868A4EE00BD4FC6 /* Debug configuration for PBXNativeTarget "FRW" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 99D2877E339CFAA8C93AE9EF /* Pods-FRW.debug.xcconfig */;
 			buildSettings = {
@@ -10861,7 +10808,7 @@
 			};
 			name = Debug;
 		};
-		15C58C6C2868A4EE00BD4FC6 /* Release */ = {
+		15C58C6C2868A4EE00BD4FC6 /* Release configuration for PBXNativeTarget "FRW" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C2919C81993F7080F0810F15 /* Pods-FRW.release.xcconfig */;
 			buildSettings = {
@@ -10907,7 +10854,7 @@
 			};
 			name = Release;
 		};
-		15EC9E10274FD1FD00F70CD9 /* Debug */ = {
+		15EC9E10274FD1FD00F70CD9 /* Debug configuration for PBXProject "FRW" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -10968,10 +10915,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -10982,7 +10926,7 @@
 			};
 			name = Debug;
 		};
-		15EC9E11274FD1FD00F70CD9 /* Release */ = {
+		15EC9E11274FD1FD00F70CD9 /* Release configuration for PBXProject "FRW" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -11036,10 +10980,7 @@
 				MARKETING_VERSION = 3.1.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -11051,7 +10992,7 @@
 			};
 			name = Release;
 		};
-		6A0B10512A66679100023767 /* Debug */ = {
+		6A0B10512A66679100023767 /* Debug configuration for PBXNativeTarget "FRWNotificationServiceExtension" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -11079,7 +11020,7 @@
 			};
 			name = Debug;
 		};
-		6A0B10522A66679100023767 /* Release */ = {
+		6A0B10522A66679100023767 /* Release configuration for PBXNativeTarget "FRWNotificationServiceExtension" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -11107,7 +11048,7 @@
 			};
 			name = Release;
 		};
-		6A0B10622A6675A600023767 /* Debug */ = {
+		6A0B10622A6675A600023767 /* Debug configuration for PBXNativeTarget "FRWDevNotificationServiceExtension" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -11135,7 +11076,7 @@
 			};
 			name = Debug;
 		};
-		6A0B10632A6675A600023767 /* Release */ = {
+		6A0B10632A6675A600023767 /* Release configuration for PBXNativeTarget "FRWDevNotificationServiceExtension" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -11169,55 +11110,49 @@
 		15007841286830EF00A00109 /* Build configuration list for PBXNativeTarget "FRWTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				15007842286830EF00A00109 /* Debug */,
-				15007843286830EF00A00109 /* Release */,
+				15007842286830EF00A00109 /* Debug configuration for PBXNativeTarget "FRWTests" */,
+				15007843286830EF00A00109 /* Release configuration for PBXNativeTarget "FRWTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		154B8925276A1EEB00780E93 /* Build configuration list for PBXNativeTarget "FRW-dev" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				154B8926276A1EEB00780E93 /* Debug */,
-				154B8927276A1EEB00780E93 /* Release */,
+				154B8926276A1EEB00780E93 /* Debug configuration for PBXNativeTarget "FRW-dev" */,
+				154B8927276A1EEB00780E93 /* Release configuration for PBXNativeTarget "FRW-dev" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		15C58C6A2868A4EE00BD4FC6 /* Build configuration list for PBXNativeTarget "FRW" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				15C58C6B2868A4EE00BD4FC6 /* Debug */,
-				15C58C6C2868A4EE00BD4FC6 /* Release */,
+				15C58C6B2868A4EE00BD4FC6 /* Debug configuration for PBXNativeTarget "FRW" */,
+				15C58C6C2868A4EE00BD4FC6 /* Release configuration for PBXNativeTarget "FRW" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		15EC9DE9274FD1FC00F70CD9 /* Build configuration list for PBXProject "FRW" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				15EC9E10274FD1FD00F70CD9 /* Debug */,
-				15EC9E11274FD1FD00F70CD9 /* Release */,
+				15EC9E10274FD1FD00F70CD9 /* Debug configuration for PBXProject "FRW" */,
+				15EC9E11274FD1FD00F70CD9 /* Release configuration for PBXProject "FRW" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		6A0B10532A66679100023767 /* Build configuration list for PBXNativeTarget "FRWNotificationServiceExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6A0B10512A66679100023767 /* Debug */,
-				6A0B10522A66679100023767 /* Release */,
+				6A0B10512A66679100023767 /* Debug configuration for PBXNativeTarget "FRWNotificationServiceExtension" */,
+				6A0B10522A66679100023767 /* Release configuration for PBXNativeTarget "FRWNotificationServiceExtension" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		6A0B10612A6675A600023767 /* Build configuration list for PBXNativeTarget "FRWDevNotificationServiceExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6A0B10622A6675A600023767 /* Debug */,
-				6A0B10632A6675A600023767 /* Release */,
+				6A0B10622A6675A600023767 /* Debug configuration for PBXNativeTarget "FRWDevNotificationServiceExtension" */,
+				6A0B10632A6675A600023767 /* Release configuration for PBXNativeTarget "FRWDevNotificationServiceExtension" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

@@ -6,9 +6,9 @@
 //
 
 import Combine
+import Factory
 import Kingfisher
 import SwiftUI
-import Factory
 
 // MARK: - SideMenuView
 
@@ -16,10 +16,10 @@ struct SideMenuView: View {
     // MARK: Internal
 
     private let SideOffset: CGFloat = 65
-    
+
     @State
     var reloadCount = 0
-    
+
     var body: some View {
         GeometryReader { proxy in
             HStack(spacing: 0) {
@@ -64,11 +64,11 @@ struct SideMenuView: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 40, height: 40)
                     .cornerRadius(8)
-              
+
                 Text(um.userInfo?.nickname ?? "lilico".localized)
                     .foregroundColor(.LL.Neutrals.text)
                     .font(.inter(size: 14, weight: .bold))
-              
+
                 Spacer()
 
                 Button {
@@ -82,7 +82,7 @@ struct SideMenuView: View {
             .padding(.vertical, 14)
 
             Divider()
-            .background(Color.Brain.Light.lines25)
+                .background(Color.Brain.Light.lines25)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -137,57 +137,64 @@ struct SideMenuView: View {
     }
 
     var accountListView: some View {
-      VStack(spacing: 0) {
-          if let account = vm.currentAccount {
-            Section {
-              SideMenuView.AccountRow(account: account, isActivity: true, onClick: { clickedAccount in
-              })
-              .padding(.horizontal, 16)
-                .background(Color.Brain.Core.cards)
-                .cornerRadius(16)
-            } header: {
-              HStack {
-                  Text("active_account".localized)
-                      .font(.inter(size: 14))
-                      .foregroundStyle(Color.Theme.Text.black8)
-                      .padding(.vertical, 16)
-                  Spacer()
-              }
-            }
-        }
-
-        if vm.shouldShowMigrationCard {
-          migrationInfoCard
-            .padding(.top, 8)
-            .padding(.bottom, 8)
-        }
-        
-        if !vm.allAccounts.isEmpty {
-          Section {
-            ForEach(0..<vm.allAccounts.count, id: \.self) { index in
-              let section = vm.allAccounts[index]
-              ForEach(0..<section.count, id: \.self) { subIndex in
-                let account = section[subIndex]
-                let isActive = vm.currentAccount?.account.address == account.account.address
-                if !account.isHidden {
-                  SideMenuView.AccountRow(account: account, isActivity: isActive) { clickedAccount in
-                    vm.updateCurrentAccount(clickedAccount)
-                  }
+        VStack(spacing: 0) {
+            if let account = vm.currentAccount {
+                Section {
+                    SideMenuView.AccountRow(
+                        account: account,
+                        isActivity: true,
+                        onClick: { clickedAccount in
+                        }
+                    )
+                    .padding(.horizontal, 16)
+                    .background(Color.Brain.Core.cards)
+                    .cornerRadius(16)
+                } header: {
+                    HStack {
+                        Text("active_account".localized)
+                            .font(.inter(size: 14))
+                            .foregroundStyle(Color.Theme.Text.black8)
+                            .padding(.vertical, 16)
+                        Spacer()
+                    }
                 }
-              }
             }
-          } header: {
-            HStack {
-                Text("other_accounts".localized)
-                  .font(.inter(size: 14))
-                  .foregroundStyle(Color.Theme.Text.black8)
-                  .padding(.vertical, 16)
-                Spacer()
+
+            if vm.shouldShowMigrationCard {
+                migrationInfoCard
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
             }
-          }
+
+            if !vm.allAccounts.isEmpty {
+                Section {
+                    if vm.isAddingAccount {
+                        SideMenuView.LoadingRow()
+                    }
+                    ForEach(0..<vm.allAccounts.count, id: \.self) { index in
+                        let section = vm.allAccounts[index]
+                        ForEach(0..<section.count, id: \.self) { subIndex in
+                            let account = section[subIndex]
+                            let isActive = vm.currentAccount?.account.address == account.account.address
+                            if !account.isHidden {
+                                SideMenuView.AccountRow(account: account, isActivity: isActive) { clickedAccount in
+                                    vm.updateCurrentAccount(clickedAccount)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    HStack {
+                        Text("other_accounts".localized)
+                            .font(.inter(size: 14))
+                            .foregroundStyle(Color.Theme.Text.black8)
+                            .padding(.vertical, 16)
+                        Spacer()
+                    }
+                }
+            }
         }
-      }
-      .mockPlaceholder(vm.currentAccount == nil)
+        .mockPlaceholder(vm.currentAccount == nil)
     }
 
     var migrationInfoCard: some View {
@@ -243,7 +250,7 @@ struct SideMenuView: View {
                 .background(.Theme.Line.line)
                 .frame(height: 1)
                 .padding(.bottom, 12)
-            
+
             Button {
                 reloadCount += 1
                 UIFeedbackGenerator.impactOccurred(.light)
@@ -254,7 +261,7 @@ struct SideMenuView: View {
                     Image(systemName: "arrow.trianglehead.2.clockwise")
                         .foregroundStyle(Color.Theme.Text.black8)
                         .font(.system(size: 14).bold())
-                        .rotationEffect(.degrees(360 * reloadCount ))
+                        .rotationEffect(.degrees(360 * reloadCount))
                         .animation(.linear(duration: 0.5), value: reloadCount)
                         .frame(width: 14, height: 14)
                         .padding(13)
@@ -270,7 +277,7 @@ struct SideMenuView: View {
                 .frame(height: 40)
             }
             .buttonStyle(ScaleButtonStyle())
-            
+
             if isDeveloperMode {
                 HStack {
                     Image("icon_side_link")
@@ -326,13 +333,45 @@ struct SideMenuView: View {
             }
 
             Button {
-              Router.route(to: RouteMap.ReactNative.backup)
-//                Router.route(to: RouteMap.RestoreLogin.restoreList)
+                Router.route(to: RouteMap.RestoreLogin.restoreList)
             } label: {
                 HStack {
+                    Image("icon_side_import")
+                        .resizable()
+                        .renderingMode(.template)
+                        .foregroundStyle(Color.Theme.Text.black8)
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 26, height: 26)
+                        .padding(7)
+                        .background(Color.Brain.Light.lines10)
+                        .clipShape(Circle())
+
+                    Text("import_wallet".localized)
+                        .font(.inter(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.Theme.Text.black8)
+
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+                .frame(height: 40)
+            }
+            .buttonStyle(ScaleButtonStyle())
+
+            if vm.shouldShowAddingAccount {
+                Button {
+                    Task {
+                        do {
+                            try await wallet.addNewAccount()
+                        } catch {
+                            log.error("add account faild: \(error)")
+                        }
+                    }
+
+                } label: {
                     Image("icon-nft-add")
                         .resizable()
                         .renderingMode(.template)
+                        .foregroundStyle(Color.Theme.Text.black8)
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 14, height: 14)
                         .padding(13)
@@ -345,10 +384,8 @@ struct SideMenuView: View {
 
                     Spacer()
                 }
-                .contentShape(Rectangle())
-                .frame(height: 40)
             }
-            .buttonStyle(ScaleButtonStyle())
+
         }
     }
 
@@ -358,13 +395,13 @@ struct SideMenuView: View {
     private var vm = SideMenuViewModel()
     @StateObject
     private var um = UserManager.shared
-    
+
     @Injected(\.wallet)
     private var wallet: WalletManager
-    
+
     @StateObject
     private var cm = ChildAccountManager.shared
-    
+
     @AppStorage("isDeveloperMode")
     private var isDeveloperMode = false
     @State

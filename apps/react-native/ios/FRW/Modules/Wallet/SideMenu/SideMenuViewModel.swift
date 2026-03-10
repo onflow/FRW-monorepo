@@ -29,8 +29,16 @@ class SideMenuViewModel: ObservableObject {
 
     @Published var hasCoa: Bool = true
     @Published var currentAccount: SideMenuItem? = nil
-    @Published var allAccounts: [[SideMenuItem]] = [[.mock()],[.mock()],[.mock()]]
+    @Published var allAccounts: [[SideMenuItem]] = [[.mock()],[.mock()],[.mock()]] {
+        didSet {
+            if currentAccount != nil {
+                shouldShowAddingAccount = (allAccounts.count < 5)
+            }
+        }
+    }
     @Published var shouldShowMigrationCard: Bool = false
+    @Published var shouldShowAddingAccount = false
+    @Published var isAddingAccount = false
     private var cancellableSet = Set<AnyCancellable>()
 
 
@@ -47,6 +55,17 @@ class SideMenuViewModel: ObservableObject {
         .sink { [weak self] account in
           self?.refreshAccount(address: account?.hexAddr)
         }.store(in: &cancellableSet)
+
+        wallet.$isAddingAccount
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isAdding in
+                if self?.currentAccount != nil && isAdding {
+                    self?.isAddingAccount = isAdding
+                } else {
+                    self?.isAddingAccount = false
+                }
+            }
+            .store(in: &cancellableSet)
 
       // Listen for hidden addresses changes
       NotificationCenter.default.publisher(for: .hiddenAddressesDidChanged)

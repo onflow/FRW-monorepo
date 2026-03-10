@@ -7,6 +7,7 @@
 
 import FlowWalletKit
 import Foundation
+import Flow
 
 // MARK: - Account
 
@@ -36,7 +37,7 @@ extension WalletManager {
   }
 
     var selectedAccountContact: Contact? {
-        guard let primaryAddr = WalletManager.shared.getPrimaryWalletAddressOrCustomWatchAddress() else {
+        guard WalletManager.shared.getPrimaryWalletAddressOrCustomWatchAddress() != nil else {
             return nil
         }
         if let account = selectedChildAccount {
@@ -46,6 +47,38 @@ extension WalletManager {
         } else {
             return toContact()
         }
+    }
+}
+
+// MARK: - add account
+extension WalletManager {
+    func addNewAccount() async throws {
+        guard !isAddingAccount else {
+            log.debug("is adding account")
+            return
+        }
+        guard let fullKey = mainAccount?.fullWeightKey else {
+            throw WalletError.invalidPublicKey
+        }
+        let request = AddAccountRequest(
+            hashAlgorithm: fullKey.hashAlgo.index,
+            publicKey: fullKey.publicKey.description,
+            signatureAlgorithm: fullKey.signAlgo.index,
+            weight: fullKey.weight
+        )
+
+        isAddingAccount = true
+        let response: AddAccountResponse = try await Network.request(FRWAPI.User.addAccount(request))
+        guard let txid = response.txid else {
+            HUD.error(title: "add failed", message: "add account failed. please try after")
+            log.error("add account failed. empty txid")
+            isAddingAccount = false
+            return
+        }
+        let txId = Flow.ID(hex: txid)
+        _ = try await txId.onceExecuted()
+        await ProfileManager.shared.refreshCurrentProfileAccounts()
+        isAddingAccount = false
     }
 }
 
