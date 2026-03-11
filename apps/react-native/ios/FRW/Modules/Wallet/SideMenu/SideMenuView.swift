@@ -143,12 +143,14 @@ struct SideMenuView: View {
                     SideMenuView.AccountRow(
                         account: account,
                         isActivity: true,
-                        onClick: { clickedAccount in
+                        onClick: { _ in
                         }
                     )
                     .padding(.horizontal, 16)
                     .background(Color.Brain.Core.cards)
                     .cornerRadius(16)
+                    .id(account.account.id)
+                    .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .opacity))
                 } header: {
                     HStack {
                         Text("active_account".localized)
@@ -170,17 +172,17 @@ struct SideMenuView: View {
                 Section {
                     if vm.isAddingAccount {
                         SideMenuView.LoadingRow()
+                            .id("account-loading-row")
+                            .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .opacity))
                     }
-                    ForEach(0..<vm.allAccounts.count, id: \.self) { index in
-                        let section = vm.allAccounts[index]
-                        ForEach(0..<section.count, id: \.self) { subIndex in
-                            let account = section[subIndex]
+                    ForEach(Array(vm.allAccounts.enumerated()), id: \.offset) { _, section in
+                        ForEach(section.filter { !$0.isHidden }, id: \.account.id) { account in
                             let isActive = vm.currentAccount?.account.address == account.account.address
-                            if !account.isHidden {
-                                SideMenuView.AccountRow(account: account, isActivity: isActive) { clickedAccount in
-                                    vm.updateCurrentAccount(clickedAccount)
-                                }
+                            SideMenuView.AccountRow(account: account, isActivity: isActive) { clickedAccount in
+                                vm.updateCurrentAccount(clickedAccount)
                             }
+                            .id(account.account.id)
+                            .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .opacity))
                         }
                     }
                 } header: {
@@ -194,7 +196,19 @@ struct SideMenuView: View {
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.22), value: vm.isAddingAccount)
+        .animation(.easeInOut(duration: 0.22), value: visibleAccountRowIDs)
+        .animation(.easeInOut(duration: 0.22), value: vm.currentAccount?.account.id)
         .mockPlaceholder(vm.currentAccount == nil)
+    }
+
+    private var visibleAccountRowIDs: [String] {
+        vm.allAccounts
+            .flatMap { section in
+                section
+                    .filter { !$0.isHidden }
+                    .map { $0.account.id }
+            }
     }
 
     var migrationInfoCard: some View {
