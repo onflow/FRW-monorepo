@@ -47,6 +47,7 @@ export function SegmentedControl({
         return (
           <Stack
             key={segment}
+            testID={`segment-${index}`}
             flex={fullWidth ? 1 : undefined}
             bg={isSelected ? '$border1' : 'transparent'}
             rounded={20}

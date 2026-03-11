@@ -26,6 +26,7 @@ export function ClaimReceiverRow({
 
   return (
     <XStack
+      testID={`claim-receiver-${address}`}
       px="$4"
       py="$3.5"
       items="center"

@@ -100,6 +100,7 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
       />
       <Sheet.Handle bg="$gray8" />
       <Sheet.Frame
+        testID="claim-drawer"
         bg="$bgDrawer"
         borderTopLeftRadius="$6"
         borderTopRightRadius="$6"
@@ -118,6 +119,7 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
               </Text>
             </View>
             <XStack
+              testID="claim-drawer-close"
               w={32}
               h={32}
               items="center"
@@ -202,7 +204,7 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
           </Text>
 
           {/* CTA */}
-          <View pb="$8">
+          <View pb="$8" testID="claim-drawer-confirm">
             <HoldToSendButton
               onPress={handleConfirm}
               stopSignal={isClaiming}

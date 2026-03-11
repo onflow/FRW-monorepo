@@ -130,6 +130,7 @@ jobs:
           TEST_SENDER_CHILD_ADDR2="${{ vars.TEST_SENDER_CHILD_ADDR2 }}"
           TEST_MULTI_ACCOUNT_TESTER_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_ADDR2 }}"
           TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2="${{ secrets.TEST_MULTI_ACCOUNT_TESTER_EVM_ADDR2 }}"
+          TEST_INBOX_ADDR="${{ vars.TEST_INBOX_ADDR }}"
           TEST_EXTENSION_ID="${{ vars.TEST_EXTENSION_ID || 'cfiagdgiikmjgfjnlballglniejjgegi' }}"
           EOF
 

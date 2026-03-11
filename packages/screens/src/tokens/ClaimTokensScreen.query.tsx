@@ -314,6 +314,7 @@ export function ClaimTokensScreen({
       if (row.item.type === 'nft') {
         return (
           <Pressable
+            testID={`claim-nft-item-${row.item.name}`}
             onPress={() => !disabled && onItemPress?.(row.item)}
             disabled={disabled}
             style={{ opacity: disabled ? 0.4 : 1 }}
@@ -330,6 +331,7 @@ export function ClaimTokensScreen({
 
       return (
         <Pressable
+          testID={`claim-ft-item-${row.item.symbol}`}
           onPress={() => !disabled && onItemPress?.(row.item)}
           disabled={disabled}
           style={{ opacity: disabled ? 0.4 : 1 }}
@@ -367,7 +369,7 @@ export function ClaimTokensScreen({
 
   return (
     <BackgroundWrapper backgroundColor="$bg" px={0}>
-      <YStack flex={1}>
+      <YStack flex={1} testID="claim-tokens-screen">
         {/* Search */}
         <YStack px="$4" pt="$2" pb="$3">
           <SearchBar
@@ -380,6 +382,7 @@ export function ClaimTokensScreen({
         {/* Filter row */}
         <XStack px="$4" pb="$3" items="center" gap="$2">
           <SegmentedControl
+            testID="claim-tab-control"
             segments={segments as unknown as string[]}
             value={segmentValue}
             onChange={(value) => setActiveTab(value === segments[0] ? 'token' : 'nft')}
@@ -389,7 +392,7 @@ export function ClaimTokensScreen({
 
         {/* Claim list */}
         {isLoading ? (
-          <YStack gap="$3" pt="$2">
+          <YStack gap="$3" pt="$2" testID="claim-loading">
             {Array.from({ length: 5 }).map((_, i) => (
               <YStack key={i}>
                 <Skeleton height={52} borderRadius={0} />
@@ -412,7 +415,7 @@ export function ClaimTokensScreen({
             maxToRenderPerBatch={15}
             windowSize={10}
             ListEmptyComponent={
-              <YStack flex={1} items="center" justify="center" pt="$10">
+              <YStack testID="claim-empty" flex={1} items="center" justify="center" pt="$10">
                 <Text color="$text2" fontSize={14}>
                   {t('claim.empty', 'No items to claim')}
                 </Text>

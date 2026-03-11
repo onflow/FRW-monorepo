@@ -39,7 +39,7 @@ export function ClaimItemRow({
   const theme = useTheme();
 
   return (
-    <YStack>
+    <YStack testID={`claim-ft-row-${symbol}`}>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Avatar src={logoURI} alt={name} fallback={symbol[0]} size={48} />
         <YStack flex={1} gap="$1">

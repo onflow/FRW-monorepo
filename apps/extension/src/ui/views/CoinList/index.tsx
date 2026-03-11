@@ -83,6 +83,7 @@ const ActionButtons = ({
       {showInbox && (
         <Box sx={{ position: 'relative' }}>
           <IconButton
+            data-testid="inbox-button"
             onClick={() => navigate('/dashboard/claimtokens')}
             sx={{
               display: 'flex',

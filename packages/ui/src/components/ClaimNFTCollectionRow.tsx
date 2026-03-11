@@ -13,7 +13,7 @@ export function ClaimNFTCollectionRow({
   isLast,
 }: ClaimNFTCollectionRowProps): React.ReactElement {
   return (
-    <YStack>
+    <YStack testID={`claim-nft-row-${name}`}>
       <XStack px="$4" py="$3" items="center" gap="$3">
         <Avatar src={logoURI} alt={name} fallback={name[0]} size={48} />
         <YStack flex={1} gap="$1">

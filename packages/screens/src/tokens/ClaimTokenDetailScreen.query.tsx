@@ -366,12 +366,19 @@ export function ClaimTokenDetailScreen({
         bg="$bg"
       >
         <YStack flex={1}>
-          <Button variant="secondary" size="large" fullWidth onPress={onReject}>
+          <Button
+            testID="claim-detail-reject"
+            variant="secondary"
+            size="large"
+            fullWidth
+            onPress={onReject}
+          >
             {t('claim.detail.reject', 'Reject')}
           </Button>
         </YStack>
         <YStack flex={1}>
           <Button
+            testID="claim-detail-claim"
             variant="inverse"
             size="large"
             fullWidth
@@ -583,6 +590,7 @@ function NFTCollectionDetailView({
       {/* Bottom claim button */}
       <XStack position="absolute" bottom={0} left={0} right={0} px="$4" pb="$8" pt="$3" bg="$bg">
         <Button
+          testID="claim-detail-claim"
           variant="inverse"
           size="large"
           fullWidth
