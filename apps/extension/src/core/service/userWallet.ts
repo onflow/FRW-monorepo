@@ -1612,6 +1612,7 @@ export default userWalletService;
 
 const MAX_LOAD_TIME = 120_000; // 2 minutes
 const POLL_INTERVAL = 2_000; // 2 seconds
+const FLOW_TX_ID_REGEX = /^(?:0x)?[0-9a-fA-F]{64}$/;
 
 /**
  * Load all accounts for a given public key
@@ -1770,6 +1771,10 @@ const getMainAccountsWithPubKey = async (
   if (!network || !pubkey) {
     throw new Error('Network or pubkey is not set');
   }
+
+  // Keep pending account-creation spinner rows in sync with real tx status.
+  // This also heals stale pending state when background async watchers are interrupted.
+  await reconcilePendingAccountCreationTransactions(network);
 
   const mainAccounts = await getValidData<MainAccount[]>(mainAccountsKey(network, pubkey));
   if (!mainAccounts) {
@@ -2291,6 +2296,58 @@ const clearPendingAccountCreationTransactions = async (network: string, pubkey: 
   // Get current user ID
   const userId = await getCurrentProfileId();
   await clearCachedData(pendingAccountCreationTransactionsKey(network, userId));
+};
+
+const reconcilePendingAccountCreationTransactions = async (network: string): Promise<void> => {
+  const userId = await getCurrentProfileId();
+  const pendingKey = pendingAccountCreationTransactionsKey(network, userId);
+  const pendingTransactions = (await getValidData<PendingTransaction[]>(pendingKey)) || [];
+
+  if (pendingTransactions.length === 0) {
+    return;
+  }
+
+  const remaining: PendingTransaction[] = [];
+
+  for (const txId of pendingTransactions) {
+    // Remove malformed/random placeholders that can never resolve on chain.
+    if (!FLOW_TX_ID_REGEX.test(txId)) {
+      continue;
+    }
+
+    try {
+      const normalizedTxId = txId.replace(/^0x/i, '');
+      const response = await fetch(
+        `https://rest-${network}.onflow.org/v1/transaction_results/${normalizedTxId}`
+      );
+
+      if (!response.ok) {
+        // Keep it and retry later if endpoint is temporarily unavailable.
+        remaining.push(txId);
+        continue;
+      }
+
+      const result = (await response.json()) as {
+        status?: string;
+        status_code?: number;
+      };
+
+      // Remove once terminal; keep only non-terminal transactions.
+      if (result.status !== 'Sealed' && result.status !== 'Expired') {
+        remaining.push(txId);
+      }
+    } catch {
+      // Network/parse error: keep it and retry later.
+      remaining.push(txId);
+    }
+  }
+
+  if (
+    remaining.length !== pendingTransactions.length ||
+    remaining.some((txId, index) => txId !== pendingTransactions[index])
+  ) {
+    await setCachedData(pendingKey, remaining, 360_000);
+  }
 };
 
 export const calculateEmojiIcon = (address: string): Emoji => {
