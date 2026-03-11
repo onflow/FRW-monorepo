@@ -217,7 +217,7 @@ const MenuDrawer = ({
             paddingTop: '8px',
           }}
         >
-          {canCreateNewAccount &&
+          {!canCreateNewAccount &&
             canAddMoreAccounts &&
             (isCreating ? (
               <ListItem disablePadding>

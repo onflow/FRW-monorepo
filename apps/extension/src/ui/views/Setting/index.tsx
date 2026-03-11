@@ -1,14 +1,6 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
-import {
-  Alert,
-  Box,
-  Divider,
-  IconButton,
-  List,
-  Snackbar,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Divider, IconButton, List, Snackbar, Typography } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
@@ -378,7 +370,7 @@ const SettingTab = () => {
             text={chrome.i18n.getMessage('Add_Profile') || 'Add Profile'}
             endIcon={<IconEnd size={12} />}
           />
-          {canCreateNewAccount && canAddMoreAccounts && (
+          {!canCreateNewAccount && canAddMoreAccounts && (
             <>
               <Divider sx={{ width: '90%' }} variant="middle" />
               <SettingsListItem
