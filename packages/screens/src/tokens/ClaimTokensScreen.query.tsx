@@ -1,4 +1,4 @@
-import { bridge } from '@onflow/frw-context';
+import { bridge, navigation } from '@onflow/frw-context';
 import { CheckCircle } from '@onflow/frw-icons';
 import { tokenQueryKeys, tokenQueries, useWalletStore, walletSelectors } from '@onflow/frw-stores';
 import {
@@ -7,6 +7,7 @@ import {
   ClaimItemRow,
   ClaimNFTCollectionRow,
   ClaimReceiverRow,
+  ExtensionHeader,
   SearchBar,
   SegmentedControl,
   Sheet,
@@ -366,10 +367,18 @@ export function ClaimTokensScreen({
   ];
 
   const isLoading = isAccountsLoading || isInboxLoading;
+  const isExtension = bridge.getPlatform() === 'extension';
 
   return (
     <BackgroundWrapper backgroundColor="$bg" px={0}>
       <YStack flex={1} testID="claim-tokens-screen">
+        {isExtension && (
+          <ExtensionHeader
+            title={t('claim.title', 'Claim')}
+            help={false}
+            onGoBack={() => navigation.goBack()}
+          />
+        )}
         {/* Search */}
         <YStack px="$4" pt="$2" pb="$3">
           <SearchBar
