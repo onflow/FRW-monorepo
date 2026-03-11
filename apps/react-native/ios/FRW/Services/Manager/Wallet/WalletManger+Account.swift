@@ -86,9 +86,6 @@ extension WalletManager {
 
     func canAddNewAccount() -> Bool {
         var isFlag = RemoteConfigManager.shared.config?.features.createNewAccount ?? false
-#if DEBUG
-        isFlag = RemoteConfigManager.shared.config?.features.createNewAccount ?? true
-#endif
         guard isFlag else {
             return false
         }
