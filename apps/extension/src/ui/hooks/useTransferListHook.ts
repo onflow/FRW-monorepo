@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 
-import { transferListKey, type TransferListStore } from '@/data-model';
+import { transferListKey, triggerRefresh, type TransferListStore } from '@/data-model';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useProfiles } from '@/ui/hooks/useProfileHook';
 
 import { useCachedData } from './use-data';
 import { useNetwork } from './useNetworkHook';
+
+const PENDING_POLL_INTERVAL_MS = 5_000;
 
 export const useTransferList = () => {
   const wallet = useWallet();
@@ -17,6 +19,21 @@ export const useTransferList = () => {
   const transferListStore = useCachedData<TransferListStore>(
     network && currentAddress ? transferListKey(network, currentAddress, '0', '15') : null
   );
+
+  // Poll for updates while there are pending transactions.
+  // This guards against the case where chrome.storage.onChanged events are
+  // not reliably delivered to the popup from the background service worker.
+  useEffect(() => {
+    if (!network || !currentAddress) return;
+    if (!transferListStore?.pendingCount) return;
+
+    const key = transferListKey(network, currentAddress, '0', '15');
+    const id = setInterval(() => {
+      triggerRefresh(key);
+    }, PENDING_POLL_INTERVAL_MS);
+
+    return () => clearInterval(id);
+  }, [network, currentAddress, transferListStore?.pendingCount]);
 
   const [monitor, setMonitor] = useState<string | null>(null);
   const [flowscanURL, setFlowscanURL] = useState<string | null>(null);
