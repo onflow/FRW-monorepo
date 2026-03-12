@@ -393,6 +393,20 @@ class TransactionActivity {
     );
     const existingTxList = existingTxStore?.list || [];
     const existingPendingList = await this.getPendingList(network, address);
+
+    // If the in-memory pending list is empty (e.g., service worker was restarted),
+    // recover any pending items from the cached list so they are not lost while
+    // the API has not yet indexed those transactions.
+    if (existingPendingList.length === 0 && existingTxList.length > 0) {
+      const cachedPendingItems = existingTxList.filter(
+        (item) => item.status.toUpperCase() === 'PENDING'
+      );
+      if (cachedPendingItems.length > 0) {
+        existingPendingList.push(...cachedPendingItems);
+        this.setPendingList(network, address, existingPendingList);
+      }
+    }
+
     const txList: TransferItem[] = [];
     data?.transactions?.forEach(async (tx) => {
       const transactionHolder = {
