@@ -4,23 +4,22 @@ import { v4 as uuid } from 'uuid';
 import { Message } from '@/extension-shared/messaging';
 
 const channelName = nanoid();
+const channelAuthToken = nanoid() + nanoid();
 const extensionId = chrome.runtime.id;
-
-const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
-const IS_BETA = process.env.IS_BETA === 'true';
-
-const channelPrefix = IS_BETA ? 'frw-beta:' : DEPLOYMENT_ENV === 'production' ? 'frw:' : 'frw-dev:';
 const injectProviderScript = (isDefaultWallet: boolean) => {
-  // Set local storage variables
-  localStorage.setItem(`${channelPrefix}channelName`, channelName);
-  localStorage.setItem(`${channelPrefix}isDefaultWallet`, isDefaultWallet.toString());
-  localStorage.setItem(`${channelPrefix}uuid`, uuid());
-  localStorage.setItem(`${channelPrefix}extensionId`, extensionId);
+  const initConfig = {
+    channelName,
+    channelAuthToken,
+    isDefaultWallet,
+    uuid: uuid(),
+    extensionId,
+  };
 
   const container = document.head || document.documentElement;
   const scriptElement = document.createElement('script');
   scriptElement.id = 'injectedScript';
   scriptElement.setAttribute('src', chrome.runtime.getURL('pageProvider.js'));
+  scriptElement.setAttribute('data-frw-config', btoa(JSON.stringify(initConfig)));
 
   container.insertBefore(scriptElement, container.children[0]);
 
@@ -29,10 +28,12 @@ const injectProviderScript = (isDefaultWallet: boolean) => {
 
 injectProviderScript(true); // Initial call to check and inject if needed
 
-const initListener = (channelName: string) => {
+const initListener = (channelName: string, authToken: string) => {
   const { BroadcastChannelMessage, PortMessage } = Message;
   const pm = new PortMessage().connect();
-  const bcm = new BroadcastChannelMessage(channelName).listen((data) => pm.request(data));
+  const bcm = new BroadcastChannelMessage(channelName)
+    .setAuthToken(authToken)
+    .listen((data) => pm.request(data));
 
   // background notification
   pm.on('message', (data) => bcm.send('message', data));
@@ -49,13 +50,7 @@ const initListener = (channelName: string) => {
   });
 };
 
-initListener(channelName);
-
-// because the content script run at document start
-setTimeout(() => {
-  document.body.setAttribute('data-channel-name', channelName);
-  document.body.setAttribute('data-extension-id', extensionId);
-}, 0);
+initListener(channelName, channelAuthToken);
 
 /**
  * Inject script
@@ -75,9 +70,8 @@ injectScript(chrome.runtime.getURL('script.js'), 'body');
 
 // Listener for messages from window/FCL
 window.addEventListener('message', function (event) {
-  if (event.data && typeof event.data === 'object') {
-    chrome.runtime.sendMessage(extensionId, event.data);
-  }
+  if (event.source !== window || !event.data || typeof event.data !== 'object') return;
+  chrome.runtime.sendMessage(extensionId, event.data);
 });
 
 // Listener for Custom Flow Transaction event from FCL send

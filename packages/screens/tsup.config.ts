@@ -13,6 +13,7 @@ export default defineConfig({
     'i18next',
     'react-native',
     'react-native-web',
+    'tamagui',
     // Mark all workspace packages as external to avoid bundling Node.js dependencies
     /^@onflow\//,
     '@tanstack/react-query',

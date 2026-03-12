@@ -7,6 +7,7 @@ export interface NFTCardProps {
   idx: number;
   nft: NFTData;
   selected?: boolean;
+  showSelectIndicator?: boolean;
   onPress?: () => void;
   onSelect?: (string) => void;
   aspectRatio?: number;
@@ -22,6 +23,7 @@ export function NFTCard({
   idx,
   nft,
   selected = false,
+  showSelectIndicator = true,
   onPress,
   onSelect = (id: string) => {},
   aspectRatio = 1,
@@ -80,25 +82,27 @@ export function NFTCard({
         )}
 
         {/* Selection Indicator - top right corner */}
-        <YStack
-          width="$6"
-          height="$6"
-          style={{
-            position: 'absolute',
-            top: 10,
-            right: 10,
-            zIndex: 1,
-          }}
-          onPress={(e) => {
-            e?.stopPropagation?.();
-            onSelect(nft.id);
-          }}
-          pressStyle={{ opacity: 0.8 }}
-          cursor="pointer"
-          data-testid={idx}
-        >
-          <CheckCircle size={24} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
-        </YStack>
+        {showSelectIndicator && (
+          <YStack
+            width="$6"
+            height="$6"
+            style={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              zIndex: 1,
+            }}
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              onSelect(nft.id);
+            }}
+            pressStyle={{ opacity: 0.8 }}
+            cursor="pointer"
+            data-testid={idx}
+          >
+            <CheckCircle size={24} color={selected ? '#00EF8B' : 'gray'} theme="filled" />
+          </YStack>
+        )}
       </YStack>
 
       {/* NFT Info */}

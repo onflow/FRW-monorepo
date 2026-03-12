@@ -141,3 +141,4 @@ Flow-Wallet-Kit/
 /apps/passkeys/.next
 metro-stats.json
 /apps/react-native/.bundle-discovery
+__node_modules

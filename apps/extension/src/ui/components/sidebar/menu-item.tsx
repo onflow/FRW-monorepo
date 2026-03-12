@@ -8,12 +8,16 @@ interface MenuItemProps {
   text: string;
   onClick: () => Promise<void> | void;
   dataTestId?: string;
+  disabled?: boolean;
 }
 
-export const MenuItem = ({ icon, text, onClick, dataTestId }: MenuItemProps) => {
+export const MenuItem = ({ icon, text, onClick, dataTestId, disabled = false }: MenuItemProps) => {
   return (
-    <ListItem disablePadding onClick={onClick} data-testid={dataTestId}>
-      <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
+    <ListItem disablePadding onClick={disabled ? undefined : onClick} data-testid={dataTestId}>
+      <ListItemButton
+        sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}
+        disabled={disabled}
+      >
         <ListItemIcon
           sx={{
             width: '40px',

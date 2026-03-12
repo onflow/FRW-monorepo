@@ -7,7 +7,10 @@
     "sendTokens": "Отправить токены",
     "nftDetails": "Детали NFT",
     "colorDemo": "Демо цветов",
-    "receive": "Получить активы"
+    "receive": "Получить активы",
+    "addTokens": "Добавить токены",
+    "claimTokens": "Получить",
+    "token": "Токен"
   },
   "common": {
     "cancel": "Отмена",
@@ -152,7 +155,25 @@
     "sent": "Отправлено",
     "received": "Получено",
     "today": "Сегодня",
-    "yesterday": "Вчера"
+    "yesterday": "Вчера",
+    "detail": {
+      "appInteraction": "Взаимодействие с приложением",
+      "youSent": "Вы отправили",
+      "youReceived": "Вы получили",
+      "from": "От",
+      "to": "Кому",
+      "date": "Дата",
+      "status": "Статус",
+      "network": "Сеть",
+      "account": "Аккаунт",
+      "transactionFee": "Комиссия за транзакцию",
+      "coveredByFlowWallet": "Оплачено Flow Wallet",
+      "viewOnExplorer": "Посмотреть в обозревателе блоков",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "NFTS из {{collection}}",
+      "nftCount": "{{count}} NFTS"
+    }
   },
   "buttons": {
     "retry": "Повторить",
@@ -487,5 +508,48 @@
     "success": {
       "rotation": "Аккаунт успешно обновлен!"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "Поиск",
+    "empty": "Нет элементов для получения",
+    "sort": {
+      "title": "Сортировать по",
+      "date": "Дата получения",
+      "amount": "Сумма",
+      "name": "Название токена"
+    },
+    "detail": {
+      "security": "Безопасность",
+      "verified": "Проверено",
+      "yes": "Да",
+      "no": "Нет",
+      "contractAddress": "Адрес контракта",
+      "claim": "Получить",
+      "reject": "Отклонить"
+    },
+    "drawer": {
+      "title": "Получить актив",
+      "token": "Токен",
+      "from": "От",
+      "cta": "Получить",
+      "to": "Получатель"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "Получить полученные токены",
+    "searchPlaceholder": "Поиск токена",
+    "verifiedOnly": "Показывать только проверенные токены"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "Получить полученные NFT",
+    "searchPlaceholder": "Поиск коллекции NFT"
+  },
+  "claimNFTDetail": {
+    "website": "Сайт",
+    "items": "Элементы",
+    "about": "О коллекции",
+    "claimButton": "Принять активы",
+    "empty": "Нет NFT",
+    "warningText": "Принимая эту коллекцию NFT, вы автоматически принимаете будущие поступления"
   }
 }

@@ -239,6 +239,24 @@ chrome.runtime.onConnect.addListener((port: chrome.runtime.Port) => {
 
     const sessionId = port.sender?.tab?.id;
     const session = sessionService.getOrCreateSession(sessionId);
+    const senderUrl = port.sender?.url || port.sender?.tab?.url || '';
+    let senderOrigin = '';
+    if (senderUrl) {
+      try {
+        senderOrigin = new URL(senderUrl).origin;
+      } catch {
+        senderOrigin = '';
+      }
+    }
+    if (senderOrigin) {
+      // Security: always bind session origin to the actual sender URL origin.
+      // This prevents dapps from spoofing origin via tabCheckin params.
+      session.setProp({
+        origin: senderOrigin,
+        icon: session.icon,
+        name: session.name,
+      });
+    }
 
     const req = { data, session };
     // for background push to respective page

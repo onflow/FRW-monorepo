@@ -117,7 +117,7 @@ class TransactionActivity {
     const timeNow = new Date().getTime();
     const pendingList = this.store.pendingItem[network][address];
     if (pendingList.length > 0) {
-      const filteredList = pendingList.filter((item) => item.time + 60_000 > timeNow);
+      const filteredList = pendingList.filter((item) => item.time + 120_000 > timeNow);
       this.store.pendingItem[network][address] = structuredClone(filteredList);
     }
   };
@@ -219,11 +219,31 @@ class TransactionActivity {
 
     const txItemIndex = txList.findIndex((item) => item.hash.includes(txId));
     let combinedTxHash = txId;
-    if (txItemIndex === -1) {
-      // txItem not found, return
+    // Get the existing indexed transaction list and update it, or create new one
+    const existingTxStore = await getInvalidData<TransferListStore>(
+      transferListKey(network, address, '0', '15')
+    );
+    const txStore: TransferListStore = existingTxStore || {
+      count: 0,
+      pendingCount: 0,
+      list: [],
+    };
+    const storeItemIndex = txStore.list.findIndex(
+      (item) =>
+        item.hash.includes(txId) ||
+        item.cadenceTxId?.includes(txId) ||
+        item.evmTxIds?.includes(txId)
+    );
+    if (txItemIndex === -1 && storeItemIndex === -1) {
+      // txItem not found in pending store nor cached transfer list
       return combinedTxHash;
     }
-    const txItem = txList[txItemIndex];
+    const txItem =
+      txItemIndex !== -1
+        ? txList[txItemIndex]
+        : ({
+            ...txStore.list[storeItemIndex],
+          } as TransferItem);
 
     txItem.status = mapTransactionStatus(transactionStatus.statusString);
     txItem.error = transactionStatus.statusCode === 1;
@@ -251,25 +271,11 @@ class TransactionActivity {
       }
       combinedTxHash = `${txItem.cadenceTxId || txItem.hash}_${evmTxIds.join('_')}`;
     }
-    txList[txItemIndex] = txItem;
-    // Always set pending transactions to 120 seconds
-    this.setPendingList(network, address, txList);
-
-    // Get the existing indexed transaction list and update it, or create new one
-    const existingTxStore = await getInvalidData<TransferListStore>(
-      transferListKey(network, address, '0', '15')
-    );
-    const txStore: TransferListStore = existingTxStore || {
-      count: 0,
-      pendingCount: 0,
-      list: [],
-    };
-    const storeItemIndex = txStore.list.findIndex(
-      (item) =>
-        item.hash.includes(txId) ||
-        item.cadenceTxId?.includes(txId) ||
-        item.evmTxIds?.includes(txId)
-    );
+    if (txItemIndex !== -1) {
+      txList[txItemIndex] = txItem;
+      // Keep pending transactions in memory while they are still active
+      this.setPendingList(network, address, txList);
+    }
     if (storeItemIndex !== -1) {
       txStore.list[storeItemIndex] = txItem;
     } else {
@@ -303,22 +309,6 @@ class TransactionActivity {
     const txList = this.getPendingList(network, address);
 
     const txItemIndex = txList.findIndex((item) => item.hash.includes(txId));
-    if (txItemIndex === -1) {
-      // txItem not found, return
-      return;
-    }
-    const txItem = txList[txItemIndex];
-
-    // Mark the transaction as failed
-    txItem.status = 'Error';
-    txItem.error = true;
-    if (errorMessage) {
-      txItem.additionalMessage = errorMessage;
-    }
-
-    txList[txItemIndex] = txItem;
-    this.setPendingList(network, address, txList);
-
     // Get the existing indexed transaction list and update it, or create new one
     const existingTxStore = await getInvalidData<TransferListStore>(
       transferListKey(network, address, '0', '15')
@@ -334,6 +324,28 @@ class TransactionActivity {
         item.cadenceTxId?.includes(txId) ||
         item.evmTxIds?.includes(txId)
     );
+    if (txItemIndex === -1 && storeItemIndex === -1) {
+      // txItem not found in pending store nor cached transfer list
+      return;
+    }
+    const txItem =
+      txItemIndex !== -1
+        ? txList[txItemIndex]
+        : ({
+            ...txStore.list[storeItemIndex],
+          } as TransferItem);
+
+    // Mark the transaction as failed
+    txItem.status = 'Error';
+    txItem.error = true;
+    if (errorMessage) {
+      txItem.additionalMessage = errorMessage;
+    }
+
+    if (txItemIndex !== -1) {
+      txList[txItemIndex] = txItem;
+      this.setPendingList(network, address, txList);
+    }
     if (storeItemIndex !== -1) {
       txStore.list[storeItemIndex] = txItem;
     } else {
