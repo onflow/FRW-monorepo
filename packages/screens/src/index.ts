@@ -25,6 +25,9 @@ export { CriticalErrorFallback } from './error/CriticalErrorFallback';
 // Export key rotation screens
 export * from './keyrotation';
 
+// Export keystore migration screens
+export * from './keystoremigration';
+
 // Export hooks
 export * from './hooks';
 

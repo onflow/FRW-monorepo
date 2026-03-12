@@ -196,6 +196,10 @@ export interface Spec extends TurboModule {
   ): Promise<void>;
   requestNotificationPermission(): Promise<boolean>;
   checkNotificationPermission(): Promise<boolean>;
+  // Keystore migration
+  keystoreMigration?(): Promise<void>;
+
+  // Screen security
   setScreenSecurityLevel(level: 'normal' | 'secure'): void;
   // Launch native screen method - uses local NativeScreenName type for Codegen compatibility
   launchNativeScreen(screenName: NativeScreenName, params?: string | null): void;
