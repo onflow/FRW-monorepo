@@ -1172,7 +1172,8 @@ extension WalletConnectSign.Request {
             expiryTime: .distantFuture,
             displayType: .click,
             flag: .walletconnect,
-            conditions: nil
+            conditions: nil,
+            localIcon: nil
         )
     }
 }

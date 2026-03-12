@@ -32,12 +32,13 @@ extension WalletManager {
             title: "Claim received assets",
             body: "",
             icon: nil,
-            image: "flow",
+            image: nil,
             url: nil,
             expiryTime: .distantFuture,
             displayType: .click,
             flag: .unclaimed,
-            conditions: nil
+            conditions: nil,
+            localIcon: "flow"
         )
     }
 

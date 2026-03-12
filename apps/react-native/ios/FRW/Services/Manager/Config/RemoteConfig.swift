@@ -242,6 +242,8 @@ extension RemoteConfigManager {
         var flag: NewsFlag? = .normal
         let conditions: [Condition]?
 
+        let localIcon: String?
+
         var iconURL: URL? {
             if let logoString = icon {
                 if logoString.hasSuffix("svg") {
