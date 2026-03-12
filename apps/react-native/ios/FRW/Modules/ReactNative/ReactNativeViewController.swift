@@ -19,6 +19,7 @@ extension ReactNativeViewController {
     case keyRotationTip = "KeyRotationTip"
     case activity = "Activity"
     case migration = "Migration"
+    case claimTokens = "ClaimTokens"
   }
 }
 
@@ -278,6 +279,8 @@ extension RNBridge.InitialProps {
       return .activity
     case .migration:
       return .migration
+    case .claimTokens:
+        return .claimTokens
     }
   }
 }

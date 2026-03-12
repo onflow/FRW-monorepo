@@ -1170,6 +1170,19 @@ extension FlowNetwork {
     }
 }
 
+// MARK: LostAndFound
+
+extension FlowNetwork {
+
+    static func batchQueryUnclaimedNumber(addresses: [String]) async throws -> Int {
+        let params = addresses.map { Flow.Cadence.FValue.address(.init(hex: $0))}
+        return try await fetch(
+            by: \.lostAndFound?.batchQueryUnclaimedNumber,
+            arguments: [.array(params)]
+        )
+    }
+}
+
 // MARK: - Base
 
 extension FlowNetwork {

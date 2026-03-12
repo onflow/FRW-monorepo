@@ -162,6 +162,7 @@ extension RemoteConfigManager {
         case normal
         case walletconnect
         case upgrade
+        case unclaimed
 
         // MARK: Lifecycle
 

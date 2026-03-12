@@ -66,10 +66,19 @@ class NFTUIKitListViewController: UIViewController {
                 log.debug("[NFT] refresh NFTs when EVM account did change ")
                 self.walletInfoDidChanged()
             }.store(in: &cancelSets)
+        WalletManager.shared.$unclaimedCount
+            .receive(on: DispatchQueue.main)
+            .map{ $0 }
+            .sink {[weak self] count in
+                self?.inboxButton.isHidden = (count == 0)
+                self?.inboxButton.badgeCount = count
+            }
+            .store(in: &cancelSets)
         listStyleHandler.refreshAction()
         gridStyleHandler.refreshAction()
 
-        addButton.isHidden = WalletManager.shared.isSelectedChildAccount
+        addButton.isHidden = !WalletManager.shared.isSelectedFlowAccount
+        inboxButton.isHidden = WalletManager.shared.unclaimedCount == 0
     }
 
     func reloadViews() {
@@ -166,6 +175,15 @@ class NFTUIKitListViewController: UIViewController {
         return btn
     }()
 
+    private lazy var inboxButton: CircleUIKitButton = {
+        let button = CircleUIKitButton(image: .inbox)
+        button.addTarget(self, action: #selector(onClickInbox), for: .touchUpInside)
+        button.snp.makeConstraints { make in
+            make.width.height.equalTo(32)
+        }
+        return button
+    }()
+
     private lazy var menuButton: UIButton = {
         let btn = UIButton(type: .custom)
         btn.setImage(UIImage(named: "icon-nft-dot"), for: .normal)
@@ -183,6 +201,15 @@ class NFTUIKitListViewController: UIViewController {
         btn.addTarget(self, action: #selector(onClickMenu), for: .touchUpInside)
 
         return btn
+    }()
+
+    private lazy var actionButtonStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [inboxButton, addButton, menuButton])
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .fill
+        stackView.spacing = 10
+        return stackView
     }()
 
     @objc
@@ -245,12 +272,7 @@ class NFTUIKitListViewController: UIViewController {
     }
 
     private func updateUI(with count: Int) {
-        menuButton.snp.updateConstraints { make in
-            make.width.height.equalTo(count > 0 ? 32 : 0)
-        }
-        addButton.snp.updateConstraints { make in
-            make.right.equalTo(menuButton.snp.left).offset(count > 0 ? -10 : 0)
-        }
+        menuButton.isHidden = count <= 0
 
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
             self.headerContentView.layoutIfNeeded()
@@ -285,15 +307,9 @@ class NFTUIKitListViewController: UIViewController {
             make.centerY.equalToSuperview()
         }
 
-        headerContentView.addSubview(menuButton)
-        menuButton.snp.makeConstraints { make in
+        headerContentView.addSubview(actionButtonStackView)
+        actionButtonStackView.snp.makeConstraints { make in
             make.right.equalTo(-18)
-            make.centerY.equalToSuperview()
-        }
-
-        headerContentView.addSubview(addButton)
-        addButton.snp.makeConstraints { make in
-            make.right.equalTo(menuButton.snp.left).offset(-10)
             make.centerY.equalToSuperview()
         }
 
@@ -303,6 +319,11 @@ class NFTUIKitListViewController: UIViewController {
     @objc
     private func onAddButtonClick() {
         Router.route(to: RouteMap.NFT.addCollection)
+    }
+
+    @objc
+    private func onClickInbox() {
+        Router.route(to: RouteMap.ReactNative.claimTokens)
     }
 
     @objc

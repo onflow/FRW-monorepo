@@ -51,6 +51,14 @@ class UserManager: ObservableObject {
 
   @Published
   var activatedUID: String? = LocalUserDefaults.shared.activatedUID {
+      willSet {
+          if let uid = activatedUID {
+              WalletManager.shared.removeUnclaimedNews(userId: uid)
+              Task { @MainActor in
+                  WalletManager.shared.unclaimedCount = 0
+              }
+          }
+      }
     didSet {
       LocalUserDefaults.shared.activatedUID = activatedUID
       if oldValue != activatedUID {
