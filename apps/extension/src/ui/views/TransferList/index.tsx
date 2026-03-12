@@ -176,7 +176,7 @@ const TransferList = () => {
                 return (
                   <ListItem
                     key={txCombinedKey}
-                    data-testid={txStableId}
+                    data-testid={txCombinedKey}
                     secondaryAction={
                       <EndListItemText
                         status={tx.status}
