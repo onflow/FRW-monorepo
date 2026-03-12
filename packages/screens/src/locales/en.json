@@ -173,7 +173,8 @@
       "networkEvm": "Flow EVM",
       "nftsFrom": "NFTS from {{collection}}",
       "nftCount": "{{count}} NFTS"
-    }
+    },
+    "loadMore": "Load more"
   },
   "buttons": {
     "retry": "Retry",
@@ -591,7 +592,8 @@
       "from": "From",
       "cta": "Claim",
       "to": "To"
-    }
+    },
+    "title": "Claim"
   },
   "addTokens": {
     "claimBannerTitle": "Claim received tokens",

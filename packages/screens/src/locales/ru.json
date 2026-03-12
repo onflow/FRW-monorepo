@@ -173,7 +173,8 @@
       "networkEvm": "Flow EVM",
       "nftsFrom": "NFTS из {{collection}}",
       "nftCount": "{{count}} NFTS"
-    }
+    },
+    "loadMore": "Загрузить ещё"
   },
   "buttons": {
     "retry": "Повторить",
@@ -551,7 +552,8 @@
       "from": "От",
       "cta": "Получить",
       "to": "Получатель"
-    }
+    },
+    "title": "Получить"
   },
   "addTokens": {
     "claimBannerTitle": "Получить полученные токены",

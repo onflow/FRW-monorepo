@@ -173,7 +173,8 @@
       "networkEvm": "Flow EVM",
       "nftsFrom": "{{collection}}のNFTS",
       "nftCount": "{{count}} NFTS"
-    }
+    },
+    "loadMore": "さらに読み込む"
   },
   "buttons": {
     "retry": "再試行",
@@ -539,7 +540,8 @@
       "from": "送信元",
       "cta": "請求する",
       "to": "宛先"
-    }
+    },
+    "title": "請求する"
   },
   "addTokens": {
     "claimBannerTitle": "受け取ったトークンを請求する",

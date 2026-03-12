@@ -23,11 +23,19 @@ import {
 } from '@onflow/frw-ui';
 import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
+import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl } from 'react-native';
 
 const PAGE_SIZE = 15;
+
+function getActivityStatusLabel(item: ActivityItem, t: TFunction): string {
+  if (item.error || item.status === 'failed') return t('activity.status.failed');
+  if (item.status === 'expired') return t('activity.status.expired');
+  if (item.status === 'pending') return t('activity.status.pending');
+  return t('activity.status.success');
+}
 
 export interface ActivityScreenProps {
   /** Optional callback when an activity item is pressed (used when embedded as tab) */
@@ -43,6 +51,16 @@ export interface ActivityScreenProps {
 export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
+
+  const cardLabels = useMemo(
+    () => ({
+      sent: t('activity.sent'),
+      received: t('activity.received'),
+      to: t('activity.detail.to'),
+      from: t('activity.detail.from'),
+    }),
+    [t]
+  );
   const network = bridge.getNetwork() || 'mainnet';
 
   const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
@@ -139,13 +157,10 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
           {!isLoading && isError && (
             <RefreshView
               type="error"
-              title={t('activity.errorTitle', 'Failed to load')}
-              message={t(
-                'activity.errorMessage',
-                'Could not fetch your activity. Please try again.'
-              )}
+              title={t('activity.error')}
+              message={t('activity.errorMessage')}
               onRefresh={handleRetry}
-              refreshText={t('activity.retry', 'Retry')}
+              refreshText={t('common.retry')}
             />
           )}
 
@@ -153,7 +168,7 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
           {!isLoading && !isError && groupedActivity.length === 0 && (
             <RefreshView
               type="empty"
-              title={t('activity.emptyTitle', 'No activity yet')}
+              title={t('activity.empty')}
               message={t('activity.emptyMessage', 'Your transactions will appear here.')}
             />
           )}
@@ -167,7 +182,11 @@ export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): R
                 <YStack mx="$4" bg="$bg1" rounded="$4" px="$3">
                   {group.items.map((item, index) => (
                     <YStack key={`${item.id}-${index}`}>
-                      <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
+                      <ActivityCard
+                        item={item}
+                        onPress={() => handleActivityPress(item)}
+                        labels={{ ...cardLabels, status: getActivityStatusLabel(item, t) }}
+                      />
                       {index < group.items.length - 1 && (
                         <Separator borderColor="$light25" borderWidth={0.5} />
                       )}
