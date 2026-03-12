@@ -428,11 +428,13 @@ class TransactionActivity {
       transactionHolder.transferType = tx.transfer_type;
       transactionHolder.additionalMessage = tx.additional_message;
       // see if there's a pending item for this transaction
+      // Use case-insensitive comparison to handle API/FCL hash casing differences
+      const normalizedTxid = tx.txid.toLowerCase();
       const pendingItemIndex = existingPendingList.findIndex(
         (item) =>
-          item.hash.includes(tx.txid) ||
-          item.cadenceTxId?.includes(tx.txid) ||
-          item.evmTxIds?.includes(tx.txid)
+          item.hash.toLowerCase().includes(normalizedTxid) ||
+          item.cadenceTxId?.toLowerCase().includes(normalizedTxid) ||
+          item.evmTxIds?.some((id) => id.toLowerCase().includes(normalizedTxid))
       );
       if (pendingItemIndex !== -1) {
         // Store the cadence transaction id
@@ -443,9 +445,9 @@ class TransactionActivity {
         // see if there's an existing transaction with cadenceId in the store
         const existingTx = existingTxList.find(
           (item) =>
-            item.hash.includes(tx.txid) ||
-            item.cadenceTxId?.includes(tx.txid) ||
-            item.evmTxIds?.includes(tx.txid)
+            item.hash.toLowerCase().includes(normalizedTxid) ||
+            item.cadenceTxId?.toLowerCase().includes(normalizedTxid) ||
+            item.evmTxIds?.some((id) => id.toLowerCase().includes(normalizedTxid))
         );
         if (existingTx && existingTx.cadenceTxId) {
           // Found existing cadence transaction id
