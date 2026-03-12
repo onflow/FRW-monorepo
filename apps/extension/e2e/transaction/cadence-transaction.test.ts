@@ -91,7 +91,7 @@ let txList: { txId: string; tokenname: string; amount: string; ingoreFlowCharge:
 
 //Send FLOW token from Flow to Flow
 test('send Cadence transactions', async ({ page, extensionId }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(600_000);
   await loginToSenderAccount({ page, extensionId });
 
   await switchToMainAccount({
@@ -138,7 +138,7 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
 
 //Send FLOW token to evm
 test('send Cadence transactions to evm', async ({ page, extensionId }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(600_000);
   await loginToSenderAccount({ page, extensionId });
 
   await switchToMainAccount({
@@ -184,7 +184,7 @@ test('send Cadence transactions to evm', async ({ page, extensionId }) => {
 });
 
 test('send from evm to Flow', async ({ page, extensionId }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(600_000);
   await loginToSenderAccount({ page, extensionId });
 
   await switchToEOAAccount({

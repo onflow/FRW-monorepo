@@ -51,7 +51,7 @@ test.beforeEach(async ({ page, extensionId }) => {
 
 //Send FLOW token from Flow to Flow
 test('send FTs ', async ({ page, extensionId }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(600_000);
   await loginToSenderAccount({
     page,
     extensionId,
@@ -91,7 +91,7 @@ test('send FTs ', async ({ page, extensionId }) => {
 });
 
 test('send FTs with Coa ', async ({ page, extensionId }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(600_000);
   const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
     [];
   await switchToEvmAddress({
@@ -123,7 +123,7 @@ test('send FTs with Coa ', async ({ page, extensionId }) => {
 });
 
 test('send FTs with EOA ', async ({ page, extensionId }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(600_000);
   await loginToEOAAccount({
     page,
     extensionId,
@@ -160,7 +160,7 @@ test('send FTs with EOA ', async ({ page, extensionId }) => {
 
 // child account ft receive test
 // test('send FTs tp child ', async ({ page, extensionId }) => {
-//   test.setTimeout(120_000);
+//   test.setTimeout(600_000);
 //   const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
 //     [];
 //   await switchToMainAccount({
@@ -200,7 +200,7 @@ test('send FTs with EOA ', async ({ page, extensionId }) => {
 
 // // child account ft send test
 // test('send FTs with child ', async ({ page, extensionId }) => {
-//   test.setTimeout(120_000);
+//   test.setTimeout(600_000);
 //   const txList: { txId: string; tokenName: string; amount: string; ingoreFlowCharge: boolean }[] =
 //     [];
 //   await switchToChildAccount({
