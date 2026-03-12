@@ -37,7 +37,11 @@ export const sendFT = async ({
   await page.getByTestId('next').click();
   await page.getByTestId('confirm').click();
   // Wait for the transaction to be completed
-  const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
+  const txId = await waitForTransaction({
+    page,
+    successtext: /success|Finalized|Executed|Sealed/,
+    ingoreFlowCharge,
+  });
   return { txId, tokenName, amount, ingoreFlowCharge };
 };
 

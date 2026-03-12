@@ -28,7 +28,11 @@ export const sendTokenFlow = async ({
   await page.getByTestId('next').click();
   await page.getByTestId('confirm').click();
   // Wait for the transaction to be completed
-  const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
+  const txId = await waitForTransaction({
+    page,
+    successtext: /success|Finalized|Executed|Sealed/,
+    ingoreFlowCharge,
+  });
   return { txId, tokenname, amount, ingoreFlowCharge };
 };
 
@@ -47,7 +51,11 @@ export const moveTokenFlow = async ({
   await page.getByRole('button', { name: 'Move' }).click();
 
   // Wait for the transaction to be completed
-  const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
+  const txId = await waitForTransaction({
+    page,
+    successtext: /success|Finalized|Executed|Sealed/,
+    ingoreFlowCharge,
+  });
   return { txId, tokenname, amount, ingoreFlowCharge };
 };
 
@@ -66,7 +74,11 @@ export const moveTokenFlowHomepage = async ({
   await page.getByPlaceholder('0.00').fill(amount);
   await page.getByRole('button', { name: 'Move' }).click();
   // Wait for the transaction to be completed
-  const txId = await waitForTransaction({ page, successtext: /Executed|Sealed/, ingoreFlowCharge });
+  const txId = await waitForTransaction({
+    page,
+    successtext: /success|Finalized|Executed|Sealed/,
+    ingoreFlowCharge,
+  });
   return { txId, tokenname, amount, ingoreFlowCharge };
 };
 
