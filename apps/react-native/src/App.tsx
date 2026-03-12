@@ -1,8 +1,8 @@
+import Luciq, { InvocationEvent } from '@luciq/react-native';
 import { ServiceContext } from '@onflow/frw-context';
 import { QueryProvider, initializeI18n } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
 import { PortalProvider, TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
-import Instabug, { InvocationEvent } from 'instabug-reactnative';
 import { useCallback, useEffect } from 'react';
 import { Clipboard, useColorScheme } from 'react-native';
 import type { ErrorUtils } from 'react-native';
@@ -113,21 +113,21 @@ const App = (props: AppProps) => {
         return;
       }
 
-      Instabug.init({
+      Luciq.init({
         token: instabugToken,
         invocationEvents: [InvocationEvent.none],
       });
 
       // Set user attributes for debugging
-      Instabug.setUserAttribute('SelectedAccount', appProps.address ?? '');
-      Instabug.setUserAttribute('Network', appProps.network ?? '');
-      Instabug.setUserAttribute('Version', version);
+      Luciq.setUserAttribute('SelectedAccount', appProps.address ?? '');
+      Luciq.setUserAttribute('Network', appProps.network ?? '');
+      Luciq.setUserAttribute('Version', version);
 
-      // Mark Instabug as initialized in platform
+      // Mark Luciq as initialized in platform
       platform.setInstabugInitialized(true);
-      platform.log('debug', '[App] Instabug initialized with token');
+      platform.log('debug', '[App] Luciq initialized with token');
     } catch (error) {
-      platform.log('error', '[App] Failed to initialize Instabug:', error);
+      platform.log('error', '[App] Failed to initialize Luciq:', error);
       // Don't mark as initialized if it failed
       platform.setInstabugInitialized(false);
     }
