@@ -154,8 +154,6 @@
     },
     "sent": "送信済み",
     "received": "受信済み",
-    "today": "今日",
-    "yesterday": "昨日",
     "detail": {
       "appInteraction": "アプリ操作",
       "youSent": "送信額",
@@ -536,8 +534,6 @@
     },
     "drawer": {
       "title": "資産を請求する",
-      "token": "トークン",
-      "from": "送信元",
       "cta": "請求する",
       "to": "宛先"
     },
@@ -556,7 +552,6 @@
     "website": "ウェブサイト",
     "items": "アイテム数",
     "about": "概要",
-    "claimButton": "資産を受け取る",
     "empty": "NFT なし",
     "warningText": "この NFT コレクションを受け入れると、今後の入金も自動的に受け入れます"
   }

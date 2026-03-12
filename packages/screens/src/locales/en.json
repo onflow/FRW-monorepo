@@ -154,8 +154,6 @@
     },
     "sent": "Sent",
     "received": "Received",
-    "today": "Today",
-    "yesterday": "Yesterday",
     "detail": {
       "appInteraction": "App Interaction",
       "youSent": "You Sent",
@@ -588,8 +586,6 @@
     },
     "drawer": {
       "title": "Claim assets",
-      "token": "Token",
-      "from": "From",
       "cta": "Claim",
       "to": "To"
     },
@@ -608,7 +604,6 @@
     "website": "Website",
     "items": "Items",
     "about": "About",
-    "claimButton": "Claim assets",
     "empty": "No NFTs",
     "warningText": "By accepting this NFT collection you will automatically accept future deposits of it as well"
   }
