@@ -55,7 +55,7 @@ class UserManager: ObservableObject {
           if let uid = activatedUID {
               WalletManager.shared.removeUnclaimedNews(userId: uid)
               Task { @MainActor in
-                  WalletManager.shared.unclaimedCount = 0
+                  WalletManager.shared.resetUnclaimedState()
               }
           }
       }

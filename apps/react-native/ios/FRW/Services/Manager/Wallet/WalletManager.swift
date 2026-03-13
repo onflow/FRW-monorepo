@@ -103,6 +103,10 @@ class WalletManager: ObservableObject {
             if let uid = UserManager.shared.activatedUID, let value = selectedAccount?.value {
                 LocalUserDefaults.shared.setSelectedAddress(value, for: uid)
             }
+            Task { @MainActor in
+                self.syncSelectedUnclaimedCount()
+                self.syncUnclaimedNewsForCurrentAccount()
+            }
         }
     }
 
@@ -111,6 +115,9 @@ class WalletManager: ObservableObject {
 
     @MainActor
     @Published var unclaimedCount: Int = 0
+
+    @MainActor
+    @Published var unclaimedCountByAddress: [String: Int] = [:]
 
     @ObservedObject
     var filterToken: TokenFilterModel =
@@ -522,6 +529,9 @@ extension WalletManager {
         selectedAccount = nil
         activatedCoins = []
         currentInitializedUID = nil
+        Task { @MainActor in
+            self.resetUnclaimedState()
+        }
         log.info("[Wallet] Cleared wallet state")
     }
 }
