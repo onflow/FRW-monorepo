@@ -389,7 +389,7 @@ extension TrustJSMessageHandler {
             .uint64(receiveModel.gasIntValue),
         ]
 
-        let vm = BrowserAuthzViewModel(
+        let vm: BrowserAuthzViewModel = BrowserAuthzViewModel(
             title: title,
             url: url?.absoluteString ?? "unknown",
             logo: url?.absoluteString.toFavIcon()?.absoluteString,
@@ -556,7 +556,12 @@ extension TrustJSMessageHandler {
                     }
 
                     // Sign the transaction
-                    guard let signedTransaction = try await WalletManager.shared.walletEntity?.ethSignTransaction(input) else {
+                      guard let index = await WalletManager.shared.eoaIndex() else {
+                          log.error("[EOA] get index error")
+                          self.cancel(id: id)
+                          return
+                      }
+                      guard let signedTransaction = try await WalletManager.shared.walletEntity?.ethSignTransaction(input, index: index) else {
                       log.error("[EOA] Failed to sign transaction")
                       HUD.error(EVMError.failedSign)
                       self.cancel(id: id)
@@ -565,12 +570,13 @@ extension TrustJSMessageHandler {
                     if RemoteConfigManager.shared.allowWrapEOAWithCadence {
                       let wallet = await WalletManager.shared
                       let mainAddress = await wallet.mainAccount?.hexAddr ?? ""
+                        let eoaAddress = wallet.isSelectedEOAAccount ? (wallet.selectedAccount?.hexAddr ?? "") : (wallet.EOAs?.first?.address ?? "")
                       let result = try await wallet.walletEntity?
                         .ethSendSignedTransactionByCadence(
                           chainId: currentNetwork,
                           account: .init(hex: mainAddress),
                           rlpEncodedTransaction: signedTransaction.encoded,
-                          coinbaseAddr: wallet.EOAs?.first?.address ?? "",
+                          coinbaseAddr: eoaAddress,
                           signers: wallet.defaultSigners
                         )
                       log.info("[EOA] Transaction sent successfully with hash: \(result?.description ?? "")")

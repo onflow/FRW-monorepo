@@ -258,7 +258,9 @@ extension WalletManager {
         updateKeyProvider(provider: provider)
         // Create wallet for all supported networks
         walletEntity = FlowWalletKit.Wallet(type: .key(provider), networks: supportNetworks)
-        self.EOAs = walletEntity?.eoaAddress?.compactMap{ EOA($0,network: currentNetwork) }
+        if let uid = UserManager.shared.activatedUID {
+            self.EOAs = allEOAAccounts(with: walletEntity, for: uid)
+        } 
       }
 
       // Fetch all network accounts (including testnet if needed)

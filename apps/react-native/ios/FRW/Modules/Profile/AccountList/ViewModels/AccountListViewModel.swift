@@ -89,13 +89,7 @@ class AccountListViewModel: ObservableObject {
     }
 
     func addNewAccount() {
-        Task {
-            do {
-                try await WalletManager.shared.addNewAccount()
-            } catch {
-                log.error(error)
-            }
-        }
+        Router.route(to: RouteMap.Profile.addAccount)
     }
 
 }

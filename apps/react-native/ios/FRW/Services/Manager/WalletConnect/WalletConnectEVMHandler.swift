@@ -198,7 +198,11 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                     }
                     confirm(encoded.hexString.addHexPrefix())
                   } else {
-                    guard let sig = try? await WalletManager.shared.walletEntity?.ethSignPersonalMessage(data) else {
+                      guard let index = await WalletManager.shared.eoaIndex() else {
+                          log.error("[EOA] get index error")
+                          return
+                      }
+                      guard let sig = try? await WalletManager.shared.walletEntity?.ethSignPersonalMessage(data,index: index) else {
                       log.error("[SOA] sign for data is error")
                       cancel()
                       return
@@ -394,7 +398,11 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                     }
 
                     // Sign the transaction
-                    guard let signedTransaction = try await WalletManager.shared.walletEntity?.ethSignTransaction(input) else {
+                      guard let index = await WalletManager.shared.eoaIndex() else {
+                          log.error("[EOA] get index error")
+                          return
+                      }
+                      guard let signedTransaction = try await WalletManager.shared.walletEntity?.ethSignTransaction(input,index: index) else {
                       log.error("[SOA] Failed to sign transaction")
                       HUD.error(EVMError.failedSign)
                       cancel()
@@ -403,12 +411,13 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                     if RemoteConfigManager.shared.allowWrapEOAWithCadence {
                       let wallet = await WalletManager.shared
                       let mainAddress = await wallet.mainAccount?.hexAddr ?? ""
+                        let eoaAddress = wallet.isSelectedEOAAccount ? (wallet.selectedAccount?.hexAddr ?? "") : (wallet.EOAs?.first?.address ?? "")
                       let result = try await wallet.walletEntity?
                         .ethSendSignedTransactionByCadence(
                           chainId: currentNetwork,
                           account: .init(hex: mainAddress),
                           rlpEncodedTransaction: signedTransaction.encoded,
-                          coinbaseAddr: wallet.EOAs?.first?.address ?? "",
+                          coinbaseAddr: eoaAddress,
                           signers: wallet.defaultSigners
                         )
                       guard (result?.description) != nil else {
@@ -502,7 +511,13 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                             confirm(encoded.hexString.addHexPrefix())
                           } else {
                             let raw: String = dataStr
-                            guard let signature = try? await WalletManager.shared.walletEntity?.ethSignTypedData(json: raw) else {
+                              guard let index = await WalletManager.shared.eoaIndex() else {
+                                  log.error("[EOA] get index error")
+                                  cancel()
+                                  return
+                              }
+                              guard let signature = try? await WalletManager.shared.walletEntity?.ethSignTypedData(json: raw, index: index) else {
+                                log.error("[EOA] sign failed at \(index)")
                               cancel()
                               return
                             }

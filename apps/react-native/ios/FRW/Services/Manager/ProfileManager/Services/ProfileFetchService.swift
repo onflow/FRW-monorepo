@@ -176,9 +176,10 @@ final class ProfileFetchService: ProfileFetchServiceProtocol {
         }
 
         // Process EOA addresses
-        if let eoas = walletEntity.eoaAddress {
-            let eoaAccounts = Array(eoas).compactMap {
-                EOA($0, network: targetNetwork)?.toWalletAccount(userId: profile.uid)
+        let eoas = await WalletManager.shared.allEOAAccounts(with: walletEntity, for: profile.uid)
+        if !eoas.isEmpty {
+            let eoaAccounts = eoas.compactMap {
+                $0.toWalletAccount(userId: profile.uid)
             }
             if !eoaAccounts.isEmpty {
                 walletAccounts.append(eoaAccounts)

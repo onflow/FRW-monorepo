@@ -52,7 +52,7 @@ extension WalletManager {
 
 // MARK: - add account
 extension WalletManager {
-    func addNewAccount() async throws {
+    func createNewCadenceAccount() async throws {
         guard !isAddingAccount else {
             log.debug("is adding account")
             return
@@ -84,15 +84,94 @@ extension WalletManager {
         }
     }
 
+    func createNewEVMAccount() async throws {
+        guard let uid = UserManager.shared.activatedUID else {
+            throw LLError.accountNotFound
+        }
+        guard !isAddingAccount else {
+            log.debug("is adding account")
+            return
+        }
+        defer {
+            isAddingAccount = false
+        }
+        let nextIndex = max(LocalUserDefaults.shared.nextEOAIndex(for: uid), 1)
+        let index = UInt32(nextIndex)
+        guard let address = try walletEntity?.ethAddress(index: index) else {
+            throw WalletError.invaildAddress
+        }
+        LocalUserDefaults.shared.setEOAIndex(nextIndex, for: address, uid: uid)
+        let eoa = EOA(address, network: currentNetwork)
+        await MainActor.run {
+            self.EOAs = allEOAAccounts(with: walletEntity, for: uid)
+            if let walletAccount = eoa?.toWalletAccount(
+                parentAddress: getPrimaryWalletAddress(),
+                userId: uid
+            ) {
+                ProfileManager.shared.appendEOAAccount(walletAccount)
+            }
+        }
+        log.info("[EOA] created new EOA account: \(address), index: \(nextIndex)")
+    }
+
+    /// Derive all EOA addresses from stored index map + default index 0
+    func allEOAAccounts(with wallet: FlowWalletKit.Wallet?,for uid: String) -> [EOA] {
+        // index 0 from walletEntity
+        var result: [EOA] = wallet?.eoaAddress?
+            .compactMap { EOA($0, network: currentNetwork) } ?? []
+
+        // Additional EOAs from stored indices (index >= 1)
+        let storedIndices = LocalUserDefaults.shared.getEOAIndices(for: uid)
+        for (address, _) in storedIndices {
+            if !result.contains(where: { $0.address.lowercased() == address.lowercased() }) {
+                if let eoa = EOA(address, network: currentNetwork) {
+                    result.append(eoa)
+                }
+            }
+        }
+        return result
+    }
+
+    func eoaIndex() -> UInt32? {
+        guard selectedAccount?.type == .eoa else {
+            return nil
+        }
+        guard let currentAddress = selectedAccount?.hexAddr else {
+            return nil
+        }
+        
+        for index in 0..<10 {
+            if let addr = try? walletEntity?.ethAddress(index: UInt32(index)),
+                addr.lowercased() == currentAddress.lowercased() {
+                return UInt32(index)
+            }
+        }
+        return nil
+    }
+
     func canAddNewAccount() -> Bool {
         var isFlag = RemoteConfigManager.shared.config?.features.createNewAccount ?? false
+#if DEBUG
+        isFlag = true
+#endif
         guard isFlag else {
             return false
         }
-        guard keyProvider?.keyType != .secureEnclave else {
+        guard keyProvider?.keyType == .seedPhrase else {
             return false
         }
+        return allowCreateCadenceAccount() || allowCreateEVMAccount()
+    }
+
+    func allowCreateCadenceAccount() -> Bool {
         return currentNetworkAccounts.count < 5
+    }
+
+    func allowCreateEVMAccount() -> Bool {
+        guard let count = EOAs?.count else {
+            return true
+        }
+        return count < 5
     }
 }
 

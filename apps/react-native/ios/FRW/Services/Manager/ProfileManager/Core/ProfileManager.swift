@@ -202,6 +202,27 @@ final class ProfileManager: ObservableObject {
         }
     }
 
+    /// Append a new EOA account to the current profile without network fetching.
+    /// Each EOA is a separate group `[WalletAccount]`. Skips if address already exists.
+    func appendEOAAccount(_ account: WalletAccount) {
+        guard let current = currentProfile else {
+            log.warning("[Profile] No current profile to append EOA")
+            return
+        }
+        let allExisting = current.accounts.flatMap { $0 }
+        guard !allExisting.contains(where: {
+            $0.address.lowercased() == account.address.lowercased()
+        }) else {
+            log.debug("[Profile] EOA already exists: \(account.address)")
+            return
+        }
+        var updatedAccounts = current.accounts
+        updatedAccounts.insert([account], at: 0)
+        let updatedProfile = current.updatingAccounts(to: updatedAccounts)
+        saveProfile(updatedProfile, validateKey: false)
+        log.info("[Profile] Appended EOA account: \(account.address)")
+    }
+
     /// Get account created by transaction id from wallet entity
     /// - Parameter txId: Transaction id used to create account
     /// - Returns: The matching account if found

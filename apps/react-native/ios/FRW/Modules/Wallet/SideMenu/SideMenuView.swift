@@ -373,14 +373,7 @@ struct SideMenuView: View {
 
             if vm.shouldShowAddingAccount {
                 Button {
-                    Task {
-                        do {
-                            try await wallet.addNewAccount()
-                        } catch {
-                            log.error("add account failed: \(error)")
-                        }
-                    }
-
+                    Router.route(to: RouteMap.Profile.addAccount)
                 } label: {
                     Image("icon-nft-add")
                         .resizable()
