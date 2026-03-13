@@ -395,11 +395,16 @@ class TransactionActivity {
     const existingPendingList = await this.getPendingList(network, address);
 
     // If the in-memory pending list is empty (e.g., service worker was restarted),
-    // recover any pending items from the cached list so they are not lost while
+    // recover any in-progress items from the cached list so they are not lost while
     // the API has not yet indexed those transactions.
+    // This includes PENDING, Executed, and Finalized states — all of which represent
+    // transactions that are not yet confirmed by the indexer. Recovering only PENDING
+    // items misses the case where updatePending already advanced the status before
+    // the SW restarted (common for EVM/Cadence hybrid transactions like withdrawCoa).
+    const TERMINAL_STATUSES = new Set(['SEALED', 'EXPIRED', 'ERROR']);
     if (existingPendingList.length === 0 && existingTxList.length > 0) {
       const cachedPendingItems = existingTxList.filter(
-        (item) => item.status.toUpperCase() === 'PENDING'
+        (item) => !TERMINAL_STATUSES.has(item.status.toUpperCase())
       );
       if (cachedPendingItems.length > 0) {
         existingPendingList.push(...cachedPendingItems);
