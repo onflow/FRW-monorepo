@@ -548,7 +548,7 @@ const getActivityItemRegexp = (txId: string, ingoreFlowCharge = false) => {
 
 export const checkNFTTrx = async ({ page, sealedText, collectionName, txId, isEvm = false }) => {
   const activityItemRegexp = getActivityItemRegexp(txId);
-  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
+  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText }).first();
   await expect(sealedItem).toBeVisible({
     timeout: 60_000,
   });
@@ -591,7 +591,7 @@ export const checkSentNFT = async ({
   ingoreFlowCharge = false,
 }) => {
   const activityItemRegexp = getActivityItemRegexp(txId, ingoreFlowCharge);
-  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
+  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText }).first();
   await expect(sealedItem).toBeVisible({
     timeout: 60_000,
   });
