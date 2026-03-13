@@ -4,11 +4,12 @@ import providerController from './controller';
 
 const tabCheckin = ({
   data: {
-    params: { origin, name, icon },
+    params: { name, icon },
   },
   session,
 }) => {
-  session.setProp({ origin, name, icon });
+  // Ignore claimed origin from page payload; origin is bound from sender URL in background/index.ts.
+  session.setProp({ origin: session.origin, name, icon });
 };
 
 const getProviderState = async (req) => {

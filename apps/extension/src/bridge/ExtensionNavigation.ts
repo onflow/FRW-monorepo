@@ -169,6 +169,7 @@ class ExtensionNavigation implements Navigation {
       SendTo: '/dashboard/token/flow/send',
       SendTokens: '/dashboard/token/flow/send', // Default fallback
       SelectTokens: '/dashboard/select-tokens',
+      // ClaimTokens: '/dashboard/claim-tokens',
       SendToScreen: '/dashboard/token/flow/send', // Use proper token route
       SendSingleNFT: '/dashboard/nft/send',
       SendMultipleNFTs: '/dashboard/nft/send',
@@ -190,6 +191,7 @@ class ExtensionNavigation implements Navigation {
       '/dashboard': 'Home',
       '/dashboard/sendtoscreen': 'SendToScreen',
       '/dashboard/select-tokens': 'SelectTokens',
+      // '/dashboard/claim-tokens': 'ClaimTokens',
       '/dashboard/nft/send': 'SendSingleNFT',
       '/dashboard/nftevm/send': 'SendNftEvm',
       '/dashboard/nested/nftdetailscreenview': 'NFTDetail',

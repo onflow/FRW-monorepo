@@ -8,17 +8,19 @@ import {
   ListItemIcon,
   Typography,
 } from '@mui/material';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
+import { MAX_MAIN_ACCOUNTS_PER_PROFILE } from '@/shared/constant';
 import { type UserInfoResponse, type MainAccount, type WalletAccount } from '@/shared/types';
-import { consoleError } from '@/shared/utils';
+import { consoleError, hasReachedFlowAddressLimit } from '@/shared/utils';
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import { AccountListing } from '@/ui/components/account/account-listing';
 import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { ProfileItemBase } from '@/ui/components/profile/profile-item-base';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
+import { useCurrentId, usePendingAccountCreationTransactions } from '@/ui/hooks/use-account-hooks';
 import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { COLOR_WHITE_ALPHA_10_FFFFFF1A, COLOR_WHITE_ALPHA_40_FFFFFF66 } from '@/ui/style/color';
@@ -58,12 +60,27 @@ const MenuDrawer = ({
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const canCreateNewAccount = useFeatureFlag('create_new_account');
+  const canAddMoreAccounts = !hasReachedFlowAddressLimit(walletList, MAX_MAIN_ACCOUNTS_PER_PROFILE);
+  const currentId = useCurrentId();
+  const pendingAccountTransactions = usePendingAccountCreationTransactions(network, currentId);
+  const hasPendingCreation = (pendingAccountTransactions?.length ?? 0) > 0;
+  const prevHasPendingCreationRef = useRef(hasPendingCreation);
   // TODO: Uncomment this when we have the import existing account feature flag
   const canImportExistingAccount = false; // useFeatureFlag('import_existing_account');
 
   // Error state
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const scrollSidebarToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    if (!scrollRef.current) {
+      return;
+    }
+    scrollRef.current.scrollTo({
+      top: scrollRef.current.scrollHeight + 60,
+      behavior,
+    });
+  }, []);
 
   const setActiveAccount = useCallback(
     (currentAccount: WalletAccount, parentAccount?: WalletAccount) => {
@@ -78,18 +95,11 @@ const MenuDrawer = ({
   );
 
   const addAccount = async () => {
+    if (hasPendingCreation) {
+      return;
+    }
     try {
       toggleAddAccount();
-
-      // Scroll to bottom to show the spinner
-      setTimeout(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTo({
-            top: scrollRef.current.scrollHeight + 60,
-            behavior: 'smooth',
-          });
-        }
-      }, 100);
 
       await wallet.createNewAccount(network);
     } catch (error) {
@@ -117,6 +127,20 @@ const MenuDrawer = ({
     },
     [navigate, toggleDrawer]
   );
+
+  useEffect(() => {
+    const hadPendingCreation = prevHasPendingCreationRef.current;
+    prevHasPendingCreationRef.current = hasPendingCreation;
+
+    // Scroll only when pending creation first appears.
+    if (!drawer || !hasPendingCreation || hadPendingCreation) {
+      return;
+    }
+    // Ensure pending card has been rendered before scrolling.
+    const timer = setTimeout(() => scrollSidebarToBottom('smooth'), 120);
+    return () => clearTimeout(timer);
+  }, [drawer, hasPendingCreation, scrollSidebarToBottom]);
+
   return (
     <Drawer
       open={drawer}
@@ -194,6 +218,7 @@ const MenuDrawer = ({
           }}
         >
           {canCreateNewAccount &&
+            canAddMoreAccounts &&
             (isCreating ? (
               <ListItem disablePadding>
                 <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
@@ -228,6 +253,7 @@ const MenuDrawer = ({
                 text={chrome.i18n.getMessage('Add_Account_Sidebar')}
                 dataTestId="add-account-button"
                 onClick={toggleAddAccount}
+                disabled={hasPendingCreation}
               />
             ))}
           <MenuItem
@@ -249,6 +275,7 @@ const MenuDrawer = ({
               }}
               addAccount={addAccount}
               importExistingAccount={canImportExistingAccount}
+              disableCreateAccount={hasPendingCreation}
             />
           )}
         </Box>

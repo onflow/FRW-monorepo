@@ -87,6 +87,9 @@
   "Developer__Mode": {
     "message": "Developer Mode"
   },
+  "Wrap_EOA_Tx_With_Cadence": {
+    "message": "Wrap EOA tx with Cadence"
+  },
   "Emulator_Mode": {
     "message": "Emulator Mode"
   },

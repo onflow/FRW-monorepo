@@ -1,0 +1,1 @@
+export const MAX_MAIN_ACCOUNTS_PER_PROFILE = 5;

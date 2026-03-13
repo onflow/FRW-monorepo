@@ -14,6 +14,7 @@ import {
   type SendPayload,
   SendTransaction,
   isValidSendTransactionPayload,
+  sendRawTransactionToEvmRpc,
 } from '@onflow/frw-workflow';
 import { create } from 'zustand';
 
@@ -30,8 +31,12 @@ import {
 // Helper function to format amount
 function formatAmount(val: string | number | undefined | null): string {
   if (val === null || val === undefined || val === '') return '0';
-  const num = typeof val === 'string' ? parseFloat(val) : val;
-  return isNaN(num) ? '0' : num.toString();
+  if (typeof val === 'number') {
+    return isNaN(val) ? '0' : String(val);
+  }
+  // Validate without parseFloat to preserve full decimal precision (e.g. 18 decimals)
+  const trimmed = val.trim();
+  return trimmed === '' || isNaN(Number(trimmed)) ? '0' : trimmed;
 }
 
 // Default form data
@@ -635,10 +640,22 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       logger.debug('[SendStore] Executing transaction with payload:', payload);
 
+      const wrapWithCadence = (await bridge.getWrapEOATxWithCadence?.()) ?? true;
+      const useDirectEvm = !wrapWithCadence;
+
+      const network = bridge.getNetwork?.() ?? 'mainnet';
       const helpers = {
         ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
-        session: session || undefined, // add session for trx
+        // Direct RPC path uses workflow/default gas settings.
+        gasPrice: useDirectEvm ? undefined : 0,
+        session: session || undefined,
+        ...(useDirectEvm
+          ? {
+              sendRawEvmTransaction: (signedTxHex: string) =>
+                sendRawTransactionToEvmRpc(signedTxHex, network),
+            }
+          : {}),
       };
 
       // tracker interceptor
@@ -673,6 +690,9 @@ export const useSendStore = create<SendState>((set, get) => ({
       // complete session
       session?.completed(true, result);
 
+      if (useDirectEvm) {
+        return { result, directEvm: true as const };
+      }
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';

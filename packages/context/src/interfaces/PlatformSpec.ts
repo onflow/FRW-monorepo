@@ -59,6 +59,12 @@ export interface PlatformSpec extends KeyRotationDependencies {
   getSignKeyIndex(): number;
   ethSign(signData: Uint8Array): Promise<Uint8Array>;
 
+  /**
+   * When false, EOA EVM transactions are sent via RLP directly to EVM RPC (by the package).
+   * When true or unset, EOA txs go through Cadence (eoaCallContract).
+   */
+  getWrapEOATxWithCadence?(): Promise<boolean>;
+
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;
@@ -105,6 +111,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
   scanQRCode(): Promise<string>;
   shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
+  closeRNWithNFT(id?: string | null): void;
 
   // Toast notifications
   showToast?(
@@ -190,6 +197,10 @@ export interface PlatformSpec extends KeyRotationDependencies {
     erc721: Array<{ address: string; id: string }>;
     erc1155: Array<{ address: string; id: string; amount: string }>;
   }>;
+  /**
+   * Refresh COA-related data after migration (native-side refresh for home + side menu)
+   */
+  refreshCoaAfterMigration?(): Promise<void>;
   // Safe area insets for cross-platform layout
   /**
    * Get device safe area insets for proper content positioning

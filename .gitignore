@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+__node_modules/
 */node_modules/
 .pnpm-debug.log*
 .yarn/cache
@@ -140,3 +141,4 @@ Flow-Wallet-Kit/
 /apps/passkeys/.next
 metro-stats.json
 /apps/react-native/.bundle-discovery
+__node_modules

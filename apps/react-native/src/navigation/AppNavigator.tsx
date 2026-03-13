@@ -5,13 +5,26 @@ import {
   SelectTokensScreen,
   SendSummaryScreen,
   SendTokensScreen,
+  MigrationScreen,
+  InfoScreen,
+  type MigrationScreenProps,
   // Key rotation screens
   KeyRotationTipScreen,
   KeyRotationMnemonicScreen,
   SendToScreen,
   ReceiveScreen,
-  // Activity screen
+  // Activity screens
   ActivityScreen,
+  ActivityDetailScreen,
+  // Token screens
+  AddTokensScreen,
+  ClaimTokensScreen,
+  ClaimTokenDetailScreen,
+  // NFT screens
+  AddNFTCollectionScreen,
+  ClaimNFTDetailScreen,
+  type ClaimItem,
+  type ClaimSender,
   // Onboarding screens
   GetStartedScreen,
   ProfileTypeSelectionScreen,
@@ -30,6 +43,7 @@ import {
   createNFTModelsFromConfig,
   createTokenModelFromConfig,
   createWalletAccountFromConfig,
+  type ActivityItem,
   type InitialProps,
   type NewKeyInfo,
   type NFTModel,
@@ -69,6 +83,12 @@ export type RootStackParamList = {
   SendSummary: undefined;
   Receive: undefined;
   Activity: undefined;
+  ActivityDetail: { item: ActivityItem };
+  AddTokens: undefined;
+  AddNFTCollection: undefined;
+  ClaimTokens: { initialTab?: 'token' | 'nft' } | undefined;
+  ClaimTokenDetail: { item: ClaimItem; sender?: ClaimSender };
+  ClaimNFTDetail: { item: ClaimItem; sender?: ClaimSender };
   Confirmation: {
     fromAccount: Record<string, unknown>;
     toAccount: Record<string, unknown>;
@@ -102,6 +122,9 @@ export type RootStackParamList = {
     newKeyInfo: NewKeyInfo;
   };
   KeystoreMigrationTip: undefined;
+  // Migration screens
+  MigrationInfo: undefined;
+  Migration: MigrationScreenProps | undefined;
 };
 
 interface AppNavigatorProps {
@@ -263,11 +286,16 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
     ? navigationThemes.customDarkTheme
     : navigationThemes.customLightTheme;
 
+  const normalizedInitialRoute =
+    initialRoute === 'Migration'
+      ? 'MigrationInfo'
+      : (initialRoute as keyof RootStackParamList) || 'Home';
+
   return (
     <SafeAreaProvider>
       <NavigationContainer ref={navigationRef} theme={currentTheme}>
         <Stack.Navigator
-          initialRouteName={(initialRoute as keyof RootStackParamList) || 'Home'}
+          initialRouteName={normalizedInitialRoute}
           screenOptions={{
             headerTitleAlign: 'center',
             headerShadowVisible: false,
@@ -341,12 +369,113 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
               }}
             />
             <Stack.Screen
+              name="AddTokens"
+              options={{
+                headerTitle: t('navigation.addTokens', 'Add Tokens'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <AddTokensScreen onClaimPress={() => nav.navigate('ClaimTokens')} />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="AddNFTCollection"
+              options={{
+                headerTitle: t('navigation.addNFTCollection', 'Add Collection'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ navigation: nav }) => (
+                <AddNFTCollectionScreen
+                  onClaimPress={() => nav.navigate('ClaimTokens', { initialTab: 'nft' })}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ClaimTokens"
+              options={{
+                headerTitle: t('navigation.claimTokens', 'Claim'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <ClaimTokensScreen
+                  initialTab={route.params?.initialTab}
+                  onItemPress={item =>
+                    item.type === 'nft'
+                      ? nav.navigate('ClaimNFTDetail', { item })
+                      : nav.navigate('ClaimTokenDetail', { item })
+                  }
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ClaimTokenDetail"
+              options={{
+                headerTitle: t('navigation.token', 'Token'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <ClaimTokenDetailScreen
+                  item={route.params.item}
+                  sender={route.params.sender}
+                  onClaim={() => nav.goBack()}
+                  onReject={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ClaimNFTDetail"
+              options={{
+                headerTitle: t('navigation.nftCollection', 'Collection'),
+                headerStyle: { backgroundColor: theme.bg.val },
+              }}
+            >
+              {({ route, navigation: nav }) => (
+                <ClaimNFTDetailScreen
+                  item={route.params.item}
+                  sender={route.params.sender}
+                  onClaim={() => nav.goBack()}
+                  onReject={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
               name="Activity"
-              component={ActivityScreen}
               options={{
                 headerShown: false, // No header for embedded tab view
               }}
-            />
+            >
+              {({ navigation: nav }) => (
+                <ActivityScreen
+                  onActivityPress={item => nav.navigate('ActivityDetail', { item })}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="ActivityDetail"
+              options={({ route }) => {
+                // Determine header title based on transaction type
+                const { item } = route.params;
+                let headerTitle = t('activity.detail.title', 'Details');
+                if (item.type === 'interaction') {
+                  headerTitle = t('activity.detail.appInteraction', 'App Interaction');
+                } else if (item.transferType === 'sent') {
+                  headerTitle = t('activity.sent', 'Sent');
+                } else if (item.transferType === 'received') {
+                  headerTitle = t('activity.received', 'Received');
+                }
+                return {
+                  headerTitle,
+                  headerRight: () => null,
+                  headerStyle: { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' },
+                };
+              }}
+            >
+              {({ route }) => <ActivityDetailScreen item={route.params.item} />}
+            </Stack.Screen>
           </Stack.Group>
 
           {/* Onboarding Screens Group */}
@@ -426,6 +555,93 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                 },
               }}
             />
+          </Stack.Group>
+
+          {/* Migration screens */}
+          <Stack.Group
+            screenOptions={{
+              headerShown: true,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => <NavigationBackButton />,
+              headerRight: () => <NavigationCloseButton />,
+              headerStyle: { backgroundColor: theme.bgDrawer.val },
+            }}
+          >
+            <Stack.Screen
+              name="MigrationInfo"
+              options={{
+                headerTitle: '',
+              }}
+            >
+              {({ navigation: nav }) => (
+                <InfoScreen
+                  onStartMigration={async () => {
+                    let sourceAccount: MigrationScreenProps['sourceAccount'] | undefined;
+                    let destinationAccount: MigrationScreenProps['destinationAccount'] | undefined;
+                    try {
+                      const selectedAccount = await platform.getSelectedAccount();
+                      const sourceAddress = selectedAccount?.address;
+                      sourceAccount =
+                        selectedAccount && sourceAddress
+                          ? {
+                              name: selectedAccount.name || sourceAddress,
+                              address: sourceAddress,
+                              avatar: selectedAccount.avatar,
+                            }
+                          : undefined;
+
+                      if (!sourceAddress) {
+                        logger.warn('[MigrationInfo] No source address available');
+                        return;
+                      }
+
+                      const { accounts } = await platform.getWalletAccounts();
+                      const parentAddress =
+                        selectedAccount?.parentAddress || selectedAccount?.address || '';
+                      const eoaAccount =
+                        accounts.find(
+                          account =>
+                            account.type === 'eoa' &&
+                            (account.parentAddress === parentAddress ||
+                              (!account.parentAddress && !parentAddress))
+                        ) ?? accounts.find(account => account.type === 'eoa');
+                      destinationAccount = eoaAccount
+                        ? {
+                            name: eoaAccount.name || eoaAccount.address,
+                            address: eoaAccount.address,
+                            avatar: eoaAccount.avatar,
+                          }
+                        : undefined;
+
+                      const assets = await platform.getMigrationAssets(sourceAddress);
+                      nav.navigate('Migration', {
+                        initialStage: 'ready',
+                        assets,
+                        sourceAccount,
+                        destinationAccount,
+                      });
+                    } catch (error) {
+                      logger.error('[MigrationInfo] Failed to fetch migration assets', error);
+                      nav.navigate('Migration', {
+                        initialStage: 'ready',
+                        sourceAccount,
+                        destinationAccount,
+                      });
+                    }
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="Migration"
+              options={{
+                headerTitle: '',
+              }}
+            >
+              {({ route }) => <MigrationScreen {...(route.params ?? {})} />}
+            </Stack.Screen>
           </Stack.Group>
 
           {/* Recovery screens with headers */}

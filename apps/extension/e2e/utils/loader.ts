@@ -60,7 +60,7 @@ export const test = base.extend<{
     context.on('page', async (page) => {
       const url = page.url();
 
-      if (url.startsWith('chrome-extension://')) {
+      if (url.startsWith('chrome-extension://') && url.endsWith('notification.html')) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         const signType = await page.getByText('SIGN MESSAGE').isVisible();

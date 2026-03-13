@@ -10,6 +10,7 @@ import {
   safeConvertToUFix64,
   convertHexToByteArray,
   signLegacyEvmTransaction,
+  safeConvertToUFix64WithoutRounding,
 } from './utils';
 import { validateEvmAddress, validateFlowAddress } from './validation';
 
@@ -377,8 +378,8 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
 
   async execute(payload: SendPayload, _helpers?: TransferExecutionHelpers): Promise<any> {
     const { flowIdentifier, amount, receiver, decimal, sender, type, assetType } = payload;
-    const formattedAmount = safeConvertToUFix64(amount);
-
+    // const formattedAmount = safeConvertToUFix64(amount);
+    const formattedAmount = safeConvertToUFix64WithoutRounding(amount);
     _helpers?.session?.strategySelected({
       strategyName: 'EvmToFlowTokenBridgeStrategy',
       assetType: type,
@@ -390,6 +391,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
     });
 
     const valueBig = parseUnits(formattedAmount, decimal);
+
     return await this.cadenceService.bridgeTokensFromEvmToFlowV3(
       flowIdentifier,
       valueBig.toString(),
@@ -510,6 +512,9 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
           },
           _helpers
         );
+        if (_helpers?.sendRawEvmTransaction) {
+          return await _helpers.sendRawEvmTransaction(signedTx);
+        }
         const rlpEncoded = convertHexToByteArray(signedTx);
         return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
       } else {
@@ -538,6 +543,9 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
           },
           _helpers
         );
+        if (_helpers?.sendRawEvmTransaction) {
+          return await _helpers.sendRawEvmTransaction(signedTx);
+        }
         const rlpEncoded = convertHexToByteArray(signedTx);
         return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
       } else {

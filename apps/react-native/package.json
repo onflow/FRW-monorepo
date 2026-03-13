@@ -34,6 +34,7 @@
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-ui": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
+    "@onflow/frw-workflow": "workspace:*",
     "@outblock/react-native-code-push": "^1.2.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-clipboard/clipboard": "^1.16.3",

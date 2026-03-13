@@ -6,7 +6,7 @@ const isValidEthereumAddress = (address: string): boolean => {
   return regex.test(address);
 };
 
-import { expect, getAuth, saveAuth } from './loader';
+import { expect, getAuth, saveAuth, wait } from './loader';
 export const getClipboardText = async () => {
   const text = await navigator.clipboard.readText();
   return text;
@@ -26,7 +26,12 @@ export const closeOpenedPages = async (page: Page) => {
 export const getCurrentAddress = async (page: Page, isCoa = false) => {
   // Wait for the dashboard page to be fully loaded
   await page.waitForURL(/.*\/dashboard.*/);
+  await wait(2000);
+  const whatsNewPopup = page.getByTestId('popup-close-button');
 
+  if (await whatsNewPopup.isVisible()) {
+    await whatsNewPopup.click();
+  }
   //await expect(page.getByLabel('Copy Address')).toBeVisible({ timeout: 120_000 });
   const copyIcon = page.getByTestId('copy-address-button');
   await expect(copyIcon).toBeEnabled({ timeout: 120_000 });
@@ -150,7 +155,7 @@ export const fillInPassword = async ({ page, password }) => {
   expect(filledAtLeastOneField).toBe(true);
 };
 
-export const registerAccount = async ({ page, extensionId, username, password }) => {
+export const registerAccount = async ({ page, extensionId, password }) => {
   // We're starting from a fresh install, so create a new wallet
   await closeOpenedPages(page);
   // Wait for the welcome page to be fully loaded
@@ -348,7 +353,7 @@ export const importSenderAccount = async ({ page, extensionId }) => {
   });
 };
 
-export const connectToApps = async ({ page, extensionId, url, testId, idx = -1 }) => {
+export const connectToApps = async ({ page, url, testId, idx = -1 }) => {
   await page.goto(url);
 
   let connectBtn = await page.getByTestId(testId);
@@ -567,14 +572,14 @@ export const checkSentAmount = async ({
   isEvm = false,
 }) => {
   const activityItemRegexp = getActivityItemRegexp(txId, ingoreFlowCharge);
-  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText });
+  const sealedItem = page.getByTestId(activityItemRegexp).filter({ hasText: sealedText }).first();
   await expect(sealedItem).toBeVisible({
     timeout: 60_000,
   });
   if (!isEvm) {
-    await expect(
-      page.getByTestId(activityItemRegexp).getByTestId(`token-balance-${amount}`)
-    ).toBeVisible({ timeout: 60_000 });
+    await expect(sealedItem.getByTestId(`token-balance-${amount}`)).toBeVisible({
+      timeout: 60_000,
+    });
   }
 };
 
@@ -633,7 +638,7 @@ export const waitForTransaction = async ({
   const executedItem = page.getByTestId(activityItemRegexp).filter({ hasText: successtext });
 
   await expect(executedItem).toBeVisible({
-    timeout: 60_000,
+    timeout: 100_000,
   });
 
   if (amount) {

@@ -20,6 +20,7 @@ import { Platform as RNPlatform } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 
 import { cache, storage } from '../storage';
+import { MigrationAssetsService } from './MigrationAssetsService';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { createBridgeAuthorization, createPayer, createProposer } from './signWithRole';
@@ -38,6 +39,14 @@ const hexToBytes = (hex: string): Uint8Array =>
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
+  private migrationAssetsService: MigrationAssetsService;
+
+  constructor() {
+    this.migrationAssetsService = new MigrationAssetsService({
+      getNetwork: () => this.getNetwork(),
+      log: this.log.bind(this),
+    });
+  }
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -308,8 +317,12 @@ class PlatformImpl implements PlatformSpec {
     return Promise.resolve();
   }
 
-  closeRN(): void {
-    NativeFRWBridge.closeRN(null);
+  closeRN(id?: string | null): void {
+    NativeFRWBridge.closeRN(id ?? null);
+  }
+
+  closeRNWithNFT(id?: string | null): void {
+    NativeFRWBridge.closeRNWithNFT(id ?? null);
   }
 
   getWalletProfiles(): Promise<WalletProfilesResponse> {
@@ -557,6 +570,28 @@ class PlatformImpl implements PlatformSpec {
       NativeFRWBridge.launchNativeScreen(screenName as any, params ?? null);
     } catch (error) {
       this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);
+    }
+  }
+
+  getMigrationAssets(sourceAddress: string): Promise<{
+    erc20: Array<{ address: string; amount: string }>;
+    erc721: Array<{ address: string; id: string }>;
+    erc1155: Array<{ address: string; id: string; amount: string }>;
+  }> {
+    return this.migrationAssetsService.getMigrationAssets(sourceAddress, () =>
+      NativeFRWBridge.getMigrationAssets(sourceAddress)
+    );
+  }
+
+  async refreshCoaAfterMigration(): Promise<void> {
+    try {
+      await NativeFRWBridge.refreshCoaAfterMigration();
+    } catch (error) {
+      this.log(
+        'warn',
+        '[PlatformImpl] Failed to refresh COA data after migration via bridge:',
+        error
+      );
     }
   }
 

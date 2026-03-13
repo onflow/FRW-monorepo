@@ -348,8 +348,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       }
 
       // Validate that we have a valid number
-      const parsedBalance = parseFloat(numericBalance);
-      if (!isNaN(parsedBalance) && parsedBalance > 0) {
+      const parsedBalance = new BN(numericBalance);
+      if (!parsedBalance.isNaN() && parsedBalance.gt(0)) {
         setAmount(numericBalance);
         // Switch to token mode when MAX is pressed (disable $ mode)
         setIsTokenMode(true);
@@ -428,7 +428,7 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
       setTransactionType('tokens');
       const inputAmount = new BN(amount || '0');
       let tokenAmount: string;
-      const decimals = selectedToken.decimal || 8;
+      const decimals = Number(selectedToken.decimal) || 8;
       if (!isTokenMode) {
         // Converting from USD to token
         const price = new BN(selectedToken.priceInUSD || 0).times(new BN(currency.rate || 1));
@@ -440,7 +440,16 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
 
       updateFormData({ tokenAmount: tokenAmount });
 
-      const result = await executeTransaction();
+      const rawResult = await executeTransaction();
+      const isDirectEvm =
+        rawResult &&
+        typeof rawResult === 'object' &&
+        'directEvm' in rawResult &&
+        (rawResult as { directEvm?: boolean }).directEvm === true;
+      const result =
+        isDirectEvm && rawResult && typeof rawResult === 'object' && 'result' in rawResult
+          ? (rawResult as { result: string }).result
+          : rawResult;
 
       // Set the recipient as a recent contact after successful transaction
       if (result && toAccount) {
@@ -466,6 +475,11 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
         if (platform === Platform.iOS || platform === Platform.Android) {
           bridge.closeRN();
         }
+
+        // Redirect to dashboard after direct RLP (EVM) submission in extension
+        if (isDirectEvm && isExtension) {
+          navigation.navigate('');
+        }
       }
 
       return result;
@@ -486,6 +500,8 @@ export const SendTokensScreen = ({ assets }: SendTokensScreenProps = {}): React.
     updateFormData,
     executeTransaction,
     addressBookStore,
+    isExtension,
+    navigation,
   ]);
 
   // Calculate if send button should be disabled and set amount error

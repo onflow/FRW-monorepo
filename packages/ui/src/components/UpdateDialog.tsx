@@ -150,6 +150,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
       >
         {/* Close button */}
         <YStack
+          data-testid="popup-close-button"
           {...({
             pos: 'absolute',
             top: 8,
@@ -160,6 +161,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
             items: 'center',
             justify: 'center',
             bg: 'transparent',
+
             rounded: 12,
             hoverStyle: { bg: 'rgba(255, 255, 255, 0.1)' },
             pressStyle: { opacity: 0.7 },
