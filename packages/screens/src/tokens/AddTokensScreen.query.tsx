@@ -48,8 +48,22 @@ export function AddTokensScreen({ onClaimPress }: AddTokensScreenProps): React.R
   const theme = useTheme();
   const network = bridge.getNetwork() || 'mainnet';
 
+  const accounts = useWalletStore(walletSelectors.getAllAccounts);
   const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
   const address = activeAccount?.address ?? '';
+
+  const flowAddresses = useMemo(
+    () => accounts.filter((a) => a.type === 'main' || a.type === 'child').map((a) => a.address),
+    [accounts]
+  );
+
+  const { data: inboxCount } = useQuery({
+    queryKey: tokenQueryKeys.inboxCount(flowAddresses, network),
+    queryFn: () => tokenQueries.fetchInboxCount(flowAddresses),
+    enabled: flowAddresses.length > 0,
+    refetchInterval: 10_000,
+    staleTime: 10_000,
+  });
 
   const [search, setSearch] = useState('');
   const [verifiedOnly, setVerifiedOnly] = useState(true);
@@ -152,6 +166,7 @@ export function AddTokensScreen({ onClaimPress }: AddTokensScreenProps): React.R
       <YStack flex={1}>
         <ClaimBanner
           title={t('addTokens.claimBannerTitle', 'Claim received tokens')}
+          count={inboxCount}
           onPress={onClaimPress}
         />
 

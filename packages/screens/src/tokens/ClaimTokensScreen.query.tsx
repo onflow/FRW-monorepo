@@ -134,7 +134,8 @@ export function ClaimTokensScreen({
       queryKey: tokenQueryKeys.inbox(account.address, network),
       queryFn: () => tokenQueries.fetchInbox(account.address, network),
       enabled: !!account.address,
-      staleTime: 60_000,
+      staleTime: 10_000,
+      refetchInterval: 10_000,
     })),
   });
 
@@ -154,15 +155,15 @@ export function ClaimTokensScreen({
     staleTime: 5 * 60_000,
   });
 
-  // Set of verified identifiers (3-part: A.address.ContractName)
+  // Map of verified identifiers (3-part: A.address.ContractName) → logoURI
   const verifiedIdentifiers = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string | undefined>();
     for (const t of catalog) {
       if (t.isVerified && t.flowIdentifier) {
-        set.add(t.flowIdentifier);
+        map.set(t.flowIdentifier, t.logoURI);
       }
     }
-    return set;
+    return map;
   }, [catalog]);
 
   // ── Build per-account ClaimItem[] from real data ────────────────────────
@@ -178,12 +179,17 @@ export function ClaimTokensScreen({
       if (flowIndexPrices) {
         ftItems = enrichClaimItemsWithPrices(ftItems, flowIndexPrices);
       }
-      // Enrich with verified status from token catalog
+      // Enrich with verified status and logo from token catalog
       ftItems = ftItems.map((item) => {
         if (!item.identifier) return item;
         const prefix = item.identifier.split('.').slice(0, 3).join('.');
         if (verifiedIdentifiers.has(prefix)) {
-          return { ...item, isVerified: true };
+          const catalogLogo = verifiedIdentifiers.get(prefix);
+          return {
+            ...item,
+            isVerified: true,
+            ...(catalogLogo ? { logoURI: catalogLogo } : {}),
+          };
         }
         return item;
       });

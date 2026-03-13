@@ -51,8 +51,22 @@ export function AddNFTCollectionScreen({
   const theme = useTheme();
   const network = bridge.getNetwork() || 'mainnet';
 
+  const accounts = useWalletStore(walletSelectors.getAllAccounts);
   const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
   const address = activeAccount?.address ?? '';
+
+  const flowAddresses = useMemo(
+    () => accounts.filter((a) => a.type === 'main' || a.type === 'child').map((a) => a.address),
+    [accounts]
+  );
+
+  const { data: inboxCount } = useQuery({
+    queryKey: tokenQueryKeys.inboxCount(flowAddresses, network),
+    queryFn: () => tokenQueries.fetchInboxCount(flowAddresses),
+    enabled: flowAddresses.length > 0,
+    refetchInterval: 10_000,
+    staleTime: 10_000,
+  });
 
   const [search, setSearch] = useState('');
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
@@ -186,6 +200,7 @@ export function AddNFTCollectionScreen({
       <YStack flex={1}>
         <ClaimBanner
           title={t('addNFTCollection.claimBannerTitle', 'Claim received NFTs')}
+          count={inboxCount}
           onPress={onClaimPress}
         />
 
