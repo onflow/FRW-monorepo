@@ -1211,3 +1211,5 @@ Key Store and Private Key.";
 "delete_nft" = "Delete NFT";
 "deep_link_hint_title" = "Proceed with caution";
 "deep_link_hint_desc" = "You were sent here by a third party, not Flow Wallet. You'll open Dapp if you continue.";
+"unclaimed_assets_title" = "Assets available to claim";
+"unclaimed_assets_message" = "Go to view.";

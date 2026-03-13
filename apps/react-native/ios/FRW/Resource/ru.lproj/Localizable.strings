@@ -972,3 +972,5 @@
 "wallet_key_invalid_restore" = "Восстановить кошелек";
 "deep_link_hint_title" = "Продолжайте с осторожностью";
 "deep_link_hint_desc" = "Вы попали сюда по ссылке от третьей стороны, а не от Flow Wallet. Если продолжите, откроется Dapp.";
+"unclaimed_assets_title" = "Доступны активы для получения";
+"unclaimed_assets_message" = "Перейти и посмотреть.";

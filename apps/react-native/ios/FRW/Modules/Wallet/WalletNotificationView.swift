@@ -7,6 +7,7 @@
 
 import Kingfisher
 import SwiftUI
+import UIKit
 
 // MARK: - WalletNotificationView
 
@@ -36,8 +37,8 @@ struct WalletNotificationView: View {
                     Image(localIcon)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 32, height: 32)
-                        .clipped()
+                        .frame(width: 24, height: 24)
+                        .clipShape(Circle())
                         .allowsHitTesting(false)
                 }
 
@@ -146,7 +147,8 @@ struct WalletNotificationView_Previews: PreviewProvider {
         expiryTime: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
         displayType: .expiry,
         conditions: nil,
-        localIcon: nil)
+        localIcon: nil
+    )
 
     WalletNotificationView(
         item: insufficientStorage,

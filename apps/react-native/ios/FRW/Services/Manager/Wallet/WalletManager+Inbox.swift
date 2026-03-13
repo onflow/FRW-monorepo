@@ -29,8 +29,8 @@ extension WalletManager {
             id: newsId,
             priority: .high,
             type: .message,
-            title: "Claim received assets",
-            body: "",
+            title: "unclaimed_assets_title".localized,
+            body: "unclaimed_assets_message".localized,
             icon: nil,
             image: nil,
             url: nil,
@@ -38,7 +38,7 @@ extension WalletManager {
             displayType: .click,
             flag: .unclaimed,
             conditions: nil,
-            localIcon: "flow"
+            localIcon: "icon-inbox"
         )
     }
 
