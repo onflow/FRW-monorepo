@@ -5,6 +5,7 @@
 import { logger } from '@onflow/frw-utils';
 
 import { WalletTypeUtils } from './utils';
+import { EOAAccount } from '../account/eoaAccount';
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { EthProvider } from '../services/eth-provider';
 import {
@@ -199,17 +200,15 @@ export class Wallet {
   }
 
   /**
-   * Derive EOA addresses for the given BIP44 indexes.
+   * Derive EOA accounts for the given BIP44 indexes (m/44'/60'/0'/0/{index}).
+   * Each returned EOAAccount can sign directly without needing to track the index.
    * Only SeedPhraseKey supports indexes > 0; PrivateKey throws for index !== 0.
    *
    * @param indexes - BIP44 address indexes to derive (default: [0])
    * @param forceRefresh - Re-derive even if cached (default: false)
-   * @returns Map of index → checksummed Ethereum address
+   * @returns Array of EOAAccount objects that can sign independently
    */
-  async getEOAAccount(
-    indexes?: number[],
-    forceRefresh: boolean = false
-  ): Promise<Map<number, string>> {
+  async getEOAAccount(indexes?: number[], forceRefresh: boolean = false): Promise<EOAAccount[]> {
     const key = this.getEthereumKey();
     if (!key) {
       throw WalletError.EthereumCapabilityMissing();
@@ -221,23 +220,19 @@ export class Wallet {
     if (!forceRefresh) {
       const allCached = normalizedIndexes.every((i) => this._eoaAddressMap.has(i));
       if (allCached) {
-        const result = new Map<number, string>();
-        for (const i of normalizedIndexes) {
-          result.set(i, this._eoaAddressMap.get(i)!);
-        }
-        return result;
+        return normalizedIndexes.map((i) => new EOAAccount(key, i, this._eoaAddressMap.get(i)!));
       }
     }
 
     // Derive addresses for requested indexes
-    const result = new Map<number, string>();
+    const accounts: EOAAccount[] = [];
     for (const index of normalizedIndexes) {
       const address = await key.ethAddress(index);
-      result.set(index, address);
       this._eoaAddressMap.set(index, address);
+      accounts.push(new EOAAccount(key, index, address));
     }
 
-    return result;
+    return accounts;
   }
 
   private getEvmAccountKey(evmNetwork: EVMNetworkConfig, address: string): string {
@@ -508,8 +503,8 @@ export class Wallet {
       return;
     }
 
-    const addressMap = await this.getEOAAccount([0]);
-    const address = addressMap.get(0);
+    const accounts = await this.getEOAAccount([0]);
+    const address = accounts[0]?.address;
     if (!address) {
       return;
     }
