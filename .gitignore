@@ -50,7 +50,6 @@ Thumbs.db
 
 # React Native specific - ios, android, and flow-wallet-kit are git submodules
 # Exclude entire directories (managed as submodules)
-apps/react-native/ios/
 apps/react-native/android/
 apps/react-native/flow-wallet-kit/
 

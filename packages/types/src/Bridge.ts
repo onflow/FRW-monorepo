@@ -98,7 +98,8 @@ export interface InitialProps {
     | 'onboarding'
     | 'receive'
     | 'activity'
-    | 'migration';
+    | 'migration'
+    | 'claimTokens';
   sendToConfig?: string;
 }
 
