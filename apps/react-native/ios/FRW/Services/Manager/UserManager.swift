@@ -489,9 +489,9 @@ extension UserManager {
 
     let flowAccountInfo = FlowAccountInfo(accountKey: key, signature: signature.hexValue)
     var evmAccountInfo: EVMAccountInfo?
-    if let ethProvider = provider as? EthereumKeyProtocol,
-       let wallet = try? Wallet(type: .key(provider)),
-       let evmAddress = try? wallet.ethAddress(),
+      let ethProvider = provider as EthereumKeyProtocol
+      let wallet = Wallet(type: .key(provider))
+    if let evmAddress = try? wallet.ethAddress(),
        let evmSignature = try? ethProvider.ethSign(digest: signData) {
       evmAccountInfo = EVMAccountInfo(eoaAddress: evmAddress, signature: evmSignature.hexValue)
     }
@@ -689,17 +689,10 @@ extension UserManager {
     )
 
     let flowAccountInfo = FlowAccountInfo(accountKey: key, signature: signature.hexValue)
-    var evmAccountInfo: EVMAccountInfo?
-    if let ethProvider = secureKey as? EthereumKeyProtocol,
-       let evmSignature = try? ethProvider.ethSign(digest: signData) {
-      // SecureEnclaveKey might not have a direct ethAddress in this context, 
-      // but if it supports ethSign, we might need more info.
-      // For now, following the pattern.
-    }
 
     let request = LoginRequest(
       flowAccountInfo: flowAccountInfo,
-      evmAccountInfo: evmAccountInfo,
+      evmAccountInfo: nil,
       deviceInfo: IPManager.shared.toParams()
     )
 

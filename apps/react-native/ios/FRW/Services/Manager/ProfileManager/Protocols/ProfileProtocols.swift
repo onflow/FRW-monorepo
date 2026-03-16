@@ -47,6 +47,8 @@ protocol ProfileFetchServiceProtocol {
 
     /// Fetch all account info (accounts + balances + NFTs) in sequence
     func fetchAllAccountInfo(for profiles: [ProfileModel]) async throws -> [ProfileModel]
+
+    
 }
 
 // MARK: - ProfileKeyServiceProtocol

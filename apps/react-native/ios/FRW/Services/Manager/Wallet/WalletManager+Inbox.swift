@@ -99,9 +99,6 @@ extension WalletManager {
 
         for account in currentNetworkAccounts {
             uniqueAddresses.insert(normalizeAddress(account.hexAddr))
-            for child in account.childs ?? [] {
-                uniqueAddresses.insert(normalizeAddress(child.address.hexAddr))
-            }
         }
 
         if let selectedCadenceAddressForUnclaimed {

@@ -78,12 +78,51 @@ extension SideMenuView {
   }
 }
 
+extension SideMenuView {
+    struct LoadingRow: View {
+        var body: some View {
+            HStack(spacing: 14) {
+                CircleStrokeSpinView(color: Color.Brain.Primary.main, size: 36, lineWidth: 4,centerImage: "flow", centerImagePadding: 1)
 
-#Preview {
-  SideMenuView.AccountRow(
-        account: SideMenuItem(
-          account: WalletAccount.mockMain()
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("             ")
+                        .font(.inter(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.Theme.Text.black8)
+                        .frame(height: 22)
+
+                    Text("                      ")
+                        .font(.inter(size: 12))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .foregroundStyle(Color.Theme.Text.black3)
+                        .frame(height: 20)
+
+                    Text("     ")
+                        .font(.inter(size: 12))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .foregroundStyle(Color.Theme.Text.black8)
+                }
+                .mockPlaceholder()
+                Spacer()
+            }
+            .padding(.horizontal,4)
+            .frame(height: 56)
+            .padding(.vertical, 10)
+        }
+    }
+}
+
+#Preview("Account") {
+    VStack {
+        SideMenuView.AccountRow(
+            account: SideMenuItem(
+                account: WalletAccount.mockMain()
+            )
         )
-    )
+
+        SideMenuView.LoadingRow()
+    }
+
 }
 

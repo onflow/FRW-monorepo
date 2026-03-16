@@ -397,6 +397,7 @@ extension RouteMap {
         case account(WalletAccount, WalletAccount?, ProfileModel)
         case RecoveryPhraseBackup
         case EOAPrivateKey
+        case addAccount
     }
 }
 
@@ -504,6 +505,9 @@ extension RouteMap.Profile: RouterTarget {
           navi.push(content: RecoveryPhraseBackupView())
         case .EOAPrivateKey:
           navi.push(content: EOAPrivateKeyView())
+        case .addAccount:
+            let vc = AdaptiveHostingController(rootView: AddAccountSheet())
+            Router.topPresentedController().present(vc, animated: true, completion: nil)
         }
     }
 }
