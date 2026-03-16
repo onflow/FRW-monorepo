@@ -57,6 +57,8 @@ export const tokenQueryKeys = {
     [...tokenQueryKeys.all, 'catalog', network, chainType] as const,
   inbox: (address: string, network: string = 'mainnet') =>
     [...tokenQueryKeys.address(address, network), 'inbox'] as const,
+  inboxCount: (addresses: string[], network: string = 'mainnet') =>
+    [...tokenQueryKeys.all, 'inbox-count', network, ...addresses] as const,
   flowIndexPrices: () => [...tokenQueryKeys.all, 'flowindex-prices'] as const,
 };
 
@@ -482,6 +484,18 @@ export const tokenQueries = {
     } catch (error) {
       logger.error('[TokenQuery] Error fetching inbox:', error);
       return { fts: [], nfts: [] };
+    }
+  },
+
+  // Batch query unclaimed inbox count for multiple Flow addresses
+  fetchInboxCount: async (addresses: string[]): Promise<number> => {
+    if (!addresses.length) return 0;
+    try {
+      const count = await cadence.batchQueryUnclaimedNumber(addresses);
+      return typeof count === 'number' ? count : 0;
+    } catch (error) {
+      logger.error('[TokenQuery] Error fetching inbox count:', error);
+      return 0;
     }
   },
 
