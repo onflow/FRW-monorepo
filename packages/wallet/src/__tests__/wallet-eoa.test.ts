@@ -240,25 +240,7 @@ describe("Wallet multi-EOA (BIP44 m/44'/60'/0'/0/{index})", () => {
     expect(Buffer.from(pubKey0).toString('hex')).not.toBe(Buffer.from(pubKey1).toString('hex'));
   });
 
-  // --- Usage example (matches iOS pattern) ---
-
-  it('example: derive EOAs and sign directly on each account', async () => {
-    const { wallet } = await createTestSeedPhraseWallet();
-
-    // Derive 3 EOA accounts
-    const accounts = await wallet.getEOAAccount([0, 1, 2]);
-
-    for (const account of accounts) {
-      // Each account knows its own index and address
-      expect(account.index).toBeGreaterThanOrEqual(0);
-      expect(account.address).toMatch(/^0x[0-9a-fA-F]{40}$/);
-
-      // Sign directly — no need to pass index
-      const message = '0x' + Buffer.from(`hello from EOA #${account.index}`).toString('hex');
-      const sig = await account.signPersonalMessage(message);
-      expect(sig.signature).toBeDefined();
-    }
-  });
+  // --- Cache persistence ---
 
   it('persists EOA addresses in cache and restores on initialize', async () => {
     const storage = new MemoryStorage();
@@ -271,7 +253,6 @@ describe("Wallet multi-EOA (BIP44 m/44'/60'/0'/0/{index})", () => {
       storage
     );
 
-    // Use a shared cacheStorage so a second wallet instance can read it
     const cacheStorage = new MemoryStorage();
     const wallet1 = WalletFactory.createKeyWallet(
       key,
@@ -279,44 +260,175 @@ describe("Wallet multi-EOA (BIP44 m/44'/60'/0'/0/{index})", () => {
       cacheStorage
     );
 
-    // Derive EOAs and trigger cache write via fetchAccount
     const accounts = await wallet1.getEOAAccount([0, 1, 2]);
     expect(accounts.length).toBe(3);
 
-    // Manually trigger cache write (fetchAccount calls this internally)
-    // We call initialize which will call fetchAccount which caches
+    // fetchAccount triggers cacheAccountData() which persists _eoaAddressMap
     await wallet1.fetchAccount();
 
-    // Create a second wallet instance with the same cacheStorage
+    // New wallet instance sharing the same cache
     const wallet2 = WalletFactory.createKeyWallet(
       key,
       new Set([NETWORKS.FLOW_EVM_MAINNET]),
       cacheStorage
     );
-
-    // Initialize loads from cache
     await wallet2.initialize();
 
-    // EOA addresses should be restored from cache
     expect(wallet2.eoaAddressMap.size).toBeGreaterThanOrEqual(1);
-    // The index 0 address (from discoverEVMAccounts in fetchAccount) should be cached
     expect(wallet2.eoaAddressMap.get(0)).toBe(accounts[0].address);
   });
 
-  it('example: add more EOAs later and sign', async () => {
+  // ============================================================
+  // Standard Usage Examples
+  // These tests demonstrate the recommended API patterns.
+  // ============================================================
+
+  it('usage: create wallet and derive default EOA (index 0)', async () => {
+    // 1. Create a SeedPhraseKey from mnemonic
+    const storage = new MemoryStorage();
+    const key = await SeedPhraseKey.createAdvanced(
+      { mnemonic: TEST_MNEMONIC, derivationPath: BIP44_PATHS.EVM, passphrase: '' },
+      storage
+    );
+
+    // 2. Create a wallet
+    const wallet = WalletFactory.createKeyWallet(
+      key,
+      new Set([NETWORKS.FLOW_EVM_MAINNET]),
+      storage
+    );
+
+    // 3. Get default EOA (index 0)
+    const [defaultEOA] = await wallet.getEOAAccount();
+
+    expect(defaultEOA.index).toBe(0);
+    expect(defaultEOA.address).toMatch(/^0x[0-9a-fA-F]{40}$/);
+  });
+
+  it('usage: derive multiple EOAs and iterate', async () => {
     const { wallet } = await createTestSeedPhraseWallet();
 
-    // Start with 2 accounts
-    const initial = await wallet.getEOAAccount([0, 1]);
-    expect(initial.length).toBe(2);
+    // Derive 3 EOA accounts (m/44'/60'/0'/0/0, /1, /2)
+    const accounts = await wallet.getEOAAccount([0, 1, 2]);
 
-    // Add index 5 later — cache merges
-    const [eoa5] = await wallet.getEOAAccount([5]);
-    expect(wallet.eoaAddressMap.size).toBe(3); // 0, 1, 5
+    for (const account of accounts) {
+      expect(account.index).toBeGreaterThanOrEqual(0);
+      expect(account.address).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    }
 
-    // Sign directly on the new account
-    const message = '0x' + Buffer.from('hello from EOA #5').toString('hex');
-    const sig = await eoa5.signPersonalMessage(message);
+    // All addresses are unique
+    const addresses = accounts.map((a) => a.address);
+    expect(new Set(addresses).size).toBe(3);
+  });
+
+  it('usage: sign personal message (EIP-191) with a specific EOA', async () => {
+    const { wallet } = await createTestSeedPhraseWallet();
+
+    const [, eoa1] = await wallet.getEOAAccount([0, 1]);
+
+    // Sign directly on the account object
+    const message = '0x' + Buffer.from('Hello from EOA #1').toString('hex');
+    const signed = await eoa1.signPersonalMessage(message);
+
+    expect(signed.signature).toBeDefined();
+    expect(signed.signature).toMatch(/^0x[0-9a-fA-F]+$/);
+  });
+
+  it('usage: sign EIP-1559 transaction with a specific EOA', async () => {
+    const { wallet } = await createTestSeedPhraseWallet();
+
+    const [eoa0] = await wallet.getEOAAccount([0]);
+
+    const tx = {
+      chainId: 747, // Flow EVM
+      to: '0x0000000000000000000000000000000000000001' as const,
+      value: '0x0',
+      nonce: 0,
+      gasLimit: '0x5208',
+      maxFeePerGas: '0x3B9ACA00',
+      maxPriorityFeePerGas: '0x3B9ACA00',
+    };
+
+    const signed = await eoa0.signTransaction(tx);
+
+    expect(signed.rawTransaction).toBeDefined();
+    expect(signed.transactionHash).toBeDefined();
+  });
+
+  it('usage: sign EIP-712 typed data with a specific EOA', async () => {
+    const { wallet } = await createTestSeedPhraseWallet();
+
+    const [eoa0] = await wallet.getEOAAccount([0]);
+
+    const typedData = {
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+        ],
+        Transfer: [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ],
+      },
+      primaryType: 'Transfer',
+      domain: { name: 'FlowWallet', chainId: 747 },
+      message: { to: '0x0000000000000000000000000000000000000001', amount: '1000000' },
+    };
+
+    const signed = await eoa0.signTypedData(typedData);
+
+    expect(signed.signature).toBeDefined();
+  });
+
+  it('usage: get private key and public key for an EOA', async () => {
+    const { wallet } = await createTestSeedPhraseWallet();
+
+    const [eoa0] = await wallet.getEOAAccount([0]);
+
+    // Get raw 32-byte secp256k1 private key
+    const privateKey = await eoa0.getPrivateKey();
+    expect(privateKey.length).toBe(32);
+
+    // Get uncompressed 65-byte secp256k1 public key (0x04 prefix)
+    const publicKey = await eoa0.getPublicKey();
+    expect(publicKey.length).toBe(65);
+    expect(publicKey[0]).toBe(0x04);
+  });
+
+  it('usage: add EOAs incrementally (cache merges)', async () => {
+    const { wallet } = await createTestSeedPhraseWallet();
+
+    // Start with EOA #0
+    await wallet.getEOAAccount([0]);
+    expect(wallet.eoaAddressMap.size).toBe(1);
+
+    // Later add EOA #1 and #2 — existing #0 stays cached
+    await wallet.getEOAAccount([1, 2]);
+    expect(wallet.eoaAddressMap.size).toBe(3);
+
+    // Can also jump to any index
+    const [eoa10] = await wallet.getEOAAccount([10]);
+    expect(wallet.eoaAddressMap.size).toBe(4);
+    expect(eoa10.index).toBe(10);
+  });
+
+  it('usage: find EOA by address and sign', async () => {
+    const { wallet } = await createTestSeedPhraseWallet();
+
+    const accounts = await wallet.getEOAAccount([0, 1, 2]);
+
+    // Simulate: user selected an address in the UI
+    const selectedAddress = accounts[2].address;
+
+    // Find the matching EOAAccount
+    const matchedAccount = accounts.find((a) => a.address === selectedAddress);
+    expect(matchedAccount).toBeDefined();
+    expect(matchedAccount!.index).toBe(2);
+
+    // Sign with it
+    const message = '0x' + Buffer.from('confirm action').toString('hex');
+    const sig = await matchedAccount!.signPersonalMessage(message);
     expect(sig.signature).toBeDefined();
   });
 });
