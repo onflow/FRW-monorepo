@@ -404,7 +404,7 @@ class TransactionActivity {
     const TERMINAL_STATUSES = new Set(['SEALED', 'EXPIRED', 'ERROR']);
     if (existingPendingList.length === 0 && existingTxList.length > 0) {
       const cachedPendingItems = existingTxList.filter(
-        (item) => !TERMINAL_STATUSES.has(item.status.toUpperCase())
+        (item) => !TERMINAL_STATUSES.has((item.status ?? '').toUpperCase())
       );
       if (cachedPendingItems.length > 0) {
         existingPendingList.push(...cachedPendingItems);
