@@ -152,8 +152,9 @@ class WalletManager: ObservableObject {
     var childs: [FlowWalletKit.ChildAccount]? {
         mainAccount?.childs
     }
-            @MainActor
-            @Published var isAddingAccount: Bool = false
+
+    @MainActor
+    @Published var isAddingAccount: Bool = false
 
     func start() {
         UserManager.shared.$activatedUID
@@ -226,14 +227,6 @@ extension WalletManager {
             return
         }
 
-      await MainActor.run {
-        updateKeyProvider(provider: provider)
-        // Create wallet for all supported networks
-        walletEntity = FlowWalletKit.Wallet(type: .key(provider), networks: supportNetworks)
-        if let uid = UserManager.shared.activatedUID {
-            self.EOAs = allEOAAccounts(with: walletEntity, for: uid)
-        } 
-      }
         // If UID is the same as currently initialized, skip re-initialization
         if currentInitializedUID == uid {
             log.info("[Wallet] UID unchanged (\(uid)), skipping re-initialization")
@@ -276,7 +269,9 @@ extension WalletManager {
                 updateKeyProvider(provider: provider)
                 // Create wallet for all supported networks
                 walletEntity = FlowWalletKit.Wallet(type: .key(provider), networks: supportNetworks)
-                self.EOAs = walletEntity?.eoaAddress?.compactMap { EOA($0, network: currentNetwork) }
+                if let uid = UserManager.shared.activatedUID {
+                    self.EOAs = allEOAAccounts(with: walletEntity, for: uid)
+                }
             }
 
             // Fetch all network accounts (including testnet if needed)
