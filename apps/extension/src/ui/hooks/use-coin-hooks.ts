@@ -79,17 +79,21 @@ export const useInboxData = (
   const [data, setData] = useState<InboxDataStore | undefined>(undefined);
 
   useEffect(() => {
-    if (!network) return;
+    if (!network || !address) return;
 
     let cancelled = false;
-    wallet.getAllProfilesInboxData().then((result: InboxDataStore) => {
-      if (!cancelled) setData(result);
+    wallet.getInboxData(address).then((result: { fts: any[]; nfts: any[] }) => {
+      if (!cancelled) {
+        setData({
+          accounts: { [address]: result },
+          totalCount: result.fts.length + result.nfts.length,
+        });
+      }
     });
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [network]);
+  }, [network, address]);
 
   return data;
 };
