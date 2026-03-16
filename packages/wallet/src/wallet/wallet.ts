@@ -574,6 +574,7 @@ export class Wallet {
     const accountsData = {
       accounts: Array.from(this.accounts.entries()),
       networks: Array.from(this.networks),
+      eoaAddressMap: Array.from(this._eoaAddressMap.entries()),
       lastUpdated: Date.now(),
     };
 
@@ -660,6 +661,21 @@ export class Wallet {
     tempNetworks.forEach((network) => {
       this.networks.add(network);
     });
+
+    // Restore cached EOA address map
+    if (Array.isArray(parsed.eoaAddressMap)) {
+      this._eoaAddressMap.clear();
+      for (const entry of parsed.eoaAddressMap) {
+        if (
+          Array.isArray(entry) &&
+          entry.length === 2 &&
+          typeof entry[0] === 'number' &&
+          typeof entry[1] === 'string'
+        ) {
+          this._eoaAddressMap.set(entry[0], entry[1]);
+        }
+      }
+    }
 
     this.notifyAccountsListeners();
     return true;
