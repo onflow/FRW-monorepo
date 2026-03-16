@@ -7,12 +7,12 @@
  */
 
 import {
-  type EthereumKeyProtocol,
   type EthUnsignedTransaction,
   type EthSignedTransaction,
   type EthSignedMessage,
   type HexLike,
-} from '../types/key-protocol';
+} from '../services/eth-signer';
+import { type EthereumKeyProtocol } from '../types/key-protocol';
 
 export class EOAAccount {
   /** BIP44 address index (last component of m/44'/60'/0'/0/{index}) */
