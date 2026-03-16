@@ -5,9 +5,9 @@
 //  Created by cat on 5/7/25.
 //
 
+import Flow
 import FlowWalletKit
 import Foundation
-import Flow
 
 // MARK: - Account
 
@@ -28,13 +28,14 @@ extension WalletManager {
         }
         return coa
     }
-  
+
     var selectedEOAAccount: EOA? {
-      guard isSelectedEOAAccount else {
-        return nil
-      }
-      return EOAs?.first
-  }
+        guard isSelectedEOAAccount, let addr = selectedAccount?.hexAddr else {
+            return nil
+        }
+        let eoa = EOAs?.first { $0.address.lowercased() == addr.lowercased() }
+        return eoa
+    }
 
     var selectedAccountContact: Contact? {
         guard WalletManager.shared.getPrimaryWalletAddressOrCustomWatchAddress() != nil else {
@@ -115,9 +116,10 @@ extension WalletManager {
     }
 
     /// Derive all EOA addresses from stored index map + default index 0
-    func allEOAAccounts(with wallet: FlowWalletKit.Wallet?,for uid: String) -> [EOA] {
+    func allEOAAccounts(with wallet: FlowWalletKit.Wallet?, for uid: String) -> [EOA] {
         // index 0 from walletEntity
-        var result: [EOA] = wallet?.eoaAddress?
+        var result: [EOA] =
+            wallet?.eoaAddress?
             .compactMap { EOA($0, network: currentNetwork) } ?? []
 
         // Additional EOAs from stored indices (index >= 1)
@@ -141,10 +143,10 @@ extension WalletManager {
             return nil
         }
 
-
         for index in 0..<10 {
             if let addr = try? walletEntity?.ethAddress(index: UInt32(index)),
-                addr.lowercased() == currentAddress.lowercased() {
+                addr.lowercased() == currentAddress.lowercased()
+            {
                 return UInt32(index)
             }
         }
@@ -153,9 +155,9 @@ extension WalletManager {
 
     func canAddNewAccount() -> Bool {
         var isFlag = RemoteConfigManager.shared.config?.features.createNewAccount ?? false
-#if DEBUG
-        isFlag = true
-#endif
+        #if DEBUG
+            isFlag = true
+        #endif
         guard isFlag else {
             return false
         }
@@ -182,7 +184,7 @@ extension WalletManager {
         guard let primaryAddr = WalletManager.shared.getPrimaryWalletAddress() else {
             return nil
         }
-        let user = WalletUser.get(address:  primaryAddr)
+        let user = WalletUser.get(address: primaryAddr)
         return Contact(
             address: primaryAddr,
             avatar: nil,
@@ -199,14 +201,33 @@ extension WalletManager {
 
 extension FlowWalletKit.ChildAccount {
     func toContact() -> Contact {
-        Contact(address: address.hexAddr, avatar: icon?.absoluteString, contactName: nil, contactType: .user, domain: nil, id: UUID().hashValue, username: name, walletType: .link)
+        Contact(
+            address: address.hexAddr,
+            avatar: icon?.absoluteString,
+            contactName: nil,
+            contactType: .user,
+            domain: nil,
+            id: UUID().hashValue,
+            username: name,
+            walletType: .link
+        )
     }
 }
 
 extension COA {
     func toContact() -> Contact {
         let showAddress = address.addHexPrefix()
-        let user = WalletUser.get(address:  showAddress)
-        return Contact(address: showAddress, avatar: nil, contactName: nil, contactType: .user, domain: nil, id: UUID().hashValue, username: user.name, user: user, walletType: .evm)
+        let user = WalletUser.get(address: showAddress)
+        return Contact(
+            address: showAddress,
+            avatar: nil,
+            contactName: nil,
+            contactType: .user,
+            domain: nil,
+            id: UUID().hashValue,
+            username: user.name,
+            user: user,
+            walletType: .evm
+        )
     }
 }

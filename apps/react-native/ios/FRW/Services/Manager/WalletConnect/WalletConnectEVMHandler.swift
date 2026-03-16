@@ -298,7 +298,7 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
 
                     //MARK: get nonce
                       //TODO: 313
-                    let address = fromAddress ?? self.cachedEVMAddress(for: url) ?? WalletManager.shared.EOAs?.first?.address ?? ""
+                      let address = fromAddress ?? self.cachedEVMAddress(for: url) ?? WalletManager.shared.selectedEOAAccount?.hexAddr ?? ""
                     let nonce = try await self.getTransactionNonce(for: address)
                     let nonceHex = self.normalizeHexString(String(nonce, radix: 16))
 
