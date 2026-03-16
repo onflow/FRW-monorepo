@@ -198,6 +198,187 @@ describe('Wallet EOA address derivation', () => {
     expect(refreshed.get(0)).toBe(first.get(0));
   });
 
+  // --- Multi-EOA private key and signing tests ---
+
+  it('derives different private keys for different indexes', async () => {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    const storage = new MemoryStorage();
+    const key = await SeedPhraseKey.createAdvanced(
+      {
+        mnemonic: testMnemonic,
+        derivationPath: "m/44'/539'/0'/0/0",
+        passphrase: '',
+      },
+      storage
+    );
+
+    // Get private keys for different indexes
+    const pk0 = await key.ethPrivateKey(0);
+    const pk1 = await key.ethPrivateKey(1);
+    const pk2 = await key.ethPrivateKey(2);
+
+    // All private keys must be 32 bytes
+    expect(pk0.length).toBe(32);
+    expect(pk1.length).toBe(32);
+    expect(pk2.length).toBe(32);
+
+    // All private keys must be different
+    expect(Buffer.from(pk0).toString('hex')).not.toBe(Buffer.from(pk1).toString('hex'));
+    expect(Buffer.from(pk1).toString('hex')).not.toBe(Buffer.from(pk2).toString('hex'));
+    expect(Buffer.from(pk0).toString('hex')).not.toBe(Buffer.from(pk2).toString('hex'));
+  });
+
+  it('derives different public keys for different indexes', async () => {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    const storage = new MemoryStorage();
+    const key = await SeedPhraseKey.createAdvanced(
+      {
+        mnemonic: testMnemonic,
+        derivationPath: "m/44'/539'/0'/0/0",
+        passphrase: '',
+      },
+      storage
+    );
+
+    const pubKey0 = await key.ethPublicKey(0);
+    const pubKey1 = await key.ethPublicKey(1);
+
+    // Uncompressed secp256k1 public keys are 65 bytes (0x04 prefix + 64 bytes)
+    expect(pubKey0.length).toBe(65);
+    expect(pubKey1.length).toBe(65);
+
+    // Must be different
+    expect(Buffer.from(pubKey0).toString('hex')).not.toBe(Buffer.from(pubKey1).toString('hex'));
+  });
+
+  it('produces different signatures for same message with different indexes', async () => {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    const storage = new MemoryStorage();
+    const key = await SeedPhraseKey.createAdvanced(
+      {
+        mnemonic: testMnemonic,
+        derivationPath: "m/44'/539'/0'/0/0",
+        passphrase: '',
+      },
+      storage
+    );
+    const wallet = WalletFactory.createKeyWallet(
+      key,
+      new Set([NETWORKS.FLOW_EVM_MAINNET]),
+      storage
+    );
+
+    const message = '0x' + Buffer.from('Hello Flow').toString('hex');
+
+    // Sign the same message with index 0 and index 1
+    const sig0 = await wallet.ethSignPersonalMessage(message, 0);
+    const sig1 = await wallet.ethSignPersonalMessage(message, 1);
+
+    // Both signatures must exist
+    expect(sig0.signature).toBeDefined();
+    expect(sig1.signature).toBeDefined();
+
+    // Signatures must be different (different private keys)
+    expect(sig0.signature).not.toBe(sig1.signature);
+  });
+
+  it('signs transaction with correct EOA index', async () => {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    const storage = new MemoryStorage();
+    const key = await SeedPhraseKey.createAdvanced(
+      {
+        mnemonic: testMnemonic,
+        derivationPath: "m/44'/539'/0'/0/0",
+        passphrase: '',
+      },
+      storage
+    );
+    const wallet = WalletFactory.createKeyWallet(
+      key,
+      new Set([NETWORKS.FLOW_EVM_MAINNET]),
+      storage
+    );
+
+    // Derive addresses to know which address each index maps to
+    const addressMap = await wallet.getEOAAccount([0, 1]);
+
+    // Sign a transaction with index 1
+    const tx = {
+      chainId: 747,
+      to: '0x0000000000000000000000000000000000000001' as const,
+      value: '0x0',
+      nonce: 0,
+      gasLimit: '0x5208',
+      maxFeePerGas: '0x3B9ACA00',
+      maxPriorityFeePerGas: '0x3B9ACA00',
+    };
+
+    const signed0 = await wallet.ethSignTransaction(tx, 0);
+    const signed1 = await wallet.ethSignTransaction(tx, 1);
+
+    // Both must succeed
+    expect(signed0.rawTransaction).toBeDefined();
+    expect(signed1.rawTransaction).toBeDefined();
+
+    // Signed transactions must be different (different signing keys)
+    expect(signed0.rawTransaction).not.toBe(signed1.rawTransaction);
+  });
+
+  it('signs EIP-712 typed data with different indexes', async () => {
+    const testMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+
+    const storage = new MemoryStorage();
+    const key = await SeedPhraseKey.createAdvanced(
+      {
+        mnemonic: testMnemonic,
+        derivationPath: "m/44'/539'/0'/0/0",
+        passphrase: '',
+      },
+      storage
+    );
+    const wallet = WalletFactory.createKeyWallet(
+      key,
+      new Set([NETWORKS.FLOW_EVM_MAINNET]),
+      storage
+    );
+
+    const typedData = {
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+          { name: 'chainId', type: 'uint256' },
+        ],
+        Message: [{ name: 'content', type: 'string' }],
+      },
+      primaryType: 'Message',
+      domain: {
+        name: 'Test',
+        version: '1',
+        chainId: 747,
+      },
+      message: {
+        content: 'Hello from typed data',
+      },
+    };
+
+    const sig0 = await wallet.ethSignTypedData(typedData, 0);
+    const sig1 = await wallet.ethSignTypedData(typedData, 1);
+
+    expect(sig0.signature).toBeDefined();
+    expect(sig1.signature).toBeDefined();
+    expect(sig0.signature).not.toBe(sig1.signature);
+  });
+
   // --- Usage examples as tests ---
 
   it('example: derive 5 EOA accounts and sign with index 2', async () => {
