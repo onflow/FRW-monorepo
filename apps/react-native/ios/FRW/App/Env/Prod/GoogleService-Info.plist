@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>556216024625-58d357dv23m4inq7mp4vog7463hjj2cc.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCf5Yk6kkd0mzuFcNaMi6TTajRLJYLVy4M</string>
+	<key>GCM_SENDER_ID</key>
+	<string>556216024625</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.flowfoundation.wallet</string>
+	<key>PROJECT_ID</key>
+	<string>lilico-334404</string>
+	<key>STORAGE_BUCKET</key>
+	<string>lilico-334404.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:556216024625:ios:6548b381d870df5fa61f10</string>
+</dict>
+</plist>

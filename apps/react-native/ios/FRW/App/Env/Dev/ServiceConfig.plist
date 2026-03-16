@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>scripts-publicKey</key>
+	<string>25bda455f2f765a2375732e44ed34eb52a611b3b14607e43b2766c6c07a3f7b0abbd2fc38543f874cbaec50f53f0b6d685e85f78dbb5ffd81c66d9ba8c67b404</string>
+	<key>instabug-key</key>
+	<string>b83c977221aa799767f8500a994ca129</string>
+	<key>dropbox-appkey</key>
+	<string>5ps7ite0xk5z9no</string>
+	<key>INSTABUG_RN_TOKEN</key>
+	<string>edf1aeb3131b8b36b1657c1658e8157a</string>
+	<key>MixPanelToken</key>
+	<string>9365d435d7badb0e5f8a51d2f9aab6f9</string>
+</dict>
+</plist>

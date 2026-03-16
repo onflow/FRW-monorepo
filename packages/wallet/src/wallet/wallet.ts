@@ -5,6 +5,7 @@
 import { logger } from '@onflow/frw-utils';
 
 import { WalletTypeUtils } from './utils';
+import { EOAAccount } from '../account/eoaAccount';
 import { WalletCoreProvider } from '../crypto/wallet-core-provider';
 import { EthProvider } from '../services/eth-provider';
 import {
@@ -52,6 +53,7 @@ export class Wallet {
 
   // Private state properties
   private accounts: Map<string, FlowAccount | EVMAccount> = new Map(); // address -> account
+  private _eoaAddressMap: Map<number, string> = new Map();
   private isLoading: boolean = false;
   private cacheStorage: StorageProtocol;
 
@@ -184,24 +186,53 @@ export class Wallet {
   }
 
   /**
-   * Get cached EOA addresses derived from current EVM accounts
+   * Get cached EOA addresses as a Set (convenience getter derived from eoaAddressMap)
    */
   get eoaAddress(): Set<string> {
-    return new Set(this.getEVMAccounts().map((account) => account.address));
+    return new Set(this._eoaAddressMap.values());
   }
 
   /**
-   * Derive and store primary EOA account for the wallet.
+   * Get cached EOA index→address mapping
    */
-  async getEOAAccount(forceRefresh: boolean = false): Promise<string[]> {
-    const address = await this.derivePrimaryEvmAddress();
-    const evmNetworks = this.getEVMNetworks();
+  get eoaAddressMap(): Map<number, string> {
+    return new Map(this._eoaAddressMap);
+  }
 
-    if (evmNetworks.length > 0) {
-      this.upsertEvmAccounts(address, evmNetworks, forceRefresh);
+  /**
+   * Derive EOA accounts for the given BIP44 indexes (m/44'/60'/0'/0/{index}).
+   * Each returned EOAAccount can sign directly without needing to track the index.
+   * Only SeedPhraseKey supports indexes > 0; PrivateKey throws for index !== 0.
+   *
+   * @param indexes - BIP44 address indexes to derive (default: [0])
+   * @param forceRefresh - Re-derive even if cached (default: false)
+   * @returns Array of EOAAccount objects that can sign independently
+   */
+  async getEOAAccount(indexes?: number[], forceRefresh: boolean = false): Promise<EOAAccount[]> {
+    const key = this.getEthereumKey();
+    if (!key) {
+      throw WalletError.EthereumCapabilityMissing();
     }
 
-    return [address];
+    const normalizedIndexes = indexes && indexes.length > 0 ? indexes : [0];
+
+    // Check cache first
+    if (!forceRefresh) {
+      const allCached = normalizedIndexes.every((i) => this._eoaAddressMap.has(i));
+      if (allCached) {
+        return normalizedIndexes.map((i) => new EOAAccount(key, i, this._eoaAddressMap.get(i)!));
+      }
+    }
+
+    // Derive addresses for requested indexes
+    const accounts: EOAAccount[] = [];
+    for (const index of normalizedIndexes) {
+      const address = await key.ethAddress(index);
+      this._eoaAddressMap.set(index, address);
+      accounts.push(new EOAAccount(key, index, address));
+    }
+
+    return accounts;
   }
 
   private getEvmAccountKey(evmNetwork: EVMNetworkConfig, address: string): string {
@@ -228,15 +259,6 @@ export class Wallet {
 
       this.setAccount(accountKey, evmAccount);
     }
-  }
-
-  private async derivePrimaryEvmAddress(): Promise<string> {
-    const key = this.getEthereumKey();
-    if (!key) {
-      throw WalletError.EthereumCapabilityMissing();
-    }
-
-    return await key.ethAddress(0);
   }
 
   /**
@@ -481,7 +503,12 @@ export class Wallet {
       return;
     }
 
-    const address = await this.derivePrimaryEvmAddress();
+    const accounts = await this.getEOAAccount([0]);
+    const address = accounts[0]?.address;
+    if (!address) {
+      return;
+    }
+
     logger.info('[frw-wallet] EOA address discovered in wallet', {
       address,
       source: 'Wallet.discoverEVMAccounts',
@@ -547,6 +574,7 @@ export class Wallet {
     const accountsData = {
       accounts: Array.from(this.accounts.entries()),
       networks: Array.from(this.networks),
+      eoaAddressMap: Array.from(this._eoaAddressMap.entries()),
       lastUpdated: Date.now(),
     };
 
@@ -633,6 +661,21 @@ export class Wallet {
     tempNetworks.forEach((network) => {
       this.networks.add(network);
     });
+
+    // Restore cached EOA address map
+    if (Array.isArray(parsed.eoaAddressMap)) {
+      this._eoaAddressMap.clear();
+      for (const entry of parsed.eoaAddressMap) {
+        if (
+          Array.isArray(entry) &&
+          entry.length === 2 &&
+          typeof entry[0] === 'number' &&
+          typeof entry[1] === 'string'
+        ) {
+          this._eoaAddressMap.set(entry[0], entry[1]);
+        }
+      }
+    }
 
     this.notifyAccountsListeners();
     return true;

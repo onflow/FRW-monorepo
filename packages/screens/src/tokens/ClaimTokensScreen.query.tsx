@@ -93,10 +93,8 @@ export function ClaimTokensScreen({
   const isAccountsLoading = useWalletStore((state) => state.isLoading);
 
   React.useEffect(() => {
-    if (accounts.length === 0 && !isAccountsLoading) {
-      loadAccountsFromBridge();
-    }
-  }, [loadAccountsFromBridge, accounts.length, isAccountsLoading]);
+    loadAccountsFromBridge();
+  }, [loadAccountsFromBridge]);
 
   const receivingAccounts: ClaimReceiver[] = useMemo(() => {
     if (accounts.length === 0) return [];
@@ -127,14 +125,19 @@ export function ClaimTokensScreen({
   }, [accounts, activeAccount]);
 
   // ── Fetch inbox data per Flow account ───────────────────────────────────
-  const flowAccounts = useMemo(() => receivingAccounts.filter(isFlowAddress), [receivingAccounts]);
+  const flowAccounts = useMemo(
+    () => receivingAccounts.filter((a) => isFlowAddress(a) && a.address === activeAccount?.address),
+    [receivingAccounts, activeAccount]
+  );
 
   const inboxQueries = useQueries({
     queries: flowAccounts.map((account) => ({
       queryKey: tokenQueryKeys.inbox(account.address, network),
       queryFn: () => tokenQueries.fetchInbox(account.address, network),
       enabled: !!account.address,
-      staleTime: 60_000,
+      refetchOnMount: 'always',
+      staleTime: 10_000,
+      refetchInterval: 10_000,
     })),
   });
 
@@ -154,15 +157,15 @@ export function ClaimTokensScreen({
     staleTime: 5 * 60_000,
   });
 
-  // Set of verified identifiers (3-part: A.address.ContractName)
+  // Map of verified identifiers (3-part: A.address.ContractName) → logoURI
   const verifiedIdentifiers = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, string | undefined>();
     for (const t of catalog) {
       if (t.isVerified && t.flowIdentifier) {
-        set.add(t.flowIdentifier);
+        map.set(t.flowIdentifier, t.logoURI);
       }
     }
-    return set;
+    return map;
   }, [catalog]);
 
   // ── Build per-account ClaimItem[] from real data ────────────────────────
@@ -178,12 +181,17 @@ export function ClaimTokensScreen({
       if (flowIndexPrices) {
         ftItems = enrichClaimItemsWithPrices(ftItems, flowIndexPrices);
       }
-      // Enrich with verified status from token catalog
+      // Enrich with verified status and logo from token catalog
       ftItems = ftItems.map((item) => {
         if (!item.identifier) return item;
         const prefix = item.identifier.split('.').slice(0, 3).join('.');
         if (verifiedIdentifiers.has(prefix)) {
-          return { ...item, isVerified: true };
+          const catalogLogo = verifiedIdentifiers.get(prefix);
+          return {
+            ...item,
+            isVerified: true,
+            ...(catalogLogo ? { logoURI: catalogLogo } : {}),
+          };
         }
         return item;
       });
@@ -309,16 +317,11 @@ export function ClaimTokensScreen({
         return <ClaimDateHeader date={row.date} />;
       }
 
-      const isActiveItem = row.accountAddress === activeAccount?.address;
-      const disabled = !isActiveItem;
-
       if (row.item.type === 'nft') {
         return (
           <Pressable
             testID={`claim-nft-item-${row.item.name}`}
-            onPress={() => !disabled && onItemPress?.(row.item)}
-            disabled={disabled}
-            style={{ opacity: disabled ? 0.4 : 1 }}
+            onPress={() => onItemPress?.(row.item)}
           >
             <ClaimNFTCollectionRow
               name={row.item.name}
@@ -333,9 +336,7 @@ export function ClaimTokensScreen({
       return (
         <Pressable
           testID={`claim-ft-item-${row.item.symbol}`}
-          onPress={() => !disabled && onItemPress?.(row.item)}
-          disabled={disabled}
-          style={{ opacity: disabled ? 0.4 : 1 }}
+          onPress={() => onItemPress?.(row.item)}
         >
           <ClaimItemRow
             name={row.item.name}
@@ -351,7 +352,7 @@ export function ClaimTokensScreen({
         </Pressable>
       );
     },
-    [activeAccount, collapsedAccounts, onItemPress, toggleCollapse]
+    [collapsedAccounts, onItemPress, toggleCollapse]
   );
 
   const keyExtractor = useCallback((item: Row, index: number) => {

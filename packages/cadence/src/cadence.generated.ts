@@ -7030,6 +7030,41 @@ transaction(vaultIdentifier:String, sender: Address, amount: UFix64 ) {
   }
 
   // Tag: SrcCadenceLostandfoundQuery
+  public async batchQueryUnclaimedNumber(addrs: string[]): Promise<number> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+
+access(all) fun main(addrs: [Address]): Int {
+    let shelfManager = LostAndFound.borrowShelfManager()
+    var unclaimedNumber = 0
+    for addr in addrs {
+        let shelf = shelfManager.borrowShelf(redeemer: addr)
+        if shelf == nil {
+            continue
+        } else {
+            unclaimedNumber = unclaimedNumber + shelf!.getRedeemableTypes().length
+        }
+        
+    }
+    return unclaimedNumber
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "batchQueryUnclaimedNumber",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addrs, t.Array(t.Address)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
   public async queryUnclaimedFts(addr: string): Promise<any | undefined[]> {
     const code = `
 import LostAndFound from 0xLostAndFound
@@ -7689,7 +7724,7 @@ transaction(vaultIdentifier:String, recipient: Address, amount: UFix64) {
         // Deposit the withdrawn tokens in the recipient's receiver
         // lostandfound.deposit(from: <- sentVault)
         let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <-sentVault, memo: "Send Tokens Backup", display: display)
-        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.2)
         let item <- depositEstimate.withdraw()
 
          LostAndFound.trySendResource(

@@ -54,6 +54,15 @@ export function AddNFTCollectionScreen({
   const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
   const address = activeAccount?.address ?? '';
 
+  const { data: inboxCount } = useQuery({
+    queryKey: tokenQueryKeys.inboxCount([address], network),
+    queryFn: () => tokenQueries.fetchInboxCount([address]),
+    enabled: !!address,
+    refetchOnMount: 'always',
+    refetchInterval: 10_000,
+    staleTime: 10_000,
+  });
+
   const [search, setSearch] = useState('');
   const [activeIndex, setActiveIndex] = useState<string | null>(null);
 
@@ -186,6 +195,7 @@ export function AddNFTCollectionScreen({
       <YStack flex={1}>
         <ClaimBanner
           title={t('addNFTCollection.claimBannerTitle', 'Claim received NFTs')}
+          count={inboxCount}
           onPress={onClaimPress}
         />
 
