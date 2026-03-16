@@ -154,42 +154,36 @@ export const AccountListing = ({
   const hiddenAccounts = useHiddenAccounts();
   const isCoaMigrationEnabled = useFeatureFlag('coa_migration_v2');
 
-  // Get the first EOA account, prioritizing from accounts with COA
+  // Get all unique EOA accounts from parents (supports multi-EOA derivation)
   const uniqueEoaAccounts = React.useMemo(() => {
     if (!accountList) return [];
 
-    let priorityEoa: { account: WalletAccount; parentAccount: MainAccount } | null = null;
-    let normalEoa: { account: WalletAccount; parentAccount: MainAccount } | null = null;
+    const eoaByAddress = new Map<string, { account: WalletAccount; parentAccount: MainAccount }>();
 
     for (const account of accountList) {
-      // Check if the account has a COA EVM account
-      const hasCoa =
-        account?.evmAccount?.address &&
-        isValidEthereumAddress(account.evmAccount.address) &&
-        isCOAAddress(account.evmAccount.address);
+      const eoaCandidates: WalletAccount[] = [];
+      if (Array.isArray(account?.eoaAccounts) && account.eoaAccounts.length > 0) {
+        eoaCandidates.push(...account.eoaAccounts);
+      } else if (account?.eoaAccount) {
+        // Backward-compatible fallback for old cache shape.
+        eoaCandidates.push(account.eoaAccount);
+      }
 
-      // If account has EOA account
-      if (account?.eoaAccount?.address && isValidEthereumAddress(account.eoaAccount.address)) {
-        if (hasCoa && !priorityEoa) {
-          // If account has COA and we haven't found a priority EOA yet, use this one
-          priorityEoa = {
-            account: account.eoaAccount,
+      for (const eoa of eoaCandidates) {
+        if (!eoa?.address || !isValidEthereumAddress(eoa.address)) {
+          continue;
+        }
+        const normalizedAddress = eoa.address.toLowerCase();
+        if (!eoaByAddress.has(normalizedAddress)) {
+          eoaByAddress.set(normalizedAddress, {
+            account: eoa,
             parentAccount: account,
-          };
-          // Early return since priority EOA takes precedence
-          return [priorityEoa];
-        } else if (!hasCoa && !normalEoa) {
-          // If no COA and we haven't found a normal EOA yet, store it
-          normalEoa = {
-            account: account.eoaAccount,
-            parentAccount: account,
-          };
+          });
         }
       }
     }
 
-    // Return priority first (from account with COA), otherwise first normal one
-    return priorityEoa ? [priorityEoa] : normalEoa ? [normalEoa] : [];
+    return Array.from(eoaByAddress.values());
   }, [accountList]);
 
   return (
@@ -274,36 +268,32 @@ export const AccountListing = ({
           </Typography>
         </>
       )}
-      {/* EOA Account - Show single EOA account at the top */}
-      {uniqueEoaAccounts[0] &&
-        (() => {
-          const { account, parentAccount } = uniqueEoaAccounts[0];
-          return (
-            <Box
-              key={account.address}
-              sx={{
-                ...(itemSx || {}),
-              }}
-            >
-              <AccountCard
-                network={network}
-                account={account}
-                parentAccount={parentAccount}
-                active={activeAccount?.address === account.address}
-                onClick={onAccountClick ? () => onAccountClick(account, parentAccount) : undefined}
-                onClickSecondary={
-                  onAccountClickSecondary
-                    ? () => onAccountClickSecondary(account, parentAccount)
-                    : undefined
-                }
-                secondaryIcon={secondaryIcon}
-                showCard={false}
-                showLink={false}
-                data-testid={`eoa-account-${account.address}`}
-              />
-            </Box>
-          );
-        })()}
+      {/* EOA Accounts */}
+      {uniqueEoaAccounts.map(({ account, parentAccount }) => (
+        <Box
+          key={account.address}
+          sx={{
+            ...(itemSx || {}),
+          }}
+        >
+          <AccountCard
+            network={network}
+            account={account}
+            parentAccount={parentAccount}
+            active={activeAccount?.address === account.address}
+            onClick={onAccountClick ? () => onAccountClick(account, parentAccount) : undefined}
+            onClickSecondary={
+              onAccountClickSecondary
+                ? () => onAccountClickSecondary(account, parentAccount)
+                : undefined
+            }
+            secondaryIcon={secondaryIcon}
+            showCard={false}
+            showLink={false}
+            data-testid={`eoa-account-${account.address}`}
+          />
+        </Box>
+      ))}
 
       {/* Loading state */}
       {accountList === undefined && (

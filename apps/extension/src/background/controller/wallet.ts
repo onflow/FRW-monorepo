@@ -1,7 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import type { AccountKey, Account as FclAccount } from '@onflow/fcl';
 import { type PayerStatusPayloadV1 } from '@onflow/frw-api';
-import { ServiceContext } from '@onflow/frw-context';
+import { ServiceContext, logger } from '@onflow/frw-context';
 import { KeyRotationService } from '@onflow/frw-services';
 import type { AccountKeySignature } from '@onflow/frw-types';
 
@@ -30,12 +30,14 @@ import {
   accountManagementService,
   authenticationService,
 } from '@/core/service';
+import walletManager from '@/core/service/wallet-manager';
 import { retryOperation } from '@/core/utils';
 import {
   getValidData,
   setCachedData,
   childAccountDescKey,
   type ChildAccountFtStore,
+  mainAccountsKey,
   cadenceNftCollectionsAndIdsKey,
   walletLoadedKey,
   CURRENT_ID_KEY,
@@ -214,6 +216,28 @@ export class WalletController extends BaseController {
 
   createNewAccount = async (network: string) => {
     return await accountManagementService.createNewAccount(network);
+  };
+
+  addNewEOAAddress = async (): Promise<{ index: number; address: string }> => {
+    logger.info('[extension-bg] addNewEOAAddress invoked');
+    const result = await walletManager.addNewEOAAddress();
+    try {
+      const network = userWalletService.getNetwork();
+      const pubkey = userWalletService.getCurrentPubkey();
+      // Force immediate rebuild of account cache (includes eoaAccount field used by sidebar).
+      await userWalletService.preloadAllAccounts(network, pubkey);
+      triggerRefresh(mainAccountsKey(network, pubkey));
+      logger.info('[extension-bg] addNewEOAAddress forced preload + triggered refresh', {
+        network,
+        pubkey: pubkey ? `${pubkey.slice(0, 8)}...` : null,
+      });
+    } catch (error) {
+      logger.warn('[extension-bg] addNewEOAAddress cache refresh failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+    logger.info('[extension-bg] addNewEOAAddress completed', result);
+    return result;
   };
 
   /**

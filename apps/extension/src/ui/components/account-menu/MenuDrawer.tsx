@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router';
 
 import { MAX_MAIN_ACCOUNTS_PER_PROFILE } from '@/shared/constant';
 import { type UserInfoResponse, type MainAccount, type WalletAccount } from '@/shared/types';
-import { consoleError, hasReachedFlowAddressLimit } from '@/shared/utils';
+import { consoleError, consoleWarn, hasReachedFlowAddressLimit } from '@/shared/utils';
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import { AccountListing } from '@/ui/components/account/account-listing';
@@ -59,6 +59,7 @@ const MenuDrawer = ({
   // Add Account Drawer
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCreatingEoa, setIsCreatingEoa] = useState(false);
   const canCreateNewAccount = useFeatureFlag('create_new_account');
   const canAddMoreAccounts = !hasReachedFlowAddressLimit(walletList, MAX_MAIN_ACCOUNTS_PER_PROFILE);
   const currentId = useCurrentId();
@@ -106,6 +107,26 @@ const MenuDrawer = ({
       consoleError('Failed to create account:', error);
       setErrorMessage(error.message || 'Failed to create account. Please try again.');
       setShowError(true);
+    }
+  };
+
+  const addEoaAccount = async () => {
+    if (isCreatingEoa) {
+      consoleWarn('[extension-ui] addEoaAccount ignored: already creating');
+      return;
+    }
+    setIsCreatingEoa(true);
+    try {
+      consoleWarn('[extension-ui] addEoaAccount clicked: calling wallet.addNewEOAAddress');
+      setShowAddAccount(false);
+      const created = await wallet.addNewEOAAddress();
+      consoleWarn('[extension-ui] addEoaAccount success', created);
+    } catch (error) {
+      consoleError('Failed to create EOA address:', error);
+      setErrorMessage(error.message || 'Failed to create EOA address. Please try again.');
+      setShowError(true);
+    } finally {
+      setIsCreatingEoa(false);
     }
   };
 
@@ -274,8 +295,10 @@ const MenuDrawer = ({
                 setShowAddAccount(false);
               }}
               addAccount={addAccount}
+              addEoaAddress={addEoaAccount}
               importExistingAccount={canImportExistingAccount}
               disableCreateAccount={hasPendingCreation}
+              disableAddEoaAddress={isCreatingEoa}
             />
           )}
         </Box>

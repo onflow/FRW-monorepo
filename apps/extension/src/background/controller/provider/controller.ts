@@ -1,5 +1,5 @@
 import { ServiceContext } from '@onflow/frw-context';
-import { EthSigner, type EthUnsignedTransaction } from '@onflow/frw-wallet';
+import { type EthUnsignedTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
 import { intToHex } from 'ethereumjs-util';
@@ -171,28 +171,14 @@ async function signTypeDataCOA(msgParams: Buffer | string) {
 // ============================================================================
 
 /**
- * Derives Ethereum address from private key
- * @param privateKeyHex - The private key as a hex string
- * @returns The Ethereum address
- */
-function deriveEthereumAddress(privateKeyHex: string): string {
-  const { privateToAddress } = require('ethereumjs-util');
-  const cleanHex = privateKeyHex.replace(/^0x/i, '');
-  const privateKeyBuffer = Buffer.from(cleanHex, 'hex');
-  const addressBuffer = privateToAddress(privateKeyBuffer);
-  return '0x' + addressBuffer.toString('hex');
-}
-
-/**
  * EOA typed data signing function
  */
-async function signTypeDataEOA(typedData: Record<string, unknown>) {
-  // Get the Ethereum private key using EVM BIP44 path
-  const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
-  const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
-
-  // Use eth-signer to sign the typed data
-  const { signature } = await EthSigner.signTypedData(privateKeyBytes, typedData);
+async function signTypeDataEOA(typedData: Record<string, unknown>, eoaAddress: string) {
+  const eoaAccount = await walletManager.getEOAAccountSigner(eoaAddress);
+  if (!eoaAccount) {
+    throw new Error('EOA signer not found');
+  }
+  const { signature } = await eoaAccount.signTypedData(typedData);
 
   return signature;
 }
@@ -240,7 +226,7 @@ export const TypedDataUtils = {
 async function isCOAAddress(address: string): Promise<boolean> {
   try {
     // Get EOA address
-    const eoaInfo = await walletManager.getEOAAccountInfo();
+    const eoaInfo = await walletManager.getEOAAccountInfo(undefined, address);
     if (eoaInfo?.address && address.toLowerCase() === eoaInfo.address.toLowerCase()) {
       return false;
     }
@@ -598,9 +584,10 @@ class ProviderController extends BaseController {
       // Get the current nonce from the network
       const nonce = await this.getTransactionCount(trxData.from);
 
-      // Get the Ethereum private key using EVM BIP44 path
-      const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
-      const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+      const eoaAccount = await walletManager.getEOAAccountSigner(trxData.from);
+      if (!eoaAccount) {
+        throw new Error('EOA signer not found');
+      }
 
       // Get the current chain ID
       const chainId = network === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
@@ -629,8 +616,7 @@ class ProviderController extends BaseController {
             value: trxData.value || '0x0',
             data: trxData.data || '0x',
           };
-      // Sign the transaction using EthSigner
-      const signedTransaction = await EthSigner.signTransaction(transaction, privateKeyBytes);
+      const signedTransaction = await eoaAccount.signTransaction(transaction);
 
       return signedTransaction;
     };
@@ -702,12 +688,12 @@ class ProviderController extends BaseController {
 
   // EOA Personal Sign
   private async personalSignEOA(string: string, from: string, session: any): Promise<string> {
-    // Get the Ethereum private key using secp256k1 algorithm
-    const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
-    const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
+    const eoaAccount = await walletManager.getEOAAccountSigner(from);
+    if (!eoaAccount) {
+      throw new Error('EOA signer not found');
+    }
 
-    // Use eth-signer to sign the personal message
-    const { signature } = await EthSigner.signPersonalMessage(privateKeyBytes, string);
+    const { signature } = await eoaAccount.signPersonalMessage(string);
 
     // Create history entry using the derived Ethereum address
     signTextHistoryService.createHistory({
@@ -814,7 +800,7 @@ class ProviderController extends BaseController {
     message: any
   ): Promise<string> {
     // EOA signing path - validate address matches EOA
-    const eoaInfo = await walletManager.getEOAAccountInfo();
+    const eoaInfo = await walletManager.getEOAAccountInfo(undefined, address);
     if (!eoaInfo || !eoaInfo.address) {
       throw new Error('EOA address not found from walletManager');
     }
@@ -826,7 +812,7 @@ class ProviderController extends BaseController {
     }
 
     // Get the Ethereum private key and sign the typed data
-    const result = await signTypeDataEOA(message);
+    const result = await signTypeDataEOA(message, address);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
@@ -930,7 +916,7 @@ class ProviderController extends BaseController {
     message: any
   ): Promise<string> {
     // EOA signing path - validate address matches EOA
-    const eoaInfo = await walletManager.getEOAAccountInfo();
+    const eoaInfo = await walletManager.getEOAAccountInfo(undefined, address);
     if (!eoaInfo || !eoaInfo.address) {
       throw new Error('EOA address not found from walletManager');
     }
@@ -941,7 +927,7 @@ class ProviderController extends BaseController {
       throw new Error('Provided address does not match the EOA address');
     }
 
-    const result = await signTypeDataEOA(message);
+    const result = await signTypeDataEOA(message, address);
     signTextHistoryService.createHistory({
       address: address,
       text: data,
@@ -1008,15 +994,13 @@ class ProviderController extends BaseController {
 
   // EOA eth_sign
   private async ethSignEOA(address: string, message: any, session: any): Promise<string> {
-    // Get the Ethereum private key using secp256k1 algorithm
-    const ethereumPrivateKey = await Wallet.getEthereumPrivateKey();
-    const privateKeyBytes = Wallet.privateKeyToUint8Array(ethereumPrivateKey);
-
-    // Derive the Ethereum address from the private key
-    const ethereumAddress = deriveEthereumAddress(ethereumPrivateKey);
+    const eoaAccount = await walletManager.getEOAAccountSigner(address);
+    if (!eoaAccount) {
+      throw new Error('EOA signer not found');
+    }
 
     // Validate that the requested address matches the derived address
-    if (address.toLowerCase() !== ethereumAddress.toLowerCase()) {
+    if (address.toLowerCase() !== eoaAccount.address.toLowerCase()) {
       throw new Error('Address mismatch');
     }
 
@@ -1032,12 +1016,11 @@ class ProviderController extends BaseController {
     // Hash the message using keccak256
     const messageHash = ethers.keccak256(messageBytes);
 
-    // Sign the hash using eth-signer
-    const { signature } = await EthSigner.signPersonalMessage(privateKeyBytes, messageHash);
+    const { signature } = await eoaAccount.signPersonalMessage(messageHash);
 
     // Create history entry
     signTextHistoryService.createHistory({
-      address: ethereumAddress,
+      address: eoaAccount.address,
       text: message,
       origin: session.origin,
       type: 'ethSign',

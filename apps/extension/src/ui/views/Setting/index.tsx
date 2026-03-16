@@ -1,14 +1,6 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
-import {
-  Alert,
-  Box,
-  Divider,
-  IconButton,
-  List,
-  Snackbar,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Divider, IconButton, List, Snackbar, Typography } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
@@ -57,6 +49,7 @@ const SettingTab = () => {
   const [gasKillSwitch, setGasKillSwitch] = useState(false);
   const [showError, setShowError] = useState(false);
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [isCreatingEoaAddress, setIsCreatingEoaAddress] = useState(false);
   const [createAccountError, setCreateAccountError] = useState('');
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
   const canCreateNewAccount = useFeatureFlag('create_new_account');
@@ -125,6 +118,28 @@ const SettingTab = () => {
   const createAccountFromPopup = async () => {
     setIsAddAccountPopupOpen(false);
     await createAccountFromSettings();
+  };
+
+  const createEoaAddressFromSettings = async () => {
+    if (isCreatingEoaAddress) {
+      return;
+    }
+
+    setIsCreatingEoaAddress(true);
+    try {
+      await usewallet.addNewEOAAddress();
+    } catch (error) {
+      setCreateAccountError(
+        error instanceof Error ? error.message : 'Failed to create EOA address. Please try again.'
+      );
+    } finally {
+      setIsCreatingEoaAddress(false);
+    }
+  };
+
+  const createEoaAddressFromPopup = async () => {
+    setIsAddAccountPopupOpen(false);
+    await createEoaAddressFromSettings();
   };
 
   useEffect(() => {
@@ -433,9 +448,11 @@ const SettingTab = () => {
         handleCancelBtnClicked={() => setIsAddAccountPopupOpen(false)}
         handleAddBtnClicked={() => setIsAddAccountPopupOpen(false)}
         addAccount={createAccountFromPopup}
+        addEoaAddress={createEoaAddressFromPopup}
         importExistingAccount={false}
         modalVariant="profile"
         disableCreateAccount={hasPendingCreation}
+        disableAddEoaAddress={isCreatingEoaAddress}
       />
     </div>
   );
