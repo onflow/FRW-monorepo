@@ -260,6 +260,49 @@ describe("Wallet multi-EOA (BIP44 m/44'/60'/0'/0/{index})", () => {
     }
   });
 
+  it('persists EOA addresses in cache and restores on initialize', async () => {
+    const storage = new MemoryStorage();
+    const key = await SeedPhraseKey.createAdvanced(
+      {
+        mnemonic: TEST_MNEMONIC,
+        derivationPath: BIP44_PATHS.EVM,
+        passphrase: '',
+      },
+      storage
+    );
+
+    // Use a shared cacheStorage so a second wallet instance can read it
+    const cacheStorage = new MemoryStorage();
+    const wallet1 = WalletFactory.createKeyWallet(
+      key,
+      new Set([NETWORKS.FLOW_EVM_MAINNET]),
+      cacheStorage
+    );
+
+    // Derive EOAs and trigger cache write via fetchAccount
+    const accounts = await wallet1.getEOAAccount([0, 1, 2]);
+    expect(accounts.length).toBe(3);
+
+    // Manually trigger cache write (fetchAccount calls this internally)
+    // We call initialize which will call fetchAccount which caches
+    await wallet1.fetchAccount();
+
+    // Create a second wallet instance with the same cacheStorage
+    const wallet2 = WalletFactory.createKeyWallet(
+      key,
+      new Set([NETWORKS.FLOW_EVM_MAINNET]),
+      cacheStorage
+    );
+
+    // Initialize loads from cache
+    await wallet2.initialize();
+
+    // EOA addresses should be restored from cache
+    expect(wallet2.eoaAddressMap.size).toBeGreaterThanOrEqual(1);
+    // The index 0 address (from discoverEVMAccounts in fetchAccount) should be cached
+    expect(wallet2.eoaAddressMap.get(0)).toBe(accounts[0].address);
+  });
+
   it('example: add more EOAs later and sign', async () => {
     const { wallet } = await createTestSeedPhraseWallet();
 
