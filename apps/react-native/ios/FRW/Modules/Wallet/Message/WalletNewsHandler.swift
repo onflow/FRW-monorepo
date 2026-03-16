@@ -77,7 +77,6 @@ class WalletNewsHandler: ObservableObject {
 
     static let shared = WalletNewsHandler()
 
-    // TODO: Change it to Set
     @MainActor @Published var list: [RemoteConfigManager.News] = []
     
     var removeIds: [String] = [] {
@@ -104,18 +103,6 @@ class WalletNewsHandler: ObservableObject {
         self.list = list
     }
 
-    @MainActor
-    func removeNews(_ news: RemoteConfigManager.News) {
-        var list = self.list
-        
-        accessQueue.sync {
-            if let index = list.firstIndex(where: { $0.id == news.id }), list[safe: index] != nil {
-                list.remove(at: index)
-            }
-        }
-        
-        self.list = list
-    }
 
     func refreshWalletConnectNews(_ news: [RemoteConfigManager.News]) {
         DispatchQueue.main.async {
@@ -204,6 +191,13 @@ extension WalletNewsHandler {
     }
 
     @MainActor
+    func onRemoveItem(_ itemId: String) {
+        withAnimation {
+            list.removeAll { $0.id == itemId }
+        }
+    }
+
+    @MainActor
     func onClickItem(_ itemId: String) {
         guard let item = list.first(where: { $0.id == itemId }) else { return }
 
@@ -221,7 +215,10 @@ extension WalletNewsHandler {
            let request = WalletConnectManager.shared.pendingRequests
            .first(where: { $0.topic == item.id }) {
             WalletConnectManager.shared.handleRequest(request)
+        } else if item.flag == .unclaimed {
+            Router.route(to: RouteMap.ReactNative.claimTokens)
         }
+
 
         if shouldRemove {
             withAnimation {

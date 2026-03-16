@@ -162,6 +162,7 @@ extension RemoteConfigManager {
         case normal
         case walletconnect
         case upgrade
+        case unclaimed
 
         // MARK: Lifecycle
 
@@ -240,6 +241,8 @@ extension RemoteConfigManager {
 
         var flag: NewsFlag? = .normal
         let conditions: [Condition]?
+
+        let localIcon: String?
 
         var iconURL: URL? {
             if let logoString = icon {

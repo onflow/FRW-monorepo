@@ -41,6 +41,7 @@ struct CadenceModel: Codable {
 
     let evm: CadenceModel.EVM?
     let bridge: CadenceModel.Bridge?
+    let lostAndFound: CadenceModel.LostAndFound?
 }
 
 extension CadenceModel {
@@ -261,5 +262,11 @@ extension CadenceModel {
         let bridgeNFTFromEvmWithPayer: String?
         let bridgeNFTToEvmAddressWithPayer: String? //
         let bridgeNFTToEvmWithPayer: String?
+    }
+}
+
+extension CadenceModel {
+    struct LostAndFound: Codable {
+        let batchQueryUnclaimedNumber: String?
     }
 }
