@@ -93,10 +93,8 @@ export function ClaimTokensScreen({
   const isAccountsLoading = useWalletStore((state) => state.isLoading);
 
   React.useEffect(() => {
-    if (accounts.length === 0 && !isAccountsLoading) {
-      loadAccountsFromBridge();
-    }
-  }, [loadAccountsFromBridge, accounts.length, isAccountsLoading]);
+    loadAccountsFromBridge();
+  }, [loadAccountsFromBridge]);
 
   const receivingAccounts: ClaimReceiver[] = useMemo(() => {
     if (accounts.length === 0) return [];
@@ -127,13 +125,17 @@ export function ClaimTokensScreen({
   }, [accounts, activeAccount]);
 
   // ── Fetch inbox data per Flow account ───────────────────────────────────
-  const flowAccounts = useMemo(() => receivingAccounts.filter(isFlowAddress), [receivingAccounts]);
+  const flowAccounts = useMemo(
+    () => receivingAccounts.filter((a) => isFlowAddress(a) && a.address === activeAccount?.address),
+    [receivingAccounts, activeAccount]
+  );
 
   const inboxQueries = useQueries({
     queries: flowAccounts.map((account) => ({
       queryKey: tokenQueryKeys.inbox(account.address, network),
       queryFn: () => tokenQueries.fetchInbox(account.address, network),
       enabled: !!account.address,
+      refetchOnMount: 'always',
       staleTime: 10_000,
       refetchInterval: 10_000,
     })),
@@ -315,16 +317,11 @@ export function ClaimTokensScreen({
         return <ClaimDateHeader date={row.date} />;
       }
 
-      const isActiveItem = row.accountAddress === activeAccount?.address;
-      const disabled = !isActiveItem;
-
       if (row.item.type === 'nft') {
         return (
           <Pressable
             testID={`claim-nft-item-${row.item.name}`}
-            onPress={() => !disabled && onItemPress?.(row.item)}
-            disabled={disabled}
-            style={{ opacity: disabled ? 0.4 : 1 }}
+            onPress={() => onItemPress?.(row.item)}
           >
             <ClaimNFTCollectionRow
               name={row.item.name}
@@ -339,9 +336,7 @@ export function ClaimTokensScreen({
       return (
         <Pressable
           testID={`claim-ft-item-${row.item.symbol}`}
-          onPress={() => !disabled && onItemPress?.(row.item)}
-          disabled={disabled}
-          style={{ opacity: disabled ? 0.4 : 1 }}
+          onPress={() => onItemPress?.(row.item)}
         >
           <ClaimItemRow
             name={row.item.name}
@@ -357,7 +352,7 @@ export function ClaimTokensScreen({
         </Pressable>
       );
     },
-    [activeAccount, collapsedAccounts, onItemPress, toggleCollapse]
+    [collapsedAccounts, onItemPress, toggleCollapse]
   );
 
   const keyExtractor = useCallback((item: Row, index: number) => {
