@@ -752,6 +752,36 @@ export class WalletController extends BaseController {
     await coinListService.initCoinList(network, address, currency);
   };
 
+  getInboxData = async (address: string) => {
+    const network = await this.getNetwork();
+    return await coinListService.getInboxData(network, address);
+  };
+
+  getAllProfilesInboxData = async () => {
+    const network = await this.getNetwork();
+    const mainAccounts = await this.getMainAccounts();
+
+    // Only query Flow addresses (LostAndFound is a Cadence contract)
+    const flowAddresses = mainAccounts.map((account) => account.address).filter(Boolean);
+
+    const results = await Promise.allSettled(
+      flowAddresses.map((address) => coinListService.getInboxData(network, address))
+    );
+
+    const accounts: Record<string, { fts: any[]; nfts: any[] }> = {};
+    let totalCount = 0;
+    for (let i = 0; i < flowAddresses.length; i++) {
+      const result = results[i];
+      if (result.status === 'fulfilled' && result.value) {
+        const { fts, nfts } = result.value;
+        accounts[flowAddresses[i]] = { fts, nfts };
+        totalCount += fts.length + nfts.length;
+      }
+    }
+
+    return { accounts, totalCount };
+  };
+
   reqeustEvmNft = async () => {
     const address = await this.getEvmAddress();
     const network = await this.getNetwork();

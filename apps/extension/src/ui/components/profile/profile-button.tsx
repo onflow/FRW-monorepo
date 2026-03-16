@@ -6,16 +6,23 @@ interface ProfileButtonProps {
   text: string;
   onClick: () => Promise<void>;
   dataTestId?: string;
+  disabled?: boolean;
 }
 
 /**
  * A button component that displays an icon and a text for profile creation and recovery.
  * It redirect the extension to the profile creation and recovery page when clicked.
  */
-export const ProfileButton = ({ icon, text, onClick, dataTestId }: ProfileButtonProps) => {
+export const ProfileButton = ({
+  icon,
+  text,
+  onClick,
+  dataTestId,
+  disabled = false,
+}: ProfileButtonProps) => {
   return (
-    <ListItem disablePadding onClick={onClick} data-testid={dataTestId}>
-      <ListItemButton sx={{ padding: '16px', margin: '0' }}>
+    <ListItem disablePadding onClick={disabled ? undefined : onClick} data-testid={dataTestId}>
+      <ListItemButton sx={{ padding: '16px', margin: '0' }} disabled={disabled}>
         <ListItemIcon
           sx={{
             width: '24px',

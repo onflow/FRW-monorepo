@@ -975,3 +975,5 @@
 "add_account" = "アカウントを追加";
 "create_cadence_account" = "新しい Flow Cadence アカウントを作成";
 "create_evm_account" = "新しい Flow EVM アカウントを作成";
+"unclaimed_assets_title" = "受け取り可能な資産があります";
+"unclaimed_assets_message" = "確認しに進む。";

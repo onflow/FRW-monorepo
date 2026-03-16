@@ -15,6 +15,7 @@ import { patchProvider } from './utils/metamask';
 import { SAFE_RPC_METHODS } from './utils/safeRpcMethods';
 
 declare const __frw__channelName;
+declare const __frw__channelAuthToken;
 declare const __frw__isDefaultWallet;
 declare const __frw__uuid;
 declare const __frw__isOpera;
@@ -30,38 +31,46 @@ const log = (event, ...args) => {
 };
 
 let channelName = typeof __frw__channelName !== 'undefined' ? __frw__channelName : '';
+let channelAuthToken =
+  typeof __frw__channelAuthToken !== 'undefined' ? __frw__channelAuthToken : '';
 let isDefaultWallet =
   typeof __frw__isDefaultWallet !== 'undefined' ? __frw__isDefaultWallet : false;
-let isOpera = typeof __frw__isOpera !== 'undefined' ? __frw__isOpera : false;
+const isOpera = typeof __frw__isOpera !== 'undefined' ? __frw__isOpera : false;
 let uuid = typeof __frw__uuid !== 'undefined' ? __frw__uuid : '';
 let extensionId = '';
 
-const DEPLOYMENT_ENV = process.env.DEPLOYMENT_ENV;
-const IS_BETA = process.env.IS_BETA === 'true';
-
-const channelPrefix = IS_BETA ? 'frw-beta:' : DEPLOYMENT_ENV === 'production' ? 'frw:' : 'frw-dev:';
-
 const getParams = () => {
-  consoleLog('eth getParams', localStorage.getItem(`${channelPrefix}channelName`));
-  if (localStorage.getItem(`${channelPrefix}channelName`)) {
-    channelName = localStorage.getItem(`${channelPrefix}channelName`) as string;
-    localStorage.removeItem(`${channelPrefix}channelName`);
-  }
-  if (localStorage.getItem(`${channelPrefix}isDefaultWallet`)) {
-    isDefaultWallet = localStorage.getItem(`${channelPrefix}isDefaultWallet`) === 'true';
-    localStorage.removeItem(`${channelPrefix}isDefaultWallet`);
-  }
-  if (localStorage.getItem(`${channelPrefix}uuid`)) {
-    uuid = localStorage.getItem(`${channelPrefix}uuid`) as string;
-    localStorage.removeItem(`${channelPrefix}uuid`);
-  }
-  if (localStorage.getItem(`${channelPrefix}isOpera`)) {
-    isOpera = localStorage.getItem(`${channelPrefix}isOpera`) === 'true';
-    localStorage.removeItem(`${channelPrefix}isOpera`);
-  }
-  if (localStorage.getItem(`${channelPrefix}extensionId`)) {
-    extensionId = localStorage.getItem(`${channelPrefix}extensionId`) as string;
-    localStorage.removeItem(`${channelPrefix}extensionId`);
+  const currentScript = document.currentScript as HTMLScriptElement | null;
+  const injectedScript =
+    (document.getElementById('injectedScript') as HTMLScriptElement | null) || currentScript;
+  const encodedConfig =
+    currentScript?.getAttribute('data-frw-config') ||
+    injectedScript?.getAttribute('data-frw-config');
+  if (encodedConfig) {
+    try {
+      const decoded = atob(encodedConfig);
+      const parsed = JSON.parse(decoded);
+      if (typeof parsed.channelName === 'string') {
+        channelName = parsed.channelName;
+      }
+      if (typeof parsed.channelAuthToken === 'string') {
+        channelAuthToken = parsed.channelAuthToken;
+      }
+      if (typeof parsed.isDefaultWallet === 'boolean') {
+        isDefaultWallet = parsed.isDefaultWallet;
+      }
+      if (typeof parsed.uuid === 'string') {
+        uuid = parsed.uuid;
+      }
+      if (typeof parsed.extensionId === 'string') {
+        extensionId = parsed.extensionId;
+      }
+    } catch (e) {
+      consoleError('[frw] failed to parse provider init config', e);
+    } finally {
+      currentScript?.removeAttribute('data-frw-config');
+      injectedScript?.removeAttribute('data-frw-config');
+    }
   }
 };
 getParams();
@@ -133,7 +142,7 @@ export class EthereumProvider extends EventEmitter {
   private _pushEventHandlers: PushEventHandlers;
   private _requestPromise = new ReadyPromise(2);
   private _dedupePromise = new DedupePromise([]);
-  private _bcm = new BroadcastChannelMessage(channelName);
+  private _bcm = new BroadcastChannelMessage(channelName).setAuthToken(channelAuthToken);
 
   constructor({ maxListeners = 100 } = {}) {
     super();

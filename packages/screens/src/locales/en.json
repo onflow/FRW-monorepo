@@ -7,7 +7,10 @@
     "sendTokens": "Send Tokens",
     "nftDetails": "NFT Details",
     "colorDemo": "Color Demo",
-    "receive": "Receive Assets"
+    "receive": "Receive Assets",
+    "addTokens": "Add Tokens",
+    "claimTokens": "Claim",
+    "token": "Token"
   },
   "common": {
     "cancel": "Cancel",
@@ -152,7 +155,25 @@
     "sent": "Sent",
     "received": "Received",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "detail": {
+      "appInteraction": "App Interaction",
+      "youSent": "You Sent",
+      "youReceived": "You Received",
+      "from": "From",
+      "to": "To",
+      "date": "Date",
+      "status": "Status",
+      "network": "Network",
+      "account": "Account",
+      "transactionFee": "Transaction Fee",
+      "coveredByFlowWallet": "Covered by Flow Wallet",
+      "viewOnExplorer": "View on block explorer",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "NFTS from {{collection}}",
+      "nftCount": "{{count}} NFTS"
+    }
   },
   "buttons": {
     "retry": "Retry",
@@ -527,5 +548,48 @@
     "success": {
       "rotation": "Account upgraded successfully!"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "Search",
+    "empty": "No items to claim",
+    "sort": {
+      "title": "Sort by",
+      "date": "Date received",
+      "amount": "Amount",
+      "name": "Token name"
+    },
+    "detail": {
+      "security": "Security",
+      "verified": "Verified",
+      "yes": "Yes",
+      "no": "No",
+      "contractAddress": "Contract address",
+      "claim": "Claim",
+      "reject": "Reject"
+    },
+    "drawer": {
+      "title": "Claim assets",
+      "token": "Token",
+      "from": "From",
+      "cta": "Claim",
+      "to": "To"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "Claim received tokens",
+    "searchPlaceholder": "Search Token",
+    "verifiedOnly": "Only show verified tokens"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "Claim received NFTs",
+    "searchPlaceholder": "Search NFT Collection"
+  },
+  "claimNFTDetail": {
+    "website": "Website",
+    "items": "Items",
+    "about": "About",
+    "claimButton": "Claim assets",
+    "empty": "No NFTs",
+    "warningText": "By accepting this NFT collection you will automatically accept future deposits of it as well"
   }
 }

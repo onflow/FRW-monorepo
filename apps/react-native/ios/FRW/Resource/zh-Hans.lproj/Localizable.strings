@@ -981,3 +981,5 @@
 "add_account" = "添加账户";
 "create_cadence_account" = "创建新的 Flow Cadence 账户";
 "create_evm_account" = "创建新的 Flow EVM 账户";
+"unclaimed_assets_title" = "有资产可领取";
+"unclaimed_assets_message" = "前往查看。";

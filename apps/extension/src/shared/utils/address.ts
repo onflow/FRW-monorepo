@@ -24,6 +24,17 @@ export const isValidFlowAddress = (address: string): address is FlowAddress => {
   return regex.test(address);
 };
 
+export const countFlowAddresses = <T extends { address: string }>(accounts: T[]): number => {
+  return accounts.filter((account) => isValidFlowAddress(account.address)).length;
+};
+
+export const hasReachedFlowAddressLimit = <T extends { address: string }>(
+  accounts: T[],
+  limit: number
+): boolean => {
+  return countFlowAddresses(accounts) >= limit;
+};
+
 export const isValidAddress = (address: unknown) => {
   return (
     typeof address === 'string' && (isValidEthereumAddress(address) || isValidFlowAddress(address))

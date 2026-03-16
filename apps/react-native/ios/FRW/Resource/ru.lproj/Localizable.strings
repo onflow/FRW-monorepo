@@ -975,3 +975,5 @@
 "add_account" = "Добавить счет";
 "create_cadence_account" = "Создать новый Flow Cadence аккаунт";
 "create_evm_account" = "Создать новый Flow EVM аккаунт";
+"unclaimed_assets_title" = "Доступны активы для получения";
+"unclaimed_assets_message" = "Перейти и посмотреть.";

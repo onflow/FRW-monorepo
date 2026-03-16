@@ -49,7 +49,7 @@ export function AlphabetIndex({
           <Text
             fontSize="$2"
             fontWeight={activeIndex === letter ? '600' : '500'}
-            color={activeIndex === letter ? '$blue10' : '$textSecondary'}
+            color={activeIndex === letter ? '$primary' : '$textSecondary'}
             lineHeight="$1"
           >
             {letter}

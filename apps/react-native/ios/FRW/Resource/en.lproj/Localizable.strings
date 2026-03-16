@@ -1214,3 +1214,5 @@ Key Store and Private Key.";
 "add_account" = "Add account";
 "create_cadence_account" = "Create a new Flow Cadence account";
 "create_evm_account" = "Create a new Flow EVM Account";
+"unclaimed_assets_title" = "Assets available to claim";
+"unclaimed_assets_message" = "Go to view.";

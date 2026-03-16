@@ -51,6 +51,9 @@ export interface NFTGridProps {
   accountName?: string;
   accountColor?: string;
 
+  // Selection
+  selectable?: boolean;
+
   // Layout
   gap?: string;
   aspectRatio?: number;
@@ -81,6 +84,7 @@ export function NFTGrid({
   accountAvatar,
   accountName,
   accountColor,
+  selectable = true,
   gap = '$3',
   aspectRatio = 1,
   enableVirtualization = true,
@@ -247,7 +251,8 @@ export function NFTGrid({
                 idx={idx}
                 nft={item}
                 size="medium"
-                selected={selectedIds.includes(item.id)}
+                selected={selectable && selectedIds.includes(item.id)}
+                showSelectIndicator={selectable}
                 onPress={() => onNFTPress(item.id)}
                 onSelect={() => onNFTSelect(item.id)}
                 aspectRatio={aspectRatio}

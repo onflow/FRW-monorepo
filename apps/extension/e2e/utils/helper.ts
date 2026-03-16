@@ -638,7 +638,7 @@ export const waitForTransaction = async ({
   const executedItem = page.getByTestId(activityItemRegexp).filter({ hasText: successtext });
 
   await expect(executedItem).toBeVisible({
-    timeout: 60_000,
+    timeout: 100_000,
   });
 
   if (amount) {

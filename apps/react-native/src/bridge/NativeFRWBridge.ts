@@ -144,6 +144,8 @@ export interface Spec extends TurboModule {
   scanQRCode(): Promise<string>;
   // Close react native method
   closeRN(id?: string | null): void;
+  // Close react native and enable NFT collection storage
+  closeRNWithNFT(id?: string | null): void;
   // Free gas settings method
   isFreeGasEnabled(): Promise<boolean>;
   // Listen to a transaction

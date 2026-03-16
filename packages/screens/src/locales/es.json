@@ -7,7 +7,10 @@
     "sendTokens": "Enviar Tokens",
     "nftDetails": "Detalles NFT",
     "colorDemo": "Demo de Colores",
-    "receive": "Recibir Activos"
+    "receive": "Recibir Activos",
+    "addTokens": "Agregar tokens",
+    "claimTokens": "Reclamar",
+    "token": "Token"
   },
   "common": {
     "cancel": "Cancelar",
@@ -152,7 +155,25 @@
     "sent": "Enviado",
     "received": "Recibido",
     "today": "Hoy",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "detail": {
+      "appInteraction": "Interacción con App",
+      "youSent": "Enviaste",
+      "youReceived": "Recibiste",
+      "from": "De",
+      "to": "Para",
+      "date": "Fecha",
+      "status": "Estado",
+      "network": "Red",
+      "account": "Cuenta",
+      "transactionFee": "Tarifa de Transacción",
+      "coveredByFlowWallet": "Cubierto por Flow Wallet",
+      "viewOnExplorer": "Ver en el explorador de bloques",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "NFTS de {{collection}}",
+      "nftCount": "{{count}} NFTS"
+    }
   },
   "buttons": {
     "retry": "Reintentar",
@@ -475,5 +496,48 @@
     "success": {
       "rotation": "¡Cuenta actualizada exitosamente!"
     }
+  },
+  "claim": {
+    "searchPlaceholder": "Buscar",
+    "empty": "No hay elementos para reclamar",
+    "sort": {
+      "title": "Ordenar por",
+      "date": "Fecha de recepción",
+      "amount": "Cantidad",
+      "name": "Nombre del token"
+    },
+    "detail": {
+      "security": "Seguridad",
+      "verified": "Verificado",
+      "yes": "Sí",
+      "no": "No",
+      "contractAddress": "Dirección del contrato",
+      "claim": "Reclamar",
+      "reject": "Rechazar"
+    },
+    "drawer": {
+      "title": "Reclamar activo",
+      "token": "Token",
+      "from": "De",
+      "cta": "Reclamar",
+      "to": "A"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "Reclamar tokens recibidos",
+    "searchPlaceholder": "Buscar token",
+    "verifiedOnly": "Mostrar solo tokens verificados"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "Reclamar NFTs recibidos",
+    "searchPlaceholder": "Buscar colección de NFT"
+  },
+  "claimNFTDetail": {
+    "website": "Sitio web",
+    "items": "Elementos",
+    "about": "Acerca de",
+    "claimButton": "Reclamar activos",
+    "empty": "Sin NFTs",
+    "warningText": "Al aceptar esta colección de NFT, aceptarás automáticamente futuros depósitos de la misma"
   }
 }
