@@ -132,14 +132,16 @@ extension WalletManager {
         return result
     }
 
-    func eoaIndex() -> UInt32? {
+    func eoaIndex(address: String? = nil) -> UInt32? {
         guard selectedAccount?.type == .eoa else {
             return nil
         }
-        guard let currentAddress = selectedAccount?.hexAddr else {
+        var currentAddress = address ?? selectedAccount?.hexAddr
+        guard let currentAddress else {
             return nil
         }
-        
+
+
         for index in 0..<10 {
             if let addr = try? walletEntity?.ethAddress(index: UInt32(index)),
                 addr.lowercased() == currentAddress.lowercased() {

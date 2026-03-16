@@ -275,8 +275,12 @@ extension TrustJSMessageHandler {
                         to: id
                     )
                   } else {
-                    
-                    guard let sig = try? await WalletManager.shared.walletEntity?.ethSignPersonalMessage(data) else {
+                      guard let index = await WalletManager.shared.eoaIndex(address: EVMAddress) else {
+                          log.error("[EOA] index is error")
+                          await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
+                          return
+                      }
+                      guard let sig = try? await WalletManager.shared.walletEntity?.ethSignPersonalMessage(data,index: index) else {
                       log.error("[EOA] sign for data is error")
                       await self.webVC?.webView.tw.send(network: .ethereum, error: "Canceled", to: id)
                       return
@@ -341,7 +345,11 @@ extension TrustJSMessageHandler {
                         to: id
                     )
                   } else {
-                    guard let signature = try? await WalletManager.shared.walletEntity?.ethSignTypedData(json: raw) else {
+                      guard let index = await WalletManager.shared.eoaIndex(address: EVMAddress) else {
+                          log.error("[EOA] get index error")
+                          return
+                      }
+                      guard let signature = try? await WalletManager.shared.walletEntity?.ethSignTypedData(json: raw, index: index) else {
                       return
                     }
                     await self.webVC?.webView.tw.send(
@@ -556,7 +564,7 @@ extension TrustJSMessageHandler {
                     }
 
                     // Sign the transaction
-                      guard let index = await WalletManager.shared.eoaIndex() else {
+                      guard let index = await WalletManager.shared.eoaIndex(address: EVMAddress) else {
                           log.error("[EOA] get index error")
                           self.cancel(id: id)
                           return

@@ -179,10 +179,10 @@ final class ProfileFetchService: ProfileFetchServiceProtocol {
         let eoas = await WalletManager.shared.allEOAAccounts(with: walletEntity, for: profile.uid)
         if !eoas.isEmpty {
             let eoaAccounts = eoas.compactMap {
-                $0.toWalletAccount(userId: profile.uid)
+                [$0.toWalletAccount(userId: profile.uid)]
             }
             if !eoaAccounts.isEmpty {
-                walletAccounts.append(eoaAccounts)
+                walletAccounts.append(contentsOf: eoaAccounts)
             }
         }
 

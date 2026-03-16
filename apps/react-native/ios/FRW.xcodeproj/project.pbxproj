@@ -1599,10 +1599,10 @@
 		4E815E6C2D7AE2AE00082EE1 /* PrivateKeyWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E815E6A2D7AE2AE00082EE1 /* PrivateKeyWarning.swift */; };
 		4E815E6E2D7AE4C900082EE1 /* CopyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E815E6D2D7AE4C900082EE1 /* CopyButton.swift */; };
 		4E815E6F2D7AE4C900082EE1 /* CopyButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E815E6D2D7AE4C900082EE1 /* CopyButton.swift */; };
-		4E81746A2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */; };
-		4E81746B2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */; };
 		4E8174662F6249BB003A8D77 /* WalletManager+Inbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174652F6249BB003A8D77 /* WalletManager+Inbox.swift */; };
 		4E8174672F6249BB003A8D77 /* WalletManager+Inbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174652F6249BB003A8D77 /* WalletManager+Inbox.swift */; };
+		4E81746A2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */; };
+		4E81746B2F63A89B003A8D77 /* AddAccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */; };
 		4E82C01F2B2AF85800A61439 /* BackupUploadTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E82C01E2B2AF85800A61439 /* BackupUploadTimeline.swift */; };
 		4E82C0202B2AF85800A61439 /* BackupUploadTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E82C01E2B2AF85800A61439 /* BackupUploadTimeline.swift */; };
 		4E8394442A7153EB00DFC422 /* CalloutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E8394432A7153EB00DFC422 /* CalloutView.swift */; };
@@ -3226,8 +3226,8 @@
 		4E7DD2602858E74600052B21 /* FRWAPI+NFT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FRWAPI+NFT.swift"; sourceTree = "<group>"; };
 		4E815E6A2D7AE2AE00082EE1 /* PrivateKeyWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivateKeyWarning.swift; sourceTree = "<group>"; };
 		4E815E6D2D7AE4C900082EE1 /* CopyButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyButton.swift; sourceTree = "<group>"; };
-		4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAccountSheet.swift; sourceTree = "<group>"; };
 		4E8174652F6249BB003A8D77 /* WalletManager+Inbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalletManager+Inbox.swift"; sourceTree = "<group>"; };
+		4E8174692F63A89B003A8D77 /* AddAccountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAccountSheet.swift; sourceTree = "<group>"; };
 		4E82C01E2B2AF85800A61439 /* BackupUploadTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupUploadTimeline.swift; sourceTree = "<group>"; };
 		4E8394432A7153EB00DFC422 /* CalloutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalloutView.swift; sourceTree = "<group>"; };
 		4E8866122DBF718A0031E242 /* FRWAPI+Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FRWAPI+Token.swift"; sourceTree = "<group>"; };
@@ -8127,13 +8127,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -8187,13 +8183,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -8208,13 +8200,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -8247,13 +8235,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRWTests/Pods-FRWTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -8330,13 +8314,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW-dev/Pods-FRW-dev-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -8392,13 +8372,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-FRW/Pods-FRW-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -11012,7 +10988,10 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -11077,7 +11056,10 @@
 				MARKETING_VERSION = 3.1.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;

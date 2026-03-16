@@ -198,7 +198,7 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                     }
                     confirm(encoded.hexString.addHexPrefix())
                   } else {
-                      guard let index = await WalletManager.shared.eoaIndex() else {
+                      guard let index = await WalletManager.shared.eoaIndex(address: fromAddress) else {
                           log.error("[EOA] get index error")
                           return
                       }
@@ -297,6 +297,7 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                     let gasValue = self.normalizeHexString(receiveModel.gas ?? String(format: "%x", defaultGas))
 
                     //MARK: get nonce
+                      //TODO: 313
                     let address = fromAddress ?? self.cachedEVMAddress(for: url) ?? WalletManager.shared.EOAs?.first?.address ?? ""
                     let nonce = try await self.getTransactionNonce(for: address)
                     let nonceHex = self.normalizeHexString(String(nonce, radix: 16))
@@ -398,7 +399,7 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                     }
 
                     // Sign the transaction
-                      guard let index = await WalletManager.shared.eoaIndex() else {
+                      guard let index = await WalletManager.shared.eoaIndex(address: fromAddress) else {
                           log.error("[EOA] get index error")
                           return
                       }
@@ -511,7 +512,7 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                             confirm(encoded.hexString.addHexPrefix())
                           } else {
                             let raw: String = dataStr
-                              guard let index = await WalletManager.shared.eoaIndex() else {
+                              guard let index = await WalletManager.shared.eoaIndex(address: fromAddress) else {
                                   log.error("[EOA] get index error")
                                   cancel()
                                   return
