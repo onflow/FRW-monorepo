@@ -297,7 +297,7 @@ struct SideMenuView: View {
                     Image("icon_side_link")
                         .resizable()
                         .renderingMode(.template)
-                        .frame(width: 14, height: 14)
+                        .frame(width: 26, height: 26)
                         .padding(13)
                         .background(Color.Brain.Light.lines10)
                         .clipShape(Circle())
