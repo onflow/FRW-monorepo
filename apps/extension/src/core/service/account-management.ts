@@ -636,7 +636,9 @@ export class AccountManagement {
   async createNewAccount(network: string): Promise<void> {
     const existingMainAccounts = await userWalletService.getMainAccounts();
     if (hasReachedFlowAddressLimit(existingMainAccounts, MAX_MAIN_ACCOUNTS_PER_PROFILE)) {
-      throw new Error(`Maximum ${MAX_MAIN_ACCOUNTS_PER_PROFILE} accounts allowed per profile.`);
+      throw new Error(
+        `Maximum ${MAX_MAIN_ACCOUNTS_PER_PROFILE} Flow addresses allowed per profile.`
+      );
     }
 
     const publickey = await keyringService.getCurrentPublicKey();

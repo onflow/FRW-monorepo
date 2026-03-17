@@ -27,6 +27,7 @@ import userWalletService from './userWallet';
 
 type EthereumKeyLike = {
   ethAddress: (index?: number) => Promise<string>;
+  ethSign: (digest: Uint8Array, index?: number) => Promise<Uint8Array>;
   ethSignTransaction: (
     transaction: EthUnsignedTransaction,
     index?: number
@@ -41,6 +42,7 @@ type EthereumKeyLike = {
 export type EOAAccountSigner = {
   index: number;
   address: string;
+  signDigest: (digest: Uint8Array) => Promise<Uint8Array>;
   signTransaction: (transaction: EthUnsignedTransaction) => Promise<EthSignedTransaction>;
   signPersonalMessage: (message: HexLike) => Promise<EthSignedMessage>;
   signTypedData: (typedData: Record<string, unknown>) => Promise<EthSignedMessage>;
@@ -54,6 +56,7 @@ export type EOAAccountInfo = {
 
 export class WalletManager {
   private static readonly EOA_DISCOVERY_INDEX_LIMIT = 20;
+  private static readonly MAX_EOA_PER_PROFILE = 5;
 
   private wallet: Wallet | null = null;
   private storage: ExtensionStorage;
@@ -218,6 +221,10 @@ export class WalletManager {
     return `eoaAddress_${publicKey}`;
   }
 
+  private getEOANextIndexStorageKey(publicKey: string): string {
+    return `eoaNextIndex_${publicKey}`;
+  }
+
   /**
    * Save EOA address to localStorage by public key
    */
@@ -282,6 +289,32 @@ export class WalletManager {
     } catch (error) {
       consoleError('Failed to get EOA addresses from localStorage:', error as Error);
       return [];
+    }
+  }
+
+  private async getSavedNextEOAIndex(publicKey: string): Promise<number | null> {
+    try {
+      const storageKey = this.getEOANextIndexStorageKey(publicKey);
+      const saved = await getLocalData<number>(storageKey);
+      if (typeof saved === 'number' && Number.isInteger(saved) && saved >= 0) {
+        return saved;
+      }
+      return null;
+    } catch (error) {
+      consoleError('Failed to get saved next EOA index from localStorage:', error as Error);
+      return null;
+    }
+  }
+
+  private async saveNextEOAIndex(publicKey: string, nextIndex: number): Promise<void> {
+    try {
+      if (!Number.isInteger(nextIndex) || nextIndex < 0) {
+        return;
+      }
+      const storageKey = this.getEOANextIndexStorageKey(publicKey);
+      await setLocalData(storageKey, nextIndex);
+    } catch (error) {
+      consoleError('Failed to save next EOA index to localStorage:', error as Error);
     }
   }
 
@@ -447,6 +480,7 @@ export class WalletManager {
     if (targetPublicKey && accounts.length > 0) {
       const latest = accounts[accounts.length - 1];
       await this.saveEOAAddress(targetPublicKey, latest.address);
+      await this.saveNextEOAIndex(targetPublicKey, latest.index + 1);
     }
 
     return accounts;
@@ -493,6 +527,16 @@ export class WalletManager {
     }
 
     return null;
+  }
+
+  async ethSignDigest(digest: Uint8Array, address?: string): Promise<Uint8Array> {
+    const eoaAccount = await this.getEOAAccountSigner(address);
+    if (!eoaAccount) {
+      throw new Error('No EOA signer available for selected address');
+    }
+    const actualDigest =
+      digest instanceof Uint8Array ? digest : new Uint8Array(Object.values(digest as any));
+    return await eoaAccount.signDigest(actualDigest);
   }
 
   private async ensureWallet(): Promise<Wallet | null> {
@@ -556,6 +600,7 @@ export class WalletManager {
     }
     const address = await ethereumKey.ethAddress(index);
     if (
+      typeof ethereumKey.ethSign !== 'function' ||
       typeof ethereumKey.ethSignTransaction !== 'function' ||
       typeof ethereumKey.ethSignPersonalMessage !== 'function' ||
       typeof ethereumKey.ethSignTypedData !== 'function'
@@ -566,6 +611,7 @@ export class WalletManager {
     return {
       index,
       address,
+      signDigest: async (digest: Uint8Array) => await ethereumKey.ethSign!(digest, index),
       signTransaction: async (transaction: EthUnsignedTransaction) =>
         await ethereumKey.ethSignTransaction!(transaction, index),
       signPersonalMessage: async (message: HexLike) =>
@@ -589,20 +635,34 @@ export class WalletManager {
     const currentPubKey = userWalletService.getCurrentPubkey();
     if (currentPubKey) {
       await this.saveEOAAddress(currentPubKey, eoaAccount.address);
+      await this.saveNextEOAIndex(currentPubKey, eoaAccount.index + 1);
     }
   }
 
   private async deriveNextEOAAccount(
     wallet: Wallet
   ): Promise<{ index: number; account: EOAAccountSigner }> {
+    const currentPubKey = userWalletService.getCurrentPubkey();
+    const savedNextIndex = currentPubKey ? await this.getSavedNextEOAIndex(currentPubKey) : null;
     const eoaAddressMap = this.getEOAAddressMapSafe(wallet);
     logger.info('[extension-bg] deriveNextEOAAccount start', {
       cachedMapSize: eoaAddressMap.size,
       evmAccountsSize: wallet.getEVMAccounts().length,
+      savedNextIndex,
     });
-    if (eoaAddressMap.size > 0) {
-      const existingIndexes = Array.from(eoaAddressMap.keys());
-      const nextIndex = Math.max(...existingIndexes) + 1;
+
+    if (eoaAddressMap.size > 0 || typeof savedNextIndex === 'number') {
+      const existingIndexes = eoaAddressMap.size > 0 ? Array.from(eoaAddressMap.keys()) : [];
+      const derivedNextIndex = existingIndexes.length > 0 ? Math.max(...existingIndexes) + 1 : 0;
+      const nextIndex =
+        typeof savedNextIndex === 'number'
+          ? Math.max(derivedNextIndex, savedNextIndex)
+          : derivedNextIndex;
+      if (nextIndex >= WalletManager.MAX_EOA_PER_PROFILE) {
+        throw new Error(
+          `Maximum ${WalletManager.MAX_EOA_PER_PROFILE} EOA addresses per profile reached.`
+        );
+      }
       logger.info('[extension-bg] deriveNextEOAAccount using cached map', {
         existingIndexes,
         nextIndex,
@@ -623,7 +683,21 @@ export class WalletManager {
         .filter((accountAddress): accountAddress is string => typeof accountAddress === 'string')
         .map((accountAddress) => accountAddress.toLowerCase())
     );
-    for (let index = 0; index < WalletManager.EOA_DISCOVERY_INDEX_LIMIT; index += 1) {
+    const scanStart = Math.max(savedNextIndex ?? 0, 0);
+    if (scanStart >= WalletManager.MAX_EOA_PER_PROFILE) {
+      throw new Error(
+        `Maximum ${WalletManager.MAX_EOA_PER_PROFILE} EOA addresses per profile reached.`
+      );
+    }
+    const scanEnd = Math.max(
+      WalletManager.MAX_EOA_PER_PROFILE,
+      Math.min(
+        WalletManager.MAX_EOA_PER_PROFILE,
+        scanStart + WalletManager.EOA_DISCOVERY_INDEX_LIMIT
+      )
+    );
+
+    for (let index = scanStart; index < scanEnd; index += 1) {
       try {
         const account = await this.deriveEOAAccountByIndex(index);
         if (
@@ -663,6 +737,14 @@ export class WalletManager {
       throw new Error('Wallet is not initialized');
     }
     logger.info('[extension-bg] addNewEOAAddress start');
+
+    const currentPubKey = userWalletService.getCurrentPubkey();
+    const existingEOAs = await this.getEOAAccountsInfo(currentPubKey);
+    if (existingEOAs.length >= WalletManager.MAX_EOA_PER_PROFILE) {
+      throw new Error(
+        `Maximum ${WalletManager.MAX_EOA_PER_PROFILE} EOA addresses per profile reached.`
+      );
+    }
 
     // Capability-based check: only keys that can derive index > 0 support multi-EOA.
     try {

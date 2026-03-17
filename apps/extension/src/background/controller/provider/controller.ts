@@ -556,9 +556,9 @@ class ProviderController extends BaseController {
       maxFeePerGas,
       maxPriorityFeePerGas,
     } = transactionParams;
-    // Get the current network and EOA account info
+    // Get the current network and EOA account info for the transaction "from" address.
     const network = await Wallet.getNetwork();
-    const eoaInfo = await walletManager.getEOAAccountInfo();
+    const eoaInfo = await walletManager.getEOAAccountInfo(undefined, from);
 
     const parentAddress = await Wallet.getParentAddress();
     if (!parentAddress) {
@@ -637,7 +637,7 @@ class ProviderController extends BaseController {
     const rlpEncodedTransaction = this.convertHexToByteArray(signedTransaction.rawTransaction);
 
     // Call eoaCallContract with the encoded transaction
-    const result = await cadenceService.eoaCallContract(rlpEncodedTransaction, eoaInfo.address);
+    const result = await cadenceService.eoaCallContract(rlpEncodedTransaction, from);
 
     // Send message to close approval popup after successful transaction
     chrome.runtime.sendMessage({

@@ -121,6 +121,7 @@ type AccountListingProps = {
   showActiveAccount?: boolean;
   itemSx?: React.CSSProperties;
   ignoreHidden?: boolean;
+  isCreatingEoaAddress?: boolean;
 };
 
 export const AccountListing = ({
@@ -136,6 +137,7 @@ export const AccountListing = ({
   showActiveAccount = false,
   itemSx,
   ignoreHidden = false,
+  isCreatingEoaAddress = false,
 }: AccountListingProps) => {
   // Get the EVM account for the active account provided it's a main account
   const evmAccount = activeParentAccount?.evmAccount;
@@ -294,6 +296,31 @@ export const AccountListing = ({
           />
         </Box>
       ))}
+      {isCreatingEoaAddress && (
+        <Box
+          sx={{
+            ...(itemSx || {}),
+          }}
+        >
+          <AccountCard
+            network={network}
+            account={{
+              address: '',
+              chain: network === 'mainnet' ? 747 : 545,
+              id: -1,
+              name: chrome.i18n.getMessage('Add_EOA_Address_Sidebar') || 'Add EOA Address',
+              icon: '',
+              color: '#6B7280',
+            }}
+            active={false}
+            showCard={false}
+            showLink={false}
+            isPending={true}
+            spinning={true}
+            data-testid="pending-eoa-account"
+          />
+        </Box>
+      )}
 
       {/* Loading state */}
       {accountList === undefined && (

@@ -2,6 +2,7 @@ import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { CadenceService } from '@onflow/frw-cadence';
+import { logger } from '@onflow/frw-context';
 import { BIP44_PATHS } from '@onflow/frw-wallet';
 import { captureException } from '@sentry/react';
 import * as ethUtil from 'ethereumjs-util';
@@ -71,7 +72,6 @@ import {
   withPrefix,
   getCompatibleHashAlgo,
   consoleError,
-  consoleWarn,
   getEmojiByIndex,
   getActiveAccountTypeForAddress,
   tupleToPrivateKey,
@@ -145,6 +145,14 @@ class UserWallet {
 
     // Initialize the account loaders
     initAccountLoaders();
+
+    // Startup hydration: when extension/background boots with an existing active profile,
+    // eagerly preload accounts so sidebar has EVM/EOA data on first open.
+    if (keyringService.isUnlocked() && this.store.currentPubkey) {
+      this.preloadAllAccounts(this.store.network, this.store.currentPubkey).catch((error) => {
+        logger.warn('Failed to preload accounts during userWallet init:', error);
+      });
+    }
   };
 
   clear = async () => {
@@ -340,6 +348,9 @@ class UserWallet {
     try {
       // Get the main accounts
       const allAccounts = await preloadAllAccountsWithPubKey(network, pubkey);
+
+      // Ensure UI hooks subscribed to cached data pick up the fresh startup preload immediately.
+      triggerRefresh(mainAccountsKey(network, pubkey));
 
       // Get the active accounts
       await this.loadActiveAccounts(network, pubkey);
@@ -1109,11 +1120,7 @@ class UserWallet {
         errorCode = match ? parseInt(match[1], 10) : undefined;
       }
 
-      consoleWarn({
-        msg: 'transactionError',
-        errorMessage,
-        errorCode,
-      });
+      logger.warn('transactionError', { errorMessage, errorCode });
 
       // Update the pending transaction to show error state
       await transactionActivityService.updatePendingError(network, address, txId, errorMessage);
@@ -1647,7 +1654,7 @@ const preloadAllAccountsWithPubKey = async (
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
-    consoleWarn(`No main accounts loaded for pubkey: ${pubKey}`);
+    logger.warn(`No main accounts loaded for pubkey: ${pubKey}`);
     return [];
   }
 

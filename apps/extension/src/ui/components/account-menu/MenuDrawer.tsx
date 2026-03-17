@@ -8,12 +8,13 @@ import {
   ListItemIcon,
   Typography,
 } from '@mui/material';
+import { logger } from '@onflow/frw-context';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { MAX_MAIN_ACCOUNTS_PER_PROFILE } from '@/shared/constant';
 import { type UserInfoResponse, type MainAccount, type WalletAccount } from '@/shared/types';
-import { consoleError, consoleWarn, hasReachedFlowAddressLimit } from '@/shared/utils';
+import { consoleError, hasReachedFlowAddressLimit } from '@/shared/utils';
 import lock from '@/ui/assets/svg/sidebar-lock.svg';
 import plus from '@/ui/assets/svg/sidebar-plus.svg';
 import { AccountListing } from '@/ui/components/account/account-listing';
@@ -53,6 +54,7 @@ const MenuDrawer = ({
   mainAddressLoading,
   noAddress,
 }: MenuDrawerProps) => {
+  const MAX_EOA_ADDRESSES_PER_PROFILE = 5;
   const wallet = useWallet();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -65,6 +67,28 @@ const MenuDrawer = ({
   const currentId = useCurrentId();
   const pendingAccountTransactions = usePendingAccountCreationTransactions(network, currentId);
   const hasPendingCreation = (pendingAccountTransactions?.length ?? 0) > 0;
+  const eoaAddressCount = React.useMemo(() => {
+    if (!walletList || walletList.length === 0) {
+      return 0;
+    }
+    const addressSet = new Set<string>();
+    for (const account of walletList) {
+      const eoas =
+        Array.isArray(account.eoaAccounts) && account.eoaAccounts.length > 0
+          ? account.eoaAccounts
+          : account.eoaAccount
+            ? [account.eoaAccount]
+            : [];
+      for (const eoa of eoas) {
+        if (eoa?.address) {
+          addressSet.add(eoa.address.toLowerCase());
+        }
+      }
+    }
+    return addressSet.size;
+  }, [walletList]);
+  const hasReachedEoaLimit = eoaAddressCount >= MAX_EOA_ADDRESSES_PER_PROFILE;
+  const canOpenAddAccountPopup = canCreateNewAccount && (canAddMoreAccounts || !hasReachedEoaLimit);
   const prevHasPendingCreationRef = useRef(hasPendingCreation);
   // TODO: Uncomment this when we have the import existing account feature flag
   const canImportExistingAccount = false; // useFeatureFlag('import_existing_account');
@@ -112,15 +136,15 @@ const MenuDrawer = ({
 
   const addEoaAccount = async () => {
     if (isCreatingEoa) {
-      consoleWarn('[extension-ui] addEoaAccount ignored: already creating');
+      logger.warn('[extension-ui] addEoaAccount ignored: already creating');
       return;
     }
     setIsCreatingEoa(true);
     try {
-      consoleWarn('[extension-ui] addEoaAccount clicked: calling wallet.addNewEOAAddress');
+      logger.warn('[extension-ui] addEoaAccount clicked: calling wallet.addNewEOAAddress');
       setShowAddAccount(false);
       const created = await wallet.addNewEOAAddress();
-      consoleWarn('[extension-ui] addEoaAccount success', created);
+      logger.warn('[extension-ui] addEoaAccount success', created);
     } catch (error) {
       consoleError('Failed to create EOA address:', error);
       setErrorMessage(error.message || 'Failed to create EOA address. Please try again.');
@@ -222,6 +246,7 @@ const MenuDrawer = ({
             onEnableEvmClick={handleEnableEvmClick}
             onMigrationClick={handleMigrationClick}
             showActiveAccount={true}
+            isCreatingEoaAddress={isCreatingEoa}
           />
         </Box>
         <Box sx={{ padding: '0 16px', flex: 1 }}></Box>
@@ -238,8 +263,7 @@ const MenuDrawer = ({
             paddingTop: '8px',
           }}
         >
-          {canCreateNewAccount &&
-            canAddMoreAccounts &&
+          {canOpenAddAccountPopup &&
             (isCreating ? (
               <ListItem disablePadding>
                 <ListItemButton sx={{ padding: '8px 16px', margin: '0', borderRadius: '0' }}>
@@ -297,8 +321,8 @@ const MenuDrawer = ({
               addAccount={addAccount}
               addEoaAddress={addEoaAccount}
               importExistingAccount={canImportExistingAccount}
-              disableCreateAccount={hasPendingCreation}
-              disableAddEoaAddress={isCreatingEoa}
+              disableCreateAccount={hasPendingCreation || !canAddMoreAccounts}
+              disableAddEoaAddress={isCreatingEoa || hasReachedEoaLimit}
             />
           )}
         </Box>

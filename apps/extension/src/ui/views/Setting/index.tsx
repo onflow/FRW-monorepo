@@ -33,6 +33,7 @@ import { useProfiles } from '@/ui/hooks/useProfileHook';
 // Feature flags
 const SHOW_DEVICES = false;
 const SettingTab = () => {
+  const MAX_EOA_ADDRESSES_PER_PROFILE = 5;
   const usewallet = useWallet();
   const {
     profileIds,
@@ -58,6 +59,28 @@ const SettingTab = () => {
     MAX_MAIN_ACCOUNTS_PER_PROFILE
   );
   const hasPendingCreation = (pendingAccountTransactions?.length ?? 0) > 0;
+  const eoaAddressCount = React.useMemo(() => {
+    if (!walletList || walletList.length === 0) {
+      return 0;
+    }
+    const addressSet = new Set<string>();
+    for (const account of walletList) {
+      const eoas =
+        Array.isArray(account.eoaAccounts) && account.eoaAccounts.length > 0
+          ? account.eoaAccounts
+          : account.eoaAccount
+            ? [account.eoaAccount]
+            : [];
+      for (const eoa of eoas) {
+        if (eoa?.address) {
+          addressSet.add(eoa.address.toLowerCase());
+        }
+      }
+    }
+    return addressSet.size;
+  }, [walletList]);
+  const hasReachedEoaLimit = eoaAddressCount >= MAX_EOA_ADDRESSES_PER_PROFILE;
+  const canOpenAddAccountPopup = canCreateNewAccount && (canAddMoreAccounts || !hasReachedEoaLimit);
 
   const checkIsKeyphrase = useCallback(async () => {
     const keyrings = await usewallet.checkMnemonics();
@@ -393,7 +416,7 @@ const SettingTab = () => {
             text={chrome.i18n.getMessage('Add_Profile') || 'Add Profile'}
             endIcon={<IconEnd size={12} />}
           />
-          {canCreateNewAccount && canAddMoreAccounts && (
+          {canOpenAddAccountPopup && (
             <>
               <Divider sx={{ width: '90%' }} variant="middle" />
               <SettingsListItem
@@ -451,8 +474,8 @@ const SettingTab = () => {
         addEoaAddress={createEoaAddressFromPopup}
         importExistingAccount={false}
         modalVariant="profile"
-        disableCreateAccount={hasPendingCreation}
-        disableAddEoaAddress={isCreatingEoaAddress}
+        disableCreateAccount={hasPendingCreation || !canAddMoreAccounts}
+        disableAddEoaAddress={isCreatingEoaAddress || hasReachedEoaLimit}
       />
     </div>
   );
