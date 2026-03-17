@@ -1014,6 +1014,10 @@ class UserWallet {
 
     try {
       transactionActivityService.setPending(network, address, txId, icon, title);
+      // Ensure FCL is configured for the correct network before subscribing.
+      // unlock() forces FCL to 'mainnet'; without this call, testnet transactions
+      // would never be found and onceExecuted/onceSealed would never resolve.
+      await fclEnsureNetwork(network);
       const fclTx = fcl.tx(txId);
 
       // Wait for the transaction to be executed
@@ -1169,7 +1173,13 @@ class UserWallet {
    */
   resumePendingTransactions = async (): Promise<void> => {
     try {
-      const network = await this.getNetwork();
+      // Ensure FCL is configured for the correct network. At SW startup,
+      // openapiService.init() calls setupFcl() before userWalletService.init()
+      // loads the persisted store, so FCL may be configured for 'mainnet' even
+      // when the wallet is on 'testnet'. Re-running setupFcl() here ensures FCL
+      // uses the right endpoints before we call onceExecuted/onceSealed.
+      await this.setupFcl();
+      const network = this.getNetwork();
       const address = await this.getCurrentAddress();
       if (!network || !address) {
         return;
@@ -1194,6 +1204,7 @@ class UserWallet {
     if (!txId || !txId.match(/^0?x?[0-9a-fA-F]{64}/)) {
       return;
     }
+    await fclEnsureNetwork(network);
     const fclTx = fcl.tx(txId);
     const txStatusExecuted = await fclTx.onceExecuted();
     await transactionActivityService.updatePending(network, address, txId, txStatusExecuted);
