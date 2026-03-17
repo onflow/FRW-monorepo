@@ -23,8 +23,9 @@ enum RNBridge {
         case onboarding = "onboarding"
         case receive = "receive"
         case activity = "activity"
+        case keystoreMigration = "keystore-migration"
         case migration = "migration"
-        case claimTokens = "ClaimTokens"
+        case claimTokens = "claimTokens"
     }
 
     enum AccountTypeType: String, Codable {
