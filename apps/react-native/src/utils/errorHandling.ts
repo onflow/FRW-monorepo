@@ -99,7 +99,7 @@ export function reportErrorToInstabug(error: Error): void {
       return;
     }
 
-    const { CrashReporting, NonFatalErrorLevel } = require('instabug-reactnative');
+    const { CrashReporting, NonFatalErrorLevel } = require('@luciq/react-native');
     if (CrashReporting?.reportError) {
       const errorType = classifyError(error);
       const level =
@@ -155,7 +155,7 @@ export function showBugReportUI(error?: Error): void {
       return;
     }
 
-    const { BugReporting, ReportType } = require('instabug-reactnative');
+    const { BugReporting, ReportType } = require('@luciq/react-native');
     if (!BugReporting?.show) {
       platform.log('warn', '[Error Handler] BugReporting.show not available');
       return;

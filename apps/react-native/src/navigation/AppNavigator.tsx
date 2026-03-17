@@ -36,6 +36,7 @@ import {
   ImportProfileScreen,
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
+  KeystoreMigrationTipScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
 import {
@@ -120,6 +121,7 @@ export type RootStackParamList = {
   KeyRotationMnemonic: {
     newKeyInfo: NewKeyInfo;
   };
+  KeystoreMigrationTip: undefined;
   // Migration screens
   MigrationInfo: undefined;
   Migration: MigrationScreenProps | undefined;
@@ -728,6 +730,27 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                     platform.closeRN();
                   }}
                   onBack={() => nav.goBack()}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen
+              name="KeystoreMigrationTip"
+              options={{
+                headerTitle: '',
+                headerLeft: () => null,
+                headerStyle: {
+                  backgroundColor: theme.bg.val,
+                },
+              }}
+            >
+              {() => (
+                <KeystoreMigrationTipScreen
+                  onContinue={async () => {
+                    await platform.keystoreMigration();
+                  }}
+                  onSkip={() => {
+                    platform.closeRN();
+                  }}
                 />
               )}
             </Stack.Screen>

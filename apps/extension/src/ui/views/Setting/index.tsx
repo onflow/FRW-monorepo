@@ -1,14 +1,6 @@
 import AndroidIcon from '@mui/icons-material/Android';
 import AppleIcon from '@mui/icons-material/Apple';
-import {
-  Alert,
-  Box,
-  Divider,
-  IconButton,
-  List,
-  Snackbar,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Divider, IconButton, List, Snackbar, Typography } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
