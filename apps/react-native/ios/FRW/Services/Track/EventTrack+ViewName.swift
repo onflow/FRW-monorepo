@@ -5,13 +5,13 @@
 //  Created by cat on 5/14/25.
 //
 
-import InstabugSDK
+import LuciqSDK
 import SwiftUI
 
 extension View {
     @ViewBuilder
     func tracedView(_ view: some View) -> some View {
-        instabugTracedView(name: viewClassName(view))
+        luciqTracedView(name: viewClassName(view))
     }
 
     func viewClassName(_ view: Any) -> String {

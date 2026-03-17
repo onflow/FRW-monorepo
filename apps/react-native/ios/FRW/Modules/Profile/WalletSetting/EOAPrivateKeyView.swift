@@ -86,7 +86,7 @@ struct EOAPrivateKeyView: RouteableView {
                     .cornerRadius(16)
                     .onTapGesture {}
                     .animation(.easeInOut, value: isBlur)
-                    .instabug_privateView()
+                    .luciq_privateView()
 
                 } header: {
                     HStack {
