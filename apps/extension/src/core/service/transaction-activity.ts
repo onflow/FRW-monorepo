@@ -616,6 +616,28 @@ class TransactionActivity {
     return this.getPendingList(network, address);
   };
 
+  /**
+   * Returns Cadence txIds from cached non-terminal transactions that need FCL monitoring
+   * re-registered after a service worker restart. Only items with a cadenceTxId and a
+   * non-terminal status (i.e., not SEALED/EXPIRED/ERROR) are returned.
+   */
+  getRecoverableCadenceTxIds = async (network: string, address: string): Promise<string[]> => {
+    const TERMINAL_STATUSES = new Set(['SEALED', 'EXPIRED', 'ERROR']);
+    const existingTxStore = await getInvalidData<TransferListStore>(
+      transferListKey(network, address, '0', '15')
+    );
+    if (!existingTxStore?.list?.length) {
+      return [];
+    }
+    const recoverableIds = new Set<string>();
+    for (const item of existingTxStore.list) {
+      if (item.cadenceTxId && !TERMINAL_STATUSES.has((item.status ?? '').toUpperCase())) {
+        recoverableIds.add(item.cadenceTxId);
+      }
+    }
+    return Array.from(recoverableIds);
+  };
+
   getCount = async (
     network: string,
     address: string,

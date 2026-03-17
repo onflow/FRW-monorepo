@@ -1157,6 +1157,51 @@ class UserWallet {
     }
   };
 
+  /**
+   * Re-registers FCL monitoring for any pending Cadence transactions that were in
+   * progress before a service worker restart. This is necessary because FCL
+   * onceExecuted/onceSealed promise chains are lost when the SW restarts, leaving
+   * items permanently stuck in a non-terminal status (PENDING, Executed, Finalized).
+   *
+   * Unlike listenTransaction, this does NOT call setPending — the cached entry already
+   * exists. It only re-attaches FCL event subscriptions so updatePending can advance
+   * the status once on-chain confirmation arrives.
+   */
+  resumePendingTransactions = async (): Promise<void> => {
+    try {
+      const network = await this.getNetwork();
+      const address = await this.getCurrentAddress();
+      if (!network || !address) {
+        return;
+      }
+      const cadenceTxIds = await transactionActivityService.getRecoverableCadenceTxIds(
+        network,
+        address
+      );
+      for (const txId of cadenceTxIds) {
+        this.reattachFclMonitoring(network, address, txId).catch(() => {});
+      }
+    } catch {
+      // Do not throw — SW startup should not fail due to recovery errors
+    }
+  };
+
+  private reattachFclMonitoring = async (
+    network: string,
+    address: string,
+    txId: string
+  ): Promise<void> => {
+    if (!txId || !txId.match(/^0?x?[0-9a-fA-F]{64}/)) {
+      return;
+    }
+    const fclTx = fcl.tx(txId);
+    const txStatusExecuted = await fclTx.onceExecuted();
+    await transactionActivityService.updatePending(network, address, txId, txStatusExecuted);
+    const txStatusSealed = await fclTx.onceSealed();
+    await transactionActivityService.updatePending(network, address, txId, txStatusSealed);
+    await transactionActivityService.pollTransferList(address, txId, network);
+  };
+
   authorizationFunction = async (account) => {
     // authorization function need to return an account
     const address = fcl.withPrefix(await this.getParentAddress());
