@@ -281,6 +281,8 @@ extension RNBridge.InitialProps {
       return .migration
     case .claimTokens:
         return .claimTokens
+    case .keystoreMigration:
+        return .selectAssets
     }
   }
 }
