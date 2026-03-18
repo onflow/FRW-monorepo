@@ -245,6 +245,11 @@ class PlatformImpl implements PlatformSpec {
     return env.GO_API_URL;
   }
 
+  async getCadenceInbox(): Promise<boolean> {
+    const env = NativeFRWBridge.getEnv();
+    return env.CADENCE_INBOX || false;
+  }
+
   getInstabugToken(): string {
     try {
       const env = NativeFRWBridge.getEnv();

@@ -55,6 +55,16 @@ function formatUsd(value: number): string {
   return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+function formatTokenAmount(amount: string): string {
+  if (!amount.includes('.')) return amount;
+  const [integer, decimal] = amount.split('.');
+  let end = decimal.length;
+  while (end > 0 && decimal[end - 1] === '0') {
+    end--;
+  }
+  return end > 0 ? `${integer}.${decimal.slice(0, end)}` : integer;
+}
+
 export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
   visible,
   item,
@@ -171,7 +181,7 @@ export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({
                 {/* Amount + USD */}
                 <YStack items="flex-end" gap="$1">
                   <Text fontSize={15} fontWeight="600" color="$text1">
-                    {item.amount} {item.symbol}
+                    {formatTokenAmount(item.amount)} {item.symbol}
                   </Text>
                   {item.usdValue !== undefined && (
                     <Text fontSize={13} color="$text2">

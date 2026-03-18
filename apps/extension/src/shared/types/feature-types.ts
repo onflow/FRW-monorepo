@@ -9,7 +9,8 @@ export type FeatureFlagKey =
   | 'import_existing_account'
   | 'vault_entrance'
   | 'blocto_key_rotation'
-  | 'coa_migration_v2';
+  | 'coa_migration_v2'
+  | 'cadence_inbox';
 
 // Feature flags
 export type FeatureFlags = {

@@ -27,6 +27,7 @@ interface EnvironmentVariables {
   GO_API_URL: string;
   INSTABUG_TOKEN: string;
   MIXPANEL_TOKEN?: string;
+  CADENCE_INBOX?: boolean;
 }
 
 interface Currency {
