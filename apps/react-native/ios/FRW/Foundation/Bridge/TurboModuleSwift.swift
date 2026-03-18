@@ -305,13 +305,15 @@ extension TurboModuleSwift {
     }
 
     @objc
-    static func getEnv() -> [String: String] {
-        return [
-            "NODE_API_URL": Config.get(.lilicoWeb).removeSuffix("/api/"),
-            "GO_API_URL": Config.get(.lilico),
-            "INSTABUG_TOKEN": ServiceConfig.luciqRNToken,
-            "MIXPANEL_TOKEN": ServiceConfig.mixpanelRNToken,
-        ]
+    static func getEnv() -> [String: Any] {
+        let model = RNBridge.EnvironmentVariables(
+            NODE_API_URL: Config.get(.lilicoWeb).removeSuffix("/api/"),
+            GO_API_URL: Config.get(.lilico),
+            INSTABUG_TOKEN: ServiceConfig.luciqRNToken,
+            MIXPANEL_TOKEN: ServiceConfig.mixpanelRNToken,
+            CADENCE_INBOX: RemoteConfigManager.shared.config?.features.cadenceInbox ?? false
+        )
+        return (try? model.toDictionary()) ?? [:]
     }
 
     @objc

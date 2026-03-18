@@ -122,6 +122,7 @@ enum RNBridge {
         let GO_API_URL: String
         let INSTABUG_TOKEN: String
         let MIXPANEL_TOKEN: String?
+        let CADENCE_INBOX: Bool
     }
 
     struct Currency: Codable {
