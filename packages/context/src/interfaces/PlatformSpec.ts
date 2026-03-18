@@ -48,7 +48,6 @@ export interface PlatformSpec extends KeyRotationDependencies {
   getApiEndpoint(): string;
   getGoApiEndpoint(): string;
   getInstabugToken(): string;
-  getCadenceInbox(): boolean;
 
   // Storage, cache, and navigation access
   storage(): Storage;
