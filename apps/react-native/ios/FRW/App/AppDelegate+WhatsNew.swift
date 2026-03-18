@@ -13,7 +13,7 @@ extension AppDelegate {
           let response = try await WhatsNewService.fetchWhatsNewForIOS()
           if let response {
               let trimmedContent = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-              guard !trimmedContent.isEmpty || !response.actions.isEmpty else {
+              guard !trimmedContent.isEmpty else {
                   log.info("[WhatsNew] Empty payload, skip popup")
                   return
               }
