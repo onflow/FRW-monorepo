@@ -34,7 +34,7 @@ interface TransactionStore {
  * Maps FCL transaction status strings to UI format
  * This replaces the previous i18n.getMessage() calls
  */
-const mapTransactionStatus = (statusString: string): string => {
+const mapTransactionStatus = (statusString: unknown): string => {
   const statusMap: Record<string, string> = {
     PENDING: 'PENDING',
     EXECUTED: 'Executed',
@@ -44,7 +44,64 @@ const mapTransactionStatus = (statusString: string): string => {
     SUCCESS: 'success',
   };
 
+  if (typeof statusString !== 'string' || statusString.length === 0) {
+    return 'PENDING';
+  }
+
   return statusMap[statusString.toUpperCase()] || statusString;
+};
+
+const extractStatusText = (transactionStatus: TransactionStatus): string => {
+  const statusFromFcl = (transactionStatus as { statusString?: unknown }).statusString;
+  if (typeof statusFromFcl === 'string' && statusFromFcl.length > 0) {
+    return statusFromFcl;
+  }
+  const statusFromRest = (transactionStatus as { status?: unknown }).status;
+  if (typeof statusFromRest === 'string' && statusFromRest.length > 0) {
+    return statusFromRest;
+  }
+  return 'PENDING';
+};
+
+const extractStatusCode = (transactionStatus: TransactionStatus): number => {
+  const codeFromFcl = (transactionStatus as { statusCode?: unknown }).statusCode;
+  if (typeof codeFromFcl === 'number') {
+    return codeFromFcl;
+  }
+  const codeFromRest = (transactionStatus as { status_code?: unknown }).status_code;
+  if (typeof codeFromRest === 'number') {
+    return codeFromRest;
+  }
+  return 0;
+};
+
+const extractEvmHashFromCadencePayload = (payload?: string): string | null => {
+  if (!payload || typeof payload !== 'string') {
+    return null;
+  }
+  try {
+    const decoded = Buffer.from(payload, 'base64').toString('utf8').trim();
+    const parsed = JSON.parse(decoded) as {
+      value?: {
+        fields?: Array<{
+          name?: string;
+          value?: {
+            value?: Array<{ value?: string }>;
+          };
+        }>;
+      };
+    };
+    const hashField = parsed?.value?.fields?.find((field) => field?.name === 'hash');
+    const bytes = (hashField?.value?.value ?? [])
+      .map((item) => Number(item?.value))
+      .filter((num) => Number.isFinite(num) && num >= 0 && num <= 255);
+    if (bytes.length === 0) {
+      return null;
+    }
+    return `0x${Buffer.from(bytes).toString('hex')}`;
+  } catch {
+    return null;
+  }
 };
 
 class TransactionActivity {
@@ -245,8 +302,8 @@ class TransactionActivity {
             ...txStore.list[storeItemIndex],
           } as TransferItem);
 
-    txItem.status = mapTransactionStatus(transactionStatus.statusString);
-    txItem.error = transactionStatus.statusCode === 1;
+    txItem.status = mapTransactionStatus(extractStatusText(transactionStatus));
+    txItem.error = extractStatusCode(transactionStatus) === 1;
 
     const evmTxIds: string[] = transactionStatus.events?.reduce(
       (transactionIds: string[], event) => {
@@ -257,6 +314,13 @@ class TransactionActivity {
             return transactionIds;
           }
           transactionIds.push(hash);
+        } else if (event.type.includes('EVM')) {
+          const hash = extractEvmHashFromCadencePayload(
+            (event as { payload?: string | undefined }).payload
+          );
+          if (hash && !transactionIds.includes(hash)) {
+            transactionIds.push(hash);
+          }
         }
         return transactionIds;
       },
