@@ -298,6 +298,10 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return val ?? true;
   }
 
+  async getCadenceInbox(): Promise<boolean> {
+    return (await this.walletController?.getFeatureFlag?.('cadence_inbox')) ?? false;
+  }
+
   async getRecentContacts(): Promise<RecentContactsResponse> {
     return await this.walletController.getRecentContacts();
   }

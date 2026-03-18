@@ -199,6 +199,9 @@ export class FlowToFlowTokenStrategy implements TransferStrategy {
       amount: formattedAmount,
     });
 
+    if (_helpers?.featureFlags?.cadence_inbox) {
+      return await this.cadenceService.transferTokensV4(flowIdentifier, receiver, formattedAmount);
+    }
     return await this.cadenceService.transferTokensV3(flowIdentifier, receiver, formattedAmount);
   }
 }
