@@ -1490,13 +1490,15 @@ export class WalletController extends BaseController {
     sendNotification = true,
     title = chrome.i18n.getMessage('Transaction__Sealed'),
     body = '',
-    icon = chrome.runtime.getURL('./images/icon-64.png')
+    icon = chrome.runtime.getURL('./images/icon-64.png'),
+    sourceAddress?: string
   ) => {
     return await userWalletService.listenTransaction(txId, {
       sendNotification,
       title,
       body,
       icon,
+      sourceAddress,
       notificationCallback: (notificationData) => {
         notification.create(
           notificationData.url,

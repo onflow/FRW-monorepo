@@ -2,6 +2,7 @@ import * as secp from '@noble/secp256k1';
 import * as fcl from '@onflow/fcl';
 import type { Account as FclAccount } from '@onflow/fcl';
 import { CadenceService } from '@onflow/frw-cadence';
+import { logger } from '@onflow/frw-context';
 import { BIP44_PATHS } from '@onflow/frw-wallet';
 import { captureException } from '@sentry/react';
 import * as ethUtil from 'ethereumjs-util';
@@ -118,6 +119,7 @@ interface TransactionMonitoringOptions {
   title?: string;
   body?: string;
   icon?: string;
+  sourceAddress?: string;
   notificationCallback?: (notification: TransactionNotification) => void;
   errorCallback?: (error: TransactionErrorInfo) => void;
 }
@@ -999,6 +1001,7 @@ class UserWallet {
       title = '',
       body = '',
       icon = '',
+      sourceAddress,
       notificationCallback,
       errorCallback,
     } = options;
@@ -1007,25 +1010,136 @@ class UserWallet {
       return;
     }
 
-    const address = (await this.getCurrentAddress()) || '0x';
+    const currentAddress = (await this.getCurrentAddress()) || '0x';
+    const primaryAddress = sourceAddress || currentAddress;
+    const trackedAddresses = Array.from(
+      new Set([primaryAddress, currentAddress].filter(Boolean))
+    ).filter((address): address is string => {
+      return isValidFlowAddress(address) || isValidEthereumAddress(address);
+    });
+    if (trackedAddresses.length === 0) {
+      trackedAddresses.push(primaryAddress);
+    }
+
     const network = await this.getNetwork();
     const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
     let txHash = txId;
+    const normalizedTxId = txId.replace(/^0x/i, '');
+
+    const fetchTransactionResult = async (): Promise<{
+      status?: string;
+      status_code?: number;
+      events?: any[];
+    }> => {
+      const response = await fetch(
+        `https://rest-${network}.onflow.org/v1/transaction_results/${normalizedTxId}`
+      );
+      if (!response.ok) {
+        throw new Error(`transaction_results request failed: ${response.status}`);
+      }
+      return (await response.json()) as {
+        status?: string;
+        status_code?: number;
+        events?: any[];
+      };
+    };
+
+    const waitForStatusWithRestFallback = async (target: 'executed' | 'sealed'): Promise<any> => {
+      const startTime = Date.now();
+      const timeoutMs = target === 'executed' ? 45_000 : 75_000;
+      while (Date.now() - startTime < timeoutMs) {
+        try {
+          const result = await fetchTransactionResult();
+          const status = (result.status || '').toUpperCase();
+          const isExecutedOrBeyond =
+            status === 'EXECUTED' ||
+            status === 'SEALED' ||
+            status === 'FINALIZED' ||
+            status === 'EXPIRED';
+          const isSealedOrTerminal = status === 'SEALED' || status === 'EXPIRED';
+          if (
+            (target === 'executed' && isExecutedOrBeyond) ||
+            (target === 'sealed' && isSealedOrTerminal)
+          ) {
+            logger.info('[userWallet] rest fallback status reached', {
+              txId,
+              target,
+              status: result.status,
+              status_code: result.status_code,
+            });
+            return {
+              status: result.status,
+              status_code: result.status_code,
+              events: result.events || [],
+            } as any;
+          }
+        } catch (error) {
+          logger.warn('[userWallet] rest fallback poll failed', { txId, target, error });
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+      throw new Error(`Timeout waiting for ${target} status via REST fallback`);
+    };
+
+    const waitForFclStatusWithFallback = async (
+      stage: 'executed' | 'sealed',
+      fclPromise: Promise<any>
+    ): Promise<any> => {
+      const timeoutMs = stage === 'executed' ? 20_000 : 30_000;
+      logger.info('[userWallet] waiting for fcl status', { txId, stage, timeoutMs });
+      try {
+        const result = await Promise.race([
+          fclPromise,
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error(`FCL ${stage} timeout after ${timeoutMs}ms`)),
+              timeoutMs
+            )
+          ),
+        ]);
+        logger.info('[userWallet] fcl status resolved', {
+          txId,
+          stage,
+          statusString: (result as any)?.statusString,
+          status: (result as any)?.status,
+          status_code: (result as any)?.status_code,
+        });
+        return result;
+      } catch (error) {
+        logger.warn('[userWallet] fcl status wait failed, switching to REST fallback', {
+          txId,
+          stage,
+          error,
+        });
+        return await waitForStatusWithRestFallback(stage);
+      }
+    };
 
     try {
-      transactionActivityService.setPending(network, address, txId, icon, title);
+      logger.info('[userWallet] listenTransaction start', {
+        txId,
+        network,
+        sourceAddress,
+        currentAddress,
+        trackedAddresses,
+      });
+      await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.setPending(network, address, txId, icon, title)
+        )
+      );
       const fclTx = fcl.tx(txId);
 
       // Wait for the transaction to be executed
-      const txStatusExecuted = await fclTx.onceExecuted();
+      const txStatusExecuted = await waitForFclStatusWithFallback('executed', fclTx.onceExecuted());
 
       // Update the pending transaction with the transaction status
-      txHash = await transactionActivityService.updatePending(
-        network,
-        address,
-        txId,
-        txStatusExecuted
+      const executedHashes = await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.updatePending(network, address, txId, txStatusExecuted)
+        )
       );
+      txHash = executedHashes.find(Boolean) || txHash;
 
       // Track the transaction result
       analyticsService.track('transaction_result', {
@@ -1076,22 +1190,26 @@ class UserWallet {
       }
 
       // Refresh the account balance
-      triggerRefresh(coinListKey(network, address, currency));
+      trackedAddresses.forEach((address) => {
+        triggerRefresh(coinListKey(network, address, currency));
+      });
       // Wait for the transaction to be sealed
-      const txStatusSealed = await fclTx.onceSealed();
+      const txStatusSealed = await waitForFclStatusWithFallback('sealed', fclTx.onceSealed());
 
       // Update the pending transaction with the transaction status
-      txHash = await transactionActivityService.updatePending(
-        network,
-        address,
-        txId,
-        txStatusSealed
+      const sealedHashes = await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.updatePending(network, address, txId, txStatusSealed)
+        )
       );
+      txHash = sealedHashes.find(Boolean) || txHash;
 
       // Refresh the account balance after sealed status - just to be sure
-      triggerRefresh(coinListKey(network, address, currency));
-      // Refresh inbox data (unclaimed assets may have changed)
-      triggerRefresh(inboxDataKey(network, address));
+      trackedAddresses.forEach((address) => {
+        triggerRefresh(coinListKey(network, address, currency));
+        // Refresh inbox data (unclaimed assets may have changed)
+        triggerRefresh(inboxDataKey(network, address));
+      });
     } catch (err: unknown) {
       // An error has occurred while listening to the transaction
       let errorMessage = 'unknown error';
@@ -1119,7 +1237,11 @@ class UserWallet {
       });
 
       // Update the pending transaction to show error state
-      await transactionActivityService.updatePendingError(network, address, txId, errorMessage);
+      await Promise.all(
+        trackedAddresses.map((address) =>
+          transactionActivityService.updatePendingError(network, address, txId, errorMessage)
+        )
+      );
 
       // Track the transaction error
       analyticsService.track('transaction_result', {
@@ -1136,7 +1258,7 @@ class UserWallet {
         },
         extra: {
           txId,
-          address,
+          address: primaryAddress,
           errorMessage,
           errorCode,
         },
@@ -1152,7 +1274,11 @@ class UserWallet {
     } finally {
       if (txHash) {
         // Start polling for transfer list updates
-        await transactionActivityService.pollTransferList(address, txHash, network);
+        await Promise.all(
+          trackedAddresses.map((address) =>
+            transactionActivityService.pollTransferList(address, txHash, network)
+          )
+        );
       }
     }
   };
