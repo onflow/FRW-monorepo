@@ -457,6 +457,25 @@ class TransactionActivity {
     );
     const existingTxList = existingTxStore?.list || [];
     const existingPendingList = await this.getPendingList(network, address);
+
+    // If the in-memory pending list is empty (e.g., service worker was restarted),
+    // recover any in-progress items from the cached list so they are not lost while
+    // the API has not yet indexed those transactions.
+    // This includes PENDING, Executed, and Finalized states — all of which represent
+    // transactions that are not yet confirmed by the indexer. Recovering only PENDING
+    // items misses the case where updatePending already advanced the status before
+    // the SW restarted (common for EVM/Cadence hybrid transactions like withdrawCoa).
+    const TERMINAL_STATUSES = new Set(['SEALED', 'EXPIRED', 'ERROR']);
+    if (existingPendingList.length === 0 && existingTxList.length > 0) {
+      const cachedPendingItems = existingTxList.filter(
+        (item) => !TERMINAL_STATUSES.has((item.status ?? '').toUpperCase())
+      );
+      if (cachedPendingItems.length > 0) {
+        existingPendingList.push(...cachedPendingItems);
+        this.setPendingList(network, address, existingPendingList);
+      }
+    }
+
     const txList: TransferItem[] = [];
     data?.transactions?.forEach(async (tx) => {
       const transactionHolder = {
@@ -492,11 +511,13 @@ class TransactionActivity {
       transactionHolder.transferType = tx.transfer_type;
       transactionHolder.additionalMessage = tx.additional_message;
       // see if there's a pending item for this transaction
+      // Use case-insensitive comparison to handle API/FCL hash casing differences
+      const normalizedTxid = tx.txid.toLowerCase();
       const pendingItemIndex = existingPendingList.findIndex(
         (item) =>
-          item.hash.includes(tx.txid) ||
-          item.cadenceTxId?.includes(tx.txid) ||
-          item.evmTxIds?.includes(tx.txid)
+          item.hash.toLowerCase().includes(normalizedTxid) ||
+          item.cadenceTxId?.toLowerCase().includes(normalizedTxid) ||
+          item.evmTxIds?.some((id) => id.toLowerCase().includes(normalizedTxid))
       );
       if (pendingItemIndex !== -1) {
         // Store the cadence transaction id
@@ -507,9 +528,9 @@ class TransactionActivity {
         // see if there's an existing transaction with cadenceId in the store
         const existingTx = existingTxList.find(
           (item) =>
-            item.hash.includes(tx.txid) ||
-            item.cadenceTxId?.includes(tx.txid) ||
-            item.evmTxIds?.includes(tx.txid)
+            item.hash.toLowerCase().includes(normalizedTxid) ||
+            item.cadenceTxId?.toLowerCase().includes(normalizedTxid) ||
+            item.evmTxIds?.some((id) => id.toLowerCase().includes(normalizedTxid))
         );
         if (existingTx && existingTx.cadenceTxId) {
           // Found existing cadence transaction id
@@ -657,6 +678,28 @@ class TransactionActivity {
 
   listPending = async (network: string, address: string): Promise<TransferItem[]> => {
     return this.getPendingList(network, address);
+  };
+
+  /**
+   * Returns Cadence txIds from cached non-terminal transactions that need FCL monitoring
+   * re-registered after a service worker restart. Only items with a cadenceTxId and a
+   * non-terminal status (i.e., not SEALED/EXPIRED/ERROR) are returned.
+   */
+  getRecoverableCadenceTxIds = async (network: string, address: string): Promise<string[]> => {
+    const TERMINAL_STATUSES = new Set(['SEALED', 'EXPIRED', 'ERROR']);
+    const existingTxStore = await getInvalidData<TransferListStore>(
+      transferListKey(network, address, '0', '15')
+    );
+    if (!existingTxStore?.list?.length) {
+      return [];
+    }
+    const recoverableIds = new Set<string>();
+    for (const item of existingTxStore.list) {
+      if (item.cadenceTxId && !TERMINAL_STATUSES.has((item.status ?? '').toUpperCase())) {
+        recoverableIds.add(item.cadenceTxId);
+      }
+    }
+    return Array.from(recoverableIds);
   };
 
   getCount = async (

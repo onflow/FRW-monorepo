@@ -102,6 +102,10 @@ async function restoreAppState() {
 
   await userWalletService.init();
   await transactionActivityService.init();
+  // Re-register FCL monitoring for any transactions that were pending before
+  // the service worker was restarted. This prevents items from being stuck
+  // in a non-terminal status (e.g. PENDING, Executed) indefinitely.
+  userWalletService.resumePendingTransactions().catch(() => {});
   await nftService.init();
   await googleDriveService.init({
     baseURL: 'https://www.googleapis.com/',

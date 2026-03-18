@@ -233,9 +233,24 @@ export interface ClaimBannerProps {
 }
 
 // Activity components props
+export interface ActivityCardLabels {
+  /** e.g. t('activity.status.*') */
+  status?: string;
+  /** e.g. t('activity.sent') */
+  sent?: string;
+  /** e.g. t('activity.received') */
+  received?: string;
+  /** e.g. t('activity.detail.to') */
+  to?: string;
+  /** e.g. t('activity.detail.from') */
+  from?: string;
+}
+
 export interface ActivityCardProps {
   item: ActivityItem;
   onPress?: () => void;
+  /** Translated labels for user-visible strings. Falls back to English if omitted. */
+  labels?: ActivityCardLabels;
 }
 
 export interface ActivityGroupHeaderProps {

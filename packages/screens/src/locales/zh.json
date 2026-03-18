@@ -154,8 +154,6 @@
     },
     "sent": "已发送",
     "received": "已接收",
-    "today": "今天",
-    "yesterday": "昨天",
     "detail": {
       "appInteraction": "应用交互",
       "youSent": "您发送了",
@@ -173,7 +171,8 @@
       "networkEvm": "Flow EVM",
       "nftsFrom": "来自{{collection}}的NFTS",
       "nftCount": "{{count}} NFTS"
-    }
+    },
+    "loadMore": "加载更多"
   },
   "buttons": {
     "retry": "重试",
@@ -535,11 +534,10 @@
     },
     "drawer": {
       "title": "领取资产",
-      "token": "代币",
-      "from": "来自",
       "cta": "领取",
       "to": "接收方"
-    }
+    },
+    "title": "领取"
   },
   "addTokens": {
     "claimBannerTitle": "领取已收到的代币",
@@ -554,7 +552,6 @@
     "website": "网站",
     "items": "数量",
     "about": "关于",
-    "claimButton": "领取资产",
     "empty": "暂无 NFT",
     "warningText": "接受此 NFT 收藏后，将自动接受未来的存入"
   }

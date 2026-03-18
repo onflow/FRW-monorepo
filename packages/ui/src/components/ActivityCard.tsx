@@ -4,7 +4,7 @@ import React from 'react';
 import { Stack, Text, XStack, YStack, useTheme } from 'tamagui';
 
 import { Avatar } from '../foundation/Avatar';
-import type { ActivityCardProps } from '../types';
+import type { ActivityCardProps, ActivityCardLabels } from '../types';
 import { ChainBadge } from './ChainBadge';
 
 /**
@@ -61,26 +61,11 @@ function getStatusColor(statusType: StatusType): string {
 }
 
 /**
- * Gets the status display text
+ * Gets the status display text, using the provided label if available.
  */
-function getStatusText(item: ActivityItem): string {
-  if (item.error) {
-    return 'Failed';
-  }
-  switch (item.status) {
-    case 'pending':
-      return 'Pending';
-    case 'sealed':
-    case 'finalized':
-    case 'executed':
-      return 'Success';
-    case 'expired':
-      return 'Expired';
-    case 'failed':
-      return 'Failed';
-    default:
-      return item.status;
-  }
+function getStatusText(item: ActivityItem, labels?: ActivityCardLabels): string {
+  if (labels?.status) return labels.status;
+  return item.status;
 }
 
 /**
@@ -118,12 +103,13 @@ function DirectionBadge({
  * Designed to be used within an ActivityCardGroup - no individual card background
  * The group container provides the shared background and separators
  */
-export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactElement {
+export function ActivityCard({ item, onPress, labels }: ActivityCardProps): React.ReactElement {
   const { title, token, image, amount, sender, receiver, transferType, type } = item;
   const theme = useTheme();
 
   // Get status type for color theming
   const statusType = getStatusType(item);
+  const statusText = getStatusText(item, labels);
 
   // Check if this is an EVM wallet transaction (show chain badge)
   const isEvm = item.walletType === 'evm';
@@ -134,7 +120,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
   // Determine the address to show based on transfer direction
   // For 'sent' transfers, show the receiver (destination)
   // For 'received' transfers, show the sender (source)
-  const addressLabel = transferType === 'sent' ? 'To' : 'From';
+  const addressLabel = transferType === 'sent' ? (labels?.to ?? 'To') : (labels?.from ?? 'From');
   const addressValue = transferType === 'sent' ? receiver : sender;
 
   // Format amount with sign (token name is already shown in title, so no need to repeat)
@@ -191,8 +177,8 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
               {isInteraction
                 ? title || 'Flow'
                 : transferType === 'sent'
-                  ? `Sent ${truncateToken(token)}`
-                  : `Received ${truncateToken(token)}`}
+                  ? `${labels?.sent ?? 'Sent'} ${truncateToken(token)}`
+                  : `${labels?.received ?? 'Received'} ${truncateToken(token)}`}
             </Text>
           </XStack>
 
@@ -242,7 +228,7 @@ export function ActivityCard({ item, onPress }: ActivityCardProps): React.ReactE
             color={getStatusColor(statusType) as any}
             lineHeight={20}
           >
-            {getStatusText(item)}
+            {statusText}
           </Text>
         </XStack>
       </YStack>

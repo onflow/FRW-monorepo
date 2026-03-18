@@ -172,6 +172,7 @@ const TransferList = () => {
               {' '}
               {(transactions || []).map((tx) => {
                 const txCombinedKey = `${tx.cadenceTxId || tx.hash}${tx.evmTxIds ? `_${tx.evmTxIds.join('_')}` : ''}_${tx.transferType}_${tx.additionalMessage}_${tx.interaction}`;
+                const txStableId = tx.cadenceTxId || tx.hash;
                 return (
                   <ListItem
                     key={txCombinedKey}

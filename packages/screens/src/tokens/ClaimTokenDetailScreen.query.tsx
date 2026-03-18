@@ -547,7 +547,7 @@ function NFTCollectionDetailView({
           {item.description && (
             <YStack px="$4" pb="$3">
               <Text fontSize={14} fontWeight="600" color="$text1" mb="$1">
-                {t('claim.nft.about', 'About')}
+                {t('claimNFTDetail.about')}
               </Text>
               <Text fontSize={13} color="$text2" lineHeight={18}>
                 {item.description}
@@ -560,7 +560,7 @@ function NFTCollectionDetailView({
             <SearchBar
               value={nftSearch}
               onChangeText={setNftSearch}
-              placeholder={t('claim.nft.search', 'Search')}
+              placeholder={t('claim.searchPlaceholder')}
             />
           </YStack>
 
@@ -576,7 +576,7 @@ function NFTCollectionDetailView({
               ListEmptyComponent={
                 <YStack items="center" pt="$6">
                   <Text color="$text2" fontSize={14}>
-                    {t('claim.nft.empty', 'No NFTs found')}
+                    {t('claimNFTDetail.empty')}
                   </Text>
                 </YStack>
               }

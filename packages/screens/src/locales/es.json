@@ -154,8 +154,6 @@
     },
     "sent": "Enviado",
     "received": "Recibido",
-    "today": "Hoy",
-    "yesterday": "Ayer",
     "detail": {
       "appInteraction": "Interacción con App",
       "youSent": "Enviaste",
@@ -173,7 +171,8 @@
       "networkEvm": "Flow EVM",
       "nftsFrom": "NFTS de {{collection}}",
       "nftCount": "{{count}} NFTS"
-    }
+    },
+    "loadMore": "Cargar más"
   },
   "buttons": {
     "retry": "Reintentar",
@@ -535,11 +534,10 @@
     },
     "drawer": {
       "title": "Reclamar activo",
-      "token": "Token",
-      "from": "De",
       "cta": "Reclamar",
       "to": "A"
-    }
+    },
+    "title": "Reclamar"
   },
   "addTokens": {
     "claimBannerTitle": "Reclamar tokens recibidos",
@@ -554,7 +552,6 @@
     "website": "Sitio web",
     "items": "Elementos",
     "about": "Acerca de",
-    "claimButton": "Reclamar activos",
     "empty": "Sin NFTs",
     "warningText": "Al aceptar esta colección de NFT, aceptarás automáticamente futuros depósitos de la misma"
   }
