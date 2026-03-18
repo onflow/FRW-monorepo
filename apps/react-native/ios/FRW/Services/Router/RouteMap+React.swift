@@ -17,7 +17,7 @@ extension RouteMap {
     case backupTip
     case migration
     case whatsNew([String: Any])
-      case claimTokens
+    case claimTokens
   }
 }
 
@@ -55,7 +55,7 @@ extension RouteMap.ReactNative: RouterTarget {
             let vc = ReactNativeViewController()
             vc.route = .claimTokens
             navi.present(vc)
-            
+
         }
     }
 }
