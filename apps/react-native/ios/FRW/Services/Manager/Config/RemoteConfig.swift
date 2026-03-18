@@ -52,6 +52,7 @@ extension RemoteConfigManager {
             case coaMigration = "coa_migration"
             case wrapEOAWithCadence = "wrap_eoa_tx_with_cadence"
             case createNewAccount = "create_new_account"
+            case cadenceInbox = "cadence_inbox"
         }
 
         let freeGas: Bool
@@ -68,6 +69,7 @@ extension RemoteConfigManager {
         let coaMigration: Bool?
         let wrapEOAWithCadence: Bool?
         let createNewAccount: Bool?
+        let cadenceInbox: Bool?
     }
 
     // MARK: - Payer

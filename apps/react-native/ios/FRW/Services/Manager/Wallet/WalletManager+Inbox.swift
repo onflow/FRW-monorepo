@@ -12,6 +12,14 @@ extension WalletManager {
 
     func fetchUnclaimedCount() async throws {
         guard let uid = UserManager.shared.activatedUID else {
+            log.debug("[inbox] don't login")
+            resetUnclaimedState()
+            return
+        }
+        guard RemoteConfigManager.shared.config?.features.cadenceInbox ?? false else {
+            log.debug("[inbox] the flag of cadence inbox don't open or nil")
+            self.resetUnclaimedState()
+            self.removeUnclaimedNews(userId: uid)
             return
         }
 
