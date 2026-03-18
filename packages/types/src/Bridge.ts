@@ -100,6 +100,7 @@ export interface InitialProps {
     | 'activity'
     | 'keystore-migration'
     | 'migration'
+    | 'whatsNew'
     | 'claimTokens';
   sendToConfig?: string;
 }

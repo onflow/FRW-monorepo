@@ -1,6 +1,7 @@
 import Luciq, { InvocationEvent } from '@luciq/react-native';
 import { ServiceContext } from '@onflow/frw-context';
 import { QueryProvider, initializeI18n } from '@onflow/frw-screens';
+import type { WhatsNewData } from '@onflow/frw-screens';
 import { useWalletStore } from '@onflow/frw-stores';
 import { PortalProvider, TamaguiProvider, tamaguiConfig } from '@onflow/frw-ui';
 import { useCallback, useEffect } from 'react';
@@ -32,6 +33,7 @@ interface AppProps {
   initialRoute?: string;
   embedded?: boolean;
   isDarkMode?: boolean;
+  whatsNewData?: WhatsNewData;
 }
 
 const App = (props: AppProps) => {

@@ -19,7 +19,18 @@ extension ReactNativeViewController {
     case keyRotationTip = "KeyRotationTip"
     case activity = "Activity"
     case migration = "Migration"
-    case claimTokens = "ClaimTokens"
+    case whatsNew = "WhatsNew"
+      case claimTokens = "ClaimTokens"
+
+    var isTransparentPopup: Bool {
+      switch self {
+      case .whatsNew:
+        return true
+      default:
+        return false
+      }
+    }
+
   }
 }
 
@@ -28,6 +39,7 @@ class ReactNativeViewController: UIViewController {
   var initialProps: RNBridge.InitialProps? = nil
   var route: ReactNativeViewController.Route? = nil
   private let initialRouteOverride: String?
+  private let additionalProps: [String: Any]?
   
     // Static identifier for easy identification
     static let identifier = "ReactNativeViewController"
@@ -40,9 +52,14 @@ class ReactNativeViewController: UIViewController {
 
     private var reactView: UIView?
   
-  init(initialProps: RNBridge.InitialProps? = nil, initialRouteOverride: String? = nil) {
+  init(
+    initialProps: RNBridge.InitialProps? = nil,
+    initialRouteOverride: String? = nil,
+    additionalProps: [String: Any]? = nil
+  ) {
     self.initialProps = initialProps
     self.initialRouteOverride = initialRouteOverride
+    self.additionalProps = additionalProps
     super.init(nibName: nil, bundle: nil)
   }
   
@@ -188,7 +205,7 @@ class ReactNativeViewController: UIViewController {
         }
         // zh,en,ru,ja
         let languageCode = Locale.preferredLanguages.first?.components(separatedBy: "-").first ?? "en"
-        let routeName = initialProps?.route.rawValue ?? route?.rawValue ?? "SelectTokens"
+        let routeName = initialRouteOverride ?? initialProps?.route.rawValue ?? route?.rawValue ?? "SelectTokens"
         var props: [String: Any] = [
             "address" : wallet.selectedAccount?.address.hexAddr ?? "",
             "network" : wallet.currentNetwork.rawValue,
@@ -201,6 +218,10 @@ class ReactNativeViewController: UIViewController {
         // Merge with additional initial props if provided
         let dic = try? initialProps?.toDictionary()
         props["initialProps"] = dic
+
+        if let additionalProps {
+          props.merge(additionalProps) { _, new in new }
+        }
         
       log.info("props:\(props)")
         print("🚀 DEBUG: Creating RCTSurfaceHostingView")
@@ -212,7 +233,12 @@ class ReactNativeViewController: UIViewController {
         )
 
         // Create RCTSurfaceHostingView
-        surfaceView.backgroundColor = UIColor.systemBackground
+
+        let isTransparentPopup = routeName == Route.whatsNew.rawValue
+        surfaceView.backgroundColor = isTransparentPopup ? .clear : UIColor.systemBackground
+        surfaceView.isOpaque = !isTransparentPopup
+        view.backgroundColor = isTransparentPopup ? .clear : UIColor.systemBackground
+        view.isOpaque = !isTransparentPopup
 
         // Add to view hierarchy
         view.addSubview(surfaceView)
@@ -279,6 +305,8 @@ extension RNBridge.InitialProps {
       return .activity
     case .migration:
       return .migration
+    case .whatsNew:
+      return .whatsNew
     case .claimTokens:
         return .claimTokens
     case .keystoreMigration:

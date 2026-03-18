@@ -25,6 +25,7 @@ enum RNBridge {
         case activity = "activity"
         case keystoreMigration = "keystore-migration"
         case migration = "migration"
+        case whatsNew = "whatsNew"
         case claimTokens = "claimTokens"
     }
 

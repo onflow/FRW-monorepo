@@ -36,6 +36,9 @@ import {
   ImportProfileScreen,
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
+  // What's new screen
+  WhatsNewScreen,
+  type WhatsNewData,
   KeystoreMigrationTipScreen,
 } from '@onflow/frw-screens';
 import { useSendStore } from '@onflow/frw-stores';
@@ -65,6 +68,7 @@ import { HomeScreen } from '@/screens';
 
 export type RootStackParamList = {
   Home: { address?: string; network?: string };
+  WhatsNew: WhatsNewData | undefined;
   ColorDemo: undefined;
   NFTDetail: {
     nft: NFTModel;
@@ -133,6 +137,7 @@ interface AppNavigatorProps {
   initialRoute?: string;
   embedded?: boolean;
   initialProps?: InitialProps;
+  whatsNewData?: WhatsNewData;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -140,7 +145,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppNavigator: React.FC<AppNavigatorProps> = props => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { address, network, initialRoute, initialProps } = props;
+  const { address, network, initialRoute, initialProps, whatsNewData } = props;
   const navigationRef = useRef<any>(null);
 
   // Send store actions
@@ -753,6 +758,27 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
                   }}
                 />
               )}
+            </Stack.Screen>
+          </Stack.Group>
+
+          <Stack.Group
+            screenOptions={{
+              headerShown: false,
+              headerBackTitle: '',
+              headerBackTitleStyle: { fontSize: 0 },
+              headerBackVisible: false,
+              headerLeft: () => null,
+            }}
+          >
+            <Stack.Screen
+              name="WhatsNew"
+              options={{
+                headerShown: false,
+                animation: 'fade',
+                contentStyle: { backgroundColor: 'transparent' },
+              }}
+            >
+              {({ route }) => <WhatsNewScreen data={route.params ?? whatsNewData} />}
             </Stack.Screen>
           </Stack.Group>
         </Stack.Navigator>

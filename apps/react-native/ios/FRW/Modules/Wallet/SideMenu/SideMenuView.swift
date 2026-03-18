@@ -295,10 +295,11 @@ struct SideMenuView: View {
             if isDeveloperMode {
                 HStack {
                     Image("icon_side_link")
-                        .resizable()
                         .renderingMode(.template)
+                        .foregroundStyle(Color.Theme.Text.black8)
+                        .aspectRatio(contentMode: .fit)
                         .frame(width: 26, height: 26)
-                        .padding(13)
+                        .padding(7)
                         .background(Color.Brain.Light.lines10)
                         .clipShape(Circle())
                     Text("Network::message".localized)
