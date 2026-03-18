@@ -141,6 +141,32 @@ class TurboModuleSwift: NSObject {
             }
         }
     }
+
+  @objc
+  static func onUpdateDialogActionPress(actionType: String, actionUrl: String?, actionText: String?) {
+    log.info(
+      "[WhatsNew] action clicked type=\(actionType) text=\(actionText ?? "") url=\(actionUrl ?? "")"
+    )
+    guard let actionUrl,
+          let url = URL(string: actionUrl) else {
+      log.debug("[WhatsNew] invalid url")
+      return
+    }
+    switch actionType {
+    case "internal":
+      runOnMain {
+        Router.route(to: RouteMap.Explore.browser(url))
+      }
+    case "deeplink":
+      runOnMain {
+        DeepLinkHandler.shared.handleURL(url)
+      }
+    case "external":
+      log.debug("[WhatsNew] ignore action")
+    default:
+      log.warning("[WhatsNew] don't support action")
+    }
+  }
 }
 
 extension TurboModuleSwift {

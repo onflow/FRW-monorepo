@@ -27,6 +27,9 @@ export { GenericErrorFallback } from './error/GenericErrorFallback';
 export { NetworkErrorFallback } from './error/NetworkErrorFallback';
 export { CriticalErrorFallback } from './error/CriticalErrorFallback';
 
+// Export what's new screens
+export * from './whatsnew';
+
 // Export key rotation screens
 export * from './keyrotation';
 
