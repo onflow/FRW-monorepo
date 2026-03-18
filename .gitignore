@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+__node_modules/
 */node_modules/
 .pnpm-debug.log*
 .yarn/cache
@@ -47,8 +48,8 @@ build/
 ehthumbs.db
 Thumbs.db
 
-# React Native specific - android and flow-wallet-kit are git submodules
-# Exclude submodule directories
+# React Native specific - android, and flow-wallet-kit are git submodules
+# Exclude entire directories (managed as submodules)
 apps/react-native/android/
 apps/react-native/flow-wallet-kit/
 
@@ -139,3 +140,4 @@ Flow-Wallet-Kit/
 /apps/passkeys/.next
 metro-stats.json
 /apps/react-native/.bundle-discovery
+__node_modules

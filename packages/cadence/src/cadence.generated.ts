@@ -3503,7 +3503,7 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
             let display = nft.resolveView(Type<MetadataViews.Display>()) as! MetadataViews.Display?
 
             let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <- nft, memo: "Send NFTs backup", display: display)
-            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.1)
             let item <- depositEstimate.withdraw()
             // withdraw the NFT from the owner''s collection
             // let nft <- collectionRef.withdraw(withdrawID: withdrawID)
@@ -3596,7 +3596,7 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
             let display = nft.resolveView(Type<MetadataViews.Display>()) as! MetadataViews.Display?
 
             let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <- nft, memo: "Send NFTs backup", display: display)
-            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.1)
             let item <- depositEstimate.withdraw()
             // withdraw the NFT from the owner''s collection
             // let nft <- collectionRef.withdraw(withdrawID: withdrawID)
@@ -7030,19 +7030,74 @@ transaction(vaultIdentifier:String, sender: Address, amount: UFix64 ) {
   }
 
   // Tag: SrcCadenceLostandfoundQuery
+  public async batchQueryUnclaimedNumber(addrs: string[]): Promise<number> {
+    const code = `
+import LostAndFound from 0xLostAndFound
+
+access(all) fun main(addrs: [Address]): Int {
+    let shelfManager = LostAndFound.borrowShelfManager()
+    var unclaimedNumber = 0
+    for addr in addrs {
+        let shelf = shelfManager.borrowShelf(redeemer: addr)
+        if shelf == nil {
+            continue
+        } else {
+            unclaimedNumber = unclaimedNumber + shelf!.getRedeemableTypes().length
+        }
+        
+    }
+    return unclaimedNumber
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "batchQueryUnclaimedNumber",
+      type: "script",
+      args: (arg: any, t: any) => [
+        arg(addrs, t.Array(t.Address)),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let response = await fcl.query(config);
+    const result = await this.runResponseInterceptors(config, response);
+    return result.response;
+  }
+
+
   public async queryUnclaimedFts(addr: string): Promise<any | undefined[]> {
     const code = `
 import LostAndFound from 0xLostAndFound
 import MetadataViews from 0xMetadataViews
 import FungibleToken from 0xFungibleToken
 
+import FungibleTokenMetadataViews from 0xFungibleTokenMetadataViews
+import ViewResolver from 0xViewResolver
+import FlowEVMBridgeUtils from 0xFlowEVMBridgeUtils
+
 access(all) fun main(addr: Address): [AnyStruct?] {
     let tickets = LostAndFound.borrowAllTickets(addr: addr)
     
     let displayArr: [AnyStruct?]  = []
     for ticket in tickets {
+    
         if ticket.type.isSubtype(of: Type<@{FungibleToken.Vault}>()) { 
-            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance()})
+            let vaultIdentifier = ticket.type.identifier
+            let vaultType = CompositeType(vaultIdentifier)
+            ?? panic("Could not construct Vault type from identifier: ".concat(vaultIdentifier))
+            // Parse the Vault identifier into its components
+            let tokenContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: vaultType)
+                ?? panic("Could not get contract address from identifier: ".concat(vaultIdentifier))
+            let tokenContractName = FlowEVMBridgeUtils.getContractName(fromType: vaultType)
+                ?? panic("Could not get contract name from identifier: ".concat(vaultIdentifier))
+            let viewResolver = getAccount(tokenContractAddress).contracts.borrow<&{ViewResolver}>(name: tokenContractName)
+                ?? panic("Could not borrow ViewResolver from FungibleToken contract")
+            let FTDisplay = viewResolver.resolveContractView(
+                    resourceType: vaultType,
+                    viewType: Type<FungibleTokenMetadataViews.FTDisplay>()
+                ) as! FungibleTokenMetadataViews.FTDisplay? ?? panic("Could not resolve FTDisplay view")
+
+            displayArr.append({"display": ticket.display, "balance": ticket.getFungibleTokenBalance(), "identifier": vaultIdentifier, "FTDisplay": FTDisplay})
         }
     }
     return displayArr
@@ -7068,15 +7123,32 @@ access(all) fun main(addr: Address): [AnyStruct?] {
     const code = `
 import LostAndFound from 0xLostAndFound
 import MetadataViews from 0xMetadataViews
+import ViewResolver from 0xMetadataViews
 import NonFungibleToken from 0xNonFungibleToken
+import FlowEVMBridgeUtils from 0xFlowEVMBridge
+
 
 access(all) fun main(addr: Address): [AnyStruct?] {
     let tickets = LostAndFound.borrowAllTickets(addr: addr)
     
-    let displayArr: [&MetadataViews.Display?]  = []
+    let displayArr: [AnyStruct?]  = []
     for ticket in tickets {
         if ticket.type.isSubtype(of: Type<@{NonFungibleToken.NFT}>()) { 
-            displayArr.append(ticket.display)
+            let nftIdentifier = ticket.type.identifier
+            let nftContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: ticket.type)
+            ?? panic("Could not get contract address from identifier: ".concat(nftIdentifier))
+            let nftContractName = FlowEVMBridgeUtils.getContractName(fromType: ticket.type)
+            ?? panic("Could not get contract name from identifier: ".concat(nftIdentifier))
+
+            // resolveView
+            let viewResolver = getAccount(nftContractAddress).contracts.borrow<&{ViewResolver}>(name: nftContractName)
+            ?? panic("Could not borrow ViewResolver from NFT contract")
+            let collectionData = viewResolver.resolveContractView(
+                resourceType: nil,
+                viewType: Type<MetadataViews.NFTCollectionDisplay>()
+            ) as! MetadataViews.NFTCollectionDisplay? ?? panic("Could not resolve NFTCollectionDisplay view")
+            
+            displayArr.append({"display":ticket.display, "identifier": nftIdentifier, "collectionData": collectionData})
         }
     }
     
@@ -7652,7 +7724,7 @@ transaction(vaultIdentifier:String, recipient: Address, amount: UFix64) {
         // Deposit the withdrawn tokens in the recipient's receiver
         // lostandfound.deposit(from: <- sentVault)
         let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <-sentVault, memo: "Send Tokens Backup", display: display)
-        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.2)
         let item <- depositEstimate.withdraw()
 
          LostAndFound.trySendResource(

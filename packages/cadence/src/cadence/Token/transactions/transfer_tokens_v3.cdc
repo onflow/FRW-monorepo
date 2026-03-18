@@ -66,7 +66,7 @@ transaction(vaultIdentifier:String, recipient: Address, amount: UFix64) {
         // Deposit the withdrawn tokens in the recipient's receiver
         // lostandfound.deposit(from: <- sentVault)
         let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <-sentVault, memo: "Send Tokens Backup", display: display)
-        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+        let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.2)
         let item <- depositEstimate.withdraw()
 
          LostAndFound.trySendResource(

@@ -1,3 +1,4 @@
+import Luciq from '@luciq/react-native';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
@@ -15,7 +16,6 @@ import { Platform } from '@onflow/frw-types';
 import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import { Buffer } from 'buffer';
-import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 
@@ -98,17 +98,17 @@ class PlatformImpl implements PlatformSpec {
           case 'debug':
             // Only send debug logs in debug mode to avoid spam
             if (this.debugMode) {
-              Instabug.logDebug(instabugMessage);
+              Luciq.logDebug(instabugMessage);
             }
             break;
           case 'info':
-            Instabug.logInfo(instabugMessage);
+            Luciq.logInfo(instabugMessage);
             break;
           case 'warn':
-            Instabug.logWarn(instabugMessage);
+            Luciq.logWarn(instabugMessage);
             break;
           case 'error':
-            Instabug.logError(instabugMessage);
+            Luciq.logError(instabugMessage);
             break;
         }
       } catch (error) {
@@ -309,8 +309,20 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.signRotationRequest(address, signatureData);
   }
 
-  closeRN(): void {
-    NativeFRWBridge.closeRN(null);
+  async keystoreMigration(): Promise<void> {
+    if (this.getPlatform() === Platform.Android && NativeFRWBridge.keystoreMigration) {
+      return NativeFRWBridge.keystoreMigration();
+    }
+    this.log('warn', '[PlatformImpl] keystoreMigration not implemented or not Android');
+    return Promise.resolve();
+  }
+
+  closeRN(id?: string | null): void {
+    NativeFRWBridge.closeRN(id ?? null);
+  }
+
+  closeRNWithNFT(id?: string | null): void {
+    NativeFRWBridge.closeRNWithNFT(id ?? null);
   }
 
   onUpdateDialogActionPress(

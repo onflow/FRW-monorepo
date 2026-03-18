@@ -130,7 +130,11 @@ const flowContext = flow
 
     const [{ height = 599 } = {}] =
       Reflect.getMetadata('APPROVAL', providerController, mapMethod) || [];
-    if (mapMethod === 'ethSendTransaction' || mapMethod === 'personalSign') {
+    if (
+      mapMethod === 'ethSendTransaction' ||
+      mapMethod === 'personalSign' ||
+      mapMethod === 'ethSign'
+    ) {
       ctx.request.requestedApproval = true;
 
       // Check if message is too long and show special popup

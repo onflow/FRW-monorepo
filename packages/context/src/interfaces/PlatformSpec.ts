@@ -116,6 +116,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
     actionUrl?: string | null,
     actionText?: string | null
   ): void;
+  closeRNWithNFT(id?: string | null): void;
 
   // Toast notifications
   showToast?(

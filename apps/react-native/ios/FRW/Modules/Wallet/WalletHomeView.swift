@@ -465,6 +465,12 @@ struct WalletHomeView: View {
                     vm.onAddToken()
                 }
                 .visibility(vm.showAddTokenButton ? .visible : .gone)
+
+                if wm.unclaimedCount > 0 {
+                    CircleButton(image: .inbox, badgeCount: wm.unclaimedCount) {
+                        Router.route(to: RouteMap.ReactNative.claimTokens)
+                    }
+                }
             }
 
             VStack(spacing: 5) {

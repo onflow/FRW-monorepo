@@ -1,24 +1,38 @@
 import { bridge, navigation } from '@onflow/frw-context';
-import { activityQueryKeys, activityQueries, groupActivityByDate } from '@onflow/frw-stores';
+import {
+  activityQueries,
+  activityQueryKeys,
+  groupActivityByDate,
+  useWalletStore,
+  walletSelectors,
+} from '@onflow/frw-stores';
 import type { ActivityItem, ActivityGroup } from '@onflow/frw-types';
 import {
+  ActivitySkeleton,
   BackgroundWrapper,
   ExtensionHeader,
+  RefreshView,
   Text,
   YStack,
   XStack,
   ActivityCard,
   ActivityGroupHeader,
-  ActivitySkeleton,
-  RefreshView,
   ScrollView,
   Separator,
+  Skeleton,
 } from '@onflow/frw-ui';
-import { logger, retryConfigs } from '@onflow/frw-utils';
+import { logger } from '@onflow/frw-utils';
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshControl } from 'react-native';
+
+const PAGE_SIZE = 15;
+
+export interface ActivityScreenProps {
+  /** Optional callback when an activity item is pressed (used when embedded as tab) */
+  onActivityPress?: (item: ActivityItem) => void;
+}
 
 /**
  * Activity Screen - displays transaction history grouped by date
@@ -26,115 +40,71 @@ import { RefreshControl } from 'react-native';
  *
  * Supports both Flow (Cadence) and Flow-EVM transactions
  */
-export function ActivityScreen(): ReactElement {
+export function ActivityScreen({ onActivityPress }: ActivityScreenProps = {}): ReactElement {
   const { t } = useTranslation();
   const isExtension = bridge.getPlatform() === 'extension';
-
-  // Get current address and network from bridge
-  const address = bridge.getSelectedAddress() || '';
   const network = bridge.getNetwork() || 'mainnet';
 
-  // Fetch activity data using TanStack Query
-  const {
-    data: activityData,
-    isLoading,
-    error,
-    refetch,
-    isRefetching,
-  } = useQuery({
-    queryKey: activityQueryKeys.list(address, network, 0, 50),
-    queryFn: () => activityQueries.fetchActivity(address, network, 0, 50),
+  const activeAccount = useWalletStore(walletSelectors.getActiveAccount);
+  const address = activeAccount?.address ?? '';
+
+  const [offset, setOffset] = useState(0);
+  const [allItems, setAllItems] = useState<ActivityItem[]>([]);
+
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: activityQueryKeys.list(address, network, offset, PAGE_SIZE),
+    queryFn: () => activityQueries.fetchActivity(address, network, offset, PAGE_SIZE),
     enabled: !!address,
-    staleTime: 0, // Always fresh for financial data
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    ...retryConfigs.critical,
+    staleTime: 30_000,
   });
 
-  // Group activity items by date
+  useEffect(() => {
+    if (!data) return;
+    if (offset === 0) {
+      setAllItems(data.items);
+    } else {
+      setAllItems((prev) => [...prev, ...data.items]);
+    }
+  }, [data, offset]);
+
+  const hasMore = useMemo(() => {
+    // Re-read latest response from cache to check hasMore
+    return allItems.length > 0 && allItems.length % PAGE_SIZE === 0;
+  }, [allItems]);
+
   const groupedActivity = useMemo((): ActivityGroup[] => {
-    const items = activityData?.items ?? [];
-    return groupActivityByDate(items);
-  }, [activityData]);
+    return groupActivityByDate(allItems);
+  }, [allItems]);
 
-  // Handle refresh
-  const handleRefresh = useCallback(() => {
-    logger.debug('[ActivityScreen] Refreshing activity data');
-    refetch();
-  }, [refetch]);
+  const handleActivityPress = useCallback(
+    (item: ActivityItem) => {
+      logger.debug('[ActivityScreen] Activity item pressed:', item.id);
+      if (onActivityPress) {
+        onActivityPress(item);
+      } else {
+        navigation.navigate('ActivityDetail', { item });
+      }
+    },
+    [onActivityPress]
+  );
 
-  // Handle activity item press - navigate to transaction details
-  const handleActivityPress = useCallback((item: ActivityItem) => {
-    logger.debug('[ActivityScreen] Activity item pressed:', item.id);
-    // TODO: Navigate to transaction detail screen when available
-    // For now, we could open in Flowscan
-    // navigation.navigate('TransactionDetail', { txId: item.hash });
+  const handleLoadMore = useCallback(() => {
+    setOffset((prev) => prev + PAGE_SIZE);
   }, []);
 
-  // Render loading state
-  if (isLoading && !activityData) {
-    return (
-      <BackgroundWrapper backgroundColor="$bg">
-        {isExtension && (
-          <ExtensionHeader
-            title={t('activity.title', 'Activity')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
-        <ActivitySkeleton count={5} />
-      </BackgroundWrapper>
-    );
-  }
+  const handleRefresh = useCallback(() => {
+    if (offset === 0) {
+      // offset unchanged so queryKey won't change — force a refetch manually
+      refetch();
+    } else {
+      // changing offset to 0 automatically triggers a new query
+      setOffset(0);
+      setAllItems([]);
+    }
+  }, [offset, refetch]);
 
-  // Render error state
-  if (error && !activityData) {
-    return (
-      <BackgroundWrapper backgroundColor="$bg">
-        {isExtension && (
-          <ExtensionHeader
-            title={t('activity.title', 'Activity')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
-        <RefreshView
-          type="error"
-          title={t('activity.error', 'Failed to load activity')}
-          message={t('activity.errorMessage', 'Please try again')}
-          onRefresh={handleRefresh}
-          refreshText={t('common.retry', 'Retry')}
-        />
-      </BackgroundWrapper>
-    );
-  }
+  const handleRetry = handleRefresh;
 
-  // Render empty state
-  if (groupedActivity.length === 0) {
-    return (
-      <BackgroundWrapper backgroundColor="$bg">
-        {isExtension && (
-          <ExtensionHeader
-            title={t('activity.title', 'Activity')}
-            help={false}
-            onGoBack={() => navigation.goBack()}
-            onNavigate={(link: string) => navigation.navigate(link)}
-          />
-        )}
-        <RefreshView
-          type="empty"
-          title={t('activity.empty', 'No activity yet')}
-          message={t('activity.emptyMessage', 'Your transaction history will appear here')}
-          onRefresh={handleRefresh}
-          refreshText={t('common.refresh', 'Refresh')}
-        />
-      </BackgroundWrapper>
-    );
-  }
-
-  // Render activity list
   return (
     <BackgroundWrapper backgroundColor="$bg">
       {isExtension && (
@@ -148,7 +118,9 @@ export function ActivityScreen(): ReactElement {
 
       <ScrollView
         flex={1}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={isFetching && offset === 0} onRefresh={handleRefresh} />
+        }
       >
         <YStack flex={1} pb="$4">
           {/* Screen title for non-extension - centered */}
@@ -160,26 +132,77 @@ export function ActivityScreen(): ReactElement {
             </XStack>
           )}
 
-          {/* Activity groups */}
-          {groupedActivity.map((group) => (
-            <YStack key={group.date}>
-              {/* Date header */}
-              <ActivityGroupHeader title={group.date} />
+          {/* Loading skeleton on first fetch */}
+          {isLoading && <ActivitySkeleton count={6} />}
 
-              {/* Activity cards container with shared background */}
-              <YStack mx="$4" bg="$bg1" rounded="$4" px="$3">
-                {group.items.map((item, index) => (
-                  <YStack key={`${item.id}-${index}`}>
-                    <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
-                    {/* Separator between cards, not after last card */}
-                    {index < group.items.length - 1 && (
-                      <Separator borderColor="$light25" borderWidth={0.5} />
-                    )}
-                  </YStack>
-                ))}
+          {/* Error state */}
+          {!isLoading && isError && (
+            <RefreshView
+              type="error"
+              title={t('activity.errorTitle', 'Failed to load')}
+              message={t(
+                'activity.errorMessage',
+                'Could not fetch your activity. Please try again.'
+              )}
+              onRefresh={handleRetry}
+              refreshText={t('activity.retry', 'Retry')}
+            />
+          )}
+
+          {/* Empty state */}
+          {!isLoading && !isError && groupedActivity.length === 0 && (
+            <RefreshView
+              type="empty"
+              title={t('activity.emptyTitle', 'No activity yet')}
+              message={t('activity.emptyMessage', 'Your transactions will appear here.')}
+            />
+          )}
+
+          {/* Activity groups */}
+          {!isLoading &&
+            !isError &&
+            groupedActivity.map((group) => (
+              <YStack key={group.date}>
+                <ActivityGroupHeader title={group.date} />
+                <YStack mx="$4" bg="$bg1" rounded="$4" px="$3">
+                  {group.items.map((item, index) => (
+                    <YStack key={`${item.id}-${index}`}>
+                      <ActivityCard item={item} onPress={() => handleActivityPress(item)} />
+                      {index < group.items.length - 1 && (
+                        <Separator borderColor="$light25" borderWidth={0.5} />
+                      )}
+                    </YStack>
+                  ))}
+                </YStack>
               </YStack>
+            ))}
+
+          {/* Load more */}
+          {!isLoading && !isError && hasMore && (
+            <YStack pt="$4" pb="$2" px="$4">
+              {isFetching ? (
+                <YStack gap="$2">
+                  <Skeleton height={64} borderRadius={12} />
+                  <Skeleton height={64} borderRadius={12} />
+                </YStack>
+              ) : (
+                <YStack
+                  bg="$bg1"
+                  rounded="$4"
+                  height={48}
+                  items="center"
+                  justify="center"
+                  pressStyle={{ opacity: 0.7 }}
+                  onPress={handleLoadMore}
+                  cursor="pointer"
+                >
+                  <Text fontSize={14} fontWeight="500" color="$text2">
+                    {t('activity.loadMore', 'Load more')}
+                  </Text>
+                </YStack>
+              )}
             </YStack>
-          ))}
+          )}
         </YStack>
       </ScrollView>
     </BackgroundWrapper>

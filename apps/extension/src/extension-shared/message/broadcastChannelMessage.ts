@@ -2,22 +2,34 @@ import Message from './index';
 
 export default class BroadcastChannelMessage extends Message {
   private _channel: BroadcastChannel;
+  private _authToken = '';
 
   constructor(name?: string) {
     super();
     if (!name) {
       throw new Error('the broadcastChannel name is missing');
     }
-
     this._channel = new BroadcastChannel(name);
   }
 
+  setAuthToken = (authToken: string) => {
+    this._authToken = authToken;
+    return this;
+  };
+
   connect = () => {
-    this._channel.onmessage = ({ data: { type, data } }) => {
+    if (!this._authToken) {
+      throw new Error('the broadcastChannel auth token is missing');
+    }
+    this._channel.onmessage = ({ data }) => {
+      if (!data || data.authToken !== this._authToken) {
+        return;
+      }
+      const { type, data: payload } = data;
       if (type === 'message') {
-        this.emit('message', data);
+        this.emit('message', payload);
       } else if (type === 'response') {
-        this.onResponse(data);
+        this.onResponse(payload);
       }
     };
 
@@ -25,11 +37,18 @@ export default class BroadcastChannelMessage extends Message {
   };
 
   listen = (listenCallback: (data: any) => void) => {
+    if (!this._authToken) {
+      throw new Error('the broadcastChannel auth token is missing');
+    }
     this.listenCallback = listenCallback;
 
-    this._channel.onmessage = ({ data: { type, data } }) => {
+    this._channel.onmessage = ({ data }) => {
+      if (!data || data.authToken !== this._authToken) {
+        return;
+      }
+      const { type, data: payload } = data;
       if (type === 'request') {
-        this.onRequest(data);
+        this.onRequest(payload);
       }
     };
 
@@ -37,9 +56,13 @@ export default class BroadcastChannelMessage extends Message {
   };
 
   send = (type: string, data: any) => {
+    if (!this._authToken) {
+      throw new Error('the broadcastChannel auth token is missing');
+    }
     this._channel.postMessage({
       type,
       data,
+      authToken: this._authToken,
     });
   };
 

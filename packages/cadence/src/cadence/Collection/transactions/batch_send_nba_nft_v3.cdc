@@ -55,7 +55,7 @@ transaction(identifier: String, recipient: Address, ids: [UInt64]) {
             let display = nft.resolveView(Type<MetadataViews.Display>()) as! MetadataViews.Display?
 
             let depositEstimate <- LostAndFound.estimateDeposit(redeemer: recipient, item: <- nft, memo: "Send NFTs backup", display: display)
-            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee)
+            let storageFee <- flowProvider.borrow()!.withdraw(amount: depositEstimate.storageFee * 1.1)
             let item <- depositEstimate.withdraw()
             // withdraw the NFT from the owner''s collection
             // let nft <- collectionRef.withdraw(withdrawID: withdrawID)

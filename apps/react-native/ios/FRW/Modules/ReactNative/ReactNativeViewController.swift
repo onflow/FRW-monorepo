@@ -20,6 +20,7 @@ extension ReactNativeViewController {
     case activity = "Activity"
     case migration = "Migration"
     case whatsNew = "WhatsNew"
+      case claimTokens = "ClaimTokens"
 
     var isTransparentPopup: Bool {
       switch self {
@@ -29,6 +30,7 @@ extension ReactNativeViewController {
         return false
       }
     }
+
   }
 }
 
@@ -305,6 +307,10 @@ extension RNBridge.InitialProps {
       return .migration
     case .whatsNew:
       return .whatsNew
+    case .claimTokens:
+        return .claimTokens
+    case .keystoreMigration:
+        return .selectAssets
     }
   }
 }

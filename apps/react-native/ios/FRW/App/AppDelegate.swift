@@ -11,7 +11,7 @@ import FirebaseAnalytics
 import FirebaseMessaging
 import Foundation
 import GoogleSignIn
-import InstabugSDK
+import LuciqSDK
 import ReownWalletKit
 import Resolver
 import SwiftUI
@@ -321,7 +321,7 @@ extension AppDelegate {
     }
 
     func application(_: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
-        let isInstabugNotification = Replies.didReceiveRemoteNotification(userInfo)
+        let isLuciqNotification = Replies.didReceiveRemoteNotification(userInfo)
     }
 }
 

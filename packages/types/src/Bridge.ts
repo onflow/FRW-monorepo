@@ -98,7 +98,9 @@ export interface InitialProps {
     | 'onboarding'
     | 'receive'
     | 'activity'
-    | 'migration';
+    | 'keystore-migration'
+    | 'migration'
+    | 'claimTokens';
   sendToConfig?: string;
 }
 

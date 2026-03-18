@@ -29,8 +29,15 @@ class SideMenuViewModel: ObservableObject {
 
     @Published var hasCoa: Bool = true
     @Published var currentAccount: SideMenuItem? = nil
-    @Published var allAccounts: [[SideMenuItem]] = [[.mock()],[.mock()],[.mock()]]
+    @Published var allAccounts: [[SideMenuItem]] = [[.mock()],[.mock()],[.mock()]] {
+        didSet {
+            log.debug("[Side] reresh allAccount")
+            shouldShowAddingAccount = wallet.canAddNewAccount()
+        }
+    }
     @Published var shouldShowMigrationCard: Bool = false
+    @Published var shouldShowAddingAccount = false
+    @Published var isAddingAccount = false
     private var cancellableSet = Set<AnyCancellable>()
 
 
@@ -48,6 +55,17 @@ class SideMenuViewModel: ObservableObject {
           self?.refreshAccount(address: account?.hexAddr)
         }.store(in: &cancellableSet)
 
+        wallet.$isAddingAccount
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isAdding in
+                if self?.currentAccount != nil && isAdding {
+                    self?.isAddingAccount = isAdding
+                } else {
+                    self?.isAddingAccount = false
+                }
+            }
+            .store(in: &cancellableSet)
+
       // Listen for hidden addresses changes
       NotificationCenter.default.publisher(for: .hiddenAddressesDidChanged)
         .receive(on: DispatchQueue.main)
@@ -64,15 +82,40 @@ class SideMenuViewModel: ObservableObject {
         allAccounts = [[.mock()],[.mock()],[.mock()]]
         return
       }
-      allAccounts = profile.accounts.map({ list in
+      let rawEoaIndices = LocalUserDefaults.shared.getEOAIndices(for: profile.uid)
+      let eoaIndices = Dictionary(rawEoaIndices.map { ($0.key.lowercased(), $0.value) }, uniquingKeysWith: { first, _ in first })
+
+      let allItems = profile.accounts.map({ list in
         list.map { account in
-          // Check if manually hidden via LocalUserDefaults
           let isManuallyHidden = LocalUserDefaults.shared.isAddressHidden(account.address, for: profile.uid)
-          // Combine with original isHidden logic (balance/NFT based)
           let isHidden = account.isHidden || isManuallyHidden
           return SideMenuItem(account: account, isHidden: isHidden)
         }
       })
+        log.debug("[Side] \(rawEoaIndices)")
+      // Separate eoa and main groups, sort independently, then merge (eoa first)
+      let eoaGroups = allItems.filter { $0.first?.account.type == .eoa }
+        .sorted { lhs, rhs in
+          let lhsIndex = eoaIndices[lhs.first?.account.address.lowercased() ?? ""] ?? 0
+          let rhsIndex = eoaIndices[rhs.first?.account.address.lowercased() ?? ""] ?? 0
+          return lhsIndex < rhsIndex
+        }
+      let mainGroups = allItems.filter { $0.first?.account.type == .main }
+        .sorted { lhs, rhs in
+          let lhsAddr = lhs.first?.account.address.lowercased() ?? ""
+          let rhsAddr = rhs.first?.account.address.lowercased() ?? ""
+          return lhsAddr < rhsAddr
+        }
+      let otherGroups = allItems.filter {
+        guard let type = $0.first?.account.type else { return true }
+        return type != .eoa && type != .main
+      }
+        log.debug("[Side] eoa index:\(eoaIndices)")
+        log.debug("[Side] eoa: \(eoaGroups.map({ $0.first?.account.address }))")
+        if eoaGroups.count == 2 {
+            log.debug("[Side] ")
+        }
+      allAccounts = eoaGroups + mainGroups + otherGroups
       if let address = wallet.selectedAccount?.hexAddr {
         refreshAccount(address: address)
         updateMigrationCardVisibility(for: currentAccount)

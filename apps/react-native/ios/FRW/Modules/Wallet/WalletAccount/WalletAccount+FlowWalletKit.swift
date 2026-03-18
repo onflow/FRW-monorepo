@@ -88,7 +88,8 @@ extension FlowWalletKit.COA {
     /// - Note: COA accounts are EVM accounts linked to a Flow account
     func toWalletAccount(
         parentAddress: String? = WalletManager.shared.mainAccount?.hexAddr,
-        userId: String? = nil
+        userId: String? = nil,
+        forceZero: Bool = false
     ) -> WalletAccount {
         let addr = address.addHexPrefix()
         let user = WalletUser.get(address: addr, userId: userId)
@@ -110,7 +111,7 @@ extension FlowWalletKit.COA {
             childInfo: nil,
             parent: parentInfo,
             isActive: WalletManager.shared.selectedAccount?.address.hexAddr == addr,
-            assets: .notLoaded
+            assets: forceZero ? .loaded(balance: 0, nftCount: 0, erc20Balance: 0) : .notLoaded
         )
     }
 }
@@ -187,9 +188,10 @@ extension FlowWalletKit.Wallet {
 extension FlowWalletKit.Account {
     /// Build account group including main account and all linked accounts
     /// - Parameter userId: Optional user ID for multi-user support
+    /// - Parameter forceZero: Set the asset to 0 in advance, for coa
     /// - Returns: Array of WalletAccounts with main account first, followed by linked accounts
     /// - Note: Automatically fetches linked accounts if not already loaded
-    func buildWalletAccount(userId: String? = nil) async throws -> [WalletAccount] {
+    func buildWalletAccount(userId: String? = nil, forceZero: Bool = false) async throws -> [WalletAccount] {
         if !hasLinkedAccounts {
             try await fetchAccount()
         }
@@ -198,7 +200,7 @@ extension FlowWalletKit.Account {
         result.append(mainAccount)
 
         if let account = coa {
-            let linkedAccount = account.toWalletAccount(parentAddress: mainAccount.address, userId: userId)
+            let linkedAccount = account.toWalletAccount(parentAddress: mainAccount.address, userId: userId, forceZero: forceZero)
             result.append(linkedAccount)
         }
 
