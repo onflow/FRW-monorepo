@@ -109,8 +109,7 @@ class AppDelegate: RCTDefaultReactNativeFactoryDelegate, UIApplicationDelegate {
             _ = Replies.didReceiveRemoteNotification(notification)
         }
         FlowLog.logEnv()
-        InstallInfoManager.recordInstallInfoIfNeeded()
-        fetchWhatsNew()
+        asyncConfig()
         return true
     }
 
@@ -249,6 +248,13 @@ extension AppDelegate {
         UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).tintColor = .orange
 
         HUD.setupProgressHUD()
+    }
+    private func asyncConfig() {
+        Task {
+            await fetchWhatsNew()
+            //must be called after `fetchWhatsNew`
+            InstallInfoManager.recordInstallInfoIfNeeded()
+        }
     }
 }
 

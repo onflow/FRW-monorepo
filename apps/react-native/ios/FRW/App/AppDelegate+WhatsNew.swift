@@ -8,26 +8,23 @@
 import Foundation
 
 extension AppDelegate {
-  func fetchWhatsNew() {
-    Task {
+  func fetchWhatsNew() async {
       do {
-        let response = try await WhatsNewService.fetchWhatsNewForIOS()
-        if let response {
-          let trimmedContent = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-          guard !trimmedContent.isEmpty || !response.actions.isEmpty else {
-            log.info("[WhatsNew] Empty payload, skip popup")
-            return
+          let response = try await WhatsNewService.fetchWhatsNewForIOS()
+          if let response {
+              let trimmedContent = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+              guard !trimmedContent.isEmpty || !response.actions.isEmpty else {
+                  log.info("[WhatsNew] Empty payload, skip popup")
+                  return
+              }
+
+              log.info("[WhatsNew] payload received for version: \(response.version)")
+
+              let popupData = try response.toDictionary()
+              Router.route(to: RouteMap.ReactNative.whatsNew(popupData))
           }
-
-          log.info("[WhatsNew] payload received for version: \(response.version)")
-
-          let popupData = try response.toDictionary()
-          Router.route(to: RouteMap.ReactNative.whatsNew(popupData))
-        }
       } catch {
-        log.error(error)
+          log.error("[WhatsNew] \(error)")
       }
-
-    }
   }
 }
