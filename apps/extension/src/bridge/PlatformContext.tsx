@@ -14,7 +14,7 @@ import { getLocalData } from '@/data-model/storage';
 import { type KeyringStateV3, type VaultEntryV3 } from '@/shared/types';
 import { isValidEthereumAddress } from '@/shared/utils/address';
 import { useCurrency } from '@/ui/hooks/preference-hooks';
-import { useUserWallets } from '@/ui/hooks/use-account-hooks';
+import { useCurrentId, useUserWallets } from '@/ui/hooks/use-account-hooks';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { useCoins } from '@/ui/hooks/useCoinHook';
 import { useNetwork } from '@/ui/hooks/useNetworkHook';
@@ -73,6 +73,7 @@ const PlatformContext = createContext<PlatformContextValue | null>(null);
  */
 export const PlatformProvider = ({ children }: { children: ReactNode }) => {
   const { network } = useNetwork();
+  const currentId = useCurrentId();
   const userWallets = useUserWallets();
   const {
     currentWallet,
@@ -1157,7 +1158,15 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
       }
 
       return {
-        profiles: profilesArray,
+        profiles: profilesArray.sort((a, b) => {
+          if (a.uid === currentId && b.uid !== currentId) {
+            return -1;
+          }
+          if (b.uid === currentId && a.uid !== currentId) {
+            return 1;
+          }
+          return 0;
+        }),
       };
     };
 
@@ -1219,7 +1228,7 @@ export const PlatformProvider = ({ children }: { children: ReactNode }) => {
 
     // Always reinitialize ServiceContext when data changes
     ServiceContext.initialize(enhancedPlatform);
-  }, [platform, coins, userWallets, currentWallet, currency]);
+  }, [platform, coins, userWallets, currentWallet, currency, currentId]);
 
   // Keep platform synchronized with extension state
   useEffect(() => {
