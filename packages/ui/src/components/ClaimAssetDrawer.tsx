@@ -57,7 +57,12 @@ function formatUsd(value: number): string {
 
 function formatTokenAmount(amount: string): string {
   if (!amount.includes('.')) return amount;
-  return amount.replace(/\.?0+$/, '');
+  const [integer, decimal] = amount.split('.');
+  let end = decimal.length;
+  while (end > 0 && decimal[end - 1] === '0') {
+    end--;
+  }
+  return end > 0 ? `${integer}.${decimal.slice(0, end)}` : integer;
 }
 
 export const ClaimAssetDrawer: React.FC<ClaimAssetDrawerProps> = ({

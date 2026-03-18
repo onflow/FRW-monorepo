@@ -315,9 +315,8 @@ export class FlowToFlowNftStrategy implements TransferStrategy {
     });
 
     if (_helpers?.featureFlags?.cadence_inbox) {
-      return await this.cadenceService.batchSendNbaNftV4(flowIdentifier, receiver, ids);
+      return await this.cadenceService.batchSendNftV4(flowIdentifier, receiver, ids);
     }
-
     return await this.cadenceService.batchSendNftV3(flowIdentifier, receiver, ids);
   }
 }
