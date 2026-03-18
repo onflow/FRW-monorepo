@@ -65,6 +65,12 @@ export interface PlatformSpec extends KeyRotationDependencies {
    */
   getWrapEOATxWithCadence?(): Promise<boolean>;
 
+  /**
+   * Returns whether the cadence inbox (LostAndFound v4) feature is enabled.
+   * When true, token transfers use sendFt (v4); when false, transferTokensV3 is used.
+   */
+  getCadenceInbox(): Promise<boolean>;
+
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;

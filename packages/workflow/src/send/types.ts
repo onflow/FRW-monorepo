@@ -34,6 +34,7 @@ export interface TransferExecutionHelpers {
   network?: 'mainnet' | 'testnet' | string;
   gasPrice?: number | string | bigint;
   session?: TransactionSession;
+  featureFlags?: { cadence_inbox?: boolean };
 }
 
 export interface TransferStrategy {

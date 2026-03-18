@@ -150,6 +150,7 @@ const CoinList = ({
   const currencyCode = currency?.code;
   const currencySymbol = currency?.symbol;
   const isVaultEnabled = useFeatureFlag('vault_entrance');
+  const isInboxEnabled = useFeatureFlag('cadence_inbox');
   const navigate = useNavigate();
   const inboxData = useInboxData(network, currentWallet?.address);
 
@@ -337,7 +338,7 @@ const CoinList = ({
             managePath="/dashboard/managetoken"
             createPath="/dashboard/tokenList"
             showEarn={isVaultEnabled}
-            claimCount={inboxCount}
+            claimCount={isInboxEnabled ? inboxCount : undefined}
           />
         </>
       )}
