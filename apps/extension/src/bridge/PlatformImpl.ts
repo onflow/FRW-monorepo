@@ -47,6 +47,19 @@ class ExtensionPlatformImpl implements PlatformSpec {
     this.storageInstance = new ExtensionStorage();
     this.cacheInstance = new ExtensionCache('screens:');
   }
+  onUpdateDialogActionPress?(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void {
+    throw new Error('Method not implemented.');
+  }
+  closeRNWithNFT(id?: string | null): void {
+    throw new Error('Method not implemented.');
+  }
+  refreshCoaAfterMigration?(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   getSignType(): string {
     throw new Error('Method not implemented.');
   }
@@ -386,7 +399,8 @@ class ExtensionPlatformImpl implements PlatformSpec {
     showNotification: boolean,
     title: string,
     message: string,
-    icon?: string
+    icon?: string,
+    sourceAddress?: string
   ): void {
     if (!this.walletController) {
       this.log('warn', 'Cannot listen transaction - wallet controller not initialized');
@@ -397,10 +411,22 @@ class ExtensionPlatformImpl implements PlatformSpec {
       return;
     }
 
-    this.log('debug', 'Extension listenTransaction called:', { txId, showNotification, title });
+    this.log('info', 'Extension listenTransaction called:', {
+      txId,
+      showNotification,
+      title,
+      sourceAddress,
+    });
 
     try {
-      this.walletController.listenTransaction(txId, showNotification, title, message, icon);
+      this.walletController.listenTransaction(
+        txId,
+        showNotification,
+        title,
+        message,
+        icon,
+        sourceAddress
+      );
     } catch (error) {
       this.log('error', 'Extension listenTransaction failed:', error);
     }
@@ -445,6 +471,30 @@ class ExtensionPlatformImpl implements PlatformSpec {
   }
 
   configureCadenceService(cadenceService: any): void {
+    const extractTxId = (value: unknown): string | null => {
+      if (typeof value === 'string' && /^(?:0x)?[0-9a-fA-F]{64}$/.test(value)) {
+        return value;
+      }
+      if (!value || typeof value !== 'object') {
+        return null;
+      }
+      const obj = value as Record<string, unknown>;
+      const candidates = [
+        obj.txId,
+        obj.transactionId,
+        obj.transaction_id,
+        obj.id,
+        obj.hash,
+        obj.result,
+      ];
+      for (const candidate of candidates) {
+        if (typeof candidate === 'string' && /^(?:0x)?[0-9a-fA-F]{64}$/.test(candidate)) {
+          return candidate;
+        }
+      }
+      return null;
+    };
+
     const version = this.getVersion();
     const buildNumber = this.getBuildNumber();
     const network = this.getNetwork();
@@ -528,20 +578,37 @@ class ExtensionPlatformImpl implements PlatformSpec {
       if (config.type === 'transaction') {
         // Handle bypassed extension transactions
         if (response && response.__EXTENSION_SUCCESS__) {
-          txId = response.result;
+          txId = extractTxId(response.result);
 
           // Return the transaction ID as the response
-          response = txId;
-        } else if (response && typeof response === 'string') {
-          // Handle normal FCL transactions
-          txId = response;
+          if (txId) {
+            response = txId;
+          }
+        } else {
+          // Handle normal FCL transactions and object-shaped transaction responses
+          txId = extractTxId(response);
         }
 
         if (txId) {
           try {
             // Start transaction monitoring
             if (this.walletController && this.walletController.listenTransaction) {
-              this.walletController.listenTransaction(txId);
+              const selectedAccountForTracking = await this.getSelectedAccount();
+              const sendFromAddress = useSendStore.getState().fromAccount?.address;
+              const trackingAddress = sendFromAddress || selectedAccountForTracking?.address;
+              this.log('info', 'Response interceptor starting tx monitor:', {
+                txId,
+                selectedTrackingAddress: selectedAccountForTracking?.address,
+                sendFromAddress,
+                trackingAddress,
+                configName: config?.name,
+              });
+              this.listenTransaction?.(txId, true, '', '', undefined, trackingAddress);
+            } else {
+              this.log(
+                'warn',
+                'Response interceptor cannot start tx monitor: listenTransaction unavailable'
+              );
             }
             // Redirect after transaction (default to true)
             // Set to false in config.skipRedirect to let the page handle its own navigation
