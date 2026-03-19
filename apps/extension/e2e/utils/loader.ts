@@ -56,9 +56,36 @@ export const test = base.extend<{
     });
 
     // Give the extension time to initialize
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    context.on('page', async (page) => {
+      const url = page.url();
 
+      if (url.startsWith('chrome-extension://') && url.endsWith('notification.html')) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        const signType = await page.getByText('SIGN MESSAGE').isVisible();
+
+        if (signType) {
+          // sign msg
+          await wait(2500);
+          const approveBtn = await page.getByRole('button', { name: 'Approve' });
+          await approveBtn.click();
+        } else {
+          // connect
+          await wait(500);
+          const changeAccBtn = await page.getByTestId('account-card-chevron');
+          expect(changeAccBtn).toBeVisible();
+          await changeAccBtn.click();
+          const eoaAccount = await page.getByTestId('0x53143927cD4ac37826eD85962ad0450442E556Fa'); // test 1 eoa addr
+          expect(eoaAccount).toBeVisible();
+          await eoaAccount.click();
+
+          await page.getByTestId('connect-button').click();
+        }
+      }
+    });
     await call(context);
+
     await context.close();
   },
   extensionId: async ({ context }, call) => {
@@ -204,6 +231,16 @@ export const test = base.extend<{
   },
 });
 
+export const connectToApps = async ({ page, extensionId, url, testId, idx = -1 }) => {
+  await page.goto(url);
+
+  let connectBtn = await page.getByTestId(testId);
+  if (idx !== -1) {
+    connectBtn = connectBtn.nth(idx);
+  }
+  await connectBtn.click();
+};
+
 export const cleanExtension = async (projectName: string) => {
   console.log(
     'Cleaning extension for - parallel index, worker index, project',
@@ -258,6 +295,10 @@ export const getAuth = async () => {
 
 export const cleanAuth = async () => {
   await saveAuth(null);
+};
+
+export const wait = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 export const expect = test.expect;

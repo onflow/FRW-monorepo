@@ -98,7 +98,7 @@
     "hdkey": "0.8.0",
     "history": "^4.10.1",
     "koa-compose": "^4.1.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "loglevel": "^1.9.2",
     "pdfjs-dist": "^4.0.379",
     "lottie-react-native": "^7.3.4",
@@ -203,7 +203,7 @@
     "typescript-transform-paths": "^3.5.5",
     "url-loader": "^4.1.1",
     "vitest": "^3.2.4",
-    "webpack": "^5.99.9",
+    "webpack": "^5.104.1",
     "webpack-cli": "^4.10.0",
     "webpack-merge": "^5.10.0",
     "zip-dir": "^2.0.0"

@@ -44,6 +44,7 @@ export interface UpdateDialogProps {
    * Callback when bottom button is clicked
    */
   onButtonClick?: () => void;
+  onActionPress?: (action: WhatsNewAction) => void;
   /**
    * Callback when dialog is closed
    */
@@ -58,6 +59,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   actions,
   buttonText,
   onButtonClick,
+  onActionPress,
   onClose,
 }) => {
   const theme = useTheme();
@@ -98,6 +100,8 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
   };
 
   const handleActions = (action: WhatsNewAction) => {
+    onActionPress?.(action);
+
     if (action.type === 'external') {
       if (action.url && typeof window !== 'undefined') {
         window.open(action.url, '_blank', 'noopener,noreferrer');
@@ -105,6 +109,8 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
     } else if (action.type === 'internal') {
       // todo for inner url
       onButtonClick?.();
+      onClose();
+    } else if (action.type === 'deeplink') {
       onClose();
     }
   };
@@ -150,6 +156,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
       >
         {/* Close button */}
         <YStack
+          data-testid="popup-close-button"
           {...({
             pos: 'absolute',
             top: 8,
@@ -160,6 +167,7 @@ export const UpdateDialog: React.FC<UpdateDialogProps> = ({
             items: 'center',
             justify: 'center',
             bg: 'transparent',
+
             rounded: 12,
             hoverStyle: { bg: 'rgba(255, 255, 255, 0.1)' },
             pressStyle: { opacity: 0.7 },

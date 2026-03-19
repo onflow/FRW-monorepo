@@ -1,0 +1,142 @@
+//
+//  ServiceConfig.swift
+//  FRW
+//
+//  Created by cat on 2023/11/28.
+//
+
+import Foundation
+import LuciqSDK
+import SwiftyDropbox
+import FlowWalletKit
+// MARK: - ServiceConfig
+
+class ServiceConfig {
+  // MARK: Lifecycle
+
+  init() {
+    guard let filePath = Bundle.main.path(forResource: "ServiceConfig", ofType: "plist") else {
+      fatalError("fatalError ===> Can't find ServiceConfig.plist")
+    }
+    self.dict = NSDictionary(contentsOfFile: filePath) as? [String: String] ?? [:]
+  }
+
+  // MARK: Internal
+
+  static let shared = ServiceConfig()
+
+  static var luciqRNToken: String {
+    ServiceConfig.shared.dict["INSTABUG_RN_TOKEN"] ?? ""
+  }
+  
+  static var mixpanelRNToken: String {
+    ServiceConfig.shared.dict["MixPanelToken"] ?? ""
+  }
+
+  static func configure() {
+    ServiceConfig.shared.setupLuciq()
+    ServiceConfig.shared.setupMixPanel()
+    ServiceConfig.shared.setupDropbox()
+  }
+
+  // MARK: Private
+
+  private let dict: [String: String]
+}
+
+// MARK: config
+
+extension ServiceConfig {
+  private func setupLuciq() {
+    guard let token = dict["instabug-key"] else {
+      fatalError("fatalError ===> Can't find luciq key at ServiceConfig.plist")
+    }
+
+    LuciqConfig.start(token: token)
+    Luciq.willSendReportHandler = { report in
+      if let uid = UserManager.shared.activatedUID {
+        report.setUserAttribute(uid, withKey: "uid")
+      }
+      if let userName = UserManager.shared.userInfo?.username {
+        report.setUserAttribute(userName, withKey: "username")
+      }
+
+      if let selectedAccount = WalletManager.shared.selectedAccountAddress {
+        report.setUserAttribute(selectedAccount, withKey: "SelectedAccount")
+      }
+
+      if let address = WalletManager.shared.getPrimaryWalletAddress() {
+        report.setUserAttribute(address, withKey: "FlowAccount")
+      }
+
+      if let address = WalletManager.shared.coa?.address {
+        report.setUserAttribute(address, withKey: "COA")
+      }
+      if let addresses = WalletManager.shared.EOAs?.map({ $0.address }) {
+        let result = addresses.joined(separator: ",")
+        report.setUserAttribute(result, withKey: "EOA")
+      }
+      if let url = try? ZipFile.zipLogFile() {
+        report.addFileAttachment(with: url)
+      }
+      
+      if let keyType = WalletManager.shared.keyProvider?.keyType {
+        report.setUserAttribute(keyType.name, withKey: "ProfileType")
+      }
+
+      let childAddress = WalletManager.shared.childs?
+        .reduce("") { $0 + "," + $1.address.hexAddr } ?? ""
+      report.setUserAttribute(childAddress, withKey: "Childs")
+      return report
+    }
+    // Enabling Proactive Reporting
+    let configurations = ProactiveReportingConfigurations()
+    configurations.enabled = true // Enable/disable
+    configurations.gapBetweenModals = 5 // Time in seconds
+    configurations.modalDelayAfterDetection = 5 // Time in seconds
+    BugReporting.setProactiveReportingConfigurations(configurations)
+  }
+
+  private func setupMixPanel() {
+    guard let token = dict["MixPanelToken"] else {
+      fatalError("fatalError ===> Can't find MixPanel Token at ServiceConfig.plist")
+    }
+    EventTrack.start(token: token)
+  }
+
+  private func setupDropbox() {
+    let appKey = ServiceConfig.shared.dropboxAppKey
+    DropboxClientsManager.setupWithTeamAppKey(appKey)
+  }
+}
+
+extension FlowWalletKit.KeyType {
+  var name: String {
+    switch self {
+    case .seedPhrase:
+      return "SeedPhrase"
+    case .privateKey:
+      return "PrivateKey"
+    case .secureEnclave:
+      return "SecureEnclave"
+    case .keyStore:
+      return "Keystore"
+    }
+  }
+}
+
+extension ServiceConfig {
+  var dropboxAppKey: String {
+    guard let appKey = dict["dropbox-appkey"] else {
+      fatalError("Can't find Dropbox appKey at ServiceConfig.plist")
+    }
+    return appKey
+  }
+
+  var scriptPublicKey: String {
+    guard let key = dict["scripts-publicKey"] else {
+      fatalError("Can't find scripts publicKey at ServiceConfig.plist")
+    }
+    return key
+  }
+}

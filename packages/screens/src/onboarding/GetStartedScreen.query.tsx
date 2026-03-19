@@ -1,6 +1,13 @@
 import { logger, navigation } from '@onflow/frw-context';
 import { ScreenName } from '@onflow/frw-types';
-import { YStack, Text, Button, OnboardingBackground, OnboardingHeader } from '@onflow/frw-ui';
+import {
+  YStack,
+  Text,
+  Button,
+  OnboardingBackground,
+  OnboardingHeader,
+  ScrollView,
+} from '@onflow/frw-ui';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking } from 'react-native';
@@ -54,24 +61,32 @@ export function GetStartedScreen(): React.ReactElement {
 
   return (
     <OnboardingBackground variant="getStarted">
-      <YStack flex={1} paddingHorizontal="$4">
-        {/* Top spacer to position title in upper third */}
-        <YStack flex={1} />
+      <YStack flex={1}>
+        <ScrollView
+          flex={1}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <YStack flex={1} paddingHorizontal="$4">
+            {/* Top spacer to position title in upper third */}
+            <YStack flex={1} />
 
-        {/* Main content */}
-        <YStack alignItems="center" gap="$4">
-          <OnboardingHeader
-            title={t('onboarding.getStarted.title')}
-            subtitle={t('onboarding.getStarted.subtitle')}
-            logoText={t('onboarding.flowWallet')}
-          />
-        </YStack>
+            {/* Main content */}
+            <YStack alignItems="center" gap="$4">
+              <OnboardingHeader
+                title={t('onboarding.getStarted.title')}
+                subtitle={t('onboarding.getStarted.subtitle')}
+                logoText={t('onboarding.flowWallet')}
+              />
+            </YStack>
 
-        {/* Larger spacer to push buttons to bottom */}
-        <YStack flex={2} />
+            {/* Larger spacer to push buttons to bottom when content fits */}
+            <YStack flex={2} />
+          </YStack>
+        </ScrollView>
 
-        {/* Bottom buttons */}
-        <YStack paddingBottom="$6" gap="$3">
+        {/* Bottom buttons - fixed at bottom */}
+        <YStack paddingHorizontal="$4" paddingBottom="$6" gap="$3">
           {/* Create Account Button - Primary */}
           <Button variant="inverse" size="large" fullWidth onPress={handleCreateAccount}>
             {t('onboarding.getStarted.createAccount')}

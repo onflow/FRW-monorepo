@@ -65,6 +65,12 @@ export interface PlatformSpec extends KeyRotationDependencies {
    */
   getWrapEOATxWithCadence?(): Promise<boolean>;
 
+  /**
+   * Returns whether the cadence inbox (LostAndFound v4) feature is enabled.
+   * When true, token transfers use sendFt (v4); when false, transferTokensV3 is used.
+   */
+  getCadenceInbox(): Promise<boolean>;
+
   // Data access methods
   getRecentContacts(): Promise<RecentContactsResponse>;
   getWalletAccounts(): Promise<WalletAccountsResponse>;
@@ -111,6 +117,12 @@ export interface PlatformSpec extends KeyRotationDependencies {
   scanQRCode(): Promise<string>;
   shareQRCode?(address: string, qrCodeDataUrl: string): Promise<void>;
   closeRN(id?: string | null): void;
+  onUpdateDialogActionPress?(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void;
+  closeRNWithNFT(id?: string | null): void;
 
   // Toast notifications
   showToast?(
@@ -196,6 +208,10 @@ export interface PlatformSpec extends KeyRotationDependencies {
     erc721: Array<{ address: string; id: string }>;
     erc1155: Array<{ address: string; id: string; amount: string }>;
   }>;
+  /**
+   * Refresh COA-related data after migration (native-side refresh for home + side menu)
+   */
+  refreshCoaAfterMigration?(): Promise<void>;
   // Safe area insets for cross-platform layout
   /**
    * Get device safe area insets for proper content positioning

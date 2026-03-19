@@ -1,3 +1,4 @@
+import Luciq from '@luciq/react-native';
 import { type forms_DeviceInfo } from '@onflow/frw-api';
 import { type Cache, type Navigation, type PlatformSpec, type Storage } from '@onflow/frw-context';
 import type { AccountKeySignature, NewKeyInfo } from '@onflow/frw-types';
@@ -15,11 +16,11 @@ import { Platform } from '@onflow/frw-types';
 import { extractUidFromJwt, isTransactionId } from '@onflow/frw-utils';
 // import { GAS_LIMITS } from '@onflow/frw-workflow';
 import { Buffer } from 'buffer';
-import Instabug from 'instabug-reactnative';
 import { Platform as RNPlatform } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 
 import { cache, storage } from '../storage';
+import { MigrationAssetsService } from './MigrationAssetsService';
 import NativeFRWBridge from './NativeFRWBridge';
 import { reactNativeNavigation } from './ReactNativeNavigation';
 import { createBridgeAuthorization, createPayer, createProposer } from './signWithRole';
@@ -38,6 +39,14 @@ const hexToBytes = (hex: string): Uint8Array =>
 class PlatformImpl implements PlatformSpec {
   private debugMode: boolean = __DEV__;
   private instabugInitialized: boolean = false;
+  private migrationAssetsService: MigrationAssetsService;
+
+  constructor() {
+    this.migrationAssetsService = new MigrationAssetsService({
+      getNetwork: () => this.getNetwork(),
+      log: this.log.bind(this),
+    });
+  }
 
   log(level: 'debug' | 'info' | 'warn' | 'error' = 'debug', message: string, ...args: any[]): void {
     if (level === 'debug' && !this.debugMode) {
@@ -89,17 +98,17 @@ class PlatformImpl implements PlatformSpec {
           case 'debug':
             // Only send debug logs in debug mode to avoid spam
             if (this.debugMode) {
-              Instabug.logDebug(instabugMessage);
+              Luciq.logDebug(instabugMessage);
             }
             break;
           case 'info':
-            Instabug.logInfo(instabugMessage);
+            Luciq.logInfo(instabugMessage);
             break;
           case 'warn':
-            Instabug.logWarn(instabugMessage);
+            Luciq.logWarn(instabugMessage);
             break;
           case 'error':
-            Instabug.logError(instabugMessage);
+            Luciq.logError(instabugMessage);
             break;
         }
       } catch (error) {
@@ -185,6 +194,24 @@ class PlatformImpl implements PlatformSpec {
   getCurrency(): Currency {
     return NativeFRWBridge.getCurrency();
   }
+
+  getMixpanelToken(): string {
+    try {
+      const env = NativeFRWBridge.getEnv();
+      return env.MIXPANEL_TOKEN || '';
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to get Mixpanel token from native bridge:', error);
+      return '';
+    }
+  }
+
+  getSignType(): string {
+    // Return sign type for analytics tracking
+    // On React Native, signing is handled natively - return 'wallet' as default
+    // The actual sign type tracking is done natively by MixpanelManager
+    return 'wallet';
+  }
+
   getPlatform(): Platform {
     return RNPlatform.OS === 'ios' ? Platform.iOS : Platform.Android;
   }
@@ -216,6 +243,11 @@ class PlatformImpl implements PlatformSpec {
   getGoApiEndpoint(): string {
     const env = NativeFRWBridge.getEnv();
     return env.GO_API_URL;
+  }
+
+  async getCadenceInbox(): Promise<boolean> {
+    const env = NativeFRWBridge.getEnv();
+    return env.CADENCE_INBOX || false;
   }
 
   getInstabugToken(): string {
@@ -282,8 +314,32 @@ class PlatformImpl implements PlatformSpec {
     return NativeFRWBridge.signRotationRequest(address, signatureData);
   }
 
-  closeRN(): void {
-    NativeFRWBridge.closeRN(null);
+  async keystoreMigration(): Promise<void> {
+    if (this.getPlatform() === Platform.Android && NativeFRWBridge.keystoreMigration) {
+      return NativeFRWBridge.keystoreMigration();
+    }
+    this.log('warn', '[PlatformImpl] keystoreMigration not implemented or not Android');
+    return Promise.resolve();
+  }
+
+  closeRN(id?: string | null): void {
+    NativeFRWBridge.closeRN(id ?? null);
+  }
+
+  closeRNWithNFT(id?: string | null): void {
+    NativeFRWBridge.closeRNWithNFT(id ?? null);
+  }
+
+  onUpdateDialogActionPress(
+    actionType: 'external' | 'internal' | 'deeplink',
+    actionUrl?: string | null,
+    actionText?: string | null
+  ): void {
+    try {
+      NativeFRWBridge.onUpdateDialogActionPress(actionType, actionUrl ?? null, actionText ?? null);
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] Failed to pass update dialog action to native:', error);
+    }
   }
 
   getWalletProfiles(): Promise<WalletProfilesResponse> {
@@ -531,6 +587,28 @@ class PlatformImpl implements PlatformSpec {
       NativeFRWBridge.launchNativeScreen(screenName as any, params ?? null);
     } catch (error) {
       this.log('error', `[PlatformImpl] Failed to launch native screen '${screenName}':`, error);
+    }
+  }
+
+  getMigrationAssets(sourceAddress: string): Promise<{
+    erc20: Array<{ address: string; amount: string }>;
+    erc721: Array<{ address: string; id: string }>;
+    erc1155: Array<{ address: string; id: string; amount: string }>;
+  }> {
+    return this.migrationAssetsService.getMigrationAssets(sourceAddress, () =>
+      NativeFRWBridge.getMigrationAssets(sourceAddress)
+    );
+  }
+
+  async refreshCoaAfterMigration(): Promise<void> {
+    try {
+      await NativeFRWBridge.refreshCoaAfterMigration();
+    } catch (error) {
+      this.log(
+        'warn',
+        '[PlatformImpl] Failed to refresh COA data after migration via bridge:',
+        error
+      );
     }
   }
 

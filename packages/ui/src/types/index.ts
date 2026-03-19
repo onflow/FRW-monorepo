@@ -1,9 +1,16 @@
-import type { TokenModel, WalletAccount, Currency, NFTModel } from '@onflow/frw-types';
+import type {
+  TokenModel,
+  WalletAccount,
+  Currency,
+  NFTModel,
+  ActivityItem,
+  FungibleTokenCatalogItem,
+} from '@onflow/frw-types';
 import type { ComponentProps } from 'react';
 import type { Button as TamaguiButton, Input as TamaguiInput, Text as TamaguiText } from 'tamagui';
 
 // Re-export from frw-types
-export type { NFTModel };
+export type { NFTModel, ActivityItem };
 
 // Base component props
 export type ButtonProps = ComponentProps<typeof TamaguiButton>;
@@ -166,4 +173,94 @@ export interface EnhancedSegmentedControlProps {
   onChange: (value: string) => void;
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
+}
+
+// Claim screen components props
+export interface PriceChangeBadgeProps {
+  value: number;
+}
+
+export interface ClaimReceiverRowProps {
+  name: string;
+  address: string;
+  avatar?: string;
+  emojiInfo?: { emoji: string; name: string; color: string };
+  parentEmoji?: { emoji: string; name: string; color: string };
+  type?: 'main' | 'child' | 'evm' | 'eoa';
+  isCollapsed: boolean;
+  onPress: () => void;
+}
+
+export interface ClaimDateHeaderProps {
+  date: string;
+}
+
+export interface ClaimItemRowProps {
+  name: string;
+  symbol: string;
+  logoURI?: string;
+  amount: string;
+  price?: number;
+  priceChange24h?: number;
+  usdValue?: number;
+  isLast: boolean;
+  isVerified?: boolean;
+}
+
+export interface ClaimNFTCollectionRowProps {
+  name: string;
+  logoURI?: string;
+  itemCount: number;
+  isLast: boolean;
+}
+
+// Token list components props
+export interface AddTokenListItemProps {
+  token: FungibleTokenCatalogItem;
+  isEnabled: boolean;
+  isLast: boolean;
+  onAdd: () => void;
+}
+
+export interface TokenSectionHeaderProps {
+  letter: string;
+}
+
+export interface ClaimBannerProps {
+  title: string;
+  count?: number;
+  onPress?: () => void;
+}
+
+// Activity components props
+export interface ActivityCardProps {
+  item: ActivityItem;
+  onPress?: () => void;
+}
+
+export interface ActivityGroupHeaderProps {
+  title: string;
+}
+
+export interface ActivitySkeletonProps {
+  count?: number;
+}
+
+export interface ActivityDetailRowProps {
+  /** Label on the left side */
+  label: string;
+  /** Value on the right side */
+  value: string;
+  /** Optional color for the value text */
+  valueColor?: string;
+  /** Optional secondary text below the value (e.g., "Covered by Flow Wallet") */
+  secondaryText?: string;
+  /** Show strikethrough on original value (for free fees) */
+  showStrikethrough?: boolean;
+  /** Original value to show with strikethrough */
+  originalValue?: string;
+  /** Show Flow logo after value */
+  showFlowLogo?: boolean;
+  /** Show skeleton placeholder instead of value while loading */
+  skeleton?: boolean;
 }

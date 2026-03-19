@@ -1,9 +1,5 @@
-import {
-  createMixpanelAnalytics,
-  TransactionTracker,
-  type TransactionSession,
-} from '@onflow/frw-analytics';
-import { bridge, cadence } from '@onflow/frw-context';
+import type { TransactionSession } from '@onflow/frw-analytics';
+import { analytics, bridge, cadence } from '@onflow/frw-context';
 import { flowService } from '@onflow/frw-services';
 import {
   type CollectionModel,
@@ -35,8 +31,12 @@ import {
 // Helper function to format amount
 function formatAmount(val: string | number | undefined | null): string {
   if (val === null || val === undefined || val === '') return '0';
-  const num = typeof val === 'string' ? parseFloat(val) : val;
-  return isNaN(num) ? '0' : num.toString();
+  if (typeof val === 'number') {
+    return isNaN(val) ? '0' : String(val);
+  }
+  // Validate without parseFloat to preserve full decimal precision (e.g. 18 decimals)
+  const trimmed = val.trim();
+  return trimmed === '' || isNaN(Number(trimmed)) ? '0' : trimmed;
 }
 
 // Default form data
@@ -382,30 +382,55 @@ export const useSendStore = create<SendState>((set, get) => ({
       error: null,
     }),
 
-  // Create transaction tracker
-  createTransactionSession: async (config: any): Promise<TransactionSession | null> => {
-    const state = get();
-    const { transactionType } = state;
-    const analytics = await createMixpanelAnalytics(config);
-    logger.info('[SendStore] createTracker -- state:', state);
+  // Create transaction session using analytics from context (initialized at app startup)
+  createTransactionSession: async (): Promise<TransactionSession | null> => {
+    try {
+      // Check if analytics is available (may be null on React Native where native MixpanelManager handles tracking)
+      if (!analytics.isEnabled()) {
+        logger.debug('[SendStore] Analytics not enabled, skipping transaction tracking');
+        return null;
+      }
 
-    const transactionTracker = new TransactionTracker(analytics);
+      const transactionTracker = analytics.getTransactionTracker();
+      if (!transactionTracker) {
+        logger.debug('[SendStore] No transaction tracker available');
+        return null;
+      }
 
-    const { accounts } = await bridge.getWalletAccounts();
-    const selectedAccount = await bridge.getSelectedAccount();
-    const mainAccount =
-      selectedAccount.type === 'main'
-        ? selectedAccount
-        : accounts.find(
-            (account) =>
-              account.type === 'main' && account.address === selectedAccount.parentAddress
-          );
-    const session = transactionTracker?.createTransactionSession(
-      mainAccount!.address,
-      transactionType
-    );
+      const state = get();
+      const { transactionType } = state;
 
-    return session;
+      const { accounts } = await bridge.getWalletAccounts();
+      const selectedAccount = await bridge.getSelectedAccount();
+      const mainAccount =
+        selectedAccount.type === 'main'
+          ? selectedAccount
+          : accounts.find(
+              (account) =>
+                account.type === 'main' && account.address === selectedAccount.parentAddress
+            );
+
+      if (!mainAccount) {
+        logger.warn('[SendStore] No main account found for analytics session');
+        return null;
+      }
+
+      // Cast to TransactionSession since TransactionTracker returns unknown to avoid type conflicts
+      const session = transactionTracker.createTransactionSession(
+        mainAccount.address,
+        transactionType
+      ) as TransactionSession;
+
+      logger.debug('[SendStore] Transaction session created for analytics');
+      return session;
+    } catch (error) {
+      // Analytics session creation failed - continue without tracking
+      logger.warn(
+        '[SendStore] Analytics session creation failed, continuing without tracking:',
+        error
+      );
+      return null;
+    }
   },
 
   // Create send payload for transaction execution
@@ -594,11 +619,9 @@ export const useSendStore = create<SendState>((set, get) => ({
   executeTransaction: async (): Promise<any> => {
     const state = get();
     set({ isLoading: true, error: null });
-    // init mixpanel
-    const session = await state.createTransactionSession({
-      token: bridge.getMixpanelToken(),
-      debug: true,
-    });
+
+    // Create analytics session (uses pre-initialized analytics from context)
+    const session = await state.createTransactionSession();
 
     try {
       // Create payload
@@ -619,6 +642,7 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       const wrapWithCadence = (await bridge.getWrapEOATxWithCadence?.()) ?? true;
       const useDirectEvm = !wrapWithCadence;
+      const cadenceInbox = (await bridge.getCadenceInbox?.()) ?? false;
 
       const network = bridge.getNetwork?.() ?? 'mainnet';
       const helpers = {
@@ -627,6 +651,7 @@ export const useSendStore = create<SendState>((set, get) => ({
         // Direct RPC path uses workflow/default gas settings.
         gasPrice: useDirectEvm ? undefined : 0,
         session: session || undefined,
+        featureFlags: { cadence_inbox: cadenceInbox },
         ...(useDirectEvm
           ? {
               sendRawEvmTransaction: (signedTxHex: string) =>

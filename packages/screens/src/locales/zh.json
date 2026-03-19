@@ -7,7 +7,10 @@
     "sendTokens": "发送代币",
     "nftDetails": "NFT详情",
     "colorDemo": "颜色演示",
-    "receive": "接收资产"
+    "receive": "接收资产",
+    "addTokens": "添加代币",
+    "claimTokens": "领取",
+    "token": "代币"
   },
   "common": {
     "cancel": "取消",
@@ -136,6 +139,41 @@
     "generatingQR": "生成二维码中...",
     "noQRCode": "二维码不可用",
     "evmWarning": "请确保仅在Flow EVM网络上向此地址发送资产。发送到其他网络上此地址的资产将会丢失。"
+  },
+  "activity": {
+    "title": "活动",
+    "empty": "暂无活动",
+    "emptyMessage": "您的交易历史将显示在这里",
+    "error": "加载活动失败",
+    "errorMessage": "请重试",
+    "status": {
+      "pending": "处理中",
+      "success": "成功",
+      "failed": "失败",
+      "expired": "已过期"
+    },
+    "sent": "已发送",
+    "received": "已接收",
+    "today": "今天",
+    "yesterday": "昨天",
+    "detail": {
+      "appInteraction": "应用交互",
+      "youSent": "您发送了",
+      "youReceived": "您收到了",
+      "from": "从",
+      "to": "至",
+      "date": "日期",
+      "status": "状态",
+      "network": "网络",
+      "account": "账户",
+      "transactionFee": "交易费用",
+      "coveredByFlowWallet": "由Flow钱包支付",
+      "viewOnExplorer": "在区块浏览器中查看",
+      "networkFlow": "Flow",
+      "networkEvm": "Flow EVM",
+      "nftsFrom": "来自{{collection}}的NFTS",
+      "nftCount": "{{count}} NFTS"
+    }
   },
   "buttons": {
     "retry": "重试",
@@ -458,5 +496,66 @@
     "success": {
       "rotation": "账户升级成功！"
     }
+  },
+  "keystoreMigration": {
+    "tip": {
+      "title": "升级\n您的账户",
+      "description": "Flow Wallet 需要升级您账户的安全性。此过程只需几秒钟即可完成。",
+      "sectionTitle": "这意味着什么？",
+      "fullControl": {
+        "title": "您将完全控制您的账户和密钥。您的备份不会受到影响。"
+      },
+      "newKey": {
+        "title": "我们将创建一个新的硬件密钥来保护您的账户，提升账户安全性。"
+      },
+      "noChanges": {
+        "title": "没有任何变化，您将继续享受 Flow Wallet 的硬件级安全保护。"
+      },
+      "start": "开始",
+      "notNow": "暂不"
+    }
+  },
+  "claim": {
+    "searchPlaceholder": "搜索",
+    "empty": "没有可领取的项目",
+    "sort": {
+      "title": "排序方式",
+      "date": "收到日期",
+      "amount": "金额",
+      "name": "代币名称"
+    },
+    "detail": {
+      "security": "安全",
+      "verified": "已验证",
+      "yes": "是",
+      "no": "否",
+      "contractAddress": "合约地址",
+      "claim": "领取",
+      "reject": "拒绝"
+    },
+    "drawer": {
+      "title": "领取资产",
+      "token": "代币",
+      "from": "来自",
+      "cta": "领取",
+      "to": "接收方"
+    }
+  },
+  "addTokens": {
+    "claimBannerTitle": "领取已收到的代币",
+    "searchPlaceholder": "搜索代币",
+    "verifiedOnly": "仅显示已验证的代币"
+  },
+  "addNFTCollection": {
+    "claimBannerTitle": "领取已收到的 NFT",
+    "searchPlaceholder": "搜索 NFT 收藏"
+  },
+  "claimNFTDetail": {
+    "website": "网站",
+    "items": "数量",
+    "about": "关于",
+    "claimButton": "领取资产",
+    "empty": "暂无 NFT",
+    "warningText": "接受此 NFT 收藏后，将自动接受未来的存入"
   }
 }

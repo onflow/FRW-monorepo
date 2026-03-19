@@ -8,9 +8,10 @@ import {
   OnboardingBackground,
   Image,
   pushNotifications,
+  ScrollView,
 } from '@onflow/frw-ui';
 import { useMutation } from '@tanstack/react-query';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -66,7 +67,9 @@ export function NotificationPreferencesScreen({
 }: NotificationPreferencesScreenProps = {}): React.ReactElement {
   const { t } = useTranslation();
   const [isCheckingPermission, setIsCheckingPermission] = React.useState(true);
-
+  const safeAreaInsets = useMemo(() => {
+    return bridge.getSafeAreaInsets?.() ?? { top: 0, bottom: 0, left: 0, right: 0 };
+  }, []);
   // Get account type from route params (defaults to secure-enclave if not specified)
   const accountType = route?.params?.accountType || 'secure-enclave';
 
@@ -182,25 +185,33 @@ export function NotificationPreferencesScreen({
 
   return (
     <OnboardingBackground>
-      <YStack flex={1} px="$4" justify="space-between">
-        {/* Title and description */}
-        <YStack mt="$6" mb="$6">
-          <Text fontSize={30} fontWeight="700" color="$text" text="center" mb="$3">
-            {t('onboarding.notificationPreferences.title')}
-          </Text>
+      <YStack flex={1}>
+        <ScrollView
+          flex={1}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <YStack flex={1} px="$4" pt={safeAreaInsets.top + 20}>
+            {/* Title and description */}
+            <YStack mt="$6" mb="$6">
+              <Text fontSize={28} fontWeight="700" color="$text" text="center">
+                {t('onboarding.notificationPreferences.title')}
+              </Text>
 
-          <Text fontSize="$4" color="$textSecondary" text="center" px="$2">
-            {t('onboarding.notificationPreferences.subtitle')}
-          </Text>
-        </YStack>
+              <Text fontSize="$4" color="$textSecondary" text="center" px="$2">
+                {t('onboarding.notificationPreferences.subtitle')}
+              </Text>
+            </YStack>
 
-        {/* Notification Preview Image - centered */}
-        <YStack flex={1} items="center" justify="center">
-          <Image source={pushNotifications} width={375} height={492} objectFit="contain" />
-        </YStack>
+            {/* Notification Preview Image - centered with flex spacer */}
+            <YStack flex={1} items="center" justify="center">
+              <Image source={pushNotifications} width={375} height={492} objectFit="contain" />
+            </YStack>
+          </YStack>
+        </ScrollView>
 
-        {/* Action buttons */}
-        <YStack>
+        {/* Fixed bottom buttons */}
+        <YStack px="$4">
           {/* Turn on notifications button - Primary style */}
           <YStack mb="$3">
             <Button variant="inverse" size="large" fullWidth onPress={handleEnableNotifications}>

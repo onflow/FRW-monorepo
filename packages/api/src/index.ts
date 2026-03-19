@@ -31,3 +31,23 @@ export { serviceOptions } from './codegen/service.generated';
 
 // Export dynamic configuration functions
 export { configureApiEndpoints, isApiConfigured } from './config';
+
+// Export EVM-specific services
+export { EvmService, type EvmTransactionsResponse, type EvmTransactionItem } from './evm';
+
+// Export crypto price history services
+export {
+  CryptoService,
+  parsePriceHistory,
+  type CryptoOhlcResponse,
+  type CryptowatchSummaryResponse,
+  type OhlcCandle,
+} from './crypto';
+
+// Export FlowIndex FT price services
+export {
+  FlowIndexService,
+  type FlowIndexTokenPrice,
+  type FlowIndexPricesData,
+  type FlowIndexPricesResponse,
+} from './flowindex';
