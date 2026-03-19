@@ -1,3 +1,4 @@
+import { logger } from '@onflow/frw-context';
 import type { TransactionStatus } from '@onflow/typedefs';
 
 import {
@@ -60,6 +61,29 @@ const extractStatusText = (transactionStatus: TransactionStatus): string => {
   if (typeof statusFromRest === 'string' && statusFromRest.length > 0) {
     return statusFromRest;
   }
+  if (typeof statusFromRest === 'number') {
+    const statusByCode: Record<number, string> = {
+      0: 'PENDING',
+      1: 'PENDING',
+      2: 'Finalized',
+      3: 'Executed',
+      4: 'Sealed',
+      5: 'EXPIRED',
+    };
+    return statusByCode[statusFromRest] || 'PENDING';
+  }
+  const statusCodeFromRest = (transactionStatus as { status_code?: unknown }).status_code;
+  if (typeof statusCodeFromRest === 'number') {
+    const statusByCode: Record<number, string> = {
+      0: 'PENDING',
+      1: 'PENDING',
+      2: 'Finalized',
+      3: 'Executed',
+      4: 'Sealed',
+      5: 'EXPIRED',
+    };
+    return statusByCode[statusCodeFromRest] || 'PENDING';
+  }
   return 'PENDING';
 };
 
@@ -104,6 +128,11 @@ const extractEvmHashFromCadencePayload = (payload?: string): string | null => {
   }
 };
 
+const getIndexedTxId = (tx: any): string => {
+  const candidate = tx?.txid || tx?.hash || tx?.transaction_id || tx?.transactionId || '';
+  return typeof candidate === 'string' ? candidate : '';
+};
+
 class TransactionActivity {
   private store: TransactionStore = {
     pendingItem: {
@@ -139,9 +168,61 @@ class TransactionActivity {
     const currency = (await preferenceService.getDisplayCurrency())?.code || 'USD';
     let attempts = 0;
     try {
+      logger.info('[transaction-activity] poll start', { network, address, txHash });
+      const resolveCadenceTxId = (hash: string): string => {
+        if (!hash) {
+          return '';
+        }
+        return hash.split('_')[0] || hash;
+      };
+      const cadenceTxId = resolveCadenceTxId(txHash);
+      const FLOW_TX_ID_REGEX = /^(?:0x)?[0-9a-fA-F]{64}$/;
       const poll = async (): Promise<void> => {
         if (attempts >= maxAttempts) {
           consoleWarn('Max polling attempts reached');
+          logger.warn('[transaction-activity] poll max attempts reached', {
+            network,
+            address,
+            txHash,
+            attempts,
+            maxAttempts,
+          });
+          // Fallback: if indexer still hasn't surfaced this tx, check chain terminal status directly.
+          if (FLOW_TX_ID_REGEX.test(cadenceTxId)) {
+            try {
+              const normalizedTxId = cadenceTxId.replace(/^0x/i, '');
+              const response = await fetch(
+                `https://rest-${network}.onflow.org/v1/transaction_results/${normalizedTxId}`
+              );
+              if (response.ok) {
+                const result = (await response.json()) as {
+                  status?: string;
+                  status_code?: number;
+                };
+                const status = result.status || '';
+                logger.info('[transaction-activity] poll fallback chain status', {
+                  network,
+                  address,
+                  txHash,
+                  cadenceTxId,
+                  status,
+                  status_code: result.status_code,
+                });
+                if (status === 'Sealed' || status === 'Expired') {
+                  await this.removePending(network, address, cadenceTxId);
+                  triggerRefresh(coinListKey(network, address, currency));
+                }
+              }
+            } catch (error) {
+              logger.warn('[transaction-activity] poll fallback chain status failed', {
+                network,
+                address,
+                txHash,
+                cadenceTxId,
+                error,
+              });
+            }
+          }
           return;
         }
 
@@ -149,11 +230,25 @@ class TransactionActivity {
 
         const foundTx = newTransactions?.find((tx: TransferItem) => txHash.includes(tx.hash));
         if (foundTx && foundTx.indexed) {
+          logger.info('[transaction-activity] poll found indexed tx', {
+            network,
+            address,
+            txHash,
+            foundHash: foundTx.hash,
+            status: foundTx.status,
+          });
           // Refresh the coin list
           triggerRefresh(coinListKey(network, address, currency));
         } else {
           // All of the transactions have not been picked up by the indexer yet
           attempts++;
+          logger.info('[transaction-activity] poll retry', {
+            network,
+            address,
+            txHash,
+            attempts,
+            maxAttempts,
+          });
           setTimeout(poll, 5000); // Poll every 5 seconds
         }
       };
@@ -164,6 +259,7 @@ class TransactionActivity {
     }
   };
   init = async () => {
+    logger.info('[transaction-activity] init register listeners');
     registerRefreshListener(transferListRefreshRegex, this.loadTransactions);
   };
 
@@ -182,6 +278,14 @@ class TransactionActivity {
     const pendingList = this.store.pendingItem[network][address];
     if (pendingList.length > 0) {
       const filteredList = pendingList.filter((item) => item.time + 120_000 > timeNow);
+      if (filteredList.length !== pendingList.length) {
+        logger.info('[transaction-activity] removeExpiredPendingItems pruned', {
+          network,
+          address,
+          before: pendingList.length,
+          after: filteredList.length,
+        });
+      }
       this.store.pendingItem[network][address] = structuredClone(filteredList);
     }
   };
@@ -194,6 +298,7 @@ class TransactionActivity {
       !this.store.pendingItem[network] ||
       !this.store.pendingItem[network][address]
     ) {
+      logger.info('[transaction-activity] getPendingList empty', { network, address });
       return [];
     }
     // Remove expired pending items from the list
@@ -205,6 +310,11 @@ class TransactionActivity {
   private setPendingList = (network: string, address: string, txList: TransferItem[]) => {
     if (network && address) {
       this.store.pendingItem[network][address] = structuredClone(txList);
+      logger.info('[transaction-activity] setPendingList', {
+        network,
+        address,
+        size: txList.length,
+      });
     }
   };
 
@@ -215,9 +325,11 @@ class TransactionActivity {
     icon: string,
     title: string
   ) => {
+    logger.info('[transaction-activity] setPending start', { network, address, txId, title });
     const txList = this.getPendingList(network, address);
     const items = txList.filter((txItem) => txItem.hash.includes(txId));
     if (items.length > 0) {
+      logger.info('[transaction-activity] setPending skip duplicate', { network, address, txId });
       return;
     }
     const now = new Date();
@@ -255,6 +367,12 @@ class TransactionActivity {
 
     txList.unshift(txItem);
     this.setPendingList(network, address, txList);
+    logger.info('[transaction-activity] setPending', {
+      network,
+      address,
+      txId,
+      pendingSize: txList.length,
+    });
 
     // Get the existing indexed transaction list or create a new one
     const existingTxStore = await getInvalidData<TransferListStore>(
@@ -279,6 +397,7 @@ class TransactionActivity {
     txId: string,
     transactionStatus: TransactionStatus
   ): Promise<string> => {
+    logger.info('[transaction-activity] updatePending start', { network, address, txId });
     const txList = this.getPendingList(network, address);
 
     const txItemIndex = txList.findIndex((item) => item.hash.includes(txId));
@@ -300,6 +419,7 @@ class TransactionActivity {
     );
     if (txItemIndex === -1 && storeItemIndex === -1) {
       // txItem not found in pending store nor cached transfer list
+      logger.warn('[transaction-activity] updatePending tx not found', { network, address, txId });
       return combinedTxHash;
     }
     const txItem =
@@ -362,6 +482,15 @@ class TransactionActivity {
       (item) => item.status.toUpperCase() === 'PENDING'
     ).length;
     await setCachedData(transferListKey(network, address, '0', '15'), txStore);
+    logger.info('[transaction-activity] updatePending applied', {
+      network,
+      address,
+      txId,
+      status: txItem.status,
+      error: txItem.error,
+      evmTxIds: txItem.evmTxIds,
+      pendingCount: txStore.pendingCount,
+    });
 
     // Return the hash of the transaction
     return combinedTxHash;
@@ -381,6 +510,12 @@ class TransactionActivity {
     txId: string,
     errorMessage?: string
   ): Promise<void> => {
+    logger.info('[transaction-activity] updatePendingError start', {
+      network,
+      address,
+      txId,
+      hasErrorMessage: !!errorMessage,
+    });
     const txList = this.getPendingList(network, address);
 
     const txItemIndex = txList.findIndex((item) => item.hash.includes(txId));
@@ -401,6 +536,11 @@ class TransactionActivity {
     );
     if (txItemIndex === -1 && storeItemIndex === -1) {
       // txItem not found in pending store nor cached transfer list
+      logger.warn('[transaction-activity] updatePendingError tx not found', {
+        network,
+        address,
+        txId,
+      });
       return;
     }
     const txItem =
@@ -432,9 +572,16 @@ class TransactionActivity {
       (item) => item.status.toUpperCase() === 'PENDING'
     ).length;
     await setCachedData(transferListKey(network, address, '0', '15'), txStore);
+    logger.info('[transaction-activity] updatePendingError applied', {
+      network,
+      address,
+      txId,
+      pendingCount: txStore.pendingCount,
+    });
   };
 
   removePending = async (network: string, address: string, txId: string) => {
+    logger.info('[transaction-activity] removePending start', { network, address, txId });
     // Get the flow transactions
     const txList = await this.getPendingList(network, address);
 
@@ -449,10 +596,40 @@ class TransactionActivity {
     });
 
     this.setPendingList(network, address, newList);
+    // Keep transfer cache in sync so stale pending rows are removed immediately from UI list.
+    const transferStoreKey = transferListKey(network, address, '0', '15');
+    const existingTxStore = await getInvalidData<TransferListStore>(transferStoreKey);
+    if (existingTxStore) {
+      const previousCount = existingTxStore.list.length;
+      const filteredTxList = existingTxStore.list.filter((item) => {
+        return (
+          !item.hash.includes(txId) &&
+          !item.cadenceTxId?.includes(txId) &&
+          !item.evmTxIds?.includes(txId)
+        );
+      });
+      const removedCount = previousCount - filteredTxList.length;
+      if (removedCount > 0) {
+        existingTxStore.list = filteredTxList;
+        existingTxStore.pendingCount = filteredTxList.filter(
+          (item) => item.status.toUpperCase() === 'PENDING'
+        ).length;
+        existingTxStore.count = Math.max(0, existingTxStore.count - removedCount);
+        await setCachedData(transferStoreKey, existingTxStore);
+      }
+    }
+    logger.info('[transaction-activity] removePending applied', {
+      network,
+      address,
+      txId,
+      before: txList.length,
+      after: newList.length,
+    });
   };
 
   // only used when evm transaction get updated.
   clearPending = async (network: string, address: string) => {
+    logger.info('[transaction-activity] clearPending', { network, address });
     this.setPendingList(network, address, []);
   };
 
@@ -463,6 +640,14 @@ class TransactionActivity {
     offset: string,
     limit: string
   ): Promise<TransferListStore> => {
+    logger.info('[transaction-activity] setTransaction start', {
+      network,
+      address,
+      offset,
+      limit,
+      txCount: data?.transactions?.length || 0,
+      total: data?.total || 0,
+    });
     const existingTxStore = await getInvalidData<TransferListStore>(
       transferListKey(network, address, offset, limit)
     );
@@ -470,6 +655,7 @@ class TransactionActivity {
     const existingPendingList = await this.getPendingList(network, address);
     const txList: TransferItem[] = [];
     data?.transactions?.forEach(async (tx) => {
+      const indexedTxId = getIndexedTxId(tx);
       const transactionHolder = {
         coin: '',
         status: '',
@@ -493,7 +679,7 @@ class TransactionActivity {
       transactionHolder.receiver = tx.receiver;
       transactionHolder.time = new Date(tx.time).getTime();
       transactionHolder.status = mapTransactionStatus(tx.status);
-      transactionHolder.hash = tx.txid;
+      transactionHolder.hash = indexedTxId;
       transactionHolder.error = tx.error;
       transactionHolder.image = tx.image;
       transactionHolder.amount = tx.amount;
@@ -505,11 +691,17 @@ class TransactionActivity {
       // see if there's a pending item for this transaction
       const pendingItemIndex = existingPendingList.findIndex(
         (item) =>
-          item.hash.includes(tx.txid) ||
-          item.cadenceTxId?.includes(tx.txid) ||
-          item.evmTxIds?.includes(tx.txid)
+          item.hash.includes(indexedTxId) ||
+          item.cadenceTxId?.includes(indexedTxId) ||
+          item.evmTxIds?.includes(indexedTxId)
       );
       if (pendingItemIndex !== -1) {
+        logger.info('[transaction-activity] setTransaction matched pending', {
+          network,
+          address,
+          indexedTxId,
+          pendingHash: existingPendingList[pendingItemIndex]?.hash,
+        });
         // Store the cadence transaction id
         transactionHolder.cadenceTxId = existingPendingList[pendingItemIndex].cadenceTxId;
         transactionHolder.evmTxIds = existingPendingList[pendingItemIndex].evmTxIds;
@@ -518,9 +710,9 @@ class TransactionActivity {
         // see if there's an existing transaction with cadenceId in the store
         const existingTx = existingTxList.find(
           (item) =>
-            item.hash.includes(tx.txid) ||
-            item.cadenceTxId?.includes(tx.txid) ||
-            item.evmTxIds?.includes(tx.txid)
+            item.hash.includes(indexedTxId) ||
+            item.cadenceTxId?.includes(indexedTxId) ||
+            item.evmTxIds?.includes(indexedTxId)
         );
         if (existingTx && existingTx.cadenceTxId) {
           // Found existing cadence transaction id
@@ -540,6 +732,15 @@ class TransactionActivity {
       list: [...existingPendingList, ...txList],
     };
     await setCachedData(transferListKey(network, address, offset, limit), transferListStore);
+    logger.info('[transaction-activity] setTransaction applied', {
+      network,
+      address,
+      offset,
+      limit,
+      pendingCount: transferListStore.pendingCount,
+      totalCount: transferListStore.count,
+      listCount: transferListStore.list.length,
+    });
     return transferListStore;
   };
 
@@ -556,6 +757,13 @@ class TransactionActivity {
     offset: string = '0',
     limit: string = '15'
   ): Promise<TransferListStore> => {
+    logger.info('[transaction-activity] loadTransactions start', {
+      network,
+      address,
+      offset,
+      limit,
+      openapiNetwork: openapiService.getNetwork(),
+    });
     if (openapiService.getNetwork() !== network) {
       // Do nothing if the network is switched
       // Don't update the cache
@@ -572,6 +780,12 @@ class TransactionActivity {
         parseInt(offset ?? '0'),
         parseInt(limit ?? '15')
       );
+      logger.info('[transaction-activity] loadTransactions flow fetched', {
+        network,
+        address,
+        txCount: flowResult?.transactions?.length || 0,
+        total: flowResult?.total || 0,
+      });
       return this.setTransaction(network, address, flowResult, offset, limit);
     } else if (isValidEthereumAddress(address)) {
       try {
@@ -589,9 +803,22 @@ class TransactionActivity {
             : evmResult.trxs?.length || 0,
           transactions: evmResult.trxs || [],
         };
+        logger.info('[transaction-activity] loadTransactions evm fetched', {
+          network,
+          address,
+          txCount: resultAsFlowResponse.transactions?.length || 0,
+          total: resultAsFlowResponse.total || 0,
+        });
         return this.setTransaction(network, address, resultAsFlowResponse, offset, limit);
       } catch (error) {
         consoleError('Error loading EVM transactions', error);
+        logger.error('[transaction-activity] loadTransactions evm fetch failed', {
+          network,
+          address,
+          offset,
+          limit,
+          error,
+        });
         const emptyResult: FlowTransactionResponse = {
           total: 0,
           transactions: [],
@@ -616,6 +843,11 @@ class TransactionActivity {
     // Pending transactions last 120 seconds
     const pendingList = this.getPendingList(network, address);
     this.setPendingList(network, address, pendingList);
+    logger.info('[transaction-activity] loadPendingTransactions refreshed', {
+      network,
+      address,
+      size: pendingList.length,
+    });
   };
 
   listAllTransactions = async (

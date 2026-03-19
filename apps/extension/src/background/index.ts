@@ -1,10 +1,12 @@
 import 'reflect-metadata';
 
+import { ServiceContext, logger } from '@onflow/frw-context';
 import { ethErrors } from 'eth-rpc-errors';
 
 import providerController from '@/background/controller/provider';
 import { preAuthzServiceDefinition } from '@/background/controller/serviceDefinition';
 import walletController, { type WalletController } from '@/background/controller/wallet';
+import { initializePlatform } from '@/bridge/PlatformImpl';
 import {
   authenticationService,
   addressBookService,
@@ -52,6 +54,16 @@ const FB_FUNCTIONS_URL = process.env.FB_FUNCTIONS;
 const SCRIPTS_PUBLIC_KEY = process.env.SCRIPTS_PUBLIC_KEY;
 
 async function restoreAppState() {
+  // Initialize ServiceContext in background runtime so shared logger/cadence proxies are active.
+  // Without this, logger.info/warn/error from background services may become no-op.
+  try {
+    const platform = initializePlatform();
+    platform.setWalletController(walletController);
+    ServiceContext.initialize(platform as any);
+  } catch (error) {
+    logger.error('[background] ServiceContext initialize failed:', error);
+  }
+
   // 1. Initialize storage first
   initializeStorage({ implementation: chromeStorage });
   // 2. Initialize version service to use the extension version
