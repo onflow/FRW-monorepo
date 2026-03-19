@@ -73,7 +73,6 @@ import {
   withPrefix,
   getCompatibleHashAlgo,
   consoleError,
-  consoleWarn,
   getEmojiByIndex,
   getActiveAccountTypeForAddress,
   tupleToPrivateKey,
@@ -148,6 +147,14 @@ class UserWallet {
 
     // Initialize the account loaders
     initAccountLoaders();
+
+    // Startup hydration: when extension/background boots with an existing active profile,
+    // eagerly preload accounts so sidebar has EVM/EOA data on first open.
+    if (keyringService.isUnlocked() && this.store.currentPubkey) {
+      this.preloadAllAccounts(this.store.network, this.store.currentPubkey).catch((error) => {
+        logger.warn('Failed to preload accounts during userWallet init:', error);
+      });
+    }
   };
 
   clear = async () => {
@@ -343,6 +350,9 @@ class UserWallet {
     try {
       // Get the main accounts
       const allAccounts = await preloadAllAccountsWithPubKey(network, pubkey);
+
+      // Ensure UI hooks subscribed to cached data pick up the fresh startup preload immediately.
+      triggerRefresh(mainAccountsKey(network, pubkey));
 
       // Get the active accounts
       await this.loadActiveAccounts(network, pubkey);
@@ -623,103 +633,102 @@ class UserWallet {
 
     // Try to get EOA account info and add it to main accounts
     try {
-      let eoaAccountInfo: WalletAccount | undefined;
+      // Try to get all EOA account info (this won't require password if cached)
+      const eoaInfos = await walletManager.getEOAAccountsInfo(pubkey);
+      const checkEoaHasAssets = async (evmAddress: string): Promise<boolean> => {
+        if (!evmAddress) return false;
 
-      // Try to get EOA account info (this won't require password if cached)
-      const eoaInfo = await walletManager.getEOAAccountInfo(pubkey);
-      const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
-      if (eoaInfo) {
-        // Helper function to check if EOA account has assets (same logic as COA)
-        const checkEoaHasAssets = async (evmAddress: string): Promise<boolean> => {
-          if (!evmAddress) return false;
-
+        try {
+          // Check Flow balance - always fetch fresh to ensure we have latest balance
+          // Don't rely on cache as it might be stale after transactions
+          const balanceKey = accountBalanceKey(network, evmAddress);
+          let balance: string | null | undefined;
+          // Always fetch fresh balance for hasAssets check to avoid stale cache
           try {
-            // Check Flow balance - always fetch fresh to ensure we have latest balance
-            // Don't rely on cache as it might be stale after transactions
-            const balanceKey = accountBalanceKey(network, evmAddress);
-            let balance: string | null | undefined;
-            // Always fetch fresh balance for hasAssets check to avoid stale cache
-            try {
-              balance = await loadAccountBalance(network, evmAddress);
-              // Update cache with fresh balance
-              if (balance) {
-                await setCachedData(balanceKey, balance, 5_000);
-              }
-            } catch (error) {
-              // Fallback to cache if fetch fails
-              balance = await getCachedData<string>(balanceKey);
-              if (!balance) {
-                consoleError('Error fetching Flow balance for EOA:', error as Error);
-              }
-            }
-
+            balance = await loadAccountBalance(network, evmAddress);
+            // Update cache with fresh balance
             if (balance) {
-              const balanceValue = parseFloat(balance);
-              if (balanceValue > 0) {
-                return true;
-              }
+              await setCachedData(balanceKey, balance, 5_000);
             }
-
-            // Check ERC20 tokens - trigger refresh to get latest data
-            const tokenListKey = coinListKey(network, evmAddress, 'usd');
-            triggerRefresh(tokenListKey);
-            const cachedTokens =
-              await getCachedData<Array<{ balance?: string; rawBalance?: string }>>(tokenListKey);
-
-            if (cachedTokens && cachedTokens.length > 0) {
-              const hasTokenBalance = cachedTokens.some((token) => {
-                const balance = parseFloat(token.balance || token.rawBalance || '0');
-                return balance > 0;
-              });
-              if (hasTokenBalance) {
-                return true;
-              }
-            }
-
-            // Check NFTs - trigger refresh to get latest data
-            const nftKey = evmNftCollectionsAndIdsKey(network, evmAddress);
-            triggerRefresh(nftKey);
-            const cachedNfts =
-              await getCachedData<Array<{ count?: number; ids?: string[] }>>(nftKey);
-
-            if (cachedNfts && cachedNfts.length > 0) {
-              const hasNfts = cachedNfts.some((collection) => {
-                return (
-                  (collection.count && collection.count > 0) ||
-                  (collection.ids && collection.ids.length > 0)
-                );
-              });
-              if (hasNfts) {
-                return true;
-              }
-            }
-
-            // If no assets data found, return false
-            return false;
           } catch (error) {
-            consoleError('Error checking EOA assets:', error as Error);
-            return false;
+            // Fallback to cache if fetch fails
+            balance = await getCachedData<string>(balanceKey);
+            if (!balance) {
+              consoleError('Error fetching Flow balance for EOA:', error as Error);
+            }
           }
-        };
 
-        const hasAssets = await checkEoaHasAssets(eoaInfo.address);
+          if (balance) {
+            const balanceValue = parseFloat(balance);
+            if (balanceValue > 0) {
+              return true;
+            }
+          }
 
-        eoaAccountInfo = {
-          address: eoaInfo.address,
-          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-          id: 99, // Special ID for EOA
-          name: eoaEmoji.name,
-          icon: eoaEmoji.emoji,
-          color: eoaEmoji.bgcolor,
-          balance: eoaInfo.balance || '0',
-          hasAssets: hasAssets,
-        };
-      }
+          // Check ERC20 tokens - trigger refresh to get latest data
+          const tokenListKey = coinListKey(network, evmAddress, 'usd');
+          triggerRefresh(tokenListKey);
+          const cachedTokens =
+            await getCachedData<Array<{ balance?: string; rawBalance?: string }>>(tokenListKey);
+
+          if (cachedTokens && cachedTokens.length > 0) {
+            const hasTokenBalance = cachedTokens.some((token) => {
+              const balance = parseFloat(token.balance || token.rawBalance || '0');
+              return balance > 0;
+            });
+            if (hasTokenBalance) {
+              return true;
+            }
+          }
+
+          // Check NFTs - trigger refresh to get latest data
+          const nftKey = evmNftCollectionsAndIdsKey(network, evmAddress);
+          triggerRefresh(nftKey);
+          const cachedNfts = await getCachedData<Array<{ count?: number; ids?: string[] }>>(nftKey);
+
+          if (cachedNfts && cachedNfts.length > 0) {
+            const hasNfts = cachedNfts.some((collection) => {
+              return (
+                (collection.count && collection.count > 0) ||
+                (collection.ids && collection.ids.length > 0)
+              );
+            });
+            if (hasNfts) {
+              return true;
+            }
+          }
+
+          // If no assets data found, return false
+          return false;
+        } catch (error) {
+          consoleError('Error checking EOA assets:', error as Error);
+          return false;
+        }
+      };
+
+      const eoaAccounts: WalletAccount[] = await Promise.all(
+        eoaInfos.map(async (eoaInfo) => {
+          const eoaEmoji = calculateEmojiIcon(eoaInfo.address ?? '');
+          const hasAssets = await checkEoaHasAssets(eoaInfo.address);
+          return {
+            address: eoaInfo.address,
+            chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+            id: 99 + eoaInfo.index, // Stable unique ID per derivation index
+            name: eoaEmoji.name,
+            icon: eoaEmoji.emoji,
+            color: eoaEmoji.bgcolor,
+            balance: eoaInfo.balance || '0',
+            hasAssets: hasAssets,
+          };
+        })
+      );
+      const primaryEoaAccount = eoaAccounts[eoaAccounts.length - 1];
 
       // Add EOA info to main accounts
       const enhancedMainAccounts: MainAccount[] = originalMainAccounts.map((account) => ({
         ...account,
-        eoaAccount: eoaAccountInfo,
+        eoaAccount: primaryEoaAccount,
+        eoaAccounts,
       }));
 
       return enhancedMainAccounts;
@@ -729,6 +738,7 @@ class UserWallet {
       return originalMainAccounts.map((account) => ({
         ...account,
         eoaAccount: undefined,
+        eoaAccounts: [],
       }));
     }
   };
@@ -1230,11 +1240,7 @@ class UserWallet {
         errorCode = match ? parseInt(match[1], 10) : undefined;
       }
 
-      consoleWarn({
-        msg: 'transactionError',
-        errorMessage,
-        errorCode,
-      });
+      logger.warn('transactionError', { errorMessage, errorCode });
 
       // Update the pending transaction to show error state
       await Promise.all(
@@ -1776,7 +1782,7 @@ const preloadAllAccountsWithPubKey = async (
   }
 
   if (!mainAccounts || mainAccounts.length === 0) {
-    consoleWarn(`No main accounts loaded for pubkey: ${pubKey}`);
+    logger.warn(`No main accounts loaded for pubkey: ${pubKey}`);
     return [];
   }
 
@@ -2029,8 +2035,8 @@ const loadMainAccountsWithPubKey = async (
     mainAccounts.map((mainAccount) => mainAccount.address)
   );
 
-  // Try to get EOA account info (this won't require password if cached)
-  const eoaInfo = await walletManager.getEOAAccountInfo(pubKey);
+  // Try to get all EOA account info (index-aware)
+  const eoaInfos = await walletManager.getEOAAccountsInfo(pubKey);
 
   // Helper function to check if COA account has assets
   const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {
@@ -2138,29 +2144,29 @@ const loadMainAccountsWithPubKey = async (
         }
       }
 
-      const eoaEmoji = calculateEmojiIcon(eoaInfo?.address ?? '');
-      let eoaAccountInfo: WalletAccount | undefined = undefined;
-
-      if (eoaInfo?.address) {
-        // Check if EOA account has assets (same logic as COA)
-        const hasAssets = await checkCoaHasAssets(eoaInfo.address);
-
-        eoaAccountInfo = {
-          address: eoaInfo.address,
-          chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
-          id: 99, // Special ID for EOA
-          name: eoaEmoji.name,
-          icon: eoaEmoji.emoji,
-          color: eoaEmoji.bgcolor,
-          balance: eoaInfo.balance || '0',
-          hasAssets: hasAssets,
-        };
-      }
+      const eoaAccountInfos: WalletAccount[] = await Promise.all(
+        eoaInfos.map(async (eoaInfo) => {
+          const eoaEmoji = calculateEmojiIcon(eoaInfo.address ?? '');
+          const hasAssets = await checkCoaHasAssets(eoaInfo.address);
+          return {
+            address: eoaInfo.address,
+            chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
+            id: 99 + eoaInfo.index, // Stable unique ID per derivation index
+            name: eoaEmoji.name,
+            icon: eoaEmoji.emoji,
+            color: eoaEmoji.bgcolor,
+            balance: eoaInfo.balance || '0',
+            hasAssets: hasAssets,
+          };
+        })
+      );
+      const primaryEoaAccount = eoaAccountInfos[eoaAccountInfos.length - 1];
 
       return {
         ...mainAccount,
         evmAccount,
-        eoaAccount: eoaAccountInfo,
+        eoaAccount: primaryEoaAccount,
+        eoaAccounts: eoaAccountInfos,
         childAccounts: childAccountMapToWalletAccounts(network, accountDetail.childrens),
       };
     })

@@ -1534,6 +1534,12 @@
   "Add_Account_Sidebar": {
     "message": "Добавить аккаунт"
   },
+  "Add_Flow_Address_Sidebar": {
+    "message": "Добавить Flow-адрес"
+  },
+  "Add_EOA_Address_Sidebar": {
+    "message": "Добавить EOA-адрес"
+  },
   "Mobile_overview": {
     "message": "Обзор мобильного приложения"
   },

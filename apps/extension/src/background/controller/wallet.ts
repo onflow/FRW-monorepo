@@ -1,7 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import type { AccountKey, Account as FclAccount } from '@onflow/fcl';
 import { type PayerStatusPayloadV1 } from '@onflow/frw-api';
-import { ServiceContext } from '@onflow/frw-context';
+import { ServiceContext, logger } from '@onflow/frw-context';
 import { KeyRotationService } from '@onflow/frw-services';
 import type { AccountKeySignature } from '@onflow/frw-types';
 
@@ -30,12 +30,14 @@ import {
   accountManagementService,
   authenticationService,
 } from '@/core/service';
+import walletManager from '@/core/service/wallet-manager';
 import { retryOperation } from '@/core/utils';
 import {
   getValidData,
   setCachedData,
   childAccountDescKey,
   type ChildAccountFtStore,
+  mainAccountsKey,
   cadenceNftCollectionsAndIdsKey,
   walletLoadedKey,
   CURRENT_ID_KEY,
@@ -92,7 +94,6 @@ import {
   isValidFlowAddress,
   withPrefix,
   consoleError,
-  consoleWarn,
   getEmojiList,
 } from '@/shared/utils';
 
@@ -214,6 +215,28 @@ export class WalletController extends BaseController {
 
   createNewAccount = async (network: string) => {
     return await accountManagementService.createNewAccount(network);
+  };
+
+  addNewEOAAddress = async (): Promise<{ index: number; address: string }> => {
+    logger.info('[extension-bg] addNewEOAAddress invoked');
+    const result = await walletManager.addNewEOAAddress();
+    try {
+      const network = userWalletService.getNetwork();
+      const pubkey = userWalletService.getCurrentPubkey();
+      // Force immediate rebuild of account cache (includes eoaAccount field used by sidebar).
+      await userWalletService.preloadAllAccounts(network, pubkey);
+      triggerRefresh(mainAccountsKey(network, pubkey));
+      logger.info('[extension-bg] addNewEOAAddress forced preload + triggered refresh', {
+        network,
+        pubkey: pubkey ? `${pubkey.slice(0, 8)}...` : null,
+      });
+    } catch (error) {
+      logger.warn('[extension-bg] addNewEOAAddress cache refresh failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+    logger.info('[extension-bg] addNewEOAAddress completed', result);
+    return result;
   };
 
   /**
@@ -378,6 +401,21 @@ export class WalletController extends BaseController {
 
   refreshWallets = async () => {
     // Refresh all the wallets after unlocking or switching profiles
+    try {
+      const network = userWalletService.getNetwork();
+      const pubkey = userWalletService.getCurrentPubkey();
+      await userWalletService.preloadAllAccounts(network, pubkey);
+      triggerRefresh(mainAccountsKey(network, pubkey));
+      logger.info('[extension-bg] refreshWallets preloaded main accounts', {
+        network,
+        pubkey: pubkey ? `${pubkey.slice(0, 8)}...` : null,
+      });
+    } catch (error) {
+      logger.warn('[extension-bg] refreshWallets preload failed', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+
     // Refresh the cadence scripts first
     await openapiService.getCadenceScripts();
     // Refresh the user info
@@ -1353,7 +1391,7 @@ export class WalletController extends BaseController {
     try {
       // Check if keyring is unlocked
       if (!keyringService.isUnlocked()) {
-        consoleWarn('[WalletController] Keyring is locked, cannot remove old key');
+        logger.warn('[WalletController] Keyring is locked, cannot remove old key');
         return;
       }
 
@@ -1365,7 +1403,7 @@ export class WalletController extends BaseController {
       const allPublicKeys = await keyringService.getAllPublicKeys();
       const keyringExists = allPublicKeys.includes(normalizedPublicKey);
       if (!keyringExists) {
-        consoleWarn(
+        logger.warn(
           `[WalletController] Keyring with public key ${normalizedPublicKey} not found, may have already been removed`,
           { originalPublicKey: publicKey, allPublicKeys }
         );
@@ -1403,7 +1441,7 @@ export class WalletController extends BaseController {
 
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       if (!tabs || tabs.length === 0) {
-        consoleWarn('No active tab found');
+        logger.warn('No active tab found');
         return;
       }
       if (tabs[0].id) {
@@ -1951,6 +1989,10 @@ export class WalletController extends BaseController {
    */
   privateKeyToUint8Array = (privateKeyHex: string): Uint8Array => {
     return userWalletService.privateKeyToUint8Array(privateKeyHex);
+  };
+
+  ethSignWithAddress = async (signData: Uint8Array, address?: string): Promise<Uint8Array> => {
+    return await walletManager.ethSignDigest(signData, address);
   };
 
   /**

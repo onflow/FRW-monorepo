@@ -263,7 +263,14 @@ class TransactionActivity {
     registerRefreshListener(transferListRefreshRegex, this.loadTransactions);
   };
 
-  clear = async () => {};
+  clear = async () => {
+    this.store = {
+      pendingItem: {
+        mainnet: {},
+        testnet: {},
+      },
+    };
+  };
 
   // Remove pending items older than 120 seconds
   private removeExpiredPendingItems = (network: string, address: string) => {
@@ -459,7 +466,7 @@ class TransactionActivity {
       if (txItem.status.toUpperCase() === 'PENDING') {
         txList[txItemIndex] = txItem;
       } else {
-        // Remove from in-memory pending list immediately once status is finalized.
+        // Remove finalized transactions from in-memory pending list immediately.
         txList.splice(txItemIndex, 1);
       }
       this.setPendingList(network, address, txList);

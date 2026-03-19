@@ -69,10 +69,10 @@ const flowContext = flow
       // Store approval result in context for controller to use
       ctx.approvalRes = approvalResult;
 
-      const { defaultChain } = approvalResult;
+      const { defaultChain, evmAddress } = approvalResult;
       // Store permission with current timestamp
       const timestamp = Date.now();
-      permissionService.addConnectedSite(origin, name, icon, defaultChain);
+      permissionService.addConnectedSite(origin, name, icon, defaultChain, false, evmAddress);
       // Update the site with timestamp and isConnected flag (site exists since we just added it)
       const site = permissionService.getConnectedSite(origin);
       if (site) {
@@ -104,14 +104,14 @@ const flowContext = flow
         !(await Wallet.isUnlocked())
       ) {
         ctx.request.requestedApproval = true;
-        const { defaultChain } = await notificationService.requestApproval(
+        const { defaultChain, evmAddress } = await notificationService.requestApproval(
           {
             params: { origin, name, icon },
             approvalComponent: 'EthConnect',
           },
           { height: 599 }
         );
-        permissionService.addConnectedSite(origin, name, icon, defaultChain);
+        permissionService.addConnectedSite(origin, name, icon, defaultChain, false, evmAddress);
       }
     }
 

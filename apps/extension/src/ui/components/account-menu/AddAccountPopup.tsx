@@ -13,10 +13,12 @@ interface TransferConfirmationProps {
   handleCancelBtnClicked: () => void;
   handleAddBtnClicked: () => void;
   addAccount: () => Promise<void>;
+  addEoaAddress?: () => Promise<void>;
   importExistingAccount: boolean;
   paperSx?: SxProps<Theme>;
   modalVariant?: 'compact' | 'profile';
   disableCreateAccount?: boolean;
+  disableAddEoaAddress?: boolean;
 }
 
 const AddAccountPopup = (props: TransferConfirmationProps) => {
@@ -115,10 +117,29 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
         >
           <ProfileButton
             icon={createNew}
-            text={chrome.i18n.getMessage('Create_a_new_account')}
+            text={chrome.i18n.getMessage('Add_Flow_Address_Sidebar') || 'Add Flow Address'}
             onClick={props.addAccount}
             disabled={props.disableCreateAccount}
           />
+          {props.addEoaAddress && (
+            <Box
+              sx={{
+                height: '1px',
+                width: '100%',
+                padding: '1px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              }}
+            />
+          )}
+          {props.addEoaAddress && (
+            <ProfileButton
+              icon={createNew}
+              text={chrome.i18n.getMessage('Add_EOA_Address_Sidebar') || 'Add EOA Address'}
+              dataTestId="add-eoa-address-button"
+              onClick={props.addEoaAddress}
+              disabled={props.disableAddEoaAddress}
+            />
+          )}
           {props.importExistingAccount && (
             <Box
               sx={{
