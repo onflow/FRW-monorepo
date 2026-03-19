@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { ServiceContext } from '@onflow/frw-context';
+import { ServiceContext, logger } from '@onflow/frw-context';
 import { ethErrors } from 'eth-rpc-errors';
 
 import providerController from '@/background/controller/provider';
@@ -61,7 +61,7 @@ async function restoreAppState() {
     platform.setWalletController(walletController);
     ServiceContext.initialize(platform as any);
   } catch (error) {
-    consoleError('[background] ServiceContext initialize failed:', error);
+    logger.error('[background] ServiceContext initialize failed:', error);
   }
 
   // 1. Initialize storage first
