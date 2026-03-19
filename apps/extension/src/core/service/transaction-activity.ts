@@ -167,7 +167,14 @@ class TransactionActivity {
     registerRefreshListener(transferListRefreshRegex, this.loadTransactions);
   };
 
-  clear = async () => {};
+  clear = async () => {
+    this.store = {
+      pendingItem: {
+        mainnet: {},
+        testnet: {},
+      },
+    };
+  };
 
   // Remove pending items older than 120 seconds
   private removeExpiredPendingItems = (network: string, address: string) => {
@@ -336,8 +343,12 @@ class TransactionActivity {
       combinedTxHash = `${txItem.cadenceTxId || txItem.hash}_${evmTxIds.join('_')}`;
     }
     if (txItemIndex !== -1) {
-      txList[txItemIndex] = txItem;
-      // Keep pending transactions in memory while they are still active
+      if (txItem.status.toUpperCase() === 'PENDING') {
+        txList[txItemIndex] = txItem;
+      } else {
+        // Remove finalized transactions from in-memory pending list immediately.
+        txList.splice(txItemIndex, 1);
+      }
       this.setPendingList(network, address, txList);
     }
     if (storeItemIndex !== -1) {
