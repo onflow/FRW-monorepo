@@ -172,9 +172,9 @@ class SideMenuViewModel: ObservableObject {
 
     private func updateMigrationCardVisibility(for item: SideMenuItem?) {
       shouldShowMigrationCard = false
-//      guard let coaMigration = RemoteConfigManager.shared.config?.features.coaMigration, coaMigration else {
-//        return
-//      }
+      guard let coaMigration = RemoteConfigManager.shared.config?.features.coaMigration, coaMigration else {
+        return
+      }
       guard let item else {
         return
       }
