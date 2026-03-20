@@ -55,8 +55,8 @@ export type EOAAccountInfo = {
 };
 
 export class WalletManager {
-  private static readonly EOA_DISCOVERY_INDEX_LIMIT = 20;
   private static readonly MAX_EOA_PER_PROFILE = 5;
+  private static readonly EOA_DISCOVERY_INDEX_LIMIT = WalletManager.MAX_EOA_PER_PROFILE;
 
   private wallet: Wallet | null = null;
   private storage: ExtensionStorage;
@@ -444,9 +444,20 @@ export class WalletManager {
     }
 
     // If wallet map is incomplete/empty, recover EOA index mapping by deriving known addresses.
-    if (knownEoaAddressSet.size > 0) {
+    if (knownEoaAddressSet.size > 0 && entries.length < WalletManager.MAX_EOA_PER_PROFILE) {
       const existingIndexSet = new Set(entries.map(([index]) => index));
-      for (let index = 0; index < WalletManager.EOA_DISCOVERY_INDEX_LIMIT; index += 1) {
+      const unresolvedKnownAddresses = new Set(knownEoaAddressSet);
+      for (const [, cachedAddress] of entries) {
+        unresolvedKnownAddresses.delete(cachedAddress.toLowerCase());
+      }
+
+      for (
+        let index = 0;
+        index < WalletManager.EOA_DISCOVERY_INDEX_LIMIT &&
+        unresolvedKnownAddresses.size > 0 &&
+        entries.length < WalletManager.MAX_EOA_PER_PROFILE;
+        index += 1
+      ) {
         if (existingIndexSet.has(index)) {
           continue;
         }
@@ -457,6 +468,7 @@ export class WalletManager {
         if (knownEoaAddressSet.has(account.address.toLowerCase())) {
           entries.push([index, account.address]);
           existingIndexSet.add(index);
+          unresolvedKnownAddresses.delete(account.address.toLowerCase());
         }
       }
       entries.sort((a, b) => a[0] - b[0]);
@@ -471,11 +483,13 @@ export class WalletManager {
       entries.push([defaultSigner.index, defaultSigner.address]);
     }
 
-    const accounts = entries.map(([index, accountAddress]) => ({
-      index,
-      address: accountAddress,
-      balance: this.getEvmBalanceByAddress(accountAddress) || '0',
-    }));
+    const accounts = entries
+      .slice(0, WalletManager.MAX_EOA_PER_PROFILE)
+      .map(([index, accountAddress]) => ({
+        index,
+        address: accountAddress,
+        balance: this.getEvmBalanceByAddress(accountAddress) || '0',
+      }));
 
     if (targetPublicKey && accounts.length > 0) {
       const latest = accounts[accounts.length - 1];
@@ -512,7 +526,7 @@ export class WalletManager {
     }
 
     // Runtime-compatible fallback: derive sequentially and match address.
-    for (let index = 0; index < WalletManager.EOA_DISCOVERY_INDEX_LIMIT; index += 1) {
+    for (let index = 0; index < WalletManager.MAX_EOA_PER_PROFILE; index += 1) {
       try {
         const account = await this.deriveEOAAccountByIndex(index);
         if (account?.address.toLowerCase() === normalizedAddress) {
@@ -560,7 +574,7 @@ export class WalletManager {
 
   private getMissingEOAIndexes(addressMap: Map<number, string>): number[] {
     const missing: number[] = [];
-    for (let index = 0; index < WalletManager.EOA_DISCOVERY_INDEX_LIMIT; index += 1) {
+    for (let index = 0; index < WalletManager.MAX_EOA_PER_PROFILE; index += 1) {
       if (!addressMap.has(index)) {
         missing.push(index);
       }

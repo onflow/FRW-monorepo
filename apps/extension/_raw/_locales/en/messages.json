@@ -1549,6 +1549,12 @@
   "Add_EOA_Address_Sidebar": {
     "message": "Add EOA Address"
   },
+  "Create_Flow_Address_Sidebar": {
+    "message": "Create Flow Address"
+  },
+  "Create_EOA_Address_Sidebar": {
+    "message": "Create EOA Address"
+  },
   "Mobile_overview": {
     "message": "Mobile overview"
   },

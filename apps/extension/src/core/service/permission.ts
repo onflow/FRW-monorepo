@@ -34,8 +34,14 @@ class PermissionService {
     dumpCache: [],
   };
   lruCache: LRUCache<string, ConnectedSite> | undefined;
+  private initialized = false;
+  private initPromise: Promise<void> | null = null;
 
   init = async () => {
+    if (this.initialized && this.lruCache) {
+      return;
+    }
+
     // Attempt to load from the new cache key first
     this.store = await createPersistStore<PermissionStore>({
       name: permissionKey, // New storage key
@@ -107,6 +113,19 @@ class PermissionService {
     ) {
       this.lruCache.load(this.store.dumpCache);
     }
+    this.initialized = true;
+  };
+
+  ensureInitialized = async () => {
+    if (this.initialized && this.lruCache) {
+      return;
+    }
+    if (!this.initPromise) {
+      this.initPromise = this.init().finally(() => {
+        this.initPromise = null;
+      });
+    }
+    await this.initPromise;
   };
 
   sync = () => {
