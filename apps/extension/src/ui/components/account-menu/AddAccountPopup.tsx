@@ -2,6 +2,7 @@ import { Box, Drawer, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import React from 'react';
 
+import createEoa from '@/ui/assets/svg/create-eoa.svg';
 import createNew from '@/ui/assets/svg/create-new.svg';
 import importExisting from '@/ui/assets/svg/import-existing.svg';
 import { ProfileButton } from '@/ui/components/profile/profile-button';
@@ -30,44 +31,33 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
       anchor="bottom"
       sx={{
         zIndex: '1500 !important',
-        ...(isProfileModal
-          ? {}
-          : {
-              '& .MuiDrawer-paper': {
-                width: '75%',
-                maxWidth: '400px',
-                marginRight: 'auto',
-                borderTopLeftRadius: '16px',
-                borderTopRightRadius: '16px',
-                background: 'transparent',
-                padding: '18px',
-                ...(props.paperSx || {}),
-              },
-            }),
       }}
       open={props.isConfirmationOpen}
       onClose={props.handleCancelBtnClicked}
       transitionDuration={300}
-      slotProps={
-        isProfileModal
-          ? {
-              paper: {
-                sx: {
-                  width: '100%',
-                  height: 'auto',
-                  maxHeight: '80%',
-                  background: '#121212',
-                  borderRadius: '18px 18px 0px 0px',
-                  p: 0,
-                  pb: 0,
-                },
-              },
-            }
-          : undefined
-      }
+      slotProps={{
+        paper: {
+          sx: {
+            width: '100%',
+            height: 'auto',
+            maxHeight: '80%',
+            background: 'var(--Drawer, #121212)',
+            borderRadius: '32px 32px 0 0',
+            p: 0,
+            pb: 0,
+            ...(props.paperSx || {}),
+          },
+        },
+      }}
     >
       <Box
-        sx={{ display: 'flex', flexDirection: 'column', gap: isProfileModal ? '10px' : 0, pb: 0 }}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: isProfileModal ? '10px' : 0,
+          pb: 0,
+          p: '20px 18px 18px 18px',
+        }}
       >
         {isProfileModal && (
           <Box
@@ -111,13 +101,13 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
             borderRadius: '16px',
             background: '#2A2A2A',
             overflow: 'hidden',
-            mx: isProfileModal ? '18px' : 0,
+            mx: 0,
             mb: 0,
           }}
         >
           <ProfileButton
             icon={createNew}
-            text={chrome.i18n.getMessage('Add_Flow_Address_Sidebar') || 'Add Flow Address'}
+            text={chrome.i18n.getMessage('Create_Flow_Address_Sidebar') || 'Create Flow Address'}
             onClick={props.addAccount}
             disabled={props.disableCreateAccount}
           />
@@ -133,8 +123,8 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
           )}
           {props.addEoaAddress && (
             <ProfileButton
-              icon={createNew}
-              text={chrome.i18n.getMessage('Add_EOA_Address_Sidebar') || 'Add EOA Address'}
+              icon={createEoa}
+              text={chrome.i18n.getMessage('Create_EOA_Address_Sidebar') || 'Create EOA Address'}
               dataTestId="add-eoa-address-button"
               onClick={props.addEoaAddress}
               disabled={props.disableAddEoaAddress}
@@ -160,17 +150,6 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
             />
           )}
         </Box>
-
-        {!props.importExistingAccount && !isProfileModal && (
-          <Box
-            sx={{
-              height: '49px',
-              width: '100%',
-              padding: '1px 16px',
-              backgroundColor: 'transparent',
-            }}
-          />
-        )}
 
         {isProfileModal && (
           <Box

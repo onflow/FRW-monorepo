@@ -170,8 +170,8 @@ const TransferList = () => {
           {transactions && transactions.length ? (
             <>
               {' '}
-              {(transactions || []).map((tx) => {
-                const txCombinedKey = `${tx.cadenceTxId || tx.hash}${tx.evmTxIds ? `_${tx.evmTxIds.join('_')}` : ''}_${tx.transferType}_${tx.additionalMessage}_${tx.interaction}`;
+              {(transactions || []).map((tx, index) => {
+                const txCombinedKey = `${tx.cadenceTxId || tx.hash || 'tx'}_${tx.time}_${tx.transferType}_${index}`;
                 return (
                   <ListItem
                     key={txCombinedKey}

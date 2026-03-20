@@ -1537,6 +1537,12 @@
   "Add_EOA_Address_Sidebar": {
     "message": "添加 EOA 地址"
   },
+  "Create_Flow_Address_Sidebar": {
+    "message": "创建 Flow 地址"
+  },
+  "Create_EOA_Address_Sidebar": {
+    "message": "创建 EOA 地址"
+  },
   "Mobile_overview": {
     "message": "移动应用概览"
   },
