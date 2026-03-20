@@ -298,7 +298,7 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
 
                     //MARK: get nonce
                       //TODO: 313
-                      let address = fromAddress ?? self.cachedEVMAddress(for: url) ?? WalletManager.shared.selectedEOAAccount?.hexAddr ?? ""
+                    let address = fromAddress ?? self.cachedEVMAddress(for: url) ?? WalletManager.shared.selectedEOAAccount?.hexAddr ?? ""
                     let nonce = try await self.getTransactionNonce(for: address)
                     let nonceHex = self.normalizeHexString(String(nonce, radix: 16))
 
@@ -412,34 +412,55 @@ struct WalletConnectEVMHandler: WalletConnectChildHandlerProtocol {
                     if RemoteConfigManager.shared.allowWrapEOAWithCadence {
                       let wallet = await WalletManager.shared
                       let mainAddress = await wallet.mainAccount?.hexAddr ?? ""
-                        let eoaAddress = wallet.isSelectedEOAAccount ? (wallet.selectedAccount?.hexAddr ?? "") : (wallet.EOAs?.first?.address ?? "")
-                      let result = try await wallet.walletEntity?
+                        let payer = RemoteConfigManager.shared.remoteGreeGas ? Flow.Address(hex: RemoteConfigManager.shared.payer) : nil
+                      guard let flowTxId = try await wallet.walletEntity?
                         .ethSendSignedTransactionByCadence(
                           chainId: currentNetwork,
                           account: .init(hex: mainAddress),
                           rlpEncodedTransaction: signedTransaction.encoded,
-                          coinbaseAddr: eoaAddress,
-                          signers: wallet.defaultSigners
-                        )
-                      guard (result?.description) != nil else {
+                          coinbaseAddr: address,
+                          signers: wallet.defaultSigners,
+                          payer: payer
+                        ) else {
                         log.error("[EOA] send signed failed")
                         cancel()
                         return
                       }
+                      log.info("[EOA] Cadence tx submitted: \(flowTxId)")
+
+                      let txResult = try await flowTxId.onceSealed()
+                      guard !txResult.isFailed else {
+                        log.error("[EOA] Cadence tx failed on-chain")
+                        cancel()
+                        return
+                      }
+
+                      let evmTxResult = try await FlowNetwork.fetchEVMTransactionResult(txid: flowTxId.hex)
+                      let evmTXID = evmTxResult.hashString ?? ""
+                      log.debug("[EOA] EVM txid: \(evmTXID)")
+                        await MainActor.run {
+                            confirm(evmTXID)
+                        }
+                        EventTrack.Transaction
+                            .evmSigned(
+                                txId: evmTXID,
+                                success: true
+                            )
                     } else {
                       let result = try await web3.eth.send(raw: signedTransaction.encoded)
-                      log.info("[EOA] result \(result.hash)")
+                        let evmTXID = result.hash
+                        log.debug("[EOA] EVM txid: \(evmTXID)")
+                        await MainActor.run {
+                            confirm(evmTXID.addHexPrefix())
+                        }
+                        EventTrack.Transaction
+                            .evmSigned(
+                                txId: evmTXID.addHexPrefix(),
+                                success: true
+                            )
                     }
 
-                    let evmTXID = signedTransaction.txIdHex()
-                    await MainActor.run {
-                        confirm(evmTXID.addHexPrefix())
-                    }
-                    EventTrack.Transaction
-                        .evmSigned(
-                            txId: evmTXID.addHexPrefix(),
-                            success: true
-                        )
+
                   }
                 }
             }
@@ -589,8 +610,11 @@ extension WalletConnectEVMHandler {
   private func address(sessionRequest: Request) -> String? {
     
     if let list = try? sessionRequest.params.get([String].self), list.count == 2 {
-      if (EthereumAddress.toChecksumAddress(list[0]) != nil) {
-        return list[0]
+        let myAddress = WalletManager.shared.EOAs?.map { $0.hexAddr.lowercased() } ?? []
+      if let ethAddr = EthereumAddress.toChecksumAddress(list[0]) {
+          if myAddress.contains(ethAddr.lowercased()) {
+              return list[0]
+          }
       }
       return list[1]
     }
