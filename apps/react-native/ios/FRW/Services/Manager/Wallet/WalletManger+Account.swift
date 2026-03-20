@@ -118,10 +118,14 @@ extension WalletManager {
     /// Derive all EOA addresses from stored index map + default index 0
     func allEOAAccounts(with wallet: FlowWalletKit.Wallet?, for uid: String) -> [EOA] {
         // index 0 from walletEntity
-        guard let eoaAddress = wallet?.eoaAddressMap[0], let firstEOA = EOA(eoaAddress, network: currentNetwork) else {
-            return []
+        var result: [EOA] =  []
+        if let eoaAddress = wallet?.eoaAddressMap[0], let firstEOA = EOA(eoaAddress, network: currentNetwork) {
+            result.append(firstEOA)
+        } else if let account = try? wallet?.getEOAAccounts(indexes: [0]).first,
+                  let firstEOA = EOA(account.address, network: currentNetwork) {
+            result.append(firstEOA)
         }
-        var result: [EOA] =  [firstEOA]
+
 
         // Additional EOAs from stored indices (index >= 1)
         let storedIndices = LocalUserDefaults.shared.getEOAIndices(for: uid)
