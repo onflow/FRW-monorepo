@@ -163,7 +163,8 @@ extension FlowWalletKit.Wallet {
         var result: [[WalletAccount]] = []
 
         // EOA accounts for current network
-        let eoa = eoaAddress?.compactMap({ EOA($0, network: currentNetwork)?.toWalletAccount(userId: userId) }) ?? []
+        let eoaList =  Array(eoaAddressMap.values)
+        let eoa = eoaList.compactMap({ EOA($0, network: currentNetwork)?.toWalletAccount(userId: userId) }) ?? []
         if !eoa.isEmpty {
             result.append(eoa)
         }

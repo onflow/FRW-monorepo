@@ -33,7 +33,7 @@ struct AuthnAccountsView: View {
             viewModel.navigateBack()
           }
         )
-        .background(Color.Brain.Light.lines5)
+        .background(Color.Brain.Light.lines10)
         .cornerRadius(16)
 
         // Divider
@@ -50,7 +50,6 @@ struct AuthnAccountsView: View {
     .padding(.horizontal, 22)
     .padding(.vertical, 20)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.Brain.Core.cards)
   }
 
   private var header: some View {
