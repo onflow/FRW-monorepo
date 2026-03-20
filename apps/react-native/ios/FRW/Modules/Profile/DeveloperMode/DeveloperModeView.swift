@@ -195,7 +195,6 @@ struct DeveloperModeView: RouteableView {
                             )
                             .toggleStyle(SwitchToggleStyle(tint: .LL.Primary.salmonPrimary))
                             .onChange(of: wrapEOAWithCadence) { value in
-                                wrapEOAWithCadence.toggle()
                             }
                             .disabled(!RemoteConfigManager.shared.remoteWrapEOAWithCadence)
                         }
