@@ -1540,6 +1540,12 @@
   "Add_EOA_Address_Sidebar": {
     "message": "EOAアドレスを追加"
   },
+  "Create_Flow_Address_Sidebar": {
+    "message": "Flowアドレスを作成"
+  },
+  "Create_EOA_Address_Sidebar": {
+    "message": "EOAアドレスを作成"
+  },
   "Mobile_overview": {
     "message": "モバイルアプリの概要"
   },

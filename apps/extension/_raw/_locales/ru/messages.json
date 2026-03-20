@@ -1540,6 +1540,12 @@
   "Add_EOA_Address_Sidebar": {
     "message": "Добавить EOA-адрес"
   },
+  "Create_Flow_Address_Sidebar": {
+    "message": "Создать Flow-адрес"
+  },
+  "Create_EOA_Address_Sidebar": {
+    "message": "Создать EOA-адрес"
+  },
   "Mobile_overview": {
     "message": "Обзор мобильного приложения"
   },

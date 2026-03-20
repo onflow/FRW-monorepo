@@ -149,32 +149,12 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
   const init = useCallback(async () => {
     setLogo(icon || '');
     if (!eoaAccount) return;
-
-    const accountToUse =
-      coaHasAssets && evmAccount && isValidEthereumAddress(evmAccount.address)
-        ? evmAccount
-        : eoaAccount;
-
-    if (isValidEthereumAddress(accountToUse.address)) {
-      const walletInfo = {
-        name: accountToUse.name || 'evm',
-        address: accountToUse.address,
-        chain_id: currentNetwork,
-        coins: ['flow'],
-        id: accountToUse.id || 1,
-        icon: accountToUse.icon || icon || '',
-        color: accountToUse.color || '#282828',
-        chain: currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
-      };
-      const isEvmAccount = isValidEthereumAddress(accountToUse.address);
-      await usewallet.setActiveWallet(walletInfo, isEvmAccount ? 'evm' : null);
-    }
     const defaultChain = currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID;
 
     setDefaultChain(defaultChain);
 
     setIsLoading(false);
-  }, [usewallet, icon, currentNetwork, eoaAccount, coaHasAssets, evmAccount]);
+  }, [icon, currentNetwork, eoaAccount]);
 
   const createCoa = async () => {
     setIsLoading(true);
@@ -236,26 +216,8 @@ const EthConnect = ({ params: { icon, name, origin } }: ConnectProps) => {
       // Set the selected account and mark it as user-selected
       setSelectedAccount(account);
       setUserSelectedAccount(account);
-
-      // Update the active wallet in the wallet service
-      if (account.address) {
-        const walletInfo = {
-          name: account.name || 'evm',
-          address: account.address,
-          chain_id: currentNetwork,
-          coins: ['flow'],
-          id: account.id || 1,
-          icon: account.icon || icon || '',
-          color: account.color || '#282828',
-          chain: currentNetwork === 'testnet' ? TESTNET_CHAIN_ID : MAINNET_CHAIN_ID,
-        };
-
-        // Determine if it's an EVM account
-        const isEvmAccount = isValidEthereumAddress(account.address);
-        await usewallet.setActiveWallet(walletInfo, isEvmAccount ? 'evm' : null);
-      }
     },
-    [usewallet, currentNetwork, icon]
+    []
   );
 
   useEffect(() => {
