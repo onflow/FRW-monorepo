@@ -29,9 +29,10 @@ struct SideMenuView: View {
 
                     ScrollView {
                         VStack {
-                            enableEVMView
-                                .padding(.top, 24)
-                                .visibility(vm.hasCoa ? .gone : .visible)
+                            if !vm.hasCoa {
+                                enableEVMView
+                                    .padding(.top, 24)
+                            }
                             accountListView
                         }
                     }
