@@ -51,6 +51,11 @@ struct NFTAddCollectionView: RouteableView {
         .background(Color.LL.Neutrals.background)
         .applyRouteable(self)
         .tracedView(self)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 5).onChanged { _ in
+                dismissKeyboard()
+            }
+        )
         .halfSheet(showSheet: $addViewModel.isConfirmSheetPresented, autoResizing: true, backgroundColor: Color.LL.Neutrals.background) {
             if let item = self.selectItem {
                 NFTAddCollectionView.NFTCollectionEnableView(item: item)
@@ -75,10 +80,13 @@ extension NFTAddCollectionView {
 
         var item: NFTCollectionItem
         var onAdd: (_ item: NFTCollectionItem) -> Void
+        @Environment(\.dismissSearch)
+        var dismissSearch
 
         var body: some View {
             HStack(alignment: .center) {
                 Button {
+                    dismissSearch()
                     if let website = item.collection.officialWebsite,
                        let url = URL(string: website)
                     {
@@ -116,6 +124,7 @@ extension NFTAddCollectionView {
 
                 Spacer(minLength: 88)
                 Button {
+                    dismissSearch()
                     onAdd(item)
 
                 } label: {
