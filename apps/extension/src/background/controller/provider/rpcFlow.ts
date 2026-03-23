@@ -20,6 +20,9 @@ const isSignApproval = (type: string) => {
 const flow = new PromiseFlow();
 const flowContext = flow
   .use(async (ctx, next) => {
+    // Ensure permission cache is loaded before any permission checks during cold start.
+    await permissionService.ensureInitialized();
+
     // check method
     const {
       data: { method },

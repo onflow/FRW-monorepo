@@ -1,4 +1,4 @@
-import { ServiceContext } from '@onflow/frw-context';
+import { ServiceContext, logger } from '@onflow/frw-context';
 import { type EthUnsignedTransaction } from '@onflow/frw-wallet';
 import BigNumber from 'bignumber.js';
 import { ethErrors } from 'eth-rpc-errors';
@@ -29,6 +29,7 @@ import type {
   TransactionParams,
   Web3WalletPermission,
 } from '@/shared/types/provider-types';
+import type { WalletAddress } from '@/shared/types/wallet-types';
 import {
   tupleToPrivateKey,
   ensureEvmAddressPrefix,
@@ -426,6 +427,23 @@ class ProviderController extends BaseController {
           }
         }
       }
+    }
+
+    // Keep extension active account aligned with the address connected to the dApp.
+    // This runs on explicit eth_requestAccounts and avoids later account mismatches.
+    try {
+      if (evmAddress && isValidEthereumAddress(evmAddress)) {
+        const parentAddress = await Wallet.getParentAddress();
+        if (parentAddress) {
+          await userWalletService.setCurrentAccount(
+            parentAddress,
+            ensureEvmAddressPrefix(evmAddress) as WalletAddress
+          );
+        }
+      }
+    } catch (error) {
+      // Non-blocking: dApp connection should still succeed even if active-account sync fails.
+      logger.error('ethRequestAccounts - failed to sync active account:', error);
     }
 
     const account = evmAddress ? [ensureEvmAddressPrefix(evmAddress)] : [];
@@ -1270,6 +1288,13 @@ class ProviderController extends BaseController {
     }
 
     try {
+      // Keep eth_coinbase consistent with eth_accounts by preferring
+      // the per-origin selected EVM address stored in permissions.
+      const connectedSite = permissionService.getConnectedSite(origin);
+      if (connectedSite?.evmAddress && isValidEthereumAddress(connectedSite.evmAddress)) {
+        return ensureEvmAddressPrefix(connectedSite.evmAddress);
+      }
+
       const eoaInfo = await walletManager.getEOAAccountInfo();
       if (!eoaInfo || !eoaInfo.address) {
         return null;
