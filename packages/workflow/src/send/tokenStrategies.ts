@@ -491,13 +491,14 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
       assetType,
     } = payload;
     const formattedAmount = safeConvertToUFix64(amount);
+    const checkedReceiver = receiver.toLowerCase();
 
     _helpers?.session?.strategySelected({
       strategyName: 'EvmToEvmTokenStrategy',
       assetType: type,
       networkType: assetType,
       sender: sender,
-      receiver: receiver,
+      receiver: checkedReceiver,
       flowIdentifier: flowIdentifier,
       amount: formattedAmount,
     });
@@ -508,7 +509,7 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
         const signedTx = await signLegacyEvmTransaction(
           {
             from: sender,
-            to: receiver,
+            to: checkedReceiver,
             data: '0x',
             gasLimit: GAS_LIMITS.EVM_DEFAULT,
             value: weiValue,
@@ -522,7 +523,7 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
         return await this.cadenceService.eoaCallContract(rlpEncoded, sender);
       } else {
         return await this.cadenceService.callContract(
-          receiver,
+          checkedReceiver,
           formattedAmount,
           [],
           GAS_LIMITS.EVM_DEFAULT
@@ -534,9 +535,9 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
         throw new Error('invalid send evm transaction payload - invalid contract address');
       }
 
-      if (validateEvmAddress(receiver) && sender !== coaAddr) {
+      if (validateEvmAddress(checkedReceiver) && sender !== coaAddr) {
         // eoa as sender
-        const callData = encodeEvmContractCallData({ ...payload, receiver: receiver }, true);
+        const callData = encodeEvmContractCallData({ ...payload, receiver: checkedReceiver }, true);
         const signedTx = await signLegacyEvmTransaction(
           {
             from: sender,
