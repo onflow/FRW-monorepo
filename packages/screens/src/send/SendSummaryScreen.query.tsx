@@ -67,6 +67,7 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
   // Local state for confirmation modal
   const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
   const [isFreeGasEnabled, setIsFreeGasEnabled] = useState(true);
+  const [cadenceInbox, setCadenceInbox] = useState(false);
   const [isSurgeWarningVisible, setIsSurgeWarningVisible] = useState(false);
 
   // Get data from send store using selectors
@@ -138,6 +139,19 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     checkFreeGasStatus();
   }, []);
 
+  // Check cadenceInbox feature flag - when enabled, V4 LostAndFound handles incompatible recipients
+  useEffect(() => {
+    const checkCadenceInbox = async (): Promise<void> => {
+      try {
+        const isEnabled = await bridge.getCadenceInbox?.();
+        setCadenceInbox(isEnabled ?? false);
+      } catch {
+        setCadenceInbox(false);
+      }
+    };
+    checkCadenceInbox();
+  }, []);
+
   // Transform NFT data for UI
   const nftForUI: NFTTransactionDisplayData = useMemo(
     () =>
@@ -199,7 +213,8 @@ export function SendSummaryScreen({ assets }: SendSummaryScreenProps = {}): Reac
     staleTime: 5 * 60 * 1000,
   });
 
-  const isAccountIncompatible = !isResourceCompatible;
+  // When cadenceInbox is enabled, V4 LostAndFound handles missing vaults/collections
+  const isAccountIncompatible = !cadenceInbox && !isResourceCompatible;
 
   const {
     data: payerStatus = null,
