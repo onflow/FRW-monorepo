@@ -2035,8 +2035,15 @@ const loadMainAccountsWithPubKey = async (
     mainAccounts.map((mainAccount) => mainAccount.address)
   );
 
-  // Try to get all EOA account info (index-aware)
-  const eoaInfos = await walletManager.getEOAAccountsInfo(pubKey);
+  // Try to get all EOA account info (index-aware).
+  // EOA discovery must not block Flow tx signing paths (e.g. key index resolution).
+  let eoaInfos: Awaited<ReturnType<typeof walletManager.getEOAAccountsInfo>> = [];
+  try {
+    eoaInfos = await walletManager.getEOAAccountsInfo(pubKey);
+  } catch (error) {
+    logger.warn('[userWallet] Failed to load EOA accounts info, fallback to empty list:', error);
+    eoaInfos = [];
+  }
 
   // Helper function to check if COA account has assets
   const checkCoaHasAssets = async (evmAddress: string): Promise<boolean> => {

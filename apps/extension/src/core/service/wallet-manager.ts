@@ -690,7 +690,15 @@ export class WalletManager {
         existingIndexes,
         nextIndex,
       });
-      const account = await this.deriveEOAAccountByIndex(nextIndex);
+      let account: EOAAccountSigner | null = null;
+      try {
+        account = await this.deriveEOAAccountByIndex(nextIndex);
+      } catch (error) {
+        if (this.isInvalidDerivationIndexError(error)) {
+          throw new Error('No additional EOA address can be derived from current key type');
+        }
+        throw error;
+      }
       if (!account) {
         throw new Error('Failed to derive next EOA account');
       }
@@ -771,7 +779,7 @@ export class WalletManager {
 
     // Capability-based check: only keys that can derive index > 0 support multi-EOA.
     try {
-      await wallet.getEOAAccount([1]);
+      await this.deriveEOAAccountByIndex(1);
     } catch {
       logger.warn('[extension-bg] addNewEOAAddress capability check failed at index 1');
       throw new Error(
@@ -786,6 +794,18 @@ export class WalletManager {
       address: account.address,
     });
     return { index, address: account.address };
+  }
+
+  private isInvalidDerivationIndexError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+      return false;
+    }
+    const maybeError = error as { code?: string; message?: string };
+    if (maybeError.code === 'KEY-06') {
+      return true;
+    }
+    const message = typeof maybeError.message === 'string' ? maybeError.message : '';
+    return message.includes('Derivation index is invalid');
   }
 
   /**
