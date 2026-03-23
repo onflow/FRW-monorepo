@@ -42,7 +42,28 @@ const AccountDetail = () => {
   const urlParams = new URLSearchParams(location.search);
   const parentAddress = urlParams.get('parentAddress') || null;
   const address = params.address || '';
+  const isEvmDetailAddress = isValidEthereumAddress(address);
   const userWallet = useMainAccount(network, parentAddress || address);
+  const selectedEvmAccount = React.useMemo(() => {
+    if (!isValidEthereumAddress(address) || !userWallet) {
+      return null;
+    }
+    if (userWallet.evmAccount?.address?.toLowerCase() === address.toLowerCase()) {
+      return userWallet.evmAccount;
+    }
+    const eoaAccounts = Array.isArray(userWallet.eoaAccounts) ? userWallet.eoaAccounts : [];
+    const matchedEoa = eoaAccounts.find(
+      (account) => account?.address?.toLowerCase() === address.toLowerCase()
+    );
+    if (matchedEoa) {
+      return matchedEoa;
+    }
+    // Backward-compatible fallback for older data shape with only a primary EOA account.
+    if (userWallet.eoaAccount?.address?.toLowerCase() === address.toLowerCase()) {
+      return userWallet.eoaAccount;
+    }
+    return null;
+  }, [address, userWallet]);
   const [showProfile, setShowProfile] = useState(false);
   const [gasKillSwitch, setGasKillSwitch] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -50,6 +71,7 @@ const AccountDetail = () => {
   const [isKeyphrase, setIsKeyphrase] = useState(false);
   const [emoji, setEmoji] = useState<Emoji | null>(null);
   const [payerStatus, setPayerStatus] = useState<any>(null);
+  const editableAccount = isEvmDetailAddress ? selectedEvmAccount : userWallet;
 
   // Use the new preference hook for hidden address status
   const isHidden = useAccountHidden(userWallet?.address || '');
@@ -154,7 +176,7 @@ const AccountDetail = () => {
               pb: 0,
             }}
           >
-            {!isValidEthereumAddress(address)
+            {!isEvmDetailAddress
               ? userWallet && (
                   <AccountCard
                     account={userWallet}
@@ -165,13 +187,9 @@ const AccountDetail = () => {
                     onClickSecondary={toggleEditProfile}
                   />
                 )
-              : (userWallet?.evmAccount || userWallet?.eoaAccount) && (
+              : selectedEvmAccount && (
                   <AccountCard
-                    account={
-                      address === userWallet?.evmAccount?.address
-                        ? userWallet?.evmAccount
-                        : userWallet?.eoaAccount
-                    }
+                    account={selectedEvmAccount}
                     network={network}
                     showCard={true}
                     onClick={toggleEditProfile}
@@ -348,7 +366,7 @@ const AccountDetail = () => {
           }
         </Alert>
       </Snackbar>
-      {showProfile && address && (
+      {showProfile && address && editableAccount && (
         <EditAccount
           showMoveBoard={showProfile}
           handleCloseIconClicked={() => setShowProfile(false)}
@@ -358,7 +376,7 @@ const AccountDetail = () => {
           }}
           updateProfileEmoji={(emoji) => updateProfileEmoji(emoji)}
           emoji={emoji}
-          userWallet={userWallet}
+          userWallet={editableAccount}
           address={address}
         />
       )}

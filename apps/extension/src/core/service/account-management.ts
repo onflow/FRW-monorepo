@@ -1175,10 +1175,11 @@ export class AccountManagement {
         const accountsCacheKeyUid = mainAccountsKeyUid(network, userId);
         const accountsCacheKeyPubkey = mainAccountsKey(network, pubkey);
         const existingMainAccounts = await getValidData<MainAccount[]>(accountsCacheKeyUid);
+        const normalizedAddress = address.toLowerCase();
 
         if (existingMainAccounts && Array.isArray(existingMainAccounts)) {
           const updatedMainAccounts = existingMainAccounts.map((account) => {
-            if (account.address === address) {
+            if (account.address?.toLowerCase() === normalizedAddress) {
               return {
                 ...account,
                 name: name,
@@ -1186,35 +1187,45 @@ export class AccountManagement {
                 color: background,
               };
             }
-            if (
-              account.eoaAccount &&
-              isValidEthereumAddress(address) &&
-              account.eoaAccount.address === address
-            ) {
+            if (isValidEthereumAddress(address)) {
+              const updatedEoaAccount =
+                account.eoaAccount?.address?.toLowerCase() === normalizedAddress
+                  ? {
+                      ...account.eoaAccount,
+                      name,
+                      icon,
+                      color: background,
+                    }
+                  : account.eoaAccount;
+
+              const updatedEoaAccounts = Array.isArray(account.eoaAccounts)
+                ? account.eoaAccounts.map((eoa) =>
+                    eoa?.address?.toLowerCase() === normalizedAddress
+                      ? {
+                          ...eoa,
+                          name,
+                          icon,
+                          color: background,
+                        }
+                      : eoa
+                  )
+                : account.eoaAccounts;
+
+              const updatedEvmAccount =
+                account.evmAccount?.address?.toLowerCase() === normalizedAddress
+                  ? {
+                      ...account.evmAccount,
+                      name,
+                      icon,
+                      color: background,
+                    }
+                  : account.evmAccount;
+
               return {
                 ...account,
-                eoaAccount: {
-                  ...account.eoaAccount,
-                  name: name,
-                  icon: icon,
-                  color: background,
-                },
-              };
-            }
-            //Update evmAccount if the address is a valid EVM address
-            if (
-              account.evmAccount &&
-              isValidEthereumAddress(address) &&
-              account.evmAccount.address === address
-            ) {
-              return {
-                ...account,
-                evmAccount: {
-                  ...account.evmAccount,
-                  name: name,
-                  icon: icon,
-                  color: background,
-                },
+                eoaAccount: updatedEoaAccount,
+                eoaAccounts: updatedEoaAccounts,
+                evmAccount: updatedEvmAccount,
               };
             }
             return account;
