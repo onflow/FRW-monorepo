@@ -53,7 +53,7 @@ const SettingTab = () => {
   const [isCreatingEoaAddress, setIsCreatingEoaAddress] = useState(false);
   const [createAccountError, setCreateAccountError] = useState('');
   const isFreeGasFeeEnabled = useFeatureFlag('free_gas');
-  const canCreateNewAccount = useFeatureFlag('create_new_account');
+  const canCreateNewAccount = true;
   const canAddMoreAccounts = !hasReachedFlowAddressLimit(
     walletList ?? [],
     MAX_MAIN_ACCOUNTS_PER_PROFILE

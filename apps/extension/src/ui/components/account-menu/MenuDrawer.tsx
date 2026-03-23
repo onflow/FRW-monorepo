@@ -22,7 +22,6 @@ import ErrorModel from '@/ui/components/PopupModal/errorModel';
 import { ProfileItemBase } from '@/ui/components/profile/profile-item-base';
 import { MenuItem } from '@/ui/components/sidebar/menu-item';
 import { useCurrentId, usePendingAccountCreationTransactions } from '@/ui/hooks/use-account-hooks';
-import { useFeatureFlag } from '@/ui/hooks/use-feature-flags';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { COLOR_WHITE_ALPHA_10_FFFFFF1A, COLOR_WHITE_ALPHA_40_FFFFFF66 } from '@/ui/style/color';
 
@@ -62,7 +61,7 @@ const MenuDrawer = ({
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreatingEoa, setIsCreatingEoa] = useState(false);
-  const canCreateNewAccount = useFeatureFlag('create_new_account');
+  const canCreateNewAccount = true;
   const canAddMoreAccounts = !hasReachedFlowAddressLimit(walletList, MAX_MAIN_ACCOUNTS_PER_PROFILE);
   const currentId = useCurrentId();
   const pendingAccountTransactions = usePendingAccountCreationTransactions(network, currentId);
