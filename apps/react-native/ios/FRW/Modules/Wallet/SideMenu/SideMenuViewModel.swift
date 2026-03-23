@@ -233,7 +233,20 @@ extension SideMenuViewModel {
     guard let account = self.currentAccount?.account else { return }
     guard account.type == .main else { return }
     guard let mainAccount = wallet.mainAccount else { return }
-    self.hasCoa = mainAccount.hasCOA
+      guard wallet.keyProvider?.keyType != .secureEnclave else { return }
+      if mainAccount.hasCOA {
+          self.hasCoa = true
+      } else {
+          Task {
+              do {
+                  log.debug("[SideMenu] refresh coa info")
+                  try? await mainAccount.fetchAccount()
+                  await MainActor.run {
+                      self.hasCoa = mainAccount.hasCOA
+                  }
+              }
+          }
+      }
     log.debug(" [Sidemenu] updateCoaStatus: \(account.address) : \(self.hasCoa ? "true" : "false") ")
   }
 }
