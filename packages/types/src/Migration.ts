@@ -25,3 +25,23 @@ export interface MigrationAssetsData {
   erc721: Erc721Asset[];
   erc1155: Erc1155Asset[];
 }
+
+export interface MigrationTokenDisplay {
+  address: string;
+  name: string;
+  symbol?: string;
+  logoURI?: string;
+  displayAmount: string;
+}
+
+export interface MigrationNFTCollectionDisplay {
+  address: string;
+  name: string;
+  logoURI?: string;
+  count: number;
+}
+
+export interface MigrationDisplayData {
+  tokens: MigrationTokenDisplay[];
+  nftCollections: MigrationNFTCollectionDisplay[];
+}
