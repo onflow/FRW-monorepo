@@ -492,7 +492,7 @@ export class EvmToEvmTokenStrategy implements TransferStrategy {
     } = payload;
     const formattedAmount = safeConvertToUFix64(amount);
     const checkedReceiver = receiver.toLowerCase();
-    console.log(checkedReceiver, '------');
+
     _helpers?.session?.strategySelected({
       strategyName: 'EvmToEvmTokenStrategy',
       assetType: type,
