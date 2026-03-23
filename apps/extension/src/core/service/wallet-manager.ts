@@ -461,7 +461,16 @@ export class WalletManager {
         if (existingIndexSet.has(index)) {
           continue;
         }
-        const account = await this.deriveEOAAccountByIndex(index);
+        let account: EOAAccountSigner | null = null;
+        try {
+          account = await this.deriveEOAAccountByIndex(index);
+        } catch (error) {
+          if (index === 0) {
+            throw error;
+          }
+          // Private-key profiles only support index 0; stop probing higher indexes.
+          break;
+        }
         if (!account) {
           continue;
         }
