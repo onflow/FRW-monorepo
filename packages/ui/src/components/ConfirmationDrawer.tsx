@@ -225,8 +225,8 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           </View>
 
           {/* Accounts Row */}
-          <XStack items="center" justify="space-between" width="100%" gap="$2" px="$2">
-            <YStack flex={1} items="center" gap="$2" maxW={100}>
+          <XStack items="center" justify="space-between" width="100%" gap="$4" px="$2">
+            <YStack flex={1} minW={0} items="center" gap="$2">
               <Avatar
                 src={fromAccount?.avatarSrc}
                 fallback={fromAccount?.avatarFallback || 'A'}
@@ -234,7 +234,13 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color="$text">
+                <Text
+                  fontSize="$3"
+                  fontWeight="600"
+                  color="$text"
+                  textAlign="center"
+                  numberOfLines={1}
+                >
                   {fromAccount?.name || unknownAccountText}
                 </Text>
                 {fromAccount?.address && (
@@ -243,9 +249,9 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
               </YStack>
             </YStack>
 
-            <LoadingIndicator isAnimating={internalIsSending} width={90} />
+            <LoadingIndicator isAnimating={internalIsSending} width={120} />
 
-            <YStack flex={1} items="center" gap="$2" maxW={100}>
+            <YStack flex={1} minW={0} items="center" gap="$2">
               <Avatar
                 src={toAccount?.avatarSrc}
                 fallback={toAccount?.avatarFallback || 'A'}
@@ -253,7 +259,13 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
                 size={36}
               />
               <YStack items="center" gap="$1">
-                <Text fontSize="$3" fontWeight="600" color="$text">
+                <Text
+                  fontSize="$3"
+                  fontWeight="600"
+                  color="$text"
+                  textAlign="center"
+                  numberOfLines={1}
+                >
                   {toAccount?.name || unknownAccountText}
                 </Text>
                 {toAccount?.address && (
