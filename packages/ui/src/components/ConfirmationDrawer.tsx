@@ -142,6 +142,8 @@ export const ConfirmationDrawer: React.FC<ConfirmationDrawerProps> = ({
           <XStack items="center" width="100%">
             {isExtension ? (
               <>
+                <View width={32} height={32} />
+
                 <View flex={1} items="center">
                   <Text fontSize="$5" fontWeight="700" color="$text" text="center">
                     {title || summaryText}
