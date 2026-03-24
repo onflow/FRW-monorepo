@@ -20,7 +20,7 @@ struct AddAccountSheet: View {
                     onCreateCadenceAccount()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "plus.circle")
+                        Image("icon-plus-circle")
                             .resizable()
                             .frame(width: 24, height: 24)
                             .foregroundStyle(Color.Brain.Core.icons)
@@ -45,7 +45,7 @@ struct AddAccountSheet: View {
                     onCreateEVMAccount()
                 } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: "shippingbox")
+                        Image("icon_create_evm")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 24, height: 24)
