@@ -236,7 +236,7 @@ export function AccountSelector({
           borderTopLeftRadius={16}
           borderTopRightRadius={16}
         >
-          <YStack gap={16}>
+          <YStack gap={16} flex={1}>
             {/* Header */}
             <XStack items="center" justify="space-between" pt={10}>
               <Text fontSize={14} fontWeight="400" color="$text">
@@ -252,7 +252,7 @@ export function AccountSelector({
             </XStack>
 
             {/* Account List */}
-            <ScrollView maxHeight={400}>
+            <ScrollView flex={1}>
               <YStack gap={2}>
                 {accounts
                   .filter((account) => !shouldHideAccount(account))
