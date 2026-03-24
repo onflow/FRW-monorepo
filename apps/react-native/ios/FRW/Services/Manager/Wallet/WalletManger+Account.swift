@@ -140,11 +140,10 @@ extension WalletManager {
     }
 
     func eoaIndex(address: String? = nil) -> UInt32? {
-        guard selectedAccount?.type == .eoa else {
-            return nil
-        }
-        var currentAddress = address ?? selectedAccount?.hexAddr
+        let selectedEOAAddress = (selectedAccount?.type == .eoa ? selectedAccount?.hexAddr : nil)
+        let currentAddress = address ?? selectedEOAAddress
         guard let currentAddress else {
+            log.warning("[EOA] invalid address:\(String(describing: address)), current:\(String(describing: selectedAccount?.type))")
             return nil
         }
 
