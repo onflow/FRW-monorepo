@@ -64,7 +64,7 @@ struct AddAccountSheet: View {
                 .buttonStyle(ScaleButtonStyle())
             }
             .padding(.horizontal, 18)
-            .background(Color.Brain.Core.cards)
+            .background(Color.Brain.Light.lines10)
             .cornerRadius(16)
         }
         .padding(.horizontal, 18)
