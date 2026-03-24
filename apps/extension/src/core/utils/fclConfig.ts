@@ -1,6 +1,7 @@
 import * as fcl from '@onflow/fcl';
 import { createFlowClient } from '@onflow/fcl';
 import { addresses } from '@onflow/frw-cadence';
+import { httpTransport } from '@onflow/transport-http';
 
 import { type FlowNetwork } from '@/shared/types';
 import { isValidNetwork } from '@/shared/utils';
@@ -19,7 +20,11 @@ const flowClients: Map<string, FlowClient> = new Map();
 // Configure FCL for Mainnet
 export const fclMainnetConfig = async (emulatorMode?: boolean) => {
   const host = emulatorMode ? EMULATOR_HOST_MAINNET : HOST_MAINNET;
-  fcl.config().put('accessNode.api', host).put('flow.network', 'mainnet');
+  fcl
+    .config()
+    .put('accessNode.api', host)
+    .put('flow.network', 'mainnet')
+    .put('sdk.transport', httpTransport);
 
   // Configure contract addresses for mainnet
   const addrMap = addresses.mainnet;
@@ -31,7 +36,11 @@ export const fclMainnetConfig = async (emulatorMode?: boolean) => {
 // Configure FCL for Testnet
 export const fclTestnetConfig = async (emulatorMode?: boolean) => {
   const host = emulatorMode ? EMULATOR_HOST_TESTNET : HOST_TESTNET;
-  fcl.config().put('accessNode.api', host).put('flow.network', 'testnet');
+  fcl
+    .config()
+    .put('accessNode.api', host)
+    .put('flow.network', 'testnet')
+    .put('sdk.transport', httpTransport);
 
   // Configure contract addresses for testnet
   const addrMap = addresses.testnet;

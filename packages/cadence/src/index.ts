@@ -1,6 +1,6 @@
 import * as fcl from '@onflow/fcl';
 import { createLogger, type BridgeLogger } from '@onflow/frw-utils';
-import { send as httpSend } from '@onflow/transport-http';
+import { httpTransport } from '@onflow/transport-http';
 
 import { addresses, CadenceService } from './cadence.generated';
 
@@ -102,7 +102,7 @@ export function configureFCL(network: 'mainnet' | 'testnet'): void {
     .config()
     .put('flow.network', network)
     .put('accessNode.api', accessNode)
-    .put('sdk.transport', httpSend)
+    .put('sdk.transport', httpTransport)
     .put('logger.level', 1);
 
   const addrMap = network === 'mainnet' ? addresses.mainnet : addresses.testnet;

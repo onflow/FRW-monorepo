@@ -1550,10 +1550,10 @@
     "message": "Add EOA Address"
   },
   "Create_Flow_Address_Sidebar": {
-    "message": "Create Flow Address"
+    "message": "Create a new Flow Cadence account"
   },
   "Create_EOA_Address_Sidebar": {
-    "message": "Create EOA Address"
+    "message": "Create a new Flow EVM Account"
   },
   "Mobile_overview": {
     "message": "Mobile overview"

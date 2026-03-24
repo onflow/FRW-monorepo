@@ -57,7 +57,7 @@ export interface PlatformSpec extends KeyRotationDependencies {
   // Cryptographic operations (hexData due to Turbo Module limitations)
   sign(hexData: string): Promise<string>;
   getSignKeyIndex(): number;
-  ethSign(signData: Uint8Array): Promise<Uint8Array>;
+  ethSign(signData: Uint8Array, address?: string): Promise<Uint8Array>;
 
   /**
    * When false, EOA EVM transactions are sent via RLP directly to EVM RPC (by the package).
