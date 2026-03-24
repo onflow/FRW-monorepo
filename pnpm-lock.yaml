@@ -162,6 +162,9 @@ importers:
       '@onflow/frw-workflow':
         specifier: workspace:^
         version: link:../../packages/workflow
+      '@onflow/transport-http':
+        specifier: ^1.15.6
+        version: 1.15.6
       '@reown/walletkit':
         specifier: ^1.2.8
         version: 1.2.11(typescript@5.7.2)(zod@3.25.76)
@@ -878,8 +881,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@onflow/transport-http':
-        specifier: ^1.13.0
-        version: 1.13.2
+        specifier: ^1.15.6
+        version: 1.15.6
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
@@ -3639,6 +3642,9 @@ packages:
 
   '@onflow/transport-http@1.13.2':
     resolution: {integrity: sha512-zJ4gq+z2hVhN/ExYiUel+6DHxkgW8O6dYzbZzA4FGqvVPz72E1zRl4ZH2T+rHKNyzMjhPFdegAqejHw7hUYg+Q==}
+
+  '@onflow/transport-http@1.15.6':
+    resolution: {integrity: sha512-WIXhPzCIdbe7r5FTHrftLmaI89vaK3fodJdYXX7efIzGe52Qtzrwa90NaxWAVmpkxnp2rgEYo5S3DD4yCDd2+w==}
 
   '@onflow/typedefs@1.7.1':
     resolution: {integrity: sha512-yH/JO4A1yHz894mHAJmtPg791gTe+TwiV/97T3hnrw0POBrQjiv56hIUsyycBB+J32RKjXMlv4YV/rUErXPdDQ==}
@@ -16122,6 +16128,25 @@ snapshots:
       - encoding
       - utf-8-validate
 
+  '@onflow/transport-http@1.15.6':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@onflow/util-address': 1.2.4
+      '@onflow/util-invariant': 1.2.5
+      '@onflow/util-logger': 1.3.4
+      '@onflow/util-template': 1.2.4
+      abort-controller: 3.0.0
+      buffer: 6.0.3
+      cross-fetch: 4.1.0
+      events: 3.3.0
+      isomorphic-ws: 5.0.0(ws@8.18.3)
+      ws: 8.18.3
+    transitivePeerDependencies:
+      - '@onflow/util-config'
+      - bufferutil
+      - encoding
+      - utf-8-validate
+
   '@onflow/typedefs@1.7.1':
     dependencies:
       '@babel/runtime': 7.28.4
@@ -28103,7 +28128,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.2.2(@types/node@22.18.8)(jiti@2.6.1)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(vite@7.2.2(@types/node@25.2.1)(jiti@2.6.1)(terser@5.46.0)(tsx@4.20.6)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

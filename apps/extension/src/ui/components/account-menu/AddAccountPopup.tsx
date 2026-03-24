@@ -107,7 +107,10 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
         >
           <ProfileButton
             icon={createNew}
-            text={chrome.i18n.getMessage('Create_Flow_Address_Sidebar') || 'Create Flow Address'}
+            text={
+              chrome.i18n.getMessage('Create_Flow_Address_Sidebar') ||
+              'Create a new Flow Cadence account'
+            }
             onClick={props.addAccount}
             disabled={props.disableCreateAccount}
           />
@@ -115,16 +118,19 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
             <Box
               sx={{
                 height: '1px',
-                width: '100%',
-                padding: '1px 16px',
-                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                width: 'calc(100% - 32px)',
+                mx: '16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.12)',
               }}
             />
           )}
           {props.addEoaAddress && (
             <ProfileButton
               icon={createEoa}
-              text={chrome.i18n.getMessage('Create_EOA_Address_Sidebar') || 'Create EOA Address'}
+              text={
+                chrome.i18n.getMessage('Create_EOA_Address_Sidebar') ||
+                'Create a new Flow EVM Account'
+              }
               dataTestId="add-eoa-address-button"
               onClick={props.addEoaAddress}
               disabled={props.disableAddEoaAddress}
@@ -134,9 +140,9 @@ const AddAccountPopup = (props: TransferConfirmationProps) => {
             <Box
               sx={{
                 height: '1px',
-                width: '100%',
-                padding: '1px 16px',
-                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                width: 'calc(100% - 32px)',
+                mx: '16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.12)',
               }}
             />
           )}
