@@ -266,7 +266,7 @@ class ExtensionPlatformImpl implements PlatformSpec {
     return this.walletController.getKeyIndex() || 0;
   }
 
-  async ethSign(signData: Uint8Array): Promise<Uint8Array> {
+  async ethSign(signData: Uint8Array, address?: string): Promise<Uint8Array> {
     if (!this.walletController) {
       throw new Error('Wallet controller not initialized');
     }
@@ -275,11 +275,11 @@ class ExtensionPlatformImpl implements PlatformSpec {
       throw new Error('signData must be a Uint8Array');
     }
 
-    // Preferred path: sign with the selected EOA address/index via wallet-manager.
+    // Preferred path: sign with the explicit EOA address/index via wallet-manager.
     if (typeof this.walletController.ethSignWithAddress === 'function') {
       const signedBytes = await this.walletController.ethSignWithAddress(
         signData,
-        this.currentAddress || undefined
+        address || this.currentAddress || undefined
       );
       return signedBytes instanceof Uint8Array
         ? signedBytes

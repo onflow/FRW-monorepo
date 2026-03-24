@@ -646,7 +646,9 @@ export const useSendStore = create<SendState>((set, get) => ({
 
       const network = bridge.getNetwork?.() ?? 'mainnet';
       const helpers = {
-        ethSign: bridge.ethSign ? (data: Uint8Array) => bridge.ethSign(data) : undefined,
+        ethSign: bridge.ethSign
+          ? (data: Uint8Array, address?: string) => bridge.ethSign(data, address)
+          : undefined,
         network: bridge.getNetwork ? bridge.getNetwork() : undefined,
         // Direct RPC path uses workflow/default gas settings.
         gasPrice: useDirectEvm ? undefined : 0,
