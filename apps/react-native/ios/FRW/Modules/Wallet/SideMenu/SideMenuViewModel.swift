@@ -100,8 +100,11 @@ class SideMenuViewModel: ObservableObject {
                     account.address,
                     for: profile.uid
                 )
-                let isHidden = account.isHidden || isManuallyHidden
-                log.debug("[Side] hide \(account.address):\(account.isHidden) or \(isManuallyHidden)")
+                var isHidden = account.isHidden || isManuallyHidden
+                if account.type == .coa {
+                    isHidden = account.isHidden
+                    log.debug("[Side] hide \(account.address):\(account.isHidden) or \(isManuallyHidden)")
+                }
                 return SideMenuItem(account: account, isHidden: isHidden)
             }
         })
