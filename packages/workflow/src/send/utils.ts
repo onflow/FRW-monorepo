@@ -385,7 +385,7 @@ export const signLegacyEvmTransaction = async (
 
   const serializedUnsigned = serialize(unsignedTx);
   const digest = arrayify(keccak256(serializedUnsigned));
-  const signatureBytes = await helpers.ethSign(digest);
+  const signatureBytes = await helpers.ethSign(digest, tx.from);
   const signatureHex = hexlify(signatureBytes);
 
   return serialize(unsignedTx, signatureHex);
