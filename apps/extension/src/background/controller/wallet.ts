@@ -1515,7 +1515,13 @@ export class WalletController extends BaseController {
     const network = await this.getNetwork();
     const isEmulator = await this.getEmulatorMode();
     const isEvm = await this.getActiveAccountType();
-    return await transactionActivityService.getFlowscanUrl(network, isEmulator, isEvm);
+    const currentAddress = await this.getCurrentAddress();
+    return await transactionActivityService.getFlowscanUrl(
+      network,
+      isEmulator,
+      isEvm,
+      currentAddress || undefined
+    );
   };
 
   getViewSourceUrl = async (): Promise<string> => {

@@ -51,3 +51,12 @@ export {
   type FlowIndexPricesData,
   type FlowIndexPricesResponse,
 } from './flowindex';
+
+// Export explorer URL service
+export {
+  ExplorerService,
+  type ExplorerType,
+  type ExplorerChain,
+  type ExplorerUrlRequest,
+  type ExplorerUrlResponse,
+} from './explorer';

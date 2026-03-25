@@ -1,3 +1,4 @@
+import { ExplorerService } from '@onflow/frw-api';
 import { logger } from '@onflow/frw-context';
 import type { TransactionStatus } from '@onflow/typedefs';
 
@@ -917,34 +918,62 @@ class TransactionActivity {
     return transactionList.count;
   };
 
-  getFlowscanUrl = async (network: string, isEmulator: boolean, isEvm: string): Promise<string> => {
+  getFlowscanUrl = async (
+    network: string,
+    isEmulator: boolean,
+    isEvm: string,
+    referenceId?: string
+  ): Promise<string> => {
     if (isEmulator) {
       return 'http://localhost:8080';
     }
 
-    // Check if it's an EVM wallet and update the base URL
-    if (isEvm === 'evm') {
-      switch (network) {
-        case 'testnet':
-          return 'https://testnet.flowscan.io/evm';
-        case 'mainnet':
-          return 'https://flowscan.io/evm';
-        default:
-          return 'https://flowscan.io/evm';
+    const fallbackUrl =
+      isEvm === 'evm'
+        ? network === 'testnet'
+          ? 'https://testnet.flowscan.io/evm'
+          : 'https://flowscan.io/evm'
+        : network === 'testnet'
+          ? 'https://testnet.flowscan.io'
+          : network === 'crescendo'
+            ? 'https://flow-view-source.vercel.app/crescendo'
+            : 'https://www.flowscan.io';
+
+    try {
+      // Use backend explorer routing endpoint first (redirect=false), then derive base URL.
+      const lookupId = referenceId || '0x00000000000000000000000000000000';
+      const chain = isEvm === 'evm' ? 'evm' : 'flow';
+      const explorerUrl = await ExplorerService.getUrl({
+        id: lookupId,
+        type: 'address',
+        chain,
+        network,
+      });
+
+      if (explorerUrl) {
+        const parsed = new URL(explorerUrl);
+        const trimmedPath = parsed.pathname.replace(
+          /\/(tx|address|account|contract|token)\/[^/]+\/?$/i,
+          ''
+        );
+        const baseUrl = `${parsed.origin}${trimmedPath}`.replace(/\/+$/, '');
+        if (baseUrl) {
+          return baseUrl;
+        }
       }
-    } else {
-      // Set baseURL based on the network
-      switch (network) {
-        case 'testnet':
-          return 'https://testnet.flowscan.io';
-        case 'mainnet':
-          return 'https://www.flowscan.io';
-        case 'crescendo':
-          return 'https://flow-view-source.vercel.app/crescendo';
-        default:
-          return 'https://www.flowscan.io';
-      }
+    } catch (error) {
+      logger.warn(
+        '[transaction-activity] getFlowscanUrl explorer endpoint failed, using fallback',
+        {
+          network,
+          isEvm,
+          referenceId,
+          error,
+        }
+      );
     }
+
+    return fallbackUrl;
   };
 
   getViewSourceUrl = async (network: string): Promise<string> => {
