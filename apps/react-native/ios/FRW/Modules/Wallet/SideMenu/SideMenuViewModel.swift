@@ -95,7 +95,19 @@ class SideMenuViewModel: ObservableObject {
         )
 
         let allItems = profile.accounts.map({ list in
-            list.map { account in
+            // If the main account in this group is manually hidden, hide the entire group
+            let mainIsManuallyHidden = list.contains { account in
+                account.type == .main && LocalUserDefaults.shared.isAddressHidden(
+                    account.address,
+                    for: profile.uid
+                )
+            }
+
+            return list.map { account in
+                if mainIsManuallyHidden {
+                    return SideMenuItem(account: account, isHidden: true)
+                }
+
                 let isManuallyHidden = LocalUserDefaults.shared.isAddressHidden(
                     account.address,
                     for: profile.uid
