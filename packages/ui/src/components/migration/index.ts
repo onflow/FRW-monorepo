@@ -9,6 +9,6 @@ export type { MigrationProgressIndicatorProps } from './MigrationProgressIndicat
 export { MigrationProgressBar } from './MigrationProgressBar';
 export type { MigrationProgressBarProps } from './MigrationProgressBar';
 export { MigrationAssetDrawer } from './MigrationAssetDrawer';
-export type { MigrationAssetDrawerProps, AssetItem } from './MigrationAssetDrawer';
+export type { MigrationAssetDrawerProps } from './MigrationAssetDrawer';
 export { MigrationStatusMessage } from './MigrationStatusMessage';
 export type { MigrationStatusMessageProps } from './MigrationStatusMessage';

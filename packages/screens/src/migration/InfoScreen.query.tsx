@@ -62,12 +62,7 @@ export function InfoScreen({ onStartMigration }: InfoScreenProps = {}): React.Re
           marginRight: mr,
         }}
       >
-        <Text
-          fontSize={8}
-          fontWeight="500"
-          color={color as any}
-          style={{ lineHeight: 'normal', whiteSpace: 'nowrap' }}
-        >
+        <Text fontSize={8} fontWeight="500" lineHeight={16} color={color as any}>
           {label}
         </Text>
       </XStack>
