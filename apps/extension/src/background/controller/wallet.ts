@@ -1524,6 +1524,12 @@ export class WalletController extends BaseController {
     );
   };
 
+  getExplorerRedirectBase = async (): Promise<string | undefined> => {
+    const network = await this.getNetwork();
+    const isEvm = await this.getActiveAccountType();
+    return await transactionActivityService.getExplorerRedirectBase(network, isEvm);
+  };
+
   getViewSourceUrl = async (): Promise<string> => {
     const network = await this.getNetwork();
     return await transactionActivityService.getViewSourceUrl(network);
