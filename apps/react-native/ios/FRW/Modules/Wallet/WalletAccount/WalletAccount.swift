@@ -96,7 +96,6 @@ extension WalletAccount {
         guard case .loaded(let balance, let nftCount, let erc20Balance) = assets else {
             return false  // Don't hide if data not loaded yet
         }
-        log.debug("\(address): \(balance)-\(nftCount)-\(erc20Balance)")
         return balance == 0 && nftCount == 0 && erc20Balance == 0
     }
 
