@@ -57,8 +57,31 @@ class ExtensionPlatformImpl implements PlatformSpec {
   closeRNWithNFT(id?: string | null): void {
     throw new Error('Method not implemented.');
   }
-  refreshCoaAfterMigration?(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async refreshCoaAfterMigration?(): Promise<void> {
+    // Extension-specific post-migration refresh:
+    // refresh account/address-book caches so UI reflects COA/EOA state changes.
+    if (!this.walletController) {
+      this.log(
+        'warn',
+        '[PlatformImpl] refreshCoaAfterMigration skipped: wallet controller missing'
+      );
+      return;
+    }
+
+    try {
+      if (typeof this.walletController.refreshWallets === 'function') {
+        await this.walletController.refreshWallets();
+      } else if (typeof this.walletController.refreshAll === 'function') {
+        await this.walletController.refreshAll();
+      } else {
+        this.log(
+          'warn',
+          '[PlatformImpl] refreshCoaAfterMigration skipped: no refreshWallets/refreshAll'
+        );
+      }
+    } catch (error) {
+      this.log('warn', '[PlatformImpl] refreshCoaAfterMigration failed', error);
+    }
   }
   getSignType(): string {
     throw new Error('Method not implemented.');
