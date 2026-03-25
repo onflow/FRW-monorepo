@@ -31,7 +31,7 @@ interface CollectionDetailProps {
   loading: boolean;
   isLoadingAll?: boolean;
   refreshCollectionImpl: () => void;
-  createGridCard: (item: any, index: number) => JSX.Element;
+  createGridCard: (item: any, index: number) => React.ReactElement;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   loadingMore: boolean;
@@ -262,7 +262,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
                       />
                     )}
                   </Grid>
-                ) : (
+                ) : isLoadingAll || loadingMore || total > 0 ? null : (
                   <Box sx={{ p: 4, textAlign: 'center' }}>
                     <Typography variant="body1" color="text.secondary">
                       No NFTs found in this collection
@@ -278,7 +278,7 @@ const CollectionDetailGrid: React.FC<CollectionDetailProps> = ({
           container
           sx={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(2, 1fr)',
             gridAutoRows: 'minmax(100px, auto)',
             padding: '0',
             overflowY: 'auto',

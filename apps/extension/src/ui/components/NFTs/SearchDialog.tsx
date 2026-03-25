@@ -13,7 +13,7 @@ interface SearchDialogProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   onFilteredResults: (results: Nft[]) => void;
-  createGridCard: (item: any, index: number) => JSX.Element;
+  createGridCard: (item: any, index: number) => React.ReactElement;
   total: number;
   isLoadingAll: boolean;
   loadingMore: boolean;
