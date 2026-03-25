@@ -1,5 +1,6 @@
-import { configureFCL, CadenceService } from '@onflow/frw-cadence';
+import { CadenceService } from '@onflow/frw-cadence';
 
+import { fclConfig } from '@/core/utils/fclConfig';
 import {
   cadenceTokenInfoKey,
   cadenceTokenInfoRefreshRegex,
@@ -281,7 +282,7 @@ class CoinList {
 
   // Inbox (unclaimed LostAndFound assets) — per address
   loadInboxData = async (network: string, address: string): Promise<InboxAddressData> => {
-    configureFCL(network as 'testnet' | 'mainnet');
+    await fclConfig(network as 'testnet' | 'mainnet');
 
     const fts = await cadenceService.queryUnclaimedFts(address);
     const nfts = await cadenceService.queryUnclaimedNfts(address);

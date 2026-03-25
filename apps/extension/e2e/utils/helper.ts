@@ -26,7 +26,7 @@ export const closeOpenedPages = async (page: Page) => {
 export const getCurrentAddress = async (page: Page, isCoa = false) => {
   // Wait for the dashboard page to be fully loaded
   await page.waitForURL(/.*\/dashboard.*/);
-  await wait(2000);
+  await wait(6000);
   const whatsNewPopup = page.getByTestId('popup-close-button');
 
   if (await whatsNewPopup.isVisible()) {
