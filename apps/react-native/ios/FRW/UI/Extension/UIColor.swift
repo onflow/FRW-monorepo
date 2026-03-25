@@ -182,6 +182,7 @@ extension UIColor {
     enum Core {
         /// dark: 000000, light: FFFFFF
         static let background = UIColor(.Brain.Core.background)
+        static let drawer = UIColor(.Brain.Core.drawer)
         /// dark: 1a1a1a, light: f2f2f7
         static let cards = UIColor(.Brain.Core.cards)
         /// dark: ffffff-50%, light: 767676-50%

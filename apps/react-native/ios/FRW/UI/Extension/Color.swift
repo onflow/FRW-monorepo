@@ -359,6 +359,8 @@ extension Color {
         enum Core {
             /// dark: 000000, light: FFFFFF
             static let background = Color(.Brain.Core.background)
+            /// dark: 121212, light: f2f2f7
+            static let drawer = Color(.Brain.Core.drawer)
             /// dark: 1a1a1a, light: f2f2f7
             static let cards = Color(.Brain.Core.cards)
             /// dark: ffffff-50%, light: 767676-50%
