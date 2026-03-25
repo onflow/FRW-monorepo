@@ -1165,7 +1165,8 @@ class UserWallet {
           const baseURL = await transactionActivityService.getFlowscanUrl(
             network,
             isEmulator,
-            isEvm
+            isEvm,
+            primaryAddress
           );
           let notificationUrl = '';
 
@@ -2154,14 +2155,15 @@ const loadMainAccountsWithPubKey = async (
       const eoaAccountInfos: WalletAccount[] = await Promise.all(
         eoaInfos.map(async (eoaInfo) => {
           const eoaEmoji = calculateEmojiIcon(eoaInfo.address ?? '');
+          const eoaCustomData = customMetadata[eoaInfo.address ?? ''];
           const hasAssets = await checkCoaHasAssets(eoaInfo.address);
           return {
             address: eoaInfo.address,
             chain: network === 'mainnet' ? 747 : 545, // Flow EVM chain ID
             id: 99 + eoaInfo.index, // Stable unique ID per derivation index
-            name: eoaEmoji.name,
-            icon: eoaEmoji.emoji,
-            color: eoaEmoji.bgcolor,
+            name: eoaCustomData?.name || eoaEmoji.name,
+            icon: eoaCustomData?.icon || eoaEmoji.emoji,
+            color: eoaCustomData?.background || eoaEmoji.bgcolor,
             balance: eoaInfo.balance || '0',
             hasAssets: hasAssets,
           };

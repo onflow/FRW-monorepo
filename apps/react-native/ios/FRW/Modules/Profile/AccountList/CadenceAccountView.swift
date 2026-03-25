@@ -30,6 +30,13 @@ struct CadenceAccountView: View {
         WalletManager.shared.keyProvider?.keyType == .seedPhrase
     }
 
+    var allowHideAccount: Bool {
+        let currentAddr = account.address.lowercased()
+        let selectedAddr = WalletManager.shared.selectedAccount?.hexAddr.lowercased()
+        let mainAddr = WalletManager.shared.mainAccount?.hexAddr.lowercased()
+        return currentAddr != selectedAddr && currentAddr != mainAddr
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             ScrollView {
@@ -93,9 +100,11 @@ struct CadenceAccountView: View {
                       AccountOptionView(title: "wallet_account_key".localized, style: .arrow)
                         .cornerRadius(radius)
                   }
-                  
-                  AccountShowView(address: account.address, uid: profile.uid)
-                    .cornerRadius(radius)
+                    
+                    if allowHideAccount {
+                    AccountShowView(address: account.address, uid: profile.uid)
+                      .cornerRadius(radius)
+                  }
 
 
                   StorageUsageView(

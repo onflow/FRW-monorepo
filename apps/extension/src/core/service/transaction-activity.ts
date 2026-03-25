@@ -917,7 +917,12 @@ class TransactionActivity {
     return transactionList.count;
   };
 
-  getFlowscanUrl = async (network: string, isEmulator: boolean, isEvm: string): Promise<string> => {
+  getFlowscanUrl = async (
+    network: string,
+    isEmulator: boolean,
+    isEvm: string,
+    _referenceId?: string
+  ): Promise<string> => {
     if (isEmulator) {
       return 'http://localhost:8080';
     }
@@ -945,6 +950,15 @@ class TransactionActivity {
           return 'https://www.flowscan.io';
       }
     }
+  };
+
+  getExplorerRedirectBase = async (network: string, isEvm: string): Promise<string | undefined> => {
+    const webNextUrl = openapiService.store?.webNextUrl;
+    if (!webNextUrl) {
+      return undefined;
+    }
+    const chain = isEvm === 'evm' ? 'evm' : 'flow';
+    return `${webNextUrl}/api/v4/explorer?chain=${chain}&network=${network}`;
   };
 
   getViewSourceUrl = async (network: string): Promise<string> => {

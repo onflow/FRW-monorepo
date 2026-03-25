@@ -20,19 +20,17 @@ extension ProfileManager {
     }
 
     // Check if profile already exists
-    var profile: ProfileModel?
     if let existingProfile = loadProfile(userId: uid) {
-      // Update existing profile
+      // Update existing profile — accounts already on-chain, no polling needed
       let updated = existingProfile.updated(
         username: userInfo.nickname,
         avatar: userInfo.avatar
       )
       // During login, key should exist - skip validation to ensure profile is saved
       saveProfile(updated, validateKey: false)
-      profile = updated
       log.info("[ProfileLogin] Updated profile: \(uid)")
     } else {
-      // Create new profile
+      // Create new profile — accounts may not be on-chain yet, poll until ready
       let wallets = findStoreUser(uid: uid)
       let newProfile = ProfileModel(
         userInfo: userInfo,
@@ -41,14 +39,10 @@ extension ProfileManager {
       )
       // During login, key should exist - skip validation to ensure profile is saved
       saveProfile(newProfile, validateKey: false)
-      profile = newProfile
       log.info("[ProfileLogin] Created new profile: \(uid)")
-    }
 
-    // Fetch account info async with polling (won't drop the profile due to merge logic)
-    Task {
-      if let profile {
-        await refreshProfileAccountWithPolling(profile: profile)
+      Task {
+        await refreshProfileAccountWithPolling(profile: newProfile)
       }
     }
   }

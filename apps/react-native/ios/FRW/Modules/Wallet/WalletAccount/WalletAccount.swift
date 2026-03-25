@@ -92,6 +92,7 @@ extension WalletAccount {
     /// Hidden when it has no balance and no NFTs
     var isHidden: Bool {
         guard type == .coa else { return false }
+        guard LocalUserDefaults.shared.hideCOAWithZero else { return false }
         guard case .loaded(let balance, let nftCount, let erc20Balance) = assets else {
             return false  // Don't hide if data not loaded yet
         }

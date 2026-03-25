@@ -1,9 +1,13 @@
 import { logger, navigation, bridge, getCadenceService } from '@onflow/frw-context';
+import { tokenQueryKeys, tokenQueries } from '@onflow/frw-stores';
 import {
   Platform,
   type WalletAccount,
   type WalletProfilesResponse,
   type MigrationAssetsData,
+  type MigrationDisplayData,
+  type TokenModel,
+  type CollectionModel,
 } from '@onflow/frw-types';
 import {
   YStack,
@@ -16,6 +20,7 @@ import {
   MigrationProgressIndicator,
   MigrationStatusMessage,
   MigrationInfoBanner,
+  MigrationAssetDrawer,
   Text,
   Avatar,
   AddressText,
@@ -48,6 +53,8 @@ export interface MigrationScreenProps {
   };
   /** Assets being migrated in MigrationAssetsData format */
   assets?: MigrationAssetsData;
+  /** Enriched display data for the asset list (icons, names, amounts) */
+  displayAssets?: MigrationDisplayData;
   /** Failed assets (for partial completion) */
   failedAssets?: Array<{ symbol: string; amount: string; name?: string }>;
 }
@@ -63,6 +70,7 @@ export function MigrationScreen({
   sourceAccount,
   destinationAccount,
   assets,
+  displayAssets,
   failedAssets = [],
 }: MigrationScreenProps): React.ReactElement {
   const { t } = useTranslation();
@@ -74,6 +82,11 @@ export function MigrationScreen({
   const [migrationError, setMigrationError] = useState<Error | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
   const refreshDoneRef = useRef(false);
+
+  // Visual progress driven by time (0→99 while in-flight, 100 on complete)
+  const [displayProgress, setDisplayProgress] = useState(0);
+  const displayProgressRef = useRef(0);
+  const txProgressRef = useRef(0); // real batch progress, readable inside timer closure
 
   // Ensure migration never runs automatically - only via button press
   useEffect(() => {
@@ -343,6 +356,47 @@ export function MigrationScreen({
     }
   };
 
+  // Fetch token metadata for the source EVM address (reuses cache from MigrationAssetsService)
+  const sourceEvmAddress = resolvedSourceWalletAccount?.address ?? '';
+  const network = bridge.getNetwork();
+
+  const { data: sourceTokens } = useQuery<TokenModel[]>({
+    queryKey: tokenQueryKeys.tokens(sourceEvmAddress, network),
+    queryFn: () => tokenQueries.fetchTokens(sourceEvmAddress, network),
+    enabled: !!sourceEvmAddress,
+    staleTime: 60_000,
+  });
+
+  const { data: sourceCollections } = useQuery<CollectionModel[]>({
+    queryKey: tokenQueryKeys.nfts(sourceEvmAddress, network),
+    queryFn: () => tokenQueries.fetchNFTCollections(sourceEvmAddress, network),
+    enabled: !!sourceEvmAddress,
+    staleTime: 60_000,
+  });
+
+  // Build address → metadata maps for the drawer (lowercase for case-insensitive matching)
+  const tokenMetadata = useMemo(() => {
+    const map: Record<string, { name: string; symbol?: string; logoURI?: string }> = {};
+    for (const token of sourceTokens ?? []) {
+      const addr = (token.evmAddress || token.contractAddress || '').toLowerCase();
+      if (addr) map[addr] = { name: token.name, symbol: token.symbol, logoURI: token.logoURI };
+    }
+    return map;
+  }, [sourceTokens]);
+
+  const collectionMetadata = useMemo(() => {
+    const map: Record<string, { name: string; logoURI?: string }> = {};
+    for (const col of sourceCollections ?? []) {
+      const addr = (col.evmAddress || col.address || '').toLowerCase();
+      if (addr)
+        map[addr] = {
+          name: col.name || col.contractName || addr,
+          logoURI: col.logoURI || col.logo,
+        };
+    }
+    return map;
+  }, [sourceCollections]);
+
   // Calculate transferred assets count for progress display
   const totalAssetsCount =
     (assets?.erc20?.length ?? 0) + (assets?.erc721?.length ?? 0) + (assets?.erc1155?.length ?? 0);
@@ -386,6 +440,48 @@ export function MigrationScreen({
     }
   }, [stage]);
 
+  // Keep txProgressRef in sync so the timer closure can read the latest real batch progress
+  useEffect(() => {
+    txProgressRef.current = progress;
+  }, [progress]);
+
+  // Time-based visual progress: advances 0→99% over estimated duration, caps at 99 until done
+  useEffect(() => {
+    if (stage !== 'in-progress') {
+      displayProgressRef.current = 0;
+      setDisplayProgress(0);
+      return;
+    }
+
+    const TICK_MS = 100;
+    // Spread 0→99% across the estimated duration; fall back to 60 s when estimate is unavailable
+    const durationMs = Math.max(estimatedTotalSeconds, 60) * 1000;
+    const incrementPerTick = (99 / durationMs) * TICK_MS;
+
+    const timer = setInterval(() => {
+      // Never exceed 99 while the transaction is still in flight;
+      // also ensure we never fall behind the real batch-reported progress
+      const next = Math.min(
+        99,
+        Math.max(displayProgressRef.current + incrementPerTick, txProgressRef.current)
+      );
+      if (next !== displayProgressRef.current) {
+        displayProgressRef.current = next;
+        setDisplayProgress(next);
+      }
+    }, TICK_MS);
+
+    return () => clearInterval(timer);
+  }, [stage, estimatedTotalSeconds]);
+
+  // Jump to 100% the moment the transaction is confirmed complete
+  useEffect(() => {
+    if (stage === 'completed-all' || stage === 'completed-partial') {
+      displayProgressRef.current = 100;
+      setDisplayProgress(100);
+    }
+  }, [stage]);
+
   // Calculate remaining time based on actual elapsed time and completed batches
   const remainingSeconds = Math.max(0, estimatedTotalSeconds - elapsedSeconds);
   const minutes = Math.floor(remainingSeconds / 60);
@@ -416,6 +512,22 @@ export function MigrationScreen({
         pb="$4"
         style={{ justifyContent: 'space-between', overflow: 'hidden' }}
       >
+        {/* Close button - mobile only */}
+        {/* {!isExtension && (
+          <YStack pos="absolute" top="$2" right="$4" z={10}>
+            <Text
+              fontSize={20}
+              color="$textSecondary"
+              onPress={handleDone}
+              pressStyle={{ opacity: 0.6 }}
+              px="$2"
+              py="$1"
+            >
+              ✕
+            </Text>
+          </YStack>
+        )} */}
+
         {/* Top Section */}
         <YStack width="100%" items="center" gap="$6" style={{ flexShrink: 0 }}>
           {/* Title - "Migrating your account" */}
@@ -463,16 +575,19 @@ export function MigrationScreen({
                         size={36}
                       />
                       <YStack items="center" gap="$1" width="100%" style={{ overflow: 'hidden' }}>
-                        <Text
-                          fontSize="$3"
-                          fontWeight="600"
-                          color="$text"
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                          style={{ overflow: 'hidden' }}
-                        >
-                          {sourceDisplay?.name || 'COA'}
-                        </Text>
+                        <XStack items="center" gap="$1" style={{ overflow: 'hidden' }}>
+                          <Text
+                            fontSize="$3"
+                            fontWeight="600"
+                            color="$text"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                            style={{ overflow: 'hidden', flexShrink: 1 }}
+                          >
+                            {sourceDisplay?.name || 'COA'}
+                          </Text>
+                          <EVMBadge variant="coa" />
+                        </XStack>
                         {resolvedSourceWalletAccount.address && (
                           <AddressText
                             address={resolvedSourceWalletAccount.address}
@@ -480,8 +595,6 @@ export function MigrationScreen({
                             color="$textSecondary"
                           />
                         )}
-                        {/* Badges */}
-                        <EVMBadge variant="coa" />
                       </YStack>
                     </>
                   );
@@ -516,16 +629,19 @@ export function MigrationScreen({
                         size={36}
                       />
                       <YStack items="center" gap="$1" width="100%" style={{ overflow: 'hidden' }}>
-                        <Text
-                          fontSize="$3"
-                          fontWeight="600"
-                          color="$text"
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                          style={{ overflow: 'hidden' }}
-                        >
-                          {destDisplay?.name || 'EOA'}
-                        </Text>
+                        <XStack items="center" gap="$1" style={{ overflow: 'hidden' }}>
+                          <Text
+                            fontSize="$3"
+                            fontWeight="600"
+                            color="$text"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                            style={{ overflow: 'hidden', flexShrink: 1 }}
+                          >
+                            {destDisplay?.name || 'EOA'}
+                          </Text>
+                          <EVMBadge variant="eoa" />
+                        </XStack>
                         {resolvedDestWalletAccount.address && (
                           <AddressText
                             address={resolvedDestWalletAccount.address}
@@ -533,8 +649,6 @@ export function MigrationScreen({
                             color="$textSecondary"
                           />
                         )}
-                        {/* Badges */}
-                        <EVMBadge variant="eoa" />
                       </YStack>
                     </>
                   );
@@ -545,12 +659,12 @@ export function MigrationScreen({
         </YStack>
 
         {/* Bottom Section - Sticks to bottom with padding */}
-        <YStack width="100%" items="center" gap="$4" style={{ maxWidth: 380 }} pb="$4">
+        <YStack width="100%" items="center" gap="$4" pb="$4">
           {/* Progress Bar (only during in-progress) */}
           {stage === 'in-progress' && (
-            <YStack width="100%" gap="$4">
+            <YStack width="100%" style={{ maxWidth: 380 }}>
               <MigrationProgressBar
-                progress={progress}
+                progress={displayProgress}
                 currentStep={t('migration.screen.progress.currentStep', 'Migrating account')}
                 timeEstimate={timeRemaining}
               />
@@ -559,7 +673,7 @@ export function MigrationScreen({
 
           {/* Status Message (only when completed) */}
           {(stage === 'completed-all' || stage === 'completed-partial') && (
-            <YStack width="100%" gap="$4">
+            <YStack width="100%" style={{ maxWidth: 380 }}>
               <MigrationStatusMessage
                 type={stage === 'completed-all' ? 'success' : 'warning'}
                 title={
@@ -579,46 +693,20 @@ export function MigrationScreen({
             </YStack>
           )}
 
-          {/* Asset Count Display */}
-          <YStack width="100%" gap="$4">
-            <YStack
-              bg="$bg2"
-              rounded="$4"
-              borderWidth={1}
-              borderColor="$borderGlass"
-              p="$4"
-              width="100%"
-            >
-              {stage === 'in-progress' ? (
-                <XStack items="center" gap="$1">
-                  <Text fontSize="$3" fontWeight="600" color="$text">
-                    {transferredAssetsCount}
-                  </Text>
-                  <Text fontSize="$3" fontWeight="400" color="$textSecondary">
-                    /
-                  </Text>
-                  <Text fontSize="$3" fontWeight="400" color="$textSecondary">
-                    {totalAssetsCount} assets transferred
-                  </Text>
-                </XStack>
-              ) : (
-                <XStack items="center" gap="$2">
-                  <Text fontSize="$3" fontWeight="400" color="$text">
-                    {t('migration.screen.assets.label', 'Assets')}
-                  </Text>
-                  {totalAssetsCount > 0 && (
-                    <Text fontSize="$3" fontWeight="400" color="$textSecondary">
-                      ({totalAssetsCount})
-                    </Text>
-                  )}
-                </XStack>
-              )}
-            </YStack>
+          {/* Asset List Drawer - full width, matches account cards above */}
+          <YStack width="100%">
+            <MigrationAssetDrawer
+              assets={assets}
+              tokenMetadata={tokenMetadata}
+              collectionMetadata={collectionMetadata}
+              transferredCount={stage === 'in-progress' ? transferredAssetsCount : undefined}
+              totalCount={stage === 'in-progress' ? totalAssetsCount : undefined}
+            />
           </YStack>
 
           {/* Warning Banner (only during in-progress) */}
           {stage === 'in-progress' && (
-            <YStack width="100%">
+            <YStack width="100%" style={{ maxWidth: 380 }}>
               <MigrationInfoBanner
                 title={t('migration.screen.warning.title')}
                 description={t('migration.screen.warning.description')}
@@ -628,7 +716,7 @@ export function MigrationScreen({
 
           {/* Start Button (only before starting) */}
           {stage === 'ready' && (
-            <YStack width="100%" pt="$2">
+            <YStack width="100%" pt="$2" style={{ maxWidth: 380 }}>
               <Button
                 variant="inverse"
                 size="large"
@@ -646,7 +734,7 @@ export function MigrationScreen({
 
           {/* Action Button (only when completed) */}
           {(stage === 'completed-all' || stage === 'completed-partial') && (
-            <YStack width="100%" pt="$2">
+            <YStack width="100%" pt="$2" style={{ maxWidth: 380 }}>
               <Button
                 variant="inverse"
                 size="large"

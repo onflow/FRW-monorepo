@@ -65,6 +65,7 @@ extension LocalUserDefaults {
         case wrapEOAWithCadence
         // EOA address to derivation index mapping per UID [uid: [eoaAddress: index]]
         case eoaIndexMap
+        case hideCOAWithZero
     }
 }
 
@@ -139,6 +140,9 @@ class LocalUserDefaults: ObservableObject {
 
     @AppStorage(Keys.migrationFinished.rawValue)
     var migrationFinished: Bool = false
+
+    @AppStorage(Keys.hideCOAWithZero.rawValue)
+    var hideCOAWithZero: Bool = true
 
     var legacyUserInfo: UserInfo? {
         set {
