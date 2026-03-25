@@ -9,6 +9,7 @@ import {
   addressBookQueryKeys,
   tokenQueries,
   tokenQueryKeys,
+  shouldHideCoaAccount,
 } from '@onflow/frw-stores';
 import { type WalletAccount, ScreenName } from '@onflow/frw-types';
 import {
@@ -206,6 +207,30 @@ export function SendToScreen(): ReactElement {
     refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
   });
 
+  // Identify zero-balance EVM addresses that need ERC20 checking
+  const zeroBalanceEvmAddresses = useMemo(() => {
+    const balLookup = new Map(batchBalances);
+    return allProfiles.flatMap((profile) =>
+      profile.accounts
+        .filter((account) => {
+          if (account.type !== 'evm') return false;
+          const balStr = balLookup.get(account.address) || '0';
+          const match = balStr.match(/^([\d,.]+)/);
+          const val = match ? parseFloat(match[1].replace(/,/g, '')) : 0;
+          return val === 0;
+        })
+        .map((account) => account.address)
+    );
+  }, [batchBalances, allProfiles]);
+
+  // Fetch ERC20 balance presence only for zero-FLOW EVM addresses
+  const { data: batchERC20Balances = [] } = useQuery({
+    queryKey: ['batchERC20HasBalance', zeroBalanceEvmAddresses, network],
+    queryFn: () => tokenQueries.fetchBatchERC20HasBalance(zeroBalanceEvmAddresses, network),
+    enabled: zeroBalanceEvmAddresses.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // 🔥 TanStack Query: Fetch balance with stale-while-revalidate pattern and retry logic
   const { data: balanceData } = useQuery({
     queryKey: tokenQueryKeys.balance(fromAddress, network),
@@ -309,29 +334,10 @@ export function SendToScreen(): ReactElement {
     [existingAddresses]
   );
 
-  // Helper function to determine if an account should be hidden
-  // Hide COA/EVM accounts that have both zero balance and zero NFTs
-  const shouldHideAccount = useCallback(
-    (account: { address: string; type?: string; balance?: string; nfts?: string }): boolean => {
-      // Only apply hiding logic to COA/EVM accounts
-      const isCoa = account.type === 'evm' || isCOAAddress(account.address);
-      if (!isCoa) {
-        return false;
-      }
-
-      // Parse balance - extract numeric value from string like "0 FLOW" or "0.00 FLOW"
-      const balanceStr = account.balance || '0';
-      const balanceMatch = balanceStr.match(/^([\d,.]+)/);
-      const balanceValue = balanceMatch ? parseFloat(balanceMatch[1].replace(/,/g, '')) : 0;
-
-      // Parse NFT count
-      const nftCount = parseInt(account.nfts || '0', 10);
-
-      // Hide if both balance and NFT count are 0
-      return balanceValue === 0 && nftCount === 0;
-    },
-    []
-  );
+  // Build ERC20 lookup map for enhanced COA visibility
+  const erc20Lookup = useMemo(() => {
+    return new Map(batchERC20Balances);
+  }, [batchERC20Balances]);
 
   // Convert and filter profiles data for display
   const profilesData = useMemo(() => {
@@ -348,12 +354,10 @@ export function SendToScreen(): ReactElement {
           };
         })
         .filter((account) => {
-          // First check search query filter
           if (!filterBySearchQuery(account.name || '', account.address)) {
             return false;
           }
-          // Then check if account should be hidden (COA with zero balance and zero NFTs)
-          if (shouldHideAccount(account)) {
+          if (shouldHideCoaAccount(account, erc20Lookup)) {
             return false;
           }
           return true;
@@ -361,7 +365,7 @@ export function SendToScreen(): ReactElement {
     }));
     // Only return profiles that have at least one matching account
     return result.filter((profile) => profile.accounts.length > 0);
-  }, [allProfiles, accountBalances, filterBySearchQuery, shouldHideAccount]);
+  }, [allProfiles, accountBalances, filterBySearchQuery, erc20Lookup]);
 
   // Get all wallet accounts for first time send check
   const allWalletAccounts = useMemo(() => {
