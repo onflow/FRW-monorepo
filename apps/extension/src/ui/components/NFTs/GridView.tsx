@@ -7,7 +7,6 @@ import type { PostMedia } from '@/ui/utils/url';
 
 interface GridViewProps {
   data: any;
-  accessible?: any[];
   blockList?: any[];
   index: number;
   ownerAddress: string;
@@ -21,7 +20,6 @@ interface GridViewProps {
 const GridView = (props: GridViewProps) => {
   const {
     data,
-    accessible,
     blockList = [],
     index,
     ownerAddress,
@@ -33,29 +31,12 @@ const GridView = (props: GridViewProps) => {
   } = props;
 
   const [loaded, setLoaded] = useState(false);
-  const [isAccessible, setAccessible] = useState(true);
-  const [media, setGetMediea] = useState<PostMedia | null>(null);
+  const [media, setMedia] = useState<PostMedia | null>(null);
   const [imageCandidateIndex, setImageCandidateIndex] = useState(0);
   const [imageExhausted, setImageExhausted] = useState(false);
   const fetchMedia = useCallback(async () => {
-    setGetMediea(data.postMedia || data.media);
-
-    if (Array.isArray(accessible) && accessible.length > 0) {
-      // Check both possible contract name fields
-      const contractName = data.contractName || data.collectionContractName;
-      const hasAccess = accessible.some((item) => {
-        if (!item?.id || !Array.isArray(item?.idList)) {
-          return false;
-        }
-        const parts = String(item.id).split('.');
-        return parts[2] === contractName && item.idList.includes(data.id);
-      });
-      setAccessible(hasAccess);
-    } else {
-      // Non-array/empty accessible input means we should not block rendering.
-      setAccessible(true);
-    }
-  }, [data, accessible]);
+    setMedia(data.postMedia || data.media);
+  }, [data]);
 
   useEffect(() => {
     fetchMedia();
