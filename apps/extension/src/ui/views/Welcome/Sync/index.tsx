@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import { logger } from '@onflow/frw-context';
 import { Core } from '@walletconnect/core';
 import SignClient from '@walletconnect/sign-client';
 import { type SessionTypes } from '@walletconnect/types';
@@ -12,7 +13,7 @@ import {
   SIGN_ALGO_NUM_ECDSA_secp256k1,
   FCLWalletConnectMethod,
 } from '@/shared/constant';
-import { isValidFlowAddress, withPrefix, consoleError } from '@/shared/utils';
+import { isValidFlowAddress, withPrefix } from '@/shared/utils';
 import AllSet from '@/ui/components/LandingPages/AllSet';
 import LandingComponents from '@/ui/components/LandingPages/LandingComponents';
 import SetPassword from '@/ui/components/LandingPages/SetPassword';
@@ -77,8 +78,13 @@ const Sync = () => {
 
   useEffect(() => {
     const checkWalletStatus = async () => {
-      const isBooted = await usewallet.isBooted();
-      setIsAddWallet(isBooted);
+      try {
+        const isBooted = await usewallet.isBooted();
+        setIsAddWallet(isBooted);
+      } catch (error) {
+        logger.error('[Welcome/Sync] Failed to check wallet boot status', error);
+        setIsAddWallet(false);
+      }
     };
 
     checkWalletStatus();
@@ -148,7 +154,9 @@ const Sync = () => {
       signClient.on('session_update', ({ topic, params }) => {
         const { namespaces } = params;
         const session = signClient.session.get(topic);
-        onSessionConnected({ ...session, namespaces });
+        void onSessionConnected({ ...session, namespaces }).catch((error) => {
+          logger.error('[Welcome/Sync] Failed handling session update', error);
+        });
       });
     },
     [onSessionConnected]
@@ -169,7 +177,8 @@ const Sync = () => {
         }
         setIsSwitchingAccount(true);
         setActiveTab(STEPS.PASSWORD);
-      } catch {
+      } catch (error) {
+        logger.warn('[Welcome/Sync] Account key check failed, falling back to device sync', error);
         setLoadingString('New account login');
         setSecondLine('Waiting for client sync');
         setIsSwitchingAccount(false);
@@ -197,7 +206,7 @@ const Sync = () => {
 
             setActiveTab(STEPS.PASSWORD);
           } catch (error) {
-            consoleError('Error in device info request:', error);
+            logger.error('[Welcome/Sync] Failed to send addDeviceInfo request', error);
           }
         }
       }
@@ -224,7 +233,7 @@ const Sync = () => {
         const jsonObject: FCLWalletConnectSyncAccountInfo = JSON.parse(result as string);
         await handleAccountInfo(signClient, topic, jsonObject);
       } catch (error) {
-        consoleError('Error in account info request:', error);
+        logger.error('[Welcome/Sync] Failed to request account info', error);
       }
     },
     [handleAccountInfo]
@@ -286,7 +295,7 @@ const Sync = () => {
           await sendRequest(signClient, session.topic);
         }
       } catch (error) {
-        consoleError('Error in wallet setup:', error);
+        logger.error('[Welcome/Sync] WalletConnect setup failed', error);
         isSignClientInitialized.current = false; // Reset on error
       }
     };
@@ -301,7 +310,9 @@ const Sync = () => {
           await usewallet.unlock(password);
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
-          throw new Error(error.message);
+          logger.error('[Welcome/Sync] Failed to unlock wallet during sync', error);
+          const message = error instanceof Error ? error.message : 'Failed to unlock wallet';
+          throw new Error(message);
         }
       } else {
         try {
@@ -311,7 +322,9 @@ const Sync = () => {
 
           setActiveTab(STEPS.ALL_SET);
         } catch (error) {
-          throw new Error(error.message);
+          logger.error('[Welcome/Sync] Failed to import account from mobile', error);
+          const message = error instanceof Error ? error.message : 'Failed to import account';
+          throw new Error(message);
         }
       }
     },
@@ -319,15 +332,19 @@ const Sync = () => {
   );
 
   const goBack = () => {
-    switch (activeTab) {
-      case STEPS.PASSWORD:
-        setActiveTab(STEPS.QR);
-        break;
-      case STEPS.ALL_SET:
-        setActiveTab(STEPS.PASSWORD);
-        break;
-      default:
-        navigate(-1);
+    try {
+      switch (activeTab) {
+        case STEPS.PASSWORD:
+          setActiveTab(STEPS.QR);
+          break;
+        case STEPS.ALL_SET:
+          setActiveTab(STEPS.PASSWORD);
+          break;
+        default:
+          navigate(-1);
+      }
+    } catch (error) {
+      logger.warn('[Welcome/Sync] Failed to navigate back', error);
     }
   };
 
@@ -350,7 +367,16 @@ const Sync = () => {
         )}
 
         {activeTab === STEPS.ALL_SET && (
-          <AllSet handleSwitchTab={() => window.close()} variant="sync" />
+          <AllSet
+            handleSwitchTab={() => {
+              try {
+                window.close();
+              } catch (error) {
+                logger.warn('[Welcome/Sync] Failed to close window', error);
+              }
+            }}
+            variant="sync"
+          />
         )}
       </Box>
     </LandingComponents>

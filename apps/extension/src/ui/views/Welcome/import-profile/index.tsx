@@ -1,4 +1,5 @@
 import { Alert, Snackbar } from '@mui/material';
+import { logger } from '@onflow/frw-context';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useEffect, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -9,7 +10,6 @@ import {
   type ImportState,
   INITIAL_IMPORT_STATE,
 } from '@/reducers';
-import { consoleError } from '@/shared/utils';
 import Google from '@/ui/components/google-import';
 import ImportTabs from '@/ui/components/import-components/ImportTabs';
 import AllSet from '@/ui/components/LandingPages/AllSet';
@@ -53,8 +53,13 @@ const ImportProfile = () => {
 
   useEffect(() => {
     const checkWalletStatus = async () => {
-      const isBooted = await usewallet.isBooted();
-      dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+      try {
+        const isBooted = await usewallet.isBooted();
+        dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+      } catch (error) {
+        logger.error('[ImportProfile] Failed to check wallet boot status', error);
+        dispatch({ type: 'SET_IS_ADD_WALLET', payload: false });
+      }
     };
 
     checkWalletStatus();
@@ -74,7 +79,7 @@ const ImportProfile = () => {
       try {
         await usewallet.verifyPasswordIfBooted(newPassword);
       } catch (err) {
-        consoleError(err);
+        logger.warn('[ImportProfile] Password verification failed', err);
         dispatch({
           type: 'SET_ERROR',
           payload: { message: chrome.i18n.getMessage('Incorrect__Password'), show: true },
@@ -100,7 +105,7 @@ const ImportProfile = () => {
       }
       dispatch({ type: 'SET_USERNAME', payload: userInfo.username });
     } catch (error) {
-      consoleError(error);
+      logger.error('[ImportProfile] Failed to import profile', error);
       dispatch({
         type: 'SET_ERROR',
         payload: {
@@ -134,14 +139,25 @@ const ImportProfile = () => {
     username: string;
     isFromImport: boolean;
   }) => {
-    // Navigate to the register flow with the import data and auto-generated username
-    navigate('/welcome/register', {
-      state: {
-        importData: data.importData,
-        username: data.username,
-        isFromImport: data.isFromImport,
-      },
-    });
+    try {
+      // Navigate to the register flow with the import data and auto-generated username
+      navigate('/welcome/register', {
+        state: {
+          importData: data.importData,
+          username: data.username,
+          isFromImport: data.isFromImport,
+        },
+      });
+    } catch (error) {
+      logger.error('[ImportProfile] Failed to navigate to register flow', error);
+      dispatch({
+        type: 'SET_ERROR',
+        payload: {
+          message: 'Unable to continue to registration. Please try again.',
+          show: true,
+        },
+      });
+    }
   };
 
   if (showGoogleImport) {

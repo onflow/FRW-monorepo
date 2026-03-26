@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import { logger } from '@onflow/frw-context';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import * as bip39 from 'bip39';
 import React, { useCallback, useEffect, useReducer } from 'react';
@@ -38,8 +39,13 @@ const Register = () => {
 
   useEffect(() => {
     const checkWalletStatus = async () => {
-      const isBooted = await usewallet.isBooted();
-      dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+      try {
+        const isBooted = await usewallet.isBooted();
+        dispatch({ type: 'SET_IS_ADD_WALLET', payload: isBooted });
+      } catch (error) {
+        logger.error('[Welcome/Register] Failed to check wallet boot status', error);
+        dispatch({ type: 'SET_IS_ADD_WALLET', payload: false });
+      }
     };
 
     checkWalletStatus();
@@ -88,16 +94,15 @@ const Register = () => {
 
         // Get the proper username
         const userInfo = await usewallet.getUserInfo();
+        if (!userInfo?.username) {
+          throw new Error('User info not found after registration');
+        }
         dispatch({ type: 'SET_USERNAME', payload: userInfo.username });
 
         // But after all this, we haven't updated loggedInAccounts so if we close the window before the account refreshes, we won't be able to login
         dispatch({ type: 'SET_ACTIVE_TAB', payload: STEPS.BACKUP });
       } catch (error) {
-        console.error('Error during registration/import:', error);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        // You might want to add error state management here
-        // For now, we'll let the error bubble up to be handled by the SetPassword component
+        logger.error('[Welcome/Register] Registration or import flow failed', error);
         throw error;
       }
     },
@@ -105,13 +110,17 @@ const Register = () => {
   );
 
   const goBack = () => {
-    if (location.state?.isFromImport) {
-      // Coming from import flow - go back to import page
-      navigate('/welcome/importprofile');
-    } else if (activeTab === STEPS.RECOVERY || activeTab === STEPS.ALL_SET) {
-      navigate(-1);
-    } else {
-      dispatch({ type: 'GO_BACK' });
+    try {
+      if (location.state?.isFromImport) {
+        // Coming from import flow - go back to import page
+        navigate('/welcome/importprofile');
+      } else if (activeTab === STEPS.RECOVERY || activeTab === STEPS.ALL_SET) {
+        navigate(-1);
+      } else {
+        dispatch({ type: 'GO_BACK' });
+      }
+    } catch (error) {
+      logger.warn('[Welcome/Register] Failed to navigate back', error);
     }
   };
 
@@ -164,7 +173,16 @@ const Register = () => {
         )}
 
         {activeTab === STEPS.ALL_SET && (
-          <AllSet handleSwitchTab={() => window.close()} variant="add" />
+          <AllSet
+            handleSwitchTab={() => {
+              try {
+                window.close();
+              } catch (error) {
+                logger.warn('[Welcome/Register] Failed to close window', error);
+              }
+            }}
+            variant="add"
+          />
         )}
       </Box>
     </LandingComponents>

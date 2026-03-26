@@ -1,5 +1,6 @@
 import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { logger } from '@onflow/frw-context';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -17,6 +18,25 @@ import { translateToComponents } from '@/ui/utils/i18n-components';
 import { TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL } from '@/ui/utils/url-constants';
 
 const Welcome = () => {
+  const loggedI18nKeyRef = React.useRef<Set<string>>(new Set());
+
+  const t = (key: string, fallback: string): string => {
+    try {
+      const message = chrome?.i18n?.getMessage?.(key);
+      if (!message && !loggedI18nKeyRef.current.has(key)) {
+        loggedI18nKeyRef.current.add(key);
+        logger.warn('[Welcome] Missing i18n message key, using fallback', key);
+      }
+      return message || fallback;
+    } catch (error) {
+      if (!loggedI18nKeyRef.current.has(key)) {
+        loggedI18nKeyRef.current.add(key);
+        logger.error('[Welcome] Failed to read i18n message key, using fallback', key, error);
+      }
+      return fallback;
+    }
+  };
+
   return (
     <LandingComponents
       activeIndex={0}
@@ -56,7 +76,7 @@ const Welcome = () => {
               width: '363px',
             }}
           >
-            {chrome.i18n.getMessage('Get_Started_with_Flow_wallet')}
+            {t('Get_Started_with_Flow_wallet', 'Get started with Flow Wallet')}
           </Typography>
 
           <Typography
@@ -67,7 +87,7 @@ const Welcome = () => {
               color: COLOR_WHITE_ALPHA_80_FFFFFFCC,
             }}
           >
-            {chrome.i18n.getMessage('Welcome_to_Flow_Wallet')}
+            {t('Welcome_to_Flow_Wallet', 'Welcome to Flow Wallet')}
           </Typography>
 
           <Typography
@@ -80,7 +100,7 @@ const Welcome = () => {
               mb: '14px',
             }}
           >
-            {chrome.i18n.getMessage('Create_an_account_to_get_started')}
+            {t('Create_an_account_to_get_started', 'Create an account to get started')}
           </Typography>
 
           <Button
@@ -104,7 +124,7 @@ const Welcome = () => {
               sx={{ fontWeight: '600', fontSize: '14px', textAlign: 'center' }}
               color="primary.contrastText"
             >
-              {chrome.i18n.getMessage('Create_a_new_account')}
+              {t('Create_a_new_account', 'Create a new account')}
             </Typography>
           </Button>
 
@@ -142,7 +162,7 @@ const Welcome = () => {
                 textAlign: 'center',
               }}
             >
-              {chrome.i18n.getMessage('I_already_have_an_account')}
+              {t('I_already_have_an_account', 'I already have an account')}
             </Typography>
           </Button>
 
@@ -216,9 +236,9 @@ const Welcome = () => {
               fontWeight: '400',
             }}
           >
-            {chrome.i18n.getMessage('A_crypto_wallet_on_Flow')}{' '}
+            {t('A_crypto_wallet_on_Flow', 'A crypto wallet on Flow')}{' '}
             <Box component="span" sx={{ color: 'primary.light' }}>
-              {chrome.i18n.getMessage('Explorers_Collectors_and_Gamers')}
+              {t('Explorers_Collectors_and_Gamers', 'for explorers, collectors, and gamers')}
             </Box>
           </Typography>
         </Box>
