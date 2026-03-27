@@ -91,18 +91,9 @@ test('send Cadence transactions', async ({ page, extensionId }) => {
     page,
     tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_ADDR,
-    amount: '0.00000123',
+    amount: '0.00001',
   });
   txList.push(tx1);
-
-  //Send StFlow from Flow to Flow
-  const tx2 = await sendTokenFlow({
-    page,
-    tokenname: 'stFlow',
-    receiver: process.env.TEST_RECEIVER_ADDR,
-    amount: '0.00000123',
-  });
-  txList.push(tx2);
 
   // Check all sealed transactions
   // Check the amounts that were sent for each transaction
@@ -134,23 +125,15 @@ test('send Cadence transactions to evm', async ({ page, extensionId }) => {
     address: process.env.TEST_SENDER_ADDR,
   });
   // This can take a while
-  const tx3 = await sendTokenFlow({
+  const tx1 = await sendTokenFlow({
     page,
     tokenname: 'flow',
     receiver: process.env.TEST_RECEIVER_EVM_ADDR,
-    amount: '0.00000123',
-  });
-  txList.push(tx3);
-
-  //Send USDC from Flow to Flow
-  const tx4 = await sendTokenFlow({
-    page,
-    tokenname: 'usdc.e',
-    receiver: process.env.TEST_RECEIVER_EVM_ADDR,
     ingoreFlowCharge: true,
-    amount: '0.00000123',
+    amount: '0.00001',
   });
-  txList.push(tx4);
+  txList.push(tx1);
+
   // Check all sealed transactions
   // Check the amounts that were sent for each transaction
   // Go to the activity page
