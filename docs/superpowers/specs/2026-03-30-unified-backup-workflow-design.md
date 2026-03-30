@@ -128,6 +128,8 @@ export interface KeystoreV3 {
 /** Legacy v1 DriveItem (for backward compat parsing) */
 export interface LegacyDriveItem {
   username: string;
+  /** May appear as `userName` in very old backups */
+  userName?: string;
   data: string;
   version: string;
   uid: string | null;
@@ -140,7 +142,7 @@ export interface BackupResult {
   provider: CloudProvider;
   backupType: BackupType;
   version: BackupVersion;
-  error?: string;
+  error?: BackupErrorCode;
 }
 
 /** Result of a restore operation */
