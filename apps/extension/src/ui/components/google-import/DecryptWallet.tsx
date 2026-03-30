@@ -6,7 +6,7 @@ import { PasswordInput } from '@/ui/components/password/PasswordInput';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { DEFAULT_PASSWORD } from '@/ui/utils/default-password';
 
-const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
+const DecryptWallet = ({ handleSwitchTab, setMnemonic, username, flowType = 'legacy' }) => {
   const usewallet = useWallet();
 
   const [isPasswordVisible, setPasswordVisible] = useState(false);
@@ -18,7 +18,10 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username }) => {
     setLoading(true);
 
     try {
-      const mnemonic = await usewallet.restoreAccount(username, password);
+      const mnemonic =
+        flowType === 'workflow'
+          ? await usewallet.restoreAccountV2(username, password)
+          : await usewallet.restoreAccount(username, password);
       setLoading(false);
       setMnemonic(mnemonic);
       handleSwitchTab();

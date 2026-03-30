@@ -48,6 +48,7 @@ const ImportTabs = ({
   phrase,
   setPhrase,
   onRegisterNewProfile,
+  initialTab = 0,
 }: {
   setMnemonic: (mnemonic: string) => void;
   setPk: (pk: string) => void;
@@ -58,18 +59,19 @@ const ImportTabs = ({
   handleSwitchTab: () => void;
   setErrorMessage: (errorMessage: string) => void;
   setShowError: (showError: boolean) => void;
-  handleGoogleAccountsFound: (accounts: string[]) => void;
+  handleGoogleAccountsFound: (accounts: string[], flowType: 'legacy' | 'workflow') => void;
   path: string;
   setPath: (path: string) => void;
   phrase: string;
   setPhrase: (phrase: string) => void;
+  initialTab?: number;
   onRegisterNewProfile?: (data: {
     importData: any;
     username: string;
     isFromImport: boolean;
   }) => void;
 }) => {
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState(initialTab);
   const [isSignLoading, setSignLoading] = useState(false);
   const [newKey, setKeyNew] = useState(true);
   const [isLogin, setIsLogin] = useState(false);
@@ -124,7 +126,7 @@ const ImportTabs = ({
     // Pass the import data and auto username to register page
     let importData: any = null;
 
-    if (selectedTab === 2) {
+    if (selectedTab === 3) {
       // Recovery Phrase tab
 
       importData = {
@@ -133,14 +135,14 @@ const ImportTabs = ({
         path: path,
         passphrase: phrase, // This is the BIP39 passphrase
       };
-    } else if (selectedTab === 3) {
+    } else if (selectedTab === 4) {
       // Private Key tab
 
       importData = {
         type: 'privateKey',
         privateKey: pk || '',
       };
-    } else if (selectedTab === 1) {
+    } else if (selectedTab === 2) {
       // Keystore tab
 
       importData = {
@@ -202,6 +204,10 @@ const ImportTabs = ({
         textColor="primary"
       >
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Google__Drive')} />
+        <Tab
+          sx={sxStyles}
+          label={chrome.i18n.getMessage('Import_Existing_Backup') || 'Backup V2'}
+        />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Keystore')} />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Recovery_Phrase')} />
         <Tab sx={sxStyles} label={chrome.i18n.getMessage('Private_Key')} />
@@ -226,6 +232,14 @@ const ImportTabs = ({
         />
       </TabPanel>
       <TabPanel value={selectedTab} index={1}>
+        <Googledrive
+          setErrorMessage={setErrorMessage}
+          setShowError={setShowError}
+          handleGoogleAccountsFound={handleGoogleAccountsFound}
+          useV2={true}
+        />
+      </TabPanel>
+      <TabPanel value={selectedTab} index={2}>
         <JsonImport
           onOpen={handleRegisterNewProfile}
           onImport={handleImport}
@@ -234,7 +248,7 @@ const ImportTabs = ({
           initialJson={keystoreJson}
         />
       </TabPanel>
-      <TabPanel value={selectedTab} index={2}>
+      <TabPanel value={selectedTab} index={3}>
         <SeedPhraseImport
           onOpen={handleRegisterNewProfile}
           onImport={handleImport}
@@ -246,7 +260,7 @@ const ImportTabs = ({
           setPhrase={setPhrase}
         />
       </TabPanel>
-      <TabPanel value={selectedTab} index={3}>
+      <TabPanel value={selectedTab} index={4}>
         <KeyImport
           onOpen={handleRegisterNewProfile}
           onImport={handleImport}
@@ -256,7 +270,7 @@ const ImportTabs = ({
           onSetKeystoreJson={(json) => setKeystoreJson(json)}
         />
       </TabPanel>
-      <TabPanel value={selectedTab} index={4}>
+      <TabPanel value={selectedTab} index={5}>
         <MobileAppImportSteps isLogin={isLogin} />
       </TabPanel>
       {!newKey && (

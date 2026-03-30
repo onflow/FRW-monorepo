@@ -1,6 +1,6 @@
 import { Alert, Snackbar } from '@mui/material';
 import { generateRandomUsername } from '@onflow/frw-utils';
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 import {
@@ -29,6 +29,7 @@ const ImportProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const usewallet = useWallet();
+  const [googleImportFlow, setGoogleImportFlow] = useState<'legacy' | 'workflow'>('legacy');
 
   const [state, dispatch] = useReducer(
     importProfileReducer,
@@ -125,7 +126,8 @@ const ImportProfile = () => {
     dispatch({ type: 'GO_BACK' });
   };
 
-  const handleGoogleAccountsFound = (accounts: string[]) => {
+  const handleGoogleAccountsFound = (accounts: string[], flowType: 'legacy' | 'workflow') => {
+    setGoogleImportFlow(flowType);
     dispatch({ type: 'SET_GOOGLE_IMPORT', payload: { show: true, accounts } });
   };
 
@@ -148,6 +150,7 @@ const ImportProfile = () => {
     return (
       <Google
         accounts={googleAccounts}
+        flowType={googleImportFlow}
         onBack={() =>
           dispatch({
             type: 'SET_GOOGLE_IMPORT',
@@ -198,6 +201,7 @@ const ImportProfile = () => {
           }
           setShowError={(show) => dispatch({ type: 'SET_ERROR', payload: { message: '', show } })}
           handleGoogleAccountsFound={handleGoogleAccountsFound}
+          initialTab={new URLSearchParams(location.search).get('backup') === 'workflow' ? 1 : 0}
           path={path}
           setPath={(p) => dispatch({ type: 'SET_DERIVATION_PATH', payload: p })}
           phrase={phrase}

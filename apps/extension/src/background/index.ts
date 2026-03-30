@@ -26,6 +26,7 @@ import {
   userWalletService,
   versionService,
   googleDriveService,
+  backupWorkflowService,
 } from '@/core/service';
 import { getLocalData, removeLocalData, setLocalData, initializeStorage } from '@/data-model';
 import { chromeStorage } from '@/extension-shared/chrome-storage';
@@ -123,6 +124,15 @@ async function restoreAppState() {
     AES_KEY: process.env.GD_AES_KEY!,
     IV: process.env.GD_IV!,
     getAuthTokenWrapper,
+  });
+
+  await backupWorkflowService.init({
+    getAuthToken: getAuthTokenWrapper,
+    backupName: process.env.GD_BACKUP_NAME_V2 || 'frw_backup_v2',
+    legacyBackupName: process.env.GD_BACKUP_NAME!,
+    legacyAesKey: process.env.GD_AES_KEY!,
+    legacyIV: process.env.GD_IV!,
+    walletConnectProjectId: process.env.WC_PROJECTID,
   });
   await googleSafeHostService.init({
     baseURL: 'https://safebrowsing.googleapis.com/',

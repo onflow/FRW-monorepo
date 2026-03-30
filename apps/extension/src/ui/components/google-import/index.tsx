@@ -27,9 +27,10 @@ interface AccountsState {
 interface GoogleProps {
   accounts: string[];
   onBack: () => void;
+  flowType?: 'legacy' | 'workflow';
 }
 
-const Google: React.FC<GoogleProps> = ({ accounts, onBack }) => {
+const Google: React.FC<GoogleProps> = ({ accounts, onBack, flowType = 'legacy' }) => {
   const [activeTab, setActiveTab] = useState<StepType>(STEPS.ACCOUNTS);
   const [mnemonic, setMnemonic] = useState('');
   const [username, setUsername] = useState('');
@@ -77,6 +78,7 @@ const Google: React.FC<GoogleProps> = ({ accounts, onBack }) => {
             handleSwitchTab={() => setActiveTab(STEPS.RECOVERY)}
             setMnemonic={setMnemonic}
             username={username}
+            flowType={flowType}
           />
         )}
 

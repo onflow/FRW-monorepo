@@ -8,7 +8,17 @@ import IconGoogleDrive from '@/ui/components/iconfont/IconGoogleDrive';
 import { useWallet } from '@/ui/hooks/use-wallet';
 import { COLOR_DARKMODE_WHITE_3pc } from '@/ui/style/color';
 
-const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound }) => {
+const Googledrive = ({
+  setErrorMessage,
+  setShowError,
+  handleGoogleAccountsFound,
+  useV2 = false,
+}: {
+  setErrorMessage: (message: string) => void;
+  setShowError: (show: boolean) => void;
+  handleGoogleAccountsFound: (accounts: string[], flowType: 'legacy' | 'workflow') => void;
+  useV2?: boolean;
+}) => {
   const wallets = useWallet();
 
   const [loading, setLoading] = useState(false);
@@ -17,12 +27,14 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
     setLoading(true);
 
     try {
-      const accounts = await wallets.loadBackupAccounts();
+      const accounts = useV2
+        ? await wallets.loadBackupAccountsV2()
+        : await wallets.loadBackupAccounts();
 
       localStorage.setItem('backupAccounts', JSON.stringify(accounts));
 
       if (accounts.length > 0) {
-        handleGoogleAccountsFound(accounts);
+        handleGoogleAccountsFound(accounts, useV2 ? 'workflow' : 'legacy');
       } else {
         setShowError(true);
         setErrorMessage(chrome.i18n.getMessage('No__backup__found'));
@@ -63,7 +75,9 @@ const Googledrive = ({ setErrorMessage, setShowError, handleGoogleAccountsFound 
           color="text.primary"
           sx={{ fontSize: '18px', paddingTop: '18px', fontWeight: '700' }}
         >
-          {chrome.i18n.getMessage('Restore__Backup__from__Google__Drive')}
+          {useV2
+            ? chrome.i18n.getMessage('Import_Existing_Backup') || 'Import Existing Backup'
+            : chrome.i18n.getMessage('Restore__Backup__from__Google__Drive')}
         </Typography>
         <Button
           className="registerButton"

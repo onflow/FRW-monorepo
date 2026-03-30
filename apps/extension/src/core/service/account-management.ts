@@ -908,7 +908,6 @@ export class AccountManagement {
     const auth = authenticationService.getAuth();
     const user = await auth.currentUser;
     try {
-      // This would need to be imported from googleDriveService
       await googleDriveService.uploadMnemonicToGoogleDrive(mnemonic, username, user!.uid, password);
       analyticsService.track('multi_backup_created', {
         address: (await userWalletService.getCurrentAddress()) || '',

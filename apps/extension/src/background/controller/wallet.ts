@@ -13,6 +13,7 @@ import {
   transactionService,
   coinListService,
   googleDriveService,
+  backupWorkflowService,
   keyringService,
   analyticsService,
   newsService,
@@ -800,7 +801,7 @@ export class WalletController extends BaseController {
     const mainAccounts = await this.getMainAccounts();
 
     // Only query Flow addresses (LostAndFound is a Cadence contract)
-    const flowAddresses = mainAccounts.map((account) => account.address).filter(Boolean);
+    const flowAddresses = (mainAccounts ?? []).map((account) => account.address).filter(Boolean);
 
     const results = await Promise.allSettled(
       flowAddresses.map((address) => coinListService.getInboxData(network, address))
@@ -1682,6 +1683,15 @@ export class WalletController extends BaseController {
 
   restoreAccount = async (username, password): Promise<string | null> => {
     return googleDriveService.restoreAccount(username, password);
+  };
+
+  // BackupWorkflow V2 - side-by-side testing entrance
+  loadBackupAccountsV2 = async (): Promise<string[]> => {
+    return backupWorkflowService.loadBackupAccounts();
+  };
+
+  restoreAccountV2 = async (username, password): Promise<string | null> => {
+    return backupWorkflowService.restoreBackup(username, password);
   };
 
   getPayerAddressAndKeyId = async () => {
