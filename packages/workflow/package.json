@@ -47,7 +47,11 @@
     "@onflow/frw-types": "workspace:*",
     "@onflow/frw-utils": "workspace:*",
     "@onflow/transport-http": "^1.13.0",
-    "@onflow/util-encode-key": "^1.2.4"
+    "@onflow/util-encode-key": "^1.2.4",
+    "aes-js": "^3.1.2",
+    "bip39": "^3.1.0",
+    "scrypt-js": "^3.0.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@onflow/types": "1.0.3",
