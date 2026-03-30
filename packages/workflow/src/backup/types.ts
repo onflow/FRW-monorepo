@@ -185,6 +185,8 @@ export interface DeviceSyncOptions {
   role: SyncRole;
   events: DeviceSyncEvents;
   pairingTimeout?: number;
+  /** WalletConnect project ID — must be provided by the platform via config */
+  walletConnectProjectId: string;
 }
 
 export interface DeviceSyncSession {

@@ -9,7 +9,6 @@ import {
   type DeviceSyncSession,
 } from '../types';
 
-const PROJECT_ID = ''; // WalletConnect project ID — injected at runtime or via env
 const BACKUP_METHOD = 'frw_backupSync';
 const BACKUP_CHAIN = 'flow:mainnet';
 
@@ -17,7 +16,7 @@ export async function createDeviceSyncSession(
   options: DeviceSyncOptions
 ): Promise<DeviceSyncSession> {
   const client = await SignClient.init({
-    projectId: PROJECT_ID,
+    projectId: options.walletConnectProjectId,
     metadata: {
       name: 'Flow Reference Wallet',
       description: 'Backup sync',

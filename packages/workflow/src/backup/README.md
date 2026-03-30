@@ -57,6 +57,7 @@ const backupWorkflow = new BackupWorkflow({
     [CloudProvider.Dropbox, dropbox],
   ]),
   api: openapiService, // implements BackupApi interface
+  walletConnectProjectId: process.env.WC_PROJECTID, // from platform config
 });
 ```
 
@@ -80,6 +81,7 @@ const backupWorkflow = new BackupWorkflow({
     ],
   ]),
   api: profileService(),
+  walletConnectProjectId: NativeFRWBridge.getEnv().wcProjectId,
 });
 
 // iOS: register iCloud provider via native bridge

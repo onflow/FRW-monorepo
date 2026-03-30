@@ -66,6 +66,7 @@ describe('createDeviceSyncSession', () => {
       role: SyncRole.Sender,
       events,
       pairingTimeout: 60000,
+      walletConnectProjectId: 'test-project-id',
     });
 
     expect(session.uri).toBe('wc:test-uri');
@@ -77,6 +78,7 @@ describe('createDeviceSyncSession', () => {
     await createDeviceSyncSession({
       role: SyncRole.Receiver,
       events,
+      walletConnectProjectId: 'test-project-id',
     });
 
     expect(mockOn).toHaveBeenCalledWith('session_request', expect.any(Function));
@@ -93,6 +95,7 @@ describe('createDeviceSyncSession', () => {
     const session = await createDeviceSyncSession({
       role: SyncRole.Sender,
       events,
+      walletConnectProjectId: 'test-project-id',
     });
 
     await expect(
@@ -116,6 +119,7 @@ describe('createDeviceSyncSession', () => {
     const session = await createDeviceSyncSession({
       role: SyncRole.Sender,
       events,
+      walletConnectProjectId: 'test-project-id',
     });
 
     await session.disconnect();
@@ -135,6 +139,7 @@ describe('createDeviceSyncSession', () => {
       role: SyncRole.Sender,
       events,
       pairingTimeout: 5000,
+      walletConnectProjectId: 'test-project-id',
     });
 
     vi.advanceTimersByTime(5000);

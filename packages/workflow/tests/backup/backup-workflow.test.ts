@@ -52,6 +52,7 @@ function makeWorkflow(
     workflow: new BackupWorkflow({
       providers: new Map([[p.provider, p]]),
       api: a,
+      walletConnectProjectId: 'test-wc-project-id',
     }),
     provider: p,
     api: a,
@@ -436,6 +437,7 @@ describe('BackupWorkflow', () => {
     const workflow = new BackupWorkflow({
       providers: new Map(),
       api,
+      walletConnectProjectId: 'test-wc-project-id',
     });
 
     // No provider registered yet

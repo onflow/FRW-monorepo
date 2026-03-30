@@ -25,17 +25,21 @@ export interface BackupWorkflowConfig {
   providers: Map<CloudProvider, CloudStorageProvider>;
   api: BackupApi;
   analytics?: BackupAnalytics;
+  /** WalletConnect project ID for device sync — provided by platform config */
+  walletConnectProjectId: string;
 }
 
 export class BackupWorkflow {
   private providers: Map<CloudProvider, CloudStorageProvider>;
   private api: BackupApi;
   private analytics?: BackupAnalytics;
+  private walletConnectProjectId: string;
 
   constructor(config: BackupWorkflowConfig) {
     this.providers = new Map(config.providers);
     this.api = config.api;
     this.analytics = config.analytics;
+    this.walletConnectProjectId = config.walletConnectProjectId;
   }
 
   registerProvider(provider: CloudStorageProvider): void {
@@ -198,9 +202,14 @@ export class BackupWorkflow {
     return result;
   }
 
-  async startDeviceSync(options: DeviceSyncOptions): Promise<DeviceSyncSession> {
+  async startDeviceSync(
+    options: Omit<DeviceSyncOptions, 'walletConnectProjectId'>
+  ): Promise<DeviceSyncSession> {
     const { createDeviceSyncSession } = await import('./device');
-    return createDeviceSyncSession(options);
+    return createDeviceSyncSession({
+      ...options,
+      walletConnectProjectId: this.walletConnectProjectId,
+    });
   }
 
   async getAllBackupStatuses(): Promise<
