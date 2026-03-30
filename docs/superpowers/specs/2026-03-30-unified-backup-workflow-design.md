@@ -157,7 +157,7 @@ export interface CreateBackupOptions {
   mnemonic: string;
   password: string;
   username: string;
-  uid: string;
+  uid: string | null;
   keyWeight: KeyWeight;
   provider: CloudProvider;
 }
@@ -168,6 +168,83 @@ export interface RestoreBackupOptions {
   password: string;
   provider: CloudProvider;
   uid?: string;
+}
+
+/** Device info for device sync and backend registration */
+export interface DeviceInfo {
+  id: string;
+  name: string;
+  platform: 'ios' | 'android' | 'extension';
+}
+
+/** Events emitted during device sync */
+export interface DeviceSyncEvents {
+  onPaired: (peerId: string) => void;
+  onPayloadReceived: (payload: DeviceSyncPayload) => void;
+  onError: (error: BackupError) => void;
+  onDisconnected: () => void;
+}
+
+/** Options for creating a device sync session */
+export interface DeviceSyncOptions {
+  role: SyncRole;
+  events: DeviceSyncEvents;
+  /** Timeout for pairing in ms (default 120000) */
+  pairingTimeout?: number;
+}
+
+/** Structured error for backup operations */
+export enum BackupErrorCode {
+  /** Password does not match */
+  IncorrectPassword = 'INCORRECT_PASSWORD',
+  /** Cloud provider auth failed or expired */
+  AuthFailed = 'AUTH_FAILED',
+  /** Network error during cloud operation */
+  NetworkError = 'NETWORK_ERROR',
+  /** Cloud provider rate limit (429) */
+  RateLimited = 'RATE_LIMITED',
+  /** Backup data is corrupt or unparseable */
+  CorruptData = 'CORRUPT_DATA',
+  /** No backup found for given username/uid */
+  NotFound = 'NOT_FOUND',
+  /** Provider not registered */
+  ProviderNotRegistered = 'PROVIDER_NOT_REGISTERED',
+  /** Backend API registration failed (backup itself succeeded) */
+  ApiRegistrationFailed = 'API_REGISTRATION_FAILED',
+  /** WalletConnect pairing timed out */
+  PairingTimeout = 'PAIRING_TIMEOUT',
+  /** Generic unexpected error */
+  Unknown = 'UNKNOWN',
+}
+
+export class BackupError extends Error {
+  constructor(
+    public readonly code: BackupErrorCode,
+    message: string,
+    public readonly cause?: unknown
+  ) {
+    super(message);
+  }
+}
+
+/** Backend API interface required by BackupWorkflow */
+export interface BackupApi {
+  /** Register backup info with backend */
+  registerBackup(backupInfo: { type: BackupType; name: string }): Promise<void>;
+  /** Sync device key with backend (used after restore) */
+  syncDeviceKey(
+    accountKey: {
+      public_key: string;
+      sign_algo: number;
+      hash_algo: number;
+      weight: number;
+    },
+    signatures: unknown
+  ): Promise<void>;
+  /** Get user's on-chain key list (for detectKeyWeightType) */
+  getUserKeys(): Promise<
+    { weight: number; publicKey: string; index: number; revoked: boolean }[]
+  >;
 }
 ```
 
@@ -187,14 +264,18 @@ export interface RestoreBackupOptions {
 ```typescript
 export interface BackupCrypto {
   readonly version: BackupVersion;
-  encrypt(mnemonic: string, password: string): string;
-  decrypt(encryptedData: string, password: string): string;
-  verifyPassword(encryptedData: string, password: string): boolean;
+  encrypt(mnemonic: string, password: string): Promise<string>;
+  decrypt(encryptedData: string, password: string): Promise<string>;
+  verifyPassword(encryptedData: string, password: string): Promise<boolean>;
 }
 
 export function createBackupCrypto(version: BackupVersion): BackupCrypto;
 export function detectCryptoVersion(data: string): BackupVersion;
 ```
+
+Note: All crypto methods are async because scrypt key derivation (V2) is
+inherently asynchronous. V1 (LegacyCrypto) wraps synchronous AES-CBC in Promise
+for interface conformance.
 
 ### LegacyCrypto (V1) — decrypt-only
 
@@ -371,7 +452,7 @@ const backupWorkflow = new BackupWorkflow({
       }),
     ],
   ]),
-  api: openapiService,
+  api: openapiService, // implements BackupApi
 });
 
 // React Native (iOS)
@@ -384,12 +465,48 @@ const backupWorkflow = new BackupWorkflow({
       }),
     ],
   ]),
-  api: profileService(),
+  api: profileService(), // implements BackupApi
 });
 if (Platform.OS === 'ios') {
   backupWorkflow.registerProvider(createICloudBridgeProvider(bridge));
 }
 ```
+
+### Error handling strategy
+
+- All public methods throw `BackupError` with structured error codes
+- `createBackup`: if cloud upload succeeds but backend API registration fails,
+  the backup is still saved. Returns `BackupResult` with
+  `error: BackupErrorCode.ApiRegistrationFailed`. Caller can retry API
+  registration separately.
+- `changePassword`: re-encrypts all entries in memory first, then writes to
+  cloud in a single `saveBackups()` call. If the write fails, no entries are
+  modified (all-or-nothing). This matches the existing extension behavior.
+- Cloud providers should implement retry with exponential backoff for transient
+  errors (network, 429 rate limit). Max 3 retries.
+- `restoreBackup` with wrong password throws `BackupError(IncorrectPassword)` —
+  V2 detects via MAC check, V1 via bip39 validation failure.
+
+### Scrypt parameter choice
+
+N=8192 (light variant) chosen for mobile performance. Standard Ethereum keystore
+uses N=262144 but that is too slow on mobile devices. N=8192 still provides
+adequate protection for password-encrypted mnemonics given that passwords are
+user-chosen and the primary threat is offline brute-force.
+
+### V1 outer encryption key sourcing
+
+The legacy outer AES key (`legacyAesKey` and `legacyIV`) is the same across all
+three platforms — it was originally shared via the backend. Each platform passes
+these values via config during `GoogleDriveProvider` / `DropboxProvider`
+construction. V2 format has no outer encryption layer, so this is only needed
+for reading legacy backups.
+
+### Device sync does not register with backend
+
+Device-to-device sync via WalletConnect is a local transfer. It does not call
+`BackupApi.registerBackup()`. The receiving device registers its own device key
+via `syncDeviceKey()` after import.
 
 ### Extension migration path
 
@@ -398,6 +515,22 @@ if (Platform.OS === 'ios') {
 2. **Phase 2**: Migrate UI calls from old services to `BackupWorkflow`
 3. **Phase 3**: Delete `apps/extension/src/core/service/googleDrive.ts` and
    backup methods from `account-management.ts`
+
+## File Format
+
+V2 backup files are stored as a JSON wrapper with a top-level format version:
+
+```typescript
+interface BackupFile {
+  /** File format version (not encryption version) */
+  formatVersion: 1;
+  entries: BackupEntry[];
+}
+```
+
+This allows future changes to the file structure without conflicting with
+`BackupVersion` which tracks per-entry encryption format. `loadBackups()` checks
+`formatVersion` and can add migration logic if the file format changes.
 
 ## Dependencies
 
