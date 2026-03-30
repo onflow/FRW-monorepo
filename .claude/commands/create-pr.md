@@ -1,6 +1,6 @@
 ---
 description:
-  'Automatically create a pull request to dev branch with proper validation and
+  'Automatically create a pull request to main branch with proper validation and
   commit handling'
 argument-hint: '[target-branch] [title]'
 allowed-tools: [Bash, TodoWrite]
@@ -13,7 +13,7 @@ GitHub integration.
 
 Arguments:
 
-- `target-branch` (optional): Target branch for the PR (default: dev)
+- `target-branch` (optional): Target branch for the PR (default: main)
 - `title` (optional): PR title (auto-generated if not provided)
 
 ## Process

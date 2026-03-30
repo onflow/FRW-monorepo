@@ -106,7 +106,7 @@ jobs:
             const branch = pr.head.ref || '';
             const body = (pr.body || '').trim();
 
-            const mainBranches = ['main', 'master', 'dev', 'develop'];
+            const mainBranches = ['main', 'master', 'dev', 'develop', 'legacy-main'];
             if (mainBranches.includes(branch)) {
               core.info('Main branch PR: skipping verification');
               return;

@@ -4,12 +4,12 @@ on:
   # Trigger the workflow on push or pull request,
   # for main, dev, and release/* branches
   push:
-    branches: [main, dev, "release/*"]
+    branches: [main, "release/*"]
 
   # Replace pull_request with pull_request_target if you
   # plan to use this action with forks, see the Limitations section
   pull_request:
-    branches: [main, dev, "release/*"]
+    branches: [main, "release/*"]
 
 # Down scope as necessary via https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
 permissions:
