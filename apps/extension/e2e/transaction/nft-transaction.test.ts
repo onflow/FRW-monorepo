@@ -441,6 +441,16 @@ test('NFT from child to evm', async ({ page, extensionId }) => {
 
   txList.push(tx1);
 
+  const tx2 = await sendNFTs({
+    page,
+    collectionName: 'FLOAT',
+    receiver: getSenderCadenceAccount({ parallelIndex: test.info().parallelIndex }),
+    successtext: /success|Finalized|Executed|Sealed/,
+    idx: ['1'],
+  });
+
+  txList.push(tx2);
+
   // Go to the activity page
   await page.goto(`chrome-extension://${extensionId}/index.html#/dashboard?activity=1`);
   await page.waitForURL(/.*\/dashboard.*/);
