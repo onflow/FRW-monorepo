@@ -64,6 +64,6 @@ export class LegacyCrypto implements BackupCrypto {
   }
 
   private padKey(arr: Uint8Array, len = 16): Uint8Array {
-    return new Uint8Array([...arr, ...new Array(16).fill(0)]).slice(0, len);
+    return new Uint8Array(Array.from(arr).concat(new Array(16).fill(0))).slice(0, len);
   }
 }

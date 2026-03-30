@@ -211,7 +211,7 @@ export class BackupWorkflow {
       { providers: CloudProvider[]; version: BackupVersion; keyWeight: KeyWeight }
     >();
 
-    for (const [providerType, provider] of this.providers) {
+    for (const [providerType, provider] of Array.from(this.providers.entries())) {
       try {
         const entries = await provider.loadBackups();
         for (const entry of entries) {
