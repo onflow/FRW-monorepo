@@ -76,10 +76,10 @@ export function ImportProfileScreen(): React.ReactElement {
   return (
     <YStack flex={1} bg="$background">
       <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-        <YStack px="$4" pt="$4" pb="$6">
+        <YStack px="$4.5" pt="$4" pb="$6">
           {/* Header Section */}
-          <YStack mt="$8" mb="$6" gap="$3" items="center">
-            <Text fontSize="$8" fontWeight="700" color="$text" text="center" lineHeight={29}>
+          <YStack mb="$4.5" gap="$2" items="center">
+            <Text fontSize="$6" fontWeight="700" color="$text" text="center" lineHeight={29}>
               {t('onboarding.importProfile.title')}
             </Text>
             <Text fontSize={14} color="$textSecondary" text="center" lineHeight={17}>
@@ -88,7 +88,7 @@ export function ImportProfileScreen(): React.ReactElement {
           </YStack>
 
           {/* Import Options List */}
-          <YStack gap="$3" pt="$4">
+          <YStack gap="$3">
             {/* Previous profiles - loading skeleton */}
             {isLoadingProfiles && (
               <YStack bg="$bg2" rounded="$4" p="$4" gap="$2">
@@ -144,10 +144,10 @@ export function ImportProfileScreen(): React.ReactElement {
               onPress={handleRecoveryPhrase}
             />
 
-            {/* From another method - no icon */}
+            {/* From another method - no icon, reduced opacity title */}
             <ImportOptionCard
               title={t('onboarding.importProfile.anotherMethod.title')}
-              subtitle={t('onboarding.importProfile.anotherMethod.subtitle')}
+              titleColor="$light80"
               onPress={handleAnotherMethod}
             />
           </YStack>

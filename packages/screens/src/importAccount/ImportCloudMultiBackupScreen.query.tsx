@@ -35,9 +35,9 @@ export function ImportCloudMultiBackupScreen(): React.ReactElement {
 
   return (
     <YStack flex={1} bg="$background">
-      <YStack flex={1} px="$4.5" pt="$8">
+      <YStack flex={1} px="$4" pt="$6">
         <YStack items="center" mb="$6">
-          <Text fontSize={14} lineHeight={17} text="center" color="$textSecondary" maxW={320}>
+          <Text fontSize={14} lineHeight={17} text="center" color="$textSecondary">
             {t('onboarding.importCloudMultiBackup.subtitle')}
           </Text>
         </YStack>

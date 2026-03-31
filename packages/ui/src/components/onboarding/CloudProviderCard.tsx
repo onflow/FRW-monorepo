@@ -20,7 +20,7 @@ export function CloudProviderCard({
 
   return (
     <Pressable onPress={onPress}>
-      <XStack bg="$bg2" rounded="$4" p="$4.5" items="center" gap="$4.5">
+      <XStack bg="$bg2" rounded={16} p="$4.5" items="center" gap="$4.5">
         <XStack flex={1} items="center" gap="$4">
           <XStack width={30} height={30} items="center" justify="center">
             {icon}
