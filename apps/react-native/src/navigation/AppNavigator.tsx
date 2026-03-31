@@ -31,10 +31,13 @@ import {
   ConfirmRecoveryPhraseScreen,
   SecureEnclaveScreen,
   NotificationPreferencesScreen,
-  // Recovery screens
-  ImportProfileScreen,
+  ImportAccountScreen,
+  ImportCloudBackupLoadingScreen,
+  ImportCloudMultiBackupScreen,
+  ImportLegacyMethodsScreen,
   ImportOtherMethodsScreen,
   ConfirmImportProfileScreen,
+  type ImportCloudBackupLoadingParams,
   // What's new screen
   WhatsNewScreen,
   type WhatsNewData,
@@ -116,6 +119,9 @@ export type RootStackParamList = {
   };
   // Recovery screens
   ImportProfile: undefined;
+  ImportCloudMultiBackup: undefined;
+  ImportCloudBackupLoading: ImportCloudBackupLoadingParams | undefined;
+  ImportLegacyMethods: undefined;
   ImportOtherMethods: undefined;
   ConfirmImportProfile: undefined;
   // Key rotation screens
@@ -639,9 +645,30 @@ const AppNavigator: React.FC<AppNavigatorProps> = props => {
           >
             <Stack.Screen
               name="ImportProfile"
-              component={ImportProfileScreen}
+              component={ImportAccountScreen}
               options={{
                 headerTitle: '',
+              }}
+            />
+            <Stack.Screen
+              name="ImportCloudMultiBackup"
+              component={ImportCloudMultiBackupScreen}
+              options={{
+                headerTitle: t('onboarding.importAccount.title'),
+              }}
+            />
+            <Stack.Screen
+              name="ImportCloudBackupLoading"
+              component={ImportCloudBackupLoadingScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="ImportLegacyMethods"
+              component={ImportLegacyMethodsScreen}
+              options={{
+                headerTitle: t('onboarding.importAccount.title'),
               }}
             />
             <Stack.Screen

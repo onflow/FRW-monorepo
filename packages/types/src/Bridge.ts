@@ -98,6 +98,7 @@ export interface InitialProps {
     | 'onboarding'
     | 'receive'
     | 'activity'
+    | 'backup'
     | 'keystore-migration'
     | 'migration'
     | 'whatsNew'
@@ -242,6 +243,10 @@ export enum ScreenName {
   IMPORT_PROFILE = 'ImportProfile',
   /** Import via other methods screen (recovery phrase, etc.) */
   IMPORT_OTHER_METHODS = 'ImportOtherMethods',
+  /** Import via legacy methods from import account flow */
+  IMPORT_LEGACY_METHODS = 'ImportLegacyMethods',
+  /** Loading state while launching cloud backup restore */
+  IMPORT_CLOUD_BACKUP_LOADING = 'ImportCloudBackupLoading',
   /** Confirm import from previous profiles screen */
   CONFIRM_IMPORT_PROFILE = 'ConfirmImportProfile',
   /** Notification preferences screen */

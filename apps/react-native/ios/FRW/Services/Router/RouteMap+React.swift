@@ -16,6 +16,7 @@ extension RouteMap {
     case getStarted
     case backupTip
     case migration
+    case backup
     case whatsNew([String: Any])
     case claimTokens
   }
@@ -26,7 +27,6 @@ extension RouteMap.ReactNative: RouterTarget {
         switch self {
         case .sendAsset(let config):
             let props = RNBridge.InitialProps(screen: .sendAsset, sendToConfig: config?.toJSON())
-            let vc = ReactNativeViewController(initialProps: props)
             navi.present(ReactNativeViewController(initialProps: props))
         case .profileSelection:
             let props = RNBridge.InitialProps(screen: .onboarding, sendToConfig: nil)
@@ -55,7 +55,10 @@ extension RouteMap.ReactNative: RouterTarget {
             let vc = ReactNativeViewController()
             vc.route = .claimTokens
             navi.present(vc)
-
+        case .backup:
+            let vc = ReactNativeViewController()
+            vc.route = .backup
+            navi.pushViewController(vc, animated: true)
         }
     }
 }

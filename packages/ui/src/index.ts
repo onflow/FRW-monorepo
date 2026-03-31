@@ -8,6 +8,7 @@ export {
   H6,
   Image,
   Paragraph,
+  Progress,
   ScrollView,
   Sheet,
   Spinner,
@@ -76,6 +77,7 @@ export * from './components/HoldToSendButton';
 export * from './components/ErrorDialog';
 export * from './components/ExtensionHeader';
 export * from './components/InfoDialog';
+export * from './components/LegacyImportMethodCard';
 export * from './components/MultipleNFTsPreview';
 export * from './components/NFTCard';
 export * from './components/NFTCollectionRow';
@@ -120,12 +122,15 @@ export { ShieldAnimation } from './components/ShieldAnimation';
 
 export * from './components/UpdateDialog';
 export * from './components/TokenAmountInput';
+export * from './components/BackupLoadingIcon';
 
 // Onboarding components (excluding WarningCard to avoid conflict with main WarningCard)
 export {
   AccountCreationLoadingState,
   OnboardingHeader,
   BackupOptionCard,
+  CloudProviderCard,
+  ImportAccountOptionCard,
   ImportOptionCard,
   RecoveryPhraseQuestion,
 } from './components/onboarding';

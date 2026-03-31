@@ -6,6 +6,7 @@ export { default as ArrowDownWideNarrow } from './ArrowDownWideNarrow.generated'
 export { default as ArrowLeft } from './ArrowLeft.generated';
 export { default as ArrowRight } from './ArrowRight.generated';
 export { default as ArrowUpRight } from './ArrowUpRight.generated';
+export { default as BackupLoadingGlow } from './BackupLoadingGlow.generated';
 export { default as CheckCircle } from './CheckCircle.generated';
 export { default as CheckCircleFill } from './CheckCircleFill.generated';
 export { default as ChevronDown } from './ChevronDown.generated';
@@ -16,6 +17,7 @@ export { default as CloudBackup } from './CloudBackup.generated';
 export { default as ConfirmDialogBg } from './ConfirmDialogBg.generated';
 export { default as Copy } from './Copy.generated';
 export { default as DeviceBackup } from './DeviceBackup.generated';
+export { default as Dropbox } from './Dropbox.generated';
 export { default as Earn } from './Earn.generated';
 export { default as Edit } from './Edit.generated';
 export { default as FileText } from './FileText.generated';

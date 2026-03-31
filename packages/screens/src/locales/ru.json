@@ -408,6 +408,40 @@
         "subtitle": "Импортируйте свой профиль с помощью ключевого хранилища, приватного ключа или фразы восстановления."
       }
     },
+    "importAccount": {
+      "title": "Импорт аккаунта",
+      "subtitle": "Импортируйте аккаунт с помощью резервной копии.",
+      "deviceBackup": {
+        "title": "Из резервной копии устройства",
+        "subtitle": "Мобильные или расширенные устройства"
+      },
+      "cloudBackup": {
+        "title": "Из облачной мульти-резервной копии",
+        "subtitle": "Google Drive, iCloud или DropBox."
+      },
+      "recoveryPhrase": {
+        "title": "Из фразы восстановления",
+        "subtitle": "Фраза восстановления из 12 слов."
+      },
+      "anotherMethod": {
+        "title": "С другого метода",
+        "subtitle": ""
+      },
+      "legacyMethodsSubtitle": "Выберите устаревший метод резервного копирования"
+    },
+    "importCloudMultiBackup": {
+      "subtitle": "Выберите облачные сервисы для резервного копирования фразы восстановления",
+      "providers": {
+        "googleDrive": "Google Drive",
+        "iCloud": "iCloud",
+        "dropbox": "Dropbox"
+      },
+      "loading": {
+        "title": "Загрузка резервной копии",
+        "status": "Загрузка вашей резервной копии из {{provider}}",
+        "defaultProvider": "облака"
+      }
+    },
     "importOtherMethods": {
       "title": "С другого метода",
       "subtitle": "Выберите способ импорта вашего профиля.",

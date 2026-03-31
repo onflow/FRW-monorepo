@@ -10,11 +10,13 @@ interface ImportOptionCardProps {
   /** Main title of the option */
   title: string;
   /** Subtitle/description text */
-  subtitle: string;
+  subtitle?: string;
   /** Optional badge text (e.g., "2" for number of profiles) */
   badge?: string;
   /** Layout variant: 'horizontal' (icon left) or 'vertical' (icon above) */
   layout?: 'horizontal' | 'vertical';
+  /** Title color override (e.g., for reduced opacity variants) */
+  titleColor?: string;
   /** Press handler */
   onPress: () => void;
 }
@@ -30,6 +32,7 @@ export function ImportOptionCard({
   subtitle,
   badge,
   layout = 'horizontal',
+  titleColor,
   onPress,
 }: ImportOptionCardProps): React.ReactElement {
   const isVertical = layout === 'vertical';
@@ -38,8 +41,8 @@ export function ImportOptionCard({
   // Common ListItem props for both layouts
   const listItemProps = {
     bg: '$bg2',
-    borderRadius: '$3',
-    padding: '$4',
+    borderRadius: 16 as const,
+    padding: '$4.5',
     onPress,
     hoverTheme: true,
     pressTheme: true,
@@ -72,7 +75,7 @@ export function ImportOptionCard({
           </YStack>
         )}
 
-        <YStack gap="$3" items="stretch" width="100%">
+        <YStack gap="$2" items="stretch" width="100%">
           {/* Icon */}
           {icon && (
             <View width="$7" height="$7" items="center" justify="center" self="flex-start">
@@ -82,11 +85,11 @@ export function ImportOptionCard({
 
           {/* Text content */}
           <YStack gap="$1" pr="$8">
-            <Text fontSize="$4" fontWeight="700" color="$text">
+            <Text fontSize="$4" fontWeight="600" color={titleColor ?? '$text'}>
               {title}
             </Text>
             {subtitle && (
-              <Text fontSize="$3" color="$textSecondary" lineHeight="$4">
+              <Text fontSize={14} color="$textSecondary" lineHeight={17}>
                 {subtitle}
               </Text>
             )}
@@ -114,11 +117,11 @@ export function ImportOptionCard({
 
         {/* Text content - flex to fill space */}
         <YStack flex={1} gap="$1" pr="$2">
-          <Text fontSize="$4" fontWeight="700" color="$text">
+          <Text fontSize="$4" fontWeight="600" color={titleColor ?? '$text'}>
             {title}
           </Text>
           {subtitle && (
-            <Text fontSize="$3" color="$textSecondary" lineHeight="$4">
+            <Text fontSize={14} color="$textSecondary" lineHeight={17}>
               {subtitle}
             </Text>
           )}

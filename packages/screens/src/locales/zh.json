@@ -396,6 +396,40 @@
         "subtitle": "使用密钥库、私钥或恢复短语导入您的个人资料。"
       }
     },
+    "importAccount": {
+      "title": "导入账户",
+      "subtitle": "使用备份导入您的账户。",
+      "deviceBackup": {
+        "title": "从设备备份",
+        "subtitle": "移动设备或扩展设备"
+      },
+      "cloudBackup": {
+        "title": "从云多重备份",
+        "subtitle": "Google Drive、iCloud 或 DropBox。"
+      },
+      "recoveryPhrase": {
+        "title": "从恢复短语",
+        "subtitle": "12 个单词的恢复短语。"
+      },
+      "anotherMethod": {
+        "title": "从其他方式",
+        "subtitle": ""
+      },
+      "legacyMethodsSubtitle": "选择旧版备份方式"
+    },
+    "importCloudMultiBackup": {
+      "subtitle": "选择云服务提供商来备份您的恢复短语",
+      "providers": {
+        "googleDrive": "Google Drive",
+        "iCloud": "iCloud",
+        "dropbox": "Dropbox"
+      },
+      "loading": {
+        "title": "正在加载备份",
+        "status": "正在加载您的{{provider}}备份",
+        "defaultProvider": "云端"
+      }
+    },
     "importOtherMethods": {
       "title": "从其他方式",
       "subtitle": "选择导入个人资料的方式。",
