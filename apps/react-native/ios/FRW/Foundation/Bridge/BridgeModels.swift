@@ -23,8 +23,11 @@ enum RNBridge {
         case onboarding = "onboarding"
         case receive = "receive"
         case activity = "activity"
-        case migration = "migration"
         case backup = "backup"
+        case keystoreMigration = "keystore-migration"
+        case migration = "migration"
+        case whatsNew = "whatsNew"
+        case claimTokens = "claimTokens"
     }
 
     enum AccountTypeType: String, Codable {
@@ -120,6 +123,7 @@ enum RNBridge {
         let GO_API_URL: String
         let INSTABUG_TOKEN: String
         let MIXPANEL_TOKEN: String?
+        let CADENCE_INBOX: Bool
     }
 
     struct Currency: Codable {
