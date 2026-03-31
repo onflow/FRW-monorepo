@@ -311,14 +311,16 @@ extension TokenModel {
 
 extension TokenModel {
     func aboutTokenUrl() -> URL? {
-        let host = currentNetwork.baseUrl(accountType: AccountType.current)
-        let path = AccountType.current == .flow ? "/ft/token" : "/token"
-        guard let target = AccountType.current == .flow ? identifier : (evmAddress ?? contractAddress) else {
+        guard !isFlowCoin else {
+            return URL(string: AppUrl.FlowUrl)
+        }
+        let accountType = AccountType.current
+        guard let target = accountType == .flow ? identifier : (evmAddress ?? contractAddress) else {
             HUD.error(title: "invalid identifier")
-            log.error("invalid identifier")
+            log.error("[Explorer] aboutTokenUrl: invalid identifier")
             return nil
         }
-        return URL(string: "\(host)\(path)/\(target)")
+        return currentNetwork.explorerUrl(id: target, type: "token", accountType: accountType)
     }
 }
 
