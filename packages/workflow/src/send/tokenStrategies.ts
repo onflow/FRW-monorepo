@@ -269,7 +269,7 @@ export class FlowTokenBridgeToEvmStrategy implements TransferStrategy {
       amount: formattedAmount,
     });
 
-    return await this.cadenceService.bridgeTokensToEvmAddressV2(
+    return await this.cadenceService.bridgeTokensToEvmAddressWithPayer(
       flowIdentifier,
       formattedAmount,
       receiver
@@ -395,7 +395,7 @@ export class EvmToFlowTokenBridgeStrategy implements TransferStrategy {
 
     const valueBig = parseUnits(formattedAmount, decimal);
 
-    return await this.cadenceService.bridgeTokensFromEvmToFlowV3(
+    return await this.cadenceService.bridgeTokensFromEvmToFlowWithPayer(
       flowIdentifier,
       valueBig.toString(),
       receiver
