@@ -12,8 +12,10 @@ import {
   CloudProvider,
   KeyWeight,
   type BackupApi,
+  type BackupDeviceInfo,
   type BackupEntry,
   type CloudStorageProvider,
+  type KeyProvider,
 } from '../../src/backup/types';
 
 const TEST_MNEMONIC =
@@ -39,6 +41,25 @@ function makeMockApi(): BackupApi {
     registerBackup: vi.fn().mockResolvedValue(undefined),
     syncDeviceKey: vi.fn().mockResolvedValue(undefined),
     getUserKeys: vi.fn().mockResolvedValue([]),
+  };
+}
+
+const mockDeviceInfo: BackupDeviceInfo = {
+  deviceId: 'device-123',
+  name: 'Test Device',
+  platform: 'extension',
+};
+
+function createMockKeyProvider(overrides?: Partial<KeyProvider>): KeyProvider {
+  return {
+    generateBackupKey: vi.fn().mockResolvedValue({
+      mnemonic: TEST_MNEMONIC,
+      publicKey: 'generated-pub-key',
+      signAlgo: 2,
+      hashAlgo: 1,
+    }),
+    addKeyToAccount: vi.fn().mockResolvedValue(3),
+    ...overrides,
   };
 }
 
@@ -78,10 +99,8 @@ describe('BackupWorkflow', () => {
     expect(result.backupType).toBe(BackupType.Google);
     expect(result.provider).toBe(CloudProvider.GoogleDrive);
     expect(provider.saveBackups).toHaveBeenCalledTimes(1);
-    expect(api.registerBackup).toHaveBeenCalledWith({
-      type: BackupType.Google,
-      name: 'alice',
-    });
+    // registerBackup is only called when accountKey+signatures are provided
+    expect(api.registerBackup).not.toHaveBeenCalled();
 
     // Verify saved entry is v2 and decryptable
     const savedEntries = (provider.saveBackups as ReturnType<typeof vi.fn>).mock
@@ -465,11 +484,194 @@ describe('BackupWorkflow', () => {
       uid: null,
       keyWeight: KeyWeight.Full,
       provider: CloudProvider.GoogleDrive,
+      accountKey: {
+        public_key: 'pk',
+        sign_algo: 2,
+        hash_algo: 1,
+        weight: 1000,
+      },
+      signatures: [
+        {
+          public_key: 'pk',
+          sign_algo: 2,
+          hash_algo: 1,
+          signature: 'sig',
+        },
+      ],
     });
 
     expect(result.success).toBe(false);
     expect(result.error).toBe(BackupErrorCode.ApiRegistrationFailed);
     // Backup was still saved to provider
     expect(provider.saveBackups).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('backupWithKeyAddition', () => {
+  it('happy path: all 4 steps succeed, on-chain metadata in saved entries', async () => {
+    const keyProvider = createMockKeyProvider();
+    const provider = makeMockProvider();
+    const api = makeMockApi();
+    const workflow = new BackupWorkflow({
+      providers: new Map([[CloudProvider.GoogleDrive, provider]]),
+      api,
+      walletConnectProjectId: 'test-wc-project-id',
+      keyProvider,
+    });
+
+    const result = await workflow.backupWithKeyAddition({
+      address: '0xabc123',
+      password: TEST_PASSWORD,
+      username: 'alice',
+      uid: 'uid-1',
+      keyWeight: KeyWeight.Full,
+      provider: CloudProvider.GoogleDrive,
+      deviceInfo: mockDeviceInfo,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.version).toBe(BackupVersion.V2);
+    expect(result.backupType).toBe(BackupType.Google);
+    expect(result.provider).toBe(CloudProvider.GoogleDrive);
+
+    // Verify key generation was called
+    expect(keyProvider.generateBackupKey).toHaveBeenCalledTimes(1);
+
+    // Verify on-chain key addition was called
+    expect(keyProvider.addKeyToAccount).toHaveBeenCalledWith(
+      '0xabc123',
+      'generated-pub-key',
+      KeyWeight.Full,
+      2,
+      1
+    );
+
+    // Verify saved entry has on-chain metadata
+    const savedEntries = (provider.saveBackups as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as BackupEntry[];
+    expect(savedEntries).toHaveLength(1);
+    expect(savedEntries[0].address).toBe('0xabc123');
+    expect(savedEntries[0].publicKey).toBe('generated-pub-key');
+    expect(savedEntries[0].keyIndex).toBe(3);
+    expect(savedEntries[0].signAlgo).toBe(2);
+    expect(savedEntries[0].hashAlgo).toBe(1);
+    expect(savedEntries[0].deviceInfo).toEqual(mockDeviceInfo);
+
+    // Verify backend sync was called
+    expect(api.syncDeviceKey).toHaveBeenCalledWith(
+      {
+        public_key: 'generated-pub-key',
+        sign_algo: 2,
+        hash_algo: 1,
+        weight: KeyWeight.Full,
+      },
+      mockDeviceInfo,
+      { type: BackupType.Google, name: 'alice' }
+    );
+
+    // Verify mnemonic is decryptable
+    const crypto = new KeystoreCrypto();
+    const decrypted = await crypto.decrypt(savedEntries[0].data, TEST_PASSWORD);
+    expect(decrypted).toBe(TEST_MNEMONIC);
+  });
+
+  it('no keyProvider: throws BackupError(ProviderNotRegistered)', async () => {
+    const provider = makeMockProvider();
+    const api = makeMockApi();
+    const workflow = new BackupWorkflow({
+      providers: new Map([[CloudProvider.GoogleDrive, provider]]),
+      api,
+      walletConnectProjectId: 'test-wc-project-id',
+      // no keyProvider
+    });
+
+    await expect(
+      workflow.backupWithKeyAddition({
+        address: '0xabc123',
+        password: TEST_PASSWORD,
+        username: 'alice',
+        uid: null,
+        keyWeight: KeyWeight.Full,
+        provider: CloudProvider.GoogleDrive,
+        deviceInfo: mockDeviceInfo,
+      })
+    ).rejects.toThrow(BackupError);
+
+    try {
+      await workflow.backupWithKeyAddition({
+        address: '0xabc123',
+        password: TEST_PASSWORD,
+        username: 'alice',
+        uid: null,
+        keyWeight: KeyWeight.Full,
+        provider: CloudProvider.GoogleDrive,
+        deviceInfo: mockDeviceInfo,
+      });
+    } catch (e) {
+      expect(e).toBeInstanceOf(BackupError);
+      expect((e as BackupError).code).toBe(BackupErrorCode.ProviderNotRegistered);
+    }
+  });
+
+  it('on-chain failure: propagates error', async () => {
+    const keyProvider = createMockKeyProvider({
+      addKeyToAccount: vi.fn().mockRejectedValue(new Error('on-chain tx failed')),
+    });
+    const provider = makeMockProvider();
+    const api = makeMockApi();
+    const workflow = new BackupWorkflow({
+      providers: new Map([[CloudProvider.GoogleDrive, provider]]),
+      api,
+      walletConnectProjectId: 'test-wc-project-id',
+      keyProvider,
+    });
+
+    await expect(
+      workflow.backupWithKeyAddition({
+        address: '0xabc123',
+        password: TEST_PASSWORD,
+        username: 'alice',
+        uid: null,
+        keyWeight: KeyWeight.Full,
+        provider: CloudProvider.GoogleDrive,
+        deviceInfo: mockDeviceInfo,
+      })
+    ).rejects.toThrow('on-chain tx failed');
+
+    // Verify no backup was saved
+    expect(provider.saveBackups).not.toHaveBeenCalled();
+  });
+
+  it('sync failure: returns success=true with error=ApiRegistrationFailed', async () => {
+    const keyProvider = createMockKeyProvider();
+    const provider = makeMockProvider();
+    const api = makeMockApi();
+    (api.syncDeviceKey as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('sync network error')
+    );
+
+    const workflow = new BackupWorkflow({
+      providers: new Map([[CloudProvider.GoogleDrive, provider]]),
+      api,
+      walletConnectProjectId: 'test-wc-project-id',
+      keyProvider,
+    });
+
+    const result = await workflow.backupWithKeyAddition({
+      address: '0xabc123',
+      password: TEST_PASSWORD,
+      username: 'alice',
+      uid: null,
+      keyWeight: KeyWeight.Full,
+      provider: CloudProvider.GoogleDrive,
+      deviceInfo: mockDeviceInfo,
+    });
+
+    // Backup was saved to cloud
+    expect(provider.saveBackups).toHaveBeenCalledTimes(1);
+
+    // But sync failed, so error is set
+    expect(result.success).toBe(false);
+    expect(result.error).toBe(BackupErrorCode.ApiRegistrationFailed);
   });
 });

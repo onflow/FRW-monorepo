@@ -75,6 +75,18 @@ export interface BackupEntry {
   version: BackupVersion;
   timestamp: number;
   keyWeight: KeyWeight;
+  /** Flow account address (populated by key-addition flow) */
+  address?: string;
+  /** Public key of the backup key */
+  publicKey?: string;
+  /** Key index assigned on the Flow blockchain */
+  keyIndex?: number;
+  /** Signature algorithm (e.g. 2 for ECDSA_secp256k1) */
+  signAlgo?: number;
+  /** Hash algorithm (e.g. 1 for SHA2_256) */
+  hashAlgo?: number;
+  /** Device that created this backup */
+  deviceInfo?: BackupDeviceInfo;
 }
 
 export interface KeystoreV3 {
@@ -137,6 +149,22 @@ export interface CreateBackupOptions {
   uid: string | null;
   keyWeight: KeyWeight;
   provider: CloudProvider;
+  /** Optional: account key for backend registration via /v3/signed */
+  accountKey?: {
+    public_key: string;
+    sign_algo: number;
+    hash_algo: number;
+    weight: number;
+  };
+  /** Optional: signatures for backend registration */
+  signatures?: Array<{
+    public_key: string;
+    sign_algo: number;
+    hash_algo: number;
+    signature: string;
+    sign_message?: string;
+    weight?: number;
+  }>;
 }
 
 export interface RestoreBackupOptions {
@@ -158,12 +186,56 @@ export interface MigrationOptions {
   usernames?: string[];
 }
 
+/** Options for creating a backup with on-chain key addition (Secure Profile) */
+export interface KeyAdditionBackupOptions {
+  address: string;
+  password: string;
+  username: string;
+  uid: string | null;
+  keyWeight: KeyWeight;
+  provider: CloudProvider;
+  deviceInfo: BackupDeviceInfo;
+}
+
 // ─── Device Sync Types ────────────────────────────
 
 export interface DeviceInfo {
   id: string;
   name: string;
   platform: 'ios' | 'android' | 'extension';
+}
+
+/** Device metadata for backend key registration (/v3/sync) */
+export interface BackupDeviceInfo {
+  deviceId: string;
+  name: string;
+  platform: 'ios' | 'android' | 'extension';
+}
+
+/** Result of generating a new backup key */
+export interface GeneratedKey {
+  mnemonic: string;
+  publicKey: string;
+  signAlgo: number;
+  hashAlgo: number;
+}
+
+/** Protocol for on-chain key operations — implemented by each platform client */
+export interface KeyProvider {
+  /** Generate a new HD wallet for backup — returns mnemonic + derived public key */
+  generateBackupKey(): Promise<GeneratedKey>;
+
+  /**
+   * Add a public key to a Flow account on-chain.
+   * Returns the assigned key index from the blockchain.
+   */
+  addKeyToAccount(
+    address: string,
+    publicKey: string,
+    weight: KeyWeight,
+    signAlgo: number,
+    hashAlgo: number
+  ): Promise<number>;
 }
 
 export interface DeviceSyncPayload {
@@ -218,7 +290,26 @@ export interface CloudStorageProvider {
 
 /** Backend API contract for BackupWorkflow */
 export interface BackupApi {
-  registerBackup(backupInfo: { type: BackupType; name: string }): Promise<void>;
+  /** POST /v3/signed — register backup key with signatures */
+  registerBackup(
+    accountKey: {
+      public_key: string;
+      sign_algo: number;
+      hash_algo: number;
+      weight: number;
+    },
+    signatures: Array<{
+      public_key: string;
+      sign_algo: number;
+      hash_algo: number;
+      signature: string;
+      sign_message?: string;
+      weight?: number;
+    }>,
+    backupInfo: { type: BackupType; name: string }
+  ): Promise<void>;
+
+  /** POST /v3/sync — sync device key to backend after on-chain key addition */
   syncDeviceKey(
     accountKey: {
       public_key: string;
@@ -226,8 +317,11 @@ export interface BackupApi {
       hash_algo: number;
       weight: number;
     },
-    signatures: unknown
+    deviceInfo: BackupDeviceInfo,
+    backupInfo: { type: BackupType; name: string }
   ): Promise<void>;
+
+  /** GET user keys — used to detect key weight type */
   getUserKeys(): Promise<{ weight: number; publicKey: string; index: number; revoked: boolean }[]>;
 }
 

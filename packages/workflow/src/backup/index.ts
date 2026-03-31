@@ -1,6 +1,9 @@
 // Types
 export type {
   BackupEntry,
+  BackupDeviceInfo,
+  GeneratedKey,
+  KeyProvider,
   KeystoreV3,
   LegacyDriveItem,
   BackupFile,
@@ -8,6 +11,7 @@ export type {
   RestoreResult,
   CreateBackupOptions,
   RestoreBackupOptions,
+  KeyAdditionBackupOptions,
   MigrationResult,
   MigrationOptions,
   DeviceInfo,

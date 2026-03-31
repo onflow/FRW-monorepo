@@ -8,7 +8,8 @@
 import Foundation
 
 enum AppUrl {
-  static let cadenceSwapUrl = "https://app.increment.fi"
-  static let evmSwapUrl = "https://swap.flow.com"
-  static let earnUrl = "" //TODO: #six 3.1.1
+    static let cadenceSwapUrl = "https://app.increment.fi"
+    static let evmSwapUrl = "https://swap.flow.com"
+    static let earnUrl = ""  //TODO: #six 3.1.1
+    static let FlowUrl = "https://flow.com/"
 }
