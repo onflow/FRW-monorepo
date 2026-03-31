@@ -153,13 +153,7 @@ struct SideMenuView: View {
                     .id(account.account.id)
                     .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity), removal: .opacity))
                 } header: {
-                    HStack {
-                        Text("active_account".localized)
-                            .font(.inter(size: 14))
-                            .foregroundStyle(Color.Theme.Text.black8)
-                            .padding(.vertical, 16)
-                        Spacer()
-                    }
+                    SectionHeader(title: "active_account".localized)
                 }
             }
 
@@ -187,13 +181,7 @@ struct SideMenuView: View {
                         }
                     }
                 } header: {
-                    HStack {
-                        Text("other_accounts".localized)
-                            .font(.inter(size: 14))
-                            .foregroundStyle(Color.Theme.Text.black8)
-                            .padding(.vertical, 16)
-                        Spacer()
-                    }
+                    SectionHeader(title: "other_accounts".localized)
                 }
             }
         }
@@ -266,47 +254,21 @@ struct SideMenuView: View {
                 .frame(height: 1)
                 .padding(.bottom, 12)
 
-            Button {
+            MenuRow(title: "Refresh Accounts".localized) {
                 reloadCount += 1
                 UIFeedbackGenerator.impactOccurred(.light)
                 wallet.reloadWalletInfo()
                 wallet.loadLinkedAccounts()
-            } label: {
-                HStack {
-                    Image(systemName: "arrow.trianglehead.2.clockwise")
-                        .foregroundStyle(Color.Theme.Text.black8)
-                        .font(.system(size: 14).bold())
-                        .rotationEffect(.degrees(360 * reloadCount ))
-                        .animation(.linear(duration: 0.5), value: reloadCount)
-                        .frame(width: 14, height: 14)
-                        .padding(13)
-                        .background(Color.Brain.Light.lines10)
-                        .clipShape(Circle())
-
-                    Text("Refresh Accounts".localized)
-                        .font(.inter(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.Theme.Text.black8)
-                    Spacer()
-                }
-                .contentShape(Rectangle())
-                .frame(height: 40)
+            } icon: {
+                IconCircle(imageName: "arrow.trianglehead.2.clockwise", isSystemImage: true)
+                    .rotationEffect(.degrees(360 * reloadCount))
+                    .animation(.linear(duration: 0.5), value: reloadCount)
             }
-            .buttonStyle(ScaleButtonStyle())
 
             if isDeveloperMode {
                 HStack {
-                    Image("icon_side_link")
-                        .renderingMode(.template)
-//<<<<<<< HEAD
-//                        .frame(width: 14, height: 14)
-//                        .padding(13)
-//=======
-                        .foregroundStyle(Color.Theme.Text.black8)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 26, height: 26)
-                        .padding(7)
-                        .background(Color.Brain.Light.lines10)
-                        .clipShape(Circle())
+                    IconCircle(imageName: "icon_side_link")
+
                     Text("Network::message".localized)
                         .lineLimit(1)
                         .font(.inter(size: 14, weight: .semibold))
@@ -319,7 +281,6 @@ struct SideMenuView: View {
                             Button {
                                 NotificationCenter.default.post(name: .toggleSideMenu)
                                 WalletManager.shared.changeNetwork(.mainnet)
-
                             } label: {
                                 NetworkMenuItem(
                                     network: .mainnet,
@@ -330,7 +291,6 @@ struct SideMenuView: View {
                             Button {
                                 NotificationCenter.default.post(name: .toggleSideMenu)
                                 WalletManager.shared.changeNetwork(.testnet)
-
                             } label: {
                                 NetworkMenuItem(
                                     network: .testnet,
@@ -338,7 +298,6 @@ struct SideMenuView: View {
                                 )
                             }
                         }
-
                     } label: {
                         Text(currentNetwork.rawValue.uppercasedFirstLetter())
                             .font(.inter(size: 12))
@@ -352,54 +311,19 @@ struct SideMenuView: View {
                 .frame(height: 40)
             }
 
-            Button {
-              Router.route(to: RouteMap.ReactNative.backup)
-//                Router.route(to: RouteMap.RestoreLogin.restoreList)
-            } label: {
-                HStack {
-                    Image("icon-nft-add")
-                        .resizable()
-                        .renderingMode(.template)
-                        .foregroundStyle(Color.Theme.Text.black8)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 26, height: 26)
-                        .padding(7)
-                        .background(Color.Brain.Light.lines10)
-                        .clipShape(Circle())
-
-                    Text("import_wallet".localized)
-                        .font(.inter(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.Theme.Text.black8)
-
-                    Spacer()
-                }
-                .contentShape(Rectangle())
-                .frame(height: 40)
+            MenuRow(title: "import_wallet".localized) {
+                Router.route(to: RouteMap.ReactNative.backup)
+            } icon: {
+                IconCircle(imageName: "icon-nft-add")
             }
-            .buttonStyle(ScaleButtonStyle())
 
             if vm.shouldShowAddingAccount {
-                Button {
+                MenuRow(title: "add_account".localized) {
                     Router.route(to: RouteMap.Profile.addAccount)
-                } label: {
-                    Image("icon-nft-add")
-                        .resizable()
-                        .renderingMode(.template)
-                        .foregroundStyle(Color.Theme.Text.black8)
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 14, height: 14)
-                        .padding(13)
-                        .background(Color.Brain.Light.lines10)
-                        .clipShape(Circle())
-
-                    Text("add_account".localized)
-                        .font(.inter(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.Theme.Text.black8)
-
-                    Spacer()
+                } icon: {
+                    IconCircle(imageName: "icon-nft-add")
                 }
             }
-
         }
     }
 
@@ -418,8 +342,4 @@ struct SideMenuView: View {
 
     @AppStorage("isDeveloperMode")
     private var isDeveloperMode = false
-    @State
-    private var showSwitchUserAlert = false
-
-    private let cPadding = 12.0
 }
