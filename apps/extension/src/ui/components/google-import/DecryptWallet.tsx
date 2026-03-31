@@ -1,5 +1,6 @@
 import { Button, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { logger } from '@onflow/frw-context';
 import React, { useState } from 'react';
 
 import { PasswordInput } from '@/ui/components/password/PasswordInput';
@@ -22,10 +23,30 @@ const DecryptWallet = ({ handleSwitchTab, setMnemonic, username, flowType = 'leg
         flowType === 'workflow'
           ? await usewallet.restoreAccountV2(username, password)
           : await usewallet.restoreAccount(username, password);
+
+      if (!mnemonic || typeof mnemonic !== 'string') {
+        logger.warn('[BackupRoute:UI] restore returned empty mnemonic', {
+          flowType,
+          username,
+        });
+        setErrorText(chrome.i18n.getMessage('No__backup__found'));
+        setLoading(false);
+        return;
+      }
+
+      logger.info('[BackupRoute:UI] restore succeeded', {
+        flowType,
+        username,
+      });
       setLoading(false);
       setMnemonic(mnemonic);
       handleSwitchTab();
     } catch (e) {
+      logger.warn('[BackupRoute:UI] restore failed', {
+        flowType,
+        username,
+        error: e instanceof Error ? e.message : String(e),
+      });
       setLoading(false);
       // Error will be shown by PasswordValidationText
       setErrorText(chrome.i18n.getMessage('Incorrect__decrypt__password__please__try__again'));

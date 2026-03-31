@@ -1635,31 +1635,31 @@ export class WalletController extends BaseController {
   };
 
   hasGooglePermission = async () => {
-    return googleDriveService.hasGooglePermission();
+    return backupWorkflowService.hasGooglePermission();
   };
 
   deleteAllBackups = async () => {
-    return googleDriveService.deleteAllFile();
+    return backupWorkflowService.deleteAllBackups();
   };
 
   deleteCurrentUserBackup = async () => {
     const data = await userInfoService.getCurrentUserInfo();
     const username = data.username;
-    return googleDriveService.deleteUserBackup(username);
+    return backupWorkflowService.deleteUserBackup(username);
   };
 
   deleteUserBackup = async (username: string) => {
-    return googleDriveService.deleteUserBackup(username);
+    return backupWorkflowService.deleteUserBackup(username);
   };
 
   hasCurrentUserBackup = async () => {
     const data = await userInfoService.getCurrentUserInfo();
     const username = data.username;
-    return googleDriveService.hasUserBackup(username);
+    return backupWorkflowService.hasUserBackup(username);
   };
 
   hasUserBackup = async (username: string) => {
-    return googleDriveService.hasUserBackup(username);
+    return backupWorkflowService.hasUserBackup(username);
   };
 
   syncBackup = async (password: string) => {
@@ -1674,24 +1674,29 @@ export class WalletController extends BaseController {
   };
 
   loadBackupAccounts = async (): Promise<string[]> => {
-    return googleDriveService.loadBackupAccounts();
-  };
-
-  loadBackupAccountLists = async () => {
-    return googleDriveService.loadBackupAccountLists();
-  };
-
-  restoreAccount = async (username, password): Promise<string | null> => {
-    return googleDriveService.restoreAccount(username, password);
-  };
-
-  // BackupWorkflow V2 - side-by-side testing entrance
-  loadBackupAccountsV2 = async (): Promise<string[]> => {
+    logger.info('[BackupRoute] loadBackupAccounts -> default route');
     return backupWorkflowService.loadBackupAccounts();
   };
 
-  restoreAccountV2 = async (username, password): Promise<string | null> => {
+  loadBackupAccountLists = async () => {
+    logger.info('[BackupRoute] loadBackupAccountLists -> default route');
+    return backupWorkflowService.loadBackupAccountLists();
+  };
+
+  restoreAccount = async (username, password): Promise<string | null> => {
+    logger.info('[BackupRoute] restoreAccount -> default route', { username });
     return backupWorkflowService.restoreBackup(username, password);
+  };
+
+  // Backward-compatible aliases for workflow backup APIs
+  loadBackupAccountsV2 = async (): Promise<string[]> => {
+    logger.info('[BackupRoute] loadBackupAccountsV2 -> workflow strict-v2 route');
+    return backupWorkflowService.loadBackupAccountsV2Only();
+  };
+
+  restoreAccountV2 = async (username, password): Promise<string | null> => {
+    logger.info('[BackupRoute] restoreAccountV2 -> workflow strict-v2 route', { username });
+    return backupWorkflowService.restoreBackupV2Only(username, password);
   };
 
   getPayerAddressAndKeyId = async () => {

@@ -2,9 +2,11 @@ import { logger } from '@onflow/frw-context';
 import {
   BackupError,
   BackupErrorCode,
+  BackupVersion,
   type BackupType,
   BackupWorkflow,
   CloudProvider,
+  createBackupCrypto,
   GoogleDriveProvider,
   KeyWeight,
   type BackupApi,
@@ -47,9 +49,9 @@ class ExtensionBackupApiAdapter implements BackupApi {
     const response = await openapiService.keyList();
     const keys = response?.data?.result ?? [];
     return keys.map((key) => ({
-      weight: Number(key.weight ?? 0),
+      weight: Number((key as any).weight ?? 0),
       publicKey: String((key as any).publicKey ?? (key as any).public_key ?? ''),
-      index: Number(key.index ?? 0),
+      index: Number((key as any).index ?? 0),
       revoked: Boolean((key as any).revoked),
     }));
   }
@@ -121,6 +123,11 @@ class BackupWorkflowService {
     const workflow = this.getWorkflow();
     const uid = authenticationService.getAuth().currentUser?.uid ?? null;
     const keyWeight = await this.resolveKeyWeight();
+    logger.info('[BackupWorkflow] createBackup -> save V2 backup file', {
+      username,
+      targetProvider: CloudProvider.GoogleDrive,
+      targetVersion: BackupVersion.V2,
+    });
     const result = await workflow.createBackup({
       mnemonic,
       password,
@@ -153,6 +160,17 @@ class BackupWorkflowService {
     }
   };
 
+  restoreBackupV2Only = async (username: string, password: string): Promise<string | null> => {
+    const v2Backups = await this.listBackupsV2Only();
+    const entry = v2Backups.find((item) => item.username === username);
+    if (!entry) {
+      return null;
+    }
+
+    const v2Crypto = createBackupCrypto(BackupVersion.V2);
+    return v2Crypto.decrypt(entry.data, password);
+  };
+
   hasGooglePermission = async (): Promise<boolean> => {
     const provider = this.getGoogleProvider();
     return provider.hasPermission();
@@ -178,8 +196,23 @@ class BackupWorkflowService {
     return workflow.listBackups(CloudProvider.GoogleDrive);
   };
 
+  private listBackupsV2Only = async (): Promise<BackupEntry[]> => {
+    const backups = await this.listBackups();
+    const v2Backups = backups.filter((entry) => entry.version === BackupVersion.V2);
+    logger.info('[BackupWorkflow] listBackupsV2Only', {
+      total: backups.length,
+      v2Only: v2Backups.length,
+    });
+    return v2Backups;
+  };
+
   loadBackupAccounts = async (): Promise<string[]> => {
     const backups = await this.listBackups();
+    return backups.map((entry) => entry.username);
+  };
+
+  loadBackupAccountsV2Only = async (): Promise<string[]> => {
+    const backups = await this.listBackupsV2Only();
     return backups.map((entry) => entry.username);
   };
 

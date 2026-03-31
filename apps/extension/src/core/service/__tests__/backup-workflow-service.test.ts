@@ -43,6 +43,13 @@ vi.mock('@onflow/frw-workflow', () => {
   return {
     BackupWorkflow: hoisted.BackupWorkflowMock,
     GoogleDriveProvider: hoisted.GoogleDriveProviderMock,
+    createBackupCrypto: vi.fn().mockReturnValue({
+      decrypt: vi.fn().mockResolvedValue('test mnemonic words'),
+    }),
+    BackupVersion: {
+      V1: '1.0',
+      V2: '2.0',
+    },
     CloudProvider: {
       GoogleDrive: 'google_drive',
     },

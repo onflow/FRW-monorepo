@@ -1,4 +1,5 @@
 import { Alert, Snackbar } from '@mui/material';
+import { logger } from '@onflow/frw-context';
 import { generateRandomUsername } from '@onflow/frw-utils';
 import React, { useEffect, useReducer, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
@@ -60,6 +61,15 @@ const ImportProfile = () => {
 
     checkWalletStatus();
   }, [usewallet]);
+
+  useEffect(() => {
+    const backupQuery = new URLSearchParams(location.search).get('backup');
+    logger.info('[BackupRoute:UI] import-profile page opened', {
+      backupQuery,
+      route: location.pathname,
+      initialTab: backupQuery === 'workflow' ? 'workflow-tab(1)' : 'legacy-tab(0)',
+    });
+  }, [location.pathname, location.search]);
 
   const handleErrorClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {

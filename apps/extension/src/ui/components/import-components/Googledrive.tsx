@@ -1,5 +1,6 @@
 import { Box, Button, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import { logger } from '@onflow/frw-context';
+import React, { useEffect, useState } from 'react';
 
 import { consoleError } from '@/shared/utils';
 import { LLSpinner } from '@/ui/components';
@@ -23,10 +24,19 @@ const Googledrive = ({
 
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    logger.info('[BackupRoute:UI] GoogleDrive tab mounted', {
+      mode: useV2 ? 'workflow(v2)' : 'legacy(v1)',
+    });
+  }, [useV2]);
+
   const getGoogle = async () => {
     setLoading(true);
 
     try {
+      logger.info('[BackupRoute:UI] Connect clicked', {
+        mode: useV2 ? 'workflow(v2)' : 'legacy(v1)',
+      });
       const accounts = useV2
         ? await wallets.loadBackupAccountsV2()
         : await wallets.loadBackupAccounts();

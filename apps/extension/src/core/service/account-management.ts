@@ -52,7 +52,7 @@ import {
 
 import { authenticationService, preferenceService } from '.';
 import { analyticsService } from './analytics';
-import googleDriveService from './googleDrive';
+import backupWorkflowService from './backup-workflow';
 import keyringService, { type Keyring } from './keyring';
 import openapiService from './openapi';
 import userInfoService from './user';
@@ -905,10 +905,11 @@ export class AccountManagement {
     if (!isValidMnemonic) {
       throw new Error('Invalid mnemonic');
     }
-    const auth = authenticationService.getAuth();
-    const user = await auth.currentUser;
     try {
-      await googleDriveService.uploadMnemonicToGoogleDrive(mnemonic, username, user!.uid, password);
+      logger.info('[BackupRoute] uploadMnemonicToGoogleDrive -> workflow createBackup', {
+        username,
+      });
+      await backupWorkflowService.createBackup(mnemonic, username, password);
       analyticsService.track('multi_backup_created', {
         address: (await userWalletService.getCurrentAddress()) || '',
         providers: ['GoogleDrive'],
@@ -997,8 +998,8 @@ export class AccountManagement {
    */
   async getProfileBackupStatuses(currentPassword: string): Promise<ProfileBackupStatus[]> {
     try {
-      // Get all backups from Google Drive
-      const backupLists = await googleDriveService.loadBackupAccountLists();
+      // Get all backups from the unified backup workflow
+      const backupLists = await backupWorkflowService.loadBackupAccountLists();
       // Get all active profiles
       const userList = userInfoService.getUserList();
 
@@ -1032,7 +1033,7 @@ export class AccountManagement {
 
           try {
             // Attempt to decrypt with current password
-            canDecrypt = await googleDriveService.testProfileBackupDecryption(
+            canDecrypt = await backupWorkflowService.testProfileBackupDecryption(
               backup.username,
               currentPassword
             );
@@ -1095,11 +1096,11 @@ export class AccountManagement {
       }
 
       // Handle Google backups if we have Google permission
-      const hasGooglePermission = await googleDriveService.hasGooglePermission();
+      const hasGooglePermission = await backupWorkflowService.hasGooglePermission();
 
       if (hasGooglePermission && selectedProfiles.length > 0) {
         // First update the Google backups
-        await googleDriveService.setNewPassword(currentPassword, newPassword, selectedProfiles);
+        await backupWorkflowService.setNewPassword(currentPassword, newPassword, selectedProfiles);
 
         // Only change the keyring password if the backup update succeeds
         const success = await keyringService.changePassword(currentPassword, newPassword);

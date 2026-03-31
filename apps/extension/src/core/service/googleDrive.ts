@@ -137,6 +137,19 @@ class GoogleDriveService {
     uid: string,
     password: string
   ) => {
+    const allowLegacyBackupWrite = process.env.ALLOW_LEGACY_BACKUP_WRITE === 'true';
+    if (!allowLegacyBackupWrite) {
+      // Legacy GoogleDriveService write path is deprecated.
+      // New backups must be created through BackupWorkflowService (V2 file).
+      consoleWarn(
+        '[BackupRoute] Legacy uploadMnemonicToGoogleDrive is disabled. Use BackupWorkflow V2 createBackup.',
+        {
+          username,
+        }
+      );
+      throw new Error('Legacy backup write path is disabled. Use V2 backup workflow.');
+    }
+
     if (!this.AES_KEY) {
       throw new Error('Upload backup failed, missing AES_KEY');
     }

@@ -146,44 +146,6 @@ const Welcome = () => {
             </Typography>
           </Button>
 
-          <Button
-            variant="contained"
-            color="secondary"
-            component={Link}
-            to="/welcome/importprofile?backup=workflow"
-            size="large"
-            data-testid="import-existing-backup-button"
-            sx={{
-              display: 'flex',
-              width: '297px',
-              height: '52px',
-              borderRadius: '16px',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textTransform: 'capitalize',
-              border: `1px solid ${COLOR_GREEN_FLOW_DARKMODE_00EF8B}`,
-              backgroundColor: 'transparent',
-              flexDirection: 'column',
-              '&:hover': {
-                backgroundColor: COLOR_GREEN_FLOW_DARKMODE_00EF8B,
-                opacity: 0.8,
-                color: COLOR_DARK_GRAY_1A1A1A,
-              },
-            }}
-          >
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: '600',
-                fontSize: '14px',
-                color: '#FFF',
-                textAlign: 'center',
-              }}
-            >
-              {chrome.i18n.getMessage('Import_Existing_Backup') || 'Import Existing Backup'}
-            </Typography>
-          </Button>
-
           <Typography
             sx={{
               textAlign: 'center',
