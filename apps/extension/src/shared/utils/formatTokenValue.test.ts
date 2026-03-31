@@ -64,17 +64,17 @@ describe('formatPrice', () => {
       {
         input: '0.0001',
         threshold: 4,
-        expected: { leadingPart: '0.00012', zeroPart: null, endingPart: null },
+        expected: { leadingPart: '0.0001', zeroPart: null, endingPart: null },
       },
       {
         input: '0.00001',
         threshold: 4,
-        expected: { leadingPart: '0.0', zeroPart: 4, endingPart: '12' },
+        expected: { leadingPart: '0.0', zeroPart: 4, endingPart: '1' },
       },
       {
         input: '0.000001',
         threshold: 4,
-        expected: { leadingPart: '0.0', zeroPart: 7, endingPart: '12' },
+        expected: { leadingPart: '0.0', zeroPart: 5, endingPart: '1' },
       },
     ];
 

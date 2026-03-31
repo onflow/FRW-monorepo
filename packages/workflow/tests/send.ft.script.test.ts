@@ -97,7 +97,7 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('bridgeTokensToEvmAddressV2');
+    expect(configCache.name).toBe('bridgeTokensToEvmAddressWithPayer');
   });
 
   it('Test FlowTokenBridgeToEvmStrategy - FLOW tokens to CoA address', async () => {
@@ -177,7 +177,7 @@ describe('Test send strategies', () => {
     };
 
     await SendTransaction(payload, cadenceService);
-    expect(configCache.name).toBe('bridgeTokensFromEvmToFlowV3');
+    expect(configCache.name).toBe('bridgeTokensFromEvmToFlowWithPayer');
   });
 
   it('Test EvmToEvmTokenStrategy - EVM to EVM token transfer', async () => {
