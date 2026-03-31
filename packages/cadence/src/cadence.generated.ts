@@ -194,6 +194,54 @@ transaction(publicKeys: [String], revokeKeyIndexs: [Int]) {
   }
 
 
+  public async addKey(publicKey: string, signatureAlgorithm: number, hashAlgorithm: number, weight: string) {
+    const code = `
+import Crypto
+
+transaction(
+    publicKey: String,
+    signatureAlgorithm: UInt8,
+    hashAlgorithm: UInt8,
+    weight: UFix64
+) {
+    prepare(signer: auth(Keys) &Account) {
+        let signAlgo = SignatureAlgorithm(rawValue: signatureAlgorithm)
+            ?? panic("Invalid signature algorithm")
+        let hashAlgo = HashAlgorithm(rawValue: hashAlgorithm)
+            ?? panic("Invalid hash algorithm")
+
+        let key = PublicKey(
+            publicKey: publicKey.decodeHex(),
+            signatureAlgorithm: signAlgo
+        )
+
+        signer.keys.add(
+            publicKey: key,
+            hashAlgorithm: hashAlgo,
+            weight: weight
+        )
+    }
+}
+`;
+    let config = {
+      cadence: code.trim(),
+      name: "addKey",
+      type: "transaction",
+      args: (arg: any, t: any) => [
+        arg(publicKey, t.String),
+        arg(signatureAlgorithm, t.UInt8),
+        arg(hashAlgorithm, t.UInt8),
+        arg(weight, t.UFix64),
+      ],
+      limit: 9999,
+    };
+    config = await this.runRequestInterceptors(config);
+    let txId = await fcl.mutate(config);
+    const result = await this.runResponseInterceptors(config, txId);
+    return result.response;
+  }
+
+
   public async checkResource(address: string, flowIdentifier: string): Promise<boolean> {
     const code = `
 import NonFungibleToken from 0xNonFungibleToken

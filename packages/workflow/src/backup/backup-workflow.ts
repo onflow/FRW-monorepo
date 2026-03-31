@@ -15,6 +15,8 @@ import {
   type CreateBackupOptions,
   type DeviceSyncOptions,
   type DeviceSyncSession,
+  type KeyAdditionBackupOptions,
+  type KeyProvider,
   type MigrationOptions,
   type MigrationResult,
   type RestoreBackupOptions,
@@ -27,6 +29,7 @@ export interface BackupWorkflowConfig {
   analytics?: BackupAnalytics;
   /** WalletConnect project ID for device sync — provided by platform config */
   walletConnectProjectId: string;
+  keyProvider?: KeyProvider;
 }
 
 export class BackupWorkflow {
@@ -34,12 +37,14 @@ export class BackupWorkflow {
   private api: BackupApi;
   private analytics?: BackupAnalytics;
   private walletConnectProjectId: string;
+  private keyProvider?: KeyProvider;
 
   constructor(config: BackupWorkflowConfig) {
     this.providers = new Map(config.providers);
     this.api = config.api;
     this.analytics = config.analytics;
     this.walletConnectProjectId = config.walletConnectProjectId;
+    this.keyProvider = config.keyProvider;
   }
 
   registerProvider(provider: CloudStorageProvider): void {
@@ -68,8 +73,88 @@ export class BackupWorkflow {
     const backupType = this.providerToBackupType(options.provider);
     let errorCode: BackupErrorCode | undefined;
 
+    if (options.accountKey && options.signatures) {
+      try {
+        await this.api.registerBackup(options.accountKey, options.signatures, {
+          type: backupType,
+          name: options.username,
+        });
+      } catch {
+        errorCode = BackupErrorCode.ApiRegistrationFailed;
+      }
+    }
+
+    this.analytics?.trackBackupCreated(options.provider, options.keyWeight);
+
+    return {
+      success: !errorCode,
+      provider: options.provider,
+      backupType,
+      version: BackupVersion.V2,
+      error: errorCode,
+    };
+  }
+
+  async backupWithKeyAddition(options: KeyAdditionBackupOptions): Promise<BackupResult> {
+    if (!this.keyProvider) {
+      throw new BackupError(
+        BackupErrorCode.ProviderNotRegistered,
+        'KeyProvider is required for key-addition backup'
+      );
+    }
+
+    const provider = this.getProvider(options.provider);
+
+    // Step 1: Generate new backup key
+    const generated = await this.keyProvider.generateBackupKey();
+
+    // Step 2: Add key to Flow account on-chain
+    const keyIndex = await this.keyProvider.addKeyToAccount(
+      options.address,
+      generated.publicKey,
+      options.keyWeight,
+      generated.signAlgo,
+      generated.hashAlgo
+    );
+
+    // Step 3: Encrypt mnemonic and upload to cloud
+    const crypto = createBackupCrypto(BackupVersion.V2);
+    const encryptedData = await crypto.encrypt(generated.mnemonic, options.password);
+    const entry: BackupEntry = {
+      username: options.username,
+      uid: options.uid,
+      data: encryptedData,
+      version: BackupVersion.V2,
+      timestamp: Date.now(),
+      keyWeight: options.keyWeight,
+      address: options.address,
+      publicKey: generated.publicKey,
+      keyIndex,
+      signAlgo: generated.signAlgo,
+      hashAlgo: generated.hashAlgo,
+      deviceInfo: options.deviceInfo,
+    };
+
+    const entries = await provider.loadBackups();
+    const filtered = entries.filter((e) => e.username !== options.username);
+    filtered.unshift(entry);
+    await provider.saveBackups(filtered);
+
+    // Step 4: Sync key metadata to backend
+    const backupType = this.providerToBackupType(options.provider);
+    let errorCode: BackupErrorCode | undefined;
+
     try {
-      await this.api.registerBackup({ type: backupType, name: options.username });
+      await this.api.syncDeviceKey(
+        {
+          public_key: generated.publicKey,
+          sign_algo: generated.signAlgo,
+          hash_algo: generated.hashAlgo,
+          weight: options.keyWeight,
+        },
+        options.deviceInfo,
+        { type: backupType, name: options.username }
+      );
     } catch {
       errorCode = BackupErrorCode.ApiRegistrationFailed;
     }
