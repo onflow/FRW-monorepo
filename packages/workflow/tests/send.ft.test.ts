@@ -2,7 +2,7 @@ import { configureFCL, CadenceService } from '@onflow/frw-cadence';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { accounts } from './utils/accounts';
-import { authz, payerAuthorization } from './utils/authz';
+import { authz, payerAuthorization, bridgeAuthorizationOnly } from './utils/authz';
 
 // dotenv.config();
 
@@ -20,7 +20,9 @@ describe('Test send strategies', () => {
       if (config.type === 'transaction') {
         config.payer = payerAuthorization;
         config.proposer = authz;
-        config.authorizations = [authz];
+        config.authorizations = config.name.includes('WithPayer')
+          ? [authz, bridgeAuthorizationOnly]
+          : [authz];
       }
       return config;
     });
@@ -93,7 +95,7 @@ describe('Test send strategies', () => {
   //     tokenContractAddr: '',
   //   };
 
-  //   const txid = await SendTransaction(payload);
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 
@@ -332,6 +334,26 @@ describe('Test send strategies', () => {
   //   };
 
   //   const txid = await SendTransaction(payload);
+  //   expect(txid.length).toBe(64);
+  // });
+
+  // it('Test bridge USDC - Bridge from EVM to Flow', async () => {
+  //   const payload = {
+  //     type: 'token',
+  //     assetType: 'evm',
+  //     proposer: mainAccount.address,
+  //     receiver: mainAccount.address,
+  //     flowIdentifier: 'A.1654653399040a61.FlowToken.Vault',
+  //     sender: mainAccount.evmAddr,
+  //     amount: '0.001',
+  //     childAddrs: [],
+  //     ids: [],
+  //     decimal: 6,
+  //     coaAddr: mainAccount.evmAddr,
+  //     tokenContractAddr: '0x0000000000000000000000000000000000000000',
+  //   };
+
+  //   const txid = await SendTransaction(payload, cadenceService);
   //   expect(txid.length).toBe(64);
   // });
 
